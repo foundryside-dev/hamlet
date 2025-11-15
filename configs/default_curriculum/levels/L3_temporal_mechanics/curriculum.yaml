@@ -1,0 +1,12 @@
+curriculum:
+  version: "1.0"
+
+  # L3: Temporal mechanics (day/night cycle)
+  # 8×8 grid, full vocabulary (8 bars, 14 affordances)
+  # 24-tick day/night cycle affects affordance behavior
+  # Adds temporal features to observation (time_of_day, day_progress, is_night)
+
+  active_vision: global
+  vision_range: 1.0
+  active_temporal: true       # Temporal features active
+  day_length: 24              # 24 ticks per day

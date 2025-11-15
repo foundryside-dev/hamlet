@@ -1,0 +1,12 @@
+curriculum:
+  version: "1.0"
+
+  # L2: Partial observability (POMDP)
+  # 8×8 grid, full vocabulary (8 bars, 14 affordances)
+  # 5×5 local window (vision_range=0.625 on 8×8 grid)
+  # Requires LSTM for memory (implemented in RecurrentSpatialQNetwork)
+
+  active_vision: local        # Local window only (POMDP)
+  vision_range: 0.625         # 5-cell window on 8×8 grid
+  active_temporal: false
+  day_length: null

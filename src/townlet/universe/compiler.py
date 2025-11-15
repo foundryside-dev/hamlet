@@ -39,6 +39,7 @@ from townlet.universe.dto import (
     AffordanceMetadata,
     MeterInfo,
     MeterMetadata,
+    ObservationField,
     ObservationSpec,
     UniverseMetadata,
 )
@@ -216,6 +217,214 @@ class UniverseCompiler:
             len(env_affordances),
         )
 
+    def _build_observation_spec(
+        self,
+        stratum,
+        environment,
+        curriculum,
+        agent,
+    ) -> ObservationSpec:
+        """
+        Build observation spec using Support/Active pattern.
+
+        Support (stratum): Which observation fields CAN exist (declared at experiment level)
+        Active (curriculum): Which fields ARE active vs masked (varies per curriculum level)
+
+        This enables:
+        - Transfer learning: All levels have same obs_dim (masked fields = zeros)
+        - Power user optimization: Future enhancement can exclude unsupported fields
+
+        Args:
+            stratum: Stratum config with vision/temporal support declarations
+            environment: Environment config with meter/affordance vocabulary
+            curriculum: Curriculum config with active vision/temporal settings
+            agent: Agent config with perception settings
+
+        Returns:
+            ObservationSpec with all fields, marked as active or masked via description
+        """
+        fields = []
+        offset = 0
+
+        # ===== Vision Fields (Support/Active pattern) =====
+
+        # Global vision (grid encoding)
+        if stratum.stratum.vision_support in ["both", "global"]:
+            is_active = curriculum.curriculum.active_vision == "global"
+
+            # Compute grid encoding dimensions
+            if stratum.stratum.substrate.type == "grid":
+                grid_width = stratum.stratum.substrate.grid.width
+                grid_height = stratum.stratum.substrate.grid.height
+                grid_encoding_dims = grid_width * grid_height  # e.g., 8*8 = 64
+            else:
+                grid_encoding_dims = 0  # Non-grid substrates don't have grid encoding
+
+            if grid_encoding_dims > 0:
+                desc = f"{grid_width}x{grid_height} grid encoding" if is_active else "MASKED (partial obs active)"
+                fields.append(
+                    ObservationField(
+                        uuid=None,  # Auto-computed
+                        name="obs_grid_encoding",
+                        type="spatial_grid",
+                        dims=grid_encoding_dims,
+                        start_index=offset,
+                        end_index=offset + grid_encoding_dims,
+                        scope="agent",
+                        description=desc,
+                        semantic_type="spatial",
+                    )
+                )
+                offset += grid_encoding_dims
+
+        # Partial vision (local window)
+        if stratum.stratum.vision_support in ["both", "partial"]:
+            is_active = curriculum.curriculum.active_vision in ["partial", "local"]
+
+            # Compute local window dimensions from normalized vision_range
+            if stratum.stratum.substrate.type == "grid":
+                grid_width = stratum.stratum.substrate.grid.width
+                # vision_range is 0.0-1.0, represents fraction of grid
+                # e.g., 0.625 on 8x8 grid = 5-cell window → 5x5 = 25 dims
+                window_size = max(3, int(curriculum.curriculum.vision_range * grid_width))
+                # Force odd size (agent at center)
+                if window_size % 2 == 0:
+                    window_size += 1
+                # Clamp to grid size
+                window_size = min(window_size, grid_width)
+
+                local_window_dims = window_size**2  # e.g., 5^2 = 25
+            else:
+                local_window_dims = 0
+
+            if local_window_dims > 0:
+                desc = f"{window_size}x{window_size} local window" if is_active else "MASKED (global obs active)"
+                fields.append(
+                    ObservationField(
+                        uuid=None,
+                        name="obs_local_window",
+                        type="spatial_grid",
+                        dims=local_window_dims,
+                        start_index=offset,
+                        end_index=offset + local_window_dims,
+                        scope="agent",
+                        description=desc,
+                        semantic_type="spatial",
+                    )
+                )
+                offset += local_window_dims
+
+        # ===== Position and Velocity (always active) =====
+
+        position_dims = 2  # 2D grid (width, height)
+
+        fields.append(
+            ObservationField(
+                uuid=None,
+                name="obs_position",
+                type="vector",
+                dims=position_dims,
+                start_index=offset,
+                end_index=offset + position_dims,
+                scope="agent",
+                description=f"Agent position ({position_dims}D coordinates)",
+                semantic_type="spatial",
+            )
+        )
+        offset += position_dims
+
+        fields.append(
+            ObservationField(
+                uuid=None,
+                name="obs_velocity",
+                type="vector",
+                dims=position_dims,
+                start_index=offset,
+                end_index=offset + position_dims,
+                scope="agent",
+                description=f"Agent velocity ({position_dims}D vector)",
+                semantic_type="spatial",
+            )
+        )
+        offset += position_dims
+
+        # ===== Meters (always active, fixed vocabulary) =====
+
+        meter_count = len(environment.environment.meters)
+
+        fields.append(
+            ObservationField(
+                uuid=None,
+                name="obs_meters",
+                type="vector",
+                dims=meter_count,
+                start_index=offset,
+                end_index=offset + meter_count,
+                scope="agent",
+                description=f"{meter_count} meter values (normalized 0-1)",
+                semantic_type="bars",
+            )
+        )
+        offset += meter_count
+
+        # ===== Affordances (always active, fixed vocabulary) =====
+
+        affordance_count = len(environment.environment.affordances)
+
+        fields.append(
+            ObservationField(
+                uuid=None,
+                name="obs_affordances",
+                type="vector",
+                dims=affordance_count,
+                start_index=offset,
+                end_index=offset + affordance_count,
+                scope="agent",
+                description=f"{affordance_count} affordance distances (normalized)",
+                semantic_type="affordance",
+            )
+        )
+        offset += affordance_count
+
+        # ===== Temporal Features (Support/Active pattern) =====
+
+        if stratum.stratum.temporal_support == "enabled":
+            is_active = curriculum.curriculum.active_temporal
+
+            # Temporal features: (time_of_day_sin, time_of_day_cos, day_progress, is_night)
+            temporal_dims = 4
+
+            desc = "Temporal features (day/night cycle)" if is_active else "MASKED (temporal inactive)"
+            fields.append(
+                ObservationField(
+                    uuid=None,
+                    name="obs_temporal",
+                    type="vector",
+                    dims=temporal_dims,
+                    start_index=offset,
+                    end_index=offset + temporal_dims,
+                    scope="agent",
+                    description=desc,
+                    semantic_type="temporal",
+                )
+            )
+            offset += temporal_dims
+
+        # ===== Build ObservationSpec =====
+
+        obs_spec = ObservationSpec.from_fields(fields=fields)
+
+        active_dims = sum(f.dims for f in fields if "MASKED" not in f.description)
+        masked_dims = sum(f.dims for f in fields if "MASKED" in f.description)
+
+        logger.info("  Observation spec built:")
+        logger.info("    Total dims: %d (active: %d, masked: %d)", obs_spec.total_dims, active_dims, masked_dims)
+        for field in fields:
+            status = "ACTIVE" if "MASKED" not in field.description else "MASKED"
+            logger.info("      [%3d:%3d] %-25s (%3d dims) %s", field.start_index, field.end_index, field.name, field.dims, status)
+
+        return obs_spec
+
     def _compile_v21_hierarchical(self, experiment_dir: Path, use_cache: bool = True) -> CompiledUniverse:
         """
         Compile v2.1 hierarchical config structure into CompiledUniverse.
@@ -247,9 +456,22 @@ class UniverseCompiler:
         logger.info("=== Stage 2: Validating vocabulary consistency ===")
         self._validate_vocabulary_consistency(environment, levels_dict)
 
-        # Stage 3-7: Return minimal CompiledUniverseV21
-        logger.info("=== Stage 3-7: Creating CompiledUniverseV21 ===")
-        logger.info("Returning v2.1 compiled universe (full stages TODO)")
+        # Stage 3-4: Symbol table and resolution
+        # TODO: Implement if needed for your system
+        # For now, skip these stages (legacy may not need them)
+        logger.info("=== Stage 3-4: Symbol table and resolution (skipped) ===")
+
+        # Stage 5: Build observation specs for all curriculum levels
+        logger.info("=== Stage 5: Building observation specs ===")
+        observation_specs = {}
+        for level_name, (curriculum, bars, affordances, training) in levels_dict.items():
+            logger.info("Building obs spec for %s:", level_name)
+            obs_spec = self._build_observation_spec(stratum, environment, curriculum, agent)
+            observation_specs[level_name] = obs_spec
+
+        # Stage 6-7: Optimization and emit
+        logger.info("=== Stage 6-7: Optimization and emit ===")
+        logger.info("Creating CompiledUniverseV21...")
 
         from townlet.universe.compiled_v21 import CompiledUniverseV21
 
@@ -260,11 +482,13 @@ class UniverseCompiler:
             actions=actions,
             agent=agent,
             curriculum_levels=levels_dict,
+            observation_specs=observation_specs,
             experiment_dir=experiment_dir,
         )
 
         logger.info("✓ Compilation complete for '%s'", experiment.experiment.metadata.name)
         logger.info("  %d curriculum levels loaded", len(compiled.curriculum_levels))
+        logger.info("  %d observation specs generated", len(compiled.observation_specs))
 
         return compiled
 

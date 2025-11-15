@@ -25,9 +25,8 @@ from townlet.substrate.grid2d import Grid2DSubstrate
 from townlet.substrate.grid3d import Grid3DSubstrate
 from townlet.substrate.gridnd import GridNDSubstrate
 from townlet.training.checkpoint_utils import safe_torch_load, verify_checkpoint_digest
-from townlet.universe.compiled import CompiledUniverse
+from townlet.universe.compiled_v21 import CompiledUniverseV21
 from townlet.universe.compiler import UniverseCompiler
-from townlet.universe.runtime import RuntimeUniverse
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +56,7 @@ class LiveInferenceServer:
     def __init__(
         self,
         checkpoint_dir: Path | str,
+        level_name: str,
         port: int = 8766,
         step_delay: float = 0.2,
         total_episodes: int = 5000,  # Expected total episodes in training run
@@ -69,6 +69,7 @@ class LiveInferenceServer:
 
         Args:
             checkpoint_dir: Directory containing training checkpoints
+            level_name: Which curriculum level to run (e.g., "L0_0_minimal")
             port: WebSocket port
             step_delay: Delay between steps in seconds (0.2 = 5 steps/sec)
             total_episodes: Expected total episodes for training run (for progress gauge)
@@ -78,6 +79,7 @@ class LiveInferenceServer:
             recordings_dir: Optional recordings directory for replay mode
         """
         self.checkpoint_dir = Path(checkpoint_dir)
+        self.level_name = level_name
         self.port = port
         self.step_delay = step_delay
         self.total_episodes = total_episodes
@@ -87,8 +89,7 @@ class LiveInferenceServer:
         self.config_dir = Path(config_dir)
         self.training_config_path: Path | None = Path(training_config_path) if training_config_path else None
         self.compiler = UniverseCompiler()
-        self.compiled_universe: CompiledUniverse | None = None
-        self.runtime_universe: RuntimeUniverse | None = None
+        self.compiled_universe: CompiledUniverseV21 | None = None
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.clients: set[WebSocket] = set()

@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     from townlet.environment.action_config import ActionConfig, ActionSpaceConfig
     from townlet.exploration.base import ExplorationStrategy
     from townlet.population.runtime_registry import AgentRuntimeRegistry
-    from townlet.universe.compiled import CompiledUniverse
+    from townlet.universe.compiled_v21 import CompiledUniverseV21
 
 
 def _build_bar_index_map(meter_metadata: MeterMetadata) -> dict[str, int]:
@@ -116,7 +116,8 @@ class VectorizedHamletEnv:
     def __init__(
         self,
         *,
-        universe: CompiledUniverse,
+        universe: CompiledUniverseV21,
+        level_name: str,
         num_agents: int,
         device: torch.device | str = torch.device("cpu"),
     ):
@@ -124,7 +125,8 @@ class VectorizedHamletEnv:
         Initialize vectorized environment.
 
         Args:
-            universe: CompiledUniverse artifact produced by UniverseCompiler
+            universe: CompiledUniverseV21 artifact produced by UniverseCompiler (v2.1 hierarchical configs)
+            level_name: Which curriculum level to instantiate (e.g., "L0_0_minimal")
             num_agents: Number of parallel agents to simulate
             device: PyTorch device or device string (defaults to CPU). Infrastructure default - PDR-002 exemption.
 
@@ -135,10 +137,10 @@ class VectorizedHamletEnv:
         """
         torch_device = torch.device(device) if isinstance(device, str) else device
 
-        runtime = universe.to_runtime()
+        runtime = universe.to_runtime(level_name)
         self.runtime = runtime
         self.universe = universe
-        self.config_pack_path = Path(universe.config_dir)
+        self.config_pack_path = Path(universe.experiment_dir)
         self.num_agents = num_agents
         self.device = torch_device
         self.optimization_data = universe.optimization_data
@@ -643,17 +645,29 @@ class VectorizedHamletEnv:
     @classmethod
     def from_universe(
         cls,
-        universe: CompiledUniverse,
+        universe: CompiledUniverseV21,
+        level_name: str,
         *,
         num_agents: int,
         device: torch.device | str = "cpu",
     ) -> VectorizedHamletEnv:
-        """Instantiate environment using metadata from a compiled universe."""
+        """Instantiate environment using metadata from a compiled universe.
+
+        Args:
+            universe: CompiledUniverseV21 with hierarchical configs
+            level_name: Which curriculum level to instantiate
+            num_agents: Number of parallel agents
+            device: PyTorch device
+
+        Returns:
+            VectorizedHamletEnv instance
+        """
 
         torch_device = torch.device(device) if isinstance(device, str) else device
 
         return cls(
             universe=universe,
+            level_name=level_name,
             num_agents=num_agents,
             device=torch_device,
         )

@@ -31,7 +31,7 @@ from townlet.training.tensorboard_logger import TensorBoardLogger
 from townlet.universe.compiler import UniverseCompiler
 
 if TYPE_CHECKING:
-    from townlet.universe.compiled import CompiledUniverse
+    from townlet.universe.compiled_v21 import CompiledUniverseV21
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +46,7 @@ class DemoRunner:
     def __init__(
         self,
         config_dir: Path | str,
+        level_name: str,
         db_path: Path | str,
         checkpoint_dir: Path | str,
         max_episodes: int | None = None,
@@ -54,13 +55,15 @@ class DemoRunner:
         """Initialize demo runner.
 
         Args:
-            config_dir: Directory containing configuration pack
+            config_dir: Directory containing configuration pack (v2.1 hierarchical structure)
+            level_name: Which curriculum level to run (e.g., "L0_0_minimal")
             db_path: Path to SQLite database
             checkpoint_dir: Directory for checkpoint files
             max_episodes: Maximum number of episodes to run (if None, reads from config YAML)
-            training_config_path: Optional explicit path to training YAML file
+            training_config_path: Optional explicit path to training YAML file (DEPRECATED - v2.1 uses level-specific training.yaml)
         """
         self.config_dir = Path(config_dir)
+        self.level_name = level_name
         if training_config_path is None:
             self.training_config_path = self.config_dir / "training.yaml"
         else:
@@ -69,7 +72,7 @@ class DemoRunner:
             raise FileNotFoundError(f"Training config not found: {self.training_config_path}")
         self.db_path = Path(db_path)
         self.checkpoint_dir = Path(checkpoint_dir)
-        self.compiled_universe: CompiledUniverse | None = None
+        self.compiled: CompiledUniverseV21 | None = None
 
         # Create directories
         self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
@@ -96,15 +99,21 @@ class DemoRunner:
             flush_every=10,
         )
 
-        # BROKEN: Needs v2.1 migration - HamletConfig.load() deleted
-        # Load config using HamletConfig DTO (enforces no-defaults validation)
-        # TODO: Replace with v2.1 hierarchical config loading
-        raise NotImplementedError(
-            "DemoRunner broken - v2.1 config migration in progress. "
-            "HamletConfig.load() method removed (flat v1.0 configs no longer supported). "
-            "Will be fixed in Phase 3."
-        )
-        # self.hamlet_config = HamletConfig.load(self.config_dir, training_config_path=self.training_config_path)
+        # v2.1: Compile hierarchical configs
+        compiler = UniverseCompiler()
+        self.compiled = compiler.compile(self.config_dir)
+
+        # Extract single level for backwards compat
+        level_config = self.compiled.as_single_level(self.level_name)
+        self.experiment_config = level_config["experiment"]
+        self.stratum_config = level_config["stratum"]
+        self.environment_config = level_config["environment"]
+        self.actions_config = level_config["actions"]
+        self.agent_config = level_config["agent"]
+        self.curriculum_config = level_config["curriculum"]
+        self.bars_config = level_config["bars"]
+        self.affordances_config = level_config["affordances"]
+        self.training_config = level_config["training"]
 
         # Also load raw YAML for optional sections (e.g., recording)
         with open(self.training_config_path) as f:
@@ -114,7 +123,7 @@ class DemoRunner:
         if max_episodes is not None:
             self.max_episodes = max_episodes
         else:
-            self.max_episodes = self.hamlet_config.training.max_episodes
+            self.max_episodes = self.training_config.max_episodes
 
         self.current_episode = 0
 
@@ -241,7 +250,7 @@ class DemoRunner:
         for agent_idx in range(self.population.num_agents):
             self.population.flush_episode(agent_idx)
 
-    def save_checkpoint(self, universe: CompiledUniverse | None = None):
+    def save_checkpoint(self, universe: CompiledUniverseV21 | None = None):
         """Save checkpoint at current episode."""
         # P1.1 Phase 5: Flush all agents before checkpoint
         self.flush_all_agents()
@@ -291,7 +300,7 @@ class DemoRunner:
             checkpoint["brain_hash"] = self.brain_hash
 
         if universe is None:
-            universe = self.compiled_universe
+            universe = self.compiled
         if universe is not None:
             attach_universe_metadata(checkpoint, universe)
 
@@ -302,7 +311,7 @@ class DemoRunner:
         # Update system state
         self.db.set_system_state("last_checkpoint", str(checkpoint_path))
 
-    def load_checkpoint(self, universe: CompiledUniverse | None = None) -> int | None:
+    def load_checkpoint(self, universe: CompiledUniverseV21 | None = None) -> int | None:
         """Load latest checkpoint if exists.
 
         Returns:
@@ -321,7 +330,7 @@ class DemoRunner:
         checkpoint = safe_torch_load(latest_checkpoint, weights_only=False)
 
         if universe is None:
-            universe = self.compiled_universe
+            universe = self.compiled
         if universe is not None:
             warning = config_hash_warning(checkpoint, universe)
             if warning:
@@ -360,64 +369,63 @@ class DemoRunner:
         logger.info(f"Database: {self.db_path}")
         logger.info(f"Checkpoints: {self.checkpoint_dir}")
 
-        # PDR-002: No-defaults validation done automatically by HamletConfig DTO
-        # All required parameters validated at load time (lines 109-110)
+        # PDR-002: No-defaults validation done automatically by config DTOs
+        # All required parameters validated at load time
 
         # Initialize training components
-        device_str = self.hamlet_config.training.device
+        device_str = self.training_config.device
         device = torch.device(device_str if torch.cuda.is_available() else "cpu")
         if device_str == "cuda" and not torch.cuda.is_available():
             logger.warning("CUDA requested but not available, falling back to CPU")
 
-        # Compile universe once and keep runtime view
-        compiler = UniverseCompiler()
-        self.compiled_universe = compiler.compile(self.config_dir)
-        runtime_universe = self.compiled_universe.to_runtime()
+        # Get observation spec for this level
+        obs_spec = self.compiled.get_obs_spec(self.level_name)
 
         # Extract config parameters from DTOs (all required, validated at load time)
-        num_agents = self.hamlet_config.population.num_agents
+        num_agents = self.training_config.population.num_agents
         # Get grid_size from compiled metadata (substrate.yaml is source of truth)
-        grid_size = runtime_universe.metadata.grid_size
-        partial_observability = self.hamlet_config.environment.partial_observability
-        vision_range = self.hamlet_config.environment.vision_range
-        enable_temporal_mechanics = self.hamlet_config.environment.enable_temporal_mechanics
+        grid_size = obs_spec.grid_size
+        partial_observability = self.environment_config.partial_observability
+        vision_range = self.environment_config.vision_range
+        enable_temporal_mechanics = self.environment_config.enable_temporal_mechanics
 
         # Create environment from compiled universe
         self.env = VectorizedHamletEnv.from_universe(
-            self.compiled_universe,
+            self.compiled,
+            self.level_name,
             num_agents=num_agents,
             device=device,
         )
 
         # Dimensions sourced from compiled metadata
-        obs_dim = runtime_universe.metadata.observation_dim
-        action_dim = runtime_universe.metadata.action_count
+        obs_dim = obs_spec.observation_dim
+        action_dim = obs_spec.action_count
 
         # Create curriculum (all params required per PDR-002)
         self.curriculum = AdversarialCurriculum(
-            max_steps_per_episode=self.hamlet_config.curriculum.max_steps_per_episode,
-            survival_advance_threshold=self.hamlet_config.curriculum.survival_advance_threshold,
-            survival_retreat_threshold=self.hamlet_config.curriculum.survival_retreat_threshold,
-            entropy_gate=self.hamlet_config.curriculum.entropy_gate,
-            min_steps_at_stage=self.hamlet_config.curriculum.min_steps_at_stage,
+            max_steps_per_episode=self.curriculum_config.max_steps_per_episode,
+            survival_advance_threshold=self.curriculum_config.survival_advance_threshold,
+            survival_retreat_threshold=self.curriculum_config.survival_retreat_threshold,
+            entropy_gate=self.curriculum_config.entropy_gate,
+            min_steps_at_stage=self.curriculum_config.min_steps_at_stage,
             device=device,
         )
 
         # Create exploration (all params required per PDR-002)
         # Conditionally pass active_mask based on mask_unused_obs config
-        active_mask = self.env.observation_activity.active_mask if self.hamlet_config.population.mask_unused_obs else None
+        active_mask = self.env.observation_activity.active_mask if self.training_config.population.mask_unused_obs else None
         self.exploration = AdaptiveIntrinsicExploration(
             obs_dim=obs_dim,
-            embed_dim=self.hamlet_config.exploration.embed_dim,
-            rnd_training_batch_size=self.hamlet_config.training.batch_size,  # Use main batch_size from config
-            initial_intrinsic_weight=self.hamlet_config.exploration.initial_intrinsic_weight,
-            variance_threshold=self.hamlet_config.exploration.variance_threshold,
-            min_survival_fraction=self.hamlet_config.exploration.min_survival_fraction,
-            max_episode_length=self.hamlet_config.curriculum.max_steps_per_episode,
-            survival_window=self.hamlet_config.exploration.survival_window,
-            epsilon_start=self.hamlet_config.training.epsilon_start,
-            epsilon_decay=self.hamlet_config.training.epsilon_decay,
-            epsilon_min=self.hamlet_config.training.epsilon_min,
+            embed_dim=self.training_config.exploration.embed_dim,
+            rnd_training_batch_size=self.training_config.batch_size,  # Use main batch_size from config
+            initial_intrinsic_weight=self.training_config.exploration.initial_intrinsic_weight,
+            variance_threshold=self.training_config.exploration.variance_threshold,
+            min_survival_fraction=self.training_config.exploration.min_survival_fraction,
+            max_episode_length=self.curriculum_config.max_steps_per_episode,
+            survival_window=self.training_config.exploration.survival_window,
+            epsilon_start=self.training_config.epsilon_start,
+            epsilon_decay=self.training_config.epsilon_decay,
+            epsilon_min=self.training_config.epsilon_min,
             device=device,
             active_mask=active_mask,
         )
@@ -426,10 +434,10 @@ class DemoRunner:
         vision_window_size = 2 * vision_range + 1  # 5 for vision_range=2
 
         # Get training hyperparameters from config (all required per PDR-002)
-        train_frequency = self.hamlet_config.training.train_frequency
-        batch_size = self.hamlet_config.training.batch_size
-        sequence_length = self.hamlet_config.training.sequence_length
-        max_grad_norm = self.hamlet_config.training.max_grad_norm
+        train_frequency = self.training_config.train_frequency
+        batch_size = self.training_config.batch_size
+        sequence_length = self.training_config.sequence_length
+        max_grad_norm = self.training_config.max_grad_norm
 
         # Create agent IDs
         agent_ids = [f"agent_{i}" for i in range(num_agents)]
@@ -463,7 +471,7 @@ class DemoRunner:
             max_grad_norm=max_grad_norm,
             brain_config=brain_config,
             max_episodes=self.max_episodes,  # For PER beta annealing
-            max_steps_per_episode=self.hamlet_config.curriculum.max_steps_per_episode,  # For PER beta annealing
+            max_steps_per_episode=self.curriculum_config.max_steps_per_episode,  # For PER beta annealing
         )
 
         self.curriculum.initialize_population(num_agents)
@@ -488,7 +496,7 @@ class DemoRunner:
             logger.info("Episode recording disabled")
 
         # Try to resume from checkpoint
-        loaded_episode = self.load_checkpoint(self.compiled_universe)
+        loaded_episode = self.load_checkpoint(self.compiled)
         if loaded_episode is not None:
             self.current_episode = loaded_episode + 1
 
@@ -502,9 +510,9 @@ class DemoRunner:
             "partial_observability": partial_observability,
             "vision_range": vision_range,
             "enable_temporal": enable_temporal_mechanics,
-            "initial_intrinsic_weight": self.hamlet_config.exploration.initial_intrinsic_weight,
-            "variance_threshold": self.hamlet_config.exploration.variance_threshold,
-            "max_steps_per_episode": self.hamlet_config.curriculum.max_steps_per_episode,
+            "initial_intrinsic_weight": self.training_config.exploration.initial_intrinsic_weight,
+            "variance_threshold": self.training_config.exploration.variance_threshold,
+            "max_steps_per_episode": self.curriculum_config.max_steps_per_episode,
         }
         # Note: final metrics will be logged at end of training
         self.tb_logger.log_hyperparameters(hparams=self.hparams, metrics={})
@@ -554,7 +562,7 @@ class DemoRunner:
 
                 # Run episode
                 num_agents = self.population.num_agents
-                max_steps = self.hamlet_config.curriculum.max_steps_per_episode
+                max_steps = self.curriculum_config.max_steps_per_episode
                 episode_reward = torch.zeros(num_agents, device=self.env.device)
                 episode_extrinsic_reward = torch.zeros(num_agents, device=self.env.device)
                 episode_intrinsic_reward = torch.zeros(num_agents, device=self.env.device)
@@ -882,7 +890,7 @@ class DemoRunner:
 
                 # Checkpoint every CHECKPOINT_INTERVAL episodes
                 if self.current_episode % self.CHECKPOINT_INTERVAL == 0:
-                    self.save_checkpoint(self.compiled_universe)
+                    self.save_checkpoint(self.compiled)
 
                 # Decay epsilon for next episode and sync telemetry
                 self.exploration.decay_epsilon()
@@ -893,7 +901,7 @@ class DemoRunner:
         finally:
             # Save final checkpoint
             logger.info("Training complete, saving final checkpoint...")
-            self.save_checkpoint(self.compiled_universe)
+            self.save_checkpoint(self.compiled)
 
             # Phase 4 - Log final metrics with hyperparameters
             if self.population is not None:
@@ -920,11 +928,18 @@ if __name__ == "__main__":
     )
 
     # Get paths from environment or args
-    config_arg = sys.argv[1] if len(sys.argv) > 1 else "configs/test"
-    db_path = sys.argv[2] if len(sys.argv) > 2 else "demo_state.db"
-    checkpoint_dir = sys.argv[3] if len(sys.argv) > 3 else "checkpoints"
+    # v2.1: REQUIRED level_name parameter
+    if len(sys.argv) < 2:
+        print("Usage: python -m townlet.demo.runner <config_dir> <level_name> [db_path] [checkpoint_dir] [max_episodes]")
+        print("Example: python -m townlet.demo.runner configs/experiment1 L0_0_minimal demo.db checkpoints 1000")
+        sys.exit(1)
+
+    config_arg = sys.argv[1]
+    level_name = sys.argv[2] if len(sys.argv) > 2 else "L0_0_minimal"  # Default level
+    db_path = sys.argv[3] if len(sys.argv) > 3 else "demo_state.db"
+    checkpoint_dir = sys.argv[4] if len(sys.argv) > 4 else "checkpoints"
     # If max_episodes provided via CLI, use it; otherwise pass None to read from config
-    max_episodes = int(sys.argv[4]) if len(sys.argv) > 4 else None
+    max_episodes = int(sys.argv[5]) if len(sys.argv) > 5 else None
 
     config_path = Path(config_arg)
     if config_path.is_dir():
@@ -936,6 +951,7 @@ if __name__ == "__main__":
 
     runner = DemoRunner(
         config_dir=config_dir,
+        level_name=level_name,
         db_path=db_path,
         checkpoint_dir=checkpoint_dir,
         max_episodes=max_episodes,  # None = read from config

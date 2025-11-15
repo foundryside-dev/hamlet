@@ -39,12 +39,9 @@ class HamletConfig(BaseModel):
     Philosophy: If it affects the universe, it's in the config. No exceptions.
 
     Example:
-        # v2.1: Use UniverseCompiler for hierarchical configs
-        >>> from townlet.universe.compiler import UniverseCompiler
-        >>> compiler = UniverseCompiler()
-        >>> compiled = compiler.compile(Path("configs/default_curriculum"))
-        >>> level_config = compiled.as_single_level("L0_0_minimal")
-        >>> # Access configs: level_config["training"], level_config["bars"], etc.
+        >>> config = HamletConfig.load(Path("configs/L0_0_minimal"))
+        >>> print(f"Training on {config.training.device} for {config.training.max_episodes} episodes")
+        Training on cuda for 500 episodes
     """
 
     # Section configs (ALL REQUIRED)
@@ -68,7 +65,7 @@ class HamletConfig(BaseModel):
         Extracted from model_validator to allow manual invocation after setting _config_dir.
         """
         # Load brain.yaml to get replay_buffer_capacity (if we have _config_dir context)
-        # In normal usage via UniverseCompiler, _config_dir is set
+        # In normal usage via HamletConfig.load(), _config_dir is set
         # In direct construction (tests), _config_dir may not be set
         if self._config_dir is None:
             # Direct construction without _config_dir - skip validation

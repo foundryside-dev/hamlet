@@ -103,7 +103,7 @@ class DemoRunner:
         compiler = UniverseCompiler()
         self.compiled = compiler.compile(self.config_dir)
 
-        # Extract single level for backwards compat
+        # Extract single level configs for this training run
         level_config = self.compiled.as_single_level(self.level_name)
         self.experiment_config = level_config["experiment"]
         self.stratum_config = level_config["stratum"]

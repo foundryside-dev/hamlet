@@ -144,7 +144,7 @@ class TestTimeProgression:
         NOTE: Updated to expect 4 temporal features (was 3) to match actual implementation.
         The 4th feature (lifetime_progress) was added for forward compatibility.
         """
-        env = cpu_env_factory(config_dir=Path("configs/L3_temporal_mechanics"), num_agents=2)
+        env = cpu_env_factory(config_dir=Path("configs/default_curriculum/levels/L3_temporal_mechanics"), num_agents=2)
 
         obs = env.reset()
 
@@ -541,7 +541,7 @@ class TestMultiAgentTemporal:
 
         New test: Validates that each agent has independent interaction progress.
         """
-        env = cpu_env_factory(config_dir=Path("configs/L3_temporal_mechanics"), num_agents=3)
+        env = cpu_env_factory(config_dir=Path("configs/default_curriculum/levels/L3_temporal_mechanics"), num_agents=3)
 
         env.reset()
 
@@ -646,7 +646,7 @@ class TestTemporalIntegrations:
         """
         from townlet.curriculum.adversarial import AdversarialCurriculum
 
-        env = cpu_env_factory(config_dir=Path("configs/L3_temporal_mechanics"), num_agents=1)
+        env = cpu_env_factory(config_dir=Path("configs/default_curriculum/levels/L3_temporal_mechanics"), num_agents=1)
 
         curriculum = AdversarialCurriculum(
             max_steps_per_episode=50,

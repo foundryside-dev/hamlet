@@ -11,7 +11,7 @@ class TestMovementDeltasFromActionConfig:
     def test_movement_deltas_from_action_config_grid2d(self, env_factory, cpu_device):
         """Movement deltas should come from ActionConfig, not hardcoded arrays."""
         env = env_factory(
-            config_dir=Path("configs/L1_full_observability"),
+            config_dir=Path("configs/default_curriculum/levels/L1_full_observability"),
             num_agents=1,
             device_override=cpu_device,
         )
@@ -31,7 +31,7 @@ class TestMovementDeltasFromActionConfig:
     def test_all_movement_deltas_match_action_config(self, env_factory, cpu_device):
         """All movement actions should have correct deltas from ActionConfig."""
         env = env_factory(
-            config_dir=Path("configs/L1_full_observability"),
+            config_dir=Path("configs/default_curriculum/levels/L1_full_observability"),
             num_agents=1,
             device_override=cpu_device,
         )
@@ -56,7 +56,7 @@ class TestMovementDeltasFromActionConfig:
     def test_non_movement_actions_have_zero_deltas(self, env_factory, cpu_device):
         """INTERACT and WAIT actions should have zero deltas."""
         env = env_factory(
-            config_dir=Path("configs/L1_full_observability"),
+            config_dir=Path("configs/default_curriculum/levels/L1_full_observability"),
             num_agents=1,
             device_override=cpu_device,
         )

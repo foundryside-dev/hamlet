@@ -7,7 +7,7 @@ import torch
 
 from townlet.substrate.grid2d import Grid2DSubstrate
 
-CONFIG_L1 = Path("configs/L1_full_observability")
+CONFIG_L1 = Path("configs/default_curriculum/levels/L1_full_observability")
 ASPARTIAL_CONFIG = Path("configs/aspatial_test")
 
 

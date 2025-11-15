@@ -178,7 +178,7 @@ def test_substrate_movement_matches_legacy(env_factory, device):
     Legacy validation test: ensures substrate.apply_movement matches old hardcoded behavior.
     """
     env = env_factory(
-        config_dir=Path("configs/L1_full_observability"),
+        config_dir=Path("configs/default_curriculum/levels/L1_full_observability"),
         num_agents=1,
         device_override=device,
     )

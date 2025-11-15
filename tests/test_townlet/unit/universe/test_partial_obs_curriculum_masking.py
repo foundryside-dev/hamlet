@@ -18,14 +18,14 @@ class TestPartialObservabilityCurriculumMasking:
     def l1_compiled(self):
         """Compile L1_full_observability config."""
         compiler = UniverseCompiler()
-        config_dir = Path("configs/L1_full_observability")
+        config_dir = Path("configs/default_curriculum/levels/L1_full_observability")
         return compiler.compile(config_dir)
 
     @pytest.fixture
     def l2_compiled(self):
         """Compile L2_partial_observability config."""
         compiler = UniverseCompiler()
-        config_dir = Path("configs/L2_partial_observability")
+        config_dir = Path("configs/default_curriculum/levels/L2_partial_observability")
         return compiler.compile(config_dir)
 
     def test_observation_dim_is_constant_across_full_and_partial_obs(self, l1_compiled, l2_compiled):

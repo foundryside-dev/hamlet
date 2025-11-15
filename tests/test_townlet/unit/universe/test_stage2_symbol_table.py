@@ -13,7 +13,7 @@ from townlet.universe.symbol_table import UniverseSymbolTable
 
 @pytest.fixture(scope="module")
 def raw_configs() -> RawConfigs:
-    return RawConfigs.from_config_dir(Path("configs/L0_0_minimal"))
+    return RawConfigs.from_config_dir(Path("configs/default_curriculum/levels/L0_0_minimal"))
 
 
 def test_stage2_registers_entities(raw_configs: RawConfigs) -> None:

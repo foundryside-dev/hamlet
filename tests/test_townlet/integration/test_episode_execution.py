@@ -121,7 +121,7 @@ class TestEpisodeLifecycle:
         since death resets hidden state to zeros (see test_hidden_state_resets_on_death).
         """
         # Create environment via compiled universe pipeline
-        env = cpu_env_factory(config_dir=Path("configs/L2_partial_observability"), num_agents=1)
+        env = cpu_env_factory(config_dir=Path("configs/default_curriculum/levels/L2_partial_observability"), num_agents=1)
 
         # Create population with recurrent network
         curriculum = StaticCurriculum(difficulty_level=0.5)

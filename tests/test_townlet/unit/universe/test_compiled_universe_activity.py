@@ -10,7 +10,7 @@ from townlet.universe.compiler import UniverseCompiler
 class TestObservationActivityInCompiledUniverse:
     def test_compiled_universe_has_observation_activity(self, tmp_path):
         """CompiledUniverse should include ObservationActivity after compilation."""
-        config_dir = Path("configs/L0_0_minimal")
+        config_dir = Path("configs/default_curriculum/levels/L0_0_minimal")
 
         compiler = UniverseCompiler()
         compiled = compiler.compile(config_dir, use_cache=False)
@@ -24,7 +24,7 @@ class TestObservationActivityInCompiledUniverse:
 
     def test_observation_activity_mask_matches_observation_dim(self):
         """active_mask length should equal total observation_dim."""
-        config_dir = Path("configs/L0_5_dual_resource")
+        config_dir = Path("configs/default_curriculum/levels/L0_5_dual_resource")
 
         compiler = UniverseCompiler()
         compiled = compiler.compile(config_dir, use_cache=False)
@@ -33,7 +33,7 @@ class TestObservationActivityInCompiledUniverse:
 
     def test_observation_activity_has_group_slices(self):
         """ObservationActivity should have slices for semantic groups."""
-        config_dir = Path("configs/L0_5_dual_resource")
+        config_dir = Path("configs/default_curriculum/levels/L0_5_dual_resource")
 
         compiler = UniverseCompiler()
         compiled = compiler.compile(config_dir, use_cache=False)
@@ -48,7 +48,7 @@ class TestObservationActivityInCompiledUniverse:
 
     def test_observation_activity_persists_through_cache(self, tmp_path):
         """ObservationActivity should survive MessagePack serialization."""
-        config_dir = Path("configs/L0_0_minimal")
+        config_dir = Path("configs/default_curriculum/levels/L0_0_minimal")
 
         # Compile and cache (use_cache=True to save to cache)
         compiler1 = UniverseCompiler()
@@ -67,7 +67,7 @@ class TestObservationActivityInCompiledUniverse:
 class TestObservationActivityInRuntimeUniverse:
     def test_runtime_universe_exposes_observation_activity(self):
         """RuntimeUniverse should expose observation_activity from compiled."""
-        config_dir = Path("configs/L0_5_dual_resource")
+        config_dir = Path("configs/default_curriculum/levels/L0_5_dual_resource")
 
         compiler = UniverseCompiler()
         compiled = compiler.compile(config_dir, use_cache=False)
@@ -78,7 +78,7 @@ class TestObservationActivityInRuntimeUniverse:
 
     def test_runtime_observation_activity_immutable(self):
         """RuntimeUniverse.observation_activity should reference frozen DTO."""
-        config_dir = Path("configs/L0_0_minimal")
+        config_dir = Path("configs/default_curriculum/levels/L0_0_minimal")
 
         compiler = UniverseCompiler()
         compiled = compiler.compile(config_dir, use_cache=False)

@@ -29,7 +29,7 @@ def test_stage1_parses_config_pack(pack_name: str):
 
 def test_compile_returns_compiled_universe():
     compiler = UniverseCompiler()
-    compiled = compiler.compile(Path("configs/L0_0_minimal"))
+    compiled = compiler.compile(Path("configs/default_curriculum/levels/L0_0_minimal"))
 
     assert isinstance(compiled, CompiledUniverse)
     assert compiled.metadata.universe_name == "L0_0_minimal"
@@ -37,7 +37,7 @@ def test_compile_returns_compiled_universe():
 
 def test_stage2_builds_symbol_table():
     compiler = UniverseCompiler()
-    raw_configs = RawConfigs.from_config_dir(Path("configs/L0_0_minimal"))
+    raw_configs = RawConfigs.from_config_dir(Path("configs/default_curriculum/levels/L0_0_minimal"))
 
     table = compiler._stage_2_build_symbol_tables(raw_configs)
 
@@ -60,7 +60,7 @@ def test_stage1_reports_missing_files(tmp_path: Path) -> None:
 
 def test_stage1_reports_invalid_yaml(tmp_path: Path) -> None:
     compiler = UniverseCompiler()
-    source_pack = Path("configs/L0_0_minimal")
+    source_pack = Path("configs/default_curriculum/levels/L0_0_minimal")
     test_pack = tmp_path / "broken_pack"
     shutil.copytree(source_pack, test_pack)
     (test_pack / "bars.yaml").write_text("bars: [broken::")
@@ -88,7 +88,7 @@ def test_compile_executes_stage2_before_stage3(monkeypatch) -> None:
     monkeypatch.setattr(UniverseCompiler, "_stage_3_resolve_references", fake_stage3, raising=False)
 
     with pytest.raises(CompilationError):
-        compiler.compile(Path("configs/L0_0_minimal"), use_cache=False)
+        compiler.compile(Path("configs/default_curriculum/levels/L0_0_minimal"), use_cache=False)
 
     assert called["stage2"] is True
     assert called["stage3"] is True
@@ -96,7 +96,7 @@ def test_compile_executes_stage2_before_stage3(monkeypatch) -> None:
 
 def test_stage1_rejects_unknown_enabled_action(tmp_path: Path) -> None:
     compiler = UniverseCompiler()
-    source_pack = Path("configs/L0_0_minimal")
+    source_pack = Path("configs/default_curriculum/levels/L0_0_minimal")
     test_pack = tmp_path / "invalid_actions"
     shutil.copytree(source_pack, test_pack)
 

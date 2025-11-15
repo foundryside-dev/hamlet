@@ -106,7 +106,7 @@ def pomdp_env(
     Returns:
         VectorizedHamletEnv instance with POMDP
     """
-    universe = compile_universe(Path("configs/L2_partial_observability"))
+    universe = compile_universe(Path("configs/default_curriculum/levels/L2_partial_observability"))
     return VectorizedHamletEnv.from_universe(
         universe,
         num_agents=1,
@@ -131,7 +131,7 @@ def temporal_env(
     Returns:
         VectorizedHamletEnv instance with temporal mechanics
     """
-    universe = compile_universe(Path("configs/L3_temporal_mechanics"))
+    universe = compile_universe(Path("configs/default_curriculum/levels/L3_temporal_mechanics"))
     return VectorizedHamletEnv.from_universe(
         universe,
         num_agents=1,
@@ -266,7 +266,7 @@ def grid2d_3x3_env(
     Returns:
         VectorizedHamletEnv with 3×3 Grid2D substrate
     """
-    universe = compile_universe(Path("configs/L0_0_minimal"))
+    universe = compile_universe(Path("configs/default_curriculum/levels/L0_0_minimal"))
     return VectorizedHamletEnv.from_universe(
         universe,
         num_agents=1,

@@ -120,13 +120,12 @@ class RawConfigs:
                 errors.add(f"{description}: {exc}")
             return None
 
-        hamlet_config = _load_config(
-            "hamlet_config",
-            lambda: HamletConfig.load(config_dir),
-            missing_hint=(
-                "Ensure the pack includes training.yaml, environment.yaml, population.yaml, curriculum.yaml, "
-                "exploration.yaml, bars.yaml, cascades.yaml, affordances.yaml, substrate.yaml, and cues.yaml."
-            ),
+        # BROKEN: Needs v2.1 migration - HamletConfig.load() deleted
+        # TODO: Replace with v2.1 hierarchical config loading
+        hamlet_config = None
+        errors.add(
+            "HamletConfig loading broken - v2.1 migration in progress. "
+            "HamletConfig.load() method removed (flat v1.0 configs no longer supported)."
         )
 
         # VFS custom variables (file required, but variables list can be empty)

@@ -189,7 +189,7 @@ class TestEpisodeRecorder:
         from townlet.recording.recorder import EpisodeRecorder
 
         # Create environment with temporal mechanics enabled
-        env = cpu_env_factory(config_dir=Path("configs/L3_temporal_mechanics"), num_agents=1)
+        env = cpu_env_factory(config_dir=Path("configs/default_curriculum/levels/L3_temporal_mechanics"), num_agents=1)
 
         with tempfile.TemporaryDirectory() as tmpdir:
             config = {"max_queue_size": 100}

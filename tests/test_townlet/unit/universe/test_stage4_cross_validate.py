@@ -17,7 +17,7 @@ from townlet.universe.errors import CompilationError, CompilationErrorCollector
 
 @pytest.fixture(scope="module")
 def base_raw_configs() -> RawConfigs:
-    return RawConfigs.from_config_dir(Path("configs/L0_0_minimal"))
+    return RawConfigs.from_config_dir(Path("configs/default_curriculum/levels/L0_0_minimal"))
 
 
 def _clone_raw_configs(

@@ -28,11 +28,11 @@ def test_preflight_detects_old_checkpoints(tmp_path):
     # Attempting to create DemoRunner should detect and reject old checkpoint
     with pytest.raises(ValueError) as exc_info:
         DemoRunner(
-            config_dir=Path("configs/L1_full_observability"),
+            config_dir=Path("configs/default_curriculum/levels/L1_full_observability"),
             db_path=tmp_path / "test.db",
             checkpoint_dir=checkpoint_dir,
             max_episodes=10,
-            training_config_path=Path("configs/L1_full_observability/training.yaml"),
+            training_config_path=Path("configs/default_curriculum/levels/L1_full_observability/training.yaml"),
         )
 
     # Verify error message provides clear guidance
@@ -59,11 +59,11 @@ def test_preflight_allows_new_checkpoints(tmp_path):
 
     # Should not raise error
     runner = DemoRunner(
-        config_dir=Path("configs/L1_full_observability"),
+        config_dir=Path("configs/default_curriculum/levels/L1_full_observability"),
         db_path=tmp_path / "test.db",
         checkpoint_dir=checkpoint_dir,
         max_episodes=10,
-        training_config_path=Path("configs/L1_full_observability/training.yaml"),
+        training_config_path=Path("configs/default_curriculum/levels/L1_full_observability/training.yaml"),
     )
     runner._cleanup()  # Clean up
 
@@ -75,10 +75,10 @@ def test_preflight_allows_empty_checkpoint_dir(tmp_path):
 
     # Should not raise error (no checkpoints to validate)
     runner = DemoRunner(
-        config_dir=Path("configs/L1_full_observability"),
+        config_dir=Path("configs/default_curriculum/levels/L1_full_observability"),
         db_path=tmp_path / "test.db",
         checkpoint_dir=checkpoint_dir,
         max_episodes=10,
-        training_config_path=Path("configs/L1_full_observability/training.yaml"),
+        training_config_path=Path("configs/default_curriculum/levels/L1_full_observability/training.yaml"),
     )
     runner._cleanup()  # Clean up

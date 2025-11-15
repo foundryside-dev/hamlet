@@ -11,7 +11,7 @@ from townlet.universe.compiler import UniverseCompiler
 
 def test_compiled_universe_to_runtime_view() -> None:
     compiler = UniverseCompiler()
-    compiled = compiler.compile(Path("configs/L0_0_minimal"))
+    compiled = compiler.compile(Path("configs/default_curriculum/levels/L0_0_minimal"))
 
     runtime = compiled.to_runtime()
 
@@ -28,7 +28,7 @@ def test_compiled_universe_to_runtime_view() -> None:
 
 def test_runtime_views_are_read_only() -> None:
     compiler = UniverseCompiler()
-    compiled = compiler.compile(Path("configs/L0_0_minimal"))
+    compiled = compiler.compile(Path("configs/default_curriculum/levels/L0_0_minimal"))
 
     runtime = compiled.to_runtime()
 
@@ -41,7 +41,7 @@ def test_runtime_views_are_read_only() -> None:
 
 def test_runtime_clone_helpers_return_mutable_copies() -> None:
     compiler = UniverseCompiler()
-    compiled = compiler.compile(Path("configs/L0_0_minimal"))
+    compiled = compiler.compile(Path("configs/default_curriculum/levels/L0_0_minimal"))
 
     runtime = compiled.to_runtime()
 

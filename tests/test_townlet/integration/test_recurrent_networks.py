@@ -606,7 +606,7 @@ class TestLSTMForwardPass:
         POMDP env (vision_range=2) produces 5×5 window.
         LSTM forward pass should work correctly and produce Q-values.
         """
-        env = cpu_env_factory(config_dir=Path("configs/L2_partial_observability"), num_agents=1)
+        env = cpu_env_factory(config_dir=Path("configs/default_curriculum/levels/L2_partial_observability"), num_agents=1)
 
         # Create recurrent network
         network = RecurrentSpatialQNetwork(

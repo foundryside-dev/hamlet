@@ -31,7 +31,7 @@ class TestVisionRangeNoDefaults:
         config_dir.mkdir()
 
         # Copy L2 config as base and modify vision_range to 0
-        l2_source = Path("configs/L2_partial_observability")
+        l2_source = Path("configs/default_curriculum/levels/L2_partial_observability")
 
         # Copy all required files
         for file in [
@@ -96,7 +96,7 @@ class TestVisionRangeNoDefaults:
     def test_compiler_respects_vision_range_two(self):
         """Baseline test: vision_range=2 should produce 5×5 window (25 cells)."""
         compiler = UniverseCompiler()
-        config_dir = Path("configs/L2_partial_observability")
+        config_dir = Path("configs/default_curriculum/levels/L2_partial_observability")
         compiled = compiler.compile(config_dir)
 
         # Find local_window variable

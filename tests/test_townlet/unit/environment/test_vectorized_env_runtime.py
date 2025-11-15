@@ -9,7 +9,7 @@ import pytest
 from townlet.universe.compiler import UniverseCompiler
 
 
-@pytest.mark.parametrize("config_name", ["configs/L0_0_minimal"])
+@pytest.mark.parametrize("config_name", ["configs/default_curriculum/levels/L0_0_minimal"])
 def test_vectorized_env_avoids_runtime_yaml_reads(monkeypatch, config_name: str) -> None:
     """Ensure compiled environments no longer reopen bars/variables/action label YAML files."""
 

@@ -13,7 +13,6 @@ import torch
 import yaml
 
 from townlet.agent.brain_config import BrainConfig, compute_brain_hash, load_brain_config
-from townlet.config import HamletConfig
 from townlet.curriculum.adversarial import AdversarialCurriculum
 from townlet.demo.database import DemoDatabase
 from townlet.environment.vectorized_env import VectorizedHamletEnv
@@ -97,8 +96,15 @@ class DemoRunner:
             flush_every=10,
         )
 
+        # BROKEN: Needs v2.1 migration - HamletConfig.load() deleted
         # Load config using HamletConfig DTO (enforces no-defaults validation)
-        self.hamlet_config = HamletConfig.load(self.config_dir, training_config_path=self.training_config_path)
+        # TODO: Replace with v2.1 hierarchical config loading
+        raise NotImplementedError(
+            "DemoRunner broken - v2.1 config migration in progress. "
+            "HamletConfig.load() method removed (flat v1.0 configs no longer supported). "
+            "Will be fixed in Phase 3."
+        )
+        # self.hamlet_config = HamletConfig.load(self.config_dir, training_config_path=self.training_config_path)
 
         # Also load raw YAML for optional sections (e.g., recording)
         with open(self.training_config_path) as f:

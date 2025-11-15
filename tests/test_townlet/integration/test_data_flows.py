@@ -98,7 +98,7 @@ class TestObservationPipeline:
         Integration point: VectorizedHamletEnv (POMDP) → ObservationBuilder._build_partial_observations()
         """
         # Create POMDP environment with 5×5 vision
-        env = cpu_env_factory(config_dir=Path("configs/L2_partial_observability"), num_agents=1)
+        env = cpu_env_factory(config_dir=Path("configs/default_curriculum/levels/L2_partial_observability"), num_agents=1)
 
         # Reset environment
         obs = env.reset()

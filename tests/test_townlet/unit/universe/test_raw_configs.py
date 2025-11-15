@@ -9,7 +9,7 @@ from townlet.universe.compiler_inputs import RawConfigs
 
 
 def test_raw_configs_from_config_dir():
-    config_dir = Path("configs/L0_0_minimal")
+    config_dir = Path("configs/default_curriculum/levels/L0_0_minimal")
     raw = RawConfigs.from_config_dir(config_dir)
 
     assert raw.training.max_episodes > 0
@@ -22,7 +22,7 @@ def test_raw_configs_from_config_dir():
 
 
 def test_raw_configs_respects_training_enabled_actions(tmp_path):
-    source = Path("configs/L0_0_minimal")
+    source = Path("configs/default_curriculum/levels/L0_0_minimal")
     target = tmp_path / "mask_pack"
     shutil.copytree(source, target)
 

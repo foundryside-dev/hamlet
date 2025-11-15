@@ -101,9 +101,9 @@ class TestEnvironmentBoundaryProperties:
     @given(
         config_name=st.sampled_from(
             [
-                "configs/L0_0_minimal",  # 3×3 full obs
+                "configs/default_curriculum/levels/L0_0_minimal",  # 3×3 full obs
                 "configs/test",  # 8×8 full obs
-                "configs/L2_partial_observability",  # POMDP
+                "configs/default_curriculum/levels/L2_partial_observability",  # POMDP
             ]
         ),
         num_agents=st.integers(min_value=1, max_value=4),

@@ -9,7 +9,7 @@ from townlet.universe.compiler import UniverseCompiler
 class TestStructuredNetworkInstantiation:
     def test_structured_network_instantiated_with_observation_activity(self):
         """VectorizedPopulation should instantiate StructuredQNetwork when network_type='structured'."""
-        config_dir = Path("configs/L0_5_dual_resource")
+        config_dir = Path("configs/default_curriculum/levels/L0_5_dual_resource")
 
         compiler = UniverseCompiler()
         compiled = compiler.compile(config_dir, use_cache=False)
@@ -30,7 +30,7 @@ class TestStructuredNetworkInstantiation:
 
     def test_simple_network_still_works(self):
         """VectorizedPopulation should still instantiate SimpleQNetwork when network_type='simple'."""
-        config_dir = Path("configs/L0_5_dual_resource")
+        config_dir = Path("configs/default_curriculum/levels/L0_5_dual_resource")
 
         compiler = UniverseCompiler()
         compiled = compiler.compile(config_dir, use_cache=False)
@@ -47,7 +47,7 @@ class TestStructuredNetworkInstantiation:
 
     def test_recurrent_network_still_works(self):
         """VectorizedPopulation should still instantiate RecurrentSpatialQNetwork when network_type='recurrent'."""
-        config_dir = Path("configs/L2_partial_observability")
+        config_dir = Path("configs/default_curriculum/levels/L2_partial_observability")
 
         compiler = UniverseCompiler()
         compiled = compiler.compile(config_dir, use_cache=False)

@@ -20,7 +20,7 @@ def _build_metadata(config_dir: Path) -> tuple[UniverseCompiler, RawConfigs, Uni
 
 
 def test_stage6_builds_cascade_and_modulation_tables() -> None:
-    config_dir = Path("configs/L0_0_minimal")
+    config_dir = Path("configs/default_curriculum/levels/L0_0_minimal")
     compiler, raw_configs, metadata = _build_metadata(config_dir)
 
     optimization = compiler._stage_6_optimize(raw_configs, metadata)
@@ -39,7 +39,7 @@ def test_stage6_builds_cascade_and_modulation_tables() -> None:
 
 
 def test_stage6_builds_action_mask_with_operating_hours() -> None:
-    config_dir = Path("configs/L0_0_minimal")
+    config_dir = Path("configs/default_curriculum/levels/L0_0_minimal")
     compiler, raw_configs, metadata = _build_metadata(config_dir)
 
     optimization = compiler._stage_6_optimize(raw_configs, metadata)
@@ -56,7 +56,7 @@ def test_stage6_builds_action_mask_with_operating_hours() -> None:
 
 
 def test_stage6_invariants_on_cascades_and_modulations() -> None:
-    config_dir = Path("configs/L0_5_dual_resource")
+    config_dir = Path("configs/default_curriculum/levels/L0_5_dual_resource")
     compiler, raw_configs, metadata = _build_metadata(config_dir)
 
     optimization = compiler._stage_6_optimize(raw_configs, metadata)

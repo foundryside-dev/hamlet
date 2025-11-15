@@ -14,16 +14,16 @@ from pathlib import Path
 
 from pydantic import BaseModel, Field, PrivateAttr, model_validator
 
-from townlet.config.affordance import AffordanceConfig, load_affordances_config
-from townlet.config.bar import BarConfig, load_bars_config
-from townlet.config.cascade import CascadeConfig, load_cascades_config
-from townlet.config.cues import CuesConfig, load_cues_config
-from townlet.config.curriculum import CurriculumConfig, load_curriculum_config
-from townlet.config.environment import TrainingEnvironmentConfig, load_environment_config
-from townlet.config.exploration import ExplorationConfig, load_exploration_config
-from townlet.config.population import PopulationConfig, load_population_config
-from townlet.config.training import TrainingConfig, load_training_config
-from townlet.substrate.config import SubstrateConfig, load_substrate_config
+from townlet.config.affordance import AffordanceConfig
+from townlet.config.bar import BarConfig
+from townlet.config.cascade import CascadeConfig
+from townlet.config.cues import CuesConfig
+from townlet.config.curriculum import CurriculumConfig
+from townlet.config.environment import TrainingEnvironmentConfig
+from townlet.config.exploration import ExplorationConfig
+from townlet.config.population import PopulationConfig
+from townlet.config.training import TrainingConfig
+from townlet.substrate.config import SubstrateConfig
 
 logger = logging.getLogger(__name__)
 
@@ -165,56 +165,3 @@ class HamletConfig(BaseModel):
             )
 
         return self
-
-    @classmethod
-    def load(cls, config_dir: Path, training_config_path: Path | None = None) -> "HamletConfig":
-        """Load complete HAMLET configuration from directory.
-
-        This is the preferred method for loading configs. Reads all sections
-        from training.yaml and composes into validated HamletConfig. The training
-        section can optionally be supplied from an explicit path to support CLI
-        overrides (e.g., `--config /tmp/custom_training.yaml`).
-
-        Args:
-            config_dir: Directory containing training.yaml (e.g., configs/L0_0_minimal)
-            training_config_path: Optional explicit training.yaml path overriding config_dir/training.yaml
-
-        Returns:
-            Validated HamletConfig with all sections loaded
-
-        Raises:
-            FileNotFoundError: If training.yaml not found
-            ValueError: If any section validation fails
-
-        Example:
-            >>> config = HamletConfig.load(Path("configs/L0_0_minimal"))
-            >>> print(f"Grid: {config.substrate.grid.width}×{config.substrate.grid.height}")
-            Grid: 3×3
-        """
-        training = load_training_config(config_dir, training_config_path=training_config_path)
-        environment = load_environment_config(config_dir)
-        population = load_population_config(config_dir)
-        curriculum = load_curriculum_config(config_dir)
-        exploration = load_exploration_config(config_dir)
-        bars = tuple(load_bars_config(config_dir))
-        cascades = tuple(load_cascades_config(config_dir))
-        affordances = tuple(load_affordances_config(config_dir))
-        substrate = load_substrate_config(config_dir / "substrate.yaml")
-
-        config = cls(
-            training=training,
-            environment=environment,
-            population=population,
-            curriculum=curriculum,
-            exploration=exploration,
-            bars=bars,
-            cascades=cascades,
-            affordances=affordances,
-            substrate=substrate,
-            cues=load_cues_config(config_dir / "cues.yaml"),
-        )
-        # Set private config_dir for validation context
-        config._config_dir = Path(config_dir)
-        # Re-run validators now that _config_dir is set
-        config._validate_batch_size_vs_buffer()
-        return config

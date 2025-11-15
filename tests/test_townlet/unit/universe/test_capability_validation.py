@@ -16,7 +16,7 @@ class TestPrerequisiteValidation:
     def test_prerequisite_with_valid_affordance_ids_passes(self, tmp_path: Path):
         """Prerequisites referencing existing affordances should pass validation."""
         # Copy L0 config as base
-        source = Path("configs/L0_0_minimal")
+        source = Path("configs/default_curriculum/levels/L0_0_minimal")
         target = tmp_path / "test_config"
         shutil.copytree(source, target)
 
@@ -59,7 +59,7 @@ affordances:
     def test_prerequisite_with_invalid_affordance_id_fails(self, tmp_path: Path):
         """Prerequisites referencing non-existent affordances should fail validation."""
         # Copy L0 config as base
-        source = Path("configs/L0_0_minimal")
+        source = Path("configs/default_curriculum/levels/L0_0_minimal")
         target = tmp_path / "test_config"
         shutil.copytree(source, target)
 
@@ -98,7 +98,7 @@ affordances:
     def test_prerequisite_with_multiple_invalid_ids_reports_all(self, tmp_path: Path):
         """Prerequisites with multiple invalid IDs should report all errors."""
         # Copy L0 config as base
-        source = Path("configs/L0_0_minimal")
+        source = Path("configs/default_curriculum/levels/L0_0_minimal")
         target = tmp_path / "test_config"
         shutil.copytree(source, target)
 
@@ -141,7 +141,7 @@ class TestProbabilisticValidation:
     def test_probabilistic_with_both_outcomes_passes(self, tmp_path: Path):
         """Probabilistic capability with both success and failure effects should pass."""
         # Copy L0 config as base
-        source = Path("configs/L0_0_minimal")
+        source = Path("configs/default_curriculum/levels/L0_0_minimal")
         target = tmp_path / "test_config"
         shutil.copytree(source, target)
 
@@ -182,7 +182,7 @@ affordances:
     def test_probabilistic_without_on_failure_warns(self, tmp_path: Path):
         """Probabilistic capability without on_failure should emit warning."""
         # Copy L0 config as base
-        source = Path("configs/L0_0_minimal")
+        source = Path("configs/default_curriculum/levels/L0_0_minimal")
         target = tmp_path / "test_config"
         shutil.copytree(source, target)
 
@@ -221,7 +221,7 @@ affordances:
     def test_probabilistic_without_on_completion_warns(self, tmp_path: Path):
         """Probabilistic capability without on_completion should emit warning."""
         # Copy L0 config as base
-        source = Path("configs/L0_0_minimal")
+        source = Path("configs/default_curriculum/levels/L0_0_minimal")
         target = tmp_path / "test_config"
         shutil.copytree(source, target)
 
@@ -264,7 +264,7 @@ class TestSkillScalingValidation:
     def test_skill_scaling_with_valid_meter_passes(self, tmp_path: Path):
         """Skill scaling referencing existing meter should pass validation."""
         # Copy L0 config as base
-        source = Path("configs/L0_0_minimal")
+        source = Path("configs/default_curriculum/levels/L0_0_minimal")
         target = tmp_path / "test_config"
         shutil.copytree(source, target)
 
@@ -301,7 +301,7 @@ affordances:
     def test_skill_scaling_with_invalid_meter_fails(self, tmp_path: Path):
         """Skill scaling referencing non-existent meter should fail validation."""
         # Copy L0 config as base
-        source = Path("configs/L0_0_minimal")
+        source = Path("configs/default_curriculum/levels/L0_0_minimal")
         target = tmp_path / "test_config"
         shutil.copytree(source, target)
 

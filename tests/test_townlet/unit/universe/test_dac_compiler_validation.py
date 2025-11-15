@@ -16,7 +16,7 @@ class TestDACReferenceValidation:
     def test_dac_references_undefined_bar_in_modifier(self, tmp_path):
         """DAC modifier referencing undefined bar raises CompilationError."""
         # Copy L0_0_minimal as base
-        source = Path("configs/L0_0_minimal")
+        source = Path("configs/default_curriculum/levels/L0_0_minimal")
         dest = tmp_path / "test_config"
         shutil.copytree(source, dest)
 
@@ -43,7 +43,7 @@ class TestDACReferenceValidation:
 
     def test_dac_references_undefined_bar_in_extrinsic(self, tmp_path):
         """Extrinsic strategy referencing undefined bar raises CompilationError."""
-        source = Path("configs/L0_0_minimal")
+        source = Path("configs/default_curriculum/levels/L0_0_minimal")
         dest = tmp_path / "test_config"
         shutil.copytree(source, dest)
 
@@ -68,7 +68,7 @@ class TestDACReferenceValidation:
     def test_dac_optional_when_file_missing(self, tmp_path):
         """Compilation fails when drive_as_code.yaml is missing (now required)."""
         # Copy L0_0_minimal but remove drive_as_code.yaml
-        source = Path("configs/L0_0_minimal")
+        source = Path("configs/default_curriculum/levels/L0_0_minimal")
         dest = tmp_path / "test_config"
         shutil.copytree(source, dest)
 
@@ -84,7 +84,7 @@ class TestDACReferenceValidation:
 
     def test_dac_valid_config_compiles(self, tmp_path):
         """Valid DAC configuration compiles successfully."""
-        source = Path("configs/L0_0_minimal")
+        source = Path("configs/default_curriculum/levels/L0_0_minimal")
         dest = tmp_path / "test_config"
         shutil.copytree(source, dest)
 
@@ -123,7 +123,7 @@ class TestDriveHashComputation:
     def test_drive_hash_included_when_dac_present(self, tmp_path):
         """Compiled universe includes drive_hash when DAC config present."""
         # Copy L0_0_minimal as base
-        source = Path("configs/L0_0_minimal")
+        source = Path("configs/default_curriculum/levels/L0_0_minimal")
         dest = tmp_path / "test_config"
         shutil.copytree(source, dest)
 
@@ -158,7 +158,7 @@ class TestDriveHashComputation:
     def test_drive_hash_none_when_dac_missing(self, tmp_path):
         """Compilation fails when DAC not present (now required)."""
         # Copy L0_0_minimal and remove drive_as_code.yaml
-        source = Path("configs/L0_0_minimal")
+        source = Path("configs/default_curriculum/levels/L0_0_minimal")
         dest = tmp_path / "test_config"
         shutil.copytree(source, dest)
 
@@ -174,7 +174,7 @@ class TestDriveHashComputation:
 
     def test_different_dac_configs_have_different_hashes(self, tmp_path):
         """Different DAC configurations produce different drive_hash values."""
-        source = Path("configs/L0_0_minimal")
+        source = Path("configs/default_curriculum/levels/L0_0_minimal")
 
         # Compile with first DAC config
         dest1 = tmp_path / "config1"
@@ -211,7 +211,7 @@ class TestDriveHashComputation:
 
     def test_identical_dac_configs_have_same_hash(self, tmp_path):
         """Identical DAC configurations produce identical drive_hash values."""
-        source = Path("configs/L0_0_minimal")
+        source = Path("configs/default_curriculum/levels/L0_0_minimal")
 
         # Compile twice with identical DAC config
         for i in range(1, 3):
@@ -242,7 +242,7 @@ class TestDACShapingValidation:
 
     def test_shaping_efficiency_bonus_undefined_bar(self, tmp_path):
         """Efficiency bonus referencing undefined bar raises CompilationError."""
-        source = Path("configs/L0_0_minimal")
+        source = Path("configs/default_curriculum/levels/L0_0_minimal")
         dest = tmp_path / "test_config"
         shutil.copytree(source, dest)
 
@@ -270,7 +270,7 @@ class TestDACShapingValidation:
 
     def test_shaping_balance_bonus_undefined_bar(self, tmp_path):
         """Balance bonus referencing undefined bar raises CompilationError."""
-        source = Path("configs/L0_0_minimal")
+        source = Path("configs/default_curriculum/levels/L0_0_minimal")
         dest = tmp_path / "test_config"
         shutil.copytree(source, dest)
 
@@ -298,7 +298,7 @@ class TestDACShapingValidation:
 
     def test_shaping_state_achievement_undefined_bar(self, tmp_path):
         """State achievement referencing undefined bar raises CompilationError."""
-        source = Path("configs/L0_0_minimal")
+        source = Path("configs/default_curriculum/levels/L0_0_minimal")
         dest = tmp_path / "test_config"
         shutil.copytree(source, dest)
 
@@ -328,7 +328,7 @@ class TestDACShapingValidation:
 
     def test_shaping_vfs_variable_undefined_variable(self, tmp_path):
         """VFS variable bonus referencing undefined variable raises CompilationError."""
-        source = Path("configs/L0_0_minimal")
+        source = Path("configs/default_curriculum/levels/L0_0_minimal")
         dest = tmp_path / "test_config"
         shutil.copytree(source, dest)
 
@@ -355,7 +355,7 @@ class TestDACShapingValidation:
 
     def test_shaping_completion_bonus_undefined_affordance(self, tmp_path):
         """Completion bonus referencing undefined affordance raises CompilationError."""
-        source = Path("configs/L0_0_minimal")
+        source = Path("configs/default_curriculum/levels/L0_0_minimal")
         dest = tmp_path / "test_config"
         shutil.copytree(source, dest)
 

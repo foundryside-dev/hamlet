@@ -34,7 +34,7 @@ from townlet.universe.dto import (
 def compiled_universe() -> CompiledUniverse:
     """Compile L0_0_minimal for testing."""
     compiler = UniverseCompiler()
-    return compiler.compile(Path("configs/L0_0_minimal"))
+    return compiler.compile(Path("configs/default_curriculum/levels/L0_0_minimal"))
 
 
 class TestCompiledUniverseProperties:
@@ -315,7 +315,7 @@ class TestSerializationRoundTrip:
         """Verify load_from_cache creates default action_mask_table when None."""
         # Create minimal payload with None action_mask_table
         compiler = UniverseCompiler()
-        compiled = compiler.compile(Path("configs/L0_0_minimal"))
+        compiled = compiler.compile(Path("configs/default_curriculum/levels/L0_0_minimal"))
         cache_path = tmp_path / "universe.msgpack"
         compiled.save_to_cache(cache_path)
 

@@ -31,6 +31,7 @@ from townlet.environment.temporal_utils import is_affordance_open
 from townlet.substrate.config import SubstrateConfig
 from townlet.universe.adapters.vfs_adapter import VFSAdapter, vfs_to_observation_spec
 from townlet.universe.compiled import CompiledUniverse
+from townlet.universe.compiled_v21 import CompiledUniverseV21
 from townlet.universe.compiler_inputs import RawConfigs
 from townlet.universe.dto import (
     ActionMetadata,
@@ -425,9 +426,9 @@ class UniverseCompiler:
 
         return obs_spec
 
-    def _compile_v21_hierarchical(self, experiment_dir: Path, use_cache: bool = True) -> CompiledUniverse:
+    def _compile_v21_hierarchical(self, experiment_dir: Path, use_cache: bool = True) -> CompiledUniverseV21:
         """
-        Compile v2.1 hierarchical config structure into CompiledUniverse.
+        Compile v2.1 hierarchical config structure into CompiledUniverseV21.
 
         This is a parallel implementation path for v2.1 configs, separate from legacy flat configs.
 
@@ -436,7 +437,7 @@ class UniverseCompiler:
             use_cache: Whether to use cache (currently stubbed for v2.1)
 
         Returns:
-            CompiledUniverse
+            CompiledUniverseV21
 
         Raises:
             NotImplementedError: Stages 3-7 not yet implemented
@@ -473,8 +474,6 @@ class UniverseCompiler:
         logger.info("=== Stage 6-7: Optimization and emit ===")
         logger.info("Creating CompiledUniverseV21...")
 
-        from townlet.universe.compiled_v21 import CompiledUniverseV21
-
         compiled = CompiledUniverseV21(
             experiment=experiment,
             stratum=stratum,
@@ -492,7 +491,7 @@ class UniverseCompiler:
 
         return compiled
 
-    def compile(self, config_dir: Path, use_cache: bool = True) -> CompiledUniverse:
+    def compile(self, config_dir: Path, use_cache: bool = True) -> CompiledUniverse | CompiledUniverseV21:
         """
         Compile a config pack into a CompiledUniverse (with optional caching).
 

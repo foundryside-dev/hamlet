@@ -15,7 +15,7 @@ def cpu_device():
 @pytest.fixture
 def test_config_pack_path() -> Path:
     """Return path to test configuration pack."""
-    # Use configs/L1_full_observability which has global_actions.yaml
+    # Use configs/default_curriculum/levels/L1_full_observability which has global_actions.yaml
     return Path(__file__).parent.parent.parent.parent / "configs" / "L1_full_observability"
 
 

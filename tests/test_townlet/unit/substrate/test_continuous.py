@@ -521,17 +521,24 @@ class TestContinuousConfiguration:
     """Test configuration integration."""
 
     def test_config_1d(self):
-        """1D continuous config loads correctly."""
-        from pathlib import Path
-
-        from townlet.substrate.config import load_substrate_config
+        """1D continuous substrate basic properties."""
+        from townlet.substrate.config import ContinuousConfig, SubstrateConfig
         from townlet.substrate.factory import SubstrateFactory
 
-        config_path = Path("configs/L1_continuous_1D/substrate.yaml")
-        if not config_path.exists():
-            pytest.skip("L1_continuous_1D config not found")
-
-        config = load_substrate_config(config_path)
+        config = SubstrateConfig(
+            version="1.0",
+            description="Test 1D continuous substrate",
+            type="continuous",
+            continuous=ContinuousConfig(
+                dimensions=1,
+                bounds=[(0.0, 10.0)],
+                boundary="clamp",
+                movement_delta=0.1,
+                interaction_radius=0.8,
+                distance_metric="euclidean",
+                observation_encoding="relative",
+            ),
+        )
         substrate = SubstrateFactory.build(config, torch.device("cpu"))
 
         assert isinstance(substrate, Continuous1DSubstrate)
@@ -539,17 +546,24 @@ class TestContinuousConfiguration:
         assert substrate.position_dtype == torch.float32
 
     def test_config_2d(self):
-        """2D continuous config loads correctly."""
-        from pathlib import Path
-
-        from townlet.substrate.config import load_substrate_config
+        """2D continuous substrate basic properties."""
+        from townlet.substrate.config import ContinuousConfig, SubstrateConfig
         from townlet.substrate.factory import SubstrateFactory
 
-        config_path = Path("configs/L1_continuous_2D/substrate.yaml")
-        if not config_path.exists():
-            pytest.skip("L1_continuous_2D config not found")
-
-        config = load_substrate_config(config_path)
+        config = SubstrateConfig(
+            version="1.0",
+            description="Test 2D continuous substrate",
+            type="continuous",
+            continuous=ContinuousConfig(
+                dimensions=2,
+                bounds=[(0.0, 10.0), (0.0, 10.0)],
+                boundary="clamp",
+                movement_delta=0.1,
+                interaction_radius=0.8,
+                distance_metric="euclidean",
+                observation_encoding="relative",
+            ),
+        )
         substrate = SubstrateFactory.build(config, torch.device("cpu"))
 
         assert isinstance(substrate, Continuous2DSubstrate)
@@ -557,17 +571,24 @@ class TestContinuousConfiguration:
         assert substrate.position_dtype == torch.float32
 
     def test_config_3d(self):
-        """3D continuous config loads correctly."""
-        from pathlib import Path
-
-        from townlet.substrate.config import load_substrate_config
+        """3D continuous substrate basic properties."""
+        from townlet.substrate.config import ContinuousConfig, SubstrateConfig
         from townlet.substrate.factory import SubstrateFactory
 
-        config_path = Path("configs/L1_continuous_3D/substrate.yaml")
-        if not config_path.exists():
-            pytest.skip("L1_continuous_3D config not found")
-
-        config = load_substrate_config(config_path)
+        config = SubstrateConfig(
+            version="1.0",
+            description="Test 3D continuous substrate",
+            type="continuous",
+            continuous=ContinuousConfig(
+                dimensions=3,
+                bounds=[(0.0, 10.0), (0.0, 10.0), (0.0, 10.0)],
+                boundary="clamp",
+                movement_delta=0.1,
+                interaction_radius=0.8,
+                distance_metric="euclidean",
+                observation_encoding="relative",
+            ),
+        )
         substrate = SubstrateFactory.build(config, torch.device("cpu"))
 
         assert isinstance(substrate, Continuous3DSubstrate)

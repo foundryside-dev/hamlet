@@ -92,7 +92,7 @@ def test_universe_metadata_round_trip() -> None:
 
 def test_compiled_universe_msgpack_round_trip(tmp_path: Path) -> None:
     compiler = UniverseCompiler()
-    compiled = compiler.compile(Path("configs/L0_0_minimal"))
+    compiled = compiler.compile(Path("configs/default_curriculum/levels/L0_0_minimal"))
 
     artifact_path = tmp_path / "compiled.msgpack"
     compiled.save_to_cache(artifact_path)

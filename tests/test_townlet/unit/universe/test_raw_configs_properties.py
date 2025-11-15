@@ -21,7 +21,7 @@ class TestRawConfigsPropertyAccessors:
     @pytest.fixture(scope="class")
     def raw_configs(self) -> RawConfigs:
         """Load L0_0_minimal as test fixture."""
-        return RawConfigs.from_config_dir(Path("configs/L0_0_minimal"))
+        return RawConfigs.from_config_dir(Path("configs/default_curriculum/levels/L0_0_minimal"))
 
     def test_bars_property_returns_tuple_of_bar_configs(self, raw_configs: RawConfigs):
         """Verify .bars returns bars from hamlet_config."""
@@ -235,7 +235,7 @@ class TestRawConfigsEdgeCases:
 
     def test_property_accessors_are_immutable_references(self):
         """Verify property accessors return immutable tuples/objects."""
-        raw = RawConfigs.from_config_dir(Path("configs/L0_0_minimal"))
+        raw = RawConfigs.from_config_dir(Path("configs/default_curriculum/levels/L0_0_minimal"))
 
         bars = raw.bars
         assert isinstance(bars, tuple)  # Tuples are immutable

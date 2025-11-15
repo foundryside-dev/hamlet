@@ -236,7 +236,7 @@ class TestDoubleDQNRecurrent:
 
         from townlet.environment.vectorized_env import VectorizedHamletEnv
 
-        universe = compile_universe(Path("configs/L2_partial_observability"))
+        universe = compile_universe(Path("configs/default_curriculum/levels/L2_partial_observability"))
         env = VectorizedHamletEnv.from_universe(
             universe,
             num_agents=1,
@@ -277,7 +277,7 @@ class TestDoubleDQNRecurrent:
 
         from townlet.environment.vectorized_env import VectorizedHamletEnv
 
-        universe = compile_universe(Path("configs/L2_partial_observability"))
+        universe = compile_universe(Path("configs/default_curriculum/levels/L2_partial_observability"))
         env = VectorizedHamletEnv.from_universe(
             universe,
             num_agents=1,

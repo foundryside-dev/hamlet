@@ -13,7 +13,7 @@ from townlet.universe.compiler import UniverseCompiler
 
 def test_compiler_returns_compiled_universe() -> None:
     compiler = UniverseCompiler()
-    compiled = compiler.compile(Path("configs/L0_0_minimal"))
+    compiled = compiler.compile(Path("configs/default_curriculum/levels/L0_0_minimal"))
 
     assert isinstance(compiled, CompiledUniverse)
     assert compiled.metadata.universe_name == "L0_0_minimal"
@@ -22,7 +22,7 @@ def test_compiler_returns_compiled_universe() -> None:
 
 def test_compiled_universe_is_frozen() -> None:
     compiler = UniverseCompiler()
-    compiled = compiler.compile(Path("configs/L0_0_minimal"))
+    compiled = compiler.compile(Path("configs/default_curriculum/levels/L0_0_minimal"))
 
     try:
         compiled.metadata = None  # type: ignore[attr-defined]
@@ -34,7 +34,7 @@ def test_compiled_universe_is_frozen() -> None:
 
 def test_compiled_universe_checkpoint_check() -> None:
     compiler = UniverseCompiler()
-    compiled = compiler.compile(Path("configs/L0_0_minimal"))
+    compiled = compiler.compile(Path("configs/default_curriculum/levels/L0_0_minimal"))
 
     # Empty checkpoint is incompatible (missing drive_hash)
     compatible, _ = compiled.check_checkpoint_compatibility({})
@@ -57,7 +57,7 @@ def test_compiled_universe_checkpoint_check() -> None:
 
 def test_compiled_universe_create_environment() -> None:
     compiler = UniverseCompiler()
-    compiled = compiler.compile(Path("configs/L0_0_minimal"))
+    compiled = compiler.compile(Path("configs/default_curriculum/levels/L0_0_minimal"))
 
     env = compiled.create_environment(num_agents=1, device="cpu")
     from townlet.environment.vectorized_env import VectorizedHamletEnv
@@ -67,7 +67,7 @@ def test_compiled_universe_create_environment() -> None:
 
 def test_compiled_universe_environment_rollout(cpu_device: torch.device) -> None:
     compiler = UniverseCompiler()
-    compiled = compiler.compile(Path("configs/L0_0_minimal"))
+    compiled = compiler.compile(Path("configs/default_curriculum/levels/L0_0_minimal"))
 
     env = compiled.create_environment(num_agents=2, device=str(cpu_device))
 
@@ -87,7 +87,7 @@ def test_compiled_universe_environment_rollout(cpu_device: torch.device) -> None
 
 def test_vectorized_env_from_universe_factory(cpu_device: torch.device) -> None:
     compiler = UniverseCompiler()
-    compiled = compiler.compile(Path("configs/L0_0_minimal"))
+    compiled = compiler.compile(Path("configs/default_curriculum/levels/L0_0_minimal"))
 
     from townlet.environment.vectorized_env import VectorizedHamletEnv
 
@@ -108,7 +108,7 @@ def test_check_checkpoint_compatibility_drive_hash_match() -> None:
     # Create temp config with DAC
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_path = Path(tmp_dir) / "test_config"
-        shutil.copytree(Path("configs/L0_0_minimal"), tmp_path)
+        shutil.copytree(Path("configs/default_curriculum/levels/L0_0_minimal"), tmp_path)
 
         # Add drive_as_code.yaml
         dac_config = {
@@ -147,7 +147,7 @@ def test_check_checkpoint_compatibility_drive_hash_mismatch() -> None:
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_path = Path(tmp_dir) / "test_config"
-        shutil.copytree(Path("configs/L0_0_minimal"), tmp_path)
+        shutil.copytree(Path("configs/default_curriculum/levels/L0_0_minimal"), tmp_path)
 
         # Add drive_as_code.yaml
         dac_config = {
@@ -187,7 +187,7 @@ def test_check_checkpoint_compatibility_missing_drive_hash_in_checkpoint() -> No
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_path = Path(tmp_dir) / "test_config"
-        shutil.copytree(Path("configs/L0_0_minimal"), tmp_path)
+        shutil.copytree(Path("configs/default_curriculum/levels/L0_0_minimal"), tmp_path)
 
         # Add drive_as_code.yaml
         dac_config = {

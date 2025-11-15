@@ -16,7 +16,7 @@ from townlet.universe.compiler_inputs import RawConfigs
 
 @pytest.fixture(scope="module")
 def base_config_dir() -> Path:
-    return Path("configs/L0_0_minimal")
+    return Path("configs/default_curriculum/levels/L0_0_minimal")
 
 
 @pytest.fixture(scope="module")

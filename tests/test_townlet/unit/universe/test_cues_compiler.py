@@ -17,7 +17,7 @@ def _formatter(code: str, message: str, location: str | None) -> CompilationMess
 
 @pytest.fixture(scope="module")
 def base_raw_configs() -> RawConfigs:
-    return RawConfigs.from_config_dir(Path("configs/L0_0_minimal"))
+    return RawConfigs.from_config_dir(Path("configs/default_curriculum/levels/L0_0_minimal"))
 
 
 @pytest.fixture(scope="module")

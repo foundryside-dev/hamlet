@@ -8,7 +8,7 @@ from townlet.universe.compiler import UniverseCompiler
 class TestEnvironmentObservationActivity:
     def test_env_exposes_observation_activity(self):
         """VectorizedHamletEnv should expose observation_activity from runtime."""
-        config_dir = Path("configs/L0_5_dual_resource")
+        config_dir = Path("configs/default_curriculum/levels/L0_5_dual_resource")
 
         compiler = UniverseCompiler()
         compiled = compiler.compile(config_dir, use_cache=False)
@@ -19,7 +19,7 @@ class TestEnvironmentObservationActivity:
 
     def test_env_observation_activity_matches_runtime(self):
         """Environment's observation_activity should match RuntimeUniverse."""
-        config_dir = Path("configs/L0_0_minimal")
+        config_dir = Path("configs/default_curriculum/levels/L0_0_minimal")
 
         compiler = UniverseCompiler()
         compiled = compiler.compile(config_dir, use_cache=False)
@@ -30,7 +30,7 @@ class TestEnvironmentObservationActivity:
 
     def test_env_observation_activity_has_valid_mask(self):
         """Environment's observation_activity should have valid active_mask."""
-        config_dir = Path("configs/L0_5_dual_resource")
+        config_dir = Path("configs/default_curriculum/levels/L0_5_dual_resource")
 
         compiler = UniverseCompiler()
         compiled = compiler.compile(config_dir, use_cache=False)
@@ -41,7 +41,7 @@ class TestEnvironmentObservationActivity:
 
     def test_env_observation_activity_has_group_slices(self):
         """Environment's observation_activity should have semantic group slices."""
-        config_dir = Path("configs/L0_5_dual_resource")
+        config_dir = Path("configs/default_curriculum/levels/L0_5_dual_resource")
 
         compiler = UniverseCompiler()
         compiled = compiler.compile(config_dir, use_cache=False)

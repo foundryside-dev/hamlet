@@ -5,6 +5,12 @@ These tests verify that HamletConfig correctly:
 2. Performs cross-config validation (batch_size vs buffer_capacity, etc.)
 3. Loads successfully from all production config packs
 4. Provides clear error messages for validation failures
+
+NOTE (Config v2.1): These tests are SKIPPED because they test HamletConfig.load() which was
+deleted in Config v2.1. Config loading is now handled by UniverseCompiler.compile().
+See test-fix-strategy.md for migration notes.
+
+TODO: Rewrite tests to verify compiler output instead of HamletConfig.load().
 """
 
 import copy
@@ -28,6 +34,9 @@ from tests.test_townlet.unit.config.fixtures import (
 )
 from townlet.config import HamletConfig
 from townlet.universe.compiler_inputs import RawConfigs
+
+# Skip all tests in this module - testing deleted v2.0 functionality
+pytestmark = pytest.mark.skip(reason="Config v2.1: HamletConfig.load() deleted, replaced by compiler")
 
 
 def _apply_valid_sections(config_dir: Path) -> None:

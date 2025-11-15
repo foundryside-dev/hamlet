@@ -247,17 +247,26 @@ class UniverseCompiler:
         logger.info("=== Stage 2: Validating vocabulary consistency ===")
         self._validate_vocabulary_consistency(environment, levels_dict)
 
-        # Stage 3-7: TODO - implement remaining stages
-        logger.info("=== Stage 3-7: TODO (stubbed for now) ===")
-        logger.info("Will implement: symbol table, resolve, obs spec, optimize, emit")
+        # Stage 3-7: Return minimal CompiledUniverseV21
+        logger.info("=== Stage 3-7: Creating CompiledUniverseV21 ===")
+        logger.info("Returning v2.1 compiled universe (full stages TODO)")
 
-        # For now, raise NotImplementedError
-        # This allows us to test Stages 1-2 independently
-        raise NotImplementedError(
-            "Compiler Stages 3-7 not yet implemented for v2.1 hierarchical configs\n"
-            "Stages 1-2 working: hierarchical loading + vocabulary validation\n"
-            f"Successfully loaded experiment '{experiment.experiment.metadata.name}' with {len(levels_dict)} curriculum levels"
+        from townlet.universe.compiled_v21 import CompiledUniverseV21
+
+        compiled = CompiledUniverseV21(
+            experiment=experiment,
+            stratum=stratum,
+            environment=environment,
+            actions=actions,
+            agent=agent,
+            curriculum_levels=levels_dict,
+            experiment_dir=experiment_dir,
         )
+
+        logger.info("✓ Compilation complete for '%s'", experiment.experiment.metadata.name)
+        logger.info("  %d curriculum levels loaded", len(compiled.curriculum_levels))
+
+        return compiled
 
     def compile(self, config_dir: Path, use_cache: bool = True) -> CompiledUniverse:
         """

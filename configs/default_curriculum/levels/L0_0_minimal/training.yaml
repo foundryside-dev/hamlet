@@ -1,0 +1,56 @@
+training:
+  version: "1.0"
+
+  population:
+    size: 256
+
+  enabled_actions:
+    custom:
+      - REST
+
+  q_learning:
+    use_double_dqn: false
+    gamma: 0.99
+    learning_rate: 0.0001
+    target_update_frequency: 500
+
+  replay_buffer:
+    capacity: 100000
+    batch_size: 32
+    min_size: 1000
+
+  exploration:
+    epsilon_start: 1.0
+    epsilon_end: 0.01
+    epsilon_decay: 0.995
+
+  intrinsic:
+    rnd:
+      feature_dim: 128
+      learning_rate: 0.0001
+
+    annealing:
+      threshold: 100.0
+      decay_rate: 0.995
+      min_weight: 0.001
+
+  training_loop:
+    max_episodes: 10000
+    max_steps_per_episode: 1000
+
+    evaluation:
+      interval: 1000
+      num_episodes: 10
+
+    checkpointing:
+      interval: 1000
+      keep_last: 5
+
+  curriculum:
+    strategy: static
+
+    adversarial:
+      difficulty_metric: survival_rate
+      adaptation_rate: 0.1
+      min_difficulty: 0.2
+      max_difficulty: 1.0

@@ -1,0 +1,11 @@
+curriculum:
+  version: "1.0"
+
+  # L0_0: Minimal temporal credit assignment
+  # 3×3 grid, 1 bar (energy), 1 affordance (RECHARGE)
+  # Focus: Learn that RECHARGE increases energy (basic credit assignment)
+
+  active_vision: global       # Full grid observable
+  vision_range: 1.0           # Full grid (though only 3×3)
+  active_temporal: false      # No time-based dynamics
+  day_length: null            # No temporal mechanics

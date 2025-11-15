@@ -21,7 +21,7 @@ SUPPORT_FILES = [
     "drive_as_code.yaml",
     "brain.yaml",  # REQUIRED for all config packs
 ]
-TEST_CONFIG_SRC = CONFIGS_DIR / "test"
+TEST_CONFIG_SRC = CONFIGS_DIR / "default_curriculum" / "levels" / "L0_0_minimal"
 
 BASE_CONFIG = {
     "environment": {

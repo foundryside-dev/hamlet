@@ -79,11 +79,245 @@ class UniverseCompiler:
         self._affordance_metadata: AffordanceMetadata | None = None
         self._optimization_data: OptimizationData | None = None
 
+    def _load_experiment_structure(self, experiment_dir: Path) -> tuple:
+        """
+        Load all config files from hierarchical v2.1 structure.
+
+        This implements Stage 1 of the v2.1 compiler pipeline: hierarchical config loading.
+
+        Returns:
+            (experiment, stratum, environment, actions, agent, levels_dict)
+            where levels_dict = {
+                "L1_full_observability": (curriculum, bars, affordances, training),
+                ...
+            }
+
+        Raises:
+            FileNotFoundError: If required files or directories missing
+            ValueError: If no curriculum levels found
+        """
+        from townlet.config.actions_config import ActionsConfig
+        from townlet.config.affordances_v2_config import load_affordances_v2_config
+        from townlet.config.agent_config import AgentConfig
+        from townlet.config.bars_v2_config import load_bars_v2_config
+        from townlet.config.curriculum_config import CurriculumConfig
+        from townlet.config.environment_config import EnvironmentConfig
+        from townlet.config.experiment_config import ExperimentConfig
+        from townlet.config.stratum_config import StratumConfig
+        from townlet.config.training_v2_config import load_training_v2_config
+
+        # Load shared configs (experiment-level)
+        experiment = ExperimentConfig.from_yaml(experiment_dir / "experiment.yaml")
+        stratum = StratumConfig.from_yaml(experiment_dir / "stratum.yaml")
+        environment = EnvironmentConfig.from_yaml(experiment_dir / "environment.yaml")
+        actions = ActionsConfig.from_yaml(experiment_dir / "actions.yaml")
+        agent = AgentConfig.from_yaml(experiment_dir / "agent.yaml")
+
+        # Load all curriculum levels
+        levels_dir = experiment_dir / "levels"
+        if not levels_dir.exists():
+            raise FileNotFoundError(
+                f"Missing levels/ directory in {experiment_dir}\n"
+                f"Expected structure: {experiment_dir}/levels/L*/{{curriculum,bars,affordances,training}}.yaml"
+            )
+
+        levels_dict = {}
+        for level_dir in sorted(levels_dir.iterdir()):
+            if not level_dir.is_dir():
+                continue
+
+            level_name = level_dir.name
+
+            # Load all 4 curriculum-level configs
+            curriculum = CurriculumConfig.from_yaml(level_dir / "curriculum.yaml")
+            bars = load_bars_v2_config(level_dir)
+            affordances = load_affordances_v2_config(level_dir)
+            training = load_training_v2_config(level_dir)
+
+            levels_dict[level_name] = (curriculum, bars, affordances, training)
+
+        if not levels_dict:
+            raise ValueError(
+                f"No curriculum levels found in {levels_dir}\n"
+                f"Expected at least one level directory (e.g., levels/L1_full_observability/)"
+            )
+
+        return (experiment, stratum, environment, actions, agent, levels_dict)
+
+    def _validate_vocabulary_consistency(self, environment, levels_dict: dict) -> None:
+        """
+        Validate that all curriculum levels use the same vocabulary as environment.yaml.
+
+        This implements Stage 2 of the v2.1 compiler pipeline: cross-curriculum validation.
+
+        Enforces the WHAT vs HOW split:
+        - environment.yaml defines WHAT exists (vocabulary - breaks checkpoints)
+        - levels/*/bars.yaml defines HOW bars behave (parameters - doesn't break)
+        - levels/*/affordances.yaml defines HOW affordances behave (parameters - doesn't break)
+
+        This ensures checkpoint portability across curriculum levels.
+
+        Args:
+            environment: Loaded EnvironmentConfig with canonical vocabulary
+            levels_dict: Dict of {level_name: (curriculum, bars, affordances, training)}
+
+        Raises:
+            ValueError: If any level has different meter or affordance vocabulary
+        """
+        # Get canonical vocabulary from environment.yaml
+        env_meters = set(m.name for m in environment.environment.meters)
+        env_affordances = set(a.name for a in environment.environment.affordances)
+
+        # Validate each curriculum level
+        for level_name, (curriculum, bars, affordances, training) in levels_dict.items():
+            # Check meter vocabulary matches
+            level_meters = set(m.name for m in bars.meters)
+            if level_meters != env_meters:
+                missing = env_meters - level_meters
+                extra = level_meters - env_meters
+
+                msg_parts = [f"Meter vocabulary mismatch in {level_name}/bars.yaml:"]
+                if missing:
+                    msg_parts.append(f"  Missing meters: {sorted(missing)}")
+                if extra:
+                    msg_parts.append(f"  Extra meters: {sorted(extra)}")
+                msg_parts.append(f"  Expected (from environment.yaml): {sorted(env_meters)}")
+                msg_parts.append(f"  Actual (from bars.yaml): {sorted(level_meters)}")
+                msg_parts.append("")
+                msg_parts.append("All curriculum levels must have same meter vocabulary as environment.yaml")
+                msg_parts.append("This ensures checkpoint portability across curriculum.")
+
+                raise ValueError("\n".join(msg_parts))
+
+            # Check affordance vocabulary matches
+            level_affordances = set(a.name for a in affordances.affordances)
+            if level_affordances != env_affordances:
+                missing = env_affordances - level_affordances
+                extra = level_affordances - env_affordances
+
+                msg_parts = [f"Affordance vocabulary mismatch in {level_name}/affordances.yaml:"]
+                if missing:
+                    msg_parts.append(f"  Missing affordances: {sorted(missing)}")
+                if extra:
+                    msg_parts.append(f"  Extra affordances: {sorted(extra)}")
+                msg_parts.append(f"  Expected (from environment.yaml): {sorted(env_affordances)}")
+                msg_parts.append(f"  Actual (from affordances.yaml): {sorted(level_affordances)}")
+                msg_parts.append("")
+                msg_parts.append("All curriculum levels must have same affordance vocabulary as environment.yaml")
+                msg_parts.append("This ensures checkpoint portability across curriculum.")
+
+                raise ValueError("\n".join(msg_parts))
+
+        # All levels validated - log confirmation
+        logger.info(
+            "✓ Vocabulary consistent across %d curriculum levels: %d meters, %d affordances",
+            len(levels_dict),
+            len(env_meters),
+            len(env_affordances),
+        )
+
+    def _compile_v21_hierarchical(self, experiment_dir: Path, use_cache: bool = True) -> CompiledUniverse:
+        """
+        Compile v2.1 hierarchical config structure into CompiledUniverse.
+
+        This is a parallel implementation path for v2.1 configs, separate from legacy flat configs.
+
+        Args:
+            experiment_dir: Path to experiment root with experiment.yaml
+            use_cache: Whether to use cache (currently stubbed for v2.1)
+
+        Returns:
+            CompiledUniverse
+
+        Raises:
+            NotImplementedError: Stages 3-7 not yet implemented
+        """
+        logger.info("Compiling v2.1 experiment: %s", experiment_dir)
+
+        # Stage 1: Load hierarchical structure
+        logger.info("=== Stage 1: Loading hierarchical config structure ===")
+        (experiment, stratum, environment, actions, agent, levels_dict) = self._load_experiment_structure(experiment_dir)
+
+        logger.info("Loaded experiment: '%s'", experiment.experiment.metadata.name)
+        logger.info("  Description: %s", experiment.experiment.metadata.description)
+        logger.info("  Stratum: %s", stratum.stratum.substrate.type)
+        logger.info("  Curriculum levels: %s", list(levels_dict.keys()))
+
+        # Stage 2: Cross-curriculum vocabulary validation
+        logger.info("=== Stage 2: Validating vocabulary consistency ===")
+        self._validate_vocabulary_consistency(environment, levels_dict)
+
+        # Stage 3-7: TODO - implement remaining stages
+        logger.info("=== Stage 3-7: TODO (stubbed for now) ===")
+        logger.info("Will implement: symbol table, resolve, obs spec, optimize, emit")
+
+        # For now, raise NotImplementedError
+        # This allows us to test Stages 1-2 independently
+        raise NotImplementedError(
+            "Compiler Stages 3-7 not yet implemented for v2.1 hierarchical configs\n"
+            "Stages 1-2 working: hierarchical loading + vocabulary validation\n"
+            f"Successfully loaded experiment '{experiment.experiment.metadata.name}' with {len(levels_dict)} curriculum levels"
+        )
+
     def compile(self, config_dir: Path, use_cache: bool = True) -> CompiledUniverse:
-        """Compile a config pack into a CompiledUniverse (with optional caching)."""
+        """
+        Compile a config pack into a CompiledUniverse (with optional caching).
+
+        BREAKING CHANGE (v2.1): This method now supports BOTH:
+        - Legacy flat config structure (backward compatibility until migration complete)
+        - New v2.1 hierarchical structure (experiment_dir with levels/)
+
+        The method auto-detects the structure based on presence of experiment.yaml.
+
+        For v2.1 hierarchical structure:
+            config_dir/
+            ├── experiment.yaml       # Metadata
+            ├── stratum.yaml          # World shape (substrate, grid, temporal)
+            ├── environment.yaml      # Vocabulary (bars, affordances, VFS)
+            ├── actions.yaml          # Action space configuration
+            ├── agent.yaml            # Perception + Drive + Brain
+            └── levels/
+                ├── L1_full_observability/
+                │   ├── curriculum.yaml   # Vision/temporal activation
+                │   ├── bars.yaml         # Bar parameters + cascades
+                │   ├── affordances.yaml  # Affordance parameters
+                │   └── training.yaml     # Runtime orchestration
+                └── [other levels]/
+
+        Compilation stages (v2.1):
+        - Stage 1: Load hierarchical structure (5 shared + N curriculum levels)
+        - Stage 2: Cross-curriculum vocabulary validation (WHAT vs HOW enforcement)
+        - Stage 3: Build symbol table from environment.yaml
+        - Stage 4: Resolve references and dependencies
+        - Stage 5: Generate observation spec with Support/Active pattern
+        - Stage 6: Optimize and cache
+        - Stage 7: Emit CompiledUniverse
+
+        Args:
+            config_dir: Path to config directory (flat) or experiment root (v2.1)
+            use_cache: Whether to use compiled universe cache
+
+        Returns:
+            CompiledUniverse with validated, cross-curriculum consistent configuration
+
+        Raises:
+            ValueError: If vocabulary inconsistent across curriculum levels (v2.1 only)
+            FileNotFoundError: If required config files missing
+        """
 
         config_dir = Path(config_dir).resolve()  # Resolve to absolute path
         self._validate_config_dir(config_dir)
+
+        # Detect config structure: v2.1 hierarchical vs legacy flat
+        is_v21 = (config_dir / "experiment.yaml").exists()
+
+        if is_v21:
+            # V2.1 HIERARCHICAL STRUCTURE PATH
+            logger.info("Detected v2.1 hierarchical config structure")
+            return self._compile_v21_hierarchical(config_dir, use_cache)
+
+        # LEGACY FLAT STRUCTURE PATH (backward compatibility)
+        logger.info("Detected legacy flat config structure")
 
         # Phase 0: Validate YAML syntax before doing any work
         self._phase_0_validate_yaml_syntax(config_dir)

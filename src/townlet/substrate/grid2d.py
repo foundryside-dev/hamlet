@@ -38,7 +38,8 @@ class Grid2DSubstrate(SpatialSubstrate):
         boundary: Literal["clamp", "wrap", "bounce", "sticky"],
         distance_metric: Literal["manhattan", "euclidean", "chebyshev"],
         observation_encoding: Literal["relative", "scaled", "absolute"] = "relative",
-        topology: Literal["square"] = "square",  # NEW: Grid2D is always square topology
+        topology: Literal["square"] = "square",  # Grid2D is always square topology
+        enable_diagonals: bool = True,
     ):
         """Initialize 2D grid substrate.
 
@@ -64,7 +65,8 @@ class Grid2DSubstrate(SpatialSubstrate):
         self.boundary = boundary
         self.distance_metric = distance_metric
         self.observation_encoding = observation_encoding
-        self.topology = topology  # NEW: Store topology
+        self.topology = topology
+        self.enable_diagonals = enable_diagonals
 
     @property
     def position_dim(self) -> int:
@@ -155,19 +157,18 @@ class Grid2DSubstrate(SpatialSubstrate):
             return torch.abs(pos1 - pos2).max(dim=-1)[0]
 
     def get_default_actions(self) -> list[ActionConfig]:
-        """Return Grid2D's 6 default actions with default costs.
+        """Return Grid2D's default actions.
 
-        Returns:
-            [UP, DOWN, LEFT, RIGHT, INTERACT, WAIT] with standard 2D costs.
+        When enable_diagonals is true, this includes diagonals as well as cardinal moves.
         """
-        return [
+        actions: list[ActionConfig] = [
             ActionConfig(
                 id=0,  # Temporary, reassigned by builder
                 name="UP",
                 type="movement",
                 delta=[0, -1],
                 teleport_to=None,
-                costs={"energy": 0.005},  # JANK-02: Only energy cost (works with all meter configs)
+                costs={},
                 effects={},
                 description="Move one cell upward (north)",
                 icon=None,
@@ -181,7 +182,7 @@ class Grid2DSubstrate(SpatialSubstrate):
                 type="movement",
                 delta=[0, 1],
                 teleport_to=None,
-                costs={"energy": 0.005},  # JANK-02: Only energy cost (works with all meter configs)
+                costs={},
                 effects={},
                 description="Move one cell downward (south)",
                 icon=None,
@@ -195,7 +196,7 @@ class Grid2DSubstrate(SpatialSubstrate):
                 type="movement",
                 delta=[-1, 0],
                 teleport_to=None,
-                costs={"energy": 0.005},  # JANK-02: Only energy cost (works with all meter configs)
+                costs={},
                 effects={},
                 description="Move one cell left (west)",
                 icon=None,
@@ -209,7 +210,7 @@ class Grid2DSubstrate(SpatialSubstrate):
                 type="movement",
                 delta=[1, 0],
                 teleport_to=None,
-                costs={"energy": 0.005},  # JANK-02: Only energy cost (works with all meter configs)
+                costs={},
                 effects={},
                 description="Move one cell right (east)",
                 icon=None,
@@ -217,35 +218,105 @@ class Grid2DSubstrate(SpatialSubstrate):
                 source_affordance=None,
                 enabled=True,
             ),
-            ActionConfig(
-                id=4,
-                name="INTERACT",
-                type="interaction",
-                delta=None,
-                teleport_to=None,
-                costs={"energy": 0.003},
-                effects={},
-                description="Interact with affordance at current position",
-                icon=None,
-                source="substrate",
-                source_affordance=None,
-                enabled=True,
-            ),
-            ActionConfig(
-                id=5,
-                name="WAIT",
-                type="passive",
-                delta=None,
-                teleport_to=None,
-                costs={"energy": 0.004},
-                effects={},
-                description="Wait in place (idle metabolic cost)",
-                icon=None,
-                source="substrate",
-                source_affordance=None,
-                enabled=True,
-            ),
         ]
+
+        if self.enable_diagonals:
+            actions.extend(
+                [
+                    ActionConfig(
+                        id=4,
+                        name="UP_LEFT",
+                        type="movement",
+                        delta=[-1, -1],
+                        teleport_to=None,
+                        costs={},
+                        effects={},
+                        description="Move one cell diagonally up-left (northwest)",
+                        icon=None,
+                        source="substrate",
+                        source_affordance=None,
+                        enabled=True,
+                    ),
+                    ActionConfig(
+                        id=5,
+                        name="UP_RIGHT",
+                        type="movement",
+                        delta=[1, -1],
+                        teleport_to=None,
+                        costs={},
+                        effects={},
+                        description="Move one cell diagonally up-right (northeast)",
+                        icon=None,
+                        source="substrate",
+                        source_affordance=None,
+                        enabled=True,
+                    ),
+                    ActionConfig(
+                        id=6,
+                        name="DOWN_LEFT",
+                        type="movement",
+                        delta=[-1, 1],
+                        teleport_to=None,
+                        costs={},
+                        effects={},
+                        description="Move one cell diagonally down-left (southwest)",
+                        icon=None,
+                        source="substrate",
+                        source_affordance=None,
+                        enabled=True,
+                    ),
+                    ActionConfig(
+                        id=7,
+                        name="DOWN_RIGHT",
+                        type="movement",
+                        delta=[1, 1],
+                        teleport_to=None,
+                        costs={},
+                        effects={},
+                        description="Move one cell diagonally down-right (southeast)",
+                        icon=None,
+                        source="substrate",
+                        source_affordance=None,
+                        enabled=True,
+                    ),
+                ]
+            )
+
+        # INTERACT and WAIT always present (last two actions)
+        actions.extend(
+            [
+                ActionConfig(
+                    id=len(actions),
+                    name="INTERACT",
+                    type="interaction",
+                    delta=None,
+                    teleport_to=None,
+                    costs={},
+                    effects={},
+                    description="Interact with affordance at current position",
+                    icon=None,
+                    source="substrate",
+                    source_affordance=None,
+                    enabled=True,
+                ),
+                ActionConfig(
+                    id=len(actions) + 1,
+                    name="WAIT",
+                    type="passive",
+                    delta=None,
+                    teleport_to=None,
+                    costs={},
+                    effects={},
+                    description="Wait in place (idle metabolic cost)",
+                    icon=None,
+                    source="substrate",
+                    source_affordance=None,
+                    enabled=True,
+                ),
+            ]
+        )
+
+        return actions
 
     def _encode_relative(
         self,
@@ -507,6 +578,10 @@ class Grid2DSubstrate(SpatialSubstrate):
         Note: Handles boundary cases - if agent near edge, out-of-bounds
         cells are marked as empty.
         """
+        if not isinstance(vision_range, int):
+            raise ValueError(
+                f"Grid2DSubstrate.encode_partial_observation expected integer vision_range (radius), " f"got {type(vision_range)!r}."
+            )
         num_agents = positions.shape[0]
         device = positions.device
         window_size = 2 * vision_range + 1

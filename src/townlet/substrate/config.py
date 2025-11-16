@@ -29,8 +29,9 @@ class GridConfig(BaseModel):
     depth: int | None = Field(None, gt=0, description="Grid depth (Z dimension) - required for cubic topology")
     boundary: Literal["clamp", "wrap", "bounce", "sticky"] = Field(description="Boundary handling mode")
     distance_metric: Literal["manhattan", "euclidean", "chebyshev"] = Field(description="Distance calculation method")
+    diagonals: bool = Field(description="Whether diagonal movement actions are enabled for grid substrates")
 
-    # NEW: Phase 5C addition
+    # NEW: Phase 5C addition (position encoding)
     observation_encoding: Literal["relative", "scaled", "absolute"] = Field(
         description="Position encoding strategy: relative (normalized [0,1]), scaled (normalized + ranges), absolute (raw coordinates)",
     )

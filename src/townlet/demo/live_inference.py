@@ -13,7 +13,7 @@ import torch
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
-from townlet.agent.brain_config import compute_brain_hash, load_brain_config
+from townlet.agent.brain_config import compute_brain_hash
 from townlet.curriculum.adversarial import AdversarialCurriculum
 from townlet.demo.database import DemoDatabase
 from townlet.environment.vectorized_env import VectorizedHamletEnv
@@ -315,19 +315,19 @@ class LiveInferenceServer:
             device=self.device,
         )
 
-        # Create exploration (for inference, we typically want near-greedy behavior)
+        # Create exploration (for inference, configuration controls intrinsic behavior)
         active_mask = self.env.observation_activity.active_mask
         self.exploration = AdaptiveIntrinsicExploration(
             obs_dim=obs_dim,
             embed_dim=intrinsic_cfg.rnd.feature_dim,
             rnd_learning_rate=intrinsic_cfg.rnd.learning_rate,
             rnd_training_batch_size=training_cfg.replay_buffer.batch_size,
-            initial_intrinsic_weight=0.0,
+            initial_intrinsic_weight=intrinsic_cfg.initial_weight,
             min_intrinsic_weight=intrinsic_cfg.annealing.min_weight,
             variance_threshold=intrinsic_cfg.annealing.threshold,
-            min_survival_fraction=0.4,
+            min_survival_fraction=intrinsic_cfg.min_survival_fraction,
             max_episode_length=loop_cfg.max_steps_per_episode,
-            survival_window=100,
+            survival_window=intrinsic_cfg.survival_window,
             decay_rate=intrinsic_cfg.annealing.decay_rate,
             epsilon_start=exploration_cfg.epsilon_start,
             epsilon_decay=exploration_cfg.epsilon_decay,
@@ -336,21 +336,24 @@ class LiveInferenceServer:
             active_mask=active_mask,
         )
 
-        # Load brain.yaml (REQUIRED for all config packs)
-        brain_yaml_path = self.config_dir / "brain.yaml"
-        logger.info(f"Loading brain configuration from {brain_yaml_path}")
-        brain_config = load_brain_config(self.config_dir)
-        brain_hash = compute_brain_hash(brain_config)
-        logger.info(f"Brain config loaded: {brain_config.description}")
+        # Derive brain configuration from agent.yaml (v2.1 AgentConfig)
+        from townlet.agent.brain_config import apply_training_overrides, build_brain_config_from_agent
+
+        base_brain_config = build_brain_config_from_agent(self.compiled_universe.agent, training_cfg)
+        brain_hash = compute_brain_hash(base_brain_config)
+        logger.info(f"Brain config derived from agent.yaml: {base_brain_config.description}")
         logger.info(f"Brain hash: {brain_hash[:16]}... (SHA256)")
 
-        # Store brain_config for checkpoint provenance
-        self.brain_config = brain_config
+        # Store base brain_config for checkpoint provenance
+        self.brain_config = base_brain_config
         self.brain_hash = brain_hash
 
-        # Create population (brain_config provides network/optimizer/Q-learning parameters)
+        # Apply curriculum-level overrides from training.yaml to derive effective brain config
+        effective_brain_config = apply_training_overrides(base_brain_config, training_cfg)
+
+        # Create population (effective_brain_config provides network/optimizer/Q-learning parameters)
         agent_ids = [f"agent_{i}" for i in range(num_agents)]
-        logger.info("Network architecture: %s (num_agents=%s)", brain_config.architecture.type, num_agents)
+        logger.info("Network architecture: %s (num_agents=%s)", base_brain_config.architecture.type, num_agents)
         self.population = VectorizedPopulation(
             env=self.env,
             curriculum=self.curriculum,
@@ -360,11 +363,11 @@ class LiveInferenceServer:
             obs_dim=obs_dim,
             action_dim=self.env.action_dim,
             vision_window_size=vision_window_size,
-            train_frequency=4,
+            train_frequency=loop_cfg.train_frequency,
             batch_size=training_cfg.replay_buffer.batch_size,
-            sequence_length=8,
-            max_grad_norm=10.0,
-            brain_config=brain_config,
+            sequence_length=loop_cfg.sequence_length,
+            max_grad_norm=loop_cfg.max_grad_norm,
+            brain_config=effective_brain_config,
             max_episodes=None,  # Not used by live inference
             max_steps_per_episode=None,  # Not used by live inference
         )

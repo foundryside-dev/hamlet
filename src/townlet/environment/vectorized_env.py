@@ -7,6 +7,7 @@ environment with tensor operations [num_agents, ...].
 
 from __future__ import annotations
 
+import math
 import random
 from collections.abc import Callable
 from numbers import Number
@@ -152,6 +153,7 @@ class VectorizedHamletEnv:
         # v2.1: runtime environment knobs live on TrainingV2Config
         self.randomize_affordances = training_cfg.randomize_affordances
         self.partial_observability = level.curriculum.curriculum.active_vision != "global"
+        # Curriculum vision_range is normalized [0, 1]; radius/window derive from grid size.
         self.vision_range = level.curriculum.curriculum.vision_range
         self.enable_temporal_mechanics = level.curriculum.curriculum.active_temporal
         self.agent_lifespan = training_cfg.training_loop.max_steps_per_episode
@@ -173,6 +175,9 @@ class VectorizedHamletEnv:
         # Metadata and observation activity
         self.metadata = self.universe.metadata
         self.observation_activity = level.observation_activity
+        # Use level-specific observation spec so non-primary levels
+        # (e.g., POMDP vs full observability) get correct shapes.
+        self.observation_spec = level.observation_spec
 
         # Get grid_size from substrate (single source of truth)
         # For grid substrates, read directly from substrate dimensions
@@ -190,6 +195,17 @@ class VectorizedHamletEnv:
         meter_count = self.meter_count
         self.base_depletions = self.optimization_data.base_depletions.to(self.device)
 
+        # Derive vision radius/window for partial observability (POMDP) when applicable.
+        # Uses the same semantics as the v2.1 compiler:
+        #   radius = ceil(vision_range * (grid_size / 2))
+        #   window_size = 2 * radius + 1 (clamped to grid_size)
+        self.vision_radius: int = 0
+        self.local_window_size: int = 0
+        if self.partial_observability and self.grid_size is not None:
+            grid_size = float(self.grid_size)
+            self.vision_radius = max(1, int(math.ceil(self.vision_range * (grid_size / 2.0))))
+            self.local_window_size = min((2 * self.vision_radius) + 1, int(grid_size))
+
         # Validate partial observability support
         if partial_observability and self.substrate.position_dim == 0:
             raise ValueError(
@@ -204,8 +220,9 @@ class VectorizedHamletEnv:
                 "Use partial_observability=False with 'relative' or 'scaled' observation_encoding instead."
             )
         if partial_observability and self.substrate.position_dim >= 4:
-            window_size = 2 * vision_range + 1
-            cell_count = window_size**self.substrate.position_dim
+            # Exponential blow-up for high-dimensional local windows.
+            window_size = self.local_window_size or 0
+            cell_count = window_size**self.substrate.position_dim if window_size > 0 else 0
             raise ValueError(
                 f"Partial observability (POMDP) is not supported for {self.substrate.position_dim}D substrates. "
                 f"\n\nProblem: Local window size grows EXPONENTIALLY with dimensionality:"
@@ -225,11 +242,12 @@ class VectorizedHamletEnv:
 
         # Validate Grid3D POMDP vision range (prevent memory explosion)
         if partial_observability and self.substrate.position_dim == 3:
-            window_volume = (2 * vision_range + 1) ** 3
+            window_size = self.local_window_size or 0
+            window_volume = window_size**3 if window_size > 0 else 0
             if window_volume > 125:  # 5×5×5 = 125 is the threshold
                 raise ValueError(
                     f"Grid3D POMDP with vision_range={vision_range} requires {window_volume} cells "
-                    f"(window size {2 * vision_range + 1}×{2 * vision_range + 1}×{2 * vision_range + 1}), which is excessive. "
+                    f"(window size {window_size}×{window_size}×{window_size}), which is excessive. "
                     f"Use vision_range ≤ 2 (5×5×5 = 125 cells) for Grid3D partial observability, "
                     f"or disable partial_observability."
                 )
@@ -244,7 +262,8 @@ class VectorizedHamletEnv:
                     f"Set observation_encoding='relative' in substrate.yaml or disable partial_observability."
                 )
 
-        self.observation_dim = self.metadata.observation_dim
+        # Observation dimension is derived from the level-specific spec.
+        self.observation_dim = self.observation_spec.total_dims
 
         # VFS INTEGRATION: Initialize variable registry from compiled VFS variables
         self.vfs_variables = list(level.vfs_variables)
@@ -297,7 +316,10 @@ class VectorizedHamletEnv:
         self.meter_dynamics = MeterDynamics(
             base_depletions=self.optimization_data.base_depletions,
             cascade_data=self.optimization_data.cascade_data,
-            modulation_data=self.optimization_data.modulation_data,
+            # v2.1: modulation_data encodes bar→affordance modulation (environment.yaml modulation_graph)
+            # and is consumed by AffordanceEngine. MeterDynamics currently only supports
+            # meter→meter modulations, so we pass an empty sequence here.
+            modulation_data=[],
             terminal_conditions=terminal_specs,
             meter_name_to_index=meter_name_to_index,
             device=self.device,
@@ -307,45 +329,58 @@ class VectorizedHamletEnv:
         self.action_mask_table = self.optimization_data.action_mask_table.to(self.device).clone()
         self.hours_per_day = self.action_mask_table.shape[0] if self.action_mask_table.ndim > 0 else 24
 
-        # Initialize affordance engine with modern affordances (effect_pipeline support)
-        # Pass meter_name_to_index for dynamic meter lookups (TASK-001)
-        # Adapt v2.1 affordances to runtime DTO
+        # Initialize affordance engine with modern affordances (effect_pipeline support).
+        # Adapt v2.1 per-level affordances (AffordancesV2Config) into runtime AffordanceConfig.
         from townlet.environment.affordance_config import AffordanceConfig as RuntimeAffordanceConfig
         from townlet.environment.affordance_config import AffordanceConfigCollection
 
+        # Build lookup from environment.yaml affordance vocabulary for categories.
+        env_affordance_categories: dict[str, str] = {a.name: a.category for a in self.universe.environment.environment.affordances}
+
         runtime_affordances: list[RuntimeAffordanceConfig] = []
         for aff in level.affordances.affordances:
-            # Enforce no-defaults: require interaction_type and opening_hours
-            interaction_type = getattr(aff, "interaction_type", None)
-            if interaction_type is None:
-                raise ValueError(f"affordance '{aff.name}' missing interaction_type (no defaults allowed)")
             if aff.opening_hours is None:
                 raise ValueError(f"affordance '{aff.name}' missing opening_hours (no defaults allowed)")
+
+            # Derive interaction_type for v2.1 packs: treat all as instant interactions.
+            # Multi-tick semantics remain available for legacy packs using AffordanceConfigCollection.
+            interaction_type = "instant"
+
+            # Derive operating_hours from OpeningHoursConfig:
+            # - enabled=false → 24/7 (0–24)
+            # - enabled=true → use first schedule window [start, end]
+            opening = aff.opening_hours
+            if not opening.enabled or not opening.schedule:
+                operating_hours = [0, 24]
+            else:
+                window = opening.schedule[0]
+                operating_hours = [window.start, window.end]
+
+            # Map deployment positions to a single canonical position for runtime.
+            deployment = aff.deployment
+            raw_position = None
+            if deployment.type == "fixed" and deployment.positions:
+                # Use the first configured position as canonical; optimization data may refine this later.
+                raw_position = deployment.positions[0]
+
+            category = env_affordance_categories.get(aff.name, "")
 
             runtime_affordances.append(
                 RuntimeAffordanceConfig(
                     id=aff.name,
                     name=aff.name,
-                    category=getattr(aff, "category", "") or "",
+                    category=category,
                     interaction_type=interaction_type,
-                    duration_ticks=getattr(aff, "duration_ticks"),
+                    duration_ticks=None,
                     costs=[{"meter": m, "amount": v} for m, v in (aff.costs or {}).items()],
                     effects=[{"meter": m, "amount": v} for m, v in (aff.effects or {}).items()],
-                    effects_per_tick=(
-                        [{"meter": m, "amount": v} for m, v in getattr(aff, "effects_per_tick", {}).items()]
-                        if hasattr(aff, "effects_per_tick")
-                        else []
-                    ),
-                    costs_per_tick=(
-                        [{"meter": m, "amount": v} for m, v in getattr(aff, "costs_per_tick", {}).items()]
-                        if hasattr(aff, "costs_per_tick")
-                        else []
-                    ),
+                    effects_per_tick=[],
+                    costs_per_tick=[],
                     completion_bonus=[],
-                    operating_hours=aff.opening_hours.model_dump(),
+                    operating_hours=operating_hours,
                     teaching_note=getattr(aff, "teaching_note", None),
                     design_intent=None,
-                    position=getattr(aff, "deployment", None),
+                    position=raw_position,
                 )
             )
 
@@ -423,6 +458,12 @@ class VectorizedHamletEnv:
         self.positions = torch.zeros(
             (self.num_agents, self.substrate.position_dim),
             dtype=self.substrate.position_dtype,
+            device=self.device,
+        )
+        # Velocity (delta position per step) in float coordinates
+        self._velocity = torch.zeros(
+            (self.num_agents, self.substrate.position_dim),
+            dtype=torch.float32,
             device=self.device,
         )
         self.meters = torch.zeros((self.num_agents, meter_count), dtype=torch.float32, device=self.device)
@@ -696,6 +737,13 @@ class VectorizedHamletEnv:
             # TODO: Consider also handling configured affordance case for complete collision-free guarantee
             self.positions = self.substrate.initialize_positions(self.num_agents, self.device)
 
+        # At episode start, velocity is zero.
+        self._velocity = torch.zeros(
+            (self.num_agents, self.substrate.position_dim),
+            dtype=torch.float32,
+            device=self.device,
+        )
+
         # Initial meter values (normalized to [0, 1]) from compiled bars config
         self.meters = self.initial_meter_values.unsqueeze(0).expand(self.num_agents, -1).clone()
 
@@ -754,7 +802,7 @@ class VectorizedHamletEnv:
         """
         import math
 
-        obs_fields = self.universe.observation_spec.fields
+        obs_fields = self.observation_spec.fields
         outputs: list[torch.Tensor] = []
 
         for field in obs_fields:
@@ -775,13 +823,40 @@ class VectorizedHamletEnv:
                     value = torch.zeros((self.num_agents, dims), device=self.device)
                 else:
                     local_window = self.substrate.encode_partial_observation(
-                        self.positions, self.affordances, vision_range=self.vision_range
+                        self.positions,
+                        self.affordances,
+                        vision_range=self.vision_radius,
                     )
                     value = local_window
             elif name == "obs_position":
-                value = self._encode_position_observation()
+                pos = self._encode_position_observation()
+                if pos is None:
+                    value = torch.zeros((self.num_agents, dims), device=self.device)
+                else:
+                    # Align encoded dims with spec dims defensively.
+                    if pos.dim() == 1:
+                        pos = pos.unsqueeze(1)
+                    if pos.shape[1] == dims:
+                        value = pos
+                    elif pos.shape[1] > dims:
+                        value = pos[:, :dims]
+                    else:
+                        value = torch.zeros((self.num_agents, dims), device=self.device)
+                        value[:, : pos.shape[1]] = pos
             elif name == "obs_velocity":
-                value = self._encode_velocity_observation()
+                vel = self._encode_velocity_observation()
+                if vel is None:
+                    value = torch.zeros((self.num_agents, dims), device=self.device)
+                else:
+                    if vel.dim() == 1:
+                        vel = vel.unsqueeze(1)
+                    if vel.shape[1] == dims:
+                        value = vel
+                    elif vel.shape[1] > dims:
+                        value = vel[:, :dims]
+                    else:
+                        value = torch.zeros((self.num_agents, dims), device=self.device)
+                        value[:, : vel.shape[1]] = vel
             elif name == "obs_meters":
                 value = self.meters
             elif name == "obs_affordances":
@@ -791,11 +866,20 @@ class VectorizedHamletEnv:
                 time_angle = (time_of_day / 24.0) * 2 * math.pi
                 time_sin = torch.tensor(math.sin(time_angle), device=self.device)
                 time_cos = torch.tensor(math.cos(time_angle), device=self.device)
-                # padding to dims if needed
+                day_progress = float(time_of_day) / 24.0
+                # Simple day/night split: 0–5 and 18–23 treated as night.
+                is_night = 1.0 if time_of_day < 6 or time_of_day >= 18 else 0.0
+
+                # Populate rich temporal encoding, padding/truncating to dims as needed.
                 value = torch.zeros((self.num_agents, dims), device=self.device)
-                value[:, 0] = time_sin
+                if dims > 0:
+                    value[:, 0] = time_sin
                 if dims > 1:
                     value[:, 1] = time_cos
+                if dims > 2:
+                    value[:, 2] = day_progress
+                if dims > 3:
+                    value[:, 3] = is_night
             else:
                 # Environment variables mapping: expect variables named by obs field
                 if name not in self.vfs_registry._definitions:
@@ -838,14 +922,23 @@ class VectorizedHamletEnv:
         return affordance_encoding
 
     def _encode_position_observation(self) -> torch.Tensor | None:
-        """Encode position variable using substrate-native encoding metadata."""
-        if "position" not in self.vfs_registry._definitions:
-            return None
+        """Encode agent position using substrate-native semantics.
 
-        # Aspatial substrates have no positional encoding
+        Returns:
+            [num_agents, position_dim] tensor or None for aspatial substrates.
+        """
+        # Aspatial substrates have no positional encoding.
         if getattr(self.substrate, "position_dim", 0) == 0:
             return None
 
+        # Prefer normalized coordinates so obs_position dims match substrate.position_dim
+        # independent of observation_encoding (relative/scaled/absolute).
+        normalizer = getattr(self.substrate, "normalize_positions", None)
+        if callable(normalizer):
+            typed_normalizer = cast(Callable[[torch.Tensor], torch.Tensor], normalizer)
+            return typed_normalizer(self.positions)
+
+        # Fallbacks: position feature encoders (may include extra metadata).
         encode_fn = Callable[[torch.Tensor, dict[str, torch.Tensor]], torch.Tensor]
 
         encoder = getattr(self.substrate, "_encode_position_features", None)
@@ -863,12 +956,32 @@ class VectorizedHamletEnv:
             typed_encode_obs = cast(encode_fn, encode_observation)
             return typed_encode_obs(self.positions, self.affordances)
 
-        normalizer = getattr(self.substrate, "normalize_positions", None)
-        if callable(normalizer):
-            typed_normalizer = cast(Callable[[torch.Tensor], torch.Tensor], normalizer)
-            return typed_normalizer(self.positions)
-
         return None
+
+    def _encode_velocity_observation(self) -> torch.Tensor | None:
+        """Encode agent velocity as delta position per step.
+
+        Returns:
+            [num_agents, position_dim] tensor or None for aspatial substrates.
+        """
+        if getattr(self.substrate, "position_dim", 0) == 0:
+            return None
+
+        # Velocity is tracked per-step in _execute_actions; default to zeros if unset.
+        if not hasattr(self, "_velocity"):
+            return torch.zeros(
+                (self.num_agents, self.substrate.position_dim),
+                dtype=torch.float32,
+                device=self.device,
+            )
+        velocity = getattr(self, "_velocity")
+        if velocity is None:
+            return torch.zeros(
+                (self.num_agents, self.substrate.position_dim),
+                dtype=torch.float32,
+                device=self.device,
+            )
+        return velocity
 
     def get_action_masks(self) -> torch.Tensor:
         """
@@ -1043,6 +1156,7 @@ class VectorizedHamletEnv:
         # Calculate velocity (movement delta since last step)
         # Cast to float32 (grid substrates use int positions, continuous use float)
         velocity = (self.positions - old_positions).float()  # [num_agents, position_dim]
+        self._velocity = velocity
 
         # Write velocity components to VFS (if velocity variables exist)
         # Scalar variables require shape (num_agents,) not (num_agents, 1)
@@ -1079,10 +1193,12 @@ class VectorizedHamletEnv:
         if substrate_mask.any():
             movement_mask[substrate_mask] = movement_actions[actions[substrate_mask]]
         if movement_mask.any():
-            # Create dynamic cost tensor from bars.yaml (base_move_depletion per meter)
+            # Create dynamic cost tensor from bars.yaml (per-level BarsV2Config).
             movement_costs = torch.zeros(self.meter_count, device=self.device)
-            for bar in self.universe.bars:
-                movement_costs[bar.index] = bar.base_move_depletion
+            for bar in self.bars_config.meters:
+                idx = self.meter_name_to_index.get(bar.name)
+                if idx is not None:
+                    movement_costs[idx] = float(bar.depletion.move)
 
             self.meters[movement_mask] -= movement_costs.unsqueeze(0)
             self.meters = torch.clamp(self.meters, 0.0, 1.0)
@@ -1098,10 +1214,12 @@ class VectorizedHamletEnv:
         successful_interactions = {}
         interact_mask = (actions == interact_action_idx) & substrate_mask
         if interact_mask.any():
-            # Apply interaction costs from bars.yaml (base_interaction_cost per meter)
+            # Apply interaction costs from bars.yaml (per-level BarsV2Config).
             interaction_costs = torch.zeros(self.meter_count, device=self.device)
-            for bar in self.universe.bars:
-                interaction_costs[bar.index] = bar.base_interaction_cost
+            for bar in self.bars_config.meters:
+                idx = self.meter_name_to_index.get(bar.name)
+                if idx is not None:
+                    interaction_costs[idx] = float(bar.depletion.interact)
 
             self.meters[interact_mask] -= interaction_costs.unsqueeze(0)
             self.meters = torch.clamp(self.meters, 0.0, 1.0)
@@ -1121,11 +1239,17 @@ class VectorizedHamletEnv:
             Dictionary mapping agent indices to affordance names
         """
         if not self.enable_temporal_mechanics:
-            # Instant interactions (Level 1-2)
+            # No temporal mechanics: always use instant interactions.
+            return self._handle_instant_interactions(interact_mask)
+
+        # If temporal mechanics are enabled but there are no multi-tick affordances
+        # (interaction_type in {"multi_tick", "dual"}), treat interactions as instant
+        # with time-of-day gating only.
+        if not any(getattr(aff, "interaction_type", "instant") in {"multi_tick", "dual"} for aff in self.affordance_engine.affordances):
             return self._handle_instant_interactions(interact_mask)
 
         # Multi-tick interaction logic using AffordanceEngine
-        successful_interactions = {}
+        successful_interactions: dict[int, str] = {}
 
         for affordance_name, affordance_pos in self.affordances.items():
             if not self._is_affordance_open(affordance_name):
@@ -1273,8 +1397,12 @@ class VectorizedHamletEnv:
             intrinsic_raw = torch.zeros(self.num_agents, device=self.device)
 
         # Gather additional context for shaping bonuses
+        # Use float positions so DACEngine distance computations operate in a
+        # consistent continuous space (grid indices or continuous coords).
+        agent_positions = self.positions.to(device=self.device, dtype=torch.float32)
+
         kwargs = {
-            "agent_positions": self.positions,
+            "agent_positions": agent_positions,
             "affordance_positions": self._get_affordance_positions(),
             "last_action_affordance": self._get_last_action_affordances(),
             "affordance_streak": self._get_affordance_streaks(),
@@ -1544,10 +1672,23 @@ class VectorizedHamletEnv:
         if capacity is not None:
             required_slots = len(self.affordances) + self.num_agents
             if required_slots > capacity:
-                raise ValueError(
-                    f"Substrate has {capacity} positions but {len(self.affordances)} affordances + "
-                    f"{self.num_agents} agents require more space."
+                # Align with v2.1 compiler behavior: treat this as an operator warning
+                # rather than a hard error (RawConfigsV21 already emits a warning).
+                import logging
+
+                logger = logging.getLogger(__name__)
+                logger.warning(
+                    "Grid capacity warning at runtime: %s positions may not fit %s agents + %s affordances "
+                    "(%s entities total). Disabling affordance randomization for this run.",
+                    capacity,
+                    self.num_agents,
+                    len(self.affordances),
+                    required_slots,
                 )
+                # Disable randomization for this environment instance and fall back
+                # to configured positions (env will call _apply_configured_affordance_positions()).
+                self.randomize_affordances = False
+                return None
 
         # Sample (affordances + agents) positions together (BUG-15 fix)
         # For discrete grids: retry on collision to guarantee unique positions

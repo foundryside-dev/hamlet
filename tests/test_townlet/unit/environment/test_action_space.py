@@ -29,15 +29,17 @@ class TestActionSpaceDynamicSizing:
 
         # Verify action dimension matches substrate
         # assert env.action_dim == substrate.action_space_size
-        # assert env.action_dim == 6
+        # assert env.action_dim == 10
 
         # Placeholder for now - actual test will be in integration tests
-        assert substrate.action_space_size == 6
+        # 4 cardinal + 4 diagonals + INTERACT + WAIT
+        assert substrate.action_space_size == 10
 
     def test_env_respects_grid3d_action_space(self):
         """Environment action_dim matches Grid3D substrate."""
         substrate = Grid3DSubstrate(8, 8, 3, "clamp")
-        assert substrate.action_space_size == 8
+        # 4 cardinal (XY) + 4 diagonals (XY) + 2 vertical (±Z) + INTERACT + WAIT
+        assert substrate.action_space_size == 12
 
     def test_env_respects_continuous_action_spaces(self):
         """Environment action_dim matches Continuous substrates."""

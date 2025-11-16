@@ -7,6 +7,6 @@ curriculum:
   # Requires LSTM for memory (implemented in RecurrentSpatialQNetwork)
 
   active_vision: partial      # Local window only (POMDP)
-  vision_range: 0.625         # 5-cell window on 8×8 grid
+  vision_range: 0.5           # 5-cell window on 8×8 grid
   active_temporal: false
   day_length: null

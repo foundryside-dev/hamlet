@@ -19,6 +19,7 @@ def test_factory_passes_observation_encoding_to_grid2d():
             "boundary": "clamp",
             "distance_metric": "manhattan",
             "observation_encoding": "scaled",  # Non-default
+            "diagonals": True,
         },
     )
     substrate = SubstrateFactory.build(config, device=torch.device("cpu"))

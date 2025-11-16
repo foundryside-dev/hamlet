@@ -167,6 +167,25 @@ class IntrinsicConfig(BaseModel):
 
     rnd: RNDConfig = Field(description="RND configuration")
     annealing: AnnealingConfig = Field(description="Annealing configuration")
+    initial_weight: float = Field(
+        default=1.0,
+        ge=0.0,
+        description=("Initial intrinsic reward weight (vs extrinsic). " "For inference runs, set to 0.0 for near-greedy behavior."),
+    )
+    min_survival_fraction: float = Field(
+        default=0.4,
+        gt=0.0,
+        lt=1.0,
+        description=(
+            "Minimum mean survival as fraction of max_episode_length before allowing annealing "
+            "(prevents 'stable failure' from triggering annealing)."
+        ),
+    )
+    survival_window: int = Field(
+        default=100,
+        gt=0,
+        description="Window size (episodes) for tracking survival consistency when annealing intrinsic weight.",
+    )
 
 
 class EvaluationConfig(BaseModel):
@@ -196,6 +215,21 @@ class TrainingLoopConfig(BaseModel):
     max_steps_per_episode: int = Field(gt=0, description="Maximum steps per episode")
     evaluation: EvaluationConfig = Field(description="Evaluation configuration")
     checkpointing: CheckpointingConfig = Field(description="Checkpointing configuration")
+    train_frequency: int = Field(
+        default=4,
+        gt=0,
+        description="Train Q-network every N environment steps (default 4).",
+    )
+    sequence_length: int = Field(
+        default=8,
+        gt=0,
+        description="Sequence length for recurrent agents when using sequential replay (default 8).",
+    )
+    max_grad_norm: float = Field(
+        default=10.0,
+        gt=0.0,
+        description="Gradient clipping threshold for Q-network updates (default 10.0).",
+    )
 
 
 class AdversarialCurriculumConfig(BaseModel):

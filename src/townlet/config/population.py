@@ -1,12 +1,15 @@
-"""Population configuration DTO with no-defaults enforcement.
+"""Legacy population configuration DTO (flat configs, pre-v2.1).
 
-Philosophy: All behavioral parameters must be explicitly specified.
-No implicit defaults. Operator accountability.
+This module supports the older `training.yaml:population` section used by the
+flat HamletConfig pipeline. The v2.1 hierarchical configuration system replaces
+it with `training_v2_config.TrainingV2Config.population`, which is wired through
+the UniverseCompiler and DemoRunner.
 
-Design: Validates agent count, Q-learning parameters, and network architecture.
+New work should prefer the v2.1 path:
+    - experiment-level: brain.yaml, agent.yaml
+    - curriculum-level: levels/*/training.yaml (TrainingV2Config)
 
-IMPORTANT: When brain.yaml exists, gamma/learning_rate/replay_buffer_capacity
-MUST NOT be specified in training.yaml - they are managed by brain.yaml.
+This module is retained for backwards compatibility and archival tests.
 """
 
 from pathlib import Path

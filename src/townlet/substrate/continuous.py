@@ -434,7 +434,7 @@ class Continuous1DSubstrate(ContinuousSubstrate):
                 type="movement",
                 delta=[-1],  # Scaled by movement_delta in apply_movement()
                 teleport_to=None,
-                costs={"energy": 0.005, "hygiene": 0.003, "satiation": 0.004},
+                costs={},
                 effects={},
                 description=f"Move left by {self.movement_delta} units",
                 icon=None,
@@ -448,7 +448,7 @@ class Continuous1DSubstrate(ContinuousSubstrate):
                 type="movement",
                 delta=[1],  # Scaled by movement_delta in apply_movement()
                 teleport_to=None,
-                costs={"energy": 0.005, "hygiene": 0.003, "satiation": 0.004},
+                costs={},
                 effects={},
                 description=f"Move right by {self.movement_delta} units",
                 icon=None,
@@ -462,7 +462,7 @@ class Continuous1DSubstrate(ContinuousSubstrate):
                 type="interaction",
                 delta=None,
                 teleport_to=None,
-                costs={"energy": 0.003},
+                costs={},
                 effects={},
                 description="Interact with affordance at current position",
                 icon=None,
@@ -476,7 +476,7 @@ class Continuous1DSubstrate(ContinuousSubstrate):
                 type="passive",
                 delta=None,
                 teleport_to=None,
-                costs={"energy": 0.004},
+                costs={},
                 effects={},
                 description="Wait in place (idle metabolic cost)",
                 icon=None,
@@ -546,7 +546,7 @@ class Continuous2DSubstrate(ContinuousSubstrate):
                 type="movement",
                 delta=[0.0, -self.movement_delta],
                 teleport_to=None,
-                costs={"energy": 0.005, "hygiene": 0.003, "satiation": 0.004},
+                costs={},
                 effects={},
                 description=f"Move upward by {self.movement_delta} units",
                 icon=None,
@@ -560,7 +560,7 @@ class Continuous2DSubstrate(ContinuousSubstrate):
                 type="movement",
                 delta=[0.0, self.movement_delta],
                 teleport_to=None,
-                costs={"energy": 0.005, "hygiene": 0.003, "satiation": 0.004},
+                costs={},
                 effects={},
                 description=f"Move downward by {self.movement_delta} units",
                 icon=None,
@@ -574,7 +574,7 @@ class Continuous2DSubstrate(ContinuousSubstrate):
                 type="movement",
                 delta=[-self.movement_delta, 0.0],
                 teleport_to=None,
-                costs={"energy": 0.005, "hygiene": 0.003, "satiation": 0.004},
+                costs={},
                 effects={},
                 description=f"Move left by {self.movement_delta} units",
                 icon=None,
@@ -588,7 +588,7 @@ class Continuous2DSubstrate(ContinuousSubstrate):
                 type="movement",
                 delta=[self.movement_delta, 0.0],
                 teleport_to=None,
-                costs={"energy": 0.005, "hygiene": 0.003, "satiation": 0.004},
+                costs={},
                 effects={},
                 description=f"Move right by {self.movement_delta} units",
                 icon=None,
@@ -602,7 +602,7 @@ class Continuous2DSubstrate(ContinuousSubstrate):
                 type="interaction",
                 delta=None,
                 teleport_to=None,
-                costs={"energy": 0.003},
+                costs={},
                 effects={},
                 description="Interact with affordance at current position",
                 icon=None,
@@ -616,7 +616,7 @@ class Continuous2DSubstrate(ContinuousSubstrate):
                 type="passive",
                 delta=None,
                 teleport_to=None,
-                costs={"energy": 0.004},
+                costs={},
                 effects={},
                 description="Wait in place (idle metabolic cost)",
                 icon=None,
@@ -665,7 +665,7 @@ class Continuous2DSubstrate(ContinuousSubstrate):
                 type="passive",
                 delta=None,
                 teleport_to=None,
-                costs={"energy": 0.004},  # Same as WAIT (idle metabolic cost)
+                costs={},
                 effects={},
                 description="Stop moving (no delta, idle metabolic cost)",
                 icon=None,
@@ -694,9 +694,11 @@ class Continuous2DSubstrate(ContinuousSubstrate):
                 delta_y = dy_unit * magnitude * self.movement_delta
 
                 # Scale costs by magnitude (more movement = more energy)
-                energy_cost = base_energy_cost * magnitude
-                hygiene_cost = base_hygiene_cost * magnitude
-                satiation_cost = base_satiation_cost * magnitude
+                # NOTE: Magnitude-scaled costs are currently a design placeholder;
+                # actual meter updates are handled elsewhere in the pipeline.
+                _ = base_energy_cost * magnitude
+                _ = base_hygiene_cost * magnitude
+                _ = base_satiation_cost * magnitude
 
                 # Action name: MOVE_<direction>_<magnitude>
                 # Direction 0 = 0° (East), Direction 8 = 90° (North), etc.
@@ -709,11 +711,7 @@ class Continuous2DSubstrate(ContinuousSubstrate):
                         type="movement",
                         delta=[delta_x, delta_y],
                         teleport_to=None,
-                        costs={
-                            "energy": energy_cost,
-                            "hygiene": hygiene_cost,
-                            "satiation": satiation_cost,
-                        },
+                        costs={},
                         effects={},
                         description=f"Move {angle_deg}° at {magnitude:.1%} speed",
                         icon=None,
@@ -732,7 +730,7 @@ class Continuous2DSubstrate(ContinuousSubstrate):
                 type="interaction",
                 delta=None,
                 teleport_to=None,
-                costs={"energy": 0.003},
+                costs={},
                 effects={},
                 description="Interact with affordance at current position",
                 icon=None,
@@ -751,7 +749,7 @@ class Continuous2DSubstrate(ContinuousSubstrate):
                 type="passive",
                 delta=None,
                 teleport_to=None,
-                costs={"energy": 0.004},
+                costs={},
                 effects={},
                 description="Wait in place (idle metabolic cost)",
                 icon=None,
@@ -811,7 +809,7 @@ class Continuous3DSubstrate(ContinuousSubstrate):
                 type="movement",
                 delta=[0, -1, 0],  # Scaled by movement_delta in apply_movement()
                 teleport_to=None,
-                costs={"energy": 0.005, "hygiene": 0.003, "satiation": 0.004},
+                costs={},
                 effects={},
                 description=f"Move upward by {self.movement_delta} units",
                 icon=None,
@@ -825,7 +823,7 @@ class Continuous3DSubstrate(ContinuousSubstrate):
                 type="movement",
                 delta=[0, 1, 0],  # Scaled by movement_delta in apply_movement()
                 teleport_to=None,
-                costs={"energy": 0.005, "hygiene": 0.003, "satiation": 0.004},
+                costs={},
                 effects={},
                 description=f"Move downward by {self.movement_delta} units",
                 icon=None,
@@ -839,7 +837,7 @@ class Continuous3DSubstrate(ContinuousSubstrate):
                 type="movement",
                 delta=[-1, 0, 0],  # Scaled by movement_delta in apply_movement()
                 teleport_to=None,
-                costs={"energy": 0.005, "hygiene": 0.003, "satiation": 0.004},
+                costs={},
                 effects={},
                 description=f"Move left by {self.movement_delta} units",
                 icon=None,
@@ -853,7 +851,7 @@ class Continuous3DSubstrate(ContinuousSubstrate):
                 type="movement",
                 delta=[1, 0, 0],  # Scaled by movement_delta in apply_movement()
                 teleport_to=None,
-                costs={"energy": 0.005, "hygiene": 0.003, "satiation": 0.004},
+                costs={},
                 effects={},
                 description=f"Move right by {self.movement_delta} units",
                 icon=None,
@@ -867,7 +865,7 @@ class Continuous3DSubstrate(ContinuousSubstrate):
                 type="movement",
                 delta=[0, 0, -1],  # Scaled by movement_delta in apply_movement()
                 teleport_to=None,
-                costs={"energy": 0.008, "hygiene": 0.003, "satiation": 0.006},
+                costs={},
                 effects={},
                 description=f"Move up vertically by {self.movement_delta} units",
                 icon=None,
@@ -881,7 +879,7 @@ class Continuous3DSubstrate(ContinuousSubstrate):
                 type="movement",
                 delta=[0, 0, 1],  # Scaled by movement_delta in apply_movement()
                 teleport_to=None,
-                costs={"energy": 0.006, "hygiene": 0.003, "satiation": 0.005},
+                costs={},
                 effects={},
                 description=f"Move down vertically by {self.movement_delta} units",
                 icon=None,
@@ -895,7 +893,7 @@ class Continuous3DSubstrate(ContinuousSubstrate):
                 type="interaction",
                 delta=None,
                 teleport_to=None,
-                costs={"energy": 0.003},
+                costs={},
                 effects={},
                 description="Interact with affordance at current position",
                 icon=None,
@@ -909,7 +907,7 @@ class Continuous3DSubstrate(ContinuousSubstrate):
                 type="passive",
                 delta=None,
                 teleport_to=None,
-                costs={"energy": 0.004},
+                costs={},
                 effects={},
                 description="Wait in place (idle metabolic cost)",
                 icon=None,

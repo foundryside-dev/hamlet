@@ -10,18 +10,18 @@ class TestActionSpaceSizeProperty:
     """Test that all substrates implement action_space_size property."""
 
     def test_grid2d_action_space_size(self):
-        """Grid2D has 6 actions (UP/DOWN/LEFT/RIGHT/INTERACT/WAIT)."""
+        """Grid2D has 10 actions when diagonals are enabled."""
         substrate = Grid2DSubstrate(
             width=8,
             height=8,
             boundary="clamp",
             distance_metric="manhattan",
         )
-        assert substrate.action_space_size == 6
-        assert substrate.action_space_size == 2 * substrate.position_dim + 2
+        # 4 cardinal + 4 diagonals + INTERACT + WAIT
+        assert substrate.action_space_size == 10
 
     def test_grid3d_action_space_size(self):
-        """Grid3D has 8 actions (±X/±Y/±Z/INTERACT/WAIT)."""
+        """Grid3D has 12 actions when diagonals are enabled."""
         substrate = Grid3DSubstrate(
             width=8,
             height=8,
@@ -29,8 +29,8 @@ class TestActionSpaceSizeProperty:
             boundary="clamp",
             distance_metric="manhattan",
         )
-        assert substrate.action_space_size == 8
-        assert substrate.action_space_size == 2 * substrate.position_dim + 2
+        # 4 cardinal (XY) + 4 diagonals (XY) + 2 vertical (±Z) + INTERACT + WAIT
+        assert substrate.action_space_size == 12
 
     def test_continuous1d_action_space_size(self):
         """Continuous1D has 4 actions (±X/INTERACT/WAIT)."""
@@ -85,10 +85,11 @@ class TestActionSpaceSizeProperty:
         # This is correct: aspatial has INTERACT + WAIT actions
 
     def test_action_space_formula_consistency(self):
-        """Verify 2N+2 formula holds for spatial substrates."""
+        """Verify 2N+2 formula holds for substrates without diagonals."""
         test_cases = [
-            (Grid2DSubstrate(8, 8, "clamp", "manhattan"), 2, 6),
-            (Grid3DSubstrate(8, 8, 3, "clamp", "manhattan"), 3, 8),
+            # Grid substrates with diagonals disabled fall back to 2N+2 actions
+            (Grid2DSubstrate(8, 8, "clamp", "manhattan", enable_diagonals=False), 2, 6),
+            (Grid3DSubstrate(8, 8, 3, "clamp", "manhattan", enable_diagonals=False), 3, 8),
             (Continuous1DSubstrate(0.0, 10.0, "clamp", 0.5, 1.0), 1, 4),
             (Continuous2DSubstrate(0.0, 10.0, 0.0, 10.0, "clamp", 0.5, 1.0), 2, 6),
             (Continuous3DSubstrate(0.0, 10.0, 0.0, 10.0, 0.0, 10.0, "clamp", 0.5, 1.0), 3, 8),

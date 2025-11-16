@@ -5,6 +5,7 @@ from __future__ import annotations
 import dataclasses
 import hashlib
 import logging
+import math
 import os
 import sys
 from collections import defaultdict
@@ -25,12 +26,14 @@ from townlet.config.bar import BarConfig
 from townlet.config.bars_v2_config import BarsV2Config
 from townlet.config.cascade import CascadeConfig
 from townlet.config.curriculum_config import CurriculumConfig
+from townlet.config.drive_as_code import DriveAsCodeConfig
 from townlet.config.effect_pipeline import EffectPipeline
 from townlet.config.environment_config import EnvironmentConfig as EnvConfigV21
 from townlet.config.experiment_config import ExperimentConfig
 from townlet.config.stratum_config import StratumConfig
 from townlet.config.training_v2_config import TrainingV2Config
 from townlet.environment.action_config import ActionConfig, ActionSpaceConfig
+from townlet.environment.cascade_config import EnvironmentConfig as CascadeEnvironmentConfig
 from townlet.environment.substrate_action_validator import SubstrateActionValidator
 from townlet.environment.temporal_utils import is_affordance_open
 from townlet.substrate.config import SubstrateConfig
@@ -598,19 +601,9 @@ class UniverseCompiler:
             errors.add_hint("Validate YAML syntax at yamllint.com or with 'yamllint <file>'")
             errors.check_and_raise()
 
-    def _stage_1_parse_individual_files(self, config_dir: Path) -> RawConfigs:
-        """Stage 1 – load all YAML files into DTOs using shared loaders."""
-        return RawConfigs.from_config_dir(config_dir)
-
     def _stage_1_load_v21_configs(self, experiment_dir: Path) -> RawConfigsV21:
         """Stage 1 – load v2.1 hierarchical configs."""
         return RawConfigsV21.from_experiment_dir(experiment_dir)
-        """Stage 1 – load v2.1 hierarchical configs."""
-        return RawConfigsV21.from_experiment_dir(experiment_dir)
-
-        """Stage 1 – load all YAML files into DTOs using shared loaders."""
-
-        return RawConfigs.from_config_dir(config_dir)
 
     # ------------------------------------------------------------------
     # v2.1 helpers
@@ -663,18 +656,34 @@ class UniverseCompiler:
                 "Partial observability requires vision_support to be 'partial' or 'both'."
             )
 
-        # Grid dimensions (only for grid substrates)
+        # Grid dimensions (for grid-based substrates)
         grid_width = grid_height = 0
-        if substrate.type in {"grid", "grid3d", "gridnd"} and substrate.grid is not None:
+        grid_cells = 0
+        if substrate.type in {"grid", "grid3d"} and substrate.grid is not None:
             grid_width = substrate.grid.width
             grid_height = substrate.grid.height
+            depth = getattr(substrate.grid, "depth", None)
+            if depth is not None:
+                grid_cells = grid_width * grid_height * depth
+            else:
+                grid_cells = grid_width * grid_height
+        elif substrate.type == "gridnd" and substrate.gridnd is not None:
+            grid_cells = 1
+            for size in substrate.gridnd.dimension_sizes:
+                grid_cells *= size
 
         # Vision: global
         if vision_support in {"both", "global"}:
-            if grid_width and grid_height:
-                dims = grid_width * grid_height
+            # Global vision only defined for grid substrates; gridnd uses flattened cells.
+            if grid_cells:
+                dims = grid_cells
                 is_active = canon_active_vision == "global"
-                desc = f"{grid_width}x{grid_height} grid encoding" if is_active else "MASKED (local vision active)"
+                if substrate.type == "gridnd":
+                    desc = f"{dims}‑cell gridnd encoding" if is_active else "MASKED (local vision active)"
+                elif grid_width and grid_height:
+                    desc = f"{grid_width}x{grid_height} grid encoding" if is_active else "MASKED (local vision active)"
+                else:
+                    desc = "Global grid encoding" if is_active else "MASKED (local vision active)"
                 fields.append(
                     ObservationField(
                         uuid=None,
@@ -692,12 +701,24 @@ class UniverseCompiler:
 
         # Vision: local / partial
         if vision_support in {"both", "partial"}:
-            if grid_width and grid_height:
-                # derive window size from vision_range [0,1] scaled to grid
-                window_size = max(3, int(round(vision_range * grid_width)))
-                if window_size % 2 == 0:
-                    window_size += 1
-                window_size = min(window_size, grid_width)
+            # Partial observability is only supported for low-dimensional grids.
+            if substrate.type == "gridnd" and canon_active_vision == "partial":
+                raise ValueError(
+                    "Partial observability (local vision) is not supported for gridnd substrates. "
+                    "Use active_vision='global' or vision_support='global'/'both' with grid substrates."
+                )
+
+            if substrate.type in {"grid", "grid3d"} and grid_width and grid_height:
+                # Derive window size from normalized vision_range [0, 1] using the
+                # v2.1 reference formula:
+                #   radius = ceil(vision_range * (grid_size / 2))
+                #   window_size = 2 * radius + 1
+                # This keeps obs_dim stable across curricula while allowing intuitive
+                # scaling with grid size.
+                radius = max(1, int(math.ceil(vision_range * (grid_width / 2.0))))
+                window_size = min((2 * radius) + 1, grid_width)
+
+                # For grid substrates we always treat the local window as a 2D footprint.
                 dims = window_size * window_size
                 is_active = canon_active_vision == "partial"
                 desc = f"{window_size}x{window_size} local window" if is_active else "MASKED (global vision active)"
@@ -716,10 +737,15 @@ class UniverseCompiler:
                 )
                 offset += dims
 
-        # Position / velocity (grid substrates only)
+        # Position / velocity (discrete spatial substrates only)
         position_dim = 0
-        if substrate.type in {"grid", "grid3d"}:
-            position_dim = 3 if substrate.type == "grid3d" else 2
+        if substrate.type in {"grid", "grid3d"} and substrate.grid is not None:
+            if substrate.grid.topology == "cubic":
+                position_dim = 3
+            else:
+                position_dim = 2
+        elif substrate.type == "gridnd" and substrate.gridnd is not None:
+            position_dim = len(substrate.gridnd.dimension_sizes)
 
         if position_dim:
             fields.append(
@@ -805,10 +831,14 @@ class UniverseCompiler:
 
         # Temporal fields
         if temporal_support == "enabled":
-            # v2.1 reference: temporal fields expose two dimensions
-            # (time_sin, time_cos). Masking is handled via curriculum.
-            temporal_dims = 2
-            desc = "Temporal features (day/night cycle)" if active_temporal else "MASKED (temporal inactive)"
+            # Rich temporal encoding: four dimensions
+            #   [0] time_of_day_sin
+            #   [1] time_of_day_cos
+            #   [2] day_progress (0.0–1.0 over 24h)
+            #   [3] is_night (0.0/1.0 indicator)
+            # Masking is handled via curriculum (active_temporal).
+            temporal_dims = 4
+            desc = "Temporal features (sin, cos, day_progress, is_night)" if active_temporal else "MASKED (temporal inactive)"
             fields.append(
                 ObservationField(
                     uuid=None,
@@ -852,17 +882,22 @@ class UniverseCompiler:
             next_id += 1
 
         substrate_actions = actions.actions.substrate_actions
+        grid_cfg = getattr(stratum.stratum.substrate, "grid", None)
+        enable_diagonals = bool(getattr(grid_cfg, "diagonals", False)) if grid_cfg is not None else False
         if substrate_actions.inherit:
             substrate_type = stratum.stratum.substrate.type
             if substrate_type in {"grid", "grid3d"}:
+                # Cardinal movement (always available for grid substrates)
                 _add("UP", "movement", "substrate", True)
                 _add("DOWN", "movement", "substrate", True)
                 _add("LEFT", "movement", "substrate", True)
                 _add("RIGHT", "movement", "substrate", True)
-                _add("UP_LEFT", "movement", "substrate", True)
-                _add("UP_RIGHT", "movement", "substrate", True)
-                _add("DOWN_LEFT", "movement", "substrate", True)
-                _add("DOWN_RIGHT", "movement", "substrate", True)
+                # Optional diagonals, controlled by grid.diagonals flag
+                if enable_diagonals:
+                    _add("UP_LEFT", "movement", "substrate", True)
+                    _add("UP_RIGHT", "movement", "substrate", True)
+                    _add("DOWN_LEFT", "movement", "substrate", True)
+                    _add("DOWN_RIGHT", "movement", "substrate", True)
                 if substrate_type == "grid3d":
                     _add("UP_Z", "movement", "substrate", True)
                     _add("DOWN_Z", "movement", "substrate", True)
@@ -994,7 +1029,7 @@ class UniverseCompiler:
             )
         return tuple(fields)
 
-    def _build_vfs_variables(self, obs_spec: ObservationSpec, environment: EnvironmentConfig) -> tuple[VariableDef, ...]:
+    def _build_vfs_variables(self, obs_spec: ObservationSpec, environment: EnvConfigV21) -> tuple[VariableDef, ...]:
         """Build VFS variables from observation fields + environment variables."""
         vars_out: list[VariableDef] = []
 
@@ -1157,13 +1192,25 @@ class UniverseCompiler:
         grid_size = None
         grid_cells = None
         position_dim = 0
-        substrate_type = raw.stratum.stratum.substrate.type
-        if substrate_type in {"grid", "grid3d"} and raw.stratum.stratum.substrate.grid is not None:
-            width = raw.stratum.stratum.substrate.grid.width
-            height = raw.stratum.stratum.substrate.grid.height
+        substrate_cfg = raw.stratum.stratum.substrate
+        substrate_type = substrate_cfg.type
+        if substrate_type in {"grid", "grid3d"} and substrate_cfg.grid is not None:
+            width = substrate_cfg.grid.width
+            height = substrate_cfg.grid.height
             grid_size = width
-            grid_cells = width * height
-            position_dim = 3 if substrate_type == "grid3d" else 2
+            depth = getattr(substrate_cfg.grid, "depth", None)
+            if depth is not None:
+                grid_cells = width * height * depth
+                position_dim = 3
+            else:
+                grid_cells = width * height
+                position_dim = 2
+        elif substrate_type == "gridnd" and substrate_cfg.gridnd is not None:
+            # GridND: product of all dimension sizes, position dim = number of axes
+            grid_cells = 1
+            for size in substrate_cfg.gridnd.dimension_sizes:
+                grid_cells *= size
+            position_dim = len(substrate_cfg.gridnd.dimension_sizes)
 
         config_mtime = self._compute_config_mtime(experiment_dir)
 
@@ -1766,42 +1813,6 @@ class UniverseCompiler:
                     _add_hint(
                         "invalid_affordance_name",
                         "Ensure environment.enabled_affordances lists valid affordance names from affordances.yaml.",
-                    )
-
-        # Validate modulation coverage (environment.yaml modulation_graph vs per-level modulations)
-        env_mods = getattr(raw_configs.environment.environment, "modulation_graph", [])
-        graph_mods = {(m.bar, tuple(sorted(m.affordances))) for m in env_mods}
-        per_level_mods = {(m.bar, tuple(sorted(m.affordances))) for m in getattr(level, "affordances").modulations}
-        missing_mods = graph_mods - per_level_mods
-        extra_mods = per_level_mods - graph_mods
-        if missing_mods:
-            errors.add(
-                _format_error(
-                    "UAC-MOD-001",
-                    f"Missing modulations: {sorted(list(missing_mods))}",
-                    location=f"levels/{level_name}/affordances.yaml:modulations",
-                )
-            )
-        if extra_mods:
-            errors.add(
-                _format_error(
-                    "UAC-MOD-002",
-                    f"Extra modulations not in modulation_graph: {sorted(list(extra_mods))}",
-                    location=f"levels/{level_name}/affordances.yaml:modulations",
-                )
-            )
-
-        # Validate affordance positions when randomize_affordances is false
-        env_cfg = getattr(level.training, "environment", None)
-        if env_cfg is not None and env_cfg.randomize_affordances is False:
-            for aff in level.affordances.affordances:
-                if not getattr(aff, "deployment", None):
-                    errors.add(
-                        _format_error(
-                            "UAC-AFF-001",
-                            f"Affordance '{aff.name}' missing deployment positions while randomize_affordances=false.",
-                            location=f"levels/{level_name}/affordances.yaml:affordances.{aff.name}.deployment",
-                        )
                     )
 
         # Global action costs/effects (dict[str, float])
@@ -3005,28 +3016,6 @@ class UniverseCompiler:
             entries.sort(key=lambda entry: entry["target_idx"])
 
         modulation_data: list[dict[str, float]] = []
-        cascades_yaml = raw_configs.config_dir / "cascades.yaml"
-        try:
-            cascades_config = load_full_cascades_config(cascades_yaml)
-        except Exception:
-            cascades_config = None
-
-        if cascades_config:
-            for modulation in cascades_config.modulations:
-                source_idx = meter_lookup.get(modulation.source)
-                target_idx = meter_lookup.get(modulation.target)
-                if source_idx is None or target_idx is None:
-                    continue
-                modulation_data.append(
-                    {
-                        "source_idx": source_idx,
-                        "target_idx": target_idx,
-                        "base_multiplier": modulation.base_multiplier,
-                        "range": modulation.range,
-                        "baseline_depletion": modulation.baseline_depletion,
-                    }
-                )
-            modulation_data.sort(key=lambda entry: entry["target_idx"])
 
         affordance_count = metadata.affordance_count
         action_mask_table = torch.zeros((24, affordance_count), dtype=torch.bool, device=torch_device)
@@ -3064,7 +3053,7 @@ class UniverseCompiler:
         meter_metadata: MeterMetadata,
         affordance_metadata: AffordanceMetadata,
         optimization_data: OptimizationData,
-        environment_config: EnvironmentConfig,
+        environment_config: CascadeEnvironmentConfig,
         dac_config: DriveAsCodeConfig,
     ) -> CompiledUniverse:
         """Stage 7 – produce immutable CompiledUniverse artifact."""

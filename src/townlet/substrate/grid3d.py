@@ -49,6 +49,7 @@ class Grid3DSubstrate(SpatialSubstrate):
         distance_metric: Literal["manhattan", "euclidean", "chebyshev"] = "manhattan",
         observation_encoding: Literal["relative", "scaled", "absolute"] = "relative",
         topology: Literal["cubic"] = "cubic",  # NEW: Grid3D is always cubic topology
+        enable_diagonals: bool = True,
     ):
         """Initialize 3D cubic grid.
 
@@ -75,6 +76,7 @@ class Grid3DSubstrate(SpatialSubstrate):
         self.distance_metric = distance_metric
         self.observation_encoding = observation_encoding
         self.topology = topology  # NEW: Store topology
+        self.enable_diagonals = enable_diagonals
 
     @property
     def coordinate_semantics(self) -> dict:
@@ -137,20 +139,16 @@ class Grid3DSubstrate(SpatialSubstrate):
             return torch.abs(pos1 - pos2).max(dim=-1)[0]
 
     def get_default_actions(self) -> list[ActionConfig]:
-        """Return Grid3D's 8 default actions with default costs.
-
-        Returns:
-            [UP, DOWN, LEFT, RIGHT, UP_Z, DOWN_Z, INTERACT, WAIT] with standard 3D costs.
-        """
-        return [
-            # XY plane movement (same as Grid2D)
+        """Return Grid3D's default actions, optionally including XY-plane diagonals."""
+        actions: list[ActionConfig] = [
+            # XY plane movement (cardinal)
             ActionConfig(
                 id=0,
                 name="UP",
                 type="movement",
                 delta=[0, -1, 0],
                 teleport_to=None,
-                costs={"energy": 0.005, "hygiene": 0.003, "satiation": 0.004},
+                costs={},
                 effects={},
                 description="Move one cell upward (north)",
                 icon=None,
@@ -164,7 +162,7 @@ class Grid3DSubstrate(SpatialSubstrate):
                 type="movement",
                 delta=[0, 1, 0],
                 teleport_to=None,
-                costs={"energy": 0.005, "hygiene": 0.003, "satiation": 0.004},
+                costs={},
                 effects={},
                 description="Move one cell downward (south)",
                 icon=None,
@@ -178,7 +176,7 @@ class Grid3DSubstrate(SpatialSubstrate):
                 type="movement",
                 delta=[-1, 0, 0],
                 teleport_to=None,
-                costs={"energy": 0.005, "hygiene": 0.003, "satiation": 0.004},
+                costs={},
                 effects={},
                 description="Move one cell left (west)",
                 icon=None,
@@ -192,7 +190,7 @@ class Grid3DSubstrate(SpatialSubstrate):
                 type="movement",
                 delta=[1, 0, 0],
                 teleport_to=None,
-                costs={"energy": 0.005, "hygiene": 0.003, "satiation": 0.004},
+                costs={},
                 effects={},
                 description="Move one cell right (east)",
                 icon=None,
@@ -200,65 +198,139 @@ class Grid3DSubstrate(SpatialSubstrate):
                 source_affordance=None,
                 enabled=True,
             ),
-            # Z-axis movement (vertical)
-            ActionConfig(
-                id=4,
-                name="UP_Z",
-                type="movement",
-                delta=[0, 0, -1],
-                teleport_to=None,
-                costs={"energy": 0.008, "hygiene": 0.003, "satiation": 0.006},  # Stairs cost more
-                effects={},
-                description="Move one floor up (climb stairs)",
-                icon=None,
-                source="substrate",
-                source_affordance=None,
-                enabled=True,
-            ),
-            ActionConfig(
-                id=5,
-                name="DOWN_Z",
-                type="movement",
-                delta=[0, 0, 1],
-                teleport_to=None,
-                costs={"energy": 0.006, "hygiene": 0.003, "satiation": 0.005},  # Going down easier
-                effects={},
-                description="Move one floor down (descend stairs)",
-                icon=None,
-                source="substrate",
-                source_affordance=None,
-                enabled=True,
-            ),
-            # Core interactions (same as Grid2D)
-            ActionConfig(
-                id=6,
-                name="INTERACT",
-                type="interaction",
-                delta=None,
-                teleport_to=None,
-                costs={"energy": 0.003},
-                effects={},
-                description="Interact with affordance at current position",
-                icon=None,
-                source="substrate",
-                source_affordance=None,
-                enabled=True,
-            ),
-            ActionConfig(
-                id=7,
-                name="WAIT",
-                type="passive",
-                delta=None,
-                teleport_to=None,
-                costs={"energy": 0.004},
-                effects={},
-                description="Wait in place (idle metabolic cost)",
-                icon=None,
-                source="substrate",
-                source_affordance=None,
-                enabled=True,
-            ),
         ]
+
+        if self.enable_diagonals:
+            actions.extend(
+                [
+                    ActionConfig(
+                        id=4,
+                        name="UP_LEFT",
+                        type="movement",
+                        delta=[-1, -1, 0],
+                        teleport_to=None,
+                        costs={},
+                        effects={},
+                        description="Move one cell diagonally up-left (northwest)",
+                        icon=None,
+                        source="substrate",
+                        source_affordance=None,
+                        enabled=True,
+                    ),
+                    ActionConfig(
+                        id=5,
+                        name="UP_RIGHT",
+                        type="movement",
+                        delta=[1, -1, 0],
+                        teleport_to=None,
+                        costs={},
+                        effects={},
+                        description="Move one cell diagonally up-right (northeast)",
+                        icon=None,
+                        source="substrate",
+                        source_affordance=None,
+                        enabled=True,
+                    ),
+                    ActionConfig(
+                        id=6,
+                        name="DOWN_LEFT",
+                        type="movement",
+                        delta=[-1, 1, 0],
+                        teleport_to=None,
+                        costs={},
+                        effects={},
+                        description="Move one cell diagonally down-left (southwest)",
+                        icon=None,
+                        source="substrate",
+                        source_affordance=None,
+                        enabled=True,
+                    ),
+                    ActionConfig(
+                        id=7,
+                        name="DOWN_RIGHT",
+                        type="movement",
+                        delta=[1, 1, 0],
+                        teleport_to=None,
+                        costs={},
+                        effects={},
+                        description="Move one cell diagonally down-right (southeast)",
+                        icon=None,
+                        source="substrate",
+                        source_affordance=None,
+                        enabled=True,
+                    ),
+                ]
+            )
+
+        # Z-axis movement (vertical)
+        actions.extend(
+            [
+                ActionConfig(
+                    id=len(actions),
+                    name="UP_Z",
+                    type="movement",
+                    delta=[0, 0, -1],
+                    teleport_to=None,
+                    costs={},
+                    effects={},
+                    description="Move one floor up (climb stairs)",
+                    icon=None,
+                    source="substrate",
+                    source_affordance=None,
+                    enabled=True,
+                ),
+                ActionConfig(
+                    id=len(actions) + 1,
+                    name="DOWN_Z",
+                    type="movement",
+                    delta=[0, 0, 1],
+                    teleport_to=None,
+                    costs={},
+                    effects={},
+                    description="Move one floor down (descend stairs)",
+                    icon=None,
+                    source="substrate",
+                    source_affordance=None,
+                    enabled=True,
+                ),
+            ]
+        )
+
+        # Core interactions (same as Grid2D)
+        actions.extend(
+            [
+                ActionConfig(
+                    id=len(actions),
+                    name="INTERACT",
+                    type="interaction",
+                    delta=None,
+                    teleport_to=None,
+                    costs={},
+                    effects={},
+                    description="Interact with affordance at current position",
+                    icon=None,
+                    source="substrate",
+                    source_affordance=None,
+                    enabled=True,
+                ),
+                ActionConfig(
+                    id=len(actions) + 1,
+                    name="WAIT",
+                    type="passive",
+                    delta=None,
+                    teleport_to=None,
+                    costs={},
+                    effects={},
+                    description="Wait in place (idle metabolic cost)",
+                    icon=None,
+                    source="substrate",
+                    source_affordance=None,
+                    enabled=True,
+                ),
+            ]
+        )
+
+        return actions
 
     def is_on_position(self, positions: torch.Tensor, target_position: torch.Tensor) -> torch.Tensor:
         """Check if agents are on target position (exact match in 3D)."""
@@ -516,6 +588,10 @@ class Grid3DSubstrate(SpatialSubstrate):
         Note: Handles boundary cases - if agent near edge, out-of-bounds
         cells are marked as empty.
         """
+        if not isinstance(vision_range, int):
+            raise ValueError(
+                f"Grid3DSubstrate.encode_partial_observation expected integer vision_range (radius), " f"got {type(vision_range)!r}."
+            )
         num_agents = positions.shape[0]
         device = positions.device
         window_size = 2 * vision_range + 1

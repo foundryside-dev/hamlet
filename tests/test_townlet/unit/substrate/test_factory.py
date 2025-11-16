@@ -24,6 +24,7 @@ def test_factory_propagates_grid2d_topology():
             boundary="clamp",
             distance_metric="manhattan",
             observation_encoding="relative",
+            diagonals=True,
         ),
     )
     substrate = SubstrateFactory.build(config, torch.device("cpu"))
@@ -45,6 +46,7 @@ def test_factory_propagates_grid3d_topology():
             boundary="clamp",
             distance_metric="manhattan",
             observation_encoding="relative",
+            diagonals=True,
         ),
     )
     substrate = SubstrateFactory.build(config, torch.device("cpu"))

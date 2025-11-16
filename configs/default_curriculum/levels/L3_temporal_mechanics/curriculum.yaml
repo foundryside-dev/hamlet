@@ -7,6 +7,6 @@ curriculum:
   # Adds temporal features to observation (time_of_day, day_progress, is_night)
 
   active_vision: global
-  vision_range: 1.0
+  vision_range: 0.5
   active_temporal: true       # Temporal features active
   day_length: 24              # 24 ticks per day

@@ -12,7 +12,7 @@ from typing import Any
 import torch
 import yaml
 
-from townlet.agent.brain_config import BrainConfig, compute_brain_hash, load_brain_config
+from townlet.agent.brain_config import BrainConfig, compute_brain_hash
 from townlet.curriculum.adversarial import AdversarialCurriculum
 from townlet.demo.database import DemoDatabase
 from townlet.environment.vectorized_env import VectorizedHamletEnv
@@ -44,18 +44,21 @@ class DemoRunner:
     def __init__(
         self,
         config_dir: Path | str,
-        level_name: str,
         db_path: Path | str,
         checkpoint_dir: Path | str,
         max_episodes: int | None = None,
         training_config_path: Path | str | None = None,
+        *,
+        level_name: str | None = None,
     ):
         """Initialize demo runner.
 
         Args:
             config_dir: Experiment root directory containing v2.1 configs
                 (experiment.yaml, stratum.yaml, environment.yaml, actions.yaml, agent.yaml, levels/*)
-            level_name: Which curriculum level to run (e.g., "L0_0_minimal")
+            level_name: Which curriculum level to run (e.g., "L0_0_minimal").
+                Optional for backward compatibility; if omitted for v2.1 packs,
+                the compiler will select a default primary level.
             db_path: Path to SQLite database
             checkpoint_dir: Directory for checkpoint files
             max_episodes: Maximum number of episodes to run (if None, reads from level training.yaml)
@@ -63,10 +66,14 @@ class DemoRunner:
                 (DEPRECATED - normally inferred from levels/<level_name>/training.yaml)
         """
         self.config_dir = Path(config_dir)
-        self.level_name = level_name
-        # v2.1 default: per-level training.yaml under levels/<level_name>/
+        # Resolve training config path with backward-compatible default:
+        # - v2.1 packs: levels/<level_name>/training.yaml
+        # - Legacy single-pack tests: training.yaml at config_dir root
         if training_config_path is None:
-            self.training_config_path = self.config_dir / "levels" / self.level_name / "training.yaml"
+            if level_name is not None:
+                self.training_config_path = self.config_dir / "levels" / level_name / "training.yaml"
+            else:
+                self.training_config_path = self.config_dir / "training.yaml"
         else:
             self.training_config_path = Path(training_config_path)
         if not self.training_config_path.exists():
@@ -100,9 +107,19 @@ class DemoRunner:
             flush_every=10,
         )
 
-        # v2.1: Compile hierarchical configs
+        # v2.1: Compile hierarchical configs (multi-level aware)
         compiler = UniverseCompiler()
-        self.compiled = compiler.compile(self.config_dir, primary_level=self.level_name)
+        self.compiled = compiler.compile(self.config_dir, primary_level=level_name)
+
+        # Determine effective level_name (supports callers that omitted it)
+        if level_name is None:
+            available_levels = getattr(self.compiled, "available_levels", [])
+            if not available_levels:
+                raise ValueError("Compiled universe has no curriculum levels; " "DemoRunner requires at least one level to be available.")
+            self.level_name = available_levels[0]
+            logger.info("No level_name specified; defaulting to %s", self.level_name)
+        else:
+            self.level_name = level_name
 
         level_config = self.compiled.get_level(self.level_name)
         self.experiment_config = self.compiled.experiment
@@ -119,11 +136,11 @@ class DemoRunner:
         with open(self.training_config_path) as f:
             self.config = yaml.safe_load(f)
 
-        # Set max_episodes: use provided value, otherwise read from config
+        # Set max_episodes: use provided value, otherwise read from curriculum training config
         if max_episodes is not None:
             self.max_episodes = max_episodes
         else:
-            self.max_episodes = self.training_config.max_episodes
+            self.max_episodes = self.training_config.training_loop.max_episodes
 
         self.current_episode = 0
 
@@ -384,6 +401,7 @@ class DemoRunner:
         obs_spec = level_meta.observation_spec
 
         # Extract config parameters from DTOs (all required, validated at load time)
+        loop_cfg = self.training_config.training_loop
         num_agents = self.training_config.population.size
         grid_size = self.compiled.metadata.grid_size
         partial_observability = level_meta.curriculum.curriculum.active_vision != "global"
@@ -404,29 +422,26 @@ class DemoRunner:
 
         # Create curriculum (all params required per PDR-002)
         self.curriculum = AdversarialCurriculum(
-            max_steps_per_episode=self.curriculum_config.max_steps_per_episode,
-            survival_advance_threshold=self.curriculum_config.survival_advance_threshold,
-            survival_retreat_threshold=self.curriculum_config.survival_retreat_threshold,
-            entropy_gate=self.curriculum_config.entropy_gate,
-            min_steps_at_stage=self.curriculum_config.min_steps_at_stage,
+            max_steps_per_episode=loop_cfg.max_steps_per_episode,
             device=device,
         )
 
         # Create exploration (all params required per PDR-002)
         # Conditionally pass active_mask based on mask_unused_obs config
         active_mask = self.env.observation_activity.active_mask
+        intrinsic_cfg = self.training_config.intrinsic
         self.exploration = AdaptiveIntrinsicExploration(
             obs_dim=obs_dim,
-            embed_dim=self.training_config.intrinsic.rnd.feature_dim,
-            rnd_learning_rate=self.training_config.intrinsic.rnd.learning_rate,
+            embed_dim=intrinsic_cfg.rnd.feature_dim,
+            rnd_learning_rate=intrinsic_cfg.rnd.learning_rate,
             rnd_training_batch_size=self.training_config.replay_buffer.batch_size,
-            initial_intrinsic_weight=1.0,
-            min_intrinsic_weight=self.training_config.intrinsic.annealing.min_weight,
-            variance_threshold=self.training_config.intrinsic.annealing.threshold,
-            min_survival_fraction=0.4,
-            max_episode_length=self.curriculum_config.max_steps_per_episode,
-            survival_window=100,
-            decay_rate=self.training_config.intrinsic.annealing.decay_rate,
+            initial_intrinsic_weight=intrinsic_cfg.initial_weight,
+            min_intrinsic_weight=intrinsic_cfg.annealing.min_weight,
+            variance_threshold=intrinsic_cfg.annealing.threshold,
+            min_survival_fraction=intrinsic_cfg.min_survival_fraction,
+            max_episode_length=loop_cfg.max_steps_per_episode,
+            survival_window=intrinsic_cfg.survival_window,
+            decay_rate=intrinsic_cfg.annealing.decay_rate,
             epsilon_start=self.training_config.exploration.epsilon_start,
             epsilon_min=self.training_config.exploration.epsilon_end,
             epsilon_decay=self.training_config.exploration.epsilon_decay,
@@ -438,27 +453,30 @@ class DemoRunner:
         vision_window_size = 2 * vision_range + 1  # 5 for vision_range=2
 
         # Get training hyperparameters from config (all required per PDR-002)
-        train_frequency = 4
+        train_frequency = loop_cfg.train_frequency
         batch_size = self.training_config.replay_buffer.batch_size
-        sequence_length = 8
-        max_grad_norm = 10.0
+        sequence_length = loop_cfg.sequence_length
+        max_grad_norm = loop_cfg.max_grad_norm
 
         # Create agent IDs
         agent_ids = [f"agent_{i}" for i in range(num_agents)]
 
-        # Load brain.yaml (REQUIRED for all config packs)
-        brain_yaml_path = self.config_dir / "brain.yaml"
-        logger.info(f"Loading brain configuration from {brain_yaml_path}")
-        brain_config = load_brain_config(self.config_dir)
-        brain_hash = compute_brain_hash(brain_config)
-        logger.info(f"Brain config loaded: {brain_config.description}")
+        # Derive brain configuration from agent.yaml (v2.1 AgentConfig)
+        from townlet.agent.brain_config import apply_training_overrides, build_brain_config_from_agent
+
+        base_brain_config = build_brain_config_from_agent(self.agent_config, self.training_config)
+        brain_hash = compute_brain_hash(base_brain_config)
+        logger.info(f"Brain config derived from agent.yaml: {base_brain_config.description}")
         logger.info(f"Brain hash: {brain_hash[:16]}... (SHA256)")
 
-        # Store brain_config and brain_hash for checkpoint provenance
-        self.brain_config = brain_config
+        # Store base brain_config and brain_hash for checkpoint provenance
+        self.brain_config = base_brain_config
         self.brain_hash = brain_hash
 
-        # Create population (brain_config provides network/optimizer/Q-learning parameters)
+        # Apply curriculum-level overrides from training.yaml to derive effective brain config
+        effective_brain_config = apply_training_overrides(base_brain_config, self.training_config)
+
+        # Create population (effective_brain_config provides network/optimizer/Q-learning parameters)
         self.population = VectorizedPopulation(
             env=self.env,
             curriculum=self.curriculum,
@@ -473,9 +491,9 @@ class DemoRunner:
             batch_size=batch_size,
             sequence_length=sequence_length,
             max_grad_norm=max_grad_norm,
-            brain_config=brain_config,
+            brain_config=effective_brain_config,
             max_episodes=self.max_episodes,  # For PER beta annealing
-            max_steps_per_episode=self.curriculum_config.max_steps_per_episode,  # For PER beta annealing
+            max_steps_per_episode=loop_cfg.max_steps_per_episode,  # For PER beta annealing
         )
 
         self.curriculum.initialize_population(num_agents)
@@ -506,17 +524,17 @@ class DemoRunner:
 
         # Phase 4 - Log hyperparameters to TensorBoard
         self.hparams = {
-            "learning_rate": brain_config.optimizer.learning_rate,
-            "gamma": brain_config.q_learning.gamma,
-            "network_architecture": brain_config.architecture.type,  # 'feedforward' or 'recurrent'
-            "replay_buffer_capacity": brain_config.replay.capacity,
+            "learning_rate": effective_brain_config.optimizer.learning_rate,
+            "gamma": effective_brain_config.q_learning.gamma,
+            "network_architecture": base_brain_config.architecture.type,  # 'feedforward' or 'recurrent'
+            "replay_buffer_capacity": effective_brain_config.replay.capacity,
             "grid_size": grid_size,
             "partial_observability": partial_observability,
             "vision_range": vision_range,
             "enable_temporal": enable_temporal_mechanics,
-            "initial_intrinsic_weight": self.training_config.exploration.initial_intrinsic_weight,
-            "variance_threshold": self.training_config.exploration.variance_threshold,
-            "max_steps_per_episode": self.curriculum_config.max_steps_per_episode,
+            "initial_intrinsic_weight": 1.0,
+            "variance_threshold": self.training_config.intrinsic.annealing.threshold,
+            "max_steps_per_episode": loop_cfg.max_steps_per_episode,
         }
         # Note: final metrics will be logged at end of training
         self.tb_logger.log_hyperparameters(hparams=self.hparams, metrics={})
@@ -566,7 +584,7 @@ class DemoRunner:
 
                 # Run episode
                 num_agents = self.population.num_agents
-                max_steps = self.curriculum_config.max_steps_per_episode
+                max_steps = loop_cfg.max_steps_per_episode
                 episode_reward = torch.zeros(num_agents, device=self.env.device)
                 episode_extrinsic_reward = torch.zeros(num_agents, device=self.env.device)
                 episode_intrinsic_reward = torch.zeros(num_agents, device=self.env.device)

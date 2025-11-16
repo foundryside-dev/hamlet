@@ -29,6 +29,7 @@ class GridConfig(BaseModel):
     boundary: Literal["clamp", "wrap", "bounce", "sticky"] = Field(..., description="Boundary behavior when agent reaches edge")
     distance_metric: Literal["manhattan", "euclidean", "chebyshev"] = Field(..., description="Distance calculation method")
     observation_encoding: Literal["relative", "scaled", "absolute"] = Field(..., description="Coordinate encoding mode for observations")
+    diagonals: bool = Field(..., description="Whether diagonal movement actions are enabled for grid substrates")
 
     class Config:
         extra = "forbid"

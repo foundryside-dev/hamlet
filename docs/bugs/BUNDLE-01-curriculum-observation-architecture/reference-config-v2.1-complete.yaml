@@ -115,7 +115,10 @@ stratum:
   # Temporal Support (BREAKING - controls whether temporal fields exist)
   # --------------------------------------------------------------------------
   temporal_support: enabled  # Options: enabled, disabled
-  # - enabled: Creates time_sin, time_cos fields in obs_dim (+2 dims)
+  # - enabled: Creates rich temporal features in obs_dim (+4 dims)
+  #   * time_sin, time_cos: cyclical time-of-day encoding
+  #   * day_progress: normalized progress through the day [0, 1]
+  #   * is_night: binary indicator (1.0 for night hours, 0.0 for day)
   # - disabled: No temporal fields
   #
   # BREAKING: Changes affect obs_dim
@@ -936,28 +939,28 @@ training:
 # meters:           8 dims (1 per meter)
 # affordances:     14 dims (1 per affordance, binary visibility)
 # vfs_variables:    4 dims (1 per variable)
-# temporal:         2 dims (time_sin, time_cos)
+# temporal:         4 dims (time_sin, time_cos, day_progress, is_night)
 #
-# TOTAL obs_dim: 121 dims
+# TOTAL obs_dim: 123 dims
 #
 # With curriculum masking:
 # L1 (active_vision: global, active_temporal: false):
 #   - grid_encoding: ACTIVE (64 dims)
 #   - local_window: MASKED (25 dims of zeros)
-#   - temporal: MASKED (2 dims of zeros)
-#   - obs_dim: 121 (same as L2, enabling checkpoint transfer!)
+#   - temporal: MASKED (4 dims of zeros)
+#   - obs_dim: 123 (same as L2, enabling checkpoint transfer!)
 #
 # L2 (active_vision: partial, active_temporal: false):
 #   - grid_encoding: MASKED (64 dims of zeros)
 #   - local_window: ACTIVE (25 dims)
-#   - temporal: MASKED (2 dims of zeros)
-#   - obs_dim: 121 (same as L1!)
+#   - temporal: MASKED (4 dims of zeros)
+#   - obs_dim: 123 (same as L1!)
 #
 # L3 (active_vision: global, active_temporal: true):
 #   - grid_encoding: ACTIVE (64 dims)
 #   - local_window: MASKED (25 dims of zeros)
-#   - temporal: ACTIVE (2 dims)
-#   - obs_dim: 121 (same as L1 and L2!)
+#   - temporal: ACTIVE (4 dims)
+#   - obs_dim: 123 (same as L1 and L2!)
 
 # =============================================================================
 # BREAKING vs NON-BREAKING SUMMARY

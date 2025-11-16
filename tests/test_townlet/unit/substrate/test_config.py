@@ -25,6 +25,7 @@ def test_grid2d_config_valid():
         "boundary": "clamp",
         "distance_metric": "manhattan",
         "observation_encoding": "relative",
+        "diagonals": True,
     }
 
     config = Grid2DSubstrateConfig(**config_data)
@@ -43,6 +44,7 @@ def test_grid2d_config_invalid_dimensions():
         "boundary": "clamp",
         "distance_metric": "manhattan",
         "observation_encoding": "relative",
+        "diagonals": True,
     }
 
     with pytest.raises(ValueError, match="greater than 0"):
@@ -72,6 +74,7 @@ def test_substrate_config_grid2d():
             "boundary": "clamp",
             "distance_metric": "manhattan",
             "observation_encoding": "relative",
+            "diagonals": True,
         },
     }
 
@@ -108,6 +111,7 @@ def test_factory_build_grid2d():
             "boundary": "clamp",
             "distance_metric": "manhattan",
             "observation_encoding": "relative",
+            "diagonals": True,
         },
     }
 
@@ -148,6 +152,7 @@ def test_grid_config_observation_encoding_valid():
             boundary="clamp",
             distance_metric="manhattan",
             observation_encoding=encoding,
+            diagonals=True,
         )
         assert config.observation_encoding == encoding
 
@@ -165,6 +170,7 @@ def test_grid_config_observation_encoding_default():
             height=8,
             boundary="clamp",
             distance_metric="manhattan",
+            diagonals=True,
             # observation_encoding NOT provided - should fail!
         )
 
@@ -181,6 +187,7 @@ def test_grid_config_observation_encoding_invalid():
             boundary="clamp",
             distance_metric="manhattan",
             observation_encoding="invalid",  # Not in Literal
+            diagonals=True,
         )
 
 

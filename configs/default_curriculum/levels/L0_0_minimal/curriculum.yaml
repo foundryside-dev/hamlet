@@ -6,6 +6,6 @@ curriculum:
   # Focus: Learn that RECHARGE increases energy (basic credit assignment)
 
   active_vision: global       # Full grid observable
-  vision_range: 1.0           # Full grid (though only 3×3)
+  vision_range: 0.5           # 5×5 window on 8×8 grid
   active_temporal: false      # No time-based dynamics
   day_length: null            # No temporal mechanics

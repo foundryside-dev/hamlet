@@ -24,7 +24,13 @@ class MeterConfig(BaseModel):
 
     name: str = Field(..., description="Meter name (e.g., 'energy', 'health')")
     description: str = Field(..., description="Human-readable description")
-    range_type: Literal["normalized", "unbounded"] = Field(..., description="Value range type (normalized=[0,1], unbounded=any float)")
+    range_type: Literal["normalized", "unbounded", "integer"] = Field(
+        ...,
+        description=(
+            "Value range type (normalized=[0,1], unbounded=any float, integer=discrete points). "
+            "Metadata only for UI; does not affect obs_dim."
+        ),
+    )
 
     class Config:
         extra = "forbid"
@@ -66,7 +72,12 @@ class AffordanceConfig(BaseModel):
 class NormalizationConfig(BaseModel):
     """Variable normalization configuration."""
 
-    method: Literal["clip", "normalize", "standardize"] = Field(..., description="Normalization method")
+    method: Literal["clip", "normalize", "standardize", "none"] = Field(
+        ...,
+        description=(
+            "Normalization method: clip (clamp to range), normalize (scale to [0,1]), " "standardize (mean/std), or none (pass-through)."
+        ),
+    )
     range: list[float] = Field(..., description="Value range [min, max]", min_items=2, max_items=2)
 
     class Config:

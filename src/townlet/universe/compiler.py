@@ -1087,24 +1087,7 @@ class UniverseCompiler:
         """Build VFS variables from observation fields + environment variables."""
         vars_out: list[VariableDef] = []
 
-        # Standard variables from observation fields
-        for field in obs_spec.fields:
-            dims = field.dims
-            vars_out.append(
-                VariableDef(
-                    id=field.name,
-                    scope="agent",
-                    type="vecNf" if dims > 1 else "scalar",
-                    dims=dims if dims > 1 else None,
-                    lifetime="tick",
-                    readable_by=["agent", "engine"],
-                    writable_by=["engine"],
-                    default=[0.0] * dims if dims > 1 else 0.0,
-                    description=field.description,
-                )
-            )
-
-        # Environment-declared variables
+        # Environment-declared variables (explicit only; no auto-generation beyond obs fields)
         for var in environment.environment.variables:
             dims = var.dims if hasattr(var, "dims") else None
             vars_out.append(
@@ -1771,6 +1754,19 @@ class UniverseCompiler:
                     location=f"levels/{level_name}/affordances.yaml:modulations",
                 )
             )
+
+        # Validate affordance positions when randomize_affordances is false
+        env_cfg = getattr(level.training, "environment", None)
+        if env_cfg is not None and env_cfg.randomize_affordances is False:
+            for aff in level.affordances.affordances:
+                if not getattr(aff, "deployment", None):
+                    errors.add(
+                        _format_error(
+                            "UAC-AFF-001",
+                            f"Affordance '{aff.name}' missing deployment positions while randomize_affordances=false.",
+                            location=f"levels/{level_name}/affordances.yaml:affordances.{aff.name}.deployment",
+                        )
+                    )
 
         # Global action costs/effects (dict[str, float])
         for action in raw_configs.global_actions.actions:

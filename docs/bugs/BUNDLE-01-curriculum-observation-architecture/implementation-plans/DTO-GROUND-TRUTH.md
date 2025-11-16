@@ -5,9 +5,34 @@
 
 ---
 
+## 🎯 HOW TO USE THIS DOCUMENT (For Subagents)
+
+**If you are implementing Phase 1, 4, 5, or 7:**
+
+1. **BEFORE writing any code**: Read the "DTO Structure Table" section below
+2. **BEFORE accessing any config field**: Look up the correct pattern in "Field Access Patterns"
+3. **WHEN in doubt**: Search this document for the DTO name (e.g., "BarsV2Config")
+4. **VALIDATE your code**: Check "Common Mistakes to Avoid" at the bottom
+
+**Key Rule**: EVERY config access MUST use the section field pattern:
+- ✅ `config.section.field` (e.g., `raw.experiment.experiment.metadata`)
+- ❌ `config.field` (missing section - THIS IS WRONG)
+
+**If your code doesn't match this document, IT IS WRONG. Fix it before proceeding.**
+
+---
+
 ## Purpose
 
-This document defines the **single source of truth** for v2.1 DTO structure, naming, and access patterns. All phase plans (1-7) must align with this reference.
+This document defines the **single source of truth** for v2.1 DTO structure, naming, and access patterns.
+
+**Referenced by:**
+- Phase 1 (2025-11-16-v2.1-phase1-create-dtos.md) - Creates these DTOs
+- Phase 4 (2025-11-16-v2.1-phase4-native-compiler.md) - Uses these DTOs in compiler
+- Phase 5 (2025-11-16-v2.1-phase5-delete-legacy.md) - Validates only these DTOs remain
+- Phase 7 (2025-11-16-v2.1-phase7-documentation.md) - Documents these DTOs
+
+**All phase plans must align with this reference. Any deviations are bugs and must be fixed.**
 
 ---
 

@@ -487,11 +487,10 @@ def test_apply_training_overrides_merges_q_learning_and_replay():
             prioritized=False,
         ),
     )
-
     training_cfg = TrainingV2Config(
         version="1.0",
         population=TrainingPopulationConfig(size=128),
-        enabled_affordances=None,
+        enabled_affordances=[],
         randomize_affordances=False,
         enabled_actions=None,
         q_learning=TrainingQLearningConfig(
@@ -517,12 +516,18 @@ def test_apply_training_overrides_merges_q_learning_and_replay():
                 decay_rate=0.995,
                 min_weight=0.01,
             ),
+            initial_weight=1.0,
+            min_survival_fraction=0.4,
+            survival_window=100,
         ),
         training_loop=TrainingLoopConfig(
             max_episodes=100000,
             max_steps_per_episode=1000,
             evaluation=EvaluationConfig(interval=1000, num_episodes=10),
             checkpointing=CheckpointingConfig(interval=5000, keep_last=5),
+            train_frequency=4,
+            sequence_length=8,
+            max_grad_norm=10.0,
         ),
         curriculum=CurriculumStrategyConfig(
             strategy="static",

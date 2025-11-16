@@ -2,8 +2,6 @@
 
 from pathlib import Path
 
-import pytest
-
 from townlet.universe.compiler import UniverseCompiler
 
 
@@ -62,28 +60,3 @@ class TestObservationActivityInCompiledUniverse:
 
         assert compiled2.observation_activity.active_mask == original_mask
         assert compiled2.observation_activity.group_slices == original_slices
-
-
-class TestObservationActivityInRuntimeUniverse:
-    def test_runtime_universe_exposes_observation_activity(self):
-        """RuntimeUniverse should expose observation_activity from compiled."""
-        config_dir = Path("configs/default_curriculum/levels/L0_5_dual_resource")
-
-        compiler = UniverseCompiler()
-        compiled = compiler.compile(config_dir, use_cache=False)
-        runtime = compiled.to_runtime()
-
-        assert hasattr(runtime, "observation_activity")
-        assert runtime.observation_activity is compiled.observation_activity
-
-    def test_runtime_observation_activity_immutable(self):
-        """RuntimeUniverse.observation_activity should reference frozen DTO."""
-        config_dir = Path("configs/default_curriculum/levels/L0_0_minimal")
-
-        compiler = UniverseCompiler()
-        compiled = compiler.compile(config_dir, use_cache=False)
-        runtime = compiled.to_runtime()
-
-        # Should raise error (frozen dataclass)
-        with pytest.raises(Exception):
-            runtime.observation_activity.active_mask = (False, False)

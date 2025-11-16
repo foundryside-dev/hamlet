@@ -92,7 +92,7 @@ def _resolve_deployable_affordances(
     """Return affordances that should be deployed, respecting IDs and names in config."""
 
     if enabled_affordances is None:
-        return all_affordance_names
+        raise ValueError("enabled_affordances must be an explicit list (empty to deploy none); null is not allowed.")
 
     enabled_lookup = {str(entry) for entry in enabled_affordances}
     deployable: list[str] = []
@@ -156,14 +156,30 @@ class VectorizedHamletEnv:
         self.partial_observability = level.curriculum.curriculum.active_vision != "global"
         # Curriculum vision_range is normalized [0, 1]; radius/window derive from grid size.
         self.vision_range = level.curriculum.curriculum.vision_range
+        if training_cfg.enabled_affordances is None:
+            raise ValueError("training.enabled_affordances must be an explicit list (empty to deploy none); null is not allowed.")
+        self.enabled_affordances = list(training_cfg.enabled_affordances)
         self.temporal_support_enabled = self.universe.stratum.stratum.temporal_support == "enabled"
         self.temporal_active = level.curriculum.curriculum.active_temporal
         # Temporal mechanics (day/night cycle) are only active when support is enabled
         # and the curriculum marks temporal as active.
         self.enable_temporal_mechanics = self.temporal_support_enabled and self.temporal_active
         # Curriculum day_length controls temporal encoding when mechanics are enabled.
-        # Validation at DTO layer ensures day_length is a positive integer when active_temporal is true.
-        self.day_length = level.curriculum.curriculum.day_length or self.metadata.ticks_per_day
+        # When temporal mechanics are active, day_length must be explicitly specified.
+        if self.enable_temporal_mechanics:
+            if level.curriculum.curriculum.day_length is None:
+                raise ValueError(
+                    "curriculum.day_length is required when active_temporal=true and "
+                    "stratum.temporal_support='enabled'. No defaults allowed."
+                )
+            self.day_length = level.curriculum.curriculum.day_length
+        else:
+            # Temporal inactive: allow day_length to be null; use metadata ticks_per_day (may be 0) when absent.
+            inactive_day_length = level.curriculum.curriculum.day_length
+            if inactive_day_length is None:
+                self.day_length = getattr(universe.metadata, "ticks_per_day", 0) or 0
+            else:
+                self.day_length = inactive_day_length
         self.agent_lifespan = training_cfg.training_loop.max_steps_per_episode
         partial_observability = self.partial_observability
         vision_range = self.vision_range
@@ -290,11 +306,6 @@ class VectorizedHamletEnv:
         # Initialize reward strategy (TASK-001: variable meters)
         meter_name_to_index = dict(self.metadata.meter_name_to_index)
         self.meter_name_to_index = meter_name_to_index
-        self.energy_idx = meter_name_to_index.get("energy", 0)  # Default to 0 if not found
-        self.health_idx = meter_name_to_index.get("health", min(6, meter_count - 1))  # Default to 6 or last meter
-        self.hygiene_idx = meter_name_to_index.get("hygiene", None)  # Optional meter
-        self.satiation_idx = meter_name_to_index.get("satiation", None)  # Optional meter
-        self.money_idx = meter_name_to_index.get("money", None)  # Optional meter
 
         # Build bar index map from universe metadata
         bar_index_map = _build_bar_index_map(self.universe.meter_metadata)
@@ -1138,11 +1149,13 @@ class VectorizedHamletEnv:
         # Respect config-disabled INTERACT entries by preserving the base mask.
         action_masks[:, interact_action_idx] = base_interact_mask & on_valid_affordance
 
-        # P3.1: Mask all actions for dead agents (health <= 0 OR energy <= 0)
-        # This must be LAST to override all other masking
-        # TASK-001: Use dynamic meter indices instead of hardcoded 0 and 6
-        dead_agents = (self.meters[:, self.health_idx] <= 0.0) | (self.meters[:, self.energy_idx] <= 0.0)  # health OR energy
-        action_masks[dead_agents] = False
+        # P3.1: Mask all actions for dead agents according to terminal conditions.
+        # This must be LAST to override all other masking. Terminal conditions are
+        # defined in bars.yaml (lethal_min/lethal_max) and enforced by MeterDynamics;
+        # we use the env's dones flag as single source of truth instead of hardcoded
+        # meter names.
+        if hasattr(self, "dones"):
+            action_masks[self.dones] = False
 
         return action_masks
 

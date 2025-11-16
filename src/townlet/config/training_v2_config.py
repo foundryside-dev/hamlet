@@ -168,12 +168,10 @@ class IntrinsicConfig(BaseModel):
     rnd: RNDConfig = Field(description="RND configuration")
     annealing: AnnealingConfig = Field(description="Annealing configuration")
     initial_weight: float = Field(
-        default=1.0,
         ge=0.0,
         description=("Initial intrinsic reward weight (vs extrinsic). " "For inference runs, set to 0.0 for near-greedy behavior."),
     )
     min_survival_fraction: float = Field(
-        default=0.4,
         gt=0.0,
         lt=1.0,
         description=(
@@ -182,7 +180,6 @@ class IntrinsicConfig(BaseModel):
         ),
     )
     survival_window: int = Field(
-        default=100,
         gt=0,
         description="Window size (episodes) for tracking survival consistency when annealing intrinsic weight.",
     )
@@ -216,17 +213,14 @@ class TrainingLoopConfig(BaseModel):
     evaluation: EvaluationConfig = Field(description="Evaluation configuration")
     checkpointing: CheckpointingConfig = Field(description="Checkpointing configuration")
     train_frequency: int = Field(
-        default=4,
         gt=0,
         description="Train Q-network every N environment steps (default 4).",
     )
     sequence_length: int = Field(
-        default=8,
         gt=0,
         description="Sequence length for recurrent agents when using sequential replay (default 8).",
     )
     max_grad_norm: float = Field(
-        default=10.0,
         gt=0.0,
         description="Gradient clipping threshold for Q-network updates (default 10.0).",
     )
@@ -297,9 +291,20 @@ class TrainingV2Config(BaseModel):
 
     version: Literal["1.0"] = Field(description="Config version")
     population: PopulationConfig = Field(description="Population settings")
-    enabled_affordances: list[str] | None = Field(
-        description=("Subset of affordances to deploy for this curriculum level " "(null = deploy all affordances from environment.yaml).")
+    enabled_affordances: list[str] = Field(
+        description=(
+            "Subset of affordances to deploy for this curriculum level. "
+            "Empty list deploys none; list affordance names/IDs explicitly to deploy them."
+        )
     )
+
+    @model_validator(mode="after")
+    def validate_enabled_affordances_not_null(self) -> "TrainingV2Config":
+        """Ensure enabled_affordances is provided (null not allowed)."""
+        if self.enabled_affordances is None:
+            raise ValueError("enabled_affordances must be an explicit list (empty to deploy none); null is not allowed.")
+        return self
+
     randomize_affordances: bool = Field(
         description=(
             "true = randomize affordance positions each episode, " "false = use configured positions from affordances.yaml/optimization."

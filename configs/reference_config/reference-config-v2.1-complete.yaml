@@ -39,6 +39,7 @@
 
 experiment:
   version: "1.0"
+  experiment_name: "Complete Reference Example"
 
   metadata:
     name: "Complete Reference Example"
@@ -838,6 +839,12 @@ training:
     size: 512  # Number of parallel agents
 
   # --------------------------------------------------------------------------
+  # Affordance Deployment Controls
+  # --------------------------------------------------------------------------
+  enabled_affordances: []         # [] = deploy no affordances; provide explicit list to deploy selected affordances (no implicit "all")
+  randomize_affordances: false    # true = randomize positions each episode; false = use configured positions/optimization data
+
+  # --------------------------------------------------------------------------
   # Curriculum-Level Action Control (optional)
   # --------------------------------------------------------------------------
   # Enable actions that have enabled_by_default: false in actions.yaml
@@ -887,6 +894,9 @@ training:
       threshold: 100.0   # Survivors metric threshold
       decay_rate: 0.995
       min_weight: 0.01
+    initial_weight: 0.1
+    min_survival_fraction: 0.5
+    survival_window: 100
 
   # --------------------------------------------------------------------------
   # Training Loop
@@ -894,6 +904,9 @@ training:
   training_loop:
     max_episodes: 100000
     max_steps_per_episode: 1000
+    train_frequency: 4
+    sequence_length: 8
+    max_grad_norm: 10.0
 
     evaluation:
       interval: 1000  # Evaluate every N episodes

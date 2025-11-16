@@ -13,7 +13,6 @@ import torch
 
 from townlet.universe.compiled import CompiledUniverse
 from townlet.universe.compiler import UniverseCompiler
-from townlet.universe.compiler_inputs import RawConfigs
 from townlet.universe.dto import (
     ActionMetadata,
     ActionSpaceMetadata,
@@ -37,18 +36,17 @@ def _to_plain(obj):
     return obj
 
 
-def _load_stage5_artifacts(config_name: str):
-    config_dir = Path("configs") / config_name
-    raw_configs = RawConfigs.from_config_dir(config_dir)
-    compiler = UniverseCompiler()
-    symbol_table = compiler._stage_2_build_symbol_tables(raw_configs)
-    metadata, observation_spec, _ = compiler._stage_5_compute_metadata(config_dir, raw_configs, symbol_table)
-    action_meta, meter_meta, affordance_meta = compiler._stage_5_build_rich_metadata(raw_configs)
-    return metadata, observation_spec, action_meta, meter_meta, affordance_meta
-
-
 def test_universe_metadata_round_trip() -> None:
-    metadata, observation_spec, action_meta, meter_meta, affordance_meta = _load_stage5_artifacts("L0_0_minimal")
+    """UniverseMetadata and related DTOs should survive JSON round-trip."""
+    config_dir = Path("configs/default_curriculum/levels/L0_0_minimal")
+    compiler = UniverseCompiler()
+    compiled = compiler.compile(config_dir, use_cache=False)
+
+    metadata = compiled.metadata
+    observation_spec = compiled.observation_spec
+    action_meta = compiled.action_space_metadata
+    meter_meta = compiled.meter_metadata
+    affordance_meta = compiled.affordance_metadata
 
     def _round_trip(dataclass_obj, factory):
         payload = json.loads(json.dumps(_to_plain(dataclass_obj)))

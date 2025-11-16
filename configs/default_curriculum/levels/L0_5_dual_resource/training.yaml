@@ -5,7 +5,21 @@ training:
     size: 256
 
   # Environment runtime controls
-  enabled_affordances: null
+  enabled_affordances:
+    - EAT
+    - SLEEP
+    - SHOWER
+    - EXERCISE
+    - WORK
+    - SOCIALIZE
+    - MEDITATE
+    - DRINK_WATER
+    - BRUSH_TEETH
+    - LAUNDRY
+    - COOK
+    - CLEAN_HOUSE
+    - ENTERTAINMENT
+    - DOCTOR
   randomize_affordances: true
 
   enabled_actions:
@@ -38,10 +52,16 @@ training:
       threshold: 100.0
       decay_rate: 0.995
       min_weight: 0.01
+    initial_weight: 1.0
+    min_survival_fraction: 0.4
+    survival_window: 100
 
   training_loop:
     max_episodes: 100000
     max_steps_per_episode: 1000
+    train_frequency: 4
+    sequence_length: 8
+    max_grad_norm: 10.0
 
     evaluation:
       interval: 1000

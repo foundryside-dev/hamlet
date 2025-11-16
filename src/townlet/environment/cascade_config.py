@@ -261,8 +261,7 @@ def load_bars_config(filepath: Path) -> BarsConfig:
         yaml.YAMLError: If YAML is malformed
         pydantic.ValidationError: If config is invalid
     """
-    data = load_yaml_file(filepath)
-    return BarsConfig(**data)
+    raise RuntimeError("load_bars_config is deprecated in the v2.1 pipeline. Use UniverseCompiler.compile() outputs instead.")
 
 
 def load_cascades_config(filepath: Path) -> CascadesConfig:

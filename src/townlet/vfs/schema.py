@@ -263,6 +263,11 @@ class VariableDef(BaseModel):
         description="Default value (type depends on 'type' field)",
     )
 
+    normalization: NormalizationSpec | None = Field(
+        default=None,
+        description="Normalization specification applied when exposing this variable",
+    )
+
     description: str | None = Field(
         default=None,
         description="Human-readable description of this variable",
@@ -299,6 +304,15 @@ def load_variables_reference_config(config_dir: Path) -> list[VariableDef]:
     variables_block = data.get("variables")
     if variables_block is None:
         raise ValueError(f"{yaml_path} must include a top-level 'variables' list.")
+
+    # Explicitly reject expression DSL until implemented
+    for raw_var in variables_block:
+        if "expression" in raw_var:
+            raise ValueError(
+                "Variable expressions are not supported yet; variables_reference.yaml must define static variables only.\n"
+                f"  Variable: {raw_var.get('name') or raw_var.get('id')}\n"
+                "  Action: remove expression and provide static defaults; DSL support is future work."
+            )
 
     try:
         return [VariableDef(**raw_var) for raw_var in variables_block]

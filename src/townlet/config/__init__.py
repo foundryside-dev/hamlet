@@ -32,21 +32,14 @@ from townlet.config.environment import (
     load_environment_config,
 )
 from townlet.config.exploration import ExplorationConfig, load_exploration_config
-from townlet.config.hamlet import HamletConfig
-from townlet.config.population import PopulationConfig, load_population_config
-from townlet.config.training import TrainingConfig, load_training_config
 
 # Version tracking for schema evolution
 CONFIG_SCHEMA_VERSION = "1.0.0"
 
 __all__ = [
     "CONFIG_SCHEMA_VERSION",
-    "TrainingConfig",
-    "load_training_config",
     "TrainingEnvironmentConfig",
     "load_environment_config",
-    "PopulationConfig",
-    "load_population_config",
     "CurriculumConfig",
     "load_curriculum_config",
     "ExplorationConfig",
@@ -60,7 +53,6 @@ __all__ = [
     "AffordanceConfig",
     "AffordanceConfigCollection",
     "load_affordances_config",
-    "HamletConfig",  # Master config - primary entry point
     "CuesConfig",
     "load_cues_config",
 ]

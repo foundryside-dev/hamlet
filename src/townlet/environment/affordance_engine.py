@@ -26,7 +26,6 @@ import torch
 
 from townlet.environment.affordance_config import (
     AffordanceConfigCollection,
-    load_affordance_config,
 )
 from townlet.environment.temporal_utils import is_affordance_open as canonical_is_affordance_open
 
@@ -193,9 +192,7 @@ class AffordanceEngine:
 
         return updated_meters
 
-    def _compute_affordance_multiplier(
-        self, affordance_name: str, meters: torch.Tensor, agent_mask: torch.Tensor
-    ) -> torch.Tensor:
+    def _compute_affordance_multiplier(self, affordance_name: str, meters: torch.Tensor, agent_mask: torch.Tensor) -> torch.Tensor:
         """Compute modulation multiplier for a given affordance based on bar values."""
         multiplier = torch.ones(meters.shape[0], device=meters.device, dtype=meters.dtype)
         for rule in self.modulation_rules:
@@ -524,16 +521,4 @@ def create_affordance_engine(
     Returns:
         Initialized AffordanceEngine
     """
-    from townlet.environment.cascade_config import load_bars_config
-
-    if config_pack_path is None:
-        config_pack_path = Path("configs/test")
-
-    bars_config = load_bars_config(config_pack_path / "bars.yaml")
-    affordance_config = load_affordance_config(config_pack_path / "affordances.yaml", bars_config)
-    return AffordanceEngine(
-        affordance_config,
-        num_agents,
-        device,
-        bars_config.meter_name_to_index,
-    )
+    raise RuntimeError("create_affordance_engine is deprecated. Use UniverseCompiler.compile() + VectorizedHamletEnv with v2.1 configs.")

@@ -42,7 +42,7 @@ class TrainingEnvironmentConfig(BaseModel):
         ...     partial_observability=False,
         ...     vision_range=8,
         ...     enable_temporal_mechanics=False,
-        ...     enabled_affordances=None,
+        ...     enabled_affordances=[],
         ...     randomize_affordances=False,
         ... )
     """

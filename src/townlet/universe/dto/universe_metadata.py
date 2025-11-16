@@ -19,11 +19,13 @@ class UniverseMetadata:
     substrate_type: str
     position_dim: int
 
-    # Meter metadata
+    # Meter metadata (required)
     meter_count: int
+    ticks_per_day: int
+
+    # Optional meter metadata
     meter_names: tuple[str, ...] = field(default_factory=tuple)
     meter_name_to_index: Mapping[str, int] = field(default_factory=dict)
-
     # Affordance metadata
     affordance_count: int = 0
     affordance_ids: tuple[str, ...] = field(default_factory=tuple)
@@ -41,9 +43,6 @@ class UniverseMetadata:
     max_sustainable_income: float = 0.0
     total_affordance_costs: float = 0.0
     economic_balance: float = 0.0
-
-    # Temporal metadata
-    ticks_per_day: int = 24
 
     # Versioning + provenance
     config_version: str = "1.0"

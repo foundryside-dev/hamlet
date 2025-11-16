@@ -3,7 +3,9 @@
 #
 # Purpose: Define custom variables that represent environmental phenomena or derived features.
 #
-# TODO: All of this needs to be implemented.
+# STATUS: Expression language not wired yet (static variables only).
+# - Compiler/runtime accept static variables with explicit defaults/normalization.
+# - Any 'expression' fields in variables_reference.yaml are rejected until DSL support lands.
 #
 # DESIGN PRINCIPLE: Variables must have grounding
 # 1. Environmental phenomena: Describe the world state (weather, lighting, noise)

@@ -167,18 +167,6 @@ class TestCheckpointCompatibility:
         assert "Observation field UUID mismatch" in msg
 
 
-class TestToRuntime:
-    """Test to_runtime conversion."""
-
-    def test_to_runtime_creates_runtime_universe(self, compiled_universe):
-        """Verify to_runtime creates RuntimeUniverse with correct fields."""
-        runtime = compiled_universe.to_runtime()
-        assert runtime.metadata is compiled_universe.metadata
-        assert runtime.observation_spec is compiled_universe.observation_spec
-        assert runtime.action_space_metadata is compiled_universe.action_space_metadata
-        assert runtime.config_dir == compiled_universe.config_dir
-
-
 class TestSerializationHelpers:
     """Test serialization helper functions."""
 

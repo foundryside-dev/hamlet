@@ -12,14 +12,10 @@ import yaml
 from tests.test_townlet.unit.config.fixtures import CONFIGS_DIR
 
 SUPPORT_FILES = [
+    # v2.1 level-local configs
     "bars.yaml",
-    "cascades.yaml",
     "affordances.yaml",
-    "cues.yaml",
-    "substrate.yaml",
-    "variables_reference.yaml",
-    "drive_as_code.yaml",
-    "brain.yaml",  # REQUIRED for all config packs
+    "curriculum.yaml",
 ]
 TEST_CONFIG_SRC = CONFIGS_DIR / "default_curriculum" / "levels" / "L0_0_minimal"
 

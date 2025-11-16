@@ -3,6 +3,7 @@
 from pathlib import Path
 
 from townlet.agent.networks import RecurrentSpatialQNetwork, SimpleQNetwork, StructuredQNetwork
+from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.universe.compiler import UniverseCompiler
 
 
@@ -15,7 +16,7 @@ class TestStructuredNetworkInstantiation:
         compiled = compiler.compile(config_dir, use_cache=False)
 
         # Create environment to get observation_activity
-        env = compiled.create_environment(num_agents=4, device="cpu")
+        env = VectorizedHamletEnv.from_universe(compiled, num_agents=4, device="cpu")
 
         # Manually create StructuredQNetwork as population would
         network = StructuredQNetwork(
@@ -34,7 +35,7 @@ class TestStructuredNetworkInstantiation:
 
         compiler = UniverseCompiler()
         compiled = compiler.compile(config_dir, use_cache=False)
-        env = compiled.create_environment(num_agents=4, device="cpu")
+        env = VectorizedHamletEnv.from_universe(compiled, num_agents=4, device="cpu")
 
         # Manually create SimpleQNetwork as population would
         network = SimpleQNetwork(
@@ -51,7 +52,7 @@ class TestStructuredNetworkInstantiation:
 
         compiler = UniverseCompiler()
         compiled = compiler.compile(config_dir, use_cache=False)
-        env = compiled.create_environment(num_agents=4, device="cpu")
+        env = VectorizedHamletEnv.from_universe(compiled, num_agents=4, device="cpu")
 
         # Manually create RecurrentSpatialQNetwork as population would
         network = RecurrentSpatialQNetwork(

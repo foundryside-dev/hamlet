@@ -40,7 +40,6 @@ from townlet.substrate.config import SubstrateConfig
 from townlet.substrate.factory import SubstrateFactory
 from townlet.universe.adapters.vfs_adapter import VFSAdapter, vfs_to_observation_spec
 from townlet.universe.compiled import CompiledUniverse
-from townlet.universe.compiler_inputs import RawConfigs
 from townlet.universe.dto import (
     ActionMetadata,
     ActionSpaceMetadata,
@@ -54,11 +53,11 @@ from townlet.universe.dto import (
     UniverseMetadata,
 )
 from townlet.universe.optimization import OptimizationData
-from townlet.universe.raw_configs_v21 import RawConfigsV21
+from townlet.universe.raw_configs_v21 import AnyV21
 from townlet.vfs.observation_builder import VFSObservationSpecBuilder
 from townlet.vfs.registry import VariableRegistry
+from townlet.vfs.schema import NormalizationSpec, VariableDef
 from townlet.vfs.schema import ObservationField as VFSObservationField
-from townlet.vfs.schema import VariableDef
 
 from .cues_compiler import CuesCompiler
 from .errors import CompilationError, CompilationErrorCollector, CompilationMessage
@@ -485,16 +484,27 @@ class UniverseCompiler:
             # Day length for temporal mechanics: curriculum day_length when active,
             # otherwise default to 24 for mask table shape (runtime ignores it when
             # temporal_support or active_temporal are disabled).
-            dl = level.curriculum.curriculum.day_length or 24
+            day_length = level.curriculum.curriculum.day_length
+            if raw.stratum.stratum.temporal_support == "enabled" and level.curriculum.curriculum.active_temporal:
+                if day_length is None:
+                    raise ValueError(
+                        "curriculum.day_length is required when temporal mechanics are active.\n"
+                        f"  Experiment: {experiment_dir}\n"
+                        f"  Level: {level_name}\n"
+                        "Set curriculum.day_length to a positive integer; no defaults are applied."
+                    )
+            # For inactive temporal mechanics, the mask table is metadata-only; keep a deterministic length.
+            if day_length is None:
+                day_length = 24
             optimization_data = self._build_optimization_data(
                 level.bars,
                 level.affordances,
                 meter_metadata,
                 affordance_metadata,
                 action_metadata,
-                day_length=dl,
+                day_length=day_length,
             )
-            vfs_fields = self._build_vfs_observation_fields(obs_spec)
+            vfs_fields = self._build_vfs_observation_fields(obs_spec, raw.environment)
             vfs_variables = self._build_vfs_variables(obs_spec, raw.environment)
 
             all_levels[level_name] = CompiledUniverse.LevelMetadata(
@@ -625,24 +635,55 @@ class UniverseCompiler:
             errors.add_hint("Validate YAML syntax at yamllint.com or with 'yamllint <file>'")
             errors.check_and_raise()
 
-    def _stage_1_load_v21_configs(self, experiment_dir: Path) -> RawConfigsV21:
+    def _stage_1_load_v21_configs(self, experiment_dir: Path) -> AnyV21:
         """Stage 1 – load v2.1 hierarchical configs."""
-        return RawConfigsV21.from_experiment_dir(experiment_dir)
+        return AnyV21.from_experiment_dir(experiment_dir)
 
     # ------------------------------------------------------------------
     # v2.1 helpers
     # ------------------------------------------------------------------
 
     def _build_observation_activity(self, obs_spec: ObservationSpec) -> ObservationActivity:
-        """Mark all fields as active except those explicitly masked in description."""
-        active_mask: list[bool] = []
+        """Build ObservationActivity grouping dims by semantic_type and honoring masking.
+
+        - active_mask: one bool per obs dim, False where description contains 'MASKED'
+        - group_slices: contiguous slices per semantic_type (e.g., 'spatial', 'bars')
+        - active_field_uuids: UUIDs for fields that are not masked
+        """
+
+        if not obs_spec.fields:
+            return ObservationActivity(active_mask=(), group_slices={}, active_field_uuids=())
+
+        active_mask_list: list[bool] = []
+        active_uuids_list: list[str] = []
+
+        group_boundaries: dict[str, int] = {}
+        group_end_indices: dict[str, int] = {}
+        current_idx = 0
+
         for field in obs_spec.fields:
             is_masked = "MASKED" in (field.description or "")
-            active_mask.extend([not is_masked] * field.dims)
+            dims = field.dims
+
+            group_name = field.semantic_type or "custom"
+            if group_name not in group_boundaries:
+                group_boundaries[group_name] = current_idx
+
+            # Expand mask and UUIDs
+            for _ in range(dims):
+                active_mask_list.append(not is_masked)
+                if not is_masked:
+                    active_uuids_list.append(field.uuid or "")
+
+            current_idx += dims
+            group_end_indices[group_name] = current_idx
+
+        group_slices = {name: slice(group_boundaries[name], group_end_indices[name]) for name in group_boundaries.keys()}
+
         return ObservationActivity(
-            active_mask=tuple(active_mask),
-            group_slices={},
-            active_field_uuids=tuple(field.uuid or "" for field in obs_spec.fields if "MASKED" not in (field.description or "")),
+            active_mask=tuple(active_mask_list),
+            group_slices=group_slices,
+            active_field_uuids=tuple(active_uuids_list),
         )
 
     def _build_observation_spec(
@@ -1087,17 +1128,70 @@ class UniverseCompiler:
             affordance_position_map={aff.name: None for aff in affordance_metadata.affordances},
         )
 
-    def _build_vfs_observation_fields(self, obs_spec: ObservationSpec) -> tuple[VFSObservationField, ...]:
+    def _build_vfs_observation_fields(self, obs_spec: ObservationSpec, environment: EnvConfigV21) -> tuple[VFSObservationField, ...]:
         """Mirror ObservationSpec fields into VFS observation fields for runtime consumption."""
+
+        def _convert_normalization(var_name: str, norm_cfg: Any) -> NormalizationSpec:
+            """Map environment.yaml normalization into VFS NormalizationSpec."""
+            if norm_cfg is None:
+                raise ValueError(
+                    "Missing normalization for variable declared in environment.yaml.\n"
+                    f"  Variable: {var_name}\n"
+                    "  Rule: All variables must declare normalization (clip/normalize/standardize); method 'none' is not allowed."
+                )
+
+            method = getattr(norm_cfg, "method", None)
+            range_values = getattr(norm_cfg, "range", None)
+
+            if method is None:
+                raise ValueError(
+                    "Normalization entry missing 'method' in environment.yaml.\n"
+                    f"  Variable: {var_name}\n"
+                    "  Provide method: clip | normalize | standardize."
+                )
+
+            if method == "none":
+                raise ValueError(
+                    "Normalization method 'none' is not permitted (no defaults). "
+                    "Specify clip/normalize/standardize with explicit parameters.\n"
+                    f"  Variable: {var_name}"
+                )
+
+            if method in {"clip", "normalize"}:
+                if not range_values or len(range_values) != 2:
+                    raise ValueError(
+                        "Normalization range must provide exactly two values [min, max].\n"
+                        f"  Variable: {var_name}\n"
+                        f"  Got: {range_values}"
+                    )
+                return NormalizationSpec(kind="minmax", min=range_values[0], max=range_values[1])
+
+            if method == "standardize":
+                raise ValueError(
+                    "Normalization method 'standardize' requires mean/std parameters, "
+                    "which are not yet supported by VFS NormalizationSpec.\n"
+                    f"  Variable: {var_name}\n"
+                    "  Action: use clip/normalize with explicit ranges or extend the schema to include mean/std."
+                )
+
+            raise ValueError(
+                f"Unsupported normalization method '{method}' for variable '{var_name}'. " "Use clip | normalize | standardize."
+            )
+
+        env_norm_by_name: dict[str, NormalizationSpec] = {}
+        for var in environment.environment.variables:
+            env_norm_by_name[var.name] = _convert_normalization(var.name, getattr(var, "normalization", None))
+
         fields: list[VFSObservationField] = []
         for field in obs_spec.fields:
+            norm = env_norm_by_name.get(field.name)
             fields.append(
                 VFSObservationField(
                     id=field.name,
                     source_variable=field.name,
                     exposed_to=["agent"],
                     shape=[field.dims],
-                    normalization=None,
+                    normalization=norm,
                     semantic_type=field.semantic_type or "custom",
                     curriculum_active="MASKED" not in (field.description or ""),
                 )
@@ -1108,6 +1202,53 @@ class UniverseCompiler:
         """Build VFS variables from observation fields + environment variables."""
         vars_out: list[VariableDef] = []
 
+        def _convert_normalization(var_name: str, norm_cfg: Any) -> NormalizationSpec:
+            """Map environment.yaml normalization into VFS NormalizationSpec."""
+            if norm_cfg is None:
+                raise ValueError(
+                    "Missing normalization for variable declared in environment.yaml.\n"
+                    f"  Variable: {var_name}\n"
+                    "  Rule: All variables must declare normalization (clip/normalize/standardize); method 'none' is not allowed."
+                )
+
+            method = getattr(norm_cfg, "method", None)
+            range_values = getattr(norm_cfg, "range", None)
+
+            if method is None:
+                raise ValueError(
+                    "Normalization entry missing 'method' in environment.yaml.\n"
+                    f"  Variable: {var_name}\n"
+                    "  Provide method: clip | normalize | standardize."
+                )
+
+            if method == "none":
+                raise ValueError(
+                    "Normalization method 'none' is not permitted (no defaults). "
+                    "Specify clip/normalize/standardize with explicit parameters.\n"
+                    f"  Variable: {var_name}"
+                )
+
+            if method in {"clip", "normalize"}:
+                if not range_values or len(range_values) != 2:
+                    raise ValueError(
+                        "Normalization range must provide exactly two values [min, max].\n"
+                        f"  Variable: {var_name}\n"
+                        f"  Got: {range_values}"
+                    )
+                return NormalizationSpec(kind="minmax", min=range_values[0], max=range_values[1])
+
+            if method == "standardize":
+                raise ValueError(
+                    "Normalization method 'standardize' requires mean/std parameters, "
+                    "which are not yet supported by VFS NormalizationSpec.\n"
+                    f"  Variable: {var_name}\n"
+                    "  Action: use clip/normalize with explicit ranges or extend the schema to include mean/std."
+                )
+
+            raise ValueError(
+                f"Unsupported normalization method '{method}' for variable '{var_name}'. " "Use clip | normalize | standardize."
+            )
+
         # Environment-declared variables (explicit only; no auto-generation beyond obs fields)
         for var in environment.environment.variables:
             raw_dims = getattr(var, "dims", None)
@@ -1115,6 +1256,7 @@ class UniverseCompiler:
             is_vector = bool(raw_dims and raw_dims > 1)
             dims = raw_dims if is_vector else None
             default = [0.0] * raw_dims if is_vector and raw_dims is not None else 0.0
+            normalization = _convert_normalization(var.name, getattr(var, "normalization", None))
 
             vars_out.append(
                 VariableDef(
@@ -1127,13 +1269,14 @@ class UniverseCompiler:
                     writable_by=["engine"],
                     default=default,
                     description=var.description,
+                    normalization=normalization,
                 )
             )
         return tuple(vars_out)
 
     def _validate_drive_references_v21(
         self,
-        raw: RawConfigsV21,
+        raw: AnyV21,
         primary_meta: CompiledUniverse.LevelMetadata,
         compiled: CompiledUniverse,
     ) -> None:
@@ -1251,7 +1394,7 @@ class UniverseCompiler:
                 warning,
             )
 
-    def _validate_economic_balance_v21(self, raw: RawConfigsV21) -> None:
+    def _validate_economic_balance_v21(self, raw: AnyV21) -> None:
         """Emit economic balance warnings for v2.1 configs.
 
         This is a minimal v2.1 analogue of the legacy Stage 4 economic checks:
@@ -1310,7 +1453,7 @@ class UniverseCompiler:
 
     def _build_universe_metadata(
         self,
-        raw: RawConfigsV21,
+        raw: AnyV21,
         primary_meta: CompiledUniverse.LevelMetadata,
         *,
         experiment_dir: Path,
@@ -1344,6 +1487,27 @@ class UniverseCompiler:
                 grid_cells *= size
             position_dim = len(substrate_cfg.gridnd.dimension_sizes)
 
+        # Temporal metadata: require explicit ticks_per_day when temporal support is enabled.
+        ticks_per_day: int | None = None
+        curriculum_day_length = primary_meta.curriculum.curriculum.day_length
+        temporal_supported = raw.stratum.stratum.temporal_support == "enabled"
+        temporal_active = primary_meta.curriculum.curriculum.active_temporal
+        if temporal_supported and temporal_active:
+            if curriculum_day_length is None:
+                raise ValueError(
+                    "Missing curriculum.day_length for temporal-enabled level.\n"
+                    f"  Experiment: {experiment_dir}\n"
+                    f"  Level: {primary_meta.level_name}\n"
+                    "Provide an explicit day_length; no defaults are applied."
+                )
+            ticks_per_day = curriculum_day_length
+        elif temporal_supported and not temporal_active:
+            # Temporal support exists but level is inactive; ticks_per_day = 0 to denote no temporal mechanics.
+            ticks_per_day = 0
+        else:
+            # Temporal support disabled; mark as zero ticks per day (no temporal mechanics).
+            ticks_per_day = 0
+
         config_mtime = self._compute_config_mtime(experiment_dir)
 
         return UniverseMetadata(
@@ -1364,7 +1528,7 @@ class UniverseCompiler:
             max_sustainable_income=0.0,
             total_affordance_costs=0.0,
             economic_balance=0.0,
-            ticks_per_day=24,
+            ticks_per_day=ticks_per_day,
             config_version=raw.experiment.experiment.version if hasattr(raw.experiment, "experiment") else "1.0",
             compiler_version=COMPILER_VERSION,
             compiled_at=datetime.now(UTC).isoformat(),
@@ -1377,9 +1541,12 @@ class UniverseCompiler:
             pydantic_version="",
         )
 
-    def _auto_generate_standard_variables(self, raw_configs: RawConfigs) -> list[VariableDef]:
-        """Auto-generate standard system variables from substrate, bars, and affordances.
+    def _auto_generate_standard_variables(self, raw_configs: Any) -> list[VariableDef]:
+        """Legacy flat config path is removed."""
 
+        raise RuntimeError("Legacy flat config pipeline removed; use v2.1 hierarchical configs.")
+
+        """
         Standard variables represent directly observable state that is always available
         in every universe. These are the fundamental building blocks for observations.
 
@@ -1710,8 +1877,10 @@ class UniverseCompiler:
 
         return variables
 
-    def _stage_2_build_symbol_tables(self, raw_configs: RawConfigs) -> UniverseSymbolTable:
+    def _stage_2_build_symbol_tables(self, raw_configs: Any) -> UniverseSymbolTable:
         """Stage 2 – register meters, variables, actions, cascades, and affordances."""
+
+        raise RuntimeError("Legacy flat config pipeline removed; use v2.1 hierarchical configs.")
 
         table = UniverseSymbolTable()
 
@@ -1752,11 +1921,13 @@ class UniverseCompiler:
 
     def _stage_3_resolve_references(
         self,
-        raw_configs: RawConfigs,
+        raw_configs: Any,
         symbol_table: UniverseSymbolTable,
         errors: CompilationErrorCollector,
     ) -> None:
         """Stage 3 – ensure every cross-file reference points to a known symbol."""
+
+        raise RuntimeError("Legacy flat config pipeline removed; use v2.1 hierarchical configs.")
 
         source_map = getattr(raw_configs, "source_map", None)
         hints_added: set[str] = set()
@@ -2171,11 +2342,13 @@ class UniverseCompiler:
 
     def _stage_4_cross_validate(
         self,
-        raw_configs: RawConfigs,
+        raw_configs: Any,
         symbol_table: UniverseSymbolTable,
         errors: CompilationErrorCollector,
     ) -> None:
         """Stage 4 – enforce cross-config semantic constraints (subset of spec for TASK-004A)."""
+
+        raise RuntimeError("Legacy flat config pipeline removed; use v2.1 hierarchical configs.")
 
         source_map = getattr(raw_configs, "source_map", None)
         hints_added: set[str] = set()
@@ -2206,7 +2379,7 @@ class UniverseCompiler:
         self._validate_substrate_action_compatibility(raw_configs, errors, _format_error, _add_hint)
         self._validate_capacity_and_sustainability(raw_configs, errors, _format_error, allow_unfeasible)
 
-    def _validate_spatial_feasibility(self, raw_configs: RawConfigs, errors: CompilationErrorCollector, formatter) -> None:
+    def _validate_spatial_feasibility(self, raw_configs: Any, errors: CompilationErrorCollector, formatter) -> None:
         """Validate that substrate has enough space for all affordances + agents.
 
         Reads spatial dimensions from substrate.yaml (single source of truth).
@@ -2253,10 +2426,7 @@ class UniverseCompiler:
             return
 
         enabled_affordances = raw_configs.environment.enabled_affordances
-        if enabled_affordances is None:
-            required = len(raw_configs.affordances)
-        else:
-            required = len(enabled_affordances)
+        required = len(enabled_affordances)
 
         num_agents = raw_configs.population.num_agents
         required_cells = required + num_agents
@@ -2268,7 +2438,7 @@ class UniverseCompiler:
             )
             errors.add(formatter("UAC-VAL-001", message, "substrate.yaml:grid"))
 
-    def _enforce_security_limits(self, raw_configs: RawConfigs, errors: CompilationErrorCollector) -> None:
+    def _enforce_security_limits(self, raw_configs: Any, errors: CompilationErrorCollector) -> None:
         checks = (
             (len(raw_configs.bars), MAX_METERS, "bars.yaml", "meters"),
             (len(raw_configs.affordances), MAX_AFFORDANCES, "affordances.yaml", "affordances"),
@@ -2287,12 +2457,12 @@ class UniverseCompiler:
 
     def _validate_economic_balance(
         self,
-        raw_configs: RawConfigs,
+        raw_configs: Any,
         errors: CompilationErrorCollector,
         formatter,
         allow_unfeasible: bool,
     ) -> None:
-        enabled_lookup = self._build_enabled_affordance_lookup(getattr(raw_configs.environment, "enabled_affordances", None))
+        enabled_lookup = self._build_enabled_affordance_lookup(raw_configs.environment.enabled_affordances)
 
         total_income = self._compute_max_income(raw_configs.affordances)
         total_costs = self._compute_total_costs(raw_configs.affordances)
@@ -2337,7 +2507,7 @@ class UniverseCompiler:
                 )
             )
 
-    def _validate_cascade_cycles(self, raw_configs: RawConfigs, errors: CompilationErrorCollector, formatter) -> None:
+    def _validate_cascade_cycles(self, raw_configs: Any, errors: CompilationErrorCollector, formatter) -> None:
         graph = self._build_cascade_graph(raw_configs.cascades)
         cycles = self._detect_cycles(graph)
         if not cycles:
@@ -2346,7 +2516,7 @@ class UniverseCompiler:
             cycle_str = " → ".join(cycle + [cycle[0]])
             errors.add(formatter("UAC-VAL-003", f"Cascade circularity detected: {cycle_str}.", "cascades.yaml"))
 
-    def _validate_operating_hours(self, raw_configs: RawConfigs, errors: CompilationErrorCollector, formatter) -> None:
+    def _validate_operating_hours(self, raw_configs: Any, errors: CompilationErrorCollector, formatter) -> None:
         for affordance in raw_configs.affordances:
             operating_hours = affordance.operating_hours
             # operating_hours is now required by schema - no None check needed
@@ -2379,7 +2549,7 @@ class UniverseCompiler:
 
     def _validate_availability_and_modes(
         self,
-        raw_configs: RawConfigs,
+        raw_configs: Any,
         symbol_table: UniverseSymbolTable,
         errors: CompilationErrorCollector,
         formatter,
@@ -2436,7 +2606,7 @@ class UniverseCompiler:
 
     def _validate_capabilities_and_effect_pipelines(
         self,
-        raw_configs: RawConfigs,
+        raw_configs: Any,
         errors: CompilationErrorCollector,
         formatter,
     ) -> None:
@@ -2572,7 +2742,7 @@ class UniverseCompiler:
 
     def _validate_affordance_positions(
         self,
-        raw_configs: RawConfigs,
+        raw_configs: Any,
         errors: CompilationErrorCollector,
         formatter,
     ) -> None:
@@ -2592,12 +2762,12 @@ class UniverseCompiler:
 
     def _validate_capacity_and_sustainability(
         self,
-        raw_configs: RawConfigs,
+        raw_configs: Any,
         errors: CompilationErrorCollector,
         formatter,
         allow_unfeasible: bool,
     ) -> None:
-        enabled_lookup = self._build_enabled_affordance_lookup(getattr(raw_configs.environment, "enabled_affordances", None))
+        enabled_lookup = self._build_enabled_affordance_lookup(raw_configs.environment.enabled_affordances)
         self._validate_meter_sustainability(raw_configs, enabled_lookup, errors, formatter, allow_unfeasible)
         self._validate_capacity_constraints(raw_configs, enabled_lookup, errors, formatter)
 
@@ -2641,7 +2811,7 @@ class UniverseCompiler:
 
     def _validate_substrate_action_compatibility(
         self,
-        raw_configs: RawConfigs,
+        raw_configs: Any,
         errors: CompilationErrorCollector,
         formatter,
         add_hint,
@@ -2708,9 +2878,11 @@ class UniverseCompiler:
             total += amount
         return total
 
-    def _build_enabled_affordance_lookup(self, enabled_affordances: list[str] | None) -> set[str] | None:
-        if not enabled_affordances:
-            return None
+    def _build_enabled_affordance_lookup(self, enabled_affordances: list[str] | None) -> set[str]:
+        if enabled_affordances is None:
+            raise ValueError(
+                "enabled_affordances must be explicitly provided (empty list allowed to disable all affordances); null is not allowed."
+            )
         return {str(name) for name in enabled_affordances}
 
     def _is_affordance_enabled(self, affordance: AffordanceConfig, enabled_lookup: set[str] | None) -> bool:
@@ -2718,7 +2890,7 @@ class UniverseCompiler:
             return True
         return affordance.name in enabled_lookup or affordance.id in enabled_lookup
 
-    def _count_income_hours(self, raw_configs: RawConfigs, enabled_lookup: set[str] | None) -> float:
+    def _count_income_hours(self, raw_configs: Any, enabled_lookup: set[str] | None) -> float:
         income_affordances = [
             aff
             for aff in raw_configs.affordances
@@ -2781,7 +2953,7 @@ class UniverseCompiler:
 
     def _validate_meter_sustainability(
         self,
-        raw_configs: RawConfigs,
+        raw_configs: Any,
         enabled_lookup: set[str] | None,
         errors: CompilationErrorCollector,
         formatter,
@@ -2817,7 +2989,7 @@ class UniverseCompiler:
                     f"bars.yaml:{bar.name}",
                 )
 
-    def _collect_critical_meter_names(self, raw_configs: RawConfigs) -> set[str]:
+    def _collect_critical_meter_names(self, raw_configs: Any) -> set[str]:
         names: set[str] = set()
         for bar in raw_configs.bars:
             if self._is_meter_critical(bar):
@@ -2832,7 +3004,7 @@ class UniverseCompiler:
 
     def _validate_capacity_constraints(
         self,
-        raw_configs: RawConfigs,
+        raw_configs: Any,
         enabled_lookup: set[str] | None,
         errors: CompilationErrorCollector,
         formatter,
@@ -2857,7 +3029,7 @@ class UniverseCompiler:
 
     def _find_critical_path_affordances(
         self,
-        raw_configs: RawConfigs,
+        raw_configs: Any,
         enabled_lookup: set[str] | None,
     ) -> list[AffordanceConfig]:
         critical_meters = self._collect_critical_meter_names(raw_configs)
@@ -2957,7 +3129,7 @@ class UniverseCompiler:
     def _stage_5_compute_metadata(
         self,
         config_dir: Path,
-        raw_configs: RawConfigs,
+        raw_configs: Any,
         symbol_table: UniverseSymbolTable,
         *,
         precomputed_config_hash: str | None = None,
@@ -3032,7 +3204,7 @@ class UniverseCompiler:
             max_sustainable_income=max_income,
             total_affordance_costs=total_costs,
             economic_balance=economic_balance,
-            ticks_per_day=24,
+            ticks_per_day=self._compute_ticks_per_day(raw_configs),
             config_version=self._resolve_config_version(raw_configs),
             compiler_version=COMPILER_VERSION,
             compiled_at=datetime.now(UTC).isoformat(),
@@ -3049,9 +3221,11 @@ class UniverseCompiler:
 
     def _stage_5_build_rich_metadata(
         self,
-        raw_configs: RawConfigs,
+        raw_configs: Any,
     ) -> tuple[ActionSpaceMetadata, MeterMetadata, AffordanceMetadata]:
         """Stage 5 – build training-facing metadata structures."""
+
+        raise RuntimeError("Legacy flat config pipeline removed; use v2.1 hierarchical configs.")
 
         actions_meta: list[ActionMetadata] = []
         for action in raw_configs.global_actions.actions:
@@ -3086,7 +3260,7 @@ class UniverseCompiler:
         meter_metadata = MeterMetadata(meters=tuple(meter_infos))
 
         enabled_affordances = raw_configs.environment.enabled_affordances
-        enabled_set = set(enabled_affordances) if enabled_affordances else None
+        enabled_set = set(enabled_affordances)
 
         affordance_infos: list[AffordanceInfo] = []
         for aff in raw_configs.affordances:
@@ -3113,7 +3287,7 @@ class UniverseCompiler:
 
     def _stage_6_optimize(
         self,
-        raw_configs: RawConfigs,
+        raw_configs: Any,
         metadata: UniverseMetadata,
         *,
         device: torch.device | None = None,
@@ -3176,7 +3350,7 @@ class UniverseCompiler:
     def _stage_7_emit_compiled_universe(
         self,
         *,
-        raw_configs: RawConfigs,
+        raw_configs: Any,
         symbol_table: UniverseSymbolTable,
         metadata: UniverseMetadata,
         observation_spec: ObservationSpec,
@@ -3189,6 +3363,8 @@ class UniverseCompiler:
         dac_config: DriveAsCodeConfig,
     ) -> CompiledUniverse:
         """Stage 7 – produce immutable CompiledUniverse artifact."""
+
+        raise RuntimeError("Legacy flat config pipeline removed; use v2.1 hierarchical configs.")
 
         # Get all variables from symbol table (auto-generated + custom)
         all_variables = list(symbol_table.variables.values())
@@ -3297,8 +3473,22 @@ class UniverseCompiler:
             return len(substrate.continuous.bounds)
         return 0
 
-    def _resolve_config_version(self, raw_configs: RawConfigs) -> str:
+    def _resolve_config_version(self, raw_configs: Any) -> str:
         return getattr(raw_configs.hamlet_config, "version", "1.0")
+
+    def _compute_ticks_per_day(self, raw_configs: Any) -> int:
+        """Derive ticks_per_day for legacy pipeline without defaults."""
+        day_length = None
+        # Legacy training path may have day_length on curriculum or training.
+        day_length = getattr(getattr(raw_configs, "curriculum", None), "day_length", None)
+        if day_length is None:
+            day_length = getattr(getattr(raw_configs, "training", None), "day_length", None)
+        if day_length is None:
+            raise ValueError(
+                "ticks_per_day is required; legacy compiler path cannot default to 24.\n"
+                "Provide day_length in curriculum or training configuration."
+            )
+        return int(day_length)
 
     def _auto_generate_standard_exposures(self, symbol_table: UniverseSymbolTable) -> list[dict[str, Any]]:
         """Auto-generate standard observation exposures for all system variables.
@@ -3336,15 +3526,10 @@ class UniverseCompiler:
 
         return exposures
 
-    def _load_observation_exposures(self, raw_configs: RawConfigs, symbol_table: UniverseSymbolTable) -> list[dict[str, Any]]:
-        """Auto-generate observation exposures for ALL variables in symbol table.
+    def _load_observation_exposures(self, raw_configs: Any, symbol_table: UniverseSymbolTable) -> list[dict[str, Any]]:
+        """Legacy observation exposure generator."""
+        raise RuntimeError("Legacy flat config pipeline removed; use v2.1 hierarchical configs.")
 
-        Design principle: All variables (standard + custom) are automatically observable.
-        The exposed_observations field in variables_reference.yaml is deprecated/ignored.
-
-        BUG-43 FIX: Instead of filtering out grid_encoding or local_window, we keep BOTH
-        and mark them with curriculum_active to enable transfer learning across full/partial obs.
-        """
         # Auto-generate exposures for ALL variables (standard system + custom computed)
         exposures = self._auto_generate_standard_exposures(symbol_table)
 

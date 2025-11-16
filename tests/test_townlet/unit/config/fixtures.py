@@ -57,19 +57,17 @@ VALID_POPULATION_PARAMS = {
 }
 
 VALID_CURRICULUM_PARAMS = {
-    "max_steps_per_episode": 500,
-    "survival_advance_threshold": 0.7,
-    "survival_retreat_threshold": 0.3,
-    "entropy_gate": 0.5,
-    "min_steps_at_stage": 1000,
+    "version": "1.0",
+    "active_vision": "global",
+    "vision_range": 0.5,
+    "active_temporal": False,
+    "day_length": None,
 }
 
 VALID_EXPLORATION_PARAMS = {
-    "embed_dim": 128,
-    "initial_intrinsic_weight": 1.0,
-    "variance_threshold": 100.0,
-    "survival_window": 100,
-    "min_survival_fraction": 0.5,
+    "epsilon_start": 1.0,
+    "epsilon_end": 0.01,
+    "epsilon_decay": 0.995,
 }
 
 VALID_BAR_PARAMS = {

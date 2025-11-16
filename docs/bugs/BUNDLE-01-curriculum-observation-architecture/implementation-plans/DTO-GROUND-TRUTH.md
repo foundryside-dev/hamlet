@@ -272,9 +272,9 @@ print(f"Meters: {[m.name for m in raw.environment.environment.meters]}")
 # Level-specific access
 l1 = raw.levels["L1_full_observability"]
 print(f"Active vision: {l1.curriculum.curriculum.active_vision}")
-print(f"Meters: {[m.name for m in l1.bars.bars.meters]}")
-print(f"Affordances: {[a.name for a in l1.affordances.affordances.affordances]}")
-print(f"Population size: {l1.training.training.population.size}")
+print(f"Meters: {[m.name for m in l1.bars.meters]}")
+print(f"Affordances: {[a.name for a in l1.affordances.affordances]}")
+print(f"Population size: {l1.training.population.size}")
 ```
 
 ### Vocabulary Validation
@@ -286,8 +286,8 @@ env_affordance_names = {a.name for a in raw.environment.environment.affordances}
 
 # Validate each level
 for level_name, level in raw.levels.items():
-    level_meter_names = {m.name for m in level.bars.bars.meters}
-    level_affordance_names = {a.name for a in level.affordances.affordances.affordances}
+    level_meter_names = {m.name for m in level.bars.meters}
+    level_affordance_names = {a.name for a in level.affordances.affordances}
 
     assert level_meter_names == env_meter_names, f"{level_name}: meter mismatch"
     assert level_affordance_names == env_affordance_names, f"{level_name}: affordance mismatch"
@@ -393,11 +393,11 @@ python -m townlet.compiler compile configs/default_curriculum --level L1_full_ob
 ❌ **Wrong**: `raw.experiment.metadata` (missing section field)
 ✅ **Correct**: `raw.experiment.experiment.metadata`
 
-❌ **Wrong**: `level.bars.meters` (missing section field)
-✅ **Correct**: `level.bars.bars.meters`
+❌ **Wrong**: `level.bars.bars.meters` (BarsV2 uses direct fields)
+✅ **Correct**: `level.bars.meters`
 
-❌ **Wrong**: `level.affordances.affordances` (only one nesting)
-✅ **Correct**: `level.affordances.affordances.affordances`
+❌ **Wrong**: `level.affordances.affordances.affordances` (extra nesting)
+✅ **Correct**: `level.affordances.affordances`
 
 ❌ **Wrong**: Using `BarsConfig` (legacy name)
 ✅ **Correct**: Using `BarsV2Config` (v2.1 name)

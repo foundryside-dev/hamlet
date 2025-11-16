@@ -25,7 +25,7 @@ from townlet.substrate.grid2d import Grid2DSubstrate
 from townlet.substrate.grid3d import Grid3DSubstrate
 from townlet.substrate.gridnd import GridNDSubstrate
 from townlet.training.checkpoint_utils import safe_torch_load, verify_checkpoint_digest
-from townlet.universe.compiled_v21 import CompiledUniverseV21
+from townlet.universe.compiled import CompiledUniverse
 from townlet.universe.compiler import UniverseCompiler
 
 logger = logging.getLogger(__name__)
@@ -89,7 +89,7 @@ class LiveInferenceServer:
         self.config_dir = Path(config_dir)
         self.training_config_path: Path | None = Path(training_config_path) if training_config_path else None
         self.compiler = UniverseCompiler()
-        self.compiled_universe: CompiledUniverseV21 | None = None
+        self.compiled_universe: CompiledUniverse | None = None
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.clients: set[WebSocket] = set()
@@ -268,14 +268,13 @@ class LiveInferenceServer:
     def _initialize_components(self):
         """Initialize environment and agent components."""
         logger.info("Compiling universe for live inference from %s", self.config_dir)
-        self.compiled_universe = self.compiler.compile(self.config_dir)
-        self.runtime_universe = self.compiled_universe.to_runtime()
-        hamlet_config = self.compiled_universe.hamlet_config
-        env_cfg = hamlet_config.environment
-        population_cfg = hamlet_config.population
-        curriculum_cfg = hamlet_config.curriculum
-        exploration_cfg = hamlet_config.exploration
-        training_cfg = hamlet_config.training
+        self.compiled_universe = self.compiler.compile(self.config_dir, primary_level=self.level_name)
+        level_meta = self.compiled_universe.get_level(self.level_name)
+
+        population_cfg = level_meta.training.population
+        curriculum_cfg = level_meta.curriculum.curriculum
+        exploration_cfg = level_meta.training.exploration
+        training_cfg = level_meta.training.training_loop
 
         num_agents = population_cfg.num_agents
         vision_range = env_cfg.vision_range
@@ -302,11 +301,11 @@ class LiveInferenceServer:
 
         # Create curriculum
         self.curriculum = AdversarialCurriculum(
-            max_steps_per_episode=curriculum_cfg.max_steps_per_episode,
+            max_steps_per_episode=training_cfg.max_steps_per_episode,
             survival_advance_threshold=curriculum_cfg.survival_advance_threshold,
             survival_retreat_threshold=curriculum_cfg.survival_retreat_threshold,
-            entropy_gate=curriculum_cfg.entropy_gate,
-            min_steps_at_stage=curriculum_cfg.min_steps_at_stage,
+            entropy_gate=getattr(curriculum_cfg, "entropy_gate", 0.0),
+            min_steps_at_stage=getattr(curriculum_cfg, "min_steps_at_stage", 0),
             device=self.device,
         )
 

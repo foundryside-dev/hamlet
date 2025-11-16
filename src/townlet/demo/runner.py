@@ -7,7 +7,7 @@ import signal
 import time
 from collections import defaultdict
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import torch
 import yaml
@@ -29,9 +29,6 @@ from townlet.training.checkpoint_utils import (
 from townlet.training.state import BatchedAgentState
 from townlet.training.tensorboard_logger import TensorBoardLogger
 from townlet.universe.compiler import UniverseCompiler
-
-if TYPE_CHECKING:
-    from townlet.universe.compiled_v21 import CompiledUniverseV21
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +69,7 @@ class DemoRunner:
             raise FileNotFoundError(f"Training config not found: {self.training_config_path}")
         self.db_path = Path(db_path)
         self.checkpoint_dir = Path(checkpoint_dir)
-        self.compiled: CompiledUniverseV21 | None = None
+        self.compiled: CompiledUniverse | None = None
 
         # Create directories
         self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
@@ -101,19 +98,18 @@ class DemoRunner:
 
         # v2.1: Compile hierarchical configs
         compiler = UniverseCompiler()
-        self.compiled = compiler.compile(self.config_dir)
+        self.compiled = compiler.compile(self.config_dir, primary_level=self.level_name)
 
-        # Extract single level for backwards compat
-        level_config = self.compiled.as_single_level(self.level_name)
-        self.experiment_config = level_config["experiment"]
-        self.stratum_config = level_config["stratum"]
-        self.environment_config = level_config["environment"]
-        self.actions_config = level_config["actions"]
-        self.agent_config = level_config["agent"]
-        self.curriculum_config = level_config["curriculum"]
-        self.bars_config = level_config["bars"]
-        self.affordances_config = level_config["affordances"]
-        self.training_config = level_config["training"]
+        level_config = self.compiled.get_level(self.level_name)
+        self.experiment_config = self.compiled.experiment
+        self.stratum_config = self.compiled.stratum
+        self.environment_config = self.compiled.environment
+        self.actions_config = self.compiled.actions
+        self.agent_config = self.compiled.agent
+        self.curriculum_config = level_config.curriculum
+        self.bars_config = level_config.bars
+        self.affordances_config = level_config.affordances
+        self.training_config = level_config.training
 
         # Also load raw YAML for optional sections (e.g., recording)
         with open(self.training_config_path) as f:
@@ -250,7 +246,7 @@ class DemoRunner:
         for agent_idx in range(self.population.num_agents):
             self.population.flush_episode(agent_idx)
 
-    def save_checkpoint(self, universe: CompiledUniverseV21 | None = None):
+    def save_checkpoint(self, universe: CompiledUniverse | None = None):
         """Save checkpoint at current episode."""
         # P1.1 Phase 5: Flush all agents before checkpoint
         self.flush_all_agents()
@@ -311,7 +307,7 @@ class DemoRunner:
         # Update system state
         self.db.set_system_state("last_checkpoint", str(checkpoint_path))
 
-    def load_checkpoint(self, universe: CompiledUniverseV21 | None = None) -> int | None:
+    def load_checkpoint(self, universe: CompiledUniverse | None = None) -> int | None:
         """Load latest checkpoint if exists.
 
         Returns:

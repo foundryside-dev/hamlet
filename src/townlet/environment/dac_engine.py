@@ -20,7 +20,8 @@ from collections.abc import Callable
 
 import torch
 
-from townlet.config.drive_as_code import DriveAsCodeConfig, ModifierConfig
+from townlet.config.agent_config import DriveConfig
+from townlet.config.drive_as_code import ModifierConfig
 from townlet.vfs.registry import VariableRegistry
 
 
@@ -46,7 +47,7 @@ class DACEngine:
 
     def __init__(
         self,
-        dac_config: DriveAsCodeConfig,
+        dac_config: DriveConfig,
         vfs_registry: VariableRegistry,
         device: torch.device,
         num_agents: int,

@@ -17,21 +17,24 @@ from typing import Any, cast
 import torch
 import yaml
 
+from townlet.config.actions_config import ActionsConfig
 from townlet.config.affordance import AffordanceConfig
+from townlet.config.affordances_v2_config import AffordancesV2Config
+from townlet.config.agent_config import AgentConfig
 from townlet.config.bar import BarConfig
+from townlet.config.bars_v2_config import BarsV2Config
 from townlet.config.cascade import CascadeConfig
+from townlet.config.curriculum_config import CurriculumConfig
 from townlet.config.drive_as_code import DriveAsCodeConfig, load_drive_as_code_config
 from townlet.config.effect_pipeline import EffectPipeline
-from townlet.environment.cascade_config import EnvironmentConfig
-from townlet.environment.cascade_config import (
-    load_cascades_config as load_full_cascades_config,
-)
-from townlet.environment.substrate_action_validator import SubstrateActionValidator
+from townlet.config.environment_config import EnvironmentConfig as EnvConfigV21
+from townlet.config.experiment_config import ExperimentConfig
+from townlet.config.stratum_config import StratumConfig
+from townlet.config.training_v2_config import TrainingV2Config
 from townlet.environment.temporal_utils import is_affordance_open
 from townlet.substrate.config import SubstrateConfig
 from townlet.universe.adapters.vfs_adapter import VFSAdapter, vfs_to_observation_spec
 from townlet.universe.compiled import CompiledUniverse
-from townlet.universe.compiled_v21 import CompiledUniverseV21
 from townlet.universe.compiler_inputs import RawConfigs
 from townlet.universe.dto import (
     ActionMetadata,
@@ -45,6 +48,7 @@ from townlet.universe.dto import (
     UniverseMetadata,
 )
 from townlet.universe.optimization import OptimizationData
+from townlet.universe.raw_configs_v21 import RawConfigsV21
 from townlet.vfs.observation_builder import VFSObservationSpecBuilder
 from townlet.vfs.registry import VariableRegistry
 from townlet.vfs.schema import ObservationField as VFSObservationField
@@ -100,11 +104,9 @@ class UniverseCompiler:
         """
         from townlet.config.actions_config import ActionsConfig
         from townlet.config.affordances_v2_config import load_affordances_v2_config
-        from townlet.config.agent_config import AgentConfig
         from townlet.config.bars_v2_config import load_bars_v2_config
         from townlet.config.curriculum_config import CurriculumConfig
         from townlet.config.environment_config import EnvironmentConfig
-        from townlet.config.experiment_config import ExperimentConfig
         from townlet.config.stratum_config import StratumConfig
         from townlet.config.training_v2_config import load_training_v2_config
 
@@ -426,133 +428,85 @@ class UniverseCompiler:
 
         return obs_spec
 
-    def _compile_v21_hierarchical(self, experiment_dir: Path, use_cache: bool = True) -> CompiledUniverseV21:
+    def compile(self, experiment_dir: Path, primary_level: str | None = None, use_cache: bool = True) -> CompiledUniverse:
         """
-        Compile v2.1 hierarchical config structure into CompiledUniverseV21.
+        Compile v2.1 hierarchical configs into a multi-level CompiledUniverse.
 
-        This is a parallel implementation path for v2.1 configs, separate from legacy flat configs.
-
-        Args:
-            experiment_dir: Path to experiment root with experiment.yaml
-            use_cache: Whether to use cache (currently stubbed for v2.1)
-
-        Returns:
-            CompiledUniverseV21
-
-        Raises:
-            NotImplementedError: Stages 3-7 not yet implemented
+        Scorched-earth path: legacy flat configs and HamletConfig plumbing are removed.
         """
-        logger.info("Compiling v2.1 experiment: %s", experiment_dir)
+        experiment_dir = Path(experiment_dir).resolve()
+        self._validate_config_dir(experiment_dir)
 
-        # Stage 1: Load hierarchical structure
-        logger.info("=== Stage 1: Loading hierarchical config structure ===")
-        (experiment, stratum, environment, actions, agent, levels_dict) = self._load_experiment_structure(experiment_dir)
+        # Stage 0: YAML syntax validation (lightweight)
+        self._phase_0_validate_yaml_syntax(experiment_dir)
 
-        logger.info("Loaded experiment: '%s'", experiment.experiment.metadata.name)
-        logger.info("  Description: %s", experiment.experiment.metadata.description)
-        logger.info("  Stratum: %s", stratum.stratum.substrate.type)
-        logger.info("  Curriculum levels: %s", list(levels_dict.keys()))
+        # Stage 1: load v2.1 configs
+        raw = self._stage_1_load_v21_configs(experiment_dir)
 
-        # Stage 2: Cross-curriculum vocabulary validation
-        logger.info("=== Stage 2: Validating vocabulary consistency ===")
-        self._validate_vocabulary_consistency(environment, levels_dict)
+        # Select primary level
+        if primary_level is None:
+            primary_level = sorted(raw.levels.keys())[0]
+            logger.info("No primary_level specified; defaulting to %s", primary_level)
+        if primary_level not in raw.levels:
+            raise ValueError(f"Primary level '{primary_level}' not found. Available: {list(raw.levels.keys())}")
 
-        # Stage 3-4: Symbol table and resolution
-        # TODO: Implement if needed for your system
-        # For now, skip these stages (legacy may not need them)
-        logger.info("=== Stage 3-4: Symbol table and resolution (skipped) ===")
+        # Build per-level artifacts
+        all_levels: dict[str, CompiledUniverse.LevelMetadata] = {}
+        for level_name, level in raw.levels.items():
+            logger.info("Compiling level: %s", level_name)
+            obs_spec = self._build_observation_spec(raw.stratum, raw.environment, level.curriculum)
+            obs_activity = self._build_observation_activity(obs_spec)
+            action_metadata = self._build_action_space_metadata(raw.stratum, raw.actions, level.training)
+            meter_metadata = self._build_meter_metadata(raw.environment, level.bars)
+            affordance_metadata = self._build_affordance_metadata(level.affordances)
+            optimization_data = self._build_optimization_data(level.bars, meter_metadata, affordance_metadata, action_metadata)
+            vfs_fields = self._build_vfs_observation_fields(obs_spec)
+            vfs_variables = self._build_vfs_variables(raw.environment)
 
-        # Stage 5: Build observation specs for all curriculum levels
-        logger.info("=== Stage 5: Building observation specs ===")
-        observation_specs = {}
-        for level_name, (curriculum, bars, affordances, training) in levels_dict.items():
-            logger.info("Building obs spec for %s:", level_name)
-            obs_spec = self._build_observation_spec(stratum, environment, curriculum, agent)
-            observation_specs[level_name] = obs_spec
+            all_levels[level_name] = CompiledUniverse.LevelMetadata(
+                level_name=level_name,
+                bars=level.bars,
+                affordances=level.affordances,
+                curriculum=level.curriculum,
+                training=level.training,
+                observation_spec=obs_spec,
+                observation_activity=obs_activity,
+                action_metadata=action_metadata,
+                meter_metadata=meter_metadata,
+                affordance_metadata=affordance_metadata,
+                optimization_data=optimization_data,
+                vfs_observation_fields=vfs_fields,
+                vfs_variables=vfs_variables,
+            )
 
-        # Stage 6-7: Optimization and emit
-        logger.info("=== Stage 6-7: Optimization and emit ===")
-        logger.info("Creating CompiledUniverseV21...")
+        primary_meta = all_levels[primary_level]
 
-        compiled = CompiledUniverseV21(
-            experiment=experiment,
-            stratum=stratum,
-            environment=environment,
-            actions=actions,
-            agent=agent,
-            curriculum_levels=levels_dict,
-            observation_specs=observation_specs,
+        universe_metadata = self._build_universe_metadata(
+            raw,
+            primary_meta,
             experiment_dir=experiment_dir,
         )
 
-        logger.info("✓ Compilation complete for '%s'", experiment.experiment.metadata.name)
-        logger.info("  %d curriculum levels loaded", len(compiled.curriculum_levels))
-        logger.info("  %d observation specs generated", len(compiled.observation_specs))
+        compiled = CompiledUniverse(
+            metadata=universe_metadata,
+            observation_spec=primary_meta.observation_spec,
+            observation_activity=primary_meta.observation_activity,
+            vfs_observation_fields=primary_meta.vfs_observation_fields,
+            vfs_variables=primary_meta.vfs_variables,
+            action_space_metadata=primary_meta.action_metadata,
+            meter_metadata=primary_meta.meter_metadata,
+            affordance_metadata=primary_meta.affordance_metadata,
+            optimization_data=primary_meta.optimization_data,
+            experiment=raw.experiment,
+            stratum=raw.stratum,
+            environment=raw.environment,
+            actions=raw.actions,
+            agent=raw.agent,
+            experiment_dir=experiment_dir,
+            all_levels=all_levels,
+        )
 
         return compiled
-
-    def compile(self, config_dir: Path, use_cache: bool = True) -> CompiledUniverse | CompiledUniverseV21:
-        """
-        Compile a config pack into a CompiledUniverse (with optional caching).
-
-        BREAKING CHANGE (v2.1): This method now supports BOTH:
-        - Legacy flat config structure (backward compatibility until migration complete)
-        - New v2.1 hierarchical structure (experiment_dir with levels/)
-
-        The method auto-detects the structure based on presence of experiment.yaml.
-
-        For v2.1 hierarchical structure:
-            config_dir/
-            ├── experiment.yaml       # Metadata
-            ├── stratum.yaml          # World shape (substrate, grid, temporal)
-            ├── environment.yaml      # Vocabulary (bars, affordances, VFS)
-            ├── actions.yaml          # Action space configuration
-            ├── agent.yaml            # Perception + Drive + Brain
-            └── levels/
-                ├── L1_full_observability/
-                │   ├── curriculum.yaml   # Vision/temporal activation
-                │   ├── bars.yaml         # Bar parameters + cascades
-                │   ├── affordances.yaml  # Affordance parameters
-                │   └── training.yaml     # Runtime orchestration
-                └── [other levels]/
-
-        Compilation stages (v2.1):
-        - Stage 1: Load hierarchical structure (5 shared + N curriculum levels)
-        - Stage 2: Cross-curriculum vocabulary validation (WHAT vs HOW enforcement)
-        - Stage 3: Build symbol table from environment.yaml
-        - Stage 4: Resolve references and dependencies
-        - Stage 5: Generate observation spec with Support/Active pattern
-        - Stage 6: Optimize and cache
-        - Stage 7: Emit CompiledUniverse
-
-        Args:
-            config_dir: Path to config directory (flat) or experiment root (v2.1)
-            use_cache: Whether to use compiled universe cache
-
-        Returns:
-            CompiledUniverse with validated, cross-curriculum consistent configuration
-
-        Raises:
-            ValueError: If vocabulary inconsistent across curriculum levels (v2.1 only)
-            FileNotFoundError: If required config files missing
-        """
-
-        config_dir = Path(config_dir).resolve()  # Resolve to absolute path
-        self._validate_config_dir(config_dir)
-
-        # Detect config structure: v2.1 hierarchical vs legacy flat
-        is_v21 = (config_dir / "experiment.yaml").exists()
-
-        if is_v21:
-            # V2.1 HIERARCHICAL STRUCTURE PATH
-            logger.info("Detected v2.1 hierarchical config structure")
-            return self._compile_v21_hierarchical(config_dir, use_cache)
-
-        # LEGACY FLAT STRUCTURE PATH (backward compatibility)
-        logger.info("Detected legacy flat config structure")
-
-        # Phase 0: Validate YAML syntax before doing any work
-        self._phase_0_validate_yaml_syntax(config_dir)
 
         cache_path = self._cache_artifact_path(config_dir)
         precomputed_hash: str | None = None
@@ -719,54 +673,44 @@ class UniverseCompiler:
         """Phase 0 – validate all YAML files can be parsed before compilation begins."""
         errors = CompilationErrorCollector(stage="Phase 0: YAML Syntax Validation")
 
-        # Required config files (consolidated structure)
-        # Note: training.yaml contains training/environment/population/curriculum/exploration sections
-        required_files = [
-            "training.yaml",
-            "bars.yaml",
-            "cascades.yaml",
-            "affordances.yaml",
-            "substrate.yaml",
-            "cues.yaml",
-            "variables_reference.yaml",  # Required file, but variables list can be empty
+        shared_files = [
+            "experiment.yaml",
+            "stratum.yaml",
+            "environment.yaml",
+            "actions.yaml",
+            "agent.yaml",
         ]
 
-        # Optional files
-        optional_files = ["action_labels.yaml"]
-
-        # Also check global actions (outside config_dir)
-        global_actions_path = Path("configs") / "global_actions.yaml"
-        all_files_to_check = [(config_dir / f, f, True) for f in required_files]
-        all_files_to_check.extend([(config_dir / f, f, False) for f in optional_files])
-        all_files_to_check.append((global_actions_path, "global_actions.yaml", True))
-
-        for file_path, file_name, is_required in all_files_to_check:
+        for file_name in shared_files:
+            file_path = config_dir / file_name
             if not file_path.exists():
-                if is_required:
-                    errors.add(
-                        f"{file_name}: File not found",
-                        code="MISSING_FILE",
-                        location=str(file_path),
-                    )
+                errors.add(f"{file_name}: File not found", code="MISSING_FILE", location=str(file_path))
                 continue
-
             try:
                 with file_path.open() as handle:
                     yaml.safe_load(handle)
             except yaml.YAMLError as exc:
-                error_msg = str(exc)
-                if hasattr(exc, "problem_mark"):
-                    mark = exc.problem_mark
-                    problem = getattr(exc, "problem", None) or "syntax error"
-                    error_msg = f"line {mark.line + 1}, column {mark.column + 1}: {problem}"
-                    if hasattr(exc, "context") and exc.context:
-                        error_msg = f"{exc.context}\n  {error_msg}"
+                errors.add(str(exc), code="YAML_SYNTAX_ERROR", location=str(file_path))
 
-                errors.add(
-                    error_msg,
-                    code="YAML_SYNTAX_ERROR",
-                    location=file_name,
-                )
+        levels_dir = config_dir / "levels"
+        if not levels_dir.exists():
+            errors.add("levels/ directory missing", code="MISSING_LEVELS_DIR", location=str(levels_dir))
+        else:
+            for level_dir in sorted(p for p in levels_dir.iterdir() if p.is_dir()):
+                for file_name in ("curriculum.yaml", "bars.yaml", "affordances.yaml", "training.yaml"):
+                    file_path = level_dir / file_name
+                    if not file_path.exists():
+                        errors.add(
+                            f"{file_name}: File not found",
+                            code="MISSING_FILE",
+                            location=str(file_path),
+                        )
+                        continue
+                    try:
+                        with file_path.open() as handle:
+                            yaml.safe_load(handle)
+                    except yaml.YAMLError as exc:
+                        errors.add(str(exc), code="YAML_SYNTAX_ERROR", location=str(file_path))
 
         if errors.errors:
             errors.add_hint("Check YAML indentation (use spaces, not tabs)")
@@ -776,8 +720,421 @@ class UniverseCompiler:
 
     def _stage_1_parse_individual_files(self, config_dir: Path) -> RawConfigs:
         """Stage 1 – load all YAML files into DTOs using shared loaders."""
+        return RawConfigs.from_config_dir(config_dir)
+
+    def _stage_1_load_v21_configs(self, experiment_dir: Path) -> RawConfigsV21:
+        """Stage 1 – load v2.1 hierarchical configs."""
+        return RawConfigsV21.from_experiment_dir(experiment_dir)
+        """Stage 1 – load v2.1 hierarchical configs."""
+        return RawConfigsV21.from_experiment_dir(experiment_dir)
+
+        """Stage 1 – load all YAML files into DTOs using shared loaders."""
 
         return RawConfigs.from_config_dir(config_dir)
+
+    # ------------------------------------------------------------------
+    # v2.1 helpers
+    # ------------------------------------------------------------------
+
+    def _build_observation_activity(self, obs_spec: ObservationSpec) -> ObservationActivity:
+        """Mark all fields as active except those explicitly masked in description."""
+        active_mask: list[bool] = []
+        for field in obs_spec.fields:
+            is_masked = "MASKED" in (field.description or "")
+            active_mask.extend([not is_masked] * field.dims)
+        return ObservationActivity(
+            active_mask=tuple(active_mask),
+            group_slices={},
+            active_field_uuids=tuple(field.uuid or "" for field in obs_spec.fields if "MASKED" not in (field.description or "")),
+        )
+
+    def _build_observation_spec(
+        self,
+        stratum: StratumConfig,
+        environment: EnvConfigV21,
+        curriculum: CurriculumConfig,
+    ) -> ObservationSpec:
+        """Build observation spec using Support/Active pattern for v2.1."""
+
+        fields: list[ObservationField] = []
+        offset = 0
+
+        substrate = stratum.stratum.substrate
+        vision_support = stratum.stratum.vision_support
+        temporal_support = stratum.stratum.temporal_support
+        active_vision = curriculum.curriculum.active_vision
+        vision_range = curriculum.curriculum.vision_range
+        active_temporal = curriculum.curriculum.active_temporal
+
+        # Grid dimensions (only for grid substrates)
+        grid_width = grid_height = 0
+        if substrate.type in {"grid", "grid3d", "gridnd"} and substrate.grid is not None:
+            grid_width = substrate.grid.width
+            grid_height = substrate.grid.height
+
+        # Vision: global
+        if vision_support in {"both", "global", "global_only"}:
+            if grid_width and grid_height:
+                dims = grid_width * grid_height
+                is_active = active_vision == "global"
+                desc = f"{grid_width}x{grid_height} grid encoding" if is_active else "MASKED (local vision active)"
+                fields.append(
+                    ObservationField(
+                        uuid=None,
+                        name="obs_grid_encoding",
+                        type="spatial_grid",
+                        dims=dims,
+                        start_index=offset,
+                        end_index=offset + dims,
+                        scope="agent",
+                        description=desc,
+                        semantic_type="spatial",
+                    )
+                )
+                offset += dims
+
+        # Vision: local
+        if vision_support in {"both", "partial", "local_only"}:
+            if grid_width and grid_height:
+                # derive window size from vision_range [0,1] scaled to grid
+                window_size = max(3, int(round(vision_range * grid_width)))
+                if window_size % 2 == 0:
+                    window_size += 1
+                window_size = min(window_size, grid_width)
+                dims = window_size * window_size
+                is_active = active_vision in {"local", "partial"}
+                desc = f"{window_size}x{window_size} local window" if is_active else "MASKED (global vision active)"
+                fields.append(
+                    ObservationField(
+                        uuid=None,
+                        name="obs_local_window",
+                        type="spatial_grid",
+                        dims=dims,
+                        start_index=offset,
+                        end_index=offset + dims,
+                        scope="agent",
+                        description=desc,
+                        semantic_type="spatial",
+                    )
+                )
+                offset += dims
+
+        # Position / velocity (grid substrates only)
+        position_dim = 0
+        if substrate.type in {"grid", "grid3d"}:
+            position_dim = 3 if substrate.type == "grid3d" else 2
+
+        if position_dim:
+            fields.append(
+                ObservationField(
+                    uuid=None,
+                    name="obs_position",
+                    type="vector",
+                    dims=position_dim,
+                    start_index=offset,
+                    end_index=offset + position_dim,
+                    scope="agent",
+                    description=f"Agent position ({position_dim}D)",
+                    semantic_type="spatial",
+                )
+            )
+            offset += position_dim
+            fields.append(
+                ObservationField(
+                    uuid=None,
+                    name="obs_velocity",
+                    type="vector",
+                    dims=position_dim,
+                    start_index=offset,
+                    end_index=offset + position_dim,
+                    scope="agent",
+                    description=f"Agent velocity ({position_dim}D)",
+                    semantic_type="spatial",
+                )
+            )
+            offset += position_dim
+
+        # Meters
+        meter_count = len(environment.environment.meters)
+        fields.append(
+            ObservationField(
+                uuid=None,
+                name="obs_meters",
+                type="vector",
+                dims=meter_count,
+                start_index=offset,
+                end_index=offset + meter_count,
+                scope="agent",
+                description=f"{meter_count} meter values (normalized)",
+                semantic_type="bars",
+            )
+        )
+        offset += meter_count
+
+        # Affordances (distance/availability vector)
+        affordance_count = len(environment.environment.affordances)
+        fields.append(
+            ObservationField(
+                uuid=None,
+                name="obs_affordances",
+                type="vector",
+                dims=affordance_count,
+                start_index=offset,
+                end_index=offset + affordance_count,
+                scope="agent",
+                description=f"{affordance_count} affordance indicators",
+                semantic_type="affordance",
+            )
+        )
+        offset += affordance_count
+
+        # Temporal fields
+        if temporal_support == "enabled":
+            temporal_dims = 4
+            desc = "Temporal features (day/night cycle)" if active_temporal else "MASKED (temporal inactive)"
+            fields.append(
+                ObservationField(
+                    uuid=None,
+                    name="obs_temporal",
+                    type="vector",
+                    dims=temporal_dims,
+                    start_index=offset,
+                    end_index=offset + temporal_dims,
+                    scope="agent",
+                    description=desc,
+                    semantic_type="temporal",
+                )
+            )
+            offset += temporal_dims
+
+        return ObservationSpec.from_fields(fields=fields)
+
+    def _build_action_space_metadata(
+        self,
+        stratum: StratumConfig,
+        actions: ActionsConfig,
+        training: TrainingV2Config,
+    ) -> ActionSpaceMetadata:
+        """Build action space metadata using substrate actions + custom actions."""
+        entries: list[ActionMetadata] = []
+        next_id = 0
+
+        def _add(name: str, action_type: str, source: str, enabled: bool) -> None:
+            nonlocal next_id
+            entries.append(
+                ActionMetadata(
+                    id=next_id,
+                    name=name,
+                    type=action_type,  # type: ignore[arg-type]
+                    enabled=enabled,
+                    source=source,  # type: ignore[arg-type]
+                    costs={},
+                    description="",
+                )
+            )
+            next_id += 1
+
+        substrate_actions = actions.actions.substrate_actions
+        if substrate_actions.inherit:
+            substrate_type = stratum.stratum.substrate.type
+            if substrate_type in {"grid", "grid3d"}:
+                _add("UP", "movement", "substrate", True)
+                _add("DOWN", "movement", "substrate", True)
+                _add("LEFT", "movement", "substrate", True)
+                _add("RIGHT", "movement", "substrate", True)
+                _add("UP_LEFT", "movement", "substrate", True)
+                _add("UP_RIGHT", "movement", "substrate", True)
+                _add("DOWN_LEFT", "movement", "substrate", True)
+                _add("DOWN_RIGHT", "movement", "substrate", True)
+                if substrate_type == "grid3d":
+                    _add("UP_Z", "movement", "substrate", True)
+                    _add("DOWN_Z", "movement", "substrate", True)
+
+        enabled_custom = set(training.enabled_actions.custom) if training.enabled_actions else set()
+        for custom in actions.actions.custom_actions:
+            name = custom.name
+            # Heuristic: WAIT = passive, others = interaction
+            action_type = "passive" if name == "WAIT" else "interaction"
+            enabled = custom.enabled_by_default or name in enabled_custom
+            _add(name, action_type, "custom", enabled)
+
+        return ActionSpaceMetadata(total_actions=len(entries), actions=tuple(entries))
+
+    def _build_meter_metadata(
+        self,
+        environment: EnvConfigV21,
+        bars: BarsV2Config,
+    ) -> MeterMetadata:
+        """Meters: use environment vocabulary, initial from bars."""
+        meter_lookup = {meter.name: meter for meter in bars.meters}
+        meter_infos: list[MeterInfo] = []
+        for idx, meter in enumerate(environment.environment.meters):
+            bar_cfg = meter_lookup.get(meter.name)
+            initial = bar_cfg.initial if bar_cfg else 0.0
+            meter_infos.append(
+                MeterInfo(
+                    name=meter.name,
+                    index=idx,
+                    critical=False,
+                    initial_value=initial,
+                    observable=True,
+                    description=meter.description,
+                )
+            )
+        return MeterMetadata(meters=tuple(meter_infos))
+
+    def _build_affordance_metadata(self, affordances: AffordancesV2Config) -> AffordanceMetadata:
+        """Affordance metadata derived from per-level affordances.yaml."""
+        infos: list[AffordanceInfo] = []
+        for aff in affordances.affordances:
+            infos.append(
+                AffordanceInfo(
+                    id=aff.name,
+                    name=aff.name,
+                    enabled=True,
+                    effects=aff.effects,
+                    cost=float(aff.costs.get("money", 0.0)) if hasattr(aff, "costs") else 0.0,
+                    category=None,
+                    description="",
+                    position=None,
+                )
+            )
+        return AffordanceMetadata(affordances=tuple(infos))
+
+    def _build_optimization_data(
+        self,
+        bars: BarsV2Config,
+        meter_metadata: MeterMetadata,
+        affordance_metadata: AffordanceMetadata,
+        action_metadata: ActionSpaceMetadata,
+    ) -> OptimizationData:
+        """Precompute simple optimization tensors from v2.1 DTOs."""
+        meter_lookup = {m.name: m.index for m in meter_metadata.meters}
+        base_depletions = torch.zeros(len(meter_metadata.meters), dtype=torch.float32)
+        for bar in bars.meters:
+            idx = meter_lookup.get(bar.name)
+            if idx is not None:
+                base_depletions[idx] = float(bar.depletion.passive)
+
+        cascade_entries: list[dict[str, Any]] = []
+        for cascade in bars.cascades:
+            source_idx = meter_lookup.get(cascade.source)
+            target_idx = meter_lookup.get(cascade.target)
+            if source_idx is None or target_idx is None:
+                continue
+            cascade_entries.append(
+                {
+                    "source_idx": source_idx,
+                    "target_idx": target_idx,
+                    "threshold": float(cascade.threshold),
+                    "strength": float(cascade.strength),
+                }
+            )
+
+        action_mask_table = torch.ones((24, action_metadata.total_actions), dtype=torch.bool)
+
+        return OptimizationData(
+            base_depletions=base_depletions,
+            cascade_data={"default": cascade_entries},
+            modulation_data=[],
+            action_mask_table=action_mask_table,
+            affordance_position_map={aff.name: None for aff in affordance_metadata.affordances},
+        )
+
+    def _build_vfs_observation_fields(self, obs_spec: ObservationSpec) -> tuple[VFSObservationField, ...]:
+        """Mirror ObservationSpec fields into VFS observation fields for runtime consumption."""
+        fields: list[VFSObservationField] = []
+        for field in obs_spec.fields:
+            fields.append(
+                VFSObservationField(
+                    id=field.name,
+                    source_variable=field.name,
+                    exposed_to=["agent"],
+                    shape=[field.dims],
+                    normalization=None,
+                    semantic_type=field.semantic_type or "custom",
+                    curriculum_active="MASKED" not in (field.description or ""),
+                )
+            )
+        return tuple(fields)
+
+    def _build_vfs_variables(self, environment: EnvironmentConfig) -> tuple[VariableDef, ...]:
+        """Build VFS variables from environment.yaml declarations."""
+        vars_out: list[VariableDef] = []
+        for var in environment.environment.variables:
+            # No defaults: require dims for vector types
+            dims = var.dims if hasattr(var, "dims") else None
+            vars_out.append(
+                VariableDef(
+                    id=var.name,
+                    scope=var.scope,
+                    type="vecNf" if dims and dims > 1 else "scalar",
+                    dims=dims if dims and dims > 1 else None,
+                    lifetime="tick",
+                    readable_by=["agent", "engine"],
+                    writable_by=["engine"],
+                    default=0.0 if not dims else [0.0] * dims,
+                    description=var.description,
+                )
+            )
+        return tuple(vars_out)
+
+    def _build_universe_metadata(
+        self,
+        raw: RawConfigsV21,
+        primary_meta: CompiledUniverse.LevelMetadata,
+        *,
+        experiment_dir: Path,
+    ) -> UniverseMetadata:
+        """Construct UniverseMetadata summary."""
+        meter_names = tuple(m.name for m in primary_meta.meter_metadata.meters)
+        meter_name_to_index = {m.name: m.index for m in primary_meta.meter_metadata.meters}
+        affordance_ids = tuple(a.id for a in primary_meta.affordance_metadata.affordances)
+        affordance_id_to_index = {a.id: idx for idx, a in enumerate(primary_meta.affordance_metadata.affordances)}
+
+        grid_size = None
+        grid_cells = None
+        position_dim = 0
+        substrate_type = raw.stratum.stratum.substrate.type
+        if substrate_type in {"grid", "grid3d"} and raw.stratum.stratum.substrate.grid is not None:
+            width = raw.stratum.stratum.substrate.grid.width
+            height = raw.stratum.stratum.substrate.grid.height
+            grid_size = width
+            grid_cells = width * height
+            position_dim = 3 if substrate_type == "grid3d" else 2
+
+        config_mtime = self._compute_config_mtime(experiment_dir)
+
+        return UniverseMetadata(
+            universe_name=raw.experiment.experiment.metadata.name,
+            schema_version=SCHEMA_VERSION,
+            substrate_type=substrate_type,
+            position_dim=position_dim,
+            meter_count=len(meter_names),
+            meter_names=meter_names,
+            meter_name_to_index=meter_name_to_index,
+            affordance_count=len(affordance_ids),
+            affordance_ids=affordance_ids,
+            affordance_id_to_index=affordance_id_to_index,
+            action_count=primary_meta.action_metadata.total_actions,
+            observation_dim=primary_meta.observation_spec.total_dims,
+            grid_size=grid_size,
+            grid_cells=grid_cells,
+            max_sustainable_income=0.0,
+            total_affordance_costs=0.0,
+            economic_balance=0.0,
+            ticks_per_day=24,
+            config_version=raw.experiment.experiment.version if hasattr(raw.experiment, "experiment") else "1.0",
+            compiler_version=COMPILER_VERSION,
+            compiled_at=datetime.now(UTC).isoformat(),
+            config_hash="",  # TODO: add hash if needed
+            config_mtime=config_mtime,
+            provenance_id=str(experiment_dir),
+            compiler_git_sha="",
+            python_version=sys.version.split()[0],
+            torch_version=torch.__version__,
+            pydantic_version="",
+        )
 
     def _auto_generate_standard_variables(self, raw_configs: RawConfigs) -> list[VariableDef]:
         """Auto-generate standard system variables from substrate, bars, and affordances.

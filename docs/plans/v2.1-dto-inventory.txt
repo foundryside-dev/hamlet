@@ -1,0 +1,18 @@
+# v2.1 DTO Inventory (2025-11-16)
+
+## Existing DTOs
+- ExperimentConfig (experiment.yaml)
+- StratumConfig (stratum.yaml)
+- EnvironmentConfig (environment.yaml)
+- ActionsConfig (actions.yaml)
+- AgentConfig (agent.yaml)
+- CurriculumConfig (curriculum.yaml)
+- BarsV2Config (bars.yaml)
+- AffordancesV2Config (affordances.yaml)
+- TrainingV2Config (training.yaml)
+
+## Missing DTOs
+- None
+
+## DTOs needing updates
+- None (all match DTO-GROUND-TRUTH direct/wrapper pattern)

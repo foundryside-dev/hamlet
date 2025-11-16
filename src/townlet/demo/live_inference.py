@@ -271,37 +271,43 @@ class LiveInferenceServer:
         self.compiled_universe = self.compiler.compile(self.config_dir, primary_level=self.level_name)
         level_meta = self.compiled_universe.get_level(self.level_name)
 
-        population_cfg = level_meta.training.population
+        # v2.1 training config DTOs
+        training_cfg = level_meta.training
+        population_cfg = training_cfg.population
         curriculum_cfg = level_meta.curriculum.curriculum
-        exploration_cfg = level_meta.training.exploration
-        training_cfg = level_meta.training.training_loop
+        exploration_cfg = training_cfg.exploration
+        intrinsic_cfg = training_cfg.intrinsic
+        loop_cfg = training_cfg.training_loop
 
-        num_agents = population_cfg.num_agents
-        vision_range = env_cfg.vision_range
-        partial_observability = env_cfg.partial_observability
-        enable_temporal_mechanics = env_cfg.enable_temporal_mechanics
+        # Derived runtime parameters
+        num_agents = population_cfg.size
+        partial_observability = curriculum_cfg.active_vision != "global"
+        vision_range = curriculum_cfg.vision_range
+        enable_temporal_mechanics = curriculum_cfg.active_temporal
         vision_window_size = 2 * vision_range + 1
+        enabled_affordances = getattr(training_cfg, "enabled_affordances", None)
 
         logger.info(
             "Environment config: grid=%s, POMDP=%s, vision=%s, temporal=%s, affordances=%s",
-            self.runtime_universe.metadata.grid_size,  # Read from substrate.yaml via metadata
+            self.compiled_universe.metadata.grid_size,  # Read from substrate.yaml via metadata
             partial_observability,
             vision_range,
             enable_temporal_mechanics,
-            env_cfg.enabled_affordances if env_cfg.enabled_affordances else "all",
+            enabled_affordances if enabled_affordances else "all",
         )
 
         self.env = VectorizedHamletEnv.from_universe(
             self.compiled_universe,
+            self.level_name,
             num_agents=num_agents,
             device=self.device,
         )
 
-        obs_dim = self.runtime_universe.metadata.observation_dim
+        obs_dim = level_meta.observation_spec.total_dims
 
         # Create curriculum
         self.curriculum = AdversarialCurriculum(
-            max_steps_per_episode=training_cfg.max_steps_per_episode,
+            max_steps_per_episode=loop_cfg.max_steps_per_episode,
             survival_advance_threshold=curriculum_cfg.survival_advance_threshold,
             survival_retreat_threshold=curriculum_cfg.survival_retreat_threshold,
             entropy_gate=getattr(curriculum_cfg, "entropy_gate", 0.0),
@@ -309,19 +315,23 @@ class LiveInferenceServer:
             device=self.device,
         )
 
-        # Create exploration (for inference, we want greedy)
-        # Conditionally pass active_mask based on mask_unused_obs config
-        active_mask = self.env.observation_activity.active_mask if population_cfg.mask_unused_obs else None
+        # Create exploration (for inference, we typically want near-greedy behavior)
+        active_mask = self.env.observation_activity.active_mask
         self.exploration = AdaptiveIntrinsicExploration(
             obs_dim=obs_dim,
-            embed_dim=exploration_cfg.embed_dim,
-            rnd_training_batch_size=training_cfg.batch_size,  # Use main batch_size from config
-            initial_intrinsic_weight=exploration_cfg.initial_intrinsic_weight,
-            variance_threshold=exploration_cfg.variance_threshold,
-            survival_window=exploration_cfg.survival_window,
-            epsilon_start=training_cfg.epsilon_start,
-            epsilon_decay=training_cfg.epsilon_decay,
-            epsilon_min=training_cfg.epsilon_min,
+            embed_dim=intrinsic_cfg.rnd.feature_dim,
+            rnd_learning_rate=intrinsic_cfg.rnd.learning_rate,
+            rnd_training_batch_size=training_cfg.replay_buffer.batch_size,
+            initial_intrinsic_weight=0.0,
+            min_intrinsic_weight=intrinsic_cfg.annealing.min_weight,
+            variance_threshold=intrinsic_cfg.annealing.threshold,
+            min_survival_fraction=0.4,
+            max_episode_length=loop_cfg.max_steps_per_episode,
+            survival_window=100,
+            decay_rate=intrinsic_cfg.annealing.decay_rate,
+            epsilon_start=exploration_cfg.epsilon_start,
+            epsilon_decay=exploration_cfg.epsilon_decay,
+            epsilon_min=exploration_cfg.epsilon_end,
             device=self.device,
             active_mask=active_mask,
         )
@@ -350,10 +360,10 @@ class LiveInferenceServer:
             obs_dim=obs_dim,
             action_dim=self.env.action_dim,
             vision_window_size=vision_window_size,
-            train_frequency=training_cfg.train_frequency,
-            batch_size=training_cfg.batch_size,
-            sequence_length=training_cfg.sequence_length,
-            max_grad_norm=training_cfg.max_grad_norm,
+            train_frequency=4,
+            batch_size=training_cfg.replay_buffer.batch_size,
+            sequence_length=8,
+            max_grad_norm=10.0,
             brain_config=brain_config,
             max_episodes=None,  # Not used by live inference
             max_steps_per_episode=None,  # Not used by live inference

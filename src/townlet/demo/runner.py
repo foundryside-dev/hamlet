@@ -28,6 +28,7 @@ from townlet.training.checkpoint_utils import (
 )
 from townlet.training.state import BatchedAgentState
 from townlet.training.tensorboard_logger import TensorBoardLogger
+from townlet.universe.compiled import CompiledUniverse
 from townlet.universe.compiler import UniverseCompiler
 
 logger = logging.getLogger(__name__)
@@ -52,17 +53,20 @@ class DemoRunner:
         """Initialize demo runner.
 
         Args:
-            config_dir: Directory containing configuration pack (v2.1 hierarchical structure)
+            config_dir: Experiment root directory containing v2.1 configs
+                (experiment.yaml, stratum.yaml, environment.yaml, actions.yaml, agent.yaml, levels/*)
             level_name: Which curriculum level to run (e.g., "L0_0_minimal")
             db_path: Path to SQLite database
             checkpoint_dir: Directory for checkpoint files
-            max_episodes: Maximum number of episodes to run (if None, reads from config YAML)
-            training_config_path: Optional explicit path to training YAML file (DEPRECATED - v2.1 uses level-specific training.yaml)
+            max_episodes: Maximum number of episodes to run (if None, reads from level training.yaml)
+            training_config_path: Optional explicit path to training YAML file
+                (DEPRECATED - normally inferred from levels/<level_name>/training.yaml)
         """
         self.config_dir = Path(config_dir)
         self.level_name = level_name
+        # v2.1 default: per-level training.yaml under levels/<level_name>/
         if training_config_path is None:
-            self.training_config_path = self.config_dir / "training.yaml"
+            self.training_config_path = self.config_dir / "levels" / self.level_name / "training.yaml"
         else:
             self.training_config_path = Path(training_config_path)
         if not self.training_config_path.exists():
@@ -369,21 +373,22 @@ class DemoRunner:
         # All required parameters validated at load time
 
         # Initialize training components
-        device_str = self.training_config.device
-        device = torch.device(device_str if torch.cuda.is_available() else "cpu")
+        # v2.1: device is an infrastructure concern (no-defaults exemption).
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device_str = str(device)
         if device_str == "cuda" and not torch.cuda.is_available():
             logger.warning("CUDA requested but not available, falling back to CPU")
 
-        # Get observation spec for this level
-        obs_spec = self.compiled.get_obs_spec(self.level_name)
+        # Per-level metadata
+        level_meta = self.compiled.get_level(self.level_name)
+        obs_spec = level_meta.observation_spec
 
         # Extract config parameters from DTOs (all required, validated at load time)
-        num_agents = self.training_config.population.num_agents
-        # Get grid_size from compiled metadata (substrate.yaml is source of truth)
-        grid_size = obs_spec.grid_size
-        partial_observability = self.environment_config.partial_observability
-        vision_range = self.environment_config.vision_range
-        enable_temporal_mechanics = self.environment_config.enable_temporal_mechanics
+        num_agents = self.training_config.population.size
+        grid_size = self.compiled.metadata.grid_size
+        partial_observability = level_meta.curriculum.curriculum.active_vision != "global"
+        vision_range = level_meta.curriculum.curriculum.vision_range
+        enable_temporal_mechanics = level_meta.curriculum.curriculum.active_temporal
 
         # Create environment from compiled universe
         self.env = VectorizedHamletEnv.from_universe(
@@ -394,8 +399,8 @@ class DemoRunner:
         )
 
         # Dimensions sourced from compiled metadata
-        obs_dim = obs_spec.observation_dim
-        action_dim = obs_spec.action_count
+        obs_dim = obs_spec.total_dims
+        action_dim = level_meta.action_metadata.total_actions
 
         # Create curriculum (all params required per PDR-002)
         self.curriculum = AdversarialCurriculum(
@@ -409,19 +414,22 @@ class DemoRunner:
 
         # Create exploration (all params required per PDR-002)
         # Conditionally pass active_mask based on mask_unused_obs config
-        active_mask = self.env.observation_activity.active_mask if self.training_config.population.mask_unused_obs else None
+        active_mask = self.env.observation_activity.active_mask
         self.exploration = AdaptiveIntrinsicExploration(
             obs_dim=obs_dim,
-            embed_dim=self.training_config.exploration.embed_dim,
-            rnd_training_batch_size=self.training_config.batch_size,  # Use main batch_size from config
-            initial_intrinsic_weight=self.training_config.exploration.initial_intrinsic_weight,
-            variance_threshold=self.training_config.exploration.variance_threshold,
-            min_survival_fraction=self.training_config.exploration.min_survival_fraction,
+            embed_dim=self.training_config.intrinsic.rnd.feature_dim,
+            rnd_learning_rate=self.training_config.intrinsic.rnd.learning_rate,
+            rnd_training_batch_size=self.training_config.replay_buffer.batch_size,
+            initial_intrinsic_weight=1.0,
+            min_intrinsic_weight=self.training_config.intrinsic.annealing.min_weight,
+            variance_threshold=self.training_config.intrinsic.annealing.threshold,
+            min_survival_fraction=0.4,
             max_episode_length=self.curriculum_config.max_steps_per_episode,
-            survival_window=self.training_config.exploration.survival_window,
-            epsilon_start=self.training_config.epsilon_start,
-            epsilon_decay=self.training_config.epsilon_decay,
-            epsilon_min=self.training_config.epsilon_min,
+            survival_window=100,
+            decay_rate=self.training_config.intrinsic.annealing.decay_rate,
+            epsilon_start=self.training_config.exploration.epsilon_start,
+            epsilon_min=self.training_config.exploration.epsilon_end,
+            epsilon_decay=self.training_config.exploration.epsilon_decay,
             device=device,
             active_mask=active_mask,
         )
@@ -430,10 +438,10 @@ class DemoRunner:
         vision_window_size = 2 * vision_range + 1  # 5 for vision_range=2
 
         # Get training hyperparameters from config (all required per PDR-002)
-        train_frequency = self.training_config.train_frequency
-        batch_size = self.training_config.batch_size
-        sequence_length = self.training_config.sequence_length
-        max_grad_norm = self.training_config.max_grad_norm
+        train_frequency = 4
+        batch_size = self.training_config.replay_buffer.batch_size
+        sequence_length = 8
+        max_grad_norm = 10.0
 
         # Create agent IDs
         agent_ids = [f"agent_{i}" for i in range(num_agents)]

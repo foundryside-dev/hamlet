@@ -18,9 +18,11 @@ import torch
 from townlet.environment.action_builder import ComposedActionSpace
 from townlet.environment.affordance_config import AffordanceConfig, AffordanceConfigCollection
 from townlet.environment.affordance_engine import AffordanceEngine
+from townlet.environment.dac_engine import DACEngine
 from townlet.environment.meter_dynamics import MeterDynamics
+from townlet.substrate import SpatialSubstrate
 from townlet.substrate.continuous import ContinuousSubstrate
-from townlet.universe.dto import MeterMetadata
+from townlet.universe.dto import ActionSpaceMetadata, MeterMetadata
 from townlet.vfs.registry import VariableRegistry
 
 if TYPE_CHECKING:
@@ -145,11 +147,10 @@ class VectorizedHamletEnv:
 
         # Training/runtime controls: derive from level.training
         training_cfg = level.training
-        population_cfg = training_cfg.population
-        env_cfg = getattr(training_cfg, "environment", None)
-        if env_cfg is None:
-            raise ValueError("training.environment must be specified (no defaults allowed)")
-        self.randomize_affordances = bool(env_cfg.randomize_affordances)
+        # population_cfg is currently unused but retained for future runtime wiring
+        population_cfg = training_cfg.population  # noqa: F841
+        # v2.1: runtime environment knobs live on TrainingV2Config
+        self.randomize_affordances = training_cfg.randomize_affordances
         self.partial_observability = level.curriculum.curriculum.active_vision != "global"
         self.vision_range = level.curriculum.curriculum.vision_range
         self.enable_temporal_mechanics = level.curriculum.curriculum.active_temporal
@@ -188,28 +189,6 @@ class VectorizedHamletEnv:
         self.meter_count = self.metadata.meter_count
         meter_count = self.meter_count
         self.base_depletions = self.optimization_data.base_depletions.to(self.device)
-
-        # Affordance vocabulary from compiled metadata
-        metadata_affordance_lookup = dict(self.metadata.affordance_id_to_index)
-        self.affordance_name_to_id = {aff.name: aff.id for aff in runtime_affordances}
-        self.affordance_name_to_mask_idx = {
-            name: metadata_affordance_lookup.get(aff_id)
-            for name, aff_id in self.affordance_name_to_id.items()
-            if metadata_affordance_lookup.get(aff_id) is not None
-        }
-        self.affordance_positions_from_config = {aff.name: getattr(aff, "position", None) for aff in runtime_affordances}
-        optimization_position_map = getattr(self.optimization_data, "affordance_position_map", {})
-        self.affordance_positions_from_optimization = {
-            name: optimization_position_map.get(aff_id) for name, aff_id in self.affordance_name_to_id.items()
-        }
-
-        all_affordance_names = [aff.name for aff in runtime_affordances]
-        affordance_names_to_deploy = all_affordance_names  # v2.1: no enabled_affordances gating
-
-        default_position = torch.zeros(self.substrate.position_dim, dtype=self.substrate.position_dtype, device=self.device)
-        self.affordances = {name: default_position.clone() for name in affordance_names_to_deploy}
-        self.affordance_names = all_affordance_names
-        self.num_affordance_types = len(all_affordance_names)
 
         # Validate partial observability support
         if partial_observability and self.substrate.position_dim == 0:
@@ -285,7 +264,7 @@ class VectorizedHamletEnv:
 
         # Instantiate DACEngine using agent drive config (v2.1)
         self.dac_engine = DACEngine(
-            dac_config=self.universe.agent.drive,
+            dac_config=self.universe.agent.agent.drive,
             vfs_registry=self.vfs_registry,
             device=self.device,
             num_agents=self.num_agents,
@@ -370,6 +349,32 @@ class VectorizedHamletEnv:
                 )
             )
 
+        # Affordance vocabulary and positions from compiled metadata
+        metadata_affordance_lookup = dict(self.metadata.affordance_id_to_index)
+        self.affordance_name_to_id = {aff.name: aff.id for aff in runtime_affordances}
+        self.affordance_name_to_mask_idx = {
+            name: metadata_affordance_lookup.get(aff_id)
+            for name, aff_id in self.affordance_name_to_id.items()
+            if metadata_affordance_lookup.get(aff_id) is not None
+        }
+        self.affordance_positions_from_config = {aff.name: getattr(aff, "position", None) for aff in runtime_affordances}
+        optimization_position_map = getattr(self.optimization_data, "affordance_position_map", {})
+        self.affordance_positions_from_optimization = {
+            name: optimization_position_map.get(aff_id) for name, aff_id in self.affordance_name_to_id.items()
+        }
+
+        all_affordance_names = [aff.name for aff in runtime_affordances]
+        affordance_names_to_deploy = _resolve_deployable_affordances(
+            all_affordance_names,
+            training_cfg.enabled_affordances,
+            self.affordance_name_to_id,
+        )
+
+        default_position = torch.zeros(self.substrate.position_dim, dtype=self.substrate.position_dtype, device=self.device)
+        self.affordances = {name: default_position.clone() for name in affordance_names_to_deploy}
+        self.affordance_names = all_affordance_names
+        self.num_affordance_types = len(all_affordance_names)
+
         # Build modulation rules mapping to affordance names
         modulation_rules = []
         for entry in self.optimization_data.modulation_data:
@@ -377,9 +382,9 @@ class VectorizedHamletEnv:
             bar_idx = entry.get("bar_idx")
             if aff_idx is None or bar_idx is None:
                 continue
-            if aff_idx < 0 or aff_idx >= len(affordance_metadata.affordances):
+            if aff_idx < 0 or aff_idx >= len(all_affordance_names):
                 continue
-            aff_name = affordance_metadata.affordances[aff_idx].name
+            aff_name = all_affordance_names[aff_idx]
             modulation_rules.append(
                 {
                     "affordance": aff_name,
@@ -452,18 +457,9 @@ class VectorizedHamletEnv:
         # Track set of unique affordances seen per agent
         self._affordances_seen: list[set[str]] = [set() for _ in range(self.num_agents)]
 
-        # Initialize affordance positions per configuration
-        enabled_affordances = None
-        env_cfg = getattr(training_cfg, "environment", None)
-        if env_cfg is not None:
-            enabled_affordances = env_cfg.enabled_affordances
-        if enabled_affordances is not None:
-            enabled_lookup = set(enabled_affordances)
-            self.affordances = {name: pos for name, pos in self.affordances.items() if name in enabled_lookup}
-            self.affordance_names = [name for name in self.affordance_names if name in enabled_lookup]
-            self.num_affordance_types = len(self.affordance_names)
-            self.affordance_name_to_id = {name: self.affordance_name_to_id[name] for name in self.affordance_names}
-
+        # Initialize affordance positions
+        # v2.1: all affordances from affordances.yaml are deployable; no curriculum-level
+        # enabled_affordances gating via training.yaml.
         if self.randomize_affordances:
             self.randomize_affordance_positions()
         else:
@@ -821,12 +817,12 @@ class VectorizedHamletEnv:
         constant across curriculum levels.
 
         Returns:
-            encoding: [num_agents, num_affordance_types + 1]
-                Last dimension is "none" (not on any affordance)
+            encoding: [num_agents, num_affordance_types]
+                All zeros for agents not on any affordance
         """
-        # Initialize with "none" (all zeros except last column)
-        affordance_encoding = torch.zeros(self.num_agents, self.num_affordance_types + 1, device=self.device)
-        affordance_encoding[:, -1] = 1.0  # Default to "none"
+        # Initialize to "none" (all zeros); a 1.0 will be set at the
+        # corresponding affordance index when an agent is on that affordance.
+        affordance_encoding = torch.zeros(self.num_agents, self.num_affordance_types, device=self.device)
 
         # Iterate over FULL affordance vocabulary (not just deployed)
         # This ensures consistent encoding across curriculum levels
@@ -837,9 +833,7 @@ class VectorizedHamletEnv:
                 # Check which agents are on affordance (using substrate)
                 on_affordance = self.substrate.is_on_position(self.positions, affordance_pos)
                 if on_affordance.any():
-                    affordance_encoding[on_affordance, -1] = 0.0  # Clear "none"
                     affordance_encoding[on_affordance, affordance_idx] = 1.0
-            # If affordance NOT deployed, agent can never be "on" it, stays as "none"
 
         return affordance_encoding
 

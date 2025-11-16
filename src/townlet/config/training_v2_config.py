@@ -263,6 +263,14 @@ class TrainingV2Config(BaseModel):
 
     version: Literal["1.0"] = Field(description="Config version")
     population: PopulationConfig = Field(description="Population settings")
+    enabled_affordances: list[str] | None = Field(
+        description=("Subset of affordances to deploy for this curriculum level " "(null = deploy all affordances from environment.yaml).")
+    )
+    randomize_affordances: bool = Field(
+        description=(
+            "true = randomize affordance positions each episode, " "false = use configured positions from affordances.yaml/optimization."
+        )
+    )
     enabled_actions: EnabledActionsConfig | None = Field(
         default=None, description="Optional curriculum-level action control (null = use defaults from actions.yaml)"
     )

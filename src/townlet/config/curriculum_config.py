@@ -25,7 +25,7 @@ class CurriculumConfigRoot(BaseModel):
     """Root structure for curriculum.yaml file."""
 
     version: str = Field(..., description="Config schema version")
-    active_vision: Literal["global", "local"] = Field(..., description="Vision mode (global=full observability, local=POMDP)")
+    active_vision: Literal["global", "partial"] = Field(..., description="Vision mode (global=full observability, partial=POMDP)")
     vision_range: float = Field(..., description="Vision range (0.0-1.0 for local, ignored for global)", ge=0.0, le=1.0)
     active_temporal: bool = Field(..., description="Whether temporal mechanics are active")
     day_length: int | None = Field(None, description="Day length in ticks (required if active_temporal=true)")

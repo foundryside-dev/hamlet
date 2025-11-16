@@ -21,7 +21,6 @@ from collections.abc import Callable
 import torch
 
 from townlet.config.agent_config import DriveConfig
-from townlet.config.drive_as_code import ModifierConfig
 from townlet.vfs.registry import VariableRegistry
 
 
@@ -91,31 +90,39 @@ class DACEngine:
         Returns:
             Dictionary mapping modifier name to evaluation function
         """
-        compiled = {}
+        compiled: dict[str, Callable] = {}
 
         for mod_name, mod_config in self.dac_config.modifiers.items():
-            # Closure captures mod_config
-            def create_modifier_fn(config: ModifierConfig) -> Callable:
+            # Closure captures per-modifier config (can be either drive_as_code.ModifierConfig
+            # or agent_config.RangeMultiplierModifier with a `source` field).
+            def create_modifier_fn(config) -> Callable:
                 # Pre-compute range boundaries and multipliers as tensors
                 ranges = sorted(config.ranges, key=lambda r: r.min)
 
                 def evaluate_modifier(meters: torch.Tensor) -> torch.Tensor:
-                    """Evaluate modifier for all agents.
+                    """Evaluate modifier for all agents."""
+                    # Determine source (bar or VFS variable) from config shape.
+                    bar_name: str | None = None
+                    var_name: str | None = None
 
-                    Args:
-                        meters: [num_agents, meter_count] normalized meter values
+                    # drive_as_code.ModifierConfig: bar/variable fields
+                    if hasattr(config, "bar") or hasattr(config, "variable"):
+                        bar_name = getattr(config, "bar", None)
+                        var_name = getattr(config, "variable", None)
+                    else:
+                        # agent_config.RangeMultiplierModifier: single 'source' string
+                        source = getattr(config, "source", None)
+                        if source:
+                            if source in self.bar_index_map:
+                                bar_name = source
+                            else:
+                                var_name = source
 
-                    Returns:
-                        [num_agents] multipliers for this modifier
-                    """
-                    # Get source value
-                    if config.bar:
-                        # Bar source: Index into meters tensor
-                        bar_idx = self._get_bar_index(config.bar)
-                        source_value = meters[:, bar_idx]  # [num_agents]
-                    elif config.variable:
-                        # VFS variable source: Read from registry
-                        source_value = self.vfs_registry.get(config.variable, reader=self.vfs_reader)  # [num_agents]
+                    if bar_name:
+                        bar_idx = self._get_bar_index(bar_name)
+                        source_value = meters[:, bar_idx]
+                    elif var_name:
+                        source_value = self.vfs_registry.get(var_name, reader=self.vfs_reader)
                     else:
                         raise ValueError(f"Modifier has no source: {mod_name}")
 
@@ -174,42 +181,81 @@ class DACEngine:
             return compute_multiplicative
 
         elif strategy.type == "constant_base_with_shaped_bonus":
-            # reward = base + sum(bar_bonuses) + sum(variable_bonuses)
-            base_reward = strategy.base_reward if strategy.base_reward is not None else 1.0
-            bar_bonuses = strategy.bar_bonuses if strategy.bar_bonuses is not None else []
-            variable_bonuses = strategy.variable_bonuses if strategy.variable_bonuses is not None else []
+            # Two supported shapes:
+            # 1) drive_as_code.ExtrinsicStrategyConfig with base_reward/bar_bonuses/variable_bonuses
+            # 2) agent_config.ExtrinsicConfig with base/bonuses (bar, weight, transform)
 
-            def compute_constant_base(meters: torch.Tensor, dones: torch.Tensor) -> torch.Tensor:
-                """Constant base + shaped bonuses"""
-                # Start with base reward
-                reward = torch.full((self.num_agents,), base_reward, device=self.device, dtype=torch.float32)
+            if hasattr(strategy, "base_reward"):
+                # DAC v2.0 path (drive_as_code.yaml)
+                base_reward = strategy.base_reward if strategy.base_reward is not None else 1.0
+                bar_bonuses = strategy.bar_bonuses if strategy.bar_bonuses is not None else []
+                variable_bonuses = strategy.variable_bonuses if strategy.variable_bonuses is not None else []
 
-                # Add bar bonuses: bonus = scale * (bar_value - center)
-                for bonus_config in bar_bonuses:
+                def compute_constant_base(meters: torch.Tensor, dones: torch.Tensor) -> torch.Tensor:
+                    """Constant base + shaped bonuses (DAC schema)."""
+                    reward = torch.full((self.num_agents,), base_reward, device=self.device, dtype=torch.float32)
+
+                    # Bar bonuses: bonus = scale * (bar_value - center)
+                    for bonus_config in bar_bonuses:
+                        bar_idx = self._get_bar_index(bonus_config.bar)
+                        bar_value = meters[:, bar_idx]
+                        bonus = bonus_config.scale * (bar_value - bonus_config.center)
+                        reward = reward + bonus
+
+                    # VFS variable bonuses: bonus = weight * var_value
+                    for var_bonus_config in variable_bonuses:
+                        var_value = self.vfs_registry.get(var_bonus_config.variable, reader=self.vfs_reader)
+                        bonus = var_bonus_config.weight * var_value
+                        reward = reward + bonus
+
+                    for modifier_name in strategy.apply_modifiers:
+                        if modifier_name in self.modifiers:
+                            modifier_fn = self.modifiers[modifier_name]
+                            multiplier = modifier_fn(meters)
+                            reward = reward * multiplier
+
+                    reward = torch.where(dones, torch.zeros_like(reward), reward)
+                    return reward
+
+                return compute_constant_base
+
+            # Agent v2.1 path (agent.yaml: extrinsic.base + bonuses[bar, weight, transform])
+            base_reward = getattr(strategy, "base", None)
+            if base_reward is None:
+                base_reward = 0.0
+            bonuses = getattr(strategy, "bonuses", None) or []
+
+            def compute_constant_base_agent(meters: torch.Tensor, dones: torch.Tensor) -> torch.Tensor:
+                """Constant base + simple shaped bonuses from agent.yaml."""
+                reward = torch.full((self.num_agents,), float(base_reward), device=self.device, dtype=torch.float32)
+
+                for bonus_config in bonuses:
                     bar_idx = self._get_bar_index(bonus_config.bar)
                     bar_value = meters[:, bar_idx]
-                    bonus = bonus_config.scale * (bar_value - bonus_config.center)
+                    transform = getattr(bonus_config, "transform", "linear")
+                    weight = float(bonus_config.weight)
+
+                    if transform == "linear":
+                        bonus = weight * bar_value
+                    elif transform == "quadratic":
+                        bonus = weight * (bar_value**2)
+                    elif transform == "exponential":
+                        bonus = weight * torch.exp(bar_value)
+                    else:
+                        raise ValueError(f"Unsupported extrinsic transform '{transform}' for bar '{bonus_config.bar}'")
+
                     reward = reward + bonus
 
-                # Add variable bonuses (from VFS): bonus = weight * var_value
-                for var_bonus_config in variable_bonuses:
-                    var_value = self.vfs_registry.get(var_bonus_config.variable, reader=self.vfs_reader)
-                    bonus = var_bonus_config.weight * var_value
-                    reward = reward + bonus
-
-                # Apply modifiers
-                for modifier_name in strategy.apply_modifiers:
+                for modifier_name in getattr(strategy, "apply_modifiers", []) or []:
                     if modifier_name in self.modifiers:
                         modifier_fn = self.modifiers[modifier_name]
                         multiplier = modifier_fn(meters)
                         reward = reward * multiplier
 
-                # Dead agents get 0.0
                 reward = torch.where(dones, torch.zeros_like(reward), reward)
-
                 return reward
 
-            return compute_constant_base
+            return compute_constant_base_agent
 
         elif strategy.type == "additive_unweighted":
             # reward = base + sum(bars)
@@ -456,9 +502,10 @@ class DACEngine:
             if bonus_config.type == "approach_reward":
                 # Use closure factory to capture config correctly
                 def create_approach_reward_fn(config):
-                    weight = config.weight
-                    target_affordance = config.target_affordance
-                    max_distance = config.max_distance
+                    # Agent.yaml uses 'target', DAC uses 'target_affordance'
+                    target_affordance = getattr(config, "target_affordance", None) or getattr(config, "target", None)
+                    weight = getattr(config, "weight", 0.0)
+                    max_distance = getattr(config, "max_distance", 1.0)
 
                     def compute_approach_reward(**kwargs) -> torch.Tensor:
                         """Compute approach reward bonus for all agents."""
@@ -492,7 +539,10 @@ class DACEngine:
             elif bonus_config.type == "completion_bonus":
                 # Use closure factory to capture config correctly
                 def create_completion_bonus_fn(config):
-                    weight = config.weight
+                    # Agent.yaml uses 'bonus' for magnitude; DAC uses 'weight'
+                    weight = getattr(config, "weight", None)
+                    if weight is None:
+                        weight = getattr(config, "bonus", 0.0)
                     target_affordance = config.affordance
 
                     def compute_completion_bonus(**kwargs) -> torch.Tensor:

@@ -4,6 +4,10 @@ training:
   population:
     size: 256
 
+  # Environment runtime controls
+  enabled_affordances: null
+  randomize_affordances: true
+
   enabled_actions:
     custom:
       - REST

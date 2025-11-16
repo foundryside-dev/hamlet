@@ -57,7 +57,14 @@ Note:
         "--config",
         type=str,
         required=True,
-        help="Path to configuration pack directory or training YAML (e.g., configs/L1_full_observability)",
+        help="Path to v2.1 experiment directory (e.g., configs/default_curriculum)",
+    )
+
+    parser.add_argument(
+        "--level",
+        type=str,
+        default="L1_full_observability",
+        help="Curriculum level name to run (default: L1_full_observability)",
     )
 
     parser.add_argument(
@@ -96,21 +103,18 @@ def main():
         logging.getLogger().setLevel(logging.DEBUG)
         logger.debug("Debug logging enabled")
 
-    # Determine config pack directory and training config file
-    config_input = Path(args.config)
-    if config_input.is_dir():
-        config_dir = config_input
-        config_file = config_dir / "training.yaml"
-        if not config_file.exists():
-            logger.error(f"Config folder '{config_dir}' does not contain training.yaml")
-            sys.exit(1)
-    else:
-        config_file = config_input
-        if not config_file.exists():
-            logger.error(f"Config file not found: {config_file}")
-            logger.error("Provide a valid config path (directory with training.yaml or legacy YAML file).")
-            sys.exit(1)
-        config_dir = config_file.parent
+    # Determine experiment root and per-level training config path
+    experiment_root = Path(args.config)
+    if not experiment_root.is_dir():
+        logger.error(f"Experiment root '{experiment_root}' is not a directory")
+        sys.exit(1)
+
+    level_name = args.level
+    config_dir = experiment_root
+    config_file = experiment_root / "levels" / level_name / "training.yaml"
+    if not config_file.exists():
+        logger.error(f"Training config not found for level '{level_name}': {config_file}")
+        sys.exit(1)
 
     # Read total_episodes from config if not provided via CLI
     total_episodes = args.episodes
@@ -133,7 +137,7 @@ def main():
     logger.info("=" * 60)
     logger.info("Unified Demo Server Starting")
     logger.info("=" * 60)
-    logger.info(f"Config Pack: {config_dir}")
+    logger.info(f"Experiment Root: {config_dir}")
     logger.info(f"Training Config: {config_file}")
     if args.episodes is not None:
         logger.info(f"Episodes: {total_episodes} (from --episodes flag)")
@@ -151,7 +155,6 @@ def main():
     try:
         server = UnifiedServer(
             config_dir=str(config_dir),
-            training_config_path=str(config_file),
             total_episodes=total_episodes,
             checkpoint_dir=args.checkpoint_dir,
             inference_port=args.inference_port,

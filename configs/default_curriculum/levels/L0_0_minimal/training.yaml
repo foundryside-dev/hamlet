@@ -4,6 +4,10 @@ training:
   population:
     size: 256
 
+  # Environment runtime controls
+  enabled_affordances: null  # null = deploy all affordances from environment.yaml
+  randomize_affordances: true
+
   enabled_actions:
     custom:
       - REST

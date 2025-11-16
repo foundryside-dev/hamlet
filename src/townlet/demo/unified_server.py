@@ -53,19 +53,15 @@ class UnifiedServer:
         Initialize unified server.
 
         Args:
-            config_dir: Directory containing configuration pack (training.yaml, affordances.yaml, etc.)
+            config_dir: Experiment root directory containing v2.1 configs
+                (experiment.yaml, stratum.yaml, environment.yaml, actions.yaml, agent.yaml, levels/*)
             total_episodes: Total number of episodes to train
             checkpoint_dir: Directory for checkpoints (auto-generated if None)
             inference_port: Port for inference WebSocket server
         """
         self.config_dir = Path(config_dir)
-        if training_config_path:
-            self.training_config_path = Path(training_config_path)
-        else:
-            # Default: assume training.yaml inside config_dir
-            self.training_config_path = self.config_dir / "training.yaml"
-        if not self.training_config_path.exists():
-            raise FileNotFoundError(f"Training config not found: {self.training_config_path}")
+        # training_config_path is retained for legacy/explicit overrides but is no longer required
+        self.training_config_path = Path(training_config_path) if training_config_path else None
         self.total_episodes = total_episodes
         self.checkpoint_dir = Path(checkpoint_dir) if checkpoint_dir else None
         self.inference_port = inference_port
@@ -204,9 +200,13 @@ class UnifiedServer:
     def _load_config(self) -> dict:
         """Load and cache the YAML configuration."""
         if self._config_cache is None:
-            with open(self.training_config_path) as f:
-                data = yaml.safe_load(f) or {}
-            self._config_cache = data
+            if self.training_config_path is not None:
+                with open(self.training_config_path) as f:
+                    data = yaml.safe_load(f) or {}
+                self._config_cache = data
+            else:
+                # No single training.yaml; synthesize minimal run metadata
+                self._config_cache = {}
         return self._config_cache
 
     def _determine_run_directory(self, timestamp: str) -> Path:
@@ -353,14 +353,20 @@ class UnifiedServer:
             # Create database path (sibling to checkpoints)
             db_path = self.checkpoint_dir.parent / "metrics.db"
 
-            # Create DemoRunner
-            self.runner = DemoRunner(
-                config_dir=str(self.config_dir),
-                training_config_path=str(self.training_config_path),
-                db_path=str(db_path),
-                checkpoint_dir=str(self.checkpoint_dir),
-                max_episodes=self.total_episodes,
-            )
+            # Create DemoRunner (v2.1: config_dir is experiment root, level selection handled
+            # by training config or external orchestrator; default to first level name here
+            # is handled inside DemoRunner or by caller).
+            # For backward compatibility, pass training_config_path only if provided.
+            runner_kwargs: dict[str, object] = {
+                "config_dir": str(self.config_dir),
+                "level_name": "L1_full_observability",
+                "db_path": str(db_path),
+                "checkpoint_dir": str(self.checkpoint_dir),
+                "max_episodes": self.total_episodes,
+            }
+            if self.training_config_path is not None:
+                runner_kwargs["training_config_path"] = str(self.training_config_path)
+            self.runner = DemoRunner(**runner_kwargs)
 
             logger.info("[Training] Starting training loop...")
             self.runner.run()
@@ -397,6 +403,7 @@ class UnifiedServer:
             # Use the same checkpoint directory as training
             self.inference_server = LiveInferenceServer(
                 checkpoint_dir=self.checkpoint_dir,
+                level_name="L1_full_observability",
                 port=self.inference_port,
                 step_delay=0.2,  # 5 steps/sec
                 total_episodes=self.total_episodes,

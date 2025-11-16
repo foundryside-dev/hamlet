@@ -46,14 +46,12 @@ class CompiledUniverse:
     observation_spec: ObservationSpec
     observation_activity: ObservationActivity
     vfs_observation_fields: tuple[VfsObservationField, ...]
-    vfs_variables: tuple["VariableDef", ...] = ()
+    vfs_variables: tuple[VariableDef, ...]
     action_space_metadata: ActionSpaceMetadata
     meter_metadata: MeterMetadata
     affordance_metadata: AffordanceMetadata
     optimization_data: OptimizationData
 
-    # Shared agent drive (reward) config
-    agent: AgentConfig
     # Shared experiment-level configs (v2.1)
     experiment: ExperimentConfig
     stratum: StratumConfig
@@ -82,6 +80,8 @@ class CompiledUniverse:
         meter_metadata: MeterMetadata
         affordance_metadata: AffordanceMetadata
         optimization_data: OptimizationData
+        vfs_observation_fields: tuple[VfsObservationField, ...]
+        vfs_variables: tuple[VariableDef, ...]
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "vfs_observation_fields", tuple(self.vfs_observation_fields))
@@ -111,6 +111,7 @@ class CompiledUniverse:
             observation_spec=deepcopy(self.observation_spec),
             observation_activity=deepcopy(self.observation_activity),
             vfs_observation_fields=tuple(deepcopy(self.vfs_observation_fields)),
+            vfs_variables=tuple(deepcopy(self.vfs_variables)),
             action_space_metadata=deepcopy(self.action_space_metadata),
             meter_metadata=deepcopy(self.meter_metadata),
             affordance_metadata=deepcopy(self.affordance_metadata),
@@ -178,6 +179,8 @@ class CompiledUniverse:
                             ),
                             "affordance_position_map": _serialize_affordance_positions(meta.optimization_data.affordance_position_map),
                         },
+                        "vfs_observation_fields": [field.model_dump() for field in meta.vfs_observation_fields],
+                        "vfs_variables": [var.model_dump() for var in meta.vfs_variables],
                     }
                     for name, meta in self.all_levels.items()
                 }
@@ -225,6 +228,8 @@ class CompiledUniverse:
                         action_mask_table=level_mask_tensor,
                         affordance_position_map=level_affordance_position_map,
                     ),
+                    vfs_observation_fields=tuple(VfsObservationField(**field) for field in meta.get("vfs_observation_fields", [])),
+                    vfs_variables=tuple(VariableDef(**var) for var in meta.get("vfs_variables", [])),
                 )
 
         return CompiledUniverse(

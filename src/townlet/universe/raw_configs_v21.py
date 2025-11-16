@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -15,6 +16,16 @@ from townlet.config.experiment_config import ExperimentConfig
 from townlet.config.stratum_config import StratumConfig
 from townlet.config.training_v2_config import TrainingV2Config, load_training_v2_config
 from townlet.universe.errors import CompilationErrorCollector
+
+# Security limits (mirrors compiler.py, kept local to avoid circular imports)
+MAX_METERS = 100
+MAX_AFFORDANCES = 100
+MAX_CASCADES = 500
+MAX_ACTIONS = 300
+MAX_VARIABLES = 200
+MAX_GRID_CELLS = 10_000  # 100×100 maximum (DoS protection)
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -51,25 +62,177 @@ class RawConfigsV21:
     experiment_dir: Path
 
     def __post_init__(self) -> None:
-        """Validate vocabulary consistency across all curriculum levels."""
+        """Validate v2.1 invariants across all curriculum levels."""
         if not self.levels:
             raise ValueError(f"No curriculum levels found in {self.experiment_dir}")
 
         env_meter_names = {meter.name for meter in self.environment.environment.meters}
         env_affordance_names = {aff.name for aff in self.environment.environment.affordances}
 
+        # ------------------------------------------------------------------
+        # Global security limits (per-environment counts)
+        # ------------------------------------------------------------------
+        env_cascades = getattr(self.environment.environment, "cascade_graph", [])
+        env_variables = getattr(self.environment.environment, "variables", []) or []
+
+        checks = [
+            (len(env_meter_names), MAX_METERS, "environment.yaml", "meters"),
+            (len(env_affordance_names), MAX_AFFORDANCES, "environment.yaml", "affordances"),
+            (len(env_cascades), MAX_CASCADES, "environment.yaml", "cascade_graph"),
+            (len(self.actions.actions.custom_actions), MAX_ACTIONS, "actions.yaml", "actions"),
+            (len(env_variables), MAX_VARIABLES, "environment.yaml", "variables"),
+        ]
+
+        for count, limit, filename, label in checks:
+            if count > limit:
+                raise ValueError(
+                    f"Too many {label}: found {count} (max {limit}).\n"
+                    f"  Experiment: {self.experiment_dir}\n"
+                    f"  File: {filename}\n"
+                    "This may indicate config injection, duplication, or an unsafe configuration size."
+                )
+
+        # ------------------------------------------------------------------
+        # Cascade invariants (environment.yaml cascade_graph vs bars.yaml)
+        # ------------------------------------------------------------------
+        env_edges = {(c.source, c.target) for c in env_cascades}
+
+        # Validate that cascade sources/targets reference existing meters
+        for edge in env_cascades:
+            problems: list[str] = []
+            if edge.source not in env_meter_names:
+                problems.append(f"unknown source meter '{edge.source}'")
+            if edge.target not in env_meter_names:
+                problems.append(f"unknown target meter '{edge.target}'")
+            if problems:
+                raise ValueError(
+                    "Invalid cascade_graph entry in environment.yaml.\n"
+                    f"  Experiment: {self.experiment_dir}\n"
+                    f"  Edge: ({edge.source} -> {edge.target})\n"
+                    f"  Problem: {', '.join(problems)}\n"
+                    f"  Valid meters: {sorted(env_meter_names)}\n"
+                    "\nAll cascade_graph entries must reference meters declared in environment.yaml meters."
+                )
+
+        # Detect cycles in environment cascade graph (structural)
+        cascade_graph: dict[str, list[str]] = {}
+        for edge in env_cascades:
+            cascade_graph.setdefault(edge.source, []).append(edge.target)
+
+        def _detect_cycles(graph: dict[str, list[str]]) -> list[list[str]]:
+            cycles: list[list[str]] = []
+            visited: set[str] = set()
+            stack: set[str] = set()
+
+            def dfs(node: str, path: list[str]) -> None:
+                visited.add(node)
+                stack.add(node)
+                path.append(node)
+                for neighbor in graph.get(node, []):
+                    if neighbor not in visited:
+                        dfs(neighbor, path.copy())
+                    elif neighbor in stack:
+                        try:
+                            start = path.index(neighbor)
+                            cycles.append(path[start:])
+                        except ValueError:
+                            cycles.append([neighbor])
+                stack.remove(node)
+
+            for node in graph:
+                if node not in visited:
+                    dfs(node, [])
+
+            return cycles
+
+        cycles = _detect_cycles(cascade_graph)
+        if cycles:
+            formatted = ", ".join(" → ".join(c + [c[0]]) for c in cycles)
+            raise ValueError(
+                "Cascade circularity detected in environment.yaml cascade_graph.\n"
+                f"  Experiment: {self.experiment_dir}\n"
+                f"  Cycles: {formatted}\n"
+                "\nFix cascade_graph in environment.yaml so it is acyclic."
+            )
+
+        # ------------------------------------------------------------------
+        # Modulation invariants (environment.yaml modulation_graph vs affordances.yaml)
+        # ------------------------------------------------------------------
+        env_mods = getattr(self.environment.environment, "modulation_graph", [])
+
+        # Validate that modulation_graph references existing bars and affordances
+        for mod in env_mods:
+            problems: list[str] = []
+            if mod.bar not in env_meter_names:
+                problems.append(f"unknown bar '{mod.bar}'")
+            invalid_affs = [name for name in mod.affordances if name not in env_affordance_names]
+            if invalid_affs:
+                problems.append(f"unknown affordances {sorted(invalid_affs)}")
+            if problems:
+                raise ValueError(
+                    "Invalid modulation_graph entry in environment.yaml.\n"
+                    f"  Experiment: {self.experiment_dir}\n"
+                    f"  Entry: (bar={mod.bar}, affordances={sorted(mod.affordances)})\n"
+                    f"  Problem: {', '.join(problems)}\n"
+                    f"  Valid meters: {sorted(env_meter_names)}\n"
+                    f"  Valid affordances: {sorted(env_affordance_names)}\n"
+                    "\nAll modulation_graph entries must reference meters and affordances declared in environment.yaml."
+                )
+
+        env_mod_pairs = {(m.bar, tuple(sorted(m.affordances))) for m in env_mods}
+
+        # ------------------------------------------------------------------
+        # Per-level invariants: vocabulary, capacity, cascades, modulations
+        # ------------------------------------------------------------------
+
+        substrate = self.stratum.stratum.substrate
+        grid_capacity: int | None = None
+        if getattr(substrate, "type", None) == "grid" and getattr(substrate, "grid", None) is not None:
+            # 2D (square) or 3D (cubic) grid
+            width = substrate.grid.width
+            height = substrate.grid.height
+            depth = getattr(substrate.grid, "depth", None)
+            if substrate.grid.topology == "cubic" and depth is not None:
+                grid_capacity = width * height * depth
+            else:
+                grid_capacity = width * height
+            if grid_capacity > MAX_GRID_CELLS:
+                raise ValueError(
+                    "Grid size exceeds safety limit for v2.1 configs.\n"
+                    f"  Experiment: {self.experiment_dir}\n"
+                    f"  Dimensions: {width}×{height}"
+                    f"{'×' + str(depth) if depth is not None and substrate.grid.topology == 'cubic' else ''}"
+                    f" = {grid_capacity} cells (max {MAX_GRID_CELLS})\n"
+                    "\nReduce grid dimensions in stratum.yaml to avoid excessive observation/state sizes."
+                )
+        elif getattr(substrate, "type", None) == "gridnd" and getattr(substrate, "gridnd", None) is not None:
+            # N-dimensional grid: product of all dimension sizes
+            grid_capacity = 1
+            for size in substrate.gridnd.dimension_sizes:
+                grid_capacity *= size
+            if grid_capacity > MAX_GRID_CELLS:
+                dims_str = "×".join(str(s) for s in substrate.gridnd.dimension_sizes)
+                raise ValueError(
+                    "GridND size exceeds safety limit for v2.1 configs.\n"
+                    f"  Experiment: {self.experiment_dir}\n"
+                    f"  Dimensions: {dims_str} = {grid_capacity} cells (max {MAX_GRID_CELLS})\n"
+                    "\nReduce dimension_sizes in stratum.yaml to avoid excessive observation/state sizes."
+                )
+
         for level_name, level in self.levels.items():
             level_meter_names = {meter.name for meter in level.bars.meters}
             level_affordance_names = {aff.name for aff in level.affordances.affordances}
 
+            # Vocabulary consistency
             if level_meter_names != env_meter_names:
                 missing = env_meter_names - level_meter_names
                 extra = level_meter_names - env_meter_names
                 raise ValueError(
-                    "Meter vocabulary mismatch in "
-                    f"{self.experiment_dir}/levels/{level_name}/bars.yaml\n"
+                    "Meter vocabulary mismatch between environment.yaml and levels "
+                    f"bars.yaml for level '{level_name}'.\n"
+                    f"  Experiment: {self.experiment_dir}\n"
                     f"  Expected (from environment.yaml): {sorted(env_meter_names)}\n"
-                    f"  Actual: {sorted(level_meter_names)}\n"
+                    f"  Actual (from levels/{level_name}/bars.yaml): {sorted(level_meter_names)}\n"
                     f"  Missing: {sorted(missing) if missing else 'none'}\n"
                     f"  Extra: {sorted(extra) if extra else 'none'}\n"
                     "\nAll levels must have identical meter vocabulary to environment.yaml."
@@ -79,14 +242,115 @@ class RawConfigsV21:
                 missing = env_affordance_names - level_affordance_names
                 extra = level_affordance_names - env_affordance_names
                 raise ValueError(
-                    "Affordance vocabulary mismatch in "
-                    f"{self.experiment_dir}/levels/{level_name}/affordances.yaml\n"
+                    "Affordance vocabulary mismatch between environment.yaml and levels "
+                    f"affordances.yaml for level '{level_name}'.\n"
+                    f"  Experiment: {self.experiment_dir}\n"
                     f"  Expected (from environment.yaml): {sorted(env_affordance_names)}\n"
-                    f"  Actual: {sorted(level_affordance_names)}\n"
+                    f"  Actual (from levels/{level_name}/affordances.yaml): {sorted(level_affordance_names)}\n"
                     f"  Missing: {sorted(missing) if missing else 'none'}\n"
                     f"  Extra: {sorted(extra) if extra else 'none'}\n"
                     "\nAll levels must have identical affordance vocabulary to environment.yaml."
                 )
+
+            # Cascade coverage per level
+            level_edges = {(c.source, c.target) for c in level.bars.cascades}
+            missing_edges = env_edges - level_edges
+            extra_edges = level_edges - env_edges
+            if missing_edges:
+                raise ValueError(
+                    f"Missing cascade entries in levels/{level_name}/bars.yaml.\n"
+                    f"  Experiment: {self.experiment_dir}\n"
+                    f"  Level: {level_name}\n"
+                    f"  Missing cascades (must match environment.yaml cascade_graph): {sorted(missing_edges)}\n"
+                    "\nAll cascades from environment.yaml cascade_graph MUST be present in each level's bars.yaml "
+                    "(set strength: 0.0 to disable, do not omit)."
+                )
+            if extra_edges:
+                raise ValueError(
+                    f"Extra cascades found in levels/{level_name}/bars.yaml.\n"
+                    f"  Experiment: {self.experiment_dir}\n"
+                    f"  Level: {level_name}\n"
+                    f"  Extra cascades (not in environment.yaml cascade_graph): {sorted(extra_edges)}\n"
+                    "\nbars.yaml cascades must exactly match the structure declared in environment.yaml cascade_graph."
+                )
+
+            # Modulation coverage per level
+            level_mod_pairs = {(m.bar, tuple(sorted(m.affordances))) for m in level.affordances.modulations}
+            missing_mods = env_mod_pairs - level_mod_pairs
+            extra_mods = level_mod_pairs - env_mod_pairs
+            if missing_mods:
+                raise ValueError(
+                    f"Missing modulation entries in levels/{level_name}/affordances.yaml.\n"
+                    f"  Experiment: {self.experiment_dir}\n"
+                    f"  Level: {level_name}\n"
+                    f"  Missing modulations (must match environment.yaml modulation_graph): {sorted(missing_mods)}\n"
+                    "\naffordances.yaml modulations must implement every relationship declared in "
+                    "environment.yaml modulation_graph."
+                )
+
+            # Affordance costs/effects meter references must be valid
+            for aff in level.affordances.affordances:
+                invalid_cost_meters = [name for name in aff.costs.keys() if name not in env_meter_names]
+                invalid_effect_meters = [name for name in aff.effects.keys() if name not in env_meter_names]
+                if invalid_cost_meters or invalid_effect_meters:
+                    problems: list[str] = []
+                    if invalid_cost_meters:
+                        problems.append(f"costs: {sorted(invalid_cost_meters)}")
+                    if invalid_effect_meters:
+                        problems.append(f"effects: {sorted(invalid_effect_meters)}")
+                    raise ValueError(
+                        "Affordance references unknown meters in costs/effects.\n"
+                        f"  Experiment: {self.experiment_dir}\n"
+                        f"  Level: {level_name}\n"
+                        f"  Affordance: {aff.name}\n"
+                        f"  Invalid meter names: {', '.join(problems)}\n"
+                        f"  Valid meters (from environment.yaml): {sorted(env_meter_names)}\n"
+                        "\nAll meter keys in costs/effects must match meters declared in environment.yaml."
+                    )
+            if extra_mods:
+                raise ValueError(
+                    f"Extra modulation entries found in levels/{level_name}/affordances.yaml.\n"
+                    f"  Experiment: {self.experiment_dir}\n"
+                    f"  Level: {level_name}\n"
+                    f"  Extra modulations (not in environment.yaml modulation_graph): {sorted(extra_mods)}\n"
+                    "\naffordances.yaml modulations must not introduce new bar→affordance relationships "
+                    "beyond environment.yaml modulation_graph."
+                )
+
+            # Validate curriculum-level enabled_affordances against environment vocabulary
+            enabled_affordances = getattr(level.training, "enabled_affordances", None)
+            normalized_enabled = env_affordance_names
+            if enabled_affordances is not None:
+                normalized_enabled = {str(name) for name in enabled_affordances}
+                invalid = normalized_enabled - env_affordance_names
+                if invalid:
+                    raise ValueError(
+                        "Invalid enabled_affordances in training.yaml.\n"
+                        f"  Experiment: {self.experiment_dir}\n"
+                        f"  Level: {level_name}\n"
+                        f"  Invalid entries: {sorted(invalid)}\n"
+                        f"  Valid affordances (from environment.yaml): {sorted(env_affordance_names)}\n"
+                        "\nAll entries in training.enabled_affordances must match affordance names "
+                        "declared in environment.yaml."
+                    )
+
+            # Capacity check for grid substrates: warn if deployed affordances + agents exceed grid capacity.
+            # Aligns with legacy HamletConfig.validate_grid_capacity (operator hint, not hard failure).
+            if grid_capacity is not None:
+                deployed_count = len(normalized_enabled)
+                population_size = getattr(level.training.population, "size", 0)
+                required_slots = deployed_count + population_size
+                if required_slots > grid_capacity:
+                    logger.warning(
+                        "Grid capacity warning (v2.1): %s cells may not fit %s agents + %s affordances "
+                        "(%s entities total) for level '%s'. Experiment: %s",
+                        grid_capacity,
+                        population_size,
+                        deployed_count,
+                        required_slots,
+                        level_name,
+                        self.experiment_dir,
+                    )
 
     @classmethod
     def from_experiment_dir(cls, experiment_dir: Path) -> RawConfigsV21:

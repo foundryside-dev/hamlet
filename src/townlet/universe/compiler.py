@@ -25,14 +25,16 @@ from townlet.config.bar import BarConfig
 from townlet.config.bars_v2_config import BarsV2Config
 from townlet.config.cascade import CascadeConfig
 from townlet.config.curriculum_config import CurriculumConfig
-from townlet.config.drive_as_code import DriveAsCodeConfig, load_drive_as_code_config
 from townlet.config.effect_pipeline import EffectPipeline
 from townlet.config.environment_config import EnvironmentConfig as EnvConfigV21
 from townlet.config.experiment_config import ExperimentConfig
 from townlet.config.stratum_config import StratumConfig
 from townlet.config.training_v2_config import TrainingV2Config
+from townlet.environment.action_config import ActionConfig, ActionSpaceConfig
+from townlet.environment.substrate_action_validator import SubstrateActionValidator
 from townlet.environment.temporal_utils import is_affordance_open
 from townlet.substrate.config import SubstrateConfig
+from townlet.substrate.factory import SubstrateFactory
 from townlet.universe.adapters.vfs_adapter import VFSAdapter, vfs_to_observation_spec
 from townlet.universe.compiled import CompiledUniverse
 from townlet.universe.compiler_inputs import RawConfigs
@@ -43,6 +45,7 @@ from townlet.universe.dto import (
     AffordanceMetadata,
     MeterInfo,
     MeterMetadata,
+    ObservationActivity,
     ObservationField,
     ObservationSpec,
     UniverseMetadata,
@@ -512,136 +515,7 @@ class UniverseCompiler:
             all_levels=all_levels,
         )
 
-        return compiled
-
-        cache_path = self._cache_artifact_path(config_dir)
-        precomputed_hash: str | None = None
-        precomputed_provenance: str | None = None
-
-        if use_cache and cache_path.exists():
-            # Validate cache file size before loading (cache bomb protection)
-            cache_size = cache_path.stat().st_size
-            if cache_size > MAX_CACHE_FILE_SIZE:
-                logger.warning(
-                    "Cache file %s exceeds size limit (%d bytes > %d bytes). Recompiling.",
-                    cache_path,
-                    cache_size,
-                    MAX_CACHE_FILE_SIZE,
-                )
-            else:
-                # Optimization: Check mtime first (fast) before computing hash (slow)
-                current_mtime = self._compute_config_mtime(config_dir)
-                try:
-                    cached_universe = CompiledUniverse.load_from_cache(cache_path)
-                except Exception as exc:  # pragma: no cover - defensive
-                    logger.warning("Failed to load cached universe from %s: %s", cache_path, exc)
-                else:
-                    # Check both content hash AND modification time for cache validity
-                    # mtime check catches ANY file change (comments, whitespace, field removal)
-                    cached_mtime = cached_universe.metadata.config_mtime
-                    if current_mtime > cached_mtime:
-                        logger.info(
-                            "Cache stale for %s (config files modified: cached_mtime=%.2f, current_mtime=%.2f). Recompiling.",
-                            cache_path,
-                            cached_mtime,
-                            current_mtime,
-                        )
-                    else:
-                        # mtime matches - now compute hash to check content equality
-                        precomputed_hash, precomputed_provenance = self._build_cache_fingerprint(config_dir)
-                        if (
-                            cached_universe.metadata.config_hash == precomputed_hash
-                            and cached_universe.metadata.provenance_id == precomputed_provenance
-                        ):
-                            logger.info("Loaded compiled universe from cache: %s", cache_path)
-                            return cached_universe
-                        else:
-                            logger.info(
-                                "Cache stale for %s (cached=%s/%s, current=%s/%s). Recompiling.",
-                                cache_path,
-                                cached_universe.metadata.config_hash[:8],
-                                precomputed_hash[:8] if precomputed_hash else "unknown",
-                                (cached_universe.metadata.provenance_id or "")[:8],
-                                (precomputed_provenance or "unknown")[:8],
-                            )
-
-        raw_configs = self._stage_1_parse_individual_files(config_dir)
-
-        symbol_table = self._stage_2_build_symbol_tables(raw_configs)
-        self._symbol_table = symbol_table
-
-        # Load DAC configuration (REQUIRED)
-        try:
-            dac_config = load_drive_as_code_config(config_dir)
-            logger.info("Loaded drive_as_code.yaml")
-        except FileNotFoundError as e:
-            raise CompilationError(
-                stage="Load DAC Configuration",
-                errors=[
-                    f"drive_as_code.yaml is required but not found in {config_dir}",
-                    "All config packs must include a drive_as_code.yaml file",
-                ],
-                hints=["See docs/config-schemas/drive_as_code.md for creating DAC configs"],
-            ) from e
-
-        errors = CompilationErrorCollector(stage="Stage 3: Resolve References")
-        self._stage_3_resolve_references(raw_configs, symbol_table, errors)
-
-        # Stage 3: Validate DAC references
-        self._validate_dac_references(dac_config, symbol_table, errors)
-
-        errors.check_and_raise("Stage 3: Resolve References")
-
-        stage4_errors = CompilationErrorCollector(stage="Stage 4: Cross-Validation")
-        self._stage_4_cross_validate(raw_configs, symbol_table, stage4_errors)
-        # Emit warnings even if Stage 4 ultimately raises so operators see every diagnostic.
-        for warning in stage4_errors.warnings:
-            logger.warning(warning)
-        stage4_errors.check_and_raise("Stage 4: Cross-Validation")
-
-        metadata, observation_spec, vfs_fields = self._stage_5_compute_metadata(
-            config_dir,
-            raw_configs,
-            symbol_table,
-            precomputed_config_hash=precomputed_hash,
-        )
-        (
-            action_space_metadata,
-            meter_metadata,
-            affordance_metadata,
-        ) = self._stage_5_build_rich_metadata(raw_configs)
-
-        optimization_data = self._stage_6_optimize(raw_configs, metadata)
-
-        compiled = self._stage_7_emit_compiled_universe(
-            raw_configs=raw_configs,
-            symbol_table=symbol_table,
-            metadata=metadata,
-            observation_spec=observation_spec,
-            vfs_observation_fields=vfs_fields,
-            action_space_metadata=action_space_metadata,
-            meter_metadata=meter_metadata,
-            affordance_metadata=affordance_metadata,
-            optimization_data=optimization_data,
-            environment_config=raw_configs.environment_config,
-            dac_config=dac_config,
-        )
-
-        if use_cache:
-            cache_dir = self._cache_directory_for(config_dir)
-            try:
-                self._prepare_cache_directory(cache_dir)
-                compiled.save_to_cache(cache_path)
-            except Exception as exc:  # pragma: no cover - defensive
-                logger.warning("Failed to write compiled universe cache at %s: %s", cache_path, exc)
-
-        self._metadata = compiled.metadata
-        self._observation_spec = compiled.observation_spec
-        self._action_metadata = compiled.action_space_metadata
-        self._meter_metadata = compiled.meter_metadata
-        self._affordance_metadata = compiled.affordance_metadata
-        self._optimization_data = compiled.optimization_data
-
+        self._validate_drive_references_v21(raw, primary_meta, compiled)
         return compiled
 
     def _validate_config_dir(self, config_dir: Path) -> None:
@@ -766,11 +640,28 @@ class UniverseCompiler:
         offset = 0
 
         substrate = stratum.stratum.substrate
-        vision_support = stratum.stratum.vision_support
+        vision_support = stratum.stratum.vision_support  # canonical: global/partial/both/none
         temporal_support = stratum.stratum.temporal_support
         active_vision = curriculum.curriculum.active_vision
         vision_range = curriculum.curriculum.vision_range
         active_temporal = curriculum.curriculum.active_temporal
+
+        # Normalize curriculum active vision: local → partial (POMDP)
+        canon_active_vision = "partial" if active_vision in {"local", "partial"} else "global"
+
+        # Compatibility validation: curriculum cannot request modes not supported by stratum
+        if canon_active_vision == "global" and vision_support not in {"global", "both"}:
+            raise ValueError(
+                "Invalid vision configuration: curriculum.active_vision='global' but "
+                f"stratum.vision_support='{vision_support}'. "
+                "active_vision='global' requires vision_support to be 'global' or 'both'."
+            )
+        if canon_active_vision == "partial" and vision_support not in {"partial", "both"}:
+            raise ValueError(
+                "Invalid vision configuration: curriculum.active_vision indicates partial/local vision but "
+                f"stratum.vision_support='{vision_support}'. "
+                "Partial observability requires vision_support to be 'partial' or 'both'."
+            )
 
         # Grid dimensions (only for grid substrates)
         grid_width = grid_height = 0
@@ -779,10 +670,10 @@ class UniverseCompiler:
             grid_height = substrate.grid.height
 
         # Vision: global
-        if vision_support in {"both", "global", "global_only"}:
+        if vision_support in {"both", "global"}:
             if grid_width and grid_height:
                 dims = grid_width * grid_height
-                is_active = active_vision == "global"
+                is_active = canon_active_vision == "global"
                 desc = f"{grid_width}x{grid_height} grid encoding" if is_active else "MASKED (local vision active)"
                 fields.append(
                     ObservationField(
@@ -799,8 +690,8 @@ class UniverseCompiler:
                 )
                 offset += dims
 
-        # Vision: local
-        if vision_support in {"both", "partial", "local_only"}:
+        # Vision: local / partial
+        if vision_support in {"both", "partial"}:
             if grid_width and grid_height:
                 # derive window size from vision_range [0,1] scaled to grid
                 window_size = max(3, int(round(vision_range * grid_width)))
@@ -808,7 +699,7 @@ class UniverseCompiler:
                     window_size += 1
                 window_size = min(window_size, grid_width)
                 dims = window_size * window_size
-                is_active = active_vision in {"local", "partial"}
+                is_active = canon_active_vision == "partial"
                 desc = f"{window_size}x{window_size} local window" if is_active else "MASKED (global vision active)"
                 fields.append(
                     ObservationField(
@@ -894,9 +785,29 @@ class UniverseCompiler:
         )
         offset += affordance_count
 
+        # VFS variables (environment-declared)
+        for var in environment.environment.variables:
+            dims = getattr(var, "dims", 1)
+            fields.append(
+                ObservationField(
+                    uuid=None,
+                    name=var.name,
+                    type="vector" if dims > 1 else "scalar",
+                    dims=dims,
+                    start_index=offset,
+                    end_index=offset + dims,
+                    scope=var.scope,
+                    description=var.description,
+                    semantic_type="custom",
+                )
+            )
+            offset += dims
+
         # Temporal fields
         if temporal_support == "enabled":
-            temporal_dims = 4
+            # v2.1 reference: temporal fields expose two dimensions
+            # (time_sin, time_cos). Masking is handled via curriculum.
+            temporal_dims = 2
             desc = "Temporal features (day/night cycle)" if active_temporal else "MASKED (temporal inactive)"
             fields.append(
                 ObservationField(
@@ -1089,21 +1000,146 @@ class UniverseCompiler:
 
         # Environment-declared variables (explicit only; no auto-generation beyond obs fields)
         for var in environment.environment.variables:
-            dims = var.dims if hasattr(var, "dims") else None
+            raw_dims = getattr(var, "dims", None)
+            # Treat dims == 1 as scalar; dims > 1 become vecNf
+            is_vector = bool(raw_dims and raw_dims > 1)
+            dims = raw_dims if is_vector else None
+            default = [0.0] * raw_dims if is_vector and raw_dims is not None else 0.0
+
             vars_out.append(
                 VariableDef(
                     id=var.name,
                     scope=var.scope,
-                    type="vecNf" if dims and dims > 1 else "scalar",
-                    dims=dims if dims and dims > 1 else None,
+                    type="vecNf" if is_vector else "scalar",
+                    dims=dims,
                     lifetime="tick",
                     readable_by=["agent", "engine"],
                     writable_by=["engine"],
-                    default=0.0 if not dims else [0.0] * dims,
+                    default=default,
                     description=var.description,
                 )
             )
         return tuple(vars_out)
+
+    def _validate_drive_references_v21(
+        self,
+        raw: RawConfigsV21,
+        primary_meta: CompiledUniverse.LevelMetadata,
+        compiled: CompiledUniverse,
+    ) -> None:
+        """Validate v2.1 agent.drive references against meters and VFS variables.
+
+        This is a minimal v2.1 analogue of DAC reference validation. It ensures:
+        - RangeMultiplierModifier.source points to an existing meter or VFS variable.
+        - Extrinsic bonuses reference valid meters.
+
+        ShapingConfig is intentionally left free-form for now; its internal fields are not validated here.
+        """
+        drive = raw.agent.agent.drive
+
+        meter_names = {m.name for m in primary_meta.meter_metadata.meters}
+        vfs_var_ids = {var.id for var in compiled.vfs_variables}
+
+        # Validate modifiers: source must be either a meter or a VFS variable
+        for mod_name, modifier in drive.modifiers.items():
+            source = modifier.source
+            if source in meter_names or source in vfs_var_ids:
+                continue
+            raise ValueError(
+                "Invalid drive.modifiers entry in agent.yaml.\n"
+                f"  Experiment: {compiled.experiment_dir}\n"
+                f"  Modifier: {mod_name}\n"
+                f"  Source: {source!r}\n"
+                f"  Valid meters: {sorted(meter_names)}\n"
+                f"  Valid VFS variables: {sorted(vfs_var_ids)}\n"
+                "\nEach modifier.source must reference a meter or VFS variable."
+            )
+
+        # Validate extrinsic bonus bar references
+        extrinsic = drive.extrinsic
+        if extrinsic.bonuses:
+            for bonus in extrinsic.bonuses:
+                if bonus.bar not in meter_names:
+                    raise ValueError(
+                        "Invalid extrinsic bonus bar in agent.yaml.\n"
+                        f"  Experiment: {compiled.experiment_dir}\n"
+                        f"  Bonus bar: {bonus.bar!r}\n"
+                        f"  Valid meters: {sorted(meter_names)}\n"
+                        "\nAll extrinsic.bonuses[*].bar values must match meters declared in environment.yaml."
+                    )
+
+        # Validate substrate ↔ action compatibility for v2.1 actions
+        # Build a temporary ActionSpaceConfig from substrate defaults + custom actions.
+        try:
+            substrate = SubstrateFactory.build(raw.stratum.stratum.substrate, torch.device("cpu"))
+            substrate_actions = substrate.get_default_actions()
+        except Exception as exc:  # pragma: no cover - defensive
+            raise ValueError(
+                "Failed to derive substrate default actions for v2.1 validation.\n"
+                f"  Experiment: {compiled.experiment_dir}\n"
+                f"  Error: {exc}"
+            ) from exc
+
+        custom_actions_cfg = raw.actions.actions.custom_actions
+        actions: list[ActionConfig] = []
+
+        # Normalize substrate actions into ActionConfig
+        for act in substrate_actions:
+            actions.append(
+                ActionConfig(
+                    id=act.id,
+                    name=act.name,
+                    type=act.type,
+                    costs={},
+                    effects={},
+                    delta=act.delta,
+                    teleport_to=act.teleport_to,
+                    enabled=True,
+                    description=None,
+                    icon=None,
+                    source="substrate",
+                    source_affordance=None,
+                )
+            )
+
+        # Normalize custom actions into ActionConfig; IDs assigned sequentially after substrate actions
+        next_id = len(actions)
+        for custom in custom_actions_cfg:
+            actions.append(
+                ActionConfig(
+                    id=next_id,
+                    name=custom.name,
+                    type="interaction" if custom.name != "WAIT" else "passive",
+                    costs={},
+                    effects={},
+                    delta=None,
+                    teleport_to=None,
+                    enabled=custom.enabled_by_default,
+                    description=custom.description or None,
+                    icon=None,
+                    source="custom",
+                    source_affordance=None,
+                )
+            )
+            next_id += 1
+
+        action_space = ActionSpaceConfig(actions=actions)
+        validator = SubstrateActionValidator(raw.stratum.stratum.substrate, action_space)
+        validation_result = validator.validate()
+        if validation_result.errors:
+            messages = "\n  - " + "\n  - ".join(validation_result.errors)
+            raise ValueError(
+                "Substrate/action incompatibility detected for v2.1 actions.\n"
+                f"  Experiment: {compiled.experiment_dir}\n"
+                f"{messages}\n"
+                "\nUpdate actions.yaml or stratum.yaml so movement actions are compatible with the substrate."
+            )
+        for warning in validation_result.warnings:
+            logger.warning(
+                "Substrate/action compatibility warning (v2.1).\n" "  Experiment: %s\n" "  Warning: %s",
+                compiled.experiment_dir,
+                warning,
+            )
 
     def _build_universe_metadata(
         self,

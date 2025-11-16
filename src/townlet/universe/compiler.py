@@ -441,6 +441,23 @@ class UniverseCompiler:
         Scorched-earth path: legacy flat configs and HamletConfig plumbing are removed.
         """
         experiment_dir = Path(experiment_dir).resolve()
+
+        # Backwards compatibility: allow callers to pass a single level directory
+        # (e.g., configs/default_curriculum/levels/L0_0_minimal). In that case,
+        # treat the experiment root as the parent of the levels/ directory and
+        # infer primary_level from the level directory name when not provided.
+        if not (experiment_dir / "experiment.yaml").exists():
+            # Detect pattern .../levels/<level_name>
+            if experiment_dir.parent.name == "levels":
+                root = experiment_dir.parent.parent
+                levels_dir = root / "levels"
+                if (root / "experiment.yaml").exists() and levels_dir.exists():
+                    level_name = experiment_dir.name
+                    if (levels_dir / level_name).exists():
+                        if primary_level is None:
+                            primary_level = level_name
+                        experiment_dir = root
+
         self._validate_config_dir(experiment_dir)
 
         # Stage 0: YAML syntax validation (lightweight)
@@ -465,12 +482,17 @@ class UniverseCompiler:
             action_metadata = self._build_action_space_metadata(raw.stratum, raw.actions, level.training)
             meter_metadata = self._build_meter_metadata(raw.environment, level.bars)
             affordance_metadata = self._build_affordance_metadata(level.affordances)
+            # Day length for temporal mechanics: curriculum day_length when active,
+            # otherwise default to 24 for mask table shape (runtime ignores it when
+            # temporal_support or active_temporal are disabled).
+            dl = level.curriculum.curriculum.day_length or 24
             optimization_data = self._build_optimization_data(
                 level.bars,
                 level.affordances,
                 meter_metadata,
                 affordance_metadata,
                 action_metadata,
+                day_length=dl,
             )
             vfs_fields = self._build_vfs_observation_fields(obs_spec)
             vfs_variables = self._build_vfs_variables(obs_spec, raw.environment)
@@ -519,6 +541,8 @@ class UniverseCompiler:
         )
 
         self._validate_drive_references_v21(raw, primary_meta, compiled)
+        # Emit economic balance warnings for v2.1 configs (non-blocking).
+        self._validate_economic_balance_v21(raw)
         return compiled
 
     def _validate_config_dir(self, config_dir: Path) -> None:
@@ -794,22 +818,23 @@ class UniverseCompiler:
         )
         offset += meter_count
 
-        # Affordances (distance/availability vector)
+        # Affordances: one-hot over full vocabulary + explicit "none" slot.
         affordance_count = len(environment.environment.affordances)
+        affordance_dim = affordance_count + 1
         fields.append(
             ObservationField(
                 uuid=None,
-                name="obs_affordances",
+                name="obs_affordance_at_position",
                 type="vector",
-                dims=affordance_count,
+                dims=affordance_dim,
                 start_index=offset,
-                end_index=offset + affordance_count,
+                end_index=offset + affordance_dim,
                 scope="agent",
-                description=f"{affordance_count} affordance indicators",
+                description=f"{affordance_dim}‑way one-hot affordance_at_position (including 'none')",
                 semantic_type="affordance",
             )
         )
-        offset += affordance_count
+        offset += affordance_dim
 
         # VFS variables (environment-declared)
         for var in environment.environment.variables:
@@ -960,8 +985,10 @@ class UniverseCompiler:
         meter_metadata: MeterMetadata,
         affordance_metadata: AffordanceMetadata,
         action_metadata: ActionSpaceMetadata,
+        *,
+        day_length: int,
     ) -> OptimizationData:
-        """Precompute tensors from v2.1 DTOs (depletions, cascades, modulations)."""
+        """Precompute tensors from v2.1 DTOs (depletions, cascades, modulations, temporal masks)."""
         meter_lookup = {m.name: m.index for m in meter_metadata.meters}
         base_depletions = torch.zeros(len(meter_metadata.meters), dtype=torch.float32)
         for bar in bars.meters:
@@ -974,7 +1001,15 @@ class UniverseCompiler:
             source_idx = meter_lookup.get(cascade.source)
             target_idx = meter_lookup.get(cascade.target)
             if source_idx is None or target_idx is None:
-                continue
+                missing_source = cascade.source not in meter_lookup
+                missing_target = cascade.target not in meter_lookup
+                parts = ["Invalid cascade entry in bars.yaml."]
+                if missing_source:
+                    parts.append(f"  Unknown source meter: {cascade.source!r}")
+                if missing_target:
+                    parts.append(f"  Unknown target meter: {cascade.target!r}")
+                parts.append("  Valid meters: " + ", ".join(sorted(meter_lookup.keys())))
+                raise ValueError("\n".join(parts))
             cascade_entries.append(
                 {
                     "source_idx": source_idx,
@@ -988,11 +1023,20 @@ class UniverseCompiler:
         for modulation in affordances.modulations:
             bar_idx = meter_lookup.get(modulation.bar)
             if bar_idx is None:
-                continue
+                raise ValueError(
+                    "Invalid modulation entry in affordances.yaml.\n"
+                    f"  Unknown bar: {modulation.bar!r}\n"
+                    "  Valid meters: " + ", ".join(sorted(meter_lookup.keys()))
+                )
             for aff_name in modulation.affordances:
                 target_idx = next((i for i, a in enumerate(affordance_metadata.affordances) if a.name == aff_name), None)
                 if target_idx is None:
-                    continue
+                    valid_affordances = [a.name for a in affordance_metadata.affordances]
+                    raise ValueError(
+                        "Invalid modulation entry in affordances.yaml.\n"
+                        f"  Unknown affordance in modulation.affordances: {aff_name!r}\n"
+                        "  Valid affordances: " + ", ".join(sorted(valid_affordances))
+                    )
                 modulation_entries.append(
                     {
                         "bar_idx": bar_idx,
@@ -1002,7 +1046,38 @@ class UniverseCompiler:
                     }
                 )
 
-        action_mask_table = torch.ones((24, action_metadata.total_actions), dtype=torch.bool)
+        # Build action mask table [day_length, num_affordances] from per-affordance opening hours.
+        # Rows correspond to discrete hours in the curriculum's day; columns align with
+        # affordance indices in AffordanceMetadata. This is consumed by the runtime
+        # via metadata.affordance_id_to_index and _is_affordance_open().
+        num_hours = max(day_length, 1)
+        num_affordances = len(affordance_metadata.affordances)
+        action_mask_table = torch.ones((num_hours, num_affordances), dtype=torch.bool)
+
+        # Build lookup from affordance name to its metadata index.
+        affordance_index: dict[str, int] = {info.name: idx for idx, info in enumerate(affordance_metadata.affordances)}
+
+        # For each affordance, compute its availability across the configured day_length.
+        for aff_cfg in affordances.affordances:
+            aff_idx = affordance_index.get(aff_cfg.name)
+            if aff_idx is None:
+                # Should not happen due to earlier vocabulary validation, but guard defensively.
+                continue
+
+            # Default: 24/7 availability when opening_hours.enabled is False.
+            hours_enabled = torch.ones(num_hours, dtype=torch.bool)
+            opening = aff_cfg.opening_hours
+            if opening.enabled and opening.schedule:
+                hours_enabled[:] = False
+                for window in opening.schedule:
+                    # Windows are expressed in 0-23 (start) and 1-28 (end, may exceed 24 for overnight).
+                    start = int(window.start)
+                    end = int(window.end)
+                    for hour in range(start, end):
+                        hours_enabled[hour % num_hours] = True
+
+            # Apply affordance-specific availability to the corresponding column.
+            action_mask_table[:, aff_idx] &= hours_enabled
 
         return OptimizationData(
             base_depletions=base_depletions,
@@ -1174,6 +1249,63 @@ class UniverseCompiler:
                 "Substrate/action compatibility warning (v2.1).\n" "  Experiment: %s\n" "  Warning: %s",
                 compiled.experiment_dir,
                 warning,
+            )
+
+    def _validate_economic_balance_v21(self, raw: RawConfigsV21) -> None:
+        """Emit economic balance warnings for v2.1 configs.
+
+        This is a minimal v2.1 analogue of the legacy Stage 4 economic checks:
+        - Computes income vs costs from environment/affordances.
+        - Logs warnings when total income is zero or lower than total costs.
+        - Logs warning when income-generating affordances never open.
+        """
+        _ = raw.environment.environment  # TODO: Decide if we need this.
+        affordances_cfg = next(iter(raw.levels.values())).affordances
+
+        total_income = self._compute_max_income(affordances_cfg.affordances)
+        total_costs = self._compute_total_costs(affordances_cfg.affordances)
+
+        if total_income <= 0.0 and total_costs > 0.0:
+            logger.warning(
+                "Economic imbalance (v2.1): No income-generating affordances available while costs accrue.\n"
+                "  Experiment: %s\n"
+                "  File: environment.yaml / affordances.yaml\n",
+                raw.experiment_dir,
+            )
+        elif total_income < total_costs:
+            logger.warning(
+                "Economic imbalance (v2.1): Total income (%.2f) < total costs (%.2f).\n"
+                "  Experiment: %s\n"
+                "  File: environment.yaml / affordances.yaml\n",
+                total_income,
+                total_costs,
+                raw.experiment_dir,
+            )
+
+        # Check whether income affordances ever open during the curriculum day.
+        income_affordances = [aff for aff in affordances_cfg.affordances if self._affordance_positive_amount_for_meter(aff, "money") > 0.0]
+        if not income_affordances:
+            return
+
+        hours_with_income = 0
+        for hour in range(24):
+            if any(self._affordance_open_for_hour(aff, hour) for aff in income_affordances):
+                hours_with_income += 1
+
+        if hours_with_income == 0:
+            logger.warning(
+                "Economic imbalance (v2.1): Income-generating affordances exist but none are available during the day.\n"
+                "  Experiment: %s\n"
+                "  File: affordances.yaml\n",
+                raw.experiment_dir,
+            )
+        elif 0 < hours_with_income < 12:
+            logger.warning(
+                "Economic stress (v2.1): Jobs only available %.0fh/day while costs accrue 24h/day.\n"
+                "  Experiment: %s\n"
+                "  File: affordances.yaml\n",
+                float(hours_with_income),
+                raw.experiment_dir,
             )
 
     def _build_universe_metadata(

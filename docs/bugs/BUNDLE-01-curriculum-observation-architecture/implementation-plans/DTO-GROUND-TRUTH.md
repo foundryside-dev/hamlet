@@ -256,34 +256,94 @@ for level_name, level in raw.levels.items():
 
 ## Multi-Level Compilation Decision
 
-**DECISION**: `compile()` compiles **ONE LEVEL AT A TIME** (Phase 4 approach)
+**DECISION**: `compile()` compiles **ALL LEVELS** in one pass (Option A / Multi-level)
 
 ```python
-# Single-level compilation
-def compile(experiment_dir: Path, level_name: str | None = None) -> CompiledUniverse:
-    """Compile one curriculum level from v2.1 hierarchical structure."""
+# Multi-level compilation
+def compile(
+    experiment_dir: Path,
+    primary_level: str | None = None,
+    use_cache: bool = True
+) -> CompiledUniverse:
+    """Compile all curriculum levels from v2.1 hierarchical structure.
+
+    Args:
+        experiment_dir: Path to experiment directory (e.g., configs/default_curriculum)
+        primary_level: Which level to use for primary fields (default: first alphabetically)
+        use_cache: Whether to use compilation cache
+
+    Returns:
+        CompiledUniverse with all_levels populated, primary fields from primary_level
+    """
+    # Stage 1: Load all configs
     raw = RawConfigsV21.from_experiment_dir(experiment_dir)
 
-    # Select level (first alphabetically if not specified)
-    if level_name is None:
-        level_name = sorted(raw.levels.keys())[0]
+    # Select primary level (first alphabetically if not specified)
+    if primary_level is None:
+        primary_level = sorted(raw.levels.keys())[0]
 
-    level = raw.levels[level_name]
+    # Compile ALL levels
+    all_levels_metadata = {}
+    for level_name, level in raw.levels.items():
+        # Run stages 2-6 for this level
+        level_metadata = self._compile_one_level(raw, level, level_name)
+        all_levels_metadata[level_name] = level_metadata
 
-    # Run stages 2-7 for this level only
-    ...
+    # Stage 7: Emit single CompiledUniverse with all levels
+    primary_metadata = all_levels_metadata[primary_level]
+    return CompiledUniverse(
+        # Primary level fields (for backwards compat)
+        observation_spec=primary_metadata.observation_spec,
+        action_metadata=primary_metadata.action_metadata,
+        metadata=UniverseMetadata(..., level_name=primary_level),
+        # ... other primary fields
 
-    # Return CompiledUniverse for this level
-    return CompiledUniverse(...)
+        # Multi-level support
+        experiment_dir=experiment_dir,
+        all_levels=all_levels_metadata
+    )
 ```
 
-**Multi-level support**: Caller compiles each level separately if needed. Future enhancement could add `compile_all_levels()` that populates `CompiledUniverse.all_levels`.
-
 **Rationale**:
-- Simpler implementation (Phase 4)
-- Clear separation of concerns
-- Cache works per-level
-- Multi-level runtime can be added later if needed
+- Enables cross-level vocabulary validation (WHAT vs HOW enforcement)
+- Supports runtime level switching via `compiled.get_level(level_name)`
+- Enables transfer learning (same obs_dim across levels)
+- Single compilation for all levels (efficient caching)
+- Matches Phase 3, Phase 7, Phase 8 design
+
+**Usage**:
+```python
+# Compile all levels, use L1 as primary
+compiled = compiler.compile(
+    Path("configs/default_curriculum"),
+    primary_level="L1_full_observability"
+)
+
+# Access different levels at runtime
+l1_env = compiled.create_environment(level_name="L1_full_observability")
+l2_env = compiled.create_environment(level_name="L2_partial_observability")
+
+# Or use primary level (defaults to L1)
+primary_env = compiled.create_environment()
+```
+
+---
+
+## Argument Naming Standard
+
+**ALWAYS use `primary_level` in code, never `level_name` for compile()**
+
+❌ **Wrong**: `compile(experiment_dir, level_name="L1")`
+✅ **Correct**: `compile(experiment_dir, primary_level="L1")`
+
+**Exception**: `create_environment(level_name=...)` uses `level_name` because it's selecting a level, not designating a primary.
+
+**CLI**: Use `--level` flag (maps to `primary_level` internally)
+
+```bash
+# CLI usage
+python -m townlet.compiler compile configs/default_curriculum --level L1_full_observability
+```
 
 ---
 
@@ -303,6 +363,9 @@ def compile(experiment_dir: Path, level_name: str | None = None) -> CompiledUniv
 
 ❌ **Wrong**: `raw_configs_v21.py` in `src/townlet/config/`
 ✅ **Correct**: `raw_configs_v21.py` in `src/townlet/universe/`
+
+❌ **Wrong**: `compile(experiment_dir, level_name="L1")`
+✅ **Correct**: `compile(experiment_dir, primary_level="L1")`
 
 ---
 

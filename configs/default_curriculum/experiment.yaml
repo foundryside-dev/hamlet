@@ -1,6 +1,8 @@
 experiment:
   version: "1.0"
 
+  experiment_name: "Default Curriculum"
+
   metadata:
     name: "Complete Reference Example"
     description: "Comprehensive demonstration of all v2.1 config options"

@@ -139,6 +139,7 @@ class VectorizedHamletEnv:
         torch_device = torch.device(device) if isinstance(device, str) else device
 
         level = universe.get_level(level_name)
+        self.level_name = level_name
         self.level = level
         self.universe = universe
         self.config_pack_path = Path(universe.experiment_dir or ".")
@@ -155,7 +156,14 @@ class VectorizedHamletEnv:
         self.partial_observability = level.curriculum.curriculum.active_vision != "global"
         # Curriculum vision_range is normalized [0, 1]; radius/window derive from grid size.
         self.vision_range = level.curriculum.curriculum.vision_range
-        self.enable_temporal_mechanics = level.curriculum.curriculum.active_temporal
+        self.temporal_support_enabled = self.universe.stratum.stratum.temporal_support == "enabled"
+        self.temporal_active = level.curriculum.curriculum.active_temporal
+        # Temporal mechanics (day/night cycle) are only active when support is enabled
+        # and the curriculum marks temporal as active.
+        self.enable_temporal_mechanics = self.temporal_support_enabled and self.temporal_active
+        # Curriculum day_length controls temporal encoding when mechanics are enabled.
+        # Validation at DTO layer ensures day_length is a positive integer when active_temporal is true.
+        self.day_length = level.curriculum.curriculum.day_length or self.metadata.ticks_per_day
         self.agent_lifespan = training_cfg.training_loop.max_steps_per_episode
         partial_observability = self.partial_observability
         vision_range = self.vision_range
@@ -174,6 +182,16 @@ class VectorizedHamletEnv:
 
         # Metadata and observation activity
         self.metadata = self.universe.metadata
+        # Experiment-level label for batching/logging, derived from experiment.yaml.
+        # experiment_name is mandatory in v2.1; treat missing or empty values as a configuration error.
+        experiment_root = self.universe.experiment.experiment
+        experiment_label = getattr(experiment_root, "experiment_name", None)
+        if not experiment_label:
+            raise ValueError(
+                "Missing mandatory experiment_name in experiment.yaml. "
+                "Set experiment.experiment_name in your v2.1 experiment config and recompile."
+            )
+        self.experiment_batch_label = experiment_label
         self.observation_activity = level.observation_activity
         # Use level-specific observation spec so non-primary levels
         # (e.g., POMDP vs full observability) get correct shapes.
@@ -770,7 +788,7 @@ class VectorizedHamletEnv:
     def from_universe(
         cls,
         universe: CompiledUniverse,
-        level_name: str,
+        level_name: str | None = None,
         *,
         num_agents: int,
         device: torch.device | str = "cpu",
@@ -779,7 +797,9 @@ class VectorizedHamletEnv:
 
         Args:
             universe: CompiledUniverse with hierarchical configs
-            level_name: Which curriculum level to instantiate
+            level_name: Which curriculum level to instantiate. If None, defaults to the
+                first curriculum level declared in experiment.yaml, falling back to the
+                first available compiled level.
             num_agents: Number of parallel agents
             device: PyTorch device
 
@@ -788,6 +808,34 @@ class VectorizedHamletEnv:
         """
 
         torch_device = torch.device(device) if isinstance(device, str) else device
+
+        # Backwards compatibility: allow callers to omit level_name and use a sensible default.
+        # Prefer the experiment.yaml curriculum_levels ordering when available, otherwise
+        # fall back to the first available compiled level.
+        if level_name is None:
+            default_level: str | None = None
+
+            # Prefer experiment-level ordering if present
+            try:
+                curriculum_levels = getattr(universe.experiment, "experiment").curriculum_levels
+            except Exception:
+                curriculum_levels = []
+
+            available_levels = set(universe.available_levels)
+            for candidate in curriculum_levels:
+                if candidate in available_levels:
+                    default_level = candidate
+                    break
+
+            # Fallback: first available compiled level
+            if default_level is None:
+                if not universe.available_levels:
+                    raise ValueError(
+                        "CompiledUniverse has no curriculum levels. " "Pass level_name explicitly to VectorizedHamletEnv.from_universe()."
+                    )
+                default_level = universe.available_levels[0]
+
+            level_name = default_level
 
         return cls(
             universe=universe,
@@ -859,27 +907,37 @@ class VectorizedHamletEnv:
                         value[:, : vel.shape[1]] = vel
             elif name == "obs_meters":
                 value = self.meters
-            elif name == "obs_affordances":
-                value = self._build_affordance_encoding()
+            elif name in {"obs_affordance_at_position", "obs_affordances"}:
+                value = self._build_affordance_encoding(dims)
             elif name == "obs_temporal":
-                time_of_day = self.time_of_day if self.enable_temporal_mechanics else 0
-                time_angle = (time_of_day / 24.0) * 2 * math.pi
-                time_sin = torch.tensor(math.sin(time_angle), device=self.device)
-                time_cos = torch.tensor(math.cos(time_angle), device=self.device)
-                day_progress = float(time_of_day) / 24.0
-                # Simple day/night split: 0–5 and 18–23 treated as night.
-                is_night = 1.0 if time_of_day < 6 or time_of_day >= 18 else 0.0
+                # Temporal observation behavior:
+                # - If temporal_support is disabled at experiment level, obs_temporal should not exist.
+                # - If support enabled but curriculum marks temporal inactive, emit all zeros (masked).
+                # - If support enabled and temporal is active, emit full rich encoding.
+                if not self.temporal_support_enabled or not self.enable_temporal_mechanics:
+                    value = torch.zeros((self.num_agents, dims), device=self.device)
+                else:
+                    time_of_day = self.time_of_day
+                    day_length = float(self.day_length)
+                    time_angle = (time_of_day / day_length) * 2 * math.pi
+                    time_sin = torch.tensor(math.sin(time_angle), device=self.device)
+                    time_cos = torch.tensor(math.cos(time_angle), device=self.device)
+                    day_progress = float(time_of_day) / day_length
+                    # Simple day/night split relative to configured day_length:
+                    # first quarter and last quarter of the day are treated as night.
+                    night_threshold = day_length * 0.25
+                    is_night = 1.0 if time_of_day < night_threshold or time_of_day >= (day_length - night_threshold) else 0.0
 
-                # Populate rich temporal encoding, padding/truncating to dims as needed.
-                value = torch.zeros((self.num_agents, dims), device=self.device)
-                if dims > 0:
-                    value[:, 0] = time_sin
-                if dims > 1:
-                    value[:, 1] = time_cos
-                if dims > 2:
-                    value[:, 2] = day_progress
-                if dims > 3:
-                    value[:, 3] = is_night
+                    # Populate rich temporal encoding, padding/truncating to dims as needed.
+                    value = torch.zeros((self.num_agents, dims), device=self.device)
+                    if dims > 0:
+                        value[:, 0] = time_sin
+                    if dims > 1:
+                        value[:, 1] = time_cos
+                    if dims > 2:
+                        value[:, 2] = day_progress
+                    if dims > 3:
+                        value[:, 3] = is_night
             else:
                 # Environment variables mapping: expect variables named by obs field
                 if name not in self.vfs_registry._definitions:
@@ -891,9 +949,23 @@ class VectorizedHamletEnv:
                 value = value.unsqueeze(1)
             outputs.append(value)
 
-        return torch.cat(outputs, dim=1)
+        observations = torch.cat(outputs, dim=1)
 
-    def _build_affordance_encoding(self) -> torch.Tensor:
+        # Apply curriculum activity mask as a final safety net to ensure masked
+        # dimensions are zeroed, even if individual field encoders evolve.
+        activity = getattr(self, "observation_activity", None)
+        if activity is not None and activity.active_mask:
+            if len(activity.active_mask) != observations.shape[1]:
+                raise ValueError(
+                    "ObservationActivity mask length does not match observation_dim.\n"
+                    f"  mask_len={len(activity.active_mask)}, obs_dim={observations.shape[1]}"
+                )
+            mask = torch.tensor(activity.active_mask, device=self.device, dtype=observations.dtype)
+            observations = observations * mask.unsqueeze(0)
+
+        return observations
+
+    def _build_affordance_encoding(self, dims: int) -> torch.Tensor:
         """Build one-hot encoding of current affordance under each agent.
 
         This encodes against the FULL affordance vocabulary (from affordances.yaml),
@@ -901,25 +973,38 @@ class VectorizedHamletEnv:
         constant across curriculum levels.
 
         Returns:
-            encoding: [num_agents, num_affordance_types]
-                All zeros for agents not on any affordance
+            encoding: [num_agents, num_affordance_types + 1]
+                One-hot over affordance types plus explicit \"none\" category.
         """
-        # Initialize to "none" (all zeros); a 1.0 will be set at the
-        # corresponding affordance index when an agent is on that affordance.
-        affordance_encoding = torch.zeros(self.num_agents, self.num_affordance_types, device=self.device)
+        # Total affordance classes (excluding the explicit "none" slot)
+        num_types = self.num_affordance_types
+        total_dims = num_types + 1
 
-        # Iterate over FULL affordance vocabulary (not just deployed)
-        # This ensures consistent encoding across curriculum levels
+        # Initialize all zeros; last column is reserved for "none".
+        affordance_encoding = torch.zeros(self.num_agents, total_dims, device=self.device)
+
+        # Iterate over full affordance vocabulary (not just deployed positions).
         for affordance_idx, affordance_name in enumerate(self.affordance_names):
-            # Check if this affordance is DEPLOYED (has position on grid)
             if affordance_name in self.affordances:
                 affordance_pos = self.affordances[affordance_name]
-                # Check which agents are on affordance (using substrate)
                 on_affordance = self.substrate.is_on_position(self.positions, affordance_pos)
                 if on_affordance.any():
                     affordance_encoding[on_affordance, affordance_idx] = 1.0
 
-        return affordance_encoding
+        # Agents not on any affordance get "none" category = 1.0 in last slot.
+        row_sums = affordance_encoding.sum(dim=1)
+        none_mask = row_sums == 0
+        affordance_encoding[none_mask, num_types] = 1.0
+
+        # Align with spec dims defensively (older artifacts may differ).
+        if dims == total_dims:
+            return affordance_encoding
+        if dims < total_dims:
+            return affordance_encoding[:, :dims]
+
+        padded = torch.zeros(self.num_agents, dims, device=self.device)
+        padded[:, :total_dims] = affordance_encoding
+        return padded
 
     def _encode_position_observation(self) -> torch.Tensor | None:
         """Encode agent position using substrate-native semantics.
@@ -1105,8 +1190,11 @@ class VectorizedHamletEnv:
         rewards = torch.where(retired, rewards + 1.0, rewards)  # +1 retirement bonus
         self.dones = torch.logical_or(self.dones, retired)
 
-        # 6. Increment time of day (always cycles, but only affects mechanics if enabled)
-        self.time_of_day = (self.time_of_day + 1) % 24
+        # 6. Increment time of day (respects configured day_length when temporal support is enabled).
+        if self.temporal_support_enabled:
+            self.time_of_day = (self.time_of_day + 1) % int(self.day_length)
+        else:
+            self.time_of_day = 0
 
         observations = self._get_observations()
 

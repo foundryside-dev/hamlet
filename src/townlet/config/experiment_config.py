@@ -6,9 +6,9 @@ levels to train through.
 
 Example:
     >>> config = ExperimentConfig.from_yaml(Path("configs/default_curriculum/experiment.yaml"))
-    >>> print(config.metadata.name)
-    'Complete Reference Example'
-    >>> print(config.curriculum_levels)
+    >>> print(config.experiment.experiment_name)
+    'Default Curriculum'
+    >>> print(config.experiment.curriculum_levels)
     ['L0_0_minimal', 'L0_5_dual_resource', ...]
 """
 
@@ -35,6 +35,12 @@ class ExperimentConfigRoot(BaseModel):
     """Root structure for experiment.yaml file."""
 
     version: str = Field(..., description="Config schema version")
+    experiment_name: str = Field(
+        ...,
+        description=(
+            "Canonical experiment name used for runtime batch labeling and telemetry. " "Must be explicitly set in experiment.yaml."
+        ),
+    )
     metadata: ExperimentMetadata = Field(..., description="Experiment metadata")
     curriculum_levels: list[str] = Field(..., description="Ordered list of curriculum level names")
 

@@ -38,17 +38,17 @@ This document defines the **single source of truth** for v2.1 DTO structure, nam
 
 ## DTO Structure Table
 
-| YAML File | DTO Class Name | File Location | Root Field | Access Pattern Example |
-|-----------|---------------|---------------|------------|------------------------|
-| `experiment.yaml` | `ExperimentConfig` | `src/townlet/config/experiment_config.py` | `experiment` | `raw.experiment.experiment.metadata.name` |
-| `stratum.yaml` | `StratumConfig` | `src/townlet/config/stratum_config.py` | `stratum` | `raw.stratum.stratum.substrate.type` |
-| `environment.yaml` | `EnvironmentConfig` | `src/townlet/config/environment_config.py` | `environment` | `raw.environment.environment.meters` |
-| `actions.yaml` | `ActionsConfig` | `src/townlet/config/actions_config.py` | `actions` | `raw.actions.actions.custom_actions` |
-| `agent.yaml` | `AgentConfig` | `src/townlet/config/agent_config.py` | `agent` | `raw.agent.agent.brain` |
-| `curriculum.yaml` | `CurriculumConfig` | `src/townlet/config/curriculum_config.py` | `curriculum` | `level.curriculum.curriculum.active_vision` |
-| `bars.yaml` | `BarsV2Config` | `src/townlet/config/bars_v2_config.py` | `bars` | `level.bars.bars.meters` |
-| `affordances.yaml` | `AffordancesV2Config` | `src/townlet/config/affordances_v2_config.py` | `affordances` | `level.affordances.affordances.affordances` |
-| `training.yaml` | `TrainingV2Config` | `src/townlet/config/training_v2_config.py` | `training` | `level.training.training.population` |
+| YAML File | DTO Class Name | File Location | Pattern | Access Pattern Example |
+|-----------|---------------|---------------|---------|------------------------|
+| `experiment.yaml` | `ExperimentConfig` | `src/townlet/config/experiment_config.py` | Wrapper | `raw.experiment.experiment.metadata.name` |
+| `stratum.yaml` | `StratumConfig` | `src/townlet/config/stratum_config.py` | Wrapper | `raw.stratum.stratum.substrate.type` |
+| `environment.yaml` | `EnvironmentConfig` | `src/townlet/config/environment_config.py` | Wrapper | `raw.environment.environment.meters` |
+| `actions.yaml` | `ActionsConfig` | `src/townlet/config/actions_config.py` | Wrapper | `raw.actions.actions.custom_actions` |
+| `agent.yaml` | `AgentConfig` | `src/townlet/config/agent_config.py` | Wrapper | `raw.agent.agent.brain` |
+| `curriculum.yaml` | `CurriculumConfig` | `src/townlet/config/curriculum_config.py` | Wrapper | `level.curriculum.curriculum.active_vision` |
+| `bars.yaml` | `BarsV2Config` | `src/townlet/config/bars_v2_config.py` | **Direct** | `level.bars.meters` ⚠️ NO double nesting |
+| `affordances.yaml` | `AffordancesV2Config` | `src/townlet/config/affordances_v2_config.py` | **Direct** | `level.affordances.affordances` ⚠️ Field name |
+| `training.yaml` | `TrainingV2Config` | `src/townlet/config/training_v2_config.py` | **Direct** | `level.training.population` ⚠️ NO double nesting |
 
 ---
 
@@ -129,35 +129,76 @@ raw.stratum.substrate.type    # Missing .stratum section
 
 ### Level-Specific Access
 
+**IMPORTANT**: Curriculum-level DTOs use MIXED patterns due to different loaders
+
 ```python
 level = raw.levels["L1_full_observability"]
 
-# Correct:
-level.curriculum.curriculum.active_vision
-level.bars.bars.meters
-level.affordances.affordances.affordances
-level.training.training.population
+# Curriculum (wrapper pattern - uses from_yaml):
+level.curriculum.curriculum.active_vision    # ✅ Double nesting
+
+# Bars (direct pattern - uses load_yaml_section):
+level.bars.version                           # ✅ Direct access
+level.bars.meters                            # ✅ Direct access (NOT level.bars.bars.meters)
+level.bars.cascades                          # ✅ Direct access
+
+# Affordances (direct pattern - uses load_yaml_section):
+level.affordances.version                    # ✅ Direct access
+level.affordances.affordances                # ✅ Direct access (field name, not wrapper)
+level.affordances.modulations                # ✅ Direct access
+
+# Training (direct pattern - uses load_yaml_section):
+level.training.version                       # ✅ Direct access
+level.training.population                    # ✅ Direct access
 
 # Wrong:
-level.curriculum.active_vision      # Missing .curriculum section
-level.bars.meters                    # Missing .bars section
-level.affordances.affordances        # Only one .affordances (needs two!)
-level.training.population            # Missing .training section
+level.curriculum.active_vision               # ❌ Missing .curriculum wrapper
+level.bars.bars.meters                       # ❌ Bars does NOT have wrapper
+level.affordances.affordances.affordances    # ❌ Only one .affordances wrapper
+level.training.training.population           # ❌ Training does NOT have wrapper
 ```
 
 ### Vocabulary Validation Pattern
 
 ```python
-# Canonical vocabulary from environment.yaml
+# Canonical vocabulary from environment.yaml (wrapper pattern):
 env_meter_names = {m.name for m in raw.environment.environment.meters}
 env_affordance_names = {a.name for a in raw.environment.environment.affordances}
 
-# Per-level vocabulary
+# Per-level vocabulary (direct pattern for Bars/Affordances):
 for level_name, level in raw.levels.items():
-    level_meter_names = {m.name for m in level.bars.bars.meters}
-    level_affordance_names = {a.name for a in level.affordances.affordances.affordances}
-    # Validate: level_meter_names == env_meter_names
+    level_meter_names = {m.name for m in level.bars.meters}                      # ✅ Direct access
+    level_affordance_names = {a.name for a in level.affordances.affordances}      # ✅ Field name, not wrapper
+
+    # Validate vocabulary consistency:
+    assert level_meter_names == env_meter_names
+    assert level_affordance_names == env_affordance_names
 ```
+
+---
+
+## Why Two Different Patterns?
+
+**Wrapper Pattern** (Experiment-Level DTOs):
+- DTOs use `@classmethod from_yaml(path)` loader
+- Loads entire file via `yaml.safe_load(file)` → returns full dict with root key
+- Creates DTO via `cls(**data)` where data = `{"experiment": {...}}`
+- Requires wrapper field to match YAML root key
+- Example: `ExperimentConfig.experiment` wraps `ExperimentConfigRoot`
+
+**Direct Pattern** (Curriculum-Level V2 DTOs):
+- DTOs use `load_some_v2_config(config_dir)` function (NOT classmethod)
+- Helper function calls `load_yaml_section(..., "bars.yaml", "bars")`
+- Section extraction happens BEFORE DTO creation
+- Creates DTO via `SomeV2Config(**data)` where data = `{"version": "1.0", "meters": [...]}`
+- No wrapper needed - section already extracted
+- Example: `BarsV2Config` directly has `version`, `meters`, `cascades` fields
+
+**Why the difference?**
+- Experiment-level: Reused existing pattern with classmethod loader
+- Curriculum-level: Uses helper for DRY code (same `load_yaml_section` utility)
+- Both patterns are correct - just different loading strategies
+- **Do NOT try to "fix" this - both are intentional design choices**
 
 ---
 

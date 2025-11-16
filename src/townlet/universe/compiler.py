@@ -459,9 +459,15 @@ class UniverseCompiler:
             action_metadata = self._build_action_space_metadata(raw.stratum, raw.actions, level.training)
             meter_metadata = self._build_meter_metadata(raw.environment, level.bars)
             affordance_metadata = self._build_affordance_metadata(level.affordances)
-            optimization_data = self._build_optimization_data(level.bars, meter_metadata, affordance_metadata, action_metadata)
+            optimization_data = self._build_optimization_data(
+                level.bars,
+                level.affordances,
+                meter_metadata,
+                affordance_metadata,
+                action_metadata,
+            )
             vfs_fields = self._build_vfs_observation_fields(obs_spec)
-            vfs_variables = self._build_vfs_variables(raw.environment)
+            vfs_variables = self._build_vfs_variables(obs_spec, raw.environment)
 
             all_levels[level_name] = CompiledUniverse.LevelMetadata(
                 level_name=level_name,
@@ -1004,11 +1010,12 @@ class UniverseCompiler:
     def _build_optimization_data(
         self,
         bars: BarsV2Config,
+        affordances: AffordancesV2Config,
         meter_metadata: MeterMetadata,
         affordance_metadata: AffordanceMetadata,
         action_metadata: ActionSpaceMetadata,
     ) -> OptimizationData:
-        """Precompute simple optimization tensors from v2.1 DTOs."""
+        """Precompute tensors from v2.1 DTOs (depletions, cascades, modulations)."""
         meter_lookup = {m.name: m.index for m in meter_metadata.meters}
         base_depletions = torch.zeros(len(meter_metadata.meters), dtype=torch.float32)
         for bar in bars.meters:
@@ -1031,12 +1038,30 @@ class UniverseCompiler:
                 }
             )
 
+        modulation_entries: list[dict[str, Any]] = []
+        for modulation in affordances.modulations:
+            bar_idx = meter_lookup.get(modulation.bar)
+            if bar_idx is None:
+                continue
+            for aff_name in modulation.affordances:
+                target_idx = next((i for i, a in enumerate(affordance_metadata.affordances) if a.name == aff_name), None)
+                if target_idx is None:
+                    continue
+                modulation_entries.append(
+                    {
+                        "bar_idx": bar_idx,
+                        "affordance_idx": target_idx,
+                        "threshold": float(modulation.threshold),
+                        "min_multiplier": float(modulation.min_multiplier),
+                    }
+                )
+
         action_mask_table = torch.ones((24, action_metadata.total_actions), dtype=torch.bool)
 
         return OptimizationData(
             base_depletions=base_depletions,
             cascade_data={"default": cascade_entries},
-            modulation_data=[],
+            modulation_data=modulation_entries,
             action_mask_table=action_mask_table,
             affordance_position_map={aff.name: None for aff in affordance_metadata.affordances},
         )
@@ -1058,11 +1083,29 @@ class UniverseCompiler:
             )
         return tuple(fields)
 
-    def _build_vfs_variables(self, environment: EnvironmentConfig) -> tuple[VariableDef, ...]:
-        """Build VFS variables from environment.yaml declarations."""
+    def _build_vfs_variables(self, obs_spec: ObservationSpec, environment: EnvironmentConfig) -> tuple[VariableDef, ...]:
+        """Build VFS variables from observation fields + environment variables."""
         vars_out: list[VariableDef] = []
+
+        # Standard variables from observation fields
+        for field in obs_spec.fields:
+            dims = field.dims
+            vars_out.append(
+                VariableDef(
+                    id=field.name,
+                    scope="agent",
+                    type="vecNf" if dims > 1 else "scalar",
+                    dims=dims if dims > 1 else None,
+                    lifetime="tick",
+                    readable_by=["agent", "engine"],
+                    writable_by=["engine"],
+                    default=[0.0] * dims if dims > 1 else 0.0,
+                    description=field.description,
+                )
+            )
+
+        # Environment-declared variables
         for var in environment.environment.variables:
-            # No defaults: require dims for vector types
             dims = var.dims if hasattr(var, "dims") else None
             vars_out.append(
                 VariableDef(
@@ -1681,9 +1724,17 @@ class UniverseCompiler:
                     else:
                         _handle_missing_meter(location)
 
-        # Environment enabled_affordances (names)
+        # Environment enabled_affordances (names) - required
         enabled_affordances = raw_configs.environment.enabled_affordances
-        if enabled_affordances:
+        if enabled_affordances is None:
+            errors.add(
+                _format_error(
+                    "UAC-RES-004",
+                    "training.environment.enabled_affordances must be specified explicitly (no defaults).",
+                    "training.yaml:environment.enabled_affordances",
+                )
+            )
+        else:
             for affordance_name in enabled_affordances:
                 if affordance_name not in symbol_table.affordances_by_name:
                     errors.add(
@@ -1697,6 +1748,29 @@ class UniverseCompiler:
                         "invalid_affordance_name",
                         "Ensure environment.enabled_affordances lists valid affordance names from affordances.yaml.",
                     )
+
+        # Validate modulation coverage (environment.yaml modulation_graph vs per-level modulations)
+        env_mods = getattr(raw_configs.environment.environment, "modulation_graph", [])
+        graph_mods = {(m.bar, tuple(sorted(m.affordances))) for m in env_mods}
+        per_level_mods = {(m.bar, tuple(sorted(m.affordances))) for m in getattr(level, "affordances").modulations}
+        missing_mods = graph_mods - per_level_mods
+        extra_mods = per_level_mods - graph_mods
+        if missing_mods:
+            errors.add(
+                _format_error(
+                    "UAC-MOD-001",
+                    f"Missing modulations: {sorted(list(missing_mods))}",
+                    location=f"levels/{level_name}/affordances.yaml:modulations",
+                )
+            )
+        if extra_mods:
+            errors.add(
+                _format_error(
+                    "UAC-MOD-002",
+                    f"Extra modulations not in modulation_graph: {sorted(list(extra_mods))}",
+                    location=f"levels/{level_name}/affordances.yaml:modulations",
+                )
+            )
 
         # Global action costs/effects (dict[str, float])
         for action in raw_configs.global_actions.actions:

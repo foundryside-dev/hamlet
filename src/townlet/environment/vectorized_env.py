@@ -146,7 +146,10 @@ class VectorizedHamletEnv:
         # Training/runtime controls: derive from level.training
         training_cfg = level.training
         population_cfg = training_cfg.population
-        self.randomize_affordances = False  # Placeholder until training/environment controls are modeled
+        env_cfg = getattr(training_cfg, "environment", None)
+        if env_cfg is None:
+            raise ValueError("training.environment must be specified (no defaults allowed)")
+        self.randomize_affordances = bool(env_cfg.randomize_affordances)
         self.partial_observability = level.curriculum.curriculum.active_vision != "global"
         self.vision_range = level.curriculum.curriculum.vision_range
         self.enable_temporal_mechanics = level.curriculum.curriculum.active_temporal
@@ -367,6 +370,25 @@ class VectorizedHamletEnv:
                 )
             )
 
+        # Build modulation rules mapping to affordance names
+        modulation_rules = []
+        for entry in self.optimization_data.modulation_data:
+            aff_idx = entry.get("affordance_idx")
+            bar_idx = entry.get("bar_idx")
+            if aff_idx is None or bar_idx is None:
+                continue
+            if aff_idx < 0 or aff_idx >= len(affordance_metadata.affordances):
+                continue
+            aff_name = affordance_metadata.affordances[aff_idx].name
+            modulation_rules.append(
+                {
+                    "affordance": aff_name,
+                    "bar_idx": bar_idx,
+                    "threshold": entry.get("threshold", 0.0),
+                    "min_multiplier": entry.get("min_multiplier", 1.0),
+                }
+            )
+
         self.affordance_engine = AffordanceEngine(
             AffordanceConfigCollection(
                 version="runtime",
@@ -377,6 +399,7 @@ class VectorizedHamletEnv:
             num_agents,
             self.device,
             self.meter_name_to_index,
+            modulation_rules=modulation_rules,
         )
 
         # Build composed action space from compiler metadata and substrate defaults
@@ -430,6 +453,17 @@ class VectorizedHamletEnv:
         self._affordances_seen: list[set[str]] = [set() for _ in range(self.num_agents)]
 
         # Initialize affordance positions per configuration
+        enabled_affordances = None
+        env_cfg = getattr(training_cfg, "environment", None)
+        if env_cfg is not None:
+            enabled_affordances = env_cfg.enabled_affordances
+        if enabled_affordances is not None:
+            enabled_lookup = set(enabled_affordances)
+            self.affordances = {name: pos for name, pos in self.affordances.items() if name in enabled_lookup}
+            self.affordance_names = [name for name in self.affordance_names if name in enabled_lookup]
+            self.num_affordance_types = len(self.affordance_names)
+            self.affordance_name_to_id = {name: self.affordance_name_to_id[name] for name in self.affordance_names}
+
         if self.randomize_affordances:
             self.randomize_affordance_positions()
         else:
@@ -556,8 +590,10 @@ class VectorizedHamletEnv:
         source_lookup = {a.name: a.source for a in action_metadata.actions}
 
         for action in substrate_actions:
+            if action.name not in id_lookup:
+                raise ValueError(f"Action '{action.name}' missing from compiler metadata; no defaults allowed.")
             enabled = enabled_lookup.get(action.name, True)
-            action.id = id_lookup.get(action.name, action.id)
+            action.id = id_lookup[action.name]
             action.enabled = enabled
             action.type = type_lookup.get(action.name, action.type)
             action.source = source_lookup.get(action.name, "substrate")
@@ -760,7 +796,11 @@ class VectorizedHamletEnv:
                 if dims > 1:
                     value[:, 1] = time_cos
             else:
-                raise ValueError(f"Unknown observation field {name}")
+                # Environment variables mapping: expect variables named by obs field
+                if name not in self.vfs_registry._definitions:
+                    raise ValueError(f"Observation field '{name}' not found in VFS variables (no defaults allowed).")
+                val = self.vfs_registry.get(name, reader="engine")
+                value = val if val.dim() > 1 else val.unsqueeze(1)
 
             if value.dim() == 1:
                 value = value.unsqueeze(1)

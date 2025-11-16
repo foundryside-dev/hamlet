@@ -45,6 +45,7 @@ class AffordanceEngine:
         num_agents: int,
         device: torch.device,
         meter_name_to_idx: dict[str, int],
+        modulation_rules: list[dict[str, Any]] | None = None,
     ):
         """
         Initialize AffordanceEngine.
@@ -66,6 +67,7 @@ class AffordanceEngine:
             self.affordances = tuple(affordance_config.affordances)
 
         self.meter_name_to_idx = meter_name_to_idx
+        self.modulation_rules = modulation_rules or []
 
         # Build lookup maps
         self._build_lookup_maps()
@@ -154,7 +156,8 @@ class AffordanceEngine:
         # Apply costs (modern dict format)
         for cost in affordance.costs:
             meter_idx = self.meter_name_to_idx[cost["meter"]]
-            updated_meters[agent_mask, meter_idx] -= cost["amount"]
+            multiplier = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
+            updated_meters[agent_mask, meter_idx] -= cost["amount"] * multiplier[agent_mask]
 
         # Apply effects from effect_pipeline (modern schema only)
         if hasattr(affordance, "effect_pipeline") and affordance.effect_pipeline:
@@ -168,24 +171,56 @@ class AffordanceEngine:
                 on_completion = getattr(affordance.effect_pipeline, "on_completion", [])
 
                 # Apply per_tick effects × duration
+                multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
                 for effect in per_tick:
                     meter_idx = self.meter_name_to_idx[effect.meter]
-                    updated_meters[agent_mask, meter_idx] += effect.amount * duration
+                    updated_meters[agent_mask, meter_idx] += effect.amount * duration * multipliers[agent_mask]
 
                 # Apply completion bonus
                 for effect in on_completion:
                     meter_idx = self.meter_name_to_idx[effect.meter]
-                    updated_meters[agent_mask, meter_idx] += effect.amount
+                    multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
+                    updated_meters[agent_mask, meter_idx] += effect.amount * multipliers[agent_mask]
             else:
                 # Apply on_start effects (instant-mode affordances)
+                multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
                 for effect in on_start:
                     meter_idx = self.meter_name_to_idx[effect.meter]
-                    updated_meters[agent_mask, meter_idx] += effect.amount
+                    updated_meters[agent_mask, meter_idx] += effect.amount * multipliers[agent_mask]
 
         # Clamp meters to [0, 1]
         updated_meters = torch.clamp(updated_meters, 0.0, 1.0)
 
         return updated_meters
+
+    def _compute_affordance_multiplier(
+        self, affordance_name: str, meters: torch.Tensor, agent_mask: torch.Tensor
+    ) -> torch.Tensor:
+        """Compute modulation multiplier for a given affordance based on bar values."""
+        multiplier = torch.ones(meters.shape[0], device=meters.device, dtype=meters.dtype)
+        for rule in self.modulation_rules:
+            if rule.get("affordance") != affordance_name:
+                continue
+            bar_idx = rule.get("bar_idx")
+            threshold = rule.get("threshold")
+            min_multiplier = rule.get("min_multiplier")
+            if bar_idx is None or threshold is None or min_multiplier is None:
+                continue
+            val = meters[:, bar_idx]
+            factor = torch.ones_like(val)
+            below = val < threshold
+            if below.any():
+                factor = torch.where(
+                    below,
+                    min_multiplier + (1.0 - min_multiplier) * (val / threshold),
+                    torch.ones_like(val),
+                )
+            multiplier = multiplier * factor
+        # Zero out masked agents to avoid applying to inactive ones
+        masked = ~agent_mask
+        if masked.any():
+            multiplier[masked] = 0.0
+        return multiplier
 
     def apply_multi_tick_interaction(
         self,
@@ -227,16 +262,18 @@ class AffordanceEngine:
             agent_mask = agent_mask & can_afford
 
         # Apply per-tick costs (modern dict format)
+        multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
         for cost in affordance.costs_per_tick:
             meter_idx = self.meter_name_to_idx[cost["meter"]]
-            updated_meters[agent_mask, meter_idx] -= cost["amount"]
+            updated_meters[agent_mask, meter_idx] -= cost["amount"] * multipliers[agent_mask]
 
         # Apply per-tick effects from effect_pipeline (modern schema: AffordanceEffect objects)
         if hasattr(affordance, "effect_pipeline") and affordance.effect_pipeline:
             per_tick_effects = getattr(affordance.effect_pipeline, "per_tick", [])
+            multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
             for effect in per_tick_effects:
                 meter_idx = self.meter_name_to_idx[effect.meter]
-                updated_meters[agent_mask, meter_idx] += effect.amount
+                updated_meters[agent_mask, meter_idx] += effect.amount * multipliers[agent_mask]
 
         duration_ticks = affordance.duration_ticks or 1
 
@@ -244,9 +281,10 @@ class AffordanceEngine:
         is_final_tick = current_tick == (duration_ticks - 1)
         if is_final_tick and hasattr(affordance, "effect_pipeline") and affordance.effect_pipeline:
             on_completion = getattr(affordance.effect_pipeline, "on_completion", [])
+            multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
             for effect in on_completion:
                 meter_idx = self.meter_name_to_idx[effect.meter]
-                updated_meters[agent_mask, meter_idx] += effect.amount
+                updated_meters[agent_mask, meter_idx] += effect.amount * multipliers[agent_mask]
 
         # Clamp meters to [0, 1]
         updated_meters = torch.clamp(updated_meters, 0.0, 1.0)

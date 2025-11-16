@@ -602,6 +602,11 @@ class VectorizedHamletEnv:
         for meta_action in action_metadata.actions:
             if meta_action.name in substrate_names:
                 continue
+            if meta_action.type == "movement":
+                raise ValueError(
+                    f"Custom movement action '{meta_action.name}' is not supported without explicit delta/teleport; "
+                    "define it in the substrate defaults instead."
+                )
             action = ActionConfig(
                 id=meta_action.id,
                 name=meta_action.name,

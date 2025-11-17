@@ -4,6 +4,7 @@ affordances:
   affordances:
     - name: EAT
 
+      interaction_type: instant
       costs:
         energy: 0.05
         money: 5.0
@@ -23,6 +24,7 @@ affordances:
         positions: [[2, 2], [5, 5]]
 
     - name: SLEEP
+      interaction_type: instant
       costs:
         energy: 0.0
       effects:
@@ -35,6 +37,7 @@ affordances:
         positions: [[0, 0], [7, 7]]
 
     - name: WORK
+      interaction_type: instant
       costs:
         energy: 0.3
         mood: 0.1
@@ -50,6 +53,7 @@ affordances:
         positions: [[4, 4]]
 
     - name: SHOWER
+      interaction_type: instant
       costs:
         energy: 0.05
         money: 1.0
@@ -63,6 +67,7 @@ affordances:
         positions: [[1, 1]]
 
     - name: EXERCISE
+      interaction_type: instant
       costs:
         energy: 0.2
         satiation: 0.1
@@ -76,6 +81,7 @@ affordances:
         positions: [[6, 6]]
 
     - name: SOCIALIZE
+      interaction_type: instant
       costs:
         energy: 0.1
       effects:
@@ -88,6 +94,7 @@ affordances:
         positions: [[3, 3]]
 
     - name: MEDITATE
+      interaction_type: instant
       costs:
         energy: 0.05
       effects:
@@ -99,6 +106,7 @@ affordances:
         positions: [[2, 6]]
 
     - name: DRINK_WATER
+      interaction_type: instant
       costs:
         energy: 0.01
       effects:
@@ -110,6 +118,7 @@ affordances:
         positions: [[2, 2]]
 
     - name: BRUSH_TEETH
+      interaction_type: instant
       costs:
         energy: 0.02
       effects:
@@ -121,6 +130,7 @@ affordances:
         positions: [[1, 1]]
 
     - name: LAUNDRY
+      interaction_type: instant
       costs:
         energy: 0.1
         money: 2.0
@@ -133,6 +143,7 @@ affordances:
         positions: [[5, 1]]
 
     - name: COOK
+      interaction_type: instant
       costs:
         energy: 0.15
         money: 3.0
@@ -146,6 +157,7 @@ affordances:
         positions: [[2, 2]]
 
     - name: CLEAN_HOUSE
+      interaction_type: instant
       costs:
         energy: 0.15
       effects:
@@ -158,6 +170,7 @@ affordances:
         positions: [[4, 2]]
 
     - name: ENTERTAINMENT
+      interaction_type: instant
       costs:
         energy: 0.05
         money: 5.0
@@ -170,6 +183,7 @@ affordances:
         positions: [[6, 2]]
 
     - name: DOCTOR
+      interaction_type: instant
       costs:
         energy: 0.1
         money: 20.0

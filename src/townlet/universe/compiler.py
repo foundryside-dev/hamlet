@@ -18,12 +18,9 @@ import torch
 import yaml
 
 from townlet.config.actions_config import ActionsConfig
-from townlet.config.affordance import AffordanceConfig
 from townlet.config.affordances_v2_config import AffordancesV2Config
 from townlet.config.agent_config import AgentConfig
-from townlet.config.bar import BarConfig
 from townlet.config.bars_v2_config import BarsV2Config
-from townlet.config.cascade import CascadeConfig
 from townlet.config.curriculum_config import CurriculumConfig
 from townlet.config.drive_as_code import DriveAsCodeConfig
 from townlet.config.effect_pipeline import EffectPipeline
@@ -32,7 +29,6 @@ from townlet.config.experiment_config import ExperimentConfig
 from townlet.config.stratum_config import StratumConfig
 from townlet.config.training_v2_config import TrainingV2Config
 from townlet.environment.action_config import ActionConfig, ActionSpaceConfig
-from townlet.environment.cascade_config import EnvironmentConfig as CascadeEnvironmentConfig
 from townlet.environment.substrate_action_validator import SubstrateActionValidator
 from townlet.environment.temporal_utils import is_affordance_open
 from townlet.substrate.config import SubstrateConfig
@@ -57,7 +53,6 @@ from townlet.vfs.schema import ObservationField as VFSObservationField
 
 from .cues_compiler import CuesCompiler
 from .errors import CompilationError, CompilationErrorCollector, CompilationMessage
-from .symbol_table import UniverseSymbolTable
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +72,6 @@ class UniverseCompiler:
     """Entry point for compiling config packs into CompiledUniverse artifacts."""
 
     def __init__(self) -> None:
-        self._symbol_table = UniverseSymbolTable()
         self._cues_compiler = CuesCompiler()
         self._metadata: UniverseMetadata | None = None
         self._observation_spec: ObservationSpec | None = None
@@ -430,11 +424,7 @@ class UniverseCompiler:
         return obs_spec
 
     def compile(self, experiment_dir: Path, primary_level: str | None = None, use_cache: bool = True) -> CompiledUniverse:
-        """
-        Compile v2.1 hierarchical configs into a multi-level CompiledUniverse.
-
-        Scorched-earth path: legacy flat configs and HamletConfig plumbing are removed.
-        """
+        """Compile v2.1 hierarchical configs into a multi-level CompiledUniverse."""
         experiment_dir = Path(experiment_dir).resolve()
 
         self._validate_config_dir(experiment_dir)
@@ -1719,13 +1709,7 @@ class UniverseCompiler:
             )
 
     def _validate_economic_balance_v21(self, raw: RawConfigsV21) -> None:
-        """Emit economic balance warnings for v2.1 configs.
-
-        This is a minimal v2.1 analogue of the legacy Stage 4 economic checks:
-        - Computes income vs costs from environment/affordances.
-        - Logs warnings when total income is zero or lower than total costs.
-        - Logs warning when income-generating affordances never open.
-        """
+        """Emit economic balance warnings for v2.1 configs."""
         _ = raw.environment.environment  # TODO: Decide if we need this.
         affordances_cfg = next(iter(raw.levels.values())).affordances
 
@@ -2204,60 +2188,9 @@ class UniverseCompiler:
 
         return variables
 
-    def _stage_2_build_symbol_tables(self, raw_configs: Any) -> UniverseSymbolTable:
-        """Stage 2 – register meters, variables, actions, cascades, and affordances."""
-
-        raise RuntimeError("Legacy flat config pipeline removed; use v2.1 hierarchical configs.")
-
-        table = UniverseSymbolTable()
-
-        for bar in raw_configs.bars:
-            table.register_meter(bar)
-
-        # Auto-generate standard system variables
-        auto_generated_vars = self._auto_generate_standard_variables(raw_configs)
-
-        # Get user-defined variable IDs to avoid duplicates
-        user_defined_var_ids = set()
-        if raw_configs.variables_reference is not None:
-            user_defined_var_ids = {var.id for var in raw_configs.variables_reference}
-
-        # Register auto-generated variables only if not overridden by user
-        for variable in auto_generated_vars:
-            if variable.id not in user_defined_var_ids:
-                table.register_variable(variable)
-
-        # Register custom user-defined variables (these take precedence over auto-generated)
-        if raw_configs.variables_reference is not None:
-            for variable in raw_configs.variables_reference:
-                table.register_variable(variable)
-
-        for action in raw_configs.global_actions.actions:
-            table.register_action(action)
-
-        for cascade in raw_configs.cascades:
-            table.register_cascade(cascade)
-
-        for affordance in raw_configs.affordances:
-            table.register_affordance(affordance)
-
-        for cue in raw_configs.cues:
-            table.register_cue(cue)
-
-        return table
-
-    def _stage_3_resolve_references(
-        self,
-        raw_configs: Any,
-        symbol_table: UniverseSymbolTable,
-        errors: CompilationErrorCollector,
-    ) -> None:
-        """Stage 3 – ensure every cross-file reference points to a known symbol."""
-
-        raise RuntimeError("Legacy flat config pipeline removed; use v2.1 hierarchical configs.")
-
-        source_map = getattr(raw_configs, "source_map", None)
-        hints_added: set[str] = set()
+        # Legacy Stage 2/3 flat-config pipeline has been removed. v2.1
+        # compilation validates references directly from RawConfigsV21
+        # and CompiledUniverse metadata.
 
         def _add_hint(key: str, text: str) -> None:
             if key not in hints_added:
@@ -3217,11 +3150,7 @@ class UniverseCompiler:
         """
         opening_hours = getattr(affordance, "opening_hours", None)
         if opening_hours is None:
-            raise ValueError(
-                "Affordance missing opening_hours in v2.1 config. "
-                "All affordances must declare opening_hours; legacy operating_hours "
-                "arrays are no longer supported."
-            )
+            raise ValueError("Affordance missing opening_hours in v2.1 config. " "All affordances must declare opening_hours.")
 
         # opening_hours.enabled == False → 24/7 availability.
         if not opening_hours.enabled:
@@ -3527,25 +3456,6 @@ class UniverseCompiler:
             action_mask_table=action_mask_table,
             affordance_position_map=affordance_position_map,
         )
-
-    def _stage_7_emit_compiled_universe(
-        self,
-        *,
-        raw_configs: Any,
-        symbol_table: UniverseSymbolTable,
-        metadata: UniverseMetadata,
-        observation_spec: ObservationSpec,
-        vfs_observation_fields: tuple[VFSObservationField, ...],
-        action_space_metadata: ActionSpaceMetadata,
-        meter_metadata: MeterMetadata,
-        affordance_metadata: AffordanceMetadata,
-        optimization_data: OptimizationData,
-        environment_config: CascadeEnvironmentConfig,
-        dac_config: DriveAsCodeConfig,
-    ) -> CompiledUniverse:
-        """Stage 7 – produce immutable CompiledUniverse artifact."""
-
-        raise RuntimeError("Legacy flat config pipeline removed; use v2.1 hierarchical configs.")
 
     def _derive_grid_dimensions(self, substrate: SubstrateConfig) -> tuple[int | None, int | None]:
         """Calculate grid dimensions for metadata.

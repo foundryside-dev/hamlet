@@ -923,7 +923,7 @@ class TestCheckpointRoundTrip:
 
 
 class TestVariableMeterCheckpoints:
-    """Test checkpoint saving/loading with variable meters (TASK-001).
+    """Test checkpoint saving/loading with variable meter universes.
 
     Verifies that checkpoints include meter metadata and validate compatibility.
     """
@@ -967,7 +967,7 @@ class TestVariableMeterCheckpoints:
 
         # Verify values
         assert metadata["meter_count"] == 4, f"Should have 4 meters, got {metadata['meter_count']}"
-        assert metadata["meter_names"] == [
+        assert list(metadata["meter_names"]) == [
             "energy",
             "health",
             "money",

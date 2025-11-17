@@ -1,0 +1,14 @@
+experiment:
+  version: "1.0"
+  experiment_name: "model_config_12meter_test"
+
+  metadata:
+    name: "Model Config 12-Meter (Test)"
+    description: "v2.1 test pack with 12 meters (8 base + 4 extras)"
+    author: "Hamlet Tests"
+    created: "2025-11-17"
+    tags: ["test", "model", "12meter"]
+
+  curriculum_levels:
+    - L0_12meter
+

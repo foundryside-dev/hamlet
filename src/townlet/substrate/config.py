@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Literal
 
 import yaml
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class GridConfig(BaseModel):
@@ -151,9 +151,9 @@ class ContinuousConfig(BaseModel):
     )
 
     # NEW: Discretized continuous action space
-    action_discretization: dict[str, int] = Field(
-        description="Discretize continuous action space: {'num_directions': 8-32, 'num_magnitudes': 3-7}. "
-        "Explicitly specify to avoid legacy defaults.",
+    action_discretization: "ActionDiscretizationConfig" = Field(
+        description="Discretize continuous action space (num_directions 8-32, num_magnitudes 3-7). "
+        "Must be specified explicitly; no implicit defaults are applied.",
     )
 
     @model_validator(mode="after")
@@ -189,6 +189,27 @@ class ContinuousConfig(BaseModel):
             )
 
         return self
+
+
+class ActionDiscretizationConfig(BaseModel):
+    """Discretized action configuration for continuous substrates.
+
+    All fields required (no implicit defaults). This controls how many
+    discrete directions and magnitude bins are generated for movement.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    num_directions: int = Field(
+        ge=8,
+        le=32,
+        description="Number of discrete directions (e.g., 8 for 45° steps, up to 32)",
+    )
+    num_magnitudes: int = Field(
+        ge=3,
+        le=7,
+        description="Number of magnitude bins (>=3). Magnitudes span [0.0, 1.0] inclusively.",
+    )
 
 
 class AspatialSubstrateConfig(BaseModel):

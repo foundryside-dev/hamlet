@@ -56,6 +56,22 @@ experiment:
     - L2_partial_observability
     - L3_temporal_mechanics
 
+  # Observation management mode (experiment-level, affects obs_dim semantics)
+  # Options:
+  #   - full_auto: System derives observation layout from config, using masking where possible.
+  #   - max_compact: System always drops inactive/unused fields to minimize obs_dim
+  #                  (different curricula may have different obs_dims).
+  #   - full_manual: User specifies the full observation layout explicitly and binds each
+  #                  slice to a variable/profile/preset; obs_dim is fixed by design.
+  #
+  # Rule of thumb:
+  #   - If a setting can change obs_dim, it lives at the experiment level.
+  #   - If it only changes values/masking, it lives at the curriculum/level.
+  #
+  # NOTE: Observation management modes are a forward-looking design hook; current
+  #       implementations behave like a constrained "full_auto" with explicit specs.
+  observation_management_mode: full_auto
+
 # =============================================================================
 # SECTION 2: stratum.yaml (World Shape + Support Declarations)
 # =============================================================================
@@ -96,6 +112,27 @@ stratum:
       # - absolute: Raw unnormalized coordinates (for physical simulation)
       # NOTE: All modes produce IDENTICAL obs_dim (2 dims for position)
       #       Only value ranges differ, not dimensions!
+
+    # Example (alternate): Continuous substrate with discretized actions
+    #
+    # To use a continuous substrate instead of grid, switch type and
+    # provide a continuous block with explicit action_discretization.
+    #
+    # type: continuous
+    #
+    # continuous:
+    #   dimensions: 2
+    #   bounds:
+    #     - [0.0, 10.0]
+    #     - [0.0, 10.0]
+    #   boundary: clamp
+    #   movement_delta: 0.5
+    #   interaction_radius: 1.0
+    #   distance_metric: euclidean
+    #   observation_encoding: relative
+    #   action_discretization:
+    #     num_directions: 8  # REQUIRED, 8-32 (no defaults)
+    #     num_magnitudes: 3  # REQUIRED, 3-7 (no defaults)
 
   # --------------------------------------------------------------------------
   # Vision Support (BREAKING - controls which vision fields exist in obs_dim)

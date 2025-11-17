@@ -6,7 +6,7 @@ class TestEnvironmentObservationActivity:
         """VectorizedHamletEnv should expose observation_activity from runtime."""
         env = env_factory(
             config_dir=test_config_pack_path,
-            level_name="L0_5_dual_resource",
+            level_name="L0_test",
             num_agents=4,
             device_override=cpu_device,
         )
@@ -17,11 +17,11 @@ class TestEnvironmentObservationActivity:
     def test_env_observation_activity_matches_runtime(self, env_factory, cpu_device, compile_universe, test_config_pack_path):
         """Environment's observation_activity should match compiled LevelMetadata."""
         compiled = compile_universe(test_config_pack_path)
-        level_meta = compiled.get_level("L0_0_minimal")
+        level_meta = compiled.get_level("L0_test")
 
         env = env_factory(
             config_dir=test_config_pack_path,
-            level_name="L0_0_minimal",
+            level_name="L0_test",
             num_agents=4,
             device_override=cpu_device,
         )
@@ -32,7 +32,7 @@ class TestEnvironmentObservationActivity:
         """Environment's observation_activity should have valid active_mask."""
         env = env_factory(
             config_dir=test_config_pack_path,
-            level_name="L0_5_dual_resource",
+            level_name="L0_test",
             num_agents=4,
             device_override=cpu_device,
         )
@@ -44,7 +44,7 @@ class TestEnvironmentObservationActivity:
         """Environment's observation_activity should have semantic group slices."""
         env = env_factory(
             config_dir=test_config_pack_path,
-            level_name="L0_5_dual_resource",
+            level_name="L0_test",
             num_agents=4,
             device_override=cpu_device,
         )

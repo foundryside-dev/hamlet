@@ -1,0 +1,131 @@
+environment:
+  version: "1.0"
+
+  meters:
+    - name: energy
+      description: "Physical energy for movement and actions"
+      range_type: normalized
+
+    - name: health
+      description: "Physical health, death at 0"
+      range_type: normalized
+
+    - name: money
+      description: "Economic resource for purchasing"
+      range_type: unbounded
+
+    - name: mood
+      description: "Mental state, affects energy cascade"
+      range_type: normalized
+
+  cascade_graph:
+    - source: mood
+      target: energy
+      description: "Low mood drains energy"
+
+  modulation_graph:
+    - bar: energy
+      affordances: [WORK]
+      description: "Low energy reduces work effectiveness"
+
+    - bar: mood
+      affordances: [SOCIALIZE, WORK]
+      description: "Low mood reduces social and work quality"
+
+  affordances:
+    - name: EAT
+      description: "Consume food to restore energy"
+      category: sustenance
+
+    - name: SLEEP
+      description: "Rest to restore energy"
+      category: sustenance
+
+    - name: SHOWER
+      description: "Clean to restore wellbeing"
+      category: hygiene
+
+    - name: EXERCISE
+      description: "Physical activity for health"
+      category: fitness
+
+    - name: WORK
+      description: "Employment for money income"
+      category: economic
+
+    - name: SOCIALIZE
+      description: "Social interaction"
+      category: social
+
+    - name: MEDITATE
+      description: "Mental restoration for mood"
+      category: mental
+
+    - name: DRINK_WATER
+      description: "Hydration"
+      category: sustenance
+
+    - name: BRUSH_TEETH
+      description: "Dental hygiene (proxied via health)"
+      category: hygiene
+
+    - name: LAUNDRY
+      description: "Clothing hygiene (proxied via mood)"
+      category: hygiene
+
+    - name: COOK
+      description: "Food preparation (energy & mood)"
+      category: sustenance
+
+    - name: CLEAN_HOUSE
+      description: "Environmental hygiene (proxied via mood)"
+      category: hygiene
+
+    - name: ENTERTAINMENT
+      description: "Leisure for mood"
+      category: mental
+
+    - name: DOCTOR
+      description: "Medical care for health"
+      category: health
+
+  variables:
+    - name: deficit_energy
+      type: scalar
+      dims: 1
+      scope: agent
+      description: "How far below target energy (0.0 = at/above target)"
+      normalization:
+        method: clip
+        range: [0.0, 1.0]
+
+    - name: time_since_last_sleep
+      type: scalar
+      dims: 1
+      scope: agent
+      description: "Timesteps since last SLEEP action"
+      normalization:
+        method: normalize
+        range: [0.0, 100.0]
+
+  cues:
+    - name: low_energy_warning
+      trigger:
+        bar: energy
+        threshold: 0.2
+        direction: below
+      display:
+        icon: "⚠️"
+        color: "#FF6B6B"
+        message: "Energy critically low!"
+
+    - name: high_money_celebration
+      trigger:
+        bar: money
+        threshold: 100.0
+        direction: above
+      display:
+        icon: "💰"
+        color: "#51CF66"
+        message: "Financial milestone reached!"
+

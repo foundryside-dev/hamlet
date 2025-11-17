@@ -170,7 +170,8 @@ class TestVectorizedHamletEnvReset:
 
     def test_reset_temporal_mechanics_initializes_time(self, env_factory, cpu_device):
         env = env_factory(
-            config_dir=Path("configs/default_curriculum/levels/L3_temporal_mechanics"),
+            config_dir=Path("configs/default_curriculum"),
+            level_name="L3_temporal_mechanics",
             num_agents=1,
             device_override=cpu_device,
         )

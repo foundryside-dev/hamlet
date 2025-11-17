@@ -373,9 +373,9 @@ class VectorizedHamletEnv:
 
             category = env_affordance_categories.get(aff.name, "")
 
-            # Interaction semantics: use v2.1 fields when present, otherwise fall back
-            # to legacy instant behavior for existing packs.
-            interaction_type = aff.interaction_type or "instant"
+            interaction_type = aff.interaction_type
+            if not interaction_type:
+                raise ValueError(f"affordance '{aff.name}' missing interaction_type (no defaults allowed)")
             duration_ticks = aff.duration_ticks if aff.duration_ticks is not None else None
 
             # Instant and per-tick costs

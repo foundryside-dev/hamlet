@@ -1,29 +1,16 @@
 """
-Affordance configuration loader and Pydantic models.
+Affordance configuration models for runtime.
 
-This module provides type-safe loading of affordance definitions from YAML.
-Follows the same pattern as cascade_config.py (ACTION #1).
-
-Architecture:
-- AffordanceEffect: Single meter effect (positive or negative)
-- AffordanceCost: Resource cost (money, energy, etc.)
-- AffordanceConfig: Complete affordance definition
-- AffordanceConfigCollection: Container for all affordances
-- load_affordance_config(): Type-safe YAML loader
-
-Teaching Value:
-- Data-driven affordance system enables student experimentation
-- Different affordance sets teach different strategic patterns
-- Config validation catches errors at load time, not runtime
+This module defines runtime affordance DTOs used by the environment
+stack. Config v2.1 compiles affordance metadata from hierarchical
+YAML packs; this module does not perform any YAML loading.
 """
 
-from pathlib import Path
+from __future__ import annotations
+
 from typing import Literal
 
-import yaml
 from pydantic import BaseModel, Field, field_validator, model_validator
-
-from townlet.environment.cascade_config import BarsConfig
 
 
 class AffordanceEffect(BaseModel):
@@ -33,8 +20,7 @@ class AffordanceEffect(BaseModel):
     amount: float  # Change amount (normalized, positive or negative)
     type: str | None = None  # "linear" for distributed effects, None for instant
 
-    # Note: Meter name validation happens at collection level in load_affordance_config()
-    # to support variable-size meter systems (TASK-001)
+    # Note: Meter name validation historically happened at collection level.
 
 
 class AffordanceCost(BaseModel):
@@ -43,8 +29,7 @@ class AffordanceCost(BaseModel):
     meter: str  # Meter name (usually "money" or "energy")
     amount: float = Field(ge=0.0)  # Cost amount (must be non-negative)
 
-    # Note: Meter name validation happens at collection level in load_affordance_config()
-    # to support variable-size meter systems (TASK-001)
+    # Note: Meter name validation historically happened at collection level.
 
 
 class AffordanceConfig(BaseModel):
@@ -82,7 +67,7 @@ class AffordanceConfig(BaseModel):
     position: list[int] | dict[str, int] | int | None = None
 
     @model_validator(mode="after")
-    def validate_multi_tick_requirements(self) -> "AffordanceConfig":
+    def validate_multi_tick_requirements(self) -> AffordanceConfig:
         """Ensure multi_tick and dual affordances have duration_ticks set."""
         if self.interaction_type == "multi_tick" and self.duration_ticks is None:
             raise ValueError(f"Affordance '{self.id}': multi_tick type requires 'duration_ticks' field")
@@ -96,7 +81,7 @@ class AffordanceConfig(BaseModel):
         return self
 
     @model_validator(mode="after")
-    def validate_operating_hours(self) -> "AffordanceConfig":
+    def validate_operating_hours(self) -> AffordanceConfig:
         """Ensure operating hours are valid."""
         if len(self.operating_hours) != 2:
             raise ValueError(f"Affordance '{self.id}': operating_hours must be [open, close]")
@@ -168,66 +153,6 @@ class AffordanceConfigCollection(BaseModel):
     def get_affordances_by_type(self, interaction_type: str) -> list[AffordanceConfig]:
         """Get all affordances of a given type."""
         return [aff for aff in self.affordances if aff.interaction_type == interaction_type]
-
-
-def load_affordance_config(config_path: Path, bars_config: BarsConfig) -> AffordanceConfigCollection:
-    """
-    Load and validate affordance configuration from YAML.
-
-    Args:
-        config_path: Path to affordances.yaml file
-        bars_config: BarsConfig to validate meter references against
-
-    Returns:
-        Validated AffordanceConfigCollection
-
-    Raises:
-        FileNotFoundError: If config file doesn't exist
-        ValidationError: If config format is invalid or meter references are invalid
-        yaml.YAMLError: If YAML parsing fails
-    """
-    if not config_path.exists():
-        raise FileNotFoundError(f"Affordance config not found: {config_path}")
-
-    with open(config_path) as f:
-        raw_data = yaml.safe_load(f)
-
-    # Pydantic will validate the structure
-    collection = AffordanceConfigCollection(**raw_data)
-
-    # Validate all meter references against bars_config (TASK-001 variable meter support)
-    valid_meters = set(bars_config.meter_name_to_index.keys())
-
-    for affordance in collection.affordances:
-        # Check all effects
-        for effect in affordance.effects + affordance.effects_per_tick + affordance.completion_bonus:
-            if effect.meter not in valid_meters:
-                raise ValueError(
-                    f"Affordance '{affordance.id}' effect references invalid meter '{effect.meter}'. Valid meters: {sorted(valid_meters)}"
-                )
-
-        # Check all costs
-        for cost in affordance.costs + affordance.costs_per_tick:
-            if cost.meter not in valid_meters:
-                raise ValueError(
-                    f"Affordance '{affordance.id}' cost references invalid meter '{cost.meter}'. Valid meters: {sorted(valid_meters)}"
-                )
-
-    return collection
-
-
-# Convenience function for common use case
-def load_default_affordances() -> AffordanceConfigCollection:
-    """
-    Load the default affordances.yaml from the test config pack.
-
-    Note: This requires bars.yaml to exist in the same directory for validation.
-    """
-    from townlet.environment.cascade_config import load_bars_config
-
-    config_dir = Path("configs/test")
-    bars_config = load_bars_config(config_dir / "bars.yaml")
-    return load_affordance_config(config_dir / "affordances.yaml", bars_config)
 
 
 # ============================================================================

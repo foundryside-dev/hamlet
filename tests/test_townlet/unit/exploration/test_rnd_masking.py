@@ -111,11 +111,13 @@ class TestRNDExplorationMasking:
 class TestRNDMaskingIntegration:
     def test_rnd_with_real_observation_activity(self):
         """Test RND with actual ObservationActivity from compiled universe."""
-        config_dir = Path("configs/default_curriculum/levels/L0_5_dual_resource")
+        level_path = Path("configs/default_curriculum/levels/L0_5_dual_resource")
 
         compiler = UniverseCompiler()
-        compiled = compiler.compile(config_dir, use_cache=False)
-        env = compiled.create_environment(num_agents=4, device="cpu")
+        # v2.1: compile the experiment root, not the level directory.
+        experiment_dir = level_path.parents[1]
+        compiled = compiler.compile(experiment_dir, use_cache=False)
+        env = compiled.create_environment(num_agents=4, device="cpu", level_name=level_path.name)
 
         obs_dim = env.observation_dim
         active_mask = env.observation_activity.active_mask

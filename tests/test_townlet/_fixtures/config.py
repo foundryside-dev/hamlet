@@ -46,10 +46,15 @@ def mock_config_path() -> Path:
 
 @pytest.fixture(scope="session")
 def test_config_pack_path() -> Path:
-    """Path to the lightweight test configuration pack (L0_0_minimal)."""
+    """Path to the canonical v2.1 test config pack.
+
+    This points at configs/test/model_config, which is a stable,
+    minimally-sized experiment pack kept in sync with the v2.1
+    configuration schema for tests.
+    """
 
     repo_root = Path(__file__).parent.parent.parent.parent
-    return repo_root / "configs" / "default_curriculum"
+    return repo_root / "configs" / "test" / "model_config"
 
 
 @pytest.fixture

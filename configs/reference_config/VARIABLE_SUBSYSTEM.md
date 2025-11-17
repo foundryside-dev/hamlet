@@ -7,6 +7,21 @@
 # - Compiler/runtime accept static variables with explicit defaults/normalization.
 # - Any 'expression' fields in variables_reference.yaml are rejected until DSL support lands.
 #
+# CURRENT IMPLEMENTATION (PHASE 1):
+# - VFS supports statically defined variables (no expressions) with:
+#   * Scoped storage: global, agent, agent_private.
+#   * Typed shapes: scalar, vec2i/vec3i, vecNi/vecNf, bool.
+#   * Access control and lifetime semantics.
+# - Observation exposure is handled via ObservationField + spec builder.
+# - Variable expressions in this document are DESIGN TARGETS ONLY (do not rely on them in configs yet).
+#
+# FUTURE DIRECTION (PHASE 2+ / BAC INTEGRATION):
+# - Introduce an expression DSL compiled by the Behavioral Action Compiler (BAC).
+# - Allow variables to be derived from:
+#   * Bars, other VFS variables, affordances, temporal state, and item state.
+#   * Noise sources and temporal operators (moving averages, windows, trends, etc.).
+# - Extend scopes to include item-local state and profile-based grouping (see profiles section below).
+#
 # DESIGN PRINCIPLE: Variables must have grounding
 # 1. Environmental phenomena: Describe the world state (weather, lighting, noise)
 # 2. Derived features: Computed from observable state (ratios, deficits, progress)
@@ -17,10 +32,11 @@
 #   - Affordances: affordance_at_position
 #   - Temporal: time_sin, time_cos, interaction_progress, lifetime_progress
 #
-# All variables (standard + custom) are automatically exposed as observations.
-# No need to specify exposed_observations - the compiler auto-exposes everything.
+# All variables (standard + custom) can be exposed as observations via the VFS
+# observation spec. Future phases may auto-expose some classes of variables,
+# but current implementations still rely on explicit observation field wiring.
 #
-# Future expression language examples:
+# Future expression language examples (PHASE 2+, NOT IMPLEMENTED YET):
 #
 # ==============================================================================
 # ENVIRONMENTAL PHENOMENA (describe the world state)
@@ -516,6 +532,34 @@
 #     normalize(vec) - unit vector (direction only)
 #     distance(vec_a, vec_b) - Euclidean distance
 #     Example: goal_alignment = dot(normalize(position), normalize(target_position))
+#
+# ------------------------------------------------------------------------------
+# VFS PROFILES AND GLOBAL / AGENT / ITEM HIERARCHY (FUTURE EXTENSION)
+# ------------------------------------------------------------------------------
+#
+# The current VFS implementation models variables directly via VariableDef with
+# scopes: global, agent, agent_private. Future work will introduce a higher-level
+# concept of VFS PROFILES to organize variables by owner type:
+#
+#   - Global VFS Profiles:
+#       * Group variables that describe shared world state (e.g., is_night).
+#       * Backed by VariableDef entries with scope="global".
+#
+#   - Agent VFS Profiles:
+#       * Group variables that each agent has its own value for (e.g., energy_urgency).
+#       * Backed by VariableDef entries with scope="agent" or "agent_private".
+#
+#   - Item VFS Profiles (FUTURE):
+#       * Group variables attached to item instances (e.g., durability, charges).
+#       * Will require extending VFS to support item-local scopes and item-indexed
+#         storage alongside the existing global/agent scopes.
+#
+# These profiles are a conceptual grouping layer on top of VariableDef and are
+# intended to make it easier to attach behaviour and observations to:
+#   - Global state, per-agent state, and per-item state.
+#   - Future expression-based variables compiled by BAC (Phase 2+).
+# Implementations should avoid design choices that would prevent adding an
+# "item" scope or profile layer in the future.
 
 version: "1.0"
 

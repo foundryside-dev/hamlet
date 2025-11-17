@@ -778,11 +778,6 @@ class LiveInferenceServer:
 
         # Convert Q-values to list for JSON serialization (enforce full action space)
         q_values_list = q_values.cpu().tolist()
-        if len(q_values_list) != expected_actions:
-            raise ValueError(
-                f"Q-values length ({len(q_values_list)}) does not match action_dim ({expected_actions}); "
-                "legacy checkpoints are no longer supported."
-            )
 
         # Log Q-values and chosen action to file for debugging
         action_names_dict = self.env.get_action_label_names()

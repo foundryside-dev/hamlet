@@ -19,7 +19,6 @@ Teaching Value:
 Status: Ready for integration with vectorized_env.py
 """
 
-from pathlib import Path
 from typing import Any
 
 import torch
@@ -74,7 +73,6 @@ class AffordanceEngine:
         This makes the config the single source of truth.
         """
         # Map affordance name to index (order from config file)
-        # Support both legacy AffordanceConfig (with id) and v2.1 AffordanceParamConfig (name-only).
         self.affordance_name_to_idx: dict[str, int] = {}
         self.affordance_map_by_id: dict[str, Any] = {}
         self.affordance_map: dict[str, Any] = {}
@@ -111,17 +109,25 @@ class AffordanceEngine:
         if affordance is None:
             return False
 
-        # v2.1 affordances use opening_hours; legacy affordances use operating_hours.
-        if hasattr(affordance, "opening_hours"):
-            opening_hours = affordance.opening_hours
-            if not opening_hours.enabled:
-                return True
-            for window in opening_hours.schedule:
-                if canonical_is_affordance_open(time_of_day, (window.start, window.end)):
-                    return True
-            return False
+        # Runtime affordances are expected to expose canonical operating_hours
+        # as a two-element [open_hour, close_hour] list. No implicit defaults
+        # or legacy fallbacks are allowed at this layer.
+        if not hasattr(affordance, "operating_hours"):
+            raise ValueError(
+                f"Affordance '{affordance_name}' missing operating_hours (no defaults allowed). "
+                "Runtime affordances must provide [open_hour, close_hour] explicitly."
+            )
 
-        return canonical_is_affordance_open(time_of_day, affordance.operating_hours)
+        operating_hours = getattr(affordance, "operating_hours")
+        try:
+            open_hour, close_hour = operating_hours
+        except Exception as exc:  # pragma: no cover - defensive
+            raise ValueError(
+                f"Affordance '{affordance_name}' has invalid operating_hours; expected [open_hour, close_hour], "
+                f"got: {operating_hours!r}."
+            ) from exc
+
+        return canonical_is_affordance_open(time_of_day, (open_hour, close_hour))
 
     def apply_instant_interaction(
         self,
@@ -543,23 +549,3 @@ class AffordanceEngine:
                 meter, amount = next(iter(cost.items()))
                 return meter, float(amount)
         raise ValueError(f"Unsupported cost format: {cost!r}")
-
-
-def create_affordance_engine(
-    config_pack_path: Path | None = None,
-    num_agents: int = 1,
-    device: torch.device = torch.device("cpu"),
-) -> AffordanceEngine:
-    """
-    Convenience function to create AffordanceEngine from config pack.
-
-    Args:
-        config_pack_path: Path to config directory containing bars.yaml and affordances.yaml
-                         (default: configs/test/)
-        num_agents: Number of agents
-        device: torch device
-
-    Returns:
-        Initialized AffordanceEngine
-    """
-    raise RuntimeError("create_affordance_engine is deprecated. Use UniverseCompiler.compile() + VectorizedHamletEnv with v2.1 configs.")

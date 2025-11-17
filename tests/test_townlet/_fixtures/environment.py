@@ -13,7 +13,7 @@ import torch
 
 from tests.test_townlet._fixtures.config import _apply_config_overrides
 from tests.test_townlet._fixtures.instant_affordances_helper import convert_to_instant_mode
-from tests.test_townlet.helpers.config_builder import mutate_training_yaml
+from tests.test_townlet.helpers.config_builder import _get_primary_level_dir, mutate_training_yaml
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.universe.compiled import CompiledUniverse
 
@@ -73,12 +73,14 @@ def instant_env(
     Returns:
         VectorizedHamletEnv instance with instant-mode affordances
     """
-    # Copy test config to temp directory
+    # Copy test config to temp directory (canonical v2.1 model config pack)
     instant_config_pack = tmp_path / "instant_config"
     shutil.copytree(test_config_pack_path, instant_config_pack)
 
-    # Convert affordances to instant mode
-    convert_to_instant_mode(instant_config_pack / "levels" / "L0_0_minimal" / "affordances.yaml")
+    # Resolve primary level from experiment.yaml and convert that level's
+    # affordances to instant mode.
+    level_dir = _get_primary_level_dir(instant_config_pack)
+    convert_to_instant_mode(level_dir / "affordances.yaml")
 
     # Compile and return environment
     universe = compile_universe(instant_config_pack)

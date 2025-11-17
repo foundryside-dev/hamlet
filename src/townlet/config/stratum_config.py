@@ -76,6 +76,30 @@ class GridNDConfig(BaseModel):
         return self
 
 
+class ActionDiscretizationConfig(BaseModel):
+    """Discretized action configuration for continuous substrates.
+
+    All fields required (no implicit defaults). This controls how many
+    discrete directions and magnitude bins are generated for movement.
+    """
+
+    num_directions: int = Field(
+        ...,
+        ge=8,
+        le=32,
+        description="Number of discrete directions (e.g., 8 for 45° steps, up to 32)",
+    )
+    num_magnitudes: int = Field(
+        ...,
+        ge=3,
+        le=7,
+        description="Number of magnitude bins (>=3). Magnitudes span [0.0, 1.0] inclusively.",
+    )
+
+    class Config:
+        extra = "forbid"
+
+
 class ContinuousConfig(BaseModel):
     """Continuous substrate configuration (1D-100D)."""
 
@@ -86,9 +110,12 @@ class ContinuousConfig(BaseModel):
     interaction_radius: float = Field(..., gt=0, description="Distance threshold for affordance interaction")
     distance_metric: Literal["euclidean", "manhattan", "chebyshev"] = Field(..., description="Distance calculation method")
     observation_encoding: Literal["relative", "scaled", "absolute"] = Field(..., description="Position encoding strategy")
-    action_discretization: dict[str, int] = Field(
+    action_discretization: ActionDiscretizationConfig = Field(
         ...,
-        description="Discretization of continuous actions {'num_directions': int, 'num_magnitudes': int}",
+        description=(
+            "Discretization of continuous actions. All fields required; no implicit defaults are applied. "
+            "{'num_directions': 8-32, 'num_magnitudes': 3-7}"
+        ),
     )
 
     class Config:

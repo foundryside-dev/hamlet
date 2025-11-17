@@ -1,28 +1,45 @@
 """Unit tests for UniverseSymbolTable registration semantics."""
 
+from dataclasses import dataclass
+
 import pytest
 
-from townlet.config.affordance import AffordanceConfig
-from townlet.config.bar import BarConfig
-from townlet.config.cascade import CascadeConfig
 from townlet.environment.action_config import ActionConfig
 from townlet.universe.errors import CompilationError
 from townlet.universe.symbol_table import UniverseSymbolTable
 from townlet.vfs.schema import VariableDef
 
 
+@dataclass
+class _StubBar:
+    name: str
+    index: int
+
+
+@dataclass
+class _StubCascade:
+    name: str
+    description: str
+    source: str
+    target: str
+    threshold: float
+    strength: float
+
+
+@dataclass
+class _StubAffordance:
+    id: str
+    name: str
+    category: str
+    interaction_type: str
+    costs: list
+    effect_pipeline: dict
+    operating_hours: list[int]
+
+
 def test_duplicate_meter_registration_raises():
     table = UniverseSymbolTable()
-    bar = BarConfig(
-        name="energy",
-        index=0,
-        tier="pivotal",
-        range=[0.0, 1.0],
-        initial=1.0,
-        base_depletion=0.1,
-        base_move_depletion=0.0,
-        base_interaction_cost=0.0,
-    )
+    bar = _StubBar(name="energy", index=0)
 
     table.register_meter(bar)
     with pytest.raises(CompilationError):
@@ -74,7 +91,7 @@ def test_duplicate_action_registration_raises():
 
 def test_duplicate_cascade_registration_raises():
     table = UniverseSymbolTable()
-    cascade = CascadeConfig(
+    cascade = _StubCascade(
         name="energy_to_health",
         description="starvation",
         source="energy",
@@ -90,7 +107,7 @@ def test_duplicate_cascade_registration_raises():
 
 def test_duplicate_affordance_registration_raises():
     table = UniverseSymbolTable()
-    affordance = AffordanceConfig(
+    affordance = _StubAffordance(
         id="Bed",
         name="Bed",
         category="rest",

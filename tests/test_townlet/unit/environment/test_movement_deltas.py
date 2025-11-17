@@ -10,7 +10,7 @@ class TestMovementDeltasFromActionConfig:
         """Movement deltas should come from ActionConfig, not hardcoded arrays."""
         env = env_factory(
             config_dir=test_config_pack_path,
-            level_name="L1_full_observability",
+            level_name="L0_test",
             num_agents=1,
             device_override=cpu_device,
         )
@@ -31,7 +31,7 @@ class TestMovementDeltasFromActionConfig:
         """All movement actions should have correct deltas from ActionConfig."""
         env = env_factory(
             config_dir=test_config_pack_path,
-            level_name="L1_full_observability",
+            level_name="L0_test",
             num_agents=1,
             device_override=cpu_device,
         )
@@ -57,7 +57,7 @@ class TestMovementDeltasFromActionConfig:
         """INTERACT and WAIT actions should have zero deltas."""
         env = env_factory(
             config_dir=test_config_pack_path,
-            level_name="L1_full_observability",
+            level_name="L0_test",
             num_agents=1,
             device_override=cpu_device,
         )

@@ -2,6 +2,7 @@ affordances:
   version: "1.0"
   affordances:
     - name: Bed
+      interaction_type: instant
       costs:
         energy: 0.0
       effects:
@@ -12,6 +13,7 @@ affordances:
         type: fixed
         positions: [[1, 1]]
     - name: Job
+      interaction_type: instant
       costs: {}
       effects:
         money: 0.1

@@ -59,7 +59,7 @@ Fixtures are defined in `tests/test_townlet/conftest.py` and automatically avail
 | Fixture | Scope | Description |
 |---------|-------|-------------|
 | `mock_config_path` | session | Path to frozen mock config (locked, don't modify) |
-| `test_config_pack_path` | session | Path to test config pack (configs/test) |
+| `test_config_pack_path` | session | Path to canonical v2.1 test config pack (`configs/test/model_config`) |
 | `temp_config_pack` | function | Writable copy of test config pack |
 | `mock_config` | function | Loaded mock config as dict |
 
@@ -144,12 +144,12 @@ def test_replay_buffer_sample(replay_buffer):
     assert batch["observations"].shape == (32, obs_dim)
 ```
 
-### Variable Meter Fixtures (TASK-001)
+### Variable Meter Fixtures
 
 | Fixture | Meters | Description |
 |---------|--------|-------------|
-| `task001_config_4meter` | 4 | Config pack with 4 meters |
-| `task001_config_12meter` | 12 | Config pack with 12 meters |
+| `task001_config_4meter` | 4 | Config pack cloned from `configs/test/model_config_4meter` (v2.1, 4 meters) |
+| `task001_config_12meter` | 12 | Config pack cloned from `configs/test/model_config_12meter` (v2.1, 12 meters) |
 | `task001_env_4meter` | 4 | Environment with 4 meters |
 | `task001_env_4meter_pomdp` | 4 | POMDP environment with 4 meters |
 | `task001_env_12meter` | 12 | Environment with 12 meters |

@@ -7,13 +7,11 @@ import torch
 
 from townlet.substrate.grid2d import Grid2DSubstrate
 
-CONFIG_L1 = Path("configs/default_curriculum/levels/L1_full_observability")
-ASPARTIAL_CONFIG = Path("configs/aspatial_test")
-
 
 def test_env_loads_substrate_config(cpu_env_factory):
     """Environment should load substrate.yaml and create substrate instance."""
-    env = cpu_env_factory(config_dir=CONFIG_L1, num_agents=1)
+    # Use canonical v2.1 test config pack via cpu_env_factory default
+    env = cpu_env_factory(num_agents=1)
 
     # Verify substrate loaded
     assert hasattr(env, "grid_size")
@@ -22,7 +20,7 @@ def test_env_loads_substrate_config(cpu_env_factory):
 
 def test_env_substrate_accessible(cpu_env_factory):
     """Environment should expose substrate for inspection."""
-    env = cpu_env_factory(config_dir=CONFIG_L1, num_agents=1)
+    env = cpu_env_factory(num_agents=1)
 
     # Verify substrate is accessible and correct type
     assert hasattr(env, "substrate")
@@ -32,7 +30,7 @@ def test_env_substrate_accessible(cpu_env_factory):
 
 def test_env_initializes_positions_via_substrate(cpu_env_factory):
     """Environment should use substrate.initialize_positions() in reset()."""
-    env = cpu_env_factory(config_dir=CONFIG_L1, num_agents=5)
+    env = cpu_env_factory(num_agents=5)
 
     # Reset environment
     env.reset()
@@ -49,7 +47,7 @@ def test_env_initializes_positions_via_substrate(cpu_env_factory):
 
 def test_env_applies_movement_via_substrate(cpu_env_factory):
     """Environment should use substrate.apply_movement() for boundary handling."""
-    env = cpu_env_factory(config_dir=CONFIG_L1, num_agents=1)
+    env = cpu_env_factory(num_agents=1)
 
     env.reset()
 
@@ -68,7 +66,7 @@ def test_env_applies_movement_via_substrate(cpu_env_factory):
 
 def test_env_randomizes_affordances_via_substrate(cpu_env_factory):
     """Environment should use substrate.get_all_positions() for affordance placement."""
-    env = cpu_env_factory(config_dir=CONFIG_L1, num_agents=1)
+    env = cpu_env_factory(num_agents=1)
 
     # Randomize affordances
     env.randomize_affordance_positions()
@@ -103,8 +101,8 @@ def test_env_randomizes_affordances_via_substrate(cpu_env_factory):
 )
 def test_env_observation_dim_unchanged(cpu_env_factory, config_name):
     """Environment observation_dim should match compiled universe metadata (BUG-43)."""
-    config_path = Path("configs") / config_name
-    env = cpu_env_factory(config_dir=config_path, num_agents=1)
+    pack_root = Path("configs/default_curriculum")
+    env = cpu_env_factory(config_dir=pack_root, level_name=config_name, num_agents=1)
 
     # BUG-43: After curriculum masking fix, obs_dim comes from compiled universe metadata
     # The environment should use the obs_dim from the compiled universe, not calculate it
@@ -135,8 +133,8 @@ def test_env_observation_dim_unchanged(cpu_env_factory, config_name):
 )
 def test_env_substrate_dimensions(cpu_env_factory, config_name, expected_grid_size):
     """Environment substrate should have correct grid dimensions."""
-    config_path = Path("configs") / config_name
-    env = cpu_env_factory(config_dir=config_path, num_agents=1)
+    pack_root = Path("configs/default_curriculum")
+    env = cpu_env_factory(config_dir=pack_root, level_name=config_name, num_agents=1)
 
     # Substrate should be Grid2D with correct dimensions
     assert env.substrate.width == expected_grid_size
@@ -146,7 +144,7 @@ def test_env_substrate_dimensions(cpu_env_factory, config_name, expected_grid_si
 
 def test_env_substrate_boundary_behavior(cpu_env_factory):
     """Environment substrate should use clamp boundary (legacy behavior)."""
-    env = cpu_env_factory(config_dir=CONFIG_L1, num_agents=1)
+    env = cpu_env_factory(num_agents=1)
 
     # Test boundary clamping (agent at edge trying to move out of bounds)
     positions = torch.tensor([[0, 0]], dtype=torch.long, device="cpu")  # Top-left corner
@@ -160,7 +158,7 @@ def test_env_substrate_boundary_behavior(cpu_env_factory):
 
 def test_env_substrate_distance_metric(cpu_env_factory):
     """Environment substrate should use manhattan distance (legacy behavior)."""
-    env = cpu_env_factory(config_dir=CONFIG_L1, num_agents=1)
+    env = cpu_env_factory(num_agents=1)
 
     # Test manhattan distance calculation
     pos1 = torch.tensor([[0, 0]], dtype=torch.long, device="cpu")
@@ -198,7 +196,7 @@ def test_vectorized_env_loads_composed_action_space(cpu_env_factory):
 
     TDD Test (RED phase): Verifies env has action_space attribute from builder.
     """
-    env = cpu_env_factory(config_dir=CONFIG_L1, num_agents=1)
+    env = cpu_env_factory(num_agents=1)
 
     # Should have composed action space (substrate + custom)
     assert hasattr(env, "action_space"), "Environment should have action_space attribute"
@@ -227,7 +225,7 @@ def test_action_masks_include_base_masking(cpu_env_factory):
     """
     from unittest.mock import patch
 
-    env = cpu_env_factory(config_dir=CONFIG_L1, num_agents=2)
+    env = cpu_env_factory(num_agents=2)
 
     env.reset()
 

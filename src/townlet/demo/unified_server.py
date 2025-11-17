@@ -101,12 +101,6 @@ class UnifiedServer:
 
             logger.info("Saving config snapshot to %s", snapshot_dir)
             shutil.copytree(self.config_dir, snapshot_dir)
-
-            # Record the training config path used (for legacy single-file configs)
-            if self.training_config_path and self.training_config_path.exists():
-                training_copy = snapshot_dir / "training.yaml"
-                if not training_copy.exists():
-                    shutil.copy2(self.training_config_path, training_copy)
         except Exception as exc:
             logger.warning("Failed to persist config snapshot: %s", exc, exc_info=logger.isEnabledFor(logging.DEBUG))
 

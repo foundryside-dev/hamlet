@@ -1,4 +1,22 @@
-"""Fixtures for TASK-001 variable meter configurations."""
+"""Fixtures for variable-meter configurations used in tests.
+
+These fixtures intentionally construct synthetic config packs that exercise
+the variable-meter and VFS plumbing without claiming to be production packs.
+
+Key design points:
+    - Base packs are cloned from the canonical v2.1 test config
+      (configs/test/model_config) via the shared test_config_pack_path fixture.
+    - bars.yaml and cascades.yaml are rewritten to use 4 or 12 meters.
+    - variables_reference.yaml is generated alongside bars.yaml and must match
+      the meter vocabulary; this drives the VFS layer for TASK-001 scenarios.
+    - training.yaml is patched with allow_unfeasible_universe=True to bypass
+      Stage 4 feasibility checks: these fixtures focus on sizing behavior,
+      not on full curriculum feasibility.
+
+Use these fixtures ONLY in variable-meter tests. For production
+curriculum behavior, prefer test_config_pack_path/basic_env and related
+fixtures that compile the default_curriculum or model_config packs directly.
+"""
 
 from __future__ import annotations
 
@@ -11,11 +29,12 @@ import pytest
 import torch
 import yaml
 
+from tests.test_townlet.helpers.config_builder import _get_primary_level_dir
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.universe.compiled import CompiledUniverse
 
 # =============================================================================
-# TASK-001: VARIABLE METER CONFIG FIXTURES
+# Variable meter config fixtures
 # =============================================================================
 
 
@@ -35,236 +54,122 @@ def task001_config_4meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
         Path to temporary 4-meter config pack directory
     """
     config_4m = tmp_path / "config_4m"
-    shutil.copytree(test_config_pack_path, config_4m)
+    # Use dedicated 4-meter model pack as source of truth
+    repo_root = Path(__file__).parent.parent.parent.parent
+    source_pack = repo_root / "configs" / "test" / "model_config_4meter"
+    shutil.copytree(source_pack, config_4m)
 
-    # Create 4-meter bars.yaml
-    bars_config = {
-        "version": "2.0",
-        "description": "4-meter test universe",
-        "bars": [
+    # Create 4-meter bars.yaml in v2.1 BarsV2Config shape
+    bars_v21 = {
+        "version": "1.0",
+        "meters": [
             {
                 "name": "energy",
-                "index": 0,
-                "tier": "pivotal",
-                "range": [0.0, 1.0],
                 "initial": 1.0,
-                "base_depletion": 0.005,
-                "base_move_depletion": 0.0,
-                "base_interaction_cost": 0.0,
-                "description": "Energy level",
+                "depletion": {
+                    "passive": 0.005,
+                    "move": 0.0,
+                    "interact": 0.0,
+                },
+                "recovery": {"natural": 0.0},
+                "bounds": {
+                    "min": 0.0,
+                    "max": 1.0,
+                    "lethal_min": True,
+                    "lethal_max": False,
+                },
             },
             {
                 "name": "health",
-                "index": 1,
-                "tier": "pivotal",
-                "range": [0.0, 1.0],
                 "initial": 1.0,
-                "base_depletion": 0.0,
-                "base_move_depletion": 0.0,
-                "base_interaction_cost": 0.0,
-                "description": "Health status",
+                "depletion": {
+                    "passive": 0.0,
+                    "move": 0.0,
+                    "interact": 0.0,
+                },
+                "recovery": {"natural": 0.001},
+                "bounds": {
+                    "min": 0.0,
+                    "max": 1.0,
+                    "lethal_min": True,
+                    "lethal_max": False,
+                },
             },
             {
                 "name": "money",
-                "index": 2,
-                "tier": "resource",
-                "range": [0.0, 1.0],
                 "initial": 0.5,
-                "base_depletion": 0.0,
-                "base_move_depletion": 0.0,
-                "base_interaction_cost": 0.0,
-                "description": "Financial resources",
+                "depletion": {
+                    "passive": 0.0,
+                    "move": 0.0,
+                    "interact": 0.0,
+                },
+                "recovery": {"natural": 0.0},
+                "bounds": {
+                    "min": 0.0,
+                    "max": 1.0,
+                    "lethal_min": False,
+                    "lethal_max": False,
+                },
             },
             {
                 "name": "mood",
-                "index": 3,
-                "tier": "secondary",
-                "range": [0.0, 1.0],
                 "initial": 0.7,
-                "base_depletion": 0.001,
-                "base_move_depletion": 0.0,
-                "base_interaction_cost": 0.0,
-                "description": "Mood state",
+                "depletion": {
+                    "passive": 0.001,
+                    "move": 0.0,
+                    "interact": 0.0,
+                },
+                "recovery": {"natural": 0.0},
+                "bounds": {
+                    "min": 0.0,
+                    "max": 1.0,
+                    "lethal_min": False,
+                    "lethal_max": False,
+                },
             },
         ],
-        "terminal_conditions": [
-            {"meter": "energy", "operator": "<=", "value": 0.0, "description": "Death by energy depletion"},
-            {"meter": "health", "operator": "<=", "value": 0.0, "description": "Death by health failure"},
+        "cascades": [
+            {
+                "source": "mood",
+                "target": "energy",
+                "threshold": 0.2,
+                "strength": 0.01,
+            }
         ],
     }
 
-    # Write v2.1 bars.yaml for all curriculum levels
+    # Write v2.1 bars.yaml for all curriculum levels in the pack
     levels_dir = config_4m / "levels"
     for level_dir in levels_dir.iterdir():
         if not level_dir.is_dir():
             continue
         with open(level_dir / "bars.yaml", "w") as f:
-            yaml.safe_dump({"bars": bars_config}, f)
+            yaml.safe_dump({"bars": bars_v21}, f, sort_keys=False)
 
-    # Simplify cascades.yaml
-    cascades_config = {
-        "version": "2.0",
-        "description": "Simplified cascades for 4-meter testing",
-        "math_type": "gradient_penalty",
-        "modulations": [],
-        "cascades": [
-            {
-                "name": "low_mood_hits_energy",
-                "category": "secondary_to_pivotal",
-                "description": "Low mood drains energy",
-                "source": "mood",
-                "source_index": 3,
-                "target": "energy",
-                "target_index": 0,
-                "threshold": 0.2,
-                "strength": 0.01,
-            }
-        ],
-        "execution_order": ["secondary_to_pivotal"],
-    }
+    # Update environment.yaml in the cloned pack to use a 4-meter vocabulary
+    env_yaml = config_4m / "environment.yaml"
+    env_data = yaml.safe_load(env_yaml.read_text()) or {}
+    env_root = env_data.get("environment", {})
 
-    with open(config_4m / "cascades.yaml", "w") as f:
-        yaml.safe_dump(cascades_config, f)
+    # Restrict meters to energy, health, money, mood
+    keep_meters = {"energy", "health", "money", "mood"}
+    meters = env_root.get("meters", []) or []
+    env_root["meters"] = [m for m in meters if m.get("name") in keep_meters]
 
-    # Create affordances.yaml with FULL 14-affordance vocabulary but only using 4 meters
-    # This maintains observation vocabulary consistency while validating meter references
-    # Note: Only enabled_affordances (Bed, Hospital, HomeMeal=FastFood, Job) will be deployed
-    affordances_config = {
-        "version": "2.0",
-        "description": "4-meter test affordances (full vocabulary, 4-meter compatible)",
-        "status": "TEST",
-        "affordances": [
-            {
-                "id": "0",
-                "name": "Bed",
-                "category": "energy",
-                "interaction_type": "instant",
-                "costs": [{"meter": "money", "amount": 0.05}],
-                "effect_pipeline": {"instant": [{"meter": "energy", "amount": 0.50}, {"meter": "health", "amount": 0.02}]},
-                "operating_hours": [0, 24],
-            },
-            {
-                "id": "1",
-                "name": "LuxuryBed",
-                "category": "energy",
-                "interaction_type": "instant",
-                "costs": [{"meter": "money", "amount": 0.11}],
-                "effect_pipeline": {"instant": [{"meter": "energy", "amount": 0.75}, {"meter": "health", "amount": 0.05}]},
-                "operating_hours": [0, 24],
-            },
-            {
-                "id": "2",
-                "name": "Shower",
-                "category": "hygiene",
-                "interaction_type": "instant",
-                "costs": [{"meter": "money", "amount": 0.03}],
-                "effect_pipeline": {"instant": [{"meter": "mood", "amount": 0.20}]},  # Use mood instead of hygiene
-                "operating_hours": [0, 24],
-            },
-            {
-                "id": "3",
-                "name": "HomeMeal",
-                "category": "food",
-                "interaction_type": "instant",
-                "costs": [{"meter": "money", "amount": 0.04}],
-                "effect_pipeline": {"instant": [{"meter": "energy", "amount": 0.20}, {"meter": "mood", "amount": 0.10}]},
-                "operating_hours": [0, 24],
-            },
-            {
-                "id": "4",
-                "name": "FastFood",
-                "category": "food",
-                "interaction_type": "instant",
-                "costs": [{"meter": "money", "amount": 0.06}],
-                "effect_pipeline": {"instant": [{"meter": "energy", "amount": 0.30}]},
-                "operating_hours": [0, 24],
-            },
-            {
-                "id": "5",
-                "name": "Restaurant",
-                "category": "food",
-                "interaction_type": "instant",
-                "costs": [{"meter": "money", "amount": 0.12}],
-                "effect_pipeline": {"instant": [{"meter": "energy", "amount": 0.40}, {"meter": "mood", "amount": 0.15}]},
-                "operating_hours": [11, 22],
-            },
-            {
-                "id": "6",
-                "name": "Gym",
-                "category": "fitness",
-                "interaction_type": "instant",
-                "costs": [{"meter": "money", "amount": 0.08}, {"meter": "energy", "amount": 0.10}],
-                "effect_pipeline": {"instant": [{"meter": "health", "amount": 0.15}, {"meter": "mood", "amount": 0.05}]},
-                "operating_hours": [6, 22],
-            },
-            {
-                "id": "7",
-                "name": "Hospital",
-                "category": "health",
-                "interaction_type": "instant",
-                "costs": [{"meter": "money", "amount": 0.15}],
-                "effect_pipeline": {"instant": [{"meter": "health", "amount": 0.60}]},
-                "operating_hours": [0, 24],
-            },
-            {
-                "id": "8",
-                "name": "Job",
-                "category": "income",
-                "interaction_type": "instant",
-                "costs": [{"meter": "energy", "amount": 0.15}],
-                "effect_pipeline": {"instant": [{"meter": "money", "amount": 0.225}, {"meter": "mood", "amount": -0.05}]},
-                "operating_hours": [8, 18],
-            },
-            {
-                "id": "9",
-                "name": "Park",
-                "category": "leisure",
-                "interaction_type": "instant",
-                "costs": [],
-                "effect_pipeline": {"instant": [{"meter": "mood", "amount": 0.20}]},
-                "operating_hours": [6, 20],
-            },
-            {
-                "id": "10",
-                "name": "Library",
-                "category": "leisure",
-                "interaction_type": "instant",
-                "costs": [],
-                "effect_pipeline": {"instant": [{"meter": "mood", "amount": 0.15}]},
-                "operating_hours": [8, 20],
-            },
-            {
-                "id": "11",
-                "name": "Bar",
-                "category": "social",
-                "interaction_type": "instant",
-                "costs": [{"meter": "money", "amount": 0.15}],
-                "effect_pipeline": {"instant": [{"meter": "mood", "amount": 0.25}]},
-                "operating_hours": [18, 28],
-            },
-            {
-                "id": "12",
-                "name": "Recreation",
-                "category": "leisure",
-                "interaction_type": "instant",
-                "costs": [{"meter": "money", "amount": 0.10}],
-                "effect_pipeline": {"instant": [{"meter": "mood", "amount": 0.30}]},
-                "operating_hours": [12, 24],
-            },
-            {
-                "id": "13",
-                "name": "SocialEvent",
-                "category": "social",
-                "interaction_type": "instant",
-                "costs": [{"meter": "money", "amount": 0.08}],
-                "effect_pipeline": {"instant": [{"meter": "mood", "amount": 0.20}]},
-                "operating_hours": [18, 23],
-            },
-        ],
-    }
+    # Minimal cascade graph consistent with BarsV2 cascades
+    env_root["cascade_graph"] = [
+        {
+            "source": "mood",
+            "target": "energy",
+            "description": "Low mood drains energy",
+        }
+    ]
 
-    with open(config_4m / "affordances.yaml", "w") as f:
-        yaml.safe_dump(affordances_config, f)
+    env_data["environment"] = env_root
+    env_yaml.write_text(yaml.safe_dump(env_data, sort_keys=False))
+
+    # NOTE: 4-meter pack now uses dedicated v2.1 model_config_4meter affordances.yaml;
+    # we no longer override per-level affordances here.
 
     cues_config = {
         "version": "1.0",
@@ -498,17 +403,9 @@ def task001_config_4meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
     with open(config_4m / "variables_reference.yaml", "w") as f:
         yaml.safe_dump(vfs_config, f, sort_keys=False)
 
-    # Set allow_unfeasible_universe on all level training.yaml files to bypass
-    # Stage 4 feasibility validation in tests. These fixtures are focused on
-    # variable meter sizing, not universe feasibility.
-    levels_dir = config_4m / "levels"
-    for level_dir in levels_dir.iterdir():
-        if not level_dir.is_dir():
-            continue
-        training_path = level_dir / "training.yaml"
-        training_data = yaml.safe_load(training_path.read_text())
-        training_data.setdefault("training", {})["allow_unfeasible_universe"] = True
-        training_path.write_text(yaml.safe_dump(training_data, sort_keys=False))
+    # NOTE: v2.1 TrainingV2Config forbids extra fields, so we no longer
+    # patch allow_unfeasible_universe into training.yaml here. Feasibility
+    # checks should be satisfied by the constructed packs.
 
     return config_4m
 
@@ -529,72 +426,10 @@ def task001_config_12meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
         Path to temporary 12-meter config pack directory
     """
     config_12m = tmp_path / "config_12m"
-    shutil.copytree(test_config_pack_path, config_12m)
-
-    # Load existing 8-meter bars (v2.1 bars.yaml under primary level)
-    primary_level_dir = test_config_pack_path / "levels" / "L0_0_minimal"
-    with open(primary_level_dir / "bars.yaml") as f:
-        bars_root = yaml.safe_load(f) or {}
-    bars_8m = bars_root.get("bars", {})
-
-    # Add 4 new meters
-    extra_meters = [
-        {
-            "name": "reputation",
-            "index": 8,
-            "tier": "secondary",
-            "range": [0.0, 1.0],
-            "initial": 0.5,
-            "base_depletion": 0.002,
-            "base_move_depletion": 0.0,
-            "base_interaction_cost": 0.0,
-            "description": "Social reputation",
-        },
-        {
-            "name": "skill",
-            "index": 9,
-            "tier": "secondary",
-            "range": [0.0, 1.0],
-            "initial": 0.3,
-            "base_depletion": 0.001,
-            "base_move_depletion": 0.0,
-            "base_interaction_cost": 0.0,
-            "description": "Professional skills",
-        },
-        {
-            "name": "spirituality",
-            "index": 10,
-            "tier": "secondary",
-            "range": [0.0, 1.0],
-            "initial": 0.6,
-            "base_depletion": 0.002,
-            "base_move_depletion": 0.0,
-            "base_interaction_cost": 0.0,
-            "description": "Spiritual wellbeing",
-        },
-        {
-            "name": "community_trust",
-            "index": 11,
-            "tier": "secondary",
-            "range": [0.0, 1.0],
-            "initial": 0.7,
-            "base_depletion": 0.001,
-            "base_move_depletion": 0.0,
-            "base_interaction_cost": 0.0,
-            "description": "Community trust level",
-        },
-    ]
-
-    bars_12m = copy.deepcopy(bars_8m)  # Deep copy to avoid modifying original
-    bars_12m["bars"].extend(extra_meters)
-
-    # Write v2.1 bars.yaml for all curriculum levels
-    levels_dir = config_12m / "levels"
-    for level_dir in levels_dir.iterdir():
-        if not level_dir.is_dir():
-            continue
-        with open(level_dir / "bars.yaml", "w") as f:
-            yaml.safe_dump({"bars": bars_12m}, f)
+    # Use dedicated 12-meter model pack as source of truth
+    repo_root = Path(__file__).parent.parent.parent.parent
+    source_pack = repo_root / "configs" / "test" / "model_config_12meter"
+    shutil.copytree(source_pack, config_12m)
 
     # Generate matching variables_reference.yaml for 12 meters
     # Must match bars_config meter count to avoid VFS/bars mismatch
@@ -916,17 +751,8 @@ def task001_config_12meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
     with open(config_12m / "variables_reference.yaml", "w") as f:
         yaml.safe_dump(vfs_config, f, sort_keys=False)
 
-    # Set allow_unfeasible_universe on all level training.yaml files to bypass
-    # Stage 4 feasibility validation in tests. These fixtures are focused on
-    # variable meter sizing, not universe feasibility.
-    levels_dir = config_12m / "levels"
-    for level_dir in levels_dir.iterdir():
-        if not level_dir.is_dir():
-            continue
-        training_path = level_dir / "training.yaml"
-        training_data = yaml.safe_load(training_path.read_text())
-        training_data.setdefault("training", {})["allow_unfeasible_universe"] = True
-        training_path.write_text(yaml.safe_dump(training_data, sort_keys=False))
+    # NOTE: v2.1 TrainingV2Config forbids extra fields, so we no longer
+    # patch allow_unfeasible_universe into training.yaml here.
 
     return config_12m
 

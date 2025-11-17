@@ -294,6 +294,39 @@ class CompiledUniverse:
             "training": level.training,
         }
 
+    # === Runtime adapters ===
+
+    def create_environment(
+        self,
+        *,
+        num_agents: int,
+        device: str | "torch.device" = "cpu",
+        level_name: str | None = None,
+    ):
+        """Instantiate a VectorizedHamletEnv from this compiled universe.
+
+        Args:
+            num_agents: Number of parallel agents to simulate.
+            device: PyTorch device or device string (e.g., \"cpu\", \"cuda\").
+            level_name: Optional curriculum level name. If None, the environment
+                will use VectorizedHamletEnv's default level selection based on
+                experiment.yaml curriculum_levels (falling back to the first
+                available compiled level).
+
+        Returns:
+            VectorizedHamletEnv instance
+        """
+
+        # Lazy import to avoid circular dependency at module import time.
+        from townlet.environment.vectorized_env import VectorizedHamletEnv
+
+        return VectorizedHamletEnv.from_universe(
+            self,
+            level_name=level_name,
+            num_agents=num_agents,
+            device=device,
+        )
+
 
 def _dataclass_to_plain(obj: Any) -> Any:
     if is_dataclass(obj):

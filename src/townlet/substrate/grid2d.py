@@ -282,38 +282,22 @@ class Grid2DSubstrate(SpatialSubstrate):
                 ]
             )
 
-        # INTERACT and WAIT always present (last two actions)
-        actions.extend(
-            [
-                ActionConfig(
-                    id=len(actions),
-                    name="INTERACT",
-                    type="interaction",
-                    delta=None,
-                    teleport_to=None,
-                    costs={},
-                    effects={},
-                    description="Interact with affordance at current position",
-                    icon=None,
-                    source="substrate",
-                    source_affordance=None,
-                    enabled=True,
-                ),
-                ActionConfig(
-                    id=len(actions) + 1,
-                    name="WAIT",
-                    type="passive",
-                    delta=None,
-                    teleport_to=None,
-                    costs={},
-                    effects={},
-                    description="Wait in place (idle metabolic cost)",
-                    icon=None,
-                    source="substrate",
-                    source_affordance=None,
-                    enabled=True,
-                ),
-            ]
+        # INTERACT always present (WAIT is custom-only via actions.yaml)
+        actions.append(
+            ActionConfig(
+                id=len(actions),
+                name="INTERACT",
+                type="interaction",
+                delta=None,
+                teleport_to=None,
+                costs={},
+                effects={},
+                description="Interact with affordance at current position",
+                icon=None,
+                source="substrate",
+                source_affordance=None,
+                enabled=True,
+            )
         )
 
         return actions

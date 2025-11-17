@@ -743,8 +743,12 @@ class LiveInferenceServer:
 
         # Get action masks (which actions are valid)
         action_masks = self.env.get_action_masks()[0].cpu().tolist()
-        if len(action_masks) < 6:
-            action_masks.extend([False] * (6 - len(action_masks)))
+        expected_actions = self.env.action_dim
+        if len(action_masks) != expected_actions:
+            raise ValueError(
+                f"Action mask length ({len(action_masks)}) does not match action_dim ({expected_actions}); "
+                "config must explicitly enumerate all actions."
+            )
 
         # Get meters dynamically from environment configuration
         # Use meter_name_to_index to support configs with varying meter sets
@@ -772,21 +776,17 @@ class LiveInferenceServer:
 
             affordances.append(affordance_data)
 
-        # Convert Q-values to list for JSON serialization (supports legacy 5-action checkpoints)
+        # Convert Q-values to list for JSON serialization (enforce full action space)
         q_values_list = q_values.cpu().tolist()
-        if len(q_values_list) < 6:
-            # Pad with NaNs so downstream consumers can detect legacy models gracefully
-            q_values_list.extend([float("nan")] * (6 - len(q_values_list)))
+        if len(q_values_list) != expected_actions:
+            raise ValueError(
+                f"Q-values length ({len(q_values_list)}) does not match action_dim ({expected_actions}); "
+                "legacy checkpoints are no longer supported."
+            )
 
         # Log Q-values and chosen action to file for debugging
         action_names_dict = self.env.get_action_label_names()
-        padded_for_log = q_values_list[:6]
-        log_line = (
-            f"Step {self.current_step}: Action={action_names_dict.get(last_action, 'UNKNOWN')}, "
-            f"Q-values: Up={padded_for_log[0]:.2f}, Down={padded_for_log[1]:.2f}, "
-            f"Left={padded_for_log[2]:.2f}, Right={padded_for_log[3]:.2f}, "
-            f"Interact={padded_for_log[4]:.2f}, Wait={padded_for_log[5]:.2f}\n"
-        )
+        log_line = f"Step {self.current_step}: Action={action_names_dict.get(last_action, 'UNKNOWN')}, " f"Q-values: {q_values_list}\n"
         if self._qvalue_log_file:
             self._qvalue_log_file.write(log_line)
             self._qvalue_log_file.flush()

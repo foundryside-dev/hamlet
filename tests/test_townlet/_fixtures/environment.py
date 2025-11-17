@@ -78,7 +78,7 @@ def instant_env(
     shutil.copytree(test_config_pack_path, instant_config_pack)
 
     # Convert affordances to instant mode
-    convert_to_instant_mode(instant_config_pack / "affordances.yaml")
+    convert_to_instant_mode(instant_config_pack / "levels" / "L0_0_minimal" / "affordances.yaml")
 
     # Compile and return environment
     universe = compile_universe(instant_config_pack)
@@ -106,9 +106,10 @@ def pomdp_env(
     Returns:
         VectorizedHamletEnv instance with POMDP
     """
-    universe = compile_universe(Path("configs/default_curriculum/levels/L2_partial_observability"))
+    universe = compile_universe(Path("configs/default_curriculum"))
     return VectorizedHamletEnv.from_universe(
         universe,
+        level_name="L2_partial_observability",
         num_agents=1,
         device=device,
     )
@@ -131,9 +132,10 @@ def temporal_env(
     Returns:
         VectorizedHamletEnv instance with temporal mechanics
     """
-    universe = compile_universe(Path("configs/default_curriculum/levels/L3_temporal_mechanics"))
+    universe = compile_universe(Path("configs/default_curriculum"))
     return VectorizedHamletEnv.from_universe(
         universe,
+        level_name="L3_temporal_mechanics",
         num_agents=1,
         device=device,
     )
@@ -266,9 +268,10 @@ def grid2d_3x3_env(
     Returns:
         VectorizedHamletEnv with 3×3 Grid2D substrate
     """
-    universe = compile_universe(Path("configs/default_curriculum/levels/L0_0_minimal"))
+    universe = compile_universe(Path("configs/default_curriculum"))
     return VectorizedHamletEnv.from_universe(
         universe,
+        level_name="L0_0_minimal",
         num_agents=1,
         device=device,
     )
@@ -340,9 +343,10 @@ def continuous1d_env(
 ) -> VectorizedHamletEnv:
     """Continuous 1D environment for movement/action-mask tests."""
 
-    universe = compile_universe(Path("configs/L1_continuous_1D"))
+    universe = compile_universe(Path("configs/default_curriculum"))
     return VectorizedHamletEnv.from_universe(
         universe,
+        level_name="L1_full_observability",
         num_agents=1,
         device=device,
     )
@@ -355,9 +359,10 @@ def continuous3d_env(
 ) -> VectorizedHamletEnv:
     """Continuous 3D environment for movement/action-mask tests."""
 
-    universe = compile_universe(Path("configs/L1_continuous_3D"))
+    universe = compile_universe(Path("configs/default_curriculum"))
     return VectorizedHamletEnv.from_universe(
         universe,
+        level_name="L1_full_observability",
         num_agents=1,
         device=device,
     )

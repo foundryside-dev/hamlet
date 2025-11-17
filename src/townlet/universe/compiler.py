@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import dataclasses
 import hashlib
 import logging
 import math
@@ -13,7 +12,7 @@ from collections.abc import Iterable, Sequence
 from datetime import UTC, datetime
 from numbers import Number
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
 import torch
 import yaml
@@ -38,7 +37,6 @@ from townlet.environment.substrate_action_validator import SubstrateActionValida
 from townlet.environment.temporal_utils import is_affordance_open
 from townlet.substrate.config import SubstrateConfig
 from townlet.substrate.factory import SubstrateFactory
-from townlet.universe.adapters.vfs_adapter import VFSAdapter, vfs_to_observation_spec
 from townlet.universe.compiled import CompiledUniverse
 from townlet.universe.dto import (
     ActionMetadata,
@@ -53,9 +51,7 @@ from townlet.universe.dto import (
     UniverseMetadata,
 )
 from townlet.universe.optimization import OptimizationData
-from townlet.universe.raw_configs_v21 import AnyV21
-from townlet.vfs.observation_builder import VFSObservationSpecBuilder
-from townlet.vfs.registry import VariableRegistry
+from townlet.universe.raw_configs_v21 import RawConfigsV21
 from townlet.vfs.schema import NormalizationSpec, VariableDef
 from townlet.vfs.schema import ObservationField as VFSObservationField
 
@@ -441,22 +437,6 @@ class UniverseCompiler:
         """
         experiment_dir = Path(experiment_dir).resolve()
 
-        # Backwards compatibility: allow callers to pass a single level directory
-        # (e.g., configs/default_curriculum/levels/L0_0_minimal). In that case,
-        # treat the experiment root as the parent of the levels/ directory and
-        # infer primary_level from the level directory name when not provided.
-        if not (experiment_dir / "experiment.yaml").exists():
-            # Detect pattern .../levels/<level_name>
-            if experiment_dir.parent.name == "levels":
-                root = experiment_dir.parent.parent
-                levels_dir = root / "levels"
-                if (root / "experiment.yaml").exists() and levels_dir.exists():
-                    level_name = experiment_dir.name
-                    if (levels_dir / level_name).exists():
-                        if primary_level is None:
-                            primary_level = level_name
-                        experiment_dir = root
-
         self._validate_config_dir(experiment_dir)
 
         # Stage 0: YAML syntax validation (lightweight)
@@ -464,6 +444,7 @@ class UniverseCompiler:
 
         # Stage 1: load v2.1 configs
         raw = self._stage_1_load_v21_configs(experiment_dir)
+        self._validate_v21_semantics(raw, experiment_dir)
 
         # Select primary level
         if primary_level is None:
@@ -478,24 +459,22 @@ class UniverseCompiler:
             logger.info("Compiling level: %s", level_name)
             obs_spec = self._build_observation_spec(raw.stratum, raw.environment, level.curriculum)
             obs_activity = self._build_observation_activity(obs_spec)
-            action_metadata = self._build_action_space_metadata(raw.stratum, raw.actions, level.training)
+            action_metadata = self._build_action_space_metadata(raw.stratum, raw.actions, level.training, level.affordances)
             meter_metadata = self._build_meter_metadata(raw.environment, level.bars)
             affordance_metadata = self._build_affordance_metadata(level.affordances)
-            # Day length for temporal mechanics: curriculum day_length when active,
-            # otherwise default to 24 for mask table shape (runtime ignores it when
-            # temporal_support or active_temporal are disabled).
             day_length = level.curriculum.curriculum.day_length
-            if raw.stratum.stratum.temporal_support == "enabled" and level.curriculum.curriculum.active_temporal:
-                if day_length is None:
+            temporal_supported = raw.stratum.stratum.temporal_support == "enabled"
+            if temporal_supported and level.curriculum.curriculum.active_temporal:
+                if day_length is None or day_length <= 0:
                     raise ValueError(
-                        "curriculum.day_length is required when temporal mechanics are active.\n"
+                        "curriculum.day_length is required when temporal mechanics are declared in stratum.temporal_support.\n"
                         f"  Experiment: {experiment_dir}\n"
                         f"  Level: {level_name}\n"
-                        "Set curriculum.day_length to a positive integer; no defaults are applied."
+                        "Provide an explicit positive day_length; no defaults are applied."
                     )
-            # For inactive temporal mechanics, the mask table is metadata-only; keep a deterministic length.
-            if day_length is None:
-                day_length = 24
+            else:
+                # No temporal mechanics active; normalize to zero-length day
+                day_length = 0
             optimization_data = self._build_optimization_data(
                 level.bars,
                 level.affordances,
@@ -635,9 +614,287 @@ class UniverseCompiler:
             errors.add_hint("Validate YAML syntax at yamllint.com or with 'yamllint <file>'")
             errors.check_and_raise()
 
-    def _stage_1_load_v21_configs(self, experiment_dir: Path) -> AnyV21:
+    def _validate_v21_semantics(self, raw: RawConfigsV21, experiment_dir: Path) -> None:
+        """Validate v2.1 semantic constraints (no defaults, no BC)."""
+
+        errors = CompilationErrorCollector(stage="Stage 1b: v2.1 Semantic Validation")
+
+        # 1) Temporal requirements
+        temporal_supported = raw.stratum.stratum.temporal_support == "enabled"
+        for level_name, level in raw.levels.items():
+            day_length = level.curriculum.curriculum.day_length
+            if temporal_supported and level.curriculum.curriculum.active_temporal:
+                if day_length is None or day_length <= 0:
+                    errors.add(
+                        "curriculum.day_length must be >0 when temporal_support is enabled and active_temporal=true.",
+                        code="TEMPORAL_DAY_LENGTH_MISSING",
+                        location=str(experiment_dir / "levels" / level_name / "curriculum.yaml"),
+                    )
+
+        # 2) Vision compatibility (active vs supported)
+        vision_support = raw.stratum.stratum.vision_support
+        for level_name, level in raw.levels.items():
+            active = level.curriculum.curriculum.active_vision
+            active_canon = "partial" if active in {"local", "partial"} else "global"
+            if active_canon == "global" and vision_support not in {"global", "both"}:
+                errors.add(
+                    "Invalid vision configuration: curriculum.active_vision='global' requires stratum.vision_support in ['global','both'].",
+                    code="VISION_INCOMPATIBLE",
+                    location=str(experiment_dir / "levels" / level_name / "curriculum.yaml"),
+                )
+            if active_canon == "partial" and vision_support not in {"partial", "both"}:
+                errors.add(
+                    (
+                        "Invalid vision configuration: curriculum.active_vision=partial/local "
+                        "requires stratum.vision_support in ['partial','both']."
+                    ),
+                    code="VISION_INCOMPATIBLE",
+                    location=str(experiment_dir / "levels" / level_name / "curriculum.yaml"),
+                )
+
+        # 3) Action/substrate compatibility: treat warnings as errors to enforce explicit action sets
+        validator = SubstrateActionValidator(raw.stratum.stratum.substrate, raw.actions)
+        validation_result = validator.validate()
+        for err in validation_result.errors:
+            errors.add(
+                err,
+                code="SUBSTRATE_ACTION_INCOMPATIBLE",
+                location=str(experiment_dir / "actions.yaml"),
+            )
+        for warn in validation_result.warnings:
+            errors.add(
+                warn,
+                code="SUBSTRATE_ACTION_WARNING_AS_ERROR",
+                location=str(experiment_dir / "actions.yaml"),
+            )
+
+        # 4) Environment↔level vocabulary alignment and cascades/modulations coverage
+        env_meter_names = {m.name for m in raw.environment.environment.meters}
+        env_affordance_names = {a.name for a in raw.environment.environment.affordances}
+        env_mod_pairs = {(m.bar, tuple(sorted(m.affordances))) for m in raw.environment.environment.modulation_graph}
+        env_edges = {(c.source, c.target) for c in raw.environment.environment.cascade_graph}
+
+        # Cascade edges must reference valid meters
+        for edge in env_edges:
+            if edge[0] not in env_meter_names or edge[1] not in env_meter_names:
+                errors.add(
+                    f"environment.yaml cascade_graph references unknown meters: {edge}",
+                    code="CASCADE_INVALID_METER",
+                    location=str(experiment_dir / "environment.yaml"),
+                )
+
+        # Grid capacity (hard error)
+        grid_capacity: int | None = None
+        substrate = raw.stratum.stratum.substrate
+        if getattr(substrate, "type", None) == "grid" and getattr(substrate, "grid", None) is not None:
+            width = substrate.grid.width
+            height = substrate.grid.height
+            depth = getattr(substrate.grid, "depth", None)
+            grid_capacity = width * height if depth is None else width * height * depth
+        elif getattr(substrate, "type", None) == "gridnd" and getattr(substrate, "gridnd", None) is not None:
+            grid_capacity = 1
+            for size in substrate.gridnd.dimension_sizes:
+                grid_capacity *= size
+
+        for level_name, level in raw.levels.items():
+            level_dir = experiment_dir / "levels" / level_name
+
+            level_meter_names = {meter.name for meter in level.bars.meters}
+            level_affordance_names = {aff.name for aff in level.affordances.affordances}
+
+            if level_meter_names != env_meter_names:
+                missing = env_meter_names - level_meter_names
+                extra = level_meter_names - env_meter_names
+                errors.add(
+                    "Meter vocabulary mismatch between environment.yaml and levels/bars.yaml.",
+                    code="METER_VOCAB_MISMATCH",
+                    location=str(level_dir / "bars.yaml"),
+                )
+                if missing:
+                    errors.add_hint(f"Missing meters: {sorted(missing)}")
+                if extra:
+                    errors.add_hint(f"Unexpected meters: {sorted(extra)}")
+
+            if level_affordance_names != env_affordance_names:
+                missing = env_affordance_names - level_affordance_names
+                extra = level_affordance_names - env_affordance_names
+                errors.add(
+                    "Affordance vocabulary mismatch between environment.yaml and levels/affordances.yaml.",
+                    code="AFFORDANCE_VOCAB_MISMATCH",
+                    location=str(level_dir / "affordances.yaml"),
+                )
+                if missing:
+                    errors.add_hint(f"Missing affordances: {sorted(missing)}")
+                if extra:
+                    errors.add_hint(f"Unexpected affordances: {sorted(extra)}")
+
+            # Cascade coverage per level
+            level_edges = {(c.source, c.target) for c in level.bars.cascades}
+            missing_edges = env_edges - level_edges
+            extra_edges = level_edges - env_edges
+            if missing_edges:
+                errors.add(
+                    f"Missing cascades (must match environment.yaml cascade_graph): {sorted(missing_edges)}",
+                    code="CASCADE_MISSING",
+                    location=str(level_dir / "bars.yaml"),
+                )
+            if extra_edges:
+                errors.add(
+                    f"Extra cascades not declared in environment.yaml cascade_graph: {sorted(extra_edges)}",
+                    code="CASCADE_EXTRA",
+                    location=str(level_dir / "bars.yaml"),
+                )
+
+            # Modulation coverage per level
+            level_mod_pairs = {(m.bar, tuple(sorted(m.affordances))) for m in level.affordances.modulations}
+            missing_mods = env_mod_pairs - level_mod_pairs
+            extra_mods = level_mod_pairs - env_mod_pairs
+            if missing_mods:
+                errors.add(
+                    f"Missing modulations (must match environment.yaml modulation_graph): {sorted(missing_mods)}",
+                    code="MODULATION_MISSING",
+                    location=str(level_dir / "affordances.yaml"),
+                )
+            if extra_mods:
+                errors.add(
+                    f"Extra modulations not declared in environment.yaml modulation_graph: {sorted(extra_mods)}",
+                    code="MODULATION_EXTRA",
+                    location=str(level_dir / "affordances.yaml"),
+                )
+
+            # Affordance field checks
+            for aff in level.affordances.affordances:
+                if getattr(aff, "opening_hours", None) is None:
+                    errors.add(
+                        f"Affordance '{aff.name}' missing opening_hours.",
+                        code="AFFORDANCE_OPENING_HOURS_MISSING",
+                        location=str(level_dir / "affordances.yaml"),
+                    )
+                deployment = getattr(aff, "deployment", None)
+                if deployment is not None and getattr(deployment, "type", None) == "fixed" and not deployment.positions:
+                    errors.add(
+                        f"Affordance '{aff.name}' has deployment.type='fixed' but no positions specified.",
+                        code="AFFORDANCE_DEPLOYMENT_POSITIONS_MISSING",
+                        location=str(level_dir / "affordances.yaml"),
+                    )
+                invalid_cost_meters = [name for name in aff.costs.keys() if name not in env_meter_names]
+                invalid_effect_meters = [name for name in aff.effects.keys() if name not in env_meter_names]
+                if invalid_cost_meters or invalid_effect_meters:
+                    errors.add(
+                        f"Affordance '{aff.name}' references unknown meters in costs/effects.",
+                        code="AFFORDANCE_INVALID_METER",
+                        location=str(level_dir / "affordances.yaml"),
+                    )
+
+            # enabled_affordances must be subset of environment affordances
+            enabled_affordances = getattr(level.training, "enabled_affordances", None)
+            normalized_enabled = env_affordance_names if enabled_affordances is None else {str(name) for name in enabled_affordances}
+            invalid_enabled = normalized_enabled - env_affordance_names
+            if invalid_enabled:
+                errors.add(
+                    f"training.enabled_affordances contains unknown entries: {sorted(invalid_enabled)}",
+                    code="ENABLED_AFFORDANCES_INVALID",
+                    location=str(level_dir / "training.yaml"),
+                )
+
+            # Grid capacity (hard error)
+            if grid_capacity is not None:
+                deployed_count = len(normalized_enabled)
+                population_size = getattr(level.training.population, "size", 0)
+                required_slots = deployed_count + population_size
+                if required_slots > grid_capacity:
+                    errors.add(
+                        f"Grid capacity exceeded: {required_slots} entities (agents + affordances) vs grid capacity {grid_capacity}.",
+                        code="GRID_CAPACITY_EXCEEDED",
+                        location=str(level_dir / "training.yaml"),
+                    )
+
+        # 6) DAC must be present under agent.yaml (agent.drive) and non-empty, with valid references
+        meters = env_meter_names
+        affordances = env_affordance_names
+        variables_set = (
+            set(var.name for var in raw.environment.environment.variables) if hasattr(raw.environment.environment, "variables") else set()
+        )
+
+        agent_drive = getattr(raw.agent.agent, "drive", None)
+        agent_path = experiment_dir / "agent.yaml"
+        if agent_drive is None:
+            errors.add("agent.drive is required and must not be empty.", code="AGENT_DRIVE_MISSING", location=str(agent_path))
+        else:
+            # Modifiers must exist and reference known bars/variables
+            modifiers = getattr(agent_drive, "modifiers", {}) or {}
+            if not modifiers:
+                errors.add("agent.drive.modifiers must not be empty.", code="AGENT_DRIVE_MODIFIERS_EMPTY", location=str(agent_path))
+            for mod_name, mod_cfg in modifiers.items():
+                source = getattr(mod_cfg, "source", None)
+                if source and source not in meters and source not in variables_set:
+                    errors.add(
+                        f"Modifier '{mod_name}' references unknown meter/variable: {source}",
+                        code="AGENT_DRIVE_MODIFIER_INVALID_SOURCE",
+                        location=str(agent_path),
+                    )
+
+            # Extrinsic bonuses
+            extrinsic = getattr(agent_drive, "extrinsic", None)
+            if extrinsic is None:
+                errors.add("agent.drive.extrinsic is required.", code="AGENT_DRIVE_EXTRINSIC_MISSING", location=str(agent_path))
+            else:
+                for bonus in getattr(extrinsic, "bonuses", []) or []:
+                    bar = getattr(bonus, "bar", None)
+                    if bar and bar not in meters:
+                        errors.add(
+                            f"Extrinsic bonus references unknown bar: {bar}",
+                            code="AGENT_DRIVE_EXTRINSIC_INVALID_BAR",
+                            location=str(agent_path),
+                        )
+
+            # Intrinsic
+            intrinsic = getattr(agent_drive, "intrinsic", None)
+            if intrinsic is None:
+                errors.add("agent.drive.intrinsic is required.", code="AGENT_DRIVE_INTRINSIC_MISSING", location=str(agent_path))
+
+            # Shaping
+            shaping = getattr(agent_drive, "shaping", None)
+            if not shaping:
+                errors.add("agent.drive.shaping must not be empty.", code="AGENT_DRIVE_SHAPING_EMPTY", location=str(agent_path))
+            else:
+                for idx, shape_cfg in enumerate(shaping):
+                    loc = f"{agent_path}:drive.shaping[{idx}]"
+                    # Handle known keys from reference-config (approach_reward, completion_bonus, etc.)
+                    target = getattr(shape_cfg, "target", None) or getattr(shape_cfg, "affordance", None)
+                    if target and target not in affordances:
+                        errors.add(
+                            f"Shaping entry references unknown affordance: {target}",
+                            code="AGENT_DRIVE_SHAPING_INVALID_AFFORDANCE",
+                            location=loc,
+                        )
+                    bar = getattr(shape_cfg, "bar", None)
+                    if bar and bar not in meters:
+                        errors.add(
+                            f"Shaping entry references unknown bar: {bar}",
+                            code="AGENT_DRIVE_SHAPING_INVALID_BAR",
+                            location=loc,
+                        )
+                    money_bar = getattr(shape_cfg, "money_bar", None)
+                    if money_bar and money_bar not in meters:
+                        errors.add(
+                            f"Shaping entry references unknown bar: {money_bar}",
+                            code="AGENT_DRIVE_SHAPING_INVALID_BAR",
+                            location=loc,
+                        )
+                    condition_bar = getattr(shape_cfg, "bar", None)
+                    if condition_bar and condition_bar not in meters:
+                        errors.add(
+                            f"Shaping condition references unknown bar: {condition_bar}",
+                            code="AGENT_DRIVE_SHAPING_INVALID_BAR",
+                            location=loc,
+                        )
+
+        errors.check_and_raise()
+
+    def _stage_1_load_v21_configs(self, experiment_dir: Path) -> RawConfigsV21:
         """Stage 1 – load v2.1 hierarchical configs."""
-        return AnyV21.from_experiment_dir(experiment_dir)
+        return RawConfigsV21.from_experiment_dir(experiment_dir)
 
     # ------------------------------------------------------------------
     # v2.1 helpers
@@ -927,6 +1184,7 @@ class UniverseCompiler:
         stratum: StratumConfig,
         actions: ActionsConfig,
         training: TrainingV2Config,
+        affordances: AffordancesV2Config,
     ) -> ActionSpaceMetadata:
         """Build action space metadata using substrate actions + custom actions."""
         entries: list[ActionMetadata] = []
@@ -947,34 +1205,30 @@ class UniverseCompiler:
             )
             next_id += 1
 
-        substrate_actions = actions.actions.substrate_actions
-        grid_cfg = getattr(stratum.stratum.substrate, "grid", None)
-        enable_diagonals = bool(getattr(grid_cfg, "diagonals", False)) if grid_cfg is not None else False
-        if substrate_actions.inherit:
-            substrate_type = stratum.stratum.substrate.type
-            if substrate_type in {"grid", "grid3d"}:
-                # Cardinal movement (always available for grid substrates)
-                _add("UP", "movement", "substrate", True)
-                _add("DOWN", "movement", "substrate", True)
-                _add("LEFT", "movement", "substrate", True)
-                _add("RIGHT", "movement", "substrate", True)
-                # Optional diagonals, controlled by grid.diagonals flag
-                if enable_diagonals:
-                    _add("UP_LEFT", "movement", "substrate", True)
-                    _add("UP_RIGHT", "movement", "substrate", True)
-                    _add("DOWN_LEFT", "movement", "substrate", True)
-                    _add("DOWN_RIGHT", "movement", "substrate", True)
-                if substrate_type == "grid3d":
-                    _add("UP_Z", "movement", "substrate", True)
-                    _add("DOWN_Z", "movement", "substrate", True)
+        substrate_actions_cfg = actions.actions.substrate_actions
+        allow_interact = len(affordances.affordances) > 0
+        substrate_actions: list[ActionConfig] = []
+        substrate_names: set[str] = set()
+
+        if substrate_actions_cfg.inherit:
+            # Build substrate instance using validated stratum config to derive canonical actions.
+            substrate = SubstrateFactory.build(stratum.stratum.substrate, torch.device("cpu"))
+            substrate_actions = substrate.get_default_actions()
+            substrate_names = {a.name for a in substrate_actions}
+            for action in substrate_actions:
+                enabled = True
+                if action.name == "INTERACT" and not allow_interact:
+                    enabled = False
+                _add(action.name, action.type, "substrate", enabled)
 
         enabled_custom = set(training.enabled_actions.custom) if training.enabled_actions else set()
         for custom in actions.actions.custom_actions:
-            name = custom.name
-            # Heuristic: WAIT = passive, others = interaction
-            action_type = "passive" if name == "WAIT" else "interaction"
-            enabled = custom.enabled_by_default or name in enabled_custom
-            _add(name, action_type, "custom", enabled)
+            # Skip custom entries that collide with substrate vocabulary; substrate owns those IDs.
+            if custom.name in substrate_names:
+                continue
+            action_type = "passive" if custom.name == "WAIT" else "interaction"
+            enabled = custom.enabled_by_default or custom.name in enabled_custom
+            _add(custom.name, action_type, "custom", enabled)
 
         return ActionSpaceMetadata(total_actions=len(entries), actions=tuple(entries))
 
@@ -1276,7 +1530,7 @@ class UniverseCompiler:
 
     def _validate_drive_references_v21(
         self,
-        raw: AnyV21,
+        raw: RawConfigsV21,
         primary_meta: CompiledUniverse.LevelMetadata,
         compiled: CompiledUniverse,
     ) -> None:
@@ -1394,7 +1648,7 @@ class UniverseCompiler:
                 warning,
             )
 
-    def _validate_economic_balance_v21(self, raw: AnyV21) -> None:
+    def _validate_economic_balance_v21(self, raw: RawConfigsV21) -> None:
         """Emit economic balance warnings for v2.1 configs.
 
         This is a minimal v2.1 analogue of the legacy Stage 4 economic checks:
@@ -1453,7 +1707,7 @@ class UniverseCompiler:
 
     def _build_universe_metadata(
         self,
-        raw: AnyV21,
+        raw: RawConfigsV21,
         primary_meta: CompiledUniverse.LevelMetadata,
         *,
         experiment_dir: Path,
@@ -1493,17 +1747,14 @@ class UniverseCompiler:
         temporal_supported = raw.stratum.stratum.temporal_support == "enabled"
         temporal_active = primary_meta.curriculum.curriculum.active_temporal
         if temporal_supported and temporal_active:
-            if curriculum_day_length is None:
+            if curriculum_day_length is None or curriculum_day_length <= 0:
                 raise ValueError(
-                    "Missing curriculum.day_length for temporal-enabled level.\n"
+                    "Missing curriculum.day_length for temporal-enabled stratum.\n"
                     f"  Experiment: {experiment_dir}\n"
                     f"  Level: {primary_meta.level_name}\n"
-                    "Provide an explicit day_length; no defaults are applied."
+                    "Provide an explicit positive day_length; no defaults are applied."
                 )
             ticks_per_day = curriculum_day_length
-        elif temporal_supported and not temporal_active:
-            # Temporal support exists but level is inactive; ticks_per_day = 0 to denote no temporal mechanics.
-            ticks_per_day = 0
         else:
             # Temporal support disabled; mark as zero ticks per day (no temporal mechanics).
             ticks_per_day = 0
@@ -2350,35 +2601,6 @@ class UniverseCompiler:
 
         raise RuntimeError("Legacy flat config pipeline removed; use v2.1 hierarchical configs.")
 
-        source_map = getattr(raw_configs, "source_map", None)
-        hints_added: set[str] = set()
-
-        def _add_hint(key: str, text: str) -> None:
-            if key not in hints_added:
-                errors.add_hint(text)
-                hints_added.add(key)
-
-        def _format_error(code: str, message: str, location: str | None = None) -> CompilationMessage:
-            location_str = None
-            if location and source_map is not None:
-                location_str = source_map.lookup(location)
-            if not location_str:
-                location_str = location
-            return CompilationMessage(code=code, message=message, location=location_str)
-
-        self._validate_spatial_feasibility(raw_configs, errors, _format_error)
-        self._enforce_security_limits(raw_configs, errors)
-        allow_unfeasible = bool(getattr(raw_configs.training, "allow_unfeasible_universe", False))
-        self._validate_economic_balance(raw_configs, errors, _format_error, allow_unfeasible)
-        self._validate_cascade_cycles(raw_configs, errors, _format_error)
-        self._validate_operating_hours(raw_configs, errors, _format_error)
-        self._validate_availability_and_modes(raw_configs, symbol_table, errors, _format_error)
-        self._cues_compiler.validate(raw_configs.hamlet_config.cues, symbol_table, errors, _format_error)
-        self._validate_capabilities_and_effect_pipelines(raw_configs, errors, _format_error)
-        self._validate_affordance_positions(raw_configs, errors, _format_error)
-        self._validate_substrate_action_compatibility(raw_configs, errors, _format_error, _add_hint)
-        self._validate_capacity_and_sustainability(raw_configs, errors, _format_error, allow_unfeasible)
-
     def _validate_spatial_feasibility(self, raw_configs: Any, errors: CompilationErrorCollector, formatter) -> None:
         """Validate that substrate has enough space for all affordances + agents.
 
@@ -3136,88 +3358,7 @@ class UniverseCompiler:
     ) -> tuple[UniverseMetadata, ObservationSpec, tuple[VFSObservationField, ...]]:
         """Stage 5 – compute derived metadata and observation specification."""
 
-        import torch
-        from pydantic import __version__ as pydantic_version  # lazy import to avoid startup penalty
-
-        exposures = self._load_observation_exposures(raw_configs, symbol_table)
-
-        # Get all variables from symbol table (auto-generated + custom)
-        all_variables = list(symbol_table.variables.values())
-        variable_registry = VariableRegistry(
-            variables=all_variables,
-            num_agents=raw_configs.population.num_agents,
-            device=torch.device("cpu"),
-        )
-
-        obs_builder = VFSObservationSpecBuilder()
-        variables = list(variable_registry.variables.values())
-        vfs_fields = obs_builder.build_observation_spec(variables, exposures)
-        var_scope_lookup = {var.id: var.scope for var in variables}
-        observation_spec = vfs_to_observation_spec(vfs_fields, var_scope_lookup)
-
-        sorted_bars = sorted(raw_configs.bars, key=lambda bar: bar.index)
-        meter_names = tuple(bar.name for bar in sorted_bars)
-        meter_name_to_index = {bar.name: bar.index for bar in sorted_bars}
-
-        affordances = tuple(raw_configs.affordances)
-        affordance_ids = tuple(aff.id for aff in affordances)
-        affordance_id_to_index = {aff.id: idx for idx, aff in enumerate(affordances)}
-
-        action_count = len(raw_configs.global_actions.actions)
-
-        max_income = self._compute_max_income(raw_configs.affordances)
-        total_costs = self._compute_total_costs(raw_configs.affordances)
-        economic_balance = max_income / total_costs if total_costs > 0 else float("inf")
-
-        grid_size, grid_cells = self._derive_grid_dimensions(raw_configs.substrate)
-
-        config_hash = precomputed_config_hash or self._compute_config_hash(config_dir)
-        compiler_git_sha = self._get_git_sha()
-        python_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-        provenance_id = self._compute_provenance_id(
-            config_hash=config_hash,
-            compiler_version=COMPILER_VERSION,
-            git_sha=compiler_git_sha,
-            python_version=python_version,
-            torch_version=torch.__version__,
-            pydantic_version=pydantic_version,
-        )
-
-        # Compute config mtime for cache invalidation
-        config_mtime = self._compute_config_mtime(config_dir)
-
-        metadata = UniverseMetadata(
-            universe_name=config_dir.name,
-            schema_version=SCHEMA_VERSION,
-            substrate_type=self._label_substrate_type(raw_configs.substrate),
-            position_dim=self._infer_position_dim(raw_configs.substrate),
-            meter_count=len(sorted_bars),
-            meter_names=meter_names,
-            meter_name_to_index=meter_name_to_index,
-            affordance_count=len(affordance_ids),
-            affordance_ids=affordance_ids,
-            affordance_id_to_index=affordance_id_to_index,
-            action_count=action_count,
-            observation_dim=observation_spec.total_dims,
-            grid_size=grid_size,
-            grid_cells=grid_cells,
-            max_sustainable_income=max_income,
-            total_affordance_costs=total_costs,
-            economic_balance=economic_balance,
-            ticks_per_day=self._compute_ticks_per_day(raw_configs),
-            config_version=self._resolve_config_version(raw_configs),
-            compiler_version=COMPILER_VERSION,
-            compiled_at=datetime.now(UTC).isoformat(),
-            config_hash=config_hash,
-            config_mtime=config_mtime,
-            provenance_id=provenance_id,
-            compiler_git_sha=compiler_git_sha,
-            python_version=python_version,
-            torch_version=torch.__version__,
-            pydantic_version=pydantic_version,
-        )
-
-        return metadata, observation_spec, tuple(vfs_fields)
+        raise RuntimeError("Legacy flat config pipeline removed; use v2.1 hierarchical configs.")
 
     def _stage_5_build_rich_metadata(
         self,
@@ -3226,64 +3367,6 @@ class UniverseCompiler:
         """Stage 5 – build training-facing metadata structures."""
 
         raise RuntimeError("Legacy flat config pipeline removed; use v2.1 hierarchical configs.")
-
-        actions_meta: list[ActionMetadata] = []
-        for action in raw_configs.global_actions.actions:
-            actions_meta.append(
-                ActionMetadata(
-                    id=action.id,
-                    name=action.name,
-                    type=action.type,
-                    enabled=action.enabled,
-                    source=getattr(action, "source", "custom"),
-                    costs=dict(action.costs),
-                    description=action.description or "",
-                )
-            )
-
-        action_space_metadata = ActionSpaceMetadata(
-            total_actions=len(actions_meta),
-            actions=tuple(actions_meta),
-        )
-
-        meter_infos = [
-            MeterInfo(
-                name=bar.name,
-                index=bar.index,
-                critical=getattr(bar, "critical", False),
-                initial_value=bar.initial,
-                observable=True,
-                description=bar.description or "",
-            )
-            for bar in sorted(raw_configs.bars, key=lambda bar: bar.index)
-        ]
-        meter_metadata = MeterMetadata(meters=tuple(meter_infos))
-
-        enabled_affordances = raw_configs.environment.enabled_affordances
-        enabled_set = set(enabled_affordances)
-
-        affordance_infos: list[AffordanceInfo] = []
-        for aff in raw_configs.affordances:
-            if enabled_set is None:
-                is_enabled = True
-            else:
-                is_enabled = aff.name in enabled_set or aff.id in enabled_set
-            affordance_infos.append(
-                AffordanceInfo(
-                    id=aff.id,
-                    name=aff.name,
-                    enabled=is_enabled,
-                    effects=self._summarize_affordance_effects(aff),
-                    cost=self._extract_money_cost(aff),
-                    category=getattr(aff, "category", None),
-                    description=aff.description or "",
-                    position=self._normalize_affordance_position_metadata(getattr(aff, "position", None)),
-                )
-            )
-
-        affordance_metadata = AffordanceMetadata(affordances=tuple(affordance_infos))
-
-        return action_space_metadata, meter_metadata, affordance_metadata
 
     def _stage_6_optimize(
         self,
@@ -3366,60 +3449,6 @@ class UniverseCompiler:
 
         raise RuntimeError("Legacy flat config pipeline removed; use v2.1 hierarchical configs.")
 
-        # Get all variables from symbol table (auto-generated + custom)
-        all_variables = list(symbol_table.variables.values())
-
-        # Build observation activity metadata for masking
-        # BUG-43 FIX: Use the original vfs_observation_fields which preserve curriculum_active
-        # instead of reconstructing them from observation_spec (which loses that information)
-        field_uuids = {field.name: field.uuid for field in observation_spec.fields if field.uuid is not None}
-        observation_activity = VFSAdapter.build_observation_activity(
-            observation_spec=list(vfs_observation_fields),
-            field_uuids=field_uuids,
-        )
-
-        # Compute drive_hash (Task 2.3)
-        drive_hash = self._compute_dac_hash(dac_config)
-
-        universe = CompiledUniverse(
-            hamlet_config=raw_configs.hamlet_config,
-            variables_reference=all_variables,
-            global_actions=raw_configs.global_actions,
-            config_dir=raw_configs.config_dir,
-            metadata=metadata,
-            observation_spec=observation_spec,
-            observation_activity=observation_activity,
-            vfs_observation_fields=vfs_observation_fields,
-            action_space_metadata=action_space_metadata,
-            meter_metadata=meter_metadata,
-            affordance_metadata=affordance_metadata,
-            optimization_data=optimization_data,
-            action_labels_config=raw_configs.action_labels,
-            environment_config=environment_config,
-            dac_config=dac_config,
-            drive_hash=drive_hash,
-        )
-
-        if not dataclasses.is_dataclass(universe):
-            raise CompilationError(
-                stage="Stage 7: Emit",
-                errors=["CompiledUniverse must be a dataclass"],
-                hints=["Ensure @dataclass decorator remains applied to CompiledUniverse"],
-            )
-
-        try:
-            setattr(cast(Any, universe), "metadata", metadata)
-        except dataclasses.FrozenInstanceError:
-            pass
-        else:
-            raise CompilationError(
-                stage="Stage 7: Emit",
-                errors=["CompiledUniverse must be frozen (immutable)"],
-                hints=["Annotate CompiledUniverse with @dataclass(frozen=True)"],
-            )
-
-        return universe
-
     def _derive_grid_dimensions(self, substrate: SubstrateConfig) -> tuple[int | None, int | None]:
         """Calculate grid dimensions for metadata.
 
@@ -3472,23 +3501,6 @@ class UniverseCompiler:
         if substrate.type == "continuousnd" and substrate.continuous is not None:
             return len(substrate.continuous.bounds)
         return 0
-
-    def _resolve_config_version(self, raw_configs: Any) -> str:
-        return getattr(raw_configs.hamlet_config, "version", "1.0")
-
-    def _compute_ticks_per_day(self, raw_configs: Any) -> int:
-        """Derive ticks_per_day for legacy pipeline without defaults."""
-        day_length = None
-        # Legacy training path may have day_length on curriculum or training.
-        day_length = getattr(getattr(raw_configs, "curriculum", None), "day_length", None)
-        if day_length is None:
-            day_length = getattr(getattr(raw_configs, "training", None), "day_length", None)
-        if day_length is None:
-            raise ValueError(
-                "ticks_per_day is required; legacy compiler path cannot default to 24.\n"
-                "Provide day_length in curriculum or training configuration."
-            )
-        return int(day_length)
 
     def _auto_generate_standard_exposures(self, symbol_table: UniverseSymbolTable) -> list[dict[str, Any]]:
         """Auto-generate standard observation exposures for all system variables.

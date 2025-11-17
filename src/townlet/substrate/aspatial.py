@@ -159,18 +159,4 @@ class AspatialSubstrate(SpatialSubstrate):
                 source_affordance=None,
                 enabled=True,
             ),
-            ActionConfig(
-                id=1,
-                name="WAIT",
-                type="passive",
-                delta=None,
-                teleport_to=None,
-                costs={},
-                effects={},
-                description="Wait (idle metabolic cost)",
-                icon=None,
-                source="substrate",
-                source_affordance=None,
-                enabled=True,
-            ),
         ]

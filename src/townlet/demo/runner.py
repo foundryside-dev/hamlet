@@ -66,14 +66,13 @@ class DemoRunner:
                 (DEPRECATED - normally inferred from levels/<level_name>/training.yaml)
         """
         self.config_dir = Path(config_dir)
-        # Resolve training config path with backward-compatible default:
-        # - v2.1 packs: levels/<level_name>/training.yaml
-        # - Legacy single-pack tests: training.yaml at config_dir root
+        # Resolve training config path:
+        # - v2.1 packs: levels/<level_name>/training.yaml (mandatory)
+        # - Explicit override path optional but must exist
+        if training_config_path is None and level_name is None:
+            raise ValueError("level_name is required for v2.1 config packs; legacy single-file training.yaml is no longer supported.")
         if training_config_path is None:
-            if level_name is not None:
-                self.training_config_path = self.config_dir / "levels" / level_name / "training.yaml"
-            else:
-                self.training_config_path = self.config_dir / "training.yaml"
+            self.training_config_path = self.config_dir / "levels" / level_name / "training.yaml"
         else:
             self.training_config_path = Path(training_config_path)
         if not self.training_config_path.exists():

@@ -49,7 +49,7 @@ def test_config_pack_path() -> Path:
     """Path to the lightweight test configuration pack (L0_0_minimal)."""
 
     repo_root = Path(__file__).parent.parent.parent.parent
-    return repo_root / "configs" / "default_curriculum" / "levels" / "L0_0_minimal"
+    return repo_root / "configs" / "default_curriculum"
 
 
 @pytest.fixture

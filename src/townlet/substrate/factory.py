@@ -146,8 +146,6 @@ class SubstrateFactory:
             )
 
         elif config.type == "aspatial":
-            assert config.aspatial is not None  # Validated by pydantic
-
             return AspatialSubstrate()
 
         else:

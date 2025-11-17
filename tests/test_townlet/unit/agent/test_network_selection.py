@@ -10,10 +10,10 @@ from townlet.universe.compiler import UniverseCompiler
 class TestStructuredNetworkInstantiation:
     def test_structured_network_instantiated_with_observation_activity(self):
         """VectorizedPopulation should instantiate StructuredQNetwork when network_type='structured'."""
-        config_dir = Path("configs/default_curriculum/levels/L0_5_dual_resource")
+        config_dir = Path("configs/default_curriculum")
 
         compiler = UniverseCompiler()
-        compiled = compiler.compile(config_dir, use_cache=False)
+        compiled = compiler.compile(config_dir, primary_level="L0_5_dual_resource", use_cache=False)
 
         # Create environment to get observation_activity
         env = VectorizedHamletEnv.from_universe(compiled, num_agents=4, device="cpu")
@@ -31,10 +31,10 @@ class TestStructuredNetworkInstantiation:
 
     def test_simple_network_still_works(self):
         """VectorizedPopulation should still instantiate SimpleQNetwork when network_type='simple'."""
-        config_dir = Path("configs/default_curriculum/levels/L0_5_dual_resource")
+        config_dir = Path("configs/default_curriculum")
 
         compiler = UniverseCompiler()
-        compiled = compiler.compile(config_dir, use_cache=False)
+        compiled = compiler.compile(config_dir, primary_level="L0_5_dual_resource", use_cache=False)
         env = VectorizedHamletEnv.from_universe(compiled, num_agents=4, device="cpu")
 
         # Manually create SimpleQNetwork as population would
@@ -48,10 +48,10 @@ class TestStructuredNetworkInstantiation:
 
     def test_recurrent_network_still_works(self):
         """VectorizedPopulation should still instantiate RecurrentSpatialQNetwork when network_type='recurrent'."""
-        config_dir = Path("configs/default_curriculum/levels/L2_partial_observability")
+        config_dir = Path("configs/default_curriculum")
 
         compiler = UniverseCompiler()
-        compiled = compiler.compile(config_dir, use_cache=False)
+        compiled = compiler.compile(config_dir, primary_level="L2_partial_observability", use_cache=False)
         env = VectorizedHamletEnv.from_universe(compiled, num_agents=4, device="cpu")
 
         # Manually create RecurrentSpatialQNetwork as population would

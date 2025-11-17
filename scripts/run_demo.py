@@ -20,6 +20,7 @@ from pathlib import Path
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
+from townlet.config.training_v2_config import load_training_v2_config
 from townlet.demo.unified_server import UnifiedServer
 
 # Configure logging
@@ -120,17 +121,11 @@ def main():
     total_episodes = args.episodes
     if total_episodes is None:
         try:
-            import yaml
-
-            with open(config_file) as f:
-                config = yaml.safe_load(f)
-                total_episodes = config.get("training", {}).get("max_episodes", None)
-                if total_episodes is None:
-                    logger.error("No total_episodes provided and training.max_episodes not found in config")
-                    sys.exit(1)
-                logger.debug(f"Read max_episodes={total_episodes} from config")
+            training_cfg = load_training_v2_config(config_file.parent)
+            total_episodes = training_cfg.training_loop.max_episodes
+            logger.debug(f"Read max_episodes={total_episodes} from training.training_loop.max_episodes")
         except Exception as e:
-            logger.error(f"Failed to read max_episodes from config: {e}")
+            logger.error(f"Failed to read max_episodes from config (v2.1 schema required): {e}")
             sys.exit(1)
 
     # Print startup banner

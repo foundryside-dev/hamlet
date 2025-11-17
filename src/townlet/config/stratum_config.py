@@ -62,6 +62,7 @@ class GridNDConfig(BaseModel):
     boundary: Literal["clamp", "wrap", "bounce", "sticky"] = Field(..., description="Boundary behavior at edges")
     distance_metric: Literal["manhattan", "euclidean", "chebyshev"] = Field(..., description="Distance calculation method")
     observation_encoding: Literal["relative", "scaled", "absolute"] = Field(..., description="Coordinate encoding mode for observations")
+    topology: Literal["hypercube"] = Field(..., description="Grid topology (explicit to avoid hidden defaults)")
 
     class Config:
         extra = "forbid"
@@ -75,15 +76,84 @@ class GridNDConfig(BaseModel):
         return self
 
 
+class ContinuousConfig(BaseModel):
+    """Continuous substrate configuration (1D-100D)."""
+
+    dimensions: int = Field(..., ge=1, le=100, description="Number of continuous dimensions")
+    bounds: list[tuple[float, float]] = Field(..., description="Bounds for each dimension [(min, max), ...]")
+    boundary: Literal["clamp", "wrap", "bounce", "sticky"] = Field(..., description="Boundary behavior at edges")
+    movement_delta: float = Field(..., gt=0, description="Discrete movement step for navigation")
+    interaction_radius: float = Field(..., gt=0, description="Distance threshold for affordance interaction")
+    distance_metric: Literal["euclidean", "manhattan", "chebyshev"] = Field(..., description="Distance calculation method")
+    observation_encoding: Literal["relative", "scaled", "absolute"] = Field(..., description="Position encoding strategy")
+    action_discretization: dict[str, int] = Field(
+        ...,
+        description="Discretization of continuous actions {'num_directions': int, 'num_magnitudes': int}",
+    )
+
+    class Config:
+        extra = "forbid"
+
+    @model_validator(mode="after")
+    def validate_bounds(self) -> "ContinuousConfig":
+        """Ensure bounds match dimensions and are strictly ordered."""
+        if len(self.bounds) != self.dimensions:
+            raise ValueError(
+                f"Number of bounds ({len(self.bounds)}) must match dimensions ({self.dimensions}). "
+                "Example for 2D: bounds: [[0.0, 10.0], [0.0, 10.0]]"
+            )
+
+        for i, (min_val, max_val) in enumerate(self.bounds):
+            if min_val >= max_val:
+                raise ValueError(f"bounds[{i}] invalid: min ({min_val}) must be < max ({max_val})")
+
+        return self
+
+
+class AspatialConfig(BaseModel):
+    """Aspatial substrate marker (no positional fields)."""
+
+    class Config:
+        extra = "forbid"
+
+
 class SubstrateConfig(BaseModel):
     """Substrate configuration (spatial or aspatial)."""
 
     type: Literal["grid", "grid3d", "gridnd", "continuous", "continuousnd", "aspatial"] = Field(..., description="Substrate type")
     grid: GridConfig | None = Field(None, description="Grid substrate parameters (2D or 3D)")
     gridnd: GridNDConfig | None = Field(None, description="GridND substrate parameters (4D+)")
+    continuous: ContinuousConfig | None = Field(None, description="Continuous substrate parameters (required for continuous/continuousnd)")
+    aspatial: AspatialConfig | None = Field(None, description="Aspatial substrate parameters (required for aspatial)")
 
     class Config:
         extra = "forbid"
+
+    @model_validator(mode="after")
+    def validate_substrate(self) -> "SubstrateConfig":
+        """Enforce type-specific config presence (no silent defaults)."""
+        if self.type == "grid" and self.grid is None:
+            raise ValueError("type='grid' requires a grid block.")
+        if self.type == "gridnd" and self.gridnd is None:
+            raise ValueError("type='gridnd' requires a gridnd block.")
+        if self.type in {"continuous", "continuousnd"} and self.continuous is None:
+            raise ValueError(f"type='{self.type}' requires a continuous block.")
+        if self.type == "aspatial" and self.aspatial is None:
+            raise ValueError("type='aspatial' requires an aspatial block.")
+
+        provided = [
+            cfg is not None
+            for cfg in (
+                self.grid,
+                self.gridnd,
+                self.continuous,
+                self.aspatial,
+            )
+        ]
+        if sum(provided) > 1:
+            raise ValueError("Only one substrate configuration block may be specified.")
+
+        return self
 
 
 class StratumConfigRoot(BaseModel):

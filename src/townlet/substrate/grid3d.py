@@ -296,7 +296,7 @@ class Grid3DSubstrate(SpatialSubstrate):
             ]
         )
 
-        # Core interactions (same as Grid2D)
+        # Core interactions (same as Grid2D; WAIT is custom-only)
         actions.extend(
             [
                 ActionConfig(
@@ -308,20 +308,6 @@ class Grid3DSubstrate(SpatialSubstrate):
                     costs={},
                     effects={},
                     description="Interact with affordance at current position",
-                    icon=None,
-                    source="substrate",
-                    source_affordance=None,
-                    enabled=True,
-                ),
-                ActionConfig(
-                    id=len(actions) + 1,
-                    name="WAIT",
-                    type="passive",
-                    delta=None,
-                    teleport_to=None,
-                    costs={},
-                    effects={},
-                    description="Wait in place (idle metabolic cost)",
                     icon=None,
                     source="substrate",
                     source_affordance=None,

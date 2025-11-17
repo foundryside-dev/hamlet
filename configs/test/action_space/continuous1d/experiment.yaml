@@ -1,0 +1,11 @@
+experiment:
+  version: "1.0"
+  experiment_name: "action_space_continuous1d"
+  metadata:
+    name: "Action Space Continuous1D"
+    description: "Continuous 1D pack for action space tests"
+    author: "Hamlet Tests"
+    created: "2025-11-17"
+    tags: ["test", "action_space"]
+  curriculum_levels:
+    - L0

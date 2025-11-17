@@ -2,7 +2,7 @@ training:
   version: "1.0"
 
   population:
-    size: 512
+    size: 8
 
   # Environment runtime controls
   enabled_affordances:

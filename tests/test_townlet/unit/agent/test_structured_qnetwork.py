@@ -11,10 +11,10 @@ from townlet.universe.compiler import UniverseCompiler
 class TestStructuredQNetworkBasics:
     def test_structured_qnetwork_accepts_observation_activity(self):
         """StructuredQNetwork should accept ObservationActivity parameter."""
-        config_dir = Path("configs/default_curriculum/levels/L0_5_dual_resource")
+        config_dir = Path("configs/default_curriculum")
 
         compiler = UniverseCompiler()
-        compiled = compiler.compile(config_dir, use_cache=False)
+        compiled = compiler.compile(config_dir, primary_level="L0_5_dual_resource", use_cache=False)
         obs_activity = compiled.observation_activity
 
         network = StructuredQNetwork(
@@ -28,10 +28,10 @@ class TestStructuredQNetworkBasics:
 
     def test_structured_qnetwork_forward_pass(self):
         """StructuredQNetwork should produce Q-values for batch of observations."""
-        config_dir = Path("configs/default_curriculum/levels/L0_5_dual_resource")
+        config_dir = Path("configs/default_curriculum")
 
         compiler = UniverseCompiler()
-        compiled = compiler.compile(config_dir, use_cache=False)
+        compiled = compiler.compile(config_dir, primary_level="L0_5_dual_resource", use_cache=False)
         obs_activity = compiled.observation_activity
 
         network = StructuredQNetwork(
@@ -49,10 +49,10 @@ class TestStructuredQNetworkBasics:
 
     def test_structured_qnetwork_has_group_encoders(self):
         """StructuredQNetwork should create encoders for each semantic group."""
-        config_dir = Path("configs/default_curriculum/levels/L0_5_dual_resource")
+        config_dir = Path("configs/default_curriculum")
 
         compiler = UniverseCompiler()
-        compiled = compiler.compile(config_dir, use_cache=False)
+        compiled = compiler.compile(config_dir, primary_level="L0_5_dual_resource", use_cache=False)
         obs_activity = compiled.observation_activity
 
         network = StructuredQNetwork(
@@ -72,10 +72,10 @@ class TestStructuredQNetworkBasics:
 class TestStructuredQNetworkArchitecture:
     def test_group_encoders_process_correct_slices(self):
         """Each group encoder should process only its semantic group dimensions."""
-        config_dir = Path("configs/default_curriculum/levels/L0_5_dual_resource")
+        config_dir = Path("configs/default_curriculum")
 
         compiler = UniverseCompiler()
-        compiled = compiler.compile(config_dir, use_cache=False)
+        compiled = compiler.compile(config_dir, primary_level="L0_5_dual_resource", use_cache=False)
         obs_activity = compiled.observation_activity
 
         network = StructuredQNetwork(
@@ -102,10 +102,10 @@ class TestStructuredQNetworkArchitecture:
         """StructuredQNetwork output should match SimpleQNetwork for compatibility."""
         from townlet.agent.networks import SimpleQNetwork
 
-        config_dir = Path("configs/default_curriculum/levels/L0_0_minimal")
+        config_dir = Path("configs/default_curriculum")
 
         compiler = UniverseCompiler()
-        compiled = compiler.compile(config_dir, use_cache=False)
+        compiled = compiler.compile(config_dir, primary_level="L0_0_minimal", use_cache=False)
         obs_activity = compiled.observation_activity
 
         obs_dim = compiled.metadata.observation_dim
@@ -132,10 +132,10 @@ class TestStructuredQNetworkArchitecture:
 class TestStructuredQNetworkIntegration:
     def test_structured_qnetwork_with_gradient_flow(self):
         """StructuredQNetwork should support gradient backpropagation."""
-        config_dir = Path("configs/default_curriculum/levels/L0_5_dual_resource")
+        config_dir = Path("configs/default_curriculum")
 
         compiler = UniverseCompiler()
-        compiled = compiler.compile(config_dir, use_cache=False)
+        compiled = compiler.compile(config_dir, primary_level="L0_5_dual_resource", use_cache=False)
         obs_activity = compiled.observation_activity
 
         network = StructuredQNetwork(
@@ -160,10 +160,10 @@ class TestStructuredQNetworkIntegration:
         if not torch.cuda.is_available():
             return  # Skip if no GPU
 
-        config_dir = Path("configs/default_curriculum/levels/L0_0_minimal")
+        config_dir = Path("configs/default_curriculum")
 
         compiler = UniverseCompiler()
-        compiled = compiler.compile(config_dir, use_cache=False)
+        compiled = compiler.compile(config_dir, primary_level="L0_0_minimal", use_cache=False)
         obs_activity = compiled.observation_activity
 
         device = torch.device("cuda")

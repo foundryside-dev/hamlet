@@ -311,7 +311,7 @@ class TrainingV2Config(BaseModel):
         )
     )
     enabled_actions: EnabledActionsConfig | None = Field(
-        default=None, description="Optional curriculum-level action control (null = use defaults from actions.yaml)"
+        description="Optional curriculum-level action control (must be explicitly set; use null to inherit actions.yaml defaults)"
     )
     q_learning: QLearningConfig = Field(description="Q-learning hyperparameters (curriculum-level overrides)")
     replay_buffer: ReplayBufferConfig = Field(description="Replay buffer configuration")

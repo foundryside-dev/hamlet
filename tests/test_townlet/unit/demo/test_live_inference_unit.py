@@ -39,7 +39,8 @@ def live_server(tmp_path: Path, test_config_pack_path: Path, noop_qvalue_log):
         step_delay=0.01,
         total_episodes=10,
         config_dir=test_config_pack_path,
-        training_config_path=test_config_pack_path / "training.yaml",
+        level_name="L0_0_minimal",
+        training_config_path=None,
     )
     yield server
     # ensure we don't leave open descriptors

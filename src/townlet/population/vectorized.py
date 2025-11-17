@@ -724,9 +724,10 @@ class VectorizedPopulation(PopulationManager):
                     )
                 elif self.brain_config is not None and self.brain_config.loss.type == "smooth_l1":
                     losses = F.smooth_l1_loss(q_pred_all, q_target_all, reduction="none")
-                else:
-                    # MSE or legacy (no brain_config)
+                elif self.brain_config is not None and self.brain_config.loss.type == "mse":
                     losses = F.mse_loss(q_pred_all, q_target_all, reduction="none")
+                else:
+                    raise ValueError("Unsupported loss configuration; brain_config.loss.type must be one of {'huber','smooth_l1','mse'}.")
                 mask = batch["mask"].float()  # [batch, seq_len] - True for valid timesteps
                 masked_loss = (losses * mask).sum() / mask.sum().clamp_min(1)
                 loss: torch.Tensor = masked_loss

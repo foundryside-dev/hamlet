@@ -151,10 +151,9 @@ class ContinuousConfig(BaseModel):
     )
 
     # NEW: Discretized continuous action space
-    action_discretization: dict[str, int] | None = Field(
-        default=None,
+    action_discretization: dict[str, int] = Field(
         description="Discretize continuous action space: {'num_directions': 8-32, 'num_magnitudes': 3-7}. "
-        "If None, uses legacy 8-way discrete actions. For maximum freedom, use {'num_directions': 32, 'num_magnitudes': 7}.",
+        "Explicitly specify to avoid legacy defaults.",
     )
 
     @model_validator(mode="after")

@@ -334,23 +334,22 @@ class RawConfigsV21:
                         "declared in environment.yaml."
                     )
 
-            # Capacity check for grid substrates: warn if deployed affordances + agents exceed grid capacity.
-            # Aligns with legacy HamletConfig.validate_grid_capacity (operator hint, not hard failure).
-            if grid_capacity is not None:
-                deployed_count = len(normalized_enabled)
-                population_size = getattr(level.training.population, "size", 0)
-                required_slots = deployed_count + population_size
-                if required_slots > grid_capacity:
-                    logger.warning(
-                        "Grid capacity warning (v2.1): %s cells may not fit %s agents + %s affordances "
-                        "(%s entities total) for level '%s'. Experiment: %s",
-                        grid_capacity,
-                        population_size,
-                        deployed_count,
-                        required_slots,
-                        level_name,
-                        self.experiment_dir,
-                    )
+        # Capacity check for grid substrates: hard error if deployed affordances + agents exceed grid capacity.
+        if grid_capacity is not None:
+            deployed_count = len(normalized_enabled)
+            population_size = getattr(level.training.population, "size", 0)
+            required_slots = deployed_count + population_size
+            if required_slots > grid_capacity:
+                raise ValueError(
+                    "Grid capacity exceeded for level configuration.\n"
+                    f"  Experiment: {self.experiment_dir}\n"
+                    f"  Level: {level_name}\n"
+                    f"  Capacity (cells): {grid_capacity}\n"
+                    f"  Agents: {population_size}\n"
+                    f"  Affordances deployed: {deployed_count}\n"
+                    f"  Required slots: {required_slots}\n"
+                    "\nReduce population size or enabled affordances, or increase grid dimensions."
+                )
 
     @classmethod
     def from_experiment_dir(cls, experiment_dir: Path) -> RawConfigsV21:

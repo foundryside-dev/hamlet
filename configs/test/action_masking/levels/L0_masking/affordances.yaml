@@ -1,0 +1,71 @@
+affordances:
+  version: "1.0"
+
+  affordances:
+    - name: Bed
+      costs:
+        energy: 0.0
+        money: 0.05
+      effects:
+        energy: 0.5
+        health: 0.02
+      opening_hours:
+        enabled: false
+      deployment:
+        type: fixed
+        positions: [[1, 1]]
+
+    - name: Hospital
+      costs:
+        money: 0.15
+      effects:
+        health: 0.4
+      opening_hours:
+        enabled: false
+      deployment:
+        type: fixed
+        positions: [[2, 2]]
+
+    - name: Job
+      costs: {}
+      effects:
+        money: 0.28
+        energy: -0.15
+      opening_hours:
+        enabled: true
+        schedule:
+          - start: 8
+            end: 18
+      deployment:
+        type: fixed
+        positions: [[3, 3]]
+
+    - name: Bar
+      costs:
+        money: 0.15
+      effects:
+        social: 0.5
+        mood: 0.25
+        health: -0.05
+      opening_hours:
+        enabled: true
+        schedule:
+          - start: 18
+            end: 28
+      deployment:
+        type: fixed
+        positions: [[4, 4]]
+
+    - name: Park
+      costs: {}
+      effects:
+        social: 0.1
+        fitness: 0.05
+        mood: 0.05
+      opening_hours:
+        enabled: false
+      deployment:
+        type: fixed
+        positions: [[5, 5]]
+
+  modulations: []

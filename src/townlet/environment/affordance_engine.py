@@ -24,9 +24,7 @@ from typing import Any
 
 import torch
 
-from townlet.environment.affordance_config import (
-    AffordanceConfigCollection,
-)
+from townlet.environment.affordance_config import AffordanceConfig
 from townlet.environment.temporal_utils import is_affordance_open as canonical_is_affordance_open
 
 
@@ -40,7 +38,7 @@ class AffordanceEngine:
 
     def __init__(
         self,
-        affordance_config: AffordanceConfigCollection | tuple[Any, ...],
+        affordance_config: tuple[AffordanceConfig, ...],
         num_agents: int,
         device: torch.device,
         meter_name_to_idx: dict[str, int],
@@ -50,7 +48,7 @@ class AffordanceEngine:
         Initialize AffordanceEngine.
 
         Args:
-            affordance_config: Tuple of affordances from compiled universe or legacy AffordanceConfigCollection
+            affordance_config: Tuple of affordances from compiled universe (v2.1 runtime form)
             num_agents: Number of agents in parallel
             device: torch.device for GPU/CPU
             meter_name_to_idx: Mapping of meter names to indices (from bars_config)
@@ -58,12 +56,7 @@ class AffordanceEngine:
         self.num_agents = num_agents
         self.device = device
 
-        # Modern compiler output: tuple of AffordanceConfig objects
-        if isinstance(affordance_config, tuple):
-            self.affordances = affordance_config
-        else:
-            # Legacy loader: AffordanceConfigCollection with .affordances list
-            self.affordances = tuple(affordance_config.affordances)
+        self.affordances = affordance_config
 
         self.meter_name_to_idx = meter_name_to_idx
         self.modulation_rules = modulation_rules or []

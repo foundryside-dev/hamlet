@@ -60,8 +60,10 @@ class UnifiedServer:
             inference_port: Port for inference WebSocket server
         """
         self.config_dir = Path(config_dir)
-        # training_config_path is retained for legacy/explicit overrides but is no longer required
+        # training_config_path is optional but must point to a v2.1 level training.yaml when provided
         self.training_config_path = Path(training_config_path) if training_config_path else None
+        if self.training_config_path is not None and not self.training_config_path.exists():
+            raise FileNotFoundError(f"training_config_path provided but not found: {self.training_config_path}")
         self.total_episodes = total_episodes
         self.checkpoint_dir = Path(checkpoint_dir) if checkpoint_dir else None
         self.inference_port = inference_port
@@ -220,18 +222,22 @@ class UnifiedServer:
         run_metadata = config.get("run_metadata") or {}
         output_subdir = run_metadata.get("output_subdir")
 
-        if output_subdir:
-            level_name = self._sanitize_folder_name(str(output_subdir))
-            if not level_name:
-                logger.warning("Config run_metadata.output_subdir is empty after sanitisation; falling back to legacy level detection.")
-                level_name = self._infer_level_name()
-        else:
-            level_name = self._infer_level_name()
+        if not output_subdir:
+            raise ValueError(
+                "run_metadata.output_subdir is required in training config; " "no defaults or inference are applied for run folder naming."
+            )
+
+        level_name = self._sanitize_folder_name(str(output_subdir))
+        if not level_name:
+            raise ValueError(
+                "run_metadata.output_subdir is present but empty after sanitisation; "
+                "provide a non-empty value to name the run directory."
+            )
 
         return Path("runs") / level_name / timestamp
 
     def _infer_level_name(self) -> str:
-        """Legacy fallback: infer run folder name from config stem."""
+        """Infer run folder name from config stem (v2.1 heuristic)."""
         if self.config_dir:
             config_stem = self.config_dir.name.lower()
         else:
@@ -356,7 +362,6 @@ class UnifiedServer:
             # Create DemoRunner (v2.1: config_dir is experiment root, level selection handled
             # by training config or external orchestrator; default to first level name here
             # is handled inside DemoRunner or by caller).
-            # For backward compatibility, pass training_config_path only if provided.
             runner_kwargs: dict[str, object] = {
                 "config_dir": str(self.config_dir),
                 "level_name": "L1_full_observability",

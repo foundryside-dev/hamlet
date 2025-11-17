@@ -17,7 +17,6 @@ from typing import TYPE_CHECKING, Any, cast
 import torch
 
 from townlet.environment.action_builder import ComposedActionSpace
-from townlet.environment.affordance_config import AffordanceConfig, AffordanceConfigCollection
 from townlet.environment.affordance_engine import AffordanceEngine
 from townlet.environment.dac_engine import DACEngine
 from townlet.environment.meter_dynamics import MeterDynamics
@@ -43,45 +42,6 @@ def _build_bar_index_map(meter_metadata: MeterMetadata) -> dict[str, int]:
         Dictionary mapping bar_id -> tensor_index
     """
     return {meter.name: meter.index for meter in meter_metadata.meters}
-
-
-def _build_affordance_collection(raw_affordances: tuple[Any, ...]) -> AffordanceConfigCollection:
-    """Convert compiler affordance DTOs into runtime collection without touching disk."""
-
-    affordance_entries: list[AffordanceConfig] = []
-    for raw in raw_affordances:
-        data = raw.model_dump()
-        interaction_type = data.get("interaction_type")
-        if not interaction_type:
-            raise ValueError(f"Affordance '{raw.id}' missing interaction_type; required for runtime execution")
-        operating_hours = data.get("operating_hours")
-        if operating_hours is None:
-            raise ValueError(f"Affordance '{raw.id}' missing operating_hours; runtime requires explicit hours")
-
-        payload = {
-            "id": raw.id,
-            "name": raw.name,
-            "category": data.get("category") or "unspecified",
-            "interaction_type": interaction_type,
-            "duration_ticks": data.get("duration_ticks"),
-            "costs": data.get("costs") or [],
-            "costs_per_tick": data.get("costs_per_tick") or [],
-            "effects": data.get("effects") or [],
-            "effects_per_tick": data.get("effects_per_tick") or [],
-            "completion_bonus": data.get("completion_bonus") or [],
-            "operating_hours": operating_hours,
-            "teaching_note": data.get("teaching_note"),
-            "design_intent": data.get("design_intent"),
-            "position": data.get("position"),
-        }
-        affordance_entries.append(AffordanceConfig(**payload))
-
-    return AffordanceConfigCollection(
-        version="runtime",
-        description="Compiled affordance set",
-        status="COMPILED",
-        affordances=affordance_entries,
-    )
 
 
 def _resolve_deployable_affordances(
@@ -361,7 +321,6 @@ class VectorizedHamletEnv:
         # Initialize affordance engine with modern affordances (effect_pipeline support).
         # Adapt v2.1 per-level affordances (AffordancesV2Config) into runtime AffordanceConfig.
         from townlet.environment.affordance_config import AffordanceConfig as RuntimeAffordanceConfig
-        from townlet.environment.affordance_config import AffordanceConfigCollection
 
         # Build lookup from environment.yaml affordance vocabulary for categories.
         env_affordance_categories: dict[str, str] = {a.name: a.category for a in self.universe.environment.environment.affordances}
@@ -371,8 +330,7 @@ class VectorizedHamletEnv:
             if aff.opening_hours is None:
                 raise ValueError(f"affordance '{aff.name}' missing opening_hours (no defaults allowed)")
 
-            # Derive interaction_type for v2.1 packs: treat all as instant interactions.
-            # Multi-tick semantics remain available for legacy packs using AffordanceConfigCollection.
+            # v2.1 affordances are single-tick; enforce explicit interaction type.
             interaction_type = "instant"
 
             # Derive operating_hours from OpeningHoursConfig:
@@ -459,12 +417,7 @@ class VectorizedHamletEnv:
             )
 
         self.affordance_engine = AffordanceEngine(
-            AffordanceConfigCollection(
-                version="runtime",
-                description="compiled v2.1 affordances",
-                status="COMPILED",
-                affordances=runtime_affordances,
-            ),
+            tuple(runtime_affordances),
             num_agents,
             self.device,
             self.meter_name_to_index,
@@ -709,8 +662,7 @@ class VectorizedHamletEnv:
         Returns:
             [action_space_size, position_dim] tensor of movement deltas
         """
-        substrate_actions = self.substrate.get_default_actions()
-        action_space_size = self.substrate.action_space_size
+        action_space_size = self.action_space.action_dim
         position_dim = self.substrate.position_dim
 
         # Initialize zero deltas for all actions
@@ -720,8 +672,8 @@ class VectorizedHamletEnv:
             dtype=self.substrate.position_dtype,
         )
 
-        # Fill in deltas from ActionConfig
-        for action in substrate_actions:
+        # Fill in deltas from any action that declares a delta
+        for action in self.action_space.actions:
             if action.delta is not None:
                 deltas[action.id] = torch.tensor(
                     action.delta,
@@ -1203,8 +1155,8 @@ class VectorizedHamletEnv:
         rewards = torch.where(retired, rewards + 1.0, rewards)  # +1 retirement bonus
         self.dones = torch.logical_or(self.dones, retired)
 
-        # 6. Increment time of day (respects configured day_length when temporal support is enabled).
-        if self.temporal_support_enabled:
+        # 6. Increment time of day only when temporal mechanics are active.
+        if self.enable_temporal_mechanics:
             self.time_of_day = (self.time_of_day + 1) % int(self.day_length)
         else:
             self.time_of_day = 0

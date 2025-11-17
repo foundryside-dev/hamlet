@@ -13,6 +13,14 @@
 #   * Typed shapes: scalar, vec2i/vec3i, vecNi/vecNf, bool.
 #   * Access control and lifetime semantics.
 # - Observation exposure is handled via ObservationField + spec builder.
+#   * exposures entries are interpreted by VFSObservationSpecBuilder with the following defaults
+#     (when individual keys are omitted in exposure config):
+#       - exposed_to: ["agent"]           # Who can see this observation (agent-only by default)
+#       - shape: inferred from VariableDef.type/dims (scalar → [], vec2i → [2], vecNf → [dims], etc.)
+#       - curriculum_active: true         # Included in active curriculum by default
+#       - semantic_type: "custom"         # Grouping tag for structured encoders (bars/spatial/affordance/temporal/custom)
+#   * These defaults are applied at SPEC level only; they do not change the underlying VariableDef
+#     and are intended as Phase 1 ergonomics for BAC integration.
 # - Variable expressions in this document are DESIGN TARGETS ONLY (do not rely on them in configs yet).
 #
 # FUTURE DIRECTION (PHASE 2+ / BAC INTEGRATION):
@@ -34,7 +42,10 @@
 #
 # All variables (standard + custom) can be exposed as observations via the VFS
 # observation spec. Future phases may auto-expose some classes of variables,
-# but current implementations still rely on explicit observation field wiring.
+# but current implementations still rely on explicit observation field wiring
+# via exposure definitions. Expression-based variables are explicitly rejected
+# by load_variables_reference_config until the DSL is implemented; variables
+# must be static with explicit defaults and normalization.
 #
 # Future expression language examples (PHASE 2+, NOT IMPLEMENTED YET):
 #

@@ -352,6 +352,18 @@ environment:
   # VFS Variables (BREAKING - variable vocabulary affects obs_dim)
   # --------------------------------------------------------------------------
   # Variable & Feature System - declarative state space configuration
+  #
+  # NOTE (Phase 1 semantics):
+  #   - variables_reference.yaml defines VariableDef entries (id/scope/type/dims/default/normalization).
+  #   - exposures for these variables are interpreted by VFSObservationSpecBuilder with
+  #     the following SPEC-LEVEL defaults when omitted in exposure entries:
+  #       * exposed_to: ["agent"]
+  #       * shape: inferred from VariableDef.type/dims
+  #       * curriculum_active: true
+  #       * semantic_type: "custom"
+  #   - These defaults shape how BAC and structured encoders see variables, but do not
+  #     alter the underlying VariableDef; future phases may tighten this to require all
+  #     fields explicitly in experiment-level exposure configs.
   variables:
     - name: deficit_energy
       type: scalar

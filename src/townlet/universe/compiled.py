@@ -61,6 +61,7 @@ class CompiledUniverse:
 
     # Provenance
     experiment_dir: Path | None = None
+    drive_hash: str | None = None
 
     # Multi-level support
     all_levels: dict[str, CompiledUniverse.LevelMetadata] | None = None
@@ -122,6 +123,7 @@ class CompiledUniverse:
             actions=deepcopy(self.actions),
             agent=deepcopy(self.agent),
             experiment_dir=self.experiment_dir,
+            drive_hash=self.drive_hash,
             all_levels=deepcopy(self.all_levels),
         )
 
@@ -153,6 +155,7 @@ class CompiledUniverse:
             "actions": self.actions.model_dump(),
             "agent": self.agent.model_dump(),
             "experiment_dir": None if self.experiment_dir is None else str(self.experiment_dir),
+            "drive_hash": self.drive_hash,
             "all_levels": (
                 None
                 if self.all_levels is None
@@ -254,6 +257,7 @@ class CompiledUniverse:
             actions=ActionsConfig.model_validate(payload["actions"]),
             agent=AgentConfig.model_validate(payload["agent"]),
             experiment_dir=None if payload.get("experiment_dir") is None else Path(payload["experiment_dir"]),
+            drive_hash=payload.get("drive_hash"),
             all_levels=all_levels,
         )
 

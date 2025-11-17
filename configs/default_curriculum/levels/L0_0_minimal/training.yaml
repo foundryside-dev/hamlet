@@ -1,3 +1,6 @@
+run_metadata:
+  output_subdir: "L0_0_minimal"
+
 training:
   version: "1.0"
 

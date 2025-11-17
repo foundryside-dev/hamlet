@@ -125,9 +125,9 @@ class TestCacheBehavior:
 
     def test_compile_with_use_cache_false_skips_cache(self, tmp_path):
         """Verify compile(use_cache=False) never reads cache."""
-        # Create a config pack copy
-        source = Path("configs/default_curriculum/levels/L0_0_minimal")
-        dest = tmp_path / "test_config"
+        # Create a v2.1 experiment copy
+        source = Path("configs/test/model_config")
+        dest = tmp_path / "test_experiment"
         shutil.copytree(source, dest)
 
         # First compile to create cache
@@ -145,8 +145,8 @@ class TestCacheBehavior:
 
     def test_compile_creates_cache_directory(self, tmp_path):
         """Verify compile() creates .compiled directory."""
-        source = Path("configs/default_curriculum/levels/L0_0_minimal")
-        dest = tmp_path / "test_config"
+        source = Path("configs/test/model_config")
+        dest = tmp_path / "test_experiment"
         shutil.copytree(source, dest)
 
         compiler = UniverseCompiler()
@@ -158,8 +158,8 @@ class TestCacheBehavior:
 
     def test_compile_saves_cache_file(self, tmp_path):
         """Verify compile() saves universe.msgpack to cache."""
-        source = Path("configs/default_curriculum/levels/L0_0_minimal")
-        dest = tmp_path / "test_config"
+        source = Path("configs/test/model_config")
+        dest = tmp_path / "test_experiment"
         shutil.copytree(source, dest)
 
         compiler = UniverseCompiler()
@@ -171,8 +171,8 @@ class TestCacheBehavior:
 
     def test_compile_uses_cache_on_second_run(self, tmp_path):
         """Verify compile() loads from cache on second run."""
-        source = Path("configs/default_curriculum/levels/L0_0_minimal")
-        dest = tmp_path / "test_config"
+        source = Path("configs/test/model_config")
+        dest = tmp_path / "test_experiment"
         shutil.copytree(source, dest)
 
         # First compile
@@ -193,8 +193,8 @@ class TestCacheBehavior:
 
     def test_compile_recompiles_when_config_changes(self, tmp_path):
         """Verify compile() detects config changes and recompiles."""
-        source = Path("configs/default_curriculum/levels/L0_0_minimal")
-        dest = tmp_path / "test_config"
+        source = Path("configs/test/model_config")
+        dest = tmp_path / "test_experiment"
         shutil.copytree(source, dest)
 
         # First compile
@@ -202,8 +202,8 @@ class TestCacheBehavior:
         compiled1 = compiler1.compile(dest, use_cache=True)
         original_hash = compiled1.metadata.config_hash
 
-        # Modify a config file
-        bars_file = dest / "bars.yaml"
+        # Modify a config file (level-local bars.yaml)
+        bars_file = dest / "levels" / "L0_test" / "bars.yaml"
         content = bars_file.read_text()
         modified = content.replace("initial: 1.0", "initial: 0.9")
         bars_file.write_text(modified)

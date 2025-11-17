@@ -150,7 +150,7 @@ class DemoRunner:
         self.exploration = None
         self.recorder = None  # Episode recorder (initialized if recording enabled)
 
-        # TASK-005 Phase 1: Brain As Code configuration (loaded in run() if brain.yaml exists)
+        # TASK-005 Phase 1: Brain As Code configuration derived from agent.yaml + training.yaml
         self.brain_config: BrainConfig | None = None
         self.brain_hash: str | None = None
 
@@ -940,42 +940,5 @@ class DemoRunner:
             self._cleanup()
 
 
-if __name__ == "__main__":
-    import sys
-
-    logging.basicConfig(
-        level=logging.INFO,
-        format="[%(asctime)s] %(levelname)s: %(message)s",
-    )
-
-    # Get paths from environment or args
-    # v2.1: REQUIRED level_name parameter
-    if len(sys.argv) < 2:
-        print("Usage: python -m townlet.demo.runner <config_dir> <level_name> [db_path] [checkpoint_dir] [max_episodes]")
-        print("Example: python -m townlet.demo.runner configs/experiment1 L0_0_minimal demo.db checkpoints 1000")
-        sys.exit(1)
-
-    config_arg = sys.argv[1]
-    level_name = sys.argv[2] if len(sys.argv) > 2 else "L0_0_minimal"  # Default level
-    db_path = sys.argv[3] if len(sys.argv) > 3 else "demo_state.db"
-    checkpoint_dir = sys.argv[4] if len(sys.argv) > 4 else "checkpoints"
-    # If max_episodes provided via CLI, use it; otherwise pass None to read from config
-    max_episodes = int(sys.argv[5]) if len(sys.argv) > 5 else None
-
-    config_path = Path(config_arg)
-    if config_path.is_dir():
-        config_dir = config_path
-        training_config = config_dir / "training.yaml"
-    else:
-        config_dir = config_path.parent
-        training_config = config_path
-
-    runner = DemoRunner(
-        config_dir=config_dir,
-        level_name=level_name,
-        db_path=db_path,
-        checkpoint_dir=checkpoint_dir,
-        max_episodes=max_episodes,  # None = read from config
-        training_config_path=training_config,
-    )
-    runner.run()
+if __name__ == "__main__":  # pragma: no cover
+    raise SystemExit("townlet.demo.runner is no longer a direct CLI entry point.\n" "Use scripts/run_demo.py for the unified demo server.")

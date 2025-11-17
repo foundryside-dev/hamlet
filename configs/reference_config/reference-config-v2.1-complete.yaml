@@ -411,18 +411,31 @@ actions:
     - name: INTERACT
       description: "Interact with affordance at current position"
       enabled_by_default: true
+      # Optional meter costs/effects (v2.1 UAC validation will ensure meters exist in environment.yaml)
+      costs: {}
+      effects: {}
 
     - name: WAIT
       description: "Do nothing (pass turn)"
       enabled_by_default: true
+      costs: {}
+      effects: {}
 
     - name: REST
       description: "Passive energy recovery (slower than SLEEP)"
       enabled_by_default: false  # Optional action, can be enabled in curriculum
+      costs:
+        energy: 0.01
+      effects:
+        energy: 0.1
 
     - name: MEDITATE
       description: "Passive mood boost (slower than MEDITATE affordance)"
       enabled_by_default: false
+      costs:
+        energy: 0.01
+      effects:
+        mood: 0.05
 
   # BREAKING: Adding/removing actions changes action_dim
   # Current (Grid2D): 8 substrate + 2 enabled custom = 10 actions
@@ -562,12 +575,23 @@ agent:
     optimizer:
       type: adam  # Options: adam, sgd, rmsprop
       learning_rate: 0.0001  # Can be overridden in training.yaml per level
+      adam_beta1: 0.9        # Required when type: adam
+      adam_beta2: 0.999      # Required when type: adam
+      adam_eps: 1.0e-8       # Required when type: adam
+      weight_decay: 0.0      # L2 weight decay
+      schedule:
+        type: constant       # Options: constant, step_decay, cosine, exponential
 
     # Q-Learning algorithm (experiment-level defaults)
     q_learning:
       algorithm: double_dqn  # Options: dqn (vanilla), double_dqn
       gamma: 0.99              # Can be overridden in training.yaml per level
       target_update_frequency: 1000  # Can be overridden in training.yaml per level
+
+    # Loss function (experiment-level defaults)
+    loss:
+      type: smooth_l1        # Options: smooth_l1, mse, huber
+      huber_delta: 1.0       # Used for huber/smooth_l1 variants
 
 # =============================================================================
 # SECTION 6: curriculum.yaml (Curriculum-Level Active Field Control)
@@ -753,15 +777,30 @@ affordances:
   affordances:
     - name: EAT  # Must match environment.yaml affordance name
 
-      # Costs (bar decreases when action executes)
+      # Interaction semantics (single-tick vs multi-tick vs dual)
+      interaction_type: instant  # Options: instant, multi_tick, dual
+      # duration_ticks: 3        # Required when interaction_type: multi_tick or dual
+
+      # Costs (bar decreases when action executes instantly)
       costs:
         energy: 0.05    # Using EAT costs 5% energy
         money: 5.0      # Costs $5 (can exceed 1.0 for unbounded meters)
 
-      # Effects (bar increases when action executes)
-      effects:
-        satiation: 0.4  # Restores 40% satiation
-        mood: 0.05      # Small mood boost from eating
+      # Per-tick costs for multi-tick/dual affordances (optional)
+      costs_per_tick: {}
+
+      # Canonical effect definition: use effect_pipeline exclusively.
+      # Simple effects dict is omitted on purpose; pipelines are the single source of truth.
+      effect_pipeline:
+        on_start:
+          - meter: satiation
+            amount: 0.4   # Restores 40% satiation
+          - meter: mood
+            amount: 0.05  # Small mood boost from eating
+        per_tick: []
+        on_completion: []
+        on_early_exit: []
+        on_failure: []
 
       # Availability (when affordance is visible/usable)
       opening_hours:
@@ -777,11 +816,28 @@ affordances:
         positions: [[2, 2], [5, 5]]  # Grid positions
 
     - name: SLEEP
+      interaction_type: multi_tick     # multi-tick sleep affordance
+      duration_ticks: 5               # Requires 5 ticks to complete
+
+      # SLEEP multi-tick cost: small per-tick energy cost (e.g., getting into bed)
       costs:
-        energy: 0.0  # Sleeping is free
-      effects:
-        energy: 0.8  # Massive energy restoration
-        mood: 0.1
+        energy: 0.0
+      costs_per_tick:
+        energy: 0.01
+
+      # Effect pipeline drives actual behavior (no separate simple effects dict):
+      effect_pipeline:
+        on_start: []  # No instant effects at start
+        per_tick:
+          - meter: energy
+            amount: 0.10     # +10% energy per tick
+        on_completion:
+          - meter: energy
+            amount: 0.30     # +30% completion bonus (total ~80%)
+          - meter: mood
+            amount: 0.10     # Mood boost after good sleep
+        on_early_exit: []
+        on_failure: []
       opening_hours:
         enabled: false  # Always available
       deployment:
@@ -789,11 +845,29 @@ affordances:
         positions: [[0, 0], [7, 7]]
 
     - name: WORK
+      # Dual-mode: can be treated as instant (one-shot) or multi-tick with completion bonus.
+      interaction_type: dual
+      duration_ticks: 4
+
+      # Instant costs (applied at start for instant interactions)
       costs:
-        energy: 0.3   # Work is exhausting
-        mood: 0.1     # Work damages mood
-      effects:
-        money: 22.5   # Job pays $22.50 (economically balanced)
+        energy: 0.0
+        mood: 0.0
+
+      # Per-tick costs (applied each tick in multi-tick mode)
+      costs_per_tick:
+        energy: 0.075  # 4 × 7.5% ≈ 30% energy cost
+        mood: 0.025    # 4 × 2.5% ≈ 10% mood cost
+
+      # Effect pipeline implements multi-tick earnings (net matches 22.5 payout)
+      effect_pipeline:
+        on_start: []  # No immediate income at tick 0
+        per_tick:
+          - meter: money
+            amount: 5.625    # 4 × 5.625 = 22.5 total
+        on_completion: []     # All pay handled via per_tick in this example
+        on_early_exit: []
+        on_failure: []
       opening_hours:
         enabled: true
         schedule:

@@ -890,44 +890,40 @@ class TestTrainingHyperparameters:
         assert population.max_grad_norm == max_grad_norm
 
     def test_runner_loads_training_hyperparameters_from_yaml(self, tmp_path: Path, config_pack_factory):
-        from tests.test_townlet.helpers.config_builder import mutate_brain_yaml
-
         config_dir = config_pack_factory(name="hyperparams_config")
 
         def training_mutator(data: dict) -> None:
-            data["training"].update(
+            training = data["training"]
+            training_loop = training["training_loop"]
+            training_loop.update(
                 {
-                    "device": "cpu",
                     "max_episodes": 10,
                     "train_frequency": 2,
-                    # target_update_frequency managed by brain.yaml - removed from training.yaml
-                    "batch_size": 128,
                     "sequence_length": 4,
                     "max_grad_norm": 15.0,
                 }
             )
+            training["replay_buffer"]["batch_size"] = 128
+            # Curriculum-level target_update_frequency lives under q_learning
+            training["q_learning"]["target_update_frequency"] = 50
 
         mutate_training_yaml(config_dir, training_mutator)
-
-        # Set target_update_frequency in brain.yaml (managed by brain.yaml now)
-        def brain_mutator(data: dict) -> None:
-            data["q_learning"]["target_update_frequency"] = 50
-
-        mutate_brain_yaml(config_dir, brain_mutator)
 
         runner = DemoRunner(
             config_dir=config_dir,
             db_path=tmp_path / "test.db",
             checkpoint_dir=tmp_path / "checkpoints",
             max_episodes=10,
+            level_name="L0_test",
         )
 
-        assert runner.config["training"]["train_frequency"] == 2
-        # target_update_frequency is now in brain_config, not training config
-        # The important test is that the runner loads and runs without error
-        assert runner.config["training"]["batch_size"] == 128
-        assert runner.config["training"]["sequence_length"] == 4
-        assert runner.config["training"]["max_grad_norm"] == 15.0
+        training_cfg = runner.config["training"]
+        loop_cfg = training_cfg["training_loop"]
+        assert loop_cfg["train_frequency"] == 2
+        assert training_cfg["replay_buffer"]["batch_size"] == 128
+        assert loop_cfg["sequence_length"] == 4
+        assert loop_cfg["max_grad_norm"] == 15.0
+        assert training_cfg["q_learning"]["target_update_frequency"] == 50
 
 
 class TestMaxEpisodesConfiguration:

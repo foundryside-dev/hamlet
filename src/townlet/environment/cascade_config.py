@@ -275,12 +275,12 @@ def load_cascades_config(filepath: Path) -> CascadesConfig:
         Validated CascadesConfig
 
     Raises:
-        FileNotFoundError: If file doesn't exist
-        yaml.YAMLError: If YAML is malformed
-        pydantic.ValidationError: If config is invalid
+        RuntimeError: Always, since legacy loaders are removed in v2.1.
     """
-    data = load_yaml_file(filepath)
-    return CascadesConfig(**data)
+    raise RuntimeError(
+        "load_cascades_config is deprecated in the v2.1 pipeline. "
+        "Compile v2.1 config packs with UniverseCompiler and use compiled.bars/cascades instead."
+    )
 
 
 def load_environment_config(config_dir: Path) -> EnvironmentConfig:
@@ -291,20 +291,15 @@ def load_environment_config(config_dir: Path) -> EnvironmentConfig:
         config_dir: Directory containing bars.yaml and cascades.yaml
 
     Returns:
-        Combined EnvironmentConfig
+        This function no longer returns an EnvironmentConfig.
 
     Raises:
-        FileNotFoundError: If files don't exist
-        yaml.YAMLError: If YAML is malformed
-        pydantic.ValidationError: If configs are invalid
+        RuntimeError: Always, since legacy loaders are removed in v2.1.
     """
-    bars_path = config_dir / "bars.yaml"
-    cascades_path = config_dir / "cascades.yaml"
-
-    bars = load_bars_config(bars_path)
-    cascades = load_cascades_config(cascades_path)
-
-    return EnvironmentConfig(bars=bars, cascades=cascades)
+    raise RuntimeError(
+        "load_environment_config (bars.yaml/cascades.yaml) is deprecated in the v2.1 pipeline. "
+        "Use UniverseCompiler.compile() and the compiled universe metadata instead."
+    )
 
 
 def load_default_config() -> EnvironmentConfig:
@@ -312,16 +307,12 @@ def load_default_config() -> EnvironmentConfig:
     Load default configuration from configs/ directory.
 
     Returns:
-        Default EnvironmentConfig
+        This function no longer returns an EnvironmentConfig.
 
     Raises:
-        FileNotFoundError: If config files don't exist
-        yaml.YAMLError: If YAML is malformed
-        pydantic.ValidationError: If configs are invalid
+        RuntimeError: Always, since legacy loaders are removed in v2.1.
     """
-    # Assume we're in src/townlet/environment/ and configs/ is at project root
-    current_file = Path(__file__)
-    project_root = current_file.parent.parent.parent.parent
-    config_dir = project_root / "configs" / "test"
-
-    return load_environment_config(config_dir)
+    raise RuntimeError(
+        "load_default_config is deprecated in the v2.1 pipeline. "
+        "Use UniverseCompiler.compile() with an explicit v2.1 config pack instead."
+    )

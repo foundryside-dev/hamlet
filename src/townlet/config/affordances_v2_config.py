@@ -19,6 +19,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
 from townlet.config.base import format_validation_error, load_yaml_section
+from townlet.config.effect_pipeline import EffectPipeline
 
 __all__ = [
     "TimeWindowConfig",
@@ -106,10 +107,54 @@ class AffordanceParamConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     name: str = Field(min_length=1, description="Affordance name (must match environment.yaml)")
-    costs: dict[str, float] = Field(default_factory=dict, description="Bar decreases when action executes (meter: value)")
-    effects: dict[str, float] = Field(default_factory=dict, description="Bar increases when action executes (meter: value)")
+
+    # Cost semantics ---------------------------------------------------------
+    costs: dict[str, float] = Field(
+        default_factory=dict,
+        description="Instant costs applied when interaction starts (meter: value)",
+    )
+    costs_per_tick: dict[str, float] = Field(
+        default_factory=dict,
+        description="Per-tick costs for multi-tick/dual affordances (meter: value)",
+    )
+
+    # Effect semantics -------------------------------------------------------
+    effects: dict[str, float] = Field(
+        default_factory=dict,
+        description="Simple instant effects (meter: value). " "For advanced control, use effect_pipeline instead.",
+    )
+    effect_pipeline: EffectPipeline | None = Field(
+        default=None,
+        description=("Optional multi-stage effect pipeline. " "When provided, takes precedence over simple effects for runtime behavior."),
+    )
+
+    # Temporal semantics -----------------------------------------------------
+    interaction_type: Literal["instant", "multi_tick", "dual"] | None = Field(
+        default=None,
+        description="Interaction type. When omitted, defaults to 'instant' at runtime.",
+    )
+    duration_ticks: int | None = Field(
+        default=None,
+        description="Number of ticks required to complete a multi_tick or dual interaction.",
+    )
+
+    # Availability + spatial deployment --------------------------------------
     opening_hours: OpeningHoursConfig = Field(description="Availability schedule")
     deployment: DeploymentConfig = Field(description="Spatial placement configuration")
+
+    @model_validator(mode="after")
+    def validate_interaction_semantics(self) -> "AffordanceParamConfig":
+        """Lightweight validation of interaction_type/duration_ticks compatibility."""
+
+        interaction = self.interaction_type or "instant"
+
+        if interaction in {"multi_tick", "dual"} and self.duration_ticks is None:
+            raise ValueError(f"Affordance '{self.name}': interaction_type='{interaction}' " "requires an explicit duration_ticks value.")
+
+        if interaction == "instant" and self.duration_ticks is not None:
+            raise ValueError(f"Affordance '{self.name}': duration_ticks is only valid for " "multi_tick or dual interaction types.")
+
+        return self
 
 
 class ModulationParamConfig(BaseModel):

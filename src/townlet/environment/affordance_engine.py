@@ -24,7 +24,6 @@ from typing import Any
 
 import torch
 
-from townlet.environment.affordance_config import AffordanceConfig
 from townlet.environment.temporal_utils import is_affordance_open as canonical_is_affordance_open
 
 
@@ -38,7 +37,7 @@ class AffordanceEngine:
 
     def __init__(
         self,
-        affordance_config: tuple[AffordanceConfig, ...],
+        affordance_config: tuple[Any, ...],
         num_agents: int,
         device: torch.device,
         meter_name_to_idx: dict[str, int],
@@ -75,14 +74,20 @@ class AffordanceEngine:
         This makes the config the single source of truth.
         """
         # Map affordance name to index (order from config file)
-        # This is now dynamically built from the config - no hardcoding!
-        self.affordance_name_to_idx = {aff.name: idx for idx, aff in enumerate(self.affordances)}
+        # Support both legacy AffordanceConfig (with id) and v2.1 AffordanceParamConfig (name-only).
+        self.affordance_name_to_idx: dict[str, int] = {}
+        self.affordance_map_by_id: dict[str, Any] = {}
+        self.affordance_map: dict[str, Any] = {}
 
-        # Map affordance ID to config object
-        self.affordance_map_by_id = {aff.id: aff for aff in self.affordances}
-
-        # Map affordance NAME to config object (for apply_instant_interaction calls)
-        self.affordance_map = {aff.name: aff for aff in self.affordances}
+        for idx, aff in enumerate(self.affordances):
+            name = getattr(aff, "name", None)
+            if not name:
+                continue
+            self.affordance_name_to_idx[name] = idx
+            # Prefer explicit id when available; otherwise fall back to name.
+            aff_id = getattr(aff, "id", name)
+            self.affordance_map_by_id[aff_id] = aff
+            self.affordance_map[name] = aff
 
     def get_affordance(self, affordance_id: str):
         """Get affordance config by ID."""
@@ -104,6 +109,16 @@ class AffordanceEngine:
         """
         affordance = self.affordance_map.get(affordance_name)
         if affordance is None:
+            return False
+
+        # v2.1 affordances use opening_hours; legacy affordances use operating_hours.
+        if hasattr(affordance, "opening_hours"):
+            opening_hours = affordance.opening_hours
+            if not opening_hours.enabled:
+                return True
+            for window in opening_hours.schedule:
+                if canonical_is_affordance_open(time_of_day, (window.start, window.end)):
+                    return True
             return False
 
         return canonical_is_affordance_open(time_of_day, affordance.operating_hours)
@@ -147,9 +162,10 @@ class AffordanceEngine:
 
         # Apply costs (modern dict format)
         for cost in affordance.costs:
-            meter_idx = self.meter_name_to_idx[cost["meter"]]
+            meter_name, amount = self._cost_fields(cost)
+            meter_idx = self.meter_name_to_idx[meter_name]
             multiplier = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
-            updated_meters[agent_mask, meter_idx] -= cost["amount"] * multiplier[agent_mask]
+            updated_meters[agent_mask, meter_idx] -= amount * multiplier[agent_mask]
 
         # Apply effects from effect_pipeline (modern schema only)
         if hasattr(affordance, "effect_pipeline") and affordance.effect_pipeline:
@@ -179,6 +195,14 @@ class AffordanceEngine:
                 for effect in on_start:
                     meter_idx = self.meter_name_to_idx[effect.meter]
                     updated_meters[agent_mask, meter_idx] += effect.amount * multipliers[agent_mask]
+        elif hasattr(affordance, "effects"):
+            # v2.1 schema: effects is a dict[str, float]
+            multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
+            for meter, amount in getattr(affordance, "effects", {}).items():
+                if meter not in self.meter_name_to_idx:
+                    continue
+                meter_idx = self.meter_name_to_idx[meter]
+                updated_meters[agent_mask, meter_idx] += float(amount) * multipliers[agent_mask]
 
         # Clamp meters to [0, 1]
         updated_meters = torch.clamp(updated_meters, 0.0, 1.0)
@@ -254,8 +278,9 @@ class AffordanceEngine:
         # Apply per-tick costs (modern dict format)
         multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
         for cost in affordance.costs_per_tick:
-            meter_idx = self.meter_name_to_idx[cost["meter"]]
-            updated_meters[agent_mask, meter_idx] -= cost["amount"] * multipliers[agent_mask]
+            meter_name, amount = self._cost_fields(cost)
+            meter_idx = self.meter_name_to_idx[meter_name]
+            updated_meters[agent_mask, meter_idx] -= amount * multipliers[agent_mask]
 
         # Apply per-tick effects from effect_pipeline (modern schema: AffordanceEffect objects)
         if hasattr(affordance, "effect_pipeline") and affordance.effect_pipeline:
@@ -264,6 +289,13 @@ class AffordanceEngine:
             for effect in per_tick_effects:
                 meter_idx = self.meter_name_to_idx[effect.meter]
                 updated_meters[agent_mask, meter_idx] += effect.amount * multipliers[agent_mask]
+        elif hasattr(affordance, "effects_per_tick"):
+            multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
+            for meter, amount in getattr(affordance, "effects_per_tick", {}).items():
+                if meter not in self.meter_name_to_idx:
+                    continue
+                meter_idx = self.meter_name_to_idx[meter]
+                updated_meters[agent_mask, meter_idx] += float(amount) * multipliers[agent_mask]
 
         duration_ticks = affordance.duration_ticks or 1
 
@@ -296,8 +328,9 @@ class AffordanceEngine:
         can_afford = torch.ones(batch_size, dtype=torch.bool, device=self.device)
 
         for cost in costs:
-            meter_idx = self.meter_name_to_idx[cost["meter"]]
-            can_afford = can_afford & (meters[:, meter_idx] >= cost["amount"])
+            meter, amount = self._cost_fields(cost)
+            meter_idx = self.meter_name_to_idx[meter]
+            can_afford = can_afford & (meters[:, meter_idx] >= amount)
 
         return can_afford
 
@@ -398,8 +431,9 @@ class AffordanceEngine:
 
         # Find money cost (most affordances only have money cost)
         for cost in costs:
-            if cost["meter"] == "money":
-                return float(cost["amount"])
+            meter, amount = self._cost_fields(cost)
+            if meter == "money":
+                return float(amount)
 
         return 0.0
 
@@ -491,10 +525,24 @@ class AffordanceEngine:
 
         # Apply costs (modern dict format)
         for cost in affordance.costs:
-            meter_idx = self.meter_name_to_idx[cost["meter"]]
-            result_meters[agent_mask, meter_idx] -= cost["amount"]
+            meter_name, amount = self._cost_fields(cost)
+            meter_idx = self.meter_name_to_idx[meter_name]
+            result_meters[agent_mask, meter_idx] -= amount
 
         return result_meters
+
+    @staticmethod
+    def _cost_fields(cost) -> tuple[str, float]:
+        """Extract (meter, amount) from dict-style or DTO-style cost entries."""
+        if hasattr(cost, "meter"):
+            return cost.meter, float(cost.amount)
+        if isinstance(cost, dict):
+            if "meter" in cost:
+                return cost["meter"], float(cost["amount"])
+            if cost:
+                meter, amount = next(iter(cost.items()))
+                return meter, float(amount)
+        raise ValueError(f"Unsupported cost format: {cost!r}")
 
 
 def create_affordance_engine(

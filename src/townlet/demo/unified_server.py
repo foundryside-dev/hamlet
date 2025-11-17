@@ -48,6 +48,7 @@ class UnifiedServer:
         checkpoint_dir: str | None = None,
         inference_port: int = 8766,
         training_config_path: str | None = None,
+        level_name: str = "L1_full_observability",
     ):
         """
         Initialize unified server.
@@ -67,6 +68,7 @@ class UnifiedServer:
         self.total_episodes = total_episodes
         self.checkpoint_dir = Path(checkpoint_dir) if checkpoint_dir else None
         self.inference_port = inference_port
+        self.level_name = level_name
         self._config_cache: dict | None = None
 
         # Component handles (initialized in start())
@@ -81,7 +83,7 @@ class UnifiedServer:
         logger.debug(
             f"UnifiedServer initialized with config_dir={self.config_dir}, "
             f"training_config={self.training_config_path}, "
-            f"episodes={total_episodes}, port={inference_port}"
+            f"level={self.level_name}, episodes={total_episodes}, port={inference_port}"
         )
 
     def _persist_config_snapshot(self, run_root: Path) -> None:
@@ -196,6 +198,7 @@ class UnifiedServer:
             # But handle just in case
             logger.info("KeyboardInterrupt received in start()")
             self.stop()
+            raise
 
         logger.info("UnifiedServer.start() exiting")
 
@@ -216,7 +219,7 @@ class UnifiedServer:
         Determine the base run directory for auto-generated checkpoints.
 
         Prefers explicit output_subdir specified in config; falls back to
-        legacy name inference from config file path.
+        explicit training run naming. No implicit defaults are applied.
         """
         config = self._load_config()
         run_metadata = config.get("run_metadata") or {}
@@ -235,24 +238,6 @@ class UnifiedServer:
             )
 
         return Path("runs") / level_name / timestamp
-
-    def _infer_level_name(self) -> str:
-        """Infer run folder name from config stem (v2.1 heuristic)."""
-        if self.config_dir:
-            config_stem = self.config_dir.name.lower()
-        else:
-            config_stem = self.training_config_path.stem.lower()
-        if "level_1" in config_stem or "full_observability" in config_stem:
-            return "L1_full_observability"
-        if "level_2" in config_stem or "partial_observability" in config_stem or "pomdp" in config_stem:
-            return "L2_partial_observability"
-        if "level_3" in config_stem or "temporal" in config_stem:
-            return "L3_temporal_mechanics"
-        if "level_4" in config_stem or "multi_agent" in config_stem:
-            return "L4_multi_agent"
-        if "level_0" in config_stem or "minimal" in config_stem:
-            return "L0_0_minimal"
-        return "training"
 
     @staticmethod
     def _sanitize_folder_name(value: str) -> str:
@@ -364,7 +349,7 @@ class UnifiedServer:
             # is handled inside DemoRunner or by caller).
             runner_kwargs: dict[str, object] = {
                 "config_dir": str(self.config_dir),
-                "level_name": "L1_full_observability",
+                "level_name": self.level_name,
                 "db_path": str(db_path),
                 "checkpoint_dir": str(self.checkpoint_dir),
                 "max_episodes": self.total_episodes,
@@ -408,7 +393,7 @@ class UnifiedServer:
             # Use the same checkpoint directory as training
             self.inference_server = LiveInferenceServer(
                 checkpoint_dir=self.checkpoint_dir,
-                level_name="L1_full_observability",
+                level_name=self.level_name,
                 port=self.inference_port,
                 step_delay=0.2,  # 5 steps/sec
                 total_episodes=self.total_episodes,

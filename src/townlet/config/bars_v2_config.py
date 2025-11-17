@@ -182,6 +182,16 @@ class BarsV2Config(BaseModel):
             raise ValueError(f"Duplicate cascade pairs found: {list(set(duplicates))}. " f"Each (source, target) pair must be unique.")
         return cascades
 
+    @property
+    def meter_names(self) -> tuple[str, ...]:
+        """Return ordered meter names to match environment metadata."""
+        return tuple(m.name for m in self.meters)
+
+    @property
+    def meter_count(self) -> int:
+        """Number of meters in this bars config."""
+        return len(self.meters)
+
 
 def load_bars_v2_config(config_dir: Path) -> BarsV2Config:
     """Load and validate bars configuration (v2.1 format).

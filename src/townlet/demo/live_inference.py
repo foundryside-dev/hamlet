@@ -283,7 +283,7 @@ class LiveInferenceServer:
         num_agents = population_cfg.size
         partial_observability = curriculum_cfg.active_vision != "global"
         vision_range = curriculum_cfg.vision_range
-        enable_temporal_mechanics = curriculum_cfg.active_temporal
+        enable_temporal_mechanics = getattr(curriculum_cfg, "active_temporal", False)
         vision_window_size = 2 * vision_range + 1
         enabled_affordances = getattr(training_cfg, "enabled_affordances", None)
 
@@ -308,8 +308,8 @@ class LiveInferenceServer:
         # Create curriculum
         self.curriculum = AdversarialCurriculum(
             max_steps_per_episode=loop_cfg.max_steps_per_episode,
-            survival_advance_threshold=curriculum_cfg.survival_advance_threshold,
-            survival_retreat_threshold=curriculum_cfg.survival_retreat_threshold,
+            survival_advance_threshold=getattr(curriculum_cfg, "survival_advance_threshold", 0.0),
+            survival_retreat_threshold=getattr(curriculum_cfg, "survival_retreat_threshold", 0.0),
             entropy_gate=getattr(curriculum_cfg, "entropy_gate", 0.0),
             min_steps_at_stage=getattr(curriculum_cfg, "min_steps_at_stage", 0),
             device=self.device,

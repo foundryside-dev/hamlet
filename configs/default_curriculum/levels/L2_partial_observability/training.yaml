@@ -1,3 +1,6 @@
+run_metadata:
+  output_subdir: "L2_partial_observability"
+
 training:
   version: "1.0"
 

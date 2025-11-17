@@ -186,6 +186,7 @@ def env_factory(
         universe: CompiledUniverse | None = None,
         num_agents: int = 1,
         device_override: torch.device | str | None = None,
+        level_name: str | None = None,
     ) -> VectorizedHamletEnv:
         target_universe = universe
         if target_universe is None:
@@ -196,6 +197,7 @@ def env_factory(
 
         return VectorizedHamletEnv.from_universe(
             target_universe,
+            level_name=level_name,
             num_agents=num_agents,
             device=target_device,
         )

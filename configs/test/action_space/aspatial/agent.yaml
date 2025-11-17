@@ -56,7 +56,21 @@ agent:
     optimizer:
       type: adam
       learning_rate: 0.001
+      adam_beta1: 0.9
+      adam_beta2: 0.999
+      adam_eps: 1.0e-8
+      weight_decay: 0.0
+      schedule:
+        type: constant
+      adam_beta1: 0.9
+      adam_beta2: 0.999
+      adam_eps: 1.0e-8
+      weight_decay: 0.0
     q_learning:
       algorithm: double_dqn
       gamma: 0.99
       target_update_frequency: 50
+
+    loss:
+      type: smooth_l1
+      huber_delta: 1.0

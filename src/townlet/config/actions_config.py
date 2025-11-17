@@ -34,6 +34,14 @@ class CustomActionConfig(BaseModel):
     name: str = Field(..., description="Action name (e.g., 'INTERACT', 'WAIT')")
     description: str = Field(..., description="Human-readable description")
     enabled_by_default: bool = Field(..., description="Whether this action is enabled by default")
+    costs: dict[str, float] | None = Field(
+        default=None,
+        description="Optional per-step meter costs (meter: value).",
+    )
+    effects: dict[str, float] | None = Field(
+        default=None,
+        description="Optional per-step meter effects (meter: value).",
+    )
 
     class Config:
         extra = "forbid"

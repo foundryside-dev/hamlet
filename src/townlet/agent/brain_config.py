@@ -573,20 +573,33 @@ def build_brain_config_from_agent(agent: AgentConfig, training: TrainingV2Config
     else:
         raise ValueError(f"Unsupported agent.brain.architecture: {brain.architecture}")
 
-    # Optimizer mapping
-    opt_type = brain.optimizer.type
+    # Optimizer mapping - parameters come from agent.yaml (no hidden defaults)
+    opt_cfg = brain.optimizer
+    opt_type = opt_cfg.type
+    # Map optimizer schedule from agent.yaml into BrainConfig ScheduleConfig
+    schedule_cfg = getattr(opt_cfg, "schedule", None)
+    if schedule_cfg is None:
+        raise ValueError("agent.brain.optimizer.schedule is required in agent.yaml (no defaults allowed).")
+    optimizer_schedule = ScheduleConfig(
+        type=schedule_cfg.type,
+        step_size=schedule_cfg.step_size,
+        gamma=schedule_cfg.gamma,
+        t_max=schedule_cfg.t_max,
+        eta_min=schedule_cfg.eta_min,
+    )
+
     optimizer_cfg = OptimizerConfig(
         type=opt_type,
-        learning_rate=brain.optimizer.learning_rate,
-        adam_beta1=0.9 if opt_type in {"adam", "adamw"} else None,
-        adam_beta2=0.999 if opt_type in {"adam", "adamw"} else None,
-        adam_eps=1e-8 if opt_type in {"adam", "adamw"} else None,
-        sgd_momentum=0.0 if opt_type == "sgd" else None,
-        sgd_nesterov=False if opt_type == "sgd" else None,
-        rmsprop_alpha=0.99 if opt_type == "rmsprop" else None,
-        rmsprop_eps=1e-8 if opt_type == "rmsprop" else None,
-        weight_decay=0.0,
-        schedule=ScheduleConfig(type="constant"),
+        learning_rate=opt_cfg.learning_rate,
+        adam_beta1=opt_cfg.adam_beta1,
+        adam_beta2=opt_cfg.adam_beta2,
+        adam_eps=opt_cfg.adam_eps,
+        sgd_momentum=opt_cfg.sgd_momentum,
+        sgd_nesterov=opt_cfg.sgd_nesterov,
+        rmsprop_alpha=opt_cfg.rmsprop_alpha,
+        rmsprop_eps=opt_cfg.rmsprop_eps,
+        weight_decay=opt_cfg.weight_decay,
+        schedule=optimizer_schedule,
     )
 
     # Q-learning defaults from agent.yaml; TrainingV2Config will override
@@ -603,8 +616,11 @@ def build_brain_config_from_agent(agent: AgentConfig, training: TrainingV2Config
         prioritized=False,
     )
 
-    # Loss: start with smooth_l1, consistent with existing tests
-    loss_cfg = LossConfig(type="smooth_l1", huber_delta=1.0)
+    # Loss configuration from agent.yaml brain.loss (no hidden defaults)
+    agent_loss = getattr(brain, "loss", None)
+    if agent_loss is None:
+        raise ValueError("agent.brain.loss is required in agent.yaml (no defaults allowed).")
+    loss_cfg = LossConfig(type=agent_loss.type, huber_delta=agent_loss.huber_delta)
 
     return BrainConfig(
         version="1.0",

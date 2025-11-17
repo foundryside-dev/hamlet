@@ -201,11 +201,91 @@ class RecurrentConfig(BaseModel):
         extra = "forbid"
 
 
+class OptimizerScheduleConfig(BaseModel):
+    """Learning rate schedule configuration for agent.yaml.
+
+    Mirrors the BrainConfig ScheduleConfig options at a schema level so
+    schedule behavior is fully configuration-driven.
+    """
+
+    type: Literal["constant", "step_decay", "cosine", "exponential"] = Field(..., description="Learning rate schedule type")
+    step_size: int | None = Field(
+        default=None,
+        gt=0,
+        description="Step size for step_decay schedule (required when type='step_decay')",
+    )
+    gamma: float | None = Field(
+        default=None,
+        gt=0.0,
+        lt=1.0,
+        description="Multiplicative factor for step_decay/exponential schedules (required for those types)",
+    )
+    t_max: int | None = Field(
+        default=None,
+        gt=0,
+        description="Maximum iterations for cosine schedule (required when type='cosine')",
+    )
+    eta_min: float | None = Field(
+        default=None,
+        ge=0.0,
+        description="Minimum learning rate for cosine schedule (required when type='cosine')",
+    )
+
+    class Config:
+        extra = "forbid"
+
+
 class OptimizerConfig(BaseModel):
     """Optimizer configuration."""
 
     type: Literal["adam", "rmsprop", "sgd"] = Field(..., description="Optimizer type")
     learning_rate: float = Field(..., description="Learning rate", gt=0)
+
+    # Optional optimizer-specific parameters. These are required for certain
+    # optimizer types and validated when constructing the runtime BrainConfig.
+    adam_beta1: float | None = Field(
+        default=None,
+        ge=0.0,
+        lt=1.0,
+        description="Adam beta1 parameter (required when type='adam')",
+    )
+    adam_beta2: float | None = Field(
+        default=None,
+        ge=0.0,
+        lt=1.0,
+        description="Adam beta2 parameter (required when type='adam')",
+    )
+    adam_eps: float | None = Field(
+        default=None,
+        gt=0.0,
+        description="Adam epsilon parameter (required when type='adam')",
+    )
+
+    sgd_momentum: float | None = Field(
+        default=None,
+        ge=0.0,
+        le=1.0,
+        description="SGD momentum (required when type='sgd')",
+    )
+    sgd_nesterov: bool | None = Field(
+        default=None,
+        description="Use Nesterov momentum (required when type='sgd')",
+    )
+
+    rmsprop_alpha: float | None = Field(
+        default=None,
+        ge=0.0,
+        lt=1.0,
+        description="RMSprop alpha/decay (required when type='rmsprop')",
+    )
+    rmsprop_eps: float | None = Field(
+        default=None,
+        gt=0.0,
+        description="RMSprop epsilon (required when type='rmsprop')",
+    )
+
+    weight_decay: float = Field(..., ge=0.0, description="L2 weight decay")
+    schedule: OptimizerScheduleConfig = Field(..., description="Learning rate schedule configuration")
 
     class Config:
         extra = "forbid"
@@ -230,6 +310,17 @@ class BrainConfig(BaseModel):
     recurrent: RecurrentConfig = Field(..., description="Recurrent network config")
     optimizer: OptimizerConfig = Field(..., description="Optimizer config")
     q_learning: QLearningConfig = Field(..., description="Q-learning config")
+    loss: "LossConfig" = Field(..., description="Loss function configuration")
+
+    class Config:
+        extra = "forbid"
+
+
+class LossConfig(BaseModel):
+    """Loss function configuration."""
+
+    type: Literal["mse", "huber", "smooth_l1"] = Field(..., description="Loss function type")
+    huber_delta: float = Field(..., gt=0.0, description="Delta parameter for Huber/smooth_l1")
 
     class Config:
         extra = "forbid"

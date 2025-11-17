@@ -29,6 +29,7 @@ from townlet.environment.vectorized_env import (
     _build_bar_index_map,
     _resolve_deployable_affordances,
 )
+from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.dto import MeterInfo, MeterMetadata
 from townlet.universe.errors import CompilationError
 
@@ -74,14 +75,13 @@ class TestResolveDeployableAffordances:
 class TestVectorizedHamletEnvInitialization:
     """Test VectorizedHamletEnv.__init__ with various configurations."""
 
-    def test_init_requires_substrate_yaml(self, temp_test_dir, compile_universe):
-        """Should raise CompilationError if substrate.yaml is missing."""
-        config_pack = temp_test_dir / "config_pack"
-        shutil.copytree(Path("configs/test"), config_pack)
-        (config_pack / "substrate.yaml").unlink()
+    def test_init_requires_stratum_yaml(self, config_pack_factory):
+        """Should raise CompilationError if stratum.yaml is missing (v2.1 experiment root)."""
+        config_pack = config_pack_factory(name="missing_stratum")
+        (config_pack / "stratum.yaml").unlink()
 
-        with pytest.raises(CompilationError, match="substrate.yaml.*not found"):
-            compile_universe(config_pack)
+        with pytest.raises(CompilationError, match="stratum.yaml.*not found"):
+            UniverseCompiler().compile(config_pack, primary_level="L0_test")
 
     def test_init_raises_if_config_pack_not_found(self, compile_universe):
         """Should raise CompilationError if config pack directory doesn't exist."""

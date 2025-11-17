@@ -13,8 +13,10 @@ import sqlite3
 
 import torch
 
-from tests.test_townlet.helpers.config_builder import mutate_brain_yaml
+from tests.test_townlet.helpers.config_builder import mutate_training_yaml
 from townlet.demo.runner import DemoRunner
+
+LEVEL_NAME = "L0_test"
 
 
 class TestDoubleDoubleTraining:
@@ -25,13 +27,23 @@ class TestDoubleDoubleTraining:
         """Create minimal config modifier for fast integration tests."""
 
         def modifier(data: dict) -> None:
-            data["environment"]["enabled_affordances"] = ["Bed"]
-            data["environment"]["vision_range"] = 8
-            data["exploration"]["survival_window"] = 10
-            data["training"]["max_episodes"] = 10
-            # use_double_dqn managed by brain.yaml - removed from training.yaml
-            data["training"]["allow_unfeasible_universe"] = True
-            data["curriculum"]["max_steps_per_episode"] = 50
+            training = data["training"]
+            training_loop = training["training_loop"]
+
+            # Keep runs short for integration speed
+            training_loop["max_episodes"] = 10
+            training_loop["max_steps_per_episode"] = 50
+
+            # Reduce buffer warmup / batch size to keep CPU-friendly
+            replay = training["replay_buffer"]
+            replay["min_size"] = 16
+            replay["batch_size"] = 8
+
+            # Fast evaluation cadence isn't needed; keep minimal to avoid overhead
+            evaluation = training_loop.get("evaluation", {})
+            evaluation["interval"] = 1000
+            evaluation["num_episodes"] = 1
+            training_loop["evaluation"] = evaluation
 
         return modifier
 
@@ -46,11 +58,11 @@ class TestDoubleDoubleTraining:
         """
         config_dir = config_pack_factory(modifier=self._create_fast_test_config(use_double_dqn=True))
 
-        # Set use_double_dqn in brain.yaml (managed by brain.yaml now)
-        def brain_mutator(data: dict) -> None:
-            data["q_learning"]["use_double_dqn"] = True
+        # Set use_double_dqn for this level in training.yaml overrides
+        def training_mutator(data: dict) -> None:
+            data["training"]["q_learning"]["use_double_dqn"] = True
 
-        mutate_brain_yaml(config_dir, brain_mutator)
+        mutate_training_yaml(config_dir, training_mutator)
 
         db_path = tmp_path / "test.db"
         checkpoint_dir = tmp_path / "checkpoints"
@@ -61,6 +73,7 @@ class TestDoubleDoubleTraining:
             db_path=db_path,
             checkpoint_dir=checkpoint_dir,
             max_episodes=10,
+            level_name=LEVEL_NAME,
         )
 
         # Run training (population is initialized inside run())
@@ -97,11 +110,11 @@ class TestDoubleDoubleTraining:
         """
         config_dir = config_pack_factory(modifier=self._create_fast_test_config(use_double_dqn=False))
 
-        # Set use_double_dqn in brain.yaml (managed by brain.yaml now)
-        def brain_mutator(data: dict) -> None:
-            data["q_learning"]["use_double_dqn"] = False
+        # Set use_double_dqn override to False for this level
+        def training_mutator(data: dict) -> None:
+            data["training"]["q_learning"]["use_double_dqn"] = False
 
-        mutate_brain_yaml(config_dir, brain_mutator)
+        mutate_training_yaml(config_dir, training_mutator)
 
         db_path = tmp_path / "test.db"
         checkpoint_dir = tmp_path / "checkpoints"
@@ -112,6 +125,7 @@ class TestDoubleDoubleTraining:
             db_path=db_path,
             checkpoint_dir=checkpoint_dir,
             max_episodes=10,
+            level_name=LEVEL_NAME,
         )
 
         # Run training
@@ -145,21 +159,23 @@ class TestDoubleDoubleTraining:
 
         # Create config with 5 episodes to hit checkpoint interval
         def modifier(data: dict) -> None:
-            data["environment"]["enabled_affordances"] = ["Bed"]
-            data["environment"]["vision_range"] = 8
-            data["exploration"]["survival_window"] = 10
-            data["training"]["max_episodes"] = 5
-            # use_double_dqn managed by brain.yaml - removed from training.yaml
-            data["training"]["allow_unfeasible_universe"] = True
-            data["curriculum"]["max_steps_per_episode"] = 50
+            training = data["training"]
+            training_loop = training["training_loop"]
+
+            training_loop["max_episodes"] = 5
+            training_loop["max_steps_per_episode"] = 50
+
+            replay = training["replay_buffer"]
+            replay["min_size"] = 8
+            replay["batch_size"] = 4
 
         config_dir = config_pack_factory(modifier=modifier)
 
-        # Set use_double_dqn in brain.yaml (managed by brain.yaml now)
-        def brain_mutator(data: dict) -> None:
-            data["q_learning"]["use_double_dqn"] = True
+        # Set use_double_dqn in training.yaml overrides
+        def training_mutator(data: dict) -> None:
+            data["training"]["q_learning"]["use_double_dqn"] = True
 
-        mutate_brain_yaml(config_dir, brain_mutator)
+        mutate_training_yaml(config_dir, training_mutator)
 
         db_path = tmp_path / "test.db"
         checkpoint_dir = tmp_path / "checkpoints"
@@ -170,6 +186,7 @@ class TestDoubleDoubleTraining:
             db_path=db_path,
             checkpoint_dir=checkpoint_dir,
             max_episodes=5,
+            level_name=LEVEL_NAME,
         )
         runner1.run()
 
@@ -192,6 +209,7 @@ class TestDoubleDoubleTraining:
             db_path=db_path,
             checkpoint_dir=checkpoint_dir,
             max_episodes=10,  # Train 5 more episodes
+            level_name=LEVEL_NAME,
         )
 
         # Note: DemoRunner.run() automatically loads checkpoint if it exists

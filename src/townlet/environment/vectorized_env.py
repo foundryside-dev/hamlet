@@ -266,6 +266,7 @@ class VectorizedHamletEnv:
         # Initialize reward strategy (TASK-001: variable meters)
         meter_name_to_index = dict(self.metadata.meter_name_to_index)
         self.meter_name_to_index = meter_name_to_index
+        self.money_idx = meter_name_to_index.get("money")
 
         # Build bar index map from universe metadata
         bar_index_map = _build_bar_index_map(self.universe.meter_metadata)
@@ -330,9 +331,6 @@ class VectorizedHamletEnv:
             if aff.opening_hours is None:
                 raise ValueError(f"affordance '{aff.name}' missing opening_hours (no defaults allowed)")
 
-            # v2.1 affordances are single-tick; enforce explicit interaction type.
-            interaction_type = "instant"
-
             # Derive operating_hours from OpeningHoursConfig:
             # - enabled=false → 24/7 (0–24)
             # - enabled=true → use first schedule window [start, end]
@@ -352,18 +350,48 @@ class VectorizedHamletEnv:
 
             category = env_affordance_categories.get(aff.name, "")
 
+            # Interaction semantics: use v2.1 fields when present, otherwise fall back
+            # to legacy instant behavior for existing packs.
+            interaction_type = aff.interaction_type or "instant"
+            duration_ticks = aff.duration_ticks if aff.duration_ticks is not None else None
+
+            # Instant and per-tick costs
+            costs_instant = [{"meter": m, "amount": v} for m, v in (aff.costs or {}).items()]
+            costs_per_tick = [{"meter": m, "amount": v} for m, v in (aff.costs_per_tick or {}).items()]
+
+            # Effect pipeline: prefer explicit pipeline when provided; otherwise synthesize
+            # a simple on_start pipeline from effects dict for instant affordances.
+            if aff.effect_pipeline is not None:
+                pipeline = aff.effect_pipeline
+                effects_on_start = list(pipeline.on_start)
+                effects_per_tick = list(pipeline.per_tick)
+                effects_on_completion = list(pipeline.on_completion)
+            else:
+                from townlet.config.effect_pipeline import AffordanceEffect, EffectPipeline
+
+                effects_on_start = [AffordanceEffect(meter=m, amount=v) for m, v in (aff.effects or {}).items()]
+                effects_per_tick = []
+                effects_on_completion = []
+                pipeline = EffectPipeline(
+                    on_start=effects_on_start,
+                    per_tick=effects_per_tick,
+                    on_completion=effects_on_completion,
+                    on_early_exit=[],
+                    on_failure=[],
+                )
+
             runtime_affordances.append(
                 RuntimeAffordanceConfig(
                     id=aff.name,
                     name=aff.name,
                     category=category,
                     interaction_type=interaction_type,
-                    duration_ticks=None,
-                    costs=[{"meter": m, "amount": v} for m, v in (aff.costs or {}).items()],
-                    effects=[{"meter": m, "amount": v} for m, v in (aff.effects or {}).items()],
-                    effects_per_tick=[],
-                    costs_per_tick=[],
-                    completion_bonus=[],
+                    duration_ticks=duration_ticks,
+                    costs=costs_instant,
+                    costs_per_tick=costs_per_tick,
+                    effects=[{"meter": e.meter, "amount": e.amount} for e in effects_on_start],
+                    effects_per_tick=[{"meter": e.meter, "amount": e.amount} for e in effects_per_tick],
+                    completion_bonus=[{"meter": e.meter, "amount": e.amount} for e in effects_on_completion],
                     operating_hours=operating_hours,
                     teaching_note=getattr(aff, "teaching_note", None),
                     design_intent=None,
@@ -588,8 +616,12 @@ class VectorizedHamletEnv:
         global_actions: ActionSpaceConfig,
         enabled_action_names: list[str] | None,
     ) -> ComposedActionSpace:
-        """Legacy builder path is unused in v2.1 runtime."""
-        raise NotImplementedError("use _build_action_space_from_metadata in v2.1 runtime")
+        """Legacy builder path removed in v2.1 runtime.
+
+        All callers must use _build_action_space_from_metadata fed by
+        ActionSpaceMetadata from the UniverseCompiler.
+        """
+        raise RuntimeError("Action space must be provided via compiler metadata in v2.1 runtime")
 
     def _build_action_space_from_metadata(
         self,

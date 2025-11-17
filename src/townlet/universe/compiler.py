@@ -439,6 +439,42 @@ class UniverseCompiler:
 
         self._validate_config_dir(experiment_dir)
 
+        # Optional cache fast-path
+        cache_path = self._cache_artifact_path(experiment_dir)
+        config_hash: str | None = None
+        config_mtime: float | None = None
+
+        if use_cache and cache_path.exists():
+            try:
+                cache_size = cache_path.stat().st_size
+                if cache_size > MAX_CACHE_FILE_SIZE:
+                    logger.warning(
+                        "Cache file exceeds size limit (%d bytes > %d bytes)",
+                        cache_size,
+                        MAX_CACHE_FILE_SIZE,
+                    )
+                else:
+                    # Compute fingerprint once for comparison
+                    config_hash = self._compute_config_hash(experiment_dir)
+                    config_mtime = self._compute_config_mtime(experiment_dir)
+
+                    cached = CompiledUniverse.load_from_cache(cache_path)
+                    cached_meta = cached.metadata
+
+                    # Treat missing fingerprint fields as stale cache
+                    if cached_meta.config_hash and cached_meta.config_mtime:
+                        if cached_meta.config_hash == config_hash and cached_meta.config_mtime >= config_mtime:
+                            logger.info("Loading compiled universe from cache: %s", cache_path)
+                            return cached
+                        logger.info(
+                            "Cache stale for %s (hash/mtime mismatch); recompiling.",
+                            experiment_dir,
+                        )
+                    else:
+                        logger.info("Cached universe at %s missing fingerprint fields; recompiling.", cache_path)
+            except Exception as exc:  # pragma: no cover - defensive
+                logger.warning("Failed to load cached universe from %s: %s", cache_path, exc)
+
         # Stage 0: YAML syntax validation (lightweight)
         self._phase_0_validate_yaml_syntax(experiment_dir)
 
@@ -508,6 +544,8 @@ class UniverseCompiler:
             raw,
             primary_meta,
             experiment_dir=experiment_dir,
+            config_hash=config_hash,
+            config_mtime=config_mtime,
         )
 
         compiled = CompiledUniverse(
@@ -528,6 +566,16 @@ class UniverseCompiler:
             experiment_dir=experiment_dir,
             all_levels=all_levels,
         )
+
+        # Best-effort cache write for future runs
+        if use_cache:
+            try:
+                cache_dir = self._cache_directory_for(experiment_dir)
+                self._prepare_cache_directory(cache_dir)
+                compiled.save_to_cache(cache_path)
+                logger.info("Saved compiled universe cache to %s", cache_path)
+            except Exception as exc:  # pragma: no cover - defensive
+                logger.warning("Failed to write cache artifact to %s: %s", cache_path, exc)
 
         self._validate_drive_references_v21(raw, primary_meta, compiled)
         # Emit economic balance warnings for v2.1 configs (non-blocking).
@@ -682,6 +730,25 @@ class UniverseCompiler:
                     code="CASCADE_INVALID_METER",
                     location=str(experiment_dir / "environment.yaml"),
                 )
+
+        # 4b) Action meter validation (JANK-02) against environment meter vocabulary.
+        # Validate any custom action costs/effects in actions.yaml.
+        for action in raw.actions.actions.custom_actions:
+            for field_name in ("costs", "effects"):
+                payload = getattr(action, field_name, None) or {}
+                if not payload:
+                    continue
+                invalid_meters = [meter for meter in payload.keys() if meter not in env_meter_names]
+                if invalid_meters:
+                    for meter in invalid_meters:
+                        errors.add(
+                            (
+                                f"Action '{action.name}' references unknown meter '{meter}' in {field_name}. "
+                                "Ensure all meters are defined in environment.yaml/bars.yaml."
+                            ),
+                            code="UAC-ACT-002",
+                            location=f"{experiment_dir / 'actions.yaml'}:{action.name}",
+                        )
 
         # Grid capacity (hard error)
         grid_capacity: int | None = None
@@ -1711,6 +1778,8 @@ class UniverseCompiler:
         primary_meta: CompiledUniverse.LevelMetadata,
         *,
         experiment_dir: Path,
+        config_hash: str | None = None,
+        config_mtime: float | None = None,
     ) -> UniverseMetadata:
         """Construct UniverseMetadata summary."""
         meter_names = tuple(m.name for m in primary_meta.meter_metadata.meters)
@@ -1741,8 +1810,8 @@ class UniverseCompiler:
                 grid_cells *= size
             position_dim = len(substrate_cfg.gridnd.dimension_sizes)
 
-        # Temporal metadata: require explicit ticks_per_day when temporal support is enabled.
-        ticks_per_day: int | None = None
+            # Temporal metadata: require explicit ticks_per_day when temporal support is enabled.
+            ticks_per_day: int | None = None
         curriculum_day_length = primary_meta.curriculum.curriculum.day_length
         temporal_supported = raw.stratum.stratum.temporal_support == "enabled"
         temporal_active = primary_meta.curriculum.curriculum.active_temporal
@@ -1759,7 +1828,11 @@ class UniverseCompiler:
             # Temporal support disabled; mark as zero ticks per day (no temporal mechanics).
             ticks_per_day = 0
 
-        config_mtime = self._compute_config_mtime(experiment_dir)
+        # Compute fingerprint if not provided by caller.
+        if config_hash is None:
+            config_hash = self._compute_config_hash(experiment_dir)
+        if config_mtime is None:
+            config_mtime = self._compute_config_mtime(experiment_dir)
 
         return UniverseMetadata(
             universe_name=raw.experiment.experiment.metadata.name,
@@ -1783,7 +1856,7 @@ class UniverseCompiler:
             config_version=raw.experiment.experiment.version if hasattr(raw.experiment, "experiment") else "1.0",
             compiler_version=COMPILER_VERSION,
             compiled_at=datetime.now(UTC).isoformat(),
-            config_hash="",  # TODO: add hash if needed
+            config_hash=config_hash,
             config_mtime=config_mtime,
             provenance_id=str(experiment_dir),
             compiler_git_sha="",
@@ -3133,11 +3206,33 @@ class UniverseCompiler:
         return float(hours_with_income)
 
     def _affordance_open_for_hour(self, affordance: AffordanceConfig, hour: int) -> bool:
-        # operating_hours is now required by schema - no None check needed
-        # Convert list[int] to tuple[int, int] for is_affordance_open
-        # Pydantic ensures exactly 2 elements (Field(min_length=2, max_length=2))
-        open_hour, close_hour = affordance.operating_hours
-        return is_affordance_open(hour, (open_hour, close_hour))
+        """Return True if an affordance is open for the given hour.
+
+        v2.1 semantics: availability is defined *only* via opening_hours on
+        curriculum-level affordances (AffordancesV2Config). Legacy
+        operating_hours fields are no longer supported.
+        """
+        opening_hours = getattr(affordance, "opening_hours", None)
+        if opening_hours is None:
+            raise ValueError(
+                "Affordance missing opening_hours in v2.1 config. "
+                "All affordances must declare opening_hours; legacy operating_hours "
+                "arrays are no longer supported."
+            )
+
+        # opening_hours.enabled == False → 24/7 availability.
+        if not opening_hours.enabled:
+            return True
+
+        windows = getattr(opening_hours, "schedule", []) or []
+        for window in windows:
+            start = getattr(window, "start", None)
+            end = getattr(window, "end", None)
+            if start is None or end is None:
+                continue
+            if is_affordance_open(hour, (start, end)):
+                return True
+        return False
 
     def _affordance_positive_amount_for_meter(self, affordance: AffordanceConfig, meter_name: str) -> float:
         pipeline = getattr(affordance, "effect_pipeline", None)
@@ -3653,7 +3748,13 @@ class UniverseCompiler:
             raise RuntimeError(f"Cache directory {cache_dir} is not writable")
 
     def _compute_config_hash(self, config_dir: Path) -> str:
+        # Include root YAML files and any hierarchical level YAMLs.
         yaml_files = sorted(config_dir.glob("*.yaml"))
+
+        levels_dir = config_dir / "levels"
+        if levels_dir.exists():
+            yaml_files.extend(sorted(levels_dir.rglob("*.yaml")))
+
         yaml_files.append(Path("configs") / "global_actions.yaml")
 
         digest = hashlib.sha256()
@@ -3673,6 +3774,11 @@ class UniverseCompiler:
         config file changes (including comment/whitespace-only changes).
         """
         yaml_files = sorted(config_dir.glob("*.yaml"))
+
+        levels_dir = config_dir / "levels"
+        if levels_dir.exists():
+            yaml_files.extend(sorted(levels_dir.rglob("*.yaml")))
+
         yaml_files.append(Path("configs") / "global_actions.yaml")
 
         max_mtime = 0.0

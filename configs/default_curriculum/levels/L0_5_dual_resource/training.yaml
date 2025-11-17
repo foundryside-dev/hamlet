@@ -1,3 +1,6 @@
+run_metadata:
+  output_subdir: "L0_5_dual_resource"
+
 training:
   version: "1.0"
 

@@ -199,10 +199,11 @@ def env_factory(
             target_universe = compile_universe(pack_path)
 
         target_device = device_override if device_override is not None else device
+        target_level = level_name or (target_universe.available_levels[0] if target_universe.available_levels else None)
 
         return VectorizedHamletEnv.from_universe(
             target_universe,
-            level_name=level_name,
+            level_name=target_level,
             num_agents=num_agents,
             device=target_device,
         )

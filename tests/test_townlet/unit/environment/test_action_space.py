@@ -51,6 +51,8 @@ class TestActionSpaceDynamicSizing:
             movement_delta=0.5,
             interaction_radius=1.0,
             action_discretization={"num_directions": 8, "num_magnitudes": 3},
+            distance_metric="euclidean",
+            observation_encoding="relative",
         )
         c2d = Continuous2DSubstrate(
             min_x=0.0,
@@ -61,6 +63,8 @@ class TestActionSpaceDynamicSizing:
             movement_delta=0.5,
             interaction_radius=1.0,
             action_discretization={"num_directions": 8, "num_magnitudes": 3},
+            distance_metric="euclidean",
+            observation_encoding="relative",
         )
         c3d = Continuous3DSubstrate(
             min_x=0.0,
@@ -73,6 +77,8 @@ class TestActionSpaceDynamicSizing:
             movement_delta=0.5,
             interaction_radius=1.0,
             action_discretization={"num_directions": 8, "num_magnitudes": 3},
+            distance_metric="euclidean",
+            observation_encoding="relative",
         )
 
         assert c1d.action_space_size == 3

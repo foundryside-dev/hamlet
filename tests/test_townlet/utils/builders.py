@@ -478,16 +478,17 @@ def make_positions(
 def make_vectorized_env_from_pack(
     config_dir: Path | str,
     *,
-    level_name: str,
+    level_name: str | None = None,
     num_agents: int = 1,
     device: torch.device | str = "cpu",
 ) -> VectorizedHamletEnv:
     """Instantiate VectorizedHamletEnv from a compiled config pack."""
 
     universe = _compile_universe(config_dir)
+    target_level = level_name or (universe.available_levels[0] if universe.available_levels else None)
     return VectorizedHamletEnv.from_universe(
         universe,
-        level_name=level_name,
+        level_name=target_level,
         num_agents=num_agents,
         device=device,
     )

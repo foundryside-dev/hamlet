@@ -34,6 +34,7 @@ class TestCheckpointValidation:
         """
         env = make_vectorized_env_from_pack(
             test_config_pack_path,
+            level_name="L0_test",
             num_agents=1,
             device=cpu_device,
         )
@@ -66,6 +67,7 @@ class TestCheckpointValidation:
         # Create 2D environment
         env_2d = make_vectorized_env_from_pack(
             test_config_pack_path,
+            level_name="L0_test",
             num_agents=1,
             device=cpu_device,
         )
@@ -95,6 +97,7 @@ class TestCheckpointValidation:
         """
         env = make_vectorized_env_from_pack(
             test_config_pack_path,
+            level_name="L0_test",
             num_agents=1,
             device=cpu_device,
         )

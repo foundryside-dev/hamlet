@@ -70,6 +70,9 @@ class TestContinuousInitialization:
                 boundary="clamp",
                 movement_delta=0.5,
                 interaction_radius=0.8,
+                action_discretization={"num_directions": 8, "num_magnitudes": 3},
+                distance_metric="euclidean",
+                observation_encoding="relative",
             )
 
     def test_initialization_bounds_mismatch(self):
@@ -81,6 +84,9 @@ class TestContinuousInitialization:
                 boundary="clamp",
                 movement_delta=0.5,
                 interaction_radius=0.8,
+                action_discretization={"num_directions": 8, "num_magnitudes": 3},
+                distance_metric="euclidean",
+                observation_encoding="relative",
             )
 
     def test_initialization_invalid_bounds(self):

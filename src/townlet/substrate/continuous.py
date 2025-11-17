@@ -41,9 +41,9 @@ class ContinuousSubstrate(SpatialSubstrate):
         boundary: Literal["clamp", "wrap", "bounce", "sticky"],
         movement_delta: float,
         interaction_radius: float,
-        action_discretization: dict[str, int] | None = None,
-        distance_metric: Literal["euclidean", "manhattan", "chebyshev"] = "euclidean",
-        observation_encoding: Literal["relative", "scaled", "absolute"] = "relative",
+        action_discretization: dict[str, int],
+        distance_metric: Literal["euclidean", "manhattan", "chebyshev"],
+        observation_encoding: Literal["relative", "scaled", "absolute"],
     ):
         """Initialize continuous substrate.
 
@@ -53,10 +53,16 @@ class ContinuousSubstrate(SpatialSubstrate):
             boundary: Boundary handling mode
             movement_delta: Distance discrete actions move agent
             interaction_radius: Distance threshold for affordance interaction
-            action_discretization: Discretized action config {'num_directions': 8-32, 'num_magnitudes': 3-7}
-            distance_metric: Distance calculation method (euclidean, manhattan, chebyshev)
-            observation_encoding: Position encoding strategy ("relative", "scaled", "absolute")
+            action_discretization: Discretized action config {'num_directions': 8-32, 'num_magnitudes': 3-7}.
+                Required; no defaults are applied.
+            distance_metric: Distance calculation method (euclidean, manhattan, chebyshev). Required; no defaults are applied.
+            observation_encoding: Position encoding strategy ("relative", "scaled", "absolute"). Required; no defaults are applied.
         """
+        if not isinstance(action_discretization, dict) or not action_discretization:
+            raise ValueError(
+                "ContinuousSubstrate requires explicit action_discretization mapping "
+                "with num_directions and num_magnitudes; no defaults are applied."
+            )
         if dimensions not in (1, 2, 3):
             raise ValueError(f"Continuous substrates support 1-3 dimensions, got {dimensions}")
 
@@ -404,8 +410,8 @@ class Continuous1DSubstrate(ContinuousSubstrate):
         movement_delta: float,
         interaction_radius: float,
         action_discretization: dict[str, int],
-        distance_metric: Literal["euclidean", "manhattan", "chebyshev"] = "euclidean",
-        observation_encoding: Literal["relative", "scaled", "absolute"] = "relative",
+        distance_metric: Literal["euclidean", "manhattan", "chebyshev"],
+        observation_encoding: Literal["relative", "scaled", "absolute"],
     ):
         super().__init__(
             dimensions=1,
@@ -480,9 +486,9 @@ class Continuous2DSubstrate(ContinuousSubstrate):
         boundary: Literal["clamp", "wrap", "bounce", "sticky"],
         movement_delta: float,
         interaction_radius: float,
-        action_discretization: dict[str, int] | None = None,
-        distance_metric: Literal["euclidean", "manhattan", "chebyshev"] = "euclidean",
-        observation_encoding: Literal["relative", "scaled", "absolute"] = "relative",
+        action_discretization: dict[str, int],
+        distance_metric: Literal["euclidean", "manhattan", "chebyshev"],
+        observation_encoding: Literal["relative", "scaled", "absolute"],
     ):
         super().__init__(
             dimensions=2,
@@ -540,8 +546,7 @@ class Continuous2DSubstrate(ContinuousSubstrate):
         num_magnitudes = discretization.get("num_magnitudes")
         if num_directions is None or num_magnitudes is None:
             raise ValueError(
-                "action_discretization must include both 'num_directions' and "
-                "'num_magnitudes' fields for continuous substrates."
+                "action_discretization must include both 'num_directions' and " "'num_magnitudes' fields for continuous substrates."
             )
 
         actions = []
@@ -636,9 +641,9 @@ class Continuous3DSubstrate(ContinuousSubstrate):
         boundary: Literal["clamp", "wrap", "bounce", "sticky"],
         movement_delta: float,
         interaction_radius: float,
-        action_discretization: dict[str, int] | None = None,
-        distance_metric: Literal["euclidean", "manhattan", "chebyshev"] = "euclidean",
-        observation_encoding: Literal["relative", "scaled", "absolute"] = "relative",
+        action_discretization: dict[str, int],
+        distance_metric: Literal["euclidean", "manhattan", "chebyshev"],
+        observation_encoding: Literal["relative", "scaled", "absolute"],
     ):
         super().__init__(
             dimensions=3,

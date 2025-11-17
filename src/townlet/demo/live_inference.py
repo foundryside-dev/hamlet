@@ -298,7 +298,7 @@ class LiveInferenceServer:
 
         self.env = VectorizedHamletEnv.from_universe(
             self.compiled_universe,
-            self.level_name,
+            level_name=self.level_name,
             num_agents=num_agents,
             device=self.device,
         )

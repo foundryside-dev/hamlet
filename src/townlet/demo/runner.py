@@ -410,7 +410,7 @@ class DemoRunner:
         # Create environment from compiled universe
         self.env = VectorizedHamletEnv.from_universe(
             self.compiled,
-            self.level_name,
+            level_name=self.level_name,
             num_agents=num_agents,
             device=device,
         )

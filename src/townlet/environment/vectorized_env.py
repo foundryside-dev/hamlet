@@ -806,8 +806,8 @@ class VectorizedHamletEnv:
     def from_universe(
         cls,
         universe: CompiledUniverse,
-        level_name: str | None = None,
         *,
+        level_name: str,
         num_agents: int,
         device: torch.device | str = "cpu",
     ) -> VectorizedHamletEnv:
@@ -815,9 +815,8 @@ class VectorizedHamletEnv:
 
         Args:
             universe: CompiledUniverse with hierarchical configs
-            level_name: Which curriculum level to instantiate. If None, defaults to the
-                first curriculum level declared in experiment.yaml, falling back to the
-                first available compiled level.
+            level_name: Curriculum level to instantiate (e.g., \"L0_0_minimal\").
+                Must be provided explicitly; no default level selection is performed.
             num_agents: Number of parallel agents
             device: PyTorch device
 
@@ -825,35 +824,13 @@ class VectorizedHamletEnv:
             VectorizedHamletEnv instance
         """
 
-        torch_device = torch.device(device) if isinstance(device, str) else device
-
-        # Backwards compatibility: allow callers to omit level_name and use a sensible default.
-        # Prefer the experiment.yaml curriculum_levels ordering when available, otherwise
-        # fall back to the first available compiled level.
         if level_name is None:
-            default_level: str | None = None
+            raise ValueError(
+                "VectorizedHamletEnv.from_universe requires an explicit level_name; "
+                "implicit default level selection is not allowed in v2.1 runtime."
+            )
 
-            # Prefer experiment-level ordering if present
-            try:
-                curriculum_levels = getattr(universe.experiment, "experiment").curriculum_levels
-            except Exception:
-                curriculum_levels = []
-
-            available_levels = set(universe.available_levels)
-            for candidate in curriculum_levels:
-                if candidate in available_levels:
-                    default_level = candidate
-                    break
-
-            # Fallback: first available compiled level
-            if default_level is None:
-                if not universe.available_levels:
-                    raise ValueError(
-                        "CompiledUniverse has no curriculum levels. " "Pass level_name explicitly to VectorizedHamletEnv.from_universe()."
-                    )
-                default_level = universe.available_levels[0]
-
-            level_name = default_level
+        torch_device = torch.device(device) if isinstance(device, str) else device
 
         return cls(
             universe=universe,

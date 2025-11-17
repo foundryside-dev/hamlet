@@ -42,6 +42,7 @@ class TestGridNDPOMDPValidation:
         with pytest.raises(ValueError, match=r"Partial observability .* gridnd"):
             make_vectorized_env_from_pack(
                 gridnd_4d_config_pack,
+                level_name="L0_test",
                 num_agents=1,
                 device=torch.device("cpu"),
             )
@@ -74,6 +75,7 @@ class TestGrid3DPOMDPValidation:
 
         env = make_vectorized_env_from_pack(
             grid3d_config_pack,
+            level_name="L0_test",
             num_agents=1,
             device=torch.device("cpu"),
         )
@@ -91,6 +93,7 @@ class TestGrid3DPOMDPValidation:
         with pytest.raises(ValueError, match="Grid3D POMDP.*requires 343 cells"):
             make_vectorized_env_from_pack(
                 grid3d_config_pack,
+                level_name="L0_test",
                 num_agents=1,
                 device=torch.device("cpu"),
             )

@@ -16,7 +16,7 @@ class TestStructuredNetworkInstantiation:
         compiled = compiler.compile(config_dir, primary_level="L0_5_dual_resource", use_cache=False)
 
         # Create environment to get observation_activity
-        env = VectorizedHamletEnv.from_universe(compiled, num_agents=4, device="cpu")
+        env = VectorizedHamletEnv.from_universe(compiled, level_name="L0_5_dual_resource", num_agents=4, device="cpu")
 
         # Manually create StructuredQNetwork as population would
         network = StructuredQNetwork(
@@ -35,7 +35,7 @@ class TestStructuredNetworkInstantiation:
 
         compiler = UniverseCompiler()
         compiled = compiler.compile(config_dir, primary_level="L0_5_dual_resource", use_cache=False)
-        env = VectorizedHamletEnv.from_universe(compiled, num_agents=4, device="cpu")
+        env = VectorizedHamletEnv.from_universe(compiled, level_name="L0_5_dual_resource", num_agents=4, device="cpu")
 
         # Manually create SimpleQNetwork as population would
         network = SimpleQNetwork(
@@ -52,7 +52,7 @@ class TestStructuredNetworkInstantiation:
 
         compiler = UniverseCompiler()
         compiled = compiler.compile(config_dir, primary_level="L2_partial_observability", use_cache=False)
-        env = VectorizedHamletEnv.from_universe(compiled, num_agents=4, device="cpu")
+        env = VectorizedHamletEnv.from_universe(compiled, level_name="L2_partial_observability", num_agents=4, device="cpu")
 
         # Manually create RecurrentSpatialQNetwork as population would
         network = RecurrentSpatialQNetwork(

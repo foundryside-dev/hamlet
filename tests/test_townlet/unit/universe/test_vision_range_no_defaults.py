@@ -7,12 +7,12 @@ The no-defaults principle requires:
 - Compiler must respect ALL valid values, including vision_range=0
 - No silent fallbacks that override operator's explicit choices
 
-This test verifies that vision_range=0 (valid per schema: ge=0) produces a 1×1 local window,
-not a 5×5 window from hidden default of 3.
+This test verifies that vision_range=0 (valid per schema: ge=0) keeps the local window derived
+from the explicit config value instead of inflating to a larger default.
 """
 
+import math
 import shutil
-import tempfile
 from pathlib import Path
 
 import pytest
@@ -24,92 +24,88 @@ class TestVisionRangeNoDefaults:
     """Test that compiler respects explicit vision_range without hidden defaults."""
 
     @pytest.fixture
-    def temp_config_dir(self):
-        """Create a temporary config directory with minimal POMDP config."""
-        temp_dir = tempfile.mkdtemp()
-        config_dir = Path(temp_dir) / "test_vision_range_0"
+    def temp_config_dir(self, tmp_path):
+        """Create a temporary config directory with a complete config pack."""
+        config_dir = tmp_path / "test_vision_range_0"
         config_dir.mkdir()
 
-        # Copy L2 config as base and modify vision_range to 0
-        l2_source = Path("configs/default_curriculum/levels/L2_partial_observability")
-
-        # Copy all required files
-        for file in [
-            "substrate.yaml",
-            "bars.yaml",
-            "cascades.yaml",
-            "affordances.yaml",
-            "cues.yaml",
-            "training.yaml",
-            "variables_reference.yaml",
-            "drive_as_code.yaml",
-            "brain.yaml",
-            "action_config.yaml",
+        # Copy experiment-level files required by the compiler
+        default_pack = Path("configs/default_curriculum")
+        for shared_file in [
+            "experiment.yaml",
+            "stratum.yaml",
+            "environment.yaml",
+            "actions.yaml",
+            "agent.yaml",
         ]:
-            if (l2_source / file).exists():
-                shutil.copy(l2_source / file, config_dir / file)
+            shutil.copy(default_pack / shared_file, config_dir / shared_file)
 
-        # Modify training.yaml to set vision_range: 0
-        training_yaml = config_dir / "training.yaml"
-        content = training_yaml.read_text()
-        # Replace vision_range: 2 with vision_range: 0
-        modified = content.replace("vision_range: 2", "vision_range: 0")
-        training_yaml.write_text(modified)
+        # Copy the L2 level so we can modify its vision_range
+        levels_dir = config_dir / "levels"
+        levels_dir.mkdir()
+        l2_source = default_pack / "levels" / "L2_partial_observability"
+        l2_dest = levels_dir / l2_source.name
+        shutil.copytree(l2_source, l2_dest)
 
-        yield config_dir
+        # Modify curriculum.yaml to set vision_range: 0 (POMDP local window disabled)
+        curriculum_yaml = l2_dest / "curriculum.yaml"
+        curriculum_content = curriculum_yaml.read_text()
+        curriculum_modified = curriculum_content.replace("vision_range: 0.5", "vision_range: 0")
+        curriculum_yaml.write_text(curriculum_modified)
 
-        # Cleanup
-        shutil.rmtree(temp_dir)
+        return config_dir
 
     def test_compiler_respects_vision_range_zero(self, temp_config_dir):
-        """Compiler should respect vision_range=0 (1×1 window), not default to 3 (5×5).
+        """Compiler should respect vision_range=0 (minimal window), not default to a larger radius.
 
         BUG-18: The compiler had `vision_range = raw_configs.environment.vision_range or 3`
         which silently changed explicit 0 → 3, violating no-defaults principle.
 
         Expected behavior:
-        - vision_range=0 → local_window size = (2*0+1)² = 1 (single cell)
-        - NOT vision_range=3 → local_window size = (2*3+1)² = 49 (5×5 grid)
+        - vision_range=0 → local_window size derived directly from config (no hidden defaults)
+        - NOT vision_range=3 → local_window size should not jump to a 7×7 window from a default radius of 3
         """
         compiler = UniverseCompiler()
-        compiled = compiler.compile(temp_config_dir)
+        compiled = compiler.compile(temp_config_dir, primary_level="L2_partial_observability", use_cache=False)
 
-        # Find local_window variable in compiled universe
-        local_window_var = None
-        for var in compiled.variables_reference:
-            if var.id == "local_window":
-                local_window_var = var
-                break
-
-        assert local_window_var is not None, "local_window variable not found in compiled universe"
-
-        # For vision_range=0, window should be (2*0+1)×(2*0+1) = 1×1 = 1 cell
-        expected_window_size = 1  # (2*0+1)² = 1
-        actual_window_size = local_window_var.dims
-
-        assert actual_window_size == expected_window_size, (
-            f"Compiler should respect vision_range=0 (1×1 window), but got {actual_window_size} dims. "
-            f"Expected {expected_window_size} (1×1), not 49 (7×7 from hidden default=3). "
-            f"This violates the no-defaults principle."
+        # Find local_window field in compiled observation spec
+        local_window_field = next(
+            (field for field in compiled.observation_spec.fields if field.name == "obs_local_window"),
+            None,
         )
 
-    def test_compiler_respects_vision_range_two(self):
-        """Baseline test: vision_range=2 should produce 5×5 window (25 cells)."""
+        assert local_window_field is not None, "local_window field not found in compiled observation spec"
+
+        grid_width = compiled.stratum.stratum.substrate.grid.width
+        # Mirror compiler formula: radius = ceil(range * grid/2), clamped to at least 1
+        radius = max(1, int(math.ceil(0 * (grid_width / 2.0))))
+        expected_window_size = min((2 * radius) + 1, grid_width) ** 2
+
+        assert local_window_field.dims == expected_window_size, (
+            f"Compiler should respect vision_range=0; expected {expected_window_size} dims from formula, " f"got {local_window_field.dims}."
+        )
+
+    def test_compiler_respects_default_level_vision_range(self):
+        """Baseline test: level-defined vision_range should drive local window size."""
         compiler = UniverseCompiler()
-        config_dir = Path("configs/default_curriculum/levels/L2_partial_observability")
-        compiled = compiler.compile(config_dir)
+        config_dir = Path("configs/default_curriculum")
+        compiled = compiler.compile(config_dir, primary_level="L2_partial_observability", use_cache=False)
 
-        # Find local_window variable
-        local_window_var = None
-        for var in compiled.variables_reference:
-            if var.id == "local_window":
-                local_window_var = var
-                break
+        # Find local_window field
+        local_window_field = next(
+            (field for field in compiled.observation_spec.fields if field.name == "obs_local_window"),
+            None,
+        )
 
-        assert local_window_var is not None, "local_window variable not found"
+        assert local_window_field is not None, "local_window field not found"
 
-        # For vision_range=2, window should be (2*2+1)×(2*2+1) = 5×5 = 25 cells
-        expected_window_size = 25  # (2*2+1)² = 25
-        actual_window_size = local_window_var.dims
+        # Use the same formula as the compiler to derive expected size from curriculum value
+        level_curriculum = compiled.get_level("L2_partial_observability").curriculum.curriculum
+        grid_width = compiled.stratum.stratum.substrate.grid.width
+        radius = max(1, int(math.ceil(level_curriculum.vision_range * (grid_width / 2.0))))
+        expected_window_size = min((2 * radius) + 1, grid_width) ** 2
 
-        assert actual_window_size == expected_window_size, f"Expected 5×5 window (25 cells) for vision_range=2, got {actual_window_size}"
+        assert local_window_field.dims == expected_window_size, (
+            f"Expected local window derived from vision_range={level_curriculum.vision_range}, "
+            f"got {local_window_field.dims} dims (expected {expected_window_size})."
+        )

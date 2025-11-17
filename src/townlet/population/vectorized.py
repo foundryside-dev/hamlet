@@ -52,14 +52,14 @@ class VectorizedPopulation(PopulationManager):
         agent_ids: list[str],
         device: torch.device,
         brain_config: BrainConfig,
-        obs_dim: int = 70,
+        obs_dim: int,
+        train_frequency: int,
+        batch_size: int,
+        sequence_length: int,
+        max_grad_norm: float,
         action_dim: int | None = None,
         vision_window_size: int = 5,
         tb_logger=None,
-        train_frequency: int = 4,
-        batch_size: int | None = None,
-        sequence_length: int = 8,
-        max_grad_norm: float = 10.0,
         max_episodes: int | None = None,
         max_steps_per_episode: int | None = None,
     ):
@@ -79,10 +79,10 @@ class VectorizedPopulation(PopulationManager):
                 See docs/config-schemas/brain.md for schema.
             vision_window_size: Size of local vision window for recurrent networks (5 for 5×5)
             tb_logger: Optional TensorBoard logger
-            train_frequency: Train Q-network every N steps (default: 4)
-            batch_size: Batch size for experience replay (default: 64 for feedforward, 16 for recurrent)
-            sequence_length: Length of sequences for LSTM training (default: 8, recurrent only)
-            max_grad_norm: Gradient clipping threshold (default: 10.0)
+            train_frequency: Train Q-network every N steps (required; typically from training.yaml)
+            batch_size: Batch size for experience replay (required; typically from training.yaml replay_buffer.batch_size)
+            sequence_length: Length of sequences for LSTM training (required for recurrent agents)
+            max_grad_norm: Gradient clipping threshold (required; typically from training.yaml)
             max_episodes: Maximum training episodes (for PER beta annealing)
             max_steps_per_episode: Maximum steps per episode (for PER beta annealing)
         """
@@ -261,11 +261,7 @@ class VectorizedPopulation(PopulationManager):
         self.train_frequency = train_frequency
         self.sequence_length = sequence_length
         self.max_grad_norm = max_grad_norm
-        # Default batch_size based on network type if not specified
-        if batch_size is None:
-            self.batch_size = 16 if self.is_recurrent else 64
-        else:
-            self.batch_size = batch_size
+        self.batch_size = batch_size
 
         # Episode step counters (reset on done)
         self.episode_step_counts = torch.zeros(self.num_agents, dtype=torch.long, device=device)

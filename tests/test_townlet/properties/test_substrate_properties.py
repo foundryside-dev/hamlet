@@ -191,6 +191,7 @@ def test_property_obs_dim_matches_substrate_grid2d(grid_size, num_agents, test_c
 
         env = make_vectorized_env_from_pack(
             temp_pack,
+            level_name="L0_test",
             num_agents=num_agents,
             device=cpu_device,
         )

@@ -487,7 +487,7 @@ class TestRecurrentNetworkSupport:
                 weight_decay=0.0,
                 schedule=ScheduleConfig(type="constant"),
             ),
-            loss=LossConfig(type="huber"),
+            loss=LossConfig(type="huber", huber_delta=1.0),
             q_learning=QLearningConfig(
                 gamma=0.99,
                 target_update_frequency=100,
@@ -916,6 +916,7 @@ class TestSchedulerIntegration:
         universe = compile_universe(test_config_pack_path)
         env = VectorizedHamletEnv.from_universe(
             universe,
+            level_name="L0_test",
             num_agents=1,
             device=cpu_device,
         )

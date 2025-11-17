@@ -43,6 +43,7 @@ def basic_env(
     universe = compile_universe(test_config_pack_path)
     return VectorizedHamletEnv.from_universe(
         universe,
+        level_name="L0_test",
         num_agents=1,
         device=device,
     )
@@ -86,6 +87,7 @@ def instant_env(
     universe = compile_universe(instant_config_pack)
     return VectorizedHamletEnv.from_universe(
         universe,
+        level_name="L0_test",
         num_agents=1,
         device=device,
     )
@@ -164,6 +166,7 @@ def multi_agent_env(
     universe = compile_universe(test_config_pack_path)
     return VectorizedHamletEnv.from_universe(
         universe,
+        level_name="L0_test",
         num_agents=4,
         device=device,
     )
@@ -304,6 +307,7 @@ def grid2d_8x8_env(
     universe = compile_universe(test_config_pack_path)
     return VectorizedHamletEnv.from_universe(
         universe,
+        level_name="L0_test",
         num_agents=1,
         device=device,
     )

@@ -327,7 +327,22 @@ class LossConfig(BaseModel):
 
     type: Literal["mse", "huber", "smooth_l1"] = Field(description="Loss function type")
 
-    huber_delta: float = Field(default=1.0, gt=0.0, description="Delta parameter for Huber loss (ignored for mse/smooth_l1)")
+    huber_delta: float | None = Field(
+        default=None,
+        gt=0.0,
+        description="Delta parameter for Huber loss. Required when type='huber'; must be omitted otherwise.",
+    )
+
+    @model_validator(mode="after")
+    def validate_huber_delta_required_for_huber(self) -> "LossConfig":
+        """Enforce that huber_delta is only set (and required) for Huber loss."""
+        if self.type == "huber":
+            if self.huber_delta is None:
+                raise ValueError("LossConfig.huber_delta is required when type='huber'.")
+        else:
+            if self.huber_delta is not None:
+                raise ValueError("LossConfig.huber_delta must be omitted unless type='huber'.")
+        return self
 
 
 class ArchitectureConfig(BaseModel):
@@ -379,9 +394,47 @@ class ReplayConfig(BaseModel):
     prioritized: bool = Field(description="Use Prioritized Experience Replay (Schaul et al. 2016)")
 
     # PER parameters (required when prioritized=True)
-    priority_alpha: float = Field(default=0.6, ge=0.0, le=1.0, description="Prioritization exponent (0=uniform, 1=full prioritization)")
-    priority_beta: float = Field(default=0.4, ge=0.0, le=1.0, description="Importance sampling exponent (anneals to 1.0)")
-    priority_beta_annealing: bool = Field(default=True, description="Anneal beta to 1.0 over training")
+    priority_alpha: float | None = Field(
+        default=None,
+        ge=0.0,
+        le=1.0,
+        description="Prioritization exponent (0=uniform, 1=full prioritization). Required when prioritized=True.",
+    )
+    priority_beta: float | None = Field(
+        default=None,
+        ge=0.0,
+        le=1.0,
+        description="Importance sampling exponent (anneals to 1.0). Required when prioritized=True.",
+    )
+    priority_beta_annealing: bool | None = Field(
+        default=None,
+        description="Anneal beta to 1.0 over training. Required when prioritized=True.",
+    )
+
+    @model_validator(mode="after")
+    def validate_per_parameters(self) -> "ReplayConfig":
+        """Ensure PER parameters are present iff prioritized=True."""
+        if self.prioritized:
+            missing = []
+            if self.priority_alpha is None:
+                missing.append("priority_alpha")
+            if self.priority_beta is None:
+                missing.append("priority_beta")
+            if self.priority_beta_annealing is None:
+                missing.append("priority_beta_annealing")
+            if missing:
+                raise ValueError(
+                    "ReplayConfig with prioritized=True requires "
+                    + ", ".join(missing)
+                    + " to be specified explicitly (no defaults are applied)."
+                )
+        else:
+            # For non-prioritized replay, PER-specific parameters must not be set.
+            if self.priority_alpha is not None or self.priority_beta is not None or self.priority_beta_annealing is not None:
+                raise ValueError(
+                    "ReplayConfig with prioritized=False must not set priority_alpha, " "priority_beta, or priority_beta_annealing."
+                )
+        return self
 
 
 class QLearningConfig(BaseModel):
@@ -614,6 +667,9 @@ def build_brain_config_from_agent(agent: AgentConfig, training: TrainingV2Config
     replay_cfg = ReplayConfig(
         capacity=training.replay_buffer.capacity,
         prioritized=False,
+        priority_alpha=None,
+        priority_beta=None,
+        priority_beta_annealing=None,
     )
 
     # Loss configuration from agent.yaml brain.loss (no hidden defaults)

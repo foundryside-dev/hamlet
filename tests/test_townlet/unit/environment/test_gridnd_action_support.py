@@ -83,6 +83,7 @@ def gridnd_env(
     universe = compile_universe(gridnd_4d_config_pack)
     return VectorizedHamletEnv.from_universe(
         universe,
+        level_name="L0_test",
         num_agents=1,
         device=cpu_device,
     )

@@ -1443,7 +1443,10 @@ class UniverseCompiler:
 
         return OptimizationData(
             base_depletions=base_depletions,
-            cascade_data={"default": cascade_entries},
+            # v2.1: BarsV2Config does not classify cascades by tier; all
+            # meter-to-meter cascades are exposed under a single category
+            # consumed by MeterDynamics.apply_secondary_to_primary_effects.
+            cascade_data={"primary_to_pivotal": cascade_entries},
             modulation_data=modulation_entries,
             action_mask_table=action_mask_table,
             affordance_position_map={aff.name: None for aff in affordance_metadata.affordances},

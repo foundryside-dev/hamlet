@@ -150,11 +150,34 @@ class VectorizedHamletEnv:
 
         from townlet.environment.action_labels import get_labels
 
-        action_labels_config = self.universe.actions.actions.labels
-        self.action_labels = get_labels(
-            preset=action_labels_config.preset,
-            substrate_position_dim=self.substrate.position_dim,
-        )
+        # Support optional override via action_labels.yaml alongside actions.yaml.
+        # When present, this file should define a top-level 'custom' mapping from
+        # canonical indices to labels (0: 'PORT', 1: 'STARBOARD', ...).
+        custom_labels: dict[int, str] | None = None
+        labels_path = self.config_pack_path / "action_labels.yaml"
+        if labels_path.exists():
+            try:
+                import yaml
+
+                data = yaml.safe_load(labels_path.read_text()) or {}
+                raw_custom = data.get("custom")
+                if isinstance(raw_custom, dict):
+                    custom_labels = {int(k): str(v) for k, v in raw_custom.items()}
+            except Exception:  # pragma: no cover - defensive
+                custom_labels = None
+
+        if custom_labels:
+            self.action_labels = get_labels(
+                preset=None,
+                custom_labels=custom_labels,
+                substrate_position_dim=self.substrate.position_dim,
+            )
+        else:
+            action_labels_config = self.universe.actions.actions.labels
+            self.action_labels = get_labels(
+                preset=action_labels_config.preset,
+                substrate_position_dim=self.substrate.position_dim,
+            )
 
         # Metadata and observation activity
         self.metadata = self.universe.metadata

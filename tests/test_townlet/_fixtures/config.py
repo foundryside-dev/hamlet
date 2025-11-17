@@ -104,7 +104,9 @@ def compile_universe() -> Callable[[Path | str], CompiledUniverse]:
         if cache_key is not None and cache_key in cache:
             return cache[cache_key]
 
-        compiled = compiler.compile(target_path)
+        # Disable on-disk cache to ensure tests see the latest
+        # compiler semantics; rely on this in-memory cache instead.
+        compiled = compiler.compile(target_path, use_cache=False)
         if cache_key is not None:
             cache[cache_key] = compiled
         return compiled

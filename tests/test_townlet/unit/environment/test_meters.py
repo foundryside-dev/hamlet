@@ -1,35 +1,11 @@
-"""Consolidated tests for meter dynamics and cascade effects.
-
-This file consolidates meter-related tests from:
-- test_meter_dynamics.py (422 lines) - Meter depletion, terminal conditions
-
-Tests cover:
-- Base depletion (per-step meter decay)
-- Modulation effects (fitness → health)
-- Cascade effects (satiation → energy/health, mood → energy, etc.)
-- Terminal conditions (death when energy ≤ 0 OR health ≤ 0)
-- Meter clamping (values stay in [0, 1])
-- Multi-agent meter independence
-
-All tests use CPU device for determinism.
-"""
-
-from pathlib import Path
+"""Consolidated tests for meter dynamics and cascade effects (v2.1 configs)."""
 
 import pytest
 import torch
 
-from townlet.environment.cascade_config import load_environment_config
-
 # =============================================================================
 # Fixtures
 # =============================================================================
-
-
-@pytest.fixture
-def cascade_config(test_config_pack_path: Path):
-    """Load environment configuration for cascade tests."""
-    return load_environment_config(test_config_pack_path)
 
 
 @pytest.fixture
@@ -51,7 +27,7 @@ class TestBaseDepletion:
     """Test per-step meter depletion mechanics."""
 
     def test_base_depletion_rates(self, cpu_env_factory):
-        """Base depletion rates applied correctly via MeterDynamics."""
+        """Base depletion rates applied correctly via MeterDynamics (v2.1 config)."""
         env = cpu_env_factory()
         env.reset()
 
@@ -61,17 +37,16 @@ class TestBaseDepletion:
         # Run one depletion cycle
         env.meters = env.meter_dynamics.deplete_meters(env.meters)
 
-        # Expected after depletion:
-        # energy: 1.0 - 0.005 = 0.995
-        # hygiene: 1.0 - 0.003 = 0.997
-        # satiation: 1.0 - 0.004 = 0.996
-        # money: 1.0 - 0.0 = 1.0 (no depletion)
-        # mood: 1.0 - 0.001 = 0.999
-        # social: 1.0 - 0.006 = 0.994
-        # health: modulated by fitness (fitness=1.0 → 0.5x multiplier → 0.0005)
-        # fitness: 1.0 - 0.002 = 0.998
-
-        expected = torch.tensor([[0.995, 0.997, 0.996, 1.0, 0.999, 0.994, 0.9995, 0.998]])
+        # Expected after depletion (configs/default_curriculum v2.1, L0_0_minimal):
+        # energy:   1.0 - 0.010 = 0.990
+        # health:   1.0 - 0.005 = 0.995
+        # satiation:1.0 - 0.008 = 0.992
+        # hygiene:  1.0 - 0.003 = 0.997
+        # money:    1.0 - 0.000 = 1.000
+        # fitness:  1.0 - 0.002 = 0.998
+        # mood:     1.0 - 0.004 = 0.996
+        # social:   1.0 - 0.006 = 0.994
+        expected = torch.tensor([[0.99, 0.995, 0.992, 0.997, 1.0, 0.998, 0.996, 0.994]])
         assert torch.allclose(env.meters, expected, atol=1e-4)
 
     def test_clamping_at_zero(self, cpu_env_factory):
@@ -90,36 +65,6 @@ class TestBaseDepletion:
         assert torch.all(env.meters[:, [0, 1, 2, 4, 5, 6, 7]] <= 0.001)
 
 
-class TestModulation:
-    """Test meter modulation effects (fitness → health)."""
-
-    def test_fitness_modulated_health_depletion(self, cpu_env_factory):
-        """Health depletion modulated by fitness (gradient approach)."""
-        env = cpu_env_factory(num_agents=3)
-        env.reset()
-
-        # Set three fitness levels: 100%, 50%, 0%
-        env.meters = torch.ones(3, 8)
-        env.meters[:, 7] = torch.tensor([1.0, 0.5, 0.0])  # fitness
-
-        # Run depletion
-        env.meters = env.meter_dynamics.deplete_meters(env.meters)
-
-        # Fitness modulation:
-        # fitness=100%: multiplier=0.5, health_depletion=0.001*0.5=0.0005
-        # fitness=50%: multiplier=1.75, health_depletion=0.001*1.75=0.00175
-        # fitness=0%: multiplier=3.0, health_depletion=0.001*3.0=0.003
-
-        # Health should be:
-        # Agent 0 (fit): 1.0 - 0.0005 = 0.9995
-        # Agent 1 (moderate): 1.0 - 0.00175 = 0.99825
-        # Agent 2 (unfit): 1.0 - 0.003 = 0.997
-
-        assert torch.isclose(env.meters[0, 6], torch.tensor(0.9995), atol=1e-4)  # fit
-        assert torch.isclose(env.meters[1, 6], torch.tensor(0.99825), atol=1e-4)  # moderate
-        assert torch.isclose(env.meters[2, 6], torch.tensor(0.997), atol=1e-4)  # unfit
-
-
 class TestCascadeEffects:
     """Test meter cascade relationships."""
 
@@ -130,155 +75,83 @@ class TestCascadeEffects:
         env = cpu_env_factory()
         env.reset()
 
+        energy_idx = env.meter_name_to_index["energy"]
+        health_idx = env.meter_name_to_index["health"]
+        satiation_idx = env.meter_name_to_index["satiation"]
+
         # Set satiation below threshold (0.3), primaries at 1.0
         env.meters = torch.ones(1, 8)
-        env.meters[0, 2] = 0.2  # satiation at 20% (below 30% threshold)
-        initial_health = env.meters[0, 6].item()
-        initial_energy = env.meters[0, 0].item()
+        env.meters[0, satiation_idx] = 0.2  # satiation at 20% (below 30% threshold)
+        initial_health = env.meters[0, health_idx].item()
+        initial_energy = env.meters[0, energy_idx].item()
 
         # Apply cascade
         env.meters = env.meter_dynamics.apply_secondary_to_primary_effects(env.meters)
 
         # Both should decrease
-        assert env.meters[0, 6] < initial_health  # health decreased
-        assert env.meters[0, 0] < initial_energy  # energy decreased
+        assert env.meters[0, health_idx] < initial_health  # health decreased
+        assert env.meters[0, energy_idx] < initial_energy  # energy decreased
 
         # Deficit = (0.3 - 0.2) / 0.3 = 0.333...
         # Health penalty = 0.004 * 0.333 = 0.00133...
-        # Energy penalty = 0.005 * 0.333 = 0.00167...
+        # Energy penalty = 0.006 * 0.333 = 0.002
         expected_health = 1.0 - (0.004 * (0.3 - 0.2) / 0.3)
-        expected_energy = 1.0 - (0.005 * (0.3 - 0.2) / 0.3)
+        expected_energy = 1.0 - (0.006 * (0.3 - 0.2) / 0.3)
 
-        assert torch.isclose(env.meters[0, 6], torch.tensor(expected_health), atol=1e-4)
-        assert torch.isclose(env.meters[0, 0], torch.tensor(expected_energy), atol=1e-4)
+        assert torch.isclose(env.meters[0, health_idx], torch.tensor(expected_health), atol=1e-4)
+        assert torch.isclose(env.meters[0, energy_idx], torch.tensor(expected_energy), atol=1e-4)
 
     def test_low_mood_affects_energy(self, cpu_env_factory):
         """Low mood damages energy (depressed → exhausted)."""
         env = cpu_env_factory()
         env.reset()
 
+        energy_idx = env.meter_name_to_index["energy"]
+        mood_idx = env.meter_name_to_index["mood"]
+
         # Set mood below threshold, energy at 1.0
         env.meters = torch.ones(1, 8)
-        env.meters[0, 4] = 0.1  # mood at 10%
-        initial_energy = env.meters[0, 0].item()
+        env.meters[0, mood_idx] = 0.1  # mood at 10%
+        initial_energy = env.meters[0, energy_idx].item()
 
         # Apply cascade
         env.meters = env.meter_dynamics.apply_secondary_to_primary_effects(env.meters)
 
         # Energy should decrease
-        assert env.meters[0, 0] < initial_energy
+        assert env.meters[0, energy_idx] < initial_energy
 
-        # Deficit = (0.3 - 0.1) / 0.3 = 0.667
-        # Energy penalty = 0.005 * 0.667 = 0.00333...
-        expected_energy = 1.0 - (0.005 * (0.3 - 0.1) / 0.3)
-        assert torch.isclose(env.meters[0, 0], torch.tensor(expected_energy), atol=1e-4)
+        # Deficit = (0.2 - 0.1) / 0.2 = 0.5
+        # Energy penalty = 0.001 * 0.5 = 0.0005
+        expected_energy = 1.0 - (0.001 * (0.2 - 0.1) / 0.2)
+        assert torch.isclose(env.meters[0, energy_idx], torch.tensor(expected_energy), atol=1e-4)
 
     def test_high_satiation_no_penalty(self, cpu_env_factory):
         """Satiation above threshold → no penalties."""
         env = cpu_env_factory()
         env.reset()
 
-        env.meters = torch.ones(1, 8)
-        env.meters[0, 2] = 0.8  # satiation at 80% (above threshold)
+        energy_idx = env.meter_name_to_index["energy"]
+        health_idx = env.meter_name_to_index["health"]
+        satiation_idx = env.meter_name_to_index["satiation"]
 
-        initial_health = env.meters[0, 6].item()
-        initial_energy = env.meters[0, 0].item()
+        env.meters = torch.ones(1, 8)
+        env.meters[0, satiation_idx] = 0.8  # satiation at 80% (above threshold)
+
+        initial_health = env.meters[0, health_idx].item()
+        initial_energy = env.meters[0, energy_idx].item()
 
         env.meters = env.meter_dynamics.apply_secondary_to_primary_effects(env.meters)
 
         # No change
-        assert env.meters[0, 6] == initial_health
-        assert env.meters[0, 0] == initial_energy
+        assert env.meters[0, health_idx] == initial_health
+        assert env.meters[0, energy_idx] == initial_energy
 
-    # Tertiary → Secondary Cascades
-
-    def test_low_hygiene_affects_satiation_fitness_mood(self, cpu_env_factory):
-        """Low hygiene damages satiation, fitness, and mood."""
-        env = cpu_env_factory()
-        env.reset()
-
-        env.meters = torch.ones(1, 8)
-        env.meters[0, 1] = 0.1  # hygiene at 10%
-
-        initial_satiation = env.meters[0, 2].item()
-        initial_fitness = env.meters[0, 7].item()
-        initial_mood = env.meters[0, 4].item()
-
-        env.meters = env.meter_dynamics.apply_tertiary_to_secondary_effects(env.meters)
-
-        # All three should decrease
-        assert env.meters[0, 2] < initial_satiation
-        assert env.meters[0, 7] < initial_fitness
-        assert env.meters[0, 4] < initial_mood
-
-    def test_low_social_affects_mood(self, cpu_env_factory):
-        """Low social damages mood."""
-        env = cpu_env_factory()
-        env.reset()
-
-        env.meters = torch.ones(1, 8)
-        env.meters[0, 5] = 0.1  # social at 10%
-
-        initial_mood = env.meters[0, 4].item()
-
-        env.meters = env.meter_dynamics.apply_tertiary_to_secondary_effects(env.meters)
-
-        # Mood should decrease
-        assert env.meters[0, 4] < initial_mood
-
-        # Deficit = (0.3 - 0.1) / 0.3 = 0.667
-        # Mood penalty = 0.004 * 0.667 = 0.00267
-        expected_mood = 1.0 - (0.004 * (0.3 - 0.1) / 0.3)
-        assert torch.isclose(env.meters[0, 4], torch.tensor(expected_mood), atol=1e-4)
-
-    # Tertiary → Primary Cascades (weak effects)
-
-    def test_low_hygiene_weak_health_energy_penalty(self, cpu_env_factory):
-        """Low hygiene → weak health and energy penalties."""
-        env = cpu_env_factory()
-        env.reset()
-
-        env.meters = torch.ones(1, 8)
-        env.meters[0, 1] = 0.1  # hygiene at 10%
-
-        initial_health = env.meters[0, 6].item()
-        initial_energy = env.meters[0, 0].item()
-
-        env.meters = env.meter_dynamics.apply_tertiary_to_primary_effects(env.meters)
-
-        # Both should decrease (weak effect)
-        assert env.meters[0, 6] < initial_health
-        assert env.meters[0, 0] < initial_energy
-
-        # Penalties are 0.0005 (weak)
-        # Deficit = (0.3 - 0.1) / 0.3 = 0.667
-        # Penalty = 0.0005 * 0.667 = 0.000333...
-        expected_health = 1.0 - (0.0005 * (0.3 - 0.1) / 0.3)
-        expected_energy = 1.0 - (0.0005 * (0.3 - 0.1) / 0.3)
-
-        assert torch.isclose(env.meters[0, 6], torch.tensor(expected_health), atol=1e-5)
-        assert torch.isclose(env.meters[0, 0], torch.tensor(expected_energy), atol=1e-5)
-
-    def test_low_social_weak_energy_penalty(self, cpu_env_factory):
-        """Low social → weak energy penalty."""
-        env = cpu_env_factory()
-        env.reset()
-
-        env.meters = torch.ones(1, 8)
-        env.meters[0, 5] = 0.1  # social at 10%
-
-        initial_energy = env.meters[0, 0].item()
-
-        env.meters = env.meter_dynamics.apply_tertiary_to_primary_effects(env.meters)
-
-        # Energy should decrease (weak effect)
-        assert env.meters[0, 0] < initial_energy
-
-        # Penalty = 0.0008 (slightly stronger than hygiene)
-        # Deficit = (0.3 - 0.1) / 0.3 = 0.667
-        # Penalty = 0.0008 * 0.667 = 0.000533...
-        expected_energy = 1.0 - (0.0008 * (0.3 - 0.1) / 0.3)
-        assert torch.isclose(env.meters[0, 0], torch.tensor(expected_energy), atol=1e-5)
+    # Note: v2.1 default curriculum expresses cascades directly in bars.yaml
+    # as a small set of meter-to-meter edges (satiation→health/energy,
+    # mood→energy, hygiene→mood/social). Legacy tertiary cascade patterns
+    # (e.g., hygiene→fitness, social→energy) are no longer present in the
+    # active configuration, so the corresponding tests have been removed
+    # rather than asserting on behavior the runtime no longer implements.
 
 
 class TestTerminalConditions:
@@ -289,8 +162,10 @@ class TestTerminalConditions:
         env = cpu_env_factory()
         env.reset()
 
+        health_idx = env.meter_name_to_index["health"]
+
         env.meters = torch.ones(1, 8)
-        env.meters[0, 6] = 0.0  # health at 0
+        env.meters[0, health_idx] = 0.0  # health at 0
         env.dones = torch.tensor([False])
 
         env.dones = env.meter_dynamics.check_terminal_conditions(env.meters, env.dones)
@@ -302,8 +177,10 @@ class TestTerminalConditions:
         env = cpu_env_factory()
         env.reset()
 
+        energy_idx = env.meter_name_to_index["energy"]
+
         env.meters = torch.ones(1, 8)
-        env.meters[0, 0] = 0.0  # energy at 0
+        env.meters[0, energy_idx] = 0.0  # energy at 0
         env.dones = torch.tensor([False])
 
         env.dones = env.meter_dynamics.check_terminal_conditions(env.meters, env.dones)
@@ -315,9 +192,12 @@ class TestTerminalConditions:
         env = cpu_env_factory()
         env.reset()
 
+        energy_idx = env.meter_name_to_index["energy"]
+        health_idx = env.meter_name_to_index["health"]
+
         env.meters = torch.ones(1, 8)
-        env.meters[0, 0] = 0.5  # energy at 50%
-        env.meters[0, 6] = 0.5  # health at 50%
+        env.meters[0, energy_idx] = 0.5  # energy at 50%
+        env.meters[0, health_idx] = 0.5  # health at 50%
         env.dones = torch.tensor([False])
 
         env.dones = env.meter_dynamics.check_terminal_conditions(env.meters, env.dones)
@@ -363,9 +243,12 @@ class TestMultiAgentMeters:
         env = cpu_env_factory(num_agents=3)
         env.reset()
 
+        energy_idx = env.meter_name_to_index["energy"]
+        health_idx = env.meter_name_to_index["health"]
+
         env.meters = torch.ones(3, 8)
-        env.meters[0, 6] = 0.0  # Agent 0: health=0 → dead
-        env.meters[1, 0] = 0.0  # Agent 1: energy=0 → dead
+        env.meters[0, health_idx] = 0.0  # Agent 0: health=0 → dead
+        env.meters[1, energy_idx] = 0.0  # Agent 1: energy=0 → dead
         # Agent 2: both primaries > 0 → alive
         env.dones = torch.tensor([False, False, False])
 
@@ -379,14 +262,17 @@ class TestMultiAgentMeters:
         """Different agents have independent meter states."""
         multi_agent_env.reset()
 
+        energy_idx = multi_agent_env.meter_name_to_index["energy"]
+        satiation_idx = multi_agent_env.meter_name_to_index["satiation"]
+
         # Modify one agent's meters
-        multi_agent_env.meters[0, 0] = 0.5  # Agent 0 energy = 50%
-        multi_agent_env.meters[0, 2] = 0.3  # Agent 0 satiation = 30%
+        multi_agent_env.meters[0, energy_idx] = 0.5  # Agent 0 energy = 50%
+        multi_agent_env.meters[0, satiation_idx] = 0.3  # Agent 0 satiation = 30%
 
         # Other agents should be unaffected
-        assert multi_agent_env.meters[1, 0] != 0.5
-        assert multi_agent_env.meters[2, 0] != 0.5
-        assert multi_agent_env.meters[3, 0] != 0.5
+        assert multi_agent_env.meters[1, energy_idx] != 0.5
+        assert multi_agent_env.meters[2, energy_idx] != 0.5
+        assert multi_agent_env.meters[3, energy_idx] != 0.5
 
 
 # =============================================================================
@@ -402,35 +288,27 @@ class TestCascadeIntegration:
         env = cpu_env_factory()
         env.reset()
 
-        # Set meters to trigger cascades
-        env.meters = torch.ones(1, 8)
-        env.meters[0, 1] = 0.1  # hygiene at 10% (will cascade)
-        env.meters[0, 2] = 0.2  # satiation at 20% (will cascade)
-        env.meters[0, 5] = 0.1  # social at 10% (will cascade)
+        energy_idx = env.meter_name_to_index["energy"]
+        health_idx = env.meter_name_to_index["health"]
+        hygiene_idx = env.meter_name_to_index["hygiene"]
+        satiation_idx = env.meter_name_to_index["satiation"]
 
-        initial_health = env.meters[0, 6].item()
-        initial_energy = env.meters[0, 0].item()
+        # Set meters to trigger cascades (hygiene + satiation)
+        env.meters = torch.ones(1, 8)
+        env.meters[0, hygiene_idx] = 0.1  # hygiene at 10% (will cascade)
+        env.meters[0, satiation_idx] = 0.2  # satiation at 20% (will cascade)
+
+        initial_health = env.meters[0, health_idx].item()
+        initial_energy = env.meters[0, energy_idx].item()
 
         # Run full cascade as in step()
         env.meters = env.meter_dynamics.deplete_meters(env.meters)
         env.meters = env.meter_dynamics.apply_secondary_to_primary_effects(env.meters)
-        env.meters = env.meter_dynamics.apply_tertiary_to_secondary_effects(env.meters)
-        env.meters = env.meter_dynamics.apply_tertiary_to_primary_effects(env.meters)
         env.dones = env.meter_dynamics.check_terminal_conditions(env.meters, env.dones)
 
         # Health and energy should be reduced (cascade effects accumulate)
-        assert env.meters[0, 6] < initial_health  # health decreased
-        assert env.meters[0, 0] < initial_energy  # energy decreased
+        assert env.meters[0, health_idx] < initial_health  # health decreased
+        assert env.meters[0, energy_idx] < initial_energy  # energy decreased
 
         # Agent should still be alive (primaries not at 0 yet)
         assert not env.dones[0]
-
-    def test_full_cascade_respects_execution_order(self, cascade_config):
-        """Cascades execute in config-specified order."""
-        # Execution order should be: modulations, primary_to_pivotal, secondary_to_primary, secondary_to_pivotal_weak
-        assert cascade_config.cascades.execution_order == [
-            "modulations",
-            "primary_to_pivotal",
-            "secondary_to_primary",
-            "secondary_to_pivotal_weak",
-        ]

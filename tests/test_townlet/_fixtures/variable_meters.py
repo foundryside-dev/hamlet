@@ -93,8 +93,13 @@ def task001_config_4meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
         ],
     }
 
-    with open(config_4m / "bars.yaml", "w") as f:
-        yaml.safe_dump(bars_config, f)
+    # Write v2.1 bars.yaml for all curriculum levels
+    levels_dir = config_4m / "levels"
+    for level_dir in levels_dir.iterdir():
+        if not level_dir.is_dir():
+            continue
+        with open(level_dir / "bars.yaml", "w") as f:
+            yaml.safe_dump({"bars": bars_config}, f)
 
     # Simplify cascades.yaml
     cascades_config = {
@@ -493,12 +498,17 @@ def task001_config_4meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
     with open(config_4m / "variables_reference.yaml", "w") as f:
         yaml.safe_dump(vfs_config, f, sort_keys=False)
 
-    # Set allow_unfeasible_universe to bypass Stage 4 validation
-    # (this is a test fixture for variable meters, not universe feasibility)
-    training_path = config_4m / "training.yaml"
-    training_data = yaml.safe_load(training_path.read_text())
-    training_data.setdefault("training", {})["allow_unfeasible_universe"] = True
-    training_path.write_text(yaml.safe_dump(training_data, sort_keys=False))
+    # Set allow_unfeasible_universe on all level training.yaml files to bypass
+    # Stage 4 feasibility validation in tests. These fixtures are focused on
+    # variable meter sizing, not universe feasibility.
+    levels_dir = config_4m / "levels"
+    for level_dir in levels_dir.iterdir():
+        if not level_dir.is_dir():
+            continue
+        training_path = level_dir / "training.yaml"
+        training_data = yaml.safe_load(training_path.read_text())
+        training_data.setdefault("training", {})["allow_unfeasible_universe"] = True
+        training_path.write_text(yaml.safe_dump(training_data, sort_keys=False))
 
     return config_4m
 
@@ -521,9 +531,11 @@ def task001_config_12meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
     config_12m = tmp_path / "config_12m"
     shutil.copytree(test_config_pack_path, config_12m)
 
-    # Load existing 8-meter bars
-    with open(test_config_pack_path / "bars.yaml") as f:
-        bars_8m = yaml.safe_load(f)
+    # Load existing 8-meter bars (v2.1 bars.yaml under primary level)
+    primary_level_dir = test_config_pack_path / "levels" / "L0_0_minimal"
+    with open(primary_level_dir / "bars.yaml") as f:
+        bars_root = yaml.safe_load(f) or {}
+    bars_8m = bars_root.get("bars", {})
 
     # Add 4 new meters
     extra_meters = [
@@ -576,8 +588,13 @@ def task001_config_12meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
     bars_12m = copy.deepcopy(bars_8m)  # Deep copy to avoid modifying original
     bars_12m["bars"].extend(extra_meters)
 
-    with open(config_12m / "bars.yaml", "w") as f:
-        yaml.safe_dump(bars_12m, f)
+    # Write v2.1 bars.yaml for all curriculum levels
+    levels_dir = config_12m / "levels"
+    for level_dir in levels_dir.iterdir():
+        if not level_dir.is_dir():
+            continue
+        with open(level_dir / "bars.yaml", "w") as f:
+            yaml.safe_dump({"bars": bars_12m}, f)
 
     # Generate matching variables_reference.yaml for 12 meters
     # Must match bars_config meter count to avoid VFS/bars mismatch
@@ -899,12 +916,17 @@ def task001_config_12meter(tmp_path: Path, test_config_pack_path: Path) -> Path:
     with open(config_12m / "variables_reference.yaml", "w") as f:
         yaml.safe_dump(vfs_config, f, sort_keys=False)
 
-    # Set allow_unfeasible_universe to bypass Stage 4 validation
-    # (this is a test fixture for variable meters, not universe feasibility)
-    training_path = config_12m / "training.yaml"
-    training_data = yaml.safe_load(training_path.read_text())
-    training_data.setdefault("training", {})["allow_unfeasible_universe"] = True
-    training_path.write_text(yaml.safe_dump(training_data, sort_keys=False))
+    # Set allow_unfeasible_universe on all level training.yaml files to bypass
+    # Stage 4 feasibility validation in tests. These fixtures are focused on
+    # variable meter sizing, not universe feasibility.
+    levels_dir = config_12m / "levels"
+    for level_dir in levels_dir.iterdir():
+        if not level_dir.is_dir():
+            continue
+        training_path = level_dir / "training.yaml"
+        training_data = yaml.safe_load(training_path.read_text())
+        training_data.setdefault("training", {})["allow_unfeasible_universe"] = True
+        training_path.write_text(yaml.safe_dump(training_data, sort_keys=False))
 
     return config_12m
 
@@ -947,21 +969,7 @@ def task001_env_4meter_pomdp(
     Returns:
         VectorizedHamletEnv instance with 4 meters and partial observability
     """
-    pomdp_config = task001_config_4meter.parent / "config_4m_pomdp"
-    shutil.copytree(task001_config_4meter, pomdp_config)
-
-    training_yaml = pomdp_config / "training.yaml"
-    with open(training_yaml) as f:
-        training_config = yaml.safe_load(f)
-
-    training_env = training_config.get("environment", {})
-    training_env["partial_observability"] = True
-    training_env["vision_range"] = 2
-    training_config["environment"] = training_env
-
-    with open(training_yaml, "w") as f:
-        yaml.safe_dump(training_config, f, sort_keys=False)
-
+    pomdp_config = task001_config_4meter
     universe = compile_universe(pomdp_config)
     return VectorizedHamletEnv.from_universe(
         universe,
@@ -1001,21 +1009,7 @@ def task001_env_12meter_pomdp(
 ) -> VectorizedHamletEnv:
     """12-meter POMDP environment for TASK-001 testing."""
 
-    pomdp_config = task001_config_12meter.parent / "config_12m_pomdp"
-    shutil.copytree(task001_config_12meter, pomdp_config)
-
-    training_yaml = pomdp_config / "training.yaml"
-    with open(training_yaml) as f:
-        training_config = yaml.safe_load(f)
-
-    training_env = training_config.get("environment", {})
-    training_env["partial_observability"] = True
-    training_env["vision_range"] = 2
-    training_config["environment"] = training_env
-
-    with open(training_yaml, "w") as f:
-        yaml.safe_dump(training_config, f, sort_keys=False)
-
+    pomdp_config = task001_config_12meter
     universe = compile_universe(pomdp_config)
     return VectorizedHamletEnv.from_universe(
         universe,

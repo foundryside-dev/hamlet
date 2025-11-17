@@ -121,9 +121,10 @@ class AffordanceConfig(BaseModel):
         if isinstance(value, list):
             if not value or not all(isinstance(coord, int) for coord in value):
                 raise ValueError("List position must contain integer coordinates")
-            # Lists represent explicit spatial coordinates; restrict to 2D or 3D.
-            if len(value) not in (2, 3):
-                raise ValueError(f"List position must be 2D or 3D, got {len(value)}D")
+            # Lists represent explicit spatial coordinates; allow 1D (continuous),
+            # 2D, or 3D substrates.
+            if len(value) not in (1, 2, 3):
+                raise ValueError(f"List position must be 1D, 2D, or 3D, got {len(value)}D")
             return value
 
         if isinstance(value, dict):

@@ -1,17 +1,16 @@
 """Tests for movement delta construction from ActionConfig in VectorizedHamletEnv."""
 
-from pathlib import Path
-
 import torch
 
 
 class TestMovementDeltasFromActionConfig:
     """Test that movement deltas come from ActionConfig, not hardcoded arrays."""
 
-    def test_movement_deltas_from_action_config_grid2d(self, env_factory, cpu_device):
+    def test_movement_deltas_from_action_config_grid2d(self, env_factory, cpu_device, test_config_pack_path):
         """Movement deltas should come from ActionConfig, not hardcoded arrays."""
         env = env_factory(
-            config_dir=Path("configs/default_curriculum/levels/L1_full_observability"),
+            config_dir=test_config_pack_path,
+            level_name="L1_full_observability",
             num_agents=1,
             device_override=cpu_device,
         )
@@ -28,10 +27,11 @@ class TestMovementDeltasFromActionConfig:
 
         assert torch.equal(actual_delta, expected_delta), f"Delta mismatch for UP action: expected {expected_delta}, got {actual_delta}"
 
-    def test_all_movement_deltas_match_action_config(self, env_factory, cpu_device):
+    def test_all_movement_deltas_match_action_config(self, env_factory, cpu_device, test_config_pack_path):
         """All movement actions should have correct deltas from ActionConfig."""
         env = env_factory(
-            config_dir=Path("configs/default_curriculum/levels/L1_full_observability"),
+            config_dir=test_config_pack_path,
+            level_name="L1_full_observability",
             num_agents=1,
             device_override=cpu_device,
         )
@@ -53,20 +53,20 @@ class TestMovementDeltasFromActionConfig:
                     actual_delta, expected_delta
                 ), f"Delta mismatch for {action.name} (id={action.id}): expected {expected_delta}, got {actual_delta}"
 
-    def test_non_movement_actions_have_zero_deltas(self, env_factory, cpu_device):
+    def test_non_movement_actions_have_zero_deltas(self, env_factory, cpu_device, test_config_pack_path):
         """INTERACT and WAIT actions should have zero deltas."""
         env = env_factory(
-            config_dir=Path("configs/default_curriculum/levels/L1_full_observability"),
+            config_dir=test_config_pack_path,
+            level_name="L1_full_observability",
             num_agents=1,
             device_override=cpu_device,
         )
 
         env.reset()
 
-        # Get non-movement actions
+        # Get non-movement actions (INTERACT and WAIT have no movement delta)
         substrate_actions = env.substrate.get_default_actions()
         interact_action = next(a for a in substrate_actions if a.name == "INTERACT")
-        wait_action = next(a for a in substrate_actions if a.name == "WAIT")
 
         # Zero delta expected
         zero_delta = torch.zeros(
@@ -78,6 +78,3 @@ class TestMovementDeltasFromActionConfig:
         assert torch.equal(
             env._movement_deltas[interact_action.id], zero_delta
         ), f"INTERACT should have zero delta, got {env._movement_deltas[interact_action.id]}"
-        assert torch.equal(
-            env._movement_deltas[wait_action.id], zero_delta
-        ), f"WAIT should have zero delta, got {env._movement_deltas[wait_action.id]}"

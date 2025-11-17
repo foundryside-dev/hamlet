@@ -196,7 +196,7 @@ class TestAffordanceConfigValidation:
         assert AffordanceConfig(**base_kwargs, position=3).position == 3
 
         with pytest.raises(ValueError):
-            AffordanceConfig(**base_kwargs, position=[1])  # Wrong dimensionality
+            AffordanceConfig(**base_kwargs, position=[1, 2, 3, 4])  # Wrong dimensionality
 
         with pytest.raises(ValueError):
             AffordanceConfig(**base_kwargs, position={"x": 1})  # Wrong keys

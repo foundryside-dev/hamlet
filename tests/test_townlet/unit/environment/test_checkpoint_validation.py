@@ -99,21 +99,23 @@ class TestCheckpointValidation:
             device=cpu_device,
         )
 
-        # Create valid checkpoint with correct position_dim
+        # Create valid checkpoint with correct position_dim using known affordances
+        first_two = list(env.affordances.keys())[:2]
+        assert len(first_two) == 2  # sanity check for test config
+        positions = {first_two[0]: [3, 4], first_two[1]: [1, 2]}
         valid_checkpoint = {
-            "positions": {"Bed": [3, 4], "Hospital": [1, 2]},
-            "ordering": ["Bed", "Hospital"],
-            "position_dim": 2,  # Matches Grid2D substrate
+            "positions": positions,
+            "ordering": first_two,
+            "position_dim": env.substrate.position_dim,  # Matches substrate dimension (2D Grid)
         }
 
         # Should load successfully (no exception)
         env.set_affordance_positions(valid_checkpoint)
 
         # Verify positions were loaded
-        assert "Bed" in env.affordances
-        assert "Hospital" in env.affordances
-        assert env.affordances["Bed"].tolist() == [3, 4]
-        assert env.affordances["Hospital"].tolist() == [1, 2]
+        for name, expected in positions.items():
+            assert name in env.affordances
+            assert env.affordances[name].tolist() == expected
 
 
 class TestActionLabelLoading:
@@ -128,7 +130,8 @@ class TestActionLabelLoading:
         Coverage target: lines 106-119 (custom action label loading)
         """
         config_dir = tmp_path / "custom_labels_config"
-        shutil.copytree(Path("configs/test"), config_dir)
+        # Use model_config as v2.1-compatible base pack.
+        shutil.copytree(Path("configs/test/model_config"), config_dir)
 
         action_labels_config = {
             "custom": {

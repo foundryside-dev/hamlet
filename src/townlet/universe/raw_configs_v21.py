@@ -336,22 +336,23 @@ class RawConfigsV21:
                         "declared in environment.yaml."
                     )
 
-        # Capacity check for grid substrates: hard error if deployed affordances + agents exceed grid capacity.
-        if grid_capacity is not None:
-            deployed_count = len(normalized_enabled)
-            population_size = getattr(level.training.population, "size", 0)
-            required_slots = deployed_count + population_size
-            if required_slots > grid_capacity:
-                raise ValueError(
-                    "Grid capacity exceeded for level configuration.\n"
-                    f"  Experiment: {self.experiment_dir}\n"
-                    f"  Level: {level_name}\n"
-                    f"  Capacity (cells): {grid_capacity}\n"
-                    f"  Agents: {population_size}\n"
-                    f"  Affordances deployed: {deployed_count}\n"
-                    f"  Required slots: {required_slots}\n"
-                    "\nReduce population size or enabled affordances, or increase grid dimensions."
-                )
+            # Capacity check for grid substrates: hard error if deployed affordances + agents exceed grid capacity.
+            # NOTE: This check must be INSIDE the loop to validate ALL levels, not just the last one.
+            if grid_capacity is not None:
+                deployed_count = len(normalized_enabled)
+                population_size = getattr(level.training.population, "size", 0)
+                required_slots = deployed_count + population_size
+                if required_slots > grid_capacity:
+                    raise ValueError(
+                        "Grid capacity exceeded for level configuration.\n"
+                        f"  Experiment: {self.experiment_dir}\n"
+                        f"  Level: {level_name}\n"
+                        f"  Capacity (cells): {grid_capacity}\n"
+                        f"  Agents: {population_size}\n"
+                        f"  Affordances deployed: {deployed_count}\n"
+                        f"  Required slots: {required_slots}\n"
+                        "\nReduce population size or enabled affordances, or increase grid dimensions."
+                    )
 
     @classmethod
     def from_experiment_dir(cls, experiment_dir: Path) -> RawConfigsV21:

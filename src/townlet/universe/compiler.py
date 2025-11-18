@@ -1311,7 +1311,14 @@ class UniverseCompiler:
         return tuple(fields)
 
     def _build_vfs_variables(self, obs_spec: ObservationSpec, environment: EnvConfigV21) -> tuple[VariableDef, ...]:
-        """Build VFS variables from observation fields + environment variables."""
+        """Build VFS variables from observation fields + environment variables.
+
+        Creates VariableDefs for:
+        1. System observation primitives (obs_position, obs_meters, etc.) from obs_spec
+        2. User-defined variables from environment.environment.variables
+
+        This ensures every VFSObservationField.source_variable has a backing VariableDef.
+        """
         vars_out: list[VariableDef] = []
 
         def _convert_normalization(var_name: str, norm_cfg: Any) -> NormalizationSpec:
@@ -1363,7 +1370,36 @@ class UniverseCompiler:
                 f"Unsupported normalization method '{method}' for variable '{var_name}'. " "Use clip | normalize | standardize."
             )
 
-        # Environment-declared variables (explicit only; no auto-generation beyond obs fields)
+        # Build lookup of user-defined variable names
+        user_var_names = {var.name for var in environment.environment.variables}
+
+        # System observation primitives (obs_position, obs_meters, obs_grid_encoding, etc.)
+        # These are compiler-generated fields from obs_spec that need backing VariableDefs
+        for field in obs_spec.fields:
+            # Skip user-defined variables - they're handled below with full metadata from environment.yaml
+            if field.name in user_var_names:
+                continue
+
+            # Create VariableDef for system primitives
+            is_vector = field.dims > 1
+            default = [0.0] * field.dims if is_vector else 0.0
+
+            vars_out.append(
+                VariableDef(
+                    id=field.name,
+                    scope="agent",  # All observation primitives are agent-scoped
+                    type="vecNf" if is_vector else "scalar",
+                    dims=field.dims if is_vector else None,
+                    lifetime="tick",  # Refreshed every step
+                    readable_by=["agent", "engine"],
+                    writable_by=["engine"],  # Only engine writes observation primitives
+                    default=default,
+                    description=field.description or f"System observation primitive: {field.name}",
+                    normalization=None,  # System primitives are pre-normalized by environment
+                )
+            )
+
+        # User-defined variables (explicit declaration from environment.yaml)
         for var in environment.environment.variables:
             raw_dims = getattr(var, "dims", None)
             # Treat dims == 1 as scalar; dims > 1 become vecNf

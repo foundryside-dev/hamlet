@@ -743,6 +743,80 @@ class TestAdversarialCurriculumBatchDecisions:
         assert decisions[0].reward_mode == "sparse"
         assert "SPARSE" in decisions[0].reason
 
+    def test_adversarial_curriculum_thresholds_from_config(self, cpu_device):
+        """AdversarialCurriculum should apply thresholds from TrainingV2Config.adversarial."""
+        from townlet.config.training_v2_config import AdversarialCurriculumConfig
+
+        cfg = AdversarialCurriculumConfig(
+            difficulty_metric="survival_rate",
+            adaptation_rate=0.1,
+            min_difficulty=0.2,
+            max_difficulty=0.8,
+            survival_advance_threshold=0.75,
+            survival_retreat_threshold=0.25,
+            entropy_gate=0.4,
+            min_steps_at_stage=200,
+        )
+
+        curriculum = AdversarialCurriculum(
+            max_steps_per_episode=500,
+            survival_advance_threshold=0.7,
+            survival_retreat_threshold=0.3,
+            entropy_gate=0.5,
+            min_steps_at_stage=100,
+            device=cpu_device,
+        )
+
+        curriculum.configure_from_training(cfg)
+
+        assert curriculum.survival_advance_threshold == cfg.survival_advance_threshold
+        assert curriculum.survival_retreat_threshold == cfg.survival_retreat_threshold
+        assert curriculum.entropy_gate == cfg.entropy_gate
+        assert curriculum.min_steps_at_stage == cfg.min_steps_at_stage
+
+    def test_adversarial_curriculum_difficulty_mapping_from_config(self, cpu_device):
+        """difficulty_level should map stages into configured [min_difficulty, max_difficulty] range."""
+        from townlet.config.training_v2_config import AdversarialCurriculumConfig
+
+        cfg = AdversarialCurriculumConfig(
+            difficulty_metric="survival_rate",
+            adaptation_rate=0.1,
+            min_difficulty=0.2,
+            max_difficulty=0.6,
+            survival_advance_threshold=0.7,
+            survival_retreat_threshold=0.3,
+            entropy_gate=0.5,
+            min_steps_at_stage=100,
+        )
+
+        curriculum = AdversarialCurriculum(max_steps_per_episode=100, device=cpu_device)
+        curriculum.configure_from_training(cfg)
+        curriculum.initialize_population(num_agents=5)
+
+        # Stages 1-5
+        curriculum.tracker.agent_stages = torch.tensor([1, 2, 3, 4, 5], device=cpu_device)
+
+        q_values = torch.ones(5, 5, device=cpu_device)
+        agent_states = BatchedAgentState(
+            observations=torch.zeros((5, 10), device=cpu_device),
+            actions=torch.zeros(5, dtype=torch.long, device=cpu_device),
+            rewards=torch.zeros(5, device=cpu_device),
+            dones=torch.zeros(5, dtype=torch.bool, device=cpu_device),
+            epsilons=torch.zeros(5, device=cpu_device),
+            intrinsic_rewards=torch.zeros(5, device=cpu_device),
+            survival_times=torch.zeros(5, device=cpu_device),
+            curriculum_difficulties=torch.zeros(5, device=cpu_device),
+            device=cpu_device,
+        )
+
+        decisions = curriculum.get_batch_decisions_with_qvalues(agent_states, ["a0", "a1", "a2", "a3", "a4"], q_values)
+
+        # Base mapping is (stage-1)/4.0, so with [0.2, 0.6]:
+        # stage 1 -> 0.2, 3 -> 0.4, 5 -> 0.6
+        assert abs(decisions[0].difficulty_level - 0.2) < 1e-6
+        assert abs(decisions[2].difficulty_level - 0.4) < 1e-6
+        assert abs(decisions[4].difficulty_level - 0.6) < 1e-6
+
 
 # =============================================================================
 # ADVERSARIAL CURRICULUM: STATE PERSISTENCE

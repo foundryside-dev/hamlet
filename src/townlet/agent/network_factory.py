@@ -4,10 +4,15 @@ Builds neural networks from BrainConfig specifications.
 Forward-compatible with future SDA (Software Defined Agent) architecture.
 """
 
+from typing import TYPE_CHECKING
+
 import torch.nn as nn
 
 from townlet.agent.brain_config import DuelingConfig, FeedforwardConfig, RecurrentConfig
 from townlet.agent.networks import DuelingQNetwork, RecurrentSpatialQNetwork
+
+if TYPE_CHECKING:
+    from townlet.universe.dto import ObservationSpec
 
 
 class NetworkFactory:
@@ -70,6 +75,7 @@ class NetworkFactory:
         position_dim: int,
         num_meters: int,
         num_affordance_types: int,
+        observation_spec: ObservationSpec | None = None,
     ) -> RecurrentSpatialQNetwork:
         """Build recurrent LSTM Q-network from configuration.
 
@@ -122,6 +128,7 @@ class NetworkFactory:
             num_affordance_types=num_affordance_types,
             enable_temporal_features=False,  # Will be determined by environment
             hidden_dim=lstm_hidden_size,  # From config instead of hardcoded!
+            observation_spec=observation_spec,
         )
 
         return network

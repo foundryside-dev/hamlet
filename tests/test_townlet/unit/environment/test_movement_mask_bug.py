@@ -18,6 +18,12 @@ def _action_tensor(env, action_name: str) -> torch.Tensor:
     return torch.tensor([action_id], dtype=torch.long, device=env.device)
 
 
+def _meter_idx(env, name: str) -> int | None:
+    """Lookup meter index from runtime metadata."""
+
+    return env.meter_name_to_index.get(name)
+
+
 def test_aspatial_interact_should_not_pay_movement_cost(aspatial_env):
     """Aspatial INTERACT should pay base_depletion + interaction cost (not movement costs).
 
@@ -37,18 +43,22 @@ def test_aspatial_interact_should_not_pay_movement_cost(aspatial_env):
     env._handle_interactions = lambda interact_mask: {}
 
     # Record initial energy
-    initial_energy = env.meters[0, env.energy_idx].item()
+    energy_idx = _meter_idx(env, "energy")
+    assert energy_idx is not None
+    initial_energy = env.meters[0, energy_idx].item()
 
     # Agent takes INTERACT action (action 0 for aspatial)
     interact_action = _action_tensor(env, "INTERACT")
     env.step(interact_action)
 
     # Check energy cost
-    final_energy = env.meters[0, env.energy_idx].item()
+    final_energy = env.meters[0, energy_idx].item()
     energy_cost = initial_energy - final_energy
 
     # Should pay base_depletion + base_interaction_cost (from bars.yaml)
-    expected_cost = 0.010  # 0.005 base + 0.005 interaction
+    base_depletion = env.meter_dynamics.get_base_depletion("energy")
+    interaction_cost = next(bar.depletion.interact for bar in env.bars_config.meters if bar.name == "energy")
+    expected_cost = base_depletion + interaction_cost
     actual_cost = energy_cost
 
     assert abs(actual_cost - expected_cost) < 1e-6, f"INTERACT should cost {expected_cost:.3%}, but cost {actual_cost:.3%}"
@@ -68,18 +78,20 @@ def test_aspatial_wait_should_not_pay_movement_cost(aspatial_env):
     env.reset()
 
     # Record initial energy
-    initial_energy = env.meters[0, env.energy_idx].item()
+    energy_idx = _meter_idx(env, "energy")
+    assert energy_idx is not None
+    initial_energy = env.meters[0, energy_idx].item()
 
     # Agent takes WAIT action (action 1 for aspatial)
     wait_action = _action_tensor(env, "WAIT")
     env.step(wait_action)
 
     # Check energy cost
-    final_energy = env.meters[0, env.energy_idx].item()
+    final_energy = env.meters[0, energy_idx].item()
     energy_cost = initial_energy - final_energy
 
     # Should pay only base_depletion (WAIT has no additional cost - JANK-03)
-    base_depletion = env.base_depletions[env.energy_idx].item()
+    base_depletion = env.meter_dynamics.get_base_depletion("energy")
     expected_cost = base_depletion  # 0.005
     actual_cost = energy_cost
 
@@ -103,14 +115,16 @@ def test_1d_interact_should_not_pay_movement_cost(continuous1d_env):
     env._handle_interactions = lambda interact_mask: {}
 
     # Record initial energy
-    initial_energy = env.meters[0, env.energy_idx].item()
+    energy_idx = _meter_idx(env, "energy")
+    assert energy_idx is not None
+    initial_energy = env.meters[0, energy_idx].item()
 
     # Agent takes INTERACT action (action 2 for 1D)
     interact_action = _action_tensor(env, "INTERACT")
     env.step(interact_action)
 
     # Check energy cost
-    final_energy = env.meters[0, env.energy_idx].item()
+    final_energy = env.meters[0, energy_idx].item()
     energy_cost = initial_energy - final_energy
 
     # Should pay base_depletion + base_interaction_cost (from bars.yaml)
@@ -134,18 +148,21 @@ def test_1d_wait_should_not_pay_movement_cost(continuous1d_env):
     env.reset()
 
     # Record initial energy
-    initial_energy = env.meters[0, env.energy_idx].item()
+    energy_idx = _meter_idx(env, "energy")
+    assert energy_idx is not None
+    initial_energy = env.meters[0, energy_idx].item()
 
     # Agent takes WAIT action (action 3 for 1D)
     wait_action = _action_tensor(env, "WAIT")
     env.step(wait_action)
 
     # Check energy cost
-    final_energy = env.meters[0, env.energy_idx].item()
+    final_energy = env.meters[0, energy_idx].item()
     energy_cost = initial_energy - final_energy
 
     # Should pay only base_depletion (WAIT has no additional cost - JANK-03)
-    expected_cost = 0.005  # base_depletion only
+    base_depletion = env.meter_dynamics.get_base_depletion("energy")
+    expected_cost = base_depletion
     actual_cost = energy_cost
 
     assert abs(actual_cost - expected_cost) < 1e-6, f"WAIT should cost {expected_cost:.3%}, but cost {actual_cost:.3%}"
@@ -165,26 +182,29 @@ def test_aspatial_hygiene_satiation_only_pay_base_depletion(aspatial_env):
     env.reset()
 
     # Record initial meters
-    initial_hygiene = env.meters[0, env.hygiene_idx].item() if env.hygiene_idx is not None else None
-    initial_satiation = env.meters[0, env.satiation_idx].item() if env.satiation_idx is not None else None
+    hygiene_idx = _meter_idx(env, "hygiene")
+    satiation_idx = _meter_idx(env, "satiation")
+    initial_hygiene = env.meters[0, hygiene_idx].item() if hygiene_idx is not None else None
+    initial_satiation = env.meters[0, satiation_idx].item() if satiation_idx is not None else None
 
     # Agent takes INTERACT action
+    env._handle_interactions = lambda interact_mask: {}
     interact_action = _action_tensor(env, "INTERACT")
     env.step(interact_action)
 
     # Check hygiene/satiation changes match base_depletion (not movement penalties)
-    if env.hygiene_idx is not None:
-        final_hygiene = env.meters[0, env.hygiene_idx].item()
+    if hygiene_idx is not None:
+        final_hygiene = env.meters[0, hygiene_idx].item()
         hygiene_cost = initial_hygiene - final_hygiene
-        expected_hygiene_cost = 0.003  # base_depletion from bars.yaml
+        expected_hygiene_cost = env.meter_dynamics.get_base_depletion("hygiene")
         assert (
             abs(hygiene_cost - expected_hygiene_cost) < 1e-6
         ), f"Hygiene should cost {expected_hygiene_cost:.3%} (base only), but cost {hygiene_cost:.3%}"
 
-    if env.satiation_idx is not None:
-        final_satiation = env.meters[0, env.satiation_idx].item()
+    if satiation_idx is not None:
+        final_satiation = env.meters[0, satiation_idx].item()
         satiation_cost = initial_satiation - final_satiation
-        expected_satiation_cost = 0.004  # base_depletion from bars.yaml
+        expected_satiation_cost = env.meter_dynamics.get_base_depletion("satiation")
         assert (
             abs(satiation_cost - expected_satiation_cost) < 1e-6
         ), f"Satiation should cost {expected_satiation_cost:.3%} (base only), but cost {satiation_cost:.3%}"
@@ -205,14 +225,16 @@ def test_1d_movement_should_pay_movement_cost(continuous1d_env):
     env.reset()
 
     # Record initial energy
-    initial_energy = env.meters[0, env.energy_idx].item()
+    energy_idx = _meter_idx(env, "energy")
+    assert energy_idx is not None
+    initial_energy = env.meters[0, energy_idx].item()
 
     # Agent takes LEFT action (action 0 for 1D)
     left_action = _action_tensor(env, "LEFT")
     env.step(left_action)
 
     # Check energy cost
-    final_energy = env.meters[0, env.energy_idx].item()
+    final_energy = env.meters[0, energy_idx].item()
     energy_cost = initial_energy - final_energy
 
     # Should pay base_depletion + move_energy_cost
@@ -230,15 +252,19 @@ def test_3d_interact_should_not_pay_movement_cost(continuous3d_env):
     # Remove affordance side-effects to isolate action costs
     env._handle_interactions = lambda interact_mask: {}
 
-    initial_energy = env.meters[0, env.energy_idx].item()
+    energy_idx = _meter_idx(env, "energy")
+    assert energy_idx is not None
+    initial_energy = env.meters[0, energy_idx].item()
 
     interact_action = _action_tensor(env, "INTERACT")
     env.step(interact_action)
 
-    final_energy = env.meters[0, env.energy_idx].item()
+    final_energy = env.meters[0, energy_idx].item()
     energy_cost = initial_energy - final_energy
 
-    expected_cost = 0.010  # 0.005 base + 0.005 interaction
+    base_depletion = env.meter_dynamics.get_base_depletion("energy")
+    interaction_cost = next(bar.depletion.interact for bar in env.bars_config.meters if bar.name == "energy")
+    expected_cost = base_depletion + interaction_cost
     assert abs(energy_cost - expected_cost) < 1e-6, f"3D INTERACT should cost {expected_cost:.3%}, but cost {energy_cost:.3%}"
 
 
@@ -247,15 +273,17 @@ def test_3d_wait_should_not_pay_movement_cost(continuous3d_env):
     env = continuous3d_env
     env.reset()
 
-    initial_energy = env.meters[0, env.energy_idx].item()
+    energy_idx = _meter_idx(env, "energy")
+    assert energy_idx is not None
+    initial_energy = env.meters[0, energy_idx].item()
 
     wait_action = _action_tensor(env, "WAIT")
     env.step(wait_action)
 
-    final_energy = env.meters[0, env.energy_idx].item()
+    final_energy = env.meters[0, energy_idx].item()
     energy_cost = initial_energy - final_energy
 
-    expected_cost = 0.005  # base_depletion only (WAIT has no additional cost)
+    expected_cost = env.meter_dynamics.get_base_depletion("energy")  # base_depletion only
     assert abs(energy_cost - expected_cost) < 1e-6, f"3D WAIT should cost {expected_cost:.3%}, but cost {energy_cost:.3%}"
 
 
@@ -268,13 +296,17 @@ def test_3d_vertical_movement_should_pay_movement_cost(continuous3d_env):
     env = continuous3d_env
     env.reset()
 
-    initial_energy = env.meters[0, env.energy_idx].item()
+    energy_idx = _meter_idx(env, "energy")
+    assert energy_idx is not None
+    initial_energy = env.meters[0, energy_idx].item()
 
     up_z_action = _action_tensor(env, "UP_Z")
     env.step(up_z_action)
 
-    final_energy = env.meters[0, env.energy_idx].item()
+    final_energy = env.meters[0, energy_idx].item()
     energy_cost = initial_energy - final_energy
 
-    expected_cost = 0.010  # 0.005 base + 0.005 movement (uniform cost)
+    base_depletion = env.meter_dynamics.get_base_depletion("energy")
+    move_cost = next(bar.depletion.move for bar in env.bars_config.meters if bar.name == "energy")
+    expected_cost = base_depletion + move_cost  # 0.005 base + 0.005 movement (uniform cost)
     assert abs(energy_cost - expected_cost) < 1e-6, f"3D UP_Z should cost {expected_cost:.3%}, but cost {energy_cost:.3%}"

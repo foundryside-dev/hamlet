@@ -20,7 +20,6 @@ fixtures that compile the default_curriculum or model_config packs directly.
 
 from __future__ import annotations
 
-import copy
 import shutil
 from collections.abc import Callable
 from pathlib import Path
@@ -29,7 +28,6 @@ import pytest
 import torch
 import yaml
 
-from tests.test_townlet.helpers.config_builder import _get_primary_level_dir
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.universe.compiled import CompiledUniverse
 
@@ -773,8 +771,10 @@ def task001_env_4meter(
         VectorizedHamletEnv instance with 4 meters
     """
     universe = compile_universe(task001_config_4meter)
+    target_level = getattr(universe, "primary_level", None) or (universe.available_levels[0] if universe.available_levels else None)
     return VectorizedHamletEnv.from_universe(
         universe,
+        level_name=target_level,
         num_agents=1,
         device=cpu_device,
     )
@@ -797,8 +797,10 @@ def task001_env_4meter_pomdp(
     """
     pomdp_config = task001_config_4meter
     universe = compile_universe(pomdp_config)
+    target_level = getattr(universe, "primary_level", None) or (universe.available_levels[0] if universe.available_levels else None)
     return VectorizedHamletEnv.from_universe(
         universe,
+        level_name=target_level,
         num_agents=1,
         device=cpu_device,
     )
@@ -820,8 +822,10 @@ def task001_env_12meter(
         VectorizedHamletEnv instance with 12 meters
     """
     universe = compile_universe(task001_config_12meter)
+    target_level = getattr(universe, "primary_level", None) or (universe.available_levels[0] if universe.available_levels else None)
     return VectorizedHamletEnv.from_universe(
         universe,
+        level_name=target_level,
         num_agents=1,
         device=cpu_device,
     )

@@ -1,0 +1,22 @@
+environment:
+  version: "1.0"
+
+  meters:
+    - name: energy
+      description: Energy
+      range_type: normalized
+    - name: health
+      description: Health
+      range_type: normalized
+    - name: money
+      description: Money
+      range_type: unbounded
+
+  cascade_graph: []
+  modulation_graph: []
+  affordances:
+    - name: Bed
+      description: Rest
+      category: rest
+  variables: []
+  cues: []

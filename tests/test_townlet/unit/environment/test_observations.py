@@ -22,6 +22,7 @@ import torch
 import yaml
 
 from tests.test_townlet.conftest import SUBSTRATE_FIXTURES
+from tests.test_townlet.helpers.config_builder import mutate_stratum_yaml
 
 # Removed: calculate_expected_observation_dim (now using env.observation_dim directly)
 from townlet.universe.errors import CompilationError
@@ -130,8 +131,12 @@ class TestPartialObservability:
         """POMDP: agent position should be normalized to [0, 1] range."""
         pomdp_env.reset()
 
-        # Query position from VFS registry instead of hardcoded slicing
-        position = pomdp_env.vfs_registry.get("position", reader="agent")
+        # Position lives in observation tensor; slice from metadata spec
+        position_field = pomdp_env.observation_spec.get_field_by_name("obs_position")
+        start = position_field.start_index
+        end = position_field.end_index
+        obs = pomdp_env.reset()
+        position = obs[:, start:end]
 
         # Should have 2 values per agent (x, y)
         assert position.shape == (1, 2), f"Expected (1, 2), got {position.shape}"
@@ -154,87 +159,47 @@ class TestPartialObservabilityWindowDimensions:
 
     def test_grid3d_window_dimension_matches_position_dim(
         self,
-        temp_config_pack: Path,
+        config_pack_factory,
         device: torch.device,
         env_factory,
     ) -> None:
-        """Grid3D should produce W³ local footprint for vision window."""
-        substrate_path = temp_config_pack / "substrate.yaml"
-        cubic_config = {
-            "version": "1.0",
-            "description": "Test cubic substrate for window dimension checks",
-            "type": "grid",
-            "grid": {
-                "topology": "cubic",
-                "width": 5,
-                "height": 5,
-                "depth": 5,
-                "boundary": "clamp",
-                "distance_metric": "manhattan",
-                "observation_encoding": "relative",
-            },
-        }
-        with substrate_path.open("w") as fh:
-            yaml.safe_dump(cubic_config, fh)
+        """Grid3D should produce local window dims equal to local_window_size^position_dim."""
+        config_dir = config_pack_factory(name="grid3d_pack")
 
-        # Update VFS config to match 3D substrate (configs/test has 2D position)
-        vfs_path = temp_config_pack / "variables_reference.yaml"
-        with vfs_path.open() as fh:
-            vfs_config = yaml.safe_load(fh)
-
-        # Update position variable from 2D to 3D
-        for var in vfs_config["variables"]:
-            if var["id"] == "position":
-                var["dims"] = 3
-                var["default"] = [0.0, 0.0, 0.0]
-                var["description"] = "Normalized agent position (3D) in [0, 1]^3 range"
-            elif var["id"] == "local_window":
-                # POMDP window: vision_range=1 → (2*1+1)^3 = 3^3 = 27 cells
-                var["dims"] = 27
-                var["description"] = "POMDP local observation window (3×3×3 cube, vision_range=1)"
-
-        # Update observations (position and local_window)
-        for obs in vfs_config.get("exposed_observations", []):
-            if obs["id"] == "obs_position":
-                obs["shape"] = [3]
-                if obs.get("normalization"):
-                    obs["normalization"]["min"] = [0.0, 0.0, 0.0]
-                    obs["normalization"]["max"] = [1.0, 1.0, 1.0]
-            elif obs["id"] == "obs_local_window":
-                # Update local_window obs shape to match 3D window
-                obs["shape"] = [27]
-
-        with vfs_path.open("w") as fh:
-            yaml.safe_dump(vfs_config, fh)
-
-        training_path = temp_config_pack / "training.yaml"
-        with training_path.open() as fh:
-            training_config = yaml.safe_load(fh)
-
-        training_config["environment"]["partial_observability"] = True
-        training_config["environment"]["vision_range"] = 1
-
-        with training_path.open("w") as fh:
-            yaml.safe_dump(training_config, fh, sort_keys=False)
-
-        env = env_factory(
-            config_dir=temp_config_pack,
-            num_agents=1,
-            device_override=device,
+        mutate_stratum_yaml(
+            config_dir,
+            lambda data: data["stratum"].update(
+                {
+                    "substrate": {
+                        "type": "grid",
+                        "grid": {
+                            "topology": "cubic",
+                            "width": 5,
+                            "height": 5,
+                            "depth": 5,
+                            "boundary": "clamp",
+                            "distance_metric": "manhattan",
+                            "observation_encoding": "relative",
+                        },
+                    },
+                    "vision_support": "partial",
+                }
+            ),
         )
 
-        obs = env.reset()
-        window_size = 2 * env.vision_range + 1
-        expected_window_dim = window_size**env.substrate.position_dim
+        level_dir = config_dir / "levels" / "L0_test"
+        curriculum_path = level_dir / "curriculum.yaml"
+        curriculum = yaml.safe_load(curriculum_path.read_text())
+        curriculum["curriculum"]["active_vision"] = "partial"
+        curriculum["curriculum"]["vision_range"] = 1.0
+        curriculum_path.write_text(yaml.safe_dump(curriculum, sort_keys=False))
 
-        # Verify substrate is 3D
+        env = env_factory(config_dir=config_dir, num_agents=1, device_override=device)
         assert env.substrate.position_dim == 3
 
-        # Verify observation shape matches env.observation_dim (VFS-computed)
-        assert obs.shape == (env.num_agents, env.observation_dim)
-
-        # Verify window is the correct size for 3D cube
-        assert expected_window_dim == 27  # 3×3×3 cube
+        local_window_field = env.observation_spec.get_field_by_name("obs_local_window")
+        expected_dims = (env.local_window_size or 0) ** env.substrate.position_dim
+        assert local_window_field.dims == expected_dims, f"Expected obs_local_window dims {expected_dims}, got {local_window_field.dims}"
 
     def test_aspatial_partial_observability_rejected(
         self,
@@ -253,15 +218,11 @@ class TestPartialObservabilityWindowDimensions:
         with substrate_path.open("w") as fh:
             yaml.safe_dump(aspatial_config, fh)
 
-        training_path = temp_config_pack / "training.yaml"
-        with training_path.open() as fh:
-            training_config = yaml.safe_load(fh)
-
-        training_config["environment"]["partial_observability"] = True
-        training_config["environment"]["vision_range"] = 1
-
-        with training_path.open("w") as fh:
-            yaml.safe_dump(training_config, fh, sort_keys=False)
+        curriculum_path = temp_config_pack / "curriculum.yaml"
+        curriculum = yaml.safe_load(curriculum_path.read_text())
+        curriculum["curriculum"]["active_vision"] = "partial"
+        curriculum["curriculum"]["vision_range"] = 1
+        curriculum_path.write_text(yaml.safe_dump(curriculum, sort_keys=False))
 
         with pytest.raises(ValueError, match="Partial observability \\(POMDP\\) is not supported for aspatial substrates"):
             env_factory(
@@ -295,15 +256,11 @@ class TestPartialObservabilityWindowDimensions:
         with substrate_path.open("w") as fh:
             yaml.safe_dump(continuous_config, fh)
 
-        training_path = temp_config_pack / "training.yaml"
-        with training_path.open() as fh:
-            training_config = yaml.safe_load(fh)
-
-        training_config["environment"]["partial_observability"] = True
-        training_config["environment"]["vision_range"] = 1
-
-        with training_path.open("w") as fh:
-            yaml.safe_dump(training_config, fh, sort_keys=False)
+        curriculum_path = temp_config_pack / "curriculum.yaml"
+        curriculum = yaml.safe_load(curriculum_path.read_text())
+        curriculum["curriculum"]["active_vision"] = "partial"
+        curriculum["curriculum"]["vision_range"] = 1
+        curriculum_path.write_text(yaml.safe_dump(curriculum, sort_keys=False))
 
         with pytest.raises(ValueError, match="Partial observability \\(POMDP\\) is not supported for continuous substrates"):
             env_factory(
@@ -594,16 +551,13 @@ class TestDimensionConsistency:
         config_dir = tmp_path / "pomdp_temporal"
         shutil.copytree(test_config_pack_path, config_dir)
 
-        training_path = config_dir / "training.yaml"
-        with training_path.open() as fh:
-            training_config = yaml.safe_load(fh)
-
-        training_config["environment"]["partial_observability"] = True
-        training_config["environment"]["vision_range"] = 2
-        training_config["environment"]["enable_temporal_mechanics"] = True
-
-        with training_path.open("w") as fh:
-            yaml.safe_dump(training_config, fh, sort_keys=False)
+        level_dir = config_dir / "levels" / "L0_test"
+        curriculum_path = level_dir / "curriculum.yaml"
+        curriculum = yaml.safe_load(curriculum_path.read_text())
+        curriculum["curriculum"]["active_vision"] = "partial"
+        curriculum["curriculum"]["vision_range"] = 2
+        curriculum["curriculum"]["active_temporal"] = True
+        curriculum_path.write_text(yaml.safe_dump(curriculum, sort_keys=False))
 
         env = env_factory(
             config_dir=config_dir,

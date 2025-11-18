@@ -48,7 +48,7 @@ affordances:
         # Update training.yaml to reference new affordances
         training_path = target / "training.yaml"
         training = yaml.safe_load(training_path.read_text())
-        training["environment"]["enabled_affordances"] = ["Foundation Course", "Advanced Course"]
+        training["training"]["enabled_affordances"] = ["Foundation Course", "Advanced Course"]
         training_path.write_text(yaml.safe_dump(training, sort_keys=False))
 
         compiler = UniverseCompiler()
@@ -83,7 +83,7 @@ affordances:
         # Update training.yaml to reference new affordances
         training_path = target / "training.yaml"
         training = yaml.safe_load(training_path.read_text())
-        training["environment"]["enabled_affordances"] = ["Advanced Course"]
+        training["training"]["enabled_affordances"] = ["Advanced Course"]
         training_path.write_text(yaml.safe_dump(training, sort_keys=False))
 
         compiler = UniverseCompiler()
@@ -122,7 +122,7 @@ affordances:
         # Update training.yaml to reference new affordances
         training_path = target / "training.yaml"
         training = yaml.safe_load(training_path.read_text())
-        training["environment"]["enabled_affordances"] = ["Advanced Course"]
+        training["training"]["enabled_affordances"] = ["Advanced Course"]
         training_path.write_text(yaml.safe_dump(training, sort_keys=False))
 
         compiler = UniverseCompiler()

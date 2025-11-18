@@ -236,12 +236,44 @@ class AdversarialCurriculumConfig(BaseModel):
     min_difficulty: float = Field(ge=0.0, le=1.0, description="Minimum difficulty")
     max_difficulty: float = Field(ge=0.0, le=1.0, description="Maximum difficulty")
 
+    # Stage advancement/retreat thresholds (ALL REQUIRED when strategy='adversarial')
+    survival_advance_threshold: float = Field(
+        ge=0.0,
+        le=1.0,
+        description="Survival rate threshold for stage advancement (e.g., 0.7 = 70% of max_steps).",
+    )
+    survival_retreat_threshold: float = Field(
+        ge=0.0,
+        le=1.0,
+        description="Survival rate threshold for stage retreat (e.g., 0.3 = 30% of max_steps).",
+    )
+    entropy_gate: float = Field(
+        ge=0.0,
+        le=1.0,
+        description="Normalized entropy gate for advancement; lower values indicate more converged policies.",
+    )
+    min_steps_at_stage: int = Field(
+        gt=0,
+        description="Minimum number of steps at a stage before advancement/retreat is considered.",
+    )
+
     @model_validator(mode="after")
     def validate_min_le_max(self) -> "AdversarialCurriculumConfig":
         """Ensure min_difficulty <= max_difficulty."""
         if self.min_difficulty > self.max_difficulty:
             raise ValueError(
                 f"curriculum.adversarial.min_difficulty ({self.min_difficulty}) must be <= " f"max_difficulty ({self.max_difficulty})."
+            )
+        return self
+
+    @model_validator(mode="after")
+    def validate_retreat_lt_advance(self) -> "AdversarialCurriculumConfig":
+        """Ensure survival_retreat_threshold < survival_advance_threshold."""
+        if self.survival_retreat_threshold >= self.survival_advance_threshold:
+            raise ValueError(
+                "curriculum.adversarial.survival_retreat_threshold "
+                f"({self.survival_retreat_threshold}) must be < "
+                f"survival_advance_threshold ({self.survival_advance_threshold})."
             )
         return self
 

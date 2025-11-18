@@ -513,6 +513,46 @@ class TestSnapshotAndMetrics:
         # Verify tracker exists and was initialized
         assert curriculum.tracker is not None, "Tracker should be initialized"
 
+    def test_recurrent_network_uses_observation_spec_and_temporal(self, temporal_env, recurrent_brain_config, cpu_device):
+        """VectorizedPopulation should wire ObservationSpec (including temporal) into recurrent network."""
+        from townlet.curriculum.static import StaticCurriculum
+        from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
+
+        env = temporal_env  # L3_temporal_mechanics: temporal mechanics enabled
+
+        curriculum = StaticCurriculum(difficulty_level=0.5)
+        exploration = EpsilonGreedyExploration(epsilon=1.0, epsilon_min=0.1, epsilon_decay=0.999)
+
+        obs_spec = env.observation_spec
+
+        population = VectorizedPopulation(
+            env=env,
+            curriculum=curriculum,
+            exploration=exploration,
+            agent_ids=["agent_0"],
+            device=cpu_device,
+            obs_dim=env.observation_dim,
+            brain_config=recurrent_brain_config,
+            batch_size=8,
+            train_frequency=4,
+            sequence_length=4,
+            max_grad_norm=10.0,
+            observation_spec=obs_spec,
+        )
+
+        assert population.is_recurrent is True
+        q_net = population.q_network
+
+        # When spec is provided, grid slice and meters slice should be defined.
+        assert getattr(q_net, "_use_observation_spec", False)
+        assert q_net._grid_slice is not None
+        assert q_net._meters_slice is not None
+        assert q_net._affordance_slice is not None
+
+        # Temporal mechanics enabled in env should toggle temporal features on.
+        assert getattr(env, "enable_temporal_mechanics", False) is True
+        assert getattr(q_net, "enable_temporal_features", False) is True
+
     def test_get_training_metrics_returns_dict(self, cpu_env_factory, cpu_device, minimal_brain_config):
         """get_training_metrics() should return metrics dictionary.
 

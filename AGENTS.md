@@ -1,5 +1,17 @@
 # Repository Guidelines
 
+## CRITICAL: Pre-Release Status - ZERO Backwards Compatibility Required
+
+**THIS PROJECT IS PRE-RELEASE WITH ZERO USERS AND ZERO DOWNLOADS.**
+
+**ABSOLUTE RULES:**
+
+1. **NO backwards compatibility arrangements** - Delete old code paths immediately
+2. **NO fallback mechanisms** - Breaking changes are free and encouraged
+3. **NO deprecation warnings** - Just break things and update references
+4. **NO migration paths** - Old configs/code should fail loudly, not be supported
+5. **NO "support both old and new"** - Technical debt for a non-existent user base is inexcusable
+
 ## Project Structure & Module Organization
 
 Core reinforcement-learning code lives in `src/townlet/` (`environment/`, `agent/`, `training/`). Config presets are under `configs/`, and runnable entry points (for example `scripts/run_demo.py`) sit in `scripts/`. Tests mirror the runtime layout: units in `tests/test_townlet/unit/`, integration and e2e flows beside them. The Vue observer UI is isolated in `frontend/`, and experiment artifacts belong in `runs/` but out of version control.

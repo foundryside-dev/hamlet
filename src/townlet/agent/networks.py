@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 
 if TYPE_CHECKING:
-    from townlet.universe.dto import ObservationActivity
+    from townlet.universe.dto import ObservationActivity, ObservationSpec
 
 
 class SimpleQNetwork(nn.Module):
@@ -78,6 +78,8 @@ class RecurrentSpatialQNetwork(nn.Module):
         num_affordance_types: int,
         enable_temporal_features: bool,
         hidden_dim: int,
+        observation_spec: ObservationSpec | None = None,
+        temporal_embed_dim: int = 16,
     ):
         """
         Initialize recurrent spatial Q-network.
@@ -105,6 +107,7 @@ class RecurrentSpatialQNetwork(nn.Module):
         self.num_meters = num_meters
         self.num_affordance_types = num_affordance_types
         self.enable_temporal_features = enable_temporal_features
+        self.temporal_dims = 4  # Fixed v2.1 temporal feature count
         self.hidden_dim = hidden_dim
 
         # Calculate affordance encoding dimension (types + 1 for "none")
@@ -141,6 +144,12 @@ class RecurrentSpatialQNetwork(nn.Module):
             nn.ReLU(),
         )
 
+        # Temporal Encoder: 4 temporal features → temporal_embed_dim
+        self.temporal_encoder = nn.Sequential(
+            nn.Linear(self.temporal_dims, temporal_embed_dim),
+            nn.ReLU(),
+        )
+
         # Affordance Encoder: dynamic size based on num_affordance_dims
         self.affordance_encoder = nn.Sequential(
             nn.Linear(self.num_affordance_dims, 32),
@@ -148,8 +157,8 @@ class RecurrentSpatialQNetwork(nn.Module):
         )
 
         # LSTM: variable input → hidden_dim
-        # Input size: 128 (vision) + position_features (0 or 32) + 32 (meters) + 32 (affordance)
-        self.lstm_input_dim = 128 + position_features + 32 + 32
+        # Input size: 128 (vision) + position_features (0 or 32) + 32 (meters) + 32 (affordance) + temporal_embed_dim
+        self.lstm_input_dim = 128 + position_features + 32 + 32 + temporal_embed_dim
         self.lstm = nn.LSTM(input_size=self.lstm_input_dim, hidden_size=hidden_dim, num_layers=1, batch_first=True)
 
         # LayerNorm for LSTM output
@@ -165,6 +174,35 @@ class RecurrentSpatialQNetwork(nn.Module):
 
         # Hidden state (initialized per episode)
         self.hidden_state: tuple[torch.Tensor, torch.Tensor] | None = None
+
+        # Optional observation-spec-driven slicing (v2.1 pipeline).
+        self._use_observation_spec = observation_spec is not None
+        self._grid_slice: slice | None = None
+        self._position_slice: slice | None = None
+        self._meters_slice: slice | None = None
+        self._affordance_slice: slice | None = None
+        self._temporal_slice: slice | None = None
+
+        if observation_spec is not None:
+            try:
+                fields = observation_spec.fields
+                for field in fields:
+                    if field.name == "obs_local_window":
+                        self._grid_slice = slice(field.start_index, field.end_index)
+                    elif field.name == "obs_position":
+                        self._position_slice = slice(field.start_index, field.end_index)
+                    elif field.name == "obs_meters":
+                        self._meters_slice = slice(field.start_index, field.end_index)
+                    elif field.name in {"obs_affordance_at_position", "obs_affordances"}:
+                        self._affordance_slice = slice(field.start_index, field.end_index)
+                    elif field.name == "obs_temporal":
+                        self._temporal_slice = slice(field.start_index, field.end_index)
+
+                # Enable spec-driven slicing only if we have the critical fields.
+                if self._grid_slice is None or self._meters_slice is None or self._affordance_slice is None:
+                    self._use_observation_spec = False
+            except Exception:  # pragma: no cover - defensive
+                self._use_observation_spec = False
 
     def forward(
         self, obs: torch.Tensor, hidden: tuple[torch.Tensor, torch.Tensor] | None = None
@@ -187,32 +225,20 @@ class RecurrentSpatialQNetwork(nn.Module):
         """
         batch_size = obs.shape[0]
 
-        # Split observation components with dynamic indices
-        grid_size_flat = self.window_size * self.window_size
-        idx = 0
+        if not self._use_observation_spec or self._grid_slice is None:
+            raise ValueError("ObservationSpec-driven slicing is required in v2.1; legacy positional layout is no longer supported.")
 
-        # Extract grid
-        grid = obs[:, idx : idx + grid_size_flat]
-        idx += grid_size_flat
-
-        # Extract position (if position_dim > 0)
-        if self.position_dim > 0:
-            position = obs[:, idx : idx + self.position_dim]
-            idx += self.position_dim
-        else:
-            position = None
-
-        # Extract meters
-        meters = obs[:, idx : idx + self.num_meters]
-        idx += self.num_meters
-
-        # Extract affordance
-        affordance = obs[:, idx : idx + self.num_affordance_dims]
-        idx += self.num_affordance_dims
-
-        # Temporal features are ignored (we encode spatial + meter state)
-        # If enable_temporal_features is True, there will be 3 extra dims (sin(time), cos(time), progress)
-        # but we don't need to process them separately for now
+        grid = obs[:, self._grid_slice]
+        position = obs[:, self._position_slice] if (self._position_slice is not None and self.position_dim > 0) else None
+        meters = obs[:, self._meters_slice] if self._meters_slice is not None else obs.new_zeros((batch_size, self.num_meters))
+        affordance = (
+            obs[:, self._affordance_slice] if self._affordance_slice is not None else obs.new_zeros((batch_size, self.num_affordance_dims))
+        )
+        temporal = (
+            obs[:, self._temporal_slice]
+            if self._temporal_slice is not None
+            else obs.new_zeros((batch_size, self.temporal_dims if hasattr(self, "temporal_dims") else 0))
+        )
 
         # Reshape grid for CNN: [batch, 1, window_size, window_size]
         grid_2d = grid.view(batch_size, 1, self.window_size, self.window_size)
@@ -228,12 +254,15 @@ class RecurrentSpatialQNetwork(nn.Module):
 
         meter_features = self.meter_encoder(meters)  # [batch, 32]
         affordance_features = self.affordance_encoder(affordance)  # [batch, 32]
+        temporal_features = self.temporal_encoder(temporal) if temporal.numel() > 0 else None
 
         # Concatenate features (conditionally include position)
+        parts = [vision_features, meter_features, affordance_features]
         if position_features is not None:
-            combined = torch.cat([vision_features, position_features, meter_features, affordance_features], dim=1)
-        else:
-            combined = torch.cat([vision_features, meter_features, affordance_features], dim=1)
+            parts.insert(1, position_features)
+        if temporal_features is not None:
+            parts.append(temporal_features)
+        combined = torch.cat(parts, dim=1)
 
         # LSTM expects [batch, seq_len, input_dim]
         combined = combined.unsqueeze(1)  # [batch, 1, lstm_input_dim]

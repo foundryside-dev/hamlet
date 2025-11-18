@@ -536,6 +536,10 @@ def test_apply_training_overrides_merges_q_learning_and_replay():
                 adaptation_rate=0.1,
                 min_difficulty=0.2,
                 max_difficulty=1.0,
+                survival_advance_threshold=0.7,
+                survival_retreat_threshold=0.3,
+                entropy_gate=0.5,
+                min_steps_at_stage=100,
             ),
         ),
     )

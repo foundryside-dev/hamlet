@@ -2,11 +2,7 @@
 
 import pytest
 
-from townlet.substrate.config import (
-    ContinuousConfig,
-    GridNDConfig,
-    SubstrateConfig,
-)
+from townlet.substrate.config import ActionDiscretizationConfig, ContinuousConfig, GridNDConfig, SubstrateConfig
 
 # ============================================================================
 # GridNDConfig Tests
@@ -137,6 +133,8 @@ def test_gridnd_config_observation_encoding_all_modes():
 # ContinuousConfig Extended Tests (N≥4 support)
 # ============================================================================
 
+BASE_ACTION_DISC = ActionDiscretizationConfig(num_directions=8, num_magnitudes=3)
+
 
 def test_continuous_config_valid_1d():
     """ContinuousConfig with 1D should still work (backward compatibility)."""
@@ -148,6 +146,7 @@ def test_continuous_config_valid_1d():
         interaction_radius=1.0,
         distance_metric="euclidean",
         observation_encoding="relative",
+        action_discretization=BASE_ACTION_DISC,
     )
 
     assert config.dimensions == 1
@@ -164,6 +163,7 @@ def test_continuous_config_valid_2d():
         interaction_radius=1.0,
         distance_metric="euclidean",
         observation_encoding="relative",
+        action_discretization=BASE_ACTION_DISC,
     )
 
     assert config.dimensions == 2
@@ -180,6 +180,7 @@ def test_continuous_config_valid_3d():
         interaction_radius=1.0,
         distance_metric="euclidean",
         observation_encoding="relative",
+        action_discretization=BASE_ACTION_DISC,
     )
 
     assert config.dimensions == 3
@@ -196,6 +197,7 @@ def test_continuous_config_valid_4d():
         interaction_radius=1.0,
         distance_metric="euclidean",
         observation_encoding="relative",
+        action_discretization=BASE_ACTION_DISC,
     )
 
     assert config.dimensions == 4
@@ -213,6 +215,7 @@ def test_continuous_config_valid_high_dimensional():
         interaction_radius=1.0,
         distance_metric="manhattan",
         observation_encoding="relative",
+        action_discretization=BASE_ACTION_DISC,
     )
 
     assert config.dimensions == 10
@@ -229,6 +232,7 @@ def test_continuous_config_valid_asymmetric_bounds():
         interaction_radius=1.0,
         distance_metric="euclidean",
         observation_encoding="relative",
+        action_discretization=BASE_ACTION_DISC,
     )
 
     assert config.bounds[0] == (-10.0, 10.0)
@@ -247,6 +251,7 @@ def test_continuous_config_invalid_bounds_mismatch():
         "interaction_radius": 1.0,
         "distance_metric": "euclidean",
         "observation_encoding": "relative",
+        "action_discretization": {"num_directions": 8, "num_magnitudes": 3},
     }
 
     with pytest.raises(ValueError, match="must match dimensions"):
@@ -263,6 +268,7 @@ def test_continuous_config_invalid_bound_order():
         "interaction_radius": 1.0,
         "distance_metric": "euclidean",
         "observation_encoding": "relative",
+        "action_discretization": {"num_directions": 8, "num_magnitudes": 3},
     }
 
     with pytest.raises(ValueError, match="must be < max"):
@@ -279,6 +285,7 @@ def test_continuous_config_invalid_too_small_range():
         "interaction_radius": 1.0,
         "distance_metric": "euclidean",
         "observation_encoding": "relative",
+        "action_discretization": {"num_directions": 8, "num_magnitudes": 3},
     }
 
     with pytest.raises(ValueError, match="Space too small"):
@@ -295,6 +302,8 @@ def test_continuous_config_invalid_too_many_dimensions():
         "movement_delta": 0.5,
         "interaction_radius": 1.0,
         "distance_metric": "euclidean",
+        "observation_encoding": "relative",
+        "action_discretization": {"num_directions": 8, "num_magnitudes": 3},
     }
 
     with pytest.raises(Exception, match="less than or equal to 100"):
@@ -311,6 +320,7 @@ def test_continuous_config_chebyshev_metric():
         interaction_radius=1.0,
         distance_metric="chebyshev",
         observation_encoding="relative",
+        action_discretization=BASE_ACTION_DISC,
     )
 
     assert config.distance_metric == "chebyshev"
@@ -370,6 +380,7 @@ def test_substrate_config_continuousnd():
             "interaction_radius": 1.0,
             "distance_metric": "euclidean",
             "observation_encoding": "relative",
+            "action_discretization": {"num_directions": 8, "num_magnitudes": 3},
         },
     }
 
@@ -407,6 +418,7 @@ def test_substrate_config_continuous_wrong_dimensions():
             "interaction_radius": 1.0,
             "distance_metric": "euclidean",
             "observation_encoding": "relative",
+            "action_discretization": {"num_directions": 8, "num_magnitudes": 3},
         },
     }
 
@@ -428,6 +440,7 @@ def test_substrate_config_continuousnd_wrong_dimensions():
             "interaction_radius": 1.0,
             "distance_metric": "euclidean",
             "observation_encoding": "relative",
+            "action_discretization": {"num_directions": 8, "num_magnitudes": 3},
         },
     }
 
@@ -448,6 +461,7 @@ def test_substrate_config_gridnd_wrong_config_type():
             "boundary": "clamp",
             "distance_metric": "manhattan",
             "observation_encoding": "relative",
+            "diagonals": True,
         },
     }
 
@@ -476,6 +490,7 @@ def test_substrate_config_multiple_configs_provided():
             "interaction_radius": 1.0,
             "distance_metric": "euclidean",
             "observation_encoding": "relative",
+            "action_discretization": {"num_directions": 8, "num_magnitudes": 3},
         },
     }
 
@@ -539,6 +554,7 @@ def test_continuousnd_yaml_round_trip(tmp_path):
             "interaction_radius": 1.0,
             "distance_metric": "manhattan",
             "observation_encoding": "absolute",
+            "action_discretization": {"num_directions": 8, "num_magnitudes": 3},
         },
     }
 

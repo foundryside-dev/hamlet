@@ -17,6 +17,8 @@ from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
 from townlet.population.vectorized import VectorizedPopulation
 from townlet.training.state import BatchedAgentState
 
+TRAIN_KWARGS = dict(train_frequency=1, batch_size=16, sequence_length=1, max_grad_norm=1.0)
+
 # =============================================================================
 # TEST CLASS: Episode Lifecycle
 # =============================================================================
@@ -63,9 +65,9 @@ class TestEpisodeLifecycle:
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=env.observation_dim,
-            # action_dim defaults to env.action_dim
             brain_config=minimal_brain_config,
-            batch_size=16,
+            action_dim=env.action_dim,
+            **TRAIN_KWARGS,
         )
 
         # Reset environment and population
@@ -137,10 +139,12 @@ class TestEpisodeLifecycle:
             exploration=exploration,
             agent_ids=["agent_0"],
             device=cpu_device,
-            # action_dim defaults to env.action_dim
             brain_config=recurrent_brain_config,
             vision_window_size=5,
             batch_size=8,
+            action_dim=env.action_dim,
+            sequence_length=1,
+            max_grad_norm=1.0,
             train_frequency=10000,  # Disable training (test focuses on episode execution and hidden state)
         )
 
@@ -218,9 +222,9 @@ class TestEpisodeLifecycle:
             agent_ids=["agent_0", "agent_1", "agent_2", "agent_3"],
             device=cpu_device,
             obs_dim=env.observation_dim,
-            # action_dim defaults to env.action_dim
             brain_config=minimal_brain_config,
-            batch_size=16,
+            action_dim=env.action_dim,
+            **TRAIN_KWARGS,
         )
 
         # Reset environment and population
@@ -278,9 +282,9 @@ class TestEpisodeLifecycle:
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=env.observation_dim,
-            # action_dim defaults to env.action_dim
             brain_config=minimal_brain_config,
-            batch_size=16,
+            action_dim=env.action_dim,
+            **TRAIN_KWARGS,
         )
 
         # Reset environment and population

@@ -16,19 +16,22 @@ from pathlib import Path
 from typing import Literal
 
 import yaml
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
-class SubstrateActionsConfig(BaseModel):
+class StrictBaseModel(BaseModel):
+    """Base model that forbids extra fields (pydantic v2 style)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class SubstrateActionsConfig(StrictBaseModel):
     """Substrate actions configuration."""
 
     inherit: bool = Field(..., description="Whether to inherit default substrate actions (movement, etc.)")
 
-    class Config:
-        extra = "forbid"
 
-
-class CustomActionConfig(BaseModel):
+class CustomActionConfig(StrictBaseModel):
     """Custom action definition."""
 
     name: str = Field(..., description="Action name (e.g., 'INTERACT', 'WAIT')")
@@ -43,20 +46,14 @@ class CustomActionConfig(BaseModel):
         description="Optional per-step meter effects (meter: value).",
     )
 
-    class Config:
-        extra = "forbid"
 
-
-class ActionLabelsConfig(BaseModel):
+class ActionLabelsConfig(StrictBaseModel):
     """Action label preset configuration."""
 
     preset: Literal["gaming", "6dof", "cardinal", "math"] = Field(..., description="Label preset for action names")
 
-    class Config:
-        extra = "forbid"
 
-
-class ActionsConfigRoot(BaseModel):
+class ActionsConfigRoot(StrictBaseModel):
     """Root structure for actions.yaml file."""
 
     version: str = Field(..., description="Config schema version")
@@ -64,20 +61,14 @@ class ActionsConfigRoot(BaseModel):
     custom_actions: list[CustomActionConfig] = Field(..., description="Custom action definitions")
     labels: ActionLabelsConfig = Field(..., description="Action label configuration")
 
-    class Config:
-        extra = "forbid"
 
-
-class ActionsConfig(BaseModel):
+class ActionsConfig(StrictBaseModel):
     """Top-level actions configuration.
 
     This DTO wraps the 'actions' key from actions.yaml.
     """
 
     actions: ActionsConfigRoot = Field(..., description="Actions configuration")
-
-    class Config:
-        extra = "forbid"
 
     @classmethod
     def from_yaml(cls, path: Path) -> "ActionsConfig":

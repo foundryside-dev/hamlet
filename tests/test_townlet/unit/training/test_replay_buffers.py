@@ -17,6 +17,8 @@ import torch
 from townlet.training.replay_buffer import ReplayBuffer
 from townlet.training.sequential_replay_buffer import SequentialReplayBuffer
 
+CPU = torch.device("cpu")
+
 # =============================================================================
 # STANDARD REPLAY BUFFER (Feed-forward DQN)
 # =============================================================================
@@ -27,7 +29,7 @@ class TestReplayBufferInitialization:
 
     def test_initialization(self):
         """Buffer should initialize with correct capacity and empty storage."""
-        buffer = ReplayBuffer(capacity=1000)
+        buffer = ReplayBuffer(capacity=1000, device=CPU)
 
         assert buffer.capacity == 1000
         assert buffer.position == 0
@@ -44,13 +46,13 @@ class TestReplayBufferInitialization:
 
     def test_custom_capacity(self):
         """Buffer should accept custom capacity."""
-        buffer = ReplayBuffer(capacity=500)
+        buffer = ReplayBuffer(capacity=500, device=CPU)
         assert buffer.capacity == 500
 
     def test_device_specification(self):
         """Buffer should accept device specification."""
-        cpu_buffer = ReplayBuffer(capacity=100, device=torch.device("cpu"))
-        assert cpu_buffer.device == torch.device("cpu")
+        cpu_buffer = ReplayBuffer(capacity=100, device=CPU)
+        assert cpu_buffer.device == CPU
 
         # CUDA buffer (only test if CUDA available)
         if torch.cuda.is_available():
@@ -64,7 +66,7 @@ class TestReplayBufferStorage:
     @pytest.fixture
     def buffer(self):
         """Create small buffer for testing."""
-        return ReplayBuffer(capacity=10)
+        return ReplayBuffer(capacity=10, device=CPU)
 
     def test_single_transition_push(self, buffer):
         """Buffer should store single transition correctly."""
@@ -150,7 +152,7 @@ class TestReplayBufferCircularLogic:
     @pytest.fixture
     def small_buffer(self):
         """Create tiny buffer to test wraparound quickly."""
-        return ReplayBuffer(capacity=5)
+        return ReplayBuffer(capacity=5, device=CPU)
 
     def test_fill_to_capacity(self, small_buffer):
         """Buffer should accept transitions up to capacity."""
@@ -234,7 +236,7 @@ class TestReplayBufferSampling:
     @pytest.fixture
     def filled_buffer(self):
         """Create buffer with 20 transitions."""
-        buffer = ReplayBuffer(capacity=100)
+        buffer = ReplayBuffer(capacity=100, device=CPU)
 
         for i in range(20):
             obs = torch.tensor([[float(i), float(i * 2)]])
@@ -269,7 +271,7 @@ class TestReplayBufferSampling:
 
     def test_sample_insufficient_data_raises_error(self):
         """Should raise error if buffer has fewer transitions than batch_size."""
-        buffer = ReplayBuffer(capacity=100)
+        buffer = ReplayBuffer(capacity=100, device=CPU)
 
         # Add only 3 transitions
         for i in range(3):
@@ -417,7 +419,7 @@ class TestReplayBufferClearAPI:
 
     def test_clear_resets_counters(self):
         """clear() should reset size and position to zero."""
-        buffer = ReplayBuffer(capacity=10)
+        buffer = ReplayBuffer(capacity=10, device=CPU)
 
         # Add some transitions
         for i in range(5):
@@ -437,7 +439,7 @@ class TestReplayBufferClearAPI:
 
     def test_clear_deallocates_storage(self):
         """clear() should set storage tensors to None to free memory."""
-        buffer = ReplayBuffer(capacity=10)
+        buffer = ReplayBuffer(capacity=10, device=CPU)
 
         # Initialize storage
         obs = torch.randn(2, 5)
@@ -459,7 +461,7 @@ class TestReplayBufferClearAPI:
 
     def test_clear_idempotence(self):
         """Calling clear() multiple times should be safe."""
-        buffer = ReplayBuffer(capacity=10)
+        buffer = ReplayBuffer(capacity=10, device=CPU)
 
         # Clear empty buffer
         buffer.clear()
@@ -484,7 +486,7 @@ class TestReplayBufferClearAPI:
 
     def test_buffer_works_after_clear(self):
         """Buffer should work normally after clear()."""
-        buffer = ReplayBuffer(capacity=10)
+        buffer = ReplayBuffer(capacity=10, device=CPU)
 
         # Fill buffer
         for i in range(5):
@@ -610,7 +612,7 @@ class TestReplayBufferEdgeCases:
 
     def test_single_capacity_buffer(self):
         """Buffer with capacity=1 should work correctly."""
-        buffer = ReplayBuffer(capacity=1)
+        buffer = ReplayBuffer(capacity=1, device=CPU)
 
         # Add first transition
         obs1 = torch.tensor([[1.0]])
@@ -641,12 +643,12 @@ class TestReplayBufferEdgeCases:
 
     def test_empty_buffer_length(self):
         """Empty buffer should have length 0."""
-        buffer = ReplayBuffer(capacity=10)
+        buffer = ReplayBuffer(capacity=10, device=CPU)
         assert len(buffer) == 0
 
     def test_large_batch_push(self):
         """Buffer should handle large batches correctly."""
-        buffer = ReplayBuffer(capacity=1000)
+        buffer = ReplayBuffer(capacity=1000, device=CPU)
 
         batch_size = 256
         obs = torch.randn(batch_size, 10)
@@ -663,7 +665,7 @@ class TestReplayBufferEdgeCases:
 
     def test_different_observation_dimensions(self):
         """Buffer should infer observation dimension from first push."""
-        buffer = ReplayBuffer(capacity=10)
+        buffer = ReplayBuffer(capacity=10, device=CPU)
 
         # First push with obs_dim=7
         obs = torch.randn(2, 7)

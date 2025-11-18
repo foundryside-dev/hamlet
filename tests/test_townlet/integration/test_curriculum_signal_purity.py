@@ -19,6 +19,8 @@ from townlet.curriculum.adversarial import AdversarialCurriculum
 from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
 from townlet.population.vectorized import VectorizedPopulation
 
+TRAIN_KWARGS = dict(train_frequency=1, batch_size=32, sequence_length=1, max_grad_norm=1.0)
+
 
 @pytest.fixture
 def env(cpu_env_factory):
@@ -61,6 +63,7 @@ def population(env, adversarial_curriculum, exploration, cpu_device, minimal_bra
         obs_dim=env.observation_dim,
         action_dim=env.action_dim,  # Use env's actual action dim (6 actions)
         brain_config=minimal_brain_config,
+        **TRAIN_KWARGS,
     )
 
 
@@ -262,6 +265,7 @@ class TestCurriculumSignalInterpretability:
             obs_dim=env.observation_dim,
             action_dim=env.action_dim,
             brain_config=minimal_brain_config,
+            **TRAIN_KWARGS,
         )
 
         # Run 10 episodes, tracking curriculum rewards
@@ -342,6 +346,7 @@ class TestCurriculumSignalInterpretability:
             obs_dim=env.observation_dim,
             action_dim=env.action_dim,
             brain_config=minimal_brain_config,
+            **TRAIN_KWARGS,
         )
 
         # Scenario 1: High survival rate (90 steps) should consider advancement

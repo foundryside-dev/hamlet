@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Literal
 
 import yaml
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class MeterConfig(BaseModel):
@@ -32,8 +32,7 @@ class MeterConfig(BaseModel):
         ),
     )
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class CascadeConfig(BaseModel):
@@ -43,8 +42,7 @@ class CascadeConfig(BaseModel):
     target: str = Field(..., description="Target meter name")
     description: str = Field(..., description="Cascade relationship description")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class ModulationConfig(BaseModel):
@@ -54,8 +52,7 @@ class ModulationConfig(BaseModel):
     affordances: list[str] = Field(..., description="Affordances affected by this meter")
     description: str = Field(..., description="Modulation effect description")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class AffordanceConfig(BaseModel):
@@ -65,8 +62,7 @@ class AffordanceConfig(BaseModel):
     description: str = Field(..., description="Human-readable description")
     category: str = Field(..., description="Affordance category (e.g., 'sustenance', 'hygiene')")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class NormalizationConfig(BaseModel):
@@ -78,10 +74,9 @@ class NormalizationConfig(BaseModel):
             "Normalization method: clip (clamp to range), normalize (scale to [0,1]), " "standardize (mean/std), or none (pass-through)."
         ),
     )
-    range: list[float] = Field(..., description="Value range [min, max]", min_items=2, max_items=2)
+    range: list[float] = Field(..., description="Value range [min, max]", min_length=2, max_length=2)
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class VariableConfig(BaseModel):
@@ -94,8 +89,7 @@ class VariableConfig(BaseModel):
     description: str = Field(..., description="Human-readable description")
     normalization: NormalizationConfig = Field(..., description="Normalization configuration")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class CueTriggerConfig(BaseModel):
@@ -105,8 +99,7 @@ class CueTriggerConfig(BaseModel):
     threshold: float = Field(..., description="Threshold value")
     direction: Literal["above", "below"] = Field(..., description="Trigger direction")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class CueDisplayConfig(BaseModel):
@@ -116,8 +109,7 @@ class CueDisplayConfig(BaseModel):
     color: str = Field(..., description="Display color (hex code)")
     message: str = Field(..., description="Message to display")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class CueConfig(BaseModel):
@@ -127,8 +119,7 @@ class CueConfig(BaseModel):
     trigger: CueTriggerConfig = Field(..., description="Trigger condition")
     display: CueDisplayConfig = Field(..., description="Display properties")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class EnvironmentConfigRoot(BaseModel):
@@ -142,8 +133,7 @@ class EnvironmentConfigRoot(BaseModel):
     variables: list[VariableConfig] = Field(..., description="VFS variable definitions")
     cues: list[CueConfig] = Field(..., description="UI cue definitions")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class EnvironmentConfig(BaseModel):
@@ -154,8 +144,7 @@ class EnvironmentConfig(BaseModel):
 
     environment: EnvironmentConfigRoot = Field(..., description="Environment configuration")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
     @classmethod
     def from_yaml(cls, path: Path) -> "EnvironmentConfig":

@@ -7,6 +7,28 @@ import torch
 from townlet.population.vectorized import VectorizedPopulation
 
 
+def _make_population(env, curriculum, exploration, brain_config, **overrides):
+    """Helper to instantiate VectorizedPopulation with required params for tests."""
+    params = {
+        "obs_dim": env.observation_dim,
+        "action_dim": env.action_dim,
+        "train_frequency": 1,
+        "batch_size": 4,
+        "sequence_length": 1,
+        "max_grad_norm": 10.0,
+    }
+    params.update(overrides)
+    return VectorizedPopulation(
+        env=env,
+        curriculum=curriculum,
+        exploration=exploration,
+        agent_ids=["agent_0"],
+        device=env.device,
+        brain_config=brain_config,
+        **params,
+    )
+
+
 class TestDoubleDQNFeedforward:
     """Test Double DQN Q-target computation for feedforward networks."""
 
@@ -26,16 +48,11 @@ class TestDoubleDQNFeedforward:
         vanilla_brain_config = copy.deepcopy(minimal_brain_config)
         vanilla_brain_config.q_learning.use_double_dqn = False
 
-        population = VectorizedPopulation(
+        population = _make_population(
             env=basic_env,
             curriculum=adversarial_curriculum,
             exploration=epsilon_greedy_exploration,
-            agent_ids=["agent_0"],
-            device=cpu_device,
-            obs_dim=basic_env.observation_dim,  # Use actual obs_dim from env
-            action_dim=basic_env.action_dim,
             brain_config=vanilla_brain_config,
-            batch_size=4,
         )
 
         # Populate replay buffer with transitions
@@ -86,16 +103,11 @@ class TestDoubleDQNFeedforward:
         double_brain_config = copy.deepcopy(minimal_brain_config)
         double_brain_config.q_learning.use_double_dqn = True
 
-        population = VectorizedPopulation(
+        population = _make_population(
             env=basic_env,
             curriculum=adversarial_curriculum,
             exploration=epsilon_greedy_exploration,
-            agent_ids=["agent_0"],
-            device=cpu_device,
-            obs_dim=basic_env.observation_dim,  # Use actual obs_dim from env
-            action_dim=basic_env.action_dim,
             brain_config=double_brain_config,
-            batch_size=4,
         )
 
         # Populate replay buffer
@@ -151,29 +163,19 @@ class TestDoubleDQNFeedforward:
 
         # Create two populations with same initialization
         torch.manual_seed(42)
-        pop_vanilla = VectorizedPopulation(
+        pop_vanilla = _make_population(
             env=basic_env,
             curriculum=adversarial_curriculum,
             exploration=epsilon_greedy_exploration,
-            agent_ids=["agent_0"],
-            device=cpu_device,
-            obs_dim=basic_env.observation_dim,  # Use actual obs_dim from env
-            action_dim=basic_env.action_dim,
             brain_config=vanilla_brain_config,
-            batch_size=4,
         )
 
         torch.manual_seed(42)
-        pop_double = VectorizedPopulation(
+        pop_double = _make_population(
             env=basic_env,
             curriculum=adversarial_curriculum,
             exploration=epsilon_greedy_exploration,
-            agent_ids=["agent_0"],
-            device=cpu_device,
-            obs_dim=basic_env.observation_dim,  # Use actual obs_dim from env
-            action_dim=basic_env.action_dim,
             brain_config=double_brain_config,
-            batch_size=4,
         )
 
         # Populate both with same transitions
@@ -248,12 +250,10 @@ class TestDoubleDQNRecurrent:
         double_brain_config = copy.deepcopy(recurrent_brain_config)
         double_brain_config.q_learning.use_double_dqn = True
 
-        population = VectorizedPopulation(
+        population = _make_population(
             env=env,
             curriculum=adversarial_curriculum,
             exploration=epsilon_greedy_exploration,
-            agent_ids=["agent_0"],
-            device=cpu_device,
             brain_config=double_brain_config,
             batch_size=2,
             sequence_length=8,
@@ -293,23 +293,19 @@ class TestDoubleDQNRecurrent:
         double_brain_config = copy.deepcopy(recurrent_brain_config)
         double_brain_config.q_learning.use_double_dqn = True
 
-        pop_vanilla = VectorizedPopulation(
+        pop_vanilla = _make_population(
             env=env,
             curriculum=adversarial_curriculum,
             exploration=epsilon_greedy_exploration,
-            agent_ids=["agent_0"],
-            device=cpu_device,
             brain_config=vanilla_brain_config,
             batch_size=2,
             sequence_length=8,
         )
 
-        pop_double = VectorizedPopulation(
+        pop_double = _make_population(
             env=env,
             curriculum=adversarial_curriculum,
             exploration=epsilon_greedy_exploration,
-            agent_ids=["agent_0"],
-            device=cpu_device,
             brain_config=double_brain_config,
             batch_size=2,
             sequence_length=8,

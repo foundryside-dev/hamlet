@@ -28,6 +28,14 @@ def test_demorunner_threads_training_loop_hyperparameters(tmp_path: Path, monkey
     experiment_dir = tmp_path / "experiment"
     shutil.copytree(src_experiment, experiment_dir)
 
+    # Ensure agent.yaml loss config matches BrainConfig expectations (no smooth_l1 defaults).
+    agent_path = experiment_dir / "agent.yaml"
+    agent_data = yaml.safe_load(agent_path.read_text())
+    agent_brain = agent_data["agent"]["brain"]
+    agent_brain["loss"]["type"] = "huber"
+    agent_brain["loss"]["huber_delta"] = 1.0
+    agent_path.write_text(yaml.safe_dump(agent_data, sort_keys=False))
+
     # Add minimal brain.yaml required by BrainConfig schema.
     brain_yaml = experiment_dir / "brain.yaml"
     brain_yaml.write_text(
@@ -54,7 +62,7 @@ optimizer:
     type: constant
 
 loss:
-  type: mse
+  type: huber
   huber_delta: 1.0
 
 q_learning:
@@ -129,6 +137,7 @@ replay:
         max_grad_norm: float = 10.0,
         max_episodes: int | None = None,
         max_steps_per_episode: int | None = None,
+        observation_spec=None,
     ) -> None:
         captured["train_frequency"] = train_frequency
         captured["sequence_length"] = sequence_length

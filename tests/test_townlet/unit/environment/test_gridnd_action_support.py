@@ -41,22 +41,6 @@ def gridnd_env(
     from townlet.universe.compiler import UniverseCompiler
 
     universe = UniverseCompiler().compile(gridnd_4d_config_pack, use_cache=False)
-    if universe.all_levels and "L0_test" in universe.all_levels:
-        universe.all_levels["L0_test"].training.enabled_affordances = []
-    level_meta = universe.get_level("L0_test")
-    if getattr(level_meta.training, "enabled_affordances", None) is None:
-        try:
-            level_meta.training.__dict__["enabled_affordances"] = []
-        except Exception:
-            level_meta.training.enabled_affordances = []
-    else:
-        level_meta.training.enabled_affordances = list(level_meta.training.enabled_affordances or [])
-    assert level_meta.training.enabled_affordances is not None, f"training enabled_affordances missing: {level_meta.training}"
-
-    def _return_level(self, name: str):
-        return level_meta
-
-    universe.get_level = _return_level.__get__(universe, type(universe))
     return VectorizedHamletEnv.from_universe(
         universe,
         level_name="L0_test",

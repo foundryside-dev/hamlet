@@ -15,6 +15,9 @@ class MockEnv:
         self.substrate = substrate
 
 
+LEVEL_NAME = "L0_test"
+
+
 def test_metadata_includes_grid2d_topology():
     """WebSocket metadata should include topology for Grid2D."""
     substrate = Grid2DSubstrate(
@@ -34,6 +37,7 @@ def test_metadata_includes_grid2d_topology():
         total_episodes=1,
         training_config_path=None,
         config_dir=TEST_CONFIG_DIR,
+        level_name=LEVEL_NAME,
     )
     server.env = MockEnv(substrate)
 
@@ -65,6 +69,7 @@ def test_metadata_includes_grid3d_topology():
         total_episodes=1,
         training_config_path=None,
         config_dir=TEST_CONFIG_DIR,
+        level_name=LEVEL_NAME,
     )
     server.env = MockEnv(substrate)
 
@@ -93,6 +98,7 @@ def test_metadata_includes_gridnd_topology():
         total_episodes=1,
         training_config_path=None,
         config_dir=TEST_CONFIG_DIR,
+        level_name=LEVEL_NAME,
     )
     server.env = MockEnv(substrate)
 
@@ -114,6 +120,7 @@ def test_metadata_omits_topology_for_continuous():
         boundary="clamp",
         movement_delta=0.5,
         interaction_radius=0.8,
+        action_discretization={"num_directions": 8, "num_magnitudes": 3},
         distance_metric="euclidean",
         observation_encoding="relative",
     )
@@ -125,6 +132,7 @@ def test_metadata_omits_topology_for_continuous():
         total_episodes=1,
         training_config_path=None,
         config_dir=TEST_CONFIG_DIR,
+        level_name=LEVEL_NAME,
     )
     server.env = MockEnv(substrate)
 
@@ -146,6 +154,7 @@ def test_metadata_omits_topology_for_aspatial():
         total_episodes=1,
         training_config_path=None,
         config_dir=TEST_CONFIG_DIR,
+        level_name=LEVEL_NAME,
     )
     server.env = MockEnv(substrate)
 
@@ -175,6 +184,7 @@ def test_metadata_topology_respects_substrate_attribute():
         total_episodes=1,
         training_config_path=None,
         config_dir=TEST_CONFIG_DIR,
+        level_name=LEVEL_NAME,
     )
     server.env = MockEnv(substrate)
 

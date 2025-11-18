@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Literal
 
 import yaml
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class GridConfig(BaseModel):
@@ -31,8 +31,7 @@ class GridConfig(BaseModel):
     observation_encoding: Literal["relative", "scaled", "absolute"] = Field(..., description="Coordinate encoding mode for observations")
     diagonals: bool = Field(..., description="Whether diagonal movement actions are enabled for grid substrates")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
     @model_validator(mode="after")
     def validate_cubic_depth(self) -> "GridConfig":
@@ -64,8 +63,7 @@ class GridNDConfig(BaseModel):
     observation_encoding: Literal["relative", "scaled", "absolute"] = Field(..., description="Coordinate encoding mode for observations")
     topology: Literal["hypercube"] = Field(..., description="Grid topology (explicit to avoid hidden defaults)")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
     @model_validator(mode="after")
     def validate_dimensions(self) -> "GridNDConfig":
@@ -96,8 +94,7 @@ class ActionDiscretizationConfig(BaseModel):
         description="Number of magnitude bins (>=3). Magnitudes span [0.0, 1.0] inclusively.",
     )
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class ContinuousConfig(BaseModel):
@@ -118,8 +115,7 @@ class ContinuousConfig(BaseModel):
         ),
     )
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
     @model_validator(mode="after")
     def validate_bounds(self) -> "ContinuousConfig":
@@ -140,8 +136,7 @@ class ContinuousConfig(BaseModel):
 class AspatialConfig(BaseModel):
     """Aspatial substrate marker (no positional fields)."""
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class SubstrateConfig(BaseModel):
@@ -153,8 +148,7 @@ class SubstrateConfig(BaseModel):
     continuous: ContinuousConfig | None = Field(None, description="Continuous substrate parameters (required for continuous/continuousnd)")
     aspatial: AspatialConfig | None = Field(None, description="Aspatial substrate parameters (required for aspatial)")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
     @model_validator(mode="after")
     def validate_substrate(self) -> "SubstrateConfig":
@@ -191,8 +185,7 @@ class StratumConfigRoot(BaseModel):
     vision_support: Literal["global", "partial", "both", "none"] = Field(..., description="Vision modes supported by this stratum")
     temporal_support: Literal["enabled", "disabled"] = Field(..., description="Whether temporal mechanics are supported")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class StratumConfig(BaseModel):
@@ -203,8 +196,7 @@ class StratumConfig(BaseModel):
 
     stratum: StratumConfigRoot = Field(..., description="Stratum configuration")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
     @classmethod
     def from_yaml(cls, path: Path) -> "StratumConfig":

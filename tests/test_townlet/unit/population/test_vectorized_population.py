@@ -27,6 +27,7 @@ def _make_population(
 
     params = {
         "obs_dim": env.observation_dim,
+        "action_dim": env.action_dim,
         "train_frequency": 1,
         "batch_size": 32,
         "sequence_length": 1,

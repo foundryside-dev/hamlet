@@ -440,6 +440,9 @@ def test_continuous1d_encode_partial_observation_raises():
         boundary="clamp",
         movement_delta=0.5,
         interaction_radius=1.0,
+        action_discretization={"num_directions": 8, "num_magnitudes": 3},
+        distance_metric="euclidean",
+        observation_encoding="relative",
     )
 
     positions = torch.tensor([[5.0]], dtype=torch.float32)  # 1D position

@@ -358,12 +358,16 @@ class VectorizedHamletEnv:
 
             # Derive operating_hours from OpeningHoursConfig:
             opening = aff.opening_hours
-            if not opening.schedule:
-                raise ValueError(
-                    f"affordance '{aff.name}' opening_hours.schedule is required (no 24/7 default); " "provide explicit start/end hours."
-                )
-            window = opening.schedule[0]
-            operating_hours = [window.start, window.end]
+            if not opening.enabled:
+                operating_hours = [0, 24]
+            else:
+                if not opening.schedule:
+                    raise ValueError(
+                        f"affordance '{aff.name}' opening_hours.schedule is required when opening_hours.enabled=true; "
+                        "provide explicit start/end hours."
+                    )
+                window = opening.schedule[0]
+                operating_hours = [window.start, window.end]
 
             # Map deployment positions to a single canonical position for runtime.
             deployment = aff.deployment
@@ -719,21 +723,21 @@ class VectorizedHamletEnv:
         """Build movement delta tensor from substrate default actions.
 
         Returns:
-            [action_space_size, position_dim] tensor of movement deltas
+            [substrate_action_count, position_dim] tensor of movement deltas
         """
-        action_space_size = self.action_space.action_dim
+        substrate_action_count = self.action_space.substrate_action_count
         position_dim = self.substrate.position_dim
 
         # Initialize zero deltas for all actions
         deltas = torch.zeros(
-            (action_space_size, position_dim),
+            (substrate_action_count, position_dim),
             device=self.device,
             dtype=self.substrate.position_dtype,
         )
 
         # Fill in deltas from any action that declares a delta
-        for action in self.action_space.actions:
-            if action.delta is not None:
+        for action in self.action_space.actions[:substrate_action_count]:
+            if action.type == "movement" and action.delta is not None:
                 deltas[action.id] = torch.tensor(
                     action.delta,
                     device=self.device,
@@ -865,6 +869,15 @@ class VectorizedHamletEnv:
                     else:
                         grid_encoding = self.substrate.encode_observation(self.positions, self.affordances)
                     value = grid_encoding
+                    # Pad or truncate to match spec dims for high-dimensional grids
+                    if value.dim() == 1:
+                        value = value.unsqueeze(1)
+                    if value.shape[1] != dims:
+                        padded = torch.zeros((self.num_agents, dims), device=self.device)
+                        if value.shape[1] > 0:
+                            fill = min(value.shape[1], dims)
+                            padded[:, :fill] = value[:, :fill]
+                        value = padded
             elif name == "obs_local_window":
                 if not self.partial_observability:
                     value = torch.zeros((self.num_agents, dims), device=self.device)
@@ -1015,14 +1028,7 @@ class VectorizedHamletEnv:
         if getattr(self.substrate, "position_dim", 0) == 0:
             return None
 
-        # Prefer normalized coordinates so obs_position dims match substrate.position_dim
-        # independent of observation_encoding (relative/scaled/absolute).
-        normalizer = getattr(self.substrate, "normalize_positions", None)
-        if callable(normalizer):
-            typed_normalizer = cast(Callable[[torch.Tensor], torch.Tensor], normalizer)
-            return typed_normalizer(self.positions)
-
-        # Fallbacks: position feature encoders (may include extra metadata).
+        # Prefer substrate-provided encoders; fall back to normalizer/observation encoder.
         encode_fn = Callable[[torch.Tensor, dict[str, torch.Tensor]], torch.Tensor]
 
         encoder = getattr(self.substrate, "_encode_position_features", None)
@@ -1039,6 +1045,12 @@ class VectorizedHamletEnv:
         if callable(encode_observation):
             typed_encode_obs = cast(encode_fn, encode_observation)
             return typed_encode_obs(self.positions, self.affordances)
+
+        # Normalized positions so obs_position dims match substrate.position_dim
+        normalizer = getattr(self.substrate, "normalize_positions", None)
+        if callable(normalizer):
+            typed_normalizer = cast(Callable[[torch.Tensor], torch.Tensor], normalizer)
+            return typed_normalizer(self.positions)
 
         return None
 

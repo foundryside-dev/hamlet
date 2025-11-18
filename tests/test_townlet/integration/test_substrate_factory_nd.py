@@ -11,6 +11,8 @@ from townlet.substrate.continuousnd import ContinuousNDSubstrate
 from townlet.substrate.factory import SubstrateFactory
 from townlet.substrate.gridnd import GridNDSubstrate
 
+BASE_ACTION_DISC = {"num_directions": 8, "num_magnitudes": 3}
+
 
 class TestGridNDFactoryFromConfig:
     """Test factory creation of GridND substrates from config."""
@@ -187,6 +189,7 @@ class TestContinuousNDFactoryFromConfig:
                 "interaction_radius": 1.0,
                 "distance_metric": "euclidean",
                 "observation_encoding": "relative",
+                "action_discretization": BASE_ACTION_DISC,
             },
         }
         config = SubstrateConfig(**config_dict)
@@ -223,6 +226,7 @@ class TestContinuousNDFactoryFromConfig:
                 "interaction_radius": 0.5,
                 "distance_metric": "manhattan",
                 "observation_encoding": "scaled",
+                "action_discretization": BASE_ACTION_DISC,
             },
         }
         config = SubstrateConfig(**config_dict)
@@ -250,6 +254,7 @@ class TestContinuousNDFactoryFromConfig:
                 "interaction_radius": 1.0,
                 "distance_metric": "euclidean",
                 "observation_encoding": "relative",
+                "action_discretization": BASE_ACTION_DISC,
             },
         }
         config = SubstrateConfig(**config_dict)
@@ -279,6 +284,7 @@ class TestContinuousNDFactoryFromConfig:
                 "interaction_radius": 1.0,
                 "observation_encoding": "relative",
                 "distance_metric": "euclidean",
+                "action_discretization": BASE_ACTION_DISC,
             },
         }
         config = SubstrateConfig(**config_dict)
@@ -311,6 +317,7 @@ class TestContinuousNDFactoryFromConfig:
                 "interaction_radius": 1.0,
                 "observation_encoding": "absolute",
                 "distance_metric": "euclidean",
+                "action_discretization": BASE_ACTION_DISC,
             },
         }
         config = SubstrateConfig(**config_dict)
@@ -383,10 +390,12 @@ class TestFactoryConfigValidation:
                 "interaction_radius": 1.0,
                 "distance_metric": "euclidean",
                 "observation_encoding": "relative",
+                "action_discretization": BASE_ACTION_DISC,
             },
         }
-        with pytest.raises(ValueError, match="type='continuousnd' expects 4\\+ dimensions"):
-            SubstrateConfig(**config_dict)
+        with pytest.raises(ValueError, match="expects 4\\+ dimensions"):
+            config = SubstrateConfig(**config_dict)
+            SubstrateFactory.build(config, torch.device("cpu"))
 
 
 class TestFactoryYAMLLoading:
@@ -434,6 +443,9 @@ continuous:
   interaction_radius: 1.0
   distance_metric: euclidean
   observation_encoding: scaled
+  action_discretization:
+    num_directions: 8
+    num_magnitudes: 3
 """
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(yaml_content)
@@ -490,6 +502,7 @@ class TestFactoryEdgeCases:
                 "interaction_radius": 0.1,
                 "distance_metric": "euclidean",
                 "observation_encoding": "relative",
+                "action_discretization": BASE_ACTION_DISC,
             },
         }
         config = SubstrateConfig(**config_dict)
@@ -531,6 +544,7 @@ class TestFactoryEdgeCases:
                     "interaction_radius": 1.0,
                     "distance_metric": "euclidean",
                     "observation_encoding": "relative",
+                    "action_discretization": BASE_ACTION_DISC,
                 },
             }
             config = SubstrateConfig(**config_dict)
@@ -571,6 +585,7 @@ class TestFactoryEdgeCases:
                     "interaction_radius": 1.0,
                     "distance_metric": metric,
                     "observation_encoding": "relative",
+                    "action_discretization": BASE_ACTION_DISC,
                 },
             }
             config = SubstrateConfig(**config_dict)
@@ -609,6 +624,7 @@ class TestFactoryIntegration:
                     "interaction_radius": 1.0,
                     "distance_metric": "euclidean",
                     "observation_encoding": "relative",
+                    "action_discretization": BASE_ACTION_DISC,
                 },
                 "expected_type": ContinuousNDSubstrate,
             },

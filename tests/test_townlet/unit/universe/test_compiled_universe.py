@@ -29,10 +29,3 @@ def test_compiled_universe_is_frozen() -> None:
         pass
     else:
         raise AssertionError("CompiledUniverse should be frozen")
-
-
-def test_check_checkpoint_compatibility_missing_drive_hash_in_universe() -> None:
-    """Test removed: drive_hash is now always present in universe (DAC is required)."""
-    # This test is no longer valid since drive_as_code.yaml is now required
-    # All universes will always have a drive_hash
-    pass

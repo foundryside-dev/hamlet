@@ -124,8 +124,8 @@ def test_env_observation_dim_unchanged(cpu_env_factory, config_name):
 @pytest.mark.parametrize(
     "config_name,expected_grid_size",
     [
-        ("L0_0_minimal", 3),
-        ("L0_5_dual_resource", 5),  # Updated from 7: config changed to 5×5
+        ("L0_0_minimal", 8),
+        ("L0_5_dual_resource", 8),  # All default curriculum levels share 8×8 grid
         ("L1_full_observability", 8),
         ("L2_partial_observability", 8),
         ("L3_temporal_mechanics", 8),

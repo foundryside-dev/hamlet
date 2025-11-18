@@ -204,6 +204,7 @@ def test_continuous_config_observation_encoding_valid():
             interaction_radius=1.0,
             distance_metric="euclidean",
             observation_encoding=encoding,
+            action_discretization={"num_directions": 8, "num_magnitudes": 3},
         )
         assert config.observation_encoding == encoding
 
@@ -223,6 +224,7 @@ def test_continuous_config_observation_encoding_default():
             interaction_radius=1.0,
             distance_metric="euclidean",
             # observation_encoding NOT provided - should fail!
+            action_discretization={"num_directions": 8, "num_magnitudes": 3},
         )
 
 
@@ -276,67 +278,47 @@ def test_gridnd_config_validates_yaml_with_topology():
 
 
 @pytest.mark.parametrize(
-    "config_name,expected_width,expected_height,expected_obs_grid_dim",
+    "config_path,expected_width,expected_height,expected_obs_grid_dim",
     [
-        ("L0_0_minimal", 3, 3, 9),  # 3×3 = 9
-        ("L0_5_dual_resource", 5, 5, 25),  # 5×5 = 25 (updated to match substrate.yaml)
-        ("L1_full_observability", 8, 8, 64),  # 8×8 = 64
-        ("L2_partial_observability", 8, 8, 64),  # 8×8 = 64
-        ("L3_temporal_mechanics", 8, 8, 64),  # 8×8 = 64
-        ("templates", 8, 8, 64),  # 8×8 = 64
-        ("test", 8, 8, 64),  # 8×8 = 64
+        (Path("configs/default_curriculum/stratum.yaml"), 8, 8, 64),
+        (Path("configs/test/model_config/stratum.yaml"), 8, 8, 64),
     ],
 )
-def test_substrate_config_schema_valid(config_name, expected_width, expected_height, expected_obs_grid_dim):
-    """Substrate config should load and pass schema validation."""
-    config_path = Path("configs") / config_name / "substrate.yaml"
+def test_substrate_config_schema_valid(config_path, expected_width, expected_height, expected_obs_grid_dim):
+    """Stratum config should load and expose substrate schema."""
+    from townlet.config.stratum_config import StratumConfig
 
-    # Load config (will raise ValidationError if schema invalid)
-    config = load_substrate_config(config_path)
+    cfg = StratumConfig.from_yaml(config_path)
+    grid = cfg.stratum.substrate.grid
+    assert grid is not None
+    assert grid.topology == "square"
+    assert grid.width == expected_width
+    assert grid.height == expected_height
+    assert grid.boundary == "clamp"
+    assert grid.distance_metric == "manhattan"
 
-    # Verify basic structure
-    assert config.version == "1.0"
-    assert config.type == "grid"
-    assert config.description  # Non-empty description required
-
-    # Verify grid configuration
-    assert isinstance(config.grid, Grid2DSubstrateConfig)
-    assert config.grid.topology == "square"
-    assert config.grid.width == expected_width
-    assert config.grid.height == expected_height
-    assert config.grid.boundary == "clamp"
-    assert config.grid.distance_metric == "manhattan"
-
-    # Verify observation dimension calculation
-    # obs_dim = grid_size + 8 meters + 15 affordances + 4 temporal
-    obs_grid_dim = config.grid.width * config.grid.height
+    obs_grid_dim = grid.width * grid.height
     assert obs_grid_dim == expected_obs_grid_dim
 
 
 @pytest.mark.parametrize(
-    "config_name",
+    "config_path",
     [
-        "L0_0_minimal",
-        "L0_5_dual_resource",
-        "L1_full_observability",
-        "L2_partial_observability",
-        "L3_temporal_mechanics",
-        "templates",
-        "test",
+        Path("configs/default_curriculum/stratum.yaml"),
+        Path("configs/test/model_config/stratum.yaml"),
     ],
 )
-def test_substrate_config_behavioral_equivalence(config_name):
-    """Substrate config should produce identical behavior to legacy hardcoded grid."""
-    config_path = Path("configs") / config_name / "substrate.yaml"
-    config = load_substrate_config(config_path)
+def test_substrate_config_behavioral_equivalence(config_path):
+    """Stratum substrate config should produce a standard Grid2D substrate."""
+    from townlet.config.stratum_config import StratumConfig
 
-    # All current configs use same spatial behavior (only size differs)
-    assert config.grid.topology == "square"  # Standard 2D grid
-    assert config.grid.boundary == "clamp"  # Hard walls (not wrap/bounce/sticky)
-    assert config.grid.distance_metric == "manhattan"  # L1 norm (not euclidean)
-
-    # Grid must be square (width == height) for current configs
-    assert config.grid.width == config.grid.height
+    cfg = StratumConfig.from_yaml(config_path)
+    grid = cfg.stratum.substrate.grid
+    assert grid is not None
+    assert grid.topology == "square"  # Standard 2D grid
+    assert grid.boundary == "clamp"
+    assert grid.distance_metric == "manhattan"
+    assert grid.width == grid.height
 
 
 def test_substrate_config_no_defaults():
@@ -363,19 +345,14 @@ type: "grid"
 
 
 def test_substrate_config_file_exists():
-    """All production config packs should have substrate.yaml."""
+    """Production packs expose substrate via stratum.yaml (v2.1 hierarchy)."""
     production_configs = [
-        "L0_0_minimal",
-        "L0_5_dual_resource",
-        "L1_full_observability",
-        "L2_partial_observability",
-        "L3_temporal_mechanics",
-        "test",
+        Path("configs/default_curriculum/stratum.yaml"),
+        Path("configs/test/model_config/stratum.yaml"),
     ]
 
-    for config_name in production_configs:
-        substrate_path = Path("configs") / config_name / "substrate.yaml"
-        assert substrate_path.exists(), f"Missing substrate.yaml for {config_name}"
+    for stratum_path in production_configs:
+        assert stratum_path.exists(), f"Missing stratum.yaml at {stratum_path}"
 
 
 # Edge Case Tests (Priority 2 from code review)
@@ -450,6 +427,7 @@ grid:
   boundary: "clamp"
   distance_metric: "manhattan"
   observation_encoding: "relative"
+  diagonals: false
 """
     non_square_path = Path("/tmp/non_square_substrate.yaml")
     non_square_path.write_text(non_square_yaml)

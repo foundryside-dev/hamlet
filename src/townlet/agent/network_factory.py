@@ -4,6 +4,8 @@ Builds neural networks from BrainConfig specifications.
 Forward-compatible with future SDA (Software Defined Agent) architecture.
 """
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 import torch.nn as nn

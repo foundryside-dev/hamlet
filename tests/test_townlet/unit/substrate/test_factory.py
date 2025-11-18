@@ -106,6 +106,7 @@ def test_factory_continuous_substrates_have_no_topology():
             interaction_radius=0.8,
             distance_metric="euclidean",
             observation_encoding="relative",
+            action_discretization={"num_directions": 8, "num_magnitudes": 3},
         ),
     )
     substrate = SubstrateFactory.build(config, torch.device("cpu"))

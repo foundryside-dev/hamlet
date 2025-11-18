@@ -13,7 +13,7 @@ import sqlite3
 
 import torch
 
-from tests.test_townlet.helpers.config_builder import mutate_training_yaml
+from tests.test_townlet.helpers.config_builder import mutate_agent_yaml, mutate_training_yaml
 from townlet.demo.runner import DemoRunner
 
 LEVEL_NAME = "L0_test"
@@ -39,6 +39,10 @@ class TestDoubleDoubleTraining:
             replay["min_size"] = 16
             replay["batch_size"] = 8
 
+            curriculum_cfg = training.get("curriculum", {}) or {}
+            curriculum_cfg["strategy"] = "adversarial"  # Ensure initialize_population is available
+            training["curriculum"] = curriculum_cfg
+
             # Fast evaluation cadence isn't needed; keep minimal to avoid overhead
             evaluation = training_loop.get("evaluation", {})
             evaluation["interval"] = 1000
@@ -46,6 +50,22 @@ class TestDoubleDoubleTraining:
             training_loop["evaluation"] = evaluation
 
         return modifier
+
+    @staticmethod
+    def _force_huber_loss(config_dir) -> None:
+        """Align agent loss with validation rules (huber requires huber_delta)."""
+
+        def _mutate_agent(data: dict) -> None:
+            agent_cfg = data.get("agent", {}) or {}
+            brain = agent_cfg.get("brain", {}) or {}
+            loss_cfg = brain.get("loss", {}) or {}
+            loss_cfg["type"] = "huber"
+            loss_cfg["huber_delta"] = 1.0
+            brain["loss"] = loss_cfg
+            agent_cfg["brain"] = brain
+            data["agent"] = agent_cfg
+
+        mutate_agent_yaml(config_dir, _mutate_agent)
 
     def test_training_with_double_dqn_enabled(self, tmp_path, config_pack_factory):
         """Full training loop should work with Double DQN enabled.
@@ -63,6 +83,7 @@ class TestDoubleDoubleTraining:
             data["training"]["q_learning"]["use_double_dqn"] = True
 
         mutate_training_yaml(config_dir, training_mutator)
+        self._force_huber_loss(config_dir)
 
         db_path = tmp_path / "test.db"
         checkpoint_dir = tmp_path / "checkpoints"
@@ -115,6 +136,7 @@ class TestDoubleDoubleTraining:
             data["training"]["q_learning"]["use_double_dqn"] = False
 
         mutate_training_yaml(config_dir, training_mutator)
+        self._force_huber_loss(config_dir)
 
         db_path = tmp_path / "test.db"
         checkpoint_dir = tmp_path / "checkpoints"
@@ -169,6 +191,10 @@ class TestDoubleDoubleTraining:
             replay["min_size"] = 8
             replay["batch_size"] = 4
 
+            curriculum_cfg = training.get("curriculum", {}) or {}
+            curriculum_cfg["strategy"] = "adversarial"
+            training["curriculum"] = curriculum_cfg
+
         config_dir = config_pack_factory(modifier=modifier)
 
         # Set use_double_dqn in training.yaml overrides
@@ -176,6 +202,7 @@ class TestDoubleDoubleTraining:
             data["training"]["q_learning"]["use_double_dqn"] = True
 
         mutate_training_yaml(config_dir, training_mutator)
+        self._force_huber_loss(config_dir)
 
         db_path = tmp_path / "test.db"
         checkpoint_dir = tmp_path / "checkpoints"

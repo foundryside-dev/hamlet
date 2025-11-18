@@ -53,6 +53,11 @@ class TestGreedyActionSelection:
             device=env.device,
             obs_dim=obs_dim,
             brain_config=minimal_brain_config,
+            action_dim=env.action_dim,
+            train_frequency=1,
+            batch_size=2,
+            sequence_length=1,
+            max_grad_norm=1.0,
         )
 
         population.reset()
@@ -151,6 +156,11 @@ class TestEpsilonGreedyActionSelection:
             device=env.device,
             obs_dim=obs_dim,
             brain_config=minimal_brain_config,
+            action_dim=env.action_dim,
+            train_frequency=1,
+            batch_size=2,
+            sequence_length=1,
+            max_grad_norm=1.0,
         )
 
         population.reset()
@@ -196,16 +206,9 @@ class TestEpsilonGreedyActionSelection:
         # Place agents at top-left corner (UP and LEFT masked)
         env.positions = torch.tensor([[0, 0], [0, 0]], device=env.device)
 
-        # Get dynamic action IDs
-        down_id = 1  # DOWN is always index 1 for Grid2D
-        right_id = 3  # RIGHT is always index 3 for Grid2D
-        interact_id = env.interact_action_idx
-        wait_id = env.wait_action_idx
-        rest_id = env.action_space.get_action_by_name("REST").id
-        meditate_id = env.action_space.get_action_by_name("MEDITATE").id
-
-        # Valid actions: DOWN, RIGHT, INTERACT, WAIT, REST, MEDITATE
-        valid_actions = [down_id, right_id, interact_id, wait_id, rest_id, meditate_id]
+        # Derive valid actions directly from masks
+        masks = env.get_action_masks()
+        valid_actions = [i for i, allowed in enumerate(masks[0].tolist()) if allowed]
 
         # Select with epsilon=1.0 (always random)
         for _ in range(100):
@@ -259,8 +262,12 @@ class TestRecurrentNetworkActionSelection:
             agent_ids=[0, 1],
             device=env.device,
             obs_dim=obs_dim,
-            # action_dim defaults to env.action_dim
             brain_config=recurrent_brain_config,
+            action_dim=env.action_dim,
+            train_frequency=1,
+            batch_size=2,
+            sequence_length=1,
+            max_grad_norm=1.0,
         )
 
         population.reset()
@@ -331,8 +338,12 @@ class TestActionSelectionEdgeCases:
             agent_ids=[0],
             device=torch.device("cpu"),
             obs_dim=obs_dim,
-            # action_dim defaults to env.action_dim
             brain_config=minimal_brain_config,
+            action_dim=minimal_env.action_dim,
+            train_frequency=1,
+            batch_size=1,
+            sequence_length=1,
+            max_grad_norm=1.0,
         )
 
         population.reset()

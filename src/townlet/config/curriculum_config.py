@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Literal
 
 import yaml
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class CurriculumConfigRoot(BaseModel):
@@ -30,8 +30,7 @@ class CurriculumConfigRoot(BaseModel):
     active_temporal: bool = Field(..., description="Whether temporal mechanics are active")
     day_length: int | None = Field(None, description="Day length in ticks (required if active_temporal=true)")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
     @model_validator(mode="after")
     def validate_day_length(self):
@@ -61,8 +60,7 @@ class CurriculumConfig(BaseModel):
 
     curriculum: CurriculumConfigRoot = Field(..., description="Curriculum configuration")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
     @classmethod
     def from_yaml(cls, path: Path) -> "CurriculumConfig":

@@ -40,6 +40,7 @@ def test_factory_passes_observation_encoding_to_continuous():
             "interaction_radius": 1.0,
             "distance_metric": "euclidean",
             "observation_encoding": "absolute",  # Non-default
+            "action_discretization": {"num_directions": 8, "num_magnitudes": 3},
         },
     )
     substrate = SubstrateFactory.build(config, device=torch.device("cpu"))

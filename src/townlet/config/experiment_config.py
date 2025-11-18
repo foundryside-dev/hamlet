@@ -15,7 +15,7 @@ Example:
 from pathlib import Path
 
 import yaml
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ExperimentMetadata(BaseModel):
@@ -27,8 +27,7 @@ class ExperimentMetadata(BaseModel):
     created: str = Field(..., description="Creation date (YYYY-MM-DD)")
     tags: list[str] = Field(..., description="Classification tags")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class ExperimentConfigRoot(BaseModel):
@@ -44,8 +43,7 @@ class ExperimentConfigRoot(BaseModel):
     metadata: ExperimentMetadata = Field(..., description="Experiment metadata")
     curriculum_levels: list[str] = Field(..., description="Ordered list of curriculum level names")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class ExperimentConfig(BaseModel):
@@ -56,8 +54,7 @@ class ExperimentConfig(BaseModel):
 
     experiment: ExperimentConfigRoot = Field(..., description="Experiment configuration")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
     @classmethod
     def from_yaml(cls, path: Path) -> "ExperimentConfig":

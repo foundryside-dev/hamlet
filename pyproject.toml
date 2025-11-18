@@ -127,6 +127,9 @@ addopts = [
     "-m",
     "not slow",
 ]
+filterwarnings = [
+    "ignore:Module already imported so cannot be rewritten; tests.test_townlet._fixtures:pytest.PytestAssertRewriteWarning",
+]
 markers = [
     "slow: marks tests as slow (tests that take >5 seconds)",
     "gpu: marks tests requiring CUDA/GPU hardware",

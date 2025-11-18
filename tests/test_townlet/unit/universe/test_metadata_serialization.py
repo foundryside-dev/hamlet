@@ -38,7 +38,7 @@ def _to_plain(obj):
 
 def test_universe_metadata_round_trip() -> None:
     """UniverseMetadata and related DTOs should survive JSON round-trip."""
-    config_dir = Path("configs/default_curriculum/levels/L0_0_minimal")
+    config_dir = Path("configs/test/model_config")
     compiler = UniverseCompiler()
     compiled = compiler.compile(config_dir, use_cache=False)
 
@@ -90,7 +90,7 @@ def test_universe_metadata_round_trip() -> None:
 
 def test_compiled_universe_msgpack_round_trip(tmp_path: Path) -> None:
     compiler = UniverseCompiler()
-    compiled = compiler.compile(Path("configs/default_curriculum/levels/L0_0_minimal"))
+    compiled = compiler.compile(Path("configs/test/model_config"))
 
     artifact_path = tmp_path / "compiled.msgpack"
     compiled.save_to_cache(artifact_path)

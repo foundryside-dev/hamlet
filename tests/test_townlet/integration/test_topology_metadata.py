@@ -21,6 +21,9 @@ class MockEnv:
         self.substrate = substrate
 
 
+LEVEL_NAME = "L0_test"
+
+
 def test_topology_propagates_from_config_to_websocket_metadata_grid2d():
     """Integration test: topology flows from config → factory → substrate → metadata."""
     # Step 1: Create substrate.yaml config
@@ -35,6 +38,7 @@ def test_topology_propagates_from_config_to_websocket_metadata_grid2d():
             "boundary": "clamp",
             "distance_metric": "manhattan",
             "observation_encoding": "relative",
+            "diagonals": True,
         },
     }
 
@@ -60,6 +64,7 @@ def test_topology_propagates_from_config_to_websocket_metadata_grid2d():
             total_episodes=1,
             training_config_path=None,
             config_dir=TEST_CONFIG_DIR,
+            level_name=LEVEL_NAME,
         )
         server.env = MockEnv(substrate)
 
@@ -108,6 +113,7 @@ def test_topology_propagates_from_config_to_websocket_metadata_gridnd():
             total_episodes=1,
             training_config_path=None,
             config_dir=TEST_CONFIG_DIR,
+            level_name=LEVEL_NAME,
         )
         server.env = MockEnv(substrate)
 
@@ -134,6 +140,7 @@ def test_continuous_substrate_has_no_topology_in_metadata():
             "interaction_radius": 0.8,
             "distance_metric": "euclidean",
             "observation_encoding": "relative",
+            "action_discretization": {"num_directions": 8, "num_magnitudes": 3},
         },
     }
 
@@ -158,6 +165,7 @@ def test_continuous_substrate_has_no_topology_in_metadata():
             total_episodes=1,
             training_config_path=None,
             config_dir=TEST_CONFIG_DIR,
+            level_name=LEVEL_NAME,
         )
         server.env = MockEnv(substrate)
 
@@ -224,6 +232,7 @@ def test_continuousnd_substrate_initializes_with_action_labels():
             "interaction_radius": 0.8,
             "distance_metric": "euclidean",
             "observation_encoding": "relative",
+            "action_discretization": {"num_directions": 8, "num_magnitudes": 3},
         },
     }
 

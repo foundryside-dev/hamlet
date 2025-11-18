@@ -247,7 +247,6 @@ optimizer:
 
 loss:
   type: mse
-  huber_delta: 1.0
 
 q_learning:
   gamma: 0.99

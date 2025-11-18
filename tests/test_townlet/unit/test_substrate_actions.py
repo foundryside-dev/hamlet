@@ -8,14 +8,16 @@ from townlet.substrate.grid2d import Grid2DSubstrate
 from townlet.substrate.grid3d import Grid3DSubstrate
 from townlet.substrate.gridnd import GridNDSubstrate
 
+ACTION_DISC = {"num_directions": 8, "num_magnitudes": 3}
 
-def test_grid2d_generates_6_default_actions():
-    """Grid2D should provide 6 default actions."""
+
+def test_grid2d_generates_default_actions():
+    """Grid2D should provide 9 default actions (4-cardinal + diagonals + INTERACT)."""
     substrate = Grid2DSubstrate(width=8, height=8, boundary="clamp", distance_metric="manhattan")
 
     actions = substrate.get_default_actions()
 
-    assert len(actions) == 6  # UP, DOWN, LEFT, RIGHT, INTERACT, WAIT
+    assert len(actions) == 9  # UP/DOWN/LEFT/RIGHT + 4 diagonals + INTERACT
     assert all(isinstance(a, ActionConfig) for a in actions)
 
 
@@ -26,7 +28,17 @@ def test_grid2d_action_names():
     actions = substrate.get_default_actions()
     names = [a.name for a in actions]
 
-    assert names == ["UP", "DOWN", "LEFT", "RIGHT", "INTERACT", "WAIT"]
+    assert names == [
+        "UP",
+        "DOWN",
+        "LEFT",
+        "RIGHT",
+        "UP_LEFT",
+        "UP_RIGHT",
+        "DOWN_LEFT",
+        "DOWN_RIGHT",
+        "INTERACT",
+    ]
 
 
 def test_grid2d_movement_actions_have_deltas():
@@ -61,12 +73,12 @@ def test_grid2d_all_actions_marked_as_substrate():
 
 
 def test_grid3d_generates_8_default_actions():
-    """Grid3D should provide 8 default actions (adds UP_Z, DOWN_Z)."""
+    """Grid3D should provide 11 default actions (cardinal + diagonals + Z + INTERACT)."""
     substrate = Grid3DSubstrate(width=8, height=8, depth=3, boundary="clamp", distance_metric="manhattan")
 
     actions = substrate.get_default_actions()
 
-    assert len(actions) == 8  # UP, DOWN, LEFT, RIGHT, UP_Z, DOWN_Z, INTERACT, WAIT
+    assert len(actions) == 11  # 8 planar (with diagonals) + 2 Z + INTERACT
 
 
 def test_grid3d_action_names():
@@ -76,7 +88,19 @@ def test_grid3d_action_names():
     actions = substrate.get_default_actions()
     names = [a.name for a in actions]
 
-    assert names == ["UP", "DOWN", "LEFT", "RIGHT", "UP_Z", "DOWN_Z", "INTERACT", "WAIT"]
+    assert names == [
+        "UP",
+        "DOWN",
+        "LEFT",
+        "RIGHT",
+        "UP_LEFT",
+        "UP_RIGHT",
+        "DOWN_LEFT",
+        "DOWN_RIGHT",
+        "UP_Z",
+        "DOWN_Z",
+        "INTERACT",
+    ]
 
 
 def test_grid3d_z_axis_deltas():
@@ -158,20 +182,23 @@ def test_gridnd_movement_deltas():
 
 
 def test_continuous1d_generates_4_actions():
-    """Continuous1D should provide 4 actions (LEFT/RIGHT/INTERACT/WAIT)."""
+    """Continuous1D should provide 3 actions (LEFT/RIGHT/INTERACT)."""
     substrate = Continuous1DSubstrate(
         min_x=0.0,
         max_x=10.0,
         boundary="clamp",
         movement_delta=0.5,
         interaction_radius=0.8,
+        action_discretization=ACTION_DISC,
+        distance_metric="euclidean",
+        observation_encoding="relative",
     )
 
     actions = substrate.get_default_actions()
 
-    assert len(actions) == 4
+    assert len(actions) == 3
     names = [a.name for a in actions]
-    assert names == ["LEFT", "RIGHT", "INTERACT", "WAIT"]
+    assert names == ["LEFT", "RIGHT", "INTERACT"]
 
 
 def test_continuous1d_uses_integer_deltas():
@@ -182,6 +209,9 @@ def test_continuous1d_uses_integer_deltas():
         boundary="clamp",
         movement_delta=0.5,
         interaction_radius=0.8,
+        action_discretization=ACTION_DISC,
+        distance_metric="euclidean",
+        observation_encoding="relative",
     )
 
     actions = substrate.get_default_actions()
@@ -193,7 +223,7 @@ def test_continuous1d_uses_integer_deltas():
 
 
 def test_continuous2d_generates_6_actions():
-    """Continuous2D should provide 6 actions (same as Grid2D)."""
+    """Continuous2D should provide discretized movement actions + INTERACT."""
     substrate = Continuous2DSubstrate(
         min_x=0.0,
         max_x=10.0,
@@ -202,17 +232,21 @@ def test_continuous2d_generates_6_actions():
         boundary="clamp",
         movement_delta=0.5,
         interaction_radius=0.8,
+        action_discretization=ACTION_DISC,
+        distance_metric="euclidean",
+        observation_encoding="relative",
     )
 
     actions = substrate.get_default_actions()
 
-    assert len(actions) == 6
+    assert len(actions) == substrate.action_space_size
     names = [a.name for a in actions]
-    assert names == ["UP", "DOWN", "LEFT", "RIGHT", "INTERACT", "WAIT"]
+    assert names[0].startswith("MOVE_")
+    assert names[-1] == "INTERACT"
 
 
 def test_continuous3d_generates_8_actions():
-    """Continuous3D should provide 8 actions (same as Grid3D)."""
+    """Continuous3D should provide movement actions + INTERACT."""
     substrate = Continuous3DSubstrate(
         min_x=0.0,
         max_x=10.0,
@@ -223,13 +257,15 @@ def test_continuous3d_generates_8_actions():
         boundary="clamp",
         movement_delta=0.5,
         interaction_radius=0.8,
+        action_discretization=ACTION_DISC,
+        distance_metric="euclidean",
+        observation_encoding="relative",
     )
 
     actions = substrate.get_default_actions()
 
-    assert len(actions) == 8
-    names = [a.name for a in actions]
-    assert names == ["UP", "DOWN", "LEFT", "RIGHT", "UP_Z", "DOWN_Z", "INTERACT", "WAIT"]
+    assert len(actions) == substrate.action_space_size
+    assert actions[-1].name == "INTERACT"
 
 
 def test_continuous3d_uses_integer_deltas():
@@ -244,6 +280,9 @@ def test_continuous3d_uses_integer_deltas():
         boundary="clamp",
         movement_delta=0.5,
         interaction_radius=0.8,
+        action_discretization=ACTION_DISC,
+        distance_metric="euclidean",
+        observation_encoding="relative",
     )
 
     actions = substrate.get_default_actions()
@@ -265,6 +304,8 @@ def test_continuousnd_generates_2n_plus_2_actions():
         boundary="clamp",
         movement_delta=0.5,
         interaction_radius=0.8,
+        distance_metric="euclidean",
+        observation_encoding="relative",
     )
 
     actions = substrate.get_default_actions()
@@ -279,6 +320,8 @@ def test_continuousnd_action_naming_pattern():
         boundary="clamp",
         movement_delta=0.5,
         interaction_radius=0.8,
+        distance_metric="euclidean",
+        observation_encoding="relative",
     )
 
     actions = substrate.get_default_actions()
@@ -306,6 +349,8 @@ def test_continuousnd_uses_integer_deltas():
         boundary="clamp",
         movement_delta=0.5,
         interaction_radius=0.8,
+        distance_metric="euclidean",
+        observation_encoding="relative",
     )
 
     actions = substrate.get_default_actions()
@@ -333,9 +378,9 @@ def test_aspatial_generates_2_actions():
 
     actions = substrate.get_default_actions()
 
-    assert len(actions) == 2  # INTERACT + WAIT only
+    assert len(actions) == 1  # INTERACT only
     names = [a.name for a in actions]
-    assert names == ["INTERACT", "WAIT"]
+    assert names == ["INTERACT"]
 
 
 def test_aspatial_no_movement_actions():
@@ -354,34 +399,32 @@ def test_aspatial_no_movement_actions():
 
 
 def test_grid2d_meta_actions_at_end():
-    """Grid2D meta-actions (INTERACT, WAIT) should be last two actions."""
+    """Grid2D meta-actions (INTERACT) should be last action."""
     substrate = Grid2DSubstrate(width=8, height=8, boundary="clamp", distance_metric="manhattan")
     actions = substrate.get_default_actions()
 
-    # Last two actions should be INTERACT, WAIT (in that order)
-    assert len(actions) == 6
-    assert actions[-2].name == "INTERACT"
-    assert actions[-1].name == "WAIT"
+    # Last action should be INTERACT
+    assert len(actions) == 9
+    assert actions[-1].name == "INTERACT"
 
-    # First 4 should be movement actions (non-zero deltas)
-    for i in range(4):
+    # First 8 should be movement actions (non-zero deltas)
+    for i in range(8):
         assert actions[i].type == "movement"
         assert actions[i].delta is not None
         assert any(d != 0 for d in actions[i].delta)
 
 
 def test_grid3d_meta_actions_at_end():
-    """Grid3D meta-actions (INTERACT, WAIT) should be last two actions."""
+    """Grid3D meta-actions (INTERACT) should be last action."""
     substrate = Grid3DSubstrate(width=8, height=8, depth=3, boundary="clamp", distance_metric="manhattan")
     actions = substrate.get_default_actions()
 
-    # Last two actions should be INTERACT, WAIT (in that order)
-    assert len(actions) == 8
-    assert actions[-2].name == "INTERACT"
-    assert actions[-1].name == "WAIT"
+    # Last action should be INTERACT
+    assert len(actions) == 11
+    assert actions[-1].name == "INTERACT"
 
-    # First 6 should be movement actions (non-zero deltas)
-    for i in range(6):
+    # First 10 should be movement actions (non-zero deltas)
+    for i in range(10):
         assert actions[i].type == "movement"
         assert actions[i].delta is not None
         assert any(d != 0 for d in actions[i].delta)
@@ -409,20 +452,22 @@ def test_gridnd_meta_actions_at_end():
 
 
 def test_continuous1d_meta_actions_at_end():
-    """Continuous1D meta-actions (INTERACT, WAIT) should be last two actions."""
+    """Continuous1D meta-action (INTERACT) should be last."""
     substrate = Continuous1DSubstrate(
         min_x=0.0,
         max_x=10.0,
         boundary="clamp",
         movement_delta=0.5,
         interaction_radius=0.8,
+        action_discretization=ACTION_DISC,
+        distance_metric="euclidean",
+        observation_encoding="relative",
     )
     actions = substrate.get_default_actions()
 
-    # Last two actions should be INTERACT, WAIT (in that order)
-    assert len(actions) == 4
-    assert actions[-2].name == "INTERACT"
-    assert actions[-1].name == "WAIT"
+    # Last action should be INTERACT
+    assert len(actions) == 3
+    assert actions[-1].name == "INTERACT"
 
     # First 2 should be movement actions (non-zero deltas)
     for i in range(2):
@@ -432,7 +477,7 @@ def test_continuous1d_meta_actions_at_end():
 
 
 def test_continuous2d_meta_actions_at_end():
-    """Continuous2D meta-actions (INTERACT, WAIT) should be last two actions."""
+    """Continuous2D meta-action (INTERACT) should be last."""
     substrate = Continuous2DSubstrate(
         min_x=0.0,
         max_x=10.0,
@@ -441,23 +486,24 @@ def test_continuous2d_meta_actions_at_end():
         boundary="clamp",
         movement_delta=0.5,
         interaction_radius=0.8,
+        action_discretization=ACTION_DISC,
+        distance_metric="euclidean",
+        observation_encoding="relative",
     )
     actions = substrate.get_default_actions()
 
-    # Last two actions should be INTERACT, WAIT (in that order)
-    assert len(actions) == 6
-    assert actions[-2].name == "INTERACT"
-    assert actions[-1].name == "WAIT"
+    # Last action should be INTERACT
+    assert actions[-1].name == "INTERACT"
 
-    # First 4 should be movement actions (non-zero deltas)
-    for i in range(4):
+    # First block should be movement actions (non-zero deltas)
+    for i in range(len(actions) - 1):
         assert actions[i].type == "movement"
         assert actions[i].delta is not None
         assert any(d != 0 for d in actions[i].delta)
 
 
 def test_continuous3d_meta_actions_at_end():
-    """Continuous3D meta-actions (INTERACT, WAIT) should be last two actions."""
+    """Continuous3D meta-action (INTERACT) should be last."""
     substrate = Continuous3DSubstrate(
         min_x=0.0,
         max_x=10.0,
@@ -468,16 +514,17 @@ def test_continuous3d_meta_actions_at_end():
         boundary="clamp",
         movement_delta=0.5,
         interaction_radius=0.8,
+        action_discretization=ACTION_DISC,
+        distance_metric="euclidean",
+        observation_encoding="relative",
     )
     actions = substrate.get_default_actions()
 
-    # Last two actions should be INTERACT, WAIT (in that order)
-    assert len(actions) == 8
-    assert actions[-2].name == "INTERACT"
-    assert actions[-1].name == "WAIT"
+    # Last action should be INTERACT
+    assert actions[-1].name == "INTERACT"
 
-    # First 6 should be movement actions (non-zero deltas)
-    for i in range(6):
+    # First block should be movement actions (non-zero deltas)
+    for i in range(len(actions) - 1):
         assert actions[i].type == "movement"
         assert actions[i].delta is not None
         assert any(d != 0 for d in actions[i].delta)
@@ -490,6 +537,8 @@ def test_continuousnd_meta_actions_at_end():
         boundary="clamp",
         movement_delta=0.5,
         interaction_radius=0.8,
+        distance_metric="euclidean",
+        observation_encoding="relative",
     )
     actions = substrate.get_default_actions()
 
@@ -510,13 +559,10 @@ def test_aspatial_only_meta_actions():
     substrate = AspatialSubstrate()
     actions = substrate.get_default_actions()
 
-    # Should only have INTERACT and WAIT
-    assert len(actions) == 2
+    # Should only have INTERACT
+    assert len(actions) == 1
     assert actions[0].name == "INTERACT"
-    assert actions[1].name == "WAIT"
 
-    # Neither should be movement actions
+    # Should not be movement
     assert actions[0].type != "movement"
-    assert actions[1].type != "movement"
     assert actions[0].delta is None
-    assert actions[1].delta is None

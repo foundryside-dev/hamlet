@@ -172,8 +172,8 @@ def test_action_space_builder_substrate_only():
 
     space = builder.build()
 
-    assert space.action_dim == 6  # Grid2D substrate actions only
-    assert space.substrate_action_count == 6
+    assert space.action_dim == substrate.action_space_size  # Grid2D substrate actions only
+    assert space.substrate_action_count == substrate.action_space_size
     assert space.custom_action_count == 0
 
 
@@ -211,20 +211,21 @@ custom_actions:
 
     space = builder.build()
 
-    # 6 substrate + 2 custom = 8 actions
-    assert space.action_dim == 8
-    assert space.substrate_action_count == 6
+    # 9 substrate (with diagonals) + 2 custom = 11 actions
+    assert space.action_dim == substrate.action_space_size + 2
+    assert space.substrate_action_count == substrate.action_space_size
     assert space.custom_action_count == 2
 
     # Substrate actions come first (IDs 0-5)
     assert space.get_action_by_id(0).name == "UP"
     assert space.get_action_by_id(0).source == "substrate"
 
-    # Custom actions come after (IDs 6-7)
-    assert space.get_action_by_id(6).name == "REST"
-    assert space.get_action_by_id(6).source == "custom"
-    assert space.get_action_by_id(7).name == "MEDITATE"
-    assert space.get_action_by_id(7).source == "custom"
+    # Custom actions come after substrate block
+    first_custom_id = substrate.action_space_size
+    assert space.get_action_by_id(first_custom_id).name == "REST"
+    assert space.get_action_by_id(first_custom_id).source == "custom"
+    assert space.get_action_by_id(first_custom_id + 1).name == "MEDITATE"
+    assert space.get_action_by_id(first_custom_id + 1).source == "custom"
 
 
 def test_action_space_builder_with_enabled_actions(tmp_path):
@@ -259,19 +260,22 @@ custom_actions:
 
     space = builder.build()
 
-    # All 8 actions defined
-    assert space.action_dim == 8
+    # All 11 actions defined (9 substrate + 2 custom)
+    assert space.action_dim == substrate.action_space_size + 2
 
     # UP, DOWN, REST enabled
     assert space.get_action_by_name("UP").enabled
     assert space.get_action_by_name("DOWN").enabled
     assert space.get_action_by_name("REST").enabled
 
-    # LEFT, RIGHT, INTERACT, WAIT, MEDITATE disabled
+    # All other substrate + custom actions disabled
     assert not space.get_action_by_name("LEFT").enabled
     assert not space.get_action_by_name("RIGHT").enabled
+    assert not space.get_action_by_name("UP_LEFT").enabled
+    assert not space.get_action_by_name("UP_RIGHT").enabled
+    assert not space.get_action_by_name("DOWN_LEFT").enabled
+    assert not space.get_action_by_name("DOWN_RIGHT").enabled
     assert not space.get_action_by_name("INTERACT").enabled
-    assert not space.get_action_by_name("WAIT").enabled
     assert not space.get_action_by_name("MEDITATE").enabled
 
     # Enabled count = 3
@@ -294,8 +298,8 @@ def test_empty_enabled_list_disables_all():
 
     space = builder.build()
 
-    # All 6 substrate actions exist
-    assert space.action_dim == 6
+    # All substrate actions exist
+    assert space.action_dim == substrate.action_space_size
 
     # But ZERO actions enabled
     assert space.enabled_action_count == 0

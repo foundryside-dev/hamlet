@@ -13,6 +13,30 @@ from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
 from townlet.population.vectorized import VectorizedPopulation
 
 
+def _make_population(env, curriculum, exploration, agent_ids, brain_config, **overrides):
+    """Helper to instantiate VectorizedPopulation with required runtime params."""
+
+    params = {
+        "obs_dim": env.observation_dim,
+        "action_dim": env.action_dim,
+        "train_frequency": 1,
+        "batch_size": 8,
+        "sequence_length": 1,
+        "max_grad_norm": 10.0,
+    }
+    params.update(overrides)
+
+    return VectorizedPopulation(
+        env=env,
+        curriculum=curriculum,
+        exploration=exploration,
+        agent_ids=agent_ids,
+        device=env.device,
+        brain_config=brain_config,
+        **params,
+    )
+
+
 @pytest.fixture
 def recurrent_env_builder(tmp_path, test_config_pack_path, env_factory, cpu_device):
     """Clone config packs, enforce POMDP settings, and build envs."""
@@ -21,23 +45,26 @@ def recurrent_env_builder(tmp_path, test_config_pack_path, env_factory, cpu_devi
         target = tmp_path / f"recurrent_env_{uuid.uuid4().hex}"
         shutil.copytree(test_config_pack_path, target)
 
-        training_yaml = target / "training.yaml"
-        with open(training_yaml) as f:
-            training_config = yaml.safe_load(f)
+        level_dir = target / "levels" / "L0_test"
+        curriculum_yaml = level_dir / "curriculum.yaml"
+        with open(curriculum_yaml) as f:
+            curriculum_config = yaml.safe_load(f)
 
-        def _merge(config: dict, updates: dict) -> None:
-            for section, values in updates.items():
-                current = config.get(section, {}) or {}
-                current.update(values)
-                config[section] = current
+        # Enforce partial observability for recurrent tests
+        curriculum_updates = {"curriculum": {"active_vision": "partial", "vision_range": 0.5}}
+        for section, values in curriculum_updates.items():
+            current = curriculum_config.get(section, {}) or {}
+            current.update(values)
+            curriculum_config[section] = current
 
-        base_updates = {"environment": {"partial_observability": True, "vision_range": 2}}
-        _merge(training_config, base_updates)
         if overrides:
-            _merge(training_config, overrides)
+            for section, values in overrides.items():
+                current = curriculum_config.get(section, {}) or {}
+                current.update(values)
+                curriculum_config[section] = current
 
-        with open(training_yaml, "w") as f:
-            yaml.safe_dump(training_config, f, sort_keys=False)
+        with open(curriculum_yaml, "w") as f:
+            yaml.safe_dump(curriculum_config, f, sort_keys=False)
 
         return env_factory(config_dir=target, num_agents=num_agents, device_override=cpu_device)
 
@@ -67,13 +94,11 @@ class TestRecurrentNetworkInitialization:
         curriculum = StaticCurriculum(difficulty_level=0.5)
         exploration = EpsilonGreedyExploration(epsilon=1.0, epsilon_min=0.1, epsilon_decay=0.999)
 
-        population = VectorizedPopulation(
+        population = _make_population(
             env=env,
             curriculum=curriculum,
             exploration=exploration,
             agent_ids=["agent_0", "agent_1"],
-            device=env.device,
-            obs_dim=env.observation_dim,
             brain_config=recurrent_brain_config,  # Use RecurrentSpatialQNetwork
             batch_size=8,
             sequence_length=10,  # Sequence length for LSTM training
@@ -102,13 +127,11 @@ class TestRecurrentNetworkInitialization:
         curriculum = StaticCurriculum(difficulty_level=0.5)
         exploration = EpsilonGreedyExploration(epsilon=1.0, epsilon_min=0.1, epsilon_decay=0.999)
 
-        population = VectorizedPopulation(
+        population = _make_population(
             env=env,
             curriculum=curriculum,
             exploration=exploration,
             agent_ids=["agent_0"],
-            device=env.device,
-            obs_dim=env.observation_dim,
             brain_config=recurrent_brain_config,
             batch_size=4,
             sequence_length=5,
@@ -147,13 +170,11 @@ class TestLSTMHiddenStateManagement:
         curriculum = StaticCurriculum(difficulty_level=0.5)
         exploration = EpsilonGreedyExploration(epsilon=1.0, epsilon_min=0.1, epsilon_decay=0.999)
 
-        population = VectorizedPopulation(
+        population = _make_population(
             env=env,
             curriculum=curriculum,
             exploration=exploration,
             agent_ids=["agent_0", "agent_1", "agent_2"],
-            device=cpu_device,
-            obs_dim=env.observation_dim,
             brain_config=recurrent_brain_config,
             batch_size=4,
             sequence_length=5,
@@ -201,13 +222,11 @@ class TestEpisodeBuffering:
         curriculum = StaticCurriculum(difficulty_level=0.5)
         exploration = EpsilonGreedyExploration(epsilon=1.0, epsilon_min=0.1, epsilon_decay=0.999)
 
-        population = VectorizedPopulation(
+        population = _make_population(
             env=env,
             curriculum=curriculum,
             exploration=exploration,
             agent_ids=["agent_0"],
-            device=cpu_device,
-            obs_dim=env.observation_dim,
             brain_config=recurrent_brain_config,
             batch_size=4,
             sequence_length=5,
@@ -248,13 +267,11 @@ class TestEpisodeBuffering:
         curriculum = StaticCurriculum(difficulty_level=0.5)
         exploration = EpsilonGreedyExploration(epsilon=1.0, epsilon_min=0.1, epsilon_decay=0.999)
 
-        population = VectorizedPopulation(
+        population = _make_population(
             env=env,
             curriculum=curriculum,
             exploration=exploration,
             agent_ids=["agent_0"],
-            device=cpu_device,
-            obs_dim=env.observation_dim,
             brain_config=recurrent_brain_config,
             batch_size=4,
             sequence_length=5,
@@ -280,13 +297,11 @@ class TestEpisodeBuffering:
         curriculum = StaticCurriculum(difficulty_level=0.5)
         exploration = EpsilonGreedyExploration(epsilon=1.0, epsilon_min=0.1, epsilon_decay=0.999)
 
-        population = VectorizedPopulation(
+        population = _make_population(
             env=env,
             curriculum=curriculum,
             exploration=exploration,
             agent_ids=["agent_0"],
-            device=cpu_device,
-            obs_dim=env.observation_dim,
             brain_config=recurrent_brain_config,
             batch_size=4,
             sequence_length=5,
@@ -333,13 +348,11 @@ class TestRecurrentTraining:
         curriculum = StaticCurriculum(difficulty_level=0.5)
         exploration = EpsilonGreedyExploration(epsilon=1.0, epsilon_min=0.1, epsilon_decay=0.999)
 
-        population = VectorizedPopulation(
+        population = _make_population(
             env=env,
             curriculum=curriculum,
             exploration=exploration,
             agent_ids=["agent_0"],
-            device=cpu_device,
-            obs_dim=env.observation_dim,
             brain_config=recurrent_brain_config,
             batch_size=2,
             sequence_length=5,
@@ -400,13 +413,11 @@ class TestAdaptiveIntrinsicExplorationIntegration:
             device=env.device,
         )
 
-        population = VectorizedPopulation(
+        population = _make_population(
             env=env,
             curriculum=curriculum,
             exploration=exploration,
             agent_ids=["agent_0"],
-            device=env.device,
-            obs_dim=env.observation_dim,
             brain_config=minimal_brain_config,
             batch_size=16,
         )
@@ -439,13 +450,11 @@ class TestSnapshotAndMetrics:
         curriculum = StaticCurriculum(difficulty_level=0.5)
         exploration = EpsilonGreedyExploration(epsilon=1.0, epsilon_min=0.1, epsilon_decay=0.999)
 
-        population = VectorizedPopulation(
+        population = _make_population(
             env=env,
             curriculum=curriculum,
             exploration=exploration,
             agent_ids=["agent_0", "agent_1"],
-            device=env.device,
-            obs_dim=env.observation_dim,
             brain_config=minimal_brain_config,
             batch_size=16,
         )
@@ -487,13 +496,11 @@ class TestSnapshotAndMetrics:
 
         exploration = EpsilonGreedyExploration(epsilon=1.0, epsilon_min=0.1, epsilon_decay=0.999)
 
-        population = VectorizedPopulation(
+        population = _make_population(
             env=env,
             curriculum=curriculum,
             exploration=exploration,
             agent_ids=["agent_0"],
-            device=env.device,
-            obs_dim=env.observation_dim,
             brain_config=minimal_brain_config,
             batch_size=16,
         )
@@ -525,13 +532,11 @@ class TestSnapshotAndMetrics:
 
         obs_spec = env.observation_spec
 
-        population = VectorizedPopulation(
+        population = _make_population(
             env=env,
             curriculum=curriculum,
             exploration=exploration,
             agent_ids=["agent_0"],
-            device=cpu_device,
-            obs_dim=env.observation_dim,
             brain_config=recurrent_brain_config,
             batch_size=8,
             train_frequency=4,
@@ -563,13 +568,11 @@ class TestSnapshotAndMetrics:
         curriculum = StaticCurriculum(difficulty_level=0.5)
         exploration = EpsilonGreedyExploration(epsilon=1.0, epsilon_min=0.1, epsilon_decay=0.999)
 
-        population = VectorizedPopulation(
+        population = _make_population(
             env=env,
             curriculum=curriculum,
             exploration=exploration,
             agent_ids=["agent_0"],
-            device=env.device,
-            obs_dim=env.observation_dim,
             brain_config=minimal_brain_config,
             batch_size=16,
         )

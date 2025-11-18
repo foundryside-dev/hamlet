@@ -4,6 +4,8 @@ import torch
 
 from tests.test_townlet.utils.builders import make_grid3d_substrate
 
+ACTION_DISC = {"num_directions": 8, "num_magnitudes": 3}
+
 
 def test_training_with_grid3d_substrate(tmp_path):
     """Training runs with 3D cubic grid."""
@@ -19,7 +21,7 @@ def test_training_with_grid3d_substrate(tmp_path):
 
     # Verify Grid3D substrate properties
     assert substrate.position_dim == 3
-    assert substrate.action_space_size == 8  # 6 cardinal movement + 2 for up/down in 3D
+    assert substrate.action_space_size == 11  # cardinal + diagonals defined by Grid3D defaults
 
     # Verify substrate can generate random positions
     num_agents = 10
@@ -68,6 +70,9 @@ def test_continuous_proximity_interaction(tmp_path):
         boundary="clamp",
         movement_delta=0.5,
         interaction_radius=0.8,
+        action_discretization=ACTION_DISC,
+        distance_metric="euclidean",
+        observation_encoding="relative",
     )
 
     # Place agent and affordance close together

@@ -40,5 +40,5 @@ def test_vectorized_env_avoids_runtime_yaml_reads(monkeypatch, config_name: str)
 
     monkeypatch.setattr(Path, "open", guarded_open, raising=False)
 
-    env = compiled.create_environment(num_agents=1, level_name=level_name)
+    env = compiled.create_environment(num_agents=1, level_name=level_name, device="cpu")
     assert env.observation_dim == compiled.metadata.observation_dim

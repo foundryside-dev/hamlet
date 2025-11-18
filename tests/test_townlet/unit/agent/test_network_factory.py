@@ -13,6 +13,84 @@ from townlet.agent.brain_config import (
 )
 from townlet.agent.network_factory import NetworkFactory
 from townlet.agent.networks import RecurrentSpatialQNetwork
+from townlet.universe.dto import ObservationField, ObservationSpec
+
+
+def _make_observation_spec(
+    *,
+    window_size: int,
+    position_dim: int,
+    num_meters: int,
+    num_affordance_types: int,
+) -> ObservationSpec:
+    """Construct an ObservationSpec matching RecurrentSpatialQNetwork expectations."""
+    fields: list[ObservationField] = []
+    start = 0
+
+    grid_dims = window_size * window_size
+    fields.append(
+        ObservationField(
+            uuid=None,
+            name="obs_local_window",
+            type="spatial_grid",
+            dims=grid_dims,
+            start_index=start,
+            end_index=start + grid_dims,
+            scope="agent",
+            description="Local vision window grid encoding",
+            semantic_type="spatial",
+        )
+    )
+    start += grid_dims
+
+    if position_dim > 0:
+        fields.append(
+            ObservationField(
+                uuid=None,
+                name="obs_position",
+                type="vector",
+                dims=position_dim,
+                start_index=start,
+                end_index=start + position_dim,
+                scope="agent",
+                description="Agent position",
+                semantic_type="spatial",
+            )
+        )
+        start += position_dim
+
+    fields.append(
+        ObservationField(
+            uuid=None,
+            name="obs_meters",
+            type="vector",
+            dims=num_meters,
+            start_index=start,
+            end_index=start + num_meters,
+            scope="agent",
+            description="Meter values",
+            semantic_type="meters",
+        )
+    )
+    start += num_meters
+
+    affordance_dims = num_affordance_types + 1  # network expects +1 for "none"
+    fields.append(
+        ObservationField(
+            uuid=None,
+            name="obs_affordances",
+            type="vector",
+            dims=affordance_dims,
+            start_index=start,
+            end_index=start + affordance_dims,
+            scope="agent",
+            description="Affordance activations",
+            semantic_type="affordance",
+        )
+    )
+    start += affordance_dims
+
+    return ObservationSpec.from_fields(fields)
 
 
 def test_build_feedforward_basic():
@@ -109,6 +187,13 @@ def test_build_recurrent_basic():
         ),
     )
 
+    obs_spec = _make_observation_spec(
+        window_size=5,
+        position_dim=2,
+        num_meters=8,
+        num_affordance_types=14,
+    )
+
     network = NetworkFactory.build_recurrent(
         config=config,
         action_dim=8,
@@ -116,6 +201,7 @@ def test_build_recurrent_basic():
         position_dim=2,
         num_meters=8,
         num_affordance_types=14,
+        observation_spec=obs_spec,
     )
 
     # Verify network type
@@ -123,8 +209,7 @@ def test_build_recurrent_basic():
 
     # Test forward pass with dummy observation
     batch_size = 4
-    obs_dim = (5 * 5) + 2 + 8 + 15  # grid + position + meters + affordances
-    obs = torch.randn(batch_size, obs_dim)
+    obs = torch.randn(batch_size, obs_spec.total_dims)
 
     q_values, hidden = network(obs)
 
@@ -168,6 +253,13 @@ def test_build_recurrent_parameter_count():
         ),
     )
 
+    obs_spec = _make_observation_spec(
+        window_size=5,
+        position_dim=2,
+        num_meters=8,
+        num_affordance_types=14,
+    )
+
     network = NetworkFactory.build_recurrent(
         config=config,
         action_dim=8,
@@ -175,6 +267,7 @@ def test_build_recurrent_parameter_count():
         position_dim=2,
         num_meters=8,
         num_affordance_types=14,
+        observation_spec=obs_spec,
     )
 
     total_params = sum(p.numel() for p in network.parameters())
@@ -215,6 +308,13 @@ def test_build_recurrent_custom_lstm_size():
         ),
     )
 
+    obs_spec = _make_observation_spec(
+        window_size=5,
+        position_dim=2,
+        num_meters=8,
+        num_affordance_types=14,
+    )
+
     network = NetworkFactory.build_recurrent(
         config=config,
         action_dim=8,
@@ -222,6 +322,7 @@ def test_build_recurrent_custom_lstm_size():
         position_dim=2,
         num_meters=8,
         num_affordance_types=14,
+        observation_spec=obs_spec,
     )
 
     # Verify LSTM hidden size is 128 (not default 256)
@@ -229,8 +330,7 @@ def test_build_recurrent_custom_lstm_size():
 
     # Test forward pass
     batch_size = 2
-    obs_dim = (5 * 5) + 2 + 8 + 15
-    obs = torch.randn(batch_size, obs_dim)
+    obs = torch.randn(batch_size, obs_spec.total_dims)
 
     q_values, hidden = network(obs)
 
@@ -272,6 +372,13 @@ def test_build_recurrent_aspatial():
         ),
     )
 
+    obs_spec = _make_observation_spec(
+        window_size=5,
+        position_dim=0,
+        num_meters=8,
+        num_affordance_types=14,
+    )
+
     network = NetworkFactory.build_recurrent(
         config=config,
         action_dim=4,
@@ -279,12 +386,12 @@ def test_build_recurrent_aspatial():
         position_dim=0,  # Aspatial (no position)
         num_meters=8,
         num_affordance_types=14,
+        observation_spec=obs_spec,
     )
 
     # Test forward pass without position component
     batch_size = 2
-    obs_dim = (5 * 5) + 0 + 8 + 15  # grid + no position + meters + affordances
-    obs = torch.randn(batch_size, obs_dim)
+    obs = torch.randn(batch_size, obs_spec.total_dims)
 
     q_values, hidden = network(obs)
 

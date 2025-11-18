@@ -16,14 +16,13 @@ from pathlib import Path
 from typing import Any, Literal
 
 import yaml
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class PerceptionConfig(BaseModel):
     """Perception configuration (currently empty placeholder)."""
 
-    class Config:
-        extra = "allow"  # Allow empty dict or future fields
+    model_config = ConfigDict(extra="allow")  # Allow empty dict or future fields
 
 
 class RangeMultiplierRange(BaseModel):
@@ -33,8 +32,7 @@ class RangeMultiplierRange(BaseModel):
     max: float = Field(..., description="Maximum value (exclusive)")
     multiplier: float = Field(..., description="Multiplier to apply in this range")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class RangeMultiplierModifier(BaseModel):
@@ -44,8 +42,7 @@ class RangeMultiplierModifier(BaseModel):
     source: str = Field(..., description="Source meter/variable name")
     ranges: list[RangeMultiplierRange] = Field(..., description="Range definitions")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class ExtrinsicBonus(BaseModel):
@@ -55,8 +52,7 @@ class ExtrinsicBonus(BaseModel):
     weight: float = Field(..., description="Bonus weight")
     transform: Literal["linear", "quadratic", "exponential"] = Field(..., description="Transform function")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class ExtrinsicConfig(BaseModel):
@@ -66,8 +62,7 @@ class ExtrinsicConfig(BaseModel):
     base: float = Field(..., description="Base reward value")
     bonuses: list[ExtrinsicBonus] | None = Field(None, description="Bonus terms (for constant_base_with_shaped_bonus)")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class AnnealingConfig(BaseModel):
@@ -78,8 +73,7 @@ class AnnealingConfig(BaseModel):
     decay_rate: float = Field(..., description="Decay rate per step")
     min_weight: float = Field(..., description="Minimum weight floor")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class IntrinsicConfig(BaseModel):
@@ -90,8 +84,7 @@ class IntrinsicConfig(BaseModel):
     apply_modifiers: list[str] = Field(..., description="Modifiers to apply")
     annealing: AnnealingConfig | None = Field(None, description="Annealing configuration")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class ShapingConfig(BaseModel):
@@ -99,8 +92,7 @@ class ShapingConfig(BaseModel):
 
     type: str = Field(..., description="Shaping bonus type")
 
-    class Config:
-        extra = "allow"  # Allow arbitrary fields for different shaping types
+    model_config = ConfigDict(extra="allow")  # Allow arbitrary fields for different shaping types
 
 
 class CompositionConfig(BaseModel):
@@ -111,8 +103,7 @@ class CompositionConfig(BaseModel):
     log_components: bool = Field(..., description="Whether to log reward components")
     log_modifiers: bool = Field(..., description="Whether to log modifier values")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class DriveConfig(BaseModel):
@@ -125,8 +116,7 @@ class DriveConfig(BaseModel):
     shaping: list[ShapingConfig] = Field(..., description="Reward shaping configurations")
     composition: CompositionConfig = Field(..., description="Composition configuration")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class FeedforwardConfig(BaseModel):
@@ -135,8 +125,7 @@ class FeedforwardConfig(BaseModel):
     hidden_sizes: list[int] = Field(..., description="Hidden layer sizes")
     activation: Literal["relu", "tanh", "elu"] = Field(..., description="Activation function")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class VisionEncoderConfig(BaseModel):
@@ -147,8 +136,7 @@ class VisionEncoderConfig(BaseModel):
     stride: int = Field(..., description="Convolution stride", gt=0)
     output_dim: int = Field(..., description="Output dimension", gt=0)
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class PositionEncoderConfig(BaseModel):
@@ -156,8 +144,7 @@ class PositionEncoderConfig(BaseModel):
 
     hidden_size: int = Field(..., description="Hidden layer size", gt=0)
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class MeterEncoderConfig(BaseModel):
@@ -165,8 +152,7 @@ class MeterEncoderConfig(BaseModel):
 
     hidden_size: int = Field(..., description="Hidden layer size", gt=0)
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class LSTMConfig(BaseModel):
@@ -175,8 +161,7 @@ class LSTMConfig(BaseModel):
     hidden_size: int = Field(..., description="LSTM hidden size", gt=0)
     num_layers: int = Field(..., description="Number of LSTM layers", gt=0)
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class QHeadConfig(BaseModel):
@@ -184,8 +169,7 @@ class QHeadConfig(BaseModel):
 
     hidden_sizes: list[int] = Field(..., description="Hidden layer sizes")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class RecurrentConfig(BaseModel):
@@ -197,8 +181,7 @@ class RecurrentConfig(BaseModel):
     lstm: LSTMConfig = Field(..., description="LSTM config")
     q_head: QHeadConfig = Field(..., description="Q-value head config")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class OptimizerScheduleConfig(BaseModel):
@@ -231,8 +214,7 @@ class OptimizerScheduleConfig(BaseModel):
         description="Minimum learning rate for cosine schedule (required when type='cosine')",
     )
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class OptimizerConfig(BaseModel):
@@ -287,8 +269,7 @@ class OptimizerConfig(BaseModel):
     weight_decay: float = Field(..., ge=0.0, description="L2 weight decay")
     schedule: OptimizerScheduleConfig = Field(..., description="Learning rate schedule configuration")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class QLearningConfig(BaseModel):
@@ -298,8 +279,7 @@ class QLearningConfig(BaseModel):
     gamma: float = Field(..., description="Discount factor", ge=0, le=1)
     target_update_frequency: int = Field(..., description="Target network update frequency (steps)", gt=0)
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class BrainConfig(BaseModel):
@@ -312,8 +292,7 @@ class BrainConfig(BaseModel):
     q_learning: QLearningConfig = Field(..., description="Q-learning config")
     loss: "LossConfig" = Field(..., description="Loss function configuration")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class LossConfig(BaseModel):
@@ -322,8 +301,7 @@ class LossConfig(BaseModel):
     type: Literal["mse", "huber", "smooth_l1"] = Field(..., description="Loss function type")
     huber_delta: float = Field(..., gt=0.0, description="Delta parameter for Huber/smooth_l1")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class AgentConfigRoot(BaseModel):
@@ -336,8 +314,7 @@ class AgentConfigRoot(BaseModel):
     drive: DriveConfig = Field(..., description="Drive (reward) configuration")
     brain: BrainConfig = Field(..., description="Brain (network) configuration")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class AgentConfig(BaseModel):
@@ -348,8 +325,7 @@ class AgentConfig(BaseModel):
 
     agent: AgentConfigRoot = Field(..., description="Agent configuration")
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
     @classmethod
     def from_yaml(cls, path: Path) -> "AgentConfig":

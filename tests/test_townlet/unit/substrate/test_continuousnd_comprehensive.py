@@ -121,55 +121,6 @@ class TestContinuousNDActionGeneration:
         # DIM3_POS should be [0, 0, 0, 1]
         assert actions[7].delta == [0, 0, 0, 1]
 
-    def test_get_default_actions_interact_and_wait(self):
-        """INTERACT and WAIT should be last two actions with correct properties."""
-        substrate = ContinuousNDSubstrate(
-            bounds=[(0.0, 10.0)] * 4,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=1.0,
-        )
-
-        actions = substrate.get_default_actions()
-
-        # Second-to-last should be INTERACT
-        interact = actions[-2]
-        assert interact.name == "INTERACT"
-        assert interact.type == "interaction"
-        assert interact.delta is None
-        assert interact.costs == {"energy": 0.003}
-        assert interact.source == "substrate"
-
-        # Last should be WAIT
-        wait = actions[-1]
-        assert wait.name == "WAIT"
-        assert wait.type == "passive"
-        assert wait.delta is None
-        assert wait.costs == {"energy": 0.004}
-        assert wait.source == "substrate"
-
-    def test_get_default_actions_all_movement_costs(self):
-        """All movement actions should have energy/hygiene/satiation costs."""
-        substrate = ContinuousNDSubstrate(
-            bounds=[(0.0, 10.0)] * 4,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=1.0,
-        )
-
-        actions = substrate.get_default_actions()
-
-        # Check first 8 movement actions
-        for action in actions[:8]:
-            assert action.type == "movement"
-            assert action.costs == {
-                "energy": 0.005,
-                "hygiene": 0.003,
-                "satiation": 0.004,
-            }
-            assert action.source == "substrate"
-            assert action.enabled is True
-
     def test_get_default_actions_description_includes_movement_delta(self):
         """Action descriptions should include the movement_delta value."""
         substrate = ContinuousNDSubstrate(

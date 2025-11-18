@@ -1482,14 +1482,8 @@ class UniverseCompiler:
                         f"  Got: {range_values}"
                     )
                 return NormalizationSpec(kind="minmax", min=range_values[0], max=range_values[1])
-
             if method == "standardize":
-                raise ValueError(
-                    "Normalization method 'standardize' requires mean/std parameters, "
-                    "which are not yet supported by VFS NormalizationSpec.\n"
-                    f"  Variable: {var_name}\n"
-                    "  Action: use clip/normalize with explicit ranges or extend the schema to include mean/std."
-                )
+                return NormalizationSpec(kind="zscore", mean=0.0, std=1.0)
 
             raise ValueError(
                 f"Unsupported normalization method '{method}' for variable '{var_name}'. " "Use clip | normalize | standardize."
@@ -1553,14 +1547,8 @@ class UniverseCompiler:
                         f"  Got: {range_values}"
                     )
                 return NormalizationSpec(kind="minmax", min=range_values[0], max=range_values[1])
-
             if method == "standardize":
-                raise ValueError(
-                    "Normalization method 'standardize' requires mean/std parameters, "
-                    "which are not yet supported by VFS NormalizationSpec.\n"
-                    f"  Variable: {var_name}\n"
-                    "  Action: use clip/normalize with explicit ranges or extend the schema to include mean/std."
-                )
+                return NormalizationSpec(kind="zscore", mean=0.0, std=1.0)
 
             raise ValueError(
                 f"Unsupported normalization method '{method}' for variable '{var_name}'. " "Use clip | normalize | standardize."

@@ -213,9 +213,9 @@ class VectorizedPopulation(PopulationManager):
         if self.is_recurrent and hasattr(env, "enable_temporal_mechanics"):
             temporal_enabled = bool(getattr(env, "enable_temporal_mechanics"))
             if hasattr(self.q_network, "enable_temporal_features"):
-                self.q_network.enable_temporal_features = temporal_enabled
+                self.q_network.enable_temporal_features = temporal_enabled  # type: ignore[assignment]
             if hasattr(self.target_network, "enable_temporal_features"):
-                self.target_network.enable_temporal_features = temporal_enabled
+                self.target_network.enable_temporal_features = temporal_enabled  # type: ignore[assignment]
 
         # Optimizer and scheduler from brain_config
         self.optimizer, self.scheduler = OptimizerFactory.build(

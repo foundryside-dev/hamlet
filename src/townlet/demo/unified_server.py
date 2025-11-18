@@ -341,16 +341,15 @@ class UnifiedServer:
             # Create DemoRunner (v2.1: config_dir is experiment root, level selection handled
             # by training config or external orchestrator; default to first level name here
             # is handled inside DemoRunner or by caller).
-            runner_kwargs: dict[str, object] = {
-                "config_dir": str(self.config_dir),
-                "level_name": self.level_name,
-                "db_path": str(db_path),
-                "checkpoint_dir": str(self.checkpoint_dir),
-                "max_episodes": self.total_episodes,
-            }
-            if self.training_config_path is not None:
-                runner_kwargs["training_config_path"] = str(self.training_config_path)
-            self.runner = DemoRunner(**runner_kwargs)
+            # Call DemoRunner directly with typed arguments
+            self.runner = DemoRunner(
+                config_dir=str(self.config_dir),
+                level_name=self.level_name,
+                db_path=str(db_path),
+                checkpoint_dir=str(self.checkpoint_dir),
+                max_episodes=self.total_episodes,
+                training_config_path=str(self.training_config_path) if self.training_config_path is not None else None,
+            )
 
             logger.info("[Training] Starting training loop...")
             self.runner.run()

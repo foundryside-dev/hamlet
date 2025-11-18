@@ -346,7 +346,13 @@ class VectorizedHamletEnv:
 
         # Initialize affordance engine with modern affordances (effect_pipeline support).
         # Adapt v2.1 per-level affordances (AffordancesV2Config) into runtime AffordanceConfig.
-        from townlet.environment.affordance_config import AffordanceConfig as RuntimeAffordanceConfig
+        from townlet.environment.affordance_config import (
+            AffordanceConfig as RuntimeAffordanceConfig,
+        )
+        from townlet.environment.affordance_config import (
+            AffordanceCost,
+            AffordanceEffect,
+        )
 
         # Build lookup from environment.yaml affordance vocabulary for categories.
         env_affordance_categories: dict[str, str] = {a.name: a.category for a in self.universe.environment.environment.affordances}
@@ -383,9 +389,9 @@ class VectorizedHamletEnv:
                 raise ValueError(f"affordance '{aff.name}' missing interaction_type (no defaults allowed)")
             duration_ticks = aff.duration_ticks if aff.duration_ticks is not None else None
 
-            # Instant and per-tick costs
-            costs_instant = [{"meter": m, "amount": v} for m, v in (aff.costs or {}).items()]
-            costs_per_tick = [{"meter": m, "amount": v} for m, v in (aff.costs_per_tick or {}).items()]
+            # Instant and per-tick costs (convert to runtime AffordanceCost objects)
+            costs_instant = [AffordanceCost(meter=m, amount=v) for m, v in (aff.costs or {}).items()]
+            costs_per_tick = [AffordanceCost(meter=m, amount=v) for m, v in (aff.costs_per_tick or {}).items()]
 
             # Effect pipeline: prefer explicit pipeline when provided; otherwise synthesize
             # a simple on_start pipeline from effects dict for instant affordances.
@@ -395,9 +401,10 @@ class VectorizedHamletEnv:
                 effects_per_tick = list(pipeline.per_tick)
                 effects_on_completion = list(pipeline.on_completion)
             else:
-                from townlet.config.effect_pipeline import AffordanceEffect, EffectPipeline
+                from townlet.config.effect_pipeline import AffordanceEffect as PipelineEffect
+                from townlet.config.effect_pipeline import EffectPipeline
 
-                effects_on_start = [AffordanceEffect(meter=m, amount=v) for m, v in (aff.effects or {}).items()]
+                effects_on_start = [PipelineEffect(meter=m, amount=v) for m, v in (aff.effects or {}).items()]
                 effects_per_tick = []
                 effects_on_completion = []
                 pipeline = EffectPipeline(
@@ -417,9 +424,9 @@ class VectorizedHamletEnv:
                     duration_ticks=duration_ticks,
                     costs=costs_instant,
                     costs_per_tick=costs_per_tick,
-                    effects=[{"meter": e.meter, "amount": e.amount} for e in effects_on_start],
-                    effects_per_tick=[{"meter": e.meter, "amount": e.amount} for e in effects_per_tick],
-                    completion_bonus=[{"meter": e.meter, "amount": e.amount} for e in effects_on_completion],
+                    effects=[AffordanceEffect(meter=e.meter, amount=e.amount) for e in effects_on_start],
+                    effects_per_tick=[AffordanceEffect(meter=e.meter, amount=e.amount) for e in effects_per_tick],
+                    completion_bonus=[AffordanceEffect(meter=e.meter, amount=e.amount) for e in effects_on_completion],
                     operating_hours=operating_hours,
                     teaching_note=getattr(aff, "teaching_note", None),
                     design_intent=None,
@@ -1070,7 +1077,7 @@ class VectorizedHamletEnv:
                 dtype=torch.float32,
                 device=self.device,
             )
-        velocity = getattr(self, "_velocity")
+        velocity: torch.Tensor | None = getattr(self, "_velocity")
         if velocity is None:
             return torch.zeros(
                 (self.num_agents, self.substrate.position_dim),

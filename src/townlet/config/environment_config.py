@@ -55,8 +55,13 @@ class ModulationConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
-class AffordanceConfig(BaseModel):
-    """Affordance definition."""
+class AffordanceDefinition(BaseModel):
+    """Global affordance registry entry (environment.yaml).
+
+    Defines the canonical name, description, and category for an affordance.
+    Curriculum-level parameters (costs, effects, deployment) are defined in
+    levels/*/affordances.yaml using AffordanceParamConfig.
+    """
 
     name: str = Field(..., description="Affordance name (e.g., 'EAT', 'SLEEP')")
     description: str = Field(..., description="Human-readable description")
@@ -137,7 +142,7 @@ class EnvironmentConfigRoot(BaseModel):
     meters: list[MeterConfig] = Field(..., description="Meter definitions")
     cascade_graph: list[CascadeConfig] = Field(..., description="Cascade relationships")
     modulation_graph: list[ModulationConfig] = Field(..., description="Modulation relationships")
-    affordances: list[AffordanceConfig] = Field(..., description="Affordance definitions")
+    affordances: list[AffordanceDefinition] = Field(..., description="Affordance definitions")
     variables: list[VariableConfig] = Field(..., description="VFS variable definitions")
     cues: list[CueConfig] = Field(..., description="UI cue definitions")
 

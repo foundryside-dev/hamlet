@@ -139,8 +139,7 @@ class UniverseCompiler:
 
         if not levels_dict:
             raise ValueError(
-                f"No curriculum levels found in {levels_dir}\n"
-                f"Expected at least one level directory (e.g., levels/L1_full_observability/)"
+                f"No curriculum levels found in {levels_dir}\nExpected at least one level directory (e.g., levels/L1_full_observability/)"
             )
 
         return (experiment, stratum, environment, actions, agent, levels_dict)
@@ -1272,9 +1271,7 @@ class UniverseCompiler:
             if method in {"clip", "normalize"}:
                 if not range_values or len(range_values) != 2:
                     raise ValueError(
-                        "Normalization range must provide exactly two values [min, max].\n"
-                        f"  Variable: {var_name}\n"
-                        f"  Got: {range_values}"
+                        f"Normalization range must provide exactly two values [min, max].\n  Variable: {var_name}\n  Got: {range_values}"
                     )
                 return NormalizationSpec(kind="minmax", min=range_values[0], max=range_values[1])
             if method == "standardize":
@@ -1286,9 +1283,7 @@ class UniverseCompiler:
                     )
                 return NormalizationSpec(kind="zscore", mean=mean, std=std)
 
-            raise ValueError(
-                f"Unsupported normalization method '{method}' for variable '{var_name}'. " "Use clip | normalize | standardize."
-            )
+            raise ValueError(f"Unsupported normalization method '{method}' for variable '{var_name}'. Use clip | normalize | standardize.")
 
         env_norm_by_name: dict[str, NormalizationSpec] = {}
         for var in environment.environment.variables:
@@ -1352,9 +1347,7 @@ class UniverseCompiler:
             if method in {"clip", "normalize"}:
                 if not range_values or len(range_values) != 2:
                     raise ValueError(
-                        "Normalization range must provide exactly two values [min, max].\n"
-                        f"  Variable: {var_name}\n"
-                        f"  Got: {range_values}"
+                        f"Normalization range must provide exactly two values [min, max].\n  Variable: {var_name}\n  Got: {range_values}"
                     )
                 return NormalizationSpec(kind="minmax", min=range_values[0], max=range_values[1])
             if method == "standardize":
@@ -1366,9 +1359,7 @@ class UniverseCompiler:
                     )
                 return NormalizationSpec(kind="zscore", mean=mean, std=std)
 
-            raise ValueError(
-                f"Unsupported normalization method '{method}' for variable '{var_name}'. " "Use clip | normalize | standardize."
-            )
+            raise ValueError(f"Unsupported normalization method '{method}' for variable '{var_name}'. Use clip | normalize | standardize.")
 
         # Build lookup of user-defined variable names
         user_var_names = {var.name for var in environment.environment.variables}
@@ -1478,9 +1469,7 @@ class UniverseCompiler:
             substrate_actions = substrate.get_default_actions()
         except Exception as exc:  # pragma: no cover - defensive
             raise ValueError(
-                "Failed to derive substrate default actions for v2.1 validation.\n"
-                f"  Experiment: {compiled.experiment_dir}\n"
-                f"  Error: {exc}"
+                f"Failed to derive substrate default actions for v2.1 validation.\n  Experiment: {compiled.experiment_dir}\n  Error: {exc}"
             ) from exc
 
         custom_actions_cfg = raw.actions.actions.custom_actions
@@ -1539,7 +1528,7 @@ class UniverseCompiler:
             )
         for warning in validation_result.warnings:
             logger.warning(
-                "Substrate/action compatibility warning (v2.1).\n" "  Experiment: %s\n" "  Warning: %s",
+                "Substrate/action compatibility warning (v2.1).\n  Experiment: %s\n  Warning: %s",
                 compiled.experiment_dir,
                 warning,
             )
@@ -1662,7 +1651,7 @@ class UniverseCompiler:
             config_version = raw.experiment.experiment.version
         except AttributeError as exc:
             raise ValueError(
-                "experiment.version is required in experiment.yaml (no defaults allowed). " "Provide an explicit semantic version string."
+                "experiment.version is required in experiment.yaml (no defaults allowed). Provide an explicit semantic version string."
             ) from exc
         if not config_version:
             raise ValueError("experiment.version is required in experiment.yaml and cannot be empty.")
@@ -2451,7 +2440,7 @@ class UniverseCompiler:
         """
         opening_hours = getattr(affordance, "opening_hours", None)
         if opening_hours is None:
-            raise ValueError("Affordance missing opening_hours in v2.1 config. " "All affordances must declare opening_hours.")
+            raise ValueError("Affordance missing opening_hours in v2.1 config. All affordances must declare opening_hours.")
 
         # opening_hours.enabled == False → 24/7 availability.
         if not opening_hours.enabled:

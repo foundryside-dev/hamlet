@@ -369,12 +369,10 @@ class TestContinuousConfiguration:
 
     def test_config_1d(self):
         """1D continuous substrate basic properties."""
-        from townlet.substrate.config import ContinuousConfig, SubstrateConfig
+        from townlet.config.stratum_config import ContinuousConfig, SubstrateConfig
         from townlet.substrate.factory import SubstrateFactory
 
         config = SubstrateConfig(
-            version="1.0",
-            description="Test 1D continuous substrate",
             type="continuous",
             continuous=ContinuousConfig(
                 dimensions=1,
@@ -395,12 +393,10 @@ class TestContinuousConfiguration:
 
     def test_config_2d(self):
         """2D continuous substrate basic properties."""
-        from townlet.substrate.config import ContinuousConfig, SubstrateConfig
+        from townlet.config.stratum_config import ContinuousConfig, SubstrateConfig
         from townlet.substrate.factory import SubstrateFactory
 
         config = SubstrateConfig(
-            version="1.0",
-            description="Test 2D continuous substrate",
             type="continuous",
             continuous=ContinuousConfig(
                 dimensions=2,
@@ -421,12 +417,10 @@ class TestContinuousConfiguration:
 
     def test_config_3d(self):
         """3D continuous substrate basic properties."""
-        from townlet.substrate.config import ContinuousConfig, SubstrateConfig
+        from townlet.config.stratum_config import ContinuousConfig, SubstrateConfig
         from townlet.substrate.factory import SubstrateFactory
 
         config = SubstrateConfig(
-            version="1.0",
-            description="Test 3D continuous substrate",
             type="continuous",
             continuous=ContinuousConfig(
                 dimensions=3,

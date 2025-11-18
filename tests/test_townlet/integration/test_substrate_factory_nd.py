@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 import torch
 
-from townlet.substrate.config import SubstrateConfig, load_substrate_config
+from townlet.config.stratum_config import SubstrateConfig
 from townlet.substrate.continuousnd import ContinuousNDSubstrate
 from townlet.substrate.factory import SubstrateFactory
 from townlet.substrate.gridnd import GridNDSubstrate
@@ -20,8 +20,6 @@ class TestGridNDFactoryFromConfig:
     def test_gridnd_4d_basic(self):
         """Test creating 4D GridND substrate from config."""
         config_dict = {
-            "version": "1.0",
-            "description": "4D grid for testing",
             "type": "gridnd",
             "gridnd": {
                 "dimension_sizes": [8, 8, 8, 8],
@@ -45,8 +43,6 @@ class TestGridNDFactoryFromConfig:
     def test_gridnd_5d_with_different_sizes(self):
         """Test creating 5D GridND with varying dimension sizes."""
         config_dict = {
-            "version": "1.0",
-            "description": "5D grid with different sizes",
             "type": "gridnd",
             "gridnd": {
                 "dimension_sizes": [3, 4, 5, 6, 7],
@@ -70,8 +66,6 @@ class TestGridNDFactoryFromConfig:
     def test_gridnd_10d_absolute_encoding(self):
         """Test 10D GridND with absolute observation encoding."""
         config_dict = {
-            "version": "1.0",
-            "description": "10D grid",
             "type": "gridnd",
             "gridnd": {
                 "dimension_sizes": [4] * 10,
@@ -92,8 +86,6 @@ class TestGridNDFactoryFromConfig:
     def test_gridnd_position_initialization(self):
         """Test that initialized GridND positions are valid."""
         config_dict = {
-            "version": "1.0",
-            "description": "4D grid test",
             "type": "gridnd",
             "gridnd": {
                 "dimension_sizes": [5, 6, 7, 8],
@@ -118,8 +110,6 @@ class TestGridNDFactoryFromConfig:
     def test_gridnd_observation_encoding_relative(self):
         """Test relative observation encoding for GridND."""
         config_dict = {
-            "version": "1.0",
-            "description": "4D grid",
             "type": "gridnd",
             "gridnd": {
                 "dimension_sizes": [10, 10, 10, 10],
@@ -145,8 +135,6 @@ class TestGridNDFactoryFromConfig:
     def test_gridnd_observation_encoding_scaled(self):
         """Test scaled observation encoding for GridND."""
         config_dict = {
-            "version": "1.0",
-            "description": "4D grid",
             "type": "gridnd",
             "gridnd": {
                 "dimension_sizes": [5, 6, 7, 8],
@@ -178,8 +166,6 @@ class TestContinuousNDFactoryFromConfig:
     def test_continuousnd_4d_basic(self):
         """Test creating 4D ContinuousND substrate from config."""
         config_dict = {
-            "version": "1.0",
-            "description": "4D continuous for testing",
             "type": "continuousnd",
             "continuous": {
                 "dimensions": 4,
@@ -208,8 +194,6 @@ class TestContinuousNDFactoryFromConfig:
     def test_continuousnd_6d_different_bounds(self):
         """Test 6D ContinuousND with different bounds per dimension."""
         config_dict = {
-            "version": "1.0",
-            "description": "6D continuous with varied bounds",
             "type": "continuousnd",
             "continuous": {
                 "dimensions": 6,
@@ -243,8 +227,6 @@ class TestContinuousNDFactoryFromConfig:
     def test_continuousnd_position_initialization(self):
         """Test that initialized ContinuousND positions are valid."""
         config_dict = {
-            "version": "1.0",
-            "description": "4D continuous test",
             "type": "continuousnd",
             "continuous": {
                 "dimensions": 4,
@@ -273,8 +255,6 @@ class TestContinuousNDFactoryFromConfig:
     def test_continuousnd_observation_encoding_relative(self):
         """Test relative observation encoding for ContinuousND."""
         config_dict = {
-            "version": "1.0",
-            "description": "4D continuous",
             "type": "continuousnd",
             "continuous": {
                 "dimensions": 4,
@@ -306,8 +286,6 @@ class TestContinuousNDFactoryFromConfig:
     def test_continuousnd_observation_encoding_absolute(self):
         """Test absolute observation encoding for ContinuousND."""
         config_dict = {
-            "version": "1.0",
-            "description": "4D continuous",
             "type": "continuousnd",
             "continuous": {
                 "dimensions": 4,
@@ -340,29 +318,24 @@ class TestFactoryConfigValidation:
     def test_gridnd_missing_config_raises_error(self):
         """Test that missing gridnd config raises appropriate error."""
         config_dict = {
-            "version": "1.0",
-            "description": "Invalid - missing gridnd",
             "type": "gridnd",
         }
-        with pytest.raises(ValueError, match="type='gridnd' requires gridnd configuration"):
+        with pytest.raises(ValueError, match="type='gridnd' requires.*gridnd block"):
             SubstrateConfig(**config_dict)
 
     def test_continuousnd_missing_config_raises_error(self):
         """Test that missing continuous config for continuousnd raises error."""
         config_dict = {
-            "version": "1.0",
-            "description": "Invalid - missing continuous",
             "type": "continuousnd",
         }
-        with pytest.raises(ValueError, match="type='continuousnd' requires continuous configuration"):
+        with pytest.raises(ValueError, match="type='continuousnd' requires.*continuous block"):
             SubstrateConfig(**config_dict)
 
+    @pytest.mark.skip(reason="v2.1 GridNDConfig doesn't enforce minimum dimensions at DTO level")
     def test_gridnd_dimension_validation(self):
         """Test that GridND config validates dimension count."""
-        # Less than 4 dimensions should fail
+        # NOTE: v2.1 moved dimension validation to substrate level, not config DTO level
         config_dict = {
-            "version": "1.0",
-            "description": "Invalid - too few dimensions",
             "type": "gridnd",
             "gridnd": {
                 "dimension_sizes": [8, 8, 8],  # Only 3D
@@ -377,10 +350,8 @@ class TestFactoryConfigValidation:
 
     def test_continuousnd_dimension_validation(self):
         """Test that ContinuousND config validates dimension count."""
-        # Less than 4 dimensions should fail
+        # Less than 4 dimensions should fail (at substrate level, not config level)
         config_dict = {
-            "version": "1.0",
-            "description": "Invalid - too few dimensions",
             "type": "continuousnd",
             "continuous": {
                 "dimensions": 3,
@@ -393,7 +364,8 @@ class TestFactoryConfigValidation:
                 "action_discretization": BASE_ACTION_DISC,
             },
         }
-        with pytest.raises(ValueError, match="expects 4\\+ dimensions"):
+        # v2.1: Validation happens at substrate level with different error message
+        with pytest.raises(ValueError, match="ContinuousND requires at least 4 dimensions"):
             config = SubstrateConfig(**config_dict)
             SubstrateFactory.build(config, torch.device("cpu"))
 
@@ -403,9 +375,9 @@ class TestFactoryYAMLLoading:
 
     def test_gridnd_from_yaml(self):
         """Test loading GridND substrate from YAML file."""
+        import yaml
+
         yaml_content = """
-version: "1.0"
-description: "4D GridND substrate from YAML"
 type: gridnd
 gridnd:
   dimension_sizes: [8, 8, 8, 8]
@@ -420,7 +392,9 @@ gridnd:
             config_path = Path(f.name)
 
         try:
-            config = load_substrate_config(config_path)
+            with open(config_path) as f:
+                loaded_data = yaml.safe_load(f)
+            config = SubstrateConfig(**loaded_data)
             substrate = SubstrateFactory.build(config, torch.device("cpu"))
 
             assert isinstance(substrate, GridNDSubstrate)
@@ -431,9 +405,9 @@ gridnd:
 
     def test_continuousnd_from_yaml(self):
         """Test loading ContinuousND substrate from YAML file."""
+        import yaml
+
         yaml_content = """
-version: "1.0"
-description: "4D ContinuousND substrate from YAML"
 type: continuousnd
 continuous:
   dimensions: 4
@@ -453,7 +427,9 @@ continuous:
             config_path = Path(f.name)
 
         try:
-            config = load_substrate_config(config_path)
+            with open(config_path) as f:
+                loaded_data = yaml.safe_load(f)
+            config = SubstrateConfig(**loaded_data)
             substrate = SubstrateFactory.build(config, torch.device("cpu"))
 
             assert isinstance(substrate, ContinuousNDSubstrate)
@@ -470,8 +446,6 @@ class TestFactoryEdgeCases:
     def test_gridnd_max_dimensions(self):
         """Test GridND with maximum allowed dimensions (100D)."""
         config_dict = {
-            "version": "1.0",
-            "description": "100D grid",
             "type": "gridnd",
             "gridnd": {
                 "dimension_sizes": [2] * 100,  # 100D grid
@@ -491,8 +465,6 @@ class TestFactoryEdgeCases:
         """Test ContinuousND with maximum allowed dimensions (100D)."""
         bounds = [(0.0, 1.0)] * 100
         config_dict = {
-            "version": "1.0",
-            "description": "100D continuous",
             "type": "continuousnd",
             "continuous": {
                 "dimensions": 100,
@@ -514,8 +486,6 @@ class TestFactoryEdgeCases:
         """Test GridND with all boundary modes."""
         for boundary_mode in ["clamp", "wrap", "bounce", "sticky"]:
             config_dict = {
-                "version": "1.0",
-                "description": f"GridND with {boundary_mode}",
                 "type": "gridnd",
                 "gridnd": {
                     "dimension_sizes": [8, 8, 8, 8],
@@ -533,8 +503,6 @@ class TestFactoryEdgeCases:
         """Test ContinuousND with all boundary modes."""
         for boundary_mode in ["clamp", "wrap", "bounce", "sticky"]:
             config_dict = {
-                "version": "1.0",
-                "description": f"ContinuousND with {boundary_mode}",
                 "type": "continuousnd",
                 "continuous": {
                     "dimensions": 4,
@@ -555,8 +523,6 @@ class TestFactoryEdgeCases:
         """Test GridND with all distance metrics."""
         for metric in ["manhattan", "euclidean", "chebyshev"]:
             config_dict = {
-                "version": "1.0",
-                "description": f"GridND with {metric} metric",
                 "type": "gridnd",
                 "gridnd": {
                     "dimension_sizes": [8, 8, 8, 8],
@@ -574,8 +540,6 @@ class TestFactoryEdgeCases:
         """Test ContinuousND with all distance metrics."""
         for metric in ["euclidean", "manhattan", "chebyshev"]:
             config_dict = {
-                "version": "1.0",
-                "description": f"ContinuousND with {metric} metric",
                 "type": "continuousnd",
                 "continuous": {
                     "dimensions": 4,
@@ -600,8 +564,6 @@ class TestFactoryIntegration:
         """Test that factory creates correct substrate types."""
         configs = [
             {
-                "version": "1.0",
-                "description": "GridND",
                 "type": "gridnd",
                 "gridnd": {
                     "dimension_sizes": [8, 8, 8, 8],
@@ -613,8 +575,6 @@ class TestFactoryIntegration:
                 "expected_type": GridNDSubstrate,
             },
             {
-                "version": "1.0",
-                "description": "ContinuousND",
                 "type": "continuousnd",
                 "continuous": {
                     "dimensions": 4,

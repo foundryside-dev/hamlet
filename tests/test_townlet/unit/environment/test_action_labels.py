@@ -7,7 +7,8 @@ Tests cover:
 - get_labels() function
 - Dimensionality filtering (0D-3D)
 - N-dimensional action labels (4D+)
-- ActionLabelConfig schema validation
+
+Note: ActionLabelConfig schema validation removed in v2.1 (now in actions.yaml).
 """
 
 import pytest
@@ -18,7 +19,8 @@ from townlet.environment.action_labels import (
     CanonicalAction,
     get_labels,
 )
-from townlet.substrate.config import ActionLabelConfig
+
+# ActionLabelConfig removed from v2.1 - action labels now in actions.yaml via ActionsConfig
 
 
 class TestCanonicalAction:
@@ -463,68 +465,5 @@ class TestActionLabelsBackwardCompatibility:
 # =============================================================================
 # ACTION LABEL CONFIG SCHEMA VALIDATION
 # =============================================================================
-
-
-class TestActionLabelConfig:
-    """Test ActionLabelConfig Pydantic schema."""
-
-    def test_config_with_preset(self):
-        """ActionLabelConfig validates preset correctly."""
-        config = ActionLabelConfig(preset="gaming")
-
-        assert config.preset == "gaming"
-        assert config.custom is None
-
-    def test_config_with_custom(self):
-        """ActionLabelConfig validates custom labels correctly."""
-        custom = {0: "PORT", 1: "STARBOARD", 4: "INTERACT", 5: "WAIT"}
-        config = ActionLabelConfig(custom=custom)
-
-        assert config.preset is None
-        assert config.custom == custom
-
-    def test_config_requires_preset_or_custom(self):
-        """ActionLabelConfig requires either preset or custom."""
-        with pytest.raises(ValueError, match="Must specify either 'preset' or 'custom'"):
-            ActionLabelConfig()
-
-    def test_config_rejects_both_preset_and_custom(self):
-        """ActionLabelConfig rejects both preset and custom."""
-        with pytest.raises(ValueError, match="Cannot specify both"):
-            ActionLabelConfig(preset="gaming", custom={0: "TEST"})
-
-    def test_config_invalid_preset(self):
-        """ActionLabelConfig rejects invalid preset names."""
-        with pytest.raises(ValueError, match="Invalid preset"):
-            ActionLabelConfig(preset="invalid")
-
-    def test_config_invalid_custom_key_type(self):
-        """ActionLabelConfig rejects non-integer keys."""
-        from pydantic import ValidationError
-
-        with pytest.raises(ValidationError, match="Input should be a valid integer"):
-            ActionLabelConfig(custom={"a": "TEST"})  # type: ignore
-
-    def test_config_accepts_custom_keys_beyond_default_range(self):
-        """ActionLabelConfig allows high-index custom labels for higher dimensions."""
-        custom = {8: "INTERACT_ALT", 9: "WAIT_ALT"}
-        config = ActionLabelConfig(custom=custom)
-
-        assert config.custom == custom
-
-    def test_config_invalid_custom_negative_key(self):
-        """ActionLabelConfig rejects negative custom keys."""
-        with pytest.raises(ValueError, match="non-negative integers"):
-            ActionLabelConfig(custom={-1: "NEG"})
-
-    def test_config_invalid_custom_value_type(self):
-        """ActionLabelConfig rejects non-string values."""
-        from pydantic import ValidationError
-
-        with pytest.raises(ValidationError, match="Input should be a valid string"):
-            ActionLabelConfig(custom={0: 123})  # type: ignore
-
-    def test_config_invalid_custom_empty_string(self):
-        """ActionLabelConfig rejects empty string values."""
-        with pytest.raises(ValueError, match="must be non-empty strings"):
-            ActionLabelConfig(custom={0: ""})
+# NOTE: ActionLabelConfig removed in v2.1 - action labels now configured in
+# actions.yaml via ActionsConfig. Schema validation tests removed.

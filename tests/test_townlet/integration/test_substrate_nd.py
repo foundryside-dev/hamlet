@@ -11,7 +11,7 @@ Note: ObservationBuilder was removed in VFS integration.
 
 import torch
 
-from townlet.substrate.config import SubstrateConfig
+from townlet.config.stratum_config import SubstrateConfig
 from townlet.substrate.continuousnd import ContinuousNDSubstrate
 from townlet.substrate.factory import SubstrateFactory
 from townlet.substrate.gridnd import GridNDSubstrate
@@ -25,8 +25,6 @@ class TestGridNDIntegration:
     def test_gridnd_4d_config_loading(self):
         """Test loading GridND config from YAML and factory creation."""
         config_dict = {
-            "version": "1.0",
-            "description": "4D grid for integration testing",
             "type": "gridnd",
             "gridnd": {
                 "dimension_sizes": [8, 8, 8, 8],
@@ -213,8 +211,6 @@ class TestContinuousNDIntegration:
     def test_continuousnd_4d_config_loading(self):
         """Test loading ContinuousND config from YAML and factory creation."""
         config_dict = {
-            "version": "1.0",
-            "description": "4D continuous space for integration testing",
             "type": "continuousnd",
             "continuous": {
                 "dimensions": 4,
@@ -735,8 +731,6 @@ class TestNDSubstrateConfigRoundtrip:
     def test_gridnd_yaml_config_roundtrip(self):
         """Test creating GridND from config dict simulates YAML loading."""
         config_dict = {
-            "version": "1.0",
-            "description": "Test 4D GridND",
             "type": "gridnd",
             "gridnd": {
                 "dimension_sizes": [6, 7, 8, 9],
@@ -760,8 +754,6 @@ class TestNDSubstrateConfigRoundtrip:
     def test_continuousnd_yaml_config_roundtrip(self):
         """Test creating ContinuousND from config dict simulates YAML loading."""
         config_dict = {
-            "version": "1.0",
-            "description": "Test 4D ContinuousND",
             "type": "continuousnd",
             "continuous": {
                 "dimensions": 4,

@@ -9,8 +9,8 @@ from pathlib import Path
 import torch
 import yaml
 
+from townlet.config.stratum_config import SubstrateConfig
 from townlet.demo.live_inference import LiveInferenceServer
-from townlet.substrate.config import load_substrate_config
 from townlet.substrate.factory import SubstrateFactory
 
 
@@ -28,8 +28,6 @@ def test_topology_propagates_from_config_to_websocket_metadata_grid2d():
     """Integration test: topology flows from config → factory → substrate → metadata."""
     # Step 1: Create substrate.yaml config
     config_data = {
-        "version": "1.0",
-        "description": "Integration test Grid2D config",
         "type": "grid",
         "grid": {
             "topology": "square",
@@ -48,7 +46,9 @@ def test_topology_propagates_from_config_to_websocket_metadata_grid2d():
             yaml.dump(config_data, f)
 
         # Step 2: Load config
-        config = load_substrate_config(config_path)
+        with open(config_path) as f:
+            loaded_data = yaml.safe_load(f)
+        config = SubstrateConfig(**loaded_data)
         assert config.grid.topology == "square"
 
         # Step 3: Build substrate via factory
@@ -79,8 +79,6 @@ def test_topology_propagates_from_config_to_websocket_metadata_gridnd():
     """Integration test: GridND topology flows through entire pipeline."""
     # Step 1: Create substrate.yaml config for GridND
     config_data = {
-        "version": "1.0",
-        "description": "Integration test GridND config",
         "type": "gridnd",
         "gridnd": {
             "dimension_sizes": [5, 5, 5, 5, 5, 5, 5],
@@ -97,7 +95,9 @@ def test_topology_propagates_from_config_to_websocket_metadata_gridnd():
             yaml.dump(config_data, f)
 
         # Step 2: Load config
-        config = load_substrate_config(config_path)
+        with open(config_path) as f:
+            loaded_data = yaml.safe_load(f)
+        config = SubstrateConfig(**loaded_data)
         assert config.gridnd.topology == "hypercube"
 
         # Step 3: Build substrate via factory
@@ -129,8 +129,6 @@ def test_continuous_substrate_has_no_topology_in_metadata():
     """Integration test: Continuous substrates omit topology throughout pipeline."""
     # Step 1: Create substrate.yaml config for Continuous2D
     config_data = {
-        "version": "1.0",
-        "description": "Integration test Continuous2D config",
         "type": "continuous",
         "continuous": {
             "dimensions": 2,
@@ -150,7 +148,9 @@ def test_continuous_substrate_has_no_topology_in_metadata():
             yaml.dump(config_data, f)
 
         # Step 2: Load config
-        config = load_substrate_config(config_path)
+        with open(config_path) as f:
+            loaded_data = yaml.safe_load(f)
+        config = SubstrateConfig(**loaded_data)
         assert not hasattr(config.continuous, "topology")
 
         # Step 3: Build substrate via factory
@@ -182,8 +182,6 @@ def test_continuous_substrate_has_no_topology_in_metadata():
 def test_gridnd_substrate_initializes_with_action_labels():
     """GridND substrate should initialize with action labels (no ValueError)."""
     config_data = {
-        "version": "1.0",
-        "description": "7D GridND integration test",
         "type": "gridnd",
         "gridnd": {
             "dimension_sizes": [3, 3, 3, 3, 3, 3, 3],
@@ -200,7 +198,9 @@ def test_gridnd_substrate_initializes_with_action_labels():
             yaml.dump(config_data, f)
 
         # Step 1: Load config
-        config = load_substrate_config(config_path)
+        with open(config_path) as f:
+            loaded_data = yaml.safe_load(f)
+        config = SubstrateConfig(**loaded_data)
 
         # Step 2: Build substrate via factory
         substrate = SubstrateFactory.build(config, torch.device("cpu"))
@@ -221,8 +221,6 @@ def test_gridnd_substrate_initializes_with_action_labels():
 def test_continuousnd_substrate_initializes_with_action_labels():
     """ContinuousND substrate should initialize with action labels."""
     config_data = {
-        "version": "1.0",
-        "description": "5D ContinuousND integration test",
         "type": "continuousnd",
         "continuous": {  # Note: Uses 'continuous' field for N-dimensional continuous
             "dimensions": 5,
@@ -242,7 +240,9 @@ def test_continuousnd_substrate_initializes_with_action_labels():
             yaml.dump(config_data, f)
 
         # Step 1: Load config
-        config = load_substrate_config(config_path)
+        with open(config_path) as f:
+            loaded_data = yaml.safe_load(f)
+        config = SubstrateConfig(**loaded_data)
 
         # Step 2: Build substrate via factory
         substrate = SubstrateFactory.build(config, torch.device("cpu"))
@@ -263,8 +263,6 @@ def test_continuousnd_substrate_initializes_with_action_labels():
 def test_4d_gridnd_custom_action_labels():
     """4D GridND with custom action labels."""
     config_data = {
-        "version": "1.0",
-        "description": "4D GridND with custom labels",
         "type": "gridnd",
         "gridnd": {
             "dimension_sizes": [5, 5, 5, 5],
@@ -281,7 +279,9 @@ def test_4d_gridnd_custom_action_labels():
             yaml.dump(config_data, f)
 
         # Step 1: Load config
-        config = load_substrate_config(config_path)
+        with open(config_path) as f:
+            loaded_data = yaml.safe_load(f)
+        config = SubstrateConfig(**loaded_data)
 
         # Step 2: Build substrate via factory
         substrate = SubstrateFactory.build(config, torch.device("cpu"))

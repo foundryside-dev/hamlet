@@ -2,8 +2,8 @@
 
 import torch
 
+from townlet.config.stratum_config import AspatialConfig, ContinuousConfig, GridConfig, GridNDConfig, SubstrateConfig
 from townlet.substrate.aspatial import AspatialSubstrate
-from townlet.substrate.config import AspatialSubstrateConfig, ContinuousConfig, GridConfig, GridNDConfig, SubstrateConfig
 from townlet.substrate.continuous import Continuous2DSubstrate
 from townlet.substrate.factory import SubstrateFactory
 from townlet.substrate.grid2d import Grid2DSubstrate
@@ -14,8 +14,6 @@ from townlet.substrate.gridnd import GridNDSubstrate
 def test_factory_propagates_grid2d_topology():
     """Factory should pass topology from config to Grid2D substrate."""
     config = SubstrateConfig(
-        version="1.0",
-        description="Test Grid2D config",
         type="grid",
         grid=GridConfig(
             topology="square",
@@ -35,8 +33,6 @@ def test_factory_propagates_grid2d_topology():
 def test_factory_propagates_grid3d_topology():
     """Factory should pass topology from config to Grid3D substrate."""
     config = SubstrateConfig(
-        version="1.0",
-        description="Test Grid3D config",
         type="grid",
         grid=GridConfig(
             topology="cubic",
@@ -57,8 +53,6 @@ def test_factory_propagates_grid3d_topology():
 def test_factory_propagates_gridnd_topology():
     """Factory should pass topology from config to GridND substrate."""
     config = SubstrateConfig(
-        version="1.0",
-        description="Test GridND config",
         type="gridnd",
         gridnd=GridNDConfig(
             dimension_sizes=[5, 5, 5, 5],
@@ -76,8 +70,6 @@ def test_factory_propagates_gridnd_topology():
 def test_factory_sets_gridnd_topology_when_config_uses_default():
     """Factory should use GridND topology when specified in config."""
     config = SubstrateConfig(
-        version="1.0",
-        description="Test GridND config with topology",
         type="gridnd",
         gridnd=GridNDConfig(
             dimension_sizes=[5, 5, 5, 5],
@@ -95,8 +87,6 @@ def test_factory_sets_gridnd_topology_when_config_uses_default():
 def test_factory_continuous_substrates_have_no_topology():
     """Factory should create continuous substrates without topology attribute."""
     config = SubstrateConfig(
-        version="1.0",
-        description="Test Continuous2D config",
         type="continuous",
         continuous=ContinuousConfig(
             dimensions=2,
@@ -117,10 +107,8 @@ def test_factory_continuous_substrates_have_no_topology():
 def test_factory_aspatial_substrate_has_no_topology():
     """Factory should create aspatial substrate without topology attribute."""
     config = SubstrateConfig(
-        version="1.0",
-        description="Test Aspatial config",
         type="aspatial",
-        aspatial=AspatialSubstrateConfig(),
+        aspatial=AspatialConfig(),
     )
     substrate = SubstrateFactory.build(config, torch.device("cpu"))
     assert isinstance(substrate, AspatialSubstrate)

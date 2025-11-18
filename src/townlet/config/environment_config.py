@@ -75,6 +75,14 @@ class NormalizationConfig(BaseModel):
         ),
     )
     range: list[float] = Field(..., description="Value range [min, max]", min_length=2, max_length=2)
+    mean: float | list[float] | None = Field(
+        default=None,
+        description="Mean value(s) for standardize normalization (optional; required when method=standardize).",
+    )
+    std: float | list[float] | None = Field(
+        default=None,
+        description="Standard deviation value(s) for standardize normalization (optional; required when method=standardize).",
+    )
 
     model_config = ConfigDict(extra="forbid")
 

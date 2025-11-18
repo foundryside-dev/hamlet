@@ -23,9 +23,14 @@ def test_standardize_normalization_maps_to_zscore(tmp_path: Path) -> None:
     env_path = config_dir / "environment.yaml"
     env_data = yaml.safe_load(env_path.read_text())
 
+    mean_value = 50.0
+    std_value = 25.0
+
     for var in env_data["environment"]["variables"]:
         if var["name"] == "time_since_last_eat":
             var["normalization"]["method"] = "standardize"
+            var["normalization"]["mean"] = mean_value
+            var["normalization"]["std"] = std_value
 
     env_path.write_text(yaml.safe_dump(env_data))
 
@@ -37,5 +42,9 @@ def test_standardize_normalization_maps_to_zscore(tmp_path: Path) -> None:
 
     assert target_var.normalization is not None
     assert target_var.normalization.kind == "zscore"
+    assert target_var.normalization.mean == mean_value
+    assert target_var.normalization.std == std_value
     assert target_field.normalization is not None
     assert target_field.normalization.kind == "zscore"
+    assert target_field.normalization.mean == mean_value
+    assert target_field.normalization.std == std_value

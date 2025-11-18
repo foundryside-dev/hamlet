@@ -1459,6 +1459,8 @@ class UniverseCompiler:
 
             method = getattr(norm_cfg, "method", None)
             range_values = getattr(norm_cfg, "range", None)
+            mean = getattr(norm_cfg, "mean", None)
+            std = getattr(norm_cfg, "std", None)
 
             if method is None:
                 raise ValueError(
@@ -1483,7 +1485,13 @@ class UniverseCompiler:
                     )
                 return NormalizationSpec(kind="minmax", min=range_values[0], max=range_values[1])
             if method == "standardize":
-                return NormalizationSpec(kind="zscore", mean=0.0, std=1.0)
+                if mean is None or std is None:
+                    raise ValueError(
+                        "Normalization method 'standardize' requires 'mean' and 'std' parameters in environment.yaml.\n"
+                        f"  Variable: {var_name}\n"
+                        "  Action: add mean/std fields to normalization or use clip/normalize with explicit ranges."
+                    )
+                return NormalizationSpec(kind="zscore", mean=mean, std=std)
 
             raise ValueError(
                 f"Unsupported normalization method '{method}' for variable '{var_name}'. " "Use clip | normalize | standardize."
@@ -1524,6 +1532,8 @@ class UniverseCompiler:
 
             method = getattr(norm_cfg, "method", None)
             range_values = getattr(norm_cfg, "range", None)
+            mean = getattr(norm_cfg, "mean", None)
+            std = getattr(norm_cfg, "std", None)
 
             if method is None:
                 raise ValueError(
@@ -1548,7 +1558,13 @@ class UniverseCompiler:
                     )
                 return NormalizationSpec(kind="minmax", min=range_values[0], max=range_values[1])
             if method == "standardize":
-                return NormalizationSpec(kind="zscore", mean=0.0, std=1.0)
+                if mean is None or std is None:
+                    raise ValueError(
+                        "Normalization method 'standardize' requires 'mean' and 'std' parameters in environment.yaml.\n"
+                        f"  Variable: {var_name}\n"
+                        "  Action: add mean/std fields to normalization or use clip/normalize with explicit ranges."
+                    )
+                return NormalizationSpec(kind="zscore", mean=mean, std=std)
 
             raise ValueError(
                 f"Unsupported normalization method '{method}' for variable '{var_name}'. " "Use clip | normalize | standardize."

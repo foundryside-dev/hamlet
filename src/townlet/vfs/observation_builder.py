@@ -65,29 +65,36 @@ class VFSObservationSpecBuilder:
             if var_id not in var_map:
                 raise ValueError(f"Variable {var_id} not found in definitions")
 
-            var_def = var_map[var_id]
-
-            # Use provided metadata when present, otherwise infer defaults
             raw_field_id = exposure_config.get("id")
-            if raw_field_id is None:
-                field_id = f"obs_{var_id}"
-            else:
-                if not isinstance(raw_field_id, str):
-                    raise ValueError(f"Exposure field id for '{var_id}' must be a string")
-                field_id = raw_field_id
-            exposed_to = exposure_config.get("exposed_to") or ["agent"]
+            if not isinstance(raw_field_id, str) or not raw_field_id:
+                raise ValueError(f"Exposure entry for '{var_id}' must include explicit string 'id' (no defaults).")
+            field_id = raw_field_id
+
+            exposed_to = exposure_config.get("exposed_to")
+            if not isinstance(exposed_to, list) or not exposed_to:
+                raise ValueError(f"Exposure entry for '{var_id}' must include explicit non-empty 'exposed_to' list (no defaults).")
 
             shape_config = exposure_config.get("shape")
-            shape = shape_config if shape_config is not None else self._infer_shape(var_def)
+            if shape_config is None:
+                raise ValueError(
+                    f"Exposure entry for '{var_id}' must include explicit 'shape'; " "shape inference is disabled under no-defaults policy."
+                )
+            shape = shape_config
 
             # Build normalization spec if provided
             norm_spec = self._build_normalization_spec(exposure_config.get("normalization"))
 
-            # Get curriculum_active flag (defaults to True if not specified)
-            curriculum_active = exposure_config.get("curriculum_active", True)
+            if "curriculum_active" not in exposure_config:
+                raise ValueError(f"Exposure entry for '{var_id}' must include explicit 'curriculum_active' boolean (no defaults).")
+            curriculum_active = exposure_config.get("curriculum_active")
+            if not isinstance(curriculum_active, bool):
+                raise ValueError(f"Exposure entry for '{var_id}' has invalid 'curriculum_active'; expected bool.")
 
-            # Get semantic_type (defaults to "custom" if not specified)
-            semantic_type = exposure_config.get("semantic_type", "custom")
+            if "semantic_type" not in exposure_config:
+                raise ValueError(f"Exposure entry for '{var_id}' must include explicit 'semantic_type' (e.g., 'bars', 'spatial').")
+            semantic_type = exposure_config.get("semantic_type")
+            if not isinstance(semantic_type, str) or not semantic_type:
+                raise ValueError(f"Exposure entry for '{var_id}' has invalid 'semantic_type'; expected non-empty string.")
 
             # Create observation field
             field = ObservationField(

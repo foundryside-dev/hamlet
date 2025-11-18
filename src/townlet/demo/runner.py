@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import math
 import signal
 import time
 from collections import defaultdict
@@ -13,7 +14,7 @@ import torch
 import yaml
 
 from townlet.agent.brain_config import BrainConfig, compute_brain_hash
-from townlet.curriculum.adversarial import AdversarialCurriculum
+from townlet.curriculum.factory import build_curriculum
 from townlet.demo.database import DemoDatabase
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
@@ -56,25 +57,22 @@ class DemoRunner:
         Args:
             config_dir: Experiment root directory containing v2.1 configs
                 (experiment.yaml, stratum.yaml, environment.yaml, actions.yaml, agent.yaml, levels/*)
-            level_name: Which curriculum level to run (e.g., "L0_0_minimal").
-                Optional for backward compatibility; if omitted for v2.1 packs,
-                the compiler will select a default primary level.
+            level_name: Which curriculum level to run (e.g., "L0_0_minimal"). Required.
             db_path: Path to SQLite database
             checkpoint_dir: Directory for checkpoint files
             max_episodes: Maximum number of episodes to run (if None, reads from level training.yaml)
-            training_config_path: Optional explicit path to training YAML file
-                (DEPRECATED - normally inferred from levels/<level_name>/training.yaml)
+            training_config_path: Deprecated; overrides are no longer supported.
         """
         self.config_dir = Path(config_dir)
         # Resolve training config path:
         # - v2.1 packs: levels/<level_name>/training.yaml (mandatory)
-        # - Explicit override path optional but must exist
-        if training_config_path is None and level_name is None:
+        if training_config_path is not None:
+            raise ValueError(
+                "training_config_path override is no longer supported; " "use levels/<level_name>/training.yaml with explicit level_name."
+            )
+        if level_name is None:
             raise ValueError("level_name is required for v2.1 config packs; legacy single-file training.yaml is no longer supported.")
-        if training_config_path is None:
-            self.training_config_path = self.config_dir / "levels" / level_name / "training.yaml"
-        else:
-            self.training_config_path = Path(training_config_path)
+        self.training_config_path = self.config_dir / "levels" / level_name / "training.yaml"
         if not self.training_config_path.exists():
             raise FileNotFoundError(f"Training config not found: {self.training_config_path}")
         self.db_path = Path(db_path)
@@ -420,7 +418,8 @@ class DemoRunner:
         action_dim = level_meta.action_metadata.total_actions
 
         # Create curriculum (all params required per PDR-002)
-        self.curriculum = AdversarialCurriculum(
+        self.curriculum = build_curriculum(
+            self.training_config,
             max_steps_per_episode=loop_cfg.max_steps_per_episode,
             device=device,
         )
@@ -449,7 +448,20 @@ class DemoRunner:
         )
 
         # Get population parameters from config (all required per PDR-002)
-        vision_window_size = 2 * vision_range + 1  # 5 for vision_range=2
+        # Derive local vision window size from compiled observation spec to keep
+        # network expectations aligned with the compiler/environment.
+        vision_window_size = 1
+        for field in obs_spec.fields:
+            if field.name == "obs_local_window" and field.dims > 0:
+                # For grid substrates, dims = window_size² (v2.1 spec)
+                root = int(math.sqrt(field.dims))
+                if root * root != field.dims:
+                    raise ValueError(
+                        f"obs_local_window dims={field.dims} is not a perfect square; "
+                        "cannot derive window_size for recurrent vision encoder."
+                    )
+                vision_window_size = root
+                break
 
         # Get training hyperparameters from config (all required per PDR-002)
         train_frequency = loop_cfg.train_frequency
@@ -493,6 +505,7 @@ class DemoRunner:
             brain_config=effective_brain_config,
             max_episodes=self.max_episodes,  # For PER beta annealing
             max_steps_per_episode=loop_cfg.max_steps_per_episode,  # For PER beta annealing
+            observation_spec=obs_spec,
         )
 
         self.curriculum.initialize_population(num_agents)

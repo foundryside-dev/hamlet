@@ -80,7 +80,7 @@ class VectorizedHamletEnv:
         universe: CompiledUniverse,
         level_name: str,
         num_agents: int,
-        device: torch.device | str = torch.device("cpu"),
+        device: torch.device | str,
     ):
         """
         Initialize vectorized environment.
@@ -89,13 +89,15 @@ class VectorizedHamletEnv:
             universe: CompiledUniverse artifact produced by UniverseCompiler (v2.1 hierarchical configs)
             level_name: Which curriculum level to instantiate (e.g., "L0_0_minimal")
             num_agents: Number of parallel agents to simulate
-            device: PyTorch device or device string (defaults to CPU). Infrastructure default - PDR-002 exemption.
+            device: PyTorch device or device string (must be provided explicitly)
 
         Note (PDR-002 Compliance):
             - device retains an infrastructure default (exempted from no-defaults principle)
             - Behavioral parameters (grid size, observability, energy costs, affordance selection)
               now flow exclusively from the compiled universe
         """
+        if device is None:
+            raise ValueError("VectorizedHamletEnv requires an explicit device; cannot default to CPU/GPU.")
         torch_device = torch.device(device) if isinstance(device, str) else device
 
         level = universe.get_level(level_name)
@@ -355,14 +357,13 @@ class VectorizedHamletEnv:
                 raise ValueError(f"affordance '{aff.name}' missing opening_hours (no defaults allowed)")
 
             # Derive operating_hours from OpeningHoursConfig:
-            # - enabled=false → 24/7 (0–24)
-            # - enabled=true → use first schedule window [start, end]
             opening = aff.opening_hours
-            if not opening.enabled or not opening.schedule:
-                operating_hours = [0, 24]
-            else:
-                window = opening.schedule[0]
-                operating_hours = [window.start, window.end]
+            if not opening.schedule:
+                raise ValueError(
+                    f"affordance '{aff.name}' opening_hours.schedule is required (no 24/7 default); " "provide explicit start/end hours."
+                )
+            window = opening.schedule[0]
+            operating_hours = [window.start, window.end]
 
             # Map deployment positions to a single canonical position for runtime.
             deployment = aff.deployment
@@ -623,12 +624,15 @@ class VectorizedHamletEnv:
             return True
 
         if self.action_mask_table.shape[1] == 0:
-            return False
+            raise ValueError(
+                "Temporal mechanics enabled but action_mask_table is empty; " "compiler must provide temporal availability metadata."
+            )
 
         idx = self.affordance_name_to_mask_idx.get(affordance_name)
         if idx is None or idx >= self.action_mask_table.shape[1]:
-            # Missing metadata should not block interactions
-            return True
+            raise ValueError(
+                f"Missing temporal mask metadata for affordance '{affordance_name}'; " "all affordances must have explicit mask entries."
+            )
 
         active_hour = self.time_of_day if hour is None else hour
         hour_idx = active_hour % self.hours_per_day
@@ -809,7 +813,7 @@ class VectorizedHamletEnv:
         *,
         level_name: str,
         num_agents: int,
-        device: torch.device | str = "cpu",
+        device: torch.device | str,
     ) -> VectorizedHamletEnv:
         """Instantiate environment using metadata from a compiled universe.
 
@@ -818,7 +822,7 @@ class VectorizedHamletEnv:
             level_name: Curriculum level to instantiate (e.g., \"L0_0_minimal\").
                 Must be provided explicitly; no default level selection is performed.
             num_agents: Number of parallel agents
-            device: PyTorch device
+            device: PyTorch device (explicit)
 
         Returns:
             VectorizedHamletEnv instance

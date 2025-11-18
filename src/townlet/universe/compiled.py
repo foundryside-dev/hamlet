@@ -301,7 +301,7 @@ class CompiledUniverse:
         *,
         num_agents: int,
         level_name: str,
-        device: str | torch.device = "cpu",
+        device: str | torch.device,
     ):
         """Instantiate a VectorizedHamletEnv from this compiled universe.
 
@@ -309,7 +309,7 @@ class CompiledUniverse:
             num_agents: Number of parallel agents to simulate.
             level_name: Curriculum level name to instantiate. Must be provided
                 explicitly; no default level selection is performed.
-            device: PyTorch device or device string (e.g., \"cpu\", \"cuda\").
+            device: PyTorch device or device string (e.g., \"cpu\", \"cuda\"). Required.
 
         Returns:
             VectorizedHamletEnv instance

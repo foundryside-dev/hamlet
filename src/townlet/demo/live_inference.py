@@ -6,6 +6,7 @@ Provides step-by-step visualization at human-watchable speed.
 
 import asyncio
 import logging
+import math
 from pathlib import Path
 from typing import Any
 
@@ -15,6 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from townlet.agent.brain_config import compute_brain_hash
 from townlet.curriculum.adversarial import AdversarialCurriculum
+from townlet.curriculum.factory import build_curriculum
 from townlet.demo.database import DemoDatabase
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
@@ -61,7 +63,7 @@ class LiveInferenceServer:
         step_delay: float = 0.2,
         total_episodes: int = 5000,  # Expected total episodes in training run
         config_dir: Path | str | None = None,  # Config pack directory
-        training_config_path: Path | str | None = None,  # Optional training config
+        training_config_path: Path | str | None = None,  # Deprecated training config override
         db_path: Path | str | None = None,  # Optional database path for replay
         recordings_dir: Path | str | None = None,  # Optional recordings directory for replay
     ):
@@ -274,16 +276,16 @@ class LiveInferenceServer:
         # v2.1 training config DTOs
         training_cfg = level_meta.training
         population_cfg = training_cfg.population
-        curriculum_cfg = level_meta.curriculum.curriculum
         exploration_cfg = training_cfg.exploration
         intrinsic_cfg = training_cfg.intrinsic
         loop_cfg = training_cfg.training_loop
 
         # Derived runtime parameters
         num_agents = population_cfg.size
+        curriculum_cfg = level_meta.curriculum.curriculum
         partial_observability = curriculum_cfg.active_vision != "global"
         vision_range = curriculum_cfg.vision_range
-        enable_temporal_mechanics = getattr(curriculum_cfg, "active_temporal", False)
+        enable_temporal_mechanics = curriculum_cfg.active_temporal
         vision_window_size = 2 * vision_range + 1
         enabled_affordances = getattr(training_cfg, "enabled_affordances", None)
 
@@ -303,15 +305,13 @@ class LiveInferenceServer:
             device=self.device,
         )
 
-        obs_dim = level_meta.observation_spec.total_dims
+        obs_spec = level_meta.observation_spec
+        obs_dim = obs_spec.total_dims
 
-        # Create curriculum
-        self.curriculum = AdversarialCurriculum(
+        # Create curriculum (mirror training pipeline behavior)
+        self.curriculum = build_curriculum(
+            training_cfg,
             max_steps_per_episode=loop_cfg.max_steps_per_episode,
-            survival_advance_threshold=getattr(curriculum_cfg, "survival_advance_threshold", 0.0),
-            survival_retreat_threshold=getattr(curriculum_cfg, "survival_retreat_threshold", 0.0),
-            entropy_gate=getattr(curriculum_cfg, "entropy_gate", 0.0),
-            min_steps_at_stage=getattr(curriculum_cfg, "min_steps_at_stage", 0),
             device=self.device,
         )
 
@@ -354,6 +354,19 @@ class LiveInferenceServer:
         # Create population (effective_brain_config provides network/optimizer/Q-learning parameters)
         agent_ids = [f"agent_{i}" for i in range(num_agents)]
         logger.info("Network architecture: %s (num_agents=%s)", base_brain_config.architecture.type, num_agents)
+        # Derive vision window size for recurrent networks from observation spec.
+        vision_window_size = 1
+        for field in obs_spec.fields:
+            if field.name == "obs_local_window" and field.dims > 0:
+                root = int(math.sqrt(field.dims))
+                if root * root != field.dims:
+                    raise ValueError(
+                        f"obs_local_window dims={field.dims} is not a perfect square; "
+                        "cannot derive window_size for recurrent vision encoder."
+                    )
+                vision_window_size = root
+                break
+
         self.population = VectorizedPopulation(
             env=self.env,
             curriculum=self.curriculum,
@@ -370,6 +383,7 @@ class LiveInferenceServer:
             brain_config=effective_brain_config,
             max_episodes=None,  # Not used by live inference
             max_steps_per_episode=None,  # Not used by live inference
+            observation_spec=obs_spec,
         )
 
         self.curriculum.initialize_population(num_agents)

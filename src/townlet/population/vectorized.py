@@ -62,6 +62,7 @@ class VectorizedPopulation(PopulationManager):
         tb_logger=None,
         max_episodes: int | None = None,
         max_steps_per_episode: int | None = None,
+        observation_spec=None,
     ):
         """
         Initialize vectorized population.
@@ -110,9 +111,10 @@ class VectorizedPopulation(PopulationManager):
         self.use_double_dqn = brain_config.q_learning.use_double_dqn
         target_update_frequency = brain_config.q_learning.target_update_frequency
 
-        # Default action_dim to env.action_dim if not specified (TASK-002B Phase 4.1)
         if action_dim is None:
-            action_dim = env.action_dim
+            raise ValueError(
+                "action_dim is required and must be sourced from compiler metadata; " "no fallback to env defaults is allowed."
+            )
         self.action_dim = action_dim
 
         # Agent runtime metrics (telemetry + reward baseline source of truth)
@@ -149,6 +151,7 @@ class VectorizedPopulation(PopulationManager):
                 position_dim=env.substrate.position_dim,
                 num_meters=env.meter_count,
                 num_affordance_types=env.num_affordance_types,
+                observation_spec=getattr(env, "observation_spec", None) if observation_spec is None else observation_spec,
             ).to(device)
         elif brain_config.architecture.type == "dueling":
             assert brain_config.architecture.dueling is not None, "dueling config must be present"
@@ -186,6 +189,7 @@ class VectorizedPopulation(PopulationManager):
                 position_dim=env.substrate.position_dim,
                 num_meters=env.meter_count,
                 num_affordance_types=env.num_affordance_types,
+                observation_spec=getattr(env, "observation_spec", None) if observation_spec is None else observation_spec,
             ).to(device)
         elif brain_config.architecture.type == "dueling":
             assert brain_config.architecture.dueling is not None
@@ -204,6 +208,14 @@ class VectorizedPopulation(PopulationManager):
         self.target_network.eval()  # Target network always in eval mode
         self.target_update_frequency = target_update_frequency
         self.training_step_counter = 0
+
+        # Propagate temporal mechanics flag from environment to recurrent networks.
+        if self.is_recurrent and hasattr(env, "enable_temporal_mechanics"):
+            temporal_enabled = bool(getattr(env, "enable_temporal_mechanics"))
+            if hasattr(self.q_network, "enable_temporal_features"):
+                self.q_network.enable_temporal_features = temporal_enabled
+            if hasattr(self.target_network, "enable_temporal_features"):
+                self.target_network.enable_temporal_features = temporal_enabled
 
         # Optimizer and scheduler from brain_config
         self.optimizer, self.scheduler = OptimizerFactory.build(

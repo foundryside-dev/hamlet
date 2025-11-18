@@ -8,7 +8,7 @@ import math
 import os
 import sys
 from collections import defaultdict
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable
 from datetime import UTC, datetime
 from numbers import Number
 from pathlib import Path
@@ -20,15 +20,17 @@ import yaml
 from townlet.config.actions_config import ActionsConfig
 from townlet.config.affordances_v2_config import AffordancesV2Config
 from townlet.config.agent_config import AgentConfig
-from townlet.config.bars_v2_config import BarsV2Config
+from townlet.config.bars_v2_config import BarsV2Config, MeterConfig
 from townlet.config.curriculum_config import CurriculumConfig
 from townlet.config.drive_as_code import DriveAsCodeConfig
 from townlet.config.effect_pipeline import EffectPipeline
+from townlet.config.environment_config import CascadeConfig
 from townlet.config.environment_config import EnvironmentConfig as EnvConfigV21
 from townlet.config.experiment_config import ExperimentConfig
 from townlet.config.stratum_config import StratumConfig
 from townlet.config.training_v2_config import TrainingV2Config
 from townlet.environment.action_config import ActionConfig, ActionSpaceConfig
+from townlet.environment.affordance_config import AffordanceConfig
 from townlet.environment.substrate_action_validator import SubstrateActionValidator
 from townlet.environment.temporal_utils import is_affordance_open
 from townlet.substrate.config import SubstrateConfig
@@ -48,6 +50,7 @@ from townlet.universe.dto import (
 )
 from townlet.universe.optimization import OptimizationData
 from townlet.universe.raw_configs_v21 import RawConfigsV21
+from townlet.universe.symbol_table import UniverseSymbolTable
 from townlet.vfs.schema import NormalizationSpec, VariableDef
 from townlet.vfs.schema import ObservationField as VFSObservationField
 
@@ -1821,6 +1824,16 @@ class UniverseCompiler:
         if config_mtime is None:
             config_mtime = self._compute_config_mtime(experiment_dir)
 
+        # v2.1: experiment.version is mandatory (no legacy fallback)
+        try:
+            config_version = raw.experiment.experiment.version
+        except AttributeError as exc:
+            raise ValueError(
+                "experiment.version is required in experiment.yaml (no defaults allowed). " "Provide an explicit semantic version string."
+            ) from exc
+        if not config_version:
+            raise ValueError("experiment.version is required in experiment.yaml and cannot be empty.")
+
         return UniverseMetadata(
             universe_name=raw.experiment.experiment.metadata.name,
             schema_version=SCHEMA_VERSION,
@@ -1840,7 +1853,7 @@ class UniverseCompiler:
             total_affordance_costs=0.0,
             economic_balance=0.0,
             ticks_per_day=ticks_per_day,
-            config_version=raw.experiment.experiment.version if hasattr(raw.experiment, "experiment") else "1.0",
+            config_version=config_version,
             compiler_version=COMPILER_VERSION,
             compiled_at=datetime.now(UTC).isoformat(),
             config_hash=config_hash,
@@ -1851,221 +1864,6 @@ class UniverseCompiler:
             torch_version=torch.__version__,
             pydantic_version="",
         )
-
-    def _auto_generate_standard_variables(self, raw_configs: Any) -> list[VariableDef]:
-        """Legacy flat-config variable generator removed.
-
-        This compiler no longer supports the v1 flat config pipeline; all
-        standard variables must be modeled via the v2.1 VFS + observation
-        spec builders instead.
-        """
-
-        raise RuntimeError("Legacy flat config pipeline removed; use v2.1 hierarchical configs and VFS schemas instead.")
-
-        def _add_hint(key: str, text: str) -> None:
-            if key not in hints_added:
-                errors.add_hint(text)
-                hints_added.add(key)
-
-        def _format_error(code: str, message: str, location: str | None = None) -> CompilationMessage:
-            location_str = None
-            if location and source_map is not None:
-                location_str = source_map.lookup(location)
-            if not location_str:
-                location_str = location
-            return CompilationMessage(code=code, message=message, location=location_str)
-
-        def _record_meter_reference(
-            meter_name: str | None,
-            location: str,
-            *,
-            code: str,
-            hint_key: str | None = None,
-            hint_text: str | None = None,
-        ) -> None:
-            if not meter_name:
-                return
-            try:
-                symbol_table.resolve_meter_reference(meter_name, location=location)
-            except ReferenceError as exc:
-                if hint_key and hint_text:
-                    _add_hint(hint_key, hint_text)
-                errors.add(_format_error(code, str(exc), location))
-
-        def _handle_missing_meter(location: str) -> None:
-            _add_hint(
-                "missing_meter",
-                "Each cost/effect entry must include a 'meter' field (case-sensitive).",
-            )
-            errors.add(
-                _format_error(
-                    "UAC-RES-003",
-                    "Entry missing required 'meter' field.",
-                    location,
-                )
-            )
-
-        def _get_attr(obj: object | None, key: str) -> object | None:
-            if obj is None:
-                return None
-            if isinstance(obj, dict):
-                return obj.get(key)
-            return getattr(obj, key, None)
-
-        def _get_meter(obj: object | None) -> str | None:
-            value = _get_attr(obj, "meter")
-            if isinstance(value, str) and value:
-                return value
-            return None
-
-        # Cascades: validate source/target meters exist.
-        cascade_hint = (
-            "invalid_meter",
-            "Meter references must match names defined in bars.yaml (case-sensitive).",
-        )
-        for cascade in raw_configs.cascades:
-            _record_meter_reference(
-                cascade.source,
-                f"cascades.yaml:{cascade.name}:source",
-                code="UAC-RES-001",
-                hint_key=cascade_hint[0],
-                hint_text=cascade_hint[1],
-            )
-            _record_meter_reference(
-                cascade.target,
-                f"cascades.yaml:{cascade.name}:target",
-                code="UAC-RES-001",
-                hint_key=cascade_hint[0],
-                hint_text=cascade_hint[1],
-            )
-
-        # Affordances: validate every meter reference across costs/effects/etc.
-        meter_fields = (
-            ("costs", "costs"),
-            ("costs_per_tick", "costs_per_tick"),
-            ("effects", "effects"),
-            ("effects_per_tick", "effects_per_tick"),
-            ("completion_bonus", "completion_bonus"),
-        )
-
-        for affordance in raw_configs.affordances:
-            for attr_name, label in meter_fields:
-                entries = getattr(affordance, attr_name, None)
-                if not entries or not isinstance(entries, Sequence):
-                    continue
-                base_location = f"affordances.yaml:{affordance.id}:{label}"
-                for idx, entry in enumerate(entries):
-                    meter = _get_meter(entry)
-                    if meter:
-                        _record_meter_reference(
-                            meter,
-                            base_location,
-                            code="UAC-RES-002",
-                            hint_key="invalid_meter",
-                            hint_text="Meter references must match names defined in bars.yaml (case-sensitive).",
-                        )
-                    else:
-                        _handle_missing_meter(f"{base_location}[{idx}]")
-
-            # Capabilities (meter-gated)
-            capabilities = getattr(affordance, "capabilities", None)
-            if capabilities and isinstance(capabilities, Sequence):
-                for idx, capability in enumerate(capabilities):
-                    if _get_attr(capability, "type") == "meter_gated":
-                        meter = _get_meter(capability)
-                        location = f"affordances.yaml:{affordance.id}:capabilities[{idx}]"
-                        if meter:
-                            _record_meter_reference(
-                                meter,
-                                location,
-                                code="UAC-RES-002",
-                                hint_key="invalid_meter",
-                                hint_text="Meter references must match names defined in bars.yaml (case-sensitive).",
-                            )
-                        else:
-                            _handle_missing_meter(location)
-
-            # Effect pipeline stages (if defined)
-            effect_pipeline = getattr(affordance, "effect_pipeline", None)
-            if effect_pipeline:
-                for stage_name in ("on_start", "per_tick", "on_completion", "on_early_exit", "on_failure"):
-                    stage_effects = _get_attr(effect_pipeline, stage_name)
-                    if not stage_effects or not isinstance(stage_effects, Sequence):
-                        continue
-                    base_location = f"affordances.yaml:{affordance.id}:effect_pipeline.{stage_name}"
-                    for idx, entry in enumerate(stage_effects):
-                        meter = _get_meter(entry)
-                        if meter:
-                            _record_meter_reference(
-                                meter,
-                                base_location,
-                                code="UAC-RES-002",
-                                hint_key="invalid_meter",
-                                hint_text="Meter references must match names defined in bars.yaml (case-sensitive).",
-                            )
-                        else:
-                            _handle_missing_meter(f"{base_location}[{idx}]")
-
-            # Availability constraints
-            availability = getattr(affordance, "availability", None)
-            if availability and isinstance(availability, Sequence):
-                for idx, constraint in enumerate(availability):
-                    meter = _get_meter(constraint)
-                    location = f"affordances.yaml:{affordance.id}:availability[{idx}]"
-                    if meter:
-                        _record_meter_reference(
-                            meter,
-                            location,
-                            code="UAC-RES-002",
-                            hint_key="invalid_meter",
-                            hint_text="Meter references must match names defined in bars.yaml (case-sensitive).",
-                        )
-                    else:
-                        _handle_missing_meter(location)
-
-        # Environment enabled_affordances (names) - required
-        enabled_affordances = raw_configs.environment.enabled_affordances
-        if enabled_affordances is None:
-            errors.add(
-                _format_error(
-                    "UAC-RES-004",
-                    "training.environment.enabled_affordances must be specified explicitly (no defaults).",
-                    "training.yaml:environment.enabled_affordances",
-                )
-            )
-        else:
-            for affordance_name in enabled_affordances:
-                if affordance_name not in symbol_table.affordances_by_name:
-                    errors.add(
-                        _format_error(
-                            "UAC-RES-004",
-                            f"References non-existent affordance '{affordance_name}'. Valid affordances: {symbol_table.affordance_names}",
-                            "training.yaml:environment.enabled_affordances",
-                        )
-                    )
-                    _add_hint(
-                        "invalid_affordance_name",
-                        "Ensure environment.enabled_affordances lists valid affordance names from affordances.yaml.",
-                    )
-
-        # Global action costs/effects (dict[str, float])
-        for action in raw_configs.global_actions.actions:
-            for meter in action.costs.keys():
-                _record_meter_reference(
-                    meter,
-                    f"global_actions.yaml:{action.name}:costs",
-                    code="UAC-RES-005",
-                    hint_key="invalid_meter",
-                    hint_text="Meter references must match names defined in bars.yaml (case-sensitive).",
-                )
-            for meter in action.effects.keys():
-                _record_meter_reference(
-                    meter,
-                    f"global_actions.yaml:{action.name}:effects",
-                    code="UAC-RES-005",
-                    hint_key="invalid_meter",
-                    hint_text="Meter references must match names defined in bars.yaml (case-sensitive).",
-                )
 
     def _validate_dac_references(
         self,
@@ -2915,7 +2713,7 @@ class UniverseCompiler:
                 names.add(bar.name)
         return names
 
-    def _is_meter_critical(self, bar: BarConfig) -> bool:
+    def _is_meter_critical(self, bar: MeterConfig) -> bool:
         if getattr(bar, "critical", False):
             return True
         tier = getattr(bar, "tier", None)

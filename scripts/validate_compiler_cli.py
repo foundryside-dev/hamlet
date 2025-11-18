@@ -10,19 +10,32 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CONFIGS_ROOT = REPO_ROOT / "configs"
-# `aspatial_test` is a trimmed-down pack used by substrate unit tests; it intentionally violates
-# several Stage 4 assumptions (no spatial layout, partial schema), so the CLI validator would fail
-# every run. We skip it here to keep CI signal clean while still covering all real packs.
-EXCLUDED_DIRS = {"templates", "aspatial_test"}
+# Excluded directories:
+# - `templates`: Template config files, not actual experiments
+# - `aspatial_test`: Trimmed pack for unit tests that violates Stage 4 assumptions
+# - `reference_config`: Documentation only, not a runnable experiment
+EXCLUDED_DIRS = {"templates", "aspatial_test", "reference_config"}
 
 
 def iter_config_dirs(base: Path) -> list[Path]:
+    """Recursively find all v2.1 experiment directories (containing experiment.yaml)."""
     dirs: list[Path] = []
-    for entry in sorted(base.iterdir()):
-        if not entry.is_dir() or entry.name in EXCLUDED_DIRS:
-            continue
-        if (entry / "training.yaml").exists():
-            dirs.append(entry)
+
+    def scan_dir(path: Path) -> None:
+        """Recursively scan for experiment directories."""
+        for entry in sorted(path.iterdir()):
+            if not entry.is_dir() or entry.name in EXCLUDED_DIRS:
+                continue
+
+            # v2.1 experiment directories contain experiment.yaml
+            if (entry / "experiment.yaml").exists():
+                dirs.append(entry)
+            else:
+                # Recurse into subdirectories to find nested experiment packs
+                # (e.g., configs/test/action_space/grid2d/)
+                scan_dir(entry)
+
+    scan_dir(base)
     return dirs
 
 

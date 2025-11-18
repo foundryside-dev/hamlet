@@ -95,6 +95,11 @@ class VFSObservationSpecBuilder:
             semantic_type = exposure_config.get("semantic_type")
             if not isinstance(semantic_type, str) or not semantic_type:
                 raise ValueError(f"Exposure entry for '{var_id}' has invalid 'semantic_type'; expected non-empty string.")
+            if semantic_type not in ("bars", "spatial", "affordance", "temporal", "custom"):
+                raise ValueError(
+                    f"Exposure entry for '{var_id}' has invalid 'semantic_type' value: '{semantic_type}'. "
+                    f"Must be one of: 'bars', 'spatial', 'affordance', 'temporal', 'custom'."
+                )
 
             # Create observation field
             field = ObservationField(
@@ -104,7 +109,7 @@ class VFSObservationSpecBuilder:
                 shape=shape,
                 normalization=norm_spec,
                 curriculum_active=curriculum_active,
-                semantic_type=semantic_type,
+                semantic_type=semantic_type,  # type: ignore[arg-type]  # Validated above
             )
 
             self._validate_normalization_shape(field_id, shape, norm_spec)

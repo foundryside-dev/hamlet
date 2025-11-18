@@ -31,6 +31,8 @@ class LossFactory:
             return nn.MSELoss()
 
         elif config.type == "huber":
+            # Pydantic validator ensures huber_delta is not None when type="huber"
+            assert config.huber_delta is not None, "huber_delta validated by LossConfig.validate_huber_delta_required_for_huber"
             return nn.HuberLoss(delta=config.huber_delta)
 
         elif config.type == "smooth_l1":

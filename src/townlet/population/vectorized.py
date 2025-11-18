@@ -227,7 +227,12 @@ class VectorizedPopulation(PopulationManager):
         self.loss_fn = LossFactory.build(config=brain_config.loss)
         # Store loss config for PER path (needs functional API with reduction='none')
         self.loss_type = brain_config.loss.type
-        self.loss_delta = brain_config.loss.huber_delta if brain_config.loss.type == "huber" else 1.0
+        # Set delta for huber loss (Pydantic validates not None when type="huber")
+        if brain_config.loss.type == "huber":
+            assert brain_config.loss.huber_delta is not None
+            self.loss_delta: float = brain_config.loss.huber_delta
+        else:
+            self.loss_delta = 1.0
 
         # Replay buffer (dual system: sequential for recurrent, standard/PER for feedforward)
         # TASK-005 Phase 3: Support PrioritizedReplayBuffer
@@ -258,6 +263,10 @@ class VectorizedPopulation(PopulationManager):
             # Feedforward networks support both standard and prioritized replay
             if self.use_per:
                 # TASK-005 Phase 3: Instantiate PrioritizedReplayBuffer
+                # Pydantic validator ensures PER params not None when prioritized=True
+                assert brain_config.replay.priority_alpha is not None
+                assert brain_config.replay.priority_beta is not None
+                assert brain_config.replay.priority_beta_annealing is not None
                 self.replay_buffer = PrioritizedReplayBuffer(
                     capacity=replay_capacity,
                     alpha=brain_config.replay.priority_alpha,
@@ -728,7 +737,7 @@ class VectorizedPopulation(PopulationManager):
                         q_pred_all,
                         q_target_all,
                         reduction="none",
-                        delta=self.brain_config.loss.huber_delta,
+                        delta=self.loss_delta,  # Already set in __init__ with proper type
                     )
                 elif self.brain_config is not None and self.brain_config.loss.type == "smooth_l1":
                     losses = F.smooth_l1_loss(q_pred_all, q_target_all, reduction="none")

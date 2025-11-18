@@ -58,7 +58,7 @@ class LiveInferenceServer:
     def __init__(
         self,
         checkpoint_dir: Path | str,
-        level_name: str,
+        level_name: str | None = None,
         port: int = 8766,
         step_delay: float = 0.2,
         total_episodes: int = 5000,  # Expected total episodes in training run
@@ -71,7 +71,7 @@ class LiveInferenceServer:
 
         Args:
             checkpoint_dir: Directory containing training checkpoints
-            level_name: Which curriculum level to run (e.g., "L0_0_minimal")
+            level_name: Which curriculum level to run (defaults to first available level)
             port: WebSocket port
             step_delay: Delay between steps in seconds (0.2 = 5 steps/sec)
             total_episodes: Expected total episodes for training run (for progress gauge)
@@ -81,7 +81,7 @@ class LiveInferenceServer:
             recordings_dir: Optional recordings directory for replay mode
         """
         self.checkpoint_dir = Path(checkpoint_dir)
-        self.level_name = level_name
+        self.level_name = level_name  # Will be determined after compilation if None
         self.port = port
         self.step_delay = step_delay
         self.total_episodes = total_episodes
@@ -270,7 +270,17 @@ class LiveInferenceServer:
     def _initialize_components(self):
         """Initialize environment and agent components."""
         logger.info("Compiling universe for live inference from %s", self.config_dir)
+        # Compile universe (primary_level can be None for initial compilation)
         self.compiled_universe = self.compiler.compile(self.config_dir, primary_level=self.level_name)
+
+        # Determine effective level_name (supports callers that omitted it)
+        if self.level_name is None:
+            available_levels = getattr(self.compiled_universe, "available_levels", [])
+            if not available_levels:
+                raise ValueError("Compiled universe has no curriculum levels; LiveInferenceServer requires at least one level.")
+            self.level_name = available_levels[0]
+            logger.info("No level_name specified; defaulting to %s", self.level_name)
+
         level_meta = self.compiled_universe.get_level(self.level_name)
 
         # v2.1 training config DTOs
@@ -1157,9 +1167,10 @@ def run_server(
 
     server = LiveInferenceServer(
         checkpoint_dir,
-        port,
-        step_delay,
-        total_episodes,
+        level_name=None,  # Will default to first available level
+        port=port,
+        step_delay=step_delay,
+        total_episodes=total_episodes,
         config_dir=config_dir,
         training_config_path=training_config_path,
         db_path=db_path,

@@ -2,9 +2,9 @@
 
 import torch
 
+from townlet.config.stratum_config import SubstrateConfig
 from townlet.substrate.aspatial import AspatialSubstrate
 from townlet.substrate.base import SpatialSubstrate
-from townlet.substrate.config import SubstrateConfig
 from townlet.substrate.continuous import Continuous1DSubstrate, Continuous2DSubstrate, Continuous3DSubstrate
 from townlet.substrate.continuousnd import ContinuousNDSubstrate
 from townlet.substrate.grid2d import Grid2DSubstrate

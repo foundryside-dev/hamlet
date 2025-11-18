@@ -18,7 +18,7 @@ import torch
 import yaml
 
 from townlet.config.actions_config import ActionsConfig
-from townlet.config.affordances_v2_config import AffordancesV2Config
+from townlet.config.affordances_v2_config import AffordanceParamConfig, AffordancesV2Config
 from townlet.config.agent_config import AgentConfig
 from townlet.config.bars_v2_config import BarsV2Config, MeterConfig
 from townlet.config.curriculum_config import CurriculumConfig
@@ -27,13 +27,12 @@ from townlet.config.effect_pipeline import EffectPipeline
 from townlet.config.environment_config import CascadeConfig
 from townlet.config.environment_config import EnvironmentConfig as EnvConfigV21
 from townlet.config.experiment_config import ExperimentConfig
-from townlet.config.stratum_config import StratumConfig
+from townlet.config.stratum_config import StratumConfig, SubstrateConfig
 from townlet.config.training_v2_config import TrainingV2Config
 from townlet.environment.action_config import ActionConfig, ActionSpaceConfig
-from townlet.environment.affordance_config import AffordanceConfig
+from townlet.environment.affordance_config import AffordanceConfig  # Runtime representation
 from townlet.environment.substrate_action_validator import SubstrateActionValidator
 from townlet.environment.temporal_utils import is_affordance_open
-from townlet.substrate.config import SubstrateConfig
 from townlet.substrate.factory import SubstrateFactory
 from townlet.universe.compiled import CompiledUniverse
 from townlet.universe.dto import (
@@ -217,214 +216,6 @@ class UniverseCompiler:
             len(env_meters),
             len(env_affordances),
         )
-
-    def _build_observation_spec(
-        self,
-        stratum,
-        environment,
-        curriculum,
-        agent,
-    ) -> ObservationSpec:
-        """
-        Build observation spec using Support/Active pattern.
-
-        Support (stratum): Which observation fields CAN exist (declared at experiment level)
-        Active (curriculum): Which fields ARE active vs masked (varies per curriculum level)
-
-        This enables:
-        - Transfer learning: All levels have same obs_dim (masked fields = zeros)
-        - Power user optimization: Future enhancement can exclude unsupported fields
-
-        Args:
-            stratum: Stratum config with vision/temporal support declarations
-            environment: Environment config with meter/affordance vocabulary
-            curriculum: Curriculum config with active vision/temporal settings
-            agent: Agent config with perception settings
-
-        Returns:
-            ObservationSpec with all fields, marked as active or masked via description
-        """
-        fields = []
-        offset = 0
-
-        # ===== Vision Fields (Support/Active pattern) =====
-
-        # Global vision (grid encoding)
-        if stratum.stratum.vision_support in ["both", "global"]:
-            is_active = curriculum.curriculum.active_vision == "global"
-
-            # Compute grid encoding dimensions
-            if stratum.stratum.substrate.type == "grid":
-                grid_width = stratum.stratum.substrate.grid.width
-                grid_height = stratum.stratum.substrate.grid.height
-                grid_encoding_dims = grid_width * grid_height  # e.g., 8*8 = 64
-            else:
-                grid_encoding_dims = 0  # Non-grid substrates don't have grid encoding
-
-            if grid_encoding_dims > 0:
-                desc = f"{grid_width}x{grid_height} grid encoding" if is_active else "MASKED (partial obs active)"
-                fields.append(
-                    ObservationField(
-                        uuid=None,  # Auto-computed
-                        name="obs_grid_encoding",
-                        type="spatial_grid",
-                        dims=grid_encoding_dims,
-                        start_index=offset,
-                        end_index=offset + grid_encoding_dims,
-                        scope="agent",
-                        description=desc,
-                        semantic_type="spatial",
-                    )
-                )
-                offset += grid_encoding_dims
-
-        # Partial vision (local window)
-        if stratum.stratum.vision_support in ["both", "partial"]:
-            is_active = curriculum.curriculum.active_vision in ["partial", "local"]
-
-            # Compute local window dimensions from normalized vision_range
-            if stratum.stratum.substrate.type == "grid":
-                grid_width = stratum.stratum.substrate.grid.width
-                # vision_range is 0.0-1.0, represents fraction of grid
-                # e.g., 0.625 on 8x8 grid = 5-cell window → 5x5 = 25 dims
-                window_size = max(3, int(curriculum.curriculum.vision_range * grid_width))
-                # Force odd size (agent at center)
-                if window_size % 2 == 0:
-                    window_size += 1
-                # Clamp to grid size
-                window_size = min(window_size, grid_width)
-
-                local_window_dims = window_size**2  # e.g., 5^2 = 25
-            else:
-                local_window_dims = 0
-
-            if local_window_dims > 0:
-                desc = f"{window_size}x{window_size} local window" if is_active else "MASKED (global obs active)"
-                fields.append(
-                    ObservationField(
-                        uuid=None,
-                        name="obs_local_window",
-                        type="spatial_grid",
-                        dims=local_window_dims,
-                        start_index=offset,
-                        end_index=offset + local_window_dims,
-                        scope="agent",
-                        description=desc,
-                        semantic_type="spatial",
-                    )
-                )
-                offset += local_window_dims
-
-        # ===== Position and Velocity (always active) =====
-
-        position_dims = 2  # 2D grid (width, height)
-
-        fields.append(
-            ObservationField(
-                uuid=None,
-                name="obs_position",
-                type="vector",
-                dims=position_dims,
-                start_index=offset,
-                end_index=offset + position_dims,
-                scope="agent",
-                description=f"Agent position ({position_dims}D coordinates)",
-                semantic_type="spatial",
-            )
-        )
-        offset += position_dims
-
-        fields.append(
-            ObservationField(
-                uuid=None,
-                name="obs_velocity",
-                type="vector",
-                dims=position_dims,
-                start_index=offset,
-                end_index=offset + position_dims,
-                scope="agent",
-                description=f"Agent velocity ({position_dims}D vector)",
-                semantic_type="spatial",
-            )
-        )
-        offset += position_dims
-
-        # ===== Meters (always active, fixed vocabulary) =====
-
-        meter_count = len(environment.environment.meters)
-
-        fields.append(
-            ObservationField(
-                uuid=None,
-                name="obs_meters",
-                type="vector",
-                dims=meter_count,
-                start_index=offset,
-                end_index=offset + meter_count,
-                scope="agent",
-                description=f"{meter_count} meter values (normalized 0-1)",
-                semantic_type="bars",
-            )
-        )
-        offset += meter_count
-
-        # ===== Affordances (always active, fixed vocabulary) =====
-
-        affordance_count = len(environment.environment.affordances)
-
-        fields.append(
-            ObservationField(
-                uuid=None,
-                name="obs_affordances",
-                type="vector",
-                dims=affordance_count,
-                start_index=offset,
-                end_index=offset + affordance_count,
-                scope="agent",
-                description=f"{affordance_count} affordance distances (normalized)",
-                semantic_type="affordance",
-            )
-        )
-        offset += affordance_count
-
-        # ===== Temporal Features (Support/Active pattern) =====
-
-        if stratum.stratum.temporal_support == "enabled":
-            is_active = curriculum.curriculum.active_temporal
-
-            # Temporal features: (time_of_day_sin, time_of_day_cos, day_progress, is_night)
-            temporal_dims = 4
-
-            desc = "Temporal features (day/night cycle)" if is_active else "MASKED (temporal inactive)"
-            fields.append(
-                ObservationField(
-                    uuid=None,
-                    name="obs_temporal",
-                    type="vector",
-                    dims=temporal_dims,
-                    start_index=offset,
-                    end_index=offset + temporal_dims,
-                    scope="agent",
-                    description=desc,
-                    semantic_type="temporal",
-                )
-            )
-            offset += temporal_dims
-
-        # ===== Build ObservationSpec =====
-
-        obs_spec = ObservationSpec.from_fields(fields=fields)
-
-        active_dims = sum(f.dims for f in fields if "MASKED" not in f.description)
-        masked_dims = sum(f.dims for f in fields if "MASKED" in f.description)
-
-        logger.info("  Observation spec built:")
-        logger.info("    Total dims: %d (active: %d, masked: %d)", obs_spec.total_dims, active_dims, masked_dims)
-        for field in fields:
-            status = "ACTIVE" if "MASKED" not in field.description else "MASKED"
-            logger.info("      [%3d:%3d] %-25s (%3d dims) %s", field.start_index, field.end_index, field.name, field.dims, status)
-
-        return obs_spec
 
     def compile(self, experiment_dir: Path, primary_level: str | None = None, use_cache: bool = True) -> CompiledUniverse:
         """Compile v2.1 hierarchical configs into a multi-level CompiledUniverse."""
@@ -746,14 +537,16 @@ class UniverseCompiler:
         # Grid capacity (hard error)
         grid_capacity: int | None = None
         substrate = raw.stratum.stratum.substrate
-        if getattr(substrate, "type", None) == "grid" and getattr(substrate, "grid", None) is not None:
-            width = substrate.grid.width
-            height = substrate.grid.height
-            depth = getattr(substrate.grid, "depth", None)
+        grid_config = getattr(substrate, "grid", None)
+        if getattr(substrate, "type", None) == "grid" and grid_config is not None:
+            width = grid_config.width
+            height = grid_config.height
+            depth = getattr(grid_config, "depth", None)
             grid_capacity = width * height if depth is None else width * height * depth
-        elif getattr(substrate, "type", None) == "gridnd" and getattr(substrate, "gridnd", None) is not None:
+        gridnd_config = getattr(substrate, "gridnd", None)
+        if getattr(substrate, "type", None) == "gridnd" and gridnd_config is not None:
             grid_capacity = 1
-            for size in substrate.gridnd.dimension_sizes:
+            for size in gridnd_config.dimension_sizes:
                 grid_capacity *= size
 
         for level_name, level in raw.levels.items():
@@ -1511,7 +1304,7 @@ class UniverseCompiler:
                     exposed_to=["agent"],
                     shape=[field.dims],
                     normalization=norm,
-                    semantic_type=field.semantic_type or "custom",
+                    semantic_type=field.semantic_type or "custom",  # type: ignore[arg-type]  # semantic_type is Literal type
                     curriculum_active="MASKED" not in (field.description or ""),
                 )
             )
@@ -2526,14 +2319,14 @@ class UniverseCompiler:
         for warning in result.warnings:
             errors.add_warning(formatter("UAC-VAL-006", warning, "configs/global_actions.yaml"))
 
-    def _compute_total_costs(self, affordances: tuple[AffordanceConfig, ...]) -> float:
+    def _compute_total_costs(self, affordances: list[AffordanceParamConfig]) -> float:
         total = 0.0
         for affordance in affordances:
             total += self._sum_amounts(getattr(affordance, "costs", []))
             total += self._sum_amounts(getattr(affordance, "costs_per_tick", []))
         return total
 
-    def _compute_max_income(self, affordances: tuple[AffordanceConfig, ...]) -> float:
+    def _compute_max_income(self, affordances: list[AffordanceParamConfig]) -> float:
         total = 0.0
         for affordance in affordances:
             pipeline = getattr(affordance, "effect_pipeline", None)
@@ -2613,12 +2406,12 @@ class UniverseCompiler:
                 hours_with_income += 1
         return float(hours_with_income)
 
-    def _affordance_open_for_hour(self, affordance: AffordanceConfig, hour: int) -> bool:
+    def _affordance_open_for_hour(self, affordance: AffordanceParamConfig, hour: int) -> bool:
         """Return True if an affordance is open for the given hour.
 
         v2.1 semantics: availability is defined *only* via opening_hours on
-        curriculum-level affordances (AffordancesV2Config). Legacy
-        operating_hours fields are no longer supported.
+        curriculum-level affordances (AffordanceParamConfig from AffordancesV2Config).
+        Legacy operating_hours fields are no longer supported.
         """
         opening_hours = getattr(affordance, "opening_hours", None)
         if opening_hours is None:
@@ -2638,7 +2431,7 @@ class UniverseCompiler:
                 return True
         return False
 
-    def _affordance_positive_amount_for_meter(self, affordance: AffordanceConfig, meter_name: str) -> float:
+    def _affordance_positive_amount_for_meter(self, affordance: AffordanceParamConfig | AffordanceConfig, meter_name: str) -> float:
         pipeline = getattr(affordance, "effect_pipeline", None)
         total = 0.0
         if pipeline is not None and not isinstance(pipeline, EffectPipeline):
@@ -3228,7 +3021,7 @@ class UniverseCompiler:
                 if meter and amount is not None:
                     totals[meter] += amount
 
-        pipeline = affordance.effect_pipeline
+        pipeline = getattr(affordance, "effect_pipeline", None)
         if pipeline is not None:
             _add_entries(pipeline.on_start)
             _add_entries(pipeline.per_tick)

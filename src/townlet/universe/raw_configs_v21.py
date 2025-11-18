@@ -99,17 +99,17 @@ class RawConfigsV21:
 
         # Validate that cascade sources/targets reference existing meters
         for edge in env_cascades:
-            problems: list[str] = []
+            cascade_problems: list[str] = []
             if edge.source not in env_meter_names:
-                problems.append(f"unknown source meter '{edge.source}'")
+                cascade_problems.append(f"unknown source meter '{edge.source}'")
             if edge.target not in env_meter_names:
-                problems.append(f"unknown target meter '{edge.target}'")
-            if problems:
+                cascade_problems.append(f"unknown target meter '{edge.target}'")
+            if cascade_problems:
                 raise ValueError(
                     "Invalid cascade_graph entry in environment.yaml.\n"
                     f"  Experiment: {self.experiment_dir}\n"
                     f"  Edge: ({edge.source} -> {edge.target})\n"
-                    f"  Problem: {', '.join(problems)}\n"
+                    f"  Problem: {', '.join(cascade_problems)}\n"
                     f"  Valid meters: {sorted(env_meter_names)}\n"
                     "\nAll cascade_graph entries must reference meters declared in environment.yaml meters."
                 )
@@ -162,18 +162,18 @@ class RawConfigsV21:
 
         # Validate that modulation_graph references existing bars and affordances
         for mod in env_mods:
-            problems: list[str] = []
+            modulation_problems: list[str] = []
             if mod.bar not in env_meter_names:
-                problems.append(f"unknown bar '{mod.bar}'")
+                modulation_problems.append(f"unknown bar '{mod.bar}'")
             invalid_affs = [name for name in mod.affordances if name not in env_affordance_names]
             if invalid_affs:
-                problems.append(f"unknown affordances {sorted(invalid_affs)}")
-            if problems:
+                modulation_problems.append(f"unknown affordances {sorted(invalid_affs)}")
+            if modulation_problems:
                 raise ValueError(
                     "Invalid modulation_graph entry in environment.yaml.\n"
                     f"  Experiment: {self.experiment_dir}\n"
                     f"  Entry: (bar={mod.bar}, affordances={sorted(mod.affordances)})\n"
-                    f"  Problem: {', '.join(problems)}\n"
+                    f"  Problem: {', '.join(modulation_problems)}\n"
                     f"  Valid meters: {sorted(env_meter_names)}\n"
                     f"  Valid affordances: {sorted(env_affordance_names)}\n"
                     "\nAll modulation_graph entries must reference meters and affordances declared in environment.yaml."
@@ -187,12 +187,13 @@ class RawConfigsV21:
 
         substrate = self.stratum.stratum.substrate
         grid_capacity: int | None = None
-        if getattr(substrate, "type", None) == "grid" and getattr(substrate, "grid", None) is not None:
+        grid_config = getattr(substrate, "grid", None)
+        if getattr(substrate, "type", None) == "grid" and grid_config is not None:
             # 2D (square) or 3D (cubic) grid
-            width = substrate.grid.width
-            height = substrate.grid.height
-            depth = getattr(substrate.grid, "depth", None)
-            if substrate.grid.topology == "cubic" and depth is not None:
+            width = grid_config.width
+            height = grid_config.height
+            depth = getattr(grid_config, "depth", None)
+            if grid_config.topology == "cubic" and depth is not None:
                 grid_capacity = width * height * depth
             else:
                 grid_capacity = width * height
@@ -201,17 +202,18 @@ class RawConfigsV21:
                     "Grid size exceeds safety limit for v2.1 configs.\n"
                     f"  Experiment: {self.experiment_dir}\n"
                     f"  Dimensions: {width}×{height}"
-                    f"{'×' + str(depth) if depth is not None and substrate.grid.topology == 'cubic' else ''}"
+                    f"{'×' + str(depth) if depth is not None and grid_config.topology == 'cubic' else ''}"
                     f" = {grid_capacity} cells (max {MAX_GRID_CELLS})\n"
                     "\nReduce grid dimensions in stratum.yaml to avoid excessive observation/state sizes."
                 )
-        elif getattr(substrate, "type", None) == "gridnd" and getattr(substrate, "gridnd", None) is not None:
+        gridnd_config = getattr(substrate, "gridnd", None)
+        if getattr(substrate, "type", None) == "gridnd" and gridnd_config is not None:
             # N-dimensional grid: product of all dimension sizes
             grid_capacity = 1
-            for size in substrate.gridnd.dimension_sizes:
+            for size in gridnd_config.dimension_sizes:
                 grid_capacity *= size
             if grid_capacity > MAX_GRID_CELLS:
-                dims_str = "×".join(str(s) for s in substrate.gridnd.dimension_sizes)
+                dims_str = "×".join(str(s) for s in gridnd_config.dimension_sizes)
                 raise ValueError(
                     "GridND size exceeds safety limit for v2.1 configs.\n"
                     f"  Experiment: {self.experiment_dir}\n"
@@ -293,17 +295,17 @@ class RawConfigsV21:
                 invalid_cost_meters = [name for name in aff.costs.keys() if name not in env_meter_names]
                 invalid_effect_meters = [name for name in aff.effects.keys() if name not in env_meter_names]
                 if invalid_cost_meters or invalid_effect_meters:
-                    problems: list[str] = []
+                    affordance_problems: list[str] = []
                     if invalid_cost_meters:
-                        problems.append(f"costs: {sorted(invalid_cost_meters)}")
+                        affordance_problems.append(f"costs: {sorted(invalid_cost_meters)}")
                     if invalid_effect_meters:
-                        problems.append(f"effects: {sorted(invalid_effect_meters)}")
+                        affordance_problems.append(f"effects: {sorted(invalid_effect_meters)}")
                     raise ValueError(
                         "Affordance references unknown meters in costs/effects.\n"
                         f"  Experiment: {self.experiment_dir}\n"
                         f"  Level: {level_name}\n"
                         f"  Affordance: {aff.name}\n"
-                        f"  Invalid meter names: {', '.join(problems)}\n"
+                        f"  Invalid meter names: {', '.join(affordance_problems)}\n"
                         f"  Valid meters (from environment.yaml): {sorted(env_meter_names)}\n"
                         "\nAll meter keys in costs/effects must match meters declared in environment.yaml."
                     )

@@ -3,11 +3,13 @@
 The spatial substrate defines the coordinate system, topology, and distance metric
 for agent positioning and navigation. This is an OPTIONAL component - aspatial
 universes (pure resource management) are perfectly valid.
+
+Note: SubstrateConfig now lives in townlet.config.stratum_config as substrate
+config is nested inside stratum.yaml in v2.1.
 """
 
 from townlet.substrate.aspatial import AspatialSubstrate
 from townlet.substrate.base import SpatialSubstrate
-from townlet.substrate.config import SubstrateConfig, load_substrate_config
 from townlet.substrate.continuous import Continuous1DSubstrate, Continuous2DSubstrate, Continuous3DSubstrate
 from townlet.substrate.continuousnd import ContinuousNDSubstrate
 from townlet.substrate.factory import SubstrateFactory
@@ -25,7 +27,5 @@ __all__ = [
     "Continuous3DSubstrate",
     "ContinuousNDSubstrate",
     "AspatialSubstrate",
-    "SubstrateConfig",
-    "load_substrate_config",
     "SubstrateFactory",
 ]

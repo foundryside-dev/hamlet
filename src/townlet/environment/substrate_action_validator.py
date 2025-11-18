@@ -6,8 +6,8 @@ from dataclasses import dataclass, field
 
 from townlet.config.actions_config import ActionsConfig as ActionsConfigDTO
 from townlet.config.actions_config import ActionsConfigRoot
+from townlet.config.stratum_config import SubstrateConfig
 from townlet.environment.action_config import ActionSpaceConfig
-from townlet.substrate.config import SubstrateConfig
 from townlet.substrate.factory import SubstrateFactory
 
 
@@ -21,7 +21,7 @@ class ValidationResult:
 class SubstrateActionValidator:
     """Validates that the action space is compatible with the chosen substrate."""
 
-    def __init__(self, substrate: SubstrateConfig, actions: ActionSpaceConfig) -> None:
+    def __init__(self, substrate: SubstrateConfig, actions: ActionSpaceConfig | ActionsConfigDTO | ActionsConfigRoot) -> None:
         self._substrate = substrate
         # Normalize to a list of ActionConfig-like objects with .type/.delta attributes.
         if isinstance(actions, ActionSpaceConfig):

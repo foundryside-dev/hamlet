@@ -66,3 +66,9 @@ def test_command_config_requires_one_command_type():
             value="5.0",
             spawn_effect="poisoned",  # Can't have both
         )
+
+
+def test_command_config_modify_requires_value():
+    """modify command must have value field."""
+    with pytest.raises(ValidationError, match="modify command requires 'value' field"):
+        CommandConfig(modify="target.bar.energy")  # Missing value

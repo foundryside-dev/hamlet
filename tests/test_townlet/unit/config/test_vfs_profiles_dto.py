@@ -7,6 +7,8 @@ from townlet.config.vfs_profiles_config import (
     AgentVFSProfileConfig,
     AgentVFSVariableConfig,
     GlobalVFSVariableConfig,
+    ItemVFSProfileConfig,
+    ItemVFSVariableConfig,
 )
 
 
@@ -109,3 +111,56 @@ def test_agent_vfs_profile_unique_names():
                 AgentVFSVariableConfig(name="x", type="int", initial_value=1),
             ]
         )
+
+
+def test_item_vfs_variable_with_initial_value():
+    """Item VFS variable with static initial value."""
+    config = ItemVFSVariableConfig(
+        name="nutrition",
+        type="float",
+        initial_value=0.5,
+        description="Nutritional value of food item",
+    )
+
+    assert config.name == "nutrition"
+    assert config.type == "float"
+    assert config.initial_value == 0.5
+
+
+def test_item_vfs_variable_with_expression():
+    """Item VFS variable with computed expression."""
+    config = ItemVFSVariableConfig(
+        name="is_spoiled",
+        type="bool",
+        expression="self.age > 100",
+        description="True when item has spoiled",
+    )
+
+    assert config.name == "is_spoiled"
+    assert config.expression == "self.age > 100"
+
+
+def test_item_vfs_variable_with_owner_reference():
+    """Item VFS can reference owning agent."""
+    config = ItemVFSVariableConfig(
+        name="owner",
+        type="agent_ref",
+        expression="self.held_by",
+        description="Agent currently holding this item",
+    )
+
+    assert config.type == "agent_ref"
+
+
+def test_item_vfs_profile_multiple_variables():
+    """Item VFS profile supports multiple variables."""
+    profile = ItemVFSProfileConfig(
+        profile_name="food_stats",
+        variables=[
+            ItemVFSVariableConfig(name="nutrition", type="float", initial_value=0.5),
+            ItemVFSVariableConfig(name="is_spoiled", type="bool", expression="self.age > 100"),
+        ],
+    )
+
+    assert profile.profile_name == "food_stats"
+    assert len(profile.variables) == 2

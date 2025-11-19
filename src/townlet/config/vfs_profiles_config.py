@@ -103,3 +103,60 @@ class AgentVFSProfileConfig(BaseModel):
             raise ValueError(f"Duplicate variable names: {duplicates}")
 
         return variables
+
+
+class ItemVFSVariableConfig(BaseModel):
+    """Configuration for a single item VFS variable.
+
+    Item variables are per-item-instance state (e.g., nutrition, age, is_spoiled).
+    """
+
+    name: str
+    type: Literal[
+        "int",
+        "float",
+        "bool",
+        "vec2i",
+        "vec3i",
+        "agent_ref",
+        "item_ref",
+        "affordance_ref",
+        "effect_ref",
+    ]
+    initial_value: int | float | bool | list | None = None
+    expression: str | None = None
+    description: str | None = None
+
+    @model_validator(mode="after")
+    def validate_value_xor_expression(self):
+        """Exactly one of initial_value or expression must be set."""
+        has_value = self.initial_value is not None
+        has_expr = self.expression is not None
+
+        if has_value == has_expr:
+            raise ValueError(f"Variable '{self.name}' must have exactly one of initial_value or expression (not both, not neither)")
+
+        return self
+
+
+class ItemVFSProfileConfig(BaseModel):
+    """Configuration for item VFS profile.
+
+    Item VFS profiles define reusable state schemas for item types
+    (e.g., 'food_stats', 'weapon_stats').
+    """
+
+    profile_name: str
+    variables: list[ItemVFSVariableConfig]
+
+    @field_validator("variables")
+    @classmethod
+    def validate_unique_names(cls, variables: list[ItemVFSVariableConfig]):
+        """Variable names must be unique within profile."""
+        names = [v.name for v in variables]
+        duplicates = {name for name in names if names.count(name) > 1}
+
+        if duplicates:
+            raise ValueError(f"Duplicate variable names: {duplicates}")
+
+        return variables

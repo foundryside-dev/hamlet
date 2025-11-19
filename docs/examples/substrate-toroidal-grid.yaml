@@ -7,9 +7,10 @@
 #   - No hard walls - agent can exit left edge and appear on right edge
 #   - Shortest path may cross edges (wrap distance < straight distance)
 #   - Infinite grid feel (no "corners" or "edges")
+#
+# v2.1 Format: This file shows the substrate portion only.
+# In a complete config pack, this would be nested in substrate.yaml under the top-level "substrate:" key.
 
-version: "1.0"
-description: "8×8 toroidal grid (Pac-Man style wraparound) for comparison with clamp boundary"
 type: "grid"
 
 grid:

@@ -66,11 +66,11 @@ class CommandExecutor:
     This executor NEVER parses expressions - it only evaluates pre-compiled ASTs.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         # No parser needed! ASTs are pre-compiled
         pass
 
-    def execute(self, command: CommandNode, context: ExecutionContext):
+    def execute(self, command: CommandNode, context: ExecutionContext) -> None:
         """Execute single command.
 
         Args:
@@ -91,7 +91,7 @@ class CommandExecutor:
         else:
             raise NotImplementedError(f"Command type {command.type} not implemented")
 
-    def _execute_modify(self, command: CommandNode, context: ExecutionContext):
+    def _execute_modify(self, command: CommandNode, context: ExecutionContext) -> None:
         """Execute modify command.
 
         Args:
@@ -119,7 +119,7 @@ class CommandExecutor:
         # Set path to result
         context.set_path(command.path, result)
 
-    def _execute_spawn_effect(self, command: CommandNode, context: ExecutionContext):
+    def _execute_spawn_effect(self, command: CommandNode, context: ExecutionContext) -> None:
         """Execute spawn_effect command (stub for now).
 
         Args:
@@ -129,7 +129,7 @@ class CommandExecutor:
         # Stub for Task 3.4 (EffectManager integration)
         pass
 
-    def _execute_if(self, command: CommandNode, context: ExecutionContext):
+    def _execute_if(self, command: CommandNode, context: ExecutionContext) -> None:
         """Execute if command.
 
         Args:
@@ -162,7 +162,7 @@ class CommandExecutor:
             for cmd in else_commands:
                 self.execute(cmd, context)
 
-    def _execute_for_each(self, command: CommandNode, context: ExecutionContext):
+    def _execute_for_each(self, command: CommandNode, context: ExecutionContext) -> None:
         """Execute for_each command (stub for now).
 
         Args:
@@ -234,7 +234,7 @@ class CommandExecutor:
             temporal={},
         )
 
-    def execute_commands(self, commands: list[CommandNode], context: ExecutionContext):
+    def execute_commands(self, commands: list[CommandNode], context: ExecutionContext) -> None:
         """Execute list of commands in order.
 
         Args:

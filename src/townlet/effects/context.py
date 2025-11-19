@@ -95,7 +95,7 @@ class ExecutionContext:
 
         raise ValueError(f"Invalid path: {path}")
 
-    def set_path(self, path: str, value: torch.Tensor):
+    def set_path(self, path: str, value: torch.Tensor) -> None:
         """Set path to new tensor value (mutation).
 
         Args:

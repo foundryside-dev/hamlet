@@ -19,7 +19,7 @@ class CommandCompiler:
             schema: Type schema for paths (e.g., {"target.bar.energy": "float"})
         """
         self.schema = schema
-        self.parser = ExpressionParser()
+        self.parser = ExpressionParser()  # type: ignore[no-untyped-call]
         self.type_checker = TypeChecker(schema=schema)
 
     def compile_command(self, node: CommandNode) -> CommandNode:

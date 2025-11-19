@@ -59,7 +59,7 @@ class CommandNode:
     iterator_var: str | None = None  # Variable name for iteration
     do_commands: list[CommandNode] | None = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Initialize empty lists for nested commands."""
         if self.then_commands is None:
             self.then_commands = []

@@ -244,3 +244,56 @@ def test_unary_op_visitor_integration():
     result = node.accept(visitor)
 
     assert result == "(- 42)"
+
+
+def test_function_call_no_args():
+    """FunctionCall supports zero-argument functions."""
+    from townlet.world.expression.ast_nodes import FunctionCall
+
+    node = FunctionCall(name="now", arguments=[])
+    assert node.name == "now"
+    assert node.arguments == []
+
+
+def test_function_call_single_arg():
+    """FunctionCall supports single-argument functions."""
+    from townlet.world.expression.ast_nodes import FunctionCall, Variable
+
+    arg = Variable(name="x")
+    node = FunctionCall(name="floor", arguments=[arg])
+    assert node.name == "floor"
+    assert len(node.arguments) == 1
+    assert node.arguments[0] == arg
+
+
+def test_function_call_multiple_args():
+    """FunctionCall supports multi-argument functions."""
+    from townlet.world.expression.ast_nodes import FunctionCall, Variable
+
+    args = [Variable(name="a"), Variable(name="b"), Constant(value=5)]
+    node = FunctionCall(name="max", arguments=args)
+    assert node.name == "max"
+    assert len(node.arguments) == 3
+    assert node.arguments[0].name == "a"
+    assert node.arguments[1].name == "b"
+    assert node.arguments[2].value == 5
+
+
+def test_function_call_visitor_integration():
+    """FunctionCall node works with visitor pattern."""
+    from townlet.world.expression.ast_nodes import FunctionCall
+
+    class FnVisitor(ASTVisitor):
+        def visit_function_call(self, node):
+            arg_strs = [str(arg.value) for arg in node.arguments]
+            return f"{node.name}({', '.join(arg_strs)})"
+
+        def visit_constant(self, node):
+            return node
+
+    args = [Constant(value=1), Constant(value=2)]
+    node = FunctionCall(name="max", arguments=args)
+    visitor = FnVisitor()
+    result = node.accept(visitor)
+
+    assert result == "max(1, 2)"

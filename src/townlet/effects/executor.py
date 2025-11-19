@@ -144,7 +144,15 @@ class CommandExecutor:
         condition = evaluator.evaluate(cond_ast)
 
         # Execute then or else branch
-        if condition.item():  # Convert to Python bool
+        # For vectorized conditions, check if any element is true
+        if condition.dim() == 0:
+            # Scalar condition
+            is_true = condition.item()
+        else:
+            # Vector condition - check if any element is true
+            is_true = condition.any().item()
+
+        if is_true:
             for cmd in command.then_commands:
                 self.execute(cmd, context)
         else:

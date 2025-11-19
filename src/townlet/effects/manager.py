@@ -3,6 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from townlet.effects.catalog import EffectCatalog
+    from townlet.effects.context import ExecutionContext
+    from townlet.effects.executor import CommandExecutor
 
 from townlet.config.effects_config import EffectScope
 
@@ -36,7 +42,7 @@ class ActiveEffect:
 class EffectManager:
     """Manages all active effects across all entities."""
 
-    def __init__(self, catalog, device: str = "cpu", command_executor=None):
+    def __init__(self, catalog: EffectCatalog, device: str = "cpu", command_executor: CommandExecutor | None = None) -> None:
         """Initialize effect manager with compiled catalog.
 
         Args:
@@ -193,7 +199,7 @@ class EffectManager:
         if collection is not None and effect in collection:
             collection.remove(effect)
 
-    def tick(self, current_step: int, env_state=None) -> None:
+    def tick(self, current_step: int, env_state: Any | None = None) -> None:
         """Execute all active effects for one timestep.
 
         Updates lifecycle counters (elapsed_ticks, duration_remaining) and
@@ -240,7 +246,7 @@ class EffectManager:
                     # Despawn (remove from collection)
                     collection.pop(i)
 
-    def _build_context(self, effect: ActiveEffect, env_state):
+    def _build_context(self, effect: ActiveEffect, env_state: Any) -> ExecutionContext:
         """Build ExecutionContext for effect.
 
         Args:

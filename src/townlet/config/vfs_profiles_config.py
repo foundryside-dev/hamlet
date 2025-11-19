@@ -160,3 +160,29 @@ class ItemVFSProfileConfig(BaseModel):
             raise ValueError(f"Duplicate variable names: {duplicates}")
 
         return variables
+
+
+class VFSProfilesConfig(BaseModel):
+    """Top-level configuration for VFS profiles.
+
+    Loaded from vfs_profiles.yaml. Contains:
+    - global_profile: Shared variables (day_count, is_night)
+    - agent_profile: Per-agent variables (motivation, is_crisis)
+    - item_profiles: Named profiles for item types (food_stats, weapon_stats)
+    """
+
+    global_profile: GlobalVFSProfileConfig | None = None
+    agent_profile: AgentVFSProfileConfig | None = None
+    item_profiles: list[ItemVFSProfileConfig] = []
+
+    @field_validator("item_profiles")
+    @classmethod
+    def validate_unique_profile_names(cls, profiles: list[ItemVFSProfileConfig]):
+        """Item profile names must be unique."""
+        names = [p.profile_name for p in profiles]
+        duplicates = {name for name in names if names.count(name) > 1}
+
+        if duplicates:
+            raise ValueError(f"Duplicate item profile names: {duplicates}")
+
+        return profiles

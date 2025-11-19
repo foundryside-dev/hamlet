@@ -6,9 +6,11 @@ from pydantic import ValidationError
 from townlet.config.vfs_profiles_config import (
     AgentVFSProfileConfig,
     AgentVFSVariableConfig,
+    GlobalVFSProfileConfig,
     GlobalVFSVariableConfig,
     ItemVFSProfileConfig,
     ItemVFSVariableConfig,
+    VFSProfilesConfig,
 )
 
 
@@ -164,3 +166,44 @@ def test_item_vfs_profile_multiple_variables():
 
     assert profile.profile_name == "food_stats"
     assert len(profile.variables) == 2
+
+
+def test_vfs_profiles_config_complete():
+    """VFSProfilesConfig loads global + agent + item profiles."""
+    config = VFSProfilesConfig(
+        global_profile=GlobalVFSProfileConfig(
+            variables=[
+                GlobalVFSVariableConfig(name="day_count", type="int", initial_value=0),
+            ]
+        ),
+        agent_profile=AgentVFSProfileConfig(
+            variables=[
+                AgentVFSVariableConfig(name="motivation", type="float", initial_value=1.0),
+            ]
+        ),
+        item_profiles=[
+            ItemVFSProfileConfig(
+                profile_name="food_stats",
+                variables=[
+                    ItemVFSVariableConfig(name="nutrition", type="float", initial_value=0.5),
+                ],
+            ),
+        ],
+    )
+
+    assert config.global_profile is not None
+    assert config.agent_profile is not None
+    assert len(config.item_profiles) == 1
+
+
+def test_vfs_profiles_config_optional_sections():
+    """VFSProfilesConfig allows missing sections."""
+    config = VFSProfilesConfig(
+        global_profile=None,
+        agent_profile=AgentVFSProfileConfig(variables=[]),
+        item_profiles=[],
+    )
+
+    assert config.global_profile is None
+    assert config.agent_profile is not None
+    assert len(config.item_profiles) == 0

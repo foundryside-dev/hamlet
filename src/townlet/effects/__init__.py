@@ -2,4 +2,6 @@
 
 from __future__ import annotations
 
-__all__: list[str] = []  # Will be populated in Step 13
+from townlet.effects.catalog import EffectCatalog
+
+__all__ = ["EffectCatalog"]

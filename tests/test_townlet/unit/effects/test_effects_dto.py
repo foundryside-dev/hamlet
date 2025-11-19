@@ -3,7 +3,12 @@
 import pytest
 from pydantic import ValidationError
 
-from townlet.config.effects_config import CommandConfig, EffectScope, ReapplyPolicy
+from townlet.config.effects_config import (
+    CommandConfig,
+    EffectDefinitionConfig,
+    EffectScope,
+    ReapplyPolicy,
+)
 
 
 def test_reapply_policy_enum():
@@ -72,3 +77,67 @@ def test_command_config_modify_requires_value():
     """modify command must have value field."""
     with pytest.raises(ValidationError, match="modify command requires 'value' field"):
         CommandConfig(modify="target.bar.energy")  # Missing value
+
+
+def test_effect_definition_minimal():
+    """EffectDefinitionConfig with minimal required fields."""
+    effect = EffectDefinitionConfig(
+        id="ate_food",
+        scope="agent",
+        duration=10,
+        reapply_policy="stack",
+    )
+
+    assert effect.id == "ate_food"
+    assert effect.scope == EffectScope.AGENT
+    assert effect.duration == 10
+    assert effect.reapply_policy == ReapplyPolicy.STACK
+    assert effect.intensity == 1.0  # Default
+    assert effect.observable is True  # Default
+    assert effect.on_spawn == []
+    assert effect.on_tick == []
+    assert effect.on_despawn == []
+
+
+def test_effect_definition_with_commands():
+    """EffectDefinitionConfig with lifecycle commands."""
+    effect = EffectDefinitionConfig(
+        id="poisoned",
+        scope="agent",
+        duration=20,
+        intensity=0.5,
+        reapply_policy="merge",
+        observable=True,
+        on_spawn=[{"modify": "target.vfs.is_poisoned", "value": "true"}],
+        on_tick=[{"modify": "target.bar.health", "value": "target.bar.health - (0.1 * intensity)"}],
+        on_despawn=[{"modify": "target.vfs.is_poisoned", "value": "false"}],
+    )
+
+    assert effect.id == "poisoned"
+    assert effect.intensity == 0.5
+    assert effect.reapply_policy == ReapplyPolicy.MERGE
+    assert len(effect.on_spawn) == 1
+    assert len(effect.on_tick) == 1
+    assert len(effect.on_despawn) == 1
+
+
+def test_effect_definition_requires_duration():
+    """EffectDefinitionConfig requires duration field."""
+    with pytest.raises(ValidationError, match="duration"):
+        EffectDefinitionConfig(
+            id="invalid",
+            scope="agent",
+            reapply_policy="stack",
+            # Missing duration
+        )
+
+
+def test_effect_definition_requires_reapply_policy():
+    """EffectDefinitionConfig requires reapply_policy (no default)."""
+    with pytest.raises(ValidationError, match="reapply_policy"):
+        EffectDefinitionConfig(
+            id="invalid",
+            scope="agent",
+            duration=10,
+            # Missing reapply_policy
+        )

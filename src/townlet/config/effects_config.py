@@ -4,12 +4,13 @@ from __future__ import annotations
 
 import enum
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 __all__ = [
     "ReapplyPolicy",
     "EffectScope",
     "CommandConfig",
+    "EffectDefinitionConfig",
 ]
 
 
@@ -108,3 +109,39 @@ class CommandConfig(BaseModel):
             raise ValueError("modify command requires 'value' field")
 
         return self
+
+
+class EffectDefinitionConfig(BaseModel):
+    """Definition of a single effect in the catalog.
+
+    Effects are reusable simulation behaviors with lifecycle hooks.
+    """
+
+    id: str = Field(..., description="Unique effect identifier")
+    scope: EffectScope = Field(..., description="Where effect can attach")
+
+    # Lifecycle parameters (REQUIRED - no defaults to prevent surprises)
+    duration: int = Field(..., description="Ticks until auto-despawn", gt=0)
+    intensity: float = Field(default=1.0, description="Default strength multiplier")
+
+    # Stacking policy (REQUIRED - must be explicit)
+    reapply_policy: ReapplyPolicy = Field(..., description="Policy for multiple spawns")
+
+    # Visibility
+    observable: bool = Field(default=True, description="Visible in agent observations")
+
+    # Lifecycle command pipelines
+    on_spawn: list[CommandConfig] = Field(default=[], description="Commands on spawn")
+    on_tick: list[CommandConfig] = Field(default=[], description="Commands each tick")
+    on_despawn: list[CommandConfig] = Field(default=[], description="Commands on despawn")
+    on_interrupt: list[CommandConfig] = Field(default=[], description="Commands on forced removal")
+
+    @field_validator("on_spawn", "on_tick", "on_despawn", "on_interrupt", mode="before")
+    @classmethod
+    def parse_command_dicts(cls, v):
+        """Convert list of dicts to list of CommandConfig."""
+        if v is None:
+            return []
+        if isinstance(v, list):
+            return [CommandConfig(**cmd) if isinstance(cmd, dict) else cmd for cmd in v]
+        return v

@@ -44,7 +44,9 @@ class EffectCatalog:
             KeyError: If effect ID not found
         """
         if effect_id not in self.effects:
-            raise KeyError(f"Effect '{effect_id}' not found in catalog. Available effects: {list(self.effects.keys())}")
+            available = list(self.effects.keys())
+            msg = f"Effect '{effect_id}' not found in catalog. Available effects: {available}"
+            raise KeyError(msg)
         return self.effects[effect_id]
 
     def __contains__(self, effect_id: str) -> bool:

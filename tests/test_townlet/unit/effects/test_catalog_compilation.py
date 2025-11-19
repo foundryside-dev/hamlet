@@ -68,3 +68,31 @@ def test_catalog_get_missing_effect_raises():
 
     with pytest.raises(KeyError, match="unknown_effect"):
         catalog.get("unknown_effect")
+
+
+def test_catalog_contains():
+    """EffectCatalog.__contains__() checks effect existence."""
+    config = EffectsConfig(
+        version="1.0",
+        effect_definitions=[{"id": "ate_food", "scope": "agent", "duration": 10, "reapply_policy": "stack"}],
+    )
+
+    catalog = EffectCatalog.from_config(config)
+
+    assert "ate_food" in catalog
+    assert "unknown_effect" not in catalog
+
+
+def test_catalog_len():
+    """EffectCatalog.__len__() returns number of effects."""
+    config = EffectsConfig(
+        version="1.0",
+        effect_definitions=[
+            {"id": "effect1", "scope": "agent", "duration": 10, "reapply_policy": "stack"},
+            {"id": "effect2", "scope": "agent", "duration": 20, "reapply_policy": "renew"},
+        ],
+    )
+
+    catalog = EffectCatalog.from_config(config)
+
+    assert len(catalog) == 2

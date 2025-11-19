@@ -3,16 +3,16 @@
 from __future__ import annotations
 
 import enum
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 __all__ = [
-    "ReapplyPolicy",
-    "EffectScope",
     "CommandConfig",
     "EffectDefinitionConfig",
+    "EffectScope",
     "EffectsConfig",
+    "ReapplyPolicy",
 ]
 
 
@@ -31,7 +31,7 @@ class ReapplyPolicy(str, enum.Enum):
     REPLACE = "replace"
 
     @classmethod
-    def _missing_(cls, value):
+    def _missing_(cls, value: object) -> ReapplyPolicy | None:
         """Case-insensitive lookup."""
         if isinstance(value, str):
             for member in cls:
@@ -55,7 +55,7 @@ class EffectScope(str, enum.Enum):
     AFFORDANCE = "affordance"
 
     @classmethod
-    def _missing_(cls, value):
+    def _missing_(cls, value: object) -> EffectScope | None:
         """Case-insensitive lookup."""
         if isinstance(value, str):
             for member in cls:
@@ -140,7 +140,7 @@ class EffectDefinitionConfig(BaseModel):
 
     @field_validator("on_spawn", "on_tick", "on_despawn", "on_interrupt", mode="before")
     @classmethod
-    def parse_command_dicts(cls, v):
+    def parse_command_dicts(cls, v: list[dict[str, Any]] | list[CommandConfig] | None) -> list[CommandConfig]:
         """Convert list of dicts to list of CommandConfig."""
         if v is None:
             return []
@@ -157,12 +157,13 @@ class EffectsConfig(BaseModel):
 
     @field_validator("effect_definitions")
     @classmethod
-    def validate_unique_ids(cls, definitions):
+    def validate_unique_ids(cls, definitions: list[EffectDefinitionConfig]) -> list[EffectDefinitionConfig]:
         """Effect IDs must be unique."""
         ids = [d.id for d in definitions]
-        duplicates = {id for id in ids if ids.count(id) > 1}
+        duplicates = {effect_id for effect_id in ids if ids.count(effect_id) > 1}
 
         if duplicates:
-            raise ValueError(f"Duplicate effect IDs: {duplicates}")
+            msg = f"Duplicate effect IDs: {duplicates}"
+            raise ValueError(msg)
 
         return definitions

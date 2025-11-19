@@ -1,0 +1,56 @@
+version: "1.0"
+
+effect_definitions:
+  # Simple energy restoration
+  - id: "ate_food"
+    scope: agent
+    duration: 10
+    intensity: 1.0
+    reapply_policy: stack
+    observable: true
+
+    on_spawn:
+      - modify: target.vfs.digesting
+        value: "true"
+
+    on_tick:
+      - modify: target.bar.energy
+        value: "target.bar.energy + (0.05 * intensity)"
+
+    on_despawn:
+      - modify: target.vfs.digesting
+        value: "false"
+
+  # Poison with merge policy
+  - id: "poisoned"
+    scope: agent
+    duration: 20
+    intensity: 0.5
+    reapply_policy: merge
+    observable: true
+
+    on_tick:
+      - modify: target.bar.health
+        value: "target.bar.health - (0.1 * intensity)"
+
+  # Wet status with renew policy
+  - id: "wet"
+    scope: agent
+    duration: 15
+    reapply_policy: renew
+    observable: true
+
+    on_spawn:
+      - modify: target.vfs.is_wet
+        value: "true"
+
+    on_despawn:
+      - modify: target.vfs.is_wet
+        value: "false"
+
+  # Currently eating (replace policy)
+  - id: "eating"
+    scope: agent
+    duration: 3
+    reapply_policy: replace
+    observable: false

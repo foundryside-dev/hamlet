@@ -203,3 +203,44 @@ def test_binary_op_visitor_integration():
     result = node.accept(visitor)
 
     assert result == "(10 * 20)"
+
+
+def test_unary_op_negation():
+    """UnaryOp represents prefix operations like -x."""
+    from townlet.world.expression.ast_nodes import UnaryOp, Variable
+
+    operand = Variable(name="x")
+    node = UnaryOp(op=OperatorType.SUB, operand=operand)
+
+    assert node.op == OperatorType.SUB
+    assert node.operand == operand
+
+
+def test_unary_op_logical_not():
+    """UnaryOp supports logical NOT operator."""
+    from townlet.world.expression.ast_nodes import UnaryOp, Variable
+
+    operand = Variable(name="p")
+    node = UnaryOp(op=OperatorType.NOT, operand=operand)
+
+    assert node.op == OperatorType.NOT
+    assert node.operand == operand
+
+
+def test_unary_op_visitor_integration():
+    """UnaryOp node works with visitor pattern."""
+    from townlet.world.expression.ast_nodes import UnaryOp
+
+    class UnaryVisitor(ASTVisitor):
+        def visit_unary_op(self, node):
+            return f"({node.op.value} {node.operand.value})"
+
+        def visit_constant(self, node):
+            return node
+
+    operand = Constant(value=42)
+    node = UnaryOp(op=OperatorType.SUB, operand=operand)
+    visitor = UnaryVisitor()
+    result = node.accept(visitor)
+
+    assert result == "(- 42)"

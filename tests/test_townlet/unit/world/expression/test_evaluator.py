@@ -2,7 +2,7 @@
 
 import torch
 
-from townlet.world.expression import BinaryOp, Constant, OperatorType
+from townlet.world.expression import BinaryOp, Constant, OperatorType, PathAccess
 from townlet.world.expression.context import ExecutionContext
 from townlet.world.expression.evaluator import Evaluator
 
@@ -151,3 +151,25 @@ def test_evaluate_variable():
     result = evaluator.evaluate(node)
 
     assert torch.equal(result, torch.tensor([0.9, 1.0]))
+
+
+def test_evaluate_index_access():
+    """Evaluator handles tensor indexing."""
+    from townlet.world.expression import IndexAccess
+
+    ctx = ExecutionContext(
+        bars={},
+        vfs={"items": torch.tensor([10, 20, 30])},
+        affordances={},
+        temporal={},
+    )
+    evaluator = Evaluator(context=ctx)
+
+    # vfs.items[0]
+    node = IndexAccess(
+        base=PathAccess(segments=["vfs", "items"]),
+        index=Constant(value=0),
+    )
+    result = evaluator.evaluate(node)
+
+    assert result.item() == 10

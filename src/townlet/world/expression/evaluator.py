@@ -99,5 +99,18 @@ class Evaluator(ASTVisitor):
         raise NotImplementedError("visit_if_then_else not yet implemented")
 
     def visit_index_access(self, node: IndexAccess) -> torch.Tensor:
-        """Execute tensor indexing."""
-        raise NotImplementedError("visit_index_access not yet implemented")
+        """Execute tensor indexing.
+
+        Supports:
+        - inventory[0] -> tensor indexing
+        - items[slot_index] -> dynamic indexing
+        - grid[x][y] -> multi-dimensional via nesting
+        """
+        base = node.base.accept(self)
+        index = node.index.accept(self)
+
+        # Convert index to long tensor for indexing
+        index_long = index.long()
+
+        # Tensor indexing
+        return base[index_long]

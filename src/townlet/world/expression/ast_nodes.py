@@ -236,3 +236,24 @@ class IfThenElse(ASTNode):
 
     def accept(self, visitor: Any) -> Any:
         return visitor.visit_if_then_else(self)
+
+
+@dataclass
+class IndexAccess(ASTNode):
+    """Array/list element access by index.
+
+    Examples:
+        - items[0] (constant index)
+        - values[i] (variable index)
+        - prices[slot_idx + 1] (computed index)
+        - matrix[row][col] (nested access - chained IndexAccess nodes)
+
+    Both target and index are AST nodes (can be nested expressions).
+    Target must evaluate to array/list, index to integer.
+    """
+
+    target: ASTNode
+    index: ASTNode
+
+    def accept(self, visitor: Any) -> Any:
+        return visitor.visit_index_access(self)

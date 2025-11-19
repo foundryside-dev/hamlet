@@ -277,3 +277,75 @@ class VariableRegistry:
             default_tensor = torch.tensor(default_values[:copy_len], device=self.device, dtype=dtype)
             tensor[:copy_len] = default_tensor
         return tensor
+
+
+class ScopedVariableRegistry:
+    """Variable storage with three scopes: global, agent, item.
+
+    Global scope: Singleton values shared across all agents
+        - Storage: dict[str, torch.Tensor] (scalar tensors)
+        - Example: {"day_count": tensor(42), "is_night": tensor(True)}
+
+    Agent scope: Per-agent values (batch tensors)
+        - Storage: dict[str, torch.Tensor] (batch_size tensors)
+        - Example: {"motivation": tensor([1.0, 0.8, 1.2])}
+
+    Item scope: Per-item-instance values (profile-based)
+        - Storage: dict[profile_name, dict[var_name, torch.Tensor]]
+        - Example: {"food_stats": {"nutrition": tensor([0.5, 0.3])}}
+    """
+
+    def __init__(self, device: torch.device = torch.device("cpu")):
+        self.device = device
+
+        # Global scope: singleton tensors
+        self._global_storage: dict[str, torch.Tensor] = {}
+
+        # Agent scope: batch tensors (populated later)
+        self._agent_storage: dict[str, torch.Tensor] = {}
+
+        # Item scope: profile -> {var -> tensor} (populated later)
+        self._item_storage: dict[str, dict[str, torch.Tensor]] = {}
+
+    # Global scope methods
+
+    def set_global(self, name: str, value: torch.Tensor) -> None:
+        """Set global variable value.
+
+        Args:
+            name: Variable name
+            value: Singleton tensor (no batch dimension)
+        """
+        self._global_storage[name] = value.to(self.device)
+
+    def get_global(self, name: str) -> torch.Tensor:
+        """Get global variable value.
+
+        Args:
+            name: Variable name
+
+        Returns:
+            Singleton tensor
+
+        Raises:
+            KeyError: If variable not found
+        """
+        if name not in self._global_storage:
+            raise KeyError(f"Global variable '{name}' not found. Available: {list(self._global_storage.keys())}")
+        return self._global_storage[name]
+
+    def list_global(self) -> list[str]:
+        """List all global variable names."""
+        return list(self._global_storage.keys())
+
+    # Agent scope methods (stubs for now)
+
+    def set_agent(self, name: str, value: torch.Tensor) -> None:
+        """Set agent variable value (batch tensor)."""
+        self._agent_storage[name] = value.to(self.device)
+
+    def get_agent(self, name: str) -> torch.Tensor:
+        """Get agent variable value (batch tensor)."""
+        if name not in self._agent_storage:
+            raise KeyError(f"Agent variable '{name}' not found. Available: {list(self._agent_storage.keys())}")
+        return self._agent_storage[name]

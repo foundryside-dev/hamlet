@@ -116,7 +116,6 @@ UV_CACHE_DIR=.uv-cache uv run pytest tests/test_townlet/unit/vfs/test_expression
 
 ```python
 """VFS profile compilation with expression evaluation."""
-import re
 import networkx as nx
 from typing import Any
 from townlet.config.vfs_profiles_config import (
@@ -124,10 +123,14 @@ from townlet.config.vfs_profiles_config import (
     AgentVFSVariableConfig,
     ItemVFSVariableConfig,
 )
+from townlet.world.expression import ExpressionParser, Variable, ASTNode
 
 
 class VFSProfileCompiler:
     """Compiles VFS profiles with expression dependency resolution."""
+
+    def __init__(self):
+        self.parser = ExpressionParser()
 
     def build_dependency_graph(
         self,
@@ -160,7 +163,10 @@ class VFSProfileCompiler:
         return graph
 
     def _extract_variable_refs(self, expression: str) -> set[str]:
-        """Extract variable references from expression string.
+        """Extract variable references by parsing AST (robust, not regex).
+
+        Uses Phase 1 parser to build AST, then traverses to find Variable nodes.
+        This is 100% accurate - no false matches from string literals or partial matches.
 
         Args:
             expression: Expression string (e.g., "a + b * c")
@@ -168,16 +174,39 @@ class VFSProfileCompiler:
         Returns:
             Set of variable names referenced
         """
-        # Match simple identifiers (not paths like "bar.energy")
-        # Pattern: word characters not preceded by "."
-        pattern = r"(?<!\.)(?<!\w)\b([a-zA-Z_][a-zA-Z0-9_]*)\b"
-        matches = re.findall(pattern, expression)
+        # Parse expression to AST (reuse Phase 1 parser!)
+        ast = self.parser.parse(expression)
 
-        # Filter out keywords and function names
-        keywords = {"and", "or", "not", "if", "then", "else", "true", "false"}
-        function_names = {"max", "min", "abs", "clamp", "nearest", "distance"}
+        # Traverse AST to collect Variable nodes
+        refs = set()
 
-        refs = {m for m in matches if m not in keywords and m not in function_names}
+        def visit(node: ASTNode) -> None:
+            """Recursively visit AST nodes to find Variables."""
+            if isinstance(node, Variable):
+                refs.add(node.name)
+
+            # Visit children (handles BinaryOp, UnaryOp, FunctionCall, etc.)
+            if hasattr(node, 'left'):
+                visit(node.left)
+            if hasattr(node, 'right'):
+                visit(node.right)
+            if hasattr(node, 'operand'):
+                visit(node.operand)
+            if hasattr(node, 'arguments'):
+                for arg in node.arguments:
+                    visit(arg)
+            if hasattr(node, 'condition'):
+                visit(node.condition)
+            if hasattr(node, 'true_branch'):
+                visit(node.true_branch)
+            if hasattr(node, 'false_branch'):
+                visit(node.false_branch)
+            if hasattr(node, 'base'):
+                visit(node.base)
+            if hasattr(node, 'index'):
+                visit(node.index)
+
+        visit(ast)
         return refs
 ```
 
@@ -634,7 +663,6 @@ git commit -m "feat(vfs): add global profile compilation with dependency orderin
 ```python
 """VFS profile compilation with expression evaluation."""
 from __future__ import annotations
-import re
 import networkx as nx
 from dataclasses import dataclass
 from typing import Optional, Any
@@ -644,7 +672,7 @@ from townlet.config.vfs_profiles_config import (
     ItemVFSVariableConfig,
     GlobalVFSProfileConfig,
 )
-from townlet.world.expression import ExpressionParser, ASTNode
+from townlet.world.expression import ExpressionParser, ASTNode, Variable
 from townlet.world.expression.type_checker import TypeChecker
 
 __all__ = [
@@ -705,11 +733,12 @@ git commit -m "test(vfs): verify all expression integration tests pass"
 ## Success Criteria
 
 ✅ **13+ tests passing** (dependency graph, topological sort, compilation)
-✅ **Dependency graph construction** (extracts variable refs from expressions)
+✅ **Dependency graph construction** (AST traversal for variable refs - 100% accurate, no regex)
 ✅ **Circular dependency detection** (raises compile-time error)
 ✅ **Topological sort** (evaluates dependencies before dependents)
 ✅ **Expression compilation** (parse + type check)
 ✅ **Profile compilation** (full pipeline with dependency ordering)
+✅ **Reuses Phase 1 infrastructure** (ExpressionParser, AST nodes)
 ✅ **Type checking passes** (mypy clean)
 ✅ **Code formatted** (ruff)
 

@@ -129,8 +129,25 @@ class Evaluator(ASTVisitor):
             )
 
     def visit_if_then_else(self, node: IfThenElse) -> torch.Tensor:
-        """Execute vectorized conditional logic using torch.where()."""
-        raise NotImplementedError("visit_if_then_else not yet implemented")
+        """Execute vectorized conditional logic using torch.where().
+
+        Evaluates condition, true_branch, and false_branch as tensors,
+        then uses torch.where() to select elements from true/false branches
+        based on the condition tensor.
+
+        This enables GPU-native conditional logic without Python branching.
+
+        Example:
+            if bar.energy < 0.2 then 1 else 0
+            - energy = [0.1, 0.5, 0.9]
+            - condition = [True, False, False]
+            - result = [1, 0, 0]
+        """
+        condition = node.condition.accept(self)
+        true_branch = node.true_branch.accept(self)
+        false_branch = node.false_branch.accept(self)
+
+        return torch.where(condition, true_branch, false_branch)
 
     def visit_index_access(self, node: IndexAccess) -> torch.Tensor:
         """Execute tensor indexing.

@@ -262,3 +262,78 @@ def test_evaluate_function_call_unknown():
     except NotImplementedError as e:
         assert "unknown_func" in str(e)
         assert "Phase 2" in str(e)
+
+
+def test_evaluate_if_then_else_vectorized():
+    """Evaluator handles vectorized if/then/else using torch.where()."""
+    from townlet.world.expression import IfThenElse
+
+    ctx = ExecutionContext(
+        bars={"energy": torch.tensor([0.1, 0.5, 0.9])},
+        vfs={},
+        affordances={},
+        temporal={},
+    )
+    evaluator = Evaluator(context=ctx)
+
+    # if bar.energy < 0.2 then 1 else 0
+    node = IfThenElse(
+        condition=BinaryOp(
+            left=PathAccess(segments=["bar", "energy"]),
+            op=OperatorType.LT,
+            right=Constant(value=0.2),
+        ),
+        true_branch=Constant(value=1),
+        false_branch=Constant(value=0),
+    )
+    result = evaluator.evaluate(node)
+
+    # Energy values: [0.1, 0.5, 0.9]
+    # Condition: [True, False, False]
+    # Result: [1, 0, 0]
+    assert torch.equal(result, torch.tensor([1, 0, 0]))
+
+
+def test_full_integration_if_then_else():
+    """Full integration: crisis bonus with if/then/else + path access + binary ops."""
+    from townlet.world.expression import IfThenElse
+
+    # Scenario: if energy < 0.2 then 10 * (0.2 - energy) else 0
+    # Crisis bonus: 10x penalty for how far below threshold
+    ctx = ExecutionContext(
+        bars={"energy": torch.tensor([0.1, 0.2, 0.5])},
+        vfs={},
+        affordances={},
+        temporal={},
+    )
+    evaluator = Evaluator(context=ctx)
+
+    # if bar.energy < 0.2 then 10 * (0.2 - bar.energy) else 0
+    node = IfThenElse(
+        condition=BinaryOp(
+            left=PathAccess(segments=["bar", "energy"]),
+            op=OperatorType.LT,
+            right=Constant(value=0.2),
+        ),
+        true_branch=BinaryOp(
+            left=Constant(value=10),
+            op=OperatorType.MUL,
+            right=BinaryOp(
+                left=Constant(value=0.2),
+                op=OperatorType.SUB,
+                right=PathAccess(segments=["bar", "energy"]),
+            ),
+        ),
+        false_branch=Constant(value=0),
+    )
+    result = evaluator.evaluate(node)
+
+    # Energy values: [0.1, 0.2, 0.5]
+    # Condition: [True, False, False]
+    # True branch: 10 * (0.2 - energy)
+    #   - 0.1: 10 * 0.1 = 1.0
+    #   - 0.2: N/A (not executed)
+    #   - 0.5: N/A (not executed)
+    # Result: [1.0, 0.0, 0.0]
+    expected = torch.tensor([1.0, 0.0, 0.0])
+    assert torch.allclose(result, expected)

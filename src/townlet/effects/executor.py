@@ -100,6 +100,7 @@ class CommandExecutor:
         """
         # ✅ PERF FIX: Use pre-compiled AST directly (NO parsing at runtime!)
         value_ast = command.value_ast
+        assert command.path is not None, "MODIFY command must have path"
 
         # Create evaluation context from execution context
         eval_ctx = self._make_eval_context(context)
@@ -153,10 +154,12 @@ class CommandExecutor:
             is_true = condition.any().item()
 
         if is_true:
-            for cmd in command.then_commands:
+            then_commands = command.then_commands or []
+            for cmd in then_commands:
                 self.execute(cmd, context)
         else:
-            for cmd in command.else_commands:
+            else_commands = command.else_commands or []
+            for cmd in else_commands:
                 self.execute(cmd, context)
 
     def _execute_for_each(self, command: CommandNode, context: ExecutionContext):

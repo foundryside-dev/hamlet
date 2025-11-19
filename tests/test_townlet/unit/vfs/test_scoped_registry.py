@@ -176,3 +176,44 @@ def test_item_variable_defensive_copy():
 
     # Internal storage should be unchanged
     assert registry.get_item("food", "nutrition")[0] == 0.5
+
+
+def test_check_global_access_allowed():
+    """Registry allows valid global access."""
+    registry = ScopedVariableRegistry(device=torch.device("cpu"))
+    registry.set_global("day_count", torch.tensor(0))
+
+    # Should not raise
+    registry.check_access("global", "day_count", "read")
+
+
+def test_check_global_access_denied():
+    """Registry denies invalid global access."""
+    from townlet.vfs.registry import AccessDeniedError
+
+    registry = ScopedVariableRegistry(device=torch.device("cpu"))
+    registry.set_global("day_count", torch.tensor(0))
+
+    with pytest.raises(AccessDeniedError, match="write"):
+        # Global variables are read-only for agents
+        registry.check_access("global", "day_count", "write")
+
+
+def test_check_agent_access_allowed():
+    """Registry allows agent to read own variables."""
+    registry = ScopedVariableRegistry(device=torch.device("cpu"))
+    registry.set_agent("motivation", torch.tensor([1.0]))
+
+    # Should not raise
+    registry.check_access("agent", "motivation", "read")
+    registry.check_access("agent", "motivation", "write")
+
+
+def test_check_item_access_allowed():
+    """Registry allows item to read/write own variables."""
+    registry = ScopedVariableRegistry(device=torch.device("cpu"))
+    registry.set_item("food_stats", "nutrition", torch.tensor([0.5]))
+
+    # Should not raise
+    registry.check_access("item", "food_stats.nutrition", "read")
+    registry.check_access("item", "food_stats.nutrition", "write")

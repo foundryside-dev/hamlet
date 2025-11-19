@@ -13,6 +13,12 @@ import torch
 from townlet.vfs.schema import VariableDef
 
 
+class AccessDeniedError(Exception):
+    """Raised when access control check fails."""
+
+    pass
+
+
 class VariableRegistry:
     """Runtime storage for VFS variables with access control.
 
@@ -411,3 +417,41 @@ class ScopedVariableRegistry:
             raise KeyError(f"Item profile '{profile_name}' not found. Available: {list(self._item_storage.keys())}")
 
         return list(self._item_storage[profile_name].keys())
+
+    def check_access(self, scope: str, path: str, operation: str) -> None:
+        """Check if access is allowed per VFS access control rules.
+
+        Access control rules:
+        - Global variables: read-only for all scopes
+        - Agent variables: read/write for agent scope only
+        - Item variables: read/write for item scope only
+
+        Args:
+            scope: Requesting scope ("global", "agent", "item")
+            path: Variable path (e.g., "day_count", "food_stats.nutrition")
+            operation: Access type ("read", "write")
+
+        Raises:
+            AccessDeniedError: If access denied
+        """
+        # Agent variables (check first, before global)
+        if path in self._agent_storage:
+            if scope != "agent" and operation == "write":
+                raise AccessDeniedError(f"Agent variable '{path}' can only be written by agent scope. Scope '{scope}' denied.")
+            return  # Read allowed, write allowed for agent scope
+
+        # Global variables are read-only
+        if path in self._global_storage:
+            if operation == "write":
+                raise AccessDeniedError(f"Global variable '{path}' is read-only. Cannot write from scope '{scope}'.")
+            return  # Read allowed
+
+        # Item variables (profile.var format)
+        if "." in path:
+            profile, var = path.split(".", 1)
+            if profile in self._item_storage:
+                if scope != "item" and operation == "write":
+                    raise AccessDeniedError(f"Item variable '{path}' can only be written by item scope. Scope '{scope}' denied.")
+                return  # Read allowed, write allowed for item scope
+
+        # Variable not found in any scope - allow for now (will fail at get/set)

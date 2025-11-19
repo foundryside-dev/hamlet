@@ -198,17 +198,19 @@ class UnaryOp(ASTNode):
 
 @dataclass
 class FunctionCall(ASTNode):
-    """Function call expressions.
+    """Function invocation (standard library or domain-specific).
 
     Examples:
-        - now() (no args)
-        - floor(x) (1 arg)
-        - max(a, b, c) (multiple args)
+        - max(a, b) - Standard math
+        - distance_to_affordance("Fridge") - HAMLET domain
+        - clamp(val, 0, 1) - Range limiting
+        - perlin_noise(x, y, seed) - Procedural generation
 
-    Arguments are AST nodes (can be nested expressions).
+    All functions resolved from single namespace (no prefixes needed).
+    Function registry handles both standard and domain-specific functions.
     """
 
-    name: str
+    function_name: str
     arguments: list[ASTNode]
 
     def accept(self, visitor: Any) -> Any:

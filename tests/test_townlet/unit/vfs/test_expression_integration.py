@@ -142,3 +142,44 @@ def test_topological_sort_linear_deps():
     # Should be ordered: a, b, c
     names = [v.name for v in sorted_vars]
     assert names == ["a", "b", "c"]
+
+
+def test_compile_variable_with_expression():
+    """Compiler parses and type-checks expressions."""
+    var = GlobalVFSVariableConfig(name="is_night", type="bool", expression="tick % 24 >= 18")
+
+    compiler = VFSProfileCompiler()
+    schema = {"tick": "int"}  # Available variables
+
+    compiled = compiler.compile_variable(var, schema)
+
+    assert compiled.name == "is_night"
+    assert compiled.ast is not None  # Parsed AST
+    assert compiled.result_type == "bool"
+
+
+def test_compile_variable_with_initial_value():
+    """Compiler handles static initial values (no expression)."""
+    var = GlobalVFSVariableConfig(name="day_count", type="int", initial_value=0)
+
+    compiler = VFSProfileCompiler()
+    schema = {}
+
+    compiled = compiler.compile_variable(var, schema)
+
+    assert compiled.name == "day_count"
+    assert compiled.ast is None  # No expression
+    assert compiled.initial_value == 0
+
+
+def test_compile_variable_type_mismatch():
+    """Compiler catches type mismatches."""
+    from townlet.world.expression.type_checker import TypeCheckError
+
+    var = GlobalVFSVariableConfig(name="invalid", type="bool", expression="tick + 1")  # Returns int, not bool
+
+    compiler = VFSProfileCompiler()
+    schema = {"tick": "int"}
+
+    with pytest.raises(TypeCheckError, match="bool"):
+        compiler.compile_variable(var, schema)

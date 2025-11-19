@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 import networkx as nx
 
 from townlet.config.vfs_profiles_config import (
@@ -10,11 +12,24 @@ from townlet.config.vfs_profiles_config import (
     ItemVFSVariableConfig,
 )
 from townlet.world.expression import ASTNode, ExpressionParser, PathAccess, Variable
+from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
 
 __all__ = [
     "VFSProfileCompiler",
     "CircularDependencyError",
+    "CompiledVariable",
 ]
+
+
+@dataclass
+class CompiledVariable:
+    """Compiled VFS variable with parsed expression."""
+
+    name: str
+    type: str
+    ast: ASTNode | None  # None if initial_value
+    initial_value: int | float | bool | list | None
+    result_type: str | None  # Inferred type from type checker
 
 
 class CircularDependencyError(Exception):
@@ -142,3 +157,50 @@ class VFSProfileCompiler:
         sorted_vars = [name_to_var[name] for name in sorted_names]
 
         return sorted_vars
+
+    def compile_variable(
+        self,
+        var: GlobalVFSVariableConfig | AgentVFSVariableConfig | ItemVFSVariableConfig,
+        schema: dict[str, str],
+    ) -> CompiledVariable:
+        """Compile a VFS variable (parse expression, type check).
+
+        Args:
+            var: Variable config
+            schema: Type schema for available variables
+
+        Returns:
+            Compiled variable with parsed AST
+
+        Raises:
+            TypeCheckError: If expression has type error
+        """
+        # Variable with static initial value
+        if var.initial_value is not None:
+            return CompiledVariable(
+                name=var.name,
+                type=var.type,
+                ast=None,
+                initial_value=var.initial_value,
+                result_type=var.type,
+            )
+
+        # Variable with expression
+        # Parse expression to AST
+        ast = self.parser.parse(var.expression)
+
+        # Type check expression
+        type_checker = TypeChecker(schema=schema)
+        result_type = type_checker.check(ast)
+
+        # Verify result type matches declared type
+        if result_type != var.type:
+            raise TypeCheckError(f"Variable '{var.name}' declared as {var.type} but expression returns {result_type}")
+
+        return CompiledVariable(
+            name=var.name,
+            type=var.type,
+            ast=ast,
+            initial_value=None,
+            result_type=result_type,
+        )

@@ -33,12 +33,14 @@ from townlet.world.expression.ast_nodes import (
     UnaryOp,
     Variable,
 )
+from townlet.world.expression.parser import ExpressionParser
 
 __all__ = [
     "ASTNode",
     "ASTVisitor",
     "BinaryOp",
     "Constant",
+    "ExpressionParser",
     "FunctionCall",
     "IfThenElse",
     "IndexAccess",

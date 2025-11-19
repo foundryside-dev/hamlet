@@ -173,3 +173,92 @@ def test_evaluate_index_access():
     result = evaluator.evaluate(node)
 
     assert result.item() == 10
+
+
+def test_evaluate_function_call_max():
+    """Evaluator handles max() function."""
+    from townlet.world.expression import FunctionCall
+
+    ctx = ExecutionContext(bars={}, vfs={}, affordances={}, temporal={})
+    evaluator = Evaluator(context=ctx)
+
+    # max(3, 7)
+    node = FunctionCall(
+        function_name="max",
+        arguments=[Constant(value=3), Constant(value=7)],
+    )
+    result = evaluator.evaluate(node)
+
+    assert torch.equal(result, torch.tensor(7))
+
+
+def test_evaluate_function_call_min():
+    """Evaluator handles min() function."""
+    from townlet.world.expression import FunctionCall
+
+    ctx = ExecutionContext(bars={}, vfs={}, affordances={}, temporal={})
+    evaluator = Evaluator(context=ctx)
+
+    # min(3, 7)
+    node = FunctionCall(
+        function_name="min",
+        arguments=[Constant(value=3), Constant(value=7)],
+    )
+    result = evaluator.evaluate(node)
+
+    assert torch.equal(result, torch.tensor(3))
+
+
+def test_evaluate_function_call_abs():
+    """Evaluator handles abs() function."""
+    from townlet.world.expression import FunctionCall
+
+    ctx = ExecutionContext(bars={}, vfs={}, affordances={}, temporal={})
+    evaluator = Evaluator(context=ctx)
+
+    # abs(-5)
+    node = FunctionCall(
+        function_name="abs",
+        arguments=[Constant(value=-5)],
+    )
+    result = evaluator.evaluate(node)
+
+    assert torch.equal(result, torch.tensor(5))
+
+
+def test_evaluate_function_call_clamp():
+    """Evaluator handles clamp() function."""
+    from townlet.world.expression import FunctionCall
+
+    ctx = ExecutionContext(bars={}, vfs={}, affordances={}, temporal={})
+    evaluator = Evaluator(context=ctx)
+
+    # clamp(15, 0, 10)
+    node = FunctionCall(
+        function_name="clamp",
+        arguments=[Constant(value=15), Constant(value=0), Constant(value=10)],
+    )
+    result = evaluator.evaluate(node)
+
+    assert torch.equal(result, torch.tensor(10))
+
+
+def test_evaluate_function_call_unknown():
+    """Evaluator raises NotImplementedError for unknown functions."""
+    from townlet.world.expression import FunctionCall
+
+    ctx = ExecutionContext(bars={}, vfs={}, affordances={}, temporal={})
+    evaluator = Evaluator(context=ctx)
+
+    # unknown_func(42)
+    node = FunctionCall(
+        function_name="unknown_func",
+        arguments=[Constant(value=42)],
+    )
+
+    try:
+        evaluator.evaluate(node)
+        assert False, "Should have raised NotImplementedError"
+    except NotImplementedError as e:
+        assert "unknown_func" in str(e)
+        assert "Phase 2" in str(e)

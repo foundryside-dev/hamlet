@@ -32,11 +32,12 @@ class Evaluator(ASTVisitor):
 
     def visit_variable(self, node: Variable) -> torch.Tensor:
         """Resolve variable from context."""
-        raise NotImplementedError("visit_variable not yet implemented")
+        return self.context.get(node.name)
 
     def visit_path_access(self, node: PathAccess) -> torch.Tensor:
         """Resolve path from execution context."""
-        raise NotImplementedError("visit_path_access not yet implemented")
+        path_str = ".".join(node.segments)
+        return self.context.get(path_str)
 
     def visit_binary_op(self, node: BinaryOp) -> torch.Tensor:
         """Execute binary operations on tensors."""
@@ -78,7 +79,16 @@ class Evaluator(ASTVisitor):
 
     def visit_unary_op(self, node: UnaryOp) -> torch.Tensor:
         """Execute unary operations on tensors."""
-        raise NotImplementedError("visit_unary_op not yet implemented")
+        from townlet.world.expression.ast_nodes import OperatorType
+
+        operand = node.operand.accept(self)
+
+        if node.op == OperatorType.SUB:
+            return -operand
+        elif node.op == OperatorType.NOT:
+            return ~operand
+        else:
+            raise ValueError(f"Unknown unary operator: {node.op}")
 
     def visit_function_call(self, node: FunctionCall) -> torch.Tensor:
         """Execute function calls."""

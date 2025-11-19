@@ -13,7 +13,14 @@ from townlet.world.expression import ASTNode, ExpressionParser, PathAccess, Vari
 
 __all__ = [
     "VFSProfileCompiler",
+    "CircularDependencyError",
 ]
+
+
+class CircularDependencyError(Exception):
+    """Raised when circular dependency detected in VFS variables."""
+
+    pass
 
 
 class VFSProfileCompiler:
@@ -103,3 +110,35 @@ class VFSProfileCompiler:
 
         visit(ast)
         return refs
+
+    def topological_sort(
+        self, variables: list[GlobalVFSVariableConfig | AgentVFSVariableConfig | ItemVFSVariableConfig]
+    ) -> list[GlobalVFSVariableConfig | AgentVFSVariableConfig | ItemVFSVariableConfig]:
+        """Sort variables in dependency order (dependencies first).
+
+        Args:
+            variables: List of variable configs
+
+        Returns:
+            Variables sorted in topological order
+
+        Raises:
+            CircularDependencyError: If circular dependency detected
+        """
+        graph = self.build_dependency_graph(variables)
+
+        # Check for cycles
+        try:
+            # networkx raises NetworkXUnfeasible if cycles exist
+            sorted_names = list(nx.topological_sort(graph))
+        except nx.NetworkXUnfeasible:
+            # Find a cycle for error message
+            cycles = list(nx.simple_cycles(graph))
+            cycle_str = " -> ".join(cycles[0] + [cycles[0][0]])
+            raise CircularDependencyError(f"Circular dependency detected in cycle: {cycle_str}")
+
+        # Map names back to variable configs
+        name_to_var = {v.name: v for v in variables}
+        sorted_vars = [name_to_var[name] for name in sorted_names]
+
+        return sorted_vars

@@ -8,9 +8,17 @@ and scope semantics. It handles three scope patterns:
 - agent_private: Per-agent values, observable only by owner (shape [num_agents] or [num_agents, dims])
 """
 
+from __future__ import annotations
+
 import torch
 
 from townlet.vfs.schema import VariableDef
+
+__all__ = [
+    "VariableRegistry",
+    "ScopedVariableRegistry",
+    "AccessDeniedError",
+]
 
 
 class AccessDeniedError(Exception):

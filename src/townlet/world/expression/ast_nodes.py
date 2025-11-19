@@ -176,3 +176,21 @@ class BinaryOp(ASTNode):
 
     def accept(self, visitor: Any) -> Any:
         return visitor.visit_binary_op(self)
+
+
+@dataclass
+class UnaryOp(ASTNode):
+    """Unary operations (prefix notation).
+
+    Examples:
+        - -x (arithmetic negation)
+        - not p (logical negation)
+
+    The operand is an AST node (can be nested).
+    """
+
+    op: OperatorType
+    operand: ASTNode
+
+    def accept(self, visitor: Any) -> Any:
+        return visitor.visit_unary_op(self)

@@ -194,3 +194,22 @@ class UnaryOp(ASTNode):
 
     def accept(self, visitor: Any) -> Any:
         return visitor.visit_unary_op(self)
+
+
+@dataclass
+class FunctionCall(ASTNode):
+    """Function call expressions.
+
+    Examples:
+        - now() (no args)
+        - floor(x) (1 arg)
+        - max(a, b, c) (multiple args)
+
+    Arguments are AST nodes (can be nested expressions).
+    """
+
+    name: str
+    arguments: list[ASTNode]
+
+    def accept(self, visitor: Any) -> Any:
+        return visitor.visit_function_call(self)

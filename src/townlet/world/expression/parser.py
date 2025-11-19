@@ -90,8 +90,22 @@ class ExpressionParser:
 
         variable = identifier.copy().setParseAction(make_variable)
 
+        # Path access (dotted notation)
+        # target.bar.energy → ["target", "bar", "energy"]
+        def make_path_access(tokens):
+            segments = [str(t) for t in tokens]
+            if len(segments) == 1:
+                # Single identifier is a Variable, not PathAccess
+                return Variable(name=segments[0])
+            return PathAccess(segments=segments)
+
+        path_or_variable = identifier + (Literal(".").suppress() + identifier)[...].setParseAction(
+            lambda tokens: tokens.asList()
+        )
+        path_or_variable.setParseAction(make_path_access)
+
         # Primary expressions (atoms)
-        primary = constant | variable
+        primary = constant | path_or_variable
 
         # For now, expression is primary
         # We'll add operators in subsequent steps

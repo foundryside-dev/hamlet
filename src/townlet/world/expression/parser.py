@@ -75,9 +75,27 @@ class ExpressionParser:
         # Combine all constants
         constant = bool_literal | numeric_literal | string_literal
 
-        # For now, expression is just constants
-        # We'll add more in subsequent steps
-        self.expression = constant
+        # Variables (identifiers)
+        # Must not match keywords (true, false, and, or, not, if, then, else)
+        keywords = {"true", "false", "and", "or", "not", "if", "then", "else"}
+        identifier = Word(alphas + "_", alphanums + "_")
+
+        def make_variable(tokens):
+            name = tokens[0]
+            if name in keywords:
+                # This shouldn't happen due to grammar ordering,
+                # but guard against it
+                raise ValueError(f"Cannot use keyword '{name}' as variable")
+            return Variable(name=name)
+
+        variable = identifier.copy().setParseAction(make_variable)
+
+        # Primary expressions (atoms)
+        primary = constant | variable
+
+        # For now, expression is primary
+        # We'll add operators in subsequent steps
+        self.expression = primary
 
     def parse(self, text: str) -> ASTNode:
         """Parse expression string into AST.

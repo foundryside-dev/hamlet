@@ -12,6 +12,7 @@ from townlet.world.expression.ast_nodes import (
     OperatorType,
     PathAccess,
     UnaryOp,
+    Variable,
 )
 from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
 
@@ -176,3 +177,30 @@ class TestPathAccess:
         result_type = checker.check(node)
 
         assert result_type == "bool"
+
+
+class TestVariable:
+    """Test type checking for variables."""
+
+    def test_type_check_variable_in_schema(self):
+        """Variables resolve from schema (simple names)."""
+        schema = {
+            "intensity": "float",
+            "duration": "float",
+        }
+        checker = TypeChecker(schema=schema)
+
+        node = Variable(name="intensity")
+        result_type = checker.check(node)
+
+        assert result_type == "float"
+
+    def test_type_check_variable_not_in_schema(self):
+        """Type error for unknown variable."""
+        schema = {}
+        checker = TypeChecker(schema=schema)
+
+        node = Variable(name="unknown")
+
+        with pytest.raises(TypeCheckError, match="not found"):
+            checker.check(node)

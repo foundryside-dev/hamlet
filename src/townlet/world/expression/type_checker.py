@@ -119,7 +119,10 @@ class TypeChecker(ASTVisitor):
         Raises:
             TypeCheckError: If variable not in schema
         """
-        raise NotImplementedError("visit_variable not yet implemented")
+        if node.name not in self.schema:
+            raise TypeCheckError(f"Variable '{node.name}' not found in schema. Available variables: {list(self.schema.keys())}")
+
+        return self.schema[node.name]
 
     def visit_path_access(self, node: PathAccess) -> str:
         """Look up path type in schema.

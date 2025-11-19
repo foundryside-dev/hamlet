@@ -5,6 +5,7 @@ from townlet.world.expression import (
     Constant,
     FunctionCall,
     IfThenElse,
+    IndexAccess,
     OperatorType,
     PathAccess,
     UnaryOp,
@@ -428,3 +429,50 @@ def test_parse_exponentiation_right_associative():
     assert result.right.left.value == 3
     assert isinstance(result.right.right, Constant)
     assert result.right.right.value == 4
+
+
+def test_parse_index_access_constant():
+    """Parser handles array indexing with constant index."""
+    parser = ExpressionParser()
+    result = parser.parse("inventory[0]")
+
+    assert isinstance(result, IndexAccess)
+    assert isinstance(result.base, Variable)
+    assert result.base.name == "inventory"
+    assert isinstance(result.index, Constant)
+    assert result.index.value == 0
+
+
+def test_parse_index_access_variable():
+    """Parser handles array indexing with variable index."""
+    parser = ExpressionParser()
+    result = parser.parse("items[slot_index]")
+
+    assert isinstance(result, IndexAccess)
+    assert isinstance(result.base, Variable)
+    assert result.base.name == "items"
+    assert isinstance(result.index, Variable)
+    assert result.index.name == "slot_index"
+
+
+def test_parse_index_access_expression():
+    """Parser handles array indexing with expression index."""
+    parser = ExpressionParser()
+    result = parser.parse("bars[i + 1]")
+
+    assert isinstance(result, IndexAccess)
+    assert isinstance(result.index, BinaryOp)
+    assert result.index.op == OperatorType.ADD
+
+
+def test_parse_nested_index_access():
+    """Parser handles multi-dimensional indexing."""
+    parser = ExpressionParser()
+    result = parser.parse("grid[x][y]")
+
+    # Should parse as: (grid[x])[y]
+    assert isinstance(result, IndexAccess)
+    assert isinstance(result.base, IndexAccess)
+    assert result.base.base.name == "grid"
+    assert result.base.index.name == "x"
+    assert result.index.name == "y"

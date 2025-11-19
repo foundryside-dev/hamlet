@@ -61,6 +61,7 @@ import torch
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from townlet.substrate.config import load_substrate_config  # noqa: E402
+
 from townlet.substrate.factory import SubstrateFactory  # noqa: E402
 
 

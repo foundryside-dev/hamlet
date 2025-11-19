@@ -18,8 +18,8 @@ import sys
 from pathlib import Path
 
 import torch
-
 from townlet.substrate.config import load_substrate_config
+
 from townlet.substrate.factory import SubstrateFactory
 
 

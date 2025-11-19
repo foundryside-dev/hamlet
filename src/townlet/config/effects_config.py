@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import enum
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -11,6 +12,7 @@ __all__ = [
     "EffectScope",
     "CommandConfig",
     "EffectDefinitionConfig",
+    "EffectsConfig",
 ]
 
 
@@ -145,3 +147,22 @@ class EffectDefinitionConfig(BaseModel):
         if isinstance(v, list):
             return [CommandConfig(**cmd) if isinstance(cmd, dict) else cmd for cmd in v]
         return v
+
+
+class EffectsConfig(BaseModel):
+    """Top-level Effects configuration from effects.yaml."""
+
+    version: Literal["1.0"] = Field(default="1.0", description="Config schema version")
+    effect_definitions: list[EffectDefinitionConfig] = Field(default=[], description="Catalog of reusable effect definitions")
+
+    @field_validator("effect_definitions")
+    @classmethod
+    def validate_unique_ids(cls, definitions):
+        """Effect IDs must be unique."""
+        ids = [d.id for d in definitions]
+        duplicates = {id for id in ids if ids.count(id) > 1}
+
+        if duplicates:
+            raise ValueError(f"Duplicate effect IDs: {duplicates}")
+
+        return definitions

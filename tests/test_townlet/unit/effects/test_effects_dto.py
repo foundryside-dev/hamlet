@@ -141,3 +141,74 @@ def test_effect_definition_requires_reapply_policy():
             duration=10,
             # Missing reapply_policy
         )
+
+
+def test_effects_config_minimal():
+    """EffectsConfig loads from YAML structure."""
+    from townlet.config.effects_config import EffectsConfig
+
+    config = EffectsConfig(
+        version="1.0",
+        effect_definitions=[
+            {
+                "id": "ate_food",
+                "scope": "agent",
+                "duration": 10,
+                "reapply_policy": "stack",
+            }
+        ],
+    )
+
+    assert config.version == "1.0"
+    assert len(config.effect_definitions) == 1
+    assert config.effect_definitions[0].id == "ate_food"
+
+
+def test_effects_config_rejects_duplicate_ids():
+    """EffectsConfig validates unique effect IDs."""
+    from townlet.config.effects_config import EffectsConfig
+
+    with pytest.raises(ValidationError, match="Duplicate effect"):
+        EffectsConfig(
+            version="1.0",
+            effect_definitions=[
+                {"id": "poisoned", "scope": "agent", "duration": 10, "reapply_policy": "stack"},
+                {"id": "poisoned", "scope": "agent", "duration": 20, "reapply_policy": "merge"},
+            ],
+        )
+
+
+def test_effects_config_from_yaml():
+    """EffectsConfig can load from YAML file."""
+    import yaml
+
+    from townlet.config.effects_config import EffectsConfig
+
+    yaml_content = """
+version: "1.0"
+
+effect_definitions:
+  - id: "ate_food"
+    scope: agent
+    duration: 10
+    reapply_policy: stack
+    on_tick:
+      - modify: target.bar.energy
+        value: target.bar.energy + 0.05
+
+  - id: "poisoned"
+    scope: agent
+    duration: 20
+    intensity: 0.5
+    reapply_policy: merge
+    on_tick:
+      - modify: target.bar.health
+        value: target.bar.health - (0.1 * intensity)
+"""
+
+    data = yaml.safe_load(yaml_content)
+    config = EffectsConfig(**data)
+
+    assert len(config.effect_definitions) == 2
+    assert config.effect_definitions[0].id == "ate_food"
+    assert config.effect_definitions[1].id == "poisoned"

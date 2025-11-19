@@ -102,3 +102,20 @@ class ASTVisitor:
     def visit_index_access(self, node: Any) -> Any:  # noqa: ARG002
         """Visit an IndexAccess node."""
         raise NotImplementedError()
+
+
+@dataclass
+class Constant(ASTNode):
+    """Literal values (numbers, booleans, strings).
+
+    Examples:
+        - 0.05 (float)
+        - 42 (int)
+        - true (bool)
+        - "energy" (string)
+    """
+
+    value: float | int | bool | str
+
+    def accept(self, visitor: Any) -> Any:
+        return visitor.visit_constant(self)

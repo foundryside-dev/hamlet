@@ -2,7 +2,7 @@
 
 import pytest
 
-from townlet.world.expression.ast_nodes import ASTNode, ASTVisitor, OperatorType
+from townlet.world.expression.ast_nodes import ASTNode, ASTVisitor, Constant, OperatorType
 
 
 def test_operator_type_arithmetic():
@@ -61,3 +61,47 @@ def test_ast_node_requires_accept_implementation():
 
     with pytest.raises(NotImplementedError):
         node.accept(visitor)
+
+
+def test_constant_node_float():
+    """Constant node holds float literals."""
+    node = Constant(value=0.05)
+    assert node.value == 0.05
+    assert isinstance(node.value, float)
+
+
+def test_constant_node_int():
+    """Constant node holds integer literals."""
+    node = Constant(value=42)
+    assert node.value == 42
+    assert isinstance(node.value, int)
+
+
+def test_constant_node_bool():
+    """Constant node holds boolean literals."""
+    true_node = Constant(value=True)
+    false_node = Constant(value=False)
+
+    assert true_node.value is True
+    assert false_node.value is False
+
+
+def test_constant_node_string():
+    """Constant node holds string literals."""
+    node = Constant(value="energy")
+    assert node.value == "energy"
+    assert isinstance(node.value, str)
+
+
+def test_constant_visitor_integration():
+    """Constant node works with visitor pattern."""
+
+    class ConstantVisitor(ASTVisitor):
+        def visit_constant(self, node):
+            return f"const({node.value})"
+
+    node = Constant(value=3.14)
+    visitor = ConstantVisitor()
+    result = node.accept(visitor)
+
+    assert result == "const(3.14)"

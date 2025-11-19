@@ -1,7 +1,7 @@
 """Tests for expression parser."""
-import pytest
+
+from townlet.world.expression import Constant, Variable
 from townlet.world.expression.parser import ExpressionParser
-from townlet.world.expression import Constant
 
 
 def test_parse_float_constant():
@@ -82,3 +82,30 @@ def test_parse_integer_vs_float_distinction():
     assert isinstance(sci_result, Constant)
     assert isinstance(sci_result.value, float)
     assert sci_result.value == 0.001
+
+
+def test_parse_simple_variable():
+    """Parser converts identifiers to Variable nodes."""
+    parser = ExpressionParser()
+    result = parser.parse("intensity")
+
+    assert isinstance(result, Variable)
+    assert result.name == "intensity"
+
+
+def test_parse_variable_with_underscore():
+    """Parser supports underscores in variable names."""
+    parser = ExpressionParser()
+    result = parser.parse("slot_index")
+
+    assert isinstance(result, Variable)
+    assert result.name == "slot_index"
+
+
+def test_parse_variable_with_numbers():
+    """Parser supports numbers in variable names (not at start)."""
+    parser = ExpressionParser()
+    result = parser.parse("var123")
+
+    assert isinstance(result, Variable)
+    assert result.name == "var123"

@@ -1,27 +1,26 @@
 """Expression parser using pyparsing."""
+
 from pyparsing import (
     Literal,
-    Word,
-    alphas,
-    alphanums,
-    QuotedString,
-    pyparsing_common,
     ParserElement,
+    QuotedString,
     Regex,
-)
-from townlet.world.expression import (
-    ASTNode,
-    Constant,
-    Variable,
-    PathAccess,
-    BinaryOp,
-    UnaryOp,
-    FunctionCall,
-    IfThenElse,
-    IndexAccess,
-    OperatorType,
+    Word,
+    alphanums,
+    alphas,
+    infixNotation,
+    opAssoc,
+    pyparsing_common,
 )
 
+from townlet.world.expression import (
+    ASTNode,
+    BinaryOp,
+    Constant,
+    OperatorType,
+    PathAccess,
+    Variable,
+)
 
 # Enable packrat parsing for performance
 ParserElement.enablePackrat()
@@ -60,17 +59,14 @@ class ExpressionParser:
         float_literal = Regex(r"[+-]?(\d+\.\d*([eE][+-]?\d+)?|\d+[eE][+-]?\d+)").setParseAction(
             lambda tokens: Constant(value=float(tokens[0]))
         )
-        int_literal = pyparsing_common.signed_integer().setParseAction(
-            lambda tokens: Constant(value=int(tokens[0]))
-        )
+        int_literal = pyparsing_common.signed_integer().setParseAction(lambda tokens: Constant(value=int(tokens[0])))
         # Try float first (so "0.5" isn't parsed as "0"), but strict regex prevents "42" matching
         numeric_literal = float_literal | int_literal
 
         # String literals (double or single quotes)
-        string_literal = (
-            QuotedString('"', escChar="\\")
-            | QuotedString("'", escChar="\\")
-        ).setParseAction(lambda tokens: Constant(value=str(tokens[0])))
+        string_literal = (QuotedString('"', escChar="\\") | QuotedString("'", escChar="\\")).setParseAction(
+            lambda tokens: Constant(value=str(tokens[0]))
+        )
 
         # Combine all constants
         constant = bool_literal | numeric_literal | string_literal
@@ -88,8 +84,6 @@ class ExpressionParser:
                 raise ValueError(f"Cannot use keyword '{name}' as variable")
             return Variable(name=name)
 
-        variable = identifier.copy().setParseAction(make_variable)
-
         # Path access (dotted notation)
         # target.bar.energy → ["target", "bar", "energy"]
         def make_path_access(tokens):
@@ -99,17 +93,73 @@ class ExpressionParser:
                 return Variable(name=segments[0])
             return PathAccess(segments=segments)
 
-        path_or_variable = identifier + (Literal(".").suppress() + identifier)[...].setParseAction(
-            lambda tokens: tokens.asList()
-        )
+        path_or_variable = identifier + (Literal(".").suppress() + identifier)[...].setParseAction(lambda tokens: tokens.asList())
         path_or_variable.setParseAction(make_path_access)
 
         # Primary expressions (atoms)
         primary = constant | path_or_variable
 
-        # For now, expression is primary
-        # We'll add operators in subsequent steps
-        self.expression = primary
+        # Helper to make binary ops
+        def make_binop(tokens):
+            """Convert infix tokens to BinaryOp AST nodes."""
+            result = tokens[0][0]
+            i = 1
+            while i < len(tokens[0]):
+                op_str = tokens[0][i]
+                right = tokens[0][i + 1]
+
+                # Map operator string to OperatorType
+                op_map = {
+                    "+": OperatorType.ADD,
+                    "-": OperatorType.SUB,
+                    "*": OperatorType.MUL,
+                    "/": OperatorType.DIV,
+                    "%": OperatorType.MOD,
+                    "**": OperatorType.POW,
+                    "==": OperatorType.EQ,
+                    "!=": OperatorType.NEQ,
+                    "<": OperatorType.LT,
+                    ">": OperatorType.GT,
+                    "<=": OperatorType.LTE,
+                    ">=": OperatorType.GTE,
+                    "and": OperatorType.AND,
+                    "or": OperatorType.OR,
+                }
+
+                op_type = op_map.get(op_str)
+                if op_type is None:
+                    raise ValueError(f"Unknown operator: {op_str}")
+
+                result = BinaryOp(left=result, op=op_type, right=right)
+                i += 2
+
+            return result
+
+        # Build expression with operator precedence
+        expression_with_ops = infixNotation(
+            primary,
+            [
+                # Level 6: Exponentiation (right-associative)
+                (Literal("**"), 2, opAssoc.RIGHT, make_binop),
+                # Level 5: Multiplication, Division, Modulo (left-associative)
+                (Literal("*") | Literal("/") | Literal("%"), 2, opAssoc.LEFT, make_binop),
+                # Level 4: Addition, Subtraction (left-associative)
+                (Literal("+") | Literal("-"), 2, opAssoc.LEFT, make_binop),
+                # Level 3: Comparisons (left-associative)
+                (
+                    Literal("==") | Literal("!=") | Literal("<=") | Literal(">=") | Literal("<") | Literal(">"),
+                    2,
+                    opAssoc.LEFT,
+                    make_binop,
+                ),
+                # Level 2: Logical AND (left-associative)
+                (Literal("and"), 2, opAssoc.LEFT, make_binop),
+                # Level 1: Logical OR (left-associative)
+                (Literal("or"), 2, opAssoc.LEFT, make_binop),
+            ],
+        )
+
+        self.expression = expression_with_ops
 
     def parse(self, text: str) -> ASTNode:
         """Parse expression string into AST.

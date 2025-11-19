@@ -1,8 +1,20 @@
 """Configuration DTOs for VFS profiles."""
 
+from __future__ import annotations
+
 from typing import Literal
 
 from pydantic import BaseModel, field_validator, model_validator
+
+__all__ = [
+    "GlobalVFSVariableConfig",
+    "GlobalVFSProfileConfig",
+    "AgentVFSVariableConfig",
+    "AgentVFSProfileConfig",
+    "ItemVFSVariableConfig",
+    "ItemVFSProfileConfig",
+    "VFSProfilesConfig",
+]
 
 
 class GlobalVFSVariableConfig(BaseModel):

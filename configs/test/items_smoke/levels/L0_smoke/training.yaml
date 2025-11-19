@@ -1,0 +1,60 @@
+# Items Smoke Test - Level L0_smoke Training Configuration
+# Minimal training for smoke testing
+
+training:
+  version: "1.0"
+
+  population:
+    size: 4
+
+  enabled_affordances:
+    - energy_station
+
+  randomize_affordances: false
+
+  enabled_actions: null
+
+  q_learning:
+    use_double_dqn: false
+    gamma: 0.99
+    learning_rate: 0.0003
+    target_update_frequency: 100
+
+  replay_buffer:
+    capacity: 10000
+    batch_size: 32
+    min_size: 100
+
+  exploration:
+    epsilon_start: 1.0
+    epsilon_end: 0.01
+    epsilon_decay: 0.995
+
+  intrinsic:
+    rnd:
+      feature_dim: 32
+      learning_rate: 0.0003
+    annealing:
+      threshold: 100.0
+      decay_rate: 0.99
+      min_weight: 0.01
+    initial_weight: 0.0
+    min_survival_fraction: 0.3
+    survival_window: 10
+
+  training_loop:
+    max_episodes: 10
+    max_steps_per_episode: 100
+    train_frequency: 1
+    sequence_length: 4
+    max_grad_norm: 10.0
+    evaluation:
+      interval: 10
+      num_episodes: 1
+    checkpointing:
+      interval: 1000
+      keep_last: 3
+
+  curriculum:
+    strategy: static
+    adversarial: null

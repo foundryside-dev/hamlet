@@ -1,0 +1,23 @@
+# Items Smoke Test - Bars Configuration
+# Minimal bars (energy + health only)
+
+version: "2.1"
+
+bars:
+  - id: energy
+    label: "Energy"
+    icon: "⚡"
+    initial_value: 0.8
+    decay_rate: 0.01  # 1% decay per step
+    min_value: 0.0
+    max_value: 1.0
+    critical_threshold: 0.2
+
+  - id: health
+    label: "Health"
+    icon: "❤️"
+    initial_value: 1.0
+    decay_rate: 0.0  # No passive decay
+    min_value: 0.0
+    max_value: 1.0
+    critical_threshold: 0.3

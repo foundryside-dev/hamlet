@@ -1,0 +1,18 @@
+# Items Smoke Test - Level L0_smoke Affordances
+# Single energy station for testing INTERACT action
+
+affordances:
+  version: "1.0"
+  affordances:
+    - name: energy_station
+      interaction_type: instant
+      costs:
+        energy: 0.0
+      effects:
+        energy: 0.3
+      opening_hours:
+        enabled: false
+      deployment:
+        type: fixed
+        positions: [[1, 1]]
+  modulations: []

@@ -140,3 +140,39 @@ def test_list_item_variables_in_profile():
 
     variables = registry.list_item_variables("food_stats")
     assert set(variables) == {"nutrition", "is_spoiled"}
+
+
+def test_global_variable_defensive_copy():
+    """Retrieved tensors don't alias internal storage (global scope)."""
+    registry = ScopedVariableRegistry(device=torch.device("cpu"))
+    registry.set_global("day_count", torch.tensor(42))
+
+    day_count = registry.get_global("day_count")
+    day_count.fill_(999)  # Mutate returned tensor
+
+    # Internal storage should be unchanged
+    assert registry.get_global("day_count") == 42
+
+
+def test_agent_variable_defensive_copy():
+    """Retrieved tensors don't alias internal storage (agent scope)."""
+    registry = ScopedVariableRegistry(device=torch.device("cpu"))
+    registry.set_agent("motivation", torch.tensor([1.0, 0.8, 1.2]))
+
+    motivation = registry.get_agent("motivation")
+    motivation[0] = 999.0  # Mutate returned tensor
+
+    # Internal storage should be unchanged
+    assert torch.equal(registry.get_agent("motivation"), torch.tensor([1.0, 0.8, 1.2]))
+
+
+def test_item_variable_defensive_copy():
+    """Retrieved tensors don't alias internal storage (item scope)."""
+    registry = ScopedVariableRegistry(device=torch.device("cpu"))
+    registry.set_item("food", "nutrition", torch.tensor([0.5]))
+
+    nutrition = registry.get_item("food", "nutrition")
+    nutrition[0] = 999.0  # Mutate returned tensor
+
+    # Internal storage should be unchanged
+    assert registry.get_item("food", "nutrition")[0] == 0.5

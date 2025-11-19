@@ -332,7 +332,7 @@ class ScopedVariableRegistry:
         """
         if name not in self._global_storage:
             raise KeyError(f"Global variable '{name}' not found. Available: {list(self._global_storage.keys())}")
-        return self._global_storage[name]
+        return self._global_storage[name].clone()
 
     def list_global(self) -> list[str]:
         """List all global variable names."""
@@ -348,7 +348,7 @@ class ScopedVariableRegistry:
         """Get agent variable value (batch tensor)."""
         if name not in self._agent_storage:
             raise KeyError(f"Agent variable '{name}' not found. Available: {list(self._agent_storage.keys())}")
-        return self._agent_storage[name]
+        return self._agent_storage[name].clone()
 
     def list_agent(self) -> list[str]:
         """List all agent variable names."""
@@ -389,7 +389,7 @@ class ScopedVariableRegistry:
         if var_name not in profile_vars:
             raise KeyError(f"Variable '{var_name}' not found in profile '{profile_name}'. Available: {list(profile_vars.keys())}")
 
-        return profile_vars[var_name]
+        return profile_vars[var_name].clone()
 
     def list_item_profiles(self) -> list[str]:
         """List all item profile names."""

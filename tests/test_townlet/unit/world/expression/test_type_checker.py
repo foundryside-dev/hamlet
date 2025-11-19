@@ -9,11 +9,13 @@ import pytest
 from townlet.world.expression.ast_nodes import (
     BinaryOp,
     Constant,
+    IfThenElse,
     OperatorType,
     PathAccess,
     UnaryOp,
     Variable,
 )
+from townlet.world.expression.parser import ExpressionParser
 from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
 
 
@@ -203,4 +205,84 @@ class TestVariable:
         node = Variable(name="unknown")
 
         with pytest.raises(TypeCheckError, match="not found"):
+            checker.check(node)
+
+
+class TestIntegration:
+    """Integration tests: Parse then type check."""
+
+    def test_integration_parse_and_typecheck(self):
+        """Integration: parse expression string, then type check."""
+        schema = {
+            "bar.energy": "float",
+            "bar.health": "float",
+        }
+
+        parser = ExpressionParser()
+        checker = TypeChecker(schema=schema)
+
+        # Parse "bar.energy + 0.05"
+        ast = parser.parse("bar.energy + 0.05")
+
+        # Type check
+        result_type = checker.check(ast)
+
+        assert result_type == "float"
+
+    def test_integration_type_error_from_parsed_expr(self):
+        """Integration: type error from parsed expression."""
+        schema = {"x": "int"}
+
+        parser = ExpressionParser()
+        checker = TypeChecker(schema=schema)
+
+        # Parse "x and true" (type error: int and bool)
+        ast = parser.parse("x and true")
+
+        with pytest.raises(TypeCheckError, match="requires bool"):
+            checker.check(ast)
+
+    def test_type_check_if_then_else(self):
+        """Type checker validates if/then/else conditionals."""
+        schema = {}
+        checker = TypeChecker(schema=schema)
+
+        # if true then 1 else 2
+        node = IfThenElse(
+            condition=Constant(value=True),
+            true_branch=Constant(value=1),
+            false_branch=Constant(value=2),
+        )
+        result_type = checker.check(node)
+
+        assert result_type == "int"
+
+    def test_type_check_if_non_bool_condition(self):
+        """Type error when condition is not bool."""
+        schema = {}
+        checker = TypeChecker(schema=schema)
+
+        # if 5 then 1 else 2  (condition is int, not bool)
+        node = IfThenElse(
+            condition=Constant(value=5),
+            true_branch=Constant(value=1),
+            false_branch=Constant(value=2),
+        )
+
+        with pytest.raises(TypeCheckError, match="must be bool"):
+            checker.check(node)
+
+    def test_type_check_if_mismatched_branches(self):
+        """Type error when branches have different types."""
+        schema = {}
+        checker = TypeChecker(schema=schema)
+
+        # if true then 1 else true  (int vs bool)
+        node = IfThenElse(
+            condition=Constant(value=True),
+            true_branch=Constant(value=1),
+            false_branch=Constant(value=True),
+        )
+
+        with pytest.raises(TypeCheckError, match="must have same type"):
             checker.check(node)

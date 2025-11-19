@@ -314,13 +314,13 @@ def test_if_then_else_basic():
     from townlet.world.expression.ast_nodes import BinaryOp, IfThenElse, Variable
 
     condition = BinaryOp(Variable(name="energy"), OperatorType.LT, Constant(value=0.2))
-    then_branch = Constant(value=1)
-    else_branch = Constant(value=0)
-    node = IfThenElse(condition=condition, then_branch=then_branch, else_branch=else_branch)
+    true_branch = Constant(value=1)
+    false_branch = Constant(value=0)
+    node = IfThenElse(condition=condition, true_branch=true_branch, false_branch=false_branch)
 
     assert node.condition == condition
-    assert node.then_branch == then_branch
-    assert node.else_branch == else_branch
+    assert node.true_branch == true_branch
+    assert node.false_branch == false_branch
 
 
 def test_if_then_else_nested():
@@ -329,10 +329,10 @@ def test_if_then_else_nested():
 
     # if is_night then (if energy < 0.3 then 2 else 1) else 0
     inner_condition = BinaryOp(Variable(name="energy"), OperatorType.LT, Constant(value=0.3))
-    inner_ternary = IfThenElse(condition=inner_condition, then_branch=Constant(value=2), else_branch=Constant(value=1))
-    outer_ternary = IfThenElse(condition=Variable(name="is_night"), then_branch=inner_ternary, else_branch=Constant(value=0))
+    inner_ternary = IfThenElse(condition=inner_condition, true_branch=Constant(value=2), false_branch=Constant(value=1))
+    outer_ternary = IfThenElse(condition=Variable(name="is_night"), true_branch=inner_ternary, false_branch=Constant(value=0))
 
-    assert isinstance(outer_ternary.then_branch, IfThenElse)
+    assert isinstance(outer_ternary.true_branch, IfThenElse)
 
 
 def test_if_then_else_visitor_integration():
@@ -341,12 +341,12 @@ def test_if_then_else_visitor_integration():
 
     class TernaryVisitor(ASTVisitor):
         def visit_if_then_else(self, node):
-            return f"(if ? then {node.then_branch.value} else {node.else_branch.value})"
+            return f"(if ? then {node.true_branch.value} else {node.false_branch.value})"
 
         def visit_constant(self, node):
             return node
 
-    node = IfThenElse(condition=Variable(name="is_night"), then_branch=Constant(value=1), else_branch=Constant(value=0))
+    node = IfThenElse(condition=Variable(name="is_night"), true_branch=Constant(value=1), false_branch=Constant(value=0))
     visitor = TernaryVisitor()
     result = node.accept(visitor)
 

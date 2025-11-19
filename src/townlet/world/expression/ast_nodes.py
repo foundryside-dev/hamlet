@@ -226,13 +226,13 @@ class IfThenElse(ASTNode):
         - if is_night then 0.5 else 1.0 (time multiplier)
         - if has_job then income else 0 (conditional reward)
 
-    Evaluates condition, returns then_branch if true, else_branch if false.
+    Evaluates condition, returns true_branch if true, false_branch if false.
     All branches are AST nodes (can be arbitrarily complex).
     """
 
     condition: ASTNode
-    then_branch: ASTNode
-    else_branch: ASTNode
+    true_branch: ASTNode
+    false_branch: ASTNode
 
     def accept(self, visitor: Any) -> Any:
         return visitor.visit_if_then_else(self)

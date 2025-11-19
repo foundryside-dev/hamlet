@@ -1,6 +1,8 @@
 """Tests for AST node types."""
 
-from townlet.world.expression.ast_nodes import OperatorType
+import pytest
+
+from townlet.world.expression.ast_nodes import ASTNode, ASTVisitor, OperatorType
 
 
 def test_operator_type_arithmetic():
@@ -28,3 +30,34 @@ def test_operator_type_logical():
     assert OperatorType.AND.value == "and"
     assert OperatorType.OR.value == "or"
     assert OperatorType.NOT.value == "not"
+
+
+def test_ast_node_visitor_pattern():
+    """ASTNode base class enforces visitor pattern."""
+
+    class TestNode(ASTNode):
+        def accept(self, visitor):
+            return visitor.visit_test_node(self)
+
+    class TestVisitor(ASTVisitor):
+        def visit_test_node(self, node):
+            return "visited"
+
+    node = TestNode()
+    visitor = TestVisitor()
+    result = node.accept(visitor)
+
+    assert result == "visited"
+
+
+def test_ast_node_requires_accept_implementation():
+    """ASTNode subclasses must implement accept()."""
+
+    class BadNode(ASTNode):
+        pass  # Forgot to implement accept()
+
+    node = BadNode()
+    visitor = ASTVisitor()
+
+    with pytest.raises(NotImplementedError):
+        node.accept(visitor)

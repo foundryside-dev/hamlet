@@ -156,3 +156,23 @@ class PathAccess(ASTNode):
 
     def accept(self, visitor: Any) -> Any:
         return visitor.visit_path_access(self)
+
+
+@dataclass
+class BinaryOp(ASTNode):
+    """Binary operations (infix notation).
+
+    Examples:
+        - a + b (arithmetic)
+        - x > y (comparison)
+        - p and q (logical)
+
+    Both left and right operands are AST nodes (can be nested).
+    """
+
+    left: ASTNode
+    op: OperatorType
+    right: ASTNode
+
+    def accept(self, visitor: Any) -> Any:
+        return visitor.visit_binary_op(self)

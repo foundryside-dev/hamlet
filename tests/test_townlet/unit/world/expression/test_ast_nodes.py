@@ -159,3 +159,47 @@ def test_path_access_visitor_integration():
     result = node.accept(visitor)
 
     assert result == "global.vfs.is_night"
+
+
+def test_binary_op_addition():
+    """BinaryOp represents infix operations like a + b."""
+    from townlet.world.expression.ast_nodes import BinaryOp
+
+    left = Constant(value=5.0)
+    right = Constant(value=3.0)
+    node = BinaryOp(left=left, op=OperatorType.ADD, right=right)
+
+    assert node.left == left
+    assert node.op == OperatorType.ADD
+    assert node.right == right
+
+
+def test_binary_op_comparison():
+    """BinaryOp supports comparison operators."""
+    from townlet.world.expression.ast_nodes import BinaryOp, Variable
+
+    left = Variable(name="x")
+    right = Constant(value=10)
+    node = BinaryOp(left=left, op=OperatorType.GT, right=right)
+
+    assert node.op == OperatorType.GT
+
+
+def test_binary_op_visitor_integration():
+    """BinaryOp node works with visitor pattern."""
+    from townlet.world.expression.ast_nodes import BinaryOp
+
+    class BinOpVisitor(ASTVisitor):
+        def visit_binary_op(self, node):
+            return f"({node.left.value} {node.op.value} {node.right.value})"
+
+        def visit_constant(self, node):
+            return node
+
+    left = Constant(value=10)
+    right = Constant(value=20)
+    node = BinaryOp(left=left, op=OperatorType.MUL, right=right)
+    visitor = BinOpVisitor()
+    result = node.accept(visitor)
+
+    assert result == "(10 * 20)"

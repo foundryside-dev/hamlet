@@ -119,3 +119,60 @@ def test_spawn_effect_stack_policy_allows_multiple(catalog_fixture):
     assert effect1.instance_id != effect2.instance_id
     assert effect1.intensity == 1.0
     assert effect2.intensity == 1.5
+
+
+def test_tick_updates_elapsed_and_remaining(catalog_fixture):
+    """tick() advances lifecycle counters."""
+    manager = EffectManager(catalog=catalog_fixture, device="cpu")
+    effect = manager.spawn_effect("regen", 1, EffectScope.AGENT, 100, 1.0, 500)
+
+    # Initial state
+    assert effect.elapsed_ticks == 0
+    assert effect.duration_remaining == 100
+
+    # Tick once
+    manager.tick(current_step=501)
+
+    assert effect.elapsed_ticks == 1
+    assert effect.duration_remaining == 99
+
+
+def test_tick_despawns_expired_effects(catalog_fixture):
+    """tick() removes effects when duration_remaining reaches 0."""
+    manager = EffectManager(catalog=catalog_fixture, device="cpu")
+    _ = manager.spawn_effect("regen", 2, EffectScope.AGENT, 3, 1.0, 100)
+
+    manager.tick(current_step=101)  # remaining=2
+    manager.tick(current_step=102)  # remaining=1
+    assert len(manager.agent_effects[2]) == 1
+
+    manager.tick(current_step=103)  # remaining=0, despawn
+
+    assert 2 not in manager.agent_effects or len(manager.agent_effects[2]) == 0
+
+
+def test_tick_handles_multiple_scopes(catalog_fixture):
+    """tick() processes effects from all scopes."""
+    manager = EffectManager(catalog=catalog_fixture, device="cpu")
+
+    # Add a global effect to the catalog
+    catalog_fixture.effects["day_cycle"] = catalog_fixture.effects["regen"].__class__(
+        id="day_cycle",
+        scope=EffectScope.GLOBAL,
+        duration=200,
+        intensity=1.0,
+        reapply_policy=ReapplyPolicy.STACK,
+        observable=True,
+        on_spawn=[],
+        on_tick=[],
+        on_despawn=[],
+        on_interrupt=[],
+    )
+
+    global_effect = manager.spawn_effect("day_cycle", 0, EffectScope.GLOBAL, 200, 1.0, 10)
+    agent_effect = manager.spawn_effect("regen", 5, EffectScope.AGENT, 50, 1.0, 10)
+
+    manager.tick(current_step=11)
+
+    assert global_effect.elapsed_ticks == 1
+    assert agent_effect.elapsed_ticks == 1

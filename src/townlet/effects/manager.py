@@ -190,3 +190,54 @@ class EffectManager:
         collection = self._get_scope_collection(effect.target_entity_id, effect.scope)
         if collection is not None and effect in collection:
             collection.remove(effect)
+
+    def tick(self, current_step: int) -> None:
+        """Execute all active effects for one timestep.
+
+        Updates lifecycle counters (elapsed_ticks, duration_remaining) and
+        removes expired effects.
+
+        Args:
+            current_step: Current environment step
+        """
+        self.current_step = current_step
+
+        # Process all scopes
+        all_collections = [
+            self.global_effects,
+            *self.agent_effects.values(),
+            *self.item_effects.values(),
+            *self.affordance_effects.values(),
+        ]
+
+        for collection in all_collections:
+            # Process in reverse to safely remove during iteration
+            for i in range(len(collection) - 1, -1, -1):
+                effect = collection[i]
+
+                # Update lifecycle
+                effect.elapsed_ticks += 1
+                effect.duration_remaining -= 1
+
+                # Check for expiry
+                if effect.duration_remaining <= 0:
+                    # Despawn (remove from collection)
+                    collection.pop(i)
+
+                    # TODO: Execute on_despawn commands in Step 5
+
+    def get_all_active_effects(self) -> list[ActiveEffect]:
+        """Get all active effects across all scopes (for testing).
+
+        Returns:
+            List of all active effects
+        """
+        result = []
+        result.extend(self.global_effects)
+        for effects in self.agent_effects.values():
+            result.extend(effects)
+        for effects in self.item_effects.values():
+            result.extend(effects)
+        for effects in self.affordance_effects.values():
+            result.extend(effects)
+        return result

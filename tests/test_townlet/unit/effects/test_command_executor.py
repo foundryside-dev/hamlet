@@ -87,10 +87,21 @@ def test_executor_if_then():
     """Executor executes then branch when condition true."""
     bar_storage = {"energy": torch.tensor([0.1, 0.5, 0.8])}
 
-    from townlet.vfs.registry import ScopedVariableRegistry
+    from townlet.vfs.registry import VariableRegistry
+    from townlet.vfs.schema import VariableDef
 
-    registry = ScopedVariableRegistry(device=torch.device("cpu"))
-    registry.set_agent("is_crisis", torch.tensor([False, False, False]))
+    variables = [
+        VariableDef(
+            id="is_crisis",
+            scope="agent",
+            type="bool",
+            lifetime="episode",
+            readable_by=["agent", "engine"],
+            writable_by=["engine"],
+            default=False,
+        )
+    ]
+    registry = VariableRegistry(variables=variables, num_agents=3, device=torch.device("cpu"))
 
     context = ExecutionContext(
         bars=bar_storage,
@@ -118,7 +129,7 @@ def test_executor_if_then():
     # First agent should have is_crisis set to true
     # But this is a vectorized operation, so ALL will be set
     # For proper per-agent logic, need target_index
-    is_crisis = registry.get_agent("is_crisis")
+    is_crisis = registry.get("is_crisis", reader="agent")
     assert is_crisis.any()  # At least one true
 
 
@@ -126,10 +137,21 @@ def test_executor_if_else():
     """Executor executes else branch when condition false."""
     bar_storage = {"energy": torch.tensor([0.9])}
 
-    from townlet.vfs.registry import ScopedVariableRegistry
+    from townlet.vfs.registry import VariableRegistry
+    from townlet.vfs.schema import VariableDef
 
-    registry = ScopedVariableRegistry(device=torch.device("cpu"))
-    registry.set_agent("status", torch.tensor([0]))
+    variables = [
+        VariableDef(
+            id="status",
+            scope="agent",
+            type="scalar",
+            lifetime="episode",
+            readable_by=["agent", "engine"],
+            writable_by=["engine"],
+            default=0.0,
+        )
+    ]
+    registry = VariableRegistry(variables=variables, num_agents=1, device=torch.device("cpu"))
 
     context = ExecutionContext(
         bars=bar_storage,
@@ -142,12 +164,12 @@ def test_executor_if_else():
     command = CommandNode(
         type=CommandType.IF,
         condition_expr="bar.energy < 0.2",  # False
-        then_commands=[CommandNode(type=CommandType.MODIFY, path="vfs.status", value_expr="1")],
-        else_commands=[CommandNode(type=CommandType.MODIFY, path="vfs.status", value_expr="2")],
+        then_commands=[CommandNode(type=CommandType.MODIFY, path="vfs.status", value_expr="1.0")],
+        else_commands=[CommandNode(type=CommandType.MODIFY, path="vfs.status", value_expr="2.0")],
     )
 
     # Compile the command and nested commands
-    schema = {"bar.energy": "float", "vfs.status": "int"}
+    schema = {"bar.energy": "float", "vfs.status": "float"}
     compiler = CommandCompiler(schema=schema)
     compiler.compile_command(command)
 
@@ -155,5 +177,5 @@ def test_executor_if_else():
     executor.execute(command, context)
 
     # Else branch should execute
-    status = registry.get_agent("status")
-    assert torch.equal(status, torch.tensor([2]))
+    status = registry.get("status", reader="agent")
+    assert torch.equal(status, torch.tensor([2.0]))

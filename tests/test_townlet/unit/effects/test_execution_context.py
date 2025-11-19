@@ -3,7 +3,8 @@
 import torch
 
 from townlet.effects.context import ExecutionContext
-from townlet.vfs.registry import ScopedVariableRegistry
+from townlet.vfs.registry import VariableRegistry
+from townlet.vfs.schema import VariableDef
 
 
 def test_execution_context_bar_access():
@@ -26,9 +27,31 @@ def test_execution_context_bar_access():
 
 def test_execution_context_vfs_access():
     """ExecutionContext provides access to VFS variables."""
-    registry = ScopedVariableRegistry(device=torch.device("cpu"))
-    registry.set_global("day_count", torch.tensor(42))
-    registry.set_agent("motivation", torch.tensor([1.0, 0.8, 1.2]))
+    variables = [
+        VariableDef(
+            id="day_count",
+            scope="global",
+            type="scalar",
+            lifetime="episode",
+            readable_by=["agent", "engine"],
+            writable_by=["engine"],
+            default=0.0,
+        ),
+        VariableDef(
+            id="motivation",
+            scope="agent",
+            type="scalar",
+            lifetime="episode",
+            readable_by=["agent", "engine"],
+            writable_by=["engine"],
+            default=1.0,
+        ),
+    ]
+    registry = VariableRegistry(variables=variables, num_agents=3, device=torch.device("cpu"))
+
+    # Set initial values
+    registry.set("day_count", torch.tensor(42.0), writer="engine")
+    registry.set("motivation", torch.tensor([1.0, 0.8, 1.2]), writer="engine")
 
     context = ExecutionContext(
         bars=None,
@@ -38,7 +61,7 @@ def test_execution_context_vfs_access():
     )
 
     day_count = context.get_path("vfs.day_count")
-    assert torch.equal(day_count, torch.tensor(42))
+    assert torch.equal(day_count, torch.tensor(42.0))
 
     motivation = context.get_path("vfs.motivation")
     assert torch.equal(motivation, torch.tensor([1.0, 0.8, 1.2]))

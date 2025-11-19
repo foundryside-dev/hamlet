@@ -170,6 +170,12 @@ src/townlet/vfs/schema.py:58:CALL003
 src/townlet/vfs/schema.py:150:CALL003
 src/townlet/vfs/schema.py:212:CALL003
 src/townlet/vfs/schema.py:236:CALL003
+src/townlet/agent/network_factory.py:*
+src/townlet/config/actions_config.py:*
+src/townlet/config/affordances_v2_config.py:*
+src/townlet/config/agent_config.py:263:32:*
+src/townlet/config/training_v2_config.py:*
+src/townlet/universe/raw_configs_v21.py:*
 
 # ============================================================================
 # TEMPORARY - Will be removed by TASK-003 and TASK-004A

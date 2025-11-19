@@ -184,3 +184,83 @@ def test_on_spawn_commands_execute_immediately(compile_universe, effects_smoke_c
     new_health = env.meters[0, env.meter_name_to_index["health"]].item()
     assert new_health > initial_health
     assert abs(new_health - 0.7) < 1e-5
+
+
+def test_renew_policy_resets_duration_in_environment(compile_universe, effects_smoke_config_path, cpu_device):
+    """RENEW policy resets effect duration in live environment."""
+    universe = compile_universe(effects_smoke_config_path)
+    env = VectorizedHamletEnv.from_universe(
+        universe=universe,
+        level_name="L0_effects",
+        num_agents=1,
+        device=cpu_device,
+    )
+
+    env.reset()
+
+    from townlet.config.effects_config import EffectScope
+
+    # Spawn effect with duration=5
+    effect = env.effect_manager.spawn_effect(
+        effect_id="energy_regen",  # Has RENEW policy
+        target_entity_id=0,
+        scope=EffectScope.AGENT,
+        duration=5,
+        intensity=1.0,
+        current_step=0,
+    )
+
+    # Step twice (duration should be 3)
+    wait_action = env.action_space.get_action_by_name("WAIT")
+    actions = torch.full((1,), wait_action.id, dtype=torch.long, device=cpu_device)
+    env.step(actions)
+    env.step(actions)
+    assert effect.duration_remaining == 3
+
+    # Reapply (should reset to 5)
+    env.effect_manager.spawn_effect(
+        effect_id="energy_regen",
+        target_entity_id=0,
+        scope=EffectScope.AGENT,
+        duration=5,
+        intensity=1.0,
+        current_step=2,
+    )
+
+    assert effect.duration_remaining == 5  # Renewed
+
+
+def test_merge_policy_stacks_intensity(compile_universe, effects_smoke_config_path, cpu_device):
+    """MERGE policy accumulates intensity for poison."""
+    universe = compile_universe(effects_smoke_config_path)
+    env = VectorizedHamletEnv.from_universe(
+        universe=universe,
+        level_name="L0_effects",
+        num_agents=1,
+        device=cpu_device,
+    )
+
+    env.reset()
+
+    from townlet.config.effects_config import EffectScope
+
+    effect = env.effect_manager.spawn_effect(
+        effect_id="poison",  # Has MERGE policy
+        target_entity_id=0,
+        scope=EffectScope.AGENT,
+        duration=10,
+        intensity=1.0,
+        current_step=0,
+    )
+
+    # Apply again with intensity=0.5
+    env.effect_manager.spawn_effect(
+        effect_id="poison",
+        target_entity_id=0,
+        scope=EffectScope.AGENT,
+        duration=10,
+        intensity=0.5,
+        current_step=1,
+    )
+
+    assert effect.intensity == 1.5  # Merged

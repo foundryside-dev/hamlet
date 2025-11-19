@@ -349,3 +349,7 @@ class ScopedVariableRegistry:
         if name not in self._agent_storage:
             raise KeyError(f"Agent variable '{name}' not found. Available: {list(self._agent_storage.keys())}")
         return self._agent_storage[name]
+
+    def list_agent(self) -> list[str]:
+        """List all agent variable names."""
+        return list(self._agent_storage.keys())

@@ -44,3 +44,43 @@ def test_list_global_variables():
 
     names = registry.list_global()
     assert set(names) == {"day_count", "is_night"}
+
+
+def test_set_agent_variable():
+    """Registry stores agent variables as batch tensors."""
+    registry = ScopedVariableRegistry(device=torch.device("cpu"))
+
+    registry.set_agent("motivation", torch.tensor([1.0, 0.8, 1.2]))
+
+    value = registry.get_agent("motivation")
+    assert torch.equal(value, torch.tensor([1.0, 0.8, 1.2]))
+
+
+def test_get_agent_variable_not_found():
+    """Registry raises KeyError for missing agent variables."""
+    registry = ScopedVariableRegistry(device=torch.device("cpu"))
+
+    with pytest.raises(KeyError, match="motivation"):
+        registry.get_agent("motivation")
+
+
+def test_agent_batch_dimension():
+    """Agent variables have batch dimension."""
+    registry = ScopedVariableRegistry(device=torch.device("cpu"))
+
+    batch_size = 64
+    registry.set_agent("is_crisis", torch.zeros(batch_size, dtype=torch.bool))
+
+    value = registry.get_agent("is_crisis")
+    assert value.shape == (batch_size,)
+
+
+def test_list_agent_variables():
+    """Registry lists all agent variable names."""
+    registry = ScopedVariableRegistry(device=torch.device("cpu"))
+
+    registry.set_agent("motivation", torch.tensor([1.0]))
+    registry.set_agent("is_crisis", torch.tensor([False]))
+
+    names = registry.list_agent()
+    assert set(names) == {"motivation", "is_crisis"}

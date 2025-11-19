@@ -216,8 +216,31 @@ class TypeChecker(ASTVisitor):
 
         Raises:
             TypeCheckError: If operand type incompatible with operator
+
+        Rules:
+            - Negation (-): numeric → numeric
+            - Logical not (not): bool → bool
         """
-        raise NotImplementedError("visit_unary_op not yet implemented")
+        from townlet.world.expression.ast_nodes import OperatorType
+
+        operand_type = node.operand.accept(self)
+
+        # Helper to check if type is numeric (int or float)
+        def is_numeric(t: str) -> bool:
+            return t in ("int", "float")
+
+        if node.op == OperatorType.SUB:  # Negation
+            if not is_numeric(operand_type):
+                raise TypeCheckError(f"Unary negation requires scalar operand, got {operand_type}")
+            return operand_type
+
+        elif node.op == OperatorType.NOT:
+            if operand_type != "bool":
+                raise TypeCheckError(f"Logical not requires bool operand, got {operand_type}")
+            return "bool"
+
+        else:
+            raise TypeCheckError(f"Unknown unary operator: {node.op}")
 
     def visit_function_call(self, node: FunctionCall) -> str:
         """Type check function call.

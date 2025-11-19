@@ -10,6 +10,7 @@ from townlet.world.expression.ast_nodes import (
     BinaryOp,
     Constant,
     OperatorType,
+    UnaryOp,
 )
 from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
 
@@ -101,4 +102,35 @@ class TestBinaryOperators:
         )
 
         with pytest.raises(TypeCheckError, match="incompatible"):
+            checker.check(node)
+
+
+class TestUnaryOperators:
+    """Test type checking for unary operators."""
+
+    def test_type_check_negation(self):
+        """Unary negation requires scalar operand."""
+        checker = TypeChecker(schema={})
+
+        node = UnaryOp(op=OperatorType.SUB, operand=Constant(value=10))
+        result_type = checker.check(node)
+
+        assert result_type == "int"
+
+    def test_type_check_logical_not(self):
+        """Logical not requires bool operand."""
+        checker = TypeChecker(schema={})
+
+        node = UnaryOp(op=OperatorType.NOT, operand=Constant(value=True))
+        result_type = checker.check(node)
+
+        assert result_type == "bool"
+
+    def test_type_check_negation_wrong_type(self):
+        """Type error when negating bool."""
+        checker = TypeChecker(schema={})
+
+        node = UnaryOp(op=OperatorType.SUB, operand=Constant(value=True))
+
+        with pytest.raises(TypeCheckError, match="requires scalar"):
             checker.check(node)

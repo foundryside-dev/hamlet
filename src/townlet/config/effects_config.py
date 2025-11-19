@@ -47,3 +47,12 @@ class EffectScope(str, enum.Enum):
     AGENT = "agent"
     ITEM = "item"
     AFFORDANCE = "affordance"
+
+    @classmethod
+    def _missing_(cls, value):
+        """Case-insensitive lookup."""
+        if isinstance(value, str):
+            for member in cls:
+                if member.value.lower() == value.lower():
+                    return member
+        return None

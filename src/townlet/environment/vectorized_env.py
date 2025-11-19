@@ -306,6 +306,49 @@ class VectorizedHamletEnv:
         )
         self.runtime_registry: AgentRuntimeRegistry | None = None  # Injected by population/inference controllers
 
+        # EFFECTS INTEGRATION: Initialize EffectManager from compiled effect catalog
+        # TODO(Task 3.6): Add effect_catalog to UniverseCompiler and CompiledUniverse
+        from townlet.effects.catalog import EffectCatalog
+        from townlet.effects.executor import CommandExecutor
+        from townlet.effects.manager import EffectManager
+
+        # Load effects.yaml and compile if it exists
+        effects_path = self.config_pack_path / "effects.yaml"
+        if effects_path.exists():
+            import yaml
+
+            from townlet.config.effects_config import EffectsConfig
+
+            effects_config = EffectsConfig(**yaml.safe_load(effects_path.read_text()))
+
+            # Build schema for type checking (from VFS and bars)
+            schema: dict[str, str] = {}
+            # Add effect-specific variables
+            schema["intensity"] = "float"  # Effect intensity multiplier
+            schema["elapsed_ticks"] = "float"  # Ticks since spawn
+            schema["duration_remaining"] = "float"  # Ticks until despawn
+            # Add bar paths
+            for bar_name in self.meter_name_to_index.keys():
+                schema[f"bar.{bar_name}"] = "float"
+                schema[f"target.bar.{bar_name}"] = "float"
+            # Add VFS paths
+            for var in self.vfs_variables:
+                vfs_type = "bool" if var.type == "bool" else "float"
+                schema[f"vfs.{var.id}"] = vfs_type
+                schema[f"target.vfs.{var.id}"] = vfs_type
+
+            effect_catalog = EffectCatalog.from_config(effects_config, schema=schema)
+        else:
+            # No effects.yaml - create empty catalog
+            effect_catalog = EffectCatalog(effects={})
+
+        self.command_executor = CommandExecutor()
+        self.effect_manager = EffectManager(
+            catalog=effect_catalog,
+            command_executor=self.command_executor,
+            device=self.device,
+        )
+
         # Bars configuration (per-level)
         self.bars_config = level.bars
 
@@ -636,13 +679,13 @@ class VectorizedHamletEnv:
 
         if self.action_mask_table.shape[1] == 0:
             raise ValueError(
-                "Temporal mechanics enabled but action_mask_table is empty; " "compiler must provide temporal availability metadata."
+                "Temporal mechanics enabled but action_mask_table is empty; compiler must provide temporal availability metadata."
             )
 
         idx = self.affordance_name_to_mask_idx.get(affordance_name)
         if idx is None or idx >= self.action_mask_table.shape[1]:
             raise ValueError(
-                f"Missing temporal mask metadata for affordance '{affordance_name}'; " "all affordances must have explicit mask entries."
+                f"Missing temporal mask metadata for affordance '{affordance_name}'; all affordances must have explicit mask entries."
             )
 
         active_hour = self.time_of_day if hour is None else hour
@@ -766,6 +809,18 @@ class VectorizedHamletEnv:
             {0: 'UP', 1: 'DOWN', 2: 'LEFT', 3: 'RIGHT', 4: 'INTERACT', 5: 'WAIT'}
         """
         return self.action_labels.get_all_labels()
+
+    @property
+    def bars(self) -> dict[str, torch.Tensor]:
+        """Convert meters tensor to dict for effects system.
+
+        Returns:
+            Dictionary mapping bar names to meter tensors [num_agents]
+        """
+        bars_dict = {}
+        for bar_name, idx in self.meter_name_to_index.items():
+            bars_dict[bar_name] = self.meters[:, idx]
+        return bars_dict
 
     def reset(self) -> torch.Tensor:
         """
@@ -1194,6 +1249,13 @@ class VectorizedHamletEnv:
         self.meters = self.meter_dynamics.apply_secondary_to_primary_effects(self.meters)
         self.meters = self.meter_dynamics.apply_tertiary_to_secondary_effects(self.meters)
         self.meters = self.meter_dynamics.apply_tertiary_to_primary_effects(self.meters)
+
+        # 3.5. Execute active effects (after cascades, before terminal checks)
+        # Effects can modify bars based on current state after all natural dynamics applied
+        self.effect_manager.tick(
+            current_step=self.step_counts[0].item() if self.step_counts.numel() > 0 else 0,
+            env_state=self,
+        )
 
         # 4. Check terminal conditions
         self.dones = self.meter_dynamics.check_terminal_conditions(self.meters, self.dones)

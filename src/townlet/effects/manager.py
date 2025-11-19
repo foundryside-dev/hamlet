@@ -267,6 +267,7 @@ class EffectManager:
             vfs_registry=vfs_registry,
             self_index=None,  # Not used in effect context
             target_index=effect.target_entity_id,
+            effect=effect,  # Pass effect for effect-specific variables
         )
 
     def get_all_active_effects(self) -> list[ActiveEffect]:

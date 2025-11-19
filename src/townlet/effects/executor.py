@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import torch
 
 from townlet.effects.context import ExecutionContext
@@ -103,7 +105,7 @@ class CommandExecutor:
         assert command.path is not None, "MODIFY command must have path"
 
         # Create evaluation context from execution context
-        eval_ctx = self._make_eval_context(context)
+        eval_ctx = self._make_eval_context(context, effect=context.effect)
 
         # Create evaluator with context and evaluate pre-compiled expression
         evaluator = Evaluator(eval_ctx)
@@ -138,7 +140,7 @@ class CommandExecutor:
         """
         # ✅ PERF FIX: Use pre-compiled AST directly (NO parsing at runtime!)
         cond_ast = command.condition_ast
-        eval_ctx = self._make_eval_context(context)
+        eval_ctx = self._make_eval_context(context, effect=context.effect)
 
         # Create evaluator with context and evaluate pre-compiled condition
         evaluator = Evaluator(eval_ctx)
@@ -172,32 +174,47 @@ class CommandExecutor:
         # Stub for now - requires iterator support in EvaluationContext
         raise NotImplementedError("for_each not implemented yet")
 
-    def _make_eval_context(self, context: ExecutionContext) -> ExprExecutionContext:
+    def _make_eval_context(self, context: ExecutionContext, effect: Any | None = None) -> ExprExecutionContext:
         """Convert ExecutionContext to ExprExecutionContext.
 
         Args:
             context: Effect execution context
+            effect: Optional ActiveEffect instance (overrides context.effect)
 
         Returns:
             Expression evaluation context
         """
+        # Use effect from parameter or context
+        active_effect = effect or context.effect
+
         # Build dictionaries for ExprExecutionContext
         bars_dict = {}
         vfs_dict = {}
+
+        # Add effect-specific variables (if available)
+        if active_effect:
+            # Make effect variables available as scalars
+            import torch
+
+            device = self.device if hasattr(self, "device") else "cpu"
+            vfs_dict["intensity"] = torch.tensor(active_effect.intensity, device=device)
+            vfs_dict["elapsed_ticks"] = torch.tensor(active_effect.elapsed_ticks, device=device)
+            vfs_dict["duration_remaining"] = torch.tensor(active_effect.duration_remaining, device=device)
 
         # Add bars
         for bar_name, tensor in context.bars.items():
             bars_dict[bar_name] = tensor
 
-        # Add VFS globals and agent variables
+        # Add VFS variables (VariableRegistry API compatibility)
         if context.vfs_registry:
-            for var_name in context.vfs_registry.list_global():
-                tensor = context.vfs_registry.get_global(var_name)
-                vfs_dict[var_name] = tensor
-
-            for var_name in context.vfs_registry.list_agent():
-                tensor = context.vfs_registry.get_agent(var_name)
-                vfs_dict[var_name] = tensor
+            # VariableRegistry has .variables property with variable definitions
+            for var_id, var_def in context.vfs_registry.variables.items():
+                try:
+                    tensor = context.vfs_registry.get(var_id, reader="engine")
+                    vfs_dict[var_id] = tensor
+                except KeyError:
+                    # Variable not initialized yet, skip
+                    pass
 
         # Handle target. prefix by creating a modified version of bars/vfs for target
         if context.target_index is not None:

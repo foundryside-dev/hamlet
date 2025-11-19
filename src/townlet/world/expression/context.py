@@ -27,7 +27,7 @@ class ExecutionContext:
         """Resolve dotted path to tensor value.
 
         Args:
-            path: Dotted path like "bar.energy" or "vfs.is_night"
+            path: Dotted path like "bar.energy" or "vfs.is_night", or bare variable name like "intensity"
 
         Returns:
             Tensor value from context
@@ -42,5 +42,10 @@ class ExecutionContext:
             return self.vfs[".".join(parts[1:])]
         elif parts[0] == "temporal" and len(parts) == 2:
             return self.temporal[parts[1]]
+        elif len(parts) == 1:
+            # Plain variable name - check vfs first
+            if path in self.vfs:
+                return self.vfs[path]
+            raise KeyError(f"Variable '{path}' not found in VFS context")
         else:
             raise KeyError(f"Path '{path}' not found in execution context")

@@ -1,56 +1,62 @@
 version: "1.0"
 
 effect_definitions:
-  # Simple energy restoration
-  - id: "ate_food"
+  # Energy regeneration (RENEW policy)
+  - id: "energy_regen"
     scope: agent
-    duration: 10
+    duration: 20
     intensity: 1.0
-    reapply_policy: stack
+    reapply_policy: renew
     observable: true
 
-    on_spawn:
-      - modify: target.vfs.digesting
-        value: "true"
+    on_spawn: []
 
     on_tick:
       - modify: target.bar.energy
         value: "target.bar.energy + (0.05 * intensity)"
 
-    on_despawn:
-      - modify: target.vfs.digesting
-        value: "false"
+    on_despawn: []
 
-  # Poison with merge policy
-  - id: "poisoned"
+  # Instant health boost (STACK policy)
+  - id: "health_boost"
     scope: agent
-    duration: 20
-    intensity: 0.5
-    reapply_policy: merge
-    observable: true
-
-    on_tick:
-      - modify: target.bar.health
-        value: "target.bar.health - (0.1 * intensity)"
-
-  # Wet status with renew policy
-  - id: "wet"
-    scope: agent
-    duration: 15
-    reapply_policy: renew
+    duration: 1
+    intensity: 1.0
+    reapply_policy: stack
     observable: true
 
     on_spawn:
-      - modify: target.vfs.is_wet
-        value: "true"
+      - modify: target.bar.health
+        value: "target.bar.health + (0.2 * intensity)"
 
-    on_despawn:
-      - modify: target.vfs.is_wet
-        value: "false"
+    on_tick: []
 
-  # Currently eating (replace policy)
-  - id: "eating"
+    on_despawn: []
+
+  # Poison with merge policy
+  - id: "poison"
     scope: agent
-    duration: 3
+    duration: 20
+    intensity: 1.0
+    reapply_policy: merge
+    observable: true
+
+    on_spawn: []
+
+    on_tick:
+      - modify: target.bar.health
+        value: "target.bar.health - (0.02 * intensity)"
+
+    on_despawn: []
+
+  # Buff with replace policy
+  - id: "buff_replace"
+    scope: agent
+    duration: 15
+    intensity: 1.0
     reapply_policy: replace
-    observable: false
+    observable: true
+
+    on_spawn: []
+    on_tick: []
+    on_despawn: []

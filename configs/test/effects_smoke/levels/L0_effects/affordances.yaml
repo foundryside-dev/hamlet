@@ -1,0 +1,29 @@
+affordances:
+  version: "1.0"
+
+  affordances:
+    - name: BED
+      interaction_type: instant
+      costs: {}
+      effects:
+        energy: 0.1
+        health: 0.0
+      opening_hours:
+        enabled: false
+      deployment:
+        type: fixed
+        positions: [[2, 2]]
+
+    - name: FOOD
+      interaction_type: instant
+      costs: {}
+      effects:
+        energy: 0.2
+        health: 0.0
+      opening_hours:
+        enabled: false
+      deployment:
+        type: fixed
+        positions: [[3, 3]]
+
+  modulations: []

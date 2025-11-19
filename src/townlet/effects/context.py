@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import torch
 
 from townlet.vfs.registry import ScopedVariableRegistry
@@ -25,11 +27,13 @@ class ExecutionContext:
         vfs_registry: ScopedVariableRegistry | None,
         self_index: int | None,
         target_index: int | None,
+        effect: Any | None = None,
     ):
         self.bars = bars or {}
         self.vfs_registry = vfs_registry
         self.self_index = self_index
         self.target_index = target_index
+        self.effect = effect  # ActiveEffect instance for effect-specific variables
 
     def get_path(self, path: str) -> torch.Tensor:
         """Resolve path to tensor value.
@@ -83,13 +87,9 @@ class ExecutionContext:
 
             var_name = path[len("vfs.") :]
 
-            # Try global scope first
-            if var_name in self.vfs_registry.list_global():
-                return self.vfs_registry.get_global(var_name)
-
-            # Try agent scope
-            if var_name in self.vfs_registry.list_agent():
-                return self.vfs_registry.get_agent(var_name)
+            # VariableRegistry API compatibility
+            if var_name in self.vfs_registry.variables:
+                return self.vfs_registry.get(var_name, reader="engine")
 
             raise KeyError(f"VFS variable '{var_name}' not found")
 
@@ -132,14 +132,9 @@ class ExecutionContext:
 
             var_name = path[len("vfs.") :]
 
-            # Try global scope
-            if var_name in self.vfs_registry.list_global():
-                self.vfs_registry.set_global(var_name, value)
-                return
-
-            # Try agent scope
-            if var_name in self.vfs_registry.list_agent():
-                self.vfs_registry.set_agent(var_name, value)
+            # VariableRegistry API compatibility
+            if var_name in self.vfs_registry.variables:
+                self.vfs_registry.set(var_name, value, writer="engine")
                 return
 
             raise KeyError(f"VFS variable '{var_name}' not found")

@@ -1,6 +1,6 @@
 """Tests for expression parser."""
 
-from townlet.world.expression import Constant, Variable
+from townlet.world.expression import Constant, PathAccess, Variable
 from townlet.world.expression.parser import ExpressionParser
 
 
@@ -109,3 +109,30 @@ def test_parse_variable_with_numbers():
 
     assert isinstance(result, Variable)
     assert result.name == "var123"
+
+
+def test_parse_path_access_two_segments():
+    """Parser converts dotted paths to PathAccess nodes."""
+    parser = ExpressionParser()
+    result = parser.parse("self.position")
+
+    assert isinstance(result, PathAccess)
+    assert result.segments == ["self", "position"]
+
+
+def test_parse_path_access_three_segments():
+    """Parser handles multi-segment paths."""
+    parser = ExpressionParser()
+    result = parser.parse("target.bar.energy")
+
+    assert isinstance(result, PathAccess)
+    assert result.segments == ["target", "bar", "energy"]
+
+
+def test_parse_path_access_deep():
+    """Parser handles deeply nested paths."""
+    parser = ExpressionParser()
+    result = parser.parse("global.vfs.agent.is_night")
+
+    assert isinstance(result, PathAccess)
+    assert result.segments == ["global", "vfs", "agent", "is_night"]

@@ -56,3 +56,22 @@ def test_build_dependency_graph_nested_deps():
     # a -> b -> c
     assert ("a", "b") in graph.edges
     assert ("b", "c") in graph.edges
+
+
+def test_build_dependency_graph_with_path_deps():
+    """Variables with PathAccess dependencies (e.g., target.bar.energy) extract root namespace."""
+    profile = GlobalVFSProfileConfig(
+        variables=[
+            # Simulate a variable named "target" that would be accessed via PathAccess
+            GlobalVFSVariableConfig(name="target", type="agent_ref", initial_value=0),
+            # Expression uses PathAccess: target.bar.energy (should extract "target" as dependency)
+            GlobalVFSVariableConfig(name="is_low", type="bool", expression="target.bar.energy < 0.2"),
+        ]
+    )
+
+    compiler = VFSProfileCompiler()
+    graph = compiler.build_dependency_graph(profile.variables)
+
+    # is_low depends on target (root namespace from target.bar.energy)
+    assert ("target", "is_low") in graph.edges
+    assert len(graph.edges) == 1  # Only one dependency

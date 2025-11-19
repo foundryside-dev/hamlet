@@ -9,7 +9,7 @@ from townlet.config.vfs_profiles_config import (
     GlobalVFSVariableConfig,
     ItemVFSVariableConfig,
 )
-from townlet.world.expression import ASTNode, ExpressionParser, Variable
+from townlet.world.expression import ASTNode, ExpressionParser, PathAccess, Variable
 
 __all__ = [
     "VFSProfileCompiler",
@@ -33,20 +33,23 @@ class VFSProfileCompiler:
         Returns:
             Directed graph with edges from dependency -> dependent
         """
-        graph = nx.DiGraph()
+        graph: nx.DiGraph = nx.DiGraph()
 
         # Add all variables as nodes
         for var in variables:
             graph.add_node(var.name)
 
         # Add edges for expression dependencies
+        # Pre-compute variable names as a set for O(1) lookup instead of O(n)
+        variable_names = {v.name for v in variables}
+
         for var in variables:
             if var.expression is not None:
                 # Extract variable references from expression
                 deps = self._extract_variable_refs(var.expression)
                 for dep in deps:
                     # Only add edge if dependency is in same profile
-                    if dep in [v.name for v in variables]:
+                    if dep in variable_names:
                         graph.add_edge(dep, var.name)
 
         return graph
@@ -70,9 +73,12 @@ class VFSProfileCompiler:
         refs = set()
 
         def visit(node: ASTNode) -> None:
-            """Recursively visit AST nodes to find Variables."""
+            """Recursively visit AST nodes to find Variables and PathAccess."""
             if isinstance(node, Variable):
                 refs.add(node.name)
+            elif isinstance(node, PathAccess):
+                # Extract root namespace (e.g., "bar" from "bar.energy")
+                refs.add(node.segments[0])
 
             # Visit children (handles BinaryOp, UnaryOp, FunctionCall, etc.)
             if hasattr(node, "left"):

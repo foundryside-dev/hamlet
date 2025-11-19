@@ -6,7 +6,7 @@ from typing import Any
 
 import torch
 
-from townlet.vfs.registry import ScopedVariableRegistry
+from townlet.vfs.registry import VariableRegistry
 
 __all__ = ["ExecutionContext"]
 
@@ -24,7 +24,7 @@ class ExecutionContext:
     def __init__(
         self,
         bars: dict[str, torch.Tensor] | None,
-        vfs_registry: ScopedVariableRegistry | None,
+        vfs_registry: VariableRegistry | None,
         self_index: int | None,
         target_index: int | None,
         effect: Any | None = None,

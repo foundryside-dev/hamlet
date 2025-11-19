@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 import networkx as nx
 
 from townlet.config.vfs_profiles_config import (
     AgentVFSVariableConfig,
+    GlobalVFSProfileConfig,
     GlobalVFSVariableConfig,
     ItemVFSVariableConfig,
 )
@@ -18,6 +20,7 @@ __all__ = [
     "VFSProfileCompiler",
     "CircularDependencyError",
     "CompiledVariable",
+    "CompiledGlobalProfile",
 ]
 
 
@@ -30,6 +33,13 @@ class CompiledVariable:
     ast: ASTNode | None  # None if initial_value
     initial_value: int | float | bool | list | None
     result_type: str | None  # Inferred type from type checker
+
+
+@dataclass
+class CompiledGlobalProfile:
+    """Compiled global VFS profile."""
+
+    variables: list[CompiledVariable]
 
 
 class CircularDependencyError(Exception):
@@ -45,7 +55,7 @@ class VFSProfileCompiler:
         self.parser = ExpressionParser()
 
     def build_dependency_graph(
-        self, variables: list[GlobalVFSVariableConfig | AgentVFSVariableConfig | ItemVFSVariableConfig]
+        self, variables: Sequence[GlobalVFSVariableConfig | AgentVFSVariableConfig | ItemVFSVariableConfig]
     ) -> nx.DiGraph:
         """Build dependency graph for variables.
 
@@ -127,7 +137,7 @@ class VFSProfileCompiler:
         return refs
 
     def topological_sort(
-        self, variables: list[GlobalVFSVariableConfig | AgentVFSVariableConfig | ItemVFSVariableConfig]
+        self, variables: Sequence[GlobalVFSVariableConfig | AgentVFSVariableConfig | ItemVFSVariableConfig]
     ) -> list[GlobalVFSVariableConfig | AgentVFSVariableConfig | ItemVFSVariableConfig]:
         """Sort variables in dependency order (dependencies first).
 
@@ -204,3 +214,35 @@ class VFSProfileCompiler:
             initial_value=None,
             result_type=result_type,
         )
+
+    def compile_global_profile(self, profile: GlobalVFSProfileConfig, bar_schema: dict[str, str] | None = None) -> CompiledGlobalProfile:
+        """Compile global VFS profile.
+
+        Args:
+            profile: Global profile config
+            bar_schema: Type schema for bars (e.g., {"energy": "float"})
+
+        Returns:
+            Compiled profile with variables in dependency order
+        """
+        # Sort variables in dependency order
+        sorted_vars = self.topological_sort(profile.variables)
+
+        # Build type schema for expression type checking
+        schema: dict[str, str] = {}
+
+        # Add bar paths to schema
+        if bar_schema:
+            for bar_name, bar_type in bar_schema.items():
+                schema[f"bar.{bar_name}"] = bar_type
+
+        # Compile each variable
+        compiled_vars = []
+        for var in sorted_vars:
+            compiled = self.compile_variable(var, schema)
+            compiled_vars.append(compiled)
+
+            # Add this variable to schema for subsequent variables
+            schema[var.name] = var.type
+
+        return CompiledGlobalProfile(variables=compiled_vars)

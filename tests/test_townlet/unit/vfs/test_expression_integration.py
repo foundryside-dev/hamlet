@@ -183,3 +183,42 @@ def test_compile_variable_type_mismatch():
 
     with pytest.raises(TypeCheckError, match="bool"):
         compiler.compile_variable(var, schema)
+
+
+def test_compile_global_profile():
+    """Compiler compiles global profile with dependency ordering."""
+    profile = GlobalVFSProfileConfig(
+        variables=[
+            GlobalVFSVariableConfig(name="c", type="int", expression="b + 1"),
+            GlobalVFSVariableConfig(name="a", type="int", initial_value=1),
+            GlobalVFSVariableConfig(name="b", type="int", expression="a + 1"),
+        ]
+    )
+
+    compiler = VFSProfileCompiler()
+    compiled = compiler.compile_global_profile(profile)
+
+    # Variables sorted in dependency order
+    assert [v.name for v in compiled.variables] == ["a", "b", "c"]
+
+    # All variables compiled
+    assert all(v.ast is not None or v.initial_value is not None for v in compiled.variables)
+
+
+def test_compile_global_profile_with_bars():
+    """Compiler includes bars in schema for expressions."""
+    profile = GlobalVFSProfileConfig(
+        variables=[
+            GlobalVFSVariableConfig(
+                name="avg_energy",
+                type="float",
+                expression="bar.energy",  # Reference to bar
+            ),
+        ]
+    )
+
+    compiler = VFSProfileCompiler()
+    # Should not raise (bar.energy is valid path)
+    compiled = compiler.compile_global_profile(profile, bar_schema={"energy": "float"})
+
+    assert compiled.variables[0].name == "avg_energy"

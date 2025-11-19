@@ -1,12 +1,15 @@
 """Tests for VFS observation builder integration."""
 
+import torch
+
 from townlet.config.vfs_profiles_config import (
     AgentVFSProfileConfig,
     AgentVFSVariableConfig,
     GlobalVFSProfileConfig,
     GlobalVFSVariableConfig,
 )
-from townlet.vfs.observation_builder import VFSObservationSpec
+from townlet.vfs.observation_builder import VFSObservationSpec, build_vfs_observation
+from townlet.vfs.registry import ScopedVariableRegistry
 
 
 def test_vfs_obs_spec_global_variables():
@@ -83,3 +86,87 @@ def test_vfs_obs_spec_complete():
     assert spec.agent_vfs_dim == 1
     assert spec.item_vfs_dim == 3  # 3 inventory slots
     assert spec.total_vfs_dim == 5
+
+
+# Step 3: Observation vector construction tests
+
+
+def test_build_vfs_observation_global_only():
+    """Build observation vector with only global VFS."""
+    registry = ScopedVariableRegistry(device=torch.device("cpu"))
+    registry.set_global("day_count", torch.tensor(42))
+    registry.set_global("is_night", torch.tensor(True))
+
+    spec = VFSObservationSpec(
+        global_vfs_dim=2,
+        agent_vfs_dim=0,
+        item_vfs_dim=0,
+    )
+
+    batch_size = 3
+    obs = build_vfs_observation(registry, spec, batch_size)
+
+    # Shape: [batch, total_vfs_dim] = [3, 2]
+    assert obs.shape == (batch_size, 2)
+
+    # Global values broadcast across batch
+    assert torch.equal(obs[:, 0], torch.tensor([42.0, 42.0, 42.0]))
+    assert torch.equal(obs[:, 1], torch.tensor([1.0, 1.0, 1.0]))  # True -> 1.0
+
+
+def test_build_vfs_observation_agent_only():
+    """Build observation vector with only agent VFS."""
+    registry = ScopedVariableRegistry(device=torch.device("cpu"))
+    registry.set_agent("motivation", torch.tensor([1.0, 0.8, 1.2]))
+    registry.set_agent("is_crisis", torch.tensor([False, True, False]))
+
+    spec = VFSObservationSpec(
+        global_vfs_dim=0,
+        agent_vfs_dim=2,
+        item_vfs_dim=0,
+    )
+
+    batch_size = 3
+    obs = build_vfs_observation(registry, spec, batch_size)
+
+    # Shape: [batch, total_vfs_dim] = [3, 2]
+    assert obs.shape == (batch_size, 2)
+
+    # Agent values per agent
+    assert torch.equal(obs[:, 0], torch.tensor([1.0, 0.8, 1.2]))
+    assert torch.equal(obs[:, 1], torch.tensor([0.0, 1.0, 0.0]))  # bool -> float
+
+
+def test_build_vfs_observation_complete():
+    """Build observation vector with global + agent + items."""
+    registry = ScopedVariableRegistry(device=torch.device("cpu"))
+
+    # Global: 1 variable
+    registry.set_global("day_count", torch.tensor(5))
+
+    # Agent: 1 variable (batch=2)
+    registry.set_agent("motivation", torch.tensor([1.0, 0.8]))
+
+    # Items: Stub for now (will implement in Phase 4)
+    # For Phase 2, just allocate zero-filled slots
+
+    spec = VFSObservationSpec(
+        global_vfs_dim=1,
+        agent_vfs_dim=1,
+        item_vfs_dim=3,  # 3 item slots (stubbed)
+    )
+
+    batch_size = 2
+    obs = build_vfs_observation(registry, spec, batch_size)
+
+    # Shape: [batch, total_vfs_dim] = [2, 5]
+    assert obs.shape == (batch_size, 5)
+
+    # Global broadcast
+    assert torch.equal(obs[:, 0], torch.tensor([5.0, 5.0]))
+
+    # Agent per-agent
+    assert torch.equal(obs[:, 1], torch.tensor([1.0, 0.8]))
+
+    # Item slots zero-filled (stubbed for Phase 2)
+    assert torch.equal(obs[:, 2:5], torch.zeros(batch_size, 3))

@@ -1,5 +1,7 @@
 """Expression parser using pyparsing."""
 
+from typing import cast
+
 from pyparsing import (
     Forward,
     Literal,
@@ -246,4 +248,4 @@ class ExpressionParser:
             ParseException: If text is not a valid expression
         """
         result = self.expression.parseString(text, parseAll=True)
-        return result[0]
+        return cast(ASTNode, result[0])

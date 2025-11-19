@@ -215,3 +215,24 @@ class FunctionCall(ASTNode):
 
     def accept(self, visitor: Any) -> Any:
         return visitor.visit_function_call(self)
+
+
+@dataclass
+class IfThenElse(ASTNode):
+    """Conditional expression (ternary operator).
+
+    Examples:
+        - if energy < 0.2 then 1 else 0 (crisis bonus)
+        - if is_night then 0.5 else 1.0 (time multiplier)
+        - if has_job then income else 0 (conditional reward)
+
+    Evaluates condition, returns then_branch if true, else_branch if false.
+    All branches are AST nodes (can be arbitrarily complex).
+    """
+
+    condition: ASTNode
+    then_branch: ASTNode
+    else_branch: ASTNode
+
+    def accept(self, visitor: Any) -> Any:
+        return visitor.visit_if_then_else(self)

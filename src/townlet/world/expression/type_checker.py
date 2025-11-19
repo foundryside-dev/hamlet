@@ -146,8 +146,64 @@ class TypeChecker(ASTVisitor):
 
         Raises:
             TypeCheckError: If operand types incompatible with operator
+
+        Rules:
+            - Arithmetic (+, -, *, /, %, **): numeric × numeric → numeric
+            - Comparison (==, !=, <, >, <=, >=): numeric × numeric → bool
+            - Logical (and, or): bool × bool → bool
         """
-        raise NotImplementedError("visit_binary_op not yet implemented")
+        from townlet.world.expression.ast_nodes import OperatorType
+
+        left_type = node.left.accept(self)
+        right_type = node.right.accept(self)
+
+        # Helper to check if type is numeric (int or float)
+        def is_numeric(t: str) -> bool:
+            return t in ("int", "float")
+
+        # Arithmetic operators
+        if node.op in {
+            OperatorType.ADD,
+            OperatorType.SUB,
+            OperatorType.MUL,
+            OperatorType.DIV,
+            OperatorType.MOD,
+            OperatorType.POW,
+        }:
+            if not is_numeric(left_type) or not is_numeric(right_type):
+                raise TypeCheckError(
+                    f"Arithmetic operator {node.op.value} requires numeric operands, got incompatible types {left_type} and {right_type}"
+                )
+            # Type promotion: if either is float, result is float
+            if left_type == "float" or right_type == "float":
+                return "float"
+            return "int"
+
+        # Comparison operators
+        elif node.op in {
+            OperatorType.EQ,
+            OperatorType.NEQ,
+            OperatorType.LT,
+            OperatorType.GT,
+            OperatorType.LTE,
+            OperatorType.GTE,
+        }:
+            if not is_numeric(left_type) or not is_numeric(right_type):
+                raise TypeCheckError(
+                    f"Comparison operator {node.op.value} requires numeric operands, got incompatible types {left_type} and {right_type}"
+                )
+            return "bool"
+
+        # Logical operators
+        elif node.op in {OperatorType.AND, OperatorType.OR}:
+            if left_type != "bool" or right_type != "bool":
+                raise TypeCheckError(
+                    f"Logical operator {node.op.value} requires bool operands, got incompatible types {left_type} and {right_type}"
+                )
+            return "bool"
+
+        else:
+            raise TypeCheckError(f"Unknown binary operator: {node.op}")
 
     def visit_unary_op(self, node: UnaryOp) -> str:
         """Type check unary operation.

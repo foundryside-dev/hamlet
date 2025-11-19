@@ -19,6 +19,7 @@ from townlet.world.expression import (
     Constant,
     OperatorType,
     PathAccess,
+    UnaryOp,
     Variable,
 )
 
@@ -135,10 +136,29 @@ class ExpressionParser:
 
             return result
 
+        # Helper to make unary ops
+        def make_unaryop(tokens):
+            """Convert prefix tokens to UnaryOp AST nodes."""
+            result = tokens[0][-1]  # Start with the innermost operand
+            # Process operators right-to-left
+            for i in range(len(tokens[0]) - 2, -1, -1):
+                op_str = tokens[0][i]
+                op_map = {
+                    "-": OperatorType.SUB,
+                    "not": OperatorType.NOT,
+                }
+                op_type = op_map.get(op_str)
+                if op_type is None:
+                    raise ValueError(f"Unknown unary operator: {op_str}")
+                result = UnaryOp(op=op_type, operand=result)
+            return result
+
         # Build expression with operator precedence
         expression_with_ops = infixNotation(
             primary,
             [
+                # Level 7: Unary operators (prefix, right-associative)
+                (Literal("-") | Literal("not"), 1, opAssoc.RIGHT, make_unaryop),
                 # Level 6: Exponentiation (right-associative)
                 (Literal("**"), 2, opAssoc.RIGHT, make_binop),
                 # Level 5: Multiplication, Division, Modulo (left-associative)

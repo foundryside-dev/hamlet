@@ -1,6 +1,12 @@
 """Tests for expression parser."""
 
-from townlet.world.expression import Constant, PathAccess, Variable
+from townlet.world.expression import (
+    BinaryOp,
+    Constant,
+    OperatorType,
+    PathAccess,
+    Variable,
+)
 from townlet.world.expression.parser import ExpressionParser
 
 
@@ -136,3 +142,99 @@ def test_parse_path_access_deep():
 
     assert isinstance(result, PathAccess)
     assert result.segments == ["global", "vfs", "agent", "is_night"]
+
+
+def test_parse_addition():
+    """Parser converts 'a + b' to BinaryOp(ADD, Variable(a), Variable(b))."""
+    parser = ExpressionParser()
+    result = parser.parse("a + b")
+
+    assert isinstance(result, BinaryOp)
+    assert result.op == OperatorType.ADD
+    assert isinstance(result.left, Variable)
+    assert result.left.name == "a"
+    assert isinstance(result.right, Variable)
+    assert result.right.name == "b"
+
+
+def test_parse_multiplication():
+    """Parser converts 'x * y' to BinaryOp(MUL, Variable(x), Variable(y))."""
+    parser = ExpressionParser()
+    result = parser.parse("x * y")
+
+    assert isinstance(result, BinaryOp)
+    assert result.op == OperatorType.MUL
+    assert isinstance(result.left, Variable)
+    assert result.left.name == "x"
+    assert isinstance(result.right, Variable)
+    assert result.right.name == "y"
+
+
+def test_parse_comparison():
+    """Parser converts 'x > 10' to BinaryOp(GT, Variable(x), Constant(10))."""
+    parser = ExpressionParser()
+    result = parser.parse("x > 10")
+
+    assert isinstance(result, BinaryOp)
+    assert result.op == OperatorType.GT
+    assert isinstance(result.left, Variable)
+    assert result.left.name == "x"
+    assert isinstance(result.right, Constant)
+    assert result.right.value == 10
+
+
+def test_parse_logical_and():
+    """Parser converts 'a and b' to BinaryOp(AND, Variable(a), Variable(b))."""
+    parser = ExpressionParser()
+    result = parser.parse("a and b")
+
+    assert isinstance(result, BinaryOp)
+    assert result.op == OperatorType.AND
+    assert isinstance(result.left, Variable)
+    assert result.left.name == "a"
+    assert isinstance(result.right, Variable)
+    assert result.right.name == "b"
+
+
+def test_parse_operator_precedence():
+    """Parser respects precedence: 'a + b * c' should be 'a + (b * c)'."""
+    parser = ExpressionParser()
+    result = parser.parse("a + b * c")
+
+    # Root should be ADD
+    assert isinstance(result, BinaryOp)
+    assert result.op == OperatorType.ADD
+
+    # Left side should be Variable(a)
+    assert isinstance(result.left, Variable)
+    assert result.left.name == "a"
+
+    # Right side should be BinaryOp(MUL, Variable(b), Variable(c))
+    assert isinstance(result.right, BinaryOp)
+    assert result.right.op == OperatorType.MUL
+    assert isinstance(result.right.left, Variable)
+    assert result.right.left.name == "b"
+    assert isinstance(result.right.right, Variable)
+    assert result.right.right.name == "c"
+
+
+def test_parse_parentheses_override_precedence():
+    """Parser respects parentheses: '(a + b) * c' should be '(a + b) * c'."""
+    parser = ExpressionParser()
+    result = parser.parse("(a + b) * c")
+
+    # Root should be MUL
+    assert isinstance(result, BinaryOp)
+    assert result.op == OperatorType.MUL
+
+    # Left side should be BinaryOp(ADD, Variable(a), Variable(b))
+    assert isinstance(result.left, BinaryOp)
+    assert result.left.op == OperatorType.ADD
+    assert isinstance(result.left.left, Variable)
+    assert result.left.left.name == "a"
+    assert isinstance(result.left.right, Variable)
+    assert result.left.right.name == "b"
+
+    # Right side should be Variable(c)
+    assert isinstance(result.right, Variable)
+    assert result.right.name == "c"

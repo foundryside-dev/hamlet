@@ -17,6 +17,25 @@
 
 ---
 
+## Architecture Notes
+
+### Integer vs Float Parsing (CRITICAL)
+
+**Issue:** `pyparsing_common.fnumber()` aggressively matches integers, causing "42" to parse as `Constant(42.0)` (float) instead of `Constant(42)` (int).
+
+**Impact:** Array indexing (`inventory[0]`) will fail type checking in Task 1.3, as indices must be integers.
+
+**Fix:** Use strict float regex requiring a decimal point (`Regex(r"[+-]?\d+\.\d*([eE][+-]?\d+)?")`). This ensures "42" → int, "42.0" → float.
+
+### Structure of Arrays (SoA) vs Object-Oriented Paths
+
+**Grammar Supports:** `target.bar.energy[0]` (SoA - vectorized-friendly)
+**Grammar Does NOT Support:** `items[0].durability` (OOP - requires AST refactor)
+
+**Rationale:** HAMLET uses `VectorizedHamletEnv` with Structure of Arrays layout for GPU performance. SoA access patterns are correct and preferred. To support OOP-style paths (`items[0].durability`), Task 1.1 would require a new `PropertyAccess(base: ASTNode, name: str)` node type.
+
+---
+
 ## Task Breakdown
 
 ### Step 1: Add pyparsing dependency
@@ -116,6 +135,29 @@ def test_parse_string_with_single_quotes():
 
     assert isinstance(result, Constant)
     assert result.value == "Fridge"
+
+
+def test_parse_integer_vs_float_distinction():
+    """Parser preserves int vs float types (critical for type checking)."""
+    parser = ExpressionParser()
+
+    # Integer should parse as int
+    int_result = parser.parse("42")
+    assert isinstance(int_result, Constant)
+    assert isinstance(int_result.value, int)
+    assert int_result.value == 42
+
+    # Float should parse as float
+    float_result = parser.parse("42.0")
+    assert isinstance(float_result, Constant)
+    assert isinstance(float_result.value, float)
+    assert float_result.value == 42.0
+
+    # Scientific notation should parse as float
+    sci_result = parser.parse("1e-3")
+    assert isinstance(sci_result, Constant)
+    assert isinstance(sci_result.value, float)
+    assert sci_result.value == 0.001
 ```
 
 **Run:**
@@ -142,6 +184,7 @@ from pyparsing import (
     QuotedString,
     pyparsing_common,
     ParserElement,
+    Regex,
 )
 from townlet.world.expression import (
     ASTNode,
@@ -188,13 +231,18 @@ class ExpressionParser:
         bool_literal = true_literal | false_literal
 
         # Numeric literals
-        float_literal = pyparsing_common.fnumber().setParseAction(
+        # CRITICAL FIX: Use strict float matching to prevent "42" from parsing as float
+        # fnumber() aggressively matches integers, breaking type checking for array indices
+        # This regex requires a decimal point: 0.5, -10.3, 1., 1.0e-5
+        from pyparsing import Regex
+
+        float_literal = Regex(r"[+-]?\d+\.\d*([eE][+-]?\d+)?").setParseAction(
             lambda tokens: Constant(value=float(tokens[0]))
         )
         int_literal = pyparsing_common.signed_integer().setParseAction(
             lambda tokens: Constant(value=int(tokens[0]))
         )
-        # Try float first (includes integers like "42.0")
+        # Try float first (so "0.5" isn't parsed as "0"), but strict regex prevents "42" matching
         numeric_literal = float_literal | int_literal
 
         # String literals (double or single quotes)

@@ -42,10 +42,10 @@ def test_catalog_load_smoke_config():
 
     # Verify all 4 smoke test effects loaded
     assert len(catalog.effects) == 4
-    assert "ate_food" in catalog.effects
-    assert "poisoned" in catalog.effects
-    assert "wet" in catalog.effects
-    assert "eating" in catalog.effects
+    assert "energy_regen" in catalog.effects
+    assert "health_boost" in catalog.effects
+    assert "poison" in catalog.effects
+    assert "buff_replace" in catalog.effects
 
 
 def test_catalog_get_effect():

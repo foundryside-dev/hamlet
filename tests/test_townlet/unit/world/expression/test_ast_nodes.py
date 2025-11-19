@@ -128,3 +128,34 @@ def test_variable_visitor_integration():
     result = node.accept(visitor)
 
     assert result == "var(duration)"
+
+
+def test_path_access_simple():
+    """PathAccess node holds dotted paths."""
+    from townlet.world.expression.ast_nodes import PathAccess
+
+    node = PathAccess(segments=["target", "bar", "energy"])
+    assert node.segments == ["target", "bar", "energy"]
+
+
+def test_path_access_two_segments():
+    """PathAccess works with two segments."""
+    from townlet.world.expression.ast_nodes import PathAccess
+
+    node = PathAccess(segments=["self", "position"])
+    assert node.segments == ["self", "position"]
+
+
+def test_path_access_visitor_integration():
+    """PathAccess node works with visitor pattern."""
+    from townlet.world.expression.ast_nodes import PathAccess
+
+    class PathVisitor(ASTVisitor):
+        def visit_path_access(self, node):
+            return ".".join(node.segments)
+
+    node = PathAccess(segments=["global", "vfs", "is_night"])
+    visitor = PathVisitor()
+    result = node.accept(visitor)
+
+    assert result == "global.vfs.is_night"

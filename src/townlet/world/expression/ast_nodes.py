@@ -137,3 +137,22 @@ class Variable(ASTNode):
 
     def accept(self, visitor: Any) -> Any:
         return visitor.visit_variable(self)
+
+
+@dataclass
+class PathAccess(ASTNode):
+    """Dot-notation access to nested state.
+
+    Examples:
+        - target.bar.energy → ["target", "bar", "energy"]
+        - global.vfs.is_night → ["global", "vfs", "is_night"]
+        - self.position → ["self", "position"]
+
+    The segments list represents the path from root to leaf.
+    Type checker validates path exists in the schema.
+    """
+
+    segments: list[str]
+
+    def accept(self, visitor: Any) -> Any:
+        return visitor.visit_path_access(self)

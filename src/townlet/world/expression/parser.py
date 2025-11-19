@@ -22,6 +22,7 @@ from townlet.world.expression import (
     Constant,
     FunctionCall,
     IfThenElse,
+    IndexAccess,
     OperatorType,
     PathAccess,
     UnaryOp,
@@ -124,8 +125,27 @@ class ExpressionParser:
             if_kw.suppress() + expression_ref + then_kw.suppress() + expression_ref + else_kw.suppress() + expression_ref
         ).setParseAction(make_if_then_else)
 
-        # Primary expressions (order matters: try function_call before path)
-        primary = constant | function_call | if_expression | path_or_variable
+        # Index access (array subscripting)
+        # inventory[0] → IndexAccess(Variable("inventory"), Constant(0))
+        lbracket = Suppress("[")
+        rbracket = Suppress("]")
+
+        # Primary expressions (before index access)
+        primary_base = constant | function_call | if_expression | path_or_variable
+
+        # Index access wraps primary (postfix operator)
+        def make_index_access(tokens):
+            result = tokens[0]
+            # Each [expr] creates a new IndexAccess wrapping the previous result
+            for i in range(1, len(tokens)):
+                index_expr = tokens[i]
+                result = IndexAccess(base=result, index=index_expr)
+            return result
+
+        primary_with_index = (primary_base + (lbracket + expression_ref + rbracket)[...]).setParseAction(make_index_access)
+
+        # Update primary to include index access
+        primary = primary_with_index
 
         # Unary operator helpers
         def make_unaryop(tokens):

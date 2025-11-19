@@ -1,7 +1,7 @@
 # Items & VFS Profiles – Implementation Plan (Config v2.1)
 
-**Status:** Draft  
-**Owner:** Config / Environment / VFS  
+**Status:** Draft
+**Owner:** Config / Environment / VFS
 **Related:** `vfs/schema.py`, `environment/vectorized_env.py`, `universe/compiler.py`, `configs/reference_config/reference-config-v2.1-complete.yaml`, `configs/reference_config/VARIABLE_SUBSYSTEM.md`, `docs/vfs-integration-guide.md`
 
 ---
@@ -103,7 +103,7 @@ The items/VFS configuration below follows this rule: catalogs and profile defini
 
 ### 3.1 New Config Files
 
-1. **`items.yaml` (experiment‑scoped catalog)**  
+1. **`items.yaml` (experiment‑scoped catalog)**
    Location (shared across all curriculum levels):
    - `configs/<experiment>/items.yaml`
 
@@ -112,7 +112,7 @@ The items/VFS configuration below follows this rule: catalogs and profile defini
    - Define intrinsic properties and interactions that are the same across levels.
    - This file does **not** control whether or where items appear; it only defines what items *are*.
 
-2. **`items.yaml` (level‑scoped appearance)**  
+2. **`items.yaml` (level‑scoped appearance)**
    Location (per curriculum level / level directory):
    - `configs/<experiment>/levels/<level_name>/items.yaml`
 
@@ -122,7 +122,7 @@ The items/VFS configuration below follows this rule: catalogs and profile defini
      - Spawn rules, lifecycle constraints, conditions, and priorities.
    - References item types by ID from the experiment‑level catalog.
 
-3. **`vfs_profiles.yaml` (experiment‑scoped)**  
+3. **`vfs_profiles.yaml` (experiment‑scoped)**
    Location (shared across levels):
    - `configs/<experiment>/vfs_profiles.yaml`
 

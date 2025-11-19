@@ -63,7 +63,7 @@ class EffectManager:
         intensity: float,
         current_step: int,
     ) -> ActiveEffect:
-        """Spawn new effect instance.
+        """Spawn new effect instance, handling reapply policies.
 
         Args:
             effect_id: Effect definition ID from catalog
@@ -77,10 +77,29 @@ class EffectManager:
             ActiveEffect instance
         """
         # Get compiled effect definition (validates effect_id exists)
-        _ = self.catalog.effects[effect_id]
+        effect_def = self.catalog.effects[effect_id]
 
-        # For now: STACK policy only (create new instance)
-        # TODO: Handle other reapply policies in Step 3
+        # Check for existing effect on same target
+        existing = self._find_existing(effect_id, target_entity_id, scope)
+
+        if existing:
+            # Handle reapply policy
+            if effect_def.reapply_policy == "renew":
+                # Reset duration to full
+                existing.duration_remaining = duration
+                return existing
+
+            elif effect_def.reapply_policy == "merge":
+                # Accumulate intensity
+                existing.intensity += intensity
+                return existing
+
+            elif effect_def.reapply_policy == "replace":
+                # Remove old instance
+                self._remove_from_scope(existing)
+                # Continue to create new instance below
+
+            # STACK: Do nothing, create new instance below
 
         # Create new instance
         active = ActiveEffect(
@@ -120,3 +139,54 @@ class EffectManager:
             if key not in self.affordance_effects:
                 self.affordance_effects[key] = []
             self.affordance_effects[key].append(effect)
+
+    def _find_existing(self, effect_id: str, target_entity_id: int, scope: EffectScope) -> ActiveEffect | None:
+        """Find existing effect on target.
+
+        Args:
+            effect_id: Effect definition ID
+            target_entity_id: Target entity ID
+            scope: Effect scope
+
+        Returns:
+            ActiveEffect if found, None otherwise
+        """
+        collection = self._get_scope_collection(target_entity_id, scope)
+        if collection is None:
+            return None
+
+        for effect in collection:
+            if effect.effect_id == effect_id:
+                return effect
+
+        return None
+
+    def _get_scope_collection(self, target_entity_id: int, scope: EffectScope) -> list[ActiveEffect] | None:
+        """Get scoped collection for target.
+
+        Args:
+            target_entity_id: Target entity ID
+            scope: Effect scope
+
+        Returns:
+            List of effects for this scope/target, or None if not found
+        """
+        if scope == EffectScope.GLOBAL:
+            return self.global_effects
+        elif scope == EffectScope.AGENT:
+            return self.agent_effects.get(target_entity_id)
+        elif scope == EffectScope.ITEM:
+            return self.item_effects.get(target_entity_id)
+        elif scope == EffectScope.AFFORDANCE:
+            return self.affordance_effects.get(str(target_entity_id))
+        return None
+
+    def _remove_from_scope(self, effect: ActiveEffect) -> None:
+        """Remove effect from scoped collection.
+
+        Args:
+            effect: Effect to remove
+        """
+        collection = self._get_scope_collection(effect.target_entity_id, effect.scope)
+        if collection is not None and effect in collection:
+            collection.remove(effect)

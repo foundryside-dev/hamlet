@@ -351,3 +351,62 @@ def test_if_then_else_visitor_integration():
     result = node.accept(visitor)
 
     assert result == "(if ? then 1 else 0)"
+
+
+def test_index_access_constant():
+    """IndexAccess supports constant indices."""
+    from townlet.world.expression.ast_nodes import IndexAccess, Variable
+
+    target = Variable(name="items")
+    index = Constant(value=0)
+    node = IndexAccess(target=target, index=index)
+
+    assert node.target == target
+    assert node.index == index
+
+
+def test_index_access_computed():
+    """IndexAccess supports computed indices."""
+    from townlet.world.expression.ast_nodes import BinaryOp, IndexAccess, Variable
+
+    # values[i + 1]
+    target = Variable(name="values")
+    index = BinaryOp(Variable(name="i"), OperatorType.ADD, Constant(value=1))
+    node = IndexAccess(target=target, index=index)
+
+    assert isinstance(node.index, BinaryOp)
+    assert node.target.name == "values"
+
+
+def test_index_access_nested():
+    """IndexAccess supports nested indexing (chaining)."""
+    from townlet.world.expression.ast_nodes import IndexAccess, Variable
+
+    # matrix[row][col] represented as IndexAccess(IndexAccess(matrix, row), col)
+    inner = IndexAccess(Variable(name="matrix"), Variable(name="row"))
+    outer = IndexAccess(target=inner, index=Variable(name="col"))
+
+    assert isinstance(outer.target, IndexAccess)
+    assert outer.index.name == "col"
+    assert outer.target.target.name == "matrix"
+
+
+def test_index_access_visitor_integration():
+    """IndexAccess node works with visitor pattern."""
+    from townlet.world.expression.ast_nodes import IndexAccess, Variable
+
+    class IndexVisitor(ASTVisitor):
+        def visit_index_access(self, node):
+            return f"{node.target.name}[{node.index.value}]"
+
+        def visit_variable(self, node):
+            return node
+
+        def visit_constant(self, node):
+            return node
+
+    node = IndexAccess(Variable(name="items"), Constant(value=0))
+    visitor = IndexVisitor()
+    result = node.accept(visitor)
+
+    assert result == "items[0]"

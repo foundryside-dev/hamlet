@@ -33,6 +33,8 @@ from townlet.world.expression.ast_nodes import (
     UnaryOp,
     Variable,
 )
+from townlet.world.expression.context import ExecutionContext
+from townlet.world.expression.evaluator import Evaluator
 from townlet.world.expression.parser import ExpressionParser
 from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
 
@@ -41,6 +43,8 @@ __all__ = [
     "ASTVisitor",
     "BinaryOp",
     "Constant",
+    "Evaluator",
+    "ExecutionContext",
     "ExpressionParser",
     "FunctionCall",
     "IfThenElse",

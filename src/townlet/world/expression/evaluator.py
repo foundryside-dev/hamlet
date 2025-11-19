@@ -24,7 +24,7 @@ class Evaluator(ASTVisitor):
 
     def evaluate(self, node) -> torch.Tensor:
         """Evaluate AST node to tensor."""
-        return node.accept(self)
+        return node.accept(self)  # type: ignore[no-any-return]
 
     def visit_constant(self, node: Constant) -> torch.Tensor:
         """Convert constant to tensor."""
@@ -47,33 +47,33 @@ class Evaluator(ASTVisitor):
         right = node.right.accept(self)
 
         if node.op == OperatorType.ADD:
-            return left + right
+            return left + right  # type: ignore[no-any-return]
         elif node.op == OperatorType.SUB:
-            return left - right
+            return left - right  # type: ignore[no-any-return]
         elif node.op == OperatorType.MUL:
-            return left * right
+            return left * right  # type: ignore[no-any-return]
         elif node.op == OperatorType.DIV:
-            return left / right
+            return left / right  # type: ignore[no-any-return]
         elif node.op == OperatorType.MOD:
-            return left % right
+            return left % right  # type: ignore[no-any-return]
         elif node.op == OperatorType.POW:
-            return left**right
+            return left**right  # type: ignore[no-any-return]
         elif node.op == OperatorType.EQ:
-            return left == right
+            return left == right  # type: ignore[no-any-return]
         elif node.op == OperatorType.NEQ:
-            return left != right
+            return left != right  # type: ignore[no-any-return]
         elif node.op == OperatorType.LT:
-            return left < right
+            return left < right  # type: ignore[no-any-return]
         elif node.op == OperatorType.GT:
-            return left > right
+            return left > right  # type: ignore[no-any-return]
         elif node.op == OperatorType.LTE:
-            return left <= right
+            return left <= right  # type: ignore[no-any-return]
         elif node.op == OperatorType.GTE:
-            return left >= right
+            return left >= right  # type: ignore[no-any-return]
         elif node.op == OperatorType.AND:
-            return left & right
+            return left & right  # type: ignore[no-any-return]
         elif node.op == OperatorType.OR:
-            return left | right
+            return left | right  # type: ignore[no-any-return]
         else:
             raise ValueError(f"Unknown operator: {node.op}")
 
@@ -84,9 +84,9 @@ class Evaluator(ASTVisitor):
         operand = node.operand.accept(self)
 
         if node.op == OperatorType.SUB:
-            return -operand
+            return -operand  # type: ignore[no-any-return]
         elif node.op == OperatorType.NOT:
-            return ~operand
+            return ~operand  # type: ignore[no-any-return]
         else:
             raise ValueError(f"Unknown unary operator: {node.op}")
 
@@ -108,19 +108,19 @@ class Evaluator(ASTVisitor):
         if node.function_name == "max":
             if len(args) != 2:
                 raise ValueError(f"max() requires 2 arguments, got {len(args)}")
-            return torch.max(args[0], args[1])
+            return torch.max(args[0], args[1])  # type: ignore[no-any-return]
         elif node.function_name == "min":
             if len(args) != 2:
                 raise ValueError(f"min() requires 2 arguments, got {len(args)}")
-            return torch.min(args[0], args[1])
+            return torch.min(args[0], args[1])  # type: ignore[no-any-return]
         elif node.function_name == "abs":
             if len(args) != 1:
                 raise ValueError(f"abs() requires 1 argument, got {len(args)}")
-            return torch.abs(args[0])
+            return torch.abs(args[0])  # type: ignore[no-any-return]
         elif node.function_name == "clamp":
             if len(args) != 3:
                 raise ValueError(f"clamp() requires 3 arguments, got {len(args)}")
-            return torch.clamp(args[0], min=args[1], max=args[2])
+            return torch.clamp(args[0], min=args[1], max=args[2])  # type: ignore[no-any-return]
         else:
             raise NotImplementedError(
                 f"Function '{node.function_name}' not implemented. "
@@ -147,7 +147,7 @@ class Evaluator(ASTVisitor):
         true_branch = node.true_branch.accept(self)
         false_branch = node.false_branch.accept(self)
 
-        return torch.where(condition, true_branch, false_branch)
+        return torch.where(condition, true_branch, false_branch)  # type: ignore[no-any-return]
 
     def visit_index_access(self, node: IndexAccess) -> torch.Tensor:
         """Execute tensor indexing.
@@ -164,4 +164,4 @@ class Evaluator(ASTVisitor):
         index_long = index.long()
 
         # Tensor indexing
-        return base[index_long]
+        return base[index_long]  # type: ignore[no-any-return]

@@ -84,3 +84,59 @@ def test_list_agent_variables():
 
     names = registry.list_agent()
     assert set(names) == {"motivation", "is_crisis"}
+
+
+def test_set_item_variable():
+    """Registry stores item variables per profile."""
+    registry = ScopedVariableRegistry(device=torch.device("cpu"))
+
+    # food_stats profile has 2 instances with nutrition values
+    registry.set_item("food_stats", "nutrition", torch.tensor([0.5, 0.3]))
+
+    value = registry.get_item("food_stats", "nutrition")
+    assert torch.equal(value, torch.tensor([0.5, 0.3]))
+
+
+def test_get_item_variable_not_found():
+    """Registry raises KeyError for missing item variables."""
+    registry = ScopedVariableRegistry(device=torch.device("cpu"))
+
+    with pytest.raises(KeyError, match="food_stats"):
+        registry.get_item("food_stats", "nutrition")
+
+
+def test_item_profiles_separate_namespaces():
+    """Item profiles are separate namespaces."""
+    registry = ScopedVariableRegistry(device=torch.device("cpu"))
+
+    registry.set_item("food_stats", "nutrition", torch.tensor([0.5]))
+    registry.set_item("weapon_stats", "damage", torch.tensor([10.0]))
+
+    # Same variable name in different profiles
+    registry.set_item("food_stats", "value", torch.tensor([1.0]))
+    registry.set_item("weapon_stats", "value", torch.tensor([50.0]))
+
+    assert torch.equal(registry.get_item("food_stats", "value"), torch.tensor([1.0]))
+    assert torch.equal(registry.get_item("weapon_stats", "value"), torch.tensor([50.0]))
+
+
+def test_list_item_profiles():
+    """Registry lists all item profile names."""
+    registry = ScopedVariableRegistry(device=torch.device("cpu"))
+
+    registry.set_item("food_stats", "nutrition", torch.tensor([0.5]))
+    registry.set_item("weapon_stats", "damage", torch.tensor([10.0]))
+
+    profiles = registry.list_item_profiles()
+    assert set(profiles) == {"food_stats", "weapon_stats"}
+
+
+def test_list_item_variables_in_profile():
+    """Registry lists all variables in a profile."""
+    registry = ScopedVariableRegistry(device=torch.device("cpu"))
+
+    registry.set_item("food_stats", "nutrition", torch.tensor([0.5]))
+    registry.set_item("food_stats", "is_spoiled", torch.tensor([False]))
+
+    variables = registry.list_item_variables("food_stats")
+    assert set(variables) == {"nutrition", "is_spoiled"}

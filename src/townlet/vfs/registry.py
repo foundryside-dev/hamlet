@@ -353,3 +353,61 @@ class ScopedVariableRegistry:
     def list_agent(self) -> list[str]:
         """List all agent variable names."""
         return list(self._agent_storage.keys())
+
+    # Item scope methods
+
+    def set_item(self, profile_name: str, var_name: str, value: torch.Tensor) -> None:
+        """Set item variable value for a profile.
+
+        Args:
+            profile_name: Item profile name (e.g., "food_stats")
+            var_name: Variable name within profile
+            value: Tensor with shape [num_instances] or [num_instances, ...]
+        """
+        if profile_name not in self._item_storage:
+            self._item_storage[profile_name] = {}
+
+        self._item_storage[profile_name][var_name] = value.to(self.device)
+
+    def get_item(self, profile_name: str, var_name: str) -> torch.Tensor:
+        """Get item variable value for a profile.
+
+        Args:
+            profile_name: Item profile name
+            var_name: Variable name within profile
+
+        Returns:
+            Tensor with shape [num_instances] or [num_instances, ...]
+
+        Raises:
+            KeyError: If profile or variable not found
+        """
+        if profile_name not in self._item_storage:
+            raise KeyError(f"Item profile '{profile_name}' not found. Available: {list(self._item_storage.keys())}")
+
+        profile_vars = self._item_storage[profile_name]
+        if var_name not in profile_vars:
+            raise KeyError(f"Variable '{var_name}' not found in profile '{profile_name}'. Available: {list(profile_vars.keys())}")
+
+        return profile_vars[var_name]
+
+    def list_item_profiles(self) -> list[str]:
+        """List all item profile names."""
+        return list(self._item_storage.keys())
+
+    def list_item_variables(self, profile_name: str) -> list[str]:
+        """List all variables in an item profile.
+
+        Args:
+            profile_name: Item profile name
+
+        Returns:
+            List of variable names in profile
+
+        Raises:
+            KeyError: If profile not found
+        """
+        if profile_name not in self._item_storage:
+            raise KeyError(f"Item profile '{profile_name}' not found. Available: {list(self._item_storage.keys())}")
+
+        return list(self._item_storage[profile_name].keys())

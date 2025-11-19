@@ -133,7 +133,12 @@ class TypeChecker(ASTVisitor):
         Raises:
             TypeCheckError: If path not in schema
         """
-        raise NotImplementedError("visit_path_access not yet implemented")
+        path_str = ".".join(node.segments)
+
+        if path_str not in self.schema:
+            raise TypeCheckError(f"Path '{path_str}' not found in schema. Available paths: {list(self.schema.keys())}")
+
+        return self.schema[path_str]
 
     def visit_binary_op(self, node: BinaryOp) -> str:
         """Type check binary operation.

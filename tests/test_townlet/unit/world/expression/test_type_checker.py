@@ -10,6 +10,7 @@ from townlet.world.expression.ast_nodes import (
     BinaryOp,
     Constant,
     OperatorType,
+    PathAccess,
     UnaryOp,
 )
 from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
@@ -134,3 +135,44 @@ class TestUnaryOperators:
 
         with pytest.raises(TypeCheckError, match="requires scalar"):
             checker.check(node)
+
+
+class TestPathAccess:
+    """Test type checking for path access."""
+
+    def test_type_check_path_access_valid(self):
+        """Type checker resolves valid paths from schema."""
+        schema = {
+            "bar.energy": "float",
+            "bar.health": "float",
+        }
+        checker = TypeChecker(schema=schema)
+
+        node = PathAccess(segments=["bar", "energy"])
+        result_type = checker.check(node)
+
+        assert result_type == "float"
+
+    def test_type_check_path_access_invalid(self):
+        """Type error for unknown path."""
+        schema = {
+            "bar.energy": "float",
+        }
+        checker = TypeChecker(schema=schema)
+
+        node = PathAccess(segments=["bar", "invalid"])
+
+        with pytest.raises(TypeCheckError, match="not found in schema"):
+            checker.check(node)
+
+    def test_type_check_nested_path(self):
+        """Type checker handles deeply nested paths."""
+        schema = {
+            "global.vfs.is_night": "bool",
+        }
+        checker = TypeChecker(schema=schema)
+
+        node = PathAccess(segments=["global", "vfs", "is_night"])
+        result_type = checker.check(node)
+
+        assert result_type == "bool"

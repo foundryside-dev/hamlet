@@ -105,3 +105,26 @@ def test_constant_visitor_integration():
     result = node.accept(visitor)
 
     assert result == "const(3.14)"
+
+
+def test_variable_node():
+    """Variable node holds simple identifiers."""
+    from townlet.world.expression.ast_nodes import Variable
+
+    node = Variable(name="intensity")
+    assert node.name == "intensity"
+
+
+def test_variable_visitor_integration():
+    """Variable node works with visitor pattern."""
+    from townlet.world.expression.ast_nodes import Variable
+
+    class VarVisitor(ASTVisitor):
+        def visit_variable(self, node):
+            return f"var({node.name})"
+
+    node = Variable(name="duration")
+    visitor = VarVisitor()
+    result = node.accept(visitor)
+
+    assert result == "var(duration)"

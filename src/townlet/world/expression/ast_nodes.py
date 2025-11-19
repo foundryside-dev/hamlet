@@ -119,3 +119,21 @@ class Constant(ASTNode):
 
     def accept(self, visitor: Any) -> Any:
         return visitor.visit_constant(self)
+
+
+@dataclass
+class Variable(ASTNode):
+    """A direct variable reference (simple identifier).
+
+    Examples:
+        - intensity
+        - duration
+        - slot_index
+
+    Note: For dotted paths use PathAccess instead.
+    """
+
+    name: str
+
+    def accept(self, visitor: Any) -> Any:
+        return visitor.visit_variable(self)

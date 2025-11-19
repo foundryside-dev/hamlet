@@ -262,7 +262,7 @@ class TypeChecker(ASTVisitor):
         Raises:
             TypeCheckError: If function unknown or argument types don't match signature
         """
-        raise NotImplementedError("visit_function_call not yet implemented")
+        raise NotImplementedError("Function call type checking deferred to Phase 2 (requires function registry with signatures)")
 
     def visit_if_then_else(self, node: IfThenElse) -> str:
         """Type check conditional expression.
@@ -275,8 +275,27 @@ class TypeChecker(ASTVisitor):
 
         Raises:
             TypeCheckError: If condition not bool or branches have incompatible types
+
+        Rules:
+            - Condition must be bool
+            - True and false branches must have same type
+            - Result type is branch type
         """
-        raise NotImplementedError("visit_if_then_else not yet implemented")
+        # Check condition is bool
+        cond_type = node.condition.accept(self)
+        if cond_type != "bool":
+            raise TypeCheckError(f"If condition must be bool, got {cond_type}")
+
+        # Check both branches
+        true_type = node.true_branch.accept(self)
+        false_type = node.false_branch.accept(self)
+
+        # Branches must match
+        if true_type != false_type:
+            raise TypeCheckError(f"If branches must have same type. Got {true_type} (true) and {false_type} (false)")
+
+        # Result type is branch type
+        return true_type
 
     def visit_index_access(self, node: IndexAccess) -> str:
         """Type check index access.
@@ -290,4 +309,4 @@ class TypeChecker(ASTVisitor):
         Raises:
             TypeCheckError: If base not indexable or index not int
         """
-        raise NotImplementedError("visit_index_access not yet implemented")
+        raise NotImplementedError("Index access type checking deferred to Phase 4 (requires tensor/array types)")

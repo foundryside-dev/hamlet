@@ -3,6 +3,8 @@
 from townlet.world.expression import (
     BinaryOp,
     Constant,
+    FunctionCall,
+    IfThenElse,
     OperatorType,
     PathAccess,
     UnaryOp,
@@ -279,3 +281,150 @@ def test_parse_double_negation():
     # Variable
     assert isinstance(result.operand.operand, Variable)
     assert result.operand.operand.name == "x"
+
+
+def test_parse_function_call_no_args():
+    """Parser converts 'get_time()' to FunctionCall('get_time', [])."""
+    parser = ExpressionParser()
+    result = parser.parse("get_time()")
+
+    assert isinstance(result, FunctionCall)
+    assert result.function_name == "get_time"
+    assert result.arguments == []
+
+
+def test_parse_function_call_single_arg():
+    """Parser converts 'abs(x)' to FunctionCall('abs', [Variable(x)])."""
+    parser = ExpressionParser()
+    result = parser.parse("abs(x)")
+
+    assert isinstance(result, FunctionCall)
+    assert result.function_name == "abs"
+    assert len(result.arguments) == 1
+    assert isinstance(result.arguments[0], Variable)
+    assert result.arguments[0].name == "x"
+
+
+def test_parse_function_call_multiple_args():
+    """Parser converts 'clamp(val, 0, 1)' to FunctionCall('clamp', [Variable, Constant, Constant])."""
+    parser = ExpressionParser()
+    result = parser.parse("clamp(val, 0, 1)")
+
+    assert isinstance(result, FunctionCall)
+    assert result.function_name == "clamp"
+    assert len(result.arguments) == 3
+    assert isinstance(result.arguments[0], Variable)
+    assert result.arguments[0].name == "val"
+    assert isinstance(result.arguments[1], Constant)
+    assert result.arguments[1].value == 0
+    assert isinstance(result.arguments[2], Constant)
+    assert result.arguments[2].value == 1
+
+
+def test_parse_function_call_string_arg():
+    """Parser converts 'distance_to_affordance("Fridge")' with string argument."""
+    parser = ExpressionParser()
+    result = parser.parse('distance_to_affordance("Fridge")')
+
+    assert isinstance(result, FunctionCall)
+    assert result.function_name == "distance_to_affordance"
+    assert len(result.arguments) == 1
+    assert isinstance(result.arguments[0], Constant)
+    assert result.arguments[0].value == "Fridge"
+
+
+def test_parse_nested_function_calls():
+    """Parser converts 'max(abs(x), abs(y))' with nested function calls."""
+    parser = ExpressionParser()
+    result = parser.parse("max(abs(x), abs(y))")
+
+    assert isinstance(result, FunctionCall)
+    assert result.function_name == "max"
+    assert len(result.arguments) == 2
+
+    # First argument: abs(x)
+    assert isinstance(result.arguments[0], FunctionCall)
+    assert result.arguments[0].function_name == "abs"
+    assert len(result.arguments[0].arguments) == 1
+    assert isinstance(result.arguments[0].arguments[0], Variable)
+    assert result.arguments[0].arguments[0].name == "x"
+
+    # Second argument: abs(y)
+    assert isinstance(result.arguments[1], FunctionCall)
+    assert result.arguments[1].function_name == "abs"
+    assert len(result.arguments[1].arguments) == 1
+    assert isinstance(result.arguments[1].arguments[0], Variable)
+    assert result.arguments[1].arguments[0].name == "y"
+
+
+def test_parse_if_then_else():
+    """Parser converts 'if x > 0 then 1 else -1' to IfThenElse node."""
+    parser = ExpressionParser()
+    result = parser.parse("if x > 0 then 1 else -1")
+
+    assert isinstance(result, IfThenElse)
+
+    # Condition: x > 0
+    assert isinstance(result.condition, BinaryOp)
+    assert result.condition.op == OperatorType.GT
+    assert isinstance(result.condition.left, Variable)
+    assert result.condition.left.name == "x"
+    assert isinstance(result.condition.right, Constant)
+    assert result.condition.right.value == 0
+
+    # Then branch: 1
+    assert isinstance(result.true_branch, Constant)
+    assert result.true_branch.value == 1
+
+    # Else branch: -1
+    assert isinstance(result.false_branch, UnaryOp)
+    assert result.false_branch.op == OperatorType.SUB
+    assert isinstance(result.false_branch.operand, Constant)
+    assert result.false_branch.operand.value == 1
+
+
+def test_parse_nested_if_then_else():
+    """Parser converts 'if a then (if b then 1 else 2) else 3' with nested conditionals."""
+    parser = ExpressionParser()
+    result = parser.parse("if a then (if b then 1 else 2) else 3")
+
+    assert isinstance(result, IfThenElse)
+
+    # Outer condition: a
+    assert isinstance(result.condition, Variable)
+    assert result.condition.name == "a"
+
+    # Then branch: if b then 1 else 2
+    assert isinstance(result.true_branch, IfThenElse)
+    assert isinstance(result.true_branch.condition, Variable)
+    assert result.true_branch.condition.name == "b"
+    assert isinstance(result.true_branch.true_branch, Constant)
+    assert result.true_branch.true_branch.value == 1
+    assert isinstance(result.true_branch.false_branch, Constant)
+    assert result.true_branch.false_branch.value == 2
+
+    # Else branch: 3
+    assert isinstance(result.false_branch, Constant)
+    assert result.false_branch.value == 3
+
+
+def test_parse_exponentiation_right_associative():
+    """Parser converts '2 ** 3 ** 4' to '2 ** (3 ** 4)' (right associative)."""
+    parser = ExpressionParser()
+    result = parser.parse("2 ** 3 ** 4")
+
+    # Root should be POW
+    assert isinstance(result, BinaryOp)
+    assert result.op == OperatorType.POW
+
+    # Left side should be Constant(2)
+    assert isinstance(result.left, Constant)
+    assert result.left.value == 2
+
+    # Right side should be BinaryOp(POW, Constant(3), Constant(4))
+    assert isinstance(result.right, BinaryOp)
+    assert result.right.op == OperatorType.POW
+    assert isinstance(result.right.left, Constant)
+    assert result.right.left.value == 3
+    assert isinstance(result.right.right, Constant)
+    assert result.right.right.value == 4

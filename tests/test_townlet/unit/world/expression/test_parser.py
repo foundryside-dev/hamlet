@@ -5,6 +5,7 @@ from townlet.world.expression import (
     Constant,
     OperatorType,
     PathAccess,
+    UnaryOp,
     Variable,
 )
 from townlet.world.expression.parser import ExpressionParser
@@ -238,3 +239,43 @@ def test_parse_parentheses_override_precedence():
     # Right side should be Variable(c)
     assert isinstance(result.right, Variable)
     assert result.right.name == "c"
+
+
+def test_parse_unary_minus():
+    """Parser converts '-x' to UnaryOp(SUB, Variable(x))."""
+    parser = ExpressionParser()
+    result = parser.parse("-x")
+
+    assert isinstance(result, UnaryOp)
+    assert result.op == OperatorType.SUB
+    assert isinstance(result.operand, Variable)
+    assert result.operand.name == "x"
+
+
+def test_parse_unary_not():
+    """Parser converts 'not active' to UnaryOp(NOT, Variable(active))."""
+    parser = ExpressionParser()
+    result = parser.parse("not active")
+
+    assert isinstance(result, UnaryOp)
+    assert result.op == OperatorType.NOT
+    assert isinstance(result.operand, Variable)
+    assert result.operand.name == "active"
+
+
+def test_parse_double_negation():
+    """Parser converts '--x' to UnaryOp(SUB, UnaryOp(SUB, Variable(x)))."""
+    parser = ExpressionParser()
+    result = parser.parse("--x")
+
+    # Outer negation
+    assert isinstance(result, UnaryOp)
+    assert result.op == OperatorType.SUB
+
+    # Inner negation
+    assert isinstance(result.operand, UnaryOp)
+    assert result.operand.op == OperatorType.SUB
+
+    # Variable
+    assert isinstance(result.operand.operand, Variable)
+    assert result.operand.operand.name == "x"

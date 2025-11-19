@@ -357,11 +357,11 @@ def test_index_access_constant():
     """IndexAccess supports constant indices."""
     from townlet.world.expression.ast_nodes import IndexAccess, Variable
 
-    target = Variable(name="items")
+    base = Variable(name="items")
     index = Constant(value=0)
-    node = IndexAccess(target=target, index=index)
+    node = IndexAccess(base=base, index=index)
 
-    assert node.target == target
+    assert node.base == base
     assert node.index == index
 
 
@@ -370,12 +370,12 @@ def test_index_access_computed():
     from townlet.world.expression.ast_nodes import BinaryOp, IndexAccess, Variable
 
     # values[i + 1]
-    target = Variable(name="values")
+    base = Variable(name="values")
     index = BinaryOp(Variable(name="i"), OperatorType.ADD, Constant(value=1))
-    node = IndexAccess(target=target, index=index)
+    node = IndexAccess(base=base, index=index)
 
     assert isinstance(node.index, BinaryOp)
-    assert node.target.name == "values"
+    assert node.base.name == "values"
 
 
 def test_index_access_nested():
@@ -383,12 +383,12 @@ def test_index_access_nested():
     from townlet.world.expression.ast_nodes import IndexAccess, Variable
 
     # matrix[row][col] represented as IndexAccess(IndexAccess(matrix, row), col)
-    inner = IndexAccess(Variable(name="matrix"), Variable(name="row"))
-    outer = IndexAccess(target=inner, index=Variable(name="col"))
+    inner = IndexAccess(base=Variable(name="matrix"), index=Variable(name="row"))
+    outer = IndexAccess(base=inner, index=Variable(name="col"))
 
-    assert isinstance(outer.target, IndexAccess)
+    assert isinstance(outer.base, IndexAccess)
     assert outer.index.name == "col"
-    assert outer.target.target.name == "matrix"
+    assert outer.base.base.name == "matrix"
 
 
 def test_index_access_visitor_integration():
@@ -397,7 +397,7 @@ def test_index_access_visitor_integration():
 
     class IndexVisitor(ASTVisitor):
         def visit_index_access(self, node):
-            return f"{node.target.name}[{node.index.value}]"
+            return f"{node.base.name}[{node.index.value}]"
 
         def visit_variable(self, node):
             return node
@@ -405,7 +405,7 @@ def test_index_access_visitor_integration():
         def visit_constant(self, node):
             return node
 
-    node = IndexAccess(Variable(name="items"), Constant(value=0))
+    node = IndexAccess(base=Variable(name="items"), index=Constant(value=0))
     visitor = IndexVisitor()
     result = node.accept(visitor)
 

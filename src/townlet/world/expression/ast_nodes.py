@@ -248,11 +248,11 @@ class IndexAccess(ASTNode):
         - prices[slot_idx + 1] (computed index)
         - matrix[row][col] (nested access - chained IndexAccess nodes)
 
-    Both target and index are AST nodes (can be nested expressions).
-    Target must evaluate to array/list, index to integer.
+    Both base and index are AST nodes (can be nested expressions).
+    Base must evaluate to array/list, index to integer.
     """
 
-    target: ASTNode
+    base: ASTNode
     index: ASTNode
 
     def accept(self, visitor: Any) -> Any:

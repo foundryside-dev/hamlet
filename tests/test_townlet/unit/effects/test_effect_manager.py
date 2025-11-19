@@ -2,7 +2,7 @@
 
 import pytest
 
-from townlet.config.effects_config import EffectDefinitionConfig, EffectsConfig, EffectScope, ReapplyPolicy
+from townlet.config.effects_config import CommandConfig, EffectDefinitionConfig, EffectsConfig, EffectScope, ReapplyPolicy
 from townlet.effects.catalog import EffectCatalog
 from townlet.effects.manager import ActiveEffect, EffectManager
 
@@ -176,3 +176,111 @@ def test_tick_handles_multiple_scopes(catalog_fixture):
 
     assert global_effect.elapsed_ticks == 1
     assert agent_effect.elapsed_ticks == 1
+
+
+# Step 5: Command Execution Integration Tests
+
+
+class MockCommandExecutor:
+    """Mock CommandExecutor for testing command execution integration."""
+
+    def __init__(self):
+        self.execute_commands_called = False
+        self.on_tick_call_count = 0
+        self.on_despawn_called = False
+        self.last_commands = None
+        self.last_context = None
+
+    def execute_commands(self, commands, context):
+        """Mock execute_commands method."""
+        self.execute_commands_called = True
+        self.last_commands = commands
+        self.last_context = context
+
+        # Track on_tick vs on_despawn by checking command list content
+        if commands:  # If there are commands
+            self.on_tick_call_count += 1
+
+
+@pytest.fixture
+def catalog_with_commands():
+    """Create a catalog with effects that have on_tick and on_despawn commands."""
+    config = EffectsConfig(
+        version="1.0",
+        effect_definitions=[
+            EffectDefinitionConfig(
+                id="regen",
+                scope=EffectScope.AGENT,
+                duration=50,
+                intensity=1.0,
+                reapply_policy=ReapplyPolicy.STACK,
+                observable=True,
+                on_spawn=[],
+                on_tick=[CommandConfig(modify="target.bar.energy", value="target.bar.energy + 0.1")],
+                on_despawn=[CommandConfig(modify="target.bar.energy", value="target.bar.energy + 5.0")],
+                on_interrupt=[],
+            ),
+            EffectDefinitionConfig(
+                id="buff",
+                scope=EffectScope.AGENT,
+                duration=2,
+                intensity=1.0,
+                reapply_policy=ReapplyPolicy.STACK,
+                observable=True,
+                on_spawn=[],
+                on_tick=[CommandConfig(modify="target.bar.health", value="target.bar.health + 0.5")],
+                on_despawn=[CommandConfig(modify="target.bar.health", value="target.bar.health + 10.0")],
+                on_interrupt=[],
+            ),
+        ],
+    )
+    return EffectCatalog.from_config(config)
+
+
+@pytest.fixture
+def mock_executor():
+    """Create a mock command executor."""
+    return MockCommandExecutor()
+
+
+def test_tick_executes_on_tick_commands(catalog_with_commands, mock_executor):
+    """tick() executes on_tick commands for each active effect."""
+    manager = EffectManager(catalog=catalog_with_commands, device="cpu")
+    manager.command_executor = mock_executor  # Inject mock
+
+    _ = manager.spawn_effect("regen", 3, EffectScope.AGENT, 50, 1.0, 100)
+
+    # Create minimal env_state mock
+    class EnvState:
+        pass
+
+    env_state = EnvState()
+
+    manager.tick(current_step=101, env_state=env_state)
+
+    # Verify command executor called
+    assert mock_executor.execute_commands_called
+    assert mock_executor.on_tick_call_count > 0
+
+
+def test_tick_executes_on_despawn_before_removal(catalog_with_commands, mock_executor):
+    """on_despawn commands execute before effect removed."""
+    manager = EffectManager(catalog=catalog_with_commands, device="cpu")
+    manager.command_executor = mock_executor
+
+    _ = manager.spawn_effect("buff", 5, EffectScope.AGENT, 2, 1.0, 200)
+
+    class EnvState:
+        pass
+
+    env_state = EnvState()
+
+    manager.tick(current_step=201, env_state=env_state)  # remaining=1
+    initial_call_count = mock_executor.on_tick_call_count
+
+    manager.tick(current_step=202, env_state=env_state)  # remaining=0, despawn
+
+    # Verify on_despawn executed (call count increased again)
+    assert mock_executor.on_tick_call_count > initial_call_count
+    # Verify effect removed
+    assert 5 not in manager.agent_effects or len(manager.agent_effects[5]) == 0

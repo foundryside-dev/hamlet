@@ -36,15 +36,17 @@ class ActiveEffect:
 class EffectManager:
     """Manages all active effects across all entities."""
 
-    def __init__(self, catalog, device: str = "cpu"):
+    def __init__(self, catalog, device: str = "cpu", command_executor=None):
         """Initialize effect manager with compiled catalog.
 
         Args:
             catalog: Compiled EffectCatalog from world compiler
             device: PyTorch device for tensor operations
+            command_executor: CommandExecutor for running effect commands (optional)
         """
         self.catalog = catalog
         self.device = device
+        self.command_executor = command_executor
         self.current_step = 0  # Track environment step
         self.next_instance_id = 0
 
@@ -191,14 +193,16 @@ class EffectManager:
         if collection is not None and effect in collection:
             collection.remove(effect)
 
-    def tick(self, current_step: int) -> None:
+    def tick(self, current_step: int, env_state=None) -> None:
         """Execute all active effects for one timestep.
 
         Updates lifecycle counters (elapsed_ticks, duration_remaining) and
-        removes expired effects.
+        removes expired effects. Executes on_tick and on_despawn commands
+        if command_executor is configured.
 
         Args:
             current_step: Current environment step
+            env_state: Environment state for command execution (optional)
         """
         self.current_step = current_step
 
@@ -215,16 +219,49 @@ class EffectManager:
             for i in range(len(collection) - 1, -1, -1):
                 effect = collection[i]
 
+                # Execute on_tick commands if executor available
+                if self.command_executor and env_state:
+                    context = self._build_context(effect, env_state)
+                    effect_def = self.catalog.effects[effect.effect_id]
+                    self.command_executor.execute_commands(effect_def.on_tick, context)
+
                 # Update lifecycle
                 effect.elapsed_ticks += 1
                 effect.duration_remaining -= 1
 
                 # Check for expiry
                 if effect.duration_remaining <= 0:
+                    # Execute on_despawn commands before removal
+                    if self.command_executor and env_state:
+                        context = self._build_context(effect, env_state)
+                        effect_def = self.catalog.effects[effect.effect_id]
+                        self.command_executor.execute_commands(effect_def.on_despawn, context)
+
                     # Despawn (remove from collection)
                     collection.pop(i)
 
-                    # TODO: Execute on_despawn commands in Step 5
+    def _build_context(self, effect: ActiveEffect, env_state):
+        """Build ExecutionContext for effect.
+
+        Args:
+            effect: Active effect instance
+            env_state: Environment state (bars, VFS, etc.)
+
+        Returns:
+            ExecutionContext with effect and target references
+        """
+        from townlet.effects.context import ExecutionContext
+
+        # Extract state from env_state
+        bars = getattr(env_state, "bars", None)
+        vfs_registry = getattr(env_state, "vfs_registry", None)
+
+        return ExecutionContext(
+            bars=bars,
+            vfs_registry=vfs_registry,
+            self_index=None,  # Not used in effect context
+            target_index=effect.target_entity_id,
+        )
 
     def get_all_active_effects(self) -> list[ActiveEffect]:
         """Get all active effects across all scopes (for testing).

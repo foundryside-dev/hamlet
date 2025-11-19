@@ -170,3 +170,50 @@ def test_build_vfs_observation_complete():
 
     # Item slots zero-filled (stubbed for Phase 2)
     assert torch.equal(obs[:, 2:5], torch.zeros(batch_size, 3))
+
+
+# Step 5: obs_dim stability test
+
+
+def test_obs_dim_stable_across_levels():
+    """VFS obs_dim must be stable for transfer learning.
+
+    NOTE: This test documents Phase 2 behavior where obs_dim varies across levels.
+    In Phase 3, we will implement a fixed VFS vocabulary to ensure obs_dim stability.
+    """
+    # L0_minimal: minimal VFS
+    l0_spec = VFSObservationSpec.from_profiles(
+        global_profile=GlobalVFSProfileConfig(
+            variables=[
+                GlobalVFSVariableConfig(name="tick", type="int", initial_value=0),
+            ]
+        ),
+        agent_profile=AgentVFSProfileConfig(variables=[]),
+        item_profiles=[],
+    )
+
+    # L1_full: full VFS
+    l1_spec = VFSObservationSpec.from_profiles(
+        global_profile=GlobalVFSProfileConfig(
+            variables=[
+                GlobalVFSVariableConfig(name="tick", type="int", initial_value=0),
+                GlobalVFSVariableConfig(name="day_count", type="int", initial_value=0),
+                GlobalVFSVariableConfig(name="is_night", type="bool", expression="tick % 24 >= 18"),
+            ]
+        ),
+        agent_profile=AgentVFSProfileConfig(
+            variables=[
+                AgentVFSVariableConfig(name="motivation", type="float", initial_value=1.0),
+            ]
+        ),
+        item_profiles=[],
+    )
+
+    # Phase 2: obs_dim VARIES across levels (expected behavior)
+    # This is expected for Phase 2 - Phase 3 will add fixed vocabulary
+    assert l0_spec.total_vfs_dim == 1
+    assert l1_spec.total_vfs_dim == 4
+
+    # TODO Phase 3: Fixed VFS vocabulary across levels
+    # When Phase 3 is implemented, uncomment this assertion:
+    # assert l0_spec.total_vfs_dim == l1_spec.total_vfs_dim

@@ -4,6 +4,8 @@ import pytest
 from pydantic import ValidationError
 
 from townlet.config.vfs_profiles_config import (
+    AgentVFSProfileConfig,
+    AgentVFSVariableConfig,
     GlobalVFSVariableConfig,
 )
 
@@ -56,4 +58,54 @@ def test_global_vfs_variable_rejects_both():
             type="int",
             initial_value=5,
             expression="bar.energy + 1",
+        )
+
+
+def test_agent_vfs_variable_with_initial_value():
+    """Agent VFS variable with static initial value."""
+    config = AgentVFSVariableConfig(
+        name="motivation",
+        type="float",
+        initial_value=1.0,
+        description="Agent's intrinsic motivation",
+    )
+
+    assert config.name == "motivation"
+    assert config.type == "float"
+    assert config.initial_value == 1.0
+
+
+def test_agent_vfs_variable_with_expression():
+    """Agent VFS variable with computed expression."""
+    config = AgentVFSVariableConfig(
+        name="is_crisis",
+        type="bool",
+        expression="bar.energy < 0.2 or bar.health < 0.2",
+        description="True when agent is in resource crisis",
+    )
+
+    assert config.name == "is_crisis"
+    assert config.expression == "bar.energy < 0.2 or bar.health < 0.2"
+
+
+def test_agent_vfs_variable_with_reference_type():
+    """Agent VFS can reference other entities."""
+    config = AgentVFSVariableConfig(
+        name="nearest_food",
+        type="item_ref",
+        expression="nearest(items, self.position, type='food')",
+        description="Reference to nearest food item",
+    )
+
+    assert config.type == "item_ref"
+
+
+def test_agent_vfs_profile_unique_names():
+    """Agent VFS profile rejects duplicate variable names."""
+    with pytest.raises(ValidationError, match="Duplicate"):
+        AgentVFSProfileConfig(
+            variables=[
+                AgentVFSVariableConfig(name="x", type="int", initial_value=0),
+                AgentVFSVariableConfig(name="x", type="int", initial_value=1),
+            ]
         )

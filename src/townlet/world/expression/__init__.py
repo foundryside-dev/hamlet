@@ -34,6 +34,7 @@ from townlet.world.expression.ast_nodes import (
     Variable,
 )
 from townlet.world.expression.parser import ExpressionParser
+from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
 
 __all__ = [
     "ASTNode",
@@ -46,6 +47,8 @@ __all__ = [
     "IndexAccess",
     "OperatorType",
     "PathAccess",
+    "TypeCheckError",
+    "TypeChecker",
     "UnaryOp",
     "Variable",
 ]

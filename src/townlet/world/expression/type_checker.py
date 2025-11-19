@@ -21,8 +21,6 @@ Design:
     - Raises TypeCheckError on violations
 """
 
-from typing import Any
-
 from townlet.world.expression.ast_nodes import (
     ASTNode,
     ASTVisitor,
@@ -62,7 +60,7 @@ class TypeChecker(ASTVisitor):
         schema: Type schema for variables/paths (e.g., {"energy": "float", "is_night": "bool"})
     """
 
-    def __init__(self, schema: dict[str, Any]):
+    def __init__(self, schema: dict[str, str]):
         """Initialize type checker with schema.
 
         Args:
@@ -83,7 +81,9 @@ class TypeChecker(ASTVisitor):
         Raises:
             TypeCheckError: If type checking fails
         """
-        return node.accept(self)
+        result = node.accept(self)
+        # Type cast for mypy - visitor methods return str
+        return str(result)
 
     def visit_constant(self, node: Constant) -> str:
         """Infer type from constant value.
@@ -240,7 +240,8 @@ class TypeChecker(ASTVisitor):
         if node.op == OperatorType.SUB:  # Negation
             if not is_numeric(operand_type):
                 raise TypeCheckError(f"Unary negation requires scalar operand, got {operand_type}")
-            return operand_type
+            # Type cast for mypy - operand_type is str from visitor
+            return str(operand_type)
 
         elif node.op == OperatorType.NOT:
             if operand_type != "bool":
@@ -294,8 +295,8 @@ class TypeChecker(ASTVisitor):
         if true_type != false_type:
             raise TypeCheckError(f"If branches must have same type. Got {true_type} (true) and {false_type} (false)")
 
-        # Result type is branch type
-        return true_type
+        # Result type is branch type (type cast for mypy)
+        return str(true_type)
 
     def visit_index_access(self, node: IndexAccess) -> str:
         """Type check index access.

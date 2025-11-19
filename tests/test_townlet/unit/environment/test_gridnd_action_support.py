@@ -21,54 +21,13 @@ from townlet.environment.vectorized_env import VectorizedHamletEnv
 def gridnd_4d_config_pack(tmp_path: Path) -> Path:
     """Create a temporary config pack backed by a 4D GridND substrate."""
     project_root = Path(__file__).parent.parent.parent.parent.parent
-    source_config = project_root / "configs" / "L1_3D_house"
+    source_config = project_root / "configs" / "test" / "gridnd_4d_pack"
     dest_config = tmp_path / "gridnd_4d_support"
 
     shutil.copytree(source_config, dest_config)
-
-    substrate_yaml = dest_config / "substrate.yaml"
-    substrate_yaml.write_text(
-        """version: "1.0"
-description: "4D hypercube grid for action support tests"
-type: "gridnd"
-
-gridnd:
-  dimension_sizes: [5, 5, 5, 5]
-  boundary: "clamp"
-  distance_metric: "manhattan"
-  observation_encoding: "relative"
-  topology: "hypercube"
-"""
-    )
-
-    # Update VFS config to match 4D substrate (L1_3D_house has 3D position)
-    import yaml
-
-    vfs_yaml = dest_config / "variables_reference.yaml"
-    with open(vfs_yaml) as f:
-        vfs_config = yaml.safe_load(f)
-
-    # Find and update position variable from 3D to 4D
-    for var in vfs_config["variables"]:
-        if var["id"] == "position":
-            var["dims"] = 4
-            var["default"] = [0.0, 0.0, 0.0, 0.0]
-            var["description"] = "Normalized agent position (4D) in [0, 1]^4 range"
-            break
-
-    # Update normalization spec for position observation (must match dims)
-    for obs in vfs_config.get("exposed_observations", []):
-        if obs["id"] == "obs_position":
-            # Update shape to match 4D
-            obs["shape"] = [4]
-            # Update normalization min/max to 4D arrays (were 3D)
-            if obs.get("normalization"):
-                obs["normalization"]["min"] = [0.0, 0.0, 0.0, 0.0]
-                obs["normalization"]["max"] = [1.0, 1.0, 1.0, 1.0]
-            break
-
-    with open(vfs_yaml, "w") as f:
-        yaml.safe_dump(vfs_config, f, sort_keys=False)
+    cache_dir = dest_config / ".compiled"
+    if cache_dir.exists():
+        shutil.rmtree(cache_dir)
 
     return dest_config
 
@@ -76,13 +35,15 @@ gridnd:
 @pytest.fixture
 def gridnd_env(
     gridnd_4d_config_pack: Path,
-    compile_universe,
     cpu_device: torch.device,
 ) -> VectorizedHamletEnv:
     """Instantiate a 4D GridND environment for action support tests."""
-    universe = compile_universe(gridnd_4d_config_pack)
+    from townlet.universe.compiler import UniverseCompiler
+
+    universe = UniverseCompiler().compile(gridnd_4d_config_pack, use_cache=False)
     return VectorizedHamletEnv.from_universe(
         universe,
+        level_name="L0_test",
         num_agents=1,
         device=cpu_device,
     )

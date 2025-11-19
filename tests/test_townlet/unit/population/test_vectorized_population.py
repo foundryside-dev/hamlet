@@ -15,6 +15,36 @@ from townlet.agent.brain_config import (
 from townlet.population.vectorized import VectorizedPopulation
 
 
+def _make_population(
+    env,
+    curriculum,
+    exploration,
+    device,
+    brain_config,
+    **overrides,
+):
+    """Create VectorizedPopulation with explicit required runtime params for tests."""
+
+    params = {
+        "obs_dim": env.observation_dim,
+        "action_dim": env.action_dim,
+        "train_frequency": 1,
+        "batch_size": 32,
+        "sequence_length": 1,
+        "max_grad_norm": 10.0,
+    }
+    params.update(overrides)
+    return VectorizedPopulation(
+        env=env,
+        curriculum=curriculum,
+        exploration=exploration,
+        agent_ids=["agent_0"],
+        device=device,
+        brain_config=brain_config,
+        **params,
+    )
+
+
 class TestDoubleDQNConfiguration:
     """Test Double DQN parameter plumbing."""
 
@@ -61,11 +91,10 @@ class TestDoubleDQNConfiguration:
             ),
         )
 
-        population = VectorizedPopulation(
+        population = _make_population(
             env=basic_env,
             curriculum=adversarial_curriculum,
             exploration=epsilon_greedy_exploration,
-            agent_ids=["agent_0"],
             device=cpu_device,
             brain_config=brain_config,
         )
@@ -82,11 +111,10 @@ class TestDoubleDQNConfiguration:
     ):
         """VectorizedPopulation with use_double_dqn=False in brain_config uses vanilla DQN."""
         # minimal_brain_config has use_double_dqn: false
-        population = VectorizedPopulation(
+        population = _make_population(
             env=basic_env,
             curriculum=adversarial_curriculum,
             exploration=epsilon_greedy_exploration,
-            agent_ids=["agent_0"],
             device=cpu_device,
             brain_config=minimal_brain_config,
         )
@@ -170,20 +198,18 @@ class TestDoubleDQNConfiguration:
             ),
         )
 
-        pop_vanilla = VectorizedPopulation(
+        pop_vanilla = _make_population(
             env=basic_env,
             curriculum=adversarial_curriculum,
             exploration=epsilon_greedy_exploration,
-            agent_ids=["agent_0"],
             device=cpu_device,
             brain_config=brain_config_vanilla,
         )
 
-        pop_double = VectorizedPopulation(
+        pop_double = _make_population(
             env=basic_env,
             curriculum=adversarial_curriculum,
             exploration=epsilon_greedy_exploration,
-            agent_ids=["agent_0"],
             device=cpu_device,
             brain_config=brain_config_double,
         )
@@ -241,14 +267,12 @@ class TestBrainConfigIntegration:
         simple_brain_config,
     ):
         """VectorizedPopulation should accept brain_config parameter."""
-        population = VectorizedPopulation(
+        population = _make_population(
             env=basic_env,
             curriculum=adversarial_curriculum,
             exploration=epsilon_greedy_exploration,
-            agent_ids=["agent_0"],
             device=cpu_device,
             brain_config=simple_brain_config,
-            batch_size=32,
         )
 
         assert population.brain_config is simple_brain_config
@@ -262,11 +286,10 @@ class TestBrainConfigIntegration:
         simple_brain_config,
     ):
         """VectorizedPopulation should build Q-network from brain_config."""
-        population = VectorizedPopulation(
+        population = _make_population(
             env=basic_env,
             curriculum=adversarial_curriculum,
             exploration=epsilon_greedy_exploration,
-            agent_ids=["agent_0"],
             device=cpu_device,
             brain_config=simple_brain_config,
         )
@@ -290,11 +313,10 @@ class TestBrainConfigIntegration:
         simple_brain_config,
     ):
         """VectorizedPopulation should build optimizer from brain_config."""
-        population = VectorizedPopulation(
+        population = _make_population(
             env=basic_env,
             curriculum=adversarial_curriculum,
             exploration=epsilon_greedy_exploration,
-            agent_ids=["agent_0"],
             device=cpu_device,
             brain_config=simple_brain_config,
         )
@@ -349,11 +371,10 @@ class TestBrainConfigIntegration:
             ),
         )
 
-        population = VectorizedPopulation(
+        population = _make_population(
             env=basic_env,
             curriculum=adversarial_curriculum,
             exploration=epsilon_greedy_exploration,
-            agent_ids=["agent_0"],
             device=cpu_device,
             brain_config=brain_config,
         )
@@ -408,11 +429,10 @@ class TestBrainConfigIntegration:
             ),
         )
 
-        population = VectorizedPopulation(
+        population = _make_population(
             env=basic_env,
             curriculum=adversarial_curriculum,
             exploration=epsilon_greedy_exploration,
-            agent_ids=["agent_0"],
             device=cpu_device,
             brain_config=brain_config,
         )
@@ -487,7 +507,7 @@ class TestRecurrentNetworkSupport:
                 weight_decay=0.0,
                 schedule=ScheduleConfig(type="constant"),
             ),
-            loss=LossConfig(type="huber"),
+            loss=LossConfig(type="huber", huber_delta=1.0),
             q_learning=QLearningConfig(
                 gamma=0.99,
                 target_update_frequency=100,
@@ -499,13 +519,13 @@ class TestRecurrentNetworkSupport:
             ),
         )
 
-        population = VectorizedPopulation(
+        population = _make_population(
             env=basic_env,
             curriculum=adversarial_curriculum,
             exploration=epsilon_greedy_exploration,
-            agent_ids=["agent_0"],
             device=cpu_device,
             brain_config=brain_config,
+            sequence_length=brain_config.q_learning.sequence_length if hasattr(brain_config.q_learning, "sequence_length") else 1,
         )
 
         # Should build RecurrentSpatialQNetwork
@@ -575,7 +595,7 @@ class TestRecurrentNetworkSupport:
                 weight_decay=0.0,
                 schedule=ScheduleConfig(type="constant"),
             ),
-            loss=LossConfig(type="huber"),
+            loss=LossConfig(type="huber", huber_delta=1.0),
             q_learning=QLearningConfig(
                 gamma=0.99,
                 target_update_frequency=100,
@@ -589,13 +609,13 @@ class TestRecurrentNetworkSupport:
 
         # Pass brain_config with recurrent architecture
         # The is_recurrent flag should come from brain_config.architecture.type
-        population = VectorizedPopulation(
+        population = _make_population(
             env=basic_env,
             curriculum=adversarial_curriculum,
             exploration=epsilon_greedy_exploration,
-            agent_ids=["agent_0"],
             device=cpu_device,
             brain_config=recurrent_config,
+            sequence_length=1,
         )
 
         # CRITICAL: is_recurrent should be True (from brain_config.architecture.type)
@@ -616,24 +636,23 @@ class TestRecurrentNetworkSupport:
     ):
         """is_recurrent should be inferred from brain_config architecture type."""
         # Test feedforward network
-        population_feedforward = VectorizedPopulation(
+        population_feedforward = _make_population(
             env=basic_env,
             curriculum=adversarial_curriculum,
             exploration=epsilon_greedy_exploration,
-            agent_ids=["agent_0"],
             device=cpu_device,
             brain_config=minimal_brain_config,
         )
         assert population_feedforward.is_recurrent is False
 
         # Test recurrent network
-        population_recurrent = VectorizedPopulation(
+        population_recurrent = _make_population(
             env=basic_env,
             curriculum=adversarial_curriculum,
             exploration=epsilon_greedy_exploration,
-            agent_ids=["agent_0"],
             device=cpu_device,
             brain_config=recurrent_brain_config,
+            sequence_length=1,
         )
         assert population_recurrent.is_recurrent is True
 
@@ -698,7 +717,7 @@ class TestRecurrentNetworkSupport:
                 weight_decay=0.0,
                 schedule=ScheduleConfig(type="constant"),
             ),
-            loss=LossConfig(type="huber"),
+            loss=LossConfig(type="huber", huber_delta=1.0),
             q_learning=QLearningConfig(
                 gamma=0.99,
                 target_update_frequency=100,
@@ -710,13 +729,13 @@ class TestRecurrentNetworkSupport:
             ),
         )
 
-        population = VectorizedPopulation(
+        population = _make_population(
             env=basic_env,
             curriculum=adversarial_curriculum,
             exploration=epsilon_greedy_exploration,
-            agent_ids=["agent_0"],
             device=cpu_device,
             brain_config=brain_config,
+            sequence_length=1,
         )
 
         # LSTM hidden size should come from config (128), not hardcoded (256)
@@ -774,11 +793,10 @@ class TestSchedulerIntegration:
             ),
         )
 
-        population = VectorizedPopulation(
+        population = _make_population(
             env=basic_env,
             curriculum=adversarial_curriculum,
             exploration=epsilon_greedy_exploration,
-            agent_ids=["agent_0"],
             device=cpu_device,
             brain_config=brain_config,
         )
@@ -829,11 +847,10 @@ class TestSchedulerIntegration:
             ),
         )
 
-        population = VectorizedPopulation(
+        population = _make_population(
             env=basic_env,
             curriculum=adversarial_curriculum,
             exploration=epsilon_greedy_exploration,
-            agent_ids=["agent_0"],
             device=cpu_device,
             brain_config=brain_config,
         )
@@ -889,11 +906,10 @@ class TestSchedulerIntegration:
             ),
         )
 
-        population = VectorizedPopulation(
+        population = _make_population(
             env=basic_env,
             curriculum=adversarial_curriculum,
             exploration=epsilon_greedy_exploration,
-            agent_ids=["agent_0"],
             device=cpu_device,
             brain_config=brain_config,
         )
@@ -916,6 +932,7 @@ class TestSchedulerIntegration:
         universe = compile_universe(test_config_pack_path)
         env = VectorizedHamletEnv.from_universe(
             universe,
+            level_name="L0_test",
             num_agents=1,
             device=cpu_device,
         )
@@ -958,14 +975,13 @@ class TestSchedulerIntegration:
         )
 
         # Create population with scheduler
-        population1 = VectorizedPopulation(
+        population1 = _make_population(
             env=env,
             curriculum=adversarial_curriculum,
             exploration=epsilon_greedy_exploration,
-            agent_ids=["agent_0"],
             device=cpu_device,
-            obs_dim=env.observation_dim,  # Use actual observation dimension
             brain_config=brain_config,
+            obs_dim=env.observation_dim,
         )
 
         # Initialize curriculum
@@ -999,14 +1015,13 @@ class TestSchedulerIntegration:
         assert checkpoint["scheduler"]["last_epoch"] == initial_step_count
 
         # Create new population
-        population2 = VectorizedPopulation(
+        population2 = _make_population(
             env=env,
             curriculum=adversarial_curriculum,
             exploration=epsilon_greedy_exploration,
-            agent_ids=["agent_0"],
             device=cpu_device,
-            obs_dim=env.observation_dim,  # Use actual observation dimension
             brain_config=brain_config,
+            obs_dim=env.observation_dim,
         )
 
         # Verify new population starts at step 0
@@ -1065,11 +1080,10 @@ class TestSchedulerIntegration:
         )
 
         # Create population
-        population = VectorizedPopulation(
+        population = _make_population(
             env=basic_env,
             curriculum=adversarial_curriculum,
             exploration=epsilon_greedy_exploration,
-            agent_ids=["agent_0"],
             device=cpu_device,
             brain_config=brain_config,
         )
@@ -1079,11 +1093,10 @@ class TestSchedulerIntegration:
         del checkpoint["scheduler"]  # Remove scheduler state to simulate old checkpoint
 
         # Create new population
-        population2 = VectorizedPopulation(
+        population2 = _make_population(
             env=basic_env,
             curriculum=adversarial_curriculum,
             exploration=epsilon_greedy_exploration,
-            agent_ids=["agent_0"],
             device=cpu_device,
             brain_config=brain_config,
         )
@@ -1108,5 +1121,10 @@ def test_brain_config_none_raises_valueerror(basic_env, adversarial_curriculum, 
             exploration=epsilon_greedy_exploration,
             agent_ids=["agent_0"],
             device=cpu_device,
+            obs_dim=basic_env.observation_dim,
+            train_frequency=1,
+            batch_size=32,
+            sequence_length=1,
+            max_grad_norm=10.0,
             brain_config=None,  # Should raise ValueError
         )

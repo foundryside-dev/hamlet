@@ -17,6 +17,8 @@ from townlet.curriculum.static import StaticCurriculum
 from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
 from townlet.population.vectorized import VectorizedPopulation
 
+TRAIN_KWARGS = dict(train_frequency=1, batch_size=16, sequence_length=1, max_grad_norm=1.0)
+
 # =============================================================================
 # TEST CLASS 1: RND Intrinsic Rewards
 # =============================================================================
@@ -61,9 +63,9 @@ class TestRNDIntrinsicRewards:
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=obs_dim,  # Must match environment's observation dimension
-            # action_dim defaults to env.action_dim
             brain_config=minimal_brain_config,
-            batch_size=16,
+            action_dim=env.action_dim,
+            **TRAIN_KWARGS,
         )
 
         # Reset environment
@@ -117,9 +119,9 @@ class TestRNDIntrinsicRewards:
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=obs_dim,  # Must match environment's observation dimension
-            # action_dim defaults to env.action_dim
             brain_config=minimal_brain_config,
-            batch_size=16,
+            action_dim=env.action_dim,
+            **TRAIN_KWARGS,
         )
 
         # Reset and step
@@ -184,9 +186,9 @@ class TestRNDIntrinsicRewards:
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=obs_dim,  # Must match environment's observation dimension
-            # action_dim defaults to env.action_dim
             brain_config=minimal_brain_config,
-            batch_size=16,
+            action_dim=env.action_dim,
+            **TRAIN_KWARGS,
         )
 
         # Reset and run 5 steps

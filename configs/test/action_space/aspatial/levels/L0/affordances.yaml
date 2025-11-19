@@ -1,0 +1,14 @@
+affordances:
+  version: "1.0"
+  affordances:
+    - name: Bed
+      interaction_type: instant
+      costs: {}
+      effects:
+        energy: 0.1
+      opening_hours:
+        enabled: false
+      deployment:
+        type: random
+        positions: []
+  modulations: []

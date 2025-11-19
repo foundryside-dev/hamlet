@@ -20,7 +20,17 @@ def convert_to_instant_mode(affordances_yaml: Path) -> None:
     with open(affordances_yaml) as f:
         data = yaml.safe_load(f)
 
-    for aff in data.get("affordances", []):
+    # Handle both v2.1 nested shape {"affordances": {"version": "...", "affordances": [...]}}
+    # and flat legacy shape {"affordances": [...]}
+    raw_affordances = data.get("affordances", [])
+    if isinstance(raw_affordances, dict):
+        aff_list = raw_affordances.get("affordances", [])
+    else:
+        aff_list = raw_affordances
+
+    for aff in aff_list:
+        if not isinstance(aff, dict):
+            continue
         # Force instant mode
         aff["interaction_type"] = "instant"
 
@@ -34,52 +44,56 @@ def convert_to_instant_mode(affordances_yaml: Path) -> None:
 
         # Convert effect_pipeline for instant mode
         # Keep effect_pipeline but move everything to on_start for instant execution
-        if "effect_pipeline" in aff:
-            pipeline = aff["effect_pipeline"]
+        pipeline = aff.get("effect_pipeline")
+        if pipeline is None and "effects" in aff and isinstance(aff["effects"], dict):
+            # v2.1 schema uses dict of meter -> amount; convert to on_start list
+            pipeline = {"on_start": [{"meter": m, "amount": v} for m, v in aff["effects"].items()]}
 
-            # Combine all effects into on_start for instant mode
-            # Merge effects for the same meter to avoid multiple entries
-            effect_totals = {}
-            if isinstance(pipeline, dict):
-                # Collect all effects
-                all_effects = []
-                all_effects.extend(pipeline.get("on_start", []))
-                all_effects.extend(pipeline.get("on_completion", []))
+        # Combine all effects into on_start for instant mode
+        # Merge effects for the same meter to avoid multiple entries
+        effect_totals = {}
+        if isinstance(pipeline, dict):
+            # Collect all effects
+            all_effects = []
+            all_effects.extend(pipeline.get("on_start", []))
+            all_effects.extend(pipeline.get("on_completion", []))
 
-                # Scale per_tick effects by duration_ticks
-                for effect in pipeline.get("per_tick", []):
-                    scaled_effect = effect.copy()
-                    if "amount" in scaled_effect:
-                        scaled_effect["amount"] = scaled_effect["amount"] * duration_ticks
-                    all_effects.append(scaled_effect)
+            # Scale per_tick effects by duration_ticks
+            for effect in pipeline.get("per_tick", []):
+                scaled_effect = effect.copy()
+                if isinstance(scaled_effect, dict) and "amount" in scaled_effect:
+                    scaled_effect["amount"] = scaled_effect["amount"] * duration_ticks
+                all_effects.append(scaled_effect)
 
-                # Merge effects by meter
-                for effect in all_effects:
-                    meter = effect.get("meter")
-                    if meter:
-                        if meter not in effect_totals:
-                            effect_totals[meter] = {"meter": meter, "amount": 0.0}
-                        effect_totals[meter]["amount"] += effect.get("amount", 0.0)
+            # Merge effects by meter
+            for effect in all_effects:
+                if not isinstance(effect, dict):
+                    continue
+                meter = effect.get("meter")
+                if meter:
+                    if meter not in effect_totals:
+                        effect_totals[meter] = {"meter": meter, "amount": 0.0}
+                    effect_totals[meter]["amount"] += effect.get("amount", 0.0)
 
-                instant_effects = list(effect_totals.values())
-
-            # Replace pipeline with instant-only effects
-            aff["effect_pipeline"] = {
-                "on_start": instant_effects,
-                "per_tick": [],
-                "on_completion": [],
-                "on_early_exit": [],
-                "on_failure": [],
-            }
+            instant_effects = list(effect_totals.values())
         else:
-            # Ensure effect_pipeline exists even if empty
-            aff["effect_pipeline"] = {
-                "on_start": [],
-                "per_tick": [],
-                "on_completion": [],
-                "on_early_exit": [],
-                "on_failure": [],
-            }
+            instant_effects = []
+
+        # Replace pipeline with instant-only effects
+        aff["effect_pipeline"] = {
+            "on_start": instant_effects,
+            "per_tick": [],
+            "on_completion": [],
+            "on_early_exit": [],
+            "on_failure": [],
+        }
+
+    # If nested schema, write back into same place
+    if isinstance(raw_affordances, dict):
+        raw_affordances["affordances"] = aff_list
+        data["affordances"] = raw_affordances
+    else:
+        data["affordances"] = aff_list
 
     # Write back
     with open(affordances_yaml, "w") as f:

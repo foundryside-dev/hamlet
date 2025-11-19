@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import yaml
 
+from tests.test_townlet.helpers.config_builder import _get_primary_level_dir
+
 
 def test_config_pack_factory_returns_unique_directories(config_pack_factory):
     """Each invocation should return a distinct, existing directory."""
@@ -24,7 +26,8 @@ def test_config_pack_factory_applies_modifier(config_pack_factory):
 
     pack = config_pack_factory(modifier=_modifier)
 
-    with open(pack / "training.yaml") as handle:
+    level_dir = _get_primary_level_dir(pack)
+    with open(level_dir / "training.yaml") as handle:
         training = yaml.safe_load(handle)
 
     assert training["environment"]["grid_size"] == 5

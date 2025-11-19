@@ -13,7 +13,7 @@ import torch
 
 from tests.test_townlet._fixtures.config import _apply_config_overrides
 from tests.test_townlet._fixtures.instant_affordances_helper import convert_to_instant_mode
-from tests.test_townlet.helpers.config_builder import mutate_training_yaml
+from tests.test_townlet.helpers.config_builder import _get_primary_level_dir, mutate_training_yaml
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.universe.compiled import CompiledUniverse
 
@@ -43,6 +43,7 @@ def basic_env(
     universe = compile_universe(test_config_pack_path)
     return VectorizedHamletEnv.from_universe(
         universe,
+        level_name="L0_test",
         num_agents=1,
         device=device,
     )
@@ -73,17 +74,20 @@ def instant_env(
     Returns:
         VectorizedHamletEnv instance with instant-mode affordances
     """
-    # Copy test config to temp directory
+    # Copy test config to temp directory (canonical v2.1 model config pack)
     instant_config_pack = tmp_path / "instant_config"
     shutil.copytree(test_config_pack_path, instant_config_pack)
 
-    # Convert affordances to instant mode
-    convert_to_instant_mode(instant_config_pack / "affordances.yaml")
+    # Resolve primary level from experiment.yaml and convert that level's
+    # affordances to instant mode.
+    level_dir = _get_primary_level_dir(instant_config_pack)
+    convert_to_instant_mode(level_dir / "affordances.yaml")
 
     # Compile and return environment
     universe = compile_universe(instant_config_pack)
     return VectorizedHamletEnv.from_universe(
         universe,
+        level_name="L0_test",
         num_agents=1,
         device=device,
     )
@@ -106,9 +110,10 @@ def pomdp_env(
     Returns:
         VectorizedHamletEnv instance with POMDP
     """
-    universe = compile_universe(Path("configs/L2_partial_observability"))
+    universe = compile_universe(Path("configs/default_curriculum"))
     return VectorizedHamletEnv.from_universe(
         universe,
+        level_name="L2_partial_observability",
         num_agents=1,
         device=device,
     )
@@ -131,9 +136,10 @@ def temporal_env(
     Returns:
         VectorizedHamletEnv instance with temporal mechanics
     """
-    universe = compile_universe(Path("configs/L3_temporal_mechanics"))
+    universe = compile_universe(Path("configs/default_curriculum"))
     return VectorizedHamletEnv.from_universe(
         universe,
+        level_name="L3_temporal_mechanics",
         num_agents=1,
         device=device,
     )
@@ -160,6 +166,7 @@ def multi_agent_env(
     universe = compile_universe(test_config_pack_path)
     return VectorizedHamletEnv.from_universe(
         universe,
+        level_name="L0_test",
         num_agents=4,
         device=device,
     )
@@ -184,6 +191,7 @@ def env_factory(
         universe: CompiledUniverse | None = None,
         num_agents: int = 1,
         device_override: torch.device | str | None = None,
+        level_name: str | None = None,
     ) -> VectorizedHamletEnv:
         target_universe = universe
         if target_universe is None:
@@ -191,9 +199,11 @@ def env_factory(
             target_universe = compile_universe(pack_path)
 
         target_device = device_override if device_override is not None else device
+        target_level = level_name or (target_universe.available_levels[0] if target_universe.available_levels else None)
 
         return VectorizedHamletEnv.from_universe(
             target_universe,
+            level_name=target_level,
             num_agents=num_agents,
             device=target_device,
         )
@@ -266,9 +276,10 @@ def grid2d_3x3_env(
     Returns:
         VectorizedHamletEnv with 3×3 Grid2D substrate
     """
-    universe = compile_universe(Path("configs/L0_0_minimal"))
+    universe = compile_universe(Path("configs/default_curriculum"))
     return VectorizedHamletEnv.from_universe(
         universe,
+        level_name="L0_0_minimal",
         num_agents=1,
         device=device,
     )
@@ -297,6 +308,7 @@ def grid2d_8x8_env(
     universe = compile_universe(test_config_pack_path)
     return VectorizedHamletEnv.from_universe(
         universe,
+        level_name="L0_test",
         num_agents=1,
         device=device,
     )
@@ -306,6 +318,8 @@ def grid2d_8x8_env(
 def aspatial_env(
     compile_universe: Callable[[Path | str], CompiledUniverse],
     device: torch.device,
+    tmp_path: Path,
+    test_config_pack_path: Path,
 ) -> VectorizedHamletEnv:
     """Aspatial environment (no grid, meters only).
 
@@ -321,13 +335,51 @@ def aspatial_env(
     Returns:
         VectorizedHamletEnv with Aspatial substrate
     """
-    # Use aspatial config pack created in Task 8.1
-    repo_root = Path(__file__).parent.parent.parent.parent
-    aspatial_config_path = repo_root / "configs" / "aspatial_test"
+    # Build a temporary aspatial pack from the canonical test pack.
+    aspatial_config_path = tmp_path / "aspatial_pack"
+    shutil.copytree(test_config_pack_path, aspatial_config_path)
+
+    # Patch stratum to aspatial
+    stratum_path = aspatial_config_path / "stratum.yaml"
+    stratum_path.write_text(
+        """stratum:
+  version: "1.0"
+  substrate:
+    type: aspatial
+    aspatial: {}
+  vision_support: global
+  temporal_support: disabled
+"""
+    )
+
+    # Patch bars for expected base/move/interaction costs used in movement mask tests.
+    import yaml
+
+    level_dir = aspatial_config_path / "levels" / "L0_test"
+    bars_path = level_dir / "bars.yaml"
+    bars_data = yaml.safe_load(bars_path.read_text())
+    meters = bars_data.get("bars", {}).get("meters", []) or bars_data.get("meters", [])
+    for meter in meters:
+        name = meter.get("name")
+        dep = meter.get("depletion", {})
+        if name == "energy":
+            dep.update({"passive": 0.005, "move": 0.005, "interact": 0.005})
+        elif name == "hygiene":
+            dep.update({"passive": 0.003, "move": 0.0, "interact": 0.0})
+        elif name == "satiation":
+            dep.update({"passive": 0.004, "move": 0.0, "interact": 0.0})
+        meter["depletion"] = dep
+    if "bars" in bars_data and isinstance(bars_data["bars"], dict):
+        bars_data["bars"]["meters"] = meters
+    else:
+        bars_data["meters"] = meters
+    bars_path.write_text(yaml.safe_dump(bars_data, sort_keys=False))
 
     universe = compile_universe(aspatial_config_path)
+    target_level = getattr(universe, "primary_level", None) or (universe.available_levels[0] if universe.available_levels else None)
     return VectorizedHamletEnv.from_universe(
         universe,
+        level_name=target_level,
         num_agents=1,
         device=device,
     )
@@ -337,30 +389,102 @@ def aspatial_env(
 def continuous1d_env(
     compile_universe: Callable[[Path | str], CompiledUniverse],
     device: torch.device,
+    tmp_path: Path,
 ) -> VectorizedHamletEnv:
     """Continuous 1D environment for movement/action-mask tests."""
 
-    universe = compile_universe(Path("configs/L1_continuous_1D"))
-    return VectorizedHamletEnv.from_universe(
-        universe,
-        num_agents=1,
-        device=device,
-    )
+    import yaml
+
+    source = Path("configs/test/action_space/continuous1d")
+    config_dir = tmp_path / "continuous1d_pack"
+    shutil.copytree(source, config_dir)
+
+    # Patch bars for expected base/move/interaction depletions
+    bars_path = config_dir / "levels" / "L0" / "bars.yaml"
+    bars_data = yaml.safe_load(bars_path.read_text())
+    meters = bars_data.get("bars", {}).get("meters", []) or bars_data.get("meters", [])
+    for meter in meters:
+        if meter.get("name") == "energy":
+            meter["depletion"] = {"passive": 0.005, "move": 0.005, "interact": 0.005}
+    if "bars" in bars_data and isinstance(bars_data["bars"], dict):
+        bars_data["bars"]["meters"] = meters
+    else:
+        bars_data["meters"] = meters
+    bars_path.write_text(yaml.safe_dump(bars_data, sort_keys=False))
+
+    universe = compile_universe(config_dir)
+    return VectorizedHamletEnv.from_universe(universe, level_name="L0", num_agents=1, device=device)
 
 
 @pytest.fixture
 def continuous3d_env(
     compile_universe: Callable[[Path | str], CompiledUniverse],
     device: torch.device,
+    tmp_path: Path,
 ) -> VectorizedHamletEnv:
     """Continuous 3D environment for movement/action-mask tests."""
 
-    universe = compile_universe(Path("configs/L1_continuous_3D"))
-    return VectorizedHamletEnv.from_universe(
-        universe,
-        num_agents=1,
-        device=device,
+    import yaml
+
+    source = Path("configs/test/action_space/continuous1d")
+    config_dir = tmp_path / "continuous3d_pack"
+    shutil.copytree(source, config_dir)
+
+    # Patch stratum to 3D continuous
+    stratum_path = config_dir / "stratum.yaml"
+    stratum_path.write_text(
+        """stratum:
+  version: "1.0"
+  substrate:
+    type: continuous
+    continuous:
+      dimensions: 3
+      bounds:
+        - [0.0, 10.0]
+        - [0.0, 10.0]
+        - [0.0, 10.0]
+      boundary: clamp
+      movement_delta: 0.5
+      interaction_radius: 1.0
+      distance_metric: euclidean
+      observation_encoding: relative
+      action_discretization:
+        num_directions: 8
+        num_magnitudes: 3
+  vision_support: global
+  temporal_support: disabled
+"""
     )
+
+    # Patch bars for expected base/move/interaction depletions
+    bars_path = config_dir / "levels" / "L0" / "bars.yaml"
+    bars_data = yaml.safe_load(bars_path.read_text())
+    meters = bars_data.get("bars", {}).get("meters", []) or bars_data.get("meters", [])
+    for meter in meters:
+        if meter.get("name") == "energy":
+            meter["depletion"] = {"passive": 0.005, "move": 0.005, "interact": 0.005}
+    if "bars" in bars_data and isinstance(bars_data["bars"], dict):
+        bars_data["bars"]["meters"] = meters
+    else:
+        bars_data["meters"] = meters
+    bars_path.write_text(yaml.safe_dump(bars_data, sort_keys=False))
+
+    # Update affordance positions to 3D points
+    aff_path = config_dir / "levels" / "L0" / "affordances.yaml"
+    aff_data = yaml.safe_load(aff_path.read_text())
+    aff_list = aff_data["affordances"]["affordances"] if isinstance(aff_data["affordances"], dict) else aff_data["affordances"]
+    for aff in aff_list:
+        positions = aff.get("deployment", {}).get("positions", [])
+        aff.setdefault("deployment", {})
+        aff["deployment"]["positions"] = [[p[0], 0, 0] if isinstance(p, list) else [0, 0, 0] for p in positions] or [[0, 0, 0]]
+    if isinstance(aff_data["affordances"], dict):
+        aff_data["affordances"]["affordances"] = aff_list
+    else:
+        aff_data["affordances"] = aff_list
+    aff_path.write_text(yaml.safe_dump(aff_data, sort_keys=False))
+
+    universe = compile_universe(config_dir)
+    return VectorizedHamletEnv.from_universe(universe, level_name="L0", num_agents=1, device=device)
 
 
 # Parameterization helper for multi-substrate tests

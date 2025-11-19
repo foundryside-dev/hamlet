@@ -8,9 +8,10 @@ These tests address the critical 13% coverage gap in cues_compiler.py:
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 import pytest
 
-from townlet.config.bar import BarConfig
 from townlet.config.cues import CompoundCueConfig, CueCondition, CuesConfig, SimpleCueConfig, VisualCueConfig
 from townlet.universe.cues_compiler import CuesCompiler
 from townlet.universe.errors import CompilationErrorCollector, CompilationMessage
@@ -20,43 +21,16 @@ from townlet.universe.symbol_table import UniverseSymbolTable
 @pytest.fixture
 def symbol_table() -> UniverseSymbolTable:
     """Create symbol table with test meters."""
+
+    @dataclass
+    class _StubBar:
+        name: str
+        index: int
+
     table = UniverseSymbolTable()
-    table.register_meter(
-        BarConfig(
-            name="energy",
-            index=0,
-            tier="pivotal",
-            range=[0.0, 1.0],
-            initial=1.0,
-            base_depletion=0.1,
-            base_move_depletion=0.01,
-            base_interaction_cost=0.01,
-        )
-    )
-    table.register_meter(
-        BarConfig(
-            name="health",
-            index=1,
-            tier="pivotal",
-            range=[0.0, 1.0],
-            initial=1.0,
-            base_depletion=0.05,
-            base_move_depletion=0.005,
-            base_interaction_cost=0.005,
-        )
-    )
-    table.register_meter(
-        BarConfig(
-            name="mood",
-            index=2,
-            tier="secondary",
-            range=[0.0, 1.0],
-            initial=1.0,
-            base_depletion=0.02,
-            base_move_depletion=0.002,
-            base_interaction_cost=0.002,
-        )
-    )
+    table.register_meter(_StubBar(name="energy", index=0))
+    table.register_meter(_StubBar(name="health", index=1))
+    table.register_meter(_StubBar(name="mood", index=2))
     return table
 
 

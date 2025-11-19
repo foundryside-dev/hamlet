@@ -10,19 +10,46 @@ from townlet.substrate.continuous import (
     ContinuousSubstrate,
 )
 
+# Shared defaults to avoid repetitive ctor args
+BASE_ACTION_DISC = {"num_directions": 8, "num_magnitudes": 3}
+BASE_ARGS = dict(
+    boundary="clamp",
+    movement_delta=0.5,
+    interaction_radius=0.8,
+    distance_metric="euclidean",
+    action_discretization=BASE_ACTION_DISC,
+    observation_encoding="relative",
+)
+
+
+# Helpers for creating substrates with required parameters
+def make_cont1d(**overrides):
+    params = dict(min_x=0.0, max_x=10.0)
+    params.update(BASE_ARGS)
+    params.update(overrides)
+    return Continuous1DSubstrate(**params)
+
+
+def make_cont2d(**overrides):
+    params = dict(min_x=0.0, max_x=10.0, min_y=0.0, max_y=10.0)
+    params.update(BASE_ARGS)
+    params.update(overrides)
+    return Continuous2DSubstrate(**params)
+
+
+def make_cont3d(**overrides):
+    params = dict(min_x=0.0, max_x=10.0, min_y=0.0, max_y=10.0, min_z=0.0, max_z=5.0)
+    params.update(BASE_ARGS)
+    params.update(overrides)
+    return Continuous3DSubstrate(**params)
+
 
 class TestContinuousInitialization:
     """Test substrate initialization and validation."""
 
     def test_continuous1d_initialization_valid(self):
         """Initialize 1D continuous substrate with valid parameters."""
-        substrate = Continuous1DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=0.8,
-        )
+        substrate = make_cont1d()
         assert substrate.dimensions == 1
         assert substrate.position_dim == 1
         assert substrate.position_dtype == torch.float32
@@ -31,32 +58,14 @@ class TestContinuousInitialization:
 
     def test_continuous2d_initialization_valid(self):
         """Initialize 2D continuous substrate with valid parameters."""
-        substrate = Continuous2DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=0.8,
-        )
+        substrate = make_cont2d()
         assert substrate.dimensions == 2
         assert substrate.position_dim == 2
         assert substrate.bounds == [(0.0, 10.0), (0.0, 10.0)]
 
     def test_continuous3d_initialization_valid(self):
         """Initialize 3D continuous substrate with valid parameters."""
-        substrate = Continuous3DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            min_z=0.0,
-            max_z=5.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=0.8,
-        )
+        substrate = make_cont3d()
         assert substrate.dimensions == 3
         assert substrate.position_dim == 3
         assert substrate.bounds == [(0.0, 10.0), (0.0, 10.0), (0.0, 5.0)]
@@ -70,6 +79,9 @@ class TestContinuousInitialization:
                 boundary="clamp",
                 movement_delta=0.5,
                 interaction_radius=0.8,
+                action_discretization={"num_directions": 8, "num_magnitudes": 3},
+                distance_metric="euclidean",
+                observation_encoding="relative",
             )
 
     def test_initialization_bounds_mismatch(self):
@@ -81,62 +93,35 @@ class TestContinuousInitialization:
                 boundary="clamp",
                 movement_delta=0.5,
                 interaction_radius=0.8,
+                action_discretization={"num_directions": 8, "num_magnitudes": 3},
+                distance_metric="euclidean",
+                observation_encoding="relative",
             )
 
     def test_initialization_invalid_bounds(self):
         """Reject invalid bounds (min >= max)."""
         with pytest.raises(ValueError, match="min.*must be < max"):
-            Continuous1DSubstrate(
-                min_x=10.0,
-                max_x=5.0,  # Invalid: min > max
-                boundary="clamp",
-                movement_delta=0.5,
-                interaction_radius=0.8,
-            )
+            make_cont1d(min_x=10.0, max_x=5.0)
 
     def test_initialization_invalid_boundary_mode(self):
         """Reject invalid boundary mode."""
         with pytest.raises(ValueError, match="Unknown boundary mode"):
-            Continuous1DSubstrate(
-                min_x=0.0,
-                max_x=10.0,
-                boundary="invalid",
-                movement_delta=0.5,
-                interaction_radius=0.8,
-            )
+            make_cont1d(boundary="invalid")
 
     def test_initialization_negative_movement_delta(self):
         """Reject negative movement_delta."""
         with pytest.raises(ValueError, match="movement_delta must be positive"):
-            Continuous1DSubstrate(
-                min_x=0.0,
-                max_x=10.0,
-                boundary="clamp",
-                movement_delta=-0.5,
-                interaction_radius=0.8,
-            )
+            make_cont1d(movement_delta=-0.5)
 
     def test_initialization_small_space_for_interaction(self):
         """Reject space too small for interaction_radius."""
         with pytest.raises(ValueError, match="range.*< interaction_radius"):
-            Continuous1DSubstrate(
-                min_x=0.0,
-                max_x=0.5,  # Range = 0.5
-                boundary="clamp",
-                movement_delta=0.1,
-                interaction_radius=1.0,  # Radius > range
-            )
+            make_cont1d(max_x=0.5, movement_delta=0.1, interaction_radius=1.0)
 
     def test_initialization_warns_small_interaction_radius(self):
         """Warn if interaction_radius < movement_delta."""
         with pytest.warns(UserWarning, match="interaction_radius.*< movement_delta"):
-            Continuous1DSubstrate(
-                min_x=0.0,
-                max_x=10.0,
-                boundary="clamp",
-                movement_delta=1.0,
-                interaction_radius=0.5,  # Smaller than movement_delta
-            )
+            make_cont1d(movement_delta=1.0, interaction_radius=0.5)
 
 
 class TestContinuousPositionInitialization:
@@ -144,43 +129,21 @@ class TestContinuousPositionInitialization:
 
     def test_initialize_positions_1d_shape(self):
         """1D positions have correct shape [num_agents, 1]."""
-        substrate = Continuous1DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=0.8,
-        )
+        substrate = make_cont1d()
         positions = substrate.initialize_positions(5, torch.device("cpu"))
         assert positions.shape == (5, 1)
         assert positions.dtype == torch.float32
 
     def test_initialize_positions_2d_shape(self):
         """2D positions have correct shape [num_agents, 2]."""
-        substrate = Continuous2DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=0.8,
-        )
+        substrate = make_cont2d()
         positions = substrate.initialize_positions(10, torch.device("cpu"))
         assert positions.shape == (10, 2)
         assert positions.dtype == torch.float32
 
     def test_initialize_positions_in_bounds(self):
         """Initialized positions are within bounds."""
-        substrate = Continuous2DSubstrate(
-            min_x=2.0,
-            max_x=8.0,
-            min_y=-5.0,
-            max_y=5.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=0.8,
-        )
+        substrate = make_cont2d(min_x=2.0, max_x=8.0, min_y=-5.0, max_y=5.0)
         positions = substrate.initialize_positions(100, torch.device("cpu"))
 
         # Check X dimension
@@ -197,13 +160,7 @@ class TestContinuousMovement:
 
     def test_movement_basic(self):
         """Basic movement updates positions correctly."""
-        substrate = Continuous1DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=0.8,
-        )
+        substrate = make_cont1d()
         positions = torch.tensor([[5.0]], dtype=torch.float32)
         deltas = torch.tensor([[1.0]], dtype=torch.float32)  # Move right
 
@@ -215,15 +172,7 @@ class TestContinuousMovement:
 
     def test_movement_clamp_boundary(self):
         """Clamp boundary prevents positions from leaving bounds."""
-        substrate = Continuous2DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            boundary="clamp",
-            movement_delta=1.0,
-            interaction_radius=0.8,
-        )
+        substrate = make_cont2d(movement_delta=1.0, interaction_radius=1.0)
         # Agent at edge trying to move outside
         positions = torch.tensor([[9.5, 5.0]], dtype=torch.float32)
         deltas = torch.tensor([[2.0, 0.0]], dtype=torch.float32)  # Try to move to 11.5
@@ -236,13 +185,7 @@ class TestContinuousMovement:
 
     def test_movement_wrap_boundary(self):
         """Wrap boundary creates toroidal space."""
-        substrate = Continuous1DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            boundary="wrap",
-            movement_delta=1.0,
-            interaction_radius=0.8,
-        )
+        substrate = make_cont1d(boundary="wrap", movement_delta=1.0, interaction_radius=1.0)
         # Agent at 9.0 moving 2.0 right -> wraps to 1.0
         positions = torch.tensor([[9.0]], dtype=torch.float32)
         deltas = torch.tensor([[2.0]], dtype=torch.float32)
@@ -255,13 +198,7 @@ class TestContinuousMovement:
 
     def test_movement_bounce_boundary(self):
         """Bounce boundary reflects movement."""
-        substrate = Continuous1DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            boundary="bounce",
-            movement_delta=1.0,
-            interaction_radius=0.8,
-        )
+        substrate = make_cont1d(boundary="bounce", movement_delta=1.0, interaction_radius=1.0)
         # Agent at 9.0 moving 2.0 right -> bounces back to 9.0
         positions = torch.tensor([[9.0]], dtype=torch.float32)
         deltas = torch.tensor([[2.0]], dtype=torch.float32)
@@ -274,15 +211,7 @@ class TestContinuousMovement:
 
     def test_movement_sticky_boundary(self):
         """Sticky boundary keeps agent in place if would exit."""
-        substrate = Continuous2DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            boundary="sticky",
-            movement_delta=1.0,
-            interaction_radius=0.8,
-        )
+        substrate = make_cont2d(boundary="sticky", movement_delta=1.0, interaction_radius=1.0)
         # Agent at edge trying to move outside
         positions = torch.tensor([[9.5, 5.0]], dtype=torch.float32)
         deltas = torch.tensor([[2.0, 0.0]], dtype=torch.float32)
@@ -294,15 +223,7 @@ class TestContinuousMovement:
 
     def test_movement_batch(self):
         """Movement works for batch of agents."""
-        substrate = Continuous2DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=0.8,
-        )
+        substrate = make_cont2d()
         positions = torch.tensor([[1.0, 2.0], [5.0, 5.0], [9.0, 8.0]], dtype=torch.float32)
         deltas = torch.tensor([[1.0, 0.0], [0.0, -1.0], [-1.0, 1.0]], dtype=torch.float32)
 
@@ -318,16 +239,7 @@ class TestContinuousDistance:
 
     def test_distance_euclidean(self):
         """Euclidean distance computed correctly."""
-        substrate = Continuous2DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=0.8,
-            distance_metric="euclidean",
-        )
+        substrate = make_cont2d()
         pos1 = torch.tensor([[0.0, 0.0], [1.0, 1.0]], dtype=torch.float32)
         pos2 = torch.tensor([[3.0, 4.0]], dtype=torch.float32)
 
@@ -340,16 +252,7 @@ class TestContinuousDistance:
 
     def test_distance_manhattan(self):
         """Manhattan distance computed correctly."""
-        substrate = Continuous2DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=0.8,
-            distance_metric="manhattan",
-        )
+        substrate = make_cont2d(distance_metric="manhattan")
         pos1 = torch.tensor([[0.0, 0.0], [1.0, 1.0]], dtype=torch.float32)
         pos2 = torch.tensor([[3.0, 4.0]], dtype=torch.float32)
 
@@ -366,15 +269,7 @@ class TestContinuousObservationEncoding:
 
     def test_encode_observation_shape(self):
         """Observation encoding has correct shape."""
-        substrate = Continuous2DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=0.8,
-        )
+        substrate = make_cont2d()
         positions = torch.tensor([[1.0, 2.0], [5.0, 5.0]], dtype=torch.float32)
         obs = substrate.encode_observation(positions, {})
 
@@ -383,15 +278,7 @@ class TestContinuousObservationEncoding:
 
     def test_encode_observation_normalization(self):
         """Observation encoding normalizes to [0, 1]."""
-        substrate = Continuous2DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=0.8,
-        )
+        substrate = make_cont2d()
         # Position at min and max bounds
         positions = torch.tensor([[0.0, 0.0], [10.0, 10.0], [5.0, 2.5]], dtype=torch.float32)
         obs = substrate.encode_observation(positions, {})
@@ -405,21 +292,9 @@ class TestContinuousObservationEncoding:
 
     def test_get_observation_dim(self):
         """Observation dimension matches substrate dimensions."""
-        substrate1d = Continuous1DSubstrate(min_x=0.0, max_x=10.0, boundary="clamp", movement_delta=0.5, interaction_radius=0.8)
-        substrate2d = Continuous2DSubstrate(
-            min_x=0.0, max_x=10.0, min_y=0.0, max_y=10.0, boundary="clamp", movement_delta=0.5, interaction_radius=0.8
-        )
-        substrate3d = Continuous3DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            min_z=0.0,
-            max_z=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=0.8,
-        )
+        substrate1d = make_cont1d()
+        substrate2d = make_cont2d()
+        substrate3d = make_cont3d()
 
         assert substrate1d.get_observation_dim() == 1
         assert substrate2d.get_observation_dim() == 2
@@ -431,15 +306,7 @@ class TestContinuousInteraction:
 
     def test_is_on_position_within_radius(self):
         """Agents within interaction_radius return True."""
-        substrate = Continuous2DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=1.0,  # 1.0 unit radius
-        )
+        substrate = make_cont2d(interaction_radius=1.0)  # 1.0 unit radius
         # Agent at (5, 5), target at (5.5, 5.5)
         # Distance = sqrt(0.5^2 + 0.5^2) = 0.707 < 1.0
         positions = torch.tensor([[5.0, 5.0]], dtype=torch.float32)
@@ -450,15 +317,7 @@ class TestContinuousInteraction:
 
     def test_is_on_position_outside_radius(self):
         """Agents outside interaction_radius return False."""
-        substrate = Continuous2DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=1.0,
-        )
+        substrate = make_cont2d(interaction_radius=1.0)
         # Agent at (5, 5), target at (7, 7)
         # Distance = sqrt(4 + 4) = 2.828 > 1.0
         positions = torch.tensor([[5.0, 5.0]], dtype=torch.float32)
@@ -469,15 +328,7 @@ class TestContinuousInteraction:
 
     def test_is_on_position_batch(self):
         """Proximity detection works for batch of agents."""
-        substrate = Continuous2DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=1.0,
-        )
+        substrate = make_cont2d(interaction_radius=1.0)
         positions = torch.tensor([[5.0, 5.0], [5.5, 5.5], [8.0, 8.0]], dtype=torch.float32)
         target = torch.tensor([[5.0, 5.0]], dtype=torch.float32)
 
@@ -496,24 +347,20 @@ class TestContinuousUtilities:
 
     def test_get_all_positions_raises_error(self):
         """Continuous substrates cannot enumerate positions."""
-        substrate = Continuous1DSubstrate(min_x=0.0, max_x=10.0, boundary="clamp", movement_delta=0.5, interaction_radius=0.8)
+        substrate = make_cont1d()
         with pytest.raises(NotImplementedError, match="infinite positions"):
             substrate.get_all_positions()
 
     def test_get_valid_neighbors_raises_error(self):
         """Continuous substrates have no discrete neighbors."""
-        substrate = Continuous2DSubstrate(
-            min_x=0.0, max_x=10.0, min_y=0.0, max_y=10.0, boundary="clamp", movement_delta=0.5, interaction_radius=0.8
-        )
+        substrate = make_cont2d()
         position = torch.tensor([5.0, 5.0], dtype=torch.float32)
         with pytest.raises(NotImplementedError, match="continuous positions"):
             substrate.get_valid_neighbors(position)
 
     def test_supports_enumerable_positions(self):
         """Continuous substrates do not support enumerable positions."""
-        substrate = Continuous2DSubstrate(
-            min_x=0.0, max_x=10.0, min_y=0.0, max_y=10.0, boundary="clamp", movement_delta=0.5, interaction_radius=0.8
-        )
+        substrate = make_cont2d()
         assert not substrate.supports_enumerable_positions()
 
 
@@ -521,17 +368,23 @@ class TestContinuousConfiguration:
     """Test configuration integration."""
 
     def test_config_1d(self):
-        """1D continuous config loads correctly."""
-        from pathlib import Path
-
-        from townlet.substrate.config import load_substrate_config
+        """1D continuous substrate basic properties."""
+        from townlet.config.stratum_config import ContinuousConfig, SubstrateConfig
         from townlet.substrate.factory import SubstrateFactory
 
-        config_path = Path("configs/L1_continuous_1D/substrate.yaml")
-        if not config_path.exists():
-            pytest.skip("L1_continuous_1D config not found")
-
-        config = load_substrate_config(config_path)
+        config = SubstrateConfig(
+            type="continuous",
+            continuous=ContinuousConfig(
+                dimensions=1,
+                bounds=[(0.0, 10.0)],
+                boundary="clamp",
+                movement_delta=0.1,
+                interaction_radius=0.8,
+                distance_metric="euclidean",
+                observation_encoding="relative",
+                action_discretization=BASE_ACTION_DISC,
+            ),
+        )
         substrate = SubstrateFactory.build(config, torch.device("cpu"))
 
         assert isinstance(substrate, Continuous1DSubstrate)
@@ -539,17 +392,23 @@ class TestContinuousConfiguration:
         assert substrate.position_dtype == torch.float32
 
     def test_config_2d(self):
-        """2D continuous config loads correctly."""
-        from pathlib import Path
-
-        from townlet.substrate.config import load_substrate_config
+        """2D continuous substrate basic properties."""
+        from townlet.config.stratum_config import ContinuousConfig, SubstrateConfig
         from townlet.substrate.factory import SubstrateFactory
 
-        config_path = Path("configs/L1_continuous_2D/substrate.yaml")
-        if not config_path.exists():
-            pytest.skip("L1_continuous_2D config not found")
-
-        config = load_substrate_config(config_path)
+        config = SubstrateConfig(
+            type="continuous",
+            continuous=ContinuousConfig(
+                dimensions=2,
+                bounds=[(0.0, 10.0), (0.0, 10.0)],
+                boundary="clamp",
+                movement_delta=0.1,
+                interaction_radius=0.8,
+                distance_metric="euclidean",
+                observation_encoding="relative",
+                action_discretization=BASE_ACTION_DISC,
+            ),
+        )
         substrate = SubstrateFactory.build(config, torch.device("cpu"))
 
         assert isinstance(substrate, Continuous2DSubstrate)
@@ -557,17 +416,23 @@ class TestContinuousConfiguration:
         assert substrate.position_dtype == torch.float32
 
     def test_config_3d(self):
-        """3D continuous config loads correctly."""
-        from pathlib import Path
-
-        from townlet.substrate.config import load_substrate_config
+        """3D continuous substrate basic properties."""
+        from townlet.config.stratum_config import ContinuousConfig, SubstrateConfig
         from townlet.substrate.factory import SubstrateFactory
 
-        config_path = Path("configs/L1_continuous_3D/substrate.yaml")
-        if not config_path.exists():
-            pytest.skip("L1_continuous_3D config not found")
-
-        config = load_substrate_config(config_path)
+        config = SubstrateConfig(
+            type="continuous",
+            continuous=ContinuousConfig(
+                dimensions=3,
+                bounds=[(0.0, 10.0), (0.0, 10.0), (0.0, 10.0)],
+                boundary="clamp",
+                movement_delta=0.1,
+                interaction_radius=0.8,
+                distance_metric="euclidean",
+                observation_encoding="relative",
+                action_discretization=BASE_ACTION_DISC,
+            ),
+        )
         substrate = SubstrateFactory.build(config, torch.device("cpu"))
 
         assert isinstance(substrate, Continuous3DSubstrate)
@@ -583,15 +448,7 @@ class TestDtypeIsolation:
         from townlet.substrate.grid2d import Grid2DSubstrate
 
         # Create both substrate types
-        continuous = Continuous2DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=0.8,
-        )
+        continuous = make_cont2d()
         grid = Grid2DSubstrate(width=10, height=10, boundary="clamp", distance_metric="manhattan")
 
         # Continuous operations with float32
@@ -616,15 +473,7 @@ class TestDtypeIsolation:
 
         # Create both substrate types
         grid = Grid2DSubstrate(width=10, height=10, boundary="clamp", distance_metric="manhattan")
-        continuous = Continuous2DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=0.8,
-        )
+        continuous = make_cont2d()
 
         # Grid operations with long
         grid_positions = grid.initialize_positions(num_agents=5, device=torch.device("cpu"))
@@ -650,27 +499,9 @@ class TestDtypeIsolation:
         # Create multiple substrate types in same process
         grid2d = Grid2DSubstrate(width=8, height=8, boundary="clamp", distance_metric="manhattan")
         grid3d = Grid3DSubstrate(width=8, height=8, depth=3, boundary="clamp", distance_metric="manhattan")
-        continuous1d = Continuous1DSubstrate(min_x=0.0, max_x=10.0, boundary="clamp", movement_delta=0.5, interaction_radius=0.8)
-        continuous2d = Continuous2DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=0.8,
-        )
-        continuous3d = Continuous3DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            min_z=0.0,
-            max_z=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=0.8,
-        )
+        continuous1d = make_cont1d()
+        continuous2d = make_cont2d()
+        continuous3d = make_cont3d()
 
         # Verify position_dtype is correct for each
         assert grid2d.position_dtype == torch.long
@@ -698,15 +529,7 @@ class TestBounceExactPositions:
 
     def test_bounce_from_lower_bound_x(self):
         """Test exact bounce position when hitting lower X bound."""
-        substrate = Continuous2DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            boundary="bounce",
-            movement_delta=0.5,
-            interaction_radius=0.8,
-        )
+        substrate = make_cont2d(boundary="bounce")
 
         # Start near lower X bound, move left (will hit boundary)
         positions = torch.tensor([[0.2, 5.0]], dtype=torch.float32)
@@ -721,15 +544,7 @@ class TestBounceExactPositions:
 
     def test_bounce_from_upper_bound_x(self):
         """Test exact bounce position when hitting upper X bound."""
-        substrate = Continuous2DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            boundary="bounce",
-            movement_delta=0.5,
-            interaction_radius=0.8,
-        )
+        substrate = make_cont2d(boundary="bounce")
 
         # Start near upper X bound, move right (will hit boundary)
         positions = torch.tensor([[9.8, 5.0]], dtype=torch.float32)
@@ -744,15 +559,7 @@ class TestBounceExactPositions:
 
     def test_bounce_from_lower_bound_y(self):
         """Test exact bounce position when hitting lower Y bound."""
-        substrate = Continuous2DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            boundary="bounce",
-            movement_delta=0.5,
-            interaction_radius=0.8,
-        )
+        substrate = make_cont2d(boundary="bounce")
 
         # Start near lower Y bound, move down (will hit boundary)
         positions = torch.tensor([[5.0, 0.3]], dtype=torch.float32)
@@ -767,15 +574,7 @@ class TestBounceExactPositions:
 
     def test_bounce_from_upper_bound_y(self):
         """Test exact bounce position when hitting upper Y bound."""
-        substrate = Continuous2DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            boundary="bounce",
-            movement_delta=0.5,
-            interaction_radius=0.8,
-        )
+        substrate = make_cont2d(boundary="bounce")
 
         # Start near upper Y bound, move up (will hit boundary)
         positions = torch.tensor([[5.0, 9.7]], dtype=torch.float32)
@@ -790,15 +589,7 @@ class TestBounceExactPositions:
 
     def test_bounce_corner_both_bounds(self):
         """Test bounce when hitting corner (both X and Y bounds)."""
-        substrate = Continuous2DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            boundary="bounce",
-            movement_delta=0.5,
-            interaction_radius=0.8,
-        )
+        substrate = make_cont2d(boundary="bounce")
 
         # Start near lower-left corner, move diagonally (will hit both bounds)
         positions = torch.tensor([[0.2, 0.3]], dtype=torch.float32)
@@ -813,13 +604,7 @@ class TestBounceExactPositions:
 
     def test_bounce_multiple_reflections_1d(self):
         """Test bounce with large movement that crosses boundary multiple times."""
-        substrate = Continuous1DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            boundary="bounce",
-            movement_delta=3.0,
-            interaction_radius=0.8,  # Large delta
-        )
+        substrate = make_cont1d(boundary="bounce", movement_delta=3.0, interaction_radius=3.0)
 
         # Start at 1.0, move left by 3.0 units (will bounce off lower bound)
         positions = torch.tensor([[1.0]], dtype=torch.float32)
@@ -833,17 +618,7 @@ class TestBounceExactPositions:
 
     def test_bounce_3d_all_dimensions(self):
         """Test bounce in 3D space with all dimensions reflecting."""
-        substrate = Continuous3DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            min_z=0.0,
-            max_z=10.0,
-            boundary="bounce",
-            movement_delta=0.5,
-            interaction_radius=0.8,
-        )
+        substrate = make_cont3d(boundary="bounce")
 
         # Start near lower bounds on all axes, move negative on all
         positions = torch.tensor([[0.2, 0.3, 0.4]], dtype=torch.float32)

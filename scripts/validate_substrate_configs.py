@@ -18,8 +18,8 @@ import sys
 from pathlib import Path
 
 import torch
-
 from townlet.substrate.config import load_substrate_config
+
 from townlet.substrate.factory import SubstrateFactory
 
 
@@ -37,9 +37,9 @@ def validate_config_pack(config_pack_path: Path, verbose: bool = False) -> tuple
     config_name = config_pack_path.name
 
     if verbose:
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"Validating: {config_name}")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
 
     # Check substrate.yaml exists
     substrate_path = config_pack_path / "substrate.yaml"
@@ -163,16 +163,16 @@ def main():
             print(f"{config_pack_path.name:30s} {status}")
 
     # Print summary
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     if all_valid:
         print("✅ All configs valid!")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
         return 0
     else:
         print("❌ Validation errors found:")
         for error in all_errors:
             print(f"  - {error}")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
         return 1
 
 

@@ -16,6 +16,9 @@ from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
 from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
 from townlet.population.vectorized import VectorizedPopulation
 
+TRAIN_KWARGS = dict(train_frequency=1, batch_size=16, sequence_length=1, max_grad_norm=1.0)
+LEVEL_NAME = "L0_test"
+
 # =============================================================================
 # TEST CLASS 1: Observation Pipeline
 # =============================================================================
@@ -73,9 +76,9 @@ class TestObservationPipeline:
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=env.observation_dim,
-            # action_dim defaults to env.action_dim
             brain_config=minimal_brain_config,
-            batch_size=16,
+            action_dim=env.action_dim,
+            **TRAIN_KWARGS,
         )
 
         population.reset()
@@ -98,7 +101,11 @@ class TestObservationPipeline:
         Integration point: VectorizedHamletEnv (POMDP) → ObservationBuilder._build_partial_observations()
         """
         # Create POMDP environment with 5×5 vision
-        env = cpu_env_factory(config_dir=Path("configs/L2_partial_observability"), num_agents=1)
+        env = cpu_env_factory(
+            config_dir=Path("configs/default_curriculum"),
+            level_name="L2_partial_observability",
+            num_agents=1,
+        )
 
         # Reset environment
         obs = env.reset()
@@ -121,10 +128,13 @@ class TestObservationPipeline:
             exploration=exploration,
             agent_ids=["agent_0"],
             device=cpu_device,
-            # action_dim defaults to env.action_dim
+            obs_dim=env.observation_dim,
             brain_config=recurrent_brain_config,  # POMDP uses recurrent network
             vision_window_size=5,
             batch_size=8,
+            action_dim=env.action_dim,
+            sequence_length=1,
+            max_grad_norm=1.0,
             train_frequency=10000,  # Disable training (test focuses on observation structure)
         )
 
@@ -179,9 +189,9 @@ class TestRewardPipeline:
             agent_ids=["agent_0", "agent_1"],
             device=cpu_device,
             obs_dim=env.observation_dim,
-            # action_dim defaults to env.action_dim
             brain_config=minimal_brain_config,
-            batch_size=16,
+            action_dim=env.action_dim,
+            **TRAIN_KWARGS,
         )
 
         # Reset and step
@@ -236,9 +246,9 @@ class TestRewardPipeline:
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=obs_dim,
-            # action_dim defaults to env.action_dim
             brain_config=minimal_brain_config,
-            batch_size=16,
+            action_dim=env.action_dim,
+            **TRAIN_KWARGS,
         )
 
         # Reset and step
@@ -306,9 +316,9 @@ class TestRewardPipeline:
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=obs_dim,
-            # action_dim defaults to env.action_dim
             brain_config=minimal_brain_config,
-            batch_size=16,
+            action_dim=env.action_dim,
+            **TRAIN_KWARGS,
         )
 
         # Reset and run 20 steps to fill buffer
@@ -374,9 +384,9 @@ class TestActionPipeline:
             agent_ids=["agent_0", "agent_1"],
             device=cpu_device,
             obs_dim=env.observation_dim,
-            # action_dim defaults to env.action_dim
             brain_config=minimal_brain_config,
-            batch_size=16,
+            action_dim=env.action_dim,
+            **TRAIN_KWARGS,
         )
 
         # Reset environment
@@ -430,9 +440,9 @@ class TestActionPipeline:
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=env.observation_dim,
-            # action_dim defaults to env.action_dim
             brain_config=minimal_brain_config,
-            batch_size=16,
+            action_dim=env.action_dim,
+            **TRAIN_KWARGS,
         )
 
         # Reset and run 100 steps to hit boundaries
@@ -486,9 +496,9 @@ class TestActionPipeline:
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=env.observation_dim,
-            # action_dim defaults to env.action_dim
             brain_config=minimal_brain_config,
-            batch_size=16,
+            action_dim=env.action_dim,
+            **TRAIN_KWARGS,
         )
 
         # Reset and capture initial state

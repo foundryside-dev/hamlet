@@ -38,7 +38,7 @@ class TestEnvironmentBoundaryProperties:
               not from the grid_size parameter.
         """
         env = make_vectorized_env_from_pack(
-            Path("configs/test"),
+            Path("configs/default_curriculum"),
             num_agents=1,
             device=torch.device("cpu"),
         )
@@ -77,7 +77,7 @@ class TestEnvironmentBoundaryProperties:
         never go below 0 or above 1, regardless of interactions or decay.
         """
         env = make_vectorized_env_from_pack(
-            Path("configs/test"),
+            Path("configs/default_curriculum"),
             num_agents=num_agents,
             device=torch.device("cpu"),
         )
@@ -101,9 +101,7 @@ class TestEnvironmentBoundaryProperties:
     @given(
         config_name=st.sampled_from(
             [
-                "configs/L0_0_minimal",  # 3×3 full obs
-                "configs/test",  # 8×8 full obs
-                "configs/L2_partial_observability",  # POMDP
+                "configs/default_curriculum",
             ]
         ),
         num_agents=st.integers(min_value=1, max_value=4),

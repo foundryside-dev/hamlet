@@ -1,0 +1,59 @@
+# Items Smoke Test - VFS Profiles Configuration
+# Minimal VFS profiles for testing Phase 1-3
+
+version: "1.0"
+
+# Global VFS profile (1 profile - minimal)
+global_profiles:
+  - id: global_test_flag
+    scope: global
+    type: scalar
+    initial_value: 1.0
+    description: "Global test flag for VFS validation"
+    normalization:
+      kind: minmax
+      min: 0.0
+      max: 1.0
+
+# Agent VFS profile (1 profile - minimal)
+agent_profiles:
+  - id: agent_test_state
+    scope: agent
+    type: scalar
+    initial_value: 0.5
+    description: "Per-agent test state for VFS validation"
+    normalization:
+      kind: minmax
+      min: 0.0
+      max: 1.0
+
+# Item VFS profiles (2 profiles - minimal but demonstrates multiple profiles)
+item_profiles:
+  - id: item_durability
+    scope: item
+    type: scalar
+    initial_value: 1.0
+    description: "Item durability (1.0 = pristine, 0.0 = broken)"
+    normalization:
+      kind: minmax
+      min: 0.0
+      max: 1.0
+
+  - id: item_uses_remaining
+    scope: item
+    type: scalar
+    initial_value: 3.0
+    description: "Number of uses remaining before item consumed"
+    normalization:
+      kind: minmax
+      min: 0.0
+      max: 10.0
+
+# Phase 1 Note: All profiles are static (initial_value only).
+# Expression-based profiles (with deps/expression fields) deferred to Phase 2+.
+#
+# Expected obs_dim contribution:
+# - global_vfs: 1 dim
+# - agent_vfs: 1 dim
+# - item_vfs: 2 profiles × 3 slots = 6 dims
+# - Total VFS: 8 dims

@@ -10,6 +10,7 @@ from townlet.agent.brain_config import (
     LossConfig,
     OptimizerConfig,
     QLearningConfig,
+    apply_training_overrides,
     compute_brain_hash,
     load_brain_config,
 )
@@ -246,7 +247,6 @@ optimizer:
 
 loss:
   type: mse
-  huber_delta: 1.0
 
 q_learning:
   gamma: 0.99
@@ -425,6 +425,139 @@ def test_compute_brain_hash_differs_for_different_configs():
     hash2 = compute_brain_hash(config2)
 
     assert hash1 != hash2
+
+
+def test_apply_training_overrides_merges_q_learning_and_replay():
+    """apply_training_overrides should respect TrainingV2Config overrides."""
+    from townlet.agent.brain_config import ReplayConfig, ScheduleConfig
+    from townlet.config.training_v2_config import (
+        AdversarialCurriculumConfig,
+        CheckpointingConfig,
+        CurriculumStrategyConfig,
+        EvaluationConfig,
+        IntrinsicConfig,
+        ReplayBufferConfig,
+        RNDConfig,
+        TrainingLoopConfig,
+        TrainingV2Config,
+    )
+    from townlet.config.training_v2_config import (
+        AnnealingConfig as TrainingAnnealingConfig,
+    )
+    from townlet.config.training_v2_config import (
+        ExplorationConfig as TrainingExplorationConfig,
+    )
+    from townlet.config.training_v2_config import (
+        PopulationConfig as TrainingPopulationConfig,
+    )
+    from townlet.config.training_v2_config import (
+        QLearningConfig as TrainingQLearningConfig,
+    )
+
+    base_brain = BrainConfig(
+        version="1.0",
+        description="Base brain",
+        architecture=ArchitectureConfig(
+            type="feedforward",
+            feedforward=FeedforwardConfig(
+                hidden_layers=[128],
+                activation="relu",
+                dropout=0.0,
+                layer_norm=True,
+            ),
+        ),
+        optimizer=OptimizerConfig(
+            type="adam",
+            learning_rate=0.00025,
+            adam_beta1=0.9,
+            adam_beta2=0.999,
+            adam_eps=1e-8,
+            weight_decay=0.0,
+            schedule=ScheduleConfig(type="constant"),
+        ),
+        loss=LossConfig(type="mse"),
+        q_learning=QLearningConfig(
+            gamma=0.99,
+            target_update_frequency=1000,
+            use_double_dqn=False,
+        ),
+        replay=ReplayConfig(
+            capacity=10000,
+            prioritized=False,
+        ),
+    )
+    training_cfg = TrainingV2Config(
+        version="1.0",
+        population=TrainingPopulationConfig(size=128),
+        enabled_affordances=[],
+        randomize_affordances=False,
+        enabled_actions=None,
+        q_learning=TrainingQLearningConfig(
+            use_double_dqn=True,
+            gamma=0.95,
+            learning_rate=0.0005,
+            target_update_frequency=500,
+        ),
+        replay_buffer=ReplayBufferConfig(
+            capacity=50000,
+            batch_size=256,
+            min_size=1000,
+        ),
+        exploration=TrainingExplorationConfig(
+            epsilon_start=1.0,
+            epsilon_end=0.01,
+            epsilon_decay=0.99,
+        ),
+        intrinsic=IntrinsicConfig(
+            rnd=RNDConfig(feature_dim=128, learning_rate=0.0001),
+            annealing=TrainingAnnealingConfig(
+                threshold=100.0,
+                decay_rate=0.995,
+                min_weight=0.01,
+            ),
+            initial_weight=1.0,
+            min_survival_fraction=0.4,
+            survival_window=100,
+        ),
+        training_loop=TrainingLoopConfig(
+            max_episodes=100000,
+            max_steps_per_episode=1000,
+            evaluation=EvaluationConfig(interval=1000, num_episodes=10),
+            checkpointing=CheckpointingConfig(interval=5000, keep_last=5),
+            train_frequency=4,
+            sequence_length=8,
+            max_grad_norm=10.0,
+        ),
+        curriculum=CurriculumStrategyConfig(
+            strategy="static",
+            adversarial=AdversarialCurriculumConfig(
+                difficulty_metric="survival_rate",
+                adaptation_rate=0.1,
+                min_difficulty=0.2,
+                max_difficulty=1.0,
+                survival_advance_threshold=0.7,
+                survival_retreat_threshold=0.3,
+                entropy_gate=0.5,
+                min_steps_at_stage=100,
+            ),
+        ),
+    )
+
+    effective = apply_training_overrides(base_brain, training_cfg)
+
+    # Architecture unchanged (experiment-level)
+    assert effective.architecture == base_brain.architecture
+
+    # Q-learning overrides applied
+    assert effective.q_learning.gamma == training_cfg.q_learning.gamma
+    assert effective.q_learning.target_update_frequency == training_cfg.q_learning.target_update_frequency
+    assert effective.q_learning.use_double_dqn == training_cfg.q_learning.use_double_dqn
+
+    # Optimizer learning rate overridden
+    assert effective.optimizer.learning_rate == training_cfg.q_learning.learning_rate
+
+    # Replay capacity overridden
+    assert effective.replay.capacity == training_cfg.replay_buffer.capacity
 
 
 def test_optimizer_config_adam_requires_adam_params():

@@ -20,80 +20,26 @@ class TestExplorationConfigValidation:
         with pytest.raises(ValidationError) as exc_info:
             ExplorationConfig()
 
-        error = str(exc_info.value)
-        # Check that key fields are mentioned as missing
-        required_fields = ["embed_dim", "initial_intrinsic_weight", "variance_threshold", "survival_window"]
-        assert any(field in error for field in required_fields)
+        assert "epsilon_start" in str(exc_info.value)
 
     def test_valid_config(self):
         """Valid config with all required fields loads successfully."""
         config = ExplorationConfig(**VALID_EXPLORATION_PARAMS)
-        assert config.embed_dim == 128
-        assert config.initial_intrinsic_weight == 1.0
-        assert config.variance_threshold == 100.0
-        assert config.survival_window == 100
+        assert config.epsilon_start == 1.0
+        assert config.epsilon_end == 0.01
+        assert config.epsilon_decay == 0.995
 
-    def test_embed_dim_must_be_positive(self):
-        """embed_dim must be > 0."""
-        # Zero embed_dim
-        with pytest.raises(ValidationError) as exc_info:
-            ExplorationConfig(**make_valid_params(VALID_EXPLORATION_PARAMS, embed_dim=0))
-        assert "embed_dim" in str(exc_info.value).lower()
-
-        # Negative embed_dim
-        with pytest.raises(ValidationError) as exc_info:
-            ExplorationConfig(**make_valid_params(VALID_EXPLORATION_PARAMS, embed_dim=-10))
-        assert "embed_dim" in str(exc_info.value).lower()
-
-    def test_initial_intrinsic_weight_must_be_non_negative(self):
-        """initial_intrinsic_weight must be >= 0.0."""
-        # Valid: zero weight (no intrinsic motivation)
-        config = ExplorationConfig(**make_valid_params(VALID_EXPLORATION_PARAMS, initial_intrinsic_weight=0.0))
-        assert config.initial_intrinsic_weight == 0.0
-
-        # Valid: high weight (exploration priority)
-        config = ExplorationConfig(**make_valid_params(VALID_EXPLORATION_PARAMS, initial_intrinsic_weight=5.0))
-        assert config.initial_intrinsic_weight == 5.0
-
-        # Invalid: negative weight
+    def test_epsilon_bounds(self):
+        """epsilon values must be within [0,1] and start >= end."""
         with pytest.raises(ValidationError):
-            ExplorationConfig(**make_valid_params(VALID_EXPLORATION_PARAMS, initial_intrinsic_weight=-0.1))
-
-    def test_variance_threshold_must_be_positive(self):
-        """variance_threshold must be > 0.0."""
-        # Valid: low threshold (fast annealing)
-        config = ExplorationConfig(**make_valid_params(VALID_EXPLORATION_PARAMS, variance_threshold=10.0))
-        assert config.variance_threshold == 10.0
-
-        # Valid: high threshold (slow annealing)
-        config = ExplorationConfig(**make_valid_params(VALID_EXPLORATION_PARAMS, variance_threshold=1000.0))
-        assert config.variance_threshold == 1000.0
-
-        # Invalid: zero threshold
+            ExplorationConfig(**make_valid_params(VALID_EXPLORATION_PARAMS, epsilon_start=-0.1))
         with pytest.raises(ValidationError):
-            ExplorationConfig(**make_valid_params(VALID_EXPLORATION_PARAMS, variance_threshold=0.0))
-
-        # Invalid: negative threshold
+            ExplorationConfig(**make_valid_params(VALID_EXPLORATION_PARAMS, epsilon_end=1.5))
         with pytest.raises(ValidationError):
-            ExplorationConfig(**make_valid_params(VALID_EXPLORATION_PARAMS, variance_threshold=-100.0))
-
-    def test_survival_window_must_be_positive(self):
-        """survival_window must be > 0."""
-        # Valid: small window
-        config = ExplorationConfig(**make_valid_params(VALID_EXPLORATION_PARAMS, survival_window=10))
-        assert config.survival_window == 10
-
-        # Valid: large window
-        config = ExplorationConfig(**make_valid_params(VALID_EXPLORATION_PARAMS, survival_window=1000))
-        assert config.survival_window == 1000
-
-        # Invalid: zero window
+            ExplorationConfig(**make_valid_params(VALID_EXPLORATION_PARAMS, epsilon_decay=1.5))
+        # start >= end requirement
         with pytest.raises(ValidationError):
-            ExplorationConfig(**make_valid_params(VALID_EXPLORATION_PARAMS, survival_window=0))
-
-        # Invalid: negative window
-        with pytest.raises(ValidationError):
-            ExplorationConfig(**make_valid_params(VALID_EXPLORATION_PARAMS, survival_window=-50))
+            ExplorationConfig(**make_valid_params(VALID_EXPLORATION_PARAMS, epsilon_start=0.1, epsilon_end=0.5))
 
 
 class TestExplorationConfigLoading:
@@ -102,18 +48,12 @@ class TestExplorationConfigLoading:
     def test_load_from_yaml(self, tmp_path):
         """Load exploration config from YAML file."""
         # Create exploration section in training.yaml
-        yaml_path = make_temp_yaml(tmp_path, "exploration", VALID_EXPLORATION_PARAMS)
-
-        # Create parent directory structure expected by loader
-        config_dir = tmp_path
-        training_yaml = config_dir / "training.yaml"
+        yaml_path = make_temp_yaml(tmp_path, "training", {"exploration": VALID_EXPLORATION_PARAMS})
+        training_yaml = tmp_path / "training.yaml"
         yaml_path.rename(training_yaml)
 
-        config = load_exploration_config(config_dir)
-        assert config.embed_dim == VALID_EXPLORATION_PARAMS["embed_dim"]
-        assert config.initial_intrinsic_weight == VALID_EXPLORATION_PARAMS["initial_intrinsic_weight"]
-        assert config.variance_threshold == VALID_EXPLORATION_PARAMS["variance_threshold"]
-        assert config.survival_window == VALID_EXPLORATION_PARAMS["survival_window"]
+        config = load_exploration_config(tmp_path)
+        assert config.epsilon_start == VALID_EXPLORATION_PARAMS["epsilon_start"]
 
     def test_load_from_real_config_L0(self):  # noqa: N802
         """Load exploration config from real L0_0_minimal config pack."""
@@ -123,10 +63,8 @@ class TestExplorationConfigLoading:
 
         config = load_exploration_config(config_dir)
         # Validate it's a valid ExplorationConfig (fields are required, so if it loads it's valid)
-        assert config.embed_dim > 0
-        assert config.initial_intrinsic_weight >= 0.0
-        assert config.variance_threshold > 0.0
-        assert config.survival_window > 0
+        assert 0.0 <= config.epsilon_end <= config.epsilon_start <= 1.0
+        assert 0.0 < config.epsilon_decay < 1.0
 
     def test_load_from_all_production_configs(self):
         """Verify all production config packs have valid exploration sections."""
@@ -139,9 +77,8 @@ class TestExplorationConfigLoading:
 
             # Should load without errors
             config = load_exploration_config(config_dir)
-            assert config.embed_dim > 0, f"{pack_name}: embed_dim must be positive"
-            assert config.variance_threshold > 0.0, f"{pack_name}: variance_threshold must be positive"
-            assert config.survival_window > 0, f"{pack_name}: survival_window must be positive"
+            assert 0.0 <= config.epsilon_end <= config.epsilon_start <= 1.0, f"{pack_name}: epsilon bounds invalid"
+            assert 0.0 < config.epsilon_decay < 1.0, f"{pack_name}: epsilon_decay must be in (0,1)"
             validated_packs += 1
 
         if validated_packs == 0:
@@ -159,9 +96,11 @@ class TestExplorationConfigLoading:
         with open(training_yaml, "w") as f:
             yaml.dump(
                 {
-                    "exploration": {
-                        "embed_dim": 128,
-                        # Missing: initial_intrinsic_weight, variance_threshold, survival_window
+                    "training": {
+                        "exploration": {
+                            "epsilon_start": 1.0,
+                            # Missing epsilon_end / epsilon_decay
+                        }
                     }
                 },
                 f,

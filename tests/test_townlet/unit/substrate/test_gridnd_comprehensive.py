@@ -138,14 +138,14 @@ class TestGridNDActionGeneration:
         assert interact.name == "INTERACT"
         assert interact.type == "interaction"
         assert interact.delta is None
-        assert "energy" in interact.costs
+        assert interact.costs == {}
 
         # Last action: WAIT
         wait = actions[-1]
         assert wait.name == "WAIT"
         assert wait.type == "passive"
         assert wait.delta is None
-        assert "energy" in wait.costs
+        assert wait.costs == {}
 
     def test_get_default_actions_costs_assigned(self):
         """All actions should have energy costs assigned.
@@ -160,10 +160,9 @@ class TestGridNDActionGeneration:
 
         actions = substrate.get_default_actions()
 
-        # All actions should have energy cost
+        # No implicit costs are assigned by default; costs are declarative
         for action in actions:
-            assert "energy" in action.costs, f"{action.name} missing energy cost"
-            assert action.costs["energy"] > 0, f"{action.name} energy cost should be positive"
+            assert action.costs == {}, f"{action.name} should carry no implicit costs"
 
 
 class TestGridNDBoundaryEdgeCases:

@@ -14,7 +14,7 @@ class ReplayBuffer:
     Samples: Random mini-batches with combined rewards
     """
 
-    def __init__(self, capacity: int = 10000, device: torch.device = torch.device("cpu")):
+    def __init__(self, capacity: int, device: torch.device):
         """Initialize replay buffer.
 
         Args:

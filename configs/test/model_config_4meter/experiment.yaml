@@ -1,0 +1,14 @@
+experiment:
+  version: "1.0"
+  experiment_name: "model_config_4meter_test"
+
+  metadata:
+    name: "Model Config 4-Meter (Test)"
+    description: "v2.1 test pack with 4 meters (energy, health, money, mood)"
+    author: "Hamlet Tests"
+    created: "2025-11-17"
+    tags: ["test", "model", "4meter"]
+
+  curriculum_levels:
+    - L0_4meter
+

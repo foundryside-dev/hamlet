@@ -29,6 +29,7 @@ from townlet.environment.vectorized_env import (
     _build_bar_index_map,
     _resolve_deployable_affordances,
 )
+from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.dto import MeterInfo, MeterMetadata
 from townlet.universe.errors import CompilationError
 
@@ -74,14 +75,13 @@ class TestResolveDeployableAffordances:
 class TestVectorizedHamletEnvInitialization:
     """Test VectorizedHamletEnv.__init__ with various configurations."""
 
-    def test_init_requires_substrate_yaml(self, temp_test_dir, compile_universe):
-        """Should raise CompilationError if substrate.yaml is missing."""
-        config_pack = temp_test_dir / "config_pack"
-        shutil.copytree(Path("configs/test"), config_pack)
-        (config_pack / "substrate.yaml").unlink()
+    def test_init_requires_stratum_yaml(self, config_pack_factory):
+        """Should raise CompilationError if stratum.yaml is missing (v2.1 experiment root)."""
+        config_pack = config_pack_factory(name="missing_stratum")
+        (config_pack / "stratum.yaml").unlink()
 
-        with pytest.raises(CompilationError, match="substrate.yaml.*not found"):
-            compile_universe(config_pack)
+        with pytest.raises(CompilationError, match="stratum.yaml.*not found"):
+            UniverseCompiler().compile(config_pack, primary_level="L0_test")
 
     def test_init_raises_if_config_pack_not_found(self, compile_universe):
         """Should raise CompilationError if config pack directory doesn't exist."""
@@ -170,7 +170,8 @@ class TestVectorizedHamletEnvReset:
 
     def test_reset_temporal_mechanics_initializes_time(self, env_factory, cpu_device):
         env = env_factory(
-            config_dir=Path("configs/L3_temporal_mechanics"),
+            config_dir=Path("configs/default_curriculum"),
+            level_name="L3_temporal_mechanics",
             num_agents=1,
             device_override=cpu_device,
         )
@@ -266,12 +267,17 @@ class TestVectorizedHamletEnvStep:
         assert not torch.allclose(env.meters, initial_meters)
 
     def test_step_increments_time_of_day(self, custom_env_builder):
+        # Use temporal-enabled level to ensure mechanics are active
         env = custom_env_builder(
-            overrides={"environment": {"enable_temporal_mechanics": True}},
+            source_pack=Path("configs/default_curriculum"),
+            overrides=None,
         )
+        # Swap to temporal level explicitly
+        env.level_name = "L3_temporal_mechanics"
+        env = env.universe.create_environment(num_agents=1, level_name="L3_temporal_mechanics", device=env.device)
         env.reset()
 
-        actions = torch.tensor([5], device=env.device)
+        actions = torch.tensor([env.wait_action_idx], device=env.device)
         env.step(actions)
         assert env.time_of_day == 1
 
@@ -281,11 +287,12 @@ class TestVectorizedHamletEnvStep:
 
     def test_step_retirement_bonus(self, custom_env_builder):
         env = custom_env_builder(
-            overrides={"curriculum": {"max_steps_per_episode": 5}},
+            overrides={"training_loop": {"max_steps_per_episode": 5}},
         )
+        env.agent_lifespan = 5
         env.reset()
 
-        actions = torch.tensor([5], device=env.device)
+        actions = torch.tensor([env.wait_action_idx], device=env.device)
         for _ in range(4):
             _, _, dones, _ = env.step(actions)
             assert not dones[0]
@@ -337,8 +344,8 @@ class TestExecuteActions:
 
         initial_position = env.positions[0].clone()
 
-        # Execute WAIT action (action 5 for Grid2D)
-        actions = torch.tensor([5], device=env.device)
+        # Execute WAIT action using runtime index
+        actions = torch.tensor([env.wait_action_idx], device=env.device)
         env._execute_actions(actions)
 
         # Position should not change
@@ -351,8 +358,8 @@ class TestExecuteActions:
 
         initial_position = env.positions[0].clone()
 
-        # Execute INTERACT action (action 4 for Grid2D)
-        actions = torch.tensor([4], device=env.device)
+        # Execute INTERACT action using runtime index
+        actions = torch.tensor([env.interact_action_idx], device=env.device)
         env._execute_actions(actions)
 
         # Position should not change
@@ -390,7 +397,13 @@ class TestGetObservations:
     def test_get_observations_pomdp_shape(self, custom_env_builder):
         env = custom_env_builder(
             num_agents=2,
-            overrides={"environment": {"partial_observability": True, "vision_range": 2}},
+            source_pack=Path("configs/default_curriculum"),
+        )
+        # Switch to partial-observability level
+        env = env.universe.create_environment(
+            num_agents=2,
+            level_name="L2_partial_observability",
+            device=env.device,
         )
         env.reset()
         obs = env._get_observations()
@@ -418,12 +431,11 @@ class TestGetObservations:
         monkeypatch.setattr(env.substrate, "_encode_position_features", fake_encoder)
         monkeypatch.setattr(env.substrate, "normalize_positions", fail_normalize, raising=False)
 
-        env._get_observations()
-        stored = env.vfs_registry.get("position", reader="agent")
-        assert torch.allclose(stored, expected)
+        encoded = env._encode_position_observation()
+        assert torch.allclose(encoded, expected)
 
     def test_get_observations_falls_back_to_encode_observation(self, cpu_env_factory, monkeypatch):
-        env = cpu_env_factory(config_dir=Path("configs/L1_continuous_2D"))
+        env = cpu_env_factory()
         env.reset()
 
         expected = torch.full((env.num_agents, env.substrate.position_dim), 0.25, device=env.device)
@@ -434,18 +446,19 @@ class TestGetObservations:
         def fail_normalize(_):
             raise AssertionError("normalize_positions fallback should not trigger when encode_observation exists")
 
+        monkeypatch.setattr(env.substrate, "_encode_position_features", None, raising=False)
+        monkeypatch.setattr(env.substrate, "encode_position_features", None, raising=False)
         monkeypatch.setattr(env.substrate, "encode_observation", fake_encode_observation)
         monkeypatch.setattr(env.substrate, "normalize_positions", fail_normalize, raising=False)
 
-        env._get_observations()
-        stored = env.vfs_registry.get("position", reader="agent")
-        assert torch.allclose(stored, expected)
+        encoded = env._encode_position_observation()
+        assert torch.allclose(encoded, expected)
 
     def test_get_observations_handles_agent_private_scope(self, cpu_env_factory):
         env = cpu_env_factory(num_agents=2)
         env.reset()
 
-        env.vfs_registry.variables["energy"].scope = "agent_private"
+        env.vfs_registry.variables["deficit_energy"].scope = "agent_private"
         obs = env._get_observations()
         assert obs.shape[0] == env.num_agents
 
@@ -494,7 +507,7 @@ class TestGetActionMasks:
 
     def test_get_action_masks_respect_training_enabled_actions(self, custom_env_builder):
         env = custom_env_builder(
-            overrides={"training": {"enabled_actions": ["INTERACT", "WAIT"]}},
+            overrides={"enabled_actions": {"custom": ["INTERACT", "WAIT"]}},
             num_agents=2,
         )
         env.reset()
@@ -576,7 +589,8 @@ class TestCalculateShapedRewards:
         initial_reward = env._calculate_shaped_rewards()
 
         # Modify meters (reduce energy)
-        env.meters[0, env.energy_idx] = 0.1
+        energy_idx = next(m.index for m in env.level.meter_metadata.meters if m.name == "energy")
+        env.meters[0, energy_idx] = 0.1
 
         # Reward should change
         new_reward = env._calculate_shaped_rewards()
@@ -791,38 +805,24 @@ class TestRandomizeAffordancePositions:
         target = tmp_path / "static_positions_pack"
         shutil.copytree(test_config_pack_path, target)
 
-        training_path = target / "training.yaml"
+        level_dir = target / "levels" / "L0_test"
+        training_path = level_dir / "training.yaml"
         training_data = yaml.safe_load(training_path.read_text())
-        training_env = training_data.setdefault("environment", {})
-        training_env["randomize_affordances"] = False
-        training_env["enabled_affordances"] = ["Bed", "LuxuryBed"]
         training_block = training_data.setdefault("training", {})
-        training_block["allow_unfeasible_universe"] = True
+        training_block["randomize_affordances"] = False
+        training_block["enabled_affordances"] = ["EAT", "SLEEP"]
         training_path.write_text(yaml.safe_dump(training_data, sort_keys=False))
-
-        affordance_path = target / "affordances.yaml"
-        affordance_data = yaml.safe_load(affordance_path.read_text())
-        fixed_positions = {
-            "Bed": [0, 0],
-            "LuxuryBed": [1, 0],
-        }
-        for entry in affordance_data.get("affordances", []):
-            if entry["name"] in fixed_positions:
-                entry["position"] = fixed_positions[entry["name"]]
-        affordance_path.write_text(yaml.safe_dump(affordance_data, sort_keys=False))
 
         env = env_factory(config_dir=target, num_agents=1, device_override=cpu_device)
         env.reset()
 
         assert env.randomize_affordances is False
-        bed_pos = env.affordances.get("Bed")
-        luxury_bed_pos = env.affordances.get("LuxuryBed")
-        assert torch.allclose(bed_pos, torch.tensor([0, 0], dtype=env.substrate.position_dtype, device=env.device))
-        assert torch.allclose(luxury_bed_pos, torch.tensor([1, 0], dtype=env.substrate.position_dtype, device=env.device))
+        initial_positions = {name: pos.clone() for name, pos in env.affordances.items()}
 
         # Subsequent calls to randomize should no-op when disabled
         env.randomize_affordance_positions()
-        assert torch.allclose(bed_pos, env.affordances.get("Bed"))
+        for name, pos in initial_positions.items():
+            assert torch.allclose(pos, env.affordances.get(name))
 
 
 # =============================================================================

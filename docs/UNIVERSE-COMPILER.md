@@ -140,10 +140,11 @@ constructors—no YAML reads happen past compile time (see `tests/test_townlet/u
 
 ## 7. Caching & Provenance
 
-- Cache artifacts live in `<config_dir>/.compiled/universe.msgpack`. The compiler normalizes YAML (sorted keys) before hashing, then folds
-in file names to avoid collisions.
-- `_build_cache_fingerprint()` compares both config hash and provenance id (compiler version + git SHA + Python/Torch/Pydantic versions).
-Any change in YAML content *or* toolchain invalidates the cache.
+- Cache artifacts live in `<experiment_dir>/.compiled/universe.msgpack`. The compiler normalizes YAML (sorted keys) before hashing, then
+folds in file names to avoid collisions.
+- Cache validation uses the normalized config hash plus the maximum modification time across all YAML files in the experiment (including
+`levels/*/*.yaml` and `configs/global_actions.yaml`). If either the hash changes or any config is newer than the cached artifact,
+the compiler recompiles instead of loading from cache.
 - `CompiledUniverse.save_to_cache/load_from_cache` perform MessagePack serialization with defensive fallbacks (corrupt cache triggers
 full recompilation + warning).
 - Checkpoints store `config_hash`, obs/action dims, meter counts, and observation-field UUIDs (`townlet/training/checkpoint_utils.py`).
@@ -156,7 +157,7 @@ from pathlib import Path
 from townlet.universe.compiler import UniverseCompiler
 
 compiler = UniverseCompiler()
-compiled = compiler.compile(Path("configs/L1_full_observability"))
+compiled = compiler.compile(Path("configs/default_curriculum"), primary_level="L1_full_observability")
 
 env = compiled.create_environment(num_agents=4)
 runtime = compiled.to_runtime()
@@ -241,16 +242,15 @@ matches runtime behavior).
 
 **Investigation**:
 ```bash
-# Profile compilation stages
 python -c "
 from pathlib import Path
 from townlet.universe.compiler import UniverseCompiler
 import time
 
-config_dir = Path('configs/L1_full_observability')
+experiment_dir = Path('configs/default_curriculum')
 start = time.time()
 compiler = UniverseCompiler()
-compiled = compiler.compile(config_dir, use_cache=False)
+compiled = compiler.compile(experiment_dir, primary_level='L1_full_observability', use_cache=False)
 print(f'Compilation time: {time.time() - start:.3f}s')
 "
 ```
@@ -278,7 +278,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 from townlet.universe.compiler import UniverseCompiler
 compiler = UniverseCompiler()
-compiled = compiler.compile(Path('configs/L1_full_observability'))
+compiled = compiler.compile(Path('configs/default_curriculum'), primary_level='L1_full_observability')
 ```
 
 #### Inspect compiled artifacts
@@ -287,7 +287,7 @@ from pathlib import Path
 from townlet.universe.compiled import CompiledUniverse
 
 # Load cached artifact directly
-cache_path = Path('configs/L1_full_observability/.compiled/universe.msgpack')
+cache_path = Path('configs/default_curriculum/.compiled/universe.msgpack')
 compiled = CompiledUniverse.load_from_cache(cache_path)
 
 print(f"Meters: {compiled.metadata.meter_count}")

@@ -80,11 +80,37 @@ def sample_variables():
     ]
 
 
-def exposures_from_dict(mapping: dict[str, dict[str, Any] | None]) -> list[dict[str, Any]]:
-    """Convert legacy mapping-style exposure definitions into list form."""
+def _infer_shape(var: VariableDef) -> list[int]:
+    """Mirror builder shape inference for tests (explicit, no defaults)."""
+    if var.type in ("scalar", "bool"):
+        return []
+    if var.type == "vec2i":
+        return [2]
+    if var.type == "vec3i":
+        return [3]
+    if var.type in ("vecNi", "vecNf"):
+        if var.dims is None:
+            raise ValueError(f"Variable {var.id} with type {var.type} must have dims specified")
+        return [var.dims]
+    raise ValueError(f"Unknown variable type {var.type}")
+
+
+def exposures_from_dict(mapping: dict[str, dict[str, Any] | None], variables: list[VariableDef]) -> list[dict[str, Any]]:
+    """Convert mapping-style exposure definitions into explicit list form."""
+    var_map = {v.id: v for v in variables}
     exposures: list[dict[str, Any]] = []
     for var_id, config in mapping.items():
-        entry: dict[str, Any] = {"source_variable": var_id}
+        var = var_map.get(var_id)
+        inferred_shape = _infer_shape(var) if var is not None else []
+        entry: dict[str, Any] = {
+            "source_variable": var_id,
+            "id": f"{var_id}_obs",
+            "exposed_to": ["agent"],
+            "shape": inferred_shape,
+            "curriculum_active": True,
+            "semantic_type": "custom",
+            "normalization": None,
+        }
         if config:
             entry.update(config)
         exposures.append(entry)
@@ -99,7 +125,7 @@ class TestObservationSpecBuilderScalarTypes:
         builder = VFSObservationSpecBuilder()
 
         exposures = {"energy": {"normalization": {"kind": "minmax", "min": 0.0, "max": 1.0}}}
-        exposures = exposures_from_dict(exposures)
+        exposures = exposures_from_dict(exposures, sample_variables)
 
         spec = builder.build_observation_spec(sample_variables, exposures)
 
@@ -115,7 +141,7 @@ class TestObservationSpecBuilderScalarTypes:
         builder = VFSObservationSpecBuilder()
 
         exposures = {"is_alive": {"normalization": None}}
-        exposures = exposures_from_dict(exposures)
+        exposures = exposures_from_dict(exposures, sample_variables)
 
         spec = builder.build_observation_spec(sample_variables, exposures)
 
@@ -132,7 +158,7 @@ class TestObservationSpecBuilderVectorTypes:
         builder = VFSObservationSpecBuilder()
 
         exposures = {"position": {"normalization": {"kind": "minmax", "min": [0, 0], "max": [7, 7]}}}
-        exposures = exposures_from_dict(exposures)
+        exposures = exposures_from_dict(exposures, sample_variables)
 
         spec = builder.build_observation_spec(sample_variables, exposures)
 
@@ -145,7 +171,7 @@ class TestObservationSpecBuilderVectorTypes:
         builder = VFSObservationSpecBuilder()
 
         exposures = {"velocity": {"normalization": None}}
-        exposures = exposures_from_dict(exposures)
+        exposures = exposures_from_dict(exposures, sample_variables)
 
         spec = builder.build_observation_spec(sample_variables, exposures)
 
@@ -158,7 +184,7 @@ class TestObservationSpecBuilderVectorTypes:
         builder = VFSObservationSpecBuilder()
 
         exposures = {"position_7d": {"normalization": None}}
-        exposures = exposures_from_dict(exposures)
+        exposures = exposures_from_dict(exposures, sample_variables)
 
         spec = builder.build_observation_spec(sample_variables, exposures)
 
@@ -179,7 +205,7 @@ class TestObservationSpecBuilderVectorTypes:
                 }
             }
         }
-        exposures = exposures_from_dict(exposures)
+        exposures = exposures_from_dict(exposures, sample_variables)
 
         spec = builder.build_observation_spec(sample_variables, exposures)
 
@@ -200,7 +226,7 @@ class TestObservationSpecBuilderMultipleVariables:
             "energy": {"normalization": None},
             "position": {"normalization": None},
         }
-        exposures = exposures_from_dict(exposures)
+        exposures = exposures_from_dict(exposures, sample_variables)
 
         spec = builder.build_observation_spec(sample_variables, exposures)
 
@@ -220,7 +246,7 @@ class TestObservationSpecBuilderMultipleVariables:
             "grid_encoding": {"normalization": None},
             "is_alive": {"normalization": None},
         }
-        exposures = exposures_from_dict(exposures)
+        exposures = exposures_from_dict(exposures, sample_variables)
 
         spec = builder.build_observation_spec(sample_variables, exposures)
 
@@ -254,7 +280,7 @@ class TestObservationSpecBuilderValidation:
                 }
             }
         }
-        exposures = exposures_from_dict(exposures)
+        exposures = exposures_from_dict(exposures, sample_variables)
 
         with pytest.raises(ValueError, match="must provide 2 values"):
             builder.build_observation_spec(sample_variables, exposures)
@@ -272,7 +298,7 @@ class TestObservationSpecBuilderValidation:
                 }
             }
         }
-        exposures = exposures_from_dict(exposures)
+        exposures = exposures_from_dict(exposures, sample_variables)
 
         with pytest.raises(ValueError, match="must be a list of length 2"):
             builder.build_observation_spec(sample_variables, exposures)
@@ -290,7 +316,7 @@ class TestObservationSpecBuilderValidation:
                 }
             }
         }
-        exposures = exposures_from_dict(exposures)
+        exposures = exposures_from_dict(exposures, sample_variables)
 
         spec = builder.build_observation_spec(sample_variables, exposures)
         assert len(spec) == 1
@@ -305,7 +331,7 @@ class TestObservationDimensionCalculation:
         builder = VFSObservationSpecBuilder()
 
         exposures = {"energy": {"normalization": None}}
-        exposures = exposures_from_dict(exposures)
+        exposures = exposures_from_dict(exposures, sample_variables)
 
         spec = builder.build_observation_spec(sample_variables, exposures)
 
@@ -318,7 +344,7 @@ class TestObservationDimensionCalculation:
         builder = VFSObservationSpecBuilder()
 
         exposures = {"position": {"normalization": None}}
-        exposures = exposures_from_dict(exposures)
+        exposures = exposures_from_dict(exposures, sample_variables)
 
         spec = builder.build_observation_spec(sample_variables, exposures)
 
@@ -336,7 +362,7 @@ class TestObservationDimensionCalculation:
             "velocity": {"normalization": None},  # 3 dims (vec3i)
             "position_7d": {"normalization": None},  # 7 dims (vecNi)
         }
-        exposures = exposures_from_dict(exposures)
+        exposures = exposures_from_dict(exposures, sample_variables)
 
         spec = builder.build_observation_spec(sample_variables, exposures)
 
@@ -352,7 +378,7 @@ class TestObservationDimensionCalculation:
             "energy": {"normalization": None},  # 1 dim
             "grid_encoding": {"normalization": None},  # 64 dims
         }
-        exposures = exposures_from_dict(exposures)
+        exposures = exposures_from_dict(exposures, sample_variables)
 
         spec = builder.build_observation_spec(sample_variables, exposures)
 
@@ -369,7 +395,7 @@ class TestObservationSpecBuilderNormalization:
         builder = VFSObservationSpecBuilder()
 
         exposures = {"energy": {"normalization": {"kind": "minmax", "min": 0.0, "max": 1.0}}}
-        exposures = exposures_from_dict(exposures)
+        exposures = exposures_from_dict(exposures, sample_variables)
 
         spec = builder.build_observation_spec(sample_variables, exposures)
 
@@ -391,7 +417,7 @@ class TestObservationSpecBuilderNormalization:
                 }
             }
         }
-        exposures = exposures_from_dict(exposures)
+        exposures = exposures_from_dict(exposures, sample_variables)
 
         spec = builder.build_observation_spec(sample_variables, exposures)
 
@@ -405,7 +431,7 @@ class TestObservationSpecBuilderNormalization:
         builder = VFSObservationSpecBuilder()
 
         exposures = {"energy": {"normalization": None}}
-        exposures = exposures_from_dict(exposures)
+        exposures = exposures_from_dict(exposures, sample_variables)
 
         spec = builder.build_observation_spec(sample_variables, exposures)
 
@@ -417,7 +443,7 @@ class TestObservationSpecBuilderNormalization:
 
         # Vec2i with per-dimension normalization
         exposures = {"position": {"normalization": {"kind": "minmax", "min": [0, 0], "max": [7, 10]}}}
-        exposures = exposures_from_dict(exposures)
+        exposures = exposures_from_dict(exposures, sample_variables)
 
         spec = builder.build_observation_spec(sample_variables, exposures)
 
@@ -434,7 +460,7 @@ class TestObservationSpecBuilderErrorHandling:
         builder = VFSObservationSpecBuilder()
 
         exposures = {"nonexistent_var": {"normalization": None}}
-        exposures = exposures_from_dict(exposures)
+        exposures = exposures_from_dict(exposures, sample_variables)
 
         with pytest.raises(ValueError, match="Variable nonexistent_var not found"):
             builder.build_observation_spec(sample_variables, exposures)
@@ -470,7 +496,7 @@ class TestObservationFieldProperties:
             "energy": {"normalization": None},
             "position": {"normalization": None},
         }
-        exposures = exposures_from_dict(exposures)
+        exposures = exposures_from_dict(exposures, sample_variables)
 
         spec = builder.build_observation_spec(sample_variables, exposures)
 
@@ -482,7 +508,7 @@ class TestObservationFieldProperties:
         builder = VFSObservationSpecBuilder()
 
         exposures = {"energy": {"normalization": None}}
-        exposures = exposures_from_dict(exposures)
+        exposures = exposures_from_dict(exposures, sample_variables)
 
         spec = builder.build_observation_spec(sample_variables, exposures)
 
@@ -493,7 +519,7 @@ class TestObservationFieldProperties:
         builder = VFSObservationSpecBuilder()
 
         exposures = {"position": {"normalization": None}}
-        exposures = exposures_from_dict(exposures)
+        exposures = exposures_from_dict(exposures, sample_variables)
 
         spec = builder.build_observation_spec(sample_variables, exposures)
 
@@ -510,6 +536,8 @@ class TestObservationFieldProperties:
                 "exposed_to": ["agent", "acs"],
                 "shape": [4],  # Should override inferred shape
                 "normalization": None,
+                "curriculum_active": True,
+                "semantic_type": "custom",
             }
         ]
 
@@ -528,12 +556,18 @@ class TestObservationFieldProperties:
                 "source_variable": "energy",
                 "exposed_to": ["agent"],
                 "shape": [],
+                "curriculum_active": True,
+                "semantic_type": "custom",
+                "normalization": None,
             },
             {
                 "id": "obs_energy_acs",
                 "source_variable": "energy",
                 "exposed_to": ["acs"],
                 "shape": [],
+                "curriculum_active": True,
+                "semantic_type": "custom",
+                "normalization": None,
             },
         ]
 

@@ -7,6 +7,8 @@ import torch
 
 from townlet.demo.runner import DemoRunner
 
+LEVEL_NAME = "L1_full_observability"
+
 
 def test_preflight_detects_old_checkpoints(tmp_path):
     """DemoRunner should strictly reject old checkpoints on startup (pre-release, 0 users)."""
@@ -28,11 +30,11 @@ def test_preflight_detects_old_checkpoints(tmp_path):
     # Attempting to create DemoRunner should detect and reject old checkpoint
     with pytest.raises(ValueError) as exc_info:
         DemoRunner(
-            config_dir=Path("configs/L1_full_observability"),
+            config_dir=Path("configs/default_curriculum"),
             db_path=tmp_path / "test.db",
             checkpoint_dir=checkpoint_dir,
             max_episodes=10,
-            training_config_path=Path("configs/L1_full_observability/training.yaml"),
+            level_name=LEVEL_NAME,
         )
 
     # Verify error message provides clear guidance
@@ -59,11 +61,11 @@ def test_preflight_allows_new_checkpoints(tmp_path):
 
     # Should not raise error
     runner = DemoRunner(
-        config_dir=Path("configs/L1_full_observability"),
+        config_dir=Path("configs/default_curriculum"),
         db_path=tmp_path / "test.db",
         checkpoint_dir=checkpoint_dir,
         max_episodes=10,
-        training_config_path=Path("configs/L1_full_observability/training.yaml"),
+        level_name=LEVEL_NAME,
     )
     runner._cleanup()  # Clean up
 
@@ -75,10 +77,10 @@ def test_preflight_allows_empty_checkpoint_dir(tmp_path):
 
     # Should not raise error (no checkpoints to validate)
     runner = DemoRunner(
-        config_dir=Path("configs/L1_full_observability"),
+        config_dir=Path("configs/default_curriculum"),
         db_path=tmp_path / "test.db",
         checkpoint_dir=checkpoint_dir,
         max_episodes=10,
-        training_config_path=Path("configs/L1_full_observability/training.yaml"),
+        level_name=LEVEL_NAME,
     )
     runner._cleanup()  # Clean up

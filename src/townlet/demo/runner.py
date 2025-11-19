@@ -3,18 +3,18 @@
 from __future__ import annotations
 
 import logging
+import math
 import signal
 import time
 from collections import defaultdict
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import torch
 import yaml
 
-from townlet.agent.brain_config import BrainConfig, compute_brain_hash, load_brain_config
-from townlet.config import HamletConfig
-from townlet.curriculum.adversarial import AdversarialCurriculum
+from townlet.agent.brain_config import BrainConfig, compute_brain_hash
+from townlet.curriculum.factory import build_curriculum
 from townlet.demo.database import DemoDatabase
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
@@ -29,10 +29,8 @@ from townlet.training.checkpoint_utils import (
 )
 from townlet.training.state import BatchedAgentState
 from townlet.training.tensorboard_logger import TensorBoardLogger
+from townlet.universe.compiled import CompiledUniverse
 from townlet.universe.compiler import UniverseCompiler
-
-if TYPE_CHECKING:
-    from townlet.universe.compiled import CompiledUniverse
 
 logger = logging.getLogger(__name__)
 
@@ -51,26 +49,35 @@ class DemoRunner:
         checkpoint_dir: Path | str,
         max_episodes: int | None = None,
         training_config_path: Path | str | None = None,
+        *,
+        level_name: str | None = None,
     ):
         """Initialize demo runner.
 
         Args:
-            config_dir: Directory containing configuration pack
+            config_dir: Experiment root directory containing v2.1 configs
+                (experiment.yaml, stratum.yaml, environment.yaml, actions.yaml, agent.yaml, levels/*)
+            level_name: Which curriculum level to run (e.g., "L0_0_minimal"). Required.
             db_path: Path to SQLite database
             checkpoint_dir: Directory for checkpoint files
-            max_episodes: Maximum number of episodes to run (if None, reads from config YAML)
-            training_config_path: Optional explicit path to training YAML file
+            max_episodes: Maximum number of episodes to run (if None, reads from level training.yaml)
+            training_config_path: Deprecated; overrides are no longer supported.
         """
         self.config_dir = Path(config_dir)
-        if training_config_path is None:
-            self.training_config_path = self.config_dir / "training.yaml"
-        else:
-            self.training_config_path = Path(training_config_path)
+        # Resolve training config path:
+        # - v2.1 packs: levels/<level_name>/training.yaml (mandatory)
+        if training_config_path is not None:
+            raise ValueError(
+                "training_config_path override is no longer supported; " "use levels/<level_name>/training.yaml with explicit level_name."
+            )
+        if level_name is None:
+            raise ValueError("level_name is required for v2.1 config packs; legacy single-file training.yaml is no longer supported.")
+        self.training_config_path = self.config_dir / "levels" / level_name / "training.yaml"
         if not self.training_config_path.exists():
             raise FileNotFoundError(f"Training config not found: {self.training_config_path}")
         self.db_path = Path(db_path)
         self.checkpoint_dir = Path(checkpoint_dir)
-        self.compiled_universe: CompiledUniverse | None = None
+        self.compiled: CompiledUniverse | None = None
 
         # Create directories
         self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
@@ -97,18 +104,41 @@ class DemoRunner:
             flush_every=10,
         )
 
-        # Load config using HamletConfig DTO (enforces no-defaults validation)
-        self.hamlet_config = HamletConfig.load(self.config_dir, training_config_path=self.training_config_path)
+        # v2.1: Compile hierarchical configs (multi-level aware)
+        compiler = UniverseCompiler()
+        self.compiled = compiler.compile(self.config_dir, primary_level=level_name)
+
+        # Determine effective level_name (supports callers that omitted it)
+        if level_name is None:
+            available_levels = getattr(self.compiled, "available_levels", [])
+            if not available_levels:
+                raise ValueError("Compiled universe has no curriculum levels; " "DemoRunner requires at least one level to be available.")
+            self.level_name: str = available_levels[0]
+            logger.info("No level_name specified; defaulting to %s", self.level_name)
+        else:
+            self.level_name = level_name
+
+        # Type narrowing: self.level_name is now guaranteed to be str
+        level_config = self.compiled.get_level(self.level_name)
+        self.experiment_config = self.compiled.experiment
+        self.stratum_config = self.compiled.stratum
+        self.environment_config = self.compiled.environment
+        self.actions_config = self.compiled.actions
+        self.agent_config = self.compiled.agent
+        self.curriculum_config = level_config.curriculum
+        self.bars_config = level_config.bars
+        self.affordances_config = level_config.affordances
+        self.training_config = level_config.training
 
         # Also load raw YAML for optional sections (e.g., recording)
         with open(self.training_config_path) as f:
             self.config = yaml.safe_load(f)
 
-        # Set max_episodes: use provided value, otherwise read from config
+        # Set max_episodes: use provided value, otherwise read from curriculum training config
         if max_episodes is not None:
             self.max_episodes = max_episodes
         else:
-            self.max_episodes = self.hamlet_config.training.max_episodes
+            self.max_episodes = self.training_config.training_loop.max_episodes
 
         self.current_episode = 0
 
@@ -119,7 +149,7 @@ class DemoRunner:
         self.exploration = None
         self.recorder = None  # Episode recorder (initialized if recording enabled)
 
-        # TASK-005 Phase 1: Brain As Code configuration (loaded in run() if brain.yaml exists)
+        # TASK-005 Phase 1: Brain As Code configuration derived from agent.yaml + training.yaml
         self.brain_config: BrainConfig | None = None
         self.brain_hash: str | None = None
 
@@ -285,7 +315,7 @@ class DemoRunner:
             checkpoint["brain_hash"] = self.brain_hash
 
         if universe is None:
-            universe = self.compiled_universe
+            universe = self.compiled
         if universe is not None:
             attach_universe_metadata(checkpoint, universe)
 
@@ -315,7 +345,7 @@ class DemoRunner:
         checkpoint = safe_torch_load(latest_checkpoint, weights_only=False)
 
         if universe is None:
-            universe = self.compiled_universe
+            universe = self.compiled
         if universe is not None:
             warning = config_hash_warning(checkpoint, universe)
             if warning:
@@ -354,93 +384,111 @@ class DemoRunner:
         logger.info(f"Database: {self.db_path}")
         logger.info(f"Checkpoints: {self.checkpoint_dir}")
 
-        # PDR-002: No-defaults validation done automatically by HamletConfig DTO
-        # All required parameters validated at load time (lines 109-110)
+        # PDR-002: No-defaults validation done automatically by config DTOs
+        # All required parameters validated at load time
 
         # Initialize training components
-        device_str = self.hamlet_config.training.device
-        device = torch.device(device_str if torch.cuda.is_available() else "cpu")
+        # v2.1: device is an infrastructure concern (no-defaults exemption).
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device_str = str(device)
         if device_str == "cuda" and not torch.cuda.is_available():
             logger.warning("CUDA requested but not available, falling back to CPU")
 
-        # Compile universe once and keep runtime view
-        compiler = UniverseCompiler()
-        self.compiled_universe = compiler.compile(self.config_dir)
-        runtime_universe = self.compiled_universe.to_runtime()
+        # Per-level metadata
+        level_meta = self.compiled.get_level(self.level_name)
+        obs_spec = level_meta.observation_spec
 
         # Extract config parameters from DTOs (all required, validated at load time)
-        num_agents = self.hamlet_config.population.num_agents
-        # Get grid_size from compiled metadata (substrate.yaml is source of truth)
-        grid_size = runtime_universe.metadata.grid_size
-        partial_observability = self.hamlet_config.environment.partial_observability
-        vision_range = self.hamlet_config.environment.vision_range
-        enable_temporal_mechanics = self.hamlet_config.environment.enable_temporal_mechanics
+        loop_cfg = self.training_config.training_loop
+        num_agents = self.training_config.population.size
+        grid_size = self.compiled.metadata.grid_size
+        partial_observability = level_meta.curriculum.curriculum.active_vision != "global"
+        vision_range = level_meta.curriculum.curriculum.vision_range
+        enable_temporal_mechanics = level_meta.curriculum.curriculum.active_temporal
 
         # Create environment from compiled universe
         self.env = VectorizedHamletEnv.from_universe(
-            self.compiled_universe,
+            self.compiled,
+            level_name=self.level_name,
             num_agents=num_agents,
             device=device,
         )
 
         # Dimensions sourced from compiled metadata
-        obs_dim = runtime_universe.metadata.observation_dim
-        action_dim = runtime_universe.metadata.action_count
+        obs_dim = obs_spec.total_dims
+        action_dim = level_meta.action_metadata.total_actions
 
         # Create curriculum (all params required per PDR-002)
-        self.curriculum = AdversarialCurriculum(
-            max_steps_per_episode=self.hamlet_config.curriculum.max_steps_per_episode,
-            survival_advance_threshold=self.hamlet_config.curriculum.survival_advance_threshold,
-            survival_retreat_threshold=self.hamlet_config.curriculum.survival_retreat_threshold,
-            entropy_gate=self.hamlet_config.curriculum.entropy_gate,
-            min_steps_at_stage=self.hamlet_config.curriculum.min_steps_at_stage,
+        self.curriculum = build_curriculum(
+            self.training_config,
+            max_steps_per_episode=loop_cfg.max_steps_per_episode,
             device=device,
         )
 
         # Create exploration (all params required per PDR-002)
         # Conditionally pass active_mask based on mask_unused_obs config
-        active_mask = self.env.observation_activity.active_mask if self.hamlet_config.population.mask_unused_obs else None
+        active_mask = self.env.observation_activity.active_mask
+        intrinsic_cfg = self.training_config.intrinsic
         self.exploration = AdaptiveIntrinsicExploration(
             obs_dim=obs_dim,
-            embed_dim=self.hamlet_config.exploration.embed_dim,
-            rnd_training_batch_size=self.hamlet_config.training.batch_size,  # Use main batch_size from config
-            initial_intrinsic_weight=self.hamlet_config.exploration.initial_intrinsic_weight,
-            variance_threshold=self.hamlet_config.exploration.variance_threshold,
-            min_survival_fraction=self.hamlet_config.exploration.min_survival_fraction,
-            max_episode_length=self.hamlet_config.curriculum.max_steps_per_episode,
-            survival_window=self.hamlet_config.exploration.survival_window,
-            epsilon_start=self.hamlet_config.training.epsilon_start,
-            epsilon_decay=self.hamlet_config.training.epsilon_decay,
-            epsilon_min=self.hamlet_config.training.epsilon_min,
+            embed_dim=intrinsic_cfg.rnd.feature_dim,
+            rnd_learning_rate=intrinsic_cfg.rnd.learning_rate,
+            rnd_training_batch_size=self.training_config.replay_buffer.batch_size,
+            initial_intrinsic_weight=intrinsic_cfg.initial_weight,
+            min_intrinsic_weight=intrinsic_cfg.annealing.min_weight,
+            variance_threshold=intrinsic_cfg.annealing.threshold,
+            min_survival_fraction=intrinsic_cfg.min_survival_fraction,
+            max_episode_length=loop_cfg.max_steps_per_episode,
+            survival_window=intrinsic_cfg.survival_window,
+            decay_rate=intrinsic_cfg.annealing.decay_rate,
+            epsilon_start=self.training_config.exploration.epsilon_start,
+            epsilon_min=self.training_config.exploration.epsilon_end,
+            epsilon_decay=self.training_config.exploration.epsilon_decay,
             device=device,
             active_mask=active_mask,
         )
 
         # Get population parameters from config (all required per PDR-002)
-        vision_window_size = 2 * vision_range + 1  # 5 for vision_range=2
+        # Derive local vision window size from compiled observation spec to keep
+        # network expectations aligned with the compiler/environment.
+        vision_window_size = 1
+        for field in obs_spec.fields:
+            if field.name == "obs_local_window" and field.dims > 0:
+                # For grid substrates, dims = window_size² (v2.1 spec)
+                root = int(math.sqrt(field.dims))
+                if root * root != field.dims:
+                    raise ValueError(
+                        f"obs_local_window dims={field.dims} is not a perfect square; "
+                        "cannot derive window_size for recurrent vision encoder."
+                    )
+                vision_window_size = root
+                break
 
         # Get training hyperparameters from config (all required per PDR-002)
-        train_frequency = self.hamlet_config.training.train_frequency
-        batch_size = self.hamlet_config.training.batch_size
-        sequence_length = self.hamlet_config.training.sequence_length
-        max_grad_norm = self.hamlet_config.training.max_grad_norm
+        train_frequency = loop_cfg.train_frequency
+        batch_size = self.training_config.replay_buffer.batch_size
+        sequence_length = loop_cfg.sequence_length
+        max_grad_norm = loop_cfg.max_grad_norm
 
         # Create agent IDs
         agent_ids = [f"agent_{i}" for i in range(num_agents)]
 
-        # Load brain.yaml (REQUIRED for all config packs)
-        brain_yaml_path = self.config_dir / "brain.yaml"
-        logger.info(f"Loading brain configuration from {brain_yaml_path}")
-        brain_config = load_brain_config(self.config_dir)
-        brain_hash = compute_brain_hash(brain_config)
-        logger.info(f"Brain config loaded: {brain_config.description}")
+        # Derive brain configuration from agent.yaml (v2.1 AgentConfig)
+        from townlet.agent.brain_config import apply_training_overrides, build_brain_config_from_agent
+
+        base_brain_config = build_brain_config_from_agent(self.agent_config, self.training_config)
+        brain_hash = compute_brain_hash(base_brain_config)
+        logger.info(f"Brain config derived from agent.yaml: {base_brain_config.description}")
         logger.info(f"Brain hash: {brain_hash[:16]}... (SHA256)")
 
-        # Store brain_config and brain_hash for checkpoint provenance
-        self.brain_config = brain_config
+        # Store base brain_config and brain_hash for checkpoint provenance
+        self.brain_config = base_brain_config
         self.brain_hash = brain_hash
 
-        # Create population (brain_config provides network/optimizer/Q-learning parameters)
+        # Apply curriculum-level overrides from training.yaml to derive effective brain config
+        effective_brain_config = apply_training_overrides(base_brain_config, self.training_config)
+
+        # Create population (effective_brain_config provides network/optimizer/Q-learning parameters)
         self.population = VectorizedPopulation(
             env=self.env,
             curriculum=self.curriculum,
@@ -455,9 +503,10 @@ class DemoRunner:
             batch_size=batch_size,
             sequence_length=sequence_length,
             max_grad_norm=max_grad_norm,
-            brain_config=brain_config,
+            brain_config=effective_brain_config,
             max_episodes=self.max_episodes,  # For PER beta annealing
-            max_steps_per_episode=self.hamlet_config.curriculum.max_steps_per_episode,  # For PER beta annealing
+            max_steps_per_episode=loop_cfg.max_steps_per_episode,  # For PER beta annealing
+            observation_spec=obs_spec,
         )
 
         self.curriculum.initialize_population(num_agents)
@@ -482,23 +531,23 @@ class DemoRunner:
             logger.info("Episode recording disabled")
 
         # Try to resume from checkpoint
-        loaded_episode = self.load_checkpoint(self.compiled_universe)
+        loaded_episode = self.load_checkpoint(self.compiled)
         if loaded_episode is not None:
             self.current_episode = loaded_episode + 1
 
         # Phase 4 - Log hyperparameters to TensorBoard
         self.hparams = {
-            "learning_rate": brain_config.optimizer.learning_rate,
-            "gamma": brain_config.q_learning.gamma,
-            "network_architecture": brain_config.architecture.type,  # 'feedforward' or 'recurrent'
-            "replay_buffer_capacity": brain_config.replay.capacity,
+            "learning_rate": effective_brain_config.optimizer.learning_rate,
+            "gamma": effective_brain_config.q_learning.gamma,
+            "network_architecture": base_brain_config.architecture.type,  # 'feedforward' or 'recurrent'
+            "replay_buffer_capacity": effective_brain_config.replay.capacity,
             "grid_size": grid_size,
             "partial_observability": partial_observability,
             "vision_range": vision_range,
             "enable_temporal": enable_temporal_mechanics,
-            "initial_intrinsic_weight": self.hamlet_config.exploration.initial_intrinsic_weight,
-            "variance_threshold": self.hamlet_config.exploration.variance_threshold,
-            "max_steps_per_episode": self.hamlet_config.curriculum.max_steps_per_episode,
+            "initial_intrinsic_weight": 1.0,
+            "variance_threshold": self.training_config.intrinsic.annealing.threshold,
+            "max_steps_per_episode": loop_cfg.max_steps_per_episode,
         }
         # Note: final metrics will be logged at end of training
         self.tb_logger.log_hyperparameters(hparams=self.hparams, metrics={})
@@ -548,7 +597,7 @@ class DemoRunner:
 
                 # Run episode
                 num_agents = self.population.num_agents
-                max_steps = self.hamlet_config.curriculum.max_steps_per_episode
+                max_steps = loop_cfg.max_steps_per_episode
                 episode_reward = torch.zeros(num_agents, device=self.env.device)
                 episode_extrinsic_reward = torch.zeros(num_agents, device=self.env.device)
                 episode_intrinsic_reward = torch.zeros(num_agents, device=self.env.device)
@@ -876,7 +925,7 @@ class DemoRunner:
 
                 # Checkpoint every CHECKPOINT_INTERVAL episodes
                 if self.current_episode % self.CHECKPOINT_INTERVAL == 0:
-                    self.save_checkpoint(self.compiled_universe)
+                    self.save_checkpoint(self.compiled)
 
                 # Decay epsilon for next episode and sync telemetry
                 self.exploration.decay_epsilon()
@@ -887,7 +936,7 @@ class DemoRunner:
         finally:
             # Save final checkpoint
             logger.info("Training complete, saving final checkpoint...")
-            self.save_checkpoint(self.compiled_universe)
+            self.save_checkpoint(self.compiled)
 
             # Phase 4 - Log final metrics with hyperparameters
             if self.population is not None:
@@ -905,34 +954,5 @@ class DemoRunner:
             self._cleanup()
 
 
-if __name__ == "__main__":
-    import sys
-
-    logging.basicConfig(
-        level=logging.INFO,
-        format="[%(asctime)s] %(levelname)s: %(message)s",
-    )
-
-    # Get paths from environment or args
-    config_arg = sys.argv[1] if len(sys.argv) > 1 else "configs/test"
-    db_path = sys.argv[2] if len(sys.argv) > 2 else "demo_state.db"
-    checkpoint_dir = sys.argv[3] if len(sys.argv) > 3 else "checkpoints"
-    # If max_episodes provided via CLI, use it; otherwise pass None to read from config
-    max_episodes = int(sys.argv[4]) if len(sys.argv) > 4 else None
-
-    config_path = Path(config_arg)
-    if config_path.is_dir():
-        config_dir = config_path
-        training_config = config_dir / "training.yaml"
-    else:
-        config_dir = config_path.parent
-        training_config = config_path
-
-    runner = DemoRunner(
-        config_dir=config_dir,
-        db_path=db_path,
-        checkpoint_dir=checkpoint_dir,
-        max_episodes=max_episodes,  # None = read from config
-        training_config_path=training_config,
-    )
-    runner.run()
+if __name__ == "__main__":  # pragma: no cover
+    raise SystemExit("townlet.demo.runner is no longer a direct CLI entry point.\n" "Use scripts/run_demo.py for the unified demo server.")

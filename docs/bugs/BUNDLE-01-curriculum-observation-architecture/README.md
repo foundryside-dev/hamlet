@@ -21,20 +21,22 @@ This bundle addresses the architectural tension between:
 - **Status**: Resolved in commit fe7f29d
 - **Tests**: `tests/test_townlet/unit/universe/test_partial_obs_curriculum_masking.py`
 
-### ENH-28: Experiment-level configuration hierarchy ✅ DESIGN v2.1 COMPLETE
+### ENH-28: Experiment-level configuration hierarchy ✅ IMPLEMENTATION PLANNING COMPLETE
 - **Problem**: BUG-43 forces all configs to pay obs_dim cost of curriculum superset, even single-level experiments
 - **Solution**: Four-layer architecture + Support/Active pattern for observation field control
 - **Architecture**: experiment.yaml + stratum.yaml + environment.yaml + actions.yaml + agent.yaml + curriculum.yaml per level
 - **Key Pattern**: Support (experiment: which fields exist) vs Active (curriculum: which fields active vs masked)
-- **Migration**: Backwards compatible with existing flat `configs/` structure (legacy mode)
-- **Status**: Design v2.1 complete (code review approved 100/100 confidence), ready for implementation
-- **Implementation Reference**: `reference-config-v2.1-complete.yaml` (600+ line complete example)
+- **Migration**: NO backwards compatibility (pre-release project, scorched earth approach)
+- **Status**: Implementation planning complete, ready to begin Phase 1 (DTO creation)
+- **Implementation Reference**: `reference-config-v2.1-complete.yaml` (990-line complete example)
+- **Implementation Plan**: `implementation-plans/2025-11-16-config-v2.1-native-implementation.md` (Native Option A, 24-36 hours)
 - **Owner**: compiler + config
 - **Key Insights**:
   - Support/Active pattern preserves BUG-43 masking while enabling power user optimization
   - WHAT vs HOW split: vocabulary (breaking) vs parameters (non-breaking)
   - Normalized vision_range (0.0-1.0) eliminates validation complexity
   - All observation_encoding modes produce identical obs_dim (value ranges differ)
+  - Delete ALL legacy code (RawConfigs, HamletConfig, flat config packs)
 
 ### Test Fixes: Observation structure adaptation ✅ COMPLETE
 - **Problem**: 10 tests had hardcoded observation dimension calculations that broke after BUG-43
@@ -124,7 +126,18 @@ affordance = obs[0, field.start_index:field.end_index]
 - **BUG-43**: `BUG-43-partial-observability-global-view-masking-and-obs-dim.md` - Closed issue that enabled this work
 - **ENH-28**: `ENH-28-experiment-level-configuration-hierarchy.md` - Enhancement tracker
 - **Target Design v2**: `target-config-design-v2.md` - Complete design specification (v2 + v2.1 integrated)
-- **Reference Config**: `reference-config-v2.1-complete.yaml` - 600+ line implementation reference with all options
+- **Reference Config**: `reference-config-v2.1-complete.yaml` - 990-line implementation reference with all options
+
+### Implementation Plans (`implementation-plans/`)
+
+**Start Here**: `IMPLEMENTATION-READY-SUMMARY.md` - Quick reference guide
+
+**Chosen Plan** (Option A - Native):
+- `2025-11-16-config-v2.1-native-implementation.md` - Full 8-phase implementation (24-36 hours)
+- `v2.1-final-decisions.md` - 10 critical design decisions (all resolved)
+
+**Rejected Plan** (Option B - Adapter):
+- `2025-11-16-config-v2.1-proper-compiler-implementation.md` - Complex adapter approach (20-30 hours, rejected due to complexity)
 
 ### Historical Documents
 

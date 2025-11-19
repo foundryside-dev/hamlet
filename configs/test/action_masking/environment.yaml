@@ -1,0 +1,50 @@
+environment:
+  version: "1.0"
+
+  meters:
+    - name: energy
+      description: "Energy reserve"
+      range_type: normalized
+    - name: health
+      description: "Health"
+      range_type: normalized
+    - name: satiation
+      description: "Hunger"
+      range_type: normalized
+    - name: hygiene
+      description: "Cleanliness"
+      range_type: normalized
+    - name: money
+      description: "Cash"
+      range_type: unbounded
+    - name: mood
+      description: "Mood"
+      range_type: normalized
+    - name: social
+      description: "Social"
+      range_type: normalized
+    - name: fitness
+      description: "Fitness"
+      range_type: normalized
+
+  affordances:
+    - name: Bed
+      description: "Sleep to restore energy"
+      category: rest
+    - name: Hospital
+      description: "Recover health"
+      category: medical
+    - name: Job
+      description: "Earn money"
+      category: work
+    - name: Bar
+      description: "Social venue"
+      category: leisure
+    - name: Park
+      description: "Free recreation"
+      category: leisure
+
+  cascade_graph: []
+  modulation_graph: []
+  variables: []
+  cues: []

@@ -16,18 +16,13 @@ from typing import Any
 HAMLET_ROOT = Path(__file__).parent.parent.parent.parent.parent
 CONFIGS_DIR = HAMLET_ROOT / "configs"
 
+# Config v2.1: Only active curriculum levels
 PRODUCTION_CONFIG_PACKS = {
-    "L0_0_minimal": CONFIGS_DIR / "L0_0_minimal",
-    "L0_5_dual_resource": CONFIGS_DIR / "L0_5_dual_resource",
-    "L1_full_observability": CONFIGS_DIR / "L1_full_observability",
-    "L2_partial_observability": CONFIGS_DIR / "L2_partial_observability",
-    "L3_temporal_mechanics": CONFIGS_DIR / "L3_temporal_mechanics",
-    "L1_3D_house": CONFIGS_DIR / "L1_3D_house",
-    "L1_continuous_1D": CONFIGS_DIR / "L1_continuous_1D",
-    "L1_continuous_2D": CONFIGS_DIR / "L1_continuous_2D",
-    "L1_continuous_3D": CONFIGS_DIR / "L1_continuous_3D",
-    "aspatial_test": CONFIGS_DIR / "aspatial_test",
-    "test": CONFIGS_DIR / "test",
+    "L0_0_minimal": CONFIGS_DIR / "default_curriculum" / "levels" / "L0_0_minimal",
+    "L0_5_dual_resource": CONFIGS_DIR / "default_curriculum" / "levels" / "L0_5_dual_resource",
+    "L1_full_observability": CONFIGS_DIR / "default_curriculum" / "levels" / "L1_full_observability",
+    "L2_partial_observability": CONFIGS_DIR / "default_curriculum" / "levels" / "L2_partial_observability",
+    "L3_temporal_mechanics": CONFIGS_DIR / "default_curriculum" / "levels" / "L3_temporal_mechanics",
 }
 
 # ==============================================================================
@@ -62,19 +57,17 @@ VALID_POPULATION_PARAMS = {
 }
 
 VALID_CURRICULUM_PARAMS = {
-    "max_steps_per_episode": 500,
-    "survival_advance_threshold": 0.7,
-    "survival_retreat_threshold": 0.3,
-    "entropy_gate": 0.5,
-    "min_steps_at_stage": 1000,
+    "version": "1.0",
+    "active_vision": "global",
+    "vision_range": 0.5,
+    "active_temporal": False,
+    "day_length": None,
 }
 
 VALID_EXPLORATION_PARAMS = {
-    "embed_dim": 128,
-    "initial_intrinsic_weight": 1.0,
-    "variance_threshold": 100.0,
-    "survival_window": 100,
-    "min_survival_fraction": 0.5,
+    "epsilon_start": 1.0,
+    "epsilon_end": 0.01,
+    "epsilon_decay": 0.995,
 }
 
 VALID_BAR_PARAMS = {
@@ -199,7 +192,7 @@ def make_temp_yaml(tmp_path: Path, section: str, data: dict[str, Any]) -> Path:
 
 
 def make_temp_config_pack(tmp_path: Path) -> Path:
-    """Create temporary config pack with all required files.
+    """Create temporary config pack with v2.1 directory structure.
 
     Args:
         tmp_path: pytest tmp_path fixture
@@ -209,15 +202,24 @@ def make_temp_config_pack(tmp_path: Path) -> Path:
 
     Example:
         >>> config_dir = make_temp_config_pack(tmp_path)
-        >>> # Creates tmp_path/config_pack/ with training.yaml containing all sections
+        >>> # Creates tmp_path/config_pack/ with v2.1 structure:
+        >>> # training/default.yaml, bars/default.yaml, etc.
     """
     import yaml
 
     config_dir = tmp_path / "config_pack"
     config_dir.mkdir()
 
-    # Create training.yaml with all sections
-    training_yaml = config_dir / "training.yaml"
+    # Create v2.1 directory structure
+    (config_dir / "training").mkdir()
+    (config_dir / "bars").mkdir()
+    (config_dir / "cascades").mkdir()
+    (config_dir / "affordances").mkdir()
+    (config_dir / "cues").mkdir()
+    (config_dir / "variables").mkdir()
+
+    # Create training/default.yaml with all sections
+    training_yaml = config_dir / "training" / "default.yaml"
     with open(training_yaml, "w") as f:
         yaml.dump(
             {
@@ -230,24 +232,29 @@ def make_temp_config_pack(tmp_path: Path) -> Path:
             f,
         )
 
-    # Create bars.yaml
-    bars_yaml = config_dir / "bars.yaml"
+    # Create bars/default.yaml
+    bars_yaml = config_dir / "bars" / "default.yaml"
     with open(bars_yaml, "w") as f:
         yaml.dump({"bars": [VALID_BAR_PARAMS]}, f)
 
-    # Create cascades.yaml
-    cascades_yaml = config_dir / "cascades.yaml"
+    # Create cascades/default.yaml
+    cascades_yaml = config_dir / "cascades" / "default.yaml"
     with open(cascades_yaml, "w") as f:
         yaml.dump({"cascades": [VALID_CASCADE_PARAMS]}, f)
 
-    # Create affordances.yaml
-    affordances_yaml = config_dir / "affordances.yaml"
+    # Create affordances/default.yaml
+    affordances_yaml = config_dir / "affordances" / "default.yaml"
     with open(affordances_yaml, "w") as f:
         yaml.dump({"affordances": [VALID_AFFORDANCE_PARAMS]}, f)
 
-    # Create cues.yaml (optional but good for completeness)
-    cues_yaml = config_dir / "cues.yaml"
+    # Create cues/default.yaml
+    cues_yaml = config_dir / "cues" / "default.yaml"
     with open(cues_yaml, "w") as f:
         yaml.dump(VALID_CUES_CONFIG, f)
+
+    # Create variables/default.yaml (required in v2.1)
+    variables_yaml = config_dir / "variables" / "default.yaml"
+    with open(variables_yaml, "w") as f:
+        yaml.dump({"variables": []}, f)
 
     return config_dir

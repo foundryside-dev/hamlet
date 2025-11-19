@@ -155,6 +155,42 @@ class AdversarialCurriculum(CurriculumManager):
         self.tracker: PerformanceTracker | None = None  # Set when population initialized
         self.transition_events: list[dict[str, Any]] = []
 
+        # Optional difficulty configuration (v2.1 training.yaml – curriculum.adversarial)
+        # These parameters control how the internal 1–5 stage index is mapped to an
+        # external difficulty_level ∈ [min_difficulty, max_difficulty]. They do NOT
+        # change stage advancement/retreat thresholds, which remain governed by
+        # survival/learning/entropy metrics.
+        self.difficulty_metric: str | None = None
+        self.difficulty_adaptation_rate: float | None = None
+        self.difficulty_min: float | None = None
+        self.difficulty_max: float | None = None
+
+    def configure_from_training(self, config: Any) -> None:
+        """Configure curriculum thresholds and difficulty mapping from TrainingV2Config.
+
+        Args:
+            config: AdversarialCurriculumConfig-like object with attributes:
+                - difficulty_metric
+                - adaptation_rate
+                - min_difficulty
+                - max_difficulty
+                - survival_advance_threshold
+                - survival_retreat_threshold
+                - entropy_gate
+                - min_steps_at_stage
+        """
+        # Difficulty mapping configuration (v2.1)
+        self.difficulty_metric = getattr(config, "difficulty_metric", None)
+        self.difficulty_adaptation_rate = getattr(config, "adaptation_rate", None)
+        self.difficulty_min = getattr(config, "min_difficulty", None)
+        self.difficulty_max = getattr(config, "max_difficulty", None)
+
+        # Thresholds: override constructor defaults with config values when provided.
+        self.survival_advance_threshold = getattr(config, "survival_advance_threshold", self.survival_advance_threshold)
+        self.survival_retreat_threshold = getattr(config, "survival_retreat_threshold", self.survival_retreat_threshold)
+        self.entropy_gate = getattr(config, "entropy_gate", self.entropy_gate)
+        self.min_steps_at_stage = getattr(config, "min_steps_at_stage", self.min_steps_at_stage)
+
     @classmethod
     def from_yaml(cls, config_path: str) -> "AdversarialCurriculum":
         """Load curriculum from YAML config file.
@@ -318,8 +354,19 @@ class AdversarialCurriculum(CurriculumManager):
                 )
 
             # Normalize stage (1-5) to difficulty_level (0.0-1.0)
-            # This maps Stage 1 -> 0.0 (easiest), Stage 5 -> 1.0 (hardest sparse rewards)
-            difficulty_level = (stage - 1) / 4.0
+            # Base mapping: Stage 1 -> 0.0 (easiest), Stage 5 -> 1.0 (hardest sparse rewards).
+            base_difficulty = (stage - 1) / 4.0
+
+            # If v2.1 adversarial config provided, map base_difficulty into the
+            # configured [min_difficulty, max_difficulty] range. This keeps the
+            # underlying stage logic unchanged while allowing operators to
+            # express difficulty bands declaratively.
+            low = self.difficulty_min if self.difficulty_min is not None else 0.0
+            high = self.difficulty_max if self.difficulty_max is not None else 1.0
+            if high > low:
+                difficulty_level = low + base_difficulty * (high - low)
+            else:
+                difficulty_level = base_difficulty
 
             decision = CurriculumDecision(
                 difficulty_level=difficulty_level,

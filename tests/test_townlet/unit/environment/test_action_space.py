@@ -29,15 +29,18 @@ class TestActionSpaceDynamicSizing:
 
         # Verify action dimension matches substrate
         # assert env.action_dim == substrate.action_space_size
-        # assert env.action_dim == 6
+        # assert env.action_dim == 10
 
         # Placeholder for now - actual test will be in integration tests
-        assert substrate.action_space_size == 6
+        # 4 cardinal + 4 diagonals + INTERACT + WAIT
+        # 4 cardinal + 4 diagonals + INTERACT (WAIT now comes from custom actions)
+        assert substrate.action_space_size == 9
 
     def test_env_respects_grid3d_action_space(self):
         """Environment action_dim matches Grid3D substrate."""
         substrate = Grid3DSubstrate(8, 8, 3, "clamp")
-        assert substrate.action_space_size == 8
+        # 4 cardinal (XY) + 4 diagonals (XY) + 2 vertical (±Z) + INTERACT (WAIT now custom)
+        assert substrate.action_space_size == 11
 
     def test_env_respects_continuous_action_spaces(self):
         """Environment action_dim matches Continuous substrates."""
@@ -47,6 +50,9 @@ class TestActionSpaceDynamicSizing:
             boundary="clamp",
             movement_delta=0.5,
             interaction_radius=1.0,
+            action_discretization={"num_directions": 8, "num_magnitudes": 3},
+            distance_metric="euclidean",
+            observation_encoding="relative",
         )
         c2d = Continuous2DSubstrate(
             min_x=0.0,
@@ -56,6 +62,9 @@ class TestActionSpaceDynamicSizing:
             boundary="clamp",
             movement_delta=0.5,
             interaction_radius=1.0,
+            action_discretization={"num_directions": 8, "num_magnitudes": 3},
+            distance_metric="euclidean",
+            observation_encoding="relative",
         )
         c3d = Continuous3DSubstrate(
             min_x=0.0,
@@ -67,16 +76,22 @@ class TestActionSpaceDynamicSizing:
             boundary="clamp",
             movement_delta=0.5,
             interaction_radius=1.0,
+            action_discretization={"num_directions": 8, "num_magnitudes": 3},
+            distance_metric="euclidean",
+            observation_encoding="relative",
         )
 
-        assert c1d.action_space_size == 4
-        assert c2d.action_space_size == 6
-        assert c3d.action_space_size == 8
+        assert c1d.action_space_size == 3
+        # Continuous2D uses discretized actions: movements + INTERACT (STOP is custom-only)
+        expected_2d = 8 * (3 - 1) + 1
+        assert c2d.action_space_size == expected_2d
+        # Continuous3D retains canonical moves + INTERACT
+        assert c3d.action_space_size == 7
 
     def test_env_respects_aspatial_action_space(self):
         """Environment action_dim matches Aspatial substrate."""
         substrate = AspatialSubstrate()
-        assert substrate.action_space_size == 2
+        assert substrate.action_space_size == 1
 
 
 class TestEnvironmentActionSpace:
@@ -85,9 +100,9 @@ class TestEnvironmentActionSpace:
     @pytest.mark.parametrize(
         "config_dir",
         [
-            Path("configs/test"),
-            Path("configs/aspatial_test"),
-            Path("configs/L1_continuous_1D"),
+            Path("configs/test/action_space/grid2d"),
+            Path("configs/test/action_space/aspatial"),
+            Path("configs/test/action_space/continuous1d"),
         ],
         ids=["grid2d", "aspatial", "continuous1d"],
     )

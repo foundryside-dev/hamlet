@@ -63,29 +63,15 @@ class SpatialSubstrate(ABC):
     def action_space_size(self) -> int:
         """Return number of discrete actions supported by this substrate.
 
-        Action spaces are determined by substrate dimensionality:
-        - Spatial substrates: 2 * position_dim + 2 (±movement per dimension + INTERACT + WAIT)
-        - Aspatial substrates: 2 (INTERACT + WAIT)
-
-        Examples:
-            Grid2D (position_dim=2): 6 actions (UP/DOWN/LEFT/RIGHT/INTERACT/WAIT)
-            Grid3D (position_dim=3): 8 actions (±X/±Y/±Z/INTERACT/WAIT)
-            Continuous1D (position_dim=1): 4 actions (±X/INTERACT/WAIT)
-            Continuous2D (position_dim=2): 6 actions (±X/±Y/INTERACT/WAIT)
-            Continuous3D (position_dim=3): 8 actions (±X/±Y/±Z/INTERACT/WAIT)
-            Aspatial (position_dim=0): 2 actions (INTERACT/WAIT)
-
-        This enables dynamic action space sizing for N-dimensional substrates.
-        VectorizedHamletEnv queries this property instead of hardcoding action counts.
+        Implementations define their default actions via get_default_actions().
+        This property returns the length of that action list so grid substrates
+        can expose diagonals/vertical movement and continuous substrates can
+        define arbitrary action sets.
 
         Returns:
             Integer count of discrete actions
         """
-        if self.position_dim == 0:
-            # Aspatial: INTERACT + WAIT actions (no movement)
-            return 2
-        # Spatial: 2N + 2 (±movement per dimension + INTERACT + WAIT)
-        return 2 * self.position_dim + 2
+        return len(self.get_default_actions())
 
     @abstractmethod
     def get_default_actions(self) -> list["ActionConfig"]:
@@ -110,10 +96,10 @@ class SpatialSubstrate(ABC):
             IDs are temporary (will be reassigned by ActionSpaceBuilder).
 
         Examples:
-            Grid2D: [UP, DOWN, LEFT, RIGHT, INTERACT, WAIT] (6 actions)
-            Grid3D: [UP, DOWN, LEFT, RIGHT, UP_Z, DOWN_Z, INTERACT, WAIT] (8 actions)
-            GridND(7D): [DIM0_NEG, DIM0_POS, ..., DIM6_POS, INTERACT, WAIT] (16 actions)
-            Aspatial: [INTERACT, WAIT] (2 actions, no movement)
+            Grid2D: [UP, DOWN, LEFT, RIGHT, UP_LEFT, UP_RIGHT, DOWN_LEFT, DOWN_RIGHT, INTERACT, WAIT]
+            Grid3D: [UP, DOWN, LEFT, RIGHT, UP_LEFT, UP_RIGHT, DOWN_LEFT, DOWN_RIGHT, UP_Z, DOWN_Z, INTERACT, WAIT]
+            GridND(7D): [DIM0_NEG, DIM0_POS, ..., DIM6_POS, INTERACT, WAIT]
+            Aspatial: [INTERACT, WAIT] (no movement)
         """
         pass
 

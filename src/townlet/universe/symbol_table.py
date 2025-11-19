@@ -3,10 +3,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any
 
-from townlet.config.affordance import AffordanceConfig
-from townlet.config.bar import BarConfig
-from townlet.config.cascade import CascadeConfig
 from townlet.config.cues import CompoundCueConfig, SimpleCueConfig
 from townlet.environment.action_config import ActionConfig
 from townlet.vfs.schema import VariableDef
@@ -18,15 +16,15 @@ from .errors import CompilationError
 class UniverseSymbolTable:
     """Stores registered entities for cross-stage validation."""
 
-    meters: dict[str, BarConfig] = field(default_factory=dict)
-    cascades: dict[str, CascadeConfig] = field(default_factory=dict)
-    affordances: dict[str, AffordanceConfig] = field(default_factory=dict)
-    affordances_by_name: dict[str, AffordanceConfig] = field(default_factory=dict)
+    meters: dict[str, Any] = field(default_factory=dict)
+    cascades: dict[str, Any] = field(default_factory=dict)
+    affordances: dict[str, Any] = field(default_factory=dict)
+    affordances_by_name: dict[str, Any] = field(default_factory=dict)
     variables: dict[str, VariableDef] = field(default_factory=dict)
     actions: dict[int, ActionConfig] = field(default_factory=dict)
     cues: dict[str, SimpleCueConfig | CompoundCueConfig] = field(default_factory=dict)
 
-    def register_meter(self, config: BarConfig) -> None:
+    def register_meter(self, config: Any) -> None:
         if config.name in self.meters:
             raise CompilationError("Stage 2: Symbol Table", [f"Duplicate meter '{config.name}' detected."])
         self.meters[config.name] = config
@@ -41,12 +39,12 @@ class UniverseSymbolTable:
             raise CompilationError("Stage 2: Symbol Table", [f"Duplicate action id '{config.id}' detected."])
         self.actions[config.id] = config
 
-    def register_cascade(self, config: CascadeConfig) -> None:
+    def register_cascade(self, config: Any) -> None:
         if config.name in self.cascades:
             raise CompilationError("Stage 2: Symbol Table", [f"Duplicate cascade '{config.name}' detected."])
         self.cascades[config.name] = config
 
-    def register_affordance(self, config: AffordanceConfig) -> None:
+    def register_affordance(self, config: Any) -> None:
         if config.id in self.affordances:
             raise CompilationError("Stage 2: Symbol Table", [f"Duplicate affordance '{config.id}' detected."])
         if config.name in self.affordances_by_name:
@@ -59,13 +57,13 @@ class UniverseSymbolTable:
             raise CompilationError("Stage 2: Symbol Table", [f"Duplicate cue '{cue.cue_id}' detected."])
         self.cues[cue.cue_id] = cue
 
-    def get_meter(self, name: str) -> BarConfig:
+    def get_meter(self, name: str) -> Any:
         return self.meters[name]
 
     def get_meter_names(self) -> list[str]:
         return [meter.name for meter in sorted(self.meters.values(), key=lambda m: m.index)]
 
-    def resolve_meter_reference(self, name: str, *, location: str | None = None) -> BarConfig:
+    def resolve_meter_reference(self, name: str, *, location: str | None = None) -> Any:
         if name not in self.meters:
             raise ReferenceError(f"References non-existent meter '{name}'. Valid meters: {list(self.meters.keys())}")
         return self.meters[name]
@@ -95,8 +93,8 @@ class UniverseSymbolTable:
         """Alias for variables (for DAC validation clarity)."""
         return self.variables
 
-    def get_affordance(self, affordance_id: str) -> AffordanceConfig:
+    def get_affordance(self, affordance_id: str) -> Any:
         return self.affordances[affordance_id]
 
-    def get_affordance_by_name(self, affordance_name: str) -> AffordanceConfig:
+    def get_affordance_by_name(self, affordance_name: str) -> Any:
         return self.affordances_by_name[affordance_name]

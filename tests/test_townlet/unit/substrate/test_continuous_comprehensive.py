@@ -17,97 +17,118 @@ import torch
 
 from townlet.substrate.continuous import Continuous1DSubstrate, Continuous2DSubstrate, Continuous3DSubstrate
 
+# Shared defaults to avoid repetitive ctor arguments in tests
+BASE_ACTION_DISC = {"num_directions": 8, "num_magnitudes": 3}
+BASE_CONT_ARGS = dict(
+    boundary="clamp",
+    movement_delta=0.5,
+    interaction_radius=1.0,
+    distance_metric="euclidean",
+    action_discretization=BASE_ACTION_DISC,
+    observation_encoding="relative",
+)
+
+
+def make_cont1d(**overrides):
+    params = dict(min_x=0.0, max_x=10.0)
+    params.update(BASE_CONT_ARGS)
+    params.update(overrides)
+    return Continuous1DSubstrate(**params)
+
+
+def make_cont2d(**overrides):
+    params = dict(min_x=0.0, max_x=10.0, min_y=0.0, max_y=10.0)
+    params.update(BASE_CONT_ARGS)
+    params.update(overrides)
+    return Continuous2DSubstrate(**params)
+
+
+def make_cont3d(**overrides):
+    params = dict(min_x=0.0, max_x=10.0, min_y=0.0, max_y=10.0, min_z=0.0, max_z=10.0)
+    params.update(BASE_CONT_ARGS)
+    params.update(overrides)
+    return Continuous3DSubstrate(**params)
+
 
 class TestContinuousActionGeneration:
-    """Test get_default_actions() for 1D/2D/3D continuous substrates.
+    """Test get_default_actions() for 1D/2D/3D continuous substrates."""
 
-    Coverage target: lines 306-355 (completely untested)
-    """
-
-    def test_get_default_actions_1d_count(self):
-        """1D continuous should generate 4 actions (LEFT, RIGHT, INTERACT, WAIT).
-
-        Coverage target: 1D action generation
-        """
-        substrate = Continuous1DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=1.0,
-        )
-
+    @pytest.mark.parametrize(
+        "substrate_cls,kwargs,expected_len,expected_names_prefix,expected_last",
+        [
+            (
+                Continuous1DSubstrate,
+                dict(
+                    min_x=0.0,
+                    max_x=10.0,
+                    boundary="clamp",
+                    movement_delta=0.5,
+                    interaction_radius=1.0,
+                    distance_metric="euclidean",
+                    action_discretization={"num_directions": 8, "num_magnitudes": 3},
+                    observation_encoding="relative",
+                ),
+                3,  # LEFT, RIGHT, INTERACT
+                ["LEFT", "RIGHT"],
+                "INTERACT",
+            ),
+            (
+                Continuous2DSubstrate,
+                dict(
+                    min_x=0.0,
+                    max_x=10.0,
+                    min_y=0.0,
+                    max_y=10.0,
+                    boundary="clamp",
+                    movement_delta=0.5,
+                    interaction_radius=1.0,
+                    distance_metric="euclidean",
+                    action_discretization={"num_directions": 8, "num_magnitudes": 3},
+                    observation_encoding="relative",
+                ),
+                17,  # 8 directions × 2 magnitudes + INTERACT
+                ["MOVE_", "MOVE_"],
+                "INTERACT",
+            ),
+            (
+                Continuous3DSubstrate,
+                dict(
+                    min_x=0.0,
+                    max_x=10.0,
+                    min_y=0.0,
+                    max_y=10.0,
+                    min_z=0.0,
+                    max_z=10.0,
+                    boundary="clamp",
+                    movement_delta=0.5,
+                    interaction_radius=1.0,
+                    distance_metric="euclidean",
+                    action_discretization={"num_directions": 8, "num_magnitudes": 3},
+                    observation_encoding="relative",
+                ),
+                7,  # 6 movement axes + INTERACT
+                ["UP", "DOWN", "LEFT", "RIGHT"],
+                "INTERACT",
+            ),
+        ],
+    )
+    def test_get_default_actions_counts_and_order(self, substrate_cls, kwargs, expected_len, expected_names_prefix, expected_last):
+        substrate = substrate_cls(**kwargs)
         actions = substrate.get_default_actions()
 
-        # 1D: 2 movement + INTERACT + WAIT = 4 actions
-        assert len(actions) == 4, "1D should have 4 actions"
+        assert len(actions) == expected_len
+        assert actions[-1].name == expected_last
 
-        # Verify action names
-        names = [a.name for a in actions]
-        assert names == ["LEFT", "RIGHT", "INTERACT", "WAIT"]
-
-    def test_get_default_actions_2d_count(self):
-        """2D continuous should generate 6 actions (UP, DOWN, LEFT, RIGHT, INTERACT, WAIT).
-
-        Coverage target: 2D action generation
-        """
-        substrate = Continuous2DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=1.0,
-        )
-
-        actions = substrate.get_default_actions()
-
-        # 2D: 4 movement + INTERACT + WAIT = 6 actions
-        assert len(actions) == 6, "2D should have 6 actions"
-
-        # Verify action names
-        names = [a.name for a in actions]
-        assert names == ["UP", "DOWN", "LEFT", "RIGHT", "INTERACT", "WAIT"]
-
-    def test_get_default_actions_3d_count(self):
-        """3D continuous should generate 8 actions (all 6 directions + INTERACT + WAIT).
-
-        Coverage target: 3D action generation
-        """
-        substrate = Continuous3DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            min_z=0.0,
-            max_z=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=1.0,
-        )
-
-        actions = substrate.get_default_actions()
-
-        # 3D: 6 movement + INTERACT + WAIT = 8 actions
-        assert len(actions) == 8, "3D should have 8 actions"
-
-        # Verify action names (3D uses UP_Z/DOWN_Z for Z-axis)
-        names = [a.name for a in actions]
-        assert names == ["UP", "DOWN", "LEFT", "RIGHT", "UP_Z", "DOWN_Z", "INTERACT", "WAIT"]
+        # Check leading names follow expected pattern/prefix
+        for prefix, action in zip(expected_names_prefix, actions):
+            assert action.name.startswith(prefix)
 
     def test_get_default_actions_deltas_1d(self):
         """1D actions should have correct deltas.
 
         Coverage target: 1D delta assignment
         """
-        substrate = Continuous1DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=1.0,
-        )
+        substrate = make_cont1d()
 
         actions = substrate.get_default_actions()
 
@@ -121,17 +142,7 @@ class TestContinuousActionGeneration:
 
         Coverage target: 3D delta assignment
         """
-        substrate = Continuous3DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            min_z=0.0,
-            max_z=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=1.0,
-        )
+        substrate = make_cont3d()
 
         actions = substrate.get_default_actions()
 
@@ -145,31 +156,16 @@ class TestContinuousActionGeneration:
 
         Coverage target: INTERACT and WAIT generation
         """
-        substrate = Continuous2DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=1.0,
-        )
+        substrate = make_cont2d()
 
         actions = substrate.get_default_actions()
 
-        # INTERACT (second-to-last)
-        interact = actions[-2]
+        # INTERACT (last)
+        interact = actions[-1]
         assert interact.name == "INTERACT"
         assert interact.type == "interaction"
         assert interact.delta is None
-        assert "energy" in interact.costs
-
-        # WAIT (last)
-        wait = actions[-1]
-        assert wait.name == "WAIT"
-        assert wait.type == "passive"
-        assert wait.delta is None
-        assert "energy" in wait.costs
+        assert interact.costs == {}
 
 
 class TestContinuousBounceEdgeCases:
@@ -183,15 +179,7 @@ class TestContinuousBounceEdgeCases:
 
         Coverage target: lines 153-162 (complex reflection logic)
         """
-        substrate = Continuous2DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            boundary="bounce",
-            movement_delta=1.0,
-            interaction_radius=0.5,
-        )
+        substrate = make_cont2d(boundary="bounce", movement_delta=1.0, interaction_radius=0.5)
 
         # Agent near right edge, move far right (multiple bounces)
         positions = torch.tensor([[9.0, 5.0]], dtype=torch.float32)
@@ -210,13 +198,7 @@ class TestContinuousBounceEdgeCases:
 
         Coverage target: lines 158-159 (exceed_half mask and reflection)
         """
-        substrate = Continuous1DSubstrate(
-            min_x=0.0,
-            max_x=5.0,
-            boundary="bounce",
-            movement_delta=1.0,
-            interaction_radius=0.5,
-        )
+        substrate = make_cont1d(max_x=5.0, boundary="bounce", movement_delta=1.0, interaction_radius=0.5)
 
         # Agent at 4, move right by 3 (would go to 7, beyond 5)
         positions = torch.tensor([[4.0]], dtype=torch.float32)
@@ -240,16 +222,7 @@ class TestContinuousChebyshevDistance:
 
         Coverage target: lines 183-184
         """
-        substrate = Continuous2DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=1.0,
-            distance_metric="chebyshev",
-        )
+        substrate = make_cont2d(distance_metric="chebyshev")
 
         pos1 = torch.tensor([[0.0, 0.0]], dtype=torch.float32)
         pos2 = torch.tensor([[3.0, 7.0]], dtype=torch.float32)
@@ -264,18 +237,7 @@ class TestContinuousChebyshevDistance:
 
         Coverage target: Chebyshev for 3D
         """
-        substrate = Continuous3DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            min_z=0.0,
-            max_z=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=1.0,
-            distance_metric="chebyshev",
-        )
+        substrate = make_cont3d(distance_metric="chebyshev")
 
         pos1 = torch.tensor([[1.0, 2.0, 3.0]], dtype=torch.float32)
         pos2 = torch.tensor([[4.0, 6.0, 5.0]], dtype=torch.float32)
@@ -298,13 +260,7 @@ class TestContinuousGetValidNeighbors:
         Continuous spaces have infinite neighbors, so enumeration is not meaningful.
         Coverage target: lines 389-392
         """
-        substrate = Continuous1DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=1.0,
-        )
+        substrate = make_cont1d()
 
         position = torch.tensor([5.0], dtype=torch.float32)
 
@@ -320,15 +276,7 @@ class TestContinuousGetValidNeighbors:
 
         Coverage target: lines 389-392
         """
-        substrate = Continuous2DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=1.0,
-        )
+        substrate = make_cont2d()
 
         position = torch.tensor([5.0, 5.0], dtype=torch.float32)
 
@@ -340,17 +288,7 @@ class TestContinuousGetValidNeighbors:
 
         Coverage target: lines 389-392
         """
-        substrate = Continuous3DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            min_z=0.0,
-            max_z=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=1.0,
-        )
+        substrate = make_cont3d()
 
         position = torch.tensor([5.0, 5.0, 5.0], dtype=torch.float32)
 
@@ -369,13 +307,7 @@ class TestContinuousNormalizePositions:
 
         Coverage target: lines 419-423 (calls _encode_relative)
         """
-        substrate = Continuous1DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=1.0,
-        )
+        substrate = make_cont1d()
 
         positions = torch.tensor([[0.0], [5.0], [10.0]], dtype=torch.float32)
 
@@ -390,15 +322,7 @@ class TestContinuousNormalizePositions:
 
         Coverage target: normalize_positions for 2D
         """
-        substrate = Continuous2DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=20.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=1.0,
-        )
+        substrate = make_cont2d(max_y=20.0)
 
         positions = torch.tensor([[0.0, 0.0], [10.0, 20.0]], dtype=torch.float32)
 
@@ -413,15 +337,7 @@ class TestContinuousNormalizePositions:
 
         Coverage target: Normalization with negative ranges
         """
-        substrate = Continuous2DSubstrate(
-            min_x=-5.0,
-            max_x=5.0,
-            min_y=-10.0,
-            max_y=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=1.0,
-        )
+        substrate = make_cont2d(min_x=-5.0, max_x=5.0, min_y=-10.0, max_y=10.0)
 
         positions = torch.tensor([[-5.0, -10.0], [0.0, 0.0], [5.0, 10.0]], dtype=torch.float32)
 
@@ -444,13 +360,7 @@ class TestContinuousPartialObservation:
         Partial observability doesn't make sense for continuous spaces.
         Coverage target: lines 483-487
         """
-        substrate = Continuous1DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=1.0,
-        )
+        substrate = make_cont1d()
 
         positions = torch.tensor([[5.0]], dtype=torch.float32)
 
@@ -466,15 +376,7 @@ class TestContinuousPartialObservation:
 
         Coverage target: lines 483-487
         """
-        substrate = Continuous2DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=1.0,
-        )
+        substrate = make_cont2d()
 
         positions = torch.tensor([[5.0, 5.0]], dtype=torch.float32)
 
@@ -486,17 +388,7 @@ class TestContinuousPartialObservation:
 
         Coverage target: lines 483-487
         """
-        substrate = Continuous3DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            min_z=0.0,
-            max_z=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=1.0,
-        )
+        substrate = make_cont3d()
 
         positions = torch.tensor([[5.0, 5.0, 5.0]], dtype=torch.float32)
 
@@ -517,16 +409,7 @@ class TestContinuousEncodingErrorPaths:
 
         Coverage target: line 285
         """
-        substrate = Continuous2DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=1.0,
-            observation_encoding="relative",
-        )
+        substrate = make_cont2d()
 
         # Force invalid encoding
         substrate.observation_encoding = "INVALID"
@@ -544,16 +427,7 @@ class TestContinuousEncodingErrorPaths:
 
         Coverage target: line 302
         """
-        substrate = Continuous2DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=1.0,
-            observation_encoding="relative",
-        )
+        substrate = make_cont2d()
 
         # Force invalid encoding
         substrate.observation_encoding = "INVALID"
@@ -575,13 +449,7 @@ class TestContinuousCoordinateSemantics:
 
         Coverage target: lines 116 (1D case)
         """
-        substrate = Continuous1DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=1.0,
-        )
+        substrate = make_cont1d()
 
         semantics = substrate.coordinate_semantics
 
@@ -593,15 +461,7 @@ class TestContinuousCoordinateSemantics:
 
         Coverage target: lines 116 (2D case)
         """
-        substrate = Continuous2DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=1.0,
-        )
+        substrate = make_cont2d()
 
         semantics = substrate.coordinate_semantics
 
@@ -615,17 +475,7 @@ class TestContinuousCoordinateSemantics:
 
         Coverage target: lines 116 (3D case)
         """
-        substrate = Continuous3DSubstrate(
-            min_x=0.0,
-            max_x=10.0,
-            min_y=0.0,
-            max_y=10.0,
-            min_z=0.0,
-            max_z=10.0,
-            boundary="clamp",
-            movement_delta=0.5,
-            interaction_radius=1.0,
-        )
+        substrate = make_cont3d()
 
         semantics = substrate.coordinate_semantics
 

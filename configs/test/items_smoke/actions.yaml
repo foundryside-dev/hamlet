@@ -1,0 +1,17 @@
+actions:
+  version: "1.0"
+
+  substrate_actions:
+    inherit: true
+
+  custom_actions:
+    - name: INTERACT
+      description: "Interact with affordance at current position"
+      enabled_by_default: true
+
+    - name: WAIT
+      description: "Do nothing (pass turn)"
+      enabled_by_default: true
+
+  labels:
+    preset: gaming

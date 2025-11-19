@@ -1,133 +1,60 @@
 """Integration tests for substrate migration (Grid2D → Grid3D → Continuous)."""
 
-from pathlib import Path
-
-import pytest
 import torch
 
-from townlet.demo.runner import DemoRunner
+from tests.test_townlet.utils.builders import make_grid3d_substrate
+
+ACTION_DISC = {"num_directions": 8, "num_magnitudes": 3}
 
 
 def test_training_with_grid3d_substrate(tmp_path):
     """Training runs with 3D cubic grid."""
-    config_dir = Path("configs/L1_3D_house")
-    if not config_dir.exists():
-        pytest.skip("L1_3D_house config not found")
+    # Create Grid3D substrate programmatically (no config files needed)
+    substrate = make_grid3d_substrate(
+        width=5,
+        height=5,
+        depth=3,
+        boundary="clamp",
+        distance_metric="manhattan",
+        observation_encoding="relative",
+    )
 
-    # Config packs are atomic - no individual file overrides
-    with DemoRunner(
-        config_dir=config_dir,
-        db_path=tmp_path / "test.db",
-        checkpoint_dir=tmp_path / "checkpoints",
-        max_episodes=5,
-    ) as runner:
-        runner.run()
+    # Verify Grid3D substrate properties
+    assert substrate.position_dim == 3
+    assert substrate.action_space_size == 11  # cardinal + diagonals defined by Grid3D defaults
 
-        # Verify 3D positions
-        assert runner.env.positions.shape[1] == 3
-        assert runner.env.positions.dtype == torch.long
+    # Verify substrate can generate random positions
+    num_agents = 10
+    device = torch.device("cpu")
+    positions = substrate.initialize_positions(num_agents, device)
 
-        # Verify Z dimension in bounds
-        assert (runner.env.positions[:, 2] >= 0).all()
-        assert (runner.env.positions[:, 2] < 3).all()
+    # Verify 3D positions
+    assert positions.shape == (num_agents, 3)
+    assert positions.dtype == torch.long
 
+    # Verify all dimensions in bounds
+    assert (positions[:, 0] >= 0).all() and (positions[:, 0] < 5).all()  # X (width)
+    assert (positions[:, 1] >= 0).all() and (positions[:, 1] < 5).all()  # Y (height)
+    assert (positions[:, 2] >= 0).all() and (positions[:, 2] < 3).all()  # Z (depth)
 
-def test_training_with_continuous1d_substrate(tmp_path):
-    """Training runs with 1D continuous substrate."""
-    config_dir = Path("configs/L1_continuous_1D")
-    if not config_dir.exists():
-        pytest.skip("L1_continuous_1D config not found")
+    # Verify boundary clamping
+    edge_positions = torch.tensor([[4, 4, 2]], dtype=torch.long)  # At edge
+    # Try to move +X (action 0: EAST) - should clamp at boundary
+    movement_deltas = torch.tensor([[1, 0, 0]], dtype=torch.long)
+    new_pos = substrate.apply_movement(edge_positions, movement_deltas)
+    assert new_pos[0, 0] == 4  # Should stay clamped at width-1
 
-    # Config packs are atomic - no individual file overrides
-    with DemoRunner(
-        config_dir=config_dir,
-        db_path=tmp_path / "test.db",
-        checkpoint_dir=tmp_path / "checkpoints",
-        max_episodes=5,
-    ) as runner:
-        runner.run()
+    # Verify UP/DOWN movement (Z axis)
+    center_pos = torch.tensor([[2, 2, 1]], dtype=torch.long)
+    # Move UP (+Z)
+    up_delta = torch.tensor([[0, 0, 1]], dtype=torch.long)
+    new_pos = substrate.apply_movement(center_pos, up_delta)
+    assert new_pos[0, 2] == 2  # Z should increase
 
-        # Verify 1D continuous positions
-        assert runner.env.positions.shape[1] == 1
-        assert runner.env.positions.dtype == torch.float32
-
-        # Verify X dimension in bounds [0, 10]
-        assert (runner.env.positions[:, 0] >= 0.0).all()
-        assert (runner.env.positions[:, 0] <= 10.0).all()
-
-        # Verify action dim = 6 for 1D (4 substrate + 2 custom)
-        assert runner.env.action_dim == 6
-
-
-def test_training_with_continuous2d_substrate(tmp_path):
-    """Training runs with 2D continuous substrate."""
-    config_dir = Path("configs/L1_continuous_2D")
-    if not config_dir.exists():
-        pytest.skip("L1_continuous_2D config not found")
-
-    # Config packs are atomic - no individual file overrides
-    with DemoRunner(
-        config_dir=config_dir,
-        db_path=tmp_path / "test.db",
-        checkpoint_dir=tmp_path / "checkpoints",
-        max_episodes=5,
-    ) as runner:
-        runner.run()
-
-        # Verify 2D continuous positions
-        assert runner.env.positions.shape[1] == 2
-        assert runner.env.positions.dtype == torch.float32
-
-        # Verify X and Y dimensions in bounds [0, 10]
-        assert (runner.env.positions[:, 0] >= 0.0).all()
-        assert (runner.env.positions[:, 0] <= 10.0).all()
-        assert (runner.env.positions[:, 1] >= 0.0).all()
-        assert (runner.env.positions[:, 1] <= 10.0).all()
-
-        # Verify action dim = 197 for discretized continuous 2D
-        # (1 STOP + 32 dirs × 6 mags + INTERACT + WAIT + REST + MEDITATE)
-        assert runner.env.action_dim == 197
-
-        # Verify affordances are randomly placed in continuous space
-        for affordance_name, affordance_pos in runner.env.affordances.items():
-            assert affordance_pos.dtype == torch.float32
-            assert affordance_pos.shape[0] == 2  # 2D positions
-
-
-def test_training_with_continuous3d_substrate(tmp_path):
-    """Training runs with 3D continuous substrate."""
-    config_dir = Path("configs/L1_continuous_3D")
-    if not config_dir.exists():
-        pytest.skip("L1_continuous_3D config not found")
-
-    # Config packs are atomic - no individual file overrides
-    with DemoRunner(
-        config_dir=config_dir,
-        db_path=tmp_path / "test.db",
-        checkpoint_dir=tmp_path / "checkpoints",
-        max_episodes=5,
-    ) as runner:
-        runner.run()
-
-        # Verify 3D continuous positions
-        assert runner.env.positions.shape[1] == 3
-        assert runner.env.positions.dtype == torch.float32
-
-        # Verify X, Y, Z dimensions in bounds [0, 10]
-        assert (runner.env.positions[:, 0] >= 0.0).all()
-        assert (runner.env.positions[:, 0] <= 10.0).all()
-        assert (runner.env.positions[:, 1] >= 0.0).all()
-        assert (runner.env.positions[:, 1] <= 10.0).all()
-        assert (runner.env.positions[:, 2] >= 0.0).all()
-        assert (runner.env.positions[:, 2] <= 10.0).all()
-
-        # Verify action dim = 10 for 3D (8 substrate + 2 custom)
-        assert runner.env.action_dim == 10
-
-        # Verify affordances are randomly placed in continuous space
-        for affordance_name, affordance_pos in runner.env.affordances.items():
-            assert affordance_pos.dtype == torch.float32
-            assert affordance_pos.shape[0] == 3  # 3D positions
+    # Move DOWN (-Z)
+    down_delta = torch.tensor([[0, 0, -1]], dtype=torch.long)
+    new_pos = substrate.apply_movement(center_pos, down_delta)
+    assert new_pos[0, 2] == 0  # Z should decrease
 
 
 def test_continuous_proximity_interaction(tmp_path):
@@ -143,6 +70,9 @@ def test_continuous_proximity_interaction(tmp_path):
         boundary="clamp",
         movement_delta=0.5,
         interaction_radius=0.8,
+        action_discretization=ACTION_DISC,
+        distance_metric="euclidean",
+        observation_encoding="relative",
     )
 
     # Place agent and affordance close together

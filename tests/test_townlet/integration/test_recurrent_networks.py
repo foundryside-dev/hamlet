@@ -16,7 +16,7 @@ import pytest
 import torch
 import torch.nn.functional as functional
 
-from tests.test_townlet.helpers.config_builder import mutate_substrate_yaml
+from tests.test_townlet.helpers.config_builder import mutate_curriculum_yaml, mutate_stratum_yaml
 from townlet.agent.networks import RecurrentSpatialQNetwork
 from townlet.curriculum.static import StaticCurriculum
 from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
@@ -44,20 +44,21 @@ class TestLSTMHiddenStatePersistence:
         """
 
         def _modifier(cfg):
-            env_cfg = cfg["environment"]
-            env_cfg.update(
-                {
-                    "partial_observability": True,
-                    "vision_range": 2,
-                    "enable_temporal_mechanics": False,
-                }
-            )
-            cfg["curriculum"].update({"max_steps_per_episode": 1000})
+            training = cfg["training"]
+            training_loop = training["training_loop"]
+            training_loop["max_steps_per_episode"] = 1000
 
         config_dir = config_pack_factory(modifier=_modifier, name="lstm_hidden_state_survival")
 
-        # Set grid size to 5x5 in substrate.yaml
-        mutate_substrate_yaml(config_dir, lambda s: s["grid"].update({"width": 5, "height": 5}))
+        # Switch to partial observability and shrink grid to 5x5
+        mutate_curriculum_yaml(
+            config_dir,
+            lambda c: c["curriculum"].update({"active_vision": "partial", "vision_range": 0.5}),
+        )
+        mutate_stratum_yaml(
+            config_dir,
+            lambda s: s["stratum"]["substrate"]["grid"].update({"width": 5, "height": 5}),
+        )
         env = cpu_env_factory(config_dir=config_dir, num_agents=1)
 
         # Create recurrent population
@@ -125,20 +126,20 @@ class TestLSTMHiddenStatePersistence:
         torch.manual_seed(42)
 
         def _modifier(cfg):
-            env_cfg = cfg["environment"]
-            env_cfg.update(
-                {
-                    "partial_observability": True,
-                    "vision_range": 2,
-                    "enable_temporal_mechanics": False,
-                }
-            )
-            cfg["curriculum"].update({"max_steps_per_episode": 1000})
+            training = cfg["training"]
+            training_loop = training["training_loop"]
+            training_loop["max_steps_per_episode"] = 1000
 
         config_dir = config_pack_factory(modifier=_modifier, name="lstm_hidden_state_reset")
 
-        # Set grid size to 5x5 in substrate.yaml
-        mutate_substrate_yaml(config_dir, lambda s: s["grid"].update({"width": 5, "height": 5}))
+        mutate_curriculum_yaml(
+            config_dir,
+            lambda c: c["curriculum"].update({"active_vision": "partial", "vision_range": 0.5}),
+        )
+        mutate_stratum_yaml(
+            config_dir,
+            lambda s: s["stratum"]["substrate"]["grid"].update({"width": 5, "height": 5}),
+        )
         env = cpu_env_factory(config_dir=config_dir, num_agents=1)
 
         curriculum = StaticCurriculum()
@@ -189,20 +190,19 @@ class TestLSTMHiddenStatePersistence:
         """
 
         def _modifier(cfg):
-            env_cfg = cfg["environment"]
-            env_cfg.update(
-                {
-                    "partial_observability": True,
-                    "vision_range": 2,
-                    "enable_temporal_mechanics": False,
-                }
-            )
-            cfg["curriculum"].update({"max_steps_per_episode": 1000})
+            training_loop = cfg["training"]["training_loop"]
+            training_loop["max_steps_per_episode"] = 1000
 
         config_dir = config_pack_factory(modifier=_modifier, name="lstm_hidden_state_flush")
 
-        # Set grid size to 5x5 in substrate.yaml
-        mutate_substrate_yaml(config_dir, lambda s: s["grid"].update({"width": 5, "height": 5}))
+        mutate_curriculum_yaml(
+            config_dir,
+            lambda c: c["curriculum"].update({"active_vision": "partial", "vision_range": 0.5}),
+        )
+        mutate_stratum_yaml(
+            config_dir,
+            lambda s: s["stratum"]["substrate"]["grid"].update({"width": 5, "height": 5}),
+        )
         env = cpu_env_factory(config_dir=config_dir, num_agents=1)
 
         curriculum = StaticCurriculum()
@@ -253,20 +253,19 @@ class TestLSTMHiddenStatePersistence:
         # Create environment with 2 agents
         # Use VERY low energy costs to ensure agents survive 10 steps
         def _modifier(cfg):
-            env_cfg = cfg["environment"]
-            env_cfg.update(
-                {
-                    "partial_observability": True,
-                    "vision_range": 2,
-                    "enable_temporal_mechanics": False,
-                }
-            )
-            cfg["curriculum"].update({"max_steps_per_episode": 1000})
+            training_loop = cfg["training"]["training_loop"]
+            training_loop["max_steps_per_episode"] = 1000
 
         config_dir = config_pack_factory(modifier=_modifier, name="lstm_hidden_state_shape")
 
-        # Set grid size to 5x5 in substrate.yaml
-        mutate_substrate_yaml(config_dir, lambda s: s["grid"].update({"width": 5, "height": 5}))
+        mutate_curriculum_yaml(
+            config_dir,
+            lambda c: c["curriculum"].update({"active_vision": "partial", "vision_range": 0.5}),
+        )
+        mutate_stratum_yaml(
+            config_dir,
+            lambda s: s["stratum"]["substrate"]["grid"].update({"width": 5, "height": 5}),
+        )
         env = cpu_env_factory(config_dir=config_dir, num_agents=2)
 
         curriculum = StaticCurriculum()
@@ -327,20 +326,19 @@ class TestLSTMBatchTraining:
         """
 
         def _modifier(cfg):
-            env_cfg = cfg["environment"]
-            env_cfg.update(
-                {
-                    "partial_observability": True,
-                    "vision_range": 2,
-                    "enable_temporal_mechanics": False,
-                }
-            )
-            cfg["curriculum"].update({"max_steps_per_episode": 1000})
+            training_loop = cfg["training"]["training_loop"]
+            training_loop["max_steps_per_episode"] = 1000
 
         config_dir = config_pack_factory(modifier=_modifier, name="lstm_batch_size")
 
-        # Set grid size to 5x5 in substrate.yaml
-        mutate_substrate_yaml(config_dir, lambda s: s["grid"].update({"width": 5, "height": 5}))
+        mutate_curriculum_yaml(
+            config_dir,
+            lambda c: c["curriculum"].update({"active_vision": "partial", "vision_range": 0.5}),
+        )
+        mutate_stratum_yaml(
+            config_dir,
+            lambda s: s["stratum"]["substrate"]["grid"].update({"width": 5, "height": 5}),
+        )
         env = cpu_env_factory(config_dir=config_dir, num_agents=2)
 
         curriculum = StaticCurriculum()
@@ -606,7 +604,11 @@ class TestLSTMForwardPass:
         POMDP env (vision_range=2) produces 5×5 window.
         LSTM forward pass should work correctly and produce Q-values.
         """
-        env = cpu_env_factory(config_dir=Path("configs/L2_partial_observability"), num_agents=1)
+        env = cpu_env_factory(
+            config_dir=Path("configs/default_curriculum"),
+            num_agents=1,
+            level_name="L2_partial_observability",
+        )
 
         # Create recurrent network
         network = RecurrentSpatialQNetwork(

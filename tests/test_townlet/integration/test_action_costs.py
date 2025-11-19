@@ -25,21 +25,18 @@ class TestMovementCosts:
 
         # Get initial energy level
         initial_energy = env.meters[0, 0].item()
+        base_depletion = env.meter_dynamics.get_base_depletion("energy")
+        move_cost = next(bar.depletion.move for bar in env.bars_config.meters if bar.name == "energy")
 
         # Execute UP action (movement) - UP is typically index 0
-        # In Grid2D: [UP, DOWN, LEFT, RIGHT, INTERACT, WAIT, ...]
-        up_action = 0
+        action_labels = env.get_action_label_names()
+        up_action = next(idx for idx, label in action_labels.items() if label == "UP")
         actions = torch.tensor([up_action], device=env.device)
 
         # One step includes: base_depletion + movement cost
         obs, rewards, dones, info = env.step(actions)
 
-        # Expected depletion (from configs/test/bars.yaml):
-        # base_depletion: 0.003 (DIFFERENT from training.yaml to force RED phase)
-        # base_move_depletion: 0.007 (DIFFERENT from training.yaml to force RED phase)
-        # Total: 0.01 (1% per movement tick)
-
-        expected_energy = initial_energy - 0.01
+        expected_energy = initial_energy - (base_depletion + move_cost)
         actual_energy = env.meters[0, 0].item()
 
         assert abs(actual_energy - expected_energy) < 1e-4, (
@@ -55,7 +52,7 @@ class TestMovementCosts:
         initial_meters = env.meters.clone()
 
         # Execute UP action
-        up_action = 0
+        up_action = next(idx for idx, label in env.get_action_label_names().items() if label == "UP")
         actions = torch.tensor([up_action], device=env.device)
         env.step(actions)
 
@@ -63,12 +60,13 @@ class TestMovementCosts:
         meter_deltas = initial_meters - env.meters
 
         # Expected: Only energy (index 0) should have base_move_depletion applied
-        # Energy: base_depletion (0.003) + base_move_depletion (0.007) = 0.01
-        # Others: only base_depletion (various rates)
-
-        # Energy should have depleted more than just base_depletion (0.003)
+        base_depletion = env.meter_dynamics.get_base_depletion("energy")
+        move_cost = next(bar.depletion.move for bar in env.bars_config.meters if bar.name == "energy")
+        expected_delta = base_depletion + move_cost
         energy_delta = meter_deltas[0, 0].item()
-        assert energy_delta > 0.003, f"Energy should deplete by base_depletion + base_move_depletion. " f"Got delta: {energy_delta:.4f}"
+        assert abs(energy_delta - expected_delta) < 1e-4, (
+            f"Energy should deplete by base_depletion + base_move_depletion. " f"Expected {expected_delta:.4f}, got {energy_delta:.4f}"
+        )
 
 
 class TestInteractionCosts:
@@ -81,21 +79,17 @@ class TestInteractionCosts:
 
         # Get initial energy level
         initial_energy = env.meters[0, 0].item()
+        base_depletion = env.meter_dynamics.get_base_depletion("energy")
+        interaction_cost = next(bar.depletion.interact for bar in env.bars_config.meters if bar.name == "energy")
 
         # Execute INTERACT action - typically index 4 in Grid2D
-        # In Grid2D: [UP, DOWN, LEFT, RIGHT, INTERACT, WAIT, ...]
-        interact_action = 4
+        interact_action = env.interact_action_idx
         actions = torch.tensor([interact_action], device=env.device)
 
         # One step includes: base_depletion + interaction cost
         obs, rewards, dones, info = env.step(actions)
 
-        # Expected depletion (from configs/test/bars.yaml):
-        # base_depletion: 0.005 (production value)
-        # base_interaction_cost: 0.005 (production value)
-        # Total: 0.010 (1.0% per interaction tick)
-
-        expected_energy = initial_energy - 0.010
+        expected_energy = initial_energy - (base_depletion + interaction_cost)
         actual_energy = env.meters[0, 0].item()
 
         assert abs(actual_energy - expected_energy) < 1e-4, (
@@ -115,20 +109,18 @@ class TestWaitActionIsolation:
         initial_energy = env.meters[0, 0].item()
 
         # Execute WAIT action - typically index 5 in Grid2D
-        # In Grid2D: [UP, DOWN, LEFT, RIGHT, INTERACT, WAIT, ...]
-        wait_action = 5
+        wait_action = next(idx for idx, label in env.get_action_label_names().items() if label == "WAIT")
         actions = torch.tensor([wait_action], device=env.device)
 
         # One step includes: only base_depletion (no action costs)
         obs, rewards, dones, info = env.step(actions)
 
-        # Expected depletion (from configs/test/bars.yaml):
-        # base_depletion: 0.005 (production value)
-        # NO base_move_depletion (WAIT doesn't move)
-        # NO base_interaction_cost (WAIT doesn't interact)
-        # Total: 0.005 (0.5% per WAIT tick)
+        base_depletion = env.meter_dynamics.get_base_depletion("energy")
+        move_cost = next(bar.depletion.move for bar in env.bars_config.meters if bar.name == "energy")
+        wait_is_movement = bool(env._movement_deltas[wait_action].ne(0).any().item())
+        wait_cost = move_cost if wait_is_movement else 0.0
 
-        expected_energy = initial_energy - 0.005
+        expected_energy = initial_energy - (base_depletion + wait_cost)
         actual_energy = env.meters[0, 0].item()
 
         assert abs(actual_energy - expected_energy) < 1e-4, (
@@ -142,25 +134,28 @@ class TestWaitActionIsolation:
         # Test WAIT
         env.reset()
         initial_energy_wait = env.meters[0, 0].item()
-        wait_action = 5
+        wait_action = next(idx for idx, label in env.get_action_label_names().items() if label == "WAIT")
         env.step(torch.tensor([wait_action], device=env.device))
         wait_energy_cost = initial_energy_wait - env.meters[0, 0].item()
 
         # Test UP (movement)
         env.reset()
         initial_energy_move = env.meters[0, 0].item()
-        up_action = 0
+        up_action = next(idx for idx, label in env.get_action_label_names().items() if label == "UP")
         env.step(torch.tensor([up_action], device=env.device))
         move_energy_cost = initial_energy_move - env.meters[0, 0].item()
 
-        # Movement should cost more than WAIT (by base_move_depletion amount)
-        assert move_energy_cost > wait_energy_cost, f"Movement ({move_energy_cost:.4f}) should cost more than WAIT ({wait_energy_cost:.4f})"
+        # Movement should cost more than WAIT when WAIT has no movement delta.
+        move_cost = next(bar.depletion.move for bar in env.bars_config.meters if bar.name == "energy")
+        wait_is_movement = bool(env._movement_deltas[wait_action].ne(0).any().item())
+        wait_cost = move_cost if wait_is_movement else 0.0
+        expected_difference = move_cost - wait_cost
+        measured_difference = move_energy_cost - wait_energy_cost
 
-        # Specifically, movement should cost base_move_depletion (0.005) more
-        expected_difference = 0.005
-        actual_difference = move_energy_cost - wait_energy_cost
-
-        assert abs(actual_difference - expected_difference) < 1e-4, (
-            f"Movement should cost {expected_difference:.3f} more than WAIT. "
-            f"Expected difference: {expected_difference:.4f}, got: {actual_difference:.4f}"
-        )
+        assert (
+            abs(measured_difference - expected_difference) < 1e-4
+        ), f"Movement vs WAIT cost delta mismatch. Expected {expected_difference:.4f}, got {measured_difference:.4f}"
+        if expected_difference > 0:
+            assert (
+                move_energy_cost > wait_energy_cost
+            ), f"Movement ({move_energy_cost:.4f}) should cost more than WAIT ({wait_energy_cost:.4f}) when WAIT has no movement delta"

@@ -292,12 +292,10 @@ class TestGrid3DConfiguration:
 
     def test_config_cubic_topology(self):
         """Config with cubic topology creates Grid3D."""
-        from townlet.substrate.config import GridConfig, SubstrateConfig
+        from townlet.config.stratum_config import GridConfig, SubstrateConfig
         from townlet.substrate.factory import SubstrateFactory
 
         config = SubstrateConfig(
-            version="1.0",
-            description="Test 3D grid",
             type="grid",
             grid=GridConfig(
                 topology="cubic",
@@ -307,6 +305,7 @@ class TestGrid3DConfiguration:
                 boundary="clamp",
                 distance_metric="manhattan",
                 observation_encoding="relative",
+                diagonals=True,
             ),
         )
 

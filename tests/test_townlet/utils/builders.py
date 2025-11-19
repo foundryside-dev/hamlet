@@ -25,7 +25,6 @@ from typing import Literal
 import torch
 
 from townlet.environment.affordance_config import AffordanceConfig, AffordanceEffect
-from townlet.environment.cascade_config import BarConfig, BarsConfig, TerminalCondition
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.recording.data_structures import EpisodeMetadata, RecordedStep
 from townlet.substrate.grid2d import Grid2DSubstrate
@@ -41,6 +40,48 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 _CONFIGS_ROOT = (_REPO_ROOT / "configs").resolve()
 _COMPILER = UniverseCompiler()
 _UNIVERSE_CACHE: dict[Path, CompiledUniverse] = {}
+
+
+# Lightweight test-only DTOs for meter configuration. The v2.1 runtime uses
+# BarsV2Config in src/townlet/config/bars_v2_config.py; these helpers are
+# purely for unit tests and do not participate in the production pipeline.
+
+
+@dataclass
+class BarConfig:
+    name: str
+    index: int
+    tier: Literal["pivotal", "primary", "secondary", "resource"]
+    range: tuple[float, float]
+    initial: float
+    base_depletion: float
+    base_move_depletion: float
+    base_interaction_cost: float
+    description: str
+
+
+@dataclass
+class TerminalCondition:
+    meter: str
+    operator: Literal["<=", ">=", "<", ">", "=="]
+    value: float
+    description: str
+
+
+@dataclass
+class BarsConfig:
+    version: str
+    description: str
+    bars: list[BarConfig]
+    terminal_conditions: list[TerminalCondition]
+
+    @property
+    def meter_count(self) -> int:
+        return len(self.bars)
+
+    @property
+    def meter_names(self) -> list[str]:
+        return [bar.name for bar in self.bars]
 
 
 def _resolve_config_path(config_dir: Path | str) -> Path:
@@ -437,14 +478,17 @@ def make_positions(
 def make_vectorized_env_from_pack(
     config_dir: Path | str,
     *,
+    level_name: str | None = None,
     num_agents: int = 1,
     device: torch.device | str = "cpu",
 ) -> VectorizedHamletEnv:
     """Instantiate VectorizedHamletEnv from a compiled config pack."""
 
     universe = _compile_universe(config_dir)
+    target_level = level_name or (universe.available_levels[0] if universe.available_levels else None)
     return VectorizedHamletEnv.from_universe(
         universe,
+        level_name=target_level,
         num_agents=num_agents,
         device=device,
     )

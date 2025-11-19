@@ -1,0 +1,24 @@
+environment:
+  version: "1.0"
+
+  meters:
+    - name: energy
+      description: "Physical energy"
+      range_type: normalized
+
+    - name: health
+      description: "Physical health"
+      range_type: normalized
+
+  cascade_graph: []
+
+  modulation_graph: []
+
+  affordances:
+    - name: energy_station
+      description: "Restore energy"
+      category: sustenance
+
+  variables: []
+
+  cues: []

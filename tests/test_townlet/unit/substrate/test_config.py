@@ -4,14 +4,10 @@ from pathlib import Path
 
 import pytest
 import torch
+import yaml
 
+from townlet.config.stratum_config import AspatialConfig, ContinuousConfig, GridConfig, GridNDConfig, SubstrateConfig
 from townlet.substrate.aspatial import AspatialSubstrate
-from townlet.substrate.config import (
-    AspatialSubstrateConfig,
-    Grid2DSubstrateConfig,
-    SubstrateConfig,
-    load_substrate_config,
-)
 from townlet.substrate.factory import SubstrateFactory
 from townlet.substrate.grid2d import Grid2DSubstrate
 
@@ -25,9 +21,10 @@ def test_grid2d_config_valid():
         "boundary": "clamp",
         "distance_metric": "manhattan",
         "observation_encoding": "relative",
+        "diagonals": True,
     }
 
-    config = Grid2DSubstrateConfig(**config_data)
+    config = GridConfig(**config_data)
 
     assert config.width == 8
     assert config.height == 8
@@ -43,17 +40,18 @@ def test_grid2d_config_invalid_dimensions():
         "boundary": "clamp",
         "distance_metric": "manhattan",
         "observation_encoding": "relative",
+        "diagonals": True,
     }
 
     with pytest.raises(ValueError, match="greater than 0"):
-        Grid2DSubstrateConfig(**config_data)
+        GridConfig(**config_data)
 
 
 def test_aspatial_config_valid():
     """Valid aspatial config should parse successfully."""
     config_data = {}  # No fields needed for aspatial
 
-    config = AspatialSubstrateConfig(**config_data)
+    config = AspatialConfig(**config_data)
 
     # Just verify it parses successfully (no fields to check)
     assert config is not None
@@ -62,8 +60,6 @@ def test_aspatial_config_valid():
 def test_substrate_config_grid2d():
     """SubstrateConfig with type='grid' should require grid config."""
     config_data = {
-        "version": "1.0",
-        "description": "Test grid substrate",
         "type": "grid",
         "grid": {
             "topology": "square",
@@ -72,6 +68,7 @@ def test_substrate_config_grid2d():
             "boundary": "clamp",
             "distance_metric": "manhattan",
             "observation_encoding": "relative",
+            "diagonals": True,
         },
     }
 
@@ -85,21 +82,17 @@ def test_substrate_config_grid2d():
 def test_substrate_config_missing_grid():
     """SubstrateConfig with type='grid' but missing grid config should fail."""
     config_data = {
-        "version": "1.0",
-        "description": "Test",
         "type": "grid",
         # Missing grid config!
     }
 
-    with pytest.raises(ValueError, match="grid configuration"):
+    with pytest.raises(ValueError, match="grid block"):
         SubstrateConfig(**config_data)
 
 
 def test_factory_build_grid2d():
     """Factory should build Grid2DSubstrate from config."""
     config_data = {
-        "version": "1.0",
-        "description": "Test grid",
         "type": "grid",
         "grid": {
             "topology": "square",
@@ -108,6 +101,7 @@ def test_factory_build_grid2d():
             "boundary": "clamp",
             "distance_metric": "manhattan",
             "observation_encoding": "relative",
+            "diagonals": True,
         },
     }
 
@@ -122,8 +116,6 @@ def test_factory_build_grid2d():
 def test_factory_build_aspatial():
     """Factory should build AspatialSubstrate from config."""
     config_data = {
-        "version": "1.0",
-        "description": "Test aspatial",
         "type": "aspatial",
         "aspatial": {},  # Empty dict (no fields needed)
     }
@@ -138,7 +130,6 @@ def test_factory_build_aspatial():
 # Phase 5C: observation_encoding tests
 def test_grid_config_observation_encoding_valid():
     """Test Grid config accepts valid observation_encoding values."""
-    from townlet.substrate.config import GridConfig
 
     for encoding in ["relative", "scaled", "absolute"]:
         config = GridConfig(
@@ -148,6 +139,7 @@ def test_grid_config_observation_encoding_valid():
             boundary="clamp",
             distance_metric="manhattan",
             observation_encoding=encoding,
+            diagonals=True,
         )
         assert config.observation_encoding == encoding
 
@@ -156,8 +148,6 @@ def test_grid_config_observation_encoding_default():
     """Test Grid config requires observation_encoding (no defaults)."""
     import pydantic_core
 
-    from townlet.substrate.config import GridConfig
-
     with pytest.raises((ValueError, pydantic_core._pydantic_core.ValidationError)):
         GridConfig(
             topology="square",
@@ -165,13 +155,13 @@ def test_grid_config_observation_encoding_default():
             height=8,
             boundary="clamp",
             distance_metric="manhattan",
+            diagonals=True,
             # observation_encoding NOT provided - should fail!
         )
 
 
 def test_grid_config_observation_encoding_invalid():
     """Test Grid config rejects invalid observation_encoding."""
-    from townlet.substrate.config import GridConfig
 
     with pytest.raises(ValueError, match="observation_encoding"):
         GridConfig(
@@ -181,12 +171,12 @@ def test_grid_config_observation_encoding_invalid():
             boundary="clamp",
             distance_metric="manhattan",
             observation_encoding="invalid",  # Not in Literal
+            diagonals=True,
         )
 
 
 def test_continuous_config_observation_encoding_valid():
     """Test Continuous config accepts valid observation_encoding values."""
-    from townlet.substrate.config import ContinuousConfig
 
     for encoding in ["relative", "scaled", "absolute"]:
         config = ContinuousConfig(
@@ -197,6 +187,7 @@ def test_continuous_config_observation_encoding_valid():
             interaction_radius=1.0,
             distance_metric="euclidean",
             observation_encoding=encoding,
+            action_discretization={"num_directions": 8, "num_magnitudes": 3},
         )
         assert config.observation_encoding == encoding
 
@@ -204,8 +195,6 @@ def test_continuous_config_observation_encoding_valid():
 def test_continuous_config_observation_encoding_default():
     """Test Continuous config requires observation_encoding (no defaults)."""
     import pydantic_core
-
-    from townlet.substrate.config import ContinuousConfig
 
     with pytest.raises((ValueError, pydantic_core._pydantic_core.ValidationError)):
         ContinuousConfig(
@@ -216,12 +205,12 @@ def test_continuous_config_observation_encoding_default():
             interaction_radius=1.0,
             distance_metric="euclidean",
             # observation_encoding NOT provided - should fail!
+            action_discretization={"num_directions": 8, "num_magnitudes": 3},
         )
 
 
 def test_gridnd_config_includes_topology_field():
     """GridNDConfig should require topology field (no defaults)."""
-    from townlet.substrate.config import GridNDConfig
 
     config = GridNDConfig(
         dimension_sizes=[5, 5, 5, 5],
@@ -236,7 +225,6 @@ def test_gridnd_config_includes_topology_field():
 
 def test_gridnd_config_topology_can_be_overridden():
     """GridNDConfig should allow explicit topology specification."""
-    from townlet.substrate.config import GridNDConfig
 
     config = GridNDConfig(
         dimension_sizes=[5, 5, 5, 5],
@@ -250,7 +238,6 @@ def test_gridnd_config_topology_can_be_overridden():
 
 def test_gridnd_config_validates_yaml_with_topology():
     """GridNDConfig should parse YAML with topology field."""
-    from townlet.substrate.config import GridNDConfig
 
     yaml_data = {
         "dimension_sizes": [5, 5, 5, 5],
@@ -269,67 +256,47 @@ def test_gridnd_config_validates_yaml_with_topology():
 
 
 @pytest.mark.parametrize(
-    "config_name,expected_width,expected_height,expected_obs_grid_dim",
+    "config_path,expected_width,expected_height,expected_obs_grid_dim",
     [
-        ("L0_0_minimal", 3, 3, 9),  # 3×3 = 9
-        ("L0_5_dual_resource", 5, 5, 25),  # 5×5 = 25 (updated to match substrate.yaml)
-        ("L1_full_observability", 8, 8, 64),  # 8×8 = 64
-        ("L2_partial_observability", 8, 8, 64),  # 8×8 = 64
-        ("L3_temporal_mechanics", 8, 8, 64),  # 8×8 = 64
-        ("templates", 8, 8, 64),  # 8×8 = 64
-        ("test", 8, 8, 64),  # 8×8 = 64
+        (Path("configs/default_curriculum/stratum.yaml"), 8, 8, 64),
+        (Path("configs/test/model_config/stratum.yaml"), 8, 8, 64),
     ],
 )
-def test_substrate_config_schema_valid(config_name, expected_width, expected_height, expected_obs_grid_dim):
-    """Substrate config should load and pass schema validation."""
-    config_path = Path("configs") / config_name / "substrate.yaml"
+def test_substrate_config_schema_valid(config_path, expected_width, expected_height, expected_obs_grid_dim):
+    """Stratum config should load and expose substrate schema."""
+    from townlet.config.stratum_config import StratumConfig
 
-    # Load config (will raise ValidationError if schema invalid)
-    config = load_substrate_config(config_path)
+    cfg = StratumConfig.from_yaml(config_path)
+    grid = cfg.stratum.substrate.grid
+    assert grid is not None
+    assert grid.topology == "square"
+    assert grid.width == expected_width
+    assert grid.height == expected_height
+    assert grid.boundary == "clamp"
+    assert grid.distance_metric == "manhattan"
 
-    # Verify basic structure
-    assert config.version == "1.0"
-    assert config.type == "grid"
-    assert config.description  # Non-empty description required
-
-    # Verify grid configuration
-    assert isinstance(config.grid, Grid2DSubstrateConfig)
-    assert config.grid.topology == "square"
-    assert config.grid.width == expected_width
-    assert config.grid.height == expected_height
-    assert config.grid.boundary == "clamp"
-    assert config.grid.distance_metric == "manhattan"
-
-    # Verify observation dimension calculation
-    # obs_dim = grid_size + 8 meters + 15 affordances + 4 temporal
-    obs_grid_dim = config.grid.width * config.grid.height
+    obs_grid_dim = grid.width * grid.height
     assert obs_grid_dim == expected_obs_grid_dim
 
 
 @pytest.mark.parametrize(
-    "config_name",
+    "config_path",
     [
-        "L0_0_minimal",
-        "L0_5_dual_resource",
-        "L1_full_observability",
-        "L2_partial_observability",
-        "L3_temporal_mechanics",
-        "templates",
-        "test",
+        Path("configs/default_curriculum/stratum.yaml"),
+        Path("configs/test/model_config/stratum.yaml"),
     ],
 )
-def test_substrate_config_behavioral_equivalence(config_name):
-    """Substrate config should produce identical behavior to legacy hardcoded grid."""
-    config_path = Path("configs") / config_name / "substrate.yaml"
-    config = load_substrate_config(config_path)
+def test_substrate_config_behavioral_equivalence(config_path):
+    """Stratum substrate config should produce a standard Grid2D substrate."""
+    from townlet.config.stratum_config import StratumConfig
 
-    # All current configs use same spatial behavior (only size differs)
-    assert config.grid.topology == "square"  # Standard 2D grid
-    assert config.grid.boundary == "clamp"  # Hard walls (not wrap/bounce/sticky)
-    assert config.grid.distance_metric == "manhattan"  # L1 norm (not euclidean)
-
-    # Grid must be square (width == height) for current configs
-    assert config.grid.width == config.grid.height
+    cfg = StratumConfig.from_yaml(config_path)
+    grid = cfg.stratum.substrate.grid
+    assert grid is not None
+    assert grid.topology == "square"  # Standard 2D grid
+    assert grid.boundary == "clamp"
+    assert grid.distance_metric == "manhattan"
+    assert grid.width == grid.height
 
 
 def test_substrate_config_no_defaults():
@@ -337,38 +304,34 @@ def test_substrate_config_no_defaults():
 
     # Attempt to load incomplete config (missing required fields)
     incomplete_yaml = """
-version: "1.0"
 type: "grid"
-# Missing: description, grid section
+# Missing: grid section
 """
     incomplete_path = Path("/tmp/incomplete_substrate.yaml")
     incomplete_path.write_text(incomplete_yaml)
 
     # Should raise ValidationError (not fall back to defaults)
     with pytest.raises(Exception) as exc_info:
-        load_substrate_config(incomplete_path)
+        with open(incomplete_path) as f:
+            loaded_data = yaml.safe_load(f)
+        SubstrateConfig(**loaded_data)
 
-    # Error message should mention missing field
-    assert "description" in str(exc_info.value).lower()
+    # Error message should mention missing grid config
+    assert "grid" in str(exc_info.value).lower()
 
     # Cleanup
     incomplete_path.unlink()
 
 
 def test_substrate_config_file_exists():
-    """All production config packs should have substrate.yaml."""
+    """Production packs expose substrate via stratum.yaml (v2.1 hierarchy)."""
     production_configs = [
-        "L0_0_minimal",
-        "L0_5_dual_resource",
-        "L1_full_observability",
-        "L2_partial_observability",
-        "L3_temporal_mechanics",
-        "test",
+        Path("configs/default_curriculum/stratum.yaml"),
+        Path("configs/test/model_config/stratum.yaml"),
     ]
 
-    for config_name in production_configs:
-        substrate_path = Path("configs") / config_name / "substrate.yaml"
-        assert substrate_path.exists(), f"Missing substrate.yaml for {config_name}"
+    for stratum_path in production_configs:
+        assert stratum_path.exists(), f"Missing stratum.yaml at {stratum_path}"
 
 
 # Edge Case Tests (Priority 2 from code review)
@@ -377,8 +340,6 @@ def test_substrate_config_file_exists():
 def test_substrate_config_invalid_boundary():
     """Invalid boundary mode should raise ValidationError."""
     invalid_yaml = """
-version: "1.0"
-description: "Test invalid boundary"
 type: "grid"
 grid:
   topology: "square"
@@ -386,13 +347,17 @@ grid:
   height: 8
   boundary: "invalid_mode"
   distance_metric: "manhattan"
+  observation_encoding: "relative"
+  diagonals: true
 """
     invalid_path = Path("/tmp/invalid_boundary_substrate.yaml")
     invalid_path.write_text(invalid_yaml)
 
     # Should raise Pydantic ValidationError for invalid literal value
     with pytest.raises(ValueError) as exc_info:
-        load_substrate_config(invalid_path)
+        with open(invalid_path) as f:
+            loaded_data = yaml.safe_load(f)
+        SubstrateConfig(**loaded_data)
 
     # Error message should indicate invalid boundary value
     error_msg = str(exc_info.value).lower()
@@ -405,8 +370,6 @@ grid:
 def test_substrate_config_invalid_distance_metric():
     """Invalid distance metric should raise ValidationError."""
     invalid_yaml = """
-version: "1.0"
-description: "Test invalid distance metric"
 type: "grid"
 grid:
   topology: "square"
@@ -414,13 +377,17 @@ grid:
   height: 8
   boundary: "clamp"
   distance_metric: "invalid_metric"
+  observation_encoding: "relative"
+  diagonals: true
 """
     invalid_path = Path("/tmp/invalid_distance_substrate.yaml")
     invalid_path.write_text(invalid_yaml)
 
     # Should raise Pydantic ValidationError for invalid literal value
     with pytest.raises(ValueError) as exc_info:
-        load_substrate_config(invalid_path)
+        with open(invalid_path) as f:
+            loaded_data = yaml.safe_load(f)
+        SubstrateConfig(**loaded_data)
 
     # Error message should indicate invalid distance_metric value
     error_msg = str(exc_info.value).lower()
@@ -433,8 +400,6 @@ grid:
 def test_substrate_config_non_square_grid():
     """Non-square grids (width ≠ height) should be valid."""
     non_square_yaml = """
-version: "1.0"
-description: "Non-square grid test"
 type: "grid"
 grid:
   topology: "square"
@@ -443,12 +408,15 @@ grid:
   boundary: "clamp"
   distance_metric: "manhattan"
   observation_encoding: "relative"
+  diagonals: false
 """
     non_square_path = Path("/tmp/non_square_substrate.yaml")
     non_square_path.write_text(non_square_yaml)
 
     # Should load successfully (non-square grids are valid)
-    config = load_substrate_config(non_square_path)
+    with open(non_square_path) as f:
+        loaded_data = yaml.safe_load(f)
+    config = SubstrateConfig(**loaded_data)
 
     assert config.grid.width == 10
     assert config.grid.height == 5
@@ -456,54 +424,3 @@ grid:
 
     # Cleanup
     non_square_path.unlink()
-
-
-def test_substrate_config_aspatial_loading():
-    """Aspatial config should load correctly end-to-end."""
-    import torch
-
-    from townlet.substrate.factory import SubstrateFactory
-
-    # Load example aspatial config
-    aspatial_path = Path("docs/examples/substrate-aspatial.yaml")
-    config = load_substrate_config(aspatial_path)
-
-    # Verify config structure
-    assert config.type == "aspatial"
-    assert config.aspatial is not None
-    assert config.grid is None
-
-    # Verify factory can build substrate
-    substrate = SubstrateFactory.build(config, device=torch.device("cpu"))
-
-    # Verify substrate behavior
-    assert substrate.position_dim == 0
-    assert substrate.get_observation_dim() == 0
-
-
-@pytest.mark.parametrize(
-    "example_name",
-    [
-        "substrate-aspatial.yaml",
-        "substrate-euclidean-distance.yaml",
-        "substrate-toroidal-grid.yaml",
-    ],
-)
-def test_example_configs_valid(example_name):
-    """Example configs should load and validate correctly."""
-    example_path = Path("docs/examples") / example_name
-
-    # Should load without errors
-    config = load_substrate_config(example_path)
-
-    # All examples should have valid version and description
-    assert config.version == "1.0"
-    assert config.description
-
-    # Verify config type matches filename
-    if "aspatial" in example_name:
-        assert config.type == "aspatial"
-        assert config.aspatial is not None
-    else:
-        assert config.type == "grid"
-        assert config.grid is not None

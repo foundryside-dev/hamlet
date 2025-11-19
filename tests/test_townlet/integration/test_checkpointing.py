@@ -31,6 +31,9 @@ from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
 from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
 from townlet.population.vectorized import VectorizedPopulation
 
+TRAIN_KWARGS = dict(train_frequency=1, batch_size=32, sequence_length=1, max_grad_norm=1.0)
+LEVEL_NAME = "L0_test"
+
 
 @pytest.fixture
 def env_builder(env_factory, cpu_device):
@@ -186,8 +189,12 @@ class TestPopulationCheckpointing:
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=basic_env.observation_dim,
-            # action_dim defaults to env.action_dim
             brain_config=minimal_brain_config,
+            train_frequency=1,
+            batch_size=32,
+            sequence_length=1,
+            max_grad_norm=1.0,
+            action_dim=basic_env.action_dim,
         )
 
         # Get checkpoint
@@ -237,8 +244,12 @@ class TestPopulationCheckpointing:
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=env.observation_dim,
-            # action_dim defaults to env.action_dim
             brain_config=minimal_brain_config,
+            train_frequency=1,
+            batch_size=32,
+            sequence_length=1,
+            max_grad_norm=1.0,
+            action_dim=env.action_dim,
         )
 
         # Train for a bit to change weights
@@ -266,8 +277,12 @@ class TestPopulationCheckpointing:
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=env.observation_dim,
-            # action_dim defaults to env.action_dim
             brain_config=minimal_brain_config,
+            train_frequency=1,
+            batch_size=32,
+            sequence_length=1,
+            max_grad_norm=1.0,
+            action_dim=env.action_dim,
         )
 
         pop2.load_checkpoint_state(checkpoint)
@@ -301,8 +316,12 @@ class TestPopulationCheckpointing:
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=env.observation_dim,
-            # action_dim defaults to env.action_dim
             brain_config=minimal_brain_config,
+            train_frequency=1,
+            batch_size=32,
+            sequence_length=1,
+            max_grad_norm=1.0,
+            action_dim=env.action_dim,
         )
 
         # Fill replay buffer with experiences
@@ -325,8 +344,12 @@ class TestPopulationCheckpointing:
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=env.observation_dim,
-            # action_dim defaults to env.action_dim
             brain_config=minimal_brain_config,
+            train_frequency=1,
+            batch_size=32,
+            sequence_length=1,
+            max_grad_norm=1.0,
+            action_dim=env.action_dim,
         )
 
         # Before load, buffer should be empty
@@ -541,7 +564,7 @@ class TestRunnerCheckpointing:
             checkpoint_dir = tmp_path / "checkpoints"
             checkpoint_dir.mkdir()
 
-            config_dir = config_pack_factory(modifier=lambda data: data["training"].update({"max_episodes": 1}))
+            config_dir = config_pack_factory(modifier=lambda data: data["training"]["training_loop"].update({"max_episodes": 1}))
 
             # Create runner with context manager
             with DemoRunner(
@@ -549,6 +572,7 @@ class TestRunnerCheckpointing:
                 db_path=tmp_path / "test.db",
                 checkpoint_dir=checkpoint_dir,
                 max_episodes=1,
+                level_name=LEVEL_NAME,
             ) as runner:
                 # Manually initialize components
                 runner.env = env_builder(config_dir=config_dir, num_agents=1)
@@ -572,8 +596,12 @@ class TestRunnerCheckpointing:
                     agent_ids=["agent_0"],
                     device=cpu_device,
                     obs_dim=runner.env.observation_dim,
-                    # action_dim defaults to env.action_dim
                     brain_config=minimal_brain_config,
+                    train_frequency=1,
+                    batch_size=32,
+                    sequence_length=1,
+                    max_grad_norm=1.0,
+                    action_dim=runner.env.action_dim,
                 )
 
                 # Save checkpoint
@@ -603,13 +631,14 @@ class TestRunnerCheckpointing:
             checkpoint_dir = tmp_path / "checkpoints"
             checkpoint_dir.mkdir()
 
-            config_dir = config_pack_factory(modifier=lambda data: data["training"].update({"max_episodes": 1}))
+            config_dir = config_pack_factory(modifier=lambda data: data["training"]["training_loop"].update({"max_episodes": 1}))
 
             with DemoRunner(
                 config_dir=config_dir,
                 db_path=tmp_path / "test1.db",
                 checkpoint_dir=checkpoint_dir,
                 max_episodes=1,
+                level_name=LEVEL_NAME,
             ) as runner1:
                 runner1.env = env_builder(config_dir=config_dir, num_agents=1)
                 runner1.curriculum = AdversarialCurriculum(max_steps_per_episode=100)
@@ -623,6 +652,11 @@ class TestRunnerCheckpointing:
                     device=cpu_device,
                     obs_dim=runner1.env.observation_dim,
                     brain_config=minimal_brain_config,
+                    train_frequency=1,
+                    batch_size=32,
+                    sequence_length=1,
+                    max_grad_norm=1.0,
+                    action_dim=runner1.env.action_dim,
                 )
                 runner1.current_episode = 42
                 runner1.save_checkpoint()
@@ -632,6 +666,7 @@ class TestRunnerCheckpointing:
                 db_path=tmp_path / "test2.db",
                 checkpoint_dir=checkpoint_dir,
                 max_episodes=1,
+                level_name=LEVEL_NAME,
             ) as runner2:
                 runner2.env = env_builder(config_dir=config_dir, num_agents=1)
                 runner2.curriculum = AdversarialCurriculum(max_steps_per_episode=100)
@@ -645,6 +680,11 @@ class TestRunnerCheckpointing:
                     device=cpu_device,
                     obs_dim=runner2.env.observation_dim,
                     brain_config=minimal_brain_config,
+                    train_frequency=1,
+                    batch_size=32,
+                    sequence_length=1,
+                    max_grad_norm=1.0,
+                    action_dim=runner2.env.action_dim,
                 )
                 runner2.load_checkpoint()
                 assert runner2.current_episode == 42, "Episode number should be preserved after load"
@@ -658,13 +698,16 @@ class TestRunnerCheckpointing:
             checkpoint_dir = tmp_path / "checkpoints"
             checkpoint_dir.mkdir()
 
-            config_dir = config_pack_factory(modifier=lambda data: data["training"].update({"max_episodes": 1}), name="runner_config")
+            config_dir = config_pack_factory(
+                modifier=lambda data: data["training"]["training_loop"].update({"max_episodes": 1}), name="runner_config"
+            )
 
             with DemoRunner(
                 config_dir=config_dir,
                 db_path=tmp_path / "test1.db",
                 checkpoint_dir=checkpoint_dir,
                 max_episodes=1,
+                level_name=LEVEL_NAME,
             ) as runner1:
                 runner1.env = env_builder(config_dir=config_dir, num_agents=1)
                 runner1.curriculum = AdversarialCurriculum(max_steps_per_episode=100)
@@ -678,6 +721,11 @@ class TestRunnerCheckpointing:
                     device=cpu_device,
                     obs_dim=runner1.env.observation_dim,
                     brain_config=minimal_brain_config,
+                    train_frequency=1,
+                    batch_size=32,
+                    sequence_length=1,
+                    max_grad_norm=1.0,
+                    action_dim=runner1.env.action_dim,
                 )
 
                 runner1.population.reset()
@@ -697,6 +745,7 @@ class TestRunnerCheckpointing:
                 db_path=tmp_path / "test2.db",
                 checkpoint_dir=checkpoint_dir,
                 max_episodes=1,
+                level_name=LEVEL_NAME,
             ) as runner2:
                 runner2.env = env_builder(config_dir=config_dir, num_agents=1)
                 runner2.curriculum = AdversarialCurriculum(max_steps_per_episode=100)
@@ -710,6 +759,11 @@ class TestRunnerCheckpointing:
                     device=cpu_device,
                     obs_dim=runner2.env.observation_dim,
                     brain_config=minimal_brain_config,
+                    train_frequency=1,
+                    batch_size=32,
+                    sequence_length=1,
+                    max_grad_norm=1.0,
+                    action_dim=runner2.env.action_dim,
                 )
 
                 runner2.load_checkpoint()
@@ -764,8 +818,9 @@ class TestCheckpointRoundTrip:
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=env.observation_dim,
-            # action_dim defaults to env.action_dim
             brain_config=minimal_brain_config,
+            action_dim=env.action_dim,
+            **TRAIN_KWARGS,
         )
 
         # Train first population
@@ -797,8 +852,9 @@ class TestCheckpointRoundTrip:
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=env.observation_dim,
-            # action_dim defaults to env.action_dim
             brain_config=minimal_brain_config,
+            action_dim=env.action_dim,
+            **TRAIN_KWARGS,
         )
 
         pop2.load_checkpoint_state(checkpoint)
@@ -846,8 +902,9 @@ class TestCheckpointRoundTrip:
             agent_ids=["agent_0", "agent_1"],
             device=cpu_device,
             obs_dim=env.observation_dim,
-            # action_dim defaults to env.action_dim
             brain_config=minimal_brain_config,
+            action_dim=env.action_dim,
+            **TRAIN_KWARGS,
         )
 
         # Train for some steps
@@ -888,8 +945,9 @@ class TestCheckpointRoundTrip:
             agent_ids=["agent_0", "agent_1"],
             device=cpu_device,
             obs_dim=env2.observation_dim,
-            # action_dim defaults to env.action_dim
             brain_config=minimal_brain_config,
+            action_dim=env2.action_dim,
+            **TRAIN_KWARGS,
         )
 
         # Load all checkpoints
@@ -923,7 +981,7 @@ class TestCheckpointRoundTrip:
 
 
 class TestVariableMeterCheckpoints:
-    """Test checkpoint saving/loading with variable meters (TASK-001).
+    """Test checkpoint saving/loading with variable meter universes.
 
     Verifies that checkpoints include meter metadata and validate compatibility.
     """
@@ -949,8 +1007,9 @@ class TestVariableMeterCheckpoints:
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=task001_env_4meter.observation_dim,
-            # action_dim defaults to env.action_dim
             brain_config=minimal_brain_config,
+            action_dim=task001_env_4meter.action_dim,
+            **TRAIN_KWARGS,
         )
 
         # Get checkpoint
@@ -967,7 +1026,7 @@ class TestVariableMeterCheckpoints:
 
         # Verify values
         assert metadata["meter_count"] == 4, f"Should have 4 meters, got {metadata['meter_count']}"
-        assert metadata["meter_names"] == [
+        assert list(metadata["meter_names"]) == [
             "energy",
             "health",
             "money",
@@ -991,8 +1050,9 @@ class TestVariableMeterCheckpoints:
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=task001_env_4meter.observation_dim,
-            # action_dim defaults to env.action_dim
             brain_config=minimal_brain_config,
+            action_dim=task001_env_4meter.action_dim,
+            **TRAIN_KWARGS,
         )
 
         # Save checkpoint (no training needed for metadata test)
@@ -1016,8 +1076,9 @@ class TestVariableMeterCheckpoints:
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=basic_env.observation_dim,
-            # action_dim defaults to env.action_dim
             brain_config=minimal_brain_config,
+            action_dim=basic_env.action_dim,
+            **TRAIN_KWARGS,
         )
 
         # Loading should raise ValueError
@@ -1037,8 +1098,9 @@ class TestVariableMeterCheckpoints:
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=task001_env_4meter.observation_dim,
-            # action_dim defaults to env.action_dim
             brain_config=minimal_brain_config,
+            action_dim=task001_env_4meter.action_dim,
+            **TRAIN_KWARGS,
         )
 
         # Save checkpoint (no training needed)
@@ -1059,8 +1121,9 @@ class TestVariableMeterCheckpoints:
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=task001_env_4meter.observation_dim,
-            # action_dim defaults to env.action_dim
             brain_config=minimal_brain_config,
+            action_dim=task001_env_4meter.action_dim,
+            **TRAIN_KWARGS,
         )
 
         # Load should succeed (no exception)
@@ -1083,8 +1146,9 @@ class TestVariableMeterCheckpoints:
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=basic_env.observation_dim,
-            # action_dim defaults to env.action_dim
             brain_config=minimal_brain_config,
+            action_dim=basic_env.action_dim,
+            **TRAIN_KWARGS,
         )
 
         # Get a real checkpoint and remove universe_metadata to simulate legacy
@@ -1106,8 +1170,9 @@ class TestVariableMeterCheckpoints:
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=basic_env.observation_dim,
-            # action_dim defaults to env.action_dim
             brain_config=minimal_brain_config,
+            action_dim=basic_env.action_dim,
+            **TRAIN_KWARGS,
         )
 
         # Loading checkpoint without universe_metadata should raise ValueError
@@ -1141,6 +1206,7 @@ class TestDemoRunnerResourceManagement:
             db_path=tmp_path / "test.db",
             checkpoint_dir=checkpoint_dir,
             max_episodes=1,
+            level_name=LEVEL_NAME,
         ) as runner:
             # Database should be open
             assert hasattr(runner, "db")
@@ -1164,6 +1230,7 @@ class TestDemoRunnerResourceManagement:
             db_path=tmp_path / "test.db",
             checkpoint_dir=checkpoint_dir,
             max_episodes=1,
+            level_name=LEVEL_NAME,
         )
 
         # Call cleanup multiple times - should not raise
@@ -1184,6 +1251,7 @@ class TestDemoRunnerResourceManagement:
                 db_path=tmp_path / "test.db",
                 checkpoint_dir=checkpoint_dir,
                 max_episodes=1,
+                level_name=LEVEL_NAME,
             ) as runner:
                 assert runner is not None  # Runner created successfully
                 raise ValueError("test exception")

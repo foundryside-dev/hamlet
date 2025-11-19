@@ -11,19 +11,33 @@ import sqlite3
 
 import pytest
 
+from tests.test_townlet.helpers.config_builder import mutate_agent_yaml
+from townlet.demo.runner import DemoRunner
+from townlet.universe.errors import CompilationError
+
+LEVEL_NAME = "L0_test"
+
+
+def _force_huber_loss(config_dir) -> None:
+    """Align agent loss with schema (huber requires huber_delta)."""
+    mutate_agent_yaml(
+        config_dir,
+        lambda data: data.setdefault("agent", {}).setdefault("brain", {}).update({"loss": {"type": "huber", "huber_delta": 1.0}}),
+    )
+
 
 class TestRunnerRecordingIntegration:
     """Test runner integration with recording system (migrated from test_recording)."""
 
     def test_runner_initializes_recorder_attribute(self, tmp_path, config_pack_factory):
         """Runner should have recorder attribute initialized to None."""
-        from townlet.demo.runner import DemoRunner
 
         def modifier(data: dict) -> None:
-            data["training"]["max_episodes"] = 2
-            data["training"]["allow_unfeasible_universe"] = True
+            training = data["training"]
+            training["training_loop"]["max_episodes"] = 2
 
         config_dir = config_pack_factory(modifier=modifier)
+        _force_huber_loss(config_dir)
         db_path = tmp_path / "test.db"
         checkpoint_dir = tmp_path / "checkpoints"
 
@@ -33,6 +47,7 @@ class TestRunnerRecordingIntegration:
             db_path=db_path,
             checkpoint_dir=checkpoint_dir,
             max_episodes=2,
+            level_name=LEVEL_NAME,
         ) as runner:
             # Verify recorder attribute exists and starts as None
             assert hasattr(runner, "recorder")
@@ -40,19 +55,19 @@ class TestRunnerRecordingIntegration:
 
     def test_runner_config_has_recording_field(self, tmp_path, config_pack_factory):
         """Runner should load recording config when present."""
-        from townlet.demo.runner import DemoRunner
 
         def modifier(data: dict) -> None:
-            data["training"]["max_episodes"] = 2
+            training = data["training"]
+            training["training_loop"]["max_episodes"] = 2
             data["recording"] = {
                 "enabled": True,
                 "output_dir": "recordings",
                 "max_queue_size": 100,
                 "compression": "lz4",
             }
-            data["training"]["allow_unfeasible_universe"] = True
 
         config_dir = config_pack_factory(modifier=modifier)
+        _force_huber_loss(config_dir)
         db_path = tmp_path / "test.db"
         checkpoint_dir = tmp_path / "checkpoints"
 
@@ -62,6 +77,7 @@ class TestRunnerRecordingIntegration:
             db_path=db_path,
             checkpoint_dir=checkpoint_dir,
             max_episodes=2,
+            level_name=LEVEL_NAME,
         ) as runner:
             # Verify recording config is loaded
             assert "recording" in runner.config
@@ -81,14 +97,14 @@ class TestRunnerOrchestration:
         from townlet.demo.runner import DemoRunner
 
         def modifier(data: dict) -> None:
-            env = data["environment"]
-            env["enabled_affordances"] = ["Bed"]
-            env["vision_range"] = 8
-            data["exploration"]["survival_window"] = 10
-            data["training"]["max_episodes"] = 3
-            data["training"]["allow_unfeasible_universe"] = True
+            training = data["training"]
+            training["enabled_affordances"] = ["SLEEP"]
+            training["intrinsic"]["survival_window"] = 10
+            training["training_loop"]["max_episodes"] = 3
+            training["curriculum"]["strategy"] = "adversarial"
 
         config_dir = config_pack_factory(modifier=modifier)
+        _force_huber_loss(config_dir)
         # Create runner
         db_path = tmp_path / "test.db"
         checkpoint_dir = tmp_path / "checkpoints"
@@ -97,6 +113,7 @@ class TestRunnerOrchestration:
             db_path=db_path,
             checkpoint_dir=checkpoint_dir,
             max_episodes=3,
+            level_name=LEVEL_NAME,
         )
 
         # Run training
@@ -125,14 +142,14 @@ class TestRunnerOrchestration:
         monkeypatch.setattr(DemoRunner, "CHECKPOINT_INTERVAL", 5)
 
         def modifier(data: dict) -> None:
-            env = data["environment"]
-            env["enabled_affordances"] = ["Bed"]
-            env["vision_range"] = 8
-            data["exploration"]["survival_window"] = 10
-            data["training"]["max_episodes"] = 15
-            data["training"]["allow_unfeasible_universe"] = True
+            training = data["training"]
+            training["enabled_affordances"] = ["SLEEP"]
+            training["intrinsic"]["survival_window"] = 10
+            training["training_loop"]["max_episodes"] = 15
+            training["curriculum"]["strategy"] = "adversarial"
 
         config_dir = config_pack_factory(modifier=modifier)
+        _force_huber_loss(config_dir)
         # Create runner
         checkpoint_dir = tmp_path / "checkpoints"
         db_path = tmp_path / "test.db"
@@ -141,6 +158,7 @@ class TestRunnerOrchestration:
             db_path=db_path,
             checkpoint_dir=checkpoint_dir,
             max_episodes=15,
+            level_name=LEVEL_NAME,
         )
 
         # Run training
@@ -165,14 +183,14 @@ class TestRunnerOrchestration:
         from townlet.demo.runner import DemoRunner
 
         def modifier(data: dict) -> None:
-            env = data["environment"]
-            env["enabled_affordances"] = ["Bed"]
-            env["vision_range"] = 8
-            data["exploration"]["survival_window"] = 10
-            data["training"]["max_episodes"] = 5
-            data["training"]["allow_unfeasible_universe"] = True
+            training = data["training"]
+            training["enabled_affordances"] = ["SLEEP"]
+            training["intrinsic"]["survival_window"] = 10
+            training["training_loop"]["max_episodes"] = 5
+            training["curriculum"]["strategy"] = "adversarial"
 
         config_dir = config_pack_factory(modifier=modifier)
+        _force_huber_loss(config_dir)
 
         # Create runner
         db_path = tmp_path / "test.db"
@@ -182,6 +200,7 @@ class TestRunnerOrchestration:
             db_path=db_path,
             checkpoint_dir=checkpoint_dir,
             max_episodes=5,
+            level_name=LEVEL_NAME,
         )
 
         # Run training
@@ -247,18 +266,17 @@ class TestRunnerAffordanceTransitions:
         def modifier(data: dict) -> None:
             env = data["environment"]
             env["vision_range"] = 3
-            env["enabled_affordances"] = ["Bed"]
-            data["curriculum"]["max_steps_per_episode"] = 50
-            data["exploration"]["survival_window"] = 10
-            data["training"].update(
-                {
-                    "max_episodes": 15,
-                    "epsilon_start": 0.9,
-                }
-            )
-            data["training"]["allow_unfeasible_universe"] = True
+            training = data["training"]
+            training["enabled_affordances"] = ["SLEEP"]
+            training_loop = training["training_loop"]
+            training_loop["max_steps_per_episode"] = 50
+            training_loop["max_episodes"] = 15
+            training["intrinsic"]["survival_window"] = 10
+            training["exploration"]["epsilon_start"] = 0.9
+            training["curriculum"]["strategy"] = "adversarial"
 
         config_dir = config_pack_factory(modifier=modifier)
+        _force_huber_loss(config_dir)
 
         # Create runner
         db_path = tmp_path / "test.db"
@@ -268,6 +286,7 @@ class TestRunnerAffordanceTransitions:
             db_path=db_path,
             checkpoint_dir=checkpoint_dir,
             max_episodes=15,
+            level_name=LEVEL_NAME,
         )
 
         # Run training
@@ -317,30 +336,22 @@ class TestRunnerConfigValidation:
         """
         from townlet.demo.runner import DemoRunner
 
-        def modifier(data: dict) -> None:
-            env = data["environment"]
-            for key in [
-                "grid_size",
-                "partial_observability",
-                "vision_range",
-                "energy_move_depletion",
-                "energy_wait_depletion",
-                "energy_interact_depletion",
-            ]:
-                env.pop(key, None)
-            data["training"]["allow_unfeasible_universe"] = True
+        config_dir = config_pack_factory()
+        _force_huber_loss(config_dir)
 
-        config_dir = config_pack_factory(modifier=modifier)
+        env_yaml = config_dir / "environment.yaml"
+        # Overwrite environment.yaml with an invalid minimal structure to trigger validation failure
+        env_yaml.write_text('environment:\n  version: "1.0"\n')
+        _force_huber_loss(config_dir)
 
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(CompilationError):
             DemoRunner(
                 config_dir=config_dir,
                 db_path=tmp_path / "test.db",
                 checkpoint_dir=tmp_path / "checkpoints",
                 max_episodes=1,
+                level_name=LEVEL_NAME,
             )
-
-        assert "environment" in str(exc_info.value).lower()
 
     def test_missing_required_training_params_raises_helpful_error(self, tmp_path, config_pack_factory):
         """Missing required training params should raise ValueError with helpful message."""
@@ -348,30 +359,21 @@ class TestRunnerConfigValidation:
 
         def modifier(data: dict) -> None:
             train = data["training"]
-            for key in [
-                "train_frequency",
-                "target_update_frequency",
-                "batch_size",
-                "sequence_length",
-                "max_grad_norm",
-                "epsilon_start",
-                "epsilon_decay",
-                "epsilon_min",
-            ]:
-                train.pop(key, None)
-            train["allow_unfeasible_universe"] = True
+            train["training_loop"] = {}
+            train["replay_buffer"] = {}
+            train["exploration"] = {}
 
         config_dir = config_pack_factory(modifier=modifier)
+        _force_huber_loss(config_dir)
 
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(CompilationError):
             DemoRunner(
                 config_dir=config_dir,
                 db_path=tmp_path / "test.db",
                 checkpoint_dir=tmp_path / "checkpoints",
                 max_episodes=1,
+                level_name=LEVEL_NAME,
             )
-
-        assert "training" in str(exc_info.value).lower()
 
 
 class TestRunnerResourceCleanup:
@@ -381,13 +383,12 @@ class TestRunnerResourceCleanup:
         from townlet.demo.runner import DemoRunner
 
         def modifier(data: dict) -> None:
-            data["training"]["max_episodes"] = 1
-            data["environment"]["enabled_affordances"] = ["Bed"]
-            data["training"]["allow_unfeasible_universe"] = True
-            data["training"]["allow_unfeasible_universe"] = True
-            data["training"]["allow_unfeasible_universe"] = True
+            training = data["training"]
+            training["training_loop"]["max_episodes"] = 1
+            training["enabled_affordances"] = ["SLEEP"]
 
         config_dir = config_pack_factory(modifier=modifier)
+        _force_huber_loss(config_dir)
         db_path = tmp_path / "test.db"
         checkpoint_dir = tmp_path / "checkpoints"
 
@@ -396,6 +397,7 @@ class TestRunnerResourceCleanup:
             db_path=db_path,
             checkpoint_dir=checkpoint_dir,
             max_episodes=1,
+            level_name=LEVEL_NAME,
         ) as runner:
             assert runner.db is not None
             assert runner.tb_logger is not None
@@ -406,10 +408,12 @@ class TestRunnerResourceCleanup:
         from townlet.demo.runner import DemoRunner
 
         def modifier(data: dict) -> None:
-            data["training"]["max_episodes"] = 1
-            data["environment"]["enabled_affordances"] = ["Bed"]
+            training = data["training"]
+            training["training_loop"]["max_episodes"] = 1
+            training["enabled_affordances"] = ["SLEEP"]
 
         config_dir = config_pack_factory(modifier=modifier)
+        _force_huber_loss(config_dir)
         db_path = tmp_path / "test.db"
         checkpoint_dir = tmp_path / "checkpoints"
 
@@ -418,6 +422,7 @@ class TestRunnerResourceCleanup:
             db_path=db_path,
             checkpoint_dir=checkpoint_dir,
             max_episodes=1,
+            level_name=LEVEL_NAME,
         ) as runner:
             pass
 
@@ -431,10 +436,13 @@ class TestRunnerResourceCleanup:
         from townlet.demo.runner import DemoRunner
 
         def modifier(data: dict) -> None:
-            data["training"]["max_episodes"] = 1
-            data["environment"]["enabled_affordances"] = ["Bed"]
+            training = data["training"]
+            training["training_loop"]["max_episodes"] = 1
+            training["enabled_affordances"] = ["SLEEP"]
+            training["curriculum"]["strategy"] = "adversarial"
 
         config_dir = config_pack_factory(modifier=modifier)
+        _force_huber_loss(config_dir)
         db_path = tmp_path / "test.db"
         checkpoint_dir = tmp_path / "checkpoints"
 
@@ -445,6 +453,7 @@ class TestRunnerResourceCleanup:
                 db_path=db_path,
                 checkpoint_dir=checkpoint_dir,
                 max_episodes=1,
+                level_name=LEVEL_NAME,
             ) as runner:
                 runner_ref = runner
                 raise RuntimeError("Intentional test exception")

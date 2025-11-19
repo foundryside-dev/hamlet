@@ -15,32 +15,29 @@ from townlet.universe.compiler import UniverseCompiler
 
 @pytest.fixture
 def temp_config_with_global_actions():
-    """Create a temporary config directory and manage global_actions.yaml safely."""
+    """Create a temporary config directory and manage actions.yaml safely."""
     with tempfile.TemporaryDirectory() as tmpdir:
         config_path = Path(tmpdir)
 
-        # Copy L0_0_minimal as the base (known to compile successfully)
+        # Copy static v2.1 action-space test pack as the base (known to compile successfully)
         repo_root = Path(__file__).parent.parent.parent.parent.parent
-        source_config = repo_root / "configs" / "L0_0_minimal"
+        source_config = repo_root / "configs" / "test" / "action_space" / "grid2d"
 
-        # Copy all files from L0_0_minimal
-        for file in source_config.glob("*.yaml"):
-            shutil.copy(file, config_path / file.name)
+        # Copy entire experiment pack structure (experiment.yaml, stratum.yaml, levels/, etc.)
+        shutil.copytree(source_config, config_path, dirs_exist_ok=True)
 
-        # Backup original global_actions.yaml (restore after test)
-        # Note: No cleanup needed - CI environment is ephemeral
-        global_actions_path = repo_root / "configs" / "global_actions.yaml"
-        backup_content = global_actions_path.read_text() if global_actions_path.exists() else None
+        actions_path = config_path / "actions.yaml"
+        backup_content = actions_path.read_text() if actions_path.exists() else None
 
         try:
             yield {
                 "config_dir": config_path,
-                "global_actions_path": global_actions_path,
+                "actions_path": actions_path,
             }
         finally:
             # Restore original content if we had a backup
             if backup_content is not None:
-                global_actions_path.write_text(backup_content)
+                actions_path.write_text(backup_content)
             # No cleanup/deletion - CI environment is transitory
 
 
@@ -61,23 +58,25 @@ class TestActionMeterValidation:
         - Error location references global_actions.yaml
         """
         config_dir = temp_config_with_global_actions["config_dir"]
-        global_actions_path = temp_config_with_global_actions["global_actions_path"]
+        actions_path = temp_config_with_global_actions["actions_path"]
 
-        # Create global_actions.yaml with typo'd meter name in costs
-        global_actions_path.write_text(
+        # Create actions.yaml with typo'd meter name in costs
+        actions_path.write_text(
             """
-version: "1.0"
-description: "Test global actions with unknown meter in costs"
-
-custom_actions:
-  - name: REST
-    type: passive
-    costs:
-      hygeine: -0.1  # TYPO: should be 'hygiene' (which exists in bars.yaml)
-    effects:
-      energy: 0.2
-    description: "Rest to recover energy"
-    icon: "😴"
+actions:
+  version: "1.0"
+  substrate_actions:
+    inherit: true
+  custom_actions:
+    - name: REST
+      description: "Rest to recover energy"
+      enabled_by_default: true
+      costs:
+        hygeine: -0.1  # TYPO: should be 'hygiene' (which exists in bars.yaml)
+      effects:
+        energy: 0.2
+  labels:
+    preset: gaming
 """
         )
 
@@ -101,23 +100,25 @@ custom_actions:
         JANK-02: Action with unknown meter in effects should produce UAC-ACT-002 error.
         """
         config_dir = temp_config_with_global_actions["config_dir"]
-        global_actions_path = temp_config_with_global_actions["global_actions_path"]
+        actions_path = temp_config_with_global_actions["actions_path"]
 
-        # Create global_actions.yaml with unknown meter in effects
-        global_actions_path.write_text(
+        # Create actions.yaml with unknown meter in effects
+        actions_path.write_text(
             """
-version: "1.0"
-description: "Test global actions with unknown meter in effects"
-
-custom_actions:
-  - name: MEDITATE
-    type: passive
-    costs:
-      energy: 0.01
-    effects:
-      moood: 0.3  # TYPO: should be 'mood'
-    description: "Meditate to improve mood"
-    icon: "🧘"
+actions:
+  version: "1.0"
+  substrate_actions:
+    inherit: true
+  custom_actions:
+    - name: MEDITATE
+      description: "Meditate to improve mood"
+      enabled_by_default: true
+      costs:
+        energy: 0.01
+      effects:
+        moood: 0.3  # TYPO: should be 'mood'
+  labels:
+    preset: gaming
 """
         )
 
@@ -138,24 +139,26 @@ custom_actions:
         JANK-02: Action with multiple unknown meters should produce error for each.
         """
         config_dir = temp_config_with_global_actions["config_dir"]
-        global_actions_path = temp_config_with_global_actions["global_actions_path"]
+        actions_path = temp_config_with_global_actions["actions_path"]
 
         # Multiple unknown meters in same action
-        global_actions_path.write_text(
+        actions_path.write_text(
             """
-version: "1.0"
-description: "Test global actions with multiple unknown meters"
-
-custom_actions:
-  - name: WORKOUT
-    type: passive
-    costs:
-      stamina: 0.2    # Unknown meter
-      hydration: 0.1  # Unknown meter
-    effects:
-      fitness_level: 0.3  # Unknown meter (correct name is 'fitness')
-    description: "Exercise"
-    icon: "💪"
+actions:
+  version: "1.0"
+  substrate_actions:
+    inherit: true
+  custom_actions:
+    - name: WORKOUT
+      description: "Exercise"
+      enabled_by_default: true
+      costs:
+        stamina: 0.2    # Unknown meter
+        hydration: 0.1  # Unknown meter
+      effects:
+        fitness_level: 0.3  # Unknown meter (correct name is 'fitness')
+  labels:
+    preset: gaming
 """
         )
 
@@ -179,33 +182,33 @@ custom_actions:
         Ensures strict validation doesn't break valid configs.
         """
         config_dir = temp_config_with_global_actions["config_dir"]
-        global_actions_path = temp_config_with_global_actions["global_actions_path"]
+        actions_path = temp_config_with_global_actions["actions_path"]
 
-        # Valid meter references (energy, health, mood exist in L0_0_minimal/bars.yaml)
-        global_actions_path.write_text(
+        # Valid meter references (energy, health, money exist in test pack bars.yaml)
+        actions_path.write_text(
             """
-version: "1.0"
-description: "Test global actions with valid meters"
+actions:
+  version: "1.0"
+  substrate_actions:
+    inherit: true
+  custom_actions:
+    - name: REST
+      description: "Rest to recover energy"
+      enabled_by_default: true
+      costs:
+        health: 0.05  # Valid meter from bars.yaml
+      effects:
+        energy: 0.2   # Valid meter from bars.yaml
 
-custom_actions:
-  - name: REST
-    type: passive
-    costs:
-      health: 0.05  # Valid meter from bars.yaml
-    effects:
-      energy: 0.2   # Valid meter from bars.yaml
-      mood: 0.01    # Valid meter from bars.yaml
-    description: "Rest to recover energy"
-    icon: "😴"
-
-  - name: MEDITATE
-    type: passive
-    costs:
-      energy: 0.01
-    effects:
-      mood: 0.02
-    description: "Meditate"
-    icon: "🧘"
+    - name: MEDITATE
+      description: "Meditate"
+      enabled_by_default: true
+      costs:
+        energy: 0.01
+      effects:
+        health: 0.01
+  labels:
+    preset: gaming
 """
         )
 
@@ -219,20 +222,22 @@ custom_actions:
     def test_empty_costs_and_effects_compiles_successfully(self, temp_config_with_global_actions):
         """Actions with no costs/effects should compile fine."""
         config_dir = temp_config_with_global_actions["config_dir"]
-        global_actions_path = temp_config_with_global_actions["global_actions_path"]
+        actions_path = temp_config_with_global_actions["actions_path"]
 
-        global_actions_path.write_text(
+        actions_path.write_text(
             """
-version: "1.0"
-description: "Test global actions with empty costs/effects"
-
-custom_actions:
-  - name: REST
-    type: passive
-    costs: {}
-    effects: {}
-    description: "Do nothing"
-    icon: "⏸️"
+actions:
+  version: "1.0"
+  substrate_actions:
+    inherit: true
+  custom_actions:
+    - name: REST
+      description: "Do nothing"
+      enabled_by_default: true
+      costs: {}
+      effects: {}
+  labels:
+    preset: gaming
 """
         )
 

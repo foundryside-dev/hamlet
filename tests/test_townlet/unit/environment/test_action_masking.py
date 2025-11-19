@@ -18,7 +18,36 @@ Coverage:
 - Integration: combined masking scenarios
 """
 
+from pathlib import Path
+
+import pytest
 import torch
+
+
+@pytest.fixture
+def masking_env(env_factory):
+    return env_factory(config_dir=Path("configs/test/action_masking"), num_agents=1)
+
+
+@pytest.fixture
+def multi_agent_masking_env(env_factory):
+    return env_factory(config_dir=Path("configs/test/action_masking"), num_agents=4)
+
+
+# Legacy alias fixtures to keep test signatures unchanged
+@pytest.fixture
+def basic_env(masking_env):
+    return masking_env
+
+
+@pytest.fixture
+def multi_agent_env(multi_agent_masking_env):
+    return multi_agent_masking_env
+
+
+@pytest.fixture
+def temporal_env(masking_env):
+    return masking_env
 
 
 class TestBoundaryMasking:
@@ -27,69 +56,69 @@ class TestBoundaryMasking:
     Consolidates tests from test_all_actions.py and test_action_selection.py.
     """
 
-    def test_up_masked_at_top_edge(self, basic_env):
+    def test_up_masked_at_top_edge(self, masking_env):
         """UP should be masked when agent is at y=0."""
-        basic_env.reset()
-        basic_env.positions[0] = torch.tensor([4, 0], device=basic_env.device)
+        masking_env.reset()
+        masking_env.positions[0] = torch.tensor([4, 0], device=masking_env.device)
 
-        masks = basic_env.get_action_masks()
+        masks = masking_env.get_action_masks()
 
         assert not masks[0, 0], "UP should be masked at top edge"
         assert masks[0, 1], "DOWN should be available"
         assert masks[0, 5], "WAIT should be available"
 
-    def test_down_masked_at_bottom_edge(self, basic_env):
+    def test_down_masked_at_bottom_edge(self, masking_env):
         """DOWN should be masked when agent is at y=grid_size-1."""
-        basic_env.reset()
-        basic_env.positions[0] = torch.tensor([4, 7], device=basic_env.device)
+        masking_env.reset()
+        masking_env.positions[0] = torch.tensor([4, 7], device=masking_env.device)
 
-        masks = basic_env.get_action_masks()
+        masks = masking_env.get_action_masks()
 
         assert not masks[0, 1], "DOWN should be masked at bottom edge"
         assert masks[0, 0], "UP should be available"
         assert masks[0, 5], "WAIT should be available"
 
-    def test_left_masked_at_left_edge(self, basic_env):
+    def test_left_masked_at_left_edge(self, masking_env):
         """LEFT should be masked when agent is at x=0."""
-        basic_env.reset()
-        basic_env.positions[0] = torch.tensor([0, 4], device=basic_env.device)
+        masking_env.reset()
+        masking_env.positions[0] = torch.tensor([0, 4], device=masking_env.device)
 
-        masks = basic_env.get_action_masks()
+        masks = masking_env.get_action_masks()
 
         assert not masks[0, 2], "LEFT should be masked at left edge"
         assert masks[0, 3], "RIGHT should be available"
         assert masks[0, 5], "WAIT should be available"
 
-    def test_right_masked_at_right_edge(self, basic_env):
+    def test_right_masked_at_right_edge(self, masking_env):
         """RIGHT should be masked when agent is at x=grid_size-1."""
-        basic_env.reset()
-        basic_env.positions[0] = torch.tensor([7, 4], device=basic_env.device)
+        masking_env.reset()
+        masking_env.positions[0] = torch.tensor([7, 4], device=masking_env.device)
 
-        masks = basic_env.get_action_masks()
+        masks = masking_env.get_action_masks()
 
         assert not masks[0, 3], "RIGHT should be masked at right edge"
         assert masks[0, 2], "LEFT should be available"
         assert masks[0, 5], "WAIT should be available"
 
-    def test_corner_masks_two_directions(self, multi_agent_env):
+    def test_corner_masks_two_directions(self, multi_agent_masking_env):
         """At corners, two movement directions should be masked.
 
         Tests all four corners with independent agents.
         """
-        multi_agent_env.reset()
+        multi_agent_masking_env.reset()
 
         # Place agents at all four corners
-        multi_agent_env.positions = torch.tensor(
+        multi_agent_masking_env.positions = torch.tensor(
             [
                 [0, 0],  # Top-left: can't UP or LEFT
                 [7, 0],  # Top-right: can't UP or RIGHT
                 [0, 7],  # Bottom-left: can't DOWN or LEFT
                 [7, 7],  # Bottom-right: can't DOWN or RIGHT
             ],
-            device=multi_agent_env.device,
+            device=multi_agent_masking_env.device,
         )
 
-        masks = multi_agent_env.get_action_masks()
+        masks = multi_agent_masking_env.get_action_masks()
 
         # Top-left corner
         assert not masks[0, 0], "UP should be masked at top-left"
@@ -115,35 +144,35 @@ class TestBoundaryMasking:
         assert masks[3, 0], "UP should be available"
         assert masks[3, 2], "LEFT should be available"
 
-    def test_all_movements_available_in_center(self, basic_env):
+    def test_all_movements_available_in_center(self, masking_env):
         """All movement actions should be available away from boundaries."""
-        basic_env.reset()
-        basic_env.positions[0] = torch.tensor([4, 4], device=basic_env.device)
+        masking_env.reset()
+        masking_env.positions[0] = torch.tensor([4, 4], device=masking_env.device)
 
-        masks = basic_env.get_action_masks()
+        masks = masking_env.get_action_masks()
 
         assert masks[0, 0], "UP should be available in center"
         assert masks[0, 1], "DOWN should be available in center"
         assert masks[0, 2], "LEFT should be available in center"
         assert masks[0, 3], "RIGHT should be available in center"
 
-    def test_movement_clamped_at_boundaries(self, basic_env):
+    def test_movement_clamped_at_boundaries(self, masking_env):
         """Movement beyond boundaries should be clamped to grid edges."""
-        basic_env.reset()
-        basic_env.positions[0] = torch.tensor([0, 0], device=basic_env.device)
+        masking_env.reset()
+        masking_env.positions[0] = torch.tensor([0, 0], device=masking_env.device)
 
         # Try to move UP (should clamp to y=0)
-        actions = torch.tensor([0], device=basic_env.device)
-        basic_env.step(actions)
+        actions = torch.tensor([0], device=masking_env.device)
+        masking_env.step(actions)
 
-        assert basic_env.positions[0, 1].item() == 0, "Y should be clamped at 0"
+        assert masking_env.positions[0, 1].item() == 0, "Y should be clamped at 0"
 
         # Try to move LEFT (should clamp to x=0)
-        basic_env.positions[0] = torch.tensor([0, 0], device=basic_env.device)
-        actions = torch.tensor([2], device=basic_env.device)
-        basic_env.step(actions)
+        masking_env.positions[0] = torch.tensor([0, 0], device=masking_env.device)
+        actions = torch.tensor([2], device=masking_env.device)
+        masking_env.step(actions)
 
-        assert basic_env.positions[0, 0].item() == 0, "X should be clamped at 0"
+        assert masking_env.positions[0, 0].item() == 0, "X should be clamped at 0"
 
 
 class TestInteractMasking:
@@ -153,100 +182,107 @@ class TestInteractMasking:
     Key insight: INTERACT should be available when on affordance, regardless of affordability.
     """
 
-    def test_interact_masked_when_not_on_affordance(self, basic_env):
+    def test_interact_masked_when_not_on_affordance(self, masking_env):
         """INTERACT should be masked when not on any affordance."""
-        basic_env.reset()
-        basic_env.positions[0] = torch.tensor([4, 4], device=basic_env.device)
+        masking_env.reset()
+        masking_env.positions[0] = torch.tensor([4, 4], device=masking_env.device)
 
         # Verify not on any affordance
-        on_affordance = any(torch.equal(basic_env.positions[0], pos) for pos in basic_env.affordances.values())
+        on_affordance = any(torch.equal(masking_env.positions[0], pos) for pos in masking_env.affordances.values())
 
         if not on_affordance:
-            masks = basic_env.get_action_masks()
+            masks = masking_env.get_action_masks()
             assert not masks[0, 4], "INTERACT should be masked off affordance"
 
-    def test_interact_available_on_bed(self, basic_env):
+    def test_interact_available_on_bed(self, masking_env):
         """INTERACT should be available when on Bed (free affordance)."""
-        basic_env.reset()
+        masking_env.reset()
 
-        bed_pos = basic_env.affordances["Bed"]
-        basic_env.positions[0] = bed_pos.clone()
+        bed_pos = masking_env.affordances["Bed"]
+        masking_env.positions[0] = bed_pos.clone()
 
-        masks = basic_env.get_action_masks()
+        masks = masking_env.get_action_masks()
 
         assert masks[0, 4], "INTERACT should be available on Bed"
 
-    def test_interact_available_on_hospital_when_broke(self, basic_env):
+    def test_interact_available_on_hospital_when_broke(self, masking_env):
         """INTERACT should be available on Hospital even with $0.
 
         This tests the P1.4 de-masking: affordability doesn't affect masking.
         """
-        basic_env.reset()
+        masking_env.reset()
 
-        hospital_pos = basic_env.affordances["Hospital"]
-        basic_env.positions[0] = hospital_pos.clone()
-        basic_env.meters[0, 3] = 0.0  # Money = 0
+        hospital_pos = masking_env.affordances["Hospital"]
+        masking_env.positions[0] = hospital_pos.clone()
+        masking_env.meters[0, 4] = 0.0  # Money = 0
 
-        masks = basic_env.get_action_masks()
+        masks = masking_env.get_action_masks()
 
         assert masks[0, 4], "INTERACT should be available on Hospital even when broke"
 
-    def test_interact_available_on_job(self, basic_env):
+    def test_interact_available_on_job(self, masking_env):
         """INTERACT should be available on Job (money-generating affordance)."""
-        basic_env.reset()
+        masking_env.reset()
 
-        job_pos = basic_env.affordances["Job"]
-        basic_env.positions[0] = job_pos.clone()
+        job_pos = masking_env.affordances["Job"]
+        masking_env.positions[0] = job_pos.clone()
+        masking_env.time_of_day = 10  # within operating hours
 
-        masks = basic_env.get_action_masks()
+        masks = masking_env.get_action_masks()
 
         assert masks[0, 4], "INTERACT should be available on Job"
 
-    def test_interact_available_on_all_affordance_types(self, basic_env):
+    def test_interact_available_on_all_affordance_types(self, masking_env):
         """INTERACT should be available on any affordance type."""
-        basic_env.reset()
+        masking_env.reset()
 
-        affordance_names = list(basic_env.affordances.keys())
+        affordance_names = list(masking_env.affordances.keys())
 
         for affordance_name in affordance_names:
-            affordance_pos = basic_env.affordances[affordance_name]
-            basic_env.positions[0] = affordance_pos.clone()
+            affordance_pos = masking_env.affordances[affordance_name]
+            masking_env.positions[0] = affordance_pos.clone()
+            if affordance_name == "Job":
+                masking_env.time_of_day = 10
+            elif affordance_name == "Bar":
+                masking_env.time_of_day = 20
+            else:
+                masking_env.time_of_day = 0
 
-            masks = basic_env.get_action_masks()
+            masks = masking_env.get_action_masks()
 
             assert masks[0, 4], f"INTERACT should be available on {affordance_name}"
 
-    def test_multiple_agents_independent_masking(self, multi_agent_env):
+    def test_multiple_agents_independent_masking(self, multi_agent_masking_env):
         """Each agent should have independent INTERACT masking."""
-        multi_agent_env.reset()
+        multi_agent_masking_env.reset()
 
         # Agent 0: on Bed
-        bed_pos = multi_agent_env.affordances["Bed"]
-        multi_agent_env.positions[0] = bed_pos.clone()
+        bed_pos = multi_agent_masking_env.affordances["Bed"]
+        multi_agent_masking_env.positions[0] = bed_pos.clone()
 
         # Agent 1: not on affordance
-        multi_agent_env.positions[1] = torch.tensor([4, 4], device=multi_agent_env.device)
+        multi_agent_masking_env.positions[1] = torch.tensor([4, 4], device=multi_agent_masking_env.device)
 
         # Verify agent 1 is not on affordance
-        on_affordance = any(torch.equal(multi_agent_env.positions[1], pos) for pos in multi_agent_env.affordances.values())
+        on_affordance = any(torch.equal(multi_agent_masking_env.positions[1], pos) for pos in multi_agent_masking_env.affordances.values())
 
         if not on_affordance:
-            masks = multi_agent_env.get_action_masks()
+            masks = multi_agent_masking_env.get_action_masks()
 
             assert masks[0, 4], "Agent on affordance should have INTERACT available"
             assert not masks[1, 4], "Agent off affordance should have INTERACT masked"
 
-    def test_movement_actions_unaffected_by_affordance(self, basic_env):
+    def test_movement_actions_unaffected_by_affordance(self, masking_env):
         """Movement masking should not change based on affordance presence."""
-        basic_env.reset()
+        masking_env.reset()
 
         # Test in center (not on affordance)
-        basic_env.positions[0] = torch.tensor([4, 4], device=basic_env.device)
+        masking_env.positions[0] = torch.tensor([4, 4], device=masking_env.device)
 
         # Test on Bed (on affordance)
-        bed_pos = basic_env.affordances["Bed"]
-        basic_env.positions[0] = bed_pos.clone()
-        masks_bed = basic_env.get_action_masks()
+        bed_pos = masking_env.affordances["Bed"]
+        masking_env.positions[0] = bed_pos.clone()
+        masks_bed = masking_env.get_action_masks()
 
         # Movement actions should have same availability
         # (only INTERACT should differ)
@@ -254,7 +290,7 @@ class TestInteractMasking:
             # Allow for boundary differences based on position
             # Just verify that being on affordance doesn't break movement
             assert masks_bed.shape[0] == 1, "Should have 1 agent"
-            assert masks_bed.shape[1] == basic_env.action_dim, f"Should have {basic_env.action_dim} actions"
+            assert masks_bed.shape[1] == masking_env.action_dim, f"Should have {masking_env.action_dim} actions"
 
 
 class TestTimeBasedMasking:
@@ -264,79 +300,79 @@ class TestTimeBasedMasking:
     Tests temporal mechanics: affordances have operating hours.
     """
 
-    def test_job_closed_outside_business_hours(self, temporal_env):
+    def test_job_closed_outside_business_hours(self, masking_env):
         """Job should be masked outside business hours (8am-6pm)."""
-        temporal_env.reset()
+        masking_env.reset()
 
-        job_pos = temporal_env.affordances["Job"]
-        temporal_env.positions[0] = job_pos.clone()
+        job_pos = masking_env.affordances["Job"]
+        masking_env.positions[0] = job_pos.clone()
 
         # 10am: Job is open
-        temporal_env.time_of_day = 10
-        masks_open = temporal_env.get_action_masks()
+        masking_env.time_of_day = 10
+        masks_open = masking_env.get_action_masks()
         assert masks_open[0, 4], "INTERACT should be available on Job at 10am"
 
         # 7pm: Job is closed
-        temporal_env.time_of_day = 19
-        masks_closed = temporal_env.get_action_masks()
+        masking_env.time_of_day = 19
+        masks_closed = masking_env.get_action_masks()
         assert not masks_closed[0, 4], "INTERACT should be masked on Job at 7pm"
 
-    def test_bar_open_after_6pm(self, temporal_env):
+    def test_bar_open_after_6pm(self, masking_env):
         """Bar should open at 6pm."""
-        temporal_env.reset()
+        masking_env.reset()
 
-        bar_pos = temporal_env.affordances["Bar"]
-        temporal_env.positions[0] = bar_pos.clone()
+        bar_pos = masking_env.affordances["Bar"]
+        masking_env.positions[0] = bar_pos.clone()
 
         # Noon: Bar is closed
-        temporal_env.time_of_day = 12
-        masks_closed = temporal_env.get_action_masks()
+        masking_env.time_of_day = 12
+        masks_closed = masking_env.get_action_masks()
         assert not masks_closed[0, 4], "INTERACT should be masked on Bar at noon"
 
         # 8pm: Bar is open
-        temporal_env.time_of_day = 20
-        masks_open = temporal_env.get_action_masks()
+        masking_env.time_of_day = 20
+        masks_open = masking_env.get_action_masks()
         assert masks_open[0, 4], "INTERACT should be available on Bar at 8pm"
 
-    def test_bar_wraparound_midnight(self, temporal_env):
+    def test_bar_wraparound_midnight(self, masking_env):
         """Bar hours should wrap around midnight (6pm-4am)."""
-        temporal_env.reset()
+        masking_env.reset()
 
-        bar_pos = temporal_env.affordances["Bar"]
-        temporal_env.positions[0] = bar_pos.clone()
+        bar_pos = masking_env.affordances["Bar"]
+        masking_env.positions[0] = bar_pos.clone()
 
         # 2am: Bar is still open (wraps to 4am)
-        temporal_env.time_of_day = 2
-        masks_open = temporal_env.get_action_masks()
+        masking_env.time_of_day = 2
+        masks_open = masking_env.get_action_masks()
         assert masks_open[0, 4], "INTERACT should be available on Bar at 2am"
 
         # 5am: Bar is closed
-        temporal_env.time_of_day = 5
-        masks_closed = temporal_env.get_action_masks()
+        masking_env.time_of_day = 5
+        masks_closed = masking_env.get_action_masks()
         assert not masks_closed[0, 4], "INTERACT should be masked on Bar at 5am"
 
-    def test_bed_available_24_7(self, temporal_env):
+    def test_bed_available_24_7(self, masking_env):
         """Bed should be available 24/7."""
-        temporal_env.reset()
+        masking_env.reset()
 
-        bed_pos = temporal_env.affordances["Bed"]
-        temporal_env.positions[0] = bed_pos.clone()
+        bed_pos = masking_env.affordances["Bed"]
+        masking_env.positions[0] = bed_pos.clone()
 
         # Test at various times
         for time in [0, 6, 12, 18, 23]:
-            temporal_env.time_of_day = time
-            masks = temporal_env.get_action_masks()
+            masking_env.time_of_day = time
+            masks = masking_env.get_action_masks()
             assert masks[0, 4], f"INTERACT on Bed should be available at {time}:00"
 
-    def test_movement_unaffected_by_time(self, temporal_env):
+    def test_movement_unaffected_by_time(self, masking_env):
         """Movement actions should not be affected by time of day."""
-        temporal_env.reset()
-        temporal_env.positions[0] = torch.tensor([4, 4], device=temporal_env.device)
+        masking_env.reset()
+        masking_env.positions[0] = torch.tensor([4, 4], device=masking_env.device)
 
         # Test movement at different times
         for time in [0, 12, 18, 23]:
-            temporal_env.time_of_day = time
-            masks = temporal_env.get_action_masks()
+            masking_env.time_of_day = time
+            masks = masking_env.get_action_masks()
 
             # All movements should be available in center
             assert masks[0, 0], f"UP should be available at {time}:00"
@@ -357,7 +393,8 @@ class TestPostTerminalMasking:
         multi_agent_env.reset()
 
         # Kill agent 0 by setting health to 0
-        multi_agent_env.meters[0, 6] = 0.0
+        multi_agent_env.meters[0, 1] = 0.0
+        multi_agent_env.dones[0] = True
 
         masks = multi_agent_env.get_action_masks()
 
@@ -373,6 +410,7 @@ class TestPostTerminalMasking:
 
         # Kill agent by setting energy to 0
         basic_env.meters[0, 0] = 0.0
+        basic_env.dones[0] = True
 
         masks = basic_env.get_action_masks()
 
@@ -384,7 +422,7 @@ class TestPostTerminalMasking:
         basic_env.positions[0] = torch.tensor([4, 4], device=basic_env.device)
 
         # Set health and energy very low but not zero
-        basic_env.meters[0, 6] = 0.01  # barely alive
+        basic_env.meters[0, 1] = 0.01  # barely alive
         basic_env.meters[0, 0] = 0.01  # barely any energy
 
         masks = basic_env.get_action_masks()
@@ -397,7 +435,8 @@ class TestPostTerminalMasking:
         multi_agent_env.reset()
 
         # Kill agent 0
-        multi_agent_env.meters[0, 6] = 0.0
+        multi_agent_env.meters[0, 1] = 0.0
+        multi_agent_env.dones[0] = True
 
         # Take a step
         actions = torch.tensor([0, 1, 2, 3], device=multi_agent_env.device)
@@ -413,9 +452,12 @@ class TestPostTerminalMasking:
         multi_agent_env.reset()
 
         # Kill first 3 agents
-        multi_agent_env.meters[0, 6] = 0.0
-        multi_agent_env.meters[1, 6] = 0.0
-        multi_agent_env.meters[2, 6] = 0.0
+        multi_agent_env.meters[0, 1] = 0.0
+        multi_agent_env.meters[1, 1] = 0.0
+        multi_agent_env.meters[2, 1] = 0.0
+        multi_agent_env.dones[0] = True
+        multi_agent_env.dones[1] = True
+        multi_agent_env.dones[2] = True
 
         masks = multi_agent_env.get_action_masks()
 
@@ -427,17 +469,18 @@ class TestPostTerminalMasking:
         # Agent 3 should still have actions
         assert masks[3].any(), "Agent 3 should have some actions available"
 
-    def test_dead_agent_masked_with_temporal_mechanics(self, temporal_env):
+    def test_dead_agent_masked_with_temporal_mechanics(self, masking_env):
         """Dead agent should be masked even with temporal mechanics."""
-        temporal_env.reset()
+        masking_env.reset()
 
         # Kill agent
-        temporal_env.meters[0, 6] = 0.0
+        masking_env.meters[0, 1] = 0.0
+        masking_env.dones[0] = True
 
         # Test at various times
         for time in [0, 12, 18, 23]:
-            temporal_env.time_of_day = time
-            masks = temporal_env.get_action_masks()
+            masking_env.time_of_day = time
+            masks = masking_env.get_action_masks()
             assert not masks[0].any(), f"Dead agent should be masked at time {time}:00"
 
 
@@ -469,7 +512,8 @@ class TestWaitAction:
         basic_env.reset()
 
         # Kill agent
-        basic_env.meters[0, 6] = 0.0
+        basic_env.meters[0, 1] = 0.0
+        basic_env.dones[0] = True
 
         masks = basic_env.get_action_masks()
 
@@ -498,23 +542,24 @@ class TestActionMaskingIntegration:
 
         # Place at corner and kill
         basic_env.positions[0] = torch.tensor([0, 0], device=basic_env.device)
-        basic_env.meters[0, 6] = 0.0  # Dead
+        basic_env.meters[0, 1] = 0.0  # Dead
+        basic_env.dones[0] = True
 
         masks = basic_env.get_action_masks()
 
         # All actions should be masked (death, not just boundary)
         assert not masks[0].any(), "Dead agent should have all 6 actions masked"
 
-    def test_alive_agent_on_closed_affordance(self, temporal_env):
+    def test_alive_agent_on_closed_affordance(self, masking_env):
         """Alive agent on closed affordance should have movement but not INTERACT."""
-        temporal_env.reset()
+        masking_env.reset()
 
         # Place on Job at night
-        job_pos = temporal_env.affordances["Job"]
-        temporal_env.positions[0] = job_pos.clone()
-        temporal_env.time_of_day = 20  # 8pm (Job closed)
+        job_pos = masking_env.affordances["Job"]
+        masking_env.positions[0] = job_pos.clone()
+        masking_env.time_of_day = 20  # 8pm (Job closed)
 
-        masks = temporal_env.get_action_masks()
+        masks = masking_env.get_action_masks()
 
         # INTERACT should be masked (closed)
         assert not masks[0, 4], "INTERACT should be masked at closed affordance"
@@ -527,16 +572,16 @@ class TestActionMaskingIntegration:
         if job_y < 7:
             assert masks[0, 1], "DOWN should be available if not at boundary"
 
-    def test_alive_agent_on_open_affordable_affordance(self, temporal_env):
+    def test_alive_agent_on_open_affordable_affordance(self, masking_env):
         """Alive agent on open, affordable affordance should have all actions."""
-        temporal_env.reset()
+        masking_env.reset()
 
         # Place on Bed (24/7, free)
-        bed_pos = temporal_env.affordances["Bed"]
-        temporal_env.positions[0] = bed_pos.clone()
-        temporal_env.time_of_day = 12
+        bed_pos = masking_env.affordances["Bed"]
+        masking_env.positions[0] = bed_pos.clone()
+        masking_env.time_of_day = 12
 
-        masks = temporal_env.get_action_masks()
+        masks = masking_env.get_action_masks()
 
         # INTERACT should be available
         assert masks[0, 4], "INTERACT should be available on open affordance"
@@ -585,20 +630,21 @@ class TestActionMaskingIntegration:
 
         # Agent 0: alive, corner
         multi_agent_env.positions[0] = torch.tensor([0, 0], device=multi_agent_env.device)
-        multi_agent_env.meters[0, 6] = 1.0  # Alive
+        multi_agent_env.meters[0, 1] = 1.0  # Alive
 
         # Agent 1: dead, center
         multi_agent_env.positions[1] = torch.tensor([4, 4], device=multi_agent_env.device)
-        multi_agent_env.meters[1, 6] = 0.0  # Dead
+        multi_agent_env.meters[1, 1] = 0.0  # Dead
+        multi_agent_env.dones[1] = True
 
         # Agent 2: alive, center, on affordance
         bed_pos = multi_agent_env.affordances["Bed"]
         multi_agent_env.positions[2] = bed_pos.clone()
-        multi_agent_env.meters[2, 6] = 1.0  # Alive
+        multi_agent_env.meters[2, 1] = 1.0  # Alive
 
         # Agent 3: alive, edge
         multi_agent_env.positions[3] = torch.tensor([0, 4], device=multi_agent_env.device)
-        multi_agent_env.meters[3, 6] = 1.0  # Alive
+        multi_agent_env.meters[3, 1] = 1.0  # Alive
 
         masks = multi_agent_env.get_action_masks()
 
@@ -629,11 +675,11 @@ class TestActionMaskingIntegration:
         basic_env.positions[0] = hospital_pos.clone()
 
         # Test with money
-        basic_env.meters[0, 3] = 1.0
+        basic_env.meters[0, 4] = 1.0
         masks_rich = basic_env.get_action_masks()
 
         # Test without money
-        basic_env.meters[0, 3] = 0.0
+        basic_env.meters[0, 4] = 0.0
         masks_broke = basic_env.get_action_masks()
 
         # INTERACT masking should be identical

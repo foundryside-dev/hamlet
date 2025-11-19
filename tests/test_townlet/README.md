@@ -143,9 +143,11 @@ pytest tests/test_townlet/ -n auto
 ### Configuration Fixtures
 
 - `mock_config_path` - Path to frozen mock config (for exact-value assertions)
-- `test_config_pack_path` - Path to test config pack
+- `test_config_pack_path` - Path to canonical v2.1 test config pack (`configs/test/model_config`)
 - `temp_config_pack(mock_config)` - Temporary config directory for isolated tests
 - `mock_config` - Loaded YAML configuration dict
+- `task001_config_4meter` - Cloned v2.1 4-meter test pack (`configs/test/model_config_4meter`)
+- `task001_config_12meter` - Cloned v2.1 12-meter test pack (`configs/test/model_config_12meter`)
 
 ### Device Fixtures
 

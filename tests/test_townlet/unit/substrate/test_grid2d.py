@@ -1,7 +1,5 @@
 """Test configurable observation encoding for Grid2D substrate."""
 
-from pathlib import Path
-
 import pytest
 import torch
 
@@ -21,6 +19,7 @@ def grid2d_relative(device):
         height=8,
         boundary="clamp",
         distance_metric="manhattan",
+        enable_diagonals=True,
         observation_encoding="relative",
     )
 
@@ -33,6 +32,7 @@ def grid2d_scaled(device):
         height=8,
         boundary="clamp",
         distance_metric="manhattan",
+        enable_diagonals=True,
         observation_encoding="scaled",
     )
 
@@ -45,6 +45,7 @@ def grid2d_absolute(device):
         height=8,
         boundary="clamp",
         distance_metric="manhattan",
+        enable_diagonals=True,
         observation_encoding="absolute",
     )
 
@@ -144,6 +145,7 @@ def test_grid2d_default_encoding_is_relative():
         height=8,
         boundary="clamp",
         distance_metric="manhattan",
+        enable_diagonals=True,
         # observation_encoding NOT provided
     )
     assert substrate.observation_encoding == "relative"
@@ -172,32 +174,21 @@ def test_substrate_initialize_positions_correctness():
     assert (positions < 8).all()
 
 
-def test_substrate_movement_matches_legacy(env_factory, device):
-    """Substrate movement should produce identical results to legacy torch.clamp.
-
-    Legacy validation test: ensures substrate.apply_movement matches old hardcoded behavior.
-    """
-    env = env_factory(
-        config_dir=Path("configs/L1_full_observability"),
-        num_agents=1,
-        device_override=device,
-    )
-    env.reset()
-
-    # Test substrate.apply_movement directly
-    substrate = env.substrate
-    positions = torch.tensor([[3, 3]], dtype=torch.long, device=device)
+def test_substrate_movement_matches_legacy():
+    """Substrate movement should produce identical results to legacy torch.clamp."""
+    substrate = Grid2DSubstrate(width=8, height=8, boundary="clamp", distance_metric="manhattan")
+    positions = torch.tensor([[3, 3]], dtype=torch.long)
 
     # Move up (delta [0, -1])
-    deltas = torch.tensor([[0, -1]], dtype=torch.long, device=device)
+    deltas = torch.tensor([[0, -1]], dtype=torch.long)
     new_positions = substrate.apply_movement(positions, deltas)
 
     # Should move to [3, 2]
     assert (new_positions == torch.tensor([[3, 2]], dtype=torch.long)).all()
 
     # Test boundary clamping at edge
-    edge_positions = torch.tensor([[0, 0]], dtype=torch.long, device=device)
-    up_left_delta = torch.tensor([[-1, -1]], dtype=torch.long, device=device)
+    edge_positions = torch.tensor([[0, 0]], dtype=torch.long)
+    up_left_delta = torch.tensor([[-1, -1]], dtype=torch.long)
     clamped = substrate.apply_movement(edge_positions, up_left_delta)
 
     # Should clamp to [0, 0] (not go negative)
@@ -216,6 +207,7 @@ def test_grid2d_stores_topology_when_provided():
         height=8,
         boundary="clamp",
         distance_metric="manhattan",
+        enable_diagonals=True,
         observation_encoding="relative",
         topology="square",
     )
@@ -229,6 +221,7 @@ def test_grid2d_topology_defaults_to_square():
         height=8,
         boundary="clamp",
         distance_metric="manhattan",
+        enable_diagonals=True,
         observation_encoding="relative",
     )
     assert substrate.topology == "square"

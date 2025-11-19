@@ -44,7 +44,7 @@ def production_configs() -> dict[str, Path]:
                 # Test each production config
     """
     repo_root = Path(__file__).parent.parent.parent.parent.parent
-    configs_dir = repo_root / "configs"
+    configs_dir = repo_root / "configs" / "default_curriculum" / "levels"
 
     return {
         "L0_0_minimal": configs_dir / "L0_0_minimal",

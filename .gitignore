@@ -120,3 +120,7 @@ test_migration_checkpoints/*
 *.broken
 
 *.msgpack
+
+tmp/
+tmp_4m_debug/
+tmp_sim_4m/

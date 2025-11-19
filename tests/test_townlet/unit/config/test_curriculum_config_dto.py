@@ -20,97 +20,31 @@ class TestCurriculumConfigValidation:
         with pytest.raises(ValidationError) as exc_info:
             CurriculumConfig()
 
-        error = str(exc_info.value)
-        # Check that key fields are mentioned as missing
-        required_fields = ["max_steps_per_episode", "survival_advance_threshold", "entropy_gate"]
-        assert any(field in error for field in required_fields)
+        assert "curriculum" in str(exc_info.value)
 
     def test_valid_config(self):
         """Valid config with all required fields loads successfully."""
-        config = CurriculumConfig(**VALID_CURRICULUM_PARAMS)
-        assert config.max_steps_per_episode == VALID_CURRICULUM_PARAMS["max_steps_per_episode"]
-        assert config.survival_advance_threshold == VALID_CURRICULUM_PARAMS["survival_advance_threshold"]
-        assert config.entropy_gate == VALID_CURRICULUM_PARAMS["entropy_gate"]
+        config = CurriculumConfig(curriculum=VALID_CURRICULUM_PARAMS)
+        assert config.curriculum.active_vision == "global"
+        assert config.curriculum.vision_range == 0.5
+        assert config.curriculum.active_temporal is False
+        assert config.curriculum.day_length is None
 
-    def test_max_steps_must_be_positive(self):
-        """max_steps_per_episode must be > 0."""
-        # Zero steps
-        with pytest.raises(ValidationError) as exc_info:
-            CurriculumConfig(**make_valid_params(VALID_CURRICULUM_PARAMS, max_steps_per_episode=0))
-        assert "max_steps_per_episode" in str(exc_info.value).lower()
-
-        # Negative steps
-        with pytest.raises(ValidationError) as exc_info:
-            CurriculumConfig(**make_valid_params(VALID_CURRICULUM_PARAMS, max_steps_per_episode=-100))
-        assert "max_steps_per_episode" in str(exc_info.value).lower()
-
-    def test_min_steps_must_be_positive(self):
-        """min_steps_at_stage must be > 0."""
-        # Zero steps
-        with pytest.raises(ValidationError) as exc_info:
-            CurriculumConfig(**make_valid_params(VALID_CURRICULUM_PARAMS, min_steps_at_stage=0))
-        assert "min_steps_at_stage" in str(exc_info.value).lower()
-
-        # Negative steps
-        with pytest.raises(ValidationError) as exc_info:
-            CurriculumConfig(**make_valid_params(VALID_CURRICULUM_PARAMS, min_steps_at_stage=-1000))
-        assert "min_steps_at_stage" in str(exc_info.value).lower()
-
-    def test_thresholds_in_range(self):
-        """Thresholds must be in [0, 1]."""
-        # survival_advance_threshold > 1.0
+    def test_vision_range_bounds(self):
+        """vision_range must be within [0,1]."""
         with pytest.raises(ValidationError):
-            CurriculumConfig(**make_valid_params(VALID_CURRICULUM_PARAMS, survival_advance_threshold=1.5))
-
-        # survival_retreat_threshold > 1.0
+            CurriculumConfig(curriculum=make_valid_params(VALID_CURRICULUM_PARAMS, vision_range=-0.1))
         with pytest.raises(ValidationError):
-            CurriculumConfig(**make_valid_params(VALID_CURRICULUM_PARAMS, survival_retreat_threshold=1.2))
+            CurriculumConfig(curriculum=make_valid_params(VALID_CURRICULUM_PARAMS, vision_range=1.1))
 
-        # entropy_gate > 1.0
+    def test_day_length_required_when_temporal_active(self):
+        """active_temporal=true requires day_length."""
         with pytest.raises(ValidationError):
-            CurriculumConfig(**make_valid_params(VALID_CURRICULUM_PARAMS, entropy_gate=1.1))
+            CurriculumConfig(curriculum=make_valid_params(VALID_CURRICULUM_PARAMS, active_temporal=True, day_length=None))
 
-        # survival_advance_threshold < 0.0
+    def test_day_length_must_be_positive_when_provided(self):
         with pytest.raises(ValidationError):
-            CurriculumConfig(**make_valid_params(VALID_CURRICULUM_PARAMS, survival_advance_threshold=-0.1))
-
-    def test_thresholds_at_boundaries(self):
-        """Thresholds at exactly 0.0 and 1.0 are valid."""
-        # advance=1.0, retreat=0.0 (maximum spread)
-        config = CurriculumConfig(
-            **make_valid_params(VALID_CURRICULUM_PARAMS, survival_advance_threshold=1.0, survival_retreat_threshold=0.0)
-        )
-        assert config.survival_advance_threshold == 1.0
-        assert config.survival_retreat_threshold == 0.0
-
-        # entropy_gate=0.0 (minimum)
-        config = CurriculumConfig(**make_valid_params(VALID_CURRICULUM_PARAMS, entropy_gate=0.0))
-        assert config.entropy_gate == 0.0
-
-        # entropy_gate=1.0 (maximum)
-        config = CurriculumConfig(**make_valid_params(VALID_CURRICULUM_PARAMS, entropy_gate=1.0))
-        assert config.entropy_gate == 1.0
-
-    def test_advance_greater_than_retreat(self):
-        """advance_threshold must be > retreat_threshold."""
-        # advance < retreat (invalid)
-        with pytest.raises(ValidationError) as exc_info:
-            CurriculumConfig(**make_valid_params(VALID_CURRICULUM_PARAMS, survival_advance_threshold=0.3, survival_retreat_threshold=0.7))
-        error = str(exc_info.value)
-        assert "advance" in error.lower() or "retreat" in error.lower()
-
-        # advance == retreat (invalid - must be strictly greater)
-        with pytest.raises(ValidationError):
-            CurriculumConfig(**make_valid_params(VALID_CURRICULUM_PARAMS, survival_advance_threshold=0.5, survival_retreat_threshold=0.5))
-
-    def test_advance_barely_greater_than_retreat(self):
-        """advance_threshold can be just epsilon greater than retreat_threshold."""
-        # Minimum valid spread (0.5 vs 0.49)
-        config = CurriculumConfig(
-            **make_valid_params(VALID_CURRICULUM_PARAMS, survival_advance_threshold=0.5, survival_retreat_threshold=0.49)
-        )
-        assert config.survival_advance_threshold == 0.5
-        assert config.survival_retreat_threshold == 0.49
+            CurriculumConfig(curriculum=make_valid_params(VALID_CURRICULUM_PARAMS, active_temporal=True, day_length=0))
 
 
 class TestCurriculumConfigLoading:
@@ -118,16 +52,10 @@ class TestCurriculumConfigLoading:
 
     def test_load_from_yaml(self, tmp_path):
         """Load curriculum config from YAML file."""
-        yaml_path = make_temp_yaml(tmp_path, "curriculum", VALID_CURRICULUM_PARAMS)
-
-        # Rename to training.yaml (expected by loader)
-        training_yaml = tmp_path / "training.yaml"
-        yaml_path.rename(training_yaml)
+        make_temp_yaml(tmp_path, "curriculum", VALID_CURRICULUM_PARAMS)
 
         config = load_curriculum_config(tmp_path)
-        assert config.max_steps_per_episode == VALID_CURRICULUM_PARAMS["max_steps_per_episode"]
-        assert config.survival_advance_threshold == VALID_CURRICULUM_PARAMS["survival_advance_threshold"]
-        assert config.entropy_gate == VALID_CURRICULUM_PARAMS["entropy_gate"]
+        assert config.curriculum.active_vision == VALID_CURRICULUM_PARAMS["active_vision"]
 
     def test_load_from_real_config_L0(self):  # noqa: N802
         """Load curriculum config from real L0_0_minimal config pack."""
@@ -136,11 +64,8 @@ class TestCurriculumConfigLoading:
             pytest.skip(f"Config pack not found: {config_dir}")
 
         config = load_curriculum_config(config_dir)
-        # Validate it's a valid CurriculumConfig (fields are required, so if it loads it's valid)
-        assert config.max_steps_per_episode > 0
-        assert 0.0 <= config.survival_advance_threshold <= 1.0
-        assert 0.0 <= config.survival_retreat_threshold <= 1.0
-        assert config.survival_advance_threshold > config.survival_retreat_threshold
+        assert config.curriculum.active_vision in {"global", "partial"}
+        assert 0.0 <= config.curriculum.vision_range <= 1.0
 
     def test_load_from_all_production_configs(self):
         """Verify all production config packs have valid curriculum sections."""
@@ -153,10 +78,8 @@ class TestCurriculumConfigLoading:
 
             # Should load without errors
             config = load_curriculum_config(config_dir)
-            assert config.max_steps_per_episode > 0, f"{pack_name}: max_steps must be positive"
-            assert config.min_steps_at_stage > 0, f"{pack_name}: min_steps must be positive"
-            assert 0.0 <= config.entropy_gate <= 1.0, f"{pack_name}: entropy_gate must be in [0, 1]"
-            assert config.survival_advance_threshold > config.survival_retreat_threshold, f"{pack_name}: advance must be > retreat"
+            assert config.curriculum.active_vision in {"global", "partial"}, f"{pack_name}: invalid active_vision"
+            assert 0.0 <= config.curriculum.vision_range <= 1.0, f"{pack_name}: invalid vision_range"
             validated_packs += 1
 
         if validated_packs == 0:
@@ -167,15 +90,16 @@ class TestCurriculumConfigLoading:
         """Missing required field raises clear error."""
         import yaml
 
-        training_yaml = tmp_path / "training.yaml"
+        curriculum_yaml = tmp_path / "curriculum.yaml"
 
         # Create YAML with missing fields
-        with open(training_yaml, "w") as f:
+        with open(curriculum_yaml, "w") as f:
             yaml.dump(
                 {
                     "curriculum": {
-                        "max_steps_per_episode": 500,
-                        # Missing: survival_advance_threshold, survival_retreat_threshold, entropy_gate, min_steps_at_stage
+                        "version": "1.0",
+                        "active_vision": "global",
+                        # Missing: vision_range, active_temporal, day_length
                     }
                 },
                 f,

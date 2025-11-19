@@ -35,7 +35,9 @@ def continuous_1d_relative():
         boundary="clamp",
         movement_delta=0.5,
         interaction_radius=1.0,
+        distance_metric="euclidean",
         observation_encoding="relative",
+        action_discretization={"num_directions": 8, "num_magnitudes": 3},
     )
 
 
@@ -48,7 +50,9 @@ def continuous_1d_scaled():
         boundary="clamp",
         movement_delta=0.5,
         interaction_radius=1.0,
+        distance_metric="euclidean",
         observation_encoding="scaled",
+        action_discretization={"num_directions": 8, "num_magnitudes": 3},
     )
 
 
@@ -61,7 +65,9 @@ def continuous_1d_absolute():
         boundary="clamp",
         movement_delta=0.5,
         interaction_radius=1.0,
+        distance_metric="euclidean",
         observation_encoding="absolute",
+        action_discretization={"num_directions": 8, "num_magnitudes": 3},
     )
 
 
@@ -133,7 +139,9 @@ def continuous_2d_relative():
         boundary="clamp",
         movement_delta=0.5,
         interaction_radius=1.0,
+        distance_metric="euclidean",
         observation_encoding="relative",
+        action_discretization={"num_directions": 8, "num_magnitudes": 3},
     )
 
 
@@ -148,7 +156,9 @@ def continuous_2d_scaled():
         boundary="clamp",
         movement_delta=0.5,
         interaction_radius=1.0,
+        distance_metric="euclidean",
         observation_encoding="scaled",
+        action_discretization={"num_directions": 8, "num_magnitudes": 3},
     )
 
 
@@ -163,7 +173,9 @@ def continuous_2d_absolute():
         boundary="clamp",
         movement_delta=0.5,
         interaction_radius=1.0,
+        distance_metric="euclidean",
         observation_encoding="absolute",
+        action_discretization={"num_directions": 8, "num_magnitudes": 3},
     )
 
 
@@ -238,7 +250,9 @@ def continuous_3d_relative():
         boundary="clamp",
         movement_delta=0.5,
         interaction_radius=1.0,
+        distance_metric="euclidean",
         observation_encoding="relative",
+        action_discretization={"num_directions": 8, "num_magnitudes": 3},
     )
 
 
@@ -255,7 +269,9 @@ def continuous_3d_scaled():
         boundary="clamp",
         movement_delta=0.5,
         interaction_radius=1.0,
+        distance_metric="euclidean",
         observation_encoding="scaled",
+        action_discretization={"num_directions": 8, "num_magnitudes": 3},
     )
 
 
@@ -272,7 +288,9 @@ def continuous_3d_absolute():
         boundary="clamp",
         movement_delta=0.5,
         interaction_radius=1.0,
+        distance_metric="euclidean",
         observation_encoding="absolute",
+        action_discretization={"num_directions": 8, "num_magnitudes": 3},
     )
 
 
@@ -343,7 +361,9 @@ def test_continuous_1d_non_zero_min():
         boundary="clamp",
         movement_delta=0.5,
         interaction_radius=1.0,
+        distance_metric="euclidean",
         observation_encoding="relative",
+        action_discretization={"num_directions": 8, "num_magnitudes": 3},
     )
 
     positions = torch.tensor([[5.0], [10.0], [15.0]])
@@ -365,7 +385,9 @@ def test_continuous_2d_asymmetric_bounds():
         boundary="clamp",
         movement_delta=0.5,
         interaction_radius=1.0,
+        distance_metric="euclidean",
         observation_encoding="scaled",
+        action_discretization={"num_directions": 8, "num_magnitudes": 3},
     )
 
     positions = torch.tensor([[-5.0, 0.0], [0.0, 10.0], [5.0, 20.0]])
@@ -390,7 +412,9 @@ def test_continuous_invalid_encoding_mode_runtime():
         boundary="clamp",
         movement_delta=0.5,
         interaction_radius=1.0,
+        distance_metric="euclidean",
         observation_encoding="relative",
+        action_discretization={"num_directions": 8, "num_magnitudes": 3},
     )
 
     # Manually corrupt the encoding to test error handling
@@ -419,6 +443,8 @@ def test_continuous_1d_chebyshev_distance():
         movement_delta=0.5,
         interaction_radius=1.0,
         distance_metric="chebyshev",
+        observation_encoding="relative",
+        action_discretization={"num_directions": 8, "num_magnitudes": 3},
     )
 
     # Test distance calculation
@@ -443,6 +469,8 @@ def test_continuous_2d_chebyshev_distance():
         movement_delta=0.5,
         interaction_radius=1.0,
         distance_metric="chebyshev",
+        observation_encoding="relative",
+        action_discretization={"num_directions": 8, "num_magnitudes": 3},
     )
 
     # Test distance calculation
@@ -471,6 +499,8 @@ def test_continuous_3d_chebyshev_distance():
         movement_delta=0.5,
         interaction_radius=1.0,
         distance_metric="chebyshev",
+        observation_encoding="relative",
+        action_discretization={"num_directions": 8, "num_magnitudes": 3},
     )
 
     # Test distance calculation
@@ -497,6 +527,8 @@ def test_continuous_chebyshev_interaction_radius():
         movement_delta=0.5,
         interaction_radius=3.0,  # Chebyshev radius
         distance_metric="chebyshev",
+        observation_encoding="relative",
+        action_discretization={"num_directions": 8, "num_magnitudes": 3},
     )
 
     # Agent positions

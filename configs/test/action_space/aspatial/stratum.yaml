@@ -1,0 +1,7 @@
+stratum:
+  version: "1.0"
+  substrate:
+    type: aspatial
+    aspatial: {}
+  vision_support: global
+  temporal_support: disabled

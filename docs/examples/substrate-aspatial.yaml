@@ -1,4 +1,4 @@
-# Example: Aspatial Universe (No Positioning)
+# Example: Aspatial Substrate (No Positioning)
 #
 # This substrate demonstrates pure state machine mode where agents have
 # NO position and NO navigation. Affordances are available without spatial location.
@@ -10,9 +10,10 @@
 #   - No navigation planning (all affordances equally accessible)
 #   - Pure resource management (energy, health, satiation cycles)
 #   - Observation dim: 0 grid + 8 meters + 15 affordances + 4 temporal = 27 dims
+#
+# v2.1 Format: This file shows the substrate portion only.
+# In a complete config pack, this would be nested in substrate.yaml under the top-level "substrate:" key.
 
-version: "1.0"
-description: "Aspatial universe (pure resource management, no navigation)"
 type: "aspatial"
 
 aspatial: {}

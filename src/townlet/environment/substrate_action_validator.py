@@ -4,8 +4,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from townlet.config.actions_config import ActionsConfig as ActionsConfigDTO
+from townlet.config.actions_config import ActionsConfigRoot
+from townlet.config.stratum_config import SubstrateConfig
 from townlet.environment.action_config import ActionSpaceConfig
-from townlet.substrate.config import SubstrateConfig
+from townlet.substrate.factory import SubstrateFactory
 
 
 @dataclass
@@ -18,9 +21,21 @@ class ValidationResult:
 class SubstrateActionValidator:
     """Validates that the action space is compatible with the chosen substrate."""
 
-    def __init__(self, substrate: SubstrateConfig, actions: ActionSpaceConfig) -> None:
+    def __init__(self, substrate: SubstrateConfig, actions: ActionSpaceConfig | ActionsConfigDTO | ActionsConfigRoot) -> None:
         self._substrate = substrate
-        self._actions = actions.actions
+        # Normalize to a list of ActionConfig-like objects with .type/.delta attributes.
+        if isinstance(actions, ActionSpaceConfig):
+            self._actions = list(actions.actions)
+        elif isinstance(actions, ActionsConfigDTO) or isinstance(actions, ActionsConfigRoot):
+            # When given the v2.1 actions DTO, synthesize substrate default actions for validation.
+            import torch
+
+            substrate_impl = SubstrateFactory.build(substrate, device=torch.device("cpu"))
+            self._actions = substrate_impl.get_default_actions()
+        elif hasattr(actions, "actions"):
+            self._actions = list(actions.actions)
+        else:
+            self._actions = list(actions)
 
     def validate(self) -> ValidationResult:
         result = ValidationResult()

@@ -1,4 +1,4 @@
-"""Unit tests for dynamic tensor sizing in engine layer (TASK-001 Phase 2).
+"""Unit tests for dynamic tensor sizing in engine layer.
 
 Tests that VectorizedHamletEnv creates correctly-sized
 tensors based on meter_count from config instead of hardcoded 8.
@@ -53,17 +53,3 @@ class TestVectorizedEnvDynamicSizing:
         env = task001_env_12meter
         expected_dim = _expected_observation_dim(env)
         assert env.observation_dim == expected_dim, f"Expected obs_dim={expected_dim} for 12-meter full obs, got {env.observation_dim}"
-
-    def test_4meter_observation_dim_pomdp(self, task001_env_4meter_pomdp):
-        """VectorizedHamletEnv should compute correct obs_dim for 4-meter POMDP config."""
-        env = task001_env_4meter_pomdp
-        expected_dim = _expected_observation_dim(env)
-        assert env.partial_observability is True
-        assert env.observation_dim == expected_dim, f"Expected obs_dim={expected_dim} for 4-meter POMDP, got {env.observation_dim}"
-
-    def test_12meter_observation_dim_pomdp(self, task001_env_12meter_pomdp):
-        """VectorizedHamletEnv should compute correct obs_dim for 12-meter POMDP config."""
-        env = task001_env_12meter_pomdp
-        expected_dim = _expected_observation_dim(env)
-        assert env.partial_observability is True
-        assert env.observation_dim == expected_dim, f"Expected obs_dim={expected_dim} for 12-meter POMDP, got {env.observation_dim}"

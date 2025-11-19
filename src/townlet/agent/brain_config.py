@@ -12,6 +12,9 @@ from typing import Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
+from townlet.config.agent_config import AgentConfig
+from townlet.config.training_v2_config import TrainingV2Config
+
 
 class FeedforwardConfig(BaseModel):
     """Feedforward MLP architecture configuration.
@@ -324,7 +327,22 @@ class LossConfig(BaseModel):
 
     type: Literal["mse", "huber", "smooth_l1"] = Field(description="Loss function type")
 
-    huber_delta: float = Field(default=1.0, gt=0.0, description="Delta parameter for Huber loss (ignored for mse/smooth_l1)")
+    huber_delta: float | None = Field(
+        default=None,
+        gt=0.0,
+        description="Delta parameter for Huber loss. Required when type='huber'; must be omitted otherwise.",
+    )
+
+    @model_validator(mode="after")
+    def validate_huber_delta_required_for_huber(self) -> "LossConfig":
+        """Enforce that huber_delta is only set (and required) for Huber loss."""
+        if self.type == "huber":
+            if self.huber_delta is None:
+                raise ValueError("LossConfig.huber_delta is required when type='huber'.")
+        else:
+            if self.huber_delta is not None:
+                raise ValueError("LossConfig.huber_delta must be omitted unless type='huber'.")
+        return self
 
 
 class ArchitectureConfig(BaseModel):
@@ -376,9 +394,47 @@ class ReplayConfig(BaseModel):
     prioritized: bool = Field(description="Use Prioritized Experience Replay (Schaul et al. 2016)")
 
     # PER parameters (required when prioritized=True)
-    priority_alpha: float = Field(default=0.6, ge=0.0, le=1.0, description="Prioritization exponent (0=uniform, 1=full prioritization)")
-    priority_beta: float = Field(default=0.4, ge=0.0, le=1.0, description="Importance sampling exponent (anneals to 1.0)")
-    priority_beta_annealing: bool = Field(default=True, description="Anneal beta to 1.0 over training")
+    priority_alpha: float | None = Field(
+        default=None,
+        ge=0.0,
+        le=1.0,
+        description="Prioritization exponent (0=uniform, 1=full prioritization). Required when prioritized=True.",
+    )
+    priority_beta: float | None = Field(
+        default=None,
+        ge=0.0,
+        le=1.0,
+        description="Importance sampling exponent (anneals to 1.0). Required when prioritized=True.",
+    )
+    priority_beta_annealing: bool | None = Field(
+        default=None,
+        description="Anneal beta to 1.0 over training. Required when prioritized=True.",
+    )
+
+    @model_validator(mode="after")
+    def validate_per_parameters(self) -> "ReplayConfig":
+        """Ensure PER parameters are present iff prioritized=True."""
+        if self.prioritized:
+            missing = []
+            if self.priority_alpha is None:
+                missing.append("priority_alpha")
+            if self.priority_beta is None:
+                missing.append("priority_beta")
+            if self.priority_beta_annealing is None:
+                missing.append("priority_beta_annealing")
+            if missing:
+                raise ValueError(
+                    "ReplayConfig with prioritized=True requires "
+                    + ", ".join(missing)
+                    + " to be specified explicitly (no defaults are applied)."
+                )
+        else:
+            # For non-prioritized replay, PER-specific parameters must not be set.
+            if self.priority_alpha is not None or self.priority_beta is not None or self.priority_beta_annealing is not None:
+                raise ValueError(
+                    "ReplayConfig with prioritized=False must not set priority_alpha, " "priority_beta, or priority_beta_annealing."
+                )
+        return self
 
 
 class QLearningConfig(BaseModel):
@@ -486,3 +542,185 @@ def compute_brain_hash(config: BrainConfig) -> str:
     # Compute SHA256 hash
     hash_bytes = hashlib.sha256(config_json.encode("utf-8")).digest()
     return hash_bytes.hex()
+
+
+def build_brain_config_from_agent(agent: AgentConfig, training: TrainingV2Config) -> BrainConfig:
+    """Build a BrainConfig from v2.1 AgentConfig + TrainingV2Config.
+
+    This is the canonical v2.1 path for demo/training runs:
+    - Experiment-level defaults come from agent.yaml (AgentConfig.brain)
+    - Curriculum-level overrides live in levels/*/training.yaml (TrainingV2Config)
+
+    The resulting BrainConfig is compatible with VectorizedPopulation,
+    OptimizerFactory, and LossFactory, without requiring a separate brain.yaml file.
+    """
+    root = agent.agent
+    brain = root.brain
+
+    # Architecture mapping (agent.yaml -> BrainConfig)
+    if brain.architecture == "feedforward":
+        ff_cfg = FeedforwardConfig(
+            hidden_layers=list(brain.feedforward.hidden_sizes),
+            activation=brain.feedforward.activation,
+            dropout=0.0,
+            layer_norm=False,
+        )
+        arch_cfg = ArchitectureConfig(
+            type="feedforward",
+            feedforward=ff_cfg,
+            recurrent=None,
+            dueling=None,
+        )
+    elif brain.architecture == "recurrent":
+        # Map simple recurrent spec in agent.yaml to full RecurrentConfig
+        vision = brain.recurrent.vision_encoder
+        channels = list(vision.conv_channels)
+        kernel_sizes = [vision.kernel_size] * len(channels)
+        strides = [vision.stride] * len(channels)
+        padding = [1] * len(channels)
+
+        vision_cfg = CNNEncoderConfig(
+            channels=channels,
+            kernel_sizes=kernel_sizes,
+            strides=strides,
+            padding=padding,
+            activation="relu",
+        )
+
+        position_cfg = MLPEncoderConfig(
+            hidden_sizes=[brain.recurrent.position_encoder.hidden_size],
+            activation="relu",
+        )
+        meter_cfg = MLPEncoderConfig(
+            hidden_sizes=[brain.recurrent.meter_encoder.hidden_size],
+            activation="relu",
+        )
+        affordance_cfg = MLPEncoderConfig(
+            hidden_sizes=[32],
+            activation="relu",
+        )
+        lstm_cfg = LSTMConfig(
+            hidden_size=brain.recurrent.lstm.hidden_size,
+            num_layers=brain.recurrent.lstm.num_layers,
+            dropout=0.0,
+        )
+        q_head_cfg = MLPEncoderConfig(
+            hidden_sizes=list(brain.recurrent.q_head.hidden_sizes),
+            activation="relu",
+        )
+
+        rec_cfg = RecurrentConfig(
+            vision_encoder=vision_cfg,
+            position_encoder=position_cfg,
+            meter_encoder=meter_cfg,
+            affordance_encoder=affordance_cfg,
+            lstm=lstm_cfg,
+            q_head=q_head_cfg,
+        )
+        arch_cfg = ArchitectureConfig(
+            type="recurrent",
+            feedforward=None,
+            recurrent=rec_cfg,
+            dueling=None,
+        )
+    else:
+        raise ValueError(f"Unsupported agent.brain.architecture: {brain.architecture}")
+
+    # Optimizer mapping - parameters come from agent.yaml (no hidden defaults)
+    opt_cfg = brain.optimizer
+    opt_type = opt_cfg.type
+    # Map optimizer schedule from agent.yaml into BrainConfig ScheduleConfig
+    schedule_cfg = getattr(opt_cfg, "schedule", None)
+    if schedule_cfg is None:
+        raise ValueError("agent.brain.optimizer.schedule is required in agent.yaml (no defaults allowed).")
+    optimizer_schedule = ScheduleConfig(
+        type=schedule_cfg.type,
+        step_size=schedule_cfg.step_size,
+        gamma=schedule_cfg.gamma,
+        t_max=schedule_cfg.t_max,
+        eta_min=schedule_cfg.eta_min,
+    )
+
+    optimizer_cfg = OptimizerConfig(
+        type=opt_type,
+        learning_rate=opt_cfg.learning_rate,
+        adam_beta1=opt_cfg.adam_beta1,
+        adam_beta2=opt_cfg.adam_beta2,
+        adam_eps=opt_cfg.adam_eps,
+        sgd_momentum=opt_cfg.sgd_momentum,
+        sgd_nesterov=opt_cfg.sgd_nesterov,
+        rmsprop_alpha=opt_cfg.rmsprop_alpha,
+        rmsprop_eps=opt_cfg.rmsprop_eps,
+        weight_decay=opt_cfg.weight_decay,
+        schedule=optimizer_schedule,
+    )
+
+    # Q-learning defaults from agent.yaml; TrainingV2Config will override
+    algo = brain.q_learning.algorithm
+    q_cfg = QLearningConfig(
+        gamma=brain.q_learning.gamma,
+        target_update_frequency=brain.q_learning.target_update_frequency,
+        use_double_dqn=algo == "double_dqn",
+    )
+
+    # Replay defaults use capacity from training.yaml; prioritized off by default.
+    replay_cfg = ReplayConfig(
+        capacity=training.replay_buffer.capacity,
+        prioritized=False,
+        priority_alpha=None,
+        priority_beta=None,
+        priority_beta_annealing=None,
+    )
+
+    # Loss configuration from agent.yaml brain.loss (no hidden defaults)
+    agent_loss = getattr(brain, "loss", None)
+    if agent_loss is None:
+        raise ValueError("agent.brain.loss is required in agent.yaml (no defaults allowed).")
+    loss_cfg = LossConfig(type=agent_loss.type, huber_delta=agent_loss.huber_delta)
+
+    return BrainConfig(
+        version="1.0",
+        description="Brain derived from agent.yaml (v2.1)",
+        architecture=arch_cfg,
+        optimizer=optimizer_cfg,
+        loss=loss_cfg,
+        q_learning=q_cfg,
+        replay=replay_cfg,
+    )
+
+
+def apply_training_overrides(brain: BrainConfig, training: TrainingV2Config) -> BrainConfig:
+    """Apply curriculum-level training overrides to a BrainConfig.
+
+    Experiment-level defaults come from brain.yaml; per-level overrides live in
+    levels/*/training.yaml (TrainingV2Config). This helper merges them into an
+    effective BrainConfig for runtime use without mutating the original.
+
+    Overrides:
+    - q_learning.gamma                <- training.q_learning.gamma
+    - q_learning.target_update_freq   <- training.q_learning.target_update_frequency
+    - q_learning.use_double_dqn       <- training.q_learning.use_double_dqn
+    - optimizer.learning_rate         <- training.q_learning.learning_rate
+    - replay.capacity                 <- training.replay_buffer.capacity
+    """
+    q_overrides = training.q_learning
+    replay_overrides = training.replay_buffer
+
+    # Build updated nested configs to keep types intact
+    updated_q_learning = brain.q_learning.model_copy(
+        update={
+            "gamma": q_overrides.gamma,
+            "target_update_frequency": q_overrides.target_update_frequency,
+            "use_double_dqn": q_overrides.use_double_dqn,
+        }
+    )
+    updated_optimizer = brain.optimizer.model_copy(update={"learning_rate": q_overrides.learning_rate})
+    updated_replay = brain.replay.model_copy(update={"capacity": replay_overrides.capacity})
+
+    return brain.model_copy(
+        update={
+            "q_learning": updated_q_learning,
+            "optimizer": updated_optimizer,
+            "replay": updated_replay,
+        }
+    )

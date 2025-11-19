@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import copy
 import shutil
 from collections.abc import Callable
 from pathlib import Path
@@ -11,116 +10,127 @@ import yaml
 
 from tests.test_townlet.unit.config.fixtures import CONFIGS_DIR
 
-SUPPORT_FILES = [
-    "bars.yaml",
-    "cascades.yaml",
-    "affordances.yaml",
-    "cues.yaml",
-    "substrate.yaml",
-    "variables_reference.yaml",
-    "drive_as_code.yaml",
-    "brain.yaml",  # REQUIRED for all config packs
+# Experiment/root-level files for the v2.1 test pack skeleton.
+TOP_LEVEL_FILES = [
+    "experiment.yaml",
+    "stratum.yaml",
+    "environment.yaml",
+    "actions.yaml",
+    "agent.yaml",
 ]
-TEST_CONFIG_SRC = CONFIGS_DIR / "test"
 
-BASE_CONFIG = {
-    "environment": {
-        # grid_size moved to substrate.yaml
-        "partial_observability": False,
-        "vision_range": 8,
-        "enable_temporal_mechanics": False,
-        "enabled_affordances": None,
-        "randomize_affordances": True,
-    },
-    "population": {
-        "num_agents": 1,
-        "mask_unused_obs": False,
-        # learning_rate, gamma, replay_buffer_capacity, network_type managed by brain.yaml
-    },
-    "curriculum": {
-        "max_steps_per_episode": 50,
-        "survival_advance_threshold": 0.7,
-        "survival_retreat_threshold": 0.3,
-        "entropy_gate": 0.5,
-        "min_steps_at_stage": 10,
-    },
-    "exploration": {
-        "embed_dim": 128,
-        "initial_intrinsic_weight": 1.0,
-        "variance_threshold": 100.0,
-        "survival_window": 100,
-        "min_survival_fraction": 0.5,
-    },
-    "training": {
-        "device": "cpu",
-        "max_episodes": 5,
-        "train_frequency": 4,
-        "batch_size": 32,
-        "sequence_length": 8,
-        "max_grad_norm": 10.0,
-        "epsilon_start": 1.0,
-        "epsilon_decay": 0.99,
-        "epsilon_min": 0.01,
-        "allow_unfeasible_universe": True,
-        # target_update_frequency, use_double_dqn managed by brain.yaml
-    },
-}
+# Level-local files (curriculum-level configs).
+LEVEL_FILES = [
+    "bars.yaml",
+    "affordances.yaml",
+    "curriculum.yaml",
+]
+
+# Source skeletons: v2.1 test experiment + level template.
+EXPERIMENT_SRC = CONFIGS_DIR / "test" / "model_config"
+LEVEL_TEMPLATE_SRC = CONFIGS_DIR / "default_curriculum" / "levels" / "L0_0_minimal"
+
+# Single-level test packs use this level name (matches experiment.yaml in the skeleton).
+PRIMARY_LEVEL_NAME = "L0_test"
 
 
-def copy_support_files(dest_dir: Path) -> None:
-    """Copy required YAML config files into dest_dir."""
+def _copy_top_level_files(dest_dir: Path) -> None:
+    """Copy experiment-level YAMLs into the destination config directory."""
     dest_dir.mkdir(parents=True, exist_ok=True)
-    for filename in SUPPORT_FILES:
-        src = TEST_CONFIG_SRC / filename
+    for filename in TOP_LEVEL_FILES:
+        src = EXPERIMENT_SRC / filename
         if not src.exists():
-            raise FileNotFoundError(f"Required test config file '{filename}' missing in {TEST_CONFIG_SRC}")
+            raise FileNotFoundError(f"Required test config file '{filename}' missing in {EXPERIMENT_SRC}")
         shutil.copy(src, dest_dir / filename)
 
 
-def build_training_config() -> dict:
-    """Return deep copy of base training configuration."""
-    return copy.deepcopy(BASE_CONFIG)
+def _copy_level_support_files(level_dir: Path) -> None:
+    """Copy curriculum-level support YAMLs (excluding training.yaml)."""
+    level_dir.mkdir(parents=True, exist_ok=True)
+    for filename in LEVEL_FILES:
+        src = LEVEL_TEMPLATE_SRC / filename
+        if not src.exists():
+            raise FileNotFoundError(f"Required level file '{filename}' missing in {LEVEL_TEMPLATE_SRC}")
+        shutil.copy(src, level_dir / filename)
 
 
-def write_training_yaml(config_dir: Path, config_data: dict) -> None:
-    """Write training.yaml using the provided data."""
-    with open(config_dir / "training.yaml", "w") as handle:
+def _load_training_template() -> dict:
+    """Load the training.yaml template from the level source."""
+    training_path = LEVEL_TEMPLATE_SRC / "training.yaml"
+    if not training_path.exists():
+        raise FileNotFoundError(f"training.yaml missing in {LEVEL_TEMPLATE_SRC}")
+    return yaml.safe_load(training_path.read_text())
+
+
+def _write_training_yaml(level_dir: Path, config_data: dict) -> None:
+    """Write training.yaml for the level."""
+    level_dir.mkdir(parents=True, exist_ok=True)
+    with open(level_dir / "training.yaml", "w") as handle:
         yaml.safe_dump(config_data, handle, sort_keys=False)
 
 
+def _get_primary_level_dir(config_dir: Path) -> Path:
+    """Resolve the primary level directory from experiment.yaml."""
+    experiment_yaml = config_dir / "experiment.yaml"
+    if not experiment_yaml.exists():
+        raise FileNotFoundError(f"experiment.yaml not found in {config_dir}")
+    experiment_data = yaml.safe_load(experiment_yaml.read_text())
+    levels = experiment_data.get("experiment", {}).get("curriculum_levels") or []
+    if not levels:
+        raise ValueError(f"No curriculum_levels defined in {experiment_yaml}")
+    level_name = levels[0]
+    return config_dir / "levels" / level_name
+
+
 def prepare_config_dir(tmp_path: Path, modifier: Callable[[dict], None] | None = None, name: str = "config") -> Path:
-    """Prepare a full config pack in tmp_path with optional modifier."""
+    """Prepare a v2.1 config pack in tmp_path with optional training modifier."""
     config_dir = tmp_path / name
     config_dir.mkdir()
-    config_data = build_training_config()
+
+    _copy_top_level_files(config_dir)
+
+    level_dir = config_dir / "levels" / PRIMARY_LEVEL_NAME
+    _copy_level_support_files(level_dir)
+
+    config_data = _load_training_template()
     if modifier is not None:
         modifier(config_data)
-    write_training_yaml(config_dir, config_data)
-    copy_support_files(config_dir)
+    _write_training_yaml(level_dir, config_data)
     return config_dir
 
 
 def mutate_training_yaml(config_dir: Path, mutator: Callable[[dict], None]) -> None:
     """Load training.yaml, apply mutator, and write back."""
-    training_yaml = config_dir / "training.yaml"
+    level_dir = _get_primary_level_dir(config_dir)
+    training_yaml = level_dir / "training.yaml"
     data = yaml.safe_load(training_yaml.read_text())
     mutator(data)
-    write_training_yaml(config_dir, data)
+    _write_training_yaml(level_dir, data)
 
 
-def mutate_brain_yaml(config_dir: Path, mutator: Callable[[dict], None]) -> None:
-    """Load brain.yaml, apply mutator, and write back."""
-    brain_yaml = config_dir / "brain.yaml"
-    data = yaml.safe_load(brain_yaml.read_text())
+def mutate_agent_yaml(config_dir: Path, mutator: Callable[[dict], None]) -> None:
+    """Load agent.yaml, apply mutator, and write back."""
+    agent_yaml = config_dir / "agent.yaml"
+    data = yaml.safe_load(agent_yaml.read_text())
     mutator(data)
-    with open(brain_yaml, "w") as handle:
+    with open(agent_yaml, "w") as handle:
         yaml.safe_dump(data, handle, sort_keys=False)
 
 
-def mutate_substrate_yaml(config_dir: Path, mutator: Callable[[dict], None]) -> None:
-    """Load substrate.yaml, apply mutator, and write back."""
-    substrate_yaml = config_dir / "substrate.yaml"
-    data = yaml.safe_load(substrate_yaml.read_text())
+def mutate_stratum_yaml(config_dir: Path, mutator: Callable[[dict], None]) -> None:
+    """Load stratum.yaml, apply mutator, and write back."""
+    stratum_yaml = config_dir / "stratum.yaml"
+    data = yaml.safe_load(stratum_yaml.read_text())
     mutator(data)
-    with open(substrate_yaml, "w") as handle:
+    with open(stratum_yaml, "w") as handle:
+        yaml.safe_dump(data, handle, sort_keys=False)
+
+
+def mutate_curriculum_yaml(config_dir: Path, mutator: Callable[[dict], None]) -> None:
+    """Load the primary level's curriculum.yaml, apply mutator, and write back."""
+    level_dir = _get_primary_level_dir(config_dir)
+    curriculum_yaml = level_dir / "curriculum.yaml"
+    data = yaml.safe_load(curriculum_yaml.read_text())
+    mutator(data)
+    with open(curriculum_yaml, "w") as handle:
         yaml.safe_dump(data, handle, sort_keys=False)

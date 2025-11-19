@@ -4,8 +4,8 @@ Unified Demo Server Entry Point
 
 Single-command interface for running Hamlet training, inference, and frontend together.
 
-Usage:
-    python run_demo.py --config configs/L1_full_observability --episodes 10000
+Usage (v2.1 hierarchical configs):
+    python run_demo.py --config configs/default_curriculum --level L1_full_observability --episodes 10000
 
 Author: Hamlet Project
 Date: November 2, 2025
@@ -20,6 +20,7 @@ from pathlib import Path
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
+from townlet.config.training_v2_config import load_training_v2_config
 from townlet.demo.unified_server import UnifiedServer
 
 # Configure logging
@@ -34,16 +35,16 @@ def parse_args() -> argparse.Namespace:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Start training + inference (then run frontend separately)
-  python run_demo.py --config configs/L1_full_observability --episodes 10000
+  # Start training + inference (then run frontend separately) for a given level
+  python run_demo.py --config configs/default_curriculum --level L1_full_observability --episodes 10000
   # In another terminal: cd frontend && npm run dev
 
   # Resume from checkpoint
-  python run_demo.py --config configs/L1_full_observability \\
+  python run_demo.py --config configs/default_curriculum --level L1_full_observability \\
       --checkpoint-dir runs/L1_full_observability/2025-11-02_123456/checkpoints
 
   # Custom inference port
-  python run_demo.py --config configs/L1_full_observability \\
+  python run_demo.py --config configs/default_curriculum --level L1_full_observability \\
       --episodes 5000 --inference-port 8800
 
 Note:
@@ -57,7 +58,14 @@ Note:
         "--config",
         type=str,
         required=True,
-        help="Path to configuration pack directory or training YAML (e.g., configs/L1_full_observability)",
+        help="Path to v2.1 experiment directory (e.g., configs/default_curriculum)",
+    )
+
+    parser.add_argument(
+        "--level",
+        type=str,
+        default="L1_full_observability",
+        help="Curriculum level name to run (default: L1_full_observability)",
     )
 
     parser.add_argument(
@@ -96,44 +104,61 @@ def main():
         logging.getLogger().setLevel(logging.DEBUG)
         logger.debug("Debug logging enabled")
 
-    # Determine config pack directory and training config file
-    config_input = Path(args.config)
-    if config_input.is_dir():
-        config_dir = config_input
-        config_file = config_dir / "training.yaml"
-        if not config_file.exists():
-            logger.error(f"Config folder '{config_dir}' does not contain training.yaml")
-            sys.exit(1)
+    # Determine experiment root and per-level training config path.
+    # Accept both experiment-root and direct level paths for convenience.
+    raw_path = Path(args.config)
+    if not raw_path.is_dir():
+        logger.error(f"Config path '{raw_path}' is not a directory")
+        sys.exit(1)
+
+    level_name = args.level
+
+    # Heuristic: if user passed a level directory (…/levels/<level_name>), normalize to experiment root.
+    if raw_path.parent.name == "levels" and (raw_path.parent.parent / "experiment.yaml").exists():
+        experiment_root = raw_path.parent.parent
+        if args.level == "L1_full_observability":
+            # If user didn't override --level, default to the level directory name.
+            level_name = raw_path.name
+        logger.info(
+            "Interpreting --config=%s as level directory; using experiment root %s and level '%s'",
+            raw_path,
+            experiment_root,
+            level_name,
+        )
     else:
-        config_file = config_input
-        if not config_file.exists():
-            logger.error(f"Config file not found: {config_file}")
-            logger.error("Provide a valid config path (directory with training.yaml or legacy YAML file).")
-            sys.exit(1)
-        config_dir = config_file.parent
+        experiment_root = raw_path
+
+    if not (experiment_root / "experiment.yaml").exists():
+        logger.error(
+            "Experiment root '%s' does not contain experiment.yaml. "
+            "Pass the v2.1 experiment directory (e.g., configs/default_curriculum).",
+            experiment_root,
+        )
+        sys.exit(1)
+
+    config_dir = experiment_root
+    config_file = experiment_root / "levels" / level_name / "training.yaml"
+    if not config_file.exists():
+        logger.error(f"Training config not found for level '{level_name}': {config_file}")
+        sys.exit(1)
 
     # Read total_episodes from config if not provided via CLI
     total_episodes = args.episodes
     if total_episodes is None:
         try:
-            import yaml
-
-            with open(config_file) as f:
-                config = yaml.safe_load(f)
-                total_episodes = config.get("training", {}).get("max_episodes", None)
-                if total_episodes is None:
-                    logger.error("No total_episodes provided and training.max_episodes not found in config")
-                    sys.exit(1)
-                logger.debug(f"Read max_episodes={total_episodes} from config")
+            training_cfg = load_training_v2_config(config_file.parent)
+            total_episodes = training_cfg.training_loop.max_episodes
+            logger.debug(f"Read max_episodes={total_episodes} from training.training_loop.max_episodes")
         except Exception as e:
-            logger.error(f"Failed to read max_episodes from config: {e}")
+            logger.error(f"Failed to read max_episodes from config (v2.1 schema required): {e}")
             sys.exit(1)
 
     # Print startup banner
     logger.info("=" * 60)
     logger.info("Unified Demo Server Starting")
     logger.info("=" * 60)
-    logger.info(f"Config Pack: {config_dir}")
+    logger.info(f"Experiment Root: {config_dir}")
+    logger.info(f"Level: {level_name}")
     logger.info(f"Training Config: {config_file}")
     if args.episodes is not None:
         logger.info(f"Episodes: {total_episodes} (from --episodes flag)")
@@ -151,10 +176,11 @@ def main():
     try:
         server = UnifiedServer(
             config_dir=str(config_dir),
-            training_config_path=str(config_file),
             total_episodes=total_episodes,
             checkpoint_dir=args.checkpoint_dir,
             inference_port=args.inference_port,
+            training_config_path=str(config_file),
+            level_name=level_name,
         )
     except Exception as e:
         logger.error(f"Failed to create UnifiedServer: {e}")

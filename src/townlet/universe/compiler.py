@@ -2,36 +2,39 @@
 
 from __future__ import annotations
 
-import dataclasses
 import hashlib
 import logging
+import math
 import os
 import sys
 from collections import defaultdict
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable
 from datetime import UTC, datetime
 from numbers import Number
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
 import torch
 import yaml
 
-from townlet.config.affordance import AffordanceConfig
-from townlet.config.bar import BarConfig
-from townlet.config.cascade import CascadeConfig
-from townlet.config.drive_as_code import DriveAsCodeConfig, load_drive_as_code_config
+from townlet.config.actions_config import ActionsConfig
+from townlet.config.affordances_v2_config import AffordanceParamConfig, AffordancesV2Config
+from townlet.config.agent_config import AgentConfig
+from townlet.config.bars_v2_config import BarsV2Config, MeterConfig
+from townlet.config.curriculum_config import CurriculumConfig
+from townlet.config.drive_as_code import DriveAsCodeConfig
 from townlet.config.effect_pipeline import EffectPipeline
-from townlet.environment.cascade_config import EnvironmentConfig
-from townlet.environment.cascade_config import (
-    load_cascades_config as load_full_cascades_config,
-)
+from townlet.config.environment_config import CascadeConfig
+from townlet.config.environment_config import EnvironmentConfig as EnvConfigV21
+from townlet.config.experiment_config import ExperimentConfig
+from townlet.config.stratum_config import StratumConfig, SubstrateConfig
+from townlet.config.training_v2_config import TrainingV2Config
+from townlet.environment.action_config import ActionConfig, ActionSpaceConfig
+from townlet.environment.affordance_config import AffordanceConfig  # Runtime representation
 from townlet.environment.substrate_action_validator import SubstrateActionValidator
 from townlet.environment.temporal_utils import is_affordance_open
-from townlet.substrate.config import SubstrateConfig
-from townlet.universe.adapters.vfs_adapter import VFSAdapter, vfs_to_observation_spec
+from townlet.substrate.factory import SubstrateFactory
 from townlet.universe.compiled import CompiledUniverse
-from townlet.universe.compiler_inputs import RawConfigs
 from townlet.universe.dto import (
     ActionMetadata,
     ActionSpaceMetadata,
@@ -39,18 +42,19 @@ from townlet.universe.dto import (
     AffordanceMetadata,
     MeterInfo,
     MeterMetadata,
+    ObservationActivity,
+    ObservationField,
     ObservationSpec,
     UniverseMetadata,
 )
 from townlet.universe.optimization import OptimizationData
-from townlet.vfs.observation_builder import VFSObservationSpecBuilder
-from townlet.vfs.registry import VariableRegistry
+from townlet.universe.raw_configs_v21 import RawConfigsV21
+from townlet.universe.symbol_table import UniverseSymbolTable
+from townlet.vfs.schema import NormalizationSpec, VariableDef
 from townlet.vfs.schema import ObservationField as VFSObservationField
-from townlet.vfs.schema import VariableDef
 
 from .cues_compiler import CuesCompiler
 from .errors import CompilationError, CompilationErrorCollector, CompilationMessage
-from .symbol_table import UniverseSymbolTable
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +74,6 @@ class UniverseCompiler:
     """Entry point for compiling config packs into CompiledUniverse artifacts."""
 
     def __init__(self) -> None:
-        self._symbol_table = UniverseSymbolTable()
         self._cues_compiler = CuesCompiler()
         self._metadata: UniverseMetadata | None = None
         self._observation_spec: ObservationSpec | None = None
@@ -79,143 +82,287 @@ class UniverseCompiler:
         self._affordance_metadata: AffordanceMetadata | None = None
         self._optimization_data: OptimizationData | None = None
 
-    def compile(self, config_dir: Path, use_cache: bool = True) -> CompiledUniverse:
-        """Compile a config pack into a CompiledUniverse (with optional caching)."""
+    def _load_experiment_structure(self, experiment_dir: Path) -> tuple:
+        """
+        Load all config files from hierarchical v2.1 structure.
 
-        config_dir = Path(config_dir).resolve()  # Resolve to absolute path
-        self._validate_config_dir(config_dir)
+        This implements Stage 1 of the v2.1 compiler pipeline: hierarchical config loading.
 
-        # Phase 0: Validate YAML syntax before doing any work
-        self._phase_0_validate_yaml_syntax(config_dir)
+        Returns:
+            (experiment, stratum, environment, actions, agent, levels_dict)
+            where levels_dict = {
+                "L1_full_observability": (curriculum, bars, affordances, training),
+                ...
+            }
 
-        cache_path = self._cache_artifact_path(config_dir)
-        precomputed_hash: str | None = None
-        precomputed_provenance: str | None = None
+        Raises:
+            FileNotFoundError: If required files or directories missing
+            ValueError: If no curriculum levels found
+        """
+        from townlet.config.actions_config import ActionsConfig
+        from townlet.config.affordances_v2_config import load_affordances_v2_config
+        from townlet.config.bars_v2_config import load_bars_v2_config
+        from townlet.config.curriculum_config import CurriculumConfig
+        from townlet.config.environment_config import EnvironmentConfig
+        from townlet.config.stratum_config import StratumConfig
+        from townlet.config.training_v2_config import load_training_v2_config
+
+        # Load shared configs (experiment-level)
+        experiment = ExperimentConfig.from_yaml(experiment_dir / "experiment.yaml")
+        stratum = StratumConfig.from_yaml(experiment_dir / "stratum.yaml")
+        environment = EnvironmentConfig.from_yaml(experiment_dir / "environment.yaml")
+        actions = ActionsConfig.from_yaml(experiment_dir / "actions.yaml")
+        agent = AgentConfig.from_yaml(experiment_dir / "agent.yaml")
+
+        # Load all curriculum levels
+        levels_dir = experiment_dir / "levels"
+        if not levels_dir.exists():
+            raise FileNotFoundError(
+                f"Missing levels/ directory in {experiment_dir}\n"
+                f"Expected structure: {experiment_dir}/levels/L*/{{curriculum,bars,affordances,training}}.yaml"
+            )
+
+        levels_dict = {}
+        for level_dir in sorted(levels_dir.iterdir()):
+            if not level_dir.is_dir():
+                continue
+
+            level_name = level_dir.name
+
+            # Load all 4 curriculum-level configs
+            curriculum = CurriculumConfig.from_yaml(level_dir / "curriculum.yaml")
+            bars = load_bars_v2_config(level_dir)
+            affordances = load_affordances_v2_config(level_dir)
+            training = load_training_v2_config(level_dir)
+
+            levels_dict[level_name] = (curriculum, bars, affordances, training)
+
+        if not levels_dict:
+            raise ValueError(
+                f"No curriculum levels found in {levels_dir}\nExpected at least one level directory (e.g., levels/L1_full_observability/)"
+            )
+
+        return (experiment, stratum, environment, actions, agent, levels_dict)
+
+    def _validate_vocabulary_consistency(self, environment, levels_dict: dict) -> None:
+        """
+        Validate that all curriculum levels use the same vocabulary as environment.yaml.
+
+        This implements Stage 2 of the v2.1 compiler pipeline: cross-curriculum validation.
+
+        Enforces the WHAT vs HOW split:
+        - environment.yaml defines WHAT exists (vocabulary - breaks checkpoints)
+        - levels/*/bars.yaml defines HOW bars behave (parameters - doesn't break)
+        - levels/*/affordances.yaml defines HOW affordances behave (parameters - doesn't break)
+
+        This ensures checkpoint portability across curriculum levels.
+
+        Args:
+            environment: Loaded EnvironmentConfig with canonical vocabulary
+            levels_dict: Dict of {level_name: (curriculum, bars, affordances, training)}
+
+        Raises:
+            ValueError: If any level has different meter or affordance vocabulary
+        """
+        # Get canonical vocabulary from environment.yaml
+        env_meters = set(m.name for m in environment.environment.meters)
+        env_affordances = set(a.name for a in environment.environment.affordances)
+
+        # Validate each curriculum level
+        for level_name, (curriculum, bars, affordances, training) in levels_dict.items():
+            # Check meter vocabulary matches
+            level_meters = set(m.name for m in bars.meters)
+            if level_meters != env_meters:
+                missing = env_meters - level_meters
+                extra = level_meters - env_meters
+
+                msg_parts = [f"Meter vocabulary mismatch in {level_name}/bars.yaml:"]
+                if missing:
+                    msg_parts.append(f"  Missing meters: {sorted(missing)}")
+                if extra:
+                    msg_parts.append(f"  Extra meters: {sorted(extra)}")
+                msg_parts.append(f"  Expected (from environment.yaml): {sorted(env_meters)}")
+                msg_parts.append(f"  Actual (from bars.yaml): {sorted(level_meters)}")
+                msg_parts.append("")
+                msg_parts.append("All curriculum levels must have same meter vocabulary as environment.yaml")
+                msg_parts.append("This ensures checkpoint portability across curriculum.")
+
+                raise ValueError("\n".join(msg_parts))
+
+            # Check affordance vocabulary matches
+            level_affordances = set(a.name for a in affordances.affordances)
+            if level_affordances != env_affordances:
+                missing = env_affordances - level_affordances
+                extra = level_affordances - env_affordances
+
+                msg_parts = [f"Affordance vocabulary mismatch in {level_name}/affordances.yaml:"]
+                if missing:
+                    msg_parts.append(f"  Missing affordances: {sorted(missing)}")
+                if extra:
+                    msg_parts.append(f"  Extra affordances: {sorted(extra)}")
+                msg_parts.append(f"  Expected (from environment.yaml): {sorted(env_affordances)}")
+                msg_parts.append(f"  Actual (from affordances.yaml): {sorted(level_affordances)}")
+                msg_parts.append("")
+                msg_parts.append("All curriculum levels must have same affordance vocabulary as environment.yaml")
+                msg_parts.append("This ensures checkpoint portability across curriculum.")
+
+                raise ValueError("\n".join(msg_parts))
+
+        # All levels validated - log confirmation
+        logger.info(
+            "✓ Vocabulary consistent across %d curriculum levels: %d meters, %d affordances",
+            len(levels_dict),
+            len(env_meters),
+            len(env_affordances),
+        )
+
+    def compile(self, experiment_dir: Path, primary_level: str | None = None, use_cache: bool = True) -> CompiledUniverse:
+        """Compile v2.1 hierarchical configs into a multi-level CompiledUniverse."""
+        experiment_dir = Path(experiment_dir).resolve()
+
+        self._validate_config_dir(experiment_dir)
+
+        # Optional cache fast-path
+        cache_path = self._cache_artifact_path(experiment_dir)
+        config_hash: str | None = None
+        config_mtime: float | None = None
 
         if use_cache and cache_path.exists():
-            # Validate cache file size before loading (cache bomb protection)
-            cache_size = cache_path.stat().st_size
-            if cache_size > MAX_CACHE_FILE_SIZE:
-                logger.warning(
-                    "Cache file %s exceeds size limit (%d bytes > %d bytes). Recompiling.",
-                    cache_path,
-                    cache_size,
-                    MAX_CACHE_FILE_SIZE,
-                )
-            else:
-                # Optimization: Check mtime first (fast) before computing hash (slow)
-                current_mtime = self._compute_config_mtime(config_dir)
-                try:
-                    cached_universe = CompiledUniverse.load_from_cache(cache_path)
-                except Exception as exc:  # pragma: no cover - defensive
-                    logger.warning("Failed to load cached universe from %s: %s", cache_path, exc)
+            try:
+                cache_size = cache_path.stat().st_size
+                if cache_size > MAX_CACHE_FILE_SIZE:
+                    logger.warning(
+                        "Cache file exceeds size limit (%d bytes > %d bytes)",
+                        cache_size,
+                        MAX_CACHE_FILE_SIZE,
+                    )
                 else:
-                    # Check both content hash AND modification time for cache validity
-                    # mtime check catches ANY file change (comments, whitespace, field removal)
-                    cached_mtime = cached_universe.metadata.config_mtime
-                    if current_mtime > cached_mtime:
+                    # Compute fingerprint once for comparison
+                    config_hash = self._compute_config_hash(experiment_dir)
+                    config_mtime = self._compute_config_mtime(experiment_dir)
+
+                    cached = CompiledUniverse.load_from_cache(cache_path)
+                    cached_meta = cached.metadata
+
+                    # Treat missing fingerprint fields as stale cache
+                    if cached_meta.config_hash and cached_meta.config_mtime:
+                        if cached_meta.config_hash == config_hash and cached_meta.config_mtime >= config_mtime:
+                            logger.info("Loading compiled universe from cache: %s", cache_path)
+                            return cached
                         logger.info(
-                            "Cache stale for %s (config files modified: cached_mtime=%.2f, current_mtime=%.2f). Recompiling.",
-                            cache_path,
-                            cached_mtime,
-                            current_mtime,
+                            "Cache stale for %s (hash/mtime mismatch); recompiling.",
+                            experiment_dir,
                         )
                     else:
-                        # mtime matches - now compute hash to check content equality
-                        precomputed_hash, precomputed_provenance = self._build_cache_fingerprint(config_dir)
-                        if (
-                            cached_universe.metadata.config_hash == precomputed_hash
-                            and cached_universe.metadata.provenance_id == precomputed_provenance
-                        ):
-                            logger.info("Loaded compiled universe from cache: %s", cache_path)
-                            return cached_universe
-                        else:
-                            logger.info(
-                                "Cache stale for %s (cached=%s/%s, current=%s/%s). Recompiling.",
-                                cache_path,
-                                cached_universe.metadata.config_hash[:8],
-                                precomputed_hash[:8] if precomputed_hash else "unknown",
-                                (cached_universe.metadata.provenance_id or "")[:8],
-                                (precomputed_provenance or "unknown")[:8],
-                            )
+                        logger.info("Cached universe at %s missing fingerprint fields; recompiling.", cache_path)
+            except Exception as exc:  # pragma: no cover - defensive
+                logger.warning("Failed to load cached universe from %s: %s", cache_path, exc)
 
-        raw_configs = self._stage_1_parse_individual_files(config_dir)
+        # Stage 0: YAML syntax validation (lightweight)
+        self._phase_0_validate_yaml_syntax(experiment_dir)
 
-        symbol_table = self._stage_2_build_symbol_tables(raw_configs)
-        self._symbol_table = symbol_table
+        # Stage 1: load v2.1 configs
+        raw = self._stage_1_load_v21_configs(experiment_dir)
+        self._validate_v21_semantics(raw, experiment_dir)
 
-        # Load DAC configuration (REQUIRED)
-        try:
-            dac_config = load_drive_as_code_config(config_dir)
-            logger.info("Loaded drive_as_code.yaml")
-        except FileNotFoundError as e:
-            raise CompilationError(
-                stage="Load DAC Configuration",
-                errors=[
-                    f"drive_as_code.yaml is required but not found in {config_dir}",
-                    "All config packs must include a drive_as_code.yaml file",
-                ],
-                hints=["See docs/config-schemas/drive_as_code.md for creating DAC configs"],
-            ) from e
+        # Select primary level
+        if primary_level is None:
+            primary_level = sorted(raw.levels.keys())[0]
+            logger.info("No primary_level specified; defaulting to %s", primary_level)
+        if primary_level not in raw.levels:
+            raise ValueError(f"Primary level '{primary_level}' not found. Available: {list(raw.levels.keys())}")
 
-        errors = CompilationErrorCollector(stage="Stage 3: Resolve References")
-        self._stage_3_resolve_references(raw_configs, symbol_table, errors)
+        # Build per-level artifacts
+        all_levels: dict[str, CompiledUniverse.LevelMetadata] = {}
+        for level_name, level in raw.levels.items():
+            logger.info("Compiling level: %s", level_name)
+            obs_spec = self._build_observation_spec(raw.stratum, raw.environment, level.curriculum)
+            obs_activity = self._build_observation_activity(obs_spec)
+            action_metadata = self._build_action_space_metadata(raw.stratum, raw.actions, level.training, level.affordances)
+            meter_metadata = self._build_meter_metadata(raw.environment, level.bars)
+            affordance_metadata = self._build_affordance_metadata(level.affordances)
+            day_length = level.curriculum.curriculum.day_length
+            temporal_supported = raw.stratum.stratum.temporal_support == "enabled"
+            if temporal_supported and level.curriculum.curriculum.active_temporal:
+                if day_length is None or day_length <= 0:
+                    raise ValueError(
+                        "curriculum.day_length is required when temporal mechanics are declared in stratum.temporal_support.\n"
+                        f"  Experiment: {experiment_dir}\n"
+                        f"  Level: {level_name}\n"
+                        "Provide an explicit positive day_length; no defaults are applied."
+                    )
+            else:
+                # No temporal mechanics active; normalize to zero-length day
+                day_length = 0
+            optimization_data = self._build_optimization_data(
+                level.bars,
+                level.affordances,
+                meter_metadata,
+                affordance_metadata,
+                action_metadata,
+                day_length=day_length,
+            )
+            vfs_fields = self._build_vfs_observation_fields(obs_spec, raw.environment)
+            vfs_variables = self._build_vfs_variables(obs_spec, raw.environment)
 
-        # Stage 3: Validate DAC references
-        self._validate_dac_references(dac_config, symbol_table, errors)
+            all_levels[level_name] = CompiledUniverse.LevelMetadata(
+                level_name=level_name,
+                bars=level.bars,
+                affordances=level.affordances,
+                curriculum=level.curriculum,
+                training=level.training,
+                observation_spec=obs_spec,
+                observation_activity=obs_activity,
+                action_metadata=action_metadata,
+                meter_metadata=meter_metadata,
+                affordance_metadata=affordance_metadata,
+                optimization_data=optimization_data,
+                vfs_observation_fields=vfs_fields,
+                vfs_variables=vfs_variables,
+            )
 
-        errors.check_and_raise("Stage 3: Resolve References")
+        primary_meta = all_levels[primary_level]
 
-        stage4_errors = CompilationErrorCollector(stage="Stage 4: Cross-Validation")
-        self._stage_4_cross_validate(raw_configs, symbol_table, stage4_errors)
-        # Emit warnings even if Stage 4 ultimately raises so operators see every diagnostic.
-        for warning in stage4_errors.warnings:
-            logger.warning(warning)
-        stage4_errors.check_and_raise("Stage 4: Cross-Validation")
-
-        metadata, observation_spec, vfs_fields = self._stage_5_compute_metadata(
-            config_dir,
-            raw_configs,
-            symbol_table,
-            precomputed_config_hash=precomputed_hash,
-        )
-        (
-            action_space_metadata,
-            meter_metadata,
-            affordance_metadata,
-        ) = self._stage_5_build_rich_metadata(raw_configs)
-
-        optimization_data = self._stage_6_optimize(raw_configs, metadata)
-
-        compiled = self._stage_7_emit_compiled_universe(
-            raw_configs=raw_configs,
-            symbol_table=symbol_table,
-            metadata=metadata,
-            observation_spec=observation_spec,
-            vfs_observation_fields=vfs_fields,
-            action_space_metadata=action_space_metadata,
-            meter_metadata=meter_metadata,
-            affordance_metadata=affordance_metadata,
-            optimization_data=optimization_data,
-            environment_config=raw_configs.environment_config,
-            dac_config=dac_config,
+        universe_metadata = self._build_universe_metadata(
+            raw,
+            primary_meta,
+            experiment_dir=experiment_dir,
+            config_hash=config_hash,
+            config_mtime=config_mtime,
         )
 
+        compiled = CompiledUniverse(
+            metadata=universe_metadata,
+            observation_spec=primary_meta.observation_spec,
+            observation_activity=primary_meta.observation_activity,
+            vfs_observation_fields=primary_meta.vfs_observation_fields,
+            vfs_variables=primary_meta.vfs_variables,
+            action_space_metadata=primary_meta.action_metadata,
+            meter_metadata=primary_meta.meter_metadata,
+            affordance_metadata=primary_meta.affordance_metadata,
+            optimization_data=primary_meta.optimization_data,
+            experiment=raw.experiment,
+            stratum=raw.stratum,
+            environment=raw.environment,
+            actions=raw.actions,
+            agent=raw.agent,
+            experiment_dir=experiment_dir,
+            all_levels=all_levels,
+        )
+
+        # Best-effort cache write for future runs
         if use_cache:
-            cache_dir = self._cache_directory_for(config_dir)
             try:
+                cache_dir = self._cache_directory_for(experiment_dir)
                 self._prepare_cache_directory(cache_dir)
                 compiled.save_to_cache(cache_path)
+                logger.info("Saved compiled universe cache to %s", cache_path)
             except Exception as exc:  # pragma: no cover - defensive
-                logger.warning("Failed to write compiled universe cache at %s: %s", cache_path, exc)
+                logger.warning("Failed to write cache artifact to %s: %s", cache_path, exc)
 
-        self._metadata = compiled.metadata
-        self._observation_spec = compiled.observation_spec
-        self._action_metadata = compiled.action_space_metadata
-        self._meter_metadata = compiled.meter_metadata
-        self._affordance_metadata = compiled.affordance_metadata
-        self._optimization_data = compiled.optimization_data
-
+        self._validate_drive_references_v21(raw, primary_meta, compiled)
+        # Emit economic balance warnings for v2.1 configs (non-blocking).
+        self._validate_economic_balance_v21(raw)
         return compiled
 
     def _validate_config_dir(self, config_dir: Path) -> None:
@@ -253,54 +400,44 @@ class UniverseCompiler:
         """Phase 0 – validate all YAML files can be parsed before compilation begins."""
         errors = CompilationErrorCollector(stage="Phase 0: YAML Syntax Validation")
 
-        # Required config files (consolidated structure)
-        # Note: training.yaml contains training/environment/population/curriculum/exploration sections
-        required_files = [
-            "training.yaml",
-            "bars.yaml",
-            "cascades.yaml",
-            "affordances.yaml",
-            "substrate.yaml",
-            "cues.yaml",
-            "variables_reference.yaml",  # Required file, but variables list can be empty
+        shared_files = [
+            "experiment.yaml",
+            "stratum.yaml",
+            "environment.yaml",
+            "actions.yaml",
+            "agent.yaml",
         ]
 
-        # Optional files
-        optional_files = ["action_labels.yaml"]
-
-        # Also check global actions (outside config_dir)
-        global_actions_path = Path("configs") / "global_actions.yaml"
-        all_files_to_check = [(config_dir / f, f, True) for f in required_files]
-        all_files_to_check.extend([(config_dir / f, f, False) for f in optional_files])
-        all_files_to_check.append((global_actions_path, "global_actions.yaml", True))
-
-        for file_path, file_name, is_required in all_files_to_check:
+        for file_name in shared_files:
+            file_path = config_dir / file_name
             if not file_path.exists():
-                if is_required:
-                    errors.add(
-                        f"{file_name}: File not found",
-                        code="MISSING_FILE",
-                        location=str(file_path),
-                    )
+                errors.add(f"{file_name}: File not found", code="MISSING_FILE", location=str(file_path))
                 continue
-
             try:
                 with file_path.open() as handle:
                     yaml.safe_load(handle)
             except yaml.YAMLError as exc:
-                error_msg = str(exc)
-                if hasattr(exc, "problem_mark"):
-                    mark = exc.problem_mark
-                    problem = getattr(exc, "problem", None) or "syntax error"
-                    error_msg = f"line {mark.line + 1}, column {mark.column + 1}: {problem}"
-                    if hasattr(exc, "context") and exc.context:
-                        error_msg = f"{exc.context}\n  {error_msg}"
+                errors.add(str(exc), code="YAML_SYNTAX_ERROR", location=str(file_path))
 
-                errors.add(
-                    error_msg,
-                    code="YAML_SYNTAX_ERROR",
-                    location=file_name,
-                )
+        levels_dir = config_dir / "levels"
+        if not levels_dir.exists():
+            errors.add("levels/ directory missing", code="MISSING_LEVELS_DIR", location=str(levels_dir))
+        else:
+            for level_dir in sorted(p for p in levels_dir.iterdir() if p.is_dir()):
+                for file_name in ("curriculum.yaml", "bars.yaml", "affordances.yaml", "training.yaml"):
+                    file_path = level_dir / file_name
+                    if not file_path.exists():
+                        errors.add(
+                            f"{file_name}: File not found",
+                            code="MISSING_FILE",
+                            location=str(file_path),
+                        )
+                        continue
+                    try:
+                        with file_path.open() as handle:
+                            yaml.safe_load(handle)
+                    except yaml.YAMLError as exc:
+                        errors.add(str(exc), code="YAML_SYNTAX_ERROR", location=str(file_path))
 
         if errors.errors:
             errors.add_hint("Check YAML indentation (use spaces, not tabs)")
@@ -308,591 +445,1247 @@ class UniverseCompiler:
             errors.add_hint("Validate YAML syntax at yamllint.com or with 'yamllint <file>'")
             errors.check_and_raise()
 
-    def _stage_1_parse_individual_files(self, config_dir: Path) -> RawConfigs:
-        """Stage 1 – load all YAML files into DTOs using shared loaders."""
+    def _validate_v21_semantics(self, raw: RawConfigsV21, experiment_dir: Path) -> None:
+        """Validate v2.1 semantic constraints (no defaults, no BC)."""
 
-        return RawConfigs.from_config_dir(config_dir)
+        errors = CompilationErrorCollector(stage="Stage 1b: v2.1 Semantic Validation")
 
-    def _auto_generate_standard_variables(self, raw_configs: RawConfigs) -> list[VariableDef]:
-        """Auto-generate standard system variables from substrate, bars, and affordances.
+        # 1) Temporal requirements
+        temporal_supported = raw.stratum.stratum.temporal_support == "enabled"
+        for level_name, level in raw.levels.items():
+            day_length = level.curriculum.curriculum.day_length
+            if temporal_supported and level.curriculum.curriculum.active_temporal:
+                if day_length is None or day_length <= 0:
+                    errors.add(
+                        "curriculum.day_length must be >0 when temporal_support is enabled and active_temporal=true.",
+                        code="TEMPORAL_DAY_LENGTH_MISSING",
+                        location=str(experiment_dir / "levels" / level_name / "curriculum.yaml"),
+                    )
 
-        Standard variables represent directly observable state that is always available
-        in every universe. These are the fundamental building blocks for observations.
+        # 2) Vision compatibility (active vs supported)
+        vision_support = raw.stratum.stratum.vision_support
+        for level_name, level in raw.levels.items():
+            active = level.curriculum.curriculum.active_vision
+            active_canon = "partial" if active in {"local", "partial"} else "global"
+            if active_canon == "global" and vision_support not in {"global", "both"}:
+                errors.add(
+                    "Invalid vision configuration: curriculum.active_vision='global' requires stratum.vision_support in ['global','both'].",
+                    code="VISION_INCOMPATIBLE",
+                    location=str(experiment_dir / "levels" / level_name / "curriculum.yaml"),
+                )
+            if active_canon == "partial" and vision_support not in {"partial", "both"}:
+                errors.add(
+                    (
+                        "Invalid vision configuration: curriculum.active_vision=partial/local "
+                        "requires stratum.vision_support in ['partial','both']."
+                    ),
+                    code="VISION_INCOMPATIBLE",
+                    location=str(experiment_dir / "levels" / level_name / "curriculum.yaml"),
+                )
 
-        Standard variables include:
-        - Spatial: grid_encoding/local_window (what's on the grid), position (where agent is)
-        - Meters: One variable per meter from bars.yaml (agent internal state)
-        - Affordances: affordance_at_position one-hot encoding (what's at current position)
-        - Temporal: time_sin, time_cos, interaction_progress, lifetime_progress (time state)
+        # 3) Action/substrate compatibility: treat warnings as errors to enforce explicit action sets
+        validator = SubstrateActionValidator(raw.stratum.stratum.substrate, raw.actions)
+        validation_result = validator.validate()
+        for err in validation_result.errors:
+            errors.add(
+                err,
+                code="SUBSTRATE_ACTION_INCOMPATIBLE",
+                location=str(experiment_dir / "actions.yaml"),
+            )
+        for warn in validation_result.warnings:
+            errors.add(
+                warn,
+                code="SUBSTRATE_ACTION_WARNING_AS_ERROR",
+                location=str(experiment_dir / "actions.yaml"),
+            )
 
-        Custom variables (defined in variables_reference.yaml) should extend these with:
-        1. Environmental phenomena: Weather, lighting, noise (world state)
-        2. Derived features: Ratios, deficits, progress metrics (computed from state)
+        # 4) Environment↔level vocabulary alignment and cascades/modulations coverage
+        env_meter_names = {m.name for m in raw.environment.environment.meters}
+        env_affordance_names = {a.name for a in raw.environment.environment.affordances}
+        env_mod_pairs = {(m.bar, tuple(sorted(m.affordances))) for m in raw.environment.environment.modulation_graph}
+        env_edges = {(c.source, c.target) for c in raw.environment.environment.cascade_graph}
 
-        All variables (standard + custom) are automatically exposed as observations.
+        # Cascade edges must reference valid meters
+        for edge in env_edges:
+            if edge[0] not in env_meter_names or edge[1] not in env_meter_names:
+                errors.add(
+                    f"environment.yaml cascade_graph references unknown meters: {edge}",
+                    code="CASCADE_INVALID_METER",
+                    location=str(experiment_dir / "environment.yaml"),
+                )
 
-        Returns:
-            List of auto-generated VariableDef objects
+        # 4b) Action meter validation (JANK-02) against environment meter vocabulary.
+        # Validate any custom action costs/effects in actions.yaml.
+        for action in raw.actions.actions.custom_actions:
+            for field_name in ("costs", "effects"):
+                payload = getattr(action, field_name, None) or {}
+                if not payload:
+                    continue
+                invalid_meters = [meter for meter in payload.keys() if meter not in env_meter_names]
+                if invalid_meters:
+                    for meter in invalid_meters:
+                        errors.add(
+                            (
+                                f"Action '{action.name}' references unknown meter '{meter}' in {field_name}. "
+                                "Ensure all meters are defined in environment.yaml/bars.yaml."
+                            ),
+                            code="UAC-ACT-002",
+                            location=f"{experiment_dir / 'actions.yaml'}:{action.name}",
+                        )
+
+        # Grid capacity (hard error)
+        grid_capacity: int | None = None
+        substrate = raw.stratum.stratum.substrate
+        grid_config = getattr(substrate, "grid", None)
+        if getattr(substrate, "type", None) == "grid" and grid_config is not None:
+            width = grid_config.width
+            height = grid_config.height
+            depth = getattr(grid_config, "depth", None)
+            grid_capacity = width * height if depth is None else width * height * depth
+        gridnd_config = getattr(substrate, "gridnd", None)
+        if getattr(substrate, "type", None) == "gridnd" and gridnd_config is not None:
+            grid_capacity = 1
+            for size in gridnd_config.dimension_sizes:
+                grid_capacity *= size
+
+        for level_name, level in raw.levels.items():
+            level_dir = experiment_dir / "levels" / level_name
+
+            level_meter_names = {meter.name for meter in level.bars.meters}
+            level_affordance_names = {aff.name for aff in level.affordances.affordances}
+
+            if level_meter_names != env_meter_names:
+                missing = env_meter_names - level_meter_names
+                extra = level_meter_names - env_meter_names
+                errors.add(
+                    "Meter vocabulary mismatch between environment.yaml and levels/bars.yaml.",
+                    code="METER_VOCAB_MISMATCH",
+                    location=str(level_dir / "bars.yaml"),
+                )
+                if missing:
+                    errors.add_hint(f"Missing meters: {sorted(missing)}")
+                if extra:
+                    errors.add_hint(f"Unexpected meters: {sorted(extra)}")
+
+            if level_affordance_names != env_affordance_names:
+                missing = env_affordance_names - level_affordance_names
+                extra = level_affordance_names - env_affordance_names
+                errors.add(
+                    "Affordance vocabulary mismatch between environment.yaml and levels/affordances.yaml.",
+                    code="AFFORDANCE_VOCAB_MISMATCH",
+                    location=str(level_dir / "affordances.yaml"),
+                )
+                if missing:
+                    errors.add_hint(f"Missing affordances: {sorted(missing)}")
+                if extra:
+                    errors.add_hint(f"Unexpected affordances: {sorted(extra)}")
+
+            # Cascade coverage per level
+            level_edges = {(c.source, c.target) for c in level.bars.cascades}
+            missing_edges = env_edges - level_edges
+            extra_edges = level_edges - env_edges
+            if missing_edges:
+                errors.add(
+                    f"Missing cascades (must match environment.yaml cascade_graph): {sorted(missing_edges)}",
+                    code="CASCADE_MISSING",
+                    location=str(level_dir / "bars.yaml"),
+                )
+            if extra_edges:
+                errors.add(
+                    f"Extra cascades not declared in environment.yaml cascade_graph: {sorted(extra_edges)}",
+                    code="CASCADE_EXTRA",
+                    location=str(level_dir / "bars.yaml"),
+                )
+
+            # Modulation coverage per level
+            level_mod_pairs = {(m.bar, tuple(sorted(m.affordances))) for m in level.affordances.modulations}
+            missing_mods = env_mod_pairs - level_mod_pairs
+            extra_mods = level_mod_pairs - env_mod_pairs
+            if missing_mods:
+                errors.add(
+                    f"Missing modulations (must match environment.yaml modulation_graph): {sorted(missing_mods)}",
+                    code="MODULATION_MISSING",
+                    location=str(level_dir / "affordances.yaml"),
+                )
+            if extra_mods:
+                errors.add(
+                    f"Extra modulations not declared in environment.yaml modulation_graph: {sorted(extra_mods)}",
+                    code="MODULATION_EXTRA",
+                    location=str(level_dir / "affordances.yaml"),
+                )
+
+            # Affordance field checks
+            for aff in level.affordances.affordances:
+                if getattr(aff, "opening_hours", None) is None:
+                    errors.add(
+                        f"Affordance '{aff.name}' missing opening_hours.",
+                        code="AFFORDANCE_OPENING_HOURS_MISSING",
+                        location=str(level_dir / "affordances.yaml"),
+                    )
+                deployment = getattr(aff, "deployment", None)
+                if deployment is not None and getattr(deployment, "type", None) == "fixed" and not deployment.positions:
+                    errors.add(
+                        f"Affordance '{aff.name}' has deployment.type='fixed' but no positions specified.",
+                        code="AFFORDANCE_DEPLOYMENT_POSITIONS_MISSING",
+                        location=str(level_dir / "affordances.yaml"),
+                    )
+                invalid_cost_meters = [name for name in aff.costs.keys() if name not in env_meter_names]
+                invalid_effect_meters = [name for name in aff.effects.keys() if name not in env_meter_names]
+                if invalid_cost_meters or invalid_effect_meters:
+                    errors.add(
+                        f"Affordance '{aff.name}' references unknown meters in costs/effects.",
+                        code="AFFORDANCE_INVALID_METER",
+                        location=str(level_dir / "affordances.yaml"),
+                    )
+
+            # enabled_affordances must be subset of environment affordances
+            enabled_affordances = getattr(level.training, "enabled_affordances", None)
+            normalized_enabled = env_affordance_names if enabled_affordances is None else {str(name) for name in enabled_affordances}
+            invalid_enabled = normalized_enabled - env_affordance_names
+            if invalid_enabled:
+                errors.add(
+                    f"training.enabled_affordances contains unknown entries: {sorted(invalid_enabled)}",
+                    code="ENABLED_AFFORDANCES_INVALID",
+                    location=str(level_dir / "training.yaml"),
+                )
+
+            # Grid capacity (hard error)
+            if grid_capacity is not None:
+                deployed_count = len(normalized_enabled)
+                population_size = getattr(level.training.population, "size", 0)
+                required_slots = deployed_count + population_size
+                if required_slots > grid_capacity:
+                    errors.add(
+                        f"Grid capacity exceeded: {required_slots} entities (agents + affordances) vs grid capacity {grid_capacity}.",
+                        code="GRID_CAPACITY_EXCEEDED",
+                        location=str(level_dir / "training.yaml"),
+                    )
+
+        # 6) DAC must be present under agent.yaml (agent.drive) and non-empty, with valid references
+        meters = env_meter_names
+        affordances = env_affordance_names
+        variables_set = (
+            set(var.name for var in raw.environment.environment.variables) if hasattr(raw.environment.environment, "variables") else set()
+        )
+
+        agent_drive = getattr(raw.agent.agent, "drive", None)
+        agent_path = experiment_dir / "agent.yaml"
+        if agent_drive is None:
+            errors.add("agent.drive is required and must not be empty.", code="AGENT_DRIVE_MISSING", location=str(agent_path))
+        else:
+            # Modifiers must exist and reference known bars/variables
+            modifiers = getattr(agent_drive, "modifiers", {}) or {}
+            if not modifiers:
+                errors.add("agent.drive.modifiers must not be empty.", code="AGENT_DRIVE_MODIFIERS_EMPTY", location=str(agent_path))
+            for mod_name, mod_cfg in modifiers.items():
+                source = getattr(mod_cfg, "source", None)
+                if source and source not in meters and source not in variables_set:
+                    errors.add(
+                        f"Modifier '{mod_name}' references unknown meter/variable: {source}",
+                        code="AGENT_DRIVE_MODIFIER_INVALID_SOURCE",
+                        location=str(agent_path),
+                    )
+
+            # Extrinsic bonuses
+            extrinsic = getattr(agent_drive, "extrinsic", None)
+            if extrinsic is None:
+                errors.add("agent.drive.extrinsic is required.", code="AGENT_DRIVE_EXTRINSIC_MISSING", location=str(agent_path))
+            else:
+                for bonus in getattr(extrinsic, "bonuses", []) or []:
+                    bar = getattr(bonus, "bar", None)
+                    if bar and bar not in meters:
+                        errors.add(
+                            f"Extrinsic bonus references unknown bar: {bar}",
+                            code="AGENT_DRIVE_EXTRINSIC_INVALID_BAR",
+                            location=str(agent_path),
+                        )
+
+            # Intrinsic
+            intrinsic = getattr(agent_drive, "intrinsic", None)
+            if intrinsic is None:
+                errors.add("agent.drive.intrinsic is required.", code="AGENT_DRIVE_INTRINSIC_MISSING", location=str(agent_path))
+
+            # Shaping
+            shaping = getattr(agent_drive, "shaping", None)
+            if not shaping:
+                errors.add("agent.drive.shaping must not be empty.", code="AGENT_DRIVE_SHAPING_EMPTY", location=str(agent_path))
+            else:
+                for idx, shape_cfg in enumerate(shaping):
+                    loc = f"{agent_path}:drive.shaping[{idx}]"
+                    # Handle known keys from reference-config (approach_reward, completion_bonus, etc.)
+                    target = getattr(shape_cfg, "target", None) or getattr(shape_cfg, "affordance", None)
+                    if target and target not in affordances:
+                        errors.add(
+                            f"Shaping entry references unknown affordance: {target}",
+                            code="AGENT_DRIVE_SHAPING_INVALID_AFFORDANCE",
+                            location=loc,
+                        )
+                    bar = getattr(shape_cfg, "bar", None)
+                    if bar and bar not in meters:
+                        errors.add(
+                            f"Shaping entry references unknown bar: {bar}",
+                            code="AGENT_DRIVE_SHAPING_INVALID_BAR",
+                            location=loc,
+                        )
+                    money_bar = getattr(shape_cfg, "money_bar", None)
+                    if money_bar and money_bar not in meters:
+                        errors.add(
+                            f"Shaping entry references unknown bar: {money_bar}",
+                            code="AGENT_DRIVE_SHAPING_INVALID_BAR",
+                            location=loc,
+                        )
+                    condition_bar = getattr(shape_cfg, "bar", None)
+                    if condition_bar and condition_bar not in meters:
+                        errors.add(
+                            f"Shaping condition references unknown bar: {condition_bar}",
+                            code="AGENT_DRIVE_SHAPING_INVALID_BAR",
+                            location=loc,
+                        )
+
+        errors.check_and_raise()
+
+    def _stage_1_load_v21_configs(self, experiment_dir: Path) -> RawConfigsV21:
+        """Stage 1 – load v2.1 hierarchical configs."""
+        return RawConfigsV21.from_experiment_dir(experiment_dir)
+
+    # ------------------------------------------------------------------
+    # v2.1 helpers
+    # ------------------------------------------------------------------
+
+    def _build_observation_activity(self, obs_spec: ObservationSpec) -> ObservationActivity:
+        """Build ObservationActivity grouping dims by semantic_type and honoring masking.
+
+        - active_mask: one bool per obs dim, False where description contains 'MASKED'
+        - group_slices: contiguous slices per semantic_type (e.g., 'spatial', 'bars')
+        - active_field_uuids: UUIDs for fields that are not masked
         """
-        variables: list[VariableDef] = []
 
-        # 1. SPATIAL VARIABLES (substrate-dependent)
-        substrate = raw_configs.substrate
-        if substrate.type == "grid" and substrate.grid is not None:
-            width = substrate.grid.width
-            height = substrate.grid.height
+        if not obs_spec.fields:
+            return ObservationActivity(active_mask=(), group_slices={}, active_field_uuids=())
 
-            # Check for 3D grid (depth field)
+        active_mask_list: list[bool] = []
+        active_uuids_list: list[str] = []
+
+        group_boundaries: dict[str, int] = {}
+        group_end_indices: dict[str, int] = {}
+        current_idx = 0
+
+        for field in obs_spec.fields:
+            is_masked = "MASKED" in (field.description or "")
+            dims = field.dims
+
+            group_name = field.semantic_type or "custom"
+            if group_name not in group_boundaries:
+                group_boundaries[group_name] = current_idx
+
+            # Expand mask and UUIDs
+            for _ in range(dims):
+                active_mask_list.append(not is_masked)
+                if not is_masked:
+                    active_uuids_list.append(field.uuid or "")
+
+            current_idx += dims
+            group_end_indices[group_name] = current_idx
+
+        group_slices = {name: slice(group_boundaries[name], group_end_indices[name]) for name in group_boundaries.keys()}
+
+        return ObservationActivity(
+            active_mask=tuple(active_mask_list),
+            group_slices=group_slices,
+            active_field_uuids=tuple(active_uuids_list),
+        )
+
+    def _build_observation_spec(
+        self,
+        stratum: StratumConfig,
+        environment: EnvConfigV21,
+        curriculum: CurriculumConfig,
+    ) -> ObservationSpec:
+        """Build observation spec using Support/Active pattern for v2.1."""
+
+        fields: list[ObservationField] = []
+        offset = 0
+
+        substrate = stratum.stratum.substrate
+        vision_support = stratum.stratum.vision_support  # canonical: global/partial/both/none
+        temporal_support = stratum.stratum.temporal_support
+        active_vision = curriculum.curriculum.active_vision
+        vision_range = curriculum.curriculum.vision_range
+        active_temporal = curriculum.curriculum.active_temporal
+
+        # Normalize curriculum active vision: local → partial (POMDP)
+        canon_active_vision = "partial" if active_vision in {"local", "partial"} else "global"
+
+        # Compatibility validation: curriculum cannot request modes not supported by stratum
+        if canon_active_vision == "global" and vision_support not in {"global", "both"}:
+            raise ValueError(
+                "Invalid vision configuration: curriculum.active_vision='global' but "
+                f"stratum.vision_support='{vision_support}'. "
+                "active_vision='global' requires vision_support to be 'global' or 'both'."
+            )
+        if canon_active_vision == "partial" and vision_support not in {"partial", "both"}:
+            raise ValueError(
+                "Invalid vision configuration: curriculum.active_vision indicates partial/local vision but "
+                f"stratum.vision_support='{vision_support}'. "
+                "Partial observability requires vision_support to be 'partial' or 'both'."
+            )
+
+        # Grid dimensions (for grid-based substrates)
+        grid_width = grid_height = 0
+        grid_cells = 0
+        if substrate.type in {"grid", "grid3d"} and substrate.grid is not None:
+            grid_width = substrate.grid.width
+            grid_height = substrate.grid.height
             depth = getattr(substrate.grid, "depth", None)
-            is_3d = depth is not None
+            if depth is not None:
+                grid_cells = grid_width * grid_height * depth
+            else:
+                grid_cells = grid_width * grid_height
+        elif substrate.type == "gridnd" and substrate.gridnd is not None:
+            grid_cells = 1
+            for size in substrate.gridnd.dimension_sizes:
+                grid_cells *= size
 
-            # Calculate grid cells based on dimensionality
-            if is_3d:
-                assert depth is not None  # Type narrowing for mypy
+        # Vision: global
+        if vision_support in {"both", "global"}:
+            # Global vision only defined for grid substrates; gridnd uses flattened cells.
+            if grid_cells:
+                dims = grid_cells
+                is_active = canon_active_vision == "global"
+                if substrate.type == "gridnd":
+                    desc = f"{dims}‑cell gridnd encoding" if is_active else "MASKED (local vision active)"
+                elif grid_width and grid_height:
+                    desc = f"{grid_width}x{grid_height} grid encoding" if is_active else "MASKED (local vision active)"
+                else:
+                    desc = "Global grid encoding" if is_active else "MASKED (local vision active)"
+                fields.append(
+                    ObservationField(
+                        uuid=None,
+                        name="obs_grid_encoding",
+                        type="spatial_grid",
+                        dims=dims,
+                        start_index=offset,
+                        end_index=offset + dims,
+                        scope="agent",
+                        description=desc,
+                        semantic_type="spatial",
+                    )
+                )
+                offset += dims
+
+        # Vision: local / partial
+        if vision_support in {"both", "partial"}:
+            # Partial observability is only supported for low-dimensional grids.
+            if substrate.type == "gridnd" and canon_active_vision == "partial":
+                raise ValueError(
+                    "Partial observability (local vision) is not supported for gridnd substrates. "
+                    "Use active_vision='global' or vision_support='global'/'both' with grid substrates."
+                )
+
+            if substrate.type in {"grid", "grid3d"} and grid_width and grid_height:
+                # Derive window size from normalized vision_range [0, 1] using the
+                # v2.1 reference formula:
+                #   radius = ceil(vision_range * (grid_size / 2))
+                #   window_size = 2 * radius + 1
+                # This keeps obs_dim stable across curricula while allowing intuitive
+                # scaling with grid size.
+                radius = max(1, int(math.ceil(vision_range * (grid_width / 2.0))))
+                window_size = min((2 * radius) + 1, grid_width)
+
+                # For grid substrates we always treat the local window as a 2D footprint.
+                dims = window_size * window_size
+                is_active = canon_active_vision == "partial"
+                desc = f"{window_size}x{window_size} local window" if is_active else "MASKED (global vision active)"
+                fields.append(
+                    ObservationField(
+                        uuid=None,
+                        name="obs_local_window",
+                        type="spatial_grid",
+                        dims=dims,
+                        start_index=offset,
+                        end_index=offset + dims,
+                        scope="agent",
+                        description=desc,
+                        semantic_type="spatial",
+                    )
+                )
+                offset += dims
+
+        # Position / velocity (discrete spatial substrates only)
+        position_dim = 0
+        if substrate.type in {"grid", "grid3d"} and substrate.grid is not None:
+            if substrate.grid.topology == "cubic":
+                position_dim = 3
+            else:
+                position_dim = 2
+        elif substrate.type == "gridnd" and substrate.gridnd is not None:
+            position_dim = len(substrate.gridnd.dimension_sizes)
+
+        if position_dim:
+            fields.append(
+                ObservationField(
+                    uuid=None,
+                    name="obs_position",
+                    type="vector",
+                    dims=position_dim,
+                    start_index=offset,
+                    end_index=offset + position_dim,
+                    scope="agent",
+                    description=f"Agent position ({position_dim}D)",
+                    semantic_type="spatial",
+                )
+            )
+            offset += position_dim
+            fields.append(
+                ObservationField(
+                    uuid=None,
+                    name="obs_velocity",
+                    type="vector",
+                    dims=position_dim,
+                    start_index=offset,
+                    end_index=offset + position_dim,
+                    scope="agent",
+                    description=f"Agent velocity ({position_dim}D)",
+                    semantic_type="spatial",
+                )
+            )
+            offset += position_dim
+
+        # Meters
+        meter_count = len(environment.environment.meters)
+        fields.append(
+            ObservationField(
+                uuid=None,
+                name="obs_meters",
+                type="vector",
+                dims=meter_count,
+                start_index=offset,
+                end_index=offset + meter_count,
+                scope="agent",
+                description=f"{meter_count} meter values (normalized)",
+                semantic_type="bars",
+            )
+        )
+        offset += meter_count
+
+        # Affordances: one-hot over full vocabulary + explicit "none" slot.
+        affordance_count = len(environment.environment.affordances)
+        affordance_dim = affordance_count + 1
+        fields.append(
+            ObservationField(
+                uuid=None,
+                name="obs_affordance_at_position",
+                type="vector",
+                dims=affordance_dim,
+                start_index=offset,
+                end_index=offset + affordance_dim,
+                scope="agent",
+                description=f"{affordance_dim}‑way one-hot affordance_at_position (including 'none')",
+                semantic_type="affordance",
+            )
+        )
+        offset += affordance_dim
+
+        # VFS variables (environment-declared)
+        for var in environment.environment.variables:
+            dims = getattr(var, "dims", 1)
+            fields.append(
+                ObservationField(
+                    uuid=None,
+                    name=var.name,
+                    type="vector" if dims > 1 else "scalar",
+                    dims=dims,
+                    start_index=offset,
+                    end_index=offset + dims,
+                    scope=var.scope,
+                    description=var.description,
+                    semantic_type="custom",
+                )
+            )
+            offset += dims
+
+        # Temporal fields
+        if temporal_support == "enabled":
+            # Rich temporal encoding: four dimensions
+            #   [0] time_of_day_sin
+            #   [1] time_of_day_cos
+            #   [2] day_progress (0.0–1.0 over 24h)
+            #   [3] is_night (0.0/1.0 indicator)
+            # Masking is handled via curriculum (active_temporal).
+            temporal_dims = 4
+            desc = "Temporal features (sin, cos, day_progress, is_night)" if active_temporal else "MASKED (temporal inactive)"
+            fields.append(
+                ObservationField(
+                    uuid=None,
+                    name="obs_temporal",
+                    type="vector",
+                    dims=temporal_dims,
+                    start_index=offset,
+                    end_index=offset + temporal_dims,
+                    scope="agent",
+                    description=desc,
+                    semantic_type="temporal",
+                )
+            )
+            offset += temporal_dims
+
+        return ObservationSpec.from_fields(fields=fields)
+
+    def _build_action_space_metadata(
+        self,
+        stratum: StratumConfig,
+        actions: ActionsConfig,
+        training: TrainingV2Config,
+        affordances: AffordancesV2Config,
+    ) -> ActionSpaceMetadata:
+        """Build action space metadata using substrate actions + custom actions."""
+        entries: list[ActionMetadata] = []
+        next_id = 0
+
+        def _add(name: str, action_type: str, source: str, enabled: bool) -> None:
+            nonlocal next_id
+            entries.append(
+                ActionMetadata(
+                    id=next_id,
+                    name=name,
+                    type=action_type,  # type: ignore[arg-type]
+                    enabled=enabled,
+                    source=source,  # type: ignore[arg-type]
+                    costs={},
+                    description="",
+                )
+            )
+            next_id += 1
+
+        substrate_actions_cfg = actions.actions.substrate_actions
+        allow_interact = len(affordances.affordances) > 0
+        substrate_actions: list[ActionConfig] = []
+        substrate_names: set[str] = set()
+
+        if substrate_actions_cfg.inherit:
+            # Build substrate instance using validated stratum config to derive canonical actions.
+            substrate = SubstrateFactory.build(stratum.stratum.substrate, torch.device("cpu"))
+            substrate_actions = substrate.get_default_actions()
+            substrate_names = {a.name for a in substrate_actions}
+            for action in substrate_actions:
+                enabled = True
+                if action.name == "INTERACT" and not allow_interact:
+                    enabled = False
+                _add(action.name, action.type, "substrate", enabled)
+
+        enabled_custom = set(training.enabled_actions.custom) if training.enabled_actions else set()
+        for custom in actions.actions.custom_actions:
+            # Skip custom entries that collide with substrate vocabulary; substrate owns those IDs.
+            if custom.name in substrate_names:
+                continue
+            action_type = "passive" if custom.name == "WAIT" else "interaction"
+            enabled = custom.enabled_by_default or custom.name in enabled_custom
+            _add(custom.name, action_type, "custom", enabled)
+
+        return ActionSpaceMetadata(total_actions=len(entries), actions=tuple(entries))
+
+    def _build_meter_metadata(
+        self,
+        environment: EnvConfigV21,
+        bars: BarsV2Config,
+    ) -> MeterMetadata:
+        """Meters: use environment vocabulary, initial from bars."""
+        meter_lookup = {meter.name: meter for meter in bars.meters}
+        meter_infos: list[MeterInfo] = []
+        for idx, meter in enumerate(environment.environment.meters):
+            bar_cfg = meter_lookup.get(meter.name)
+            initial = bar_cfg.initial if bar_cfg else 0.0
+            meter_infos.append(
+                MeterInfo(
+                    name=meter.name,
+                    index=idx,
+                    critical=False,
+                    initial_value=initial,
+                    observable=True,
+                    description=meter.description,
+                )
+            )
+        return MeterMetadata(meters=tuple(meter_infos))
+
+    def _build_affordance_metadata(self, affordances: AffordancesV2Config) -> AffordanceMetadata:
+        """Affordance metadata derived from per-level affordances.yaml."""
+        infos: list[AffordanceInfo] = []
+        for aff in affordances.affordances:
+            infos.append(
+                AffordanceInfo(
+                    id=aff.name,
+                    name=aff.name,
+                    enabled=True,
+                    effects=aff.effects,
+                    cost=float(aff.costs.get("money", 0.0)) if hasattr(aff, "costs") else 0.0,
+                    category=None,
+                    description="",
+                    position=None,
+                )
+            )
+        return AffordanceMetadata(affordances=tuple(infos))
+
+    def _build_optimization_data(
+        self,
+        bars: BarsV2Config,
+        affordances: AffordancesV2Config,
+        meter_metadata: MeterMetadata,
+        affordance_metadata: AffordanceMetadata,
+        action_metadata: ActionSpaceMetadata,
+        *,
+        day_length: int,
+    ) -> OptimizationData:
+        """Precompute tensors from v2.1 DTOs (depletions, cascades, modulations, temporal masks)."""
+        meter_lookup = {m.name: m.index for m in meter_metadata.meters}
+        base_depletions = torch.zeros(len(meter_metadata.meters), dtype=torch.float32)
+        for bar in bars.meters:
+            idx = meter_lookup.get(bar.name)
+            if idx is not None:
+                base_depletions[idx] = float(bar.depletion.passive)
+
+        cascade_entries: list[dict[str, Any]] = []
+        for cascade in bars.cascades:
+            source_idx = meter_lookup.get(cascade.source)
+            target_idx = meter_lookup.get(cascade.target)
+            if source_idx is None or target_idx is None:
+                missing_source = cascade.source not in meter_lookup
+                missing_target = cascade.target not in meter_lookup
+                parts = ["Invalid cascade entry in bars.yaml."]
+                if missing_source:
+                    parts.append(f"  Unknown source meter: {cascade.source!r}")
+                if missing_target:
+                    parts.append(f"  Unknown target meter: {cascade.target!r}")
+                parts.append("  Valid meters: " + ", ".join(sorted(meter_lookup.keys())))
+                raise ValueError("\n".join(parts))
+            cascade_entries.append(
+                {
+                    "source_idx": source_idx,
+                    "target_idx": target_idx,
+                    "threshold": float(cascade.threshold),
+                    "strength": float(cascade.strength),
+                }
+            )
+
+        modulation_entries: list[dict[str, Any]] = []
+        for modulation in affordances.modulations:
+            bar_idx = meter_lookup.get(modulation.bar)
+            if bar_idx is None:
+                raise ValueError(
+                    "Invalid modulation entry in affordances.yaml.\n"
+                    f"  Unknown bar: {modulation.bar!r}\n"
+                    "  Valid meters: " + ", ".join(sorted(meter_lookup.keys()))
+                )
+            for aff_name in modulation.affordances:
+                target_idx = next((i for i, a in enumerate(affordance_metadata.affordances) if a.name == aff_name), None)
+                if target_idx is None:
+                    valid_affordances = [a.name for a in affordance_metadata.affordances]
+                    raise ValueError(
+                        "Invalid modulation entry in affordances.yaml.\n"
+                        f"  Unknown affordance in modulation.affordances: {aff_name!r}\n"
+                        "  Valid affordances: " + ", ".join(sorted(valid_affordances))
+                    )
+                modulation_entries.append(
+                    {
+                        "bar_idx": bar_idx,
+                        "affordance_idx": target_idx,
+                        "threshold": float(modulation.threshold),
+                        "min_multiplier": float(modulation.min_multiplier),
+                    }
+                )
+
+        # Build action mask table [day_length, num_affordances] from per-affordance opening hours.
+        # Rows correspond to discrete hours in the curriculum's day; columns align with
+        # affordance indices in AffordanceMetadata. This is consumed by the runtime
+        # via metadata.affordance_id_to_index and _is_affordance_open().
+        num_hours = max(day_length, 1)
+        num_affordances = len(affordance_metadata.affordances)
+        action_mask_table = torch.ones((num_hours, num_affordances), dtype=torch.bool)
+
+        # Build lookup from affordance name to its metadata index.
+        affordance_index: dict[str, int] = {info.name: idx for idx, info in enumerate(affordance_metadata.affordances)}
+
+        # For each affordance, compute its availability across the configured day_length.
+        for aff_cfg in affordances.affordances:
+            aff_idx = affordance_index.get(aff_cfg.name)
+            if aff_idx is None:
+                # Should not happen due to earlier vocabulary validation, but guard defensively.
+                continue
+
+            # Default: 24/7 availability when opening_hours.enabled is False.
+            hours_enabled = torch.ones(num_hours, dtype=torch.bool)
+            opening = aff_cfg.opening_hours
+            if opening.enabled and opening.schedule:
+                hours_enabled[:] = False
+                for window in opening.schedule:
+                    # Windows are expressed in 0-23 (start) and 1-28 (end, may exceed 24 for overnight).
+                    start = int(window.start)
+                    end = int(window.end)
+                    for hour in range(start, end):
+                        hours_enabled[hour % num_hours] = True
+
+            # Apply affordance-specific availability to the corresponding column.
+            action_mask_table[:, aff_idx] &= hours_enabled
+
+        return OptimizationData(
+            base_depletions=base_depletions,
+            # v2.1: BarsV2Config does not classify cascades by tier; all
+            # meter-to-meter cascades are exposed under a single category
+            # consumed by MeterDynamics.apply_secondary_to_primary_effects.
+            cascade_data={"primary_to_pivotal": cascade_entries},
+            modulation_data=modulation_entries,
+            action_mask_table=action_mask_table,
+            affordance_position_map={aff.name: None for aff in affordance_metadata.affordances},
+        )
+
+    def _build_vfs_observation_fields(self, obs_spec: ObservationSpec, environment: EnvConfigV21) -> tuple[VFSObservationField, ...]:
+        """Mirror ObservationSpec fields into VFS observation fields for runtime consumption."""
+
+        def _convert_normalization(var_name: str, norm_cfg: Any) -> NormalizationSpec:
+            """Map environment.yaml normalization into VFS NormalizationSpec."""
+            if norm_cfg is None:
+                raise ValueError(
+                    "Missing normalization for variable declared in environment.yaml.\n"
+                    f"  Variable: {var_name}\n"
+                    "  Rule: All variables must declare normalization (clip/normalize/standardize); method 'none' is not allowed."
+                )
+
+            method = getattr(norm_cfg, "method", None)
+            range_values = getattr(norm_cfg, "range", None)
+            mean = getattr(norm_cfg, "mean", None)
+            std = getattr(norm_cfg, "std", None)
+
+            if method is None:
+                raise ValueError(
+                    "Normalization entry missing 'method' in environment.yaml.\n"
+                    f"  Variable: {var_name}\n"
+                    "  Provide method: clip | normalize | standardize."
+                )
+
+            if method == "none":
+                raise ValueError(
+                    "Normalization method 'none' is not permitted (no defaults). "
+                    "Specify clip/normalize/standardize with explicit parameters.\n"
+                    f"  Variable: {var_name}"
+                )
+
+            if method in {"clip", "normalize"}:
+                if not range_values or len(range_values) != 2:
+                    raise ValueError(
+                        f"Normalization range must provide exactly two values [min, max].\n  Variable: {var_name}\n  Got: {range_values}"
+                    )
+                return NormalizationSpec(kind="minmax", min=range_values[0], max=range_values[1])
+            if method == "standardize":
+                if mean is None or std is None:
+                    raise ValueError(
+                        "Normalization method 'standardize' requires 'mean' and 'std' parameters in environment.yaml.\n"
+                        f"  Variable: {var_name}\n"
+                        "  Action: add mean/std fields to normalization or use clip/normalize with explicit ranges."
+                    )
+                return NormalizationSpec(kind="zscore", mean=mean, std=std)
+
+            raise ValueError(f"Unsupported normalization method '{method}' for variable '{var_name}'. Use clip | normalize | standardize.")
+
+        env_norm_by_name: dict[str, NormalizationSpec] = {}
+        for var in environment.environment.variables:
+            env_norm_by_name[var.name] = _convert_normalization(var.name, getattr(var, "normalization", None))
+
+        fields: list[VFSObservationField] = []
+        for field in obs_spec.fields:
+            norm = env_norm_by_name.get(field.name)
+            fields.append(
+                VFSObservationField(
+                    id=field.name,
+                    source_variable=field.name,
+                    exposed_to=["agent"],
+                    shape=[field.dims],
+                    normalization=norm,
+                    semantic_type=field.semantic_type or "custom",  # type: ignore[arg-type]  # semantic_type is Literal type
+                    curriculum_active="MASKED" not in (field.description or ""),
+                )
+            )
+        return tuple(fields)
+
+    def _build_vfs_variables(self, obs_spec: ObservationSpec, environment: EnvConfigV21) -> tuple[VariableDef, ...]:
+        """Build VFS variables from observation fields + environment variables.
+
+        Creates VariableDefs for:
+        1. System observation primitives (obs_position, obs_meters, etc.) from obs_spec
+        2. User-defined variables from environment.environment.variables
+
+        This ensures every VFSObservationField.source_variable has a backing VariableDef.
+        """
+        vars_out: list[VariableDef] = []
+
+        def _convert_normalization(var_name: str, norm_cfg: Any) -> NormalizationSpec:
+            """Map environment.yaml normalization into VFS NormalizationSpec."""
+            if norm_cfg is None:
+                raise ValueError(
+                    "Missing normalization for variable declared in environment.yaml.\n"
+                    f"  Variable: {var_name}\n"
+                    "  Rule: All variables must declare normalization (clip/normalize/standardize); method 'none' is not allowed."
+                )
+
+            method = getattr(norm_cfg, "method", None)
+            range_values = getattr(norm_cfg, "range", None)
+            mean = getattr(norm_cfg, "mean", None)
+            std = getattr(norm_cfg, "std", None)
+
+            if method is None:
+                raise ValueError(
+                    "Normalization entry missing 'method' in environment.yaml.\n"
+                    f"  Variable: {var_name}\n"
+                    "  Provide method: clip | normalize | standardize."
+                )
+
+            if method == "none":
+                raise ValueError(
+                    "Normalization method 'none' is not permitted (no defaults). "
+                    "Specify clip/normalize/standardize with explicit parameters.\n"
+                    f"  Variable: {var_name}"
+                )
+
+            if method in {"clip", "normalize"}:
+                if not range_values or len(range_values) != 2:
+                    raise ValueError(
+                        f"Normalization range must provide exactly two values [min, max].\n  Variable: {var_name}\n  Got: {range_values}"
+                    )
+                return NormalizationSpec(kind="minmax", min=range_values[0], max=range_values[1])
+            if method == "standardize":
+                if mean is None or std is None:
+                    raise ValueError(
+                        "Normalization method 'standardize' requires 'mean' and 'std' parameters in environment.yaml.\n"
+                        f"  Variable: {var_name}\n"
+                        "  Action: add mean/std fields to normalization or use clip/normalize with explicit ranges."
+                    )
+                return NormalizationSpec(kind="zscore", mean=mean, std=std)
+
+            raise ValueError(f"Unsupported normalization method '{method}' for variable '{var_name}'. Use clip | normalize | standardize.")
+
+        # Build lookup of user-defined variable names
+        user_var_names = {var.name for var in environment.environment.variables}
+
+        # System observation primitives (obs_position, obs_meters, obs_grid_encoding, etc.)
+        # These are compiler-generated fields from obs_spec that need backing VariableDefs
+        for field in obs_spec.fields:
+            # Skip user-defined variables - they're handled below with full metadata from environment.yaml
+            if field.name in user_var_names:
+                continue
+
+            # Create VariableDef for system primitives
+            is_vector = field.dims > 1
+            default = [0.0] * field.dims if is_vector else 0.0
+
+            vars_out.append(
+                VariableDef(
+                    id=field.name,
+                    scope="agent",  # All observation primitives are agent-scoped
+                    type="vecNf" if is_vector else "scalar",
+                    dims=field.dims if is_vector else None,
+                    lifetime="tick",  # Refreshed every step
+                    readable_by=["agent", "engine"],
+                    writable_by=["engine"],  # Only engine writes observation primitives
+                    default=default,
+                    description=field.description or f"System observation primitive: {field.name}",
+                    normalization=None,  # System primitives are pre-normalized by environment
+                )
+            )
+
+        # User-defined variables (explicit declaration from environment.yaml)
+        for var in environment.environment.variables:
+            raw_dims = getattr(var, "dims", None)
+            # Treat dims == 1 as scalar; dims > 1 become vecNf
+            is_vector = bool(raw_dims and raw_dims > 1)
+            dims = raw_dims if is_vector else None
+            default = [0.0] * raw_dims if is_vector and raw_dims is not None else 0.0
+            normalization = _convert_normalization(var.name, getattr(var, "normalization", None))
+
+            vars_out.append(
+                VariableDef(
+                    id=var.name,
+                    scope=var.scope,
+                    type="vecNf" if is_vector else "scalar",
+                    dims=dims,
+                    lifetime="tick",
+                    readable_by=["agent", "engine"],
+                    writable_by=["engine"],
+                    default=default,
+                    description=var.description,
+                    normalization=normalization,
+                )
+            )
+        return tuple(vars_out)
+
+    def _validate_drive_references_v21(
+        self,
+        raw: RawConfigsV21,
+        primary_meta: CompiledUniverse.LevelMetadata,
+        compiled: CompiledUniverse,
+    ) -> None:
+        """Validate v2.1 agent.drive references against meters and VFS variables.
+
+        This is a minimal v2.1 analogue of DAC reference validation. It ensures:
+        - RangeMultiplierModifier.source points to an existing meter or VFS variable.
+        - Extrinsic bonuses reference valid meters.
+
+        ShapingConfig is intentionally left free-form for now; its internal fields are not validated here.
+        """
+        drive = raw.agent.agent.drive
+
+        meter_names = {m.name for m in primary_meta.meter_metadata.meters}
+        vfs_var_ids = {var.id for var in compiled.vfs_variables}
+
+        # Validate modifiers: source must be either a meter or a VFS variable
+        for mod_name, modifier in drive.modifiers.items():
+            source = modifier.source
+            if source in meter_names or source in vfs_var_ids:
+                continue
+            raise ValueError(
+                "Invalid drive.modifiers entry in agent.yaml.\n"
+                f"  Experiment: {compiled.experiment_dir}\n"
+                f"  Modifier: {mod_name}\n"
+                f"  Source: {source!r}\n"
+                f"  Valid meters: {sorted(meter_names)}\n"
+                f"  Valid VFS variables: {sorted(vfs_var_ids)}\n"
+                "\nEach modifier.source must reference a meter or VFS variable."
+            )
+
+        # Validate extrinsic bonus bar references
+        extrinsic = drive.extrinsic
+        if extrinsic.bonuses:
+            for bonus in extrinsic.bonuses:
+                if bonus.bar not in meter_names:
+                    raise ValueError(
+                        "Invalid extrinsic bonus bar in agent.yaml.\n"
+                        f"  Experiment: {compiled.experiment_dir}\n"
+                        f"  Bonus bar: {bonus.bar!r}\n"
+                        f"  Valid meters: {sorted(meter_names)}\n"
+                        "\nAll extrinsic.bonuses[*].bar values must match meters declared in environment.yaml."
+                    )
+
+        # Validate substrate ↔ action compatibility for v2.1 actions
+        # Build a temporary ActionSpaceConfig from substrate defaults + custom actions.
+        try:
+            substrate = SubstrateFactory.build(raw.stratum.stratum.substrate, torch.device("cpu"))
+            substrate_actions = substrate.get_default_actions()
+        except Exception as exc:  # pragma: no cover - defensive
+            raise ValueError(
+                f"Failed to derive substrate default actions for v2.1 validation.\n  Experiment: {compiled.experiment_dir}\n  Error: {exc}"
+            ) from exc
+
+        custom_actions_cfg = raw.actions.actions.custom_actions
+        actions: list[ActionConfig] = []
+
+        # Normalize substrate actions into ActionConfig
+        for act in substrate_actions:
+            actions.append(
+                ActionConfig(
+                    id=act.id,
+                    name=act.name,
+                    type=act.type,
+                    costs={},
+                    effects={},
+                    delta=act.delta,
+                    teleport_to=act.teleport_to,
+                    enabled=True,
+                    description=None,
+                    icon=None,
+                    source="substrate",
+                    source_affordance=None,
+                )
+            )
+
+        # Normalize custom actions into ActionConfig; IDs assigned sequentially after substrate actions
+        next_id = len(actions)
+        for custom in custom_actions_cfg:
+            actions.append(
+                ActionConfig(
+                    id=next_id,
+                    name=custom.name,
+                    type="interaction" if custom.name != "WAIT" else "passive",
+                    costs={},
+                    effects={},
+                    delta=None,
+                    teleport_to=None,
+                    enabled=custom.enabled_by_default,
+                    description=custom.description or None,
+                    icon=None,
+                    source="custom",
+                    source_affordance=None,
+                )
+            )
+            next_id += 1
+
+        action_space = ActionSpaceConfig(actions=actions)
+        validator = SubstrateActionValidator(raw.stratum.stratum.substrate, action_space)
+        validation_result = validator.validate()
+        if validation_result.errors:
+            messages = "\n  - " + "\n  - ".join(validation_result.errors)
+            raise ValueError(
+                "Substrate/action incompatibility detected for v2.1 actions.\n"
+                f"  Experiment: {compiled.experiment_dir}\n"
+                f"{messages}\n"
+                "\nUpdate actions.yaml or stratum.yaml so movement actions are compatible with the substrate."
+            )
+        for warning in validation_result.warnings:
+            logger.warning(
+                "Substrate/action compatibility warning (v2.1).\n  Experiment: %s\n  Warning: %s",
+                compiled.experiment_dir,
+                warning,
+            )
+
+    def _validate_economic_balance_v21(self, raw: RawConfigsV21) -> None:
+        """Emit economic balance warnings for v2.1 configs."""
+        _ = raw.environment.environment  # TODO: Decide if we need this.
+        affordances_cfg = next(iter(raw.levels.values())).affordances
+
+        total_income = self._compute_max_income(affordances_cfg.affordances)
+        total_costs = self._compute_total_costs(affordances_cfg.affordances)
+
+        if total_income <= 0.0 and total_costs > 0.0:
+            logger.warning(
+                "Economic imbalance (v2.1): No income-generating affordances available while costs accrue.\n"
+                "  Experiment: %s\n"
+                "  File: environment.yaml / affordances.yaml\n",
+                raw.experiment_dir,
+            )
+        elif total_income < total_costs:
+            logger.warning(
+                "Economic imbalance (v2.1): Total income (%.2f) < total costs (%.2f).\n"
+                "  Experiment: %s\n"
+                "  File: environment.yaml / affordances.yaml\n",
+                total_income,
+                total_costs,
+                raw.experiment_dir,
+            )
+
+        # Check whether income affordances ever open during the curriculum day.
+        income_affordances = [aff for aff in affordances_cfg.affordances if self._affordance_positive_amount_for_meter(aff, "money") > 0.0]
+        if not income_affordances:
+            return
+
+        hours_with_income = 0
+        for hour in range(24):
+            if any(self._affordance_open_for_hour(aff, hour) for aff in income_affordances):
+                hours_with_income += 1
+
+        if hours_with_income == 0:
+            logger.warning(
+                "Economic imbalance (v2.1): Income-generating affordances exist but none are available during the day.\n"
+                "  Experiment: %s\n"
+                "  File: affordances.yaml\n",
+                raw.experiment_dir,
+            )
+        elif 0 < hours_with_income < 12:
+            logger.warning(
+                "Economic stress (v2.1): Jobs only available %.0fh/day while costs accrue 24h/day.\n"
+                "  Experiment: %s\n"
+                "  File: affordances.yaml\n",
+                float(hours_with_income),
+                raw.experiment_dir,
+            )
+
+    def _build_universe_metadata(
+        self,
+        raw: RawConfigsV21,
+        primary_meta: CompiledUniverse.LevelMetadata,
+        *,
+        experiment_dir: Path,
+        config_hash: str | None = None,
+        config_mtime: float | None = None,
+    ) -> UniverseMetadata:
+        """Construct UniverseMetadata summary."""
+        meter_names = tuple(m.name for m in primary_meta.meter_metadata.meters)
+        meter_name_to_index = {m.name: m.index for m in primary_meta.meter_metadata.meters}
+        affordance_ids = tuple(a.id for a in primary_meta.affordance_metadata.affordances)
+        affordance_id_to_index = {a.id: idx for idx, a in enumerate(primary_meta.affordance_metadata.affordances)}
+
+        grid_size = None
+        grid_cells = None
+        position_dim = 0
+        substrate_cfg = raw.stratum.stratum.substrate
+        substrate_type = substrate_cfg.type
+        if substrate_type in {"grid", "grid3d"} and substrate_cfg.grid is not None:
+            width = substrate_cfg.grid.width
+            height = substrate_cfg.grid.height
+            grid_size = width
+            depth = getattr(substrate_cfg.grid, "depth", None)
+            if depth is not None:
                 grid_cells = width * height * depth
-                grid_desc = f"{width}×{height}×{depth} grid encoding (0=empty, 1=agent, 2=affordance, 3=both)"
-                position_dims = 3
-                position_default = [0.0, 0.0, 0.0]
-                position_desc = "Normalized agent position (x, y, z) in [0, 1] range"
+                position_dim = 3
             else:
                 grid_cells = width * height
-                grid_desc = f"{width}×{height} grid encoding (0=empty, 1=agent, 2=affordance, 3=both)"
-                position_dims = 2
-                position_default = [0.0, 0.0]
-                position_desc = "Normalized agent position (x, y) in [0, 1] range"
+                position_dim = 2
+        elif substrate_type == "gridnd" and substrate_cfg.gridnd is not None:
+            # GridND: product of all dimension sizes, position dim = number of axes
+            grid_cells = 1
+            for size in substrate_cfg.gridnd.dimension_sizes:
+                grid_cells *= size
+            position_dim = len(substrate_cfg.gridnd.dimension_sizes)
 
-            # BUG-43 FIX: Always create BOTH grid_encoding and local_window variables
-            # Use curriculum_active masking to control which is observed (not variable creation)
-            # This enables transfer learning with constant obs_dim across full/partial observability
-
-            # Grid encoding for full observability
-            variables.append(
-                VariableDef(
-                    id="grid_encoding",
-                    scope="agent",
-                    type="vecNf",
-                    dims=grid_cells,
-                    lifetime="tick",
-                    readable_by=["agent", "engine"],
-                    writable_by=["engine"],
-                    default=[0.0] * grid_cells,
-                    description=grid_desc,
+            # Temporal metadata: require explicit ticks_per_day when temporal support is enabled.
+            ticks_per_day: int | None = None
+        curriculum_day_length = primary_meta.curriculum.curriculum.day_length
+        temporal_supported = raw.stratum.stratum.temporal_support == "enabled"
+        temporal_active = primary_meta.curriculum.curriculum.active_temporal
+        if temporal_supported and temporal_active:
+            if curriculum_day_length is None or curriculum_day_length <= 0:
+                raise ValueError(
+                    "Missing curriculum.day_length for temporal-enabled stratum.\n"
+                    f"  Experiment: {experiment_dir}\n"
+                    f"  Level: {primary_meta.level_name}\n"
+                    "Provide an explicit positive day_length; no defaults are applied."
                 )
-            )
+            ticks_per_day = curriculum_day_length
+        else:
+            # Temporal support disabled; mark as zero ticks per day (no temporal mechanics).
+            ticks_per_day = 0
 
-            # Local window for partial observability (POMDP)
-            # Always create this variable (even in full obs) for curriculum consistency
-            # BUG-43 FIX: Use vision_range ONLY when partial_observability=True
-            # Otherwise use a fixed POMDP vision range (2 for 2D → 5×5, 1 for 3D → 3×3×3)
-            # to ensure constant obs_dim across full/partial obs configs
-            if raw_configs.environment.partial_observability:
-                # POMDP mode: use actual vision_range (no hidden defaults - BUG-18 fix)
-                vision_range = raw_configs.environment.vision_range
-            else:
-                # Full obs mode: use fixed POMDP standard (matches typical POMDP configs)
-                vision_range = 1 if is_3d else 2  # 3×3×3 for 3D, 5×5 for 2D
+        # Compute fingerprint if not provided by caller.
+        if config_hash is None:
+            config_hash = self._compute_config_hash(experiment_dir)
+        if config_mtime is None:
+            config_mtime = self._compute_config_mtime(experiment_dir)
 
-            if is_3d:
-                # 3D POMDP: (2r+1)³ window
-                window_size = (2 * vision_range + 1) ** 3
-                window_dim = 2 * vision_range + 1
-                window_desc = f"{window_dim}×{window_dim}×{window_dim} local observation window (POMDP 3D)"
-            else:
-                # 2D POMDP: (2r+1)² window
-                window_size = (2 * vision_range + 1) ** 2
-                window_dim = 2 * vision_range + 1
-                window_desc = f"{window_dim}×{window_dim} local observation window (POMDP)"
+        # v2.1: experiment.version is mandatory (no legacy fallback)
+        try:
+            config_version = raw.experiment.experiment.version
+        except AttributeError as exc:
+            raise ValueError(
+                "experiment.version is required in experiment.yaml (no defaults allowed). Provide an explicit semantic version string."
+            ) from exc
+        if not config_version:
+            raise ValueError("experiment.version is required in experiment.yaml and cannot be empty.")
 
-            variables.append(
-                VariableDef(
-                    id="local_window",
-                    scope="agent",
-                    type="vecNf",
-                    dims=window_size,
-                    lifetime="tick",
-                    readable_by=["agent", "engine"],
-                    writable_by=["engine"],
-                    default=[0.0] * window_size,
-                    description=window_desc,
-                )
-            )
-
-            # Position (normalized coordinates)
-            variables.append(
-                VariableDef(
-                    id="position",
-                    scope="agent",
-                    type="vecNf",
-                    dims=position_dims,
-                    lifetime="episode",
-                    readable_by=["agent", "engine", "acs"],
-                    writable_by=["actions", "engine"],
-                    default=position_default,
-                    description=position_desc,
-                )
-            )
-
-            # Velocity tracking (movement delta from previous step)
-            # Enables agents to remember their movement direction and speed
-            variables.extend(
-                [
-                    VariableDef(
-                        id="velocity_x",
-                        scope="agent",
-                        type="scalar",
-                        lifetime="tick",
-                        readable_by=["agent", "engine"],
-                        writable_by=["engine"],
-                        default=0.0,
-                        description="X-component of velocity (movement delta since last step)",
-                    ),
-                    VariableDef(
-                        id="velocity_y",
-                        scope="agent",
-                        type="scalar",
-                        lifetime="tick",
-                        readable_by=["agent", "engine"],
-                        writable_by=["engine"],
-                        default=0.0,
-                        description="Y-component of velocity (movement delta since last step)",
-                    ),
-                ]
-            )
-
-            # 3D velocity component
-            if is_3d:
-                variables.append(
-                    VariableDef(
-                        id="velocity_z",
-                        scope="agent",
-                        type="scalar",
-                        lifetime="tick",
-                        readable_by=["agent", "engine"],
-                        writable_by=["engine"],
-                        default=0.0,
-                        description="Z-component of velocity (movement delta since last step)",
-                    )
-                )
-
-            # Velocity magnitude (speed)
-            variables.append(
-                VariableDef(
-                    id="velocity_magnitude",
-                    scope="agent",
-                    type="scalar",
-                    lifetime="tick",
-                    readable_by=["agent", "engine"],
-                    writable_by=["engine"],
-                    default=0.0,
-                    description="Speed (magnitude of velocity vector)",
-                )
-            )
-
-        elif substrate.type in ("continuous", "continuousnd"):
-            # Continuous substrates: position + velocity (no grid encoding)
-            position_dims = self._infer_position_dim(substrate)
-
-            variables.append(
-                VariableDef(
-                    id="position",
-                    scope="agent",
-                    type="vecNf",
-                    dims=position_dims,
-                    lifetime="episode",
-                    readable_by=["agent", "engine", "acs"],
-                    writable_by=["actions", "engine"],
-                    default=[0.0] * position_dims,
-                    description=f"Agent position in {position_dims}D continuous space",
-                )
-            )
-
-            # Velocity tracking for continuous substrates
-            if position_dims >= 1:
-                variables.append(
-                    VariableDef(
-                        id="velocity_x",
-                        scope="agent",
-                        type="scalar",
-                        lifetime="tick",
-                        readable_by=["agent", "engine"],
-                        writable_by=["engine"],
-                        default=0.0,
-                        description="X-component of velocity (continuous movement delta)",
-                    )
-                )
-
-            if position_dims >= 2:
-                variables.append(
-                    VariableDef(
-                        id="velocity_y",
-                        scope="agent",
-                        type="scalar",
-                        lifetime="tick",
-                        readable_by=["agent", "engine"],
-                        writable_by=["engine"],
-                        default=0.0,
-                        description="Y-component of velocity (continuous movement delta)",
-                    )
-                )
-
-            if position_dims >= 3:
-                variables.append(
-                    VariableDef(
-                        id="velocity_z",
-                        scope="agent",
-                        type="scalar",
-                        lifetime="tick",
-                        readable_by=["agent", "engine"],
-                        writable_by=["engine"],
-                        default=0.0,
-                        description="Z-component of velocity (continuous movement delta)",
-                    )
-                )
-
-            # Velocity magnitude
-            variables.append(
-                VariableDef(
-                    id="velocity_magnitude",
-                    scope="agent",
-                    type="scalar",
-                    lifetime="tick",
-                    readable_by=["agent", "engine"],
-                    writable_by=["engine"],
-                    default=0.0,
-                    description="Speed (magnitude of velocity vector)",
-                )
-            )
-
-        elif substrate.type == "aspatial":
-            # Aspatial has no spatial variables
-            pass
-
-        # 2. METER VARIABLES (from bars.yaml)
-        for bar in sorted(raw_configs.bars, key=lambda b: b.index):
-            variables.append(
-                VariableDef(
-                    id=bar.name,
-                    scope="agent",
-                    type="scalar",
-                    lifetime="episode",
-                    readable_by=["agent", "engine", "acs"],
-                    writable_by=["actions", "engine"],
-                    default=1.0,  # Meters typically start at 100%
-                    description=f"{bar.name.capitalize()} level [0.0-1.0]",
-                )
-            )
-
-        # 3. AFFORDANCE VARIABLES
-        affordance_count = len(raw_configs.affordances) + 1  # +1 for "none"
-        variables.append(
-            VariableDef(
-                id="affordance_at_position",
-                scope="agent",
-                type="vecNf",
-                dims=affordance_count,
-                lifetime="tick",
-                readable_by=["agent", "engine"],
-                writable_by=["engine"],
-                default=[0.0] * (affordance_count - 1) + [1.0],  # Last element (none) = 1.0
-                description=f"One-hot encoding of affordance at agent position ({affordance_count} categories)",
-            )
+        return UniverseMetadata(
+            universe_name=raw.experiment.experiment.metadata.name,
+            schema_version=SCHEMA_VERSION,
+            substrate_type=substrate_type,
+            position_dim=position_dim,
+            meter_count=len(meter_names),
+            meter_names=meter_names,
+            meter_name_to_index=meter_name_to_index,
+            affordance_count=len(affordance_ids),
+            affordance_ids=affordance_ids,
+            affordance_id_to_index=affordance_id_to_index,
+            action_count=primary_meta.action_metadata.total_actions,
+            observation_dim=primary_meta.observation_spec.total_dims,
+            grid_size=grid_size,
+            grid_cells=grid_cells,
+            max_sustainable_income=0.0,
+            total_affordance_costs=0.0,
+            economic_balance=0.0,
+            ticks_per_day=ticks_per_day,
+            config_version=config_version,
+            compiler_version=COMPILER_VERSION,
+            compiled_at=datetime.now(UTC).isoformat(),
+            config_hash=config_hash,
+            config_mtime=config_mtime,
+            provenance_id=str(experiment_dir),
+            compiler_git_sha="",
+            python_version=sys.version.split()[0],
+            torch_version=torch.__version__,
+            pydantic_version="",
         )
-
-        # 4. TEMPORAL VARIABLES (standard)
-        variables.extend(
-            [
-                VariableDef(
-                    id="time_sin",
-                    scope="global",
-                    type="scalar",
-                    lifetime="tick",
-                    readable_by=["agent", "engine"],
-                    writable_by=["engine"],
-                    default=0.0,
-                    description="Sine of current time (24-hour cycle)",
-                ),
-                VariableDef(
-                    id="time_cos",
-                    scope="global",
-                    type="scalar",
-                    lifetime="tick",
-                    readable_by=["agent", "engine"],
-                    writable_by=["engine"],
-                    default=1.0,
-                    description="Cosine of current time (24-hour cycle)",
-                ),
-                VariableDef(
-                    id="interaction_progress",
-                    scope="agent",
-                    type="scalar",
-                    lifetime="tick",
-                    readable_by=["agent", "engine"],
-                    writable_by=["engine"],
-                    default=0.0,
-                    description="Progress through current multi-tick interaction [0.0-1.0]",
-                ),
-                VariableDef(
-                    id="lifetime_progress",
-                    scope="agent",
-                    type="scalar",
-                    lifetime="episode",
-                    readable_by=["agent", "engine"],
-                    writable_by=["engine"],
-                    default=0.0,
-                    description="Progress through episode lifetime [0.0-1.0]",
-                ),
-            ]
-        )
-
-        return variables
-
-    def _stage_2_build_symbol_tables(self, raw_configs: RawConfigs) -> UniverseSymbolTable:
-        """Stage 2 – register meters, variables, actions, cascades, and affordances."""
-
-        table = UniverseSymbolTable()
-
-        for bar in raw_configs.bars:
-            table.register_meter(bar)
-
-        # Auto-generate standard system variables
-        auto_generated_vars = self._auto_generate_standard_variables(raw_configs)
-
-        # Get user-defined variable IDs to avoid duplicates
-        user_defined_var_ids = set()
-        if raw_configs.variables_reference is not None:
-            user_defined_var_ids = {var.id for var in raw_configs.variables_reference}
-
-        # Register auto-generated variables only if not overridden by user
-        for variable in auto_generated_vars:
-            if variable.id not in user_defined_var_ids:
-                table.register_variable(variable)
-
-        # Register custom user-defined variables (these take precedence over auto-generated)
-        if raw_configs.variables_reference is not None:
-            for variable in raw_configs.variables_reference:
-                table.register_variable(variable)
-
-        for action in raw_configs.global_actions.actions:
-            table.register_action(action)
-
-        for cascade in raw_configs.cascades:
-            table.register_cascade(cascade)
-
-        for affordance in raw_configs.affordances:
-            table.register_affordance(affordance)
-
-        for cue in raw_configs.cues:
-            table.register_cue(cue)
-
-        return table
-
-    def _stage_3_resolve_references(
-        self,
-        raw_configs: RawConfigs,
-        symbol_table: UniverseSymbolTable,
-        errors: CompilationErrorCollector,
-    ) -> None:
-        """Stage 3 – ensure every cross-file reference points to a known symbol."""
-
-        source_map = getattr(raw_configs, "source_map", None)
-        hints_added: set[str] = set()
-
-        def _add_hint(key: str, text: str) -> None:
-            if key not in hints_added:
-                errors.add_hint(text)
-                hints_added.add(key)
-
-        def _format_error(code: str, message: str, location: str | None = None) -> CompilationMessage:
-            location_str = None
-            if location and source_map is not None:
-                location_str = source_map.lookup(location)
-            if not location_str:
-                location_str = location
-            return CompilationMessage(code=code, message=message, location=location_str)
-
-        def _record_meter_reference(
-            meter_name: str | None,
-            location: str,
-            *,
-            code: str,
-            hint_key: str | None = None,
-            hint_text: str | None = None,
-        ) -> None:
-            if not meter_name:
-                return
-            try:
-                symbol_table.resolve_meter_reference(meter_name, location=location)
-            except ReferenceError as exc:
-                if hint_key and hint_text:
-                    _add_hint(hint_key, hint_text)
-                errors.add(_format_error(code, str(exc), location))
-
-        def _handle_missing_meter(location: str) -> None:
-            _add_hint(
-                "missing_meter",
-                "Each cost/effect entry must include a 'meter' field (case-sensitive).",
-            )
-            errors.add(
-                _format_error(
-                    "UAC-RES-003",
-                    "Entry missing required 'meter' field.",
-                    location,
-                )
-            )
-
-        def _get_attr(obj: object | None, key: str) -> object | None:
-            if obj is None:
-                return None
-            if isinstance(obj, dict):
-                return obj.get(key)
-            return getattr(obj, key, None)
-
-        def _get_meter(obj: object | None) -> str | None:
-            value = _get_attr(obj, "meter")
-            if isinstance(value, str) and value:
-                return value
-            return None
-
-        # Cascades: validate source/target meters exist.
-        cascade_hint = (
-            "invalid_meter",
-            "Meter references must match names defined in bars.yaml (case-sensitive).",
-        )
-        for cascade in raw_configs.cascades:
-            _record_meter_reference(
-                cascade.source,
-                f"cascades.yaml:{cascade.name}:source",
-                code="UAC-RES-001",
-                hint_key=cascade_hint[0],
-                hint_text=cascade_hint[1],
-            )
-            _record_meter_reference(
-                cascade.target,
-                f"cascades.yaml:{cascade.name}:target",
-                code="UAC-RES-001",
-                hint_key=cascade_hint[0],
-                hint_text=cascade_hint[1],
-            )
-
-        # Affordances: validate every meter reference across costs/effects/etc.
-        meter_fields = (
-            ("costs", "costs"),
-            ("costs_per_tick", "costs_per_tick"),
-            ("effects", "effects"),
-            ("effects_per_tick", "effects_per_tick"),
-            ("completion_bonus", "completion_bonus"),
-        )
-
-        for affordance in raw_configs.affordances:
-            for attr_name, label in meter_fields:
-                entries = getattr(affordance, attr_name, None)
-                if not entries or not isinstance(entries, Sequence):
-                    continue
-                base_location = f"affordances.yaml:{affordance.id}:{label}"
-                for idx, entry in enumerate(entries):
-                    meter = _get_meter(entry)
-                    if meter:
-                        _record_meter_reference(
-                            meter,
-                            base_location,
-                            code="UAC-RES-002",
-                            hint_key="invalid_meter",
-                            hint_text="Meter references must match names defined in bars.yaml (case-sensitive).",
-                        )
-                    else:
-                        _handle_missing_meter(f"{base_location}[{idx}]")
-
-            # Capabilities (meter-gated)
-            capabilities = getattr(affordance, "capabilities", None)
-            if capabilities and isinstance(capabilities, Sequence):
-                for idx, capability in enumerate(capabilities):
-                    if _get_attr(capability, "type") == "meter_gated":
-                        meter = _get_meter(capability)
-                        location = f"affordances.yaml:{affordance.id}:capabilities[{idx}]"
-                        if meter:
-                            _record_meter_reference(
-                                meter,
-                                location,
-                                code="UAC-RES-002",
-                                hint_key="invalid_meter",
-                                hint_text="Meter references must match names defined in bars.yaml (case-sensitive).",
-                            )
-                        else:
-                            _handle_missing_meter(location)
-
-            # Effect pipeline stages (if defined)
-            effect_pipeline = getattr(affordance, "effect_pipeline", None)
-            if effect_pipeline:
-                for stage_name in ("on_start", "per_tick", "on_completion", "on_early_exit", "on_failure"):
-                    stage_effects = _get_attr(effect_pipeline, stage_name)
-                    if not stage_effects or not isinstance(stage_effects, Sequence):
-                        continue
-                    base_location = f"affordances.yaml:{affordance.id}:effect_pipeline.{stage_name}"
-                    for idx, entry in enumerate(stage_effects):
-                        meter = _get_meter(entry)
-                        if meter:
-                            _record_meter_reference(
-                                meter,
-                                base_location,
-                                code="UAC-RES-002",
-                                hint_key="invalid_meter",
-                                hint_text="Meter references must match names defined in bars.yaml (case-sensitive).",
-                            )
-                        else:
-                            _handle_missing_meter(f"{base_location}[{idx}]")
-
-            # Availability constraints
-            availability = getattr(affordance, "availability", None)
-            if availability and isinstance(availability, Sequence):
-                for idx, constraint in enumerate(availability):
-                    meter = _get_meter(constraint)
-                    location = f"affordances.yaml:{affordance.id}:availability[{idx}]"
-                    if meter:
-                        _record_meter_reference(
-                            meter,
-                            location,
-                            code="UAC-RES-002",
-                            hint_key="invalid_meter",
-                            hint_text="Meter references must match names defined in bars.yaml (case-sensitive).",
-                        )
-                    else:
-                        _handle_missing_meter(location)
-
-        # Environment enabled_affordances (names)
-        enabled_affordances = raw_configs.environment.enabled_affordances
-        if enabled_affordances:
-            for affordance_name in enabled_affordances:
-                if affordance_name not in symbol_table.affordances_by_name:
-                    errors.add(
-                        _format_error(
-                            "UAC-RES-004",
-                            f"References non-existent affordance '{affordance_name}'. Valid affordances: {symbol_table.affordance_names}",
-                            "training.yaml:environment.enabled_affordances",
-                        )
-                    )
-                    _add_hint(
-                        "invalid_affordance_name",
-                        "Ensure environment.enabled_affordances lists valid affordance names from affordances.yaml.",
-                    )
-
-        # Global action costs/effects (dict[str, float])
-        for action in raw_configs.global_actions.actions:
-            for meter in action.costs.keys():
-                _record_meter_reference(
-                    meter,
-                    f"global_actions.yaml:{action.name}:costs",
-                    code="UAC-RES-005",
-                    hint_key="invalid_meter",
-                    hint_text="Meter references must match names defined in bars.yaml (case-sensitive).",
-                )
-            for meter in action.effects.keys():
-                _record_meter_reference(
-                    meter,
-                    f"global_actions.yaml:{action.name}:effects",
-                    code="UAC-RES-005",
-                    hint_key="invalid_meter",
-                    hint_text="Meter references must match names defined in bars.yaml (case-sensitive).",
-                )
 
     def _validate_dac_references(
         self,
@@ -1099,42 +1892,15 @@ class UniverseCompiler:
 
     def _stage_4_cross_validate(
         self,
-        raw_configs: RawConfigs,
+        raw_configs: Any,
         symbol_table: UniverseSymbolTable,
         errors: CompilationErrorCollector,
     ) -> None:
         """Stage 4 – enforce cross-config semantic constraints (subset of spec for TASK-004A)."""
 
-        source_map = getattr(raw_configs, "source_map", None)
-        hints_added: set[str] = set()
+        raise RuntimeError("Legacy flat config pipeline removed; use v2.1 hierarchical configs.")
 
-        def _add_hint(key: str, text: str) -> None:
-            if key not in hints_added:
-                errors.add_hint(text)
-                hints_added.add(key)
-
-        def _format_error(code: str, message: str, location: str | None = None) -> CompilationMessage:
-            location_str = None
-            if location and source_map is not None:
-                location_str = source_map.lookup(location)
-            if not location_str:
-                location_str = location
-            return CompilationMessage(code=code, message=message, location=location_str)
-
-        self._validate_spatial_feasibility(raw_configs, errors, _format_error)
-        self._enforce_security_limits(raw_configs, errors)
-        allow_unfeasible = bool(getattr(raw_configs.training, "allow_unfeasible_universe", False))
-        self._validate_economic_balance(raw_configs, errors, _format_error, allow_unfeasible)
-        self._validate_cascade_cycles(raw_configs, errors, _format_error)
-        self._validate_operating_hours(raw_configs, errors, _format_error)
-        self._validate_availability_and_modes(raw_configs, symbol_table, errors, _format_error)
-        self._cues_compiler.validate(raw_configs.hamlet_config.cues, symbol_table, errors, _format_error)
-        self._validate_capabilities_and_effect_pipelines(raw_configs, errors, _format_error)
-        self._validate_affordance_positions(raw_configs, errors, _format_error)
-        self._validate_substrate_action_compatibility(raw_configs, errors, _format_error, _add_hint)
-        self._validate_capacity_and_sustainability(raw_configs, errors, _format_error, allow_unfeasible)
-
-    def _validate_spatial_feasibility(self, raw_configs: RawConfigs, errors: CompilationErrorCollector, formatter) -> None:
+    def _validate_spatial_feasibility(self, raw_configs: Any, errors: CompilationErrorCollector, formatter) -> None:
         """Validate that substrate has enough space for all affordances + agents.
 
         Reads spatial dimensions from substrate.yaml (single source of truth).
@@ -1181,10 +1947,7 @@ class UniverseCompiler:
             return
 
         enabled_affordances = raw_configs.environment.enabled_affordances
-        if enabled_affordances is None:
-            required = len(raw_configs.affordances)
-        else:
-            required = len(enabled_affordances)
+        required = len(enabled_affordances)
 
         num_agents = raw_configs.population.num_agents
         required_cells = required + num_agents
@@ -1196,7 +1959,7 @@ class UniverseCompiler:
             )
             errors.add(formatter("UAC-VAL-001", message, "substrate.yaml:grid"))
 
-    def _enforce_security_limits(self, raw_configs: RawConfigs, errors: CompilationErrorCollector) -> None:
+    def _enforce_security_limits(self, raw_configs: Any, errors: CompilationErrorCollector) -> None:
         checks = (
             (len(raw_configs.bars), MAX_METERS, "bars.yaml", "meters"),
             (len(raw_configs.affordances), MAX_AFFORDANCES, "affordances.yaml", "affordances"),
@@ -1215,12 +1978,12 @@ class UniverseCompiler:
 
     def _validate_economic_balance(
         self,
-        raw_configs: RawConfigs,
+        raw_configs: Any,
         errors: CompilationErrorCollector,
         formatter,
         allow_unfeasible: bool,
     ) -> None:
-        enabled_lookup = self._build_enabled_affordance_lookup(getattr(raw_configs.environment, "enabled_affordances", None))
+        enabled_lookup = self._build_enabled_affordance_lookup(raw_configs.environment.enabled_affordances)
 
         total_income = self._compute_max_income(raw_configs.affordances)
         total_costs = self._compute_total_costs(raw_configs.affordances)
@@ -1265,7 +2028,7 @@ class UniverseCompiler:
                 )
             )
 
-    def _validate_cascade_cycles(self, raw_configs: RawConfigs, errors: CompilationErrorCollector, formatter) -> None:
+    def _validate_cascade_cycles(self, raw_configs: Any, errors: CompilationErrorCollector, formatter) -> None:
         graph = self._build_cascade_graph(raw_configs.cascades)
         cycles = self._detect_cycles(graph)
         if not cycles:
@@ -1274,7 +2037,7 @@ class UniverseCompiler:
             cycle_str = " → ".join(cycle + [cycle[0]])
             errors.add(formatter("UAC-VAL-003", f"Cascade circularity detected: {cycle_str}.", "cascades.yaml"))
 
-    def _validate_operating_hours(self, raw_configs: RawConfigs, errors: CompilationErrorCollector, formatter) -> None:
+    def _validate_operating_hours(self, raw_configs: Any, errors: CompilationErrorCollector, formatter) -> None:
         for affordance in raw_configs.affordances:
             operating_hours = affordance.operating_hours
             # operating_hours is now required by schema - no None check needed
@@ -1307,7 +2070,7 @@ class UniverseCompiler:
 
     def _validate_availability_and_modes(
         self,
-        raw_configs: RawConfigs,
+        raw_configs: Any,
         symbol_table: UniverseSymbolTable,
         errors: CompilationErrorCollector,
         formatter,
@@ -1364,7 +2127,7 @@ class UniverseCompiler:
 
     def _validate_capabilities_and_effect_pipelines(
         self,
-        raw_configs: RawConfigs,
+        raw_configs: Any,
         errors: CompilationErrorCollector,
         formatter,
     ) -> None:
@@ -1500,7 +2263,7 @@ class UniverseCompiler:
 
     def _validate_affordance_positions(
         self,
-        raw_configs: RawConfigs,
+        raw_configs: Any,
         errors: CompilationErrorCollector,
         formatter,
     ) -> None:
@@ -1520,12 +2283,12 @@ class UniverseCompiler:
 
     def _validate_capacity_and_sustainability(
         self,
-        raw_configs: RawConfigs,
+        raw_configs: Any,
         errors: CompilationErrorCollector,
         formatter,
         allow_unfeasible: bool,
     ) -> None:
-        enabled_lookup = self._build_enabled_affordance_lookup(getattr(raw_configs.environment, "enabled_affordances", None))
+        enabled_lookup = self._build_enabled_affordance_lookup(raw_configs.environment.enabled_affordances)
         self._validate_meter_sustainability(raw_configs, enabled_lookup, errors, formatter, allow_unfeasible)
         self._validate_capacity_constraints(raw_configs, enabled_lookup, errors, formatter)
 
@@ -1569,7 +2332,7 @@ class UniverseCompiler:
 
     def _validate_substrate_action_compatibility(
         self,
-        raw_configs: RawConfigs,
+        raw_configs: Any,
         errors: CompilationErrorCollector,
         formatter,
         add_hint,
@@ -1581,14 +2344,14 @@ class UniverseCompiler:
         for warning in result.warnings:
             errors.add_warning(formatter("UAC-VAL-006", warning, "configs/global_actions.yaml"))
 
-    def _compute_total_costs(self, affordances: tuple[AffordanceConfig, ...]) -> float:
+    def _compute_total_costs(self, affordances: list[AffordanceParamConfig]) -> float:
         total = 0.0
         for affordance in affordances:
             total += self._sum_amounts(getattr(affordance, "costs", []))
             total += self._sum_amounts(getattr(affordance, "costs_per_tick", []))
         return total
 
-    def _compute_max_income(self, affordances: tuple[AffordanceConfig, ...]) -> float:
+    def _compute_max_income(self, affordances: list[AffordanceParamConfig]) -> float:
         total = 0.0
         for affordance in affordances:
             pipeline = getattr(affordance, "effect_pipeline", None)
@@ -1636,9 +2399,11 @@ class UniverseCompiler:
             total += amount
         return total
 
-    def _build_enabled_affordance_lookup(self, enabled_affordances: list[str] | None) -> set[str] | None:
-        if not enabled_affordances:
-            return None
+    def _build_enabled_affordance_lookup(self, enabled_affordances: list[str] | None) -> set[str]:
+        if enabled_affordances is None:
+            raise ValueError(
+                "enabled_affordances must be explicitly provided (empty list allowed to disable all affordances); null is not allowed."
+            )
         return {str(name) for name in enabled_affordances}
 
     def _is_affordance_enabled(self, affordance: AffordanceConfig, enabled_lookup: set[str] | None) -> bool:
@@ -1646,7 +2411,7 @@ class UniverseCompiler:
             return True
         return affordance.name in enabled_lookup or affordance.id in enabled_lookup
 
-    def _count_income_hours(self, raw_configs: RawConfigs, enabled_lookup: set[str] | None) -> float:
+    def _count_income_hours(self, raw_configs: Any, enabled_lookup: set[str] | None) -> float:
         income_affordances = [
             aff
             for aff in raw_configs.affordances
@@ -1666,14 +2431,32 @@ class UniverseCompiler:
                 hours_with_income += 1
         return float(hours_with_income)
 
-    def _affordance_open_for_hour(self, affordance: AffordanceConfig, hour: int) -> bool:
-        # operating_hours is now required by schema - no None check needed
-        # Convert list[int] to tuple[int, int] for is_affordance_open
-        # Pydantic ensures exactly 2 elements (Field(min_length=2, max_length=2))
-        open_hour, close_hour = affordance.operating_hours
-        return is_affordance_open(hour, (open_hour, close_hour))
+    def _affordance_open_for_hour(self, affordance: AffordanceParamConfig, hour: int) -> bool:
+        """Return True if an affordance is open for the given hour.
 
-    def _affordance_positive_amount_for_meter(self, affordance: AffordanceConfig, meter_name: str) -> float:
+        v2.1 semantics: availability is defined *only* via opening_hours on
+        curriculum-level affordances (AffordanceParamConfig from AffordancesV2Config).
+        Legacy operating_hours fields are no longer supported.
+        """
+        opening_hours = getattr(affordance, "opening_hours", None)
+        if opening_hours is None:
+            raise ValueError("Affordance missing opening_hours in v2.1 config. All affordances must declare opening_hours.")
+
+        # opening_hours.enabled == False → 24/7 availability.
+        if not opening_hours.enabled:
+            return True
+
+        windows = getattr(opening_hours, "schedule", []) or []
+        for window in windows:
+            start = getattr(window, "start", None)
+            end = getattr(window, "end", None)
+            if start is None or end is None:
+                continue
+            if is_affordance_open(hour, (start, end)):
+                return True
+        return False
+
+    def _affordance_positive_amount_for_meter(self, affordance: AffordanceParamConfig | AffordanceConfig, meter_name: str) -> float:
         pipeline = getattr(affordance, "effect_pipeline", None)
         total = 0.0
         if pipeline is not None and not isinstance(pipeline, EffectPipeline):
@@ -1709,7 +2492,7 @@ class UniverseCompiler:
 
     def _validate_meter_sustainability(
         self,
-        raw_configs: RawConfigs,
+        raw_configs: Any,
         enabled_lookup: set[str] | None,
         errors: CompilationErrorCollector,
         formatter,
@@ -1745,14 +2528,14 @@ class UniverseCompiler:
                     f"bars.yaml:{bar.name}",
                 )
 
-    def _collect_critical_meter_names(self, raw_configs: RawConfigs) -> set[str]:
+    def _collect_critical_meter_names(self, raw_configs: Any) -> set[str]:
         names: set[str] = set()
         for bar in raw_configs.bars:
             if self._is_meter_critical(bar):
                 names.add(bar.name)
         return names
 
-    def _is_meter_critical(self, bar: BarConfig) -> bool:
+    def _is_meter_critical(self, bar: MeterConfig) -> bool:
         if getattr(bar, "critical", False):
             return True
         tier = getattr(bar, "tier", None)
@@ -1760,7 +2543,7 @@ class UniverseCompiler:
 
     def _validate_capacity_constraints(
         self,
-        raw_configs: RawConfigs,
+        raw_configs: Any,
         enabled_lookup: set[str] | None,
         errors: CompilationErrorCollector,
         formatter,
@@ -1785,7 +2568,7 @@ class UniverseCompiler:
 
     def _find_critical_path_affordances(
         self,
-        raw_configs: RawConfigs,
+        raw_configs: Any,
         enabled_lookup: set[str] | None,
     ) -> list[AffordanceConfig]:
         critical_meters = self._collect_critical_meter_names(raw_configs)
@@ -1885,163 +2668,26 @@ class UniverseCompiler:
     def _stage_5_compute_metadata(
         self,
         config_dir: Path,
-        raw_configs: RawConfigs,
+        raw_configs: Any,
         symbol_table: UniverseSymbolTable,
         *,
         precomputed_config_hash: str | None = None,
     ) -> tuple[UniverseMetadata, ObservationSpec, tuple[VFSObservationField, ...]]:
         """Stage 5 – compute derived metadata and observation specification."""
 
-        import torch
-        from pydantic import __version__ as pydantic_version  # lazy import to avoid startup penalty
-
-        exposures = self._load_observation_exposures(raw_configs, symbol_table)
-
-        # Get all variables from symbol table (auto-generated + custom)
-        all_variables = list(symbol_table.variables.values())
-        variable_registry = VariableRegistry(
-            variables=all_variables,
-            num_agents=raw_configs.population.num_agents,
-            device=torch.device("cpu"),
-        )
-
-        obs_builder = VFSObservationSpecBuilder()
-        variables = list(variable_registry.variables.values())
-        vfs_fields = obs_builder.build_observation_spec(variables, exposures)
-        var_scope_lookup = {var.id: var.scope for var in variables}
-        observation_spec = vfs_to_observation_spec(vfs_fields, var_scope_lookup)
-
-        sorted_bars = sorted(raw_configs.bars, key=lambda bar: bar.index)
-        meter_names = tuple(bar.name for bar in sorted_bars)
-        meter_name_to_index = {bar.name: bar.index for bar in sorted_bars}
-
-        affordances = tuple(raw_configs.affordances)
-        affordance_ids = tuple(aff.id for aff in affordances)
-        affordance_id_to_index = {aff.id: idx for idx, aff in enumerate(affordances)}
-
-        action_count = len(raw_configs.global_actions.actions)
-
-        max_income = self._compute_max_income(raw_configs.affordances)
-        total_costs = self._compute_total_costs(raw_configs.affordances)
-        economic_balance = max_income / total_costs if total_costs > 0 else float("inf")
-
-        grid_size, grid_cells = self._derive_grid_dimensions(raw_configs.substrate)
-
-        config_hash = precomputed_config_hash or self._compute_config_hash(config_dir)
-        compiler_git_sha = self._get_git_sha()
-        python_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-        provenance_id = self._compute_provenance_id(
-            config_hash=config_hash,
-            compiler_version=COMPILER_VERSION,
-            git_sha=compiler_git_sha,
-            python_version=python_version,
-            torch_version=torch.__version__,
-            pydantic_version=pydantic_version,
-        )
-
-        # Compute config mtime for cache invalidation
-        config_mtime = self._compute_config_mtime(config_dir)
-
-        metadata = UniverseMetadata(
-            universe_name=config_dir.name,
-            schema_version=SCHEMA_VERSION,
-            substrate_type=self._label_substrate_type(raw_configs.substrate),
-            position_dim=self._infer_position_dim(raw_configs.substrate),
-            meter_count=len(sorted_bars),
-            meter_names=meter_names,
-            meter_name_to_index=meter_name_to_index,
-            affordance_count=len(affordance_ids),
-            affordance_ids=affordance_ids,
-            affordance_id_to_index=affordance_id_to_index,
-            action_count=action_count,
-            observation_dim=observation_spec.total_dims,
-            grid_size=grid_size,
-            grid_cells=grid_cells,
-            max_sustainable_income=max_income,
-            total_affordance_costs=total_costs,
-            economic_balance=economic_balance,
-            ticks_per_day=24,
-            config_version=self._resolve_config_version(raw_configs),
-            compiler_version=COMPILER_VERSION,
-            compiled_at=datetime.now(UTC).isoformat(),
-            config_hash=config_hash,
-            config_mtime=config_mtime,
-            provenance_id=provenance_id,
-            compiler_git_sha=compiler_git_sha,
-            python_version=python_version,
-            torch_version=torch.__version__,
-            pydantic_version=pydantic_version,
-        )
-
-        return metadata, observation_spec, tuple(vfs_fields)
+        raise RuntimeError("Legacy flat config pipeline removed; use v2.1 hierarchical configs.")
 
     def _stage_5_build_rich_metadata(
         self,
-        raw_configs: RawConfigs,
+        raw_configs: Any,
     ) -> tuple[ActionSpaceMetadata, MeterMetadata, AffordanceMetadata]:
         """Stage 5 – build training-facing metadata structures."""
 
-        actions_meta: list[ActionMetadata] = []
-        for action in raw_configs.global_actions.actions:
-            actions_meta.append(
-                ActionMetadata(
-                    id=action.id,
-                    name=action.name,
-                    type=action.type,
-                    enabled=action.enabled,
-                    source=getattr(action, "source", "custom"),
-                    costs=dict(action.costs),
-                    description=action.description or "",
-                )
-            )
-
-        action_space_metadata = ActionSpaceMetadata(
-            total_actions=len(actions_meta),
-            actions=tuple(actions_meta),
-        )
-
-        meter_infos = [
-            MeterInfo(
-                name=bar.name,
-                index=bar.index,
-                critical=getattr(bar, "critical", False),
-                initial_value=bar.initial,
-                observable=True,
-                description=bar.description or "",
-            )
-            for bar in sorted(raw_configs.bars, key=lambda bar: bar.index)
-        ]
-        meter_metadata = MeterMetadata(meters=tuple(meter_infos))
-
-        enabled_affordances = raw_configs.environment.enabled_affordances
-        enabled_set = set(enabled_affordances) if enabled_affordances else None
-
-        affordance_infos: list[AffordanceInfo] = []
-        for aff in raw_configs.affordances:
-            if enabled_set is None:
-                is_enabled = True
-            else:
-                is_enabled = aff.name in enabled_set or aff.id in enabled_set
-            affordance_infos.append(
-                AffordanceInfo(
-                    id=aff.id,
-                    name=aff.name,
-                    enabled=is_enabled,
-                    effects=self._summarize_affordance_effects(aff),
-                    cost=self._extract_money_cost(aff),
-                    category=getattr(aff, "category", None),
-                    description=aff.description or "",
-                    position=self._normalize_affordance_position_metadata(getattr(aff, "position", None)),
-                )
-            )
-
-        affordance_metadata = AffordanceMetadata(affordances=tuple(affordance_infos))
-
-        return action_space_metadata, meter_metadata, affordance_metadata
+        raise RuntimeError("Legacy flat config pipeline removed; use v2.1 hierarchical configs.")
 
     def _stage_6_optimize(
         self,
-        raw_configs: RawConfigs,
+        raw_configs: Any,
         metadata: UniverseMetadata,
         *,
         device: torch.device | None = None,
@@ -2076,28 +2722,6 @@ class UniverseCompiler:
             entries.sort(key=lambda entry: entry["target_idx"])
 
         modulation_data: list[dict[str, float]] = []
-        cascades_yaml = raw_configs.config_dir / "cascades.yaml"
-        try:
-            cascades_config = load_full_cascades_config(cascades_yaml)
-        except Exception:
-            cascades_config = None
-
-        if cascades_config:
-            for modulation in cascades_config.modulations:
-                source_idx = meter_lookup.get(modulation.source)
-                target_idx = meter_lookup.get(modulation.target)
-                if source_idx is None or target_idx is None:
-                    continue
-                modulation_data.append(
-                    {
-                        "source_idx": source_idx,
-                        "target_idx": target_idx,
-                        "base_multiplier": modulation.base_multiplier,
-                        "range": modulation.range,
-                        "baseline_depletion": modulation.baseline_depletion,
-                    }
-                )
-            modulation_data.sort(key=lambda entry: entry["target_idx"])
 
         affordance_count = metadata.affordance_count
         action_mask_table = torch.zeros((24, affordance_count), dtype=torch.bool, device=torch_device)
@@ -2122,77 +2746,6 @@ class UniverseCompiler:
             action_mask_table=action_mask_table,
             affordance_position_map=affordance_position_map,
         )
-
-    def _stage_7_emit_compiled_universe(
-        self,
-        *,
-        raw_configs: RawConfigs,
-        symbol_table: UniverseSymbolTable,
-        metadata: UniverseMetadata,
-        observation_spec: ObservationSpec,
-        vfs_observation_fields: tuple[VFSObservationField, ...],
-        action_space_metadata: ActionSpaceMetadata,
-        meter_metadata: MeterMetadata,
-        affordance_metadata: AffordanceMetadata,
-        optimization_data: OptimizationData,
-        environment_config: EnvironmentConfig,
-        dac_config: DriveAsCodeConfig,
-    ) -> CompiledUniverse:
-        """Stage 7 – produce immutable CompiledUniverse artifact."""
-
-        # Get all variables from symbol table (auto-generated + custom)
-        all_variables = list(symbol_table.variables.values())
-
-        # Build observation activity metadata for masking
-        # BUG-43 FIX: Use the original vfs_observation_fields which preserve curriculum_active
-        # instead of reconstructing them from observation_spec (which loses that information)
-        field_uuids = {field.name: field.uuid for field in observation_spec.fields if field.uuid is not None}
-        observation_activity = VFSAdapter.build_observation_activity(
-            observation_spec=list(vfs_observation_fields),
-            field_uuids=field_uuids,
-        )
-
-        # Compute drive_hash (Task 2.3)
-        drive_hash = self._compute_dac_hash(dac_config)
-
-        universe = CompiledUniverse(
-            hamlet_config=raw_configs.hamlet_config,
-            variables_reference=all_variables,
-            global_actions=raw_configs.global_actions,
-            config_dir=raw_configs.config_dir,
-            metadata=metadata,
-            observation_spec=observation_spec,
-            observation_activity=observation_activity,
-            vfs_observation_fields=vfs_observation_fields,
-            action_space_metadata=action_space_metadata,
-            meter_metadata=meter_metadata,
-            affordance_metadata=affordance_metadata,
-            optimization_data=optimization_data,
-            action_labels_config=raw_configs.action_labels,
-            environment_config=environment_config,
-            dac_config=dac_config,
-            drive_hash=drive_hash,
-        )
-
-        if not dataclasses.is_dataclass(universe):
-            raise CompilationError(
-                stage="Stage 7: Emit",
-                errors=["CompiledUniverse must be a dataclass"],
-                hints=["Ensure @dataclass decorator remains applied to CompiledUniverse"],
-            )
-
-        try:
-            setattr(cast(Any, universe), "metadata", metadata)
-        except dataclasses.FrozenInstanceError:
-            pass
-        else:
-            raise CompilationError(
-                stage="Stage 7: Emit",
-                errors=["CompiledUniverse must be frozen (immutable)"],
-                hints=["Annotate CompiledUniverse with @dataclass(frozen=True)"],
-            )
-
-        return universe
 
     def _derive_grid_dimensions(self, substrate: SubstrateConfig) -> tuple[int | None, int | None]:
         """Calculate grid dimensions for metadata.
@@ -2247,9 +2800,6 @@ class UniverseCompiler:
             return len(substrate.continuous.bounds)
         return 0
 
-    def _resolve_config_version(self, raw_configs: RawConfigs) -> str:
-        return getattr(raw_configs.hamlet_config, "version", "1.0")
-
     def _auto_generate_standard_exposures(self, symbol_table: UniverseSymbolTable) -> list[dict[str, Any]]:
         """Auto-generate standard observation exposures for all system variables.
 
@@ -2286,15 +2836,10 @@ class UniverseCompiler:
 
         return exposures
 
-    def _load_observation_exposures(self, raw_configs: RawConfigs, symbol_table: UniverseSymbolTable) -> list[dict[str, Any]]:
-        """Auto-generate observation exposures for ALL variables in symbol table.
+    def _load_observation_exposures(self, raw_configs: Any, symbol_table: UniverseSymbolTable) -> list[dict[str, Any]]:
+        """Legacy observation exposure generator."""
+        raise RuntimeError("Legacy flat config pipeline removed; use v2.1 hierarchical configs.")
 
-        Design principle: All variables (standard + custom) are automatically observable.
-        The exposed_observations field in variables_reference.yaml is deprecated/ignored.
-
-        BUG-43 FIX: Instead of filtering out grid_encoding or local_window, we keep BOTH
-        and mark them with curriculum_active to enable transfer learning across full/partial obs.
-        """
         # Auto-generate exposures for ALL variables (standard system + custom computed)
         exposures = self._auto_generate_standard_exposures(symbol_table)
 
@@ -2406,7 +2951,13 @@ class UniverseCompiler:
             raise RuntimeError(f"Cache directory {cache_dir} is not writable")
 
     def _compute_config_hash(self, config_dir: Path) -> str:
+        # Include root YAML files and any hierarchical level YAMLs.
         yaml_files = sorted(config_dir.glob("*.yaml"))
+
+        levels_dir = config_dir / "levels"
+        if levels_dir.exists():
+            yaml_files.extend(sorted(levels_dir.rglob("*.yaml")))
+
         yaml_files.append(Path("configs") / "global_actions.yaml")
 
         digest = hashlib.sha256()
@@ -2426,6 +2977,11 @@ class UniverseCompiler:
         config file changes (including comment/whitespace-only changes).
         """
         yaml_files = sorted(config_dir.glob("*.yaml"))
+
+        levels_dir = config_dir / "levels"
+        if levels_dir.exists():
+            yaml_files.extend(sorted(levels_dir.rglob("*.yaml")))
+
         yaml_files.append(Path("configs") / "global_actions.yaml")
 
         max_mtime = 0.0
@@ -2490,7 +3046,7 @@ class UniverseCompiler:
                 if meter and amount is not None:
                     totals[meter] += amount
 
-        pipeline = affordance.effect_pipeline
+        pipeline = getattr(affordance, "effect_pipeline", None)
         if pipeline is not None:
             _add_entries(pipeline.on_start)
             _add_entries(pipeline.per_tick)

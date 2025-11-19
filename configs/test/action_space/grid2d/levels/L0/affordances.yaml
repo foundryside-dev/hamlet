@@ -1,0 +1,26 @@
+affordances:
+  version: "1.0"
+  affordances:
+    - name: Bed
+      interaction_type: instant
+      costs:
+        energy: 0.0
+      effects:
+        energy: 0.5
+      opening_hours:
+        enabled: false
+      deployment:
+        type: fixed
+        positions: [[1, 1]]
+    - name: Job
+      interaction_type: instant
+      costs: {}
+      effects:
+        money: 0.1
+        energy: -0.1
+      opening_hours:
+        enabled: false
+      deployment:
+        type: fixed
+        positions: [[2, 2]]
+  modulations: []

@@ -19,15 +19,10 @@ Teaching Value:
 Status: Ready for integration with vectorized_env.py
 """
 
-from pathlib import Path
 from typing import Any
 
 import torch
 
-from townlet.environment.affordance_config import (
-    AffordanceConfigCollection,
-    load_affordance_config,
-)
 from townlet.environment.temporal_utils import is_affordance_open as canonical_is_affordance_open
 
 
@@ -41,16 +36,17 @@ class AffordanceEngine:
 
     def __init__(
         self,
-        affordance_config: AffordanceConfigCollection | tuple[Any, ...],
+        affordance_config: tuple[Any, ...],
         num_agents: int,
         device: torch.device,
         meter_name_to_idx: dict[str, int],
+        modulation_rules: list[dict[str, Any]] | None = None,
     ):
         """
         Initialize AffordanceEngine.
 
         Args:
-            affordance_config: Tuple of affordances from compiled universe or legacy AffordanceConfigCollection
+            affordance_config: Tuple of affordances from compiled universe (v2.1 runtime form)
             num_agents: Number of agents in parallel
             device: torch.device for GPU/CPU
             meter_name_to_idx: Mapping of meter names to indices (from bars_config)
@@ -58,14 +54,10 @@ class AffordanceEngine:
         self.num_agents = num_agents
         self.device = device
 
-        # Modern compiler output: tuple of AffordanceConfig objects
-        if isinstance(affordance_config, tuple):
-            self.affordances = affordance_config
-        else:
-            # Legacy loader: AffordanceConfigCollection with .affordances list
-            self.affordances = tuple(affordance_config.affordances)
+        self.affordances = affordance_config
 
         self.meter_name_to_idx = meter_name_to_idx
+        self.modulation_rules = modulation_rules or []
 
         # Build lookup maps
         self._build_lookup_maps()
@@ -81,14 +73,19 @@ class AffordanceEngine:
         This makes the config the single source of truth.
         """
         # Map affordance name to index (order from config file)
-        # This is now dynamically built from the config - no hardcoding!
-        self.affordance_name_to_idx = {aff.name: idx for idx, aff in enumerate(self.affordances)}
+        self.affordance_name_to_idx: dict[str, int] = {}
+        self.affordance_map_by_id: dict[str, Any] = {}
+        self.affordance_map: dict[str, Any] = {}
 
-        # Map affordance ID to config object
-        self.affordance_map_by_id = {aff.id: aff for aff in self.affordances}
-
-        # Map affordance NAME to config object (for apply_instant_interaction calls)
-        self.affordance_map = {aff.name: aff for aff in self.affordances}
+        for idx, aff in enumerate(self.affordances):
+            name = getattr(aff, "name", None)
+            if not name:
+                continue
+            self.affordance_name_to_idx[name] = idx
+            # Prefer explicit id when available; otherwise fall back to name.
+            aff_id = getattr(aff, "id", name)
+            self.affordance_map_by_id[aff_id] = aff
+            self.affordance_map[name] = aff
 
     def get_affordance(self, affordance_id: str):
         """Get affordance config by ID."""
@@ -112,7 +109,25 @@ class AffordanceEngine:
         if affordance is None:
             return False
 
-        return canonical_is_affordance_open(time_of_day, affordance.operating_hours)
+        # Runtime affordances are expected to expose canonical operating_hours
+        # as a two-element [open_hour, close_hour] list. No implicit defaults
+        # or legacy fallbacks are allowed at this layer.
+        if not hasattr(affordance, "operating_hours"):
+            raise ValueError(
+                f"Affordance '{affordance_name}' missing operating_hours (no defaults allowed). "
+                "Runtime affordances must provide [open_hour, close_hour] explicitly."
+            )
+
+        operating_hours = getattr(affordance, "operating_hours")
+        try:
+            open_hour, close_hour = operating_hours
+        except Exception as exc:  # pragma: no cover - defensive
+            raise ValueError(
+                f"Affordance '{affordance_name}' has invalid operating_hours; expected [open_hour, close_hour], "
+                f"got: {operating_hours!r}."
+            ) from exc
+
+        return canonical_is_affordance_open(time_of_day, (open_hour, close_hour))
 
     def apply_instant_interaction(
         self,
@@ -153,8 +168,10 @@ class AffordanceEngine:
 
         # Apply costs (modern dict format)
         for cost in affordance.costs:
-            meter_idx = self.meter_name_to_idx[cost["meter"]]
-            updated_meters[agent_mask, meter_idx] -= cost["amount"]
+            meter_name, amount = self._cost_fields(cost)
+            meter_idx = self.meter_name_to_idx[meter_name]
+            multiplier = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
+            updated_meters[agent_mask, meter_idx] -= amount * multiplier[agent_mask]
 
         # Apply effects from effect_pipeline (modern schema only)
         if hasattr(affordance, "effect_pipeline") and affordance.effect_pipeline:
@@ -168,24 +185,62 @@ class AffordanceEngine:
                 on_completion = getattr(affordance.effect_pipeline, "on_completion", [])
 
                 # Apply per_tick effects × duration
+                multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
                 for effect in per_tick:
                     meter_idx = self.meter_name_to_idx[effect.meter]
-                    updated_meters[agent_mask, meter_idx] += effect.amount * duration
+                    updated_meters[agent_mask, meter_idx] += effect.amount * duration * multipliers[agent_mask]
 
                 # Apply completion bonus
                 for effect in on_completion:
                     meter_idx = self.meter_name_to_idx[effect.meter]
-                    updated_meters[agent_mask, meter_idx] += effect.amount
+                    multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
+                    updated_meters[agent_mask, meter_idx] += effect.amount * multipliers[agent_mask]
             else:
                 # Apply on_start effects (instant-mode affordances)
+                multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
                 for effect in on_start:
                     meter_idx = self.meter_name_to_idx[effect.meter]
-                    updated_meters[agent_mask, meter_idx] += effect.amount
+                    updated_meters[agent_mask, meter_idx] += effect.amount * multipliers[agent_mask]
+        elif hasattr(affordance, "effects"):
+            # v2.1 schema: effects is a dict[str, float]
+            multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
+            for meter, amount in getattr(affordance, "effects", {}).items():
+                if meter not in self.meter_name_to_idx:
+                    continue
+                meter_idx = self.meter_name_to_idx[meter]
+                updated_meters[agent_mask, meter_idx] += float(amount) * multipliers[agent_mask]
 
         # Clamp meters to [0, 1]
         updated_meters = torch.clamp(updated_meters, 0.0, 1.0)
 
         return updated_meters
+
+    def _compute_affordance_multiplier(self, affordance_name: str, meters: torch.Tensor, agent_mask: torch.Tensor) -> torch.Tensor:
+        """Compute modulation multiplier for a given affordance based on bar values."""
+        multiplier = torch.ones(meters.shape[0], device=meters.device, dtype=meters.dtype)
+        for rule in self.modulation_rules:
+            if rule.get("affordance") != affordance_name:
+                continue
+            bar_idx = rule.get("bar_idx")
+            threshold = rule.get("threshold")
+            min_multiplier = rule.get("min_multiplier")
+            if bar_idx is None or threshold is None or min_multiplier is None:
+                continue
+            val = meters[:, bar_idx]
+            factor = torch.ones_like(val)
+            below = val < threshold
+            if below.any():
+                factor = torch.where(
+                    below,
+                    min_multiplier + (1.0 - min_multiplier) * (val / threshold),
+                    torch.ones_like(val),
+                )
+            multiplier = multiplier * factor
+        # Zero out masked agents to avoid applying to inactive ones
+        masked = ~agent_mask
+        if masked.any():
+            multiplier[masked] = 0.0
+        return multiplier
 
     def apply_multi_tick_interaction(
         self,
@@ -227,16 +282,26 @@ class AffordanceEngine:
             agent_mask = agent_mask & can_afford
 
         # Apply per-tick costs (modern dict format)
+        multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
         for cost in affordance.costs_per_tick:
-            meter_idx = self.meter_name_to_idx[cost["meter"]]
-            updated_meters[agent_mask, meter_idx] -= cost["amount"]
+            meter_name, amount = self._cost_fields(cost)
+            meter_idx = self.meter_name_to_idx[meter_name]
+            updated_meters[agent_mask, meter_idx] -= amount * multipliers[agent_mask]
 
         # Apply per-tick effects from effect_pipeline (modern schema: AffordanceEffect objects)
         if hasattr(affordance, "effect_pipeline") and affordance.effect_pipeline:
             per_tick_effects = getattr(affordance.effect_pipeline, "per_tick", [])
+            multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
             for effect in per_tick_effects:
                 meter_idx = self.meter_name_to_idx[effect.meter]
-                updated_meters[agent_mask, meter_idx] += effect.amount
+                updated_meters[agent_mask, meter_idx] += effect.amount * multipliers[agent_mask]
+        elif hasattr(affordance, "effects_per_tick"):
+            multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
+            for meter, amount in getattr(affordance, "effects_per_tick", {}).items():
+                if meter not in self.meter_name_to_idx:
+                    continue
+                meter_idx = self.meter_name_to_idx[meter]
+                updated_meters[agent_mask, meter_idx] += float(amount) * multipliers[agent_mask]
 
         duration_ticks = affordance.duration_ticks or 1
 
@@ -244,9 +309,10 @@ class AffordanceEngine:
         is_final_tick = current_tick == (duration_ticks - 1)
         if is_final_tick and hasattr(affordance, "effect_pipeline") and affordance.effect_pipeline:
             on_completion = getattr(affordance.effect_pipeline, "on_completion", [])
+            multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
             for effect in on_completion:
                 meter_idx = self.meter_name_to_idx[effect.meter]
-                updated_meters[agent_mask, meter_idx] += effect.amount
+                updated_meters[agent_mask, meter_idx] += effect.amount * multipliers[agent_mask]
 
         # Clamp meters to [0, 1]
         updated_meters = torch.clamp(updated_meters, 0.0, 1.0)
@@ -268,8 +334,9 @@ class AffordanceEngine:
         can_afford = torch.ones(batch_size, dtype=torch.bool, device=self.device)
 
         for cost in costs:
-            meter_idx = self.meter_name_to_idx[cost["meter"]]
-            can_afford = can_afford & (meters[:, meter_idx] >= cost["amount"])
+            meter, amount = self._cost_fields(cost)
+            meter_idx = self.meter_name_to_idx[meter]
+            can_afford = can_afford & (meters[:, meter_idx] >= amount)
 
         return can_afford
 
@@ -370,8 +437,9 @@ class AffordanceEngine:
 
         # Find money cost (most affordances only have money cost)
         for cost in costs:
-            if cost["meter"] == "money":
-                return float(cost["amount"])
+            meter, amount = self._cost_fields(cost)
+            if meter == "money":
+                return float(amount)
 
         return 0.0
 
@@ -463,39 +531,21 @@ class AffordanceEngine:
 
         # Apply costs (modern dict format)
         for cost in affordance.costs:
-            meter_idx = self.meter_name_to_idx[cost["meter"]]
-            result_meters[agent_mask, meter_idx] -= cost["amount"]
+            meter_name, amount = self._cost_fields(cost)
+            meter_idx = self.meter_name_to_idx[meter_name]
+            result_meters[agent_mask, meter_idx] -= amount
 
         return result_meters
 
-
-def create_affordance_engine(
-    config_pack_path: Path | None = None,
-    num_agents: int = 1,
-    device: torch.device = torch.device("cpu"),
-) -> AffordanceEngine:
-    """
-    Convenience function to create AffordanceEngine from config pack.
-
-    Args:
-        config_pack_path: Path to config directory containing bars.yaml and affordances.yaml
-                         (default: configs/test/)
-        num_agents: Number of agents
-        device: torch device
-
-    Returns:
-        Initialized AffordanceEngine
-    """
-    from townlet.environment.cascade_config import load_bars_config
-
-    if config_pack_path is None:
-        config_pack_path = Path("configs/test")
-
-    bars_config = load_bars_config(config_pack_path / "bars.yaml")
-    affordance_config = load_affordance_config(config_pack_path / "affordances.yaml", bars_config)
-    return AffordanceEngine(
-        affordance_config,
-        num_agents,
-        device,
-        bars_config.meter_name_to_index,
-    )
+    @staticmethod
+    def _cost_fields(cost) -> tuple[str, float]:
+        """Extract (meter, amount) from dict-style or DTO-style cost entries."""
+        if hasattr(cost, "meter"):
+            return cost.meter, float(cost.amount)
+        if isinstance(cost, dict):
+            if "meter" in cost:
+                return cost["meter"], float(cost["amount"])
+            if cost:
+                meter, amount = next(iter(cost.items()))
+                return meter, float(amount)
+        raise ValueError(f"Unsupported cost format: {cost!r}")

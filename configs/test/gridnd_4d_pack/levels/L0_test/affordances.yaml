@@ -1,0 +1,51 @@
+affordances:
+  version: "1.0"
+  affordances:
+    - name: EAT
+      interaction_type: instant
+      costs:
+        money: 1.0
+      effects:
+        energy: 0.1
+        health: 0.05
+      opening_hours:
+        enabled: false
+      deployment:
+        type: fixed
+        positions: [[0, 0, 0, 0]]
+
+    - name: SLEEP
+      interaction_type: instant
+      costs: {}
+      effects:
+        energy: 0.5
+        health: 0.1
+      opening_hours:
+        enabled: false
+      deployment:
+        type: fixed
+        positions: [[1, 0, 0, 0]]
+
+    - name: WORK
+      interaction_type: instant
+      costs:
+        energy: 0.05
+      effects:
+        money: 0.25
+      opening_hours:
+        enabled: false
+      deployment:
+        type: fixed
+        positions: [[0, 1, 0, 0]]
+
+    - name: Bed
+      interaction_type: instant
+      costs: {}
+      effects:
+        energy: 0.1
+      opening_hours:
+        enabled: false
+      deployment:
+        type: fixed
+        positions: [[0, 0, 0, 0]]
+  modulations: []

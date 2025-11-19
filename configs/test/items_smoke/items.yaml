@@ -1,0 +1,47 @@
+# Items Smoke Test - Item Catalog (Experiment-Level)
+# Single item type for minimal testing
+
+version: "1.0"
+
+item_types:
+  - id: test_item
+    name: "Test Item"
+    icon: "🔹"
+    tags: ["test", "consumable"]
+
+    # VFS profiles this item uses (references vfs_profiles.yaml)
+    vfs_profiles:
+      - item_durability
+      - item_uses_remaining
+
+    # Interaction effects (Phase 1: stored as opaque dicts, validated in Phase 3)
+    interactions:
+      # Pickup effect (triggered by GET action)
+      pickup:
+        bars: []
+        agent_vfs: []
+        item_vfs: []
+
+      # Use effect (triggered by USE_SLOT_N action)
+      use:
+        bars:
+          - name: energy
+            delta: 0.2  # Using item restores 20% energy
+        item_vfs:
+          - name: item_uses_remaining
+            delta: -1.0  # Decrement uses
+          - name: item_durability
+            delta: -0.1  # Slight durability loss
+        # Note: Item consumed when uses_remaining reaches 0 (Phase 3 logic)
+
+      # Drop effect (triggered by DROP_SLOT_N action)
+      drop:
+        bars: []
+        agent_vfs: []
+        item_vfs: []
+
+# Expected behavior:
+# - Agent can pickup test_item (adds to inventory slot)
+# - Agent can use test_item (restores energy, decrements uses/durability)
+# - Agent can drop test_item (returns to world)
+# - Item despawns after 3 uses or when durability = 0

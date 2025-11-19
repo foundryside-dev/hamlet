@@ -52,16 +52,17 @@ class VectorizedPopulation(PopulationManager):
         agent_ids: list[str],
         device: torch.device,
         brain_config: BrainConfig,
-        obs_dim: int = 70,
+        obs_dim: int,
+        train_frequency: int,
+        batch_size: int,
+        sequence_length: int,
+        max_grad_norm: float,
         action_dim: int | None = None,
         vision_window_size: int = 5,
         tb_logger=None,
-        train_frequency: int = 4,
-        batch_size: int | None = None,
-        sequence_length: int = 8,
-        max_grad_norm: float = 10.0,
         max_episodes: int | None = None,
         max_steps_per_episode: int | None = None,
+        observation_spec=None,
     ):
         """
         Initialize vectorized population.
@@ -79,10 +80,10 @@ class VectorizedPopulation(PopulationManager):
                 See docs/config-schemas/brain.md for schema.
             vision_window_size: Size of local vision window for recurrent networks (5 for 5×5)
             tb_logger: Optional TensorBoard logger
-            train_frequency: Train Q-network every N steps (default: 4)
-            batch_size: Batch size for experience replay (default: 64 for feedforward, 16 for recurrent)
-            sequence_length: Length of sequences for LSTM training (default: 8, recurrent only)
-            max_grad_norm: Gradient clipping threshold (default: 10.0)
+            train_frequency: Train Q-network every N steps (required; typically from training.yaml)
+            batch_size: Batch size for experience replay (required; typically from training.yaml replay_buffer.batch_size)
+            sequence_length: Length of sequences for LSTM training (required for recurrent agents)
+            max_grad_norm: Gradient clipping threshold (required; typically from training.yaml)
             max_episodes: Maximum training episodes (for PER beta annealing)
             max_steps_per_episode: Maximum steps per episode (for PER beta annealing)
         """
@@ -110,9 +111,10 @@ class VectorizedPopulation(PopulationManager):
         self.use_double_dqn = brain_config.q_learning.use_double_dqn
         target_update_frequency = brain_config.q_learning.target_update_frequency
 
-        # Default action_dim to env.action_dim if not specified (TASK-002B Phase 4.1)
         if action_dim is None:
-            action_dim = env.action_dim
+            raise ValueError(
+                "action_dim is required and must be sourced from compiler metadata; " "no fallback to env defaults is allowed."
+            )
         self.action_dim = action_dim
 
         # Agent runtime metrics (telemetry + reward baseline source of truth)
@@ -149,6 +151,7 @@ class VectorizedPopulation(PopulationManager):
                 position_dim=env.substrate.position_dim,
                 num_meters=env.meter_count,
                 num_affordance_types=env.num_affordance_types,
+                observation_spec=getattr(env, "observation_spec", None) if observation_spec is None else observation_spec,
             ).to(device)
         elif brain_config.architecture.type == "dueling":
             assert brain_config.architecture.dueling is not None, "dueling config must be present"
@@ -186,6 +189,7 @@ class VectorizedPopulation(PopulationManager):
                 position_dim=env.substrate.position_dim,
                 num_meters=env.meter_count,
                 num_affordance_types=env.num_affordance_types,
+                observation_spec=getattr(env, "observation_spec", None) if observation_spec is None else observation_spec,
             ).to(device)
         elif brain_config.architecture.type == "dueling":
             assert brain_config.architecture.dueling is not None
@@ -205,6 +209,14 @@ class VectorizedPopulation(PopulationManager):
         self.target_update_frequency = target_update_frequency
         self.training_step_counter = 0
 
+        # Propagate temporal mechanics flag from environment to recurrent networks.
+        if self.is_recurrent and hasattr(env, "enable_temporal_mechanics"):
+            temporal_enabled = bool(getattr(env, "enable_temporal_mechanics"))
+            if hasattr(self.q_network, "enable_temporal_features"):
+                self.q_network.enable_temporal_features = temporal_enabled  # type: ignore[assignment]
+            if hasattr(self.target_network, "enable_temporal_features"):
+                self.target_network.enable_temporal_features = temporal_enabled  # type: ignore[assignment]
+
         # Optimizer and scheduler from brain_config
         self.optimizer, self.scheduler = OptimizerFactory.build(
             config=brain_config.optimizer,
@@ -215,7 +227,12 @@ class VectorizedPopulation(PopulationManager):
         self.loss_fn = LossFactory.build(config=brain_config.loss)
         # Store loss config for PER path (needs functional API with reduction='none')
         self.loss_type = brain_config.loss.type
-        self.loss_delta = brain_config.loss.huber_delta if brain_config.loss.type == "huber" else 1.0
+        # Set delta for huber loss (Pydantic validates not None when type="huber")
+        if brain_config.loss.type == "huber":
+            assert brain_config.loss.huber_delta is not None
+            self.loss_delta: float = brain_config.loss.huber_delta
+        else:
+            self.loss_delta = 1.0
 
         # Replay buffer (dual system: sequential for recurrent, standard/PER for feedforward)
         # TASK-005 Phase 3: Support PrioritizedReplayBuffer
@@ -246,6 +263,10 @@ class VectorizedPopulation(PopulationManager):
             # Feedforward networks support both standard and prioritized replay
             if self.use_per:
                 # TASK-005 Phase 3: Instantiate PrioritizedReplayBuffer
+                # Pydantic validator ensures PER params not None when prioritized=True
+                assert brain_config.replay.priority_alpha is not None
+                assert brain_config.replay.priority_beta is not None
+                assert brain_config.replay.priority_beta_annealing is not None
                 self.replay_buffer = PrioritizedReplayBuffer(
                     capacity=replay_capacity,
                     alpha=brain_config.replay.priority_alpha,
@@ -261,11 +282,7 @@ class VectorizedPopulation(PopulationManager):
         self.train_frequency = train_frequency
         self.sequence_length = sequence_length
         self.max_grad_norm = max_grad_norm
-        # Default batch_size based on network type if not specified
-        if batch_size is None:
-            self.batch_size = 16 if self.is_recurrent else 64
-        else:
-            self.batch_size = batch_size
+        self.batch_size = batch_size
 
         # Episode step counters (reset on done)
         self.episode_step_counts = torch.zeros(self.num_agents, dtype=torch.long, device=device)
@@ -720,13 +737,14 @@ class VectorizedPopulation(PopulationManager):
                         q_pred_all,
                         q_target_all,
                         reduction="none",
-                        delta=self.brain_config.loss.huber_delta,
+                        delta=self.loss_delta,  # Already set in __init__ with proper type
                     )
                 elif self.brain_config is not None and self.brain_config.loss.type == "smooth_l1":
                     losses = F.smooth_l1_loss(q_pred_all, q_target_all, reduction="none")
-                else:
-                    # MSE or legacy (no brain_config)
+                elif self.brain_config is not None and self.brain_config.loss.type == "mse":
                     losses = F.mse_loss(q_pred_all, q_target_all, reduction="none")
+                else:
+                    raise ValueError("Unsupported loss configuration; brain_config.loss.type must be one of {'huber','smooth_l1','mse'}.")
                 mask = batch["mask"].float()  # [batch, seq_len] - True for valid timesteps
                 masked_loss = (losses * mask).sum() / mask.sum().clamp_min(1)
                 loss: torch.Tensor = masked_loss

@@ -10,13 +10,15 @@ from tests.test_townlet.utils.builders import make_vectorized_env_from_pack
 def test_l0_and_l1_have_same_action_dim():
     """L0 and L1 should have same action_dim (enables checkpoint transfer)."""
     env_l0 = make_vectorized_env_from_pack(
-        Path("configs/L0_0_minimal"),
+        Path("configs/default_curriculum"),
+        level_name="L0_0_minimal",
         num_agents=1,
         device=torch.device("cpu"),
     )
 
     env_l1 = make_vectorized_env_from_pack(
-        Path("configs/L1_full_observability"),
+        Path("configs/default_curriculum"),
+        level_name="L1_full_observability",
         num_agents=1,
         device=torch.device("cpu"),
     )
@@ -30,13 +32,15 @@ def test_l0_and_l1_have_same_action_dim():
 def test_l0_and_l1_share_global_vocabulary():
     """L0 and L1 should share same action vocabulary (from global_actions.yaml)."""
     env_l0 = make_vectorized_env_from_pack(
-        Path("configs/L0_0_minimal"),
+        Path("configs/default_curriculum"),
+        level_name="L0_0_minimal",
         num_agents=1,
         device=torch.device("cpu"),
     )
 
     env_l1 = make_vectorized_env_from_pack(
-        Path("configs/L1_full_observability"),
+        Path("configs/default_curriculum"),
+        level_name="L1_full_observability",
         num_agents=1,
         device=torch.device("cpu"),
     )

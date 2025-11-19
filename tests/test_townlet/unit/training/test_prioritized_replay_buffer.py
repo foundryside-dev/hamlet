@@ -12,6 +12,7 @@ def test_prioritized_replay_buffer_push():
         capacity=100,
         alpha=0.6,
         beta=0.4,
+        beta_annealing=False,
         device=torch.device("cpu"),
     )
 
@@ -34,6 +35,7 @@ def test_prioritized_replay_buffer_sample():
         capacity=100,
         alpha=0.6,
         beta=0.4,
+        beta_annealing=False,
         device=torch.device("cpu"),
     )
 
@@ -64,6 +66,7 @@ def test_prioritized_replay_buffer_update_priorities():
         capacity=100,
         alpha=0.6,
         beta=0.4,
+        beta_annealing=False,
         device=torch.device("cpu"),
     )
 
@@ -114,6 +117,7 @@ def test_prioritized_replay_buffer_len():
         capacity=100,
         alpha=0.6,
         beta=0.4,
+        beta_annealing=False,
         device=torch.device("cpu"),
     )
 
@@ -158,6 +162,7 @@ def test_prioritized_replay_buffer_serialize():
         capacity=50,
         alpha=0.7,
         beta=0.5,
+        beta_annealing=False,
         device=torch.device("cpu"),
     )
     new_buffer.load_from_serialized(state)
@@ -178,6 +183,7 @@ def test_prioritized_replay_buffer_device_placement():
         capacity=100,
         alpha=0.6,
         beta=0.4,
+        beta_annealing=False,
         device=device,
     )
 
@@ -226,6 +232,7 @@ def test_prioritized_replay_buffer_wraparound_indexing():
         capacity=10,
         alpha=0.6,
         beta=0.4,
+        beta_annealing=False,
         device=torch.device("cpu"),
     )
 
@@ -264,6 +271,7 @@ def test_prioritized_replay_buffer_sample_size_guard():
         capacity=100,
         alpha=0.6,
         beta=0.4,
+        beta_annealing=False,
         device=torch.device("cpu"),
     )
 
@@ -294,6 +302,7 @@ class TestPrioritizedReplayBufferClearAPI:
             capacity=50,
             alpha=0.6,
             beta=0.4,
+            beta_annealing=False,
             device=torch.device("cpu"),
         )
 
@@ -321,6 +330,7 @@ class TestPrioritizedReplayBufferClearAPI:
             capacity=50,
             alpha=0.6,
             beta=0.4,
+            beta_annealing=False,
             device=torch.device("cpu"),
         )
 
@@ -350,6 +360,7 @@ class TestPrioritizedReplayBufferClearAPI:
             capacity=50,
             alpha=0.6,
             beta=0.4,
+            beta_annealing=False,
             device=torch.device("cpu"),
         )
 
@@ -383,6 +394,7 @@ class TestPrioritizedReplayBufferClearAPI:
             capacity=50,
             alpha=0.6,
             beta=0.4,
+            beta_annealing=False,
             device=torch.device("cpu"),
         )
 
@@ -411,6 +423,7 @@ class TestPrioritizedReplayBufferClearAPI:
             capacity=50,
             alpha=0.6,
             beta=0.4,
+            beta_annealing=False,
             device=torch.device("cpu"),
         )
 
@@ -448,6 +461,7 @@ class TestPrioritizedReplayBufferStatsAPI:
             capacity=100,
             alpha=0.6,
             beta=0.4,
+            beta_annealing=False,
             device=torch.device("cpu"),
         )
 
@@ -465,6 +479,7 @@ class TestPrioritizedReplayBufferStatsAPI:
             capacity=100,
             alpha=0.6,
             beta=0.4,
+            beta_annealing=False,
             device=torch.device("cpu"),
         )
 
@@ -491,6 +506,7 @@ class TestPrioritizedReplayBufferStatsAPI:
             capacity=10,
             alpha=0.6,
             beta=0.4,
+            beta_annealing=False,
             device=torch.device("cpu"),
         )
 
@@ -515,6 +531,7 @@ class TestPrioritizedReplayBufferStatsAPI:
             capacity=10,
             alpha=0.6,
             beta=0.4,
+            beta_annealing=False,
             device=torch.device("cpu"),
         )
 
@@ -553,6 +570,7 @@ class TestPrioritizedReplayBufferStatsAPI:
             capacity=10,
             alpha=0.6,
             beta=0.4,
+            beta_annealing=False,
             device=torch.device("cuda"),
         )
 
@@ -574,6 +592,7 @@ class TestPrioritizedReplayBufferStatsAPI:
             capacity=50,
             alpha=0.6,
             beta=0.4,
+            beta_annealing=False,
             device=torch.device("cpu"),
         )
 

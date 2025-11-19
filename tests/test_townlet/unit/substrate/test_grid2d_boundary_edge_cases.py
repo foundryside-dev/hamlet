@@ -308,6 +308,7 @@ class TestGrid2DDistanceMetricEdgeCases:
             height=8,
             boundary="clamp",
             distance_metric="manhattan",
+            enable_diagonals=False,
         )
 
         # Multiple agent positions

@@ -2,9 +2,9 @@
 
 import torch
 
+from townlet.config.stratum_config import SubstrateConfig
 from townlet.substrate.aspatial import AspatialSubstrate
 from townlet.substrate.base import SpatialSubstrate
-from townlet.substrate.config import SubstrateConfig
 from townlet.substrate.continuous import Continuous1DSubstrate, Continuous2DSubstrate, Continuous3DSubstrate
 from townlet.substrate.continuousnd import ContinuousNDSubstrate
 from townlet.substrate.grid2d import Grid2DSubstrate
@@ -53,7 +53,8 @@ class SubstrateFactory:
                     boundary=config.grid.boundary,
                     distance_metric=config.grid.distance_metric,
                     observation_encoding=config.grid.observation_encoding,  # NEW: Phase 5C
-                    topology=config.grid.topology,  # NEW: Pass topology from config
+                    topology=config.grid.topology,
+                    enable_diagonals=config.grid.diagonals,
                 )
             elif config.grid.topology == "cubic":
                 if config.grid.depth is None:
@@ -65,7 +66,8 @@ class SubstrateFactory:
                     boundary=config.grid.boundary,
                     distance_metric=config.grid.distance_metric,
                     observation_encoding=config.grid.observation_encoding,  # NEW: Phase 5C
-                    topology=config.grid.topology,  # NEW: Pass topology from config
+                    topology=config.grid.topology,
+                    enable_diagonals=config.grid.diagonals,
                 )
             else:
                 raise ValueError(f"Unknown grid topology: {config.grid.topology}")
@@ -83,7 +85,7 @@ class SubstrateFactory:
                     interaction_radius=config.continuous.interaction_radius,
                     distance_metric=config.continuous.distance_metric,
                     observation_encoding=config.continuous.observation_encoding,  # NEW: Phase 5C
-                    action_discretization=config.continuous.action_discretization,  # NEW: Discretized actions
+                    action_discretization=config.continuous.action_discretization.model_dump(),  # NEW: Discretized actions
                 )
 
             elif config.continuous.dimensions == 2:
@@ -98,7 +100,7 @@ class SubstrateFactory:
                     interaction_radius=config.continuous.interaction_radius,
                     distance_metric=config.continuous.distance_metric,
                     observation_encoding=config.continuous.observation_encoding,  # NEW: Phase 5C
-                    action_discretization=config.continuous.action_discretization,  # NEW: Discretized actions
+                    action_discretization=config.continuous.action_discretization.model_dump(),  # NEW: Discretized actions
                 )
 
             elif config.continuous.dimensions == 3:
@@ -115,7 +117,7 @@ class SubstrateFactory:
                     interaction_radius=config.continuous.interaction_radius,
                     distance_metric=config.continuous.distance_metric,
                     observation_encoding=config.continuous.observation_encoding,  # NEW: Phase 5C
-                    action_discretization=config.continuous.action_discretization,  # NEW: Discretized actions
+                    action_discretization=config.continuous.action_discretization.model_dump(),  # NEW: Discretized actions
                 )
             else:
                 raise ValueError(f"Unsupported continuous dimensions: {config.continuous.dimensions}")
@@ -144,8 +146,6 @@ class SubstrateFactory:
             )
 
         elif config.type == "aspatial":
-            assert config.aspatial is not None  # Validated by pydantic
-
             return AspatialSubstrate()
 
         else:

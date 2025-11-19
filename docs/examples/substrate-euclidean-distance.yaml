@@ -7,9 +7,10 @@
 #   - Diagonal positions are CLOSER than manhattan distance
 #   - Proximity calculations more realistic (as the crow flies)
 #   - May not match movement mechanics (if only 4-directional movement)
+#
+# v2.1 Format: This file shows the substrate portion only.
+# In a complete config pack, this would be nested in substrate.yaml under the top-level "substrate:" key.
 
-version: "1.0"
-description: "8×8 grid with Euclidean distance (diagonal-aware proximity)"
 type: "grid"
 
 grid:
@@ -19,3 +20,4 @@ grid:
   boundary: "clamp"
   distance_metric: "euclidean"  # ← Different! L2 norm instead of L1
   observation_encoding: "relative"
+  diagonals: true

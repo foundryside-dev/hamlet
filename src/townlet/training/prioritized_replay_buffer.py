@@ -20,10 +20,10 @@ class PrioritizedReplayBuffer:
     def __init__(
         self,
         capacity: int,
-        alpha: float = 0.6,
-        beta: float = 0.4,
-        beta_annealing: bool = True,
-        device: torch.device | None = None,
+        alpha: float,
+        beta: float,
+        beta_annealing: bool,
+        device: torch.device,
     ):
         """Initialize prioritized replay buffer.
 
@@ -38,7 +38,7 @@ class PrioritizedReplayBuffer:
         self.alpha = alpha
         self.beta = beta
         self.beta_annealing = beta_annealing
-        self.device = device if device else torch.device("cpu")
+        self.device = device
 
         # Storage tensors (initialized on first push)
         self.observations: torch.Tensor | None = None

@@ -1,0 +1,47 @@
+training:
+  version: "1.0"
+  population:
+    size: 1
+  enabled_affordances:
+    - Bed
+  randomize_affordances: false
+  enabled_actions: null
+  q_learning:
+    use_double_dqn: true
+    gamma: 0.99
+    learning_rate: 0.0005
+    target_update_frequency: 100
+  replay_buffer:
+    capacity: 100
+    batch_size: 8
+    min_size: 8
+  exploration:
+    epsilon_start: 1.0
+    epsilon_end: 0.1
+    epsilon_decay: 0.95
+  intrinsic:
+    rnd:
+      feature_dim: 8
+      learning_rate: 0.0005
+    annealing:
+      threshold: 10.0
+      decay_rate: 0.99
+      min_weight: 0.01
+    initial_weight: 0.0
+    min_survival_fraction: 0.3
+    survival_window: 5
+  training_loop:
+    max_episodes: 5
+    max_steps_per_episode: 10
+    train_frequency: 1
+    sequence_length: 2
+    max_grad_norm: 5.0
+    evaluation:
+      interval: 5
+      num_episodes: 1
+    checkpointing:
+      interval: 5
+      keep_last: 1
+  curriculum:
+    strategy: static
+    adversarial: null

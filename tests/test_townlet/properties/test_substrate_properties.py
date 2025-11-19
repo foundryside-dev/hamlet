@@ -160,15 +160,16 @@ def test_property_obs_dim_matches_substrate_grid2d(grid_size, num_agents, test_c
         temp_pack = Path(tmpdir) / "pack"
         shutil.copytree(test_config_pack_path, temp_pack)
 
-        # Update substrate.yaml with grid_size
-        substrate_path = temp_pack / "substrate.yaml"
-        substrate_data = yaml.safe_load(substrate_path.read_text())
-        substrate_data["grid"]["width"] = grid_size
-        substrate_data["grid"]["height"] = grid_size
-        substrate_path.write_text(yaml.safe_dump(substrate_data, sort_keys=False))
+        # Update stratum.yaml substrate grid size (v2.1 pack embeds substrate in stratum)
+        stratum_path = temp_pack / "stratum.yaml"
+        stratum_data = yaml.safe_load(stratum_path.read_text())
+        stratum_grid = stratum_data["stratum"]["substrate"]["grid"]
+        stratum_grid["width"] = grid_size
+        stratum_grid["height"] = grid_size
+        stratum_path.write_text(yaml.safe_dump(stratum_data, sort_keys=False))
 
         # Update training.yaml with vision_range
-        training_path = temp_pack / "training.yaml"
+        training_path = temp_pack / "levels" / "L0_test" / "training.yaml"
         training_data = yaml.safe_load(training_path.read_text())
         training_env = training_data.setdefault("environment", {})
         training_env["vision_range"] = grid_size
@@ -191,6 +192,7 @@ def test_property_obs_dim_matches_substrate_grid2d(grid_size, num_agents, test_c
 
         env = make_vectorized_env_from_pack(
             temp_pack,
+            level_name="L0_test",
             num_agents=num_agents,
             device=cpu_device,
         )

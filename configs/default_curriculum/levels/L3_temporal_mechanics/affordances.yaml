@@ -1,0 +1,213 @@
+affordances:
+  version: "1.0"
+
+  affordances:
+    - name: EAT
+
+      interaction_type: instant
+
+      costs:
+        energy: 0.05
+        money: 5.0
+
+      effects:
+        satiation: 0.4
+        mood: 0.05
+
+      opening_hours:
+        enabled: true
+        schedule:
+          - start: 6
+            end: 22
+
+      deployment:
+        type: fixed
+        positions: [[2, 2], [5, 5]]
+
+    - name: SLEEP
+      interaction_type: instant
+      costs:
+        energy: 0.0
+      effects:
+        energy: 0.8
+        mood: 0.1
+      opening_hours:
+        enabled: false
+      deployment:
+        type: fixed
+        positions: [[0, 0], [7, 7]]
+
+    - name: WORK
+      interaction_type: instant
+      costs:
+        energy: 0.3
+        mood: 0.1
+      effects:
+        money: 22.5
+      opening_hours:
+        enabled: true
+        schedule:
+          - start: 9
+            end: 17
+      deployment:
+        type: fixed
+        positions: [[4, 4]]
+
+    - name: SHOWER
+      interaction_type: instant
+      costs:
+        energy: 0.05
+        money: 1.0
+      effects:
+        hygiene: 0.5
+        mood: 0.1
+      opening_hours:
+        enabled: false
+      deployment:
+        type: fixed
+        positions: [[1, 1]]
+
+    - name: EXERCISE
+      interaction_type: instant
+      costs:
+        energy: 0.2
+        satiation: 0.1
+      effects:
+        fitness: 0.15
+        mood: 0.05
+      opening_hours:
+        enabled: false
+      deployment:
+        type: fixed
+        positions: [[6, 6]]
+
+    - name: SOCIALIZE
+      interaction_type: instant
+      costs:
+        energy: 0.1
+      effects:
+        social: 0.3
+        mood: 0.15
+      opening_hours:
+        enabled: false
+      deployment:
+        type: fixed
+        positions: [[3, 3]]
+
+    - name: MEDITATE
+      interaction_type: instant
+      costs:
+        energy: 0.05
+      effects:
+        mood: 0.2
+      opening_hours:
+        enabled: false
+      deployment:
+        type: fixed
+        positions: [[2, 6]]
+
+    - name: DRINK_WATER
+      interaction_type: instant
+      costs:
+        energy: 0.01
+      effects:
+        satiation: 0.1
+      opening_hours:
+        enabled: false
+      deployment:
+        type: fixed
+        positions: [[2, 2]]
+
+    - name: BRUSH_TEETH
+      interaction_type: instant
+      costs:
+        energy: 0.02
+      effects:
+        hygiene: 0.1
+      opening_hours:
+        enabled: false
+      deployment:
+        type: fixed
+        positions: [[1, 1]]
+
+    - name: LAUNDRY
+      interaction_type: instant
+      costs:
+        energy: 0.1
+        money: 2.0
+      effects:
+        hygiene: 0.2
+      opening_hours:
+        enabled: false
+      deployment:
+        type: fixed
+        positions: [[5, 1]]
+
+    - name: COOK
+      interaction_type: instant
+      costs:
+        energy: 0.15
+        money: 3.0
+      effects:
+        satiation: 0.5
+        mood: 0.1
+      opening_hours:
+        enabled: false
+      deployment:
+        type: fixed
+        positions: [[2, 2]]
+
+    - name: CLEAN_HOUSE
+      interaction_type: instant
+      costs:
+        energy: 0.15
+      effects:
+        hygiene: 0.25
+        mood: 0.05
+      opening_hours:
+        enabled: false
+      deployment:
+        type: fixed
+        positions: [[4, 2]]
+
+    - name: ENTERTAINMENT
+      interaction_type: instant
+      costs:
+        energy: 0.05
+        money: 5.0
+      effects:
+        mood: 0.25
+      opening_hours:
+        enabled: false
+      deployment:
+        type: fixed
+        positions: [[6, 2]]
+
+    - name: DOCTOR
+      interaction_type: instant
+      costs:
+        energy: 0.1
+        money: 20.0
+      effects:
+        health: 0.4
+      opening_hours:
+        enabled: true
+        schedule:
+          - start: 8
+            end: 18
+      deployment:
+        type: fixed
+        positions: [[7, 4]]
+
+  modulations:
+    - bar: energy
+      affordances: [WORK]
+      type: linear_multiplier
+      threshold: 0.3
+      min_multiplier: 0.5
+
+    - bar: mood
+      affordances: [SOCIALIZE, WORK]
+      type: linear_multiplier
+      threshold: 0.4
+      min_multiplier: 0.7

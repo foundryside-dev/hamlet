@@ -1,8 +1,8 @@
-"""Immutable CompiledUniverse artifact."""
+"""Immutable CompiledUniverse artifact with multi-level support (v2.1)."""
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 from copy import deepcopy
 from dataclasses import dataclass, fields, is_dataclass
 from pathlib import Path
@@ -11,11 +11,15 @@ from typing import Any
 import msgpack  # type: ignore[import]
 import torch
 
-from townlet.config import HamletConfig
-from townlet.config.drive_as_code import DriveAsCodeConfig
-from townlet.environment.action_config import ActionSpaceConfig
-from townlet.environment.cascade_config import EnvironmentConfig
-from townlet.substrate.config import ActionLabelConfig
+from townlet.config.actions_config import ActionsConfig
+from townlet.config.affordances_v2_config import AffordancesV2Config
+from townlet.config.agent_config import AgentConfig
+from townlet.config.bars_v2_config import BarsV2Config
+from townlet.config.curriculum_config import CurriculumConfig
+from townlet.config.environment_config import EnvironmentConfig
+from townlet.config.experiment_config import ExperimentConfig
+from townlet.config.stratum_config import StratumConfig
+from townlet.config.training_v2_config import TrainingV2Config
 from townlet.universe.dto import (
     ActionMetadata,
     ActionSpaceMetadata,
@@ -29,190 +33,112 @@ from townlet.universe.dto import (
     UniverseMetadata,
 )
 from townlet.universe.optimization import OptimizationData
-from townlet.universe.runtime import RuntimeUniverse
 from townlet.vfs.schema import ObservationField as VfsObservationField
 from townlet.vfs.schema import VariableDef
 
 
 @dataclass(frozen=True)
 class CompiledUniverse:
-    """Complete, immutable representation of a compiled universe."""
+    """Compiled universe representation with multi-level support."""
 
-    hamlet_config: HamletConfig
-    variables_reference: Sequence[VariableDef]
-    global_actions: ActionSpaceConfig
-    config_dir: Path
+    # Primary (per-primary-level) metadata
     metadata: UniverseMetadata
     observation_spec: ObservationSpec
     observation_activity: ObservationActivity
     vfs_observation_fields: tuple[VfsObservationField, ...]
+    vfs_variables: tuple[VariableDef, ...]
     action_space_metadata: ActionSpaceMetadata
     meter_metadata: MeterMetadata
     affordance_metadata: AffordanceMetadata
     optimization_data: OptimizationData
-    environment_config: EnvironmentConfig
-    dac_config: DriveAsCodeConfig  # REQUIRED (no default)
-    drive_hash: str  # REQUIRED (no default)
-    action_labels_config: ActionLabelConfig | None = None
+
+    # Shared experiment-level configs (v2.1)
+    experiment: ExperimentConfig
+    stratum: StratumConfig
+    environment: EnvironmentConfig
+    actions: ActionsConfig
+    agent: AgentConfig
+
+    # Provenance
+    experiment_dir: Path | None = None
+    drive_hash: str | None = None
+
+    # Multi-level support
+    all_levels: dict[str, CompiledUniverse.LevelMetadata] | None = None
+
+    @dataclass(frozen=True)
+    class LevelMetadata:
+        """Per-level metadata for multi-level compilation."""
+
+        level_name: str
+        bars: BarsV2Config
+        affordances: AffordancesV2Config
+        curriculum: CurriculumConfig
+        training: TrainingV2Config
+        observation_spec: ObservationSpec
+        observation_activity: ObservationActivity
+        action_metadata: ActionSpaceMetadata
+        meter_metadata: MeterMetadata
+        affordance_metadata: AffordanceMetadata
+        optimization_data: OptimizationData
+        vfs_observation_fields: tuple[VfsObservationField, ...]
+        vfs_variables: tuple[VariableDef, ...]
 
     def __post_init__(self) -> None:
-        object.__setattr__(self, "variables_reference", tuple(self.variables_reference))
-        object.__setattr__(self, "config_dir", Path(self.config_dir))
         object.__setattr__(self, "vfs_observation_fields", tuple(self.vfs_observation_fields))
-        if self.metadata.meter_count != len(self.hamlet_config.bars):
+        if self.all_levels is not None and len(self.all_levels) == 0:
+            raise ValueError("all_levels must be None or a non-empty dict of LevelMetadata")
+
+    @property
+    def available_levels(self) -> list[str]:
+        if self.all_levels is None:
+            return []
+        return sorted(self.all_levels.keys())
+
+    def get_level(self, level_name: str) -> CompiledUniverse.LevelMetadata:
+        if self.all_levels is None:
             raise ValueError(
-                f"Metadata meter_count does not match bars length. {self.metadata.meter_count} vs {len(self.hamlet_config.bars)}"
+                "This CompiledUniverse was not compiled with multi-level support. "
+                "Compile with primary_level and ensure all_levels is populated."
             )
-        if self.metadata.affordance_count != len(self.hamlet_config.affordances):
-            raise ValueError(
-                "Metadata affordance_count does not match affordances length. "
-                f"{self.metadata.affordance_count} vs {len(self.hamlet_config.affordances)}"
-            )
+        if level_name not in self.all_levels:
+            raise ValueError(f"Level '{level_name}' not found. Available: {list(self.all_levels.keys())}")
+        return self.all_levels[level_name]
 
-    # Convenience properties -------------------------------------------------
-
-    @property
-    def substrate(self):
-        return self.hamlet_config.substrate
-
-    @property
-    def bars(self):
-        return self.hamlet_config.bars
-
-    @property
-    def cascades(self):
-        return self.hamlet_config.cascades
-
-    @property
-    def affordances(self):
-        return self.hamlet_config.affordances
-
-    @property
-    def cues(self):
-        return self.hamlet_config.cues
-
-    @property
-    def training(self):
-        return self.hamlet_config.training
-
-    # Runtime helpers -------------------------------------------------------
-
-    def create_environment(self, num_agents: int, device: str = "cpu"):
-        """Instantiate a VectorizedHamletEnv using this compiled universe.
-
-        Note: Import is deferred to avoid circular dependency:
-        - compiled.py imports environment.vectorized_env
-        - vectorized_env.py imports universe.compiled
-        This lazy import breaks the cycle by deferring the environment import
-        until runtime (when CompiledUniverse is already defined).
-        """
-        from townlet.environment.vectorized_env import VectorizedHamletEnv
-
-        return VectorizedHamletEnv(
-            universe=self,
-            num_agents=num_agents,
-            device=device,
+    def clone(self) -> CompiledUniverse:
+        """Clone the compiled universe."""
+        return CompiledUniverse(
+            metadata=deepcopy(self.metadata),
+            observation_spec=deepcopy(self.observation_spec),
+            observation_activity=deepcopy(self.observation_activity),
+            vfs_observation_fields=tuple(deepcopy(self.vfs_observation_fields)),
+            vfs_variables=tuple(deepcopy(self.vfs_variables)),
+            action_space_metadata=deepcopy(self.action_space_metadata),
+            meter_metadata=deepcopy(self.meter_metadata),
+            affordance_metadata=deepcopy(self.affordance_metadata),
+            optimization_data=deepcopy(self.optimization_data),
+            experiment=deepcopy(self.experiment),
+            stratum=deepcopy(self.stratum),
+            environment=deepcopy(self.environment),
+            actions=deepcopy(self.actions),
+            agent=deepcopy(self.agent),
+            experiment_dir=self.experiment_dir,
+            drive_hash=self.drive_hash,
+            all_levels=deepcopy(self.all_levels),
         )
 
-    # Checkpoint compatibility -----------------------------------------------
-
-    def check_checkpoint_compatibility(self, checkpoint: dict) -> tuple[bool, str]:
-        """Validate whether a checkpoint can be used with this compiled universe."""
-
-        checkpoint_hash = checkpoint.get("config_hash")
-        if checkpoint_hash is None:
-            return (
-                False,
-                "Checkpoint missing config_hash; retraining recommended.",
-            )
-        if checkpoint_hash != self.metadata.config_hash:
-            return (
-                False,
-                "Config hash mismatch between checkpoint and compiled universe.",
-            )
-
-        checkpoint_obs_dim = checkpoint.get("observation_dim")
-        if checkpoint_obs_dim is not None and checkpoint_obs_dim != self.metadata.observation_dim:
-            return (
-                False,
-                "Observation dimension mismatch between checkpoint and compiled universe.",
-            )
-
-        checkpoint_action_dim = checkpoint.get("action_dim")
-        if checkpoint_action_dim is not None and checkpoint_action_dim != self.metadata.action_count:
-            return (
-                False,
-                "Action dimension mismatch between checkpoint and compiled universe.",
-            )
-
-        expected_uuids = [field.uuid for field in self.observation_spec.fields]
-        checkpoint_field_uuids = checkpoint.get("observation_field_uuids")
-        if checkpoint_field_uuids is None:
-            return (
-                False,
-                "Checkpoint missing observation_field_uuids; regenerate with updated compiler to ensure field alignment.",
-            )
-        if list(checkpoint_field_uuids) != expected_uuids:
-            return (
-                False,
-                "Observation field UUID mismatch between checkpoint and compiled universe.",
-            )
-
-        # Check drive_hash (reward function provenance) - now always required
-        checkpoint_drive_hash = checkpoint.get("drive_hash")
-        if checkpoint_drive_hash is None:
-            return (
-                False,
-                "Checkpoint missing drive_hash. This checkpoint predates DAC and cannot be used. Please retrain.",
-            )
-        if checkpoint_drive_hash != self.drive_hash:
-            return (
-                False,
-                "Drive hash mismatch: reward function has changed since checkpoint was created. "
-                "This checkpoint was trained with a different DAC configuration and cannot be used. "
-                "Please retrain with the current drive_as_code.yaml.",
-            )
-
-        return True, "Checkpoint compatible."
-
-    def to_runtime(self) -> RuntimeUniverse:
-        """Create a runtime-facing DTO for environment and training systems."""
-
-        return RuntimeUniverse(
-            _hamlet_config=deepcopy(self.hamlet_config),
-            _global_actions=deepcopy(self.global_actions),
-            variables_reference=tuple(deepcopy(var) for var in self.variables_reference),
-            config_dir=self.config_dir,
-            metadata=self.metadata,
-            observation_spec=self.observation_spec,
-            observation_activity=self.observation_activity,
-            vfs_observation_fields=self.vfs_observation_fields,
-            action_space_metadata=self.action_space_metadata,
-            meter_metadata=self.meter_metadata,
-            affordance_metadata=self.affordance_metadata,
-            optimization_data=self.optimization_data,
-            action_labels_config=deepcopy(self.action_labels_config) if self.action_labels_config else None,
-            _environment_config=deepcopy(self.environment_config),
-        )
-
-    # Serialization -----------------------------------------------------------
-
-    def save_to_cache(self, path: Path) -> None:
-        """Serialize compiled universe to MessagePack file."""
-
-        data = {
-            "hamlet_config": self.hamlet_config.model_dump(),
-            "variables_reference": [var.model_dump() for var in self.variables_reference],
-            "global_actions": self.global_actions.model_dump(),
-            "config_dir": str(self.config_dir),
+    def to_dict(self) -> dict[str, Any]:
+        """Convert to a serialization-friendly dictionary."""
+        return {
             "metadata": _dataclass_to_plain(self.metadata),
             "observation_spec": _dataclass_to_plain(self.observation_spec),
             "observation_activity": _dataclass_to_plain(self.observation_activity),
             "vfs_observation_fields": [field.model_dump() for field in self.vfs_observation_fields],
+            "vfs_variables": [var.model_dump() for var in getattr(self, "vfs_variables", ())],
             "action_space_metadata": _dataclass_to_plain(self.action_space_metadata),
             "meter_metadata": _dataclass_to_plain(self.meter_metadata),
             "affordance_metadata": _dataclass_to_plain(self.affordance_metadata),
-            "optimization_data": {
+            "optimization_data_raw": {
                 "base_depletions": self.optimization_data.base_depletions.cpu().tolist(),
                 "cascade_data": self.optimization_data.cascade_data,
                 "modulation_data": self.optimization_data.modulation_data,
@@ -223,76 +149,180 @@ class CompiledUniverse:
                 ),
                 "affordance_position_map": _serialize_affordance_positions(self.optimization_data.affordance_position_map),
             },
-            "action_labels_config": (self.action_labels_config.model_dump() if self.action_labels_config is not None else None),
-            "environment_config": self.environment_config.model_dump(),
-            "dac_config": self.dac_config.model_dump(),
+            "experiment": self.experiment.model_dump(),
+            "stratum": self.stratum.model_dump(),
+            "environment": self.environment.model_dump(),
+            "actions": self.actions.model_dump(),
+            "agent": self.agent.model_dump(),
+            "experiment_dir": None if self.experiment_dir is None else str(self.experiment_dir),
             "drive_hash": self.drive_hash,
+            "all_levels": (
+                None
+                if self.all_levels is None
+                else {
+                    name: {
+                        "level_name": meta.level_name,
+                        "bars": meta.bars.model_dump(),
+                        "affordances": meta.affordances.model_dump(),
+                        "curriculum": meta.curriculum.model_dump(),
+                        "training": meta.training.model_dump(),
+                        "observation_spec": _dataclass_to_plain(meta.observation_spec),
+                        "observation_activity": _dataclass_to_plain(meta.observation_activity),
+                        "action_metadata": _dataclass_to_plain(meta.action_metadata),
+                        "meter_metadata": _dataclass_to_plain(meta.meter_metadata),
+                        "affordance_metadata": _dataclass_to_plain(meta.affordance_metadata),
+                        "optimization_data_raw": {
+                            "base_depletions": meta.optimization_data.base_depletions.cpu().tolist(),
+                            "cascade_data": meta.optimization_data.cascade_data,
+                            "modulation_data": meta.optimization_data.modulation_data,
+                            "action_mask_table": (
+                                meta.optimization_data.action_mask_table.cpu().tolist()
+                                if meta.optimization_data.action_mask_table is not None
+                                else None
+                            ),
+                            "affordance_position_map": _serialize_affordance_positions(meta.optimization_data.affordance_position_map),
+                        },
+                        "vfs_observation_fields": [field.model_dump() for field in meta.vfs_observation_fields],
+                        "vfs_variables": [var.model_dump() for var in meta.vfs_variables],
+                    }
+                    for name, meta in self.all_levels.items()
+                }
+            ),
         }
 
+    @classmethod
+    def from_dict(cls, payload: Mapping[str, Any]) -> CompiledUniverse:
+        """Create CompiledUniverse from a dictionary produced by to_dict/save_to_cache."""
+        opt_payload = payload.get("optimization_data_raw", {})
+        action_mask = opt_payload.get("action_mask_table")
+        if action_mask is None:
+            action_mask_tensor = torch.zeros((24, 0), dtype=torch.bool)
+        else:
+            action_mask_tensor = torch.tensor(action_mask, dtype=torch.bool)
+
+        affordance_position_map = _deserialize_affordance_positions(opt_payload.get("affordance_position_map", {}))
+
+        all_levels = None
+        raw_levels = payload.get("all_levels")
+        if raw_levels is not None:
+            all_levels = {}
+            for name, meta in raw_levels.items():
+                level_opt_payload = meta.get("optimization_data_raw", {})
+                level_action_mask = level_opt_payload.get("action_mask_table")
+                level_mask_tensor = (
+                    torch.tensor(level_action_mask, dtype=torch.bool) if level_action_mask is not None else torch.zeros((24, 0))
+                )
+                level_affordance_position_map = _deserialize_affordance_positions(level_opt_payload.get("affordance_position_map", {}))
+                all_levels[name] = CompiledUniverse.LevelMetadata(
+                    level_name=meta["level_name"],
+                    bars=BarsV2Config.model_validate(meta["bars"]),
+                    affordances=AffordancesV2Config.model_validate(meta["affordances"]),
+                    curriculum=CurriculumConfig.model_validate(meta["curriculum"]),
+                    training=TrainingV2Config.model_validate(meta["training"]),
+                    observation_spec=_observation_spec_from_plain(meta["observation_spec"]),
+                    observation_activity=_observation_activity_from_plain(meta.get("observation_activity", {})),
+                    action_metadata=_action_space_metadata_from_plain(meta["action_metadata"]),
+                    meter_metadata=_meter_metadata_from_plain(meta["meter_metadata"]),
+                    affordance_metadata=_affordance_metadata_from_plain(meta["affordance_metadata"]),
+                    optimization_data=OptimizationData(
+                        base_depletions=torch.tensor(level_opt_payload.get("base_depletions", []), dtype=torch.float32),
+                        cascade_data=level_opt_payload.get("cascade_data", {}),
+                        modulation_data=level_opt_payload.get("modulation_data", []),
+                        action_mask_table=level_mask_tensor,
+                        affordance_position_map=level_affordance_position_map,
+                    ),
+                    vfs_observation_fields=tuple(VfsObservationField(**field) for field in meta.get("vfs_observation_fields", [])),
+                    vfs_variables=tuple(VariableDef(**var) for var in meta.get("vfs_variables", [])),
+                )
+
+        return CompiledUniverse(
+            metadata=UniverseMetadata(**payload["metadata"]),
+            observation_spec=_observation_spec_from_plain(payload["observation_spec"]),
+            observation_activity=_observation_activity_from_plain(payload.get("observation_activity", {})),
+            vfs_observation_fields=tuple(VfsObservationField(**field) for field in payload.get("vfs_observation_fields", [])),
+            vfs_variables=tuple(VariableDef(**var) for var in payload.get("vfs_variables", [])),
+            action_space_metadata=_action_space_metadata_from_plain(payload["action_space_metadata"]),
+            meter_metadata=_meter_metadata_from_plain(payload["meter_metadata"]),
+            affordance_metadata=_affordance_metadata_from_plain(payload["affordance_metadata"]),
+            optimization_data=OptimizationData(
+                base_depletions=torch.tensor(opt_payload.get("base_depletions", []), dtype=torch.float32),
+                cascade_data=opt_payload.get("cascade_data"),
+                modulation_data=opt_payload.get("modulation_data"),
+                action_mask_table=action_mask_tensor,
+                affordance_position_map=affordance_position_map,
+            ),
+            experiment=ExperimentConfig.model_validate(payload["experiment"]),
+            stratum=StratumConfig.model_validate(payload["stratum"]),
+            environment=EnvironmentConfig.model_validate(payload["environment"]),
+            actions=ActionsConfig.model_validate(payload["actions"]),
+            agent=AgentConfig.model_validate(payload["agent"]),
+            experiment_dir=None if payload.get("experiment_dir") is None else Path(payload["experiment_dir"]),
+            drive_hash=payload.get("drive_hash"),
+            all_levels=all_levels,
+        )
+
+    def save_to_cache(self, path: Path) -> None:
+        """Serialize compiled universe to MessagePack file."""
+        data = self.to_dict()
         packed = msgpack.packb(data, use_bin_type=True)
         path.write_bytes(packed)
 
     @classmethod
     def load_from_cache(cls, path: Path) -> CompiledUniverse:
-        """Deserialize a compiled universe from MessagePack."""
-
+        """Deserialize a compiled universe from MessagePack file."""
         payload = msgpack.unpackb(path.read_bytes(), raw=False)
+        return cls.from_dict(payload)
 
-        optimization_payload = payload["optimization_data"]
-        action_mask = optimization_payload.get("action_mask_table")
-        if action_mask is None:
-            action_mask_tensor = torch.zeros((24, 0), dtype=torch.bool)
-        else:
-            action_mask_tensor = torch.tensor(action_mask, dtype=torch.bool)
-        activity_payload = payload.get("observation_activity")
-        if activity_payload:
-            observation_activity = ObservationActivity(
-                active_mask=tuple(activity_payload["active_mask"]),
-                group_slices={k: slice(v[0], v[1]) for k, v in activity_payload["group_slices"].items()},
-                active_field_uuids=tuple(activity_payload["active_field_uuids"]),
-            )
-        else:
-            # Backward compatibility: Create empty activity if not present
-            observation_activity = ObservationActivity(
-                active_mask=(),
-                group_slices={},
-                active_field_uuids=(),
-            )
+    # Runtime adapters -----------------------------------------------------
 
-        return cls(
-            hamlet_config=HamletConfig.model_validate(payload["hamlet_config"]),
-            variables_reference=[VariableDef.model_validate(var) for var in payload["variables_reference"]],
-            global_actions=ActionSpaceConfig.model_validate(payload["global_actions"]),
-            config_dir=Path(payload["config_dir"]),
-            metadata=UniverseMetadata(**payload["metadata"]),
-            observation_spec=ObservationSpec(
-                total_dims=payload["observation_spec"]["total_dims"],
-                encoding_version=payload["observation_spec"]["encoding_version"],
-                fields=tuple(ObservationField(**field) for field in payload["observation_spec"]["fields"]),
-            ),
-            observation_activity=observation_activity,
-            vfs_observation_fields=tuple(VfsObservationField(**field) for field in payload.get("vfs_observation_fields", [])),
-            action_space_metadata=ActionSpaceMetadata(
-                total_actions=payload["action_space_metadata"]["total_actions"],
-                actions=tuple(ActionMetadata(**entry) for entry in payload["action_space_metadata"]["actions"]),
-            ),
-            meter_metadata=MeterMetadata(meters=tuple(MeterInfo(**entry) for entry in payload["meter_metadata"]["meters"])),
-            affordance_metadata=AffordanceMetadata(
-                affordances=tuple(AffordanceInfo(**entry) for entry in payload["affordance_metadata"]["affordances"])
-            ),
-            optimization_data=OptimizationData(
-                base_depletions=torch.tensor(optimization_payload["base_depletions"], dtype=torch.float32),
-                cascade_data=optimization_payload["cascade_data"],
-                modulation_data=optimization_payload["modulation_data"],
-                action_mask_table=action_mask_tensor,
-                affordance_position_map=_deserialize_affordance_positions(optimization_payload["affordance_position_map"]),
-            ),
-            action_labels_config=(
-                ActionLabelConfig(**payload["action_labels_config"]) if payload.get("action_labels_config") is not None else None
-            ),
-            environment_config=EnvironmentConfig(**payload["environment_config"]),
-            dac_config=DriveAsCodeConfig.model_validate(payload["dac_config"]),
-            drive_hash=payload["drive_hash"],
+    def to_level(self, level_name: str) -> CompiledUniverse.LevelMetadata:
+        """Return per-level metadata (raises if missing)."""
+        return self.get_level(level_name)
+
+    def as_single_level(self, level_name: str) -> dict[str, Any]:
+        """Return a dict of shared + level-specific configs for callers expecting a flat bundle."""
+        level = self.get_level(level_name)
+        return {
+            "experiment": self.experiment,
+            "stratum": self.stratum,
+            "environment": self.environment,
+            "actions": self.actions,
+            "agent": self.agent,
+            "curriculum": level.curriculum,
+            "bars": level.bars,
+            "affordances": level.affordances,
+            "training": level.training,
+        }
+
+    # === Runtime adapters ===
+
+    def create_environment(
+        self,
+        *,
+        num_agents: int,
+        level_name: str,
+        device: str | torch.device,
+    ):
+        """Instantiate a VectorizedHamletEnv from this compiled universe.
+
+        Args:
+            num_agents: Number of parallel agents to simulate.
+            level_name: Curriculum level name to instantiate. Must be provided
+                explicitly; no default level selection is performed.
+            device: PyTorch device or device string (e.g., \"cpu\", \"cuda\"). Required.
+
+        Returns:
+            VectorizedHamletEnv instance
+        """
+
+        # Lazy import to avoid circular dependency at module import time.
+        from townlet.environment.vectorized_env import VectorizedHamletEnv
+
+        return VectorizedHamletEnv.from_universe(
+            self,
+            level_name=level_name,
+            num_agents=num_agents,
+            device=device,
         )
 
 
@@ -304,7 +334,6 @@ def _dataclass_to_plain(obj: Any) -> Any:
     if isinstance(obj, list | tuple):
         return [_dataclass_to_plain(value) for value in obj]
     if isinstance(obj, slice):
-        # Convert slice to tuple for serialization (step is usually None for our slices)
         return [obj.start, obj.stop]
     return obj
 
@@ -327,3 +356,36 @@ def _deserialize_affordance_positions(payload: dict[str, Any]) -> dict[str, torc
         else:
             restored[key] = torch.tensor(value)
     return restored
+
+
+def _observation_spec_from_plain(payload: Mapping[str, Any]) -> ObservationSpec:
+    return ObservationSpec(
+        total_dims=payload["total_dims"],
+        encoding_version=payload["encoding_version"],
+        fields=tuple(ObservationField(**field) for field in payload["fields"]),
+    )
+
+
+def _observation_activity_from_plain(payload: Mapping[str, Any]) -> ObservationActivity:
+    if not payload:
+        return ObservationActivity(active_mask=(), group_slices={}, active_field_uuids=())
+    return ObservationActivity(
+        active_mask=tuple(payload.get("active_mask", ())),
+        group_slices={k: slice(v[0], v[1]) for k, v in payload.get("group_slices", {}).items()},
+        active_field_uuids=tuple(payload.get("active_field_uuids", ())),
+    )
+
+
+def _action_space_metadata_from_plain(payload: Mapping[str, Any]) -> ActionSpaceMetadata:
+    return ActionSpaceMetadata(
+        total_actions=payload["total_actions"],
+        actions=tuple(ActionMetadata(**entry) for entry in payload.get("actions", [])),
+    )
+
+
+def _meter_metadata_from_plain(payload: Mapping[str, Any]) -> MeterMetadata:
+    return MeterMetadata(meters=tuple(MeterInfo(**entry) for entry in payload.get("meters", [])))
+
+
+def _affordance_metadata_from_plain(payload: Mapping[str, Any]) -> AffordanceMetadata:
+    return AffordanceMetadata(affordances=tuple(AffordanceInfo(**entry) for entry in payload.get("affordances", [])))

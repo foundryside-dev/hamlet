@@ -46,10 +46,15 @@ def mock_config_path() -> Path:
 
 @pytest.fixture(scope="session")
 def test_config_pack_path() -> Path:
-    """Path to the lightweight test configuration pack (configs/test)."""
+    """Path to the canonical v2.1 test config pack.
+
+    This points at configs/test/model_config, which is a stable,
+    minimally-sized experiment pack kept in sync with the v2.1
+    configuration schema for tests.
+    """
 
     repo_root = Path(__file__).parent.parent.parent.parent
-    return repo_root / "configs" / "test"
+    return repo_root / "configs" / "test" / "model_config"
 
 
 @pytest.fixture
@@ -104,7 +109,9 @@ def compile_universe() -> Callable[[Path | str], CompiledUniverse]:
         if cache_key is not None and cache_key in cache:
             return cache[cache_key]
 
-        compiled = compiler.compile(target_path)
+        # Disable on-disk cache to ensure tests see the latest
+        # compiler semantics; rely on this in-memory cache instead.
+        compiled = compiler.compile(target_path, use_cache=False)
         if cache_key is not None:
             cache[cache_key] = compiled
         return compiled

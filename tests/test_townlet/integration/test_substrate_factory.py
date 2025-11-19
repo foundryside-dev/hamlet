@@ -2,24 +2,23 @@
 
 import torch
 
-from townlet.substrate.config import SubstrateConfig
+from townlet.config.stratum_config import GridConfig, SubstrateConfig
 from townlet.substrate.factory import SubstrateFactory
 
 
 def test_factory_passes_observation_encoding_to_grid2d():
     """Test factory passes observation_encoding to Grid2D substrate."""
     config = SubstrateConfig(
-        version="1.0",
-        description="Test",
         type="grid",
-        grid={
-            "topology": "square",
-            "width": 8,
-            "height": 8,
-            "boundary": "clamp",
-            "distance_metric": "manhattan",
-            "observation_encoding": "scaled",  # Non-default
-        },
+        grid=GridConfig(
+            topology="square",
+            width=8,
+            height=8,
+            boundary="clamp",
+            distance_metric="manhattan",
+            observation_encoding="scaled",  # Non-default
+            diagonals=True,
+        ),
     )
     substrate = SubstrateFactory.build(config, device=torch.device("cpu"))
     assert substrate.observation_encoding == "scaled"
@@ -28,8 +27,6 @@ def test_factory_passes_observation_encoding_to_grid2d():
 def test_factory_passes_observation_encoding_to_continuous():
     """Test factory passes observation_encoding to Continuous substrate."""
     config = SubstrateConfig(
-        version="1.0",
-        description="Test",
         type="continuous",
         continuous={
             "dimensions": 2,
@@ -39,6 +36,7 @@ def test_factory_passes_observation_encoding_to_continuous():
             "interaction_radius": 1.0,
             "distance_metric": "euclidean",
             "observation_encoding": "absolute",  # Non-default
+            "action_discretization": {"num_directions": 8, "num_magnitudes": 3},
         },
     )
     substrate = SubstrateFactory.build(config, device=torch.device("cpu"))

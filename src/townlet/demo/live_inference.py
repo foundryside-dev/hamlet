@@ -6,6 +6,7 @@ Provides step-by-step visualization at human-watchable speed.
 
 import asyncio
 import logging
+import math
 from pathlib import Path
 from typing import Any
 
@@ -13,8 +14,9 @@ import torch
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
-from townlet.agent.brain_config import compute_brain_hash, load_brain_config
+from townlet.agent.brain_config import compute_brain_hash
 from townlet.curriculum.adversarial import AdversarialCurriculum
+from townlet.curriculum.factory import build_curriculum
 from townlet.demo.database import DemoDatabase
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
@@ -27,7 +29,6 @@ from townlet.substrate.gridnd import GridNDSubstrate
 from townlet.training.checkpoint_utils import safe_torch_load, verify_checkpoint_digest
 from townlet.universe.compiled import CompiledUniverse
 from townlet.universe.compiler import UniverseCompiler
-from townlet.universe.runtime import RuntimeUniverse
 
 logger = logging.getLogger(__name__)
 
@@ -57,11 +58,12 @@ class LiveInferenceServer:
     def __init__(
         self,
         checkpoint_dir: Path | str,
+        level_name: str | None = None,
         port: int = 8766,
         step_delay: float = 0.2,
         total_episodes: int = 5000,  # Expected total episodes in training run
         config_dir: Path | str | None = None,  # Config pack directory
-        training_config_path: Path | str | None = None,  # Optional training config
+        training_config_path: Path | str | None = None,  # Deprecated training config override
         db_path: Path | str | None = None,  # Optional database path for replay
         recordings_dir: Path | str | None = None,  # Optional recordings directory for replay
     ):
@@ -69,6 +71,7 @@ class LiveInferenceServer:
 
         Args:
             checkpoint_dir: Directory containing training checkpoints
+            level_name: Which curriculum level to run (defaults to first available level)
             port: WebSocket port
             step_delay: Delay between steps in seconds (0.2 = 5 steps/sec)
             total_episodes: Expected total episodes for training run (for progress gauge)
@@ -78,6 +81,7 @@ class LiveInferenceServer:
             recordings_dir: Optional recordings directory for replay mode
         """
         self.checkpoint_dir = Path(checkpoint_dir)
+        self.level_name = level_name  # Will be determined after compilation if None
         self.port = port
         self.step_delay = step_delay
         self.total_episodes = total_episodes
@@ -88,7 +92,6 @@ class LiveInferenceServer:
         self.training_config_path: Path | None = Path(training_config_path) if training_config_path else None
         self.compiler = UniverseCompiler()
         self.compiled_universe: CompiledUniverse | None = None
-        self.runtime_universe: RuntimeUniverse | None = None
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.clients: set[WebSocket] = set()
@@ -267,80 +270,113 @@ class LiveInferenceServer:
     def _initialize_components(self):
         """Initialize environment and agent components."""
         logger.info("Compiling universe for live inference from %s", self.config_dir)
-        self.compiled_universe = self.compiler.compile(self.config_dir)
-        self.runtime_universe = self.compiled_universe.to_runtime()
-        hamlet_config = self.compiled_universe.hamlet_config
-        env_cfg = hamlet_config.environment
-        population_cfg = hamlet_config.population
-        curriculum_cfg = hamlet_config.curriculum
-        exploration_cfg = hamlet_config.exploration
-        training_cfg = hamlet_config.training
+        # Compile universe (primary_level can be None for initial compilation)
+        self.compiled_universe = self.compiler.compile(self.config_dir, primary_level=self.level_name)
 
-        num_agents = population_cfg.num_agents
-        vision_range = env_cfg.vision_range
-        partial_observability = env_cfg.partial_observability
-        enable_temporal_mechanics = env_cfg.enable_temporal_mechanics
+        # Determine effective level_name (supports callers that omitted it)
+        if self.level_name is None:
+            available_levels = getattr(self.compiled_universe, "available_levels", [])
+            if not available_levels:
+                raise ValueError("Compiled universe has no curriculum levels; LiveInferenceServer requires at least one level.")
+            self.level_name = available_levels[0]
+            logger.info("No level_name specified; defaulting to %s", self.level_name)
+
+        level_meta = self.compiled_universe.get_level(self.level_name)
+
+        # v2.1 training config DTOs
+        training_cfg = level_meta.training
+        population_cfg = training_cfg.population
+        exploration_cfg = training_cfg.exploration
+        intrinsic_cfg = training_cfg.intrinsic
+        loop_cfg = training_cfg.training_loop
+
+        # Derived runtime parameters
+        num_agents = population_cfg.size
+        curriculum_cfg = level_meta.curriculum.curriculum
+        partial_observability = curriculum_cfg.active_vision != "global"
+        vision_range = curriculum_cfg.vision_range
+        enable_temporal_mechanics = curriculum_cfg.active_temporal
         vision_window_size = 2 * vision_range + 1
+        enabled_affordances = getattr(training_cfg, "enabled_affordances", None)
 
         logger.info(
             "Environment config: grid=%s, POMDP=%s, vision=%s, temporal=%s, affordances=%s",
-            self.runtime_universe.metadata.grid_size,  # Read from substrate.yaml via metadata
+            self.compiled_universe.metadata.grid_size,  # Read from substrate.yaml via metadata
             partial_observability,
             vision_range,
             enable_temporal_mechanics,
-            env_cfg.enabled_affordances if env_cfg.enabled_affordances else "all",
+            enabled_affordances if enabled_affordances else "all",
         )
 
         self.env = VectorizedHamletEnv.from_universe(
             self.compiled_universe,
+            level_name=self.level_name,
             num_agents=num_agents,
             device=self.device,
         )
 
-        obs_dim = self.runtime_universe.metadata.observation_dim
+        obs_spec = level_meta.observation_spec
+        obs_dim = obs_spec.total_dims
 
-        # Create curriculum
-        self.curriculum = AdversarialCurriculum(
-            max_steps_per_episode=curriculum_cfg.max_steps_per_episode,
-            survival_advance_threshold=curriculum_cfg.survival_advance_threshold,
-            survival_retreat_threshold=curriculum_cfg.survival_retreat_threshold,
-            entropy_gate=curriculum_cfg.entropy_gate,
-            min_steps_at_stage=curriculum_cfg.min_steps_at_stage,
+        # Create curriculum (mirror training pipeline behavior)
+        self.curriculum = build_curriculum(
+            training_cfg,
+            max_steps_per_episode=loop_cfg.max_steps_per_episode,
             device=self.device,
         )
 
-        # Create exploration (for inference, we want greedy)
-        # Conditionally pass active_mask based on mask_unused_obs config
-        active_mask = self.env.observation_activity.active_mask if population_cfg.mask_unused_obs else None
+        # Create exploration (for inference, configuration controls intrinsic behavior)
+        active_mask = self.env.observation_activity.active_mask
         self.exploration = AdaptiveIntrinsicExploration(
             obs_dim=obs_dim,
-            embed_dim=exploration_cfg.embed_dim,
-            rnd_training_batch_size=training_cfg.batch_size,  # Use main batch_size from config
-            initial_intrinsic_weight=exploration_cfg.initial_intrinsic_weight,
-            variance_threshold=exploration_cfg.variance_threshold,
-            survival_window=exploration_cfg.survival_window,
-            epsilon_start=training_cfg.epsilon_start,
-            epsilon_decay=training_cfg.epsilon_decay,
-            epsilon_min=training_cfg.epsilon_min,
+            embed_dim=intrinsic_cfg.rnd.feature_dim,
+            rnd_learning_rate=intrinsic_cfg.rnd.learning_rate,
+            rnd_training_batch_size=training_cfg.replay_buffer.batch_size,
+            initial_intrinsic_weight=intrinsic_cfg.initial_weight,
+            min_intrinsic_weight=intrinsic_cfg.annealing.min_weight,
+            variance_threshold=intrinsic_cfg.annealing.threshold,
+            min_survival_fraction=intrinsic_cfg.min_survival_fraction,
+            max_episode_length=loop_cfg.max_steps_per_episode,
+            survival_window=intrinsic_cfg.survival_window,
+            decay_rate=intrinsic_cfg.annealing.decay_rate,
+            epsilon_start=exploration_cfg.epsilon_start,
+            epsilon_decay=exploration_cfg.epsilon_decay,
+            epsilon_min=exploration_cfg.epsilon_end,
             device=self.device,
             active_mask=active_mask,
         )
 
-        # Load brain.yaml (REQUIRED for all config packs)
-        brain_yaml_path = self.config_dir / "brain.yaml"
-        logger.info(f"Loading brain configuration from {brain_yaml_path}")
-        brain_config = load_brain_config(self.config_dir)
-        brain_hash = compute_brain_hash(brain_config)
-        logger.info(f"Brain config loaded: {brain_config.description}")
+        # Derive brain configuration from agent.yaml (v2.1 AgentConfig)
+        from townlet.agent.brain_config import apply_training_overrides, build_brain_config_from_agent
+
+        base_brain_config = build_brain_config_from_agent(self.compiled_universe.agent, training_cfg)
+        brain_hash = compute_brain_hash(base_brain_config)
+        logger.info(f"Brain config derived from agent.yaml: {base_brain_config.description}")
         logger.info(f"Brain hash: {brain_hash[:16]}... (SHA256)")
 
-        # Store brain_config for checkpoint provenance
-        self.brain_config = brain_config
+        # Store base brain_config for checkpoint provenance
+        self.brain_config = base_brain_config
         self.brain_hash = brain_hash
 
-        # Create population (brain_config provides network/optimizer/Q-learning parameters)
+        # Apply curriculum-level overrides from training.yaml to derive effective brain config
+        effective_brain_config = apply_training_overrides(base_brain_config, training_cfg)
+
+        # Create population (effective_brain_config provides network/optimizer/Q-learning parameters)
         agent_ids = [f"agent_{i}" for i in range(num_agents)]
-        logger.info("Network architecture: %s (num_agents=%s)", brain_config.architecture.type, num_agents)
+        logger.info("Network architecture: %s (num_agents=%s)", base_brain_config.architecture.type, num_agents)
+        # Derive vision window size for recurrent networks from observation spec.
+        vision_window_size = 1
+        for field in obs_spec.fields:
+            if field.name == "obs_local_window" and field.dims > 0:
+                root = int(math.sqrt(field.dims))
+                if root * root != field.dims:
+                    raise ValueError(
+                        f"obs_local_window dims={field.dims} is not a perfect square; "
+                        "cannot derive window_size for recurrent vision encoder."
+                    )
+                vision_window_size = root
+                break
+
         self.population = VectorizedPopulation(
             env=self.env,
             curriculum=self.curriculum,
@@ -350,13 +386,14 @@ class LiveInferenceServer:
             obs_dim=obs_dim,
             action_dim=self.env.action_dim,
             vision_window_size=vision_window_size,
-            train_frequency=training_cfg.train_frequency,
-            batch_size=training_cfg.batch_size,
-            sequence_length=training_cfg.sequence_length,
-            max_grad_norm=training_cfg.max_grad_norm,
-            brain_config=brain_config,
+            train_frequency=loop_cfg.train_frequency,
+            batch_size=training_cfg.replay_buffer.batch_size,
+            sequence_length=loop_cfg.sequence_length,
+            max_grad_norm=loop_cfg.max_grad_norm,
+            brain_config=effective_brain_config,
             max_episodes=None,  # Not used by live inference
             max_steps_per_episode=None,  # Not used by live inference
+            observation_spec=obs_spec,
         )
 
         self.curriculum.initialize_population(num_agents)
@@ -730,8 +767,12 @@ class LiveInferenceServer:
 
         # Get action masks (which actions are valid)
         action_masks = self.env.get_action_masks()[0].cpu().tolist()
-        if len(action_masks) < 6:
-            action_masks.extend([False] * (6 - len(action_masks)))
+        expected_actions = self.env.action_dim
+        if len(action_masks) != expected_actions:
+            raise ValueError(
+                f"Action mask length ({len(action_masks)}) does not match action_dim ({expected_actions}); "
+                "config must explicitly enumerate all actions."
+            )
 
         # Get meters dynamically from environment configuration
         # Use meter_name_to_index to support configs with varying meter sets
@@ -759,21 +800,12 @@ class LiveInferenceServer:
 
             affordances.append(affordance_data)
 
-        # Convert Q-values to list for JSON serialization (supports legacy 5-action checkpoints)
+        # Convert Q-values to list for JSON serialization (enforce full action space)
         q_values_list = q_values.cpu().tolist()
-        if len(q_values_list) < 6:
-            # Pad with NaNs so downstream consumers can detect legacy models gracefully
-            q_values_list.extend([float("nan")] * (6 - len(q_values_list)))
 
         # Log Q-values and chosen action to file for debugging
         action_names_dict = self.env.get_action_label_names()
-        padded_for_log = q_values_list[:6]
-        log_line = (
-            f"Step {self.current_step}: Action={action_names_dict.get(last_action, 'UNKNOWN')}, "
-            f"Q-values: Up={padded_for_log[0]:.2f}, Down={padded_for_log[1]:.2f}, "
-            f"Left={padded_for_log[2]:.2f}, Right={padded_for_log[3]:.2f}, "
-            f"Interact={padded_for_log[4]:.2f}, Wait={padded_for_log[5]:.2f}\n"
-        )
+        log_line = f"Step {self.current_step}: Action={action_names_dict.get(last_action, 'UNKNOWN')}, " f"Q-values: {q_values_list}\n"
         if self._qvalue_log_file:
             self._qvalue_log_file.write(log_line)
             self._qvalue_log_file.flush()
@@ -1135,9 +1167,10 @@ def run_server(
 
     server = LiveInferenceServer(
         checkpoint_dir,
-        port,
-        step_delay,
-        total_episodes,
+        level_name=None,  # Will default to first available level
+        port=port,
+        step_delay=step_delay,
+        total_episodes=total_episodes,
         config_dir=config_dir,
         training_config_path=training_config_path,
         db_path=db_path,

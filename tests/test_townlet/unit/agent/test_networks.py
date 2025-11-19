@@ -115,20 +115,22 @@ class TestRecurrentSpatialQNetwork:
     """Test RecurrentSpatialQNetwork (LSTM for partial observability)."""
 
     @pytest.fixture
-    def network(self, basic_env):
+    def network(self, pomdp_env):
         """Create RecurrentSpatialQNetwork with standard config."""
-        # Network computes obs_dim from window_size + num_meters + affordances
-        # Default num_affordance_types=15 → encoding size = 15+1 = 16
-        # Observation: 25 (5×5) + 2 (position) + 8 (meters) + 16 (affordance) = 51
+        window_size = getattr(pomdp_env, "local_window_size", 5) or 5
+        position_dim = getattr(pomdp_env.substrate, "position_dim", 2)
+        num_meters = getattr(pomdp_env, "meter_count", 8)
+        num_affordance_types = getattr(pomdp_env, "num_affordance_types", 15)
         return RecurrentSpatialQNetwork(
-            action_dim=basic_env.action_dim,
-            window_size=5,
-            position_dim=2,
-            num_meters=8,
-            num_affordance_types=15,
-            enable_temporal_features=False,
+            action_dim=pomdp_env.action_dim,
+            window_size=window_size,
+            position_dim=position_dim,
+            num_meters=num_meters,
+            num_affordance_types=num_affordance_types,
+            enable_temporal_features=True,
             hidden_dim=256,
-        )
+            observation_spec=pomdp_env.observation_spec,
+        ).to(pomdp_env.device)
 
     def test_initialization(self, network):
         """Network should initialize with correct architecture."""
@@ -142,7 +144,8 @@ class TestRecurrentSpatialQNetwork:
 
         # Check LSTM
         assert isinstance(network.lstm, nn.LSTM)
-        assert network.lstm.input_size == 224  # 128+32+32+32
+        expected_input = 128 + (32 if network.position_encoder is not None else 0) + 32 + 32 + 16
+        assert network.lstm.input_size == expected_input
         assert network.lstm.hidden_size == 256
         assert network.lstm.num_layers == 1
 
@@ -153,21 +156,20 @@ class TestRecurrentSpatialQNetwork:
         assert isinstance(network.q_head[2], nn.ReLU)
         assert isinstance(network.q_head[3], nn.Linear)  # 128 → 6
 
-    def test_forward_pass_without_hidden_state(self, network, basic_env):
+    def test_forward_pass_without_hidden_state(self, network, pomdp_env):
         """Forward pass should work without providing hidden state."""
-        # 25 (grid) + 2 (pos) + 8 (meters) + 16 (affordance encoding) = 51
-        obs = torch.randn(1, 51)
+        obs = pomdp_env.reset()
         q_values, hidden = network(obs)
 
-        assert q_values.shape == (1, basic_env.action_dim)
+        assert q_values.shape == (1, pomdp_env.action_dim)
         assert hidden is not None
         assert len(hidden) == 2  # (h, c)
         assert hidden[0].shape == (1, 1, 256)  # (num_layers, batch, hidden_size)
         assert hidden[1].shape == (1, 1, 256)
 
-    def test_forward_pass_with_hidden_state(self, network, basic_env):
+    def test_forward_pass_with_hidden_state(self, network, pomdp_env):
         """Forward pass should accept and update hidden state."""
-        obs = torch.randn(1, 51)
+        obs = pomdp_env.reset()
 
         # First forward pass
         q1, hidden1 = network(obs)
@@ -175,17 +177,17 @@ class TestRecurrentSpatialQNetwork:
         # Second forward pass with previous hidden state
         q2, hidden2 = network(obs, hidden1)
 
-        assert q2.shape == (1, basic_env.action_dim)
+        assert q2.shape == (1, pomdp_env.action_dim)
         assert not torch.equal(q1, q2), "Q-values should differ with different hidden states"
         assert not torch.equal(hidden1[0], hidden2[0]), "Hidden state should be updated"
 
-    def test_hidden_state_management(self, network):
+    def test_hidden_state_management(self, network, pomdp_env):
         """Hidden state should persist across forward passes."""
         batch_size = 1
-        obs = torch.randn(batch_size, 51)
+        obs = pomdp_env.reset()
 
         # Reset hidden state
-        network.reset_hidden_state(batch_size, device=torch.device("cpu"))
+        network.reset_hidden_state(batch_size, device=pomdp_env.device)
         h, c = network.get_hidden_state()
 
         assert h is not None
@@ -226,33 +228,31 @@ class TestRecurrentSpatialQNetwork:
         assert torch.equal(stored_h, custom_h)
         assert torch.equal(stored_c, custom_c)
 
-    def test_batch_processing(self, network, basic_env):
+    def test_batch_processing(self, network, pomdp_env):
         """Network should handle batched observations."""
         batch_size = 8
-        obs = torch.randn(batch_size, 51)
+        single = pomdp_env.reset()
+        obs = single.repeat(batch_size, 1)
 
-        network.reset_hidden_state(batch_size, device=torch.device("cpu"))
+        network.reset_hidden_state(batch_size, device=next(network.parameters()).device)
         q_values, hidden = network(obs)
 
-        assert q_values.shape == (batch_size, basic_env.action_dim)
+        assert q_values.shape == (batch_size, pomdp_env.action_dim)
         assert hidden[0].shape == (1, batch_size, 256)
         assert hidden[1].shape == (1, batch_size, 256)
 
-    def test_vision_encoding(self, network, basic_env):
+    def test_vision_encoding(self, network, pomdp_env):
         """Vision encoder should process 5×5 window correctly."""
-        # Test just the vision encoder component
-        # Vision goes through conv-like processing (reshaped to spatial)
-        # This is tested implicitly in full forward pass
-        obs = torch.randn(4, 51)
+        obs = pomdp_env.reset().repeat(4, 1)
         q_values, _ = network(obs)
 
-        assert q_values.shape == (4, basic_env.action_dim)
+        assert q_values.shape == (4, pomdp_env.action_dim)
         assert not torch.isnan(q_values).any()
 
-    def test_gradient_flow_through_lstm(self, network):
+    def test_gradient_flow_through_lstm(self, network, pomdp_env):
         """Gradients should flow through LSTM."""
-        obs = torch.randn(4, 51, requires_grad=True)
-        network.reset_hidden_state(4, device=torch.device("cpu"))
+        obs = pomdp_env.reset().repeat(4, 1).requires_grad_()
+        network.reset_hidden_state(4, device=pomdp_env.device)
 
         q_values, _ = network(obs)
         loss = q_values.mean()
@@ -264,14 +264,14 @@ class TestRecurrentSpatialQNetwork:
                 assert param.grad is not None, f"No gradient for LSTM parameter {name}"
                 assert not torch.isnan(param.grad).any(), f"NaN gradient in {name}"
 
-    def test_sequential_hidden_state_evolution(self, network):
+    def test_sequential_hidden_state_evolution(self, network, pomdp_env):
         """Hidden state should evolve over multiple steps."""
         batch_size = 1
-        network.reset_hidden_state(batch_size, device=torch.device("cpu"))
+        network.reset_hidden_state(batch_size, device=pomdp_env.device)
 
         hidden_states = []
         for step in range(5):
-            obs = torch.randn(batch_size, 51)
+            obs = pomdp_env.reset()
             q_values, hidden = network(obs)
             hidden_states.append(hidden[0].clone())
 
@@ -279,45 +279,31 @@ class TestRecurrentSpatialQNetwork:
         for i in range(len(hidden_states) - 1):
             assert not torch.equal(hidden_states[i], hidden_states[i + 1]), f"Hidden state unchanged between steps {i} and {i + 1}"
 
-    def test_different_observation_dimensions(self, basic_env):
-        """Network should work with temporal features added (obs dimensions change)."""
-        # Base POMDP: 25 (5×5) + 2 (pos) + 8 (meters) + 15 (affordance) = 50
-        net_base = RecurrentSpatialQNetwork(
-            action_dim=basic_env.action_dim,
-            window_size=5,
-            position_dim=2,
-            num_meters=8,
-            num_affordance_types=15,
-            enable_temporal_features=False,
+    def test_different_observation_dimensions(self, pomdp_env):
+        """Network should work with spec-defined observation layout (including temporal)."""
+        net = RecurrentSpatialQNetwork(
+            action_dim=pomdp_env.action_dim,
+            window_size=getattr(pomdp_env, "local_window_size", 5) or 5,
+            position_dim=getattr(pomdp_env.substrate, "position_dim", 2),
+            num_meters=getattr(pomdp_env, "meter_count", 8),
+            num_affordance_types=getattr(pomdp_env, "num_affordance_types", 15),
+            enable_temporal_features=True,
             hidden_dim=256,
-        )
-        obs_base = torch.randn(2, 51)
-        q_base, _ = net_base(obs_base)
-        assert q_base.shape == (2, basic_env.action_dim)
+            observation_spec=pomdp_env.observation_spec,
+        ).to(pomdp_env.device)
 
-        # With temporal: 25 + 2 + 8 + 16 + 2 (time + progress) = 52
-        # But network doesn't know about temporal - it just processes extra dims
-        # So we test it handles the expected 50 dims correctly
-        net_temporal = RecurrentSpatialQNetwork(
-            action_dim=basic_env.action_dim,
-            window_size=5,
-            position_dim=2,
-            num_meters=8,
-            num_affordance_types=15,
-            enable_temporal_features=False,
-            hidden_dim=256,
-        )
-        obs_temporal = torch.randn(2, 51)
-        q_temporal, _ = net_temporal(obs_temporal)
-        assert q_temporal.shape == (2, basic_env.action_dim)
+        obs = pomdp_env.reset()
+        q, _ = net(obs)
+        assert q.shape == (1, pomdp_env.action_dim)
 
-    def test_lstm_memory_effect(self, network):
+    def test_lstm_memory_effect(self, network, pomdp_env):
         """LSTM should show memory effect across sequence."""
         batch_size = 1
-        network.reset_hidden_state(batch_size, device=torch.device("cpu"))
+        device = next(network.parameters()).device
+        network.reset_hidden_state(batch_size, device=device)
 
         # Create sequence of similar observations
-        obs_sequence = [torch.randn(batch_size, 51) for _ in range(3)]
+        obs_sequence = [pomdp_env.reset() for _ in range(3)]
 
         # Get Q-values for each step
         q_values_list = []
@@ -330,7 +316,7 @@ class TestRecurrentSpatialQNetwork:
         assert not torch.equal(q_values_list[1], q_values_list[2])
 
         # Now reset and try same sequence - should get same results
-        network.reset_hidden_state(batch_size, device=torch.device("cpu"))
+        network.reset_hidden_state(batch_size, device=device)
         q_values_reset_list = []
         for obs in obs_sequence:
             q_values, _ = network(obs)
@@ -344,18 +330,19 @@ class TestRecurrentSpatialQNetwork:
 class TestNetworkComparison:
     """Compare behavior between SimpleQNetwork and RecurrentSpatialQNetwork."""
 
-    def test_parameter_counts(self, basic_env):
+    def test_parameter_counts(self, basic_env, pomdp_env):
         """RecurrentSpatialQNetwork should have more parameters (LSTM)."""
         simple_net = SimpleQNetwork(obs_dim=basic_env.observation_dim, action_dim=basic_env.action_dim, hidden_dim=128)
         recurrent_net = RecurrentSpatialQNetwork(
-            action_dim=basic_env.action_dim,
-            window_size=5,
-            position_dim=2,
-            num_meters=8,
-            num_affordance_types=15,
-            enable_temporal_features=False,
+            action_dim=pomdp_env.action_dim,
+            window_size=getattr(pomdp_env, "local_window_size", 5) or 5,
+            position_dim=getattr(pomdp_env.substrate, "position_dim", 2),
+            num_meters=getattr(pomdp_env, "meter_count", 8),
+            num_affordance_types=getattr(pomdp_env, "num_affordance_types", 15),
+            enable_temporal_features=True,
             hidden_dim=256,
-        )
+            observation_spec=pomdp_env.observation_spec,
+        ).to(pomdp_env.device)
 
         simple_params = sum(p.numel() for p in simple_net.parameters())
         recurrent_params = sum(p.numel() for p in recurrent_net.parameters())
@@ -366,28 +353,29 @@ class TestNetworkComparison:
 
         assert recurrent_params > simple_params, "Recurrent network should have more parameters due to LSTM"
 
-    def test_computational_difference(self, basic_env):
+    def test_computational_difference(self, basic_env, pomdp_env):
         """Recurrent network should take longer due to sequential LSTM."""
         import time
 
         simple_net = SimpleQNetwork(obs_dim=basic_env.observation_dim, action_dim=basic_env.action_dim, hidden_dim=128)
         recurrent_net = RecurrentSpatialQNetwork(
-            action_dim=basic_env.action_dim,
-            window_size=5,
-            position_dim=2,
-            num_meters=8,
-            num_affordance_types=15,
-            enable_temporal_features=False,
+            action_dim=pomdp_env.action_dim,
+            window_size=getattr(pomdp_env, "local_window_size", 5) or 5,
+            position_dim=getattr(pomdp_env.substrate, "position_dim", 2),
+            num_meters=getattr(pomdp_env, "meter_count", 8),
+            num_affordance_types=getattr(pomdp_env, "num_affordance_types", 15),
+            enable_temporal_features=True,
             hidden_dim=256,
-        )
+            observation_spec=pomdp_env.observation_spec,
+        ).to(pomdp_env.device)
 
         batch_size = 32
         obs_simple = torch.randn(batch_size, basic_env.observation_dim)
-        obs_recurrent = torch.randn(batch_size, 51)  # 25 + 2 + 8 + 16
+        obs_recurrent = pomdp_env.reset().repeat(batch_size, 1)
 
         # Warm up
         _ = simple_net(obs_simple)
-        recurrent_net.reset_hidden_state(batch_size, device=torch.device("cpu"))
+        recurrent_net.reset_hidden_state(batch_size, device=next(recurrent_net.parameters()).device)
         _ = recurrent_net(obs_recurrent)
 
         # Time simple network
@@ -397,7 +385,7 @@ class TestNetworkComparison:
         simple_time = time.time() - start
 
         # Time recurrent network
-        recurrent_net.reset_hidden_state(batch_size, device=torch.device("cpu"))
+        recurrent_net.reset_hidden_state(batch_size, device=next(recurrent_net.parameters()).device)
         start = time.time()
         for _ in range(100):
             _ = recurrent_net(obs_recurrent)

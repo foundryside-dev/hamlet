@@ -1,0 +1,31 @@
+environment:
+  version: "1.0"
+
+  meters:
+    - name: energy
+      description: Energy
+      range_type: normalized
+    - name: health
+      description: Health
+      range_type: normalized
+    - name: money
+      description: Money
+      range_type: unbounded
+
+  cascade_graph: []
+  modulation_graph: []
+  affordances:
+    - name: Bed
+      description: Rest
+      category: rest
+    - name: EAT
+      description: Eat food
+      category: sustenance
+    - name: SLEEP
+      description: Sleep to recover energy
+      category: rest
+    - name: WORK
+      description: Earn money
+      category: income
+  variables: []
+  cues: []

@@ -4,6 +4,8 @@ import pytest
 
 from townlet.demo.live_inference import LiveInferenceServer
 
+LEVEL_NAME = "L0_test"
+
 
 @pytest.mark.asyncio
 async def test_build_substrate_metadata_grid2d(tmp_path, test_config_pack_path):
@@ -11,12 +13,32 @@ async def test_build_substrate_metadata_grid2d(tmp_path, test_config_pack_path):
     checkpoint_dir = tmp_path / "checkpoints"
     checkpoint_dir.mkdir()
 
+    # Use a writable copy so we can adjust agent loss if schemas change
+    import shutil
+
+    from tests.test_townlet.helpers.config_builder import mutate_agent_yaml, mutate_training_yaml
+
+    config_copy = tmp_path / "config_pack"
+    shutil.copytree(test_config_pack_path, config_copy)
+    # Ensure agent loss is schema-compliant
+    mutate_agent_yaml(config_copy, lambda data: data["agent"]["brain"].update({"loss": {"type": "huber", "huber_delta": 1.0}}))
+
+    def _set_adversarial(training_data: dict) -> None:
+        training_section = training_data.get("training", {}) or {}
+        curriculum_cfg = training_section.get("curriculum", {}) or {}
+        curriculum_cfg["strategy"] = "adversarial"
+        training_section["curriculum"] = curriculum_cfg
+        training_data["training"] = training_section
+
+    mutate_training_yaml(config_copy, _set_adversarial)
+
     server = LiveInferenceServer(
         checkpoint_dir=checkpoint_dir,
         port=8767,  # Different port to avoid conflicts
         step_delay=0.01,
         total_episodes=100,
-        config_dir=test_config_pack_path,
+        config_dir=config_copy,
+        level_name=LEVEL_NAME,
     )
 
     # Initialize components (creates environment with substrate)
@@ -59,6 +81,7 @@ async def test_build_substrate_metadata_before_env_created(tmp_path, test_config
         step_delay=0.01,
         total_episodes=100,
         config_dir=test_config_pack_path,
+        level_name=LEVEL_NAME,
     )
 
     # Don't call startup() - env should be None

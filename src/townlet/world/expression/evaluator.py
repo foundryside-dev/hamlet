@@ -40,7 +40,41 @@ class Evaluator(ASTVisitor):
 
     def visit_binary_op(self, node: BinaryOp) -> torch.Tensor:
         """Execute binary operations on tensors."""
-        raise NotImplementedError("visit_binary_op not yet implemented")
+        from townlet.world.expression.ast_nodes import OperatorType
+
+        left = node.left.accept(self)
+        right = node.right.accept(self)
+
+        if node.op == OperatorType.ADD:
+            return left + right
+        elif node.op == OperatorType.SUB:
+            return left - right
+        elif node.op == OperatorType.MUL:
+            return left * right
+        elif node.op == OperatorType.DIV:
+            return left / right
+        elif node.op == OperatorType.MOD:
+            return left % right
+        elif node.op == OperatorType.POW:
+            return left**right
+        elif node.op == OperatorType.EQ:
+            return left == right
+        elif node.op == OperatorType.NEQ:
+            return left != right
+        elif node.op == OperatorType.LT:
+            return left < right
+        elif node.op == OperatorType.GT:
+            return left > right
+        elif node.op == OperatorType.LTE:
+            return left <= right
+        elif node.op == OperatorType.GTE:
+            return left >= right
+        elif node.op == OperatorType.AND:
+            return left & right
+        elif node.op == OperatorType.OR:
+            return left | right
+        else:
+            raise ValueError(f"Unknown operator: {node.op}")
 
     def visit_unary_op(self, node: UnaryOp) -> torch.Tensor:
         """Execute unary operations on tensors."""

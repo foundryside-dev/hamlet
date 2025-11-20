@@ -8,6 +8,26 @@ from townlet.items.inventory import InventoryState
 from townlet.items.manager import ItemManager
 
 
+# Stubs for testing
+class MockCommandExecutor:
+    """Mock CommandExecutor for testing."""
+
+    def execute(self, *args, **kwargs):
+        """No-op execute."""
+        pass
+
+
+class MockVariableRegistry:
+    """Mock VariableRegistry for testing."""
+
+    def __init__(self):
+        self.variables = {}
+
+    def get(self, key, default=None):
+        """Mock get."""
+        return self.variables.get(key, default)
+
+
 def test_get_action_picks_up_item():
     """GET action: picks up item at agent position."""
     # Setup
@@ -27,7 +47,13 @@ def test_get_action_picks_up_item():
 
     manager = ItemManager(catalog=catalog, max_items=10, device="cpu")
     inventory = InventoryState(batch_size=1, max_items_per_agent=3, device="cpu")
-    handler = ItemActionHandler(manager=manager, inventory=inventory)
+    handler = ItemActionHandler(
+        manager=manager,
+        inventory=inventory,
+        command_executor=MockCommandExecutor(),
+        vfs_registry=MockVariableRegistry(),
+        meter_name_to_index={"energy": 0, "health": 1},
+    )
 
     # Spawn item at agent's position
     item = manager.spawn_item("apple", position=(3, 5), current_tick=100)
@@ -36,11 +62,13 @@ def test_get_action_picks_up_item():
     # Agent at same position tries to pick up
     agent_idx = 0
     agent_position = torch.tensor([[3, 5]], dtype=torch.long)
+    meters = torch.zeros((1, 2), dtype=torch.float32)  # [batch, num_meters]
 
     success = handler.handle_get_action(
         agent_idx=agent_idx,
         agent_position=agent_position[agent_idx],
         current_tick=100,
+        meters=meters,
     )
 
     assert success is True
@@ -63,7 +91,13 @@ def test_get_action_fails_when_inventory_full():
 
     manager = ItemManager(catalog=catalog, max_items=10, device="cpu")
     inventory = InventoryState(batch_size=1, max_items_per_agent=2, device="cpu")
-    handler = ItemActionHandler(manager=manager, inventory=inventory)
+    handler = ItemActionHandler(
+        manager=manager,
+        inventory=inventory,
+        command_executor=MockCommandExecutor(),
+        vfs_registry=MockVariableRegistry(),
+        meter_name_to_index={"energy": 0, "health": 1},
+    )
 
     # Fill inventory
     item1 = manager.spawn_item("apple", (0, 0), 100)
@@ -74,11 +108,13 @@ def test_get_action_fails_when_inventory_full():
     # Try to pick up third item
     item3 = manager.spawn_item("apple", (3, 5), 100)
     agent_position = torch.tensor([3, 5], dtype=torch.long)
+    meters = torch.zeros((1, 2), dtype=torch.float32)  # [batch, num_meters]
 
     success = handler.handle_get_action(
         agent_idx=0,
         agent_position=agent_position,
         current_tick=100,
+        meters=meters,
     )
 
     assert success is False  # DENY_PICKUP
@@ -91,15 +127,23 @@ def test_get_action_fails_when_no_item_at_position():
     catalog = ItemsCatalogConfig(item_types=[])
     manager = ItemManager(catalog=catalog, max_items=10, device="cpu")
     inventory = InventoryState(batch_size=1, max_items_per_agent=3, device="cpu")
-    handler = ItemActionHandler(manager=manager, inventory=inventory)
+    handler = ItemActionHandler(
+        manager=manager,
+        inventory=inventory,
+        command_executor=MockCommandExecutor(),
+        vfs_registry=MockVariableRegistry(),
+        meter_name_to_index={"energy": 0, "health": 1},
+    )
 
     # No item spawned at (3, 5)
     agent_position = torch.tensor([3, 5], dtype=torch.long)
+    meters = torch.zeros((1, 2), dtype=torch.float32)  # [batch, num_meters]
 
     success = handler.handle_get_action(
         agent_idx=0,
         agent_position=agent_position,
         current_tick=100,
+        meters=meters,
     )
 
     assert success is False
@@ -124,16 +168,24 @@ def test_use_slot_action_succeeds_when_slot_occupied():
 
     manager = ItemManager(catalog=catalog, max_items=10, device="cpu")
     inventory = InventoryState(batch_size=1, max_items_per_agent=3, device="cpu")
-    handler = ItemActionHandler(manager=manager, inventory=inventory)
+    handler = ItemActionHandler(
+        manager=manager,
+        inventory=inventory,
+        command_executor=MockCommandExecutor(),
+        vfs_registry=MockVariableRegistry(),
+        meter_name_to_index={"energy": 0, "health": 1},
+    )
 
     # Add item to inventory
     item = manager.spawn_item("medkit", (0, 0), 100)
     inventory.add_item(0, item)
+    meters = torch.zeros((1, 2), dtype=torch.float32)  # [batch, num_meters]
 
     success = handler.handle_use_slot_action(
         agent_idx=0,
         slot_idx=0,
         current_tick=100,
+        meters=meters,
     )
 
     assert success is True
@@ -146,12 +198,20 @@ def test_use_slot_action_fails_when_slot_empty():
     catalog = ItemsCatalogConfig(item_types=[])
     manager = ItemManager(catalog=catalog, max_items=10, device="cpu")
     inventory = InventoryState(batch_size=1, max_items_per_agent=3, device="cpu")
-    handler = ItemActionHandler(manager=manager, inventory=inventory)
+    handler = ItemActionHandler(
+        manager=manager,
+        inventory=inventory,
+        command_executor=MockCommandExecutor(),
+        vfs_registry=MockVariableRegistry(),
+        meter_name_to_index={"energy": 0, "health": 1},
+    )
+    meters = torch.zeros((1, 2), dtype=torch.float32)  # [batch, num_meters]
 
     success = handler.handle_use_slot_action(
         agent_idx=0,
         slot_idx=0,
         current_tick=100,
+        meters=meters,
     )
 
     assert success is False
@@ -171,12 +231,19 @@ def test_drop_slot_action_removes_from_inventory():
 
     manager = ItemManager(catalog=catalog, max_items=10, device="cpu")
     inventory = InventoryState(batch_size=1, max_items_per_agent=3, device="cpu")
-    handler = ItemActionHandler(manager=manager, inventory=inventory)
+    handler = ItemActionHandler(
+        manager=manager,
+        inventory=inventory,
+        command_executor=MockCommandExecutor(),
+        vfs_registry=MockVariableRegistry(),
+        meter_name_to_index={"energy": 0, "health": 1},
+    )
 
     # Add item to inventory
     item = manager.spawn_item("apple", (0, 0), 100)
     manager.despawn_item(item.instance_id, 100)  # Remove from world first
     inventory.slots[0, 0] = item.instance_id  # Manually add to inventory
+    inventory.items[item.instance_id] = item  # Add to metadata dict
 
     agent_position = torch.tensor([5, 5], dtype=torch.long)
 
@@ -196,7 +263,13 @@ def test_drop_slot_action_fails_when_slot_empty():
     catalog = ItemsCatalogConfig(item_types=[])
     manager = ItemManager(catalog=catalog, max_items=10, device="cpu")
     inventory = InventoryState(batch_size=1, max_items_per_agent=3, device="cpu")
-    handler = ItemActionHandler(manager=manager, inventory=inventory)
+    handler = ItemActionHandler(
+        manager=manager,
+        inventory=inventory,
+        command_executor=MockCommandExecutor(),
+        vfs_registry=MockVariableRegistry(),
+        meter_name_to_index={"energy": 0, "health": 1},
+    )
 
     agent_position = torch.tensor([5, 5], dtype=torch.long)
 

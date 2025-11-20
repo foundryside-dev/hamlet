@@ -29,15 +29,16 @@ def test_item_interactions_are_compiled():
         schema=schema,  # NEW PARAMETER
     )
 
-    # Verify apple interactions are compiled
-    apple_type = next(t for t in manager.compiled_item_types if t.id == "apple")
-    assert apple_type.compiled_on_pickup is not None, "on_pickup not compiled"
-    assert len(apple_type.compiled_on_pickup) == 1
-    assert apple_type.compiled_on_pickup[0].type == CommandType.MODIFY
-    assert apple_type.compiled_on_pickup[0].path == "target.vfs.has_food"
-    assert apple_type.compiled_on_pickup[0].value_ast is not None, "AST not compiled"
+    # Verify coin interactions are compiled (coin has on_pickup effect)
+    coin_type = next(t for t in manager.compiled_item_types if t.id == "coin")
+    assert coin_type.compiled_on_pickup is not None, "on_pickup not compiled"
+    assert len(coin_type.compiled_on_pickup) == 1
+    assert coin_type.compiled_on_pickup[0].type == CommandType.MODIFY
+    assert coin_type.compiled_on_pickup[0].path == "target.bar.money"
+    assert coin_type.compiled_on_pickup[0].value_ast is not None, "AST not compiled"
 
-    # Verify on_use commands compiled
+    # Verify apple on_use commands compiled
+    apple_type = next(t for t in manager.compiled_item_types if t.id == "apple")
     assert apple_type.compiled_on_use is not None
     assert len(apple_type.compiled_on_use) == 1
     assert apple_type.compiled_on_use[0].path == "target.bar.energy"

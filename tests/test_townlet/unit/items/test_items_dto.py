@@ -144,13 +144,14 @@ def test_items_catalog_from_yaml():
     with open(catalog_path) as f:
         data = yaml.safe_load(f)
 
-    catalog = ItemsCatalogConfig(**data)
+    catalog = ItemsCatalogConfig(**data["items"])
 
     assert len(catalog.item_types) == 3
     assert catalog.item_types[0].id == "apple"
-    assert catalog.item_types[0].duration == 200
+    assert catalog.item_types[0].duration is None  # Permanent
     assert catalog.item_types[1].id == "medkit"
-    assert catalog.item_types[1].duration is None  # Permanent
+    assert catalog.item_types[1].duration == 100  # Despawns after 100 ticks
+    assert catalog.item_types[2].id == "coin"
 
 
 def test_items_appearance_from_yaml():

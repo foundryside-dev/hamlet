@@ -2,14 +2,38 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
+
+import torch
 
 if TYPE_CHECKING:
     from townlet.config.items_config import ItemsCatalogConfig
 
+from townlet.effects.compiler import CommandCompiler
+from townlet.effects.schema import CommandNode
 from townlet.items.instance import ItemInstance
 
-__all__ = ["ItemManager"]
+__all__ = ["ItemManager", "CompiledItemType"]
+
+
+@dataclass
+class CompiledItemType:
+    """Item type with pre-compiled Effects commands.
+
+    This is the runtime representation after CommandCompiler processes
+    the raw ItemTypeConfig from YAML.
+    """
+
+    id: str
+    vfs_profile: str
+    duration: int | None
+    cooldown: int | None
+
+    # Pre-compiled Effects commands (ready for CommandExecutor)
+    compiled_on_pickup: list[CommandNode]
+    compiled_on_use: list[CommandNode]
+    compiled_on_drop: list[CommandNode]
 
 
 class ItemManager:
@@ -19,7 +43,8 @@ class ItemManager:
         self,
         catalog: ItemsCatalogConfig,
         max_items: int,
-        device: str = "cpu",
+        device: torch.device | str,
+        schema: dict[str, str] | None = None,  # NEW: Schema for Effects compilation
     ) -> None:
         """Initialize ItemManager.
 
@@ -27,10 +52,64 @@ class ItemManager:
             catalog: Items catalog from items.yaml
             max_items: Maximum items that can exist simultaneously
             device: PyTorch device
+            schema: Variable type schema for Effects compilation
         """
         self.catalog = catalog
         self.max_items = max_items
-        self.device = device
+        self.device = torch.device(device) if isinstance(device, str) else device
+
+        # Compile item interactions if schema provided
+        self.compiled_item_types: list[CompiledItemType] = []
+
+        if schema is not None:
+            from townlet.config.effects_config import CommandConfig
+            from townlet.effects.parser import CommandParser
+
+            compiler = CommandCompiler(schema=schema)
+            parser = CommandParser()
+
+            for item_type in catalog.item_types:
+                # Convert raw dicts to CommandConfig objects
+                on_pickup_configs = [CommandConfig(**cmd) for cmd in item_type.interactions.on_pickup]
+                on_use_configs = [CommandConfig(**cmd) for cmd in item_type.interactions.on_use]
+                on_drop_configs = [CommandConfig(**cmd) for cmd in item_type.interactions.on_drop]
+
+                # Parse CommandConfig objects to CommandNode AST
+                on_pickup_nodes = parser.parse_commands(on_pickup_configs)
+                on_use_nodes = parser.parse_commands(on_use_configs)
+                on_drop_nodes = parser.parse_commands(on_drop_configs)
+
+                # Compile with type checking and AST storage
+                compiled_on_pickup = compiler.compile_commands(on_pickup_nodes)
+                compiled_on_use = compiler.compile_commands(on_use_nodes)
+                compiled_on_drop = compiler.compile_commands(on_drop_nodes)
+
+                self.compiled_item_types.append(
+                    CompiledItemType(
+                        id=item_type.id,
+                        vfs_profile=item_type.vfs_profile,
+                        duration=item_type.duration,
+                        cooldown=item_type.cooldown,
+                        compiled_on_pickup=compiled_on_pickup,
+                        compiled_on_use=compiled_on_use,
+                        compiled_on_drop=compiled_on_drop,
+                    )
+                )
+        else:
+            # No schema - store raw types without compilation
+            # (Used in unit tests that don't need Effects)
+            for item_type in catalog.item_types:
+                self.compiled_item_types.append(
+                    CompiledItemType(
+                        id=item_type.id,
+                        vfs_profile=item_type.vfs_profile,
+                        duration=item_type.duration,
+                        cooldown=item_type.cooldown,
+                        compiled_on_pickup=[],
+                        compiled_on_use=[],
+                        compiled_on_drop=[],
+                    )
+                )
 
         self.next_instance_id = 0
 

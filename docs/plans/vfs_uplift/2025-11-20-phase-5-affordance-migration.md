@@ -8,7 +8,7 @@
 
 **Tech Stack:** Pydantic DTOs, Effects system (CommandCompiler + CommandExecutor), PyTorch tensors, YAML configuration
 
-**Timeline:** 4-5 days (Task 5.1: 1.5 days, Task 5.2: 2 days, Task 5.3: 0.5 days)
+**Timeline:** 4-5 days (Task 5.1: 1.5 days, Task 5.2: 2 days, Task 5.3: 0.5 days, Task 5.4: 0.5 days)
 
 **CRITICAL FIXES APPLIED:**
 1. ✅ Compile affordance Effects at startup (performance)
@@ -834,6 +834,162 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 ---
 
+## Task 5.4: Remove Backwards Compatibility Code (0.5 days)
+
+**Goal:** Remove temporary backwards compatibility scaffolding added in Task 5.1 fix.
+
+**Context:** Task 5.1 added backward compatibility (effects, effect_pipeline fields + validate_effects_exclusivity) to allow safe migration. After all configs migrated (Task 5.2) and legacy code deleted (Task 5.3), remove the compatibility layer.
+
+### Step 1: Make interactions field REQUIRED
+
+**File:** `src/townlet/config/affordances_v2_config.py`
+
+Remove backward compatibility fields and make interactions required:
+
+```python
+# BEFORE (backward compatible):
+effects: dict[str, float] = Field(
+    default_factory=dict,
+    description="[DEPRECATED] Simple instant effects (meter: value). Use interactions field instead.",
+)
+effect_pipeline: Any | None = Field(
+    default=None,
+    description="[DEPRECATED] Multi-stage effect pipeline. Use interactions field instead.",
+)
+interactions: dict[str, list[CommandConfig]] | None = Field(
+    default=None,
+    description=...
+)
+
+# AFTER (clean breaking change):
+# REMOVED: effects and effect_pipeline fields
+
+interactions: dict[str, list[CommandConfig]] = Field(
+    description=(
+        "Effects commands for affordance lifecycle stages. "
+        "Unified with Items system (declarative Effects). "
+        "Stages: on_start, per_tick, on_completion, on_early_exit, on_failure. "
+        "NOTE: Use costs/costs_per_tick for affordability gates, interactions for outcomes."
+    ),
+)
+```
+
+**Expected:** interactions field is REQUIRED, legacy fields deleted.
+
+---
+
+### Step 2: Remove validate_effects_exclusivity validator
+
+**File:** `src/townlet/config/affordances_v2_config.py`
+
+Delete the validator that checks for multiple effect systems:
+
+```python
+# DELETE THIS ENTIRE VALIDATOR:
+@model_validator(mode="after")
+def validate_effects_exclusivity(self) -> "AffordanceParamConfig":
+    """Ensure only one effect system is used (legacy or new)."""
+    effects_count = sum([
+        bool(self.effects),
+        self.effect_pipeline is not None,
+        self.interactions is not None,
+    ])
+    # ... rest of validator ...
+```
+
+**Expected:** Validator removed (no longer needed - only one system exists).
+
+---
+
+### Step 3: Update validate_interaction_stages to remove legacy check
+
+**File:** `src/townlet/config/affordances_v2_config.py`
+
+Remove the backward compatibility skip:
+
+```python
+# BEFORE:
+@model_validator(mode="after")
+def validate_interaction_stages(self) -> "AffordanceParamConfig":
+    """Validate interactions have correct stages for interaction_type."""
+    # Skip validation if using legacy effect systems
+    if self.interactions is None:
+        return self
+    # ... rest of validator ...
+
+# AFTER:
+@model_validator(mode="after")
+def validate_interaction_stages(self) -> "AffordanceParamConfig":
+    """Validate interactions have correct stages for interaction_type."""
+    # interactions is always present now (required field)
+    valid_stages = {"on_start", "per_tick", "on_completion", "on_early_exit", "on_failure"}
+    # ... rest of validator ...
+```
+
+**Expected:** No more legacy compatibility checks.
+
+---
+
+### Step 4: Verify all configs still load
+
+**Command:**
+```bash
+for level in configs/default_curriculum/levels/*/; do
+    echo "Testing: $level"
+    UV_CACHE_DIR=.uv-cache uv run python -c "
+from pathlib import Path
+from townlet.config.affordances_v2_config import load_affordances_v2_config
+config = load_affordances_v2_config(Path('$level'))
+print(f'✅ {len(config.affordances)} affordances')
+" || exit 1
+done
+```
+
+**Expected:** All 5 levels load successfully (all using interactions field now).
+
+---
+
+### Step 5: Run full test suite
+
+**Command:**
+```bash
+UV_CACHE_DIR=.uv-cache uv run pytest tests/test_townlet/ -v
+```
+
+**Expected:** All tests PASS.
+
+---
+
+### Step 6: Commit cleanup
+
+**Command:**
+```bash
+git add src/townlet/config/affordances_v2_config.py
+git commit -m "chore(affordances)!: remove backwards compatibility scaffolding
+
+BREAKING CHANGE: interactions field now REQUIRED, legacy fields removed
+
+After config migration (Task 5.2) and legacy code deletion (Task 5.3),
+remove temporary backwards compatibility added in Task 5.1:
+- Make interactions field REQUIRED (remove Optional)
+- Delete effects field (deprecated)
+- Delete effect_pipeline field (deprecated)
+- Delete validate_effects_exclusivity validator
+- Remove legacy skip from validate_interaction_stages
+
+All affordances now use interactions field exclusively.
+
+Pre-release cleanup - no backwards compatibility needed (zero users).
+
+Part of Phase 5: Affordance Migration (COMPLETE)
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+```
+
+---
+
 ## Verification Checklist
 
 After completing all tasks, verify:
@@ -897,9 +1053,10 @@ context = ExecutionContext(
 ## End of Plan
 
 **Estimated Timeline:** 4-5 days
-- Task 5.1: Schema Migration (1.5 days) - includes compilation optimization
+- Task 5.1: Schema Migration (1.5 days) - includes compilation optimization + backward compat
 - Task 5.2: Config Migration (2 days) - extended migration script
-- Task 5.3: Code Cleanup (0.5 days)
+- Task 5.3: Legacy Code Deletion (0.5 days) - delete effect_pipeline.py
+- Task 5.4: Remove Backward Compatibility (0.5 days) - clean breaking change
 
 **Total LOC Changes:**
 - Added: ~400 lines (migration script, Effects integration, compilation optimization)

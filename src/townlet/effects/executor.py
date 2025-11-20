@@ -214,53 +214,50 @@ class CommandExecutor:
     def _execute_spawn_item(self, command: CommandNode, context: ExecutionContext) -> None:
         """Execute spawn_item command.
 
-        ⚠️ WARNING: EXPERIMENTAL/UNSTABLE - ItemManager signature mismatch
-
-        This implementation expects ItemManager to have:
-            spawn_item(item_id: str, position_hint: tuple, initial_state: dict | None)
-
-        But real ItemManager (src/townlet/items/manager.py:172) has:
-            spawn_item(item_type: str, position: tuple, current_tick: int)
-
-        Will crash at runtime with real ItemManager. Only works with MockItemManager.
-        Phase 7.2 required to implement proper ItemManager integration.
-
         Args:
             command: Spawn item command node
             context: Execution context
 
         Raises:
-            ValueError: If item_manager not available
+            ValueError: If item_manager not available or invalid position
         """
         if context.item_manager is None:
             raise ValueError("item_manager not set in context - cannot spawn items")
 
-        # Resolve position
-        # Note: Position resolution depends on substrate type (Grid2D, Continuous, etc.)
-        # For now, support "self" and "target" by delegating to item_manager
+        if context.agent_positions is None:
+            raise ValueError("agent_positions not set in context - cannot resolve position")
 
+        # Resolve position from hint to actual coordinates
         if command.position == "self":
             if context.self_index is None:
                 raise ValueError("self_index not set - cannot use 'self' position")
-            position_hint = ("agent", context.self_index)
+            # Get agent position as tuple (round floats to ints for grid coords)
+            pos_tensor = context.agent_positions[context.self_index]
+            position = tuple(int(round(x.item())) for x in pos_tensor)
+
         elif command.position == "target":
             if context.target_index is None:
                 raise ValueError("target_index not set - cannot use 'target' position")
-            position_hint = ("agent", context.target_index)
+            pos_tensor = context.agent_positions[context.target_index]
+            position = tuple(int(round(x.item())) for x in pos_tensor)
+
         elif isinstance(command.position, (list, tuple)):
-            # Explicit coordinates
-            position_hint = ("explicit", command.position)
+            # Explicit coordinates - convert to tuple
+            position = tuple(command.position)
+
         else:
             raise ValueError(f"Invalid position: {command.position}")
 
-        # Spawn item(s)
+        # Spawn item(s) with correct signature
         quantity = command.quantity or 1
         item_instance = None
+
         for _ in range(quantity):
             item_instance = context.item_manager.spawn_item(
-                item_id=command.item_id,
-                position_hint=position_hint,
-                initial_state=command.initial_state or {},
+                item_type=command.item_id,  # Note: parameter name is item_type, not item_id
+                position=position,
+                current_tick=context.current_tick,
+                initial_state=command.initial_state,
             )
 
         # Return last spawned item instance ID

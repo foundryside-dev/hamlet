@@ -553,20 +553,21 @@ class AffordanceEngine:
         updated_meters = meters.clone()
 
         for agent_idx in torch.where(agent_mask)[0]:
+            # Build bars dict (same pattern as ItemActionHandler)
+            bars_dict = {name: updated_meters[:, idx] for name, idx in self.meter_name_to_idx.items()}
+
             context = ExecutionContext(
-                target_index=agent_idx.item(),
+                bars=bars_dict,
+                vfs_registry=self.vfs_registry,
                 self_index=None,  # Affordances don't have self yet
-                registry=self.vfs_registry,
-                meters=updated_meters,
-                meter_name_to_idx=self.meter_name_to_idx,
+                target_index=agent_idx.item(),
             )
 
             for command in commands:
                 self.command_executor.execute(command, context)
 
-            # Sync meters from VFS back to tensor
+            # Sync meters back from bars dict
             for meter_name, meter_idx in self.meter_name_to_idx.items():
-                if meter_name in self.vfs_registry.storage:
-                    updated_meters[agent_idx, meter_idx] = self.vfs_registry.storage[meter_name][agent_idx]
+                updated_meters[:, meter_idx] = bars_dict[meter_name]
 
         return updated_meters

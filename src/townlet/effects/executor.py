@@ -17,10 +17,10 @@ __all__ = ["CommandExecutor"]
 
 
 class _TargetAwareExecutionContext(ExprExecutionContext):
-    """Execution context that supports target. prefix resolution.
+    """Execution context that supports target. and self. prefix resolution.
 
-    This wrapper extends ExprExecutionContext to handle target.bar.* and target.vfs.*
-    paths by delegating to pre-indexed target-scoped dictionaries.
+    This wrapper extends ExprExecutionContext to handle target.bar.*, target.vfs.*,
+    self.bar.*, and self.vfs.* paths by delegating to pre-indexed dictionaries.
     """
 
     def __init__(
@@ -29,16 +29,26 @@ class _TargetAwareExecutionContext(ExprExecutionContext):
         vfs: dict[str, torch.Tensor],
         target_bars: dict[str, torch.Tensor],
         target_vfs: dict[str, torch.Tensor],
+        self_bars: dict[str, torch.Tensor] | None = None,  # NEW
+        self_vfs: dict[str, torch.Tensor] | None = None,  # NEW
+        vfs_registry: Any | None = None,  # NEW: For item-scoped VFS lookups
+        self_index: int | None = None,  # NEW
+        self_is_item: bool = False,  # NEW
     ):
         super().__init__(bars=bars, vfs=vfs, affordances={}, temporal={})
         self.target_bars = target_bars
         self.target_vfs = target_vfs
+        self.self_bars = self_bars or {}  # NEW
+        self.self_vfs = self_vfs or {}  # NEW
+        self.vfs_registry = vfs_registry  # NEW
+        self.self_index = self_index  # NEW
+        self.self_is_item = self_is_item  # NEW
 
     def get(self, path: str) -> torch.Tensor:
-        """Resolve dotted path with target. prefix support.
+        """Resolve dotted path with target. and self. prefix support.
 
         Args:
-            path: Dotted path like "bar.energy" or "target.bar.energy"
+            path: Dotted path like "bar.energy", "target.bar.energy", or "self.vfs.durability"
 
         Returns:
             Tensor value from context
@@ -57,7 +67,34 @@ class _TargetAwareExecutionContext(ExprExecutionContext):
             else:
                 raise KeyError(f"Target path '{path}' not found in execution context")
 
-        # Delegate to parent for non-target paths
+        # NEW: Handle self. prefix
+        if parts[0] == "self":
+            # Special handling for self.vfs.* when self is an item
+            if parts[1] == "vfs" and len(parts) >= 3 and self.self_is_item:
+                import torch
+
+                from townlet.vfs.schema import VariableScope
+
+                var_name = ".".join(parts[2:])
+                if self.vfs_registry is None or self.self_index is None:
+                    raise ValueError("VFS registry or self_index not set for item-scoped VFS lookup")
+                value = self.vfs_registry.read(
+                    var_name,
+                    context_index=self.self_index,
+                    scope=VariableScope.ITEM,
+                )
+                # Convert to tensor if needed
+                if not isinstance(value, torch.Tensor):
+                    value = torch.tensor(value, dtype=torch.float32)
+                return value
+            elif parts[1] == "bar" and len(parts) == 3:
+                return self.self_bars[parts[2]]
+            elif parts[1] == "vfs" and len(parts) >= 3:
+                return self.self_vfs[".".join(parts[2:])]
+            else:
+                raise KeyError(f"Self path '{path}' not found in execution context")
+
+        # Delegate to parent for non-target/non-self paths
         return super().get(path)
 
 
@@ -234,13 +271,37 @@ class CommandExecutor:
                 else:
                     target_vfs[var_name] = tensor
 
-            # Build a custom get() function that handles target. prefix
-            # For now, we'll use a wrapper approach
+            # NEW: Create self-scoped bars/vfs if self_index is set
+            # BUT: Only do this if self is NOT an item (items don't have bars)
+            self_bars = {}
+            self_vfs = {}
+            if context.self_index is not None and not context.self_is_item:
+                # Self is an agent - index into agent-scoped tensors
+                for bar_name, tensor in bars_dict.items():
+                    if tensor.dim() > 0:
+                        self_bars[bar_name] = tensor[context.self_index]
+                    else:
+                        self_bars[bar_name] = tensor
+
+                for var_name, tensor in vfs_dict.items():
+                    if tensor.dim() > 0:
+                        self_vfs[var_name] = tensor[context.self_index]
+                    else:
+                        self_vfs[var_name] = tensor
+            # If self is an item, self_bars/self_vfs stay empty
+            # Item-scoped VFS lookups are handled directly in _TargetAwareExecutionContext.get()
+
+            # Build a custom get() function that handles target. and self. prefix
             return _TargetAwareExecutionContext(
                 bars=bars_dict,
                 vfs=vfs_dict,
                 target_bars=target_bars,
                 target_vfs=target_vfs,
+                self_bars=self_bars,  # NEW
+                self_vfs=self_vfs,  # NEW
+                vfs_registry=context.vfs_registry,  # NEW: For item-scoped lookups
+                self_index=context.self_index,  # NEW
+                self_is_item=context.self_is_item,  # NEW
             )
 
         # No target, return standard context

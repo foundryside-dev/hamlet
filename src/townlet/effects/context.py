@@ -28,12 +28,14 @@ class ExecutionContext:
         self_index: int | None,
         target_index: int | None,
         effect: Any | None = None,
+        self_is_item: bool = False,  # NEW: Track if self refers to item
     ):
         self.bars = bars or {}
         self.vfs_registry = vfs_registry
         self.self_index = self_index
         self.target_index = target_index
         self.effect = effect  # ActiveEffect instance for effect-specific variables
+        self.self_is_item = self_is_item  # NEW
 
     def get_path(self, path: str) -> torch.Tensor:
         """Resolve path to tensor value.
@@ -67,6 +69,24 @@ class ExecutionContext:
                 raise ValueError("self_index not set in context")
 
             rest = path[len("self.") :]
+
+            # NEW: Special handling for self.vfs.* when self is an item
+            if rest.startswith("vfs.") and self.self_is_item:
+                from townlet.vfs.schema import VariableScope
+
+                var_name = rest[len("vfs.") :]
+                if self.vfs_registry is None:
+                    raise ValueError("VFS registry not set in context")
+                value = self.vfs_registry.read(
+                    var_name,
+                    context_index=self.self_index,
+                    scope=VariableScope.ITEM,
+                )
+                # Convert to tensor if needed
+                if not isinstance(value, torch.Tensor):
+                    value = torch.tensor(value, dtype=torch.float32)
+                return value
+
             tensor = self.get_path(rest)
 
             if tensor.dim() > 0:
@@ -112,6 +132,39 @@ class ExecutionContext:
             original = self.get_path(rest)
             if original.dim() > 0:
                 original[self.target_index] = value
+            else:
+                # Scalar case - need to replace
+                self.set_path(rest, value)
+            return
+
+        # NEW: Handle self. prefix with special logic for items
+        if path.startswith("self."):
+            if self.self_index is None:
+                raise ValueError("self_index not set in context")
+
+            rest = path[len("self.") :]
+
+            # NEW: Special handling for self.vfs.* when self is an item
+            if rest.startswith("vfs.") and self.self_is_item:
+                from townlet.vfs.schema import VariableScope
+
+                var_name = rest[len("vfs.") :]
+                if self.vfs_registry is None:
+                    raise ValueError("VFS registry not set in context")
+                # Convert value to Python float if it's a tensor (VFS registry.write() accepts both)
+                write_value = value.item() if isinstance(value, torch.Tensor) and value.numel() == 1 else value
+                self.vfs_registry.write(
+                    var_name,
+                    write_value,
+                    context_index=self.self_index,
+                    scope=VariableScope.ITEM,
+                )
+                return
+
+            # Default: Get original tensor and mutate in-place
+            original = self.get_path(rest)
+            if original.dim() > 0:
+                original[self.self_index] = value
             else:
                 # Scalar case - need to replace
                 self.set_path(rest, value)

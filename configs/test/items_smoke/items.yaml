@@ -24,6 +24,8 @@ items:
         on_use:
           - modify: "target.bar.health"
             value: "target.bar.health + 0.5"
+          - modify: "self.vfs.durability"
+            value: "self.vfs.durability - 10"  # NEW: Decrease durability on use
         on_drop: []
 
     - id: coin

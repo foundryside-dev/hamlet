@@ -286,8 +286,34 @@ class VectorizedHamletEnv:
         self.observation_dim = self.observation_spec.total_dims
 
         # VFS INTEGRATION: Initialize variable registry from compiled VFS variables
-        self.vfs_variables = list(level.vfs_variables)
-        self.vfs_registry = VariableRegistry(variables=self.vfs_variables, num_agents=num_agents, device=self.device)
+        # TEMPORARY WORKAROUND: Manually add item-scoped variables from variables_reference.yaml
+        # TODO: Compiler should load ALL variables, not just observation variables
+        import yaml
+
+        from townlet.vfs.schema import VariableDef
+
+        self.vfs_variables = list(universe.vfs_variables)
+
+        # Load item-scoped variables from variables_reference.yaml
+        vfs_ref_path = self.config_pack_path / "variables_reference.yaml"
+        if vfs_ref_path.exists():
+            with vfs_ref_path.open() as f:
+                vfs_data = yaml.safe_load(f)
+                for var_dict in vfs_data.get("variables", []):
+                    if var_dict.get("scope") == "item":
+                        # Create VariableDef for item-scoped variable
+                        # Strip normalization field if it has old format
+                        var_dict_clean = {k: v for k, v in var_dict.items() if k != "normalization"}
+                        var_def = VariableDef(**var_dict_clean)
+                        self.vfs_variables.append(var_def)
+
+        max_items_in_world = universe.items_catalog.max_items_in_world if universe.items_catalog else 0
+        self.vfs_registry = VariableRegistry(
+            variables=self.vfs_variables,
+            num_agents=num_agents,
+            device=self.device,
+            max_items=max_items_in_world,
+        )
 
         # Initialize reward strategy (TASK-001: variable meters)
         meter_name_to_index = dict(self.metadata.meter_name_to_index)
@@ -584,11 +610,18 @@ class VectorizedHamletEnv:
                 vfs_type = "bool" if var_type == "bool" else "float"
                 schema[f"target.vfs.{var['id']}"] = vfs_type
 
+                # NEW: Add self.vfs.* paths for item-scoped variables
+                # Items can modify their own VFS state via self.vfs.*
+                var_scope = var.get("scope", "agent")
+                if var_scope == "item":
+                    schema[f"self.vfs.{var['id']}"] = vfs_type
+
             self.item_manager = ItemManager(
                 catalog=universe.items_catalog,
                 max_items=universe.items_catalog.max_items_in_world,
                 device=self.device,
                 schema=schema,  # NEW: Enable Effects compilation
+                vfs_registry=self.vfs_registry,  # NEW: Pass VFS registry for item state storage
             )
 
             self.item_inventory = InventoryState(

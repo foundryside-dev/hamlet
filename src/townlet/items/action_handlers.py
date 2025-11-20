@@ -49,6 +49,7 @@ class ItemActionHandler:
         agent_idx: int,
         interaction: Literal["on_pickup", "on_use", "on_drop"],
         meters: torch.Tensor,  # [batch, num_meters] - passed from environment
+        item_vfs_index: int | None = None,  # NEW: Item's VFS index for self-modification
     ) -> None:
         """Execute Effects commands for item interaction.
 
@@ -57,6 +58,7 @@ class ItemActionHandler:
             agent_idx: Agent performing interaction
             interaction: Which interaction type to execute
             meters: Current meters tensor from environment
+            item_vfs_index: Item's VFS index for self-modification (NEW)
         """
         # Find compiled item type
         compiled_type = next(
@@ -86,15 +88,13 @@ class ItemActionHandler:
 
         # Context mapping for item interactions:
         # - target = Agent performing the action (can access target.bar.*, target.vfs.*)
-        # - self = The Item itself (TODO: requires item VFS index for self.vfs.*)
-        #
-        # Current limitation: If item commands use self.vfs.durability, ExecutionContext
-        # needs to support source_item_index. For Phase 1-3, items only modify target.
+        # - self = The Item itself (can access self.vfs.durability, etc.)
         context = ExecutionContext(
             bars=bars_dict,
             vfs_registry=self.vfs_registry,
-            self_index=None,  # Items don't have self yet (Phase 4 limitation)
+            self_index=item_vfs_index,  # NEW: Pass item's vfs_index
             target_index=agent_idx,  # Agent is the target
+            self_is_item=True,  # NEW: Mark self as item for VFS routing
         )
 
         # Execute all commands
@@ -144,6 +144,7 @@ class ItemActionHandler:
                 agent_idx=agent_idx,
                 interaction="on_pickup",
                 meters=meters,
+                item_vfs_index=item.vfs_index,  # NEW: Pass vfs_index
             )
 
         return success
@@ -185,6 +186,7 @@ class ItemActionHandler:
             agent_idx=agent_idx,
             interaction="on_use",
             meters=meters,
+            item_vfs_index=item.vfs_index,  # NEW: Pass vfs_index
         )
 
         return True

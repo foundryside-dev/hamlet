@@ -5,6 +5,10 @@
 **Owner:** World Compiler (T0 Pillar 3)
 **Components:** Expression Language + VFS Profiles + Effects + Items
 **Compiler Entry Point:** `UniverseCompiler` (master compiler orchestrating schema validation, world compilation, and brain/agent compilation; no separate `world_compiler.py`)
+**Compiler Subsystems:** `UniverseCompiler` encapsulates three subcompilers:
+- Stratum compiler (spatial substrate shape: GridND, ContinuousND, Aspatial, Grid2D/3D)
+- World compiler (expressions, VFS profiles, Effects, Items)
+- Agent/Brain compiler (actions, drives, networks)
 
 ---
 

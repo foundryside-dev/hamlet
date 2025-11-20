@@ -201,6 +201,9 @@ class CommandExecutor:
             duration=command.duration or 10,
             intensity=command.intensity or 1.0,
             current_step=context.effect_manager.current_step,
+            bars=context.bars,
+            vfs_registry=context.vfs_registry,
+            spawn_depth=context.spawn_depth,
         )
 
         # Return spawned effect instance ID for potential future use

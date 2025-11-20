@@ -294,3 +294,99 @@ def test_tick_executes_on_despawn_before_removal(catalog_with_commands, mock_exe
     assert mock_executor.on_tick_call_count > initial_call_count
     # Verify effect removed
     assert 5 not in manager.agent_effects or len(manager.agent_effects[5]) == 0
+
+
+def test_spawn_effect_executes_on_spawn():
+    """spawn_effect() executes on_spawn commands when spawning effects."""
+    import torch
+
+    # Create catalog with effect that has on_spawn commands
+    config = EffectsConfig(
+        version="1.0",
+        effect_definitions=[
+            EffectDefinitionConfig(
+                id="poisoned",
+                scope=EffectScope.AGENT,
+                duration=30,
+                intensity=1.0,
+                reapply_policy=ReapplyPolicy.STACK,
+                observable=True,
+                on_spawn=[CommandConfig(modify="target.bar.health", value="target.bar.health - 5.0")],
+                on_tick=[],
+                on_despawn=[],
+                on_interrupt=[],
+            )
+        ],
+    )
+    catalog = EffectCatalog.from_config(config)
+
+    # Create mock executor to track command execution
+    mock_executor = MockCommandExecutor()
+    manager = EffectManager(catalog=catalog, device="cpu", command_executor=mock_executor)
+
+    # Spawn effect with bars and vfs_registry
+    bars = {"health": torch.tensor([100.0, 95.0, 80.0])}
+    effect = manager.spawn_effect(
+        effect_id="poisoned",
+        target_entity_id=1,
+        scope=EffectScope.AGENT,
+        duration=30,
+        intensity=1.0,
+        current_step=100,
+        bars=bars,
+        vfs_registry=None,
+        spawn_depth=0,
+    )
+
+    # Verify effect created
+    assert effect.effect_id == "poisoned"
+    assert effect.target_entity_id == 1
+
+    # Verify on_spawn commands executed
+    assert mock_executor.execute_commands_called
+    assert mock_executor.last_context is not None
+    assert mock_executor.last_context.self_index == 1
+    assert mock_executor.last_context.effect == effect
+    assert mock_executor.last_context.spawn_depth == 1  # Incremented from 0
+
+
+def test_spawn_effect_skips_on_spawn_without_bars():
+    """spawn_effect() skips on_spawn commands when bars not provided."""
+
+    # Create catalog with effect that has on_spawn commands
+    config = EffectsConfig(
+        version="1.0",
+        effect_definitions=[
+            EffectDefinitionConfig(
+                id="poisoned",
+                scope=EffectScope.AGENT,
+                duration=30,
+                intensity=1.0,
+                reapply_policy=ReapplyPolicy.STACK,
+                observable=True,
+                on_spawn=[CommandConfig(modify="target.bar.health", value="target.bar.health - 5.0")],
+                on_tick=[],
+                on_despawn=[],
+                on_interrupt=[],
+            )
+        ],
+    )
+    catalog = EffectCatalog.from_config(config)
+
+    # Create mock executor
+    mock_executor = MockCommandExecutor()
+    manager = EffectManager(catalog=catalog, device="cpu", command_executor=mock_executor)
+
+    # Spawn effect WITHOUT bars (backward compatibility)
+    effect = manager.spawn_effect(
+        effect_id="poisoned",
+        target_entity_id=2,
+        scope=EffectScope.AGENT,
+        duration=30,
+        intensity=1.0,
+        current_step=100,
+    )
+
+    # Verify effect created but on_spawn NOT executed
+    assert effect.effect_id == "poisoned"
+    assert not mock_executor.execute_commands_called

@@ -72,6 +72,9 @@ class EffectManager:
         duration: int,
         intensity: float,
         current_step: int,
+        bars: dict[str, torch.Tensor] | None = None,
+        vfs_registry: Any | None = None,
+        spawn_depth: int = 0,
     ) -> ActiveEffect:
         """Spawn new effect instance, handling reapply policies.
 
@@ -82,6 +85,9 @@ class EffectManager:
             duration: Effect duration in ticks
             intensity: Effect intensity multiplier
             current_step: Current environment step
+            bars: Current meter values (for on_spawn command execution)
+            vfs_registry: VFS registry (for on_spawn command execution)
+            spawn_depth: Current cascade depth (for on_spawn command execution)
 
         Returns:
             ActiveEffect instance
@@ -127,6 +133,23 @@ class EffectManager:
 
         # Store in scoped collection
         self._add_to_scope(active)
+
+        # Execute on_spawn commands
+        if effect_def.on_spawn and self.command_executor and bars is not None:
+            from townlet.effects.context import ExecutionContext
+
+            context = ExecutionContext(
+                bars=bars,
+                vfs_registry=vfs_registry,
+                self_index=target_entity_id,
+                target_index=None,
+                effect=active,
+                effect_manager=self,
+                spawn_depth=spawn_depth + 1,  # Increment depth for cascade tracking
+            )
+
+            for command in effect_def.on_spawn:
+                self.command_executor.execute(command, context)
 
         return active
 

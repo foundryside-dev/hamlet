@@ -21,7 +21,7 @@
 
 ## Introduction
 
-The **World Compiler** is HAMLET's unified system for defining and compiling simulation behavior. `UniverseCompiler` is the single entry point that orchestrates schema validation plus the world stack (expressions, VFS, Effects, Items) alongside the brain/agent pipeline—there is no separate `world_compiler.py` binary.
+The **World Compiler** is HAMLET's unified system for defining and compiling simulation behavior. `UniverseCompiler` is the single entry point that orchestrates schema validation plus the world stack (expressions, VFS, Effects, Items) alongside the stratum compiler (spatial substrate shape: gridND, aspatial, continuous2D/3D) and the brain/agent pipeline—there is no separate `world_compiler.py` binary.
 
 It integrates four powerful layers into a single coherent pipeline:
 

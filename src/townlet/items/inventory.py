@@ -13,10 +13,11 @@ __all__ = ["InventoryState"]
 
 
 class InventoryState:
-    """Agent inventory state ([batch, max_items_per_agent] slots).
+    """Fixed-size inventory for agents using GPU tensors.
 
-    Stores item instance_ids in fixed-size tensor.
-    -1 indicates empty slot.
+    Storage:
+    - slots: [batch, max_items_per_agent] tensor of instance IDs (-1 = empty)
+    - items: dict[instance_id -> ItemInstance] for metadata lookup
     """
 
     def __init__(
@@ -36,8 +37,7 @@ class InventoryState:
         self.max_items_per_agent = max_items_per_agent
         self.device = device
 
-        # Inventory slots: [batch, max_items_per_agent]
-        # -1 = empty slot, >=0 = item instance_id
+        # Slot storage: -1 = empty, ≥0 = instance_id
         self.slots = torch.full(
             (batch_size, max_items_per_agent),
             fill_value=-1,
@@ -45,48 +45,58 @@ class InventoryState:
             device=device,
         )
 
+        # Item metadata lookup
+        self.items: dict[int, ItemInstance] = {}
+
     def add_item(self, agent_idx: int, item: ItemInstance) -> bool:
-        """Add item to agent's inventory (DENY_PICKUP policy).
+        """Add item to first empty slot (DENY_PICKUP if full).
 
         Args:
             agent_idx: Agent index
-            item: Item instance to add
+            item: ItemInstance to add
 
         Returns:
-            True if added, False if inventory full (DENY_PICKUP)
+            True if added, False if inventory full
         """
-        # Find first empty slot (-1)
-        empty_slots = self.slots[agent_idx] == -1
-        if not empty_slots.any():
-            return False  # Inventory full (DENY_PICKUP policy)
+        # Find first empty slot
+        agent_slots = self.slots[agent_idx]
+        empty_mask = agent_slots == -1
+
+        if not empty_mask.any():
+            return False  # DENY_PICKUP policy
 
         # Get first empty slot index
-        slot_idx = empty_slots.nonzero(as_tuple=True)[0][0].item()
+        slot_idx = int(torch.where(empty_mask)[0][0].item())
 
-        # Store item instance_id
+        # Store instance ID
         self.slots[agent_idx, slot_idx] = item.instance_id
+
+        # Store item metadata
+        self.items[item.instance_id] = item
 
         return True
 
     def remove_item(self, agent_idx: int, slot_idx: int) -> int | None:
-        """Remove item from inventory slot.
+        """Remove item from slot.
 
         Args:
             agent_idx: Agent index
-            slot_idx: Inventory slot index (0 to max_items_per_agent-1)
+            slot_idx: Slot index
 
         Returns:
-            Item instance_id if removed, None if slot empty
+            Instance ID if removed, None if slot empty
         """
-        if slot_idx < 0 or slot_idx >= self.max_items_per_agent:
-            raise ValueError(f"Invalid slot_idx: {slot_idx}")
+        instance_id = int(self.slots[agent_idx, slot_idx].item())
 
-        instance_id = self.slots[agent_idx, slot_idx].item()
         if instance_id == -1:
-            return None  # Slot already empty
+            return None
 
         # Clear slot
         self.slots[agent_idx, slot_idx] = -1
+
+        # Remove from metadata (keep for respawn tracking)
+        # Actually DON'T remove - need it for DROP action
+        # self.items.pop(instance_id, None)
 
         return instance_id
 

@@ -95,3 +95,82 @@ def test_env_with_items_initializes():
     # Verify inventory shape
     assert env.item_inventory.slots.shape == (4, 3), f"Expected (4, 3), got {env.item_inventory.slots.shape}"
     assert torch.all(env.item_inventory.slots == -1), "Inventory should start empty"
+
+
+def test_get_action_picks_up_item():
+    """GET action picks up item and executes on_pickup Effects."""
+    compiler = UniverseCompiler()
+    universe = compiler.compile(Path("configs/test/items_smoke"), use_cache=False)
+
+    env = VectorizedHamletEnv(
+        universe=universe,
+        level_name="L0_smoke",
+        num_agents=1,
+        device="cpu",
+    )
+
+    # Reset to initialize state
+    env.reset()
+
+    # Spawn coin at (2, 2) - has on_pickup: money +0.1 (10 out of max 100)
+    item = env.item_manager.spawn_item("coin", position=(2, 2), current_tick=0)
+    assert item is not None
+
+    # Record initial money
+    money_idx = env.meter_name_to_index["money"]
+    initial_money = env.meters[0, money_idx].item()
+
+    # Move agent to (2, 2)
+    env.positions[0] = torch.tensor([2, 2], dtype=torch.long)
+
+    # Execute GET action
+    get_action = env.action_space.get_action_by_name("GET")
+    actions = torch.tensor([get_action.id], dtype=torch.long)
+    env.step(actions)
+
+    # Verify item picked up
+    assert env.item_inventory.count_items(0) == 1
+    assert item.instance_id not in env.item_manager.active_items
+
+    # Verify on_pickup Effects executed: money increased by 0.1
+    final_money = env.meters[0, money_idx].item()
+    money_increase = final_money - initial_money
+    assert money_increase > 0.09, f"Expected ~0.1 increase, got {money_increase}"
+    assert money_increase < 0.11, f"Expected ~0.1 increase, got {money_increase}"
+
+
+def test_use_slot_action_executes_effects():
+    """USE_SLOT_N executes on_use Effects (apple increases energy)."""
+    compiler = UniverseCompiler()
+    universe = compiler.compile(Path("configs/test/items_smoke"), use_cache=False)
+
+    env = VectorizedHamletEnv(
+        universe=universe,
+        level_name="L0_smoke",
+        num_agents=1,
+        device="cpu",
+    )
+
+    env.reset()
+
+    # Spawn apple and pick it up
+    env.item_manager.spawn_item("apple", position=(0, 0), current_tick=0)
+    env.positions[0] = torch.tensor([0, 0], dtype=torch.long)
+    get_action = env.action_space.get_action_by_name("GET")
+    env.step(torch.tensor([get_action.id]))
+
+    # Record initial energy
+    energy_idx = env.meter_name_to_index["energy"]
+    initial_energy = env.meters[0, energy_idx].item()
+
+    # Use apple (on_use: energy +0.3)
+    use_action = env.action_space.get_action_by_name("USE_SLOT_0")
+    env.step(torch.tensor([use_action.id]))
+
+    # Verify energy increased (accounting for meter decay during step)
+    # Apple adds +0.3, but energy also decays during the step
+    # Net result should be positive (item effect > decay)
+    final_energy = env.meters[0, energy_idx].item()
+    energy_increase = final_energy - initial_energy
+
+    assert energy_increase > 0.0, f"Expected positive energy increase from apple, got {energy_increase}"

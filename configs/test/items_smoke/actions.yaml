@@ -13,5 +13,34 @@ actions:
       description: "Do nothing (pass turn)"
       enabled_by_default: true
 
+    # Item actions
+    - name: GET
+      description: "Pick up item at current position"
+      enabled_by_default: true
+
+    - name: USE_SLOT_0
+      description: "Use item in inventory slot 0"
+      enabled_by_default: true
+
+    - name: USE_SLOT_1
+      description: "Use item in inventory slot 1"
+      enabled_by_default: true
+
+    - name: USE_SLOT_2
+      description: "Use item in inventory slot 2"
+      enabled_by_default: true
+
+    - name: DROP_SLOT_0
+      description: "Drop item from inventory slot 0"
+      enabled_by_default: true
+
+    - name: DROP_SLOT_1
+      description: "Drop item from inventory slot 1"
+      enabled_by_default: true
+
+    - name: DROP_SLOT_2
+      description: "Drop item from inventory slot 2"
+      enabled_by_default: true
+
   labels:
     preset: gaming

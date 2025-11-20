@@ -8,12 +8,10 @@ items:
       duration: null  # Permanent
       cooldown: null
       interactions:
-        on_pickup:
-          - modify: "target.vfs.has_food"
-            value: "true"
+        on_pickup: []  # No VFS variables available yet
         on_use:
           - modify: "target.bar.energy"
-            value: "+0.3"
+            value: "target.bar.energy + 0.3"
         on_drop: []
 
     - id: medkit
@@ -25,7 +23,7 @@ items:
         on_pickup: []
         on_use:
           - modify: "target.bar.health"
-            value: "+0.5"
+            value: "target.bar.health + 0.5"
         on_drop: []
 
     - id: coin
@@ -36,7 +34,7 @@ items:
       interactions:
         on_pickup:
           - modify: "target.bar.money"
-            value: "+10.0"
+            value: "target.bar.money + 0.1"  # 10 out of max 100 = 0.1 in normalized space
         on_use: []
         on_drop: []
 

@@ -531,29 +531,6 @@ class VectorizedHamletEnv:
             modulation_rules=modulation_rules,
         )
 
-        # === ITEMS INITIALIZATION ===
-        if universe.items_catalog is not None:
-            self.item_manager = ItemManager(
-                catalog=universe.items_catalog,
-                max_items=universe.items_catalog.max_items_in_world,
-                device=self.device,
-            )
-
-            self.item_inventory = InventoryState(
-                batch_size=num_agents,
-                max_items_per_agent=universe.items_catalog.max_items_per_agent,
-                device=self.device,
-            )
-
-            self.item_handler = ItemActionHandler(
-                manager=self.item_manager,
-                inventory=self.item_inventory,
-            )
-        else:
-            self.item_manager = None
-            self.item_inventory = None
-            self.item_handler = None
-
         # Build composed action space from compiler metadata and substrate defaults
         self.action_space = self._build_action_space_from_metadata(
             universe.action_space_metadata,
@@ -582,6 +559,55 @@ class VectorizedHamletEnv:
         self.dones = torch.zeros(self.num_agents, dtype=torch.bool, device=self.device)
         self.step_counts = torch.zeros(self.num_agents, dtype=torch.long, device=self.device)
         self.intrinsic_weights = torch.ones(self.num_agents, dtype=torch.float32, device=self.device)  # Default: 1.0 (full exploration)
+
+        # === ITEMS INITIALIZATION ===
+        # Must happen AFTER self.meters is initialized because ItemActionHandler needs it
+        if universe.items_catalog is not None:
+            # Build schema for Effects compilation
+            # Need to load ALL VFS variables (not just observations) from variables_reference.yaml
+            # because the compiler currently only loads exposed_observations into universe.vfs_variables
+            import yaml
+
+            vfs_ref_path = self.config_pack_path / "variables_reference.yaml"
+            all_vfs_vars = []
+            if vfs_ref_path.exists():
+                with vfs_ref_path.open() as f:
+                    vfs_data = yaml.safe_load(f)
+                    all_vfs_vars = vfs_data.get("variables", [])
+
+            schema: dict[str, str] = {}
+            for bar_name in self.meter_name_to_index.keys():
+                schema[f"target.bar.{bar_name}"] = "float"
+            for var in all_vfs_vars:
+                # Simple type inference: bool if type is "bool", else float
+                var_type = var.get("type", "float")
+                vfs_type = "bool" if var_type == "bool" else "float"
+                schema[f"target.vfs.{var['id']}"] = vfs_type
+
+            self.item_manager = ItemManager(
+                catalog=universe.items_catalog,
+                max_items=universe.items_catalog.max_items_in_world,
+                device=self.device,
+                schema=schema,  # NEW: Enable Effects compilation
+            )
+
+            self.item_inventory = InventoryState(
+                batch_size=num_agents,
+                max_items_per_agent=universe.items_catalog.max_items_per_agent,
+                device=self.device,
+            )
+
+            self.item_handler = ItemActionHandler(
+                manager=self.item_manager,
+                inventory=self.item_inventory,
+                command_executor=self.command_executor,
+                vfs_registry=self.vfs_registry,
+                meter_name_to_index=self.meter_name_to_index,
+            )
+        else:
+            self.item_manager = None
+            self.item_inventory = None
+            self.item_handler = None
 
         # Exploration module (optional, set by population or external code)
         self.exploration_module: ExplorationStrategy | None = None
@@ -1412,7 +1438,8 @@ class VectorizedHamletEnv:
                         self.item_handler.handle_get_action(
                             agent_idx=int(agent_idx.item()),
                             agent_position=self.positions[agent_idx],
-                            current_tick=self.tick_count,
+                            current_tick=0,  # TODO: Add tick tracking
+                            meters=self.meters,
                         )
             except ValueError:
                 pass  # GET action not in action space
@@ -1428,7 +1455,8 @@ class VectorizedHamletEnv:
                             self.item_handler.handle_use_slot_action(
                                 agent_idx=int(agent_idx.item()),
                                 slot_idx=slot_idx,
-                                current_tick=self.tick_count,
+                                current_tick=0,  # TODO: Add tick tracking
+                                meters=self.meters,
                             )
                 except ValueError:
                     pass  # Action not in action space
@@ -1445,7 +1473,7 @@ class VectorizedHamletEnv:
                                 agent_idx=int(agent_idx.item()),
                                 slot_idx=slot_idx,
                                 agent_position=self.positions[agent_idx],
-                                current_tick=self.tick_count,
+                                current_tick=0,  # TODO: Add tick tracking
                             )
                 except ValueError:
                     pass  # Action not in action space

@@ -4,9 +4,11 @@ Provides world objects with VFS state, inventory mechanics, and Effects-based in
 """
 
 from townlet.items.instance import ItemInstance
+from townlet.items.inventory import InventoryState
 from townlet.items.manager import ItemManager
 
 __all__ = [
     "ItemInstance",
     "ItemManager",
+    "InventoryState",
 ]

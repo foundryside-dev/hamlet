@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
+    import torch
+
     from townlet.effects.catalog import EffectCatalog
     from townlet.effects.context import ExecutionContext
     from townlet.effects.executor import CommandExecutor
@@ -199,7 +201,13 @@ class EffectManager:
         if collection is not None and effect in collection:
             collection.remove(effect)
 
-    def tick(self, current_step: int, env_state: Any | None = None) -> None:
+    def tick(
+        self,
+        bars: dict[str, torch.Tensor],
+        vfs_registry: Any | None,
+        current_step: int,
+        env_state: Any | None = None,  # Keep for backward compatibility
+    ) -> None:
         """Execute all active effects for one timestep.
 
         Updates lifecycle counters (elapsed_ticks, duration_remaining) and
@@ -207,44 +215,94 @@ class EffectManager:
         if command_executor is configured.
 
         Args:
+            bars: Current meter values
+            vfs_registry: VFS registry
             current_step: Current environment step
-            env_state: Environment state for command execution (optional)
+            env_state: Environment state for command execution (deprecated, use bars/vfs_registry)
         """
+
         self.current_step = current_step
 
-        # Process all scopes
-        all_collections = [
-            self.global_effects,
-            *self.agent_effects.values(),
-            *self.item_effects.values(),
-            *self.affordance_effects.values(),
-        ]
+        # Tick global effects
+        for i in range(len(self.global_effects) - 1, -1, -1):
+            effect = self.global_effects[i]
+            self._tick_effect(effect, None, EffectScope.GLOBAL, bars, vfs_registry)
+            if effect.duration_remaining <= 0:
+                self.global_effects.pop(i)
 
-        for collection in all_collections:
+        # Tick agent effects
+        for agent_id, effects in list(self.agent_effects.items()):
             # Process in reverse to safely remove during iteration
-            for i in range(len(collection) - 1, -1, -1):
-                effect = collection[i]
-
-                # Execute on_tick commands if executor available
-                if self.command_executor and env_state:
-                    context = self._build_context(effect, env_state)
-                    effect_def = self.catalog.effects[effect.effect_id]
-                    self.command_executor.execute_commands(effect_def.on_tick, context)
-
-                # Update lifecycle
-                effect.elapsed_ticks += 1
-                effect.duration_remaining -= 1
-
-                # Check for expiry
+            for i in range(len(effects) - 1, -1, -1):
+                effect = effects[i]
+                self._tick_effect(effect, agent_id, EffectScope.AGENT, bars, vfs_registry)
                 if effect.duration_remaining <= 0:
-                    # Execute on_despawn commands before removal
-                    if self.command_executor and env_state:
-                        context = self._build_context(effect, env_state)
-                        effect_def = self.catalog.effects[effect.effect_id]
-                        self.command_executor.execute_commands(effect_def.on_despawn, context)
+                    self._despawn_effect(effect, agent_id, EffectScope.AGENT, bars, vfs_registry)
 
-                    # Despawn (remove from collection)
-                    collection.pop(i)
+    def _tick_effect(
+        self,
+        effect: ActiveEffect,
+        entity_id: int | None,
+        scope: EffectScope,
+        bars: dict[str, torch.Tensor],
+        vfs_registry: Any | None,
+    ) -> None:
+        """Tick a single effect (execute on_tick and update counters)."""
+        # Execute on_tick commands
+        if effect.effect_id in self.catalog.effects:
+            compiled = self.catalog.effects[effect.effect_id]
+
+            if compiled.on_tick and self.command_executor:
+                from townlet.effects.context import ExecutionContext
+
+                context = ExecutionContext(
+                    bars=bars,
+                    vfs_registry=vfs_registry,
+                    self_index=entity_id,
+                    target_index=None,
+                    effect=effect,
+                    effect_manager=self,  # Pass self for spawn_effect
+                    spawn_depth=0,  # Reset depth for top-level tick
+                )
+
+                for command in compiled.on_tick:
+                    self.command_executor.execute(command, context)
+
+        # Decrement duration
+        effect.duration_remaining -= 1
+        effect.elapsed_ticks += 1
+
+    def _despawn_effect(
+        self,
+        effect: ActiveEffect,
+        entity_id: int,
+        scope: EffectScope,
+        bars: dict[str, torch.Tensor],
+        vfs_registry: Any | None,
+    ) -> None:
+        """Despawn effect and execute on_despawn commands."""
+        if effect.effect_id in self.catalog.effects:
+            compiled = self.catalog.effects[effect.effect_id]
+
+            if compiled.on_despawn and self.command_executor:
+                from townlet.effects.context import ExecutionContext
+
+                context = ExecutionContext(
+                    bars=bars,
+                    vfs_registry=vfs_registry,
+                    self_index=entity_id,
+                    target_index=None,
+                    effect=effect,
+                    effect_manager=self,
+                    spawn_depth=0,
+                )
+
+                for command in compiled.on_despawn:
+                    self.command_executor.execute(command, context)
+
+        # Remove from storage
+        if scope == EffectScope.AGENT and entity_id in self.agent_effects:
+            self.agent_effects[entity_id].remove(effect)
 
     def _build_context(self, effect: ActiveEffect, env_state: Any) -> ExecutionContext:
         """Build ExecutionContext for effect.

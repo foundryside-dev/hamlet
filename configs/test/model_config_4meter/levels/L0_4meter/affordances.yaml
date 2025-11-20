@@ -1,206 +1,314 @@
 affordances:
-  version: "1.0"
-
+  version: '1.0'
   affordances:
-    - name: EAT
-      interaction_type: instant
-      costs:
-        energy: 0.05
-        money: 5.0
-      effects:
-        energy: 0.4      # was satiation
-        mood: 0.05
-      opening_hours:
-        enabled: true
-        schedule:
-          - start: 6
-            end: 22
-      deployment:
-        type: fixed
-        positions: [[2, 2], [5, 5]]
-
-    - name: SLEEP
-      interaction_type: instant
-      costs:
-        energy: 0.0
-      effects:
-        energy: 0.8
-        mood: 0.1
-      opening_hours:
-        enabled: false
-      deployment:
-        type: fixed
-        positions: [[0, 0], [7, 7]]
-
-    - name: WORK
-      interaction_type: instant
-      costs:
-        energy: 0.3
-        mood: 0.1
-      effects:
-        money: 22.5
-      opening_hours:
-        enabled: true
-        schedule:
-          - start: 9
-            end: 17
-      deployment:
-        type: fixed
-        positions: [[4, 4]]
-
-    - name: SHOWER
-      interaction_type: instant
-      costs:
-        energy: 0.05
-        money: 1.0
-      effects:
-        health: 0.2     # proxy for hygiene
-        mood: 0.1
-      opening_hours:
-        enabled: false
-      deployment:
-        type: fixed
-        positions: [[1, 1]]
-
-    - name: EXERCISE
-      interaction_type: instant
-      costs:
-        energy: 0.2
-        money: 0.0
-      effects:
-        health: 0.15    # proxy for fitness
-        mood: 0.05
-      opening_hours:
-        enabled: false
-      deployment:
-        type: fixed
-        positions: [[6, 6]]
-
-    - name: SOCIALIZE
-      interaction_type: instant
-      costs:
-        energy: 0.1
-      effects:
-        mood: 0.3       # proxy for social
-      opening_hours:
-        enabled: false
-      deployment:
-        type: fixed
-        positions: [[3, 3]]
-
-    - name: MEDITATE
-      interaction_type: instant
-      costs:
-        energy: 0.05
-      effects:
-        mood: 0.2
-      opening_hours:
-        enabled: false
-      deployment:
-        type: fixed
-        positions: [[2, 6]]
-
-    - name: DRINK_WATER
-      interaction_type: instant
-      costs:
-        energy: 0.01
-      effects:
-        energy: 0.1     # was satiation
-      opening_hours:
-        enabled: false
-      deployment:
-        type: fixed
-        positions: [[2, 2]]
-
-    - name: BRUSH_TEETH
-      interaction_type: instant
-      costs:
-        energy: 0.02
-      effects:
-        health: 0.1     # proxy for hygiene
-      opening_hours:
-        enabled: false
-      deployment:
-        type: fixed
-        positions: [[1, 1]]
-
-    - name: LAUNDRY
-      interaction_type: instant
-      costs:
-        energy: 0.1
-        money: 2.0
-      effects:
-        mood: 0.1       # proxy for hygiene
-      opening_hours:
-        enabled: false
-      deployment:
-        type: fixed
-        positions: [[5, 1]]
-
-    - name: COOK
-      interaction_type: instant
-      costs:
-        energy: 0.15
-        money: 3.0
-      effects:
-        energy: 0.5     # was satiation
-        mood: 0.1
-      opening_hours:
-        enabled: false
-      deployment:
-        type: fixed
-        positions: [[2, 2]]
-
-    - name: CLEAN_HOUSE
-      interaction_type: instant
-      costs:
-        energy: 0.15
-      effects:
-        mood: 0.05      # proxy for hygiene
-      opening_hours:
-        enabled: false
-      deployment:
-        type: fixed
-        positions: [[4, 2]]
-
-    - name: ENTERTAINMENT
-      interaction_type: instant
-      costs:
-        energy: 0.05
-        money: 5.0
-      effects:
-        mood: 0.25
-      opening_hours:
-        enabled: false
-      deployment:
-        type: fixed
-        positions: [[6, 2]]
-
-    - name: DOCTOR
-      interaction_type: instant
-      costs:
-        energy: 0.1
-        money: 20.0
-      effects:
-        health: 0.4
-      opening_hours:
-        enabled: true
-        schedule:
-          - start: 8
-            end: 18
-      deployment:
-        type: fixed
-        positions: [[7, 4]]
-
+  - name: EAT
+    interaction_type: instant
+    costs:
+      energy: 0.05
+      money: 5.0
+    opening_hours:
+      enabled: true
+      schedule:
+      - start: 6
+        end: 22
+    deployment:
+      type: fixed
+      positions:
+      - - 2
+        - 2
+      - - 5
+        - 5
+    interactions:
+      on_start:
+      - modify: target.bar.energy
+        value: target.bar.energy + 0.4
+      - modify: target.bar.mood
+        value: target.bar.mood + 0.05
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
+  - name: SLEEP
+    interaction_type: instant
+    costs:
+      energy: 0.0
+    opening_hours:
+      enabled: false
+    deployment:
+      type: fixed
+      positions:
+      - - 0
+        - 0
+      - - 7
+        - 7
+    interactions:
+      on_start:
+      - modify: target.bar.energy
+        value: target.bar.energy + 0.8
+      - modify: target.bar.mood
+        value: target.bar.mood + 0.1
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
+  - name: WORK
+    interaction_type: instant
+    costs:
+      energy: 0.3
+      mood: 0.1
+    opening_hours:
+      enabled: true
+      schedule:
+      - start: 9
+        end: 17
+    deployment:
+      type: fixed
+      positions:
+      - - 4
+        - 4
+    interactions:
+      on_start:
+      - modify: target.bar.money
+        value: target.bar.money + 22.5
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
+  - name: SHOWER
+    interaction_type: instant
+    costs:
+      energy: 0.05
+      money: 1.0
+    opening_hours:
+      enabled: false
+    deployment:
+      type: fixed
+      positions:
+      - - 1
+        - 1
+    interactions:
+      on_start:
+      - modify: target.bar.health
+        value: target.bar.health + 0.2
+      - modify: target.bar.mood
+        value: target.bar.mood + 0.1
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
+  - name: EXERCISE
+    interaction_type: instant
+    costs:
+      energy: 0.2
+      money: 0.0
+    opening_hours:
+      enabled: false
+    deployment:
+      type: fixed
+      positions:
+      - - 6
+        - 6
+    interactions:
+      on_start:
+      - modify: target.bar.health
+        value: target.bar.health + 0.15
+      - modify: target.bar.mood
+        value: target.bar.mood + 0.05
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
+  - name: SOCIALIZE
+    interaction_type: instant
+    costs:
+      energy: 0.1
+    opening_hours:
+      enabled: false
+    deployment:
+      type: fixed
+      positions:
+      - - 3
+        - 3
+    interactions:
+      on_start:
+      - modify: target.bar.mood
+        value: target.bar.mood + 0.3
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
+  - name: MEDITATE
+    interaction_type: instant
+    costs:
+      energy: 0.05
+    opening_hours:
+      enabled: false
+    deployment:
+      type: fixed
+      positions:
+      - - 2
+        - 6
+    interactions:
+      on_start:
+      - modify: target.bar.mood
+        value: target.bar.mood + 0.2
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
+  - name: DRINK_WATER
+    interaction_type: instant
+    costs:
+      energy: 0.01
+    opening_hours:
+      enabled: false
+    deployment:
+      type: fixed
+      positions:
+      - - 2
+        - 2
+    interactions:
+      on_start:
+      - modify: target.bar.energy
+        value: target.bar.energy + 0.1
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
+  - name: BRUSH_TEETH
+    interaction_type: instant
+    costs:
+      energy: 0.02
+    opening_hours:
+      enabled: false
+    deployment:
+      type: fixed
+      positions:
+      - - 1
+        - 1
+    interactions:
+      on_start:
+      - modify: target.bar.health
+        value: target.bar.health + 0.1
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
+  - name: LAUNDRY
+    interaction_type: instant
+    costs:
+      energy: 0.1
+      money: 2.0
+    opening_hours:
+      enabled: false
+    deployment:
+      type: fixed
+      positions:
+      - - 5
+        - 1
+    interactions:
+      on_start:
+      - modify: target.bar.mood
+        value: target.bar.mood + 0.1
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
+  - name: COOK
+    interaction_type: instant
+    costs:
+      energy: 0.15
+      money: 3.0
+    opening_hours:
+      enabled: false
+    deployment:
+      type: fixed
+      positions:
+      - - 2
+        - 2
+    interactions:
+      on_start:
+      - modify: target.bar.energy
+        value: target.bar.energy + 0.5
+      - modify: target.bar.mood
+        value: target.bar.mood + 0.1
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
+  - name: CLEAN_HOUSE
+    interaction_type: instant
+    costs:
+      energy: 0.15
+    opening_hours:
+      enabled: false
+    deployment:
+      type: fixed
+      positions:
+      - - 4
+        - 2
+    interactions:
+      on_start:
+      - modify: target.bar.mood
+        value: target.bar.mood + 0.05
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
+  - name: ENTERTAINMENT
+    interaction_type: instant
+    costs:
+      energy: 0.05
+      money: 5.0
+    opening_hours:
+      enabled: false
+    deployment:
+      type: fixed
+      positions:
+      - - 6
+        - 2
+    interactions:
+      on_start:
+      - modify: target.bar.mood
+        value: target.bar.mood + 0.25
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
+  - name: DOCTOR
+    interaction_type: instant
+    costs:
+      energy: 0.1
+      money: 20.0
+    opening_hours:
+      enabled: true
+      schedule:
+      - start: 8
+        end: 18
+    deployment:
+      type: fixed
+      positions:
+      - - 7
+        - 4
+    interactions:
+      on_start:
+      - modify: target.bar.health
+        value: target.bar.health + 0.4
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
   modulations:
-    - bar: energy
-      affordances: [WORK]
-      type: linear_multiplier
-      threshold: 0.3
-      min_multiplier: 0.5
-
-    - bar: mood
-      affordances: [SOCIALIZE, WORK]
-      type: linear_multiplier
-      threshold: 0.4
-      min_multiplier: 0.7
+  - bar: energy
+    affordances:
+    - WORK
+    type: linear_multiplier
+    threshold: 0.3
+    min_multiplier: 0.5
+  - bar: mood
+    affordances:
+    - SOCIALIZE
+    - WORK
+    type: linear_multiplier
+    threshold: 0.4
+    min_multiplier: 0.7

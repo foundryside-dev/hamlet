@@ -38,14 +38,20 @@ class CommandNode:
 
     # spawn_effect command fields
     effect_id: str | None = None  # Effect ID to spawn
-    target_expr: str | None = "self"  # Expression string
+    target: str | int | None = None  # Simple target ("self", "target", or explicit index)
+    target_expr: str | None = "self"  # Expression string (for complex expressions)
     target_ast: Any | None = None  # ✅ Pre-compiled AST
+    duration: int | None = None  # Duration override (if not using effect default)
     intensity: float | None = 1.0  # Intensity multiplier
 
     # spawn_item command fields
-    item_type: str | None = None  # Item type ID
-    position_expr: str | None = None  # Expression string
+    item_type: str | None = None  # Item type ID (legacy name, kept for compatibility)
+    item_id: str | None = None  # Item ID to spawn (NEW - preferred)
+    position: Any | None = None  # Simple position ("self", "target", or coordinates)
+    position_expr: str | None = None  # Expression string (for complex expressions)
     position_ast: Any | None = None  # ✅ Pre-compiled AST
+    quantity: int | None = None  # Number of items to spawn (NEW)
+    initial_state: dict | None = None  # Initial VFS state (NEW)
 
     # if command fields
     condition_expr: str | None = None  # Boolean expression string
@@ -54,10 +60,14 @@ class CommandNode:
     else_commands: list[CommandNode] | None = None
 
     # for_each command fields
-    collection_expr: str | None = None  # Expression string
+    collection: str | None = None  # Simple collection type ("nearby_agents", "all_agents")
+    collection_expr: str | None = None  # Expression string (for complex expressions)
     collection_ast: Any | None = None  # ✅ Pre-compiled AST
-    iterator_var: str | None = None  # Variable name for iteration
-    do_commands: list[CommandNode] | None = None
+    iterator: str | None = None  # Iterator variable name (NEW - simpler name)
+    iterator_var: str | None = None  # Variable name for iteration (legacy)
+    body: list[CommandNode] | None = None  # Body commands (NEW - clearer name)
+    do_commands: list[CommandNode] | None = None  # Legacy name
+    radius: float | None = None  # Radius for spatial collections (NEW)
 
     def __post_init__(self) -> None:
         """Initialize empty lists for nested commands."""

@@ -123,6 +123,8 @@ def test_spawn_effect_stack_policy_allows_multiple(catalog_fixture):
 
 def test_tick_updates_elapsed_and_remaining(catalog_fixture):
     """tick() advances lifecycle counters."""
+    import torch
+
     manager = EffectManager(catalog=catalog_fixture, device="cpu")
     effect = manager.spawn_effect("regen", 1, EffectScope.AGENT, 100, 1.0, 500)
 
@@ -131,7 +133,8 @@ def test_tick_updates_elapsed_and_remaining(catalog_fixture):
     assert effect.duration_remaining == 100
 
     # Tick once
-    manager.tick(current_step=501)
+    bars = {"health": torch.tensor([1.0, 0.8])}
+    manager.tick(bars=bars, vfs_registry=None, current_step=501)
 
     assert effect.elapsed_ticks == 1
     assert effect.duration_remaining == 99
@@ -139,20 +142,25 @@ def test_tick_updates_elapsed_and_remaining(catalog_fixture):
 
 def test_tick_despawns_expired_effects(catalog_fixture):
     """tick() removes effects when duration_remaining reaches 0."""
+    import torch
+
     manager = EffectManager(catalog=catalog_fixture, device="cpu")
     _ = manager.spawn_effect("regen", 2, EffectScope.AGENT, 3, 1.0, 100)
 
-    manager.tick(current_step=101)  # remaining=2
-    manager.tick(current_step=102)  # remaining=1
+    bars = {"health": torch.tensor([1.0, 0.8, 0.9])}
+    manager.tick(bars=bars, vfs_registry=None, current_step=101)  # remaining=2
+    manager.tick(bars=bars, vfs_registry=None, current_step=102)  # remaining=1
     assert len(manager.agent_effects[2]) == 1
 
-    manager.tick(current_step=103)  # remaining=0, despawn
+    manager.tick(bars=bars, vfs_registry=None, current_step=103)  # remaining=0, despawn
 
     assert 2 not in manager.agent_effects or len(manager.agent_effects[2]) == 0
 
 
 def test_tick_handles_multiple_scopes(catalog_fixture):
     """tick() processes effects from all scopes."""
+    import torch
+
     manager = EffectManager(catalog=catalog_fixture, device="cpu")
 
     # Add a global effect to the catalog
@@ -172,7 +180,8 @@ def test_tick_handles_multiple_scopes(catalog_fixture):
     global_effect = manager.spawn_effect("day_cycle", 0, EffectScope.GLOBAL, 200, 1.0, 10)
     agent_effect = manager.spawn_effect("regen", 5, EffectScope.AGENT, 50, 1.0, 10)
 
-    manager.tick(current_step=11)
+    bars = {"health": torch.tensor([1.0] * 6)}
+    manager.tick(bars=bars, vfs_registry=None, current_step=11)
 
     assert global_effect.elapsed_ticks == 1
     assert agent_effect.elapsed_ticks == 1
@@ -190,6 +199,12 @@ class MockCommandExecutor:
         self.on_despawn_called = False
         self.last_commands = None
         self.last_context = None
+
+    def execute(self, command, context):
+        """Mock execute method (single command)."""
+        self.execute_commands_called = True
+        self.last_context = context
+        self.on_tick_call_count += 1
 
     def execute_commands(self, commands, context):
         """Mock execute_commands method."""
@@ -245,18 +260,15 @@ def mock_executor():
 
 def test_tick_executes_on_tick_commands(catalog_with_commands, mock_executor):
     """tick() executes on_tick commands for each active effect."""
+    import torch
+
     manager = EffectManager(catalog=catalog_with_commands, device="cpu")
     manager.command_executor = mock_executor  # Inject mock
 
     _ = manager.spawn_effect("regen", 3, EffectScope.AGENT, 50, 1.0, 100)
 
-    # Create minimal env_state mock
-    class EnvState:
-        pass
-
-    env_state = EnvState()
-
-    manager.tick(current_step=101, env_state=env_state)
+    bars = {"energy": torch.tensor([1.0] * 4)}
+    manager.tick(bars=bars, vfs_registry=None, current_step=101)
 
     # Verify command executor called
     assert mock_executor.execute_commands_called
@@ -265,20 +277,18 @@ def test_tick_executes_on_tick_commands(catalog_with_commands, mock_executor):
 
 def test_tick_executes_on_despawn_before_removal(catalog_with_commands, mock_executor):
     """on_despawn commands execute before effect removed."""
+    import torch
+
     manager = EffectManager(catalog=catalog_with_commands, device="cpu")
     manager.command_executor = mock_executor
 
     _ = manager.spawn_effect("buff", 5, EffectScope.AGENT, 2, 1.0, 200)
 
-    class EnvState:
-        pass
-
-    env_state = EnvState()
-
-    manager.tick(current_step=201, env_state=env_state)  # remaining=1
+    bars = {"health": torch.tensor([1.0] * 6)}
+    manager.tick(bars=bars, vfs_registry=None, current_step=201)  # remaining=1
     initial_call_count = mock_executor.on_tick_call_count
 
-    manager.tick(current_step=202, env_state=env_state)  # remaining=0, despawn
+    manager.tick(bars=bars, vfs_registry=None, current_step=202)  # remaining=0, despawn
 
     # Verify on_despawn executed (call count increased again)
     assert mock_executor.on_tick_call_count > initial_call_count

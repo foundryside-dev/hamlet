@@ -109,10 +109,12 @@ class TestDualVsInstant:
                 aff["interaction_type"] = "dual"
                 aff["duration_ticks"] = 5
                 aff["costs_per_tick"] = {"money": 0.01}
-                aff["effect_pipeline"] = {
+                aff["interactions"] = {
                     "on_start": [],
-                    "per_tick": [{"meter": "energy", "amount": 0.05}],
-                    "on_completion": [{"meter": "energy", "amount": 0.25}],
+                    "per_tick": [{"modify": "target.bar.energy", "value": "target.bar.energy + 0.05"}],
+                    "on_completion": [{"modify": "target.bar.energy", "value": "target.bar.energy + 0.25"}],
+                    "on_early_exit": [],
+                    "on_failure": [],
                 }
         if isinstance(data["affordances"], dict):
             data["affordances"]["affordances"] = aff_list
@@ -133,10 +135,17 @@ class TestDualVsInstant:
                 aff["interaction_type"] = "instant"
                 aff.pop("duration_ticks", None)
                 aff.pop("costs_per_tick", None)
-                aff["effect_pipeline"] = {
-                    "on_start": [{"meter": "energy", "amount": 0.05 * 5 + 0.25}],
+                aff["interactions"] = {
+                    "on_start": [
+                        {
+                            "modify": "target.bar.energy",
+                            "value": "target.bar.energy + (0.05 * 5 + 0.25)",
+                        }
+                    ],
                     "per_tick": [],
                     "on_completion": [],
+                    "on_early_exit": [],
+                    "on_failure": [],
                 }
         if isinstance(data_inst["affordances"], dict):
             data_inst["affordances"]["affordances"] = aff_list_inst

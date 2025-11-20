@@ -163,24 +163,44 @@ class AffordanceEngine:
         if affordance is None:
             return False
 
-        # Runtime affordances are expected to expose canonical operating_hours
-        # as a two-element [open_hour, close_hour] list. No implicit defaults
-        # or legacy fallbacks are allowed at this layer.
-        if not hasattr(affordance, "operating_hours"):
-            raise ValueError(
-                f"Affordance '{affordance_name}' missing operating_hours (no defaults allowed). "
-                "Runtime affordances must provide [open_hour, close_hour] explicitly."
-            )
+        # Prefer opening_hours from config (supports schedules); fall back to legacy operating_hours tuple if present.
+        if hasattr(affordance, "opening_hours"):
+            opening_hours = getattr(affordance, "opening_hours")
+            if not getattr(opening_hours, "enabled", False):
+                return True  # 24/7 availability
+            schedule = getattr(opening_hours, "schedule", []) or []
+            if not schedule:
+                raise ValueError(
+                    f"Affordance '{affordance_name}' has opening_hours.enabled=true but an empty schedule; "
+                    "provide at least one time window."
+                )
+            for window in schedule:
+                start = getattr(window, "start", None)
+                end = getattr(window, "end", None)
+                if start is None or end is None:
+                    raise ValueError(
+                        f"Affordance '{affordance_name}' has malformed opening_hours window: {window!r}. "
+                        "Expected 'start' and 'end' integers."
+                    )
+                if canonical_is_affordance_open(time_of_day, (start, end)):
+                    return True
+            return False
 
-        operating_hours = getattr(affordance, "operating_hours")
-        try:
-            open_hour, close_hour = operating_hours
-        except Exception as exc:  # pragma: no cover - defensive
-            raise ValueError(
-                f"Affordance '{affordance_name}' has invalid operating_hours; expected [open_hour, close_hour], got: {operating_hours!r}."
-            ) from exc
+        if hasattr(affordance, "operating_hours"):
+            operating_hours = getattr(affordance, "operating_hours")
+            try:
+                open_hour, close_hour = operating_hours
+            except Exception as exc:  # pragma: no cover - defensive
+                raise ValueError(
+                    f"Affordance '{affordance_name}' has invalid operating_hours; "
+                    f"expected [open_hour, close_hour], got: {operating_hours!r}."
+                ) from exc
+            return canonical_is_affordance_open(time_of_day, (open_hour, close_hour))
 
-        return canonical_is_affordance_open(time_of_day, (open_hour, close_hour))
+        raise ValueError(
+            f"Affordance '{affordance_name}' missing opening_hours/operating_hours; "
+            "runtime affordances must provide explicit availability windows."
+        )
 
     def apply_instant_interaction(
         self,

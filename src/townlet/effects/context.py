@@ -19,6 +19,8 @@ class ExecutionContext:
     - vfs: VFS variable registry
     - self: Current agent/item index
     - target: Target agent/item index
+    - effect_manager: EffectManager for spawning effects (NEW)
+    - item_manager: ItemManager for spawning items (NEW)
     """
 
     def __init__(
@@ -29,6 +31,9 @@ class ExecutionContext:
         target_index: int | None,
         effect: Any | None = None,
         self_is_item: bool = False,  # NEW: Track if self refers to item
+        effect_manager: Any | None = None,  # NEW
+        item_manager: Any | None = None,  # NEW
+        spawn_depth: int = 0,  # NEW (cascade depth tracking)
     ):
         self.bars = bars or {}
         self.vfs_registry = vfs_registry
@@ -36,6 +41,9 @@ class ExecutionContext:
         self.target_index = target_index
         self.effect = effect  # ActiveEffect instance for effect-specific variables
         self.self_is_item = self_is_item  # NEW
+        self.effect_manager = effect_manager  # NEW
+        self.item_manager = item_manager  # NEW
+        self.spawn_depth = spawn_depth  # NEW
 
     def get_path(self, path: str) -> torch.Tensor:
         """Resolve path to tensor value.

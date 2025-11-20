@@ -1,14 +1,21 @@
 affordances:
-  version: "1.0"
+  version: '1.0'
   affordances:
-    - name: Bed
-      interaction_type: instant
-      costs: {}
-      effects:
-        energy: 0.1
-      opening_hours:
-        enabled: false
-      deployment:
-        type: fixed
-        positions: [[0]]
+  - name: Bed
+    interaction_type: instant
+    costs: {}
+    opening_hours:
+      enabled: false
+    deployment:
+      type: fixed
+      positions:
+      - - 0
+    interactions:
+      on_start:
+      - modify: target.bar.energy
+        value: target.bar.energy + 0.1
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
   modulations: []

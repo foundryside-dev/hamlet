@@ -159,14 +159,52 @@ class CommandExecutor:
         context.set_path(command.path, result)
 
     def _execute_spawn_effect(self, command: CommandNode, context: ExecutionContext) -> None:
-        """Execute spawn_effect command (stub for now).
+        """Execute spawn_effect command.
 
         Args:
             command: Spawn effect command node
             context: Execution context
+
+        Raises:
+            ValueError: If effect_manager not available or cascade depth exceeded
         """
-        # Stub for Task 3.4 (EffectManager integration)
-        pass
+        if context.effect_manager is None:
+            raise ValueError("effect_manager not set in context - cannot spawn effects")
+
+        # Check cascade depth limit
+        max_cascade_depth = 10
+        if context.spawn_depth >= max_cascade_depth:
+            raise RuntimeError(f"Effect cascade depth limit exceeded ({max_cascade_depth}). Check for infinite spawn loops.")
+
+        # Resolve target index
+        if command.target == "self":
+            if context.self_index is None:
+                raise ValueError("self_index not set - cannot use 'self' target")
+            target_idx = context.self_index
+        elif command.target == "target":
+            if context.target_index is None:
+                raise ValueError("target_index not set - cannot use 'target' target")
+            target_idx = context.target_index
+        elif isinstance(command.target, int):
+            target_idx = command.target
+        else:
+            raise ValueError(f"Invalid target: {command.target}")
+
+        # Spawn effect via EffectManager
+        # Note: scope hardcoded to AGENT for now (can extend later)
+        from townlet.config.effects_config import EffectScope
+
+        spawned = context.effect_manager.spawn_effect(
+            effect_id=command.effect_id,
+            target_entity_id=target_idx,
+            scope=EffectScope.AGENT,
+            duration=command.duration or 10,
+            intensity=command.intensity or 1.0,
+            current_step=context.effect_manager.current_step,
+        )
+
+        # Return spawned effect instance ID for potential future use
+        return spawned.instance_id
 
     def _execute_if(self, command: CommandNode, context: ExecutionContext) -> None:
         """Execute if command.

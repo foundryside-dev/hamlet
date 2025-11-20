@@ -76,15 +76,15 @@ def test_items_smoke_obs_dim_baseline():
     - 25 dims: 5×5 grid encoding
     - 2 dims: agent position
     - 2 dims: agent velocity
-    - 2 dims: meters (energy, health)
+    - 3 dims: meters (energy, health, money)
     - 2 dims: affordance_at_position (one-hot)
-    - Total: 33 dims
+    - Total: 34 dims
 
     Future VFS contribution (Phase 1 integration):
     - 1 global profile (global_test_flag) → +1 dim
     - 1 agent profile (agent_test_state) → +1 dim
     - 2 item profiles × 3 slots (item_durability, item_uses_remaining) → +6 dims
-    - Expected after Phase 1: 33 + 8 = 41 dims
+    - Expected after Phase 1: 34 + 8 = 42 dims
     """
     config_dir = Path("configs/test/items_smoke")
     if not config_dir.exists():
@@ -94,7 +94,7 @@ def test_items_smoke_obs_dim_baseline():
     universe = compiler.compile(config_dir, use_cache=False)
 
     # Baseline (before VFS profile integration in Phase 1)
-    expected_baseline_dims = 33
+    expected_baseline_dims = 34
 
     assert (
         universe.metadata.observation_dim == expected_baseline_dims

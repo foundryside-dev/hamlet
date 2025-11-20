@@ -4,6 +4,7 @@
 **Date:** 2025-11-19
 **Owner:** World Compiler (T0 Pillar 3)
 **Components:** Expression Language + VFS Profiles + Effects + Items
+**Compiler Entry Point:** `UniverseCompiler` (master compiler orchestrating schema validation, world compilation, and brain/agent compilation; no separate `world_compiler.py`)
 
 ---
 
@@ -99,7 +100,7 @@ src/townlet/world/
 │   └── tensor.py            # tensor1d, tensor2d, tensor3d, tensorNd
 └── compiler/
     ├── __init__.py
-    └── world_compiler.py    # Main compilation orchestrator
+    └── (Integrated inside UniverseCompiler; no standalone world_compiler.py)
 
 configs/test/expression_smoke/
 └── expressions.yaml         # Test expressions for validation

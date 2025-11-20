@@ -8,6 +8,7 @@ Phase 1: Basic types and validation
 Phase 2: Derivation graphs, complex types, expression parsing
 """
 
+from enum import Enum
 from pathlib import Path
 from typing import Any, Literal
 
@@ -19,8 +20,18 @@ __all__ = [
     "WriteSpec",
     "ObservationField",
     "VariableDef",
+    "VariableScope",
     "load_variables_reference_config",
 ]
+
+
+class VariableScope(str, Enum):
+    """Variable scope determines storage layout and access patterns."""
+
+    GLOBAL = "global"  # Shared across all agents (world state)
+    AGENT = "agent"  # Per-agent state ([batch, ...])
+    AGENT_PRIVATE = "agent_private"  # Hidden from agent observations
+    ITEM = "item"  # Per-item state ([max_items, ...])
 
 
 class NormalizationSpec(BaseModel):
@@ -231,11 +242,11 @@ class VariableDef(BaseModel):
         description="Unique identifier for this variable",
     )
 
-    scope: Literal["global", "agent", "agent_private"] = Field(
-        description="Scope: global (shared), agent (per-agent public), agent_private (per-agent private)",
+    scope: VariableScope | Literal["global", "agent", "agent_private", "item"] = Field(
+        description="Scope: global (shared), agent (per-agent public), agent_private (per-agent private), item (per-item)",
     )
 
-    type: Literal["scalar", "vec2i", "vec3i", "vecNi", "vecNf", "bool"] = Field(
+    type: Literal["scalar", "vec2i", "vec3i", "vec2f", "vec3f", "vecNi", "vecNf", "bool"] = Field(
         description="Variable type (scalar, vector, or bool)",
     )
 
@@ -245,8 +256,8 @@ class VariableDef(BaseModel):
         description="Number of dimensions for vecNi/vecNf types (required for those types)",
     )
 
-    lifetime: Literal["tick", "episode"] = Field(
-        description="Lifetime: tick (recomputed each step) or episode (persistent)",
+    lifetime: Literal["tick", "episode", "persistent"] = Field(
+        description="Lifetime: tick (recomputed each step), episode (persistent within episode), or persistent (survives episodes)",
     )
 
     readable_by: list[str] = Field(
@@ -282,7 +293,7 @@ class VariableDef(BaseModel):
         elif self.type in ("scalar", "bool"):
             if self.dims is not None:
                 raise ValueError(f"Variable '{self.id}' with type '{self.type}' should not have 'dims' field")
-        # vec2i, vec3i have implicit dims (2, 3) - no dims field needed
+        # vec2i, vec3i, vec2f, vec3f have implicit dims (2, 3) - no dims field needed
         return self
 
 

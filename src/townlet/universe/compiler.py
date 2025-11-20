@@ -23,7 +23,6 @@ from townlet.config.agent_config import AgentConfig
 from townlet.config.bars_v2_config import BarsV2Config, MeterConfig
 from townlet.config.curriculum_config import CurriculumConfig
 from townlet.config.drive_as_code import DriveAsCodeConfig
-from townlet.config.effect_pipeline import EffectPipeline
 from townlet.config.environment_config import CascadeConfig
 from townlet.config.environment_config import EnvironmentConfig as EnvConfigV21
 from townlet.config.experiment_config import ExperimentConfig
@@ -2178,11 +2177,10 @@ class UniverseCompiler:
                     )
                 )
 
-            pipeline = affordance.effect_pipeline
-            if pipeline is not None and not isinstance(pipeline, EffectPipeline):
-                pipeline = EffectPipeline.model_validate(pipeline)
+            # Legacy effect_pipeline validation removed - interactions field used instead
+            pipeline = getattr(affordance, "effect_pipeline", None)
             if multi_tick_caps:
-                if pipeline is None or (not pipeline.per_tick and not pipeline.on_completion):
+                if pipeline is None or (not getattr(pipeline, "per_tick", None) and not getattr(pipeline, "on_completion", None)):
                     errors.add(
                         formatter(
                             "UAC-VAL-008",
@@ -2484,10 +2482,9 @@ class UniverseCompiler:
         return False
 
     def _affordance_positive_amount_for_meter(self, affordance: AffordanceParamConfig | AffordanceConfig, meter_name: str) -> float:
+        # Legacy effect_pipeline validation removed - interactions field used instead
         pipeline = getattr(affordance, "effect_pipeline", None)
         total = 0.0
-        if pipeline is not None and not isinstance(pipeline, EffectPipeline):
-            pipeline = EffectPipeline.model_validate(pipeline)
 
         if pipeline is not None:
             total += self._sum_positive_meter_entries(pipeline.on_start, meter_name)

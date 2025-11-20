@@ -226,42 +226,8 @@ class AffordanceEngine:
             multiplier = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
             updated_meters[agent_mask, meter_idx] -= amount * multiplier[agent_mask]
 
-        # Apply effects from effect_pipeline (modern schema only)
-        if hasattr(affordance, "effect_pipeline") and affordance.effect_pipeline:
-            on_start = getattr(affordance.effect_pipeline, "on_start", [])
-
-            # For dual-mode affordances, if on_start is empty, simulate full multi-tick cycle
-            if not on_start and affordance.interaction_type == "dual":
-                # Get duration and per_tick effects
-                duration = self.get_duration_ticks(affordance_name)
-                per_tick = getattr(affordance.effect_pipeline, "per_tick", [])
-                on_completion = getattr(affordance.effect_pipeline, "on_completion", [])
-
-                # Apply per_tick effects × duration
-                multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
-                for effect in per_tick:
-                    meter_idx = self.meter_name_to_idx[effect.meter]
-                    updated_meters[agent_mask, meter_idx] += effect.amount * duration * multipliers[agent_mask]
-
-                # Apply completion bonus
-                for effect in on_completion:
-                    meter_idx = self.meter_name_to_idx[effect.meter]
-                    multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
-                    updated_meters[agent_mask, meter_idx] += effect.amount * multipliers[agent_mask]
-            else:
-                # Apply on_start effects (instant-mode affordances)
-                multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
-                for effect in on_start:
-                    meter_idx = self.meter_name_to_idx[effect.meter]
-                    updated_meters[agent_mask, meter_idx] += effect.amount * multipliers[agent_mask]
-        elif hasattr(affordance, "effects"):
-            # v2.1 schema: effects is a dict[str, float]
-            multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
-            for meter, amount in getattr(affordance, "effects", {}).items():
-                if meter not in self.meter_name_to_idx:
-                    continue
-                meter_idx = self.meter_name_to_idx[meter]
-                updated_meters[agent_mask, meter_idx] += float(amount) * multipliers[agent_mask]
+        # Execute compiled Effects commands (on_start stage for instant affordances)
+        updated_meters = self._execute_affordance_effects(affordance_name, "on_start", agent_mask, updated_meters)
 
         # Clamp meters to [0, 1]
         updated_meters = torch.clamp(updated_meters, 0.0, 1.0)
@@ -341,31 +307,16 @@ class AffordanceEngine:
             meter_idx = self.meter_name_to_idx[meter_name]
             updated_meters[agent_mask, meter_idx] -= amount * multipliers[agent_mask]
 
-        # Apply per-tick effects from effect_pipeline (modern schema: AffordanceEffect objects)
-        if hasattr(affordance, "effect_pipeline") and affordance.effect_pipeline:
-            per_tick_effects = getattr(affordance.effect_pipeline, "per_tick", [])
-            multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
-            for effect in per_tick_effects:
-                meter_idx = self.meter_name_to_idx[effect.meter]
-                updated_meters[agent_mask, meter_idx] += effect.amount * multipliers[agent_mask]
-        elif hasattr(affordance, "effects_per_tick"):
-            multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
-            for meter, amount in getattr(affordance, "effects_per_tick", {}).items():
-                if meter not in self.meter_name_to_idx:
-                    continue
-                meter_idx = self.meter_name_to_idx[meter]
-                updated_meters[agent_mask, meter_idx] += float(amount) * multipliers[agent_mask]
+        # Execute compiled Effects commands (per_tick stage)
+        updated_meters = self._execute_affordance_effects(affordance_name, "per_tick", agent_mask, updated_meters)
 
         duration_ticks = affordance.duration_ticks or 1
 
         # Check if this is the final tick - if so, apply completion bonus
         is_final_tick = current_tick == (duration_ticks - 1)
-        if is_final_tick and hasattr(affordance, "effect_pipeline") and affordance.effect_pipeline:
-            on_completion = getattr(affordance.effect_pipeline, "on_completion", [])
-            multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
-            for effect in on_completion:
-                meter_idx = self.meter_name_to_idx[effect.meter]
-                updated_meters[agent_mask, meter_idx] += effect.amount * multipliers[agent_mask]
+        if is_final_tick:
+            # Execute compiled Effects commands (on_completion stage)
+            updated_meters = self._execute_affordance_effects(affordance_name, "on_completion", agent_mask, updated_meters)
 
         # Clamp meters to [0, 1]
         updated_meters = torch.clamp(updated_meters, 0.0, 1.0)
@@ -544,49 +495,14 @@ class AffordanceEngine:
         # Clone meters to avoid in-place modification
         result_meters = meters.clone()
 
-        # Apply effects from effect_pipeline (modern schema: AffordanceEffect objects)
-        if hasattr(affordance, "effect_pipeline") and affordance.effect_pipeline:
-            pipeline = affordance.effect_pipeline
-
-            # For dual-mode affordances with no on_start, synthesize instant effects
-            # from per_tick (scaled by duration) + on_completion
-            if affordance.interaction_type == "dual" and not pipeline.on_start and (pipeline.per_tick or pipeline.on_completion):
-                duration = affordance.duration_ticks or 1
-
-                # Apply scaled per_tick effects
-                for effect in pipeline.per_tick:
-                    meter_idx = self.meter_name_to_idx[effect.meter]
-                    total_effect = effect.amount * duration
-                    result_meters[agent_mask, meter_idx] = torch.clamp(
-                        result_meters[agent_mask, meter_idx] + total_effect,
-                        0.0,
-                        1.0,
-                    )
-
-                # Apply completion effects
-                for effect in pipeline.on_completion:
-                    meter_idx = self.meter_name_to_idx[effect.meter]
-                    result_meters[agent_mask, meter_idx] = torch.clamp(
-                        result_meters[agent_mask, meter_idx] + effect.amount,
-                        0.0,
-                        1.0,
-                    )
-            else:
-                # Standard instant mode: use on_start effects
-                on_start = getattr(pipeline, "on_start", [])
-                for effect in on_start:
-                    meter_idx = self.meter_name_to_idx[effect.meter]
-                    result_meters[agent_mask, meter_idx] = torch.clamp(
-                        result_meters[agent_mask, meter_idx] + effect.amount,
-                        0.0,
-                        1.0,
-                    )
-
-        # Apply costs (modern dict format)
+        # Apply costs first
         for cost in affordance.costs:
             meter_name, amount = self._cost_fields(cost)
             meter_idx = self.meter_name_to_idx[meter_name]
             result_meters[agent_mask, meter_idx] -= amount
+
+        # Execute compiled Effects commands (on_start stage)
+        result_meters = self._execute_affordance_effects(affordance_name, "on_start", agent_mask, result_meters)
 
         return result_meters
 

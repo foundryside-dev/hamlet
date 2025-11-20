@@ -421,7 +421,6 @@ class VectorizedHamletEnv:
         )
         from townlet.environment.affordance_config import (
             AffordanceCost,
-            AffordanceEffect,
         )
 
         # Build lookup from environment.yaml affordance vocabulary for categories.
@@ -463,28 +462,9 @@ class VectorizedHamletEnv:
             costs_instant = [AffordanceCost(meter=m, amount=v) for m, v in (aff.costs or {}).items()]
             costs_per_tick = [AffordanceCost(meter=m, amount=v) for m, v in (aff.costs_per_tick or {}).items()]
 
-            # Effect pipeline: prefer explicit pipeline when provided; otherwise synthesize
-            # a simple on_start pipeline from effects dict for instant affordances.
-            if aff.effect_pipeline is not None:
-                pipeline = aff.effect_pipeline
-                effects_on_start = list(pipeline.on_start)
-                effects_per_tick = list(pipeline.per_tick)
-                effects_on_completion = list(pipeline.on_completion)
-            else:
-                from townlet.config.effect_pipeline import AffordanceEffect as PipelineEffect
-                from townlet.config.effect_pipeline import EffectPipeline
-
-                effects_on_start = [PipelineEffect(meter=m, amount=v) for m, v in (aff.effects or {}).items()]
-                effects_per_tick = []
-                effects_on_completion = []
-                pipeline = EffectPipeline(
-                    on_start=effects_on_start,
-                    per_tick=effects_per_tick,
-                    on_completion=effects_on_completion,
-                    on_early_exit=[],
-                    on_failure=[],
-                )
-
+            # Effects are now handled through compiled Effects commands (interactions field)
+            # RuntimeAffordanceConfig still needs empty lists for backward compat with affordance engine
+            # but actual execution uses compiled Effects from AffordanceEngine
             runtime_affordances.append(
                 RuntimeAffordanceConfig(
                     id=aff.name,
@@ -494,9 +474,9 @@ class VectorizedHamletEnv:
                     duration_ticks=duration_ticks,
                     costs=costs_instant,
                     costs_per_tick=costs_per_tick,
-                    effects=[AffordanceEffect(meter=e.meter, amount=e.amount) for e in effects_on_start],
-                    effects_per_tick=[AffordanceEffect(meter=e.meter, amount=e.amount) for e in effects_per_tick],
-                    completion_bonus=[AffordanceEffect(meter=e.meter, amount=e.amount) for e in effects_on_completion],
+                    effects=[],  # Effects handled via compiled interactions
+                    effects_per_tick=[],  # Effects handled via compiled interactions
+                    completion_bonus=[],  # Effects handled via compiled interactions
                     operating_hours=operating_hours,
                     teaching_note=getattr(aff, "teaching_note", None),
                     design_intent=None,
@@ -549,8 +529,10 @@ class VectorizedHamletEnv:
                 }
             )
 
+        # Pass AffordanceParamConfig objects directly (have interactions field for compilation)
+        # Runtime affordances are only used for position/category lookups
         self.affordance_engine = AffordanceEngine(
-            tuple(runtime_affordances),
+            tuple(level.affordances.affordances),  # AffordanceParamConfig with interactions
             num_agents,
             self.device,
             self.meter_name_to_index,

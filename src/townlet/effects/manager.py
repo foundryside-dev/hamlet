@@ -127,6 +127,7 @@ class EffectManager:
                         spawn_depth=spawn_depth,
                         agent_positions=agent_positions,
                         interrupt_reason="replaced_by_effect",  # NEW
+                        current_tick=current_step,  # NEW
                     )
 
                     for command in effect_def.on_interrupt:
@@ -168,6 +169,7 @@ class EffectManager:
                 effect_manager=self,
                 spawn_depth=spawn_depth + 1,  # Increment depth for cascade tracking
                 agent_positions=agent_positions,  # NEW: for for_each spatial queries
+                current_tick=current_step,  # NEW
             )
 
             for command in effect_def.on_spawn:
@@ -312,6 +314,7 @@ class EffectManager:
                     effect_manager=self,  # Pass self for spawn_effect
                     item_manager=item_manager,  # NEW
                     spawn_depth=0,  # Reset depth for top-level tick
+                    current_tick=self.current_step,  # NEW
                 )
 
                 for command in compiled.on_tick:
@@ -346,6 +349,7 @@ class EffectManager:
                     effect_manager=self,
                     item_manager=item_manager,  # NEW
                     spawn_depth=0,
+                    current_tick=self.current_step,  # NEW
                 )
 
                 for command in compiled.on_despawn:
@@ -355,12 +359,13 @@ class EffectManager:
         if scope == EffectScope.AGENT and entity_id in self.agent_effects:
             self.agent_effects[entity_id].remove(effect)
 
-    def _build_context(self, effect: ActiveEffect, env_state: Any) -> ExecutionContext:
+    def _build_context(self, effect: ActiveEffect, env_state: Any, current_tick: int = 0) -> ExecutionContext:
         """Build ExecutionContext for effect.
 
         Args:
             effect: Active effect instance
             env_state: Environment state (bars, VFS, etc.)
+            current_tick: Current simulation tick (for time-based conditions)
 
         Returns:
             ExecutionContext with effect and target references
@@ -377,6 +382,7 @@ class EffectManager:
             self_index=None,  # Not used in effect context
             target_index=effect.target_entity_id,
             effect=effect,  # Pass effect for effect-specific variables
+            current_tick=current_tick,
         )
 
     def get_all_active_effects(self) -> list[ActiveEffect]:

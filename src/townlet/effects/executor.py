@@ -332,6 +332,7 @@ class CommandExecutor:
                 effect_manager=context.effect_manager,
                 item_manager=context.item_manager,
                 spawn_depth=context.spawn_depth,
+                current_tick=context.current_tick,
             )
 
             # Copy agent_positions if present (for nested for_each)

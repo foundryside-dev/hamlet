@@ -21,6 +21,7 @@ class ExecutionContext:
     - target: Target agent/item index
     - effect_manager: EffectManager for spawning effects (NEW)
     - item_manager: ItemManager for spawning items (NEW)
+    - current_tick: Current environment tick (NEW)
     """
 
     def __init__(
@@ -36,6 +37,7 @@ class ExecutionContext:
         spawn_depth: int = 0,  # NEW (cascade depth tracking)
         agent_positions: torch.Tensor | None = None,  # NEW: [batch, 2] spatial positions
         interrupt_reason: str | None = None,  # NEW: Why effect was interrupted
+        current_tick: int = 0,  # NEW
     ):
         self.bars = bars or {}
         self.vfs_registry = vfs_registry
@@ -48,6 +50,7 @@ class ExecutionContext:
         self.spawn_depth = spawn_depth  # NEW
         self.agent_positions = agent_positions  # NEW
         self.interrupt_reason = interrupt_reason  # NEW
+        self.current_tick = current_tick  # NEW
 
     def get_path(self, path: str) -> torch.Tensor:
         """Resolve path to tensor value.

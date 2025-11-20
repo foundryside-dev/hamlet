@@ -18,6 +18,7 @@ from townlet.config.bars_v2_config import BarsV2Config
 from townlet.config.curriculum_config import CurriculumConfig
 from townlet.config.environment_config import EnvironmentConfig
 from townlet.config.experiment_config import ExperimentConfig
+from townlet.config.items_config import ItemsCatalogConfig
 from townlet.config.stratum_config import StratumConfig
 from townlet.config.training_v2_config import TrainingV2Config
 from townlet.universe.dto import (
@@ -58,6 +59,7 @@ class CompiledUniverse:
     environment: EnvironmentConfig
     actions: ActionsConfig
     agent: AgentConfig
+    items_catalog: ItemsCatalogConfig | None = None
 
     # Provenance
     experiment_dir: Path | None = None
@@ -122,6 +124,7 @@ class CompiledUniverse:
             environment=deepcopy(self.environment),
             actions=deepcopy(self.actions),
             agent=deepcopy(self.agent),
+            items_catalog=deepcopy(self.items_catalog) if self.items_catalog is not None else None,
             experiment_dir=self.experiment_dir,
             drive_hash=self.drive_hash,
             all_levels=deepcopy(self.all_levels),
@@ -154,6 +157,7 @@ class CompiledUniverse:
             "environment": self.environment.model_dump(),
             "actions": self.actions.model_dump(),
             "agent": self.agent.model_dump(),
+            "items_catalog": self.items_catalog.model_dump() if self.items_catalog is not None else None,
             "experiment_dir": None if self.experiment_dir is None else str(self.experiment_dir),
             "drive_hash": self.drive_hash,
             "all_levels": (

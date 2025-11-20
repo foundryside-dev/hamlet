@@ -13,6 +13,7 @@ from townlet.config.bars_v2_config import BarsV2Config, load_bars_v2_config
 from townlet.config.curriculum_config import CurriculumConfig
 from townlet.config.environment_config import EnvironmentConfig
 from townlet.config.experiment_config import ExperimentConfig
+from townlet.config.items_config import ItemsCatalogConfig
 from townlet.config.stratum_config import StratumConfig
 from townlet.config.training_v2_config import TrainingV2Config, load_training_v2_config
 from townlet.universe.errors import CompilationErrorCollector
@@ -60,6 +61,9 @@ class RawConfigsV21:
 
     # Provenance
     experiment_dir: Path
+
+    # Optional experiment-level configs
+    items: ItemsCatalogConfig | None = None
 
     def __post_init__(self) -> None:
         """Validate v2.1 invariants across all curriculum levels."""
@@ -378,7 +382,7 @@ class RawConfigsV21:
         errors = CompilationErrorCollector(stage="Stage 1: Load v2.1 Configs")
 
         # Shared experiment-level configs
-        experiment = stratum = environment = actions = agent = None
+        experiment = stratum = environment = actions = agent = items = None
         shared_specs = [
             ("experiment.yaml", ExperimentConfig, "experiment"),
             ("stratum.yaml", StratumConfig, "stratum"),
@@ -409,6 +413,19 @@ class RawConfigsV21:
                 actions = loaded
             elif label == "agent":
                 agent = loaded
+
+        # Load items.yaml (optional)
+        items_path = experiment_dir / "items.yaml"
+        if items_path.exists():
+            try:
+                loaded_items = ItemsCatalogConfig.from_yaml(items_path)
+                items = loaded_items
+            except Exception as exc:  # noqa: BLE001
+                errors.add(
+                    f"Failed to load items from items.yaml: {exc}",
+                    code="LOAD_ERROR",
+                    location=str(items_path),
+                )
 
         # If any shared config failed, surface now.
         if errors.errors:
@@ -464,6 +481,7 @@ class RawConfigsV21:
             environment=environment,  # type: ignore[arg-type]
             actions=actions,  # type: ignore[arg-type]
             agent=agent,  # type: ignore[arg-type]
+            items=items,
             levels=levels,
             experiment_dir=experiment_dir,
         )

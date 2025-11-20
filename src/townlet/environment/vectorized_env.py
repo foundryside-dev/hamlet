@@ -20,6 +20,7 @@ from townlet.environment.action_builder import ComposedActionSpace
 from townlet.environment.affordance_engine import AffordanceEngine
 from townlet.environment.dac_engine import DACEngine
 from townlet.environment.meter_dynamics import MeterDynamics
+from townlet.items import InventoryState, ItemActionHandler, ItemManager
 from townlet.substrate import SpatialSubstrate
 from townlet.substrate.continuous import ContinuousSubstrate
 from townlet.universe.dto import ActionSpaceMetadata, MeterMetadata
@@ -529,6 +530,29 @@ class VectorizedHamletEnv:
             self.meter_name_to_index,
             modulation_rules=modulation_rules,
         )
+
+        # === ITEMS INITIALIZATION ===
+        if universe.items_catalog is not None:
+            self.item_manager = ItemManager(
+                catalog=universe.items_catalog,
+                max_items=universe.items_catalog.max_items_in_world,
+                device=self.device,
+            )
+
+            self.item_inventory = InventoryState(
+                batch_size=num_agents,
+                max_items_per_agent=universe.items_catalog.max_items_per_agent,
+                device=self.device,
+            )
+
+            self.item_handler = ItemActionHandler(
+                manager=self.item_manager,
+                inventory=self.item_inventory,
+            )
+        else:
+            self.item_manager = None
+            self.item_inventory = None
+            self.item_handler = None
 
         # Build composed action space from compiler metadata and substrate defaults
         self.action_space = self._build_action_space_from_metadata(
@@ -1376,6 +1400,55 @@ class VectorizedHamletEnv:
         # WAIT action - NO additional cost
         # WAIT only pays base_depletion (handled by MeterDynamics), no action-specific cost
         # This is architecturally correct: WAIT = existence without action
+
+        # === ITEM ACTION DISPATCH ===
+        if self.item_handler is not None:
+            # GET action
+            try:
+                get_action_id = self.action_space.get_action_by_name("GET").id
+                get_mask = actions == get_action_id
+                if get_mask.any():
+                    for agent_idx in torch.where(get_mask)[0]:
+                        self.item_handler.handle_get_action(
+                            agent_idx=int(agent_idx.item()),
+                            agent_position=self.positions[agent_idx],
+                            current_tick=self.tick_count,
+                        )
+            except ValueError:
+                pass  # GET action not in action space
+
+            # USE_SLOT_N actions
+            for slot_idx in range(self.item_inventory.max_items_per_agent):
+                use_action_name = f"USE_SLOT_{slot_idx}"
+                try:
+                    use_action_id = self.action_space.get_action_by_name(use_action_name).id
+                    use_mask = actions == use_action_id
+                    if use_mask.any():
+                        for agent_idx in torch.where(use_mask)[0]:
+                            self.item_handler.handle_use_slot_action(
+                                agent_idx=int(agent_idx.item()),
+                                slot_idx=slot_idx,
+                                current_tick=self.tick_count,
+                            )
+                except ValueError:
+                    pass  # Action not in action space
+
+            # DROP_SLOT_N actions
+            for slot_idx in range(self.item_inventory.max_items_per_agent):
+                drop_action_name = f"DROP_SLOT_{slot_idx}"
+                try:
+                    drop_action_id = self.action_space.get_action_by_name(drop_action_name).id
+                    drop_mask = actions == drop_action_id
+                    if drop_mask.any():
+                        for agent_idx in torch.where(drop_mask)[0]:
+                            self.item_handler.handle_drop_slot_action(
+                                agent_idx=int(agent_idx.item()),
+                                slot_idx=slot_idx,
+                                agent_position=self.positions[agent_idx],
+                                current_tick=self.tick_count,
+                            )
+                except ValueError:
+                    pass  # Action not in action space
 
         # Handle INTERACT actions
         # Use cached INTERACT index (from ActionSpaceBuilder)

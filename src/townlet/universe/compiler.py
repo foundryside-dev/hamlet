@@ -346,6 +346,7 @@ class UniverseCompiler:
             environment=raw.environment,
             actions=raw.actions,
             agent=raw.agent,
+            items_catalog=raw.items,
             experiment_dir=experiment_dir,
             all_levels=all_levels,
         )

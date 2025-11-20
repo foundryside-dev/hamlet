@@ -1,10 +1,11 @@
-"""Integration tests for Items system in VectorizedHamletEnv.
-
-NOTE: Full environment integration requires HamletConfig schema changes
-to support items_catalog field. These tests verify config existence only.
-"""
+"""Integration tests for Items system in VectorizedHamletEnv."""
 
 from pathlib import Path
+
+import torch
+
+from townlet.environment.vectorized_env import VectorizedHamletEnv
+from townlet.universe.compiler import UniverseCompiler
 
 
 def test_items_smoke_config_pack_exists():
@@ -74,79 +75,23 @@ def test_item_actions_defined_in_global_actions():
     assert "DROP_SLOT_2" in action_names, "DROP_SLOT_2 action missing"
 
 
-# ============================================================================
-# DEFERRED TO PHASE 5: Environment Integration Tests
-# ============================================================================
-# The following tests require HamletConfig schema changes to support
-# items_catalog field. They are placeholders for Phase 5 implementation.
-# ============================================================================
+def test_env_with_items_initializes():
+    """Environment with ItemManager and InventoryState initializes correctly."""
+    compiler = UniverseCompiler()
+    universe = compiler.compile(Path("configs/test/items_smoke"))
 
+    env = VectorizedHamletEnv(
+        universe=universe,
+        level_name="L0_smoke",
+        num_agents=4,
+        device="cpu",
+    )
 
-def test_env_with_items_initializes_deferred():
-    """DEFERRED: Environment with ItemManager and InventoryState initializes correctly.
+    # Verify Items components exist
+    assert env.item_manager is not None, "ItemManager not initialized"
+    assert env.item_inventory is not None, "InventoryState not initialized"
+    assert env.item_handler is not None, "ItemActionHandler not initialized"
 
-    Requires:
-    - HamletConfig.items_catalog field
-    - VectorizedHamletEnv Items integration
-    - ItemManager initialization in reset()
-    """
-    # TODO: Setup config pack with items enabled
-    # TODO: Create env with items
-    # TODO: Verify env.item_manager exists
-    # TODO: Verify env.item_inventory exists
-    # TODO: Verify item actions in action space
-
-    assert True  # Placeholder
-
-
-def test_get_action_picks_up_item_deferred():
-    """DEFERRED: GET action picks up item from world into inventory.
-
-    Requires:
-    - Items environment integration
-    - ItemManager.spawn_item() in reset()
-    - GET action dispatch wiring
-    """
-    # TODO: Setup env with items_smoke config
-    # TODO: Spawn item at position (3, 5)
-    # TODO: Move agent to (3, 5)
-    # TODO: Execute GET action
-    # TODO: Verify item in inventory
-    # TODO: Verify item removed from world
-
-    assert True  # Placeholder
-
-
-def test_use_slot_action_executes_effects_deferred():
-    """DEFERRED: USE_SLOT_N action executes on_use Effects commands.
-
-    Requires:
-    - Items environment integration
-    - Effects execution in ItemActionHandler
-    - VFS integration for item state
-    """
-    # TODO: Setup env with items_smoke config
-    # TODO: Give agent apple (on_use: energy +0.3)
-    # TODO: Record initial energy
-    # TODO: Execute USE_SLOT_0 action
-    # TODO: Verify energy increased by 0.3
-
-    assert True  # Placeholder
-
-
-def test_drop_slot_action_spawns_item_in_world_deferred():
-    """DEFERRED: DROP_SLOT_N action places item back in world.
-
-    Requires:
-    - Items environment integration
-    - ItemInstance item_type tracking for respawn
-    - DROP action spawn logic
-    """
-    # TODO: Setup env with items_smoke config
-    # TODO: Give agent apple in slot 0
-    # TODO: Agent at position (5, 5)
-    # TODO: Execute DROP_SLOT_0 action
-    # TODO: Verify item removed from inventory
-    # TODO: Verify item spawned at (5, 5)
-
-    assert True  # Placeholder
+    # Verify inventory shape
+    assert env.item_inventory.slots.shape == (4, 3), f"Expected (4, 3), got {env.item_inventory.slots.shape}"
+    assert torch.all(env.item_inventory.slots == -1), "Inventory should start empty"

@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any, Literal
 
+import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 __all__ = [
@@ -132,6 +134,24 @@ class ItemsCatalogConfig(BaseModel):
             duplicates = [id for id in ids if ids.count(id) > 1]
             raise ValueError(f"Duplicate item type IDs: {duplicates}")
         return v
+
+    @classmethod
+    def from_yaml(cls, path: Path) -> ItemsCatalogConfig:
+        """Load items catalog from YAML file.
+
+        Args:
+            path: Path to items.yaml file
+
+        Returns:
+            ItemsCatalogConfig instance
+
+        Raises:
+            ValidationError: If YAML structure doesn't match schema
+            FileNotFoundError: If path doesn't exist
+        """
+        with open(path) as f:
+            data = yaml.safe_load(f)
+        return cls(**data["items"])
 
 
 class ItemAppearanceRuleConfig(BaseModel):

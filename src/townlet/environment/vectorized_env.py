@@ -1284,10 +1284,20 @@ class VectorizedHamletEnv:
 
         # 3.5. Execute active effects (after cascades, before terminal checks)
         # Effects can modify bars based on current state after all natural dynamics applied
+        bars_dict = {}
+        for bar_name, idx in self.meter_name_to_index.items():
+            bars_dict[bar_name] = self.meters[:, idx]
+
         self.effect_manager.tick(
+            bars=bars_dict,
+            vfs_registry=self.vfs_registry,
             current_step=self.step_counts[0].item() if self.step_counts.numel() > 0 else 0,
-            env_state=self,
+            item_manager=self.item_manager,
         )
+
+        # Sync meters back from bars dict (effects may have modified them)
+        for bar_name, idx in self.meter_name_to_index.items():
+            self.meters[:, idx] = bars_dict[bar_name]
 
         # 4. Check terminal conditions
         self.dones = self.meter_dynamics.check_terminal_conditions(self.meters, self.dones)

@@ -285,7 +285,7 @@ class EffectManager:
                     bars=bars,
                     vfs_registry=vfs_registry,
                     self_index=entity_id,
-                    target_index=None,
+                    target_index=effect.target_entity_id,
                     effect=effect,
                     effect_manager=self,  # Pass self for spawn_effect
                     item_manager=item_manager,  # NEW
@@ -319,7 +319,7 @@ class EffectManager:
                     bars=bars,
                     vfs_registry=vfs_registry,
                     self_index=entity_id,
-                    target_index=None,
+                    target_index=effect.target_entity_id,
                     effect=effect,
                     effect_manager=self,
                     item_manager=item_manager,  # NEW

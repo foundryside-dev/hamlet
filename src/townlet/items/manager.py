@@ -257,6 +257,8 @@ class ItemManager:
             self.cooldown_until[item.item_type] = current_tick + item_def.cooldown
 
         # Set respawn timer if configured in appearance config
+        # Note: Timer is per item_type, not per instance. If multiple items
+        # of the same type despawn, only the most recent despawn triggers respawn.
         if self.appearance_config is not None:
             # Find appearance rule for this item type
             rule = next(

@@ -7,7 +7,7 @@ from townlet.items.manager import ItemManager
 
 
 def test_respawn_timer_initialized_on_despawn():
-    """When item despawns with cooldown, respawn timer is set."""
+    """When item despawns with spawn_interval configured, respawn timer is set."""
     config_path = Path("configs/test/items_smoke/items.yaml")
     catalog = ItemsCatalogConfig.from_yaml(config_path)
 

@@ -348,3 +348,49 @@ class ItemManager:
         """
         self.appearance_config = appearance_config
         self.grid_size = grid_size
+
+    def process_respawns(self, current_tick: int) -> None:
+        """Process periodic item respawning based on timers.
+
+        Args:
+            current_tick: Current environment tick
+        """
+        if self.appearance_config is None or self.grid_size is None:
+            return  # No appearance config, no respawning
+
+        # Check which timers have expired
+        expired_types = [item_type for item_type, respawn_tick in self.respawn_timers.items() if current_tick >= respawn_tick]
+
+        # Attempt to spawn each expired type
+        for item_type in expired_types:
+            # Find appearance rule for this item type
+            rule = next(
+                (r for r in self.appearance_config.items if r.item_type == item_type),
+                None,
+            )
+
+            if rule is None:
+                # Rule removed from config, clear timer
+                del self.respawn_timers[item_type]
+                continue
+
+            # Generate random position
+            if rule.spawn_position == "random":
+                position = tuple(random.randint(0, size - 1) for size in self.grid_size)
+            else:
+                # TODO: Support fixed positions when needed
+                position = tuple(random.randint(0, size - 1) for size in self.grid_size)
+
+            # Attempt spawn (may fail if at capacity or on cooldown)
+            spawned = self.spawn_item(item_type, position, current_tick)
+
+            if spawned is not None:
+                # Successfully spawned, clear timer
+                del self.respawn_timers[item_type]
+
+                # If spawn_interval exists, schedule next respawn when this item despawns
+                # (Timer will be set by despawn_item when this item expires)
+            else:
+                # Failed to spawn (at capacity or cooldown), keep timer for retry next tick
+                # Don't delete timer - will retry on next process_respawns call
+                pass

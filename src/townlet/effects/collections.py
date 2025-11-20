@@ -42,7 +42,8 @@ def resolve_collection(
         distances = torch.norm(context.agent_positions - self_pos, dim=1)
 
         # Filter by radius (exclude self)
-        nearby = torch.where((distances <= radius) & (torch.arange(len(distances)) != context.self_index))[0]
+        device = distances.device
+        nearby = torch.where((distances <= radius) & (torch.arange(len(distances), device=device) != context.self_index))[0]
 
         return nearby.tolist()
 

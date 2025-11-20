@@ -289,14 +289,48 @@ class CommandExecutor:
                 self.execute(cmd, context)
 
     def _execute_for_each(self, command: CommandNode, context: ExecutionContext) -> None:
-        """Execute for_each command (stub for now).
+        """Execute for_each command.
 
         Args:
-            command: For each command node
+            command: For each command node with collection, iterator, body
             context: Execution context
         """
-        # Stub for now - requires iterator support in EvaluationContext
-        raise NotImplementedError("for_each not implemented yet")
+        from townlet.effects.collections import resolve_collection
+
+        # Resolve collection to list of indices
+        collection_type = command.collection
+        if not collection_type:
+            raise ValueError("for_each command missing collection field")
+
+        indices = resolve_collection(
+            collection_type=collection_type,
+            context=context,
+            radius=command.radius,
+        )
+
+        # Execute body commands for each index
+        for idx in indices:
+            # Create child context with target_index set to current iteration element
+            child_context = ExecutionContext(
+                bars=context.bars,
+                vfs_registry=context.vfs_registry,
+                self_index=context.self_index,
+                target_index=idx,  # Set target to current iteration element
+                effect=context.effect,
+                self_is_item=context.self_is_item,
+                effect_manager=context.effect_manager,
+                item_manager=context.item_manager,
+                spawn_depth=context.spawn_depth,
+            )
+
+            # Copy agent_positions if present (for nested for_each)
+            if hasattr(context, "agent_positions"):
+                child_context.agent_positions = context.agent_positions
+
+            # Execute body commands with child context
+            body = command.body or []
+            for body_cmd in body:
+                self.execute(body_cmd, child_context)
 
     def _make_eval_context(self, context: ExecutionContext, effect: Any | None = None) -> ExprExecutionContext:
         """Convert ExecutionContext to ExprExecutionContext.

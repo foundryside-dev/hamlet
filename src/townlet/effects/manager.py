@@ -75,6 +75,7 @@ class EffectManager:
         bars: dict[str, torch.Tensor] | None = None,
         vfs_registry: Any | None = None,
         spawn_depth: int = 0,
+        agent_positions: Any | None = None,  # NEW: for for_each spatial queries
     ) -> ActiveEffect:
         """Spawn new effect instance, handling reapply policies.
 
@@ -88,6 +89,7 @@ class EffectManager:
             bars: Current meter values (for on_spawn command execution)
             vfs_registry: VFS registry (for on_spawn command execution)
             spawn_depth: Current cascade depth (for on_spawn command execution)
+            agent_positions: Agent positions tensor [batch, 2] (for for_each spatial queries)
 
         Returns:
             ActiveEffect instance
@@ -146,6 +148,7 @@ class EffectManager:
                 effect=active,
                 effect_manager=self,
                 spawn_depth=spawn_depth + 1,  # Increment depth for cascade tracking
+                agent_positions=agent_positions,  # NEW: for for_each spatial queries
             )
 
             for command in effect_def.on_spawn:

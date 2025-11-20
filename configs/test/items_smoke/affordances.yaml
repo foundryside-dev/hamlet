@@ -1,20 +1,3 @@
-# Items Smoke Test - Affordances Configuration
-# Single test affordance
-
-version: "2.1"
-
 affordances:
-  - id: energy_station
-    name: "Energy Station"
-    icon: "🔋"
-    category: "resource"
-    visual_state: "available"
-
-    effects:
-      bars:
-        - name: energy
-          delta: 0.5  # Restore 50% energy
-      vfs: []
-
-    cooldown_steps: 10
-    uses_per_episode: -1  # Unlimited uses
+  version: "1.0"
+  affordances: []

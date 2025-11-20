@@ -1,63 +1,44 @@
-# Items Smoke Test Configuration (Experiment-Level Catalog)
-# Tests: Basic item definitions, VFS integration, Effects interactions
+items:
+  version: "1.0"
 
-version: "1.0"
+  item_types:
+    - id: apple
+      vfs_profile: food
+      description: "Restores energy when used"
+      duration: null  # Permanent
+      cooldown: null
+      interactions:
+        on_pickup:
+          - modify: "target.vfs.has_food"
+            value: "true"
+        on_use:
+          - modify: "target.bar.energy"
+            value: "+0.3"
+        on_drop: []
 
-max_items_per_agent: 3
-max_items_in_world: 10
+    - id: medkit
+      vfs_profile: medical
+      description: "Restores health when used"
+      duration: 100  # Despawns after 100 ticks
+      cooldown: 50   # Can't respawn for 50 ticks after despawn
+      interactions:
+        on_pickup: []
+        on_use:
+          - modify: "target.bar.health"
+            value: "+0.5"
+        on_drop: []
 
-item_types:
-  - id: apple
-    description: "Restores energy when eaten"
-    vfs_profile: food
-    duration: 200  # Despawns after 200 ticks if not picked up
-    cooldown: 50   # Can respawn 50 ticks after despawn
+    - id: coin
+      vfs_profile: currency
+      description: "Adds money when picked up"
+      duration: null
+      cooldown: null
+      interactions:
+        on_pickup:
+          - modify: "target.bar.money"
+            value: "+10.0"
+        on_use: []
+        on_drop: []
 
-    interactions:
-      on_pickup:
-        - modify: target.vfs.has_food
-          value: "true"
-
-      on_use:
-        - modify: target.bar.energy
-          value: "clamp(target.bar.energy + 0.3, 0.0, 1.0)"
-        - spawn_effect: ate_food
-          target: self
-          duration: 5
-          intensity: 1.0
-
-      on_drop:
-        - modify: target.vfs.has_food
-          value: "false"
-
-  - id: medkit
-    description: "Restores health when used"
-    vfs_profile: medical
-    duration: null  # Permanent (doesn't despawn)
-    cooldown: null  # No cooldown
-
-    interactions:
-      on_pickup: []
-
-      on_use:
-        - modify: target.bar.health
-          value: "clamp(target.bar.health + 0.5, 0.0, 1.0)"
-
-      on_drop: []
-
-  - id: energy_drink
-    description: "Quick energy boost"
-    vfs_profile: beverage
-    duration: 150
-    cooldown: 30
-
-    interactions:
-      on_pickup: []
-
-      on_use:
-        - modify: target.bar.energy
-          value: "clamp(target.bar.energy + 0.2, 0.0, 1.0)"
-        - modify: target.bar.mood
-          value: "clamp(target.bar.mood + 0.1, 0.0, 1.0)"
-
-      on_drop: []
+  max_items_per_agent: 3
+  max_items_in_world: 10

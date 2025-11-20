@@ -1,8 +1,8 @@
-# Phase 7.1: Effects Command Completion - COMPLETE
+# Phase 7.1: Effects Command Completion - PARTIAL
 
 **Date:** 2025-11-21
 **Branch:** `vfs,effects,items`
-**Status:** ✅ PRODUCTION READY (85% readiness)
+**Status:** ⚠️ CONDITIONAL APPROVAL (65% readiness - spawn_item stubbed)
 
 ## Overview
 
@@ -32,11 +32,11 @@ Phase 7.1 closes critical scope gaps identified in Phase 6 documentation review 
 - on_spawn commands not executed (caught by code reviewer)
 
 ### Task 2: spawn_item Command
-**Status:** ✅ Complete (with ItemManager integration deferred)
+**Status:** ⚠️ STUBBED (MockItemManager only - incompatible with real ItemManager)
 **Commits:** bdd23af, f4e86b5
-**Tests:** 2 unit + 1 integration = 3 tests
+**Tests:** 2 unit + 1 integration = 3 tests (MockItemManager only)
 
-**Features:**
+**Features (MockItemManager only):**
 - Position resolution (self, target, explicit coordinates)
 - Quantity support (spawn multiple items)
 - Initial state parameters
@@ -45,9 +45,29 @@ Phase 7.1 closes critical scope gaps identified in Phase 6 documentation review 
 - Environment caller not updated for new tick() signature (65 test failures)
 - target_index=None bug in EffectManager preventing `target.bar.*` expressions
 
-**Known Limitation:**
-- Tests use MockItemManager; real ItemManager has different signature
-- Full integration deferred to Phase 7.2
+**🚨 CRITICAL BLOCKER: ItemManager Signature Mismatch**
+```python
+# What executor.py expects (NOT IMPLEMENTED):
+item_manager.spawn_item(
+    item_id=str,
+    position_hint=tuple,
+    initial_state=dict | None
+)
+
+# What real ItemManager has (src/townlet/items/manager.py:172):
+item_manager.spawn_item(
+    item_type=str,
+    position=tuple,
+    current_tick=int
+) -> ItemInstance | None
+```
+
+**Impact:** spawn_item command will crash at runtime with real ItemManager due to incompatible signatures:
+- `position_hint` parameter does not exist in real ItemManager
+- `initial_state` parameter does not exist in real ItemManager
+- `current_tick` parameter not passed by executor
+
+**Verdict:** spawn_item is **NOT production-ready**. Must be marked as experimental/unstable until Phase 7.2 completes ItemManager integration.
 
 ### Task 3: for_each Command
 **Status:** ✅ Complete
@@ -150,37 +170,68 @@ Phase 7.1 closes critical scope gaps identified in Phase 6 documentation review 
    - Fix: Explicit device parameter in collections.py
    - Commit: 4fec40b
 
-## Production Readiness: 85%
+## Production Readiness: 65% (Revised from 85% after honest code review)
+
+**Feature Breakdown:**
+- spawn_effect: 95% (production ready)
+- spawn_item: 30% (stubbed, incompatible with real ItemManager) ⚠️ **BLOCKS PRODUCTION**
+- for_each: 90% (production ready for agent collections)
+- on_interrupt: 95% (production ready)
 
 **Strengths:**
-- All 4 features working correctly
+- 3 of 4 features working correctly (spawn_effect, for_each, on_interrupt)
 - 387 tests passing (69 unit + 318 integration)
 - Critical bugs caught and fixed during code review
 - Breaking changes acceptable (pre-release status)
 
+**Critical Issues:**
+- 🚨 **spawn_item signature mismatch with real ItemManager (BLOCKER)**
+- Test coverage significantly below target (16 vs 65-85 = 24%)
+- spawn_item only tested with MockItemManager, not real implementation
+
 **Technical Debt:**
 - ItemManager integration incomplete (deferred to Phase 7.2)
-- Test coverage below target (16 vs 65-85)
 - Unsupported collections (nearby_items)
+- Missing edge case tests for all 4 features
 
-**Recommendation:** ✅ **APPROVED FOR PRODUCTION**
+**Recommendation:** ⚠️ **CONDITIONAL APPROVAL**
+
+**Approve IF:**
+- spawn_item is marked as experimental/unstable in all documentation
+- Production code paths avoid spawn_item until Phase 7.2 completion
+- Warning added to effects.md about ItemManager incompatibility
+
+**Reject IF:**
+- spawn_item is advertised as working in production
+- No warning about signature mismatch provided to users
 
 ## Known Limitations
 
-1. **ItemManager Integration Incomplete**
-   - spawn_item uses MockItemManager in tests
-   - Real ItemManager.spawn_item() has different signature
-   - Deferred to Phase 7.2 (Items auto-registration)
+1. **🚨 CRITICAL: spawn_item ItemManager Signature Mismatch (BLOCKER)**
+   - spawn_item command expects: `spawn_item(item_id, position_hint, initial_state)`
+   - Real ItemManager provides: `spawn_item(item_type, position, current_tick)`
+   - **Will crash at runtime** if used with real ItemManager
+   - Only works with MockItemManager in tests
+   - **Status:** EXPERIMENTAL/UNSTABLE until Phase 7.2
+   - **Action Required:** Mark as experimental in all documentation
 
-2. **Unsupported Collections**
+2. **Scope Delivery: PARTIAL (75%)**
+   - spawn_effect: ✅ COMPLETE (production ready)
+   - spawn_item: ⚠️ STUBBED (MockItemManager only)
+   - for_each: ✅ COMPLETE (production ready)
+   - on_interrupt: ✅ COMPLETE (production ready)
+   - **Overall:** 3 of 4 features production-ready
+
+3. **Unsupported Collections**
    - nearby_items not implemented (requires ItemManager)
    - nearby_affordances not implemented (no use case yet)
    - Raises NotImplementedError with clear message
 
-3. **Test Coverage Gap**
+4. **Test Coverage Gap**
    - Plan specified 65-85 tests, delivered 16 (24%)
-   - Edge cases deferred to Phase 7.3
-   - Approved as adequate for production
+   - Missing edge cases for all 4 features
+   - Integration test combining all features missing
+   - Code reviewer: "Borderline adequate, needs Phase 7.3 hardening"
 
 ## Related Documents
 
@@ -207,6 +258,16 @@ Phase 7.1 closes critical scope gaps identified in Phase 6 documentation review 
 
 ---
 
-**Phase 7.1 Status:** ✅ COMPLETE AND MERGED
+**Phase 7.1 Status:** ⚠️ PARTIAL COMPLETION (3 of 4 features production-ready)
 
-**Production Impact:** Effects system now supports cascade patterns, AoE patterns, item generation, and interruption handling - enabling rich emergent behaviors in curriculum levels.
+**What Works in Production:**
+- ✅ spawn_effect: Effect cascade patterns (poison → nausea)
+- ✅ for_each: Area-of-effect patterns (AoE healing for agent collections)
+- ✅ on_interrupt: Effect interruption lifecycle hook
+
+**What Does NOT Work:**
+- ⚠️ spawn_item: **EXPERIMENTAL/UNSTABLE** - Will crash with real ItemManager
+  - Only works with MockItemManager in tests
+  - Phase 7.2 required for production use
+
+**Production Impact:** Effects system now supports cascade patterns, AoE patterns (agents only), and interruption handling. Item generation via spawn_item is NOT production-ready and must be marked experimental until Phase 7.2.

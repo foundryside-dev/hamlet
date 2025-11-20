@@ -214,6 +214,17 @@ class CommandExecutor:
     def _execute_spawn_item(self, command: CommandNode, context: ExecutionContext) -> None:
         """Execute spawn_item command.
 
+        ⚠️ WARNING: EXPERIMENTAL/UNSTABLE - ItemManager signature mismatch
+
+        This implementation expects ItemManager to have:
+            spawn_item(item_id: str, position_hint: tuple, initial_state: dict | None)
+
+        But real ItemManager (src/townlet/items/manager.py:172) has:
+            spawn_item(item_type: str, position: tuple, current_tick: int)
+
+        Will crash at runtime with real ItemManager. Only works with MockItemManager.
+        Phase 7.2 required to implement proper ItemManager integration.
+
         Args:
             command: Spawn item command node
             context: Execution context

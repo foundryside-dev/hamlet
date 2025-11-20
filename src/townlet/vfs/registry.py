@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import torch
 
-from townlet.vfs.schema import VariableDef
+from townlet.vfs.schema import VariableDef, VariableScope
 
 __all__ = [
     "VariableRegistry",
@@ -53,6 +53,7 @@ class VariableRegistry:
         variables: list[VariableDef],
         num_agents: int,
         device: torch.device,
+        max_items: int = 0,
     ):
         """Initialize variable registry.
 
@@ -60,8 +61,10 @@ class VariableRegistry:
             variables: List of variable definitions
             num_agents: Number of agents in the environment
             device: PyTorch device (cpu or cuda)
+            max_items: Maximum items (for item-scoped variables)
         """
         self.num_agents = num_agents
+        self.max_items = max_items
         self.device = device
 
         # Store variable definitions by ID, guarding against duplicate IDs
@@ -76,6 +79,9 @@ class VariableRegistry:
         self._expected_shapes: dict[str, torch.Size] = {}
         self._expected_dtypes: dict[str, torch.dtype] = {}
         self._initialize_storage()
+
+        # Initialize item-scoped storage
+        self._initialize_item_storage()
 
     @property
     def variables(self) -> dict[str, VariableDef]:
@@ -291,6 +297,94 @@ class VariableRegistry:
             default_tensor = torch.tensor(default_values[:copy_len], device=self.device, dtype=dtype)
             tensor[:copy_len] = default_tensor
         return tensor
+
+    def _initialize_item_storage(self) -> None:
+        """Initialize item-scoped variable storage."""
+        # Get all item-scoped variables
+        item_vars = [v for v in self._definitions.values() if v.scope == VariableScope.ITEM]
+
+        if item_vars and self.max_items > 0:
+            # Allocate item_vfs: [max_items, num_item_vars]
+            self.item_vfs = torch.zeros(
+                (self.max_items, len(item_vars)),
+                dtype=torch.float32,
+                device=self.device,
+            )
+
+            # Set default values
+            for idx, var in enumerate(item_vars):
+                if var.default is not None:
+                    if isinstance(var.default, (int, float)):
+                        self.item_vfs[:, idx] = var.default
+                    elif isinstance(var.default, list):
+                        # Vector defaults (if needed in future)
+                        self.item_vfs[:, idx] = var.default[0]
+
+            # Map variable IDs to indices for item scope
+            self.item_var_to_index = {v.id: idx for idx, v in enumerate(item_vars)}
+        else:
+            self.item_vfs = None
+            self.item_var_to_index = {}
+
+    def read(
+        self,
+        variable_id: str,
+        context_index: int,
+        scope: VariableScope,
+    ) -> float | torch.Tensor:
+        """Read variable value from registry.
+
+        Args:
+            variable_id: Variable ID
+            context_index: Index (agent index for agent scope, item vfs_index for item scope)
+            scope: Variable scope
+
+        Returns:
+            Variable value
+        """
+        var = self._definitions.get(variable_id)
+        if var is None:
+            raise KeyError(f"Variable {variable_id} not found")
+
+        if scope == VariableScope.ITEM:
+            if self.item_vfs is None:
+                raise RuntimeError("Item VFS storage not allocated")
+            var_idx = self.item_var_to_index[variable_id]
+            return self.item_vfs[context_index, var_idx].item()
+
+        # For other scopes, use existing get() method with reader="engine"
+        # This is a simplified implementation for testing
+        raise NotImplementedError(f"read() not yet implemented for scope {scope}")
+
+    def write(
+        self,
+        variable_id: str,
+        value: float | torch.Tensor,
+        context_index: int,
+        scope: VariableScope,
+    ) -> None:
+        """Write variable value to registry.
+
+        Args:
+            variable_id: Variable ID
+            value: New value
+            context_index: Index (agent index for agent scope, item vfs_index for item scope)
+            scope: Variable scope
+        """
+        var = self._definitions.get(variable_id)
+        if var is None:
+            raise KeyError(f"Variable {variable_id} not found")
+
+        if scope == VariableScope.ITEM:
+            if self.item_vfs is None:
+                raise RuntimeError("Item VFS storage not allocated")
+            var_idx = self.item_var_to_index[variable_id]
+            self.item_vfs[context_index, var_idx] = value
+            return
+
+        # For other scopes, use existing set() method with writer="engine"
+        # This is a simplified implementation for testing
+        raise NotImplementedError(f"write() not yet implemented for scope {scope}")
 
 
 class ScopedVariableRegistry:

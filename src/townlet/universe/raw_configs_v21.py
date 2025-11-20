@@ -295,18 +295,29 @@ class RawConfigsV21:
                     "environment.yaml modulation_graph."
                 )
 
-            # Affordance costs/effects meter references must be valid
+            # Affordance costs meter references must be valid
             for aff in level.affordances.affordances:
                 invalid_cost_meters = [name for name in aff.costs.keys() if name not in env_meter_names]
-                invalid_effect_meters = [name for name in aff.effects.keys() if name not in env_meter_names]
-                if invalid_cost_meters or invalid_effect_meters:
+
+                # Extract meter names from interactions (Effects commands)
+                # Effects commands use paths like "target.bar.{meter_name}"
+                invalid_interaction_meters = []
+                for stage_commands in aff.interactions.values():
+                    for cmd in stage_commands:
+                        # Extract meter name from modify path (e.g., "target.bar.energy" -> "energy")
+                        if hasattr(cmd, "modify") and cmd.modify.startswith("target.bar."):
+                            meter_name = cmd.modify.split(".")[-1]
+                            if meter_name not in env_meter_names:
+                                invalid_interaction_meters.append(meter_name)
+
+                if invalid_cost_meters or invalid_interaction_meters:
                     affordance_problems: list[str] = []
                     if invalid_cost_meters:
                         affordance_problems.append(f"costs: {sorted(invalid_cost_meters)}")
-                    if invalid_effect_meters:
-                        affordance_problems.append(f"effects: {sorted(invalid_effect_meters)}")
+                    if invalid_interaction_meters:
+                        affordance_problems.append(f"interactions: {sorted(set(invalid_interaction_meters))}")
                     raise ValueError(
-                        "Affordance references unknown meters in costs/effects.\n"
+                        "Affordance references unknown meters in costs/interactions.\n"
                         f"  Experiment: {self.experiment_dir}\n"
                         f"  Level: {level_name}\n"
                         f"  Affordance: {aff.name}\n"

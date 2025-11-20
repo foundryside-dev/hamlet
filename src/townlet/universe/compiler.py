@@ -632,10 +632,19 @@ class UniverseCompiler:
                         location=str(level_dir / "affordances.yaml"),
                     )
                 invalid_cost_meters = [name for name in aff.costs.keys() if name not in env_meter_names]
-                invalid_effect_meters = [name for name in aff.effects.keys() if name not in env_meter_names]
-                if invalid_cost_meters or invalid_effect_meters:
+
+                # Extract meter names from interactions (Effects commands)
+                invalid_interaction_meters = []
+                for stage_commands in aff.interactions.values():
+                    for cmd in stage_commands:
+                        if hasattr(cmd, "modify") and cmd.modify.startswith("target.bar."):
+                            meter_name = cmd.modify.split(".")[-1]
+                            if meter_name not in env_meter_names:
+                                invalid_interaction_meters.append(meter_name)
+
+                if invalid_cost_meters or invalid_interaction_meters:
                     errors.add(
-                        f"Affordance '{aff.name}' references unknown meters in costs/effects.",
+                        f"Affordance '{aff.name}' references unknown meters in costs/interactions.",
                         code="AFFORDANCE_INVALID_METER",
                         location=str(level_dir / "affordances.yaml"),
                     )
@@ -1113,12 +1122,28 @@ class UniverseCompiler:
         """Affordance metadata derived from per-level affordances.yaml."""
         infos: list[AffordanceInfo] = []
         for aff in affordances.affordances:
+            # Extract effects from interactions (on_start stage for metadata)
+            # This is for visualization/UI purposes - the actual Effects execution uses compiled commands
+            effects_dict = {}
+            if aff.interactions and "on_start" in aff.interactions:
+                for cmd in aff.interactions["on_start"]:
+                    if hasattr(cmd, "modify") and cmd.modify.startswith("target.bar."):
+                        meter_name = cmd.modify.split(".")[-1]
+                        # Simple extraction - just parse basic addition (e.g., "target.bar.energy + 0.5")
+                        # This is best-effort for metadata; actual execution uses compiled Effects
+                        if hasattr(cmd, "value") and "+" in cmd.value:
+                            try:
+                                value_part = cmd.value.split("+")[-1].strip()
+                                effects_dict[meter_name] = float(value_part)
+                            except (ValueError, IndexError):
+                                pass  # Skip if not a simple addition
+
             infos.append(
                 AffordanceInfo(
                     id=aff.name,
                     name=aff.name,
                     enabled=True,
-                    effects=aff.effects,
+                    effects=effects_dict,
                     cost=float(aff.costs.get("money", 0.0)) if hasattr(aff, "costs") else 0.0,
                     category=None,
                     description="",

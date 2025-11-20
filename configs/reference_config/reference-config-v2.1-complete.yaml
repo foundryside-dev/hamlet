@@ -838,14 +838,14 @@ affordances:
       # Per-tick costs for multi-tick/dual affordances (optional)
       costs_per_tick: {}
 
-      # Canonical effect definition: use effect_pipeline exclusively.
-      # Simple effects dict is omitted on purpose; pipelines are the single source of truth.
-      effect_pipeline:
+      # Canonical effect definition: use interactions (Effects commands).
+      # Unified with Items system - declarative command pipeline.
+      interactions:
         on_start:
-          - meter: satiation
-            amount: 0.4   # Restores 40% satiation
-          - meter: mood
-            amount: 0.05  # Small mood boost from eating
+          - modify: "target.bar.satiation"
+            value: "target.bar.satiation + 0.4"   # Restores 40% satiation
+          - modify: "target.bar.mood"
+            value: "target.bar.mood + 0.05"  # Small mood boost from eating
         per_tick: []
         on_completion: []
         on_early_exit: []
@@ -874,17 +874,17 @@ affordances:
       costs_per_tick:
         energy: 0.01
 
-      # Effect pipeline drives actual behavior (no separate simple effects dict):
-      effect_pipeline:
+      # Effects pipeline drives actual behavior using interactions:
+      interactions:
         on_start: []  # No instant effects at start
         per_tick:
-          - meter: energy
-            amount: 0.10     # +10% energy per tick
+          - modify: "target.bar.energy"
+            value: "target.bar.energy + 0.10"     # +10% energy per tick
         on_completion:
-          - meter: energy
-            amount: 0.30     # +30% completion bonus (total ~80%)
-          - meter: mood
-            amount: 0.10     # Mood boost after good sleep
+          - modify: "target.bar.energy"
+            value: "target.bar.energy + 0.30"     # +30% completion bonus (total ~80%)
+          - modify: "target.bar.mood"
+            value: "target.bar.mood + 0.10"     # Mood boost after good sleep
         on_early_exit: []
         on_failure: []
       opening_hours:
@@ -908,12 +908,12 @@ affordances:
         energy: 0.075  # 4 × 7.5% ≈ 30% energy cost
         mood: 0.025    # 4 × 2.5% ≈ 10% mood cost
 
-      # Effect pipeline implements multi-tick earnings (net matches 22.5 payout)
-      effect_pipeline:
+      # Effects implement multi-tick earnings (net matches 22.5 payout)
+      interactions:
         on_start: []  # No immediate income at tick 0
         per_tick:
-          - meter: money
-            amount: 5.625    # 4 × 5.625 = 22.5 total
+          - modify: "target.bar.money"
+            value: "target.bar.money + 5.625"    # 4 × 5.625 = 22.5 total
         on_completion: []     # All pay handled via per_tick in this example
         on_early_exit: []
         on_failure: []

@@ -81,6 +81,8 @@ class VariableRegistry:
         self._initialize_storage()
 
         # Initialize item-scoped storage
+        self.item_vfs: torch.Tensor | None = None
+        self.item_var_to_index: dict[str, int] = {}
         self._initialize_item_storage()
 
     @property
@@ -322,9 +324,6 @@ class VariableRegistry:
 
             # Map variable IDs to indices for item scope
             self.item_var_to_index = {v.id: idx for idx, v in enumerate(item_vars)}
-        else:
-            self.item_vfs = None
-            self.item_var_to_index = {}
 
     def read(
         self,
@@ -349,7 +348,7 @@ class VariableRegistry:
         if scope == VariableScope.ITEM:
             # Validate scope matches
             if var.scope != VariableScope.ITEM:
-                raise ValueError(f"Variable '{variable_id}' has scope {var.scope.value}, cannot read as {scope.value}")
+                raise ValueError(f"Variable '{variable_id}' has scope {var.scope}, cannot read as item")
             if self.item_vfs is None:
                 raise RuntimeError("Item VFS storage not allocated")
             var_idx = self.item_var_to_index[variable_id]
@@ -381,7 +380,7 @@ class VariableRegistry:
         if scope == VariableScope.ITEM:
             # Validate scope matches
             if var.scope != VariableScope.ITEM:
-                raise ValueError(f"Variable '{variable_id}' has scope {var.scope.value}, cannot write as {scope.value}")
+                raise ValueError(f"Variable '{variable_id}' has scope {var.scope}, cannot write as item")
             if self.item_vfs is None:
                 raise RuntimeError("Item VFS storage not allocated")
             var_idx = self.item_var_to_index[variable_id]

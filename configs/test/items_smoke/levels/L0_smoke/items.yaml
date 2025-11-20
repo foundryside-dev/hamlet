@@ -1,44 +1,19 @@
-# Items Smoke Test - Level L0_smoke Items Configuration
-# Single spawn rule for test_item
+# Items Appearance (Level-Specific Spawn Rules)
 
 version: "1.0"
 
-# Inventory capacity (REQUIRED - Phase 1 limit: max 3)
-inventory:
-  max_items_per_agent: 3
+items:
+  - item_type: apple
+    spawn_count: 3       # Spawn 3 apples at level start
+    spawn_interval: 100  # Respawn every 100 ticks
+    spawn_position: random
 
-# Spawn rules
-spawn_rules:
-  - type_id: test_item  # References catalog entry
+  - item_type: medkit
+    spawn_count: 1
+    spawn_interval: 200
+    spawn_position: random
 
-    # Placement: Fixed position for determinism
-    placement:
-      mode: fixed
-      positions: [[2.0, 2.0]]  # Center of 5×5 grid
-
-    # Schedule: Spawn once at episode start
-    schedule:
-      kind: once
-      params: {}
-
-    # Limits
-    limits:
-      max_simultaneous: 2  # Max 2 test_items in world
-      max_total: 5         # Max 5 spawns per episode
-
-    # Lifecycle
-    lifecycle:
-      duration_steps: 50   # Item despawns after 50 steps
-      cooldown_steps: 10   # 10 steps before respawn
-
-    # Priority
-    priority: 10
-
-    # Conditions (Phase 1: stored as metadata, not evaluated)
-    conditions: []
-
-# Expected behavior:
-# - 1 test_item spawns at position (2, 2) at episode start
-# - Agent can pickup (3 inventory slots available)
-# - Item despawns after 50 steps if not picked up
-# - After despawn, 10-step cooldown before respawn allowed
+  - item_type: energy_drink
+    spawn_count: 2
+    spawn_interval: 150
+    spawn_position: random

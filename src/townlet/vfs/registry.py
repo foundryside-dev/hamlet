@@ -347,6 +347,9 @@ class VariableRegistry:
             raise KeyError(f"Variable {variable_id} not found")
 
         if scope == VariableScope.ITEM:
+            # Validate scope matches
+            if var.scope != VariableScope.ITEM:
+                raise ValueError(f"Variable '{variable_id}' has scope {var.scope.value}, cannot read as {scope.value}")
             if self.item_vfs is None:
                 raise RuntimeError("Item VFS storage not allocated")
             var_idx = self.item_var_to_index[variable_id]
@@ -376,6 +379,9 @@ class VariableRegistry:
             raise KeyError(f"Variable {variable_id} not found")
 
         if scope == VariableScope.ITEM:
+            # Validate scope matches
+            if var.scope != VariableScope.ITEM:
+                raise ValueError(f"Variable '{variable_id}' has scope {var.scope.value}, cannot write as {scope.value}")
             if self.item_vfs is None:
                 raise RuntimeError("Item VFS storage not allocated")
             var_idx = self.item_var_to_index[variable_id]

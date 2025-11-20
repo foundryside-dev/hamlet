@@ -127,6 +127,13 @@ class ItemManager:
         # Cooldown tracking (item_type -> tick when can spawn again)
         self.cooldown_until: dict[str, int] = {}
 
+        # Appearance config for periodic respawning
+        self.appearance_config: ItemsAppearanceConfig | None = None
+        self.grid_size: tuple[int, ...] | None = None
+
+        # Respawn timers (item_type -> tick when should respawn)
+        self.respawn_timers: dict[str, int] = {}
+
     def spawn_item(
         self,
         item_type: str,
@@ -249,6 +256,18 @@ class ItemManager:
         if item_def.cooldown is not None:
             self.cooldown_until[item.item_type] = current_tick + item_def.cooldown
 
+        # Set respawn timer if configured in appearance config
+        if self.appearance_config is not None:
+            # Find appearance rule for this item type
+            rule = next(
+                (r for r in self.appearance_config.items if r.item_type == item.item_type),
+                None,
+            )
+
+            if rule is not None and rule.spawn_interval is not None:
+                # Schedule respawn
+                self.respawn_timers[item.item_type] = current_tick + rule.spawn_interval
+
     def tick(self, current_tick: int) -> None:
         """Advance all item lifecycles by one tick.
 
@@ -313,3 +332,17 @@ class ItemManager:
 
                 # Attempt spawn (may fail if at capacity)
                 self.spawn_item(rule.item_type, position, current_tick)
+
+    def set_appearance_config(
+        self,
+        appearance_config: ItemsAppearanceConfig,
+        grid_size: tuple[int, ...],
+    ) -> None:
+        """Store appearance config for periodic respawning.
+
+        Args:
+            appearance_config: Level-specific item spawn rules
+            grid_size: Grid dimensions for random position generation
+        """
+        self.appearance_config = appearance_config
+        self.grid_size = grid_size

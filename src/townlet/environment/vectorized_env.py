@@ -920,6 +920,24 @@ class VectorizedHamletEnv:
         self._unique_affordances_count.zero_()
         self._affordances_seen = [set() for _ in range(self.num_agents)]
 
+        # Spawn initial items if configured
+        if self.item_manager is not None and self.level.items_appearance is not None:
+            # Get grid size from substrate (only works for Grid2D/Grid3D/GridND)
+            # For continuous substrates, this would need different handling
+            if hasattr(self.substrate, "width") and hasattr(self.substrate, "height"):
+                if hasattr(self.substrate, "depth"):
+                    # Grid3D
+                    grid_size = (self.substrate.width, self.substrate.height, self.substrate.depth)
+                else:
+                    # Grid2D
+                    grid_size = (self.substrate.width, self.substrate.height)
+
+                self.item_manager.spawn_initial_items(
+                    appearance_config=self.level.items_appearance,
+                    grid_size=grid_size,
+                    current_tick=0,
+                )
+
         return self._get_observations()
 
     @classmethod

@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
+import random
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 import torch
 
 if TYPE_CHECKING:
-    from townlet.config.items_config import ItemsCatalogConfig
+    from townlet.config.items_config import ItemsAppearanceConfig, ItemsCatalogConfig
 
 from townlet.effects.compiler import CommandCompiler
 from townlet.effects.schema import CommandNode
@@ -281,3 +282,34 @@ class ItemManager:
     def get_all_items(self) -> list[ItemInstance]:
         """Get all active items (for testing/debugging)."""
         return list(self.active_items.values())
+
+    def spawn_initial_items(
+        self,
+        appearance_config: ItemsAppearanceConfig,
+        grid_size: tuple[int, ...],
+        current_tick: int,
+    ) -> None:
+        """Spawn items at level start based on ItemsAppearanceConfig.
+
+        Args:
+            appearance_config: Level-specific item spawn rules
+            grid_size: Grid dimensions (e.g., (7, 7) for 7x7 grid)
+            current_tick: Current environment tick
+        """
+        for rule in appearance_config.items:
+            # Validate item type exists in catalog
+            if not any(t.id == rule.item_type for t in self.catalog.item_types):
+                # Skip unknown item types (e.g., energy_drink in test config)
+                continue
+
+            # Spawn count items
+            for _ in range(rule.spawn_count):
+                # Generate random position within grid bounds
+                if rule.spawn_position == "random":
+                    position = tuple(random.randint(0, size - 1) for size in grid_size)
+                else:
+                    # TODO: Support fixed positions when needed
+                    position = tuple(random.randint(0, size - 1) for size in grid_size)
+
+                # Attempt spawn (may fail if at capacity)
+                self.spawn_item(rule.item_type, position, current_tick)

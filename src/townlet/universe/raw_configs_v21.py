@@ -13,7 +13,7 @@ from townlet.config.bars_v2_config import BarsV2Config, load_bars_v2_config
 from townlet.config.curriculum_config import CurriculumConfig
 from townlet.config.environment_config import EnvironmentConfig
 from townlet.config.experiment_config import ExperimentConfig
-from townlet.config.items_config import ItemsCatalogConfig
+from townlet.config.items_config import ItemsAppearanceConfig, ItemsCatalogConfig
 from townlet.config.stratum_config import StratumConfig
 from townlet.config.training_v2_config import TrainingV2Config, load_training_v2_config
 from townlet.universe.errors import CompilationErrorCollector
@@ -38,6 +38,7 @@ class CurriculumLevel:
     bars: BarsV2Config
     affordances: AffordancesV2Config
     training: TrainingV2Config
+    items_appearance: ItemsAppearanceConfig | None = None
 
     @property
     def level_dir(self) -> str:
@@ -452,12 +453,24 @@ class RawConfigsV21:
                 bars = load_bars_v2_config(level_dir)
                 affordances = load_affordances_v2_config(level_dir)
                 training = load_training_v2_config(level_dir)
+
+                # Load level-specific items.yaml if exists
+                items_appearance = None
+                level_items_path = level_dir / "items.yaml"
+                if level_items_path.exists():
+                    import yaml
+
+                    with open(level_items_path) as f:
+                        items_data = yaml.safe_load(f)
+                    items_appearance = ItemsAppearanceConfig(**items_data)
+
                 levels[level_name] = CurriculumLevel(
                     name=level_name,
                     curriculum=curriculum,
                     bars=bars,
                     affordances=affordances,
                     training=training,
+                    items_appearance=items_appearance,
                 )
             except Exception as exc:  # noqa: BLE001
                 errors.add(

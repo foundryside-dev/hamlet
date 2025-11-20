@@ -18,7 +18,7 @@ from townlet.config.bars_v2_config import BarsV2Config
 from townlet.config.curriculum_config import CurriculumConfig
 from townlet.config.environment_config import EnvironmentConfig
 from townlet.config.experiment_config import ExperimentConfig
-from townlet.config.items_config import ItemsCatalogConfig
+from townlet.config.items_config import ItemsAppearanceConfig, ItemsCatalogConfig
 from townlet.config.stratum_config import StratumConfig
 from townlet.config.training_v2_config import TrainingV2Config
 from townlet.universe.dto import (
@@ -85,6 +85,7 @@ class CompiledUniverse:
         optimization_data: OptimizationData
         vfs_observation_fields: tuple[VfsObservationField, ...]
         vfs_variables: tuple[VariableDef, ...]
+        items_appearance: ItemsAppearanceConfig | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "vfs_observation_fields", tuple(self.vfs_observation_fields))

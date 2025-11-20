@@ -211,3 +211,40 @@ def test_drop_slot_action_spawns_item_in_world():
     spawned_items = [i for i in env.item_manager.active_items.values() if i.position == (4, 4)]
     assert len(spawned_items) == 1, "Item not spawned at drop position"
     assert spawned_items[0].item_type == "apple"
+
+
+def test_automatic_item_spawning_at_reset():
+    """Items spawn automatically at reset based on ItemsAppearanceConfig."""
+    compiler = UniverseCompiler()
+    universe = compiler.compile(Path("configs/test/items_smoke"), use_cache=False)
+
+    env = VectorizedHamletEnv(
+        universe=universe,
+        level_name="L0_smoke",
+        num_agents=1,
+        device="cpu",
+    )
+
+    # Reset should spawn items according to levels/L0_smoke/items.yaml
+    # - 3 apples
+    # - 1 medkit
+    # - 2 energy_drink (but energy_drink not in catalog, should skip)
+    env.reset()
+
+    # Count items by type
+    active_items = list(env.item_manager.active_items.values())
+    apple_count = sum(1 for item in active_items if item.item_type == "apple")
+    medkit_count = sum(1 for item in active_items if item.item_type == "medkit")
+
+    # Verify correct spawn counts
+    assert apple_count == 3, f"Expected 3 apples, got {apple_count}"
+    assert medkit_count == 1, f"Expected 1 medkit, got {medkit_count}"
+
+    # Verify total item count
+    assert len(active_items) == 4, f"Expected 4 items total (3 apples + 1 medkit), got {len(active_items)}"
+
+    # Verify positions are within grid bounds (7x7 grid for items_smoke)
+    for item in active_items:
+        x, y = item.position
+        assert 0 <= x < 7, f"Item x position {x} out of bounds"
+        assert 0 <= y < 7, f"Item y position {y} out of bounds"

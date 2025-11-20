@@ -319,6 +319,7 @@ class UniverseCompiler:
                 optimization_data=optimization_data,
                 vfs_observation_fields=vfs_fields,
                 vfs_variables=vfs_variables,
+                items_appearance=level.items_appearance,
             )
 
         primary_meta = all_levels[primary_level]

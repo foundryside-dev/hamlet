@@ -174,6 +174,7 @@ class ItemManager:
         item_type: str,
         position: tuple[int, ...] | tuple[float, ...],
         current_tick: int,
+        initial_state: dict[str, float] | None = None,
     ) -> ItemInstance | None:
         """Spawn new item instance.
 
@@ -181,6 +182,7 @@ class ItemManager:
             item_type: Item type ID from catalog
             position: Spawn position (grid or continuous coords)
             current_tick: Current environment tick
+            initial_state: Optional VFS state overrides (e.g., {"durability": 50.0})
 
         Returns:
             ItemInstance if spawned, None if at capacity or on cooldown
@@ -218,6 +220,27 @@ class ItemManager:
                             context_index=vfs_index,
                             scope=VariableScope.ITEM,
                         )
+
+            # Apply initial_state overrides if provided
+            if initial_state is not None:
+                for var_id, value in initial_state.items():
+                    # Validate variable exists
+                    if var_id not in self.vfs_registry.variables:
+                        raise KeyError(f"Unknown VFS variable for initial_state: {var_id}")
+
+                    var_def = self.vfs_registry.variables[var_id]
+
+                    # Validate scope
+                    if var_def.scope != VariableScope.ITEM:
+                        raise ValueError(f"Variable {var_id} is not item-scoped (scope={var_def.scope})")
+
+                    # Apply override
+                    self.vfs_registry.write(
+                        var_id,
+                        value,
+                        context_index=vfs_index,
+                        scope=VariableScope.ITEM,
+                    )
 
         # Create instance
         instance = ItemInstance(

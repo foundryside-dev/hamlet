@@ -78,7 +78,7 @@ def test_item_actions_defined_in_global_actions():
 def test_env_with_items_initializes():
     """Environment with ItemManager and InventoryState initializes correctly."""
     compiler = UniverseCompiler()
-    universe = compiler.compile(Path("configs/test/items_smoke"))
+    universe = compiler.compile(Path("configs/test/items_smoke"), use_cache=False)
 
     env = VectorizedHamletEnv(
         universe=universe,
@@ -248,3 +248,45 @@ def test_automatic_item_spawning_at_reset():
         x, y = item.position
         assert 0 <= x < 7, f"Item x position {x} out of bounds"
         assert 0 <= y < 7, f"Item y position {y} out of bounds"
+
+
+def test_periodic_item_respawning():
+    """Items respawn at configured intervals after despawning."""
+    compiler = UniverseCompiler()
+    universe = compiler.compile(Path("configs/test/items_smoke"), use_cache=False)
+
+    env = VectorizedHamletEnv(
+        universe=universe,
+        level_name="L0_smoke",
+        num_agents=1,
+        device="cpu",
+    )
+
+    # Reset spawns initial items (1 medkit with duration=100, spawn_interval=200)
+    env.reset()
+
+    # Verify initial spawn (should have 1 medkit from appearance config)
+    initial_medkits = [i for i in env.item_manager.active_items.values() if i.item_type == "medkit"]
+    assert len(initial_medkits) == 1, f"Expected 1 medkit at spawn, got {len(initial_medkits)}"
+
+    # Wait for medkit to expire in the world (duration=100 ticks)
+    # Item spawned at tick 0, ticks down each step, expires at tick 101
+    # Then respawn_timer = despawn_tick + spawn_interval = 101 + 200 = 301
+    wait_action = env.action_space.get_action_by_name("WAIT")
+    for _ in range(101):  # Wait for item to expire
+        env.step(torch.tensor([wait_action.id]))
+
+    # Verify medkit despawned after duration expired
+    remaining_medkits = [i for i in env.item_manager.active_items.values() if i.item_type == "medkit"]
+    assert len(remaining_medkits) == 0, "Medkit should have despawned after duration expired"
+
+    # Verify respawn timer is set correctly (should be at tick 101 + 200 = 301)
+    assert "medkit" in env.item_manager.respawn_timers, "Respawn timer should be set for medkit"
+
+    # Step until respawn_timer expires (200 more ticks to reach tick 301)
+    for _ in range(200):
+        env.step(torch.tensor([wait_action.id]))
+
+    # Verify medkit respawned after spawn_interval elapsed
+    respawned_medkits = [i for i in env.item_manager.active_items.values() if i.item_type == "medkit"]
+    assert len(respawned_medkits) == 1, f"Expected 1 medkit to respawn after spawn_interval, got {len(respawned_medkits)}"

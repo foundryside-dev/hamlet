@@ -317,6 +317,9 @@ class ItemManager:
             grid_size: Grid dimensions (e.g., (7, 7) for 7x7 grid)
             current_tick: Current environment tick
         """
+        # Store config for periodic respawning
+        self.set_appearance_config(appearance_config, grid_size)
+
         for rule in appearance_config.items:
             # Validate item type exists in catalog
             if not any(t.id == rule.item_type for t in self.catalog.item_types):

@@ -1331,6 +1331,15 @@ class VectorizedHamletEnv:
         # 5. Increment step counts (before retirement check)
         self.step_counts += 1
 
+        # 5.1. Age items and process periodic respawning (after step count increment)
+        # Items age/despawn/respawn based on the NEW tick count after incrementing
+        if self.item_manager is not None:
+            current_tick = self.step_counts[0].item() if self.step_counts.numel() > 0 else 0
+            # Age all items (expire items that reach duration limit)
+            self.item_manager.tick(current_tick)
+            # Respawn items whose spawn_interval timer has expired
+            self.item_manager.process_respawns(current_tick)
+
         # 5.5. Check for retirement (reached maximum lifespan)
         # Agents that reach their lifespan retire with a bonus reward
         retired = self.step_counts >= self.agent_lifespan

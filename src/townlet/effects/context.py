@@ -35,6 +35,7 @@ class ExecutionContext:
         item_manager: Any | None = None,  # NEW
         spawn_depth: int = 0,  # NEW (cascade depth tracking)
         agent_positions: torch.Tensor | None = None,  # NEW: [batch, 2] spatial positions
+        interrupt_reason: str | None = None,  # NEW: Why effect was interrupted
     ):
         self.bars = bars or {}
         self.vfs_registry = vfs_registry
@@ -46,6 +47,7 @@ class ExecutionContext:
         self.item_manager = item_manager  # NEW
         self.spawn_depth = spawn_depth  # NEW
         self.agent_positions = agent_positions  # NEW
+        self.interrupt_reason = interrupt_reason  # NEW
 
     def get_path(self, path: str) -> torch.Tensor:
         """Resolve path to tensor value.

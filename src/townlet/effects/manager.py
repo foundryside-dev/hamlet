@@ -113,7 +113,26 @@ class EffectManager:
                 return existing
 
             elif effect_def.reapply_policy == "replace":
-                # Remove old instance
+                # NEW: Execute on_interrupt before removing old effect
+                if effect_def.on_interrupt and self.command_executor and bars is not None:
+                    from townlet.effects.context import ExecutionContext
+
+                    context = ExecutionContext(
+                        bars=bars,
+                        vfs_registry=vfs_registry,
+                        self_index=target_entity_id,
+                        target_index=None,
+                        effect=existing,
+                        effect_manager=self,
+                        spawn_depth=spawn_depth,
+                        agent_positions=agent_positions,
+                        interrupt_reason="replaced_by_effect",  # NEW
+                    )
+
+                    for command in effect_def.on_interrupt:
+                        self.command_executor.execute(command, context)
+
+                # Remove old instance (skip on_despawn - already interrupted)
                 self._remove_from_scope(existing)
                 # Continue to create new instance below
 

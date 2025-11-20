@@ -122,16 +122,16 @@ class ItemManager:
         Args:
             current_tick: Current environment tick
         """
-        # Tick all items first (decrement durations)
-        for item in self.active_items.values():
-            item.tick()
-
-        # Collect expired items (after ticking)
+        # Collect expired items (BEFORE ticking - expired items don't tick)
         expired = [instance_id for instance_id, item in self.active_items.items() if item.is_expired()]
 
         # Despawn expired items
         for instance_id in expired:
             self.despawn_item(instance_id, current_tick)
+
+        # Tick all remaining items (AFTER despawning)
+        for item in self.active_items.values():
+            item.tick()
 
     def get_all_items(self) -> list[ItemInstance]:
         """Get all active items (for testing/debugging)."""

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 __all__ = [
     "ItemTypeConfig",
@@ -21,6 +21,8 @@ class ItemInteractionsConfig(BaseModel):
     All interactions are Effects commands (modify, spawn_effect, etc.).
     Phase 1-3 does NOT support custom item commands.
     """
+
+    model_config = ConfigDict(extra="forbid")  # Reject unknown fields (like local_commands, inventory_commands)
 
     on_pickup: list[dict[str, Any]] = Field(
         default_factory=list,
@@ -49,9 +51,6 @@ class ItemInteractionsConfig(BaseModel):
             if not any(k in cmd for k in command_types):
                 raise ValueError(f"Command must have one of: {', '.join(command_types)}. Got keys: {list(cmd.keys())}")
         return v
-
-    class Config:
-        extra = "forbid"  # Reject unknown fields (like local_commands, inventory_commands)
 
 
 class ItemTypeConfig(BaseModel):

@@ -147,11 +147,14 @@ def test_lifecycle_despawn_on_expiration(items_catalog):
     assert item.instance_id in manager.active_items
     assert item.duration_remaining == 1
 
-    # Tick once more (expires)
+    # Tick once more (ticks to 0 but doesn't despawn yet - not expired at start of tick)
     manager.tick(1200)
+    assert item.instance_id in manager.active_items  # Still alive
+    assert item.duration_remaining == 0
 
-    # Item should be despawned
-    assert item.instance_id not in manager.active_items
+    # Next tick despawns (expired at start of tick)
+    manager.tick(1201)
+    assert item.instance_id not in manager.active_items  # Now despawned
     assert len(manager.active_items) == 0
 
 

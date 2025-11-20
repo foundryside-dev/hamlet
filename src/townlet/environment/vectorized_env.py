@@ -414,91 +414,33 @@ class VectorizedHamletEnv:
         self.action_mask_table = self.optimization_data.action_mask_table.to(self.device).clone()
         self.hours_per_day = self.action_mask_table.shape[0] if self.action_mask_table.ndim > 0 else 24
 
-        # Initialize affordance engine with modern affordances (effect_pipeline support).
-        # Adapt v2.1 per-level affordances (AffordancesV2Config) into runtime AffordanceConfig.
-        from townlet.environment.affordance_config import (
-            AffordanceConfig as RuntimeAffordanceConfig,
-        )
-        from townlet.environment.affordance_config import (
-            AffordanceCost,
-        )
+        # Initialize affordance engine with AffordanceParamConfig directly
+        # No RuntimeAffordanceConfig conversion needed - AffordanceEngine uses interactions field
 
-        # Build lookup from environment.yaml affordance vocabulary for categories.
-        env_affordance_categories: dict[str, str] = {a.name: a.category for a in self.universe.environment.environment.affordances}
+        affordances_list = level.affordances.affordances
 
-        runtime_affordances: list[RuntimeAffordanceConfig] = []
-        for aff in level.affordances.affordances:
-            if aff.opening_hours is None:
-                raise ValueError(f"affordance '{aff.name}' missing opening_hours (no defaults allowed)")
-
-            # Derive operating_hours from OpeningHoursConfig:
-            opening = aff.opening_hours
-            if not opening.enabled:
-                operating_hours = [0, 24]
-            else:
-                if not opening.schedule:
-                    raise ValueError(
-                        f"affordance '{aff.name}' opening_hours.schedule is required when opening_hours.enabled=true; "
-                        "provide explicit start/end hours."
-                    )
-                window = opening.schedule[0]
-                operating_hours = [window.start, window.end]
-
-            # Map deployment positions to a single canonical position for runtime.
-            deployment = aff.deployment
-            raw_position = None
-            if deployment.type == "fixed" and deployment.positions:
-                # Use the first configured position as canonical; optimization data may refine this later.
-                raw_position = deployment.positions[0]
-
-            category = env_affordance_categories.get(aff.name, "")
-
-            interaction_type = aff.interaction_type
-            if not interaction_type:
-                raise ValueError(f"affordance '{aff.name}' missing interaction_type (no defaults allowed)")
-            duration_ticks = aff.duration_ticks if aff.duration_ticks is not None else None
-
-            # Instant and per-tick costs (convert to runtime AffordanceCost objects)
-            costs_instant = [AffordanceCost(meter=m, amount=v) for m, v in (aff.costs or {}).items()]
-            costs_per_tick = [AffordanceCost(meter=m, amount=v) for m, v in (aff.costs_per_tick or {}).items()]
-
-            # Effects are now handled through compiled Effects commands (interactions field)
-            # RuntimeAffordanceConfig still needs empty lists for backward compat with affordance engine
-            # but actual execution uses compiled Effects from AffordanceEngine
-            runtime_affordances.append(
-                RuntimeAffordanceConfig(
-                    id=aff.name,
-                    name=aff.name,
-                    category=category,
-                    interaction_type=interaction_type,
-                    duration_ticks=duration_ticks,
-                    costs=costs_instant,
-                    costs_per_tick=costs_per_tick,
-                    effects=[],  # Effects handled via compiled interactions
-                    effects_per_tick=[],  # Effects handled via compiled interactions
-                    completion_bonus=[],  # Effects handled via compiled interactions
-                    operating_hours=operating_hours,
-                    teaching_note=getattr(aff, "teaching_note", None),
-                    design_intent=None,
-                    position=raw_position,
-                )
-            )
+        # Extract positions directly from AffordanceParamConfig
+        def _extract_position(aff):
+            """Extract first fixed position from deployment config."""
+            if aff.deployment.type == "fixed" and aff.deployment.positions:
+                return aff.deployment.positions[0]
+            return None
 
         # Affordance vocabulary and positions from compiled metadata
         metadata_affordance_lookup = dict(self.metadata.affordance_id_to_index)
-        self.affordance_name_to_id = {aff.name: aff.id for aff in runtime_affordances}
+        self.affordance_name_to_id = {aff.name: aff.name for aff in affordances_list}
         self.affordance_name_to_mask_idx = {
             name: metadata_affordance_lookup.get(aff_id)
             for name, aff_id in self.affordance_name_to_id.items()
             if metadata_affordance_lookup.get(aff_id) is not None
         }
-        self.affordance_positions_from_config = {aff.name: getattr(aff, "position", None) for aff in runtime_affordances}
+        self.affordance_positions_from_config = {aff.name: _extract_position(aff) for aff in affordances_list}
         optimization_position_map = getattr(self.optimization_data, "affordance_position_map", {})
         self.affordance_positions_from_optimization = {
             name: optimization_position_map.get(aff_id) for name, aff_id in self.affordance_name_to_id.items()
         }
 
-        all_affordance_names = [aff.name for aff in runtime_affordances]
+        all_affordance_names = [aff.name for aff in affordances_list]
         affordance_names_to_deploy = _resolve_deployable_affordances(
             all_affordance_names,
             training_cfg.enabled_affordances,
@@ -530,7 +472,6 @@ class VectorizedHamletEnv:
             )
 
         # Pass AffordanceParamConfig objects directly (have interactions field for compilation)
-        # Runtime affordances are only used for position/category lookups
         self.affordance_engine = AffordanceEngine(
             tuple(level.affordances.affordances),  # AffordanceParamConfig with interactions
             num_agents,

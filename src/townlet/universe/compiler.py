@@ -2177,10 +2177,12 @@ class UniverseCompiler:
                     )
                 )
 
-            # Legacy effect_pipeline validation removed - interactions field used instead
-            pipeline = getattr(affordance, "effect_pipeline", None)
+            # Validate interactions field (Effects commands)
+            interactions = getattr(affordance, "interactions", {})
             if multi_tick_caps:
-                if pipeline is None or (not getattr(pipeline, "per_tick", None) and not getattr(pipeline, "on_completion", None)):
+                has_per_tick = bool(interactions.get("per_tick"))
+                has_on_completion = bool(interactions.get("on_completion"))
+                if not has_per_tick and not has_on_completion:
                     errors.add(
                         formatter(
                             "UAC-VAL-008",
@@ -2191,7 +2193,7 @@ class UniverseCompiler:
                 else:
                     cap = multi_tick_caps[0]
                     early_exit_allowed = bool(self._get_attr_value(cap, "early_exit_allowed"))
-                    if pipeline.on_early_exit and not early_exit_allowed:
+                    if interactions.get("on_early_exit") and not early_exit_allowed:
                         errors.add_warning(
                             formatter(
                                 "UAC-VAL-008",
@@ -2199,7 +2201,7 @@ class UniverseCompiler:
                                 f"affordances.yaml:{affordance.id}",
                             )
                         )
-            elif pipeline and pipeline.per_tick:
+            elif interactions.get("per_tick"):
                 errors.add_warning(
                     formatter(
                         "UAC-VAL-008",
@@ -2257,34 +2259,29 @@ class UniverseCompiler:
                             )
                         )
 
-            # UAC-VAL-011: Validate probabilistic effect pipeline completeness
+            # UAC-VAL-011: Validate probabilistic interactions completeness
             has_probabilistic = any(self._get_attr_value(cap, "type") == "probabilistic" for cap in capabilities)
 
             if has_probabilistic:
-                if pipeline is None:
+                # interactions is already defined earlier in this method
+                has_on_completion = bool(interactions.get("on_completion"))
+                has_on_failure = bool(interactions.get("on_failure"))
+
+                missing_stages = []
+                if not has_on_completion:
+                    missing_stages.append("on_completion (success path)")
+                if not has_on_failure:
+                    missing_stages.append("on_failure (failure path)")
+
+                if missing_stages:
                     errors.add(
                         formatter(
                             "UAC-VAL-011",
-                            f"Probabilistic affordance '{affordance.id}' must define effect_pipeline with on_completion and on_failure",
-                            f"affordances.yaml:{affordance.id}",
+                            f"Probabilistic affordance '{affordance.id}' should define both success and failure effects. "
+                            f"Missing: {', '.join(missing_stages)}",
+                            f"affordances.yaml:{affordance.id}:interactions",
                         )
                     )
-                else:
-                    missing_stages = []
-                    if not pipeline.on_completion:
-                        missing_stages.append("on_completion (success path)")
-                    if not pipeline.on_failure:
-                        missing_stages.append("on_failure (failure path)")
-
-                    if missing_stages:
-                        errors.add(
-                            formatter(
-                                "UAC-VAL-011",
-                                f"Probabilistic affordance '{affordance.id}' should define both success and failure effects. "
-                                f"Missing: {', '.join(missing_stages)}",
-                                f"affordances.yaml:{affordance.id}:effect_pipeline",
-                            )
-                        )
 
     def _validate_affordance_positions(
         self,
@@ -2379,17 +2376,13 @@ class UniverseCompiler:
     def _compute_max_income(self, affordances: list[AffordanceParamConfig]) -> float:
         total = 0.0
         for affordance in affordances:
-            pipeline = getattr(affordance, "effect_pipeline", None)
-            if pipeline is not None:
-                total += self._sum_money_entries(pipeline.on_start, positive_only=True)
-                total += self._sum_money_entries(pipeline.per_tick, positive_only=True)
-                total += self._sum_money_entries(pipeline.on_completion, positive_only=True)
-                total += self._sum_money_entries(pipeline.on_early_exit, positive_only=True)
-                total += self._sum_money_entries(pipeline.on_failure, positive_only=True)
-            else:
-                total += self._sum_money_entries(getattr(affordance, "effects", []), positive_only=True)
-                total += self._sum_money_entries(getattr(affordance, "effects_per_tick", []), positive_only=True)
-                total += self._sum_money_entries(getattr(affordance, "completion_bonus", []), positive_only=True)
+            # Extract from interactions field (Effects commands)
+            interactions = getattr(affordance, "interactions", {})
+            total += self._sum_money_entries(interactions.get("on_start", []), positive_only=True)
+            total += self._sum_money_entries(interactions.get("per_tick", []), positive_only=True)
+            total += self._sum_money_entries(interactions.get("on_completion", []), positive_only=True)
+            total += self._sum_money_entries(interactions.get("on_early_exit", []), positive_only=True)
+            total += self._sum_money_entries(interactions.get("on_failure", []), positive_only=True)
         return total
 
     def _sum_money_entries(self, entries: object | None, *, positive_only: bool) -> float:
@@ -2482,20 +2475,15 @@ class UniverseCompiler:
         return False
 
     def _affordance_positive_amount_for_meter(self, affordance: AffordanceParamConfig | AffordanceConfig, meter_name: str) -> float:
-        # Legacy effect_pipeline validation removed - interactions field used instead
-        pipeline = getattr(affordance, "effect_pipeline", None)
+        # Extract from interactions field (Effects commands)
+        interactions = getattr(affordance, "interactions", {})
         total = 0.0
 
-        if pipeline is not None:
-            total += self._sum_positive_meter_entries(pipeline.on_start, meter_name)
-            total += self._sum_positive_meter_entries(pipeline.per_tick, meter_name)
-            total += self._sum_positive_meter_entries(pipeline.on_completion, meter_name)
-            total += self._sum_positive_meter_entries(pipeline.on_early_exit, meter_name)
-            total += self._sum_positive_meter_entries(pipeline.on_failure, meter_name)
-        else:
-            total += self._sum_positive_meter_entries(getattr(affordance, "effects", []), meter_name)
-            total += self._sum_positive_meter_entries(getattr(affordance, "effects_per_tick", []), meter_name)
-            total += self._sum_positive_meter_entries(getattr(affordance, "completion_bonus", []), meter_name)
+        total += self._sum_positive_meter_entries(interactions.get("on_start", []), meter_name)
+        total += self._sum_positive_meter_entries(interactions.get("per_tick", []), meter_name)
+        total += self._sum_positive_meter_entries(interactions.get("on_completion", []), meter_name)
+        total += self._sum_positive_meter_entries(interactions.get("on_early_exit", []), meter_name)
+        total += self._sum_positive_meter_entries(interactions.get("on_failure", []), meter_name)
 
         return total
 
@@ -2623,15 +2611,49 @@ class UniverseCompiler:
             errors.add(issue)
 
     def _get_meter(self, entry: object | None) -> str | None:
+        """Extract meter name from Effects command or legacy effect entry."""
         if entry is None:
             return None
         if isinstance(entry, dict):
+            # Effects command: extract from "modify" field
+            if "modify" in entry:
+                modify = entry["modify"]
+                if isinstance(modify, str) and modify.startswith("target.bar."):
+                    return modify.split(".")[-1]
+                return None
+            # Legacy effect entry
             return entry.get("meter")
         return getattr(entry, "meter", None)
 
     def _get_amount(self, entry: object | None) -> float | None:
+        """Extract meter delta from Effects command or legacy effect entry."""
         if entry is None:
             return None
+
+        # Effects command: parse simple addition from "value" expression
+        if isinstance(entry, dict) and "value" in entry:
+            value_expr = entry["value"]
+            if isinstance(value_expr, str):
+                # Parse simple pattern: "target.bar.X + Y" or "target.bar.X - Y"
+                # For more complex expressions, return None (heuristic validation only)
+                if " + " in value_expr:
+                    parts = value_expr.split(" + ")
+                    if len(parts) == 2:
+                        try:
+                            return float(parts[1].strip())
+                        except ValueError:
+                            return None
+                elif " - " in value_expr:
+                    parts = value_expr.split(" - ")
+                    if len(parts) == 2:
+                        try:
+                            return -float(parts[1].strip())
+                        except ValueError:
+                            return None
+                return None
+            return None
+
+        # Legacy effect entry
         value = entry.get("amount") if isinstance(entry, dict) else getattr(entry, "amount", None)
         if isinstance(value, int | float):
             return float(value)
@@ -3070,17 +3092,13 @@ class UniverseCompiler:
                 if meter and amount is not None:
                     totals[meter] += amount
 
-        pipeline = getattr(affordance, "effect_pipeline", None)
-        if pipeline is not None:
-            _add_entries(pipeline.on_start)
-            _add_entries(pipeline.per_tick)
-            _add_entries(pipeline.on_completion)
-            _add_entries(pipeline.on_early_exit)
-            _add_entries(pipeline.on_failure)
-        else:
-            _add_entries(getattr(affordance, "effects", []))
-            _add_entries(getattr(affordance, "effects_per_tick", []))
-            _add_entries(getattr(affordance, "completion_bonus", []))
+        # Extract from interactions field (Effects commands)
+        interactions = getattr(affordance, "interactions", {})
+        _add_entries(interactions.get("on_start", []))
+        _add_entries(interactions.get("per_tick", []))
+        _add_entries(interactions.get("on_completion", []))
+        _add_entries(interactions.get("on_early_exit", []))
+        _add_entries(interactions.get("on_failure", []))
 
         return dict(totals)
 

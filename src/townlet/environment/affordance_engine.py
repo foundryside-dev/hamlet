@@ -220,14 +220,20 @@ class AffordanceEngine:
             agent_mask = agent_mask & can_afford
 
         # Apply costs (modern dict format)
-        for cost in affordance.costs:
+        multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
+        for cost in self._iter_costs(affordance.costs):
             meter_name, amount = self._cost_fields(cost)
             meter_idx = self.meter_name_to_idx[meter_name]
-            multiplier = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
-            updated_meters[agent_mask, meter_idx] -= amount * multiplier[agent_mask]
+            updated_meters[agent_mask, meter_idx] -= amount * multipliers[agent_mask]
 
         # Execute compiled Effects commands (on_start stage for instant affordances)
-        updated_meters = self._execute_affordance_effects(affordance_name, "on_start", agent_mask, updated_meters)
+        updated_meters = self._execute_affordance_effects(
+            affordance_name,
+            "on_start",
+            agent_mask,
+            updated_meters,
+            multipliers=multipliers,
+        )
 
         # Clamp meters to [0, 1]
         updated_meters = torch.clamp(updated_meters, 0.0, 1.0)
@@ -302,13 +308,19 @@ class AffordanceEngine:
 
         # Apply per-tick costs (modern dict format)
         multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
-        for cost in affordance.costs_per_tick:
+        for cost in self._iter_costs(affordance.costs_per_tick):
             meter_name, amount = self._cost_fields(cost)
             meter_idx = self.meter_name_to_idx[meter_name]
             updated_meters[agent_mask, meter_idx] -= amount * multipliers[agent_mask]
 
         # Execute compiled Effects commands (per_tick stage)
-        updated_meters = self._execute_affordance_effects(affordance_name, "per_tick", agent_mask, updated_meters)
+        updated_meters = self._execute_affordance_effects(
+            affordance_name,
+            "per_tick",
+            agent_mask,
+            updated_meters,
+            multipliers=multipliers,
+        )
 
         duration_ticks = affordance.duration_ticks or 1
 
@@ -316,7 +328,13 @@ class AffordanceEngine:
         is_final_tick = current_tick == (duration_ticks - 1)
         if is_final_tick:
             # Execute compiled Effects commands (on_completion stage)
-            updated_meters = self._execute_affordance_effects(affordance_name, "on_completion", agent_mask, updated_meters)
+            updated_meters = self._execute_affordance_effects(
+                affordance_name,
+                "on_completion",
+                agent_mask,
+                updated_meters,
+                multipliers=multipliers,
+            )
 
         # Clamp meters to [0, 1]
         updated_meters = torch.clamp(updated_meters, 0.0, 1.0)
@@ -337,7 +355,7 @@ class AffordanceEngine:
         batch_size = meters.shape[0]
         can_afford = torch.ones(batch_size, dtype=torch.bool, device=self.device)
 
-        for cost in costs:
+        for cost in self._iter_costs(costs):
             meter, amount = self._cost_fields(cost)
             meter_idx = self.meter_name_to_idx[meter]
             can_afford = can_afford & (meters[:, meter_idx] >= amount)
@@ -440,7 +458,7 @@ class AffordanceEngine:
         costs = affordance.costs if cost_mode == "instant" else affordance.costs_per_tick
 
         # Find money cost (most affordances only have money cost)
-        for cost in costs:
+        for cost in self._iter_costs(costs):
             meter, amount = self._cost_fields(cost)
             if meter == "money":
                 return float(amount)
@@ -495,22 +513,40 @@ class AffordanceEngine:
         # Clone meters to avoid in-place modification
         result_meters = meters.clone()
 
+        multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
+
         # Apply costs first
-        for cost in affordance.costs:
+        for cost in self._iter_costs(affordance.costs):
             meter_name, amount = self._cost_fields(cost)
             meter_idx = self.meter_name_to_idx[meter_name]
-            result_meters[agent_mask, meter_idx] -= amount
+            result_meters[agent_mask, meter_idx] -= amount * multipliers[agent_mask]
 
         # Execute compiled Effects commands (on_start stage)
-        result_meters = self._execute_affordance_effects(affordance_name, "on_start", agent_mask, result_meters)
+        result_meters = self._execute_affordance_effects(
+            affordance_name,
+            "on_start",
+            agent_mask,
+            result_meters,
+            multipliers=multipliers,
+        )
 
         return result_meters
+
+    @staticmethod
+    def _iter_costs(costs) -> Any:
+        """Yield cost entries from either dict- or list-style configs."""
+        if isinstance(costs, dict):
+            return costs.items()
+        return costs
 
     @staticmethod
     def _cost_fields(cost) -> tuple[str, float]:
         """Extract (meter, amount) from dict-style or DTO-style cost entries."""
         if hasattr(cost, "meter"):
             return cost.meter, float(cost.amount)
+        if isinstance(cost, tuple) and len(cost) == 2:
+            meter, amount = cost
+            return str(meter), float(amount)
         if isinstance(cost, dict):
             if "meter" in cost:
                 return cost["meter"], float(cost["amount"])
@@ -525,6 +561,7 @@ class AffordanceEngine:
         stage: str,
         agent_mask: torch.Tensor,
         meters: torch.Tensor,
+        multipliers: torch.Tensor | None = None,
     ) -> torch.Tensor:
         """Execute pre-compiled Effects commands for affordance lifecycle stage.
 
@@ -533,6 +570,7 @@ class AffordanceEngine:
             stage: Lifecycle stage (on_start, per_tick, on_completion, etc.)
             agent_mask: Boolean mask of agents interacting [batch]
             meters: Current meter values [batch, num_meters]
+            multipliers: Modulation multipliers to scale effect deltas [batch]
 
         Returns:
             Updated meters tensor [batch, num_meters]
@@ -551,6 +589,17 @@ class AffordanceEngine:
 
         # Execute commands for each agent in mask
         updated_meters = meters.clone()
+        pre_effect_meters = updated_meters.clone()
+        if multipliers is None:
+            multipliers = torch.ones(
+                meters.shape[0],
+                device=meters.device,
+                dtype=meters.dtype,
+            )
+            # Zero out non-participating agents to guard against stray writes
+            inactive = ~agent_mask
+            if inactive.any():
+                multipliers[inactive] = 0.0
 
         for agent_idx in torch.where(agent_mask)[0]:
             # Build bars dict (same pattern as ItemActionHandler)
@@ -569,5 +618,9 @@ class AffordanceEngine:
             # Sync meters back from bars dict
             for meter_name, meter_idx in self.meter_name_to_idx.items():
                 updated_meters[:, meter_idx] = bars_dict[meter_name]
+
+        # Scale effect deltas by modulation multipliers
+        deltas = updated_meters - pre_effect_meters
+        updated_meters = pre_effect_meters + deltas * multipliers.unsqueeze(1)
 
         return updated_meters

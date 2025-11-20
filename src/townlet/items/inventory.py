@@ -123,3 +123,8 @@ class InventoryState:
     def count_items(self, agent_idx: int) -> int:
         """Count non-empty slots in agent's inventory."""
         return (self.slots[agent_idx] != -1).sum().item()
+
+    def reset(self) -> None:
+        """Clear all inventory slots and metadata."""
+        self.slots.fill_(-1)
+        self.items.clear()

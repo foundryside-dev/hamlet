@@ -339,35 +339,34 @@ class VectorizedHamletEnv:
         from townlet.effects.executor import CommandExecutor
         from townlet.effects.manager import EffectManager
 
-        # Load effects.yaml and compile if it exists
         effects_path = self.config_pack_path / "effects.yaml"
-        if effects_path.exists():
-            import yaml
+        if not effects_path.exists():
+            raise FileNotFoundError(f"effects.yaml is required for affordance interactions but was not found at {effects_path}")
 
-            from townlet.config.effects_config import EffectsConfig
+        import yaml
 
-            effects_config = EffectsConfig(**yaml.safe_load(effects_path.read_text()))
+        from townlet.config.effects_config import EffectsConfig
 
-            # Build schema for type checking (from VFS and bars)
-            schema: dict[str, str] = {}
-            # Add effect-specific variables
-            schema["intensity"] = "float"  # Effect intensity multiplier
-            schema["elapsed_ticks"] = "float"  # Ticks since spawn
-            schema["duration_remaining"] = "float"  # Ticks until despawn
-            # Add bar paths
-            for bar_name in self.meter_name_to_index.keys():
-                schema[f"bar.{bar_name}"] = "float"
-                schema[f"target.bar.{bar_name}"] = "float"
-            # Add VFS paths
-            for var in self.vfs_variables:
-                vfs_type = "bool" if var.type == "bool" else "float"
-                schema[f"vfs.{var.id}"] = vfs_type
-                schema[f"target.vfs.{var.id}"] = vfs_type
+        # Build schema for type checking (from VFS and bars)
+        effects_schema: dict[str, str] = {}
+        # Add effect-specific variables
+        effects_schema["intensity"] = "float"  # Effect intensity multiplier
+        effects_schema["elapsed_ticks"] = "float"  # Ticks since spawn
+        effects_schema["duration_remaining"] = "float"  # Ticks until despawn
+        # Add bar paths
+        for bar_name in self.meter_name_to_index.keys():
+            effects_schema[f"bar.{bar_name}"] = "float"
+            effects_schema[f"target.bar.{bar_name}"] = "float"
+        # Add VFS paths
+        for var in self.vfs_variables:
+            vfs_type = "bool" if var.type == "bool" else "float"
+            effects_schema[f"vfs.{var.id}"] = vfs_type
+            effects_schema[f"target.vfs.{var.id}"] = vfs_type
 
-            effect_catalog = EffectCatalog.from_config(effects_config, schema=schema)
-        else:
-            # No effects.yaml - create empty catalog
-            effect_catalog = EffectCatalog(effects={})
+        self.effects_schema = effects_schema
+        effects_config_data = yaml.safe_load(effects_path.read_text()) or {}
+        effects_config = EffectsConfig(**effects_config_data)
+        effect_catalog = EffectCatalog.from_config(effects_config, schema=effects_schema)
 
         self.command_executor = CommandExecutor()
         self.effect_manager = EffectManager(
@@ -878,6 +877,12 @@ class VectorizedHamletEnv:
         self._affordance_streaks = {}
         self._unique_affordances_count.zero_()
         self._affordances_seen = [set() for _ in range(self.num_agents)]
+
+        # Clear item/inventory state between episodes
+        if self.item_manager is not None:
+            self.item_manager.reset_state()
+        if self.item_inventory is not None:
+            self.item_inventory.reset()
 
         # Spawn initial items if configured
         if self.item_manager is not None and self.level.items_appearance is not None:

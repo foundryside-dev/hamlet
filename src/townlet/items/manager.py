@@ -138,6 +138,37 @@ class ItemManager:
         # Respawn timers (item_type -> tick when should respawn)
         self.respawn_timers: dict[str, int] = {}
 
+    def reset_state(self) -> None:
+        """Clear all item runtime state for a fresh episode."""
+
+        self.active_items.clear()
+        self.held_items.clear()
+        self.vfs_free_slots = set(range(self.max_items))
+        self.cooldown_until.clear()
+        self.appearance_config = None
+        self.grid_size = None
+        self.respawn_timers.clear()
+        self.next_instance_id = 0
+
+        if self.vfs_registry is not None and self.vfs_registry.item_vfs is not None:
+            from townlet.vfs.schema import VariableScope
+
+            self.vfs_registry.item_vfs.zero_()
+            for var_id, var_def in self.vfs_registry.variables.items():
+                if var_def.scope != VariableScope.ITEM:
+                    continue
+                default_value = var_def.default
+                if default_value is None:
+                    continue
+                var_idx = self.vfs_registry.item_var_to_index.get(var_id)
+                if var_idx is None:
+                    continue
+                target_tensor = self.vfs_registry.item_vfs[:, var_idx]
+                if isinstance(default_value, list):
+                    target_tensor.fill_(default_value[0])
+                else:
+                    target_tensor.fill_(default_value)
+
     def spawn_item(
         self,
         item_type: str,

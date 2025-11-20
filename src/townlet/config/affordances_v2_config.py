@@ -14,7 +14,7 @@ Structure:
 """
 
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
@@ -119,10 +119,22 @@ class AffordanceParamConfig(BaseModel):
     )
 
     # Effect outcomes (applied AFTER affordability check passes) -------------
-    # REMOVED: effects dict and effect_pipeline (legacy systems deleted)
 
-    # NEW: Effects commands (unified with Items system) - REQUIRED
-    interactions: dict[str, list[CommandConfig]] = Field(
+    # LEGACY: Simple effects dict (DEPRECATED - use interactions instead)
+    effects: dict[str, float] = Field(
+        default_factory=dict,
+        description="[DEPRECATED] Simple instant effects (meter: value). Use interactions field instead.",
+    )
+
+    # LEGACY: Effect pipeline (DEPRECATED - use interactions instead)
+    effect_pipeline: Any | None = Field(  # EffectPipeline type removed to avoid import
+        default=None,
+        description="[DEPRECATED] Multi-stage effect pipeline. Use interactions field instead.",
+    )
+
+    # NEW: Effects commands (unified with Items system) - OPTIONAL during migration
+    interactions: dict[str, list[CommandConfig]] | None = Field(
+        default=None,
         description=(
             "Effects commands for affordance lifecycle stages. "
             "Unified with Items system (declarative Effects). "
@@ -160,8 +172,38 @@ class AffordanceParamConfig(BaseModel):
         return self
 
     @model_validator(mode="after")
+    def validate_effects_exclusivity(self) -> "AffordanceParamConfig":
+        """Ensure only one effect system is used (legacy or new)."""
+        effects_count = sum(
+            [
+                bool(self.effects),
+                self.effect_pipeline is not None,
+                self.interactions is not None,
+            ]
+        )
+
+        if effects_count == 0:
+            raise ValueError(
+                f"Affordance '{self.name}': Must specify one effect system: "
+                "effects (deprecated), effect_pipeline (deprecated), or interactions (preferred)."
+            )
+
+        if effects_count > 1:
+            raise ValueError(
+                f"Affordance '{self.name}': Only one effect system allowed. "
+                "Found multiple: effects, effect_pipeline, and/or interactions. "
+                "Use interactions field only (legacy fields are deprecated)."
+            )
+
+        return self
+
+    @model_validator(mode="after")
     def validate_interaction_stages(self) -> "AffordanceParamConfig":
         """Validate interactions have correct stages for interaction_type."""
+        # Skip validation if using legacy effect systems
+        if self.interactions is None:
+            return self
+
         valid_stages = {"on_start", "per_tick", "on_completion", "on_early_exit", "on_failure"}
         provided_stages = set(self.interactions.keys())
 

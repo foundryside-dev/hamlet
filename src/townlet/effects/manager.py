@@ -230,6 +230,7 @@ class EffectManager:
         vfs_registry: Any | None,
         current_step: int,
         env_state: Any | None = None,  # Keep for backward compatibility
+        item_manager: Any | None = None,  # NEW: ItemManager for spawn_item commands
     ) -> None:
         """Execute all active effects for one timestep.
 
@@ -242,6 +243,7 @@ class EffectManager:
             vfs_registry: VFS registry
             current_step: Current environment step
             env_state: Environment state for command execution (deprecated, use bars/vfs_registry)
+            item_manager: ItemManager for spawn_item commands (optional)
         """
 
         self.current_step = current_step
@@ -249,7 +251,7 @@ class EffectManager:
         # Tick global effects
         for i in range(len(self.global_effects) - 1, -1, -1):
             effect = self.global_effects[i]
-            self._tick_effect(effect, None, EffectScope.GLOBAL, bars, vfs_registry)
+            self._tick_effect(effect, None, EffectScope.GLOBAL, bars, vfs_registry, item_manager)
             if effect.duration_remaining <= 0:
                 self.global_effects.pop(i)
 
@@ -258,9 +260,9 @@ class EffectManager:
             # Process in reverse to safely remove during iteration
             for i in range(len(effects) - 1, -1, -1):
                 effect = effects[i]
-                self._tick_effect(effect, agent_id, EffectScope.AGENT, bars, vfs_registry)
+                self._tick_effect(effect, agent_id, EffectScope.AGENT, bars, vfs_registry, item_manager)
                 if effect.duration_remaining <= 0:
-                    self._despawn_effect(effect, agent_id, EffectScope.AGENT, bars, vfs_registry)
+                    self._despawn_effect(effect, agent_id, EffectScope.AGENT, bars, vfs_registry, item_manager)
 
     def _tick_effect(
         self,
@@ -269,6 +271,7 @@ class EffectManager:
         scope: EffectScope,
         bars: dict[str, torch.Tensor],
         vfs_registry: Any | None,
+        item_manager: Any | None = None,  # NEW
     ) -> None:
         """Tick a single effect (execute on_tick and update counters)."""
         # Execute on_tick commands
@@ -285,6 +288,7 @@ class EffectManager:
                     target_index=None,
                     effect=effect,
                     effect_manager=self,  # Pass self for spawn_effect
+                    item_manager=item_manager,  # NEW
                     spawn_depth=0,  # Reset depth for top-level tick
                 )
 
@@ -302,6 +306,7 @@ class EffectManager:
         scope: EffectScope,
         bars: dict[str, torch.Tensor],
         vfs_registry: Any | None,
+        item_manager: Any | None = None,  # NEW
     ) -> None:
         """Despawn effect and execute on_despawn commands."""
         if effect.effect_id in self.catalog.effects:
@@ -317,6 +322,7 @@ class EffectManager:
                     target_index=None,
                     effect=effect,
                     effect_manager=self,
+                    item_manager=item_manager,  # NEW
                     spawn_depth=0,
                 )
 

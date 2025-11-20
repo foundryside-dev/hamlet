@@ -123,6 +123,8 @@ class CommandExecutor:
             self._execute_modify(command, context)
         elif command.type == CommandType.SPAWN_EFFECT:
             self._execute_spawn_effect(command, context)
+        elif command.type == CommandType.SPAWN_ITEM:
+            self._execute_spawn_item(command, context)
         elif command.type == CommandType.IF:
             self._execute_if(command, context)
         elif command.type == CommandType.FOR_EACH:
@@ -208,6 +210,50 @@ class CommandExecutor:
 
         # Return spawned effect instance ID for potential future use
         return spawned.instance_id
+
+    def _execute_spawn_item(self, command: CommandNode, context: ExecutionContext) -> None:
+        """Execute spawn_item command.
+
+        Args:
+            command: Spawn item command node
+            context: Execution context
+
+        Raises:
+            ValueError: If item_manager not available
+        """
+        if context.item_manager is None:
+            raise ValueError("item_manager not set in context - cannot spawn items")
+
+        # Resolve position
+        # Note: Position resolution depends on substrate type (Grid2D, Continuous, etc.)
+        # For now, support "self" and "target" by delegating to item_manager
+
+        if command.position == "self":
+            if context.self_index is None:
+                raise ValueError("self_index not set - cannot use 'self' position")
+            position_hint = ("agent", context.self_index)
+        elif command.position == "target":
+            if context.target_index is None:
+                raise ValueError("target_index not set - cannot use 'target' position")
+            position_hint = ("agent", context.target_index)
+        elif isinstance(command.position, (list, tuple)):
+            # Explicit coordinates
+            position_hint = ("explicit", command.position)
+        else:
+            raise ValueError(f"Invalid position: {command.position}")
+
+        # Spawn item(s)
+        quantity = command.quantity or 1
+        item_instance = None
+        for _ in range(quantity):
+            item_instance = context.item_manager.spawn_item(
+                item_id=command.item_id,
+                position_hint=position_hint,
+                initial_state=command.initial_state or {},
+            )
+
+        # Return last spawned item instance ID
+        return item_instance.instance_id if item_instance else None
 
     def _execute_if(self, command: CommandNode, context: ExecutionContext) -> None:
         """Execute if command.

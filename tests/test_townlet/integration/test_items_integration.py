@@ -174,3 +174,40 @@ def test_use_slot_action_executes_effects():
     energy_increase = final_energy - initial_energy
 
     assert energy_increase > 0.0, f"Expected positive energy increase from apple, got {energy_increase}"
+
+
+def test_drop_slot_action_spawns_item_in_world():
+    """DROP_SLOT_N spawns item back into world at agent position."""
+    compiler = UniverseCompiler()
+    universe = compiler.compile(Path("configs/test/items_smoke"), use_cache=False)
+
+    env = VectorizedHamletEnv(
+        universe=universe,
+        level_name="L0_smoke",
+        num_agents=1,
+        device="cpu",
+    )
+
+    env.reset()
+
+    # Give agent apple in slot 0
+    env.item_manager.spawn_item("apple", position=(0, 0), current_tick=0)
+    env.positions[0] = torch.tensor([0, 0], dtype=torch.long)
+    get_action = env.action_space.get_action_by_name("GET")
+    env.step(torch.tensor([get_action.id]))
+
+    # Verify in inventory
+    assert env.item_inventory.count_items(0) == 1
+
+    # Move to (4, 4) and drop
+    env.positions[0] = torch.tensor([4, 4], dtype=torch.long)
+    drop_action = env.action_space.get_action_by_name("DROP_SLOT_0")
+    env.step(torch.tensor([drop_action.id]))
+
+    # Verify removed from inventory
+    assert env.item_inventory.count_items(0) == 0
+
+    # Verify spawned at (4, 4)
+    spawned_items = [i for i in env.item_manager.active_items.values() if i.position == (4, 4)]
+    assert len(spawned_items) == 1, "Item not spawned at drop position"
+    assert spawned_items[0].item_type == "apple"

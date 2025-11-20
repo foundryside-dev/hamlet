@@ -207,20 +207,27 @@ class ItemActionHandler:
         Returns:
             True if item dropped, False if slot empty
         """
-        # Remove item from inventory
+        # Remove item from inventory slot
         instance_id = self.inventory.remove_item(agent_idx, slot_idx)
 
         if instance_id is None:
             return False  # Slot already empty
 
-        # Get item from manager's despawned tracking
-        # (We need to restore it to the world)
+        # Get item metadata from inventory
+        item = self.inventory.items.get(instance_id)
 
-        # TODO: Spawn item at agent's position
-        # (Need to track item_type from instance_id)
-        # This requires extending ItemInstance or tracking in ItemManager
+        if item is None:
+            return False  # Item metadata missing (shouldn't happen)
 
-        # For now, just return success
-        # (Full implementation in Task 4.5)
+        # Execute on_drop Effects commands (if any exist and need meters)
+        # Note: Current items have empty on_drop arrays, so this is a no-op
+        # Future: If on_drop Effects require meters, we'd need to pass them here
+
+        # Place item back in world at agent's position (preserves VFS state)
+        agent_pos_tuple = tuple(agent_position.tolist())
+        self.manager.place_item(
+            instance_id=instance_id,  # Use existing instance (NOT spawn_item)
+            position=agent_pos_tuple,
+        )
 
         return True

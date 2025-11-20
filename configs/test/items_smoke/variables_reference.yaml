@@ -68,3 +68,24 @@ exposed_observations:
     normalization:
       min: [0.0, 0.0]
       max: [1.0, 1.0]
+
+  # Item observations (expose item properties to agents)
+  - id: obs_item_durability
+    shape: [1]
+    type: scalar
+    source: durability
+    scope: item
+    normalization:
+      min: 0.0
+      max: 100.0
+    description: "Durability of nearest item (0-100)"
+
+  - id: obs_item_freshness
+    shape: [1]
+    type: scalar
+    source: freshness
+    scope: item
+    normalization:
+      min: 0.0
+      max: 100.0
+    description: "Freshness of nearest item (0-100)"

@@ -191,7 +191,8 @@ def test_drop_slot_action_spawns_item_in_world():
     env.reset()
 
     # Give agent apple in slot 0
-    env.item_manager.spawn_item("apple", position=(0, 0), current_tick=0)
+    apple = env.item_manager.spawn_item("apple", position=(0, 0), current_tick=0)
+    apple_instance_id = apple.instance_id  # Track the specific apple we spawned
     env.positions[0] = torch.tensor([0, 0], dtype=torch.long)
     get_action = env.action_space.get_action_by_name("GET")
     env.step(torch.tensor([get_action.id]))
@@ -207,10 +208,12 @@ def test_drop_slot_action_spawns_item_in_world():
     # Verify removed from inventory
     assert env.item_inventory.count_items(0) == 0
 
-    # Verify spawned at (4, 4)
-    spawned_items = [i for i in env.item_manager.active_items.values() if i.position == (4, 4)]
-    assert len(spawned_items) == 1, "Item not spawned at drop position"
-    assert spawned_items[0].item_type == "apple"
+    # Verify OUR apple is in active_items at (4, 4)
+    # (There may be other items at (4, 4) from random initial spawn)
+    assert apple_instance_id in env.item_manager.active_items, "Dropped item not in active_items"
+    dropped_apple = env.item_manager.active_items[apple_instance_id]
+    assert dropped_apple.position == (4, 4), f"Dropped item at {dropped_apple.position}, expected (4, 4)"
+    assert dropped_apple.item_type == "apple"
 
 
 def test_automatic_item_spawning_at_reset():

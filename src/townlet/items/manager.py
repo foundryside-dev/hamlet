@@ -33,7 +33,13 @@ class ItemManager:
         self.device = device
 
         self.next_instance_id = 0
+
+        # Active items in the world (visible on grid)
         self.active_items: dict[int, ItemInstance] = {}  # instance_id -> ItemInstance
+
+        # Held items (in agent inventories, not on grid)
+        # These items continue to tick (age/spoil) but are not spatially positioned
+        self.held_items: dict[int, ItemInstance] = {}
 
         # VFS slot allocation (fixed-size pool)
         self.vfs_free_slots: set[int] = set(range(max_items))  # Available VFS indices
@@ -93,17 +99,67 @@ class ItemManager:
 
         return instance
 
+    def lift_item(self, instance_id: int) -> ItemInstance | None:
+        """Move item from world to held state (pickup).
+
+        Preserves item identity and VFS state. Item continues to tick.
+
+        Args:
+            instance_id: Item instance ID
+
+        Returns:
+            ItemInstance if lifted, None if not found
+        """
+        if instance_id not in self.active_items:
+            return None
+
+        # Move from active to held (do NOT free VFS slot - item still exists)
+        item = self.active_items.pop(instance_id)
+        self.held_items[instance_id] = item
+
+        return item
+
+    def place_item(
+        self,
+        instance_id: int,
+        position: tuple[int, ...],
+    ) -> ItemInstance | None:
+        """Move item from held state to world (drop).
+
+        Preserves item identity and VFS state.
+
+        Args:
+            instance_id: Item instance ID
+            position: Position to place item
+
+        Returns:
+            ItemInstance if placed, None if not found
+        """
+        if instance_id not in self.held_items:
+            return None
+
+        # Move from held to active
+        item = self.held_items.pop(instance_id)
+        item.position = position
+        self.active_items[instance_id] = item
+
+        return item
+
     def despawn_item(self, instance_id: int, current_tick: int) -> None:
-        """Despawn item and free VFS slot.
+        """Despawn item from world or held state.
 
         Args:
             instance_id: Item instance ID to despawn
             current_tick: Current tick (for cooldown tracking)
         """
-        if instance_id not in self.active_items:
-            return
-
-        item = self.active_items[instance_id]
+        # Check active items first
+        if instance_id in self.active_items:
+            item = self.active_items.pop(instance_id)
+        # Then check held items
+        elif instance_id in self.held_items:
+            item = self.held_items.pop(instance_id)
+        else:
+            return  # Item not found
 
         # Free VFS slot
         self.vfs_free_slots.add(item.vfs_index)
@@ -113,24 +169,34 @@ class ItemManager:
         if item_def.cooldown is not None:
             self.cooldown_until[item.item_type] = current_tick + item_def.cooldown
 
-        # Remove from active items
-        del self.active_items[instance_id]
-
     def tick(self, current_tick: int) -> None:
         """Advance all item lifecycles by one tick.
 
         Args:
             current_tick: Current environment tick
         """
-        # Collect expired items (BEFORE ticking - expired items don't tick)
-        expired = [instance_id for instance_id, item in self.active_items.items() if item.is_expired()]
+        # Collect expired items from BOTH registries (BEFORE ticking)
+        expired = []
+
+        # Check active items (on grid)
+        for instance_id, item in self.active_items.items():
+            if item.is_expired():
+                expired.append(instance_id)
+
+        # Check held items (in inventories) - they also expire!
+        for instance_id, item in self.held_items.items():
+            if item.is_expired():
+                expired.append(instance_id)
 
         # Despawn expired items
         for instance_id in expired:
             self.despawn_item(instance_id, current_tick)
 
-        # Tick all remaining items (AFTER despawning)
+        # Tick all remaining items in BOTH registries (AFTER despawning)
         for item in self.active_items.values():
+            item.tick()
+
+        for item in self.held_items.values():
             item.tick()
 
     def get_all_items(self) -> list[ItemInstance]:

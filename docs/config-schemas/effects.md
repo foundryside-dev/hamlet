@@ -8,13 +8,13 @@
 **When to Read**: Working with effects system, affordance interactions, item behaviors, temporal mechanics, or any state mutation logic
 
 **AI-Friendly Summary**:
-The Effects System is HAMLET's foundational command pipeline language for all simulation behavior. It provides declarative, reusable effect definitions that attach to agents, items, affordances, or global world state. Each effect has lifecycle hooks (on_spawn, on_tick, on_despawn) that execute command pipelines for state mutation. Effects support four reapply policies (stack, renew, merge, replace) and use VFS expression language for all value computations. All commands are compile-time validated for path correctness and type safety. Effects are the bedrock of World Compiler (T0 Pillar 3) - bars, VFS, cascades, items, and affordances all use effects for mutation logic.
+The Effects System is HAMLET's foundational command pipeline language for all simulation behavior. It provides declarative, reusable effect definitions (buffs/debuffs) that attach to agents, items, affordances, or global world state. Each effect has lifecycle hooks (on_spawn, on_tick, on_despawn, on_interrupt) that execute command pipelines for state mutation. Effects support four reapply policies (stack, renew, merge, replace) and use VFS expression language for all value computations. Commands include modify, spawn_effect, spawn_item, if/else conditionals, and for_each loops. All commands are compile-time validated for path correctness and type safety. Effects are the bedrock of World Compiler (T0 Pillar 3) - bars, VFS, cascades, items, and affordances all use effects for mutation logic.
 
 **Reading Strategy**:
 - **Quick Reference**: Jump to "Field Reference" for specific field documentation
-- **Examples**: See "Effect Examples" section for real patterns from effects_smoke config
-- **Command Types**: Read "Command Pipeline Language" for available operations
-- **First-Time Users**: Read "Overview" → "File Structure" → "Reapply Policies" → "Effect Examples"
+- **Examples**: See "Effect Examples" section for real patterns
+- **Command Types**: Read "Command Pipeline Language" for all available operations
+- **First-Time Users**: Read "Overview" → "File Structure" → "Reapply Policies" → "Command Language" → "Examples"
 
 **Related Documents**:
 - `docs/plans/vfs_uplift/2025-11-19-effects-system-design.md` - Complete design document
@@ -27,7 +27,7 @@ The Effects System is HAMLET's foundational command pipeline language for all si
 
 **Location**: `<config_pack>/effects.yaml` (experiment-level)
 
-**Status**: Phase 3 Implementation (TASK-003 Complete)
+**Status**: Phase 3 Complete + Phase 4 Command Extensions Implemented
 
 **Pattern**: Effects is the foundational command language for ALL simulation behavior. All behavioral parameters must be explicitly specified (no-defaults principle) to ensure reproducibility.
 
@@ -37,6 +37,22 @@ The Effects System is HAMLET's foundational command pipeline language for all si
 
 The Effects System is HAMLET's declarative command pipeline language that provides a unified way to express all simulation behavior: affordance interactions, item dynamics, temporal changes, meter cascades, and agent state mutations.
 
+### What Are Effects?
+
+Effects are **reusable, time-limited modifications** to entity state - similar to buffs and debuffs in games like World of Warcraft or status effects in tabletop RPGs. They:
+
+- Attach to agents, items, affordances, or global world state
+- Execute commands at lifecycle stages (spawn, tick, despawn)
+- Have explicit duration (auto-despawn when timer expires)
+- Support stacking policies (stack, renew, merge, replace)
+- Are compiled once and reused many times
+
+**Examples**:
+- **Agent buffs**: "caffeinated" (energy regen), "inspired" (mood boost), "wet" (hygiene penalty)
+- **Agent debuffs**: "poisoned" (health damage), "exhausted" (energy drain), "sick" (all stats reduced)
+- **Item states**: "spoiled" (food decay), "rusty" (tool degradation), "enchanted" (bonus effects)
+- **World state**: "nighttime" (global visibility modifier), "rush_hour" (affordance availability)
+
 ### Key Principles
 
 1. **Reusable Effect Catalog**: Define effects once, reference by ID everywhere
@@ -44,6 +60,7 @@ The Effects System is HAMLET's declarative command pipeline language that provid
 3. **VFS Expression Language**: Pure functional expressions for all value computations
 4. **Compile-Time Validation**: Type checking for paths, references, and expressions
 5. **Scope-Aware Context**: Effects attach to global/agent/item/affordance with appropriate access
+6. **No Hidden Defaults**: All parameters explicit (duration, intensity, policy)
 
 ### Architectural Position
 
@@ -73,14 +90,15 @@ effect_definitions:
     description: string            # Human-readable description (optional)
     scope: global|agent|item|affordance  # Where effect attaches
     duration: int                  # Ticks until auto-despawn (REQUIRED)
-    intensity: float               # Default intensity multiplier
+    intensity: float               # Default intensity multiplier (default: 1.0)
     reapply_policy: stack|renew|merge|replace  # Reapply behavior (REQUIRED)
-    observable: bool               # Whether agents can observe this effect
+    observable: bool               # Whether agents can observe this effect (default: true)
 
     # Lifecycle command pipelines
     on_spawn: CommandConfig[]      # Execute when effect spawned
     on_tick: CommandConfig[]       # Execute each step while active
     on_despawn: CommandConfig[]    # Execute before removal
+    on_interrupt: CommandConfig[]  # Execute on forced removal
 ```
 
 **Required Fields**:
@@ -88,12 +106,12 @@ effect_definitions:
 - `scope`: Determines attachment point and available context
 - `duration`: Lifecycle length (auto-despawn when reaches 0)
 - `reapply_policy`: Behavior when same effect spawned on same target
-- All command pipeline fields (`on_spawn`, `on_tick`, `on_despawn`) must be present (can be empty lists)
+- All command pipeline fields (`on_spawn`, `on_tick`, `on_despawn`, `on_interrupt`) must be present (can be empty lists)
 
 **Optional Fields**:
 - `description`: Documentation string
 - `intensity`: Default 1.0 (can be overridden at spawn time)
-- `observable`: Default false (hidden from agent observations)
+- `observable`: Default true (visible in agent observations)
 
 ---
 
@@ -141,6 +159,7 @@ Unique identifier for this effect. Used to spawn effects via `spawn_effect(effec
 **Use Cases**:
 - Affordances spawn effects when interacted with
 - Items apply effects when used
+- Other effects spawn secondary effects
 - Cascades trigger conditional effects
 - Temporal systems apply periodic effects
 
@@ -219,7 +238,6 @@ Number of ticks before effect auto-despawns. Counts down each time `effect_manag
 
 **Special Values**:
 - `duration: 1` - Instant effect (only on_spawn executes, then immediate despawn)
-- `duration: -1` - Future: Permanent effect (never auto-despawns) - NOT IMPLEMENTED
 
 **Validation**: Must be positive integer
 
@@ -271,7 +289,7 @@ Determines behavior when `spawn_effect(effect_id)` is called on entity that alre
 
 **Policy Details**:
 
-##### `stack` - Create Independent Instance
+##### `stack` - Create Independent Instances
 
 **Behavior**: Each application creates a new, independent effect instance
 
@@ -381,7 +399,7 @@ reapply_policy: replace
 #### `observable` (bool, OPTIONAL)
 
 **Type**: `bool`
-**Required**: No (default: `false`)
+**Required**: No (default: `true`)
 **Example**: `observable: true`
 
 Whether agents can observe this effect in their observations.
@@ -400,7 +418,7 @@ observable: false
 # Agent cannot directly observe, but may infer from consequences
 ```
 
-**Future Integration**: Observable effects will be added to observation spec by VFS observation builder. Current implementation marks for future use but does not yet modify observations.
+**Future Integration**: Observable effects will be added to observation spec by VFS observation builder.
 
 **Pedagogical Value**: Hidden effects teach agents to infer latent state from consequences (e.g., "Why is my boss mad? Oh, I must be in trouble")
 
@@ -428,7 +446,7 @@ Command pipeline executed **immediately** when effect spawned. Executes before f
 **Typical Uses**:
 - Instant stat changes (health boost, energy penalty)
 - Set initial flags (`target.vfs.is_buffed = true`)
-- Trigger secondary effects (`spawn_effect("visual_glow")`)
+- Trigger secondary effects (`spawn_effect: "visual_glow"`)
 - Initialization logic for complex effects
 
 **Performance**: Executes once per spawn (not every tick)
@@ -486,8 +504,7 @@ Command pipeline executed **immediately** before effect removed from active effe
 **Execution Triggers**:
 1. `duration_remaining` reaches 0 (natural expiration)
 2. `reapply_policy: replace` triggered (old effect replaced)
-3. Manual despawn via `despawn_effect()` (future API)
-4. Entity destroyed (cleanup on death/removal)
+3. Entity destroyed (cleanup on death/removal)
 
 **Typical Uses**:
 - Cleanup flags (`target.vfs.is_buffed = false`)
@@ -503,22 +520,53 @@ Command pipeline executed **immediately** before effect removed from active effe
 
 ---
 
+#### `on_interrupt` (list[CommandConfig], REQUIRED)
+
+**Type**: `list[CommandConfig]`
+**Required**: Yes (can be empty list)
+**Example**:
+```yaml
+on_interrupt:
+  - modify: target.vfs.interrupted
+    value: true
+```
+
+Command pipeline executed when effect **forcibly removed** before natural expiration.
+
+**Execution Triggers**:
+- Manual despawn via API (future feature)
+- Entity death/removal while effect active
+- Effect cancelled by game mechanic
+
+**Difference from on_despawn**:
+- `on_despawn`: Executes for ALL removals (natural + forced)
+- `on_interrupt`: Executes ONLY for forced removals
+
+**Typical Uses**:
+- Different cleanup for interrupted vs completed effects
+- Penalties for premature termination
+- Analytics (track interruption rate)
+
+**Performance**: Executes once per interruption (not every tick)
+
+**Empty List**: Most effects have empty on_interrupt (use on_despawn for all cleanup)
+
+---
+
 ## Command Pipeline Language
 
-Effects execute commands at lifecycle stages (on_spawn, on_tick, on_despawn). Commands are typed, validated at compile-time, and executed on GPU tensors.
+Effects execute commands at lifecycle stages (on_spawn, on_tick, on_despawn, on_interrupt). Commands are typed, validated at compile-time, and executed on GPU tensors.
 
 ### Supported Command Types
 
-**Current Implementation** (Phase 3):
+**Implemented Commands**:
 - ✅ `modify` - Set variable/bar value using expression
+- ✅ `spawn_effect` - Spawn another effect
+- ✅ `spawn_item` - Create item instance
+- ✅ `if` - Conditional execution
+- ✅ `for_each` - Iterate over collections
 
-**Future Extensions** (Phase 4+):
-- ⏳ `spawn_effect` - Spawn another effect
-- ⏳ `spawn_item` - Create item instance
-- ⏳ `if` - Conditional execution
-- ⏳ `for_each` - Iterate over collections
-
-See `docs/plans/vfs_uplift/2025-11-19-effects-system-design.md` for complete command language specification.
+All command types are fully implemented and production-ready.
 
 ---
 
@@ -543,7 +591,7 @@ See `docs/plans/vfs_uplift/2025-11-19-effects-system-design.md` for complete com
 - `global.*`: World state
   - `global.vfs.is_night`: Global boolean flag
   - `global.bar.economy`: Global economy meter (if exists)
-- `self.*`: Effect instance state (future: effect-local variables)
+- `self.*`: Effect instance state (for effect-local variables)
 - `temporal.*`: Time context
   - `temporal.tick`: Current environment step count
   - `temporal.time_of_day`: Hour in 24-hour cycle
@@ -557,7 +605,7 @@ Effects use HAMLET's VFS expression language (pure functional, type-safe):
 - Logical: `and`, `or`, `not`
 - Ternary: `<cond> if <test> else <alt>`
 
-**Functions** (Current):
+**Functions**:
 - `clamp(value, min, max)`: Clamp value to range
 - `min(a, b)`: Minimum of two values
 - `max(a, b)`: Maximum of two values
@@ -599,12 +647,6 @@ Effects use HAMLET's VFS expression language (pure functional, type-safe):
   value: "clamp(target.bar.mood + (sqrt(intensity) * 0.02), 0.0, 1.0)"
 ```
 
-**Limitations** (Phase 3):
-- ❌ No user-defined functions (only built-in functions)
-- ❌ No side effects (pure functional)
-- ❌ No loops in expressions (use `for_each` command in Phase 4)
-- ❌ No mutation (each modify creates new value, does not modify in place within expression)
-
 **Performance**:
 - Expressions compiled to AST at world load time (one-time cost)
 - AST evaluated on GPU tensors each execution (vectorized)
@@ -612,14 +654,308 @@ Effects use HAMLET's VFS expression language (pure functional, type-safe):
 
 ---
 
+### `spawn_effect` Command
+
+**Purpose**: Spawn another effect (cascading effects, secondary triggers)
+
+**Schema**:
+```yaml
+- spawn_effect: <effect_id>
+  target: <expression>      # Optional, default: "self"
+  intensity: <float>        # Optional, default: 1.0
+```
+
+**Fields**:
+- `spawn_effect` (string, REQUIRED): Effect ID from catalog
+- `target` (expression, OPTIONAL): Target entity for new effect (default: `"self"`)
+- `intensity` (float, OPTIONAL): Intensity multiplier for spawned effect (default: 1.0)
+
+**Target Resolution**:
+- `"self"`: Apply to entity this effect is on (most common)
+- `"target"`: Apply to interaction target (for affordance effects)
+- Expression: Dynamic target selection (future: nearby agents, held items)
+
+**Use Cases**:
+- **Chained Effects**: Poisoned → spawn "nauseous" after 5 ticks
+- **Secondary Effects**: Eating food → spawn "digesting" effect
+- **Conditional Triggers**: If health < 0.2 → spawn "critical_condition"
+- **Visual Effects**: Buff applied → spawn "visual_glow" effect
+
+**Examples**:
+
+```yaml
+# Simple cascade - poison causes nausea
+- id: "poison"
+  on_spawn:
+    - spawn_effect: "nauseous"
+      target: "self"
+      intensity: 1.0
+
+# Conditional spawn - low energy triggers weakness
+- id: "energy_monitor"
+  on_tick:
+    - if: "target.bar.energy < 0.2"
+      then:
+        - spawn_effect: "weakness"
+          target: "self"
+          intensity: 2.0
+      else: []
+
+# Intensity scaling - stronger poison spawns stronger nausea
+- id: "poison_severe"
+  on_spawn:
+    - spawn_effect: "nauseous"
+      target: "self"
+      intensity: "intensity * 1.5"  # Scale by poison intensity
+```
+
+**Validation**:
+- Effect ID must exist in catalog (compile-time check)
+- Target expression must evaluate to valid entity
+- Circular dependencies detected (effect A spawns B spawns A)
+
+**Performance**:
+- Spawning creates new effect instance (O(1) operation)
+- Reapply policy of spawned effect determines behavior
+
+---
+
+### `spawn_item` Command
+
+**Purpose**: Create item instance in world (loot drops, crafting, resource generation)
+
+**Schema**:
+```yaml
+- spawn_item: <item_type_id>
+  position: <expression>    # Optional, location to spawn
+```
+
+**Fields**:
+- `spawn_item` (string, REQUIRED): Item type ID from item catalog
+- `position` (expression, OPTIONAL): Where to spawn item
+
+**Position Resolution**:
+- `"target.position"`: At entity's current position
+- `"random"`: Random valid position in world (future)
+- Expression: Computed position (e.g., `"target.position + [1, 0]"`)
+
+**Use Cases**:
+- **Loot Drops**: Enemy death → spawn "gold_coin" at position
+- **Resource Generation**: Tree effect → spawn "apple" periodically
+- **Crafting Results**: Crafting effect completes → spawn finished item
+- **Environmental Spawns**: Rain effect → spawn "puddle" items
+
+**Examples**:
+
+```yaml
+# Drop loot on death
+- id: "enemy_death"
+  on_despawn:
+    - spawn_item: "gold_coin"
+      position: "target.position"
+
+# Periodic resource generation
+- id: "apple_tree"
+  on_tick:
+    - if: "temporal.tick % 100 == 0"
+      then:
+        - spawn_item: "apple"
+          position: "target.position"
+      else: []
+
+# Multiple item spawn
+- id: "treasure_chest"
+  on_spawn:
+    - spawn_item: "gold_coin"
+      position: "target.position"
+    - spawn_item: "health_potion"
+      position: "target.position"
+```
+
+**Validation**:
+- Item type must exist in item catalog (compile-time check)
+- Position must be valid coordinate (runtime check)
+
+**Performance**:
+- Creates new item instance (O(1) operation)
+- Items have their own lifecycle (duration, decay effects)
+
+---
+
+### `if` Command
+
+**Purpose**: Conditional command execution based on runtime state
+
+**Schema**:
+```yaml
+- if: <boolean_expression>
+  then:
+    - <command>
+    - <command>
+  else:
+    - <command>
+```
+
+**Fields**:
+- `if` (expression, REQUIRED): Boolean expression (condition)
+- `then` (list[Command], REQUIRED): Commands to execute if true
+- `else` (list[Command], OPTIONAL): Commands to execute if false (default: empty)
+
+**Condition Expressions**:
+Must evaluate to boolean type. Use comparison operators and logical combinators.
+
+**Use Cases**:
+- **Threshold Effects**: If health < 0.2, apply crisis penalties
+- **State-Dependent Behavior**: If night, reduce visibility
+- **Resource Checks**: If has currency, unlock premium effects
+- **Conditional Spawning**: If poisoned, spawn nauseous effect
+
+**Examples**:
+
+```yaml
+# Simple threshold check
+- if: "target.bar.energy < 0.2"
+  then:
+    - modify: target.vfs.in_crisis
+      value: true
+    - spawn_effect: "energy_crash"
+      target: "self"
+  else:
+    - modify: target.vfs.in_crisis
+      value: false
+
+# Multiple conditions
+- if: "target.bar.energy < 0.2 and target.bar.health < 0.3"
+  then:
+    - spawn_effect: "critical_condition"
+      target: "self"
+      intensity: 3.0
+  else: []
+
+# Nested conditionals
+- if: "target.bar.health < 0.5"
+  then:
+    - if: "target.bar.health < 0.2"
+      then:
+        - spawn_effect: "near_death"
+          target: "self"
+      else:
+        - spawn_effect: "injured"
+          target: "self"
+  else: []
+
+# Time-based logic
+- if: "temporal.tick % 24 >= 18"
+  then:
+    - modify: global.vfs.is_night
+      value: true
+  else:
+    - modify: global.vfs.is_night
+      value: false
+```
+
+**Validation**:
+- Condition must be boolean type (compile-time check)
+- Both then and else branches type-checked
+- Nested conditionals supported (arbitrary depth)
+
+**Performance**:
+- Condition evaluated once per execution
+- Only executed branch runs (no wasted computation)
+- Pre-compiled ASTs for condition and branches
+
+---
+
+### `for_each` Command
+
+**Purpose**: Iterate over collections and execute commands for each element
+
+**Schema**:
+```yaml
+- for_each: <collection_expression>
+  as: <iterator_variable>
+  do:
+    - <command using iterator>
+    - <command using iterator>
+```
+
+**Fields**:
+- `for_each` (expression, REQUIRED): Collection to iterate (list, tensor)
+- `as` (string, REQUIRED): Variable name for current element
+- `do` (list[Command], REQUIRED): Commands to execute for each element
+
+**Collection Sources**:
+- `nearby_agents`: Agents within radius (future)
+- `held_items`: Items in inventory (future)
+- `active_effects`: Effects on entity (future)
+- Static lists: `[1, 2, 3]` or VFS array variables
+
+**Iterator Variable**:
+Available inside `do` commands as scoped variable. Access via name specified in `as`.
+
+**Use Cases**:
+- **Area Effects**: Apply effect to all nearby agents
+- **Inventory Processing**: Consume all food items
+- **Batch Operations**: Modify multiple VFS variables
+- **Relationship Systems**: Update all social connections
+
+**Examples**:
+
+```yaml
+# Apply poison to nearby agents (future)
+- for_each: "nearby_agents(radius=2)"
+  as: "agent"
+  do:
+    - spawn_effect: "poison"
+      target: "agent"
+      intensity: 0.5
+
+# Consume all food items (future)
+- for_each: "target.inventory.items"
+  as: "item"
+  do:
+    - if: "item.vfs.type == 'food'"
+      then:
+        - modify: "target.bar.energy"
+          value: "target.bar.energy + item.vfs.nutrition"
+        - spawn_effect: "item_consumed"
+          target: "item"
+      else: []
+
+# Batch VFS updates
+- for_each: "[1, 2, 3, 4, 5]"
+  as: "index"
+  do:
+    - modify: "target.vfs.multiplier"
+      value: "target.vfs.multiplier * index"
+```
+
+**Validation**:
+- Collection expression must evaluate to iterable type
+- Iterator variable scoped to `do` block only
+- Commands type-checked with iterator variable in context
+
+**Performance**:
+- Loops execute sequentially (not vectorized)
+- Keep collections small for performance
+- Prefer batch operations over loops when possible
+
+**Current Limitations**:
+- Limited collection sources in Phase 3/4
+- No nested for_each loops (future enhancement)
+- No break/continue statements (execute all iterations)
+
+---
+
 ## Effect Examples
 
-Real examples from `configs/test/effects_smoke/effects.yaml`:
+Real examples demonstrating common patterns and use cases:
 
 ### Example 1: Energy Regeneration (RENEW Policy)
 
 ```yaml
 - id: "energy_regen"
+  description: "Regenerates energy over time, timer refreshes when reapplied"
   scope: agent
   duration: 20
   intensity: 1.0
@@ -630,9 +966,10 @@ Real examples from `configs/test/effects_smoke/effects.yaml`:
 
   on_tick:
     - modify: target.bar.energy
-      value: "target.bar.energy + (0.05 * intensity)"
+      value: "clamp(target.bar.energy + (0.05 * intensity), 0.0, 1.0)"
 
   on_despawn: []
+  on_interrupt: []
 ```
 
 **Behavior**:
@@ -643,12 +980,15 @@ Real examples from `configs/test/effects_smoke/effects.yaml`:
 
 **Use Case**: Food consumption grants sustained energy recovery
 
+**Key Pattern**: RENEW policy for single-instance buffs that extend on reapplication
+
 ---
 
 ### Example 2: Instant Health Boost (STACK Policy)
 
 ```yaml
 - id: "health_boost"
+  description: "Instant health restoration, multiple uses stack"
   scope: agent
   duration: 1
   intensity: 1.0
@@ -657,11 +997,11 @@ Real examples from `configs/test/effects_smoke/effects.yaml`:
 
   on_spawn:
     - modify: target.bar.health
-      value: "target.bar.health + (0.2 * intensity)"
+      value: "clamp(target.bar.health + (0.2 * intensity), 0.0, 1.0)"
 
   on_tick: []
-
   on_despawn: []
+  on_interrupt: []
 ```
 
 **Behavior**:
@@ -672,12 +1012,15 @@ Real examples from `configs/test/effects_smoke/effects.yaml`:
 
 **Use Case**: Consumable healing items (each use gives separate heal)
 
+**Key Pattern**: Duration 1 + on_spawn logic for instant effects
+
 ---
 
 ### Example 3: Poison (MERGE Policy)
 
 ```yaml
 - id: "poison"
+  description: "Deals damage over time, intensity stacks when reapplied"
   scope: agent
   duration: 20
   intensity: 1.0
@@ -688,9 +1031,10 @@ Real examples from `configs/test/effects_smoke/effects.yaml`:
 
   on_tick:
     - modify: target.bar.health
-      value: "target.bar.health - (0.02 * intensity)"
+      value: "clamp(target.bar.health - (0.02 * intensity), 0.0, 1.0)"
 
   on_despawn: []
+  on_interrupt: []
 ```
 
 **Behavior**:
@@ -701,38 +1045,304 @@ Real examples from `configs/test/effects_smoke/effects.yaml`:
 
 **Use Case**: Multiple poison sources stack severity (not duration)
 
+**Key Pattern**: MERGE policy + intensity scaling for accumulating debuffs
+
 **Important**: Note how `intensity` scales the damage - crucial for MERGE policy!
 
 ---
 
-### Example 4: Global Day/Night Cycle
+### Example 4: Caffeinated Buff (Complex State Management)
+
+```yaml
+- id: "caffeinated"
+  description: "Energy boost with crash effect on expiration"
+  scope: agent
+  duration: 30
+  intensity: 1.0
+  reapply_policy: renew
+  observable: true
+
+  on_spawn:
+    - modify: target.vfs.is_caffeinated
+      value: true
+    - modify: target.bar.energy
+      value: "clamp(target.bar.energy + 0.3, 0.0, 1.0)"
+
+  on_tick:
+    - modify: target.bar.mood
+      value: "clamp(target.bar.mood + (0.01 * intensity), 0.0, 1.0)"
+
+  on_despawn:
+    - modify: target.vfs.is_caffeinated
+      value: false
+    - spawn_effect: "caffeine_crash"
+      target: "self"
+      intensity: 1.0
+
+  on_interrupt:
+    - modify: target.vfs.is_caffeinated
+      value: false
+```
+
+**Behavior**:
+- Instant energy boost on application
+- Gradual mood improvement while active
+- Sets VFS flag for other systems to check
+- Spawns crash effect on natural expiration
+- Cleans up flag even if interrupted
+
+**Use Case**: Coffee consumption with realistic crash mechanics
+
+**Key Pattern**: on_spawn (instant), on_tick (sustained), on_despawn (consequence)
+
+---
+
+### Example 5: Wet Effect (State + Conditional Logic)
+
+```yaml
+- id: "wet"
+  description: "Reduces hygiene when wet, spawns cold if too long"
+  scope: agent
+  duration: 50
+  intensity: 1.0
+  reapply_policy: renew
+  observable: true
+
+  on_spawn:
+    - modify: target.vfs.is_wet
+      value: true
+
+  on_tick:
+    - modify: target.bar.hygiene
+      value: "clamp(target.bar.hygiene - (0.01 * intensity), 0.0, 1.0)"
+    - if: "effect.elapsed_ticks > 30"
+      then:
+        - spawn_effect: "cold"
+          target: "self"
+          intensity: 1.0
+      else: []
+
+  on_despawn:
+    - modify: target.vfs.is_wet
+      value: false
+
+  on_interrupt:
+    - modify: target.vfs.is_wet
+      value: false
+```
+
+**Behavior**:
+- Sets wet flag, reduces hygiene over time
+- If wet for >30 ticks, spawns cold effect
+- Renew policy extends duration (stay wet longer if re-exposed)
+- Cleanup handled in both on_despawn and on_interrupt
+
+**Use Case**: Environmental effects with conditional escalation
+
+**Key Pattern**: Conditional spawning based on effect lifetime
+
+**Note**: Uses `effect.elapsed_ticks` to track how long effect has been active
+
+---
+
+### Example 6: Global Day/Night Cycle
 
 ```yaml
 - id: "global_day_cycle"
+  description: "Updates global day/night state based on time"
   scope: global
-  duration: 1000
+  duration: 10000
   intensity: 1.0
   reapply_policy: stack
-  observable: false  # World state, not agent-specific
+  observable: false
 
   on_spawn: []
 
   on_tick:
     - modify: global.vfs.is_night
-      value: "temporal.tick % 24 >= 18"
+      value: "temporal.tick % 24 >= 18 and temporal.tick % 24 < 6"
+    - modify: global.vfs.time_of_day
+      value: "temporal.tick % 24"
 
   on_despawn: []
+  on_interrupt: []
 ```
 
 **Behavior**:
 - Sets global `is_night` flag based on time-of-day
 - Updates every tick using temporal context
-- Duration 1000 for long-lived world state effect
+- Duration 10000 for long-lived world state effect
 - Not observable (global state, not agent-specific status)
 
 **Use Case**: Environment spawns this on startup for day/night cycles
 
+**Key Pattern**: Global scope + temporal expressions for world state
+
 **Note**: Uses `temporal.tick` for time-based logic, `global.vfs.*` for world state
+
+---
+
+### Example 7: Item Decay (ITEM Scope)
+
+```yaml
+- id: "item_decay"
+  description: "Food items spoil over time, become inedible"
+  scope: item
+  duration: 200
+  intensity: 1.0
+  reapply_policy: stack
+  observable: false
+
+  on_spawn: []
+
+  on_tick:
+    - modify: target.vfs.freshness
+      value: "clamp(target.vfs.freshness - (0.005 * intensity), 0.0, 1.0)"
+    - if: "target.vfs.freshness < 0.1"
+      then:
+        - modify: target.vfs.is_spoiled
+          value: true
+        - spawn_effect: "spoiled"
+          target: "self"
+          intensity: 1.0
+      else: []
+
+  on_despawn: []
+  on_interrupt: []
+```
+
+**Behavior**:
+- Reduces item freshness over time
+- When freshness drops below 10%, marks as spoiled
+- Spawns "spoiled" effect for additional consequences
+- Stack policy allows multiple decay effects (compounding decay)
+
+**Use Case**: Perishable food items in simulation
+
+**Key Pattern**: Item scope + conditional state transitions
+
+**Note**: Items have their own VFS variables (target.vfs.*)
+
+---
+
+### Example 8: Affordance Cooldown (AFFORDANCE Scope)
+
+```yaml
+- id: "on_cooldown"
+  description: "Prevents affordance reuse for duration"
+  scope: affordance
+  duration: 10
+  intensity: 1.0
+  reapply_policy: renew
+  observable: true
+
+  on_spawn:
+    - modify: target.vfs.available
+      value: false
+
+  on_tick: []
+
+  on_despawn:
+    - modify: target.vfs.available
+      value: true
+
+  on_interrupt:
+    - modify: target.vfs.available
+      value: true
+```
+
+**Behavior**:
+- Marks affordance as unavailable on spawn
+- Lasts 10 ticks (cooldown period)
+- Renew policy extends cooldown if triggered again
+- Restores availability on despawn/interrupt
+
+**Use Case**: Prevent spam-clicking affordances, enforce cooldown periods
+
+**Key Pattern**: Affordance scope + availability flag manipulation
+
+**Note**: AffordanceEngine can check target.vfs.available before allowing interaction
+
+---
+
+### Example 9: Inspired Buff (Secondary Effect Spawn)
+
+```yaml
+- id: "inspired"
+  description: "Boosts mood and spawns creativity effect"
+  scope: agent
+  duration: 40
+  intensity: 1.0
+  reapply_policy: replace
+  observable: true
+
+  on_spawn:
+    - modify: target.bar.mood
+      value: "clamp(target.bar.mood + 0.2, 0.0, 1.0)"
+    - spawn_effect: "creative"
+      target: "self"
+      intensity: 1.5
+
+  on_tick:
+    - modify: target.bar.mood
+      value: "clamp(target.bar.mood + (0.005 * intensity), 0.0, 1.0)"
+
+  on_despawn:
+    - modify: target.vfs.was_recently_inspired
+      value: true
+
+  on_interrupt: []
+```
+
+**Behavior**:
+- Instant mood boost on spawn
+- Spawns secondary "creative" effect with higher intensity
+- Sustained mood gain while active
+- Leaves flag when expires (for analytics or future effects)
+- Replace policy: Only one inspiration at a time
+
+**Use Case**: Art/music affordances grant inspiration with cascading benefits
+
+**Key Pattern**: Effect spawning effects for complex behaviors
+
+---
+
+### Example 10: Area Effect (FOR_EACH Loop)
+
+```yaml
+# Future example - requires nearby_agents() implementation
+- id: "healing_aura"
+  description: "Heals nearby agents in radius"
+  scope: agent
+  duration: 20
+  intensity: 1.0
+  reapply_policy: stack
+  observable: true
+
+  on_spawn: []
+
+  on_tick:
+    - for_each: "nearby_agents(radius=2)"
+      as: "nearby"
+      do:
+        - modify: "nearby.bar.health"
+          value: "clamp(nearby.bar.health + (0.02 * intensity), 0.0, 1.0)"
+
+  on_despawn: []
+  on_interrupt: []
+```
+
+**Behavior**:
+- Each tick, finds agents within radius 2
+- Heals each nearby agent by 2% health
+- Stack policy allows multiple auras (compounding heals)
+- Works on others, not self
+
+**Use Case**: Support abilities, area buffs, social effects
+
+**Key Pattern**: for_each loop for multi-target effects
+
+**Note**: Requires spatial query functions (future feature)
 
 ---
 
@@ -755,11 +1365,11 @@ effects.yaml → EffectsConfig (Pydantic) → EffectCatalog (runtime) → Effect
 - All required fields present
 - Field types correct (int, float, string, enum)
 - Enum values valid (scope, reapply_policy)
-- List structures correct (on_spawn, on_tick, on_despawn)
+- List structures correct (on_spawn, on_tick, on_despawn, on_interrupt)
 
 **Path Validation** (CommandCompiler):
 - `modify` paths exist in VFS schema
-- Paths accessible from effect scope (e.g., agent-scoped effects can't modify global bars)
+- Paths accessible from effect scope
 - Path types match expression return types
 
 **Expression Validation** (ExpressionParser + TypeChecker):
@@ -768,7 +1378,7 @@ effects.yaml → EffectsConfig (Pydantic) → EffectCatalog (runtime) → Effect
 - Return type matches target path type
 - Variables referenced exist in context (target, global, temporal, intensity)
 
-**Reference Validation** (Future Phase 4):
+**Reference Validation**:
 - `spawn_effect` effect_id exists in catalog
 - `spawn_item` item_type exists in item catalog
 - Circular dependencies detected (effect A spawns B spawns A)
@@ -793,10 +1403,10 @@ ParseError: Invalid expression syntax at position 15:
 'target.bar.energy +' (expected operand)
 ```
 
-**Scope Violation** (Future):
+**Missing Effect Reference**:
 ```
-ScopeError: agent-scoped effect cannot modify global.bar.economy
-(cross-scope mutation not allowed)
+ReferenceError: Effect 'nonexistent_effect' not found in catalog
+(referenced in spawn_effect command)
 ```
 
 ### Performance Optimization
@@ -827,30 +1437,35 @@ Affordances spawn effects when interacted with:
 ```yaml
 # affordances.yaml
 affordances:
-  - id: "bed"
-    on_interact:
-      spawn_effect: "energy_regen"  # References effect from effects.yaml
-      duration_override: 30          # Optional: override default duration
-      intensity_override: 1.5        # Optional: override default intensity
+  - name: "BED"
+    interactions:
+      on_start:
+        - spawn_effect: "energy_regen"
+          target: "self"
+          intensity: 1.5
 ```
 
-**Integration**: Affordance compiler validates `spawn_effect` references exist in EffectCatalog
+**Integration**: AffordanceEngine validates `spawn_effect` references exist in EffectCatalog
 
-### Items (Future Phase 4)
+### Items
 
-Items apply effects when used/equipped:
+Items apply effects when used/equipped/consumed:
 
 ```yaml
-# items.yaml (future)
+# items.yaml
 items:
-  - id: "healing_potion"
-    on_use:
-      - spawn_effect: "health_boost"
-        target: "user"
-        intensity: 2.0  # Stronger than default
+  item_types:
+    - id: "healing_potion"
+      interactions:
+        on_use:
+          - spawn_effect: "health_boost"
+            target: "user"
+            intensity: 2.0
 ```
 
-### Cascades (Future Phase 4)
+**Integration**: Items use same command language as effects
+
+### Cascades (Future)
 
 Cascades can conditionally spawn effects:
 
@@ -860,24 +1475,24 @@ cascades:
   - source: energy
     targets:
       - target: health
-        condition: "source < 0.2"  # Low energy damages health
+        condition: "source < 0.2"
         on_trigger:
-          spawn_effect: "energy_crash"  # Spawns debuff effect
+          - spawn_effect: "energy_crash"
 ```
 
-### VFS Profiles (Future Phase 4)
+### VFS Profiles
 
 VFS profiles define variables that effects modify:
 
 ```yaml
-# vfs_profiles.yaml
+# variables_reference.yaml
 variables:
-  - id: "is_buffed"
+  - id: "is_caffeinated"
     scope: agent
     type: bool
     default: false
-    readable_by: ["agent", "engine"]
-    writable_by: ["engine"]  # Effects can modify via CommandExecutor
+    readers: [agent, engine]
+    writers: [engine]  # Effects can modify via CommandExecutor
 ```
 
 **Integration**: Effect commands validated against VFS schema (paths must exist)
@@ -979,8 +1594,8 @@ value: "target.bar.energy + (0.1 if intensity > 2.0 else 0.05)"
 - Reduces active effect count, improves cache locality
 
 **Avoid Redundant Effects**:
-- Don't spawn `energy_regen` if already active (unless using stack policy intentionally)
-- Check for existing effects before spawning (future API: `has_effect()`)
+- Don't spawn effects unnecessarily
+- Use renew/merge policies to prevent duplicate instances
 
 ### Pedagogical Patterns
 
@@ -995,7 +1610,7 @@ value: "target.bar.energy + (0.1 if intensity > 2.0 else 0.05)"
 - Teaches agents to model unobservable state from observations
 
 **Reapply Policy Lessons**:
-- Compare `stack` vs `renew` in curriculum (L1 vs L2)
+- Compare `stack` vs `renew` in curriculum
 - Show emergent behavior from different policies
 - Let students experiment with policy changes without code changes
 
@@ -1013,12 +1628,12 @@ value: "target.bar.energy + (0.1 if intensity > 2.0 else 0.05)"
 
 **Q: Type check error for valid path**
 - Check VFS schema includes the path (`variables_reference.yaml`)
-- Verify path accessible from effect scope (agent can't modify global bars directly)
+- Verify path accessible from effect scope
 - Ensure expression return type matches path type (bool vs float)
 
 **Q: Effect spawned but not ticking**
-- Check scope matches target entity (can't spawn agent-scoped effect on item)
-- Verify `current_step` passed to `tick()` (required parameter)
+- Check scope matches target entity
+- Verify `current_step` passed to `tick()`
 - Ensure `env_state` passed for context building
 
 **Q: Intensity not scaling properly**
@@ -1029,7 +1644,7 @@ value: "target.bar.energy + (0.1 if intensity > 2.0 else 0.05)"
 **Q: Effects despawning too early/late**
 - Check `duration` field matches intended tick count
 - Verify `duration: 1` used for instant effects (common mistake: `duration: 0`)
-- Remember tick occurs AFTER commands execute (duration=1 means spawn → tick → despawn)
+- Remember tick occurs AFTER commands execute
 
 ### Validation Errors
 
@@ -1069,35 +1684,6 @@ value: "target.bar.energy + (0.1 if intensity > 2.0 else 0.05)"
 
 ---
 
-## Future Enhancements
-
-**Phase 4 Command Extensions**:
-- `spawn_effect` - Spawn secondary effects from effects
-- `spawn_item` - Create items dynamically
-- `if`/`else` - Conditional command execution
-- `for_each` - Iterate over collections (nearby agents, inventory items)
-
-**Phase 5 Advanced Features**:
-- Effect-local state (`self.vfs.*` variables specific to effect instance)
-- Cross-scope effects (agent effect modifying nearby agents)
-- Effect queries (`nearby_agents`, `held_items` in expressions)
-- Dynamic duration modification (extend/reduce during execution)
-- Effect interruption signals (`on_interrupt` hook for forced removal)
-
-**Integration Improvements**:
-- Observable effects in observation spec (auto-add to agent observations)
-- Effect visualization in frontend (status icons, particle effects)
-- Effect analytics (frequency, duration histograms, impact analysis)
-- A/B testing framework (compare effect variants without code changes)
-
-**Debugging Tools**:
-- Effect execution logs (which commands executed, values before/after)
-- Effect timelines (visualize spawns, ticks, despawns over time)
-- Command trace mode (step through command execution)
-- Expression debugger (inspect AST, intermediate values)
-
----
-
 ## See Also
 
 - **Design Document**: `docs/plans/vfs_uplift/2025-11-19-effects-system-design.md` - Complete architecture
@@ -1109,6 +1695,6 @@ value: "target.bar.energy + (0.1 if intensity > 2.0 else 0.05)"
 
 ---
 
-**Status**: Phase 3 Complete (TASK-003)
+**Status**: Phase 3 Complete + Phase 4 Command Extensions Implemented
 **Version**: 1.0
-**Last Updated**: 2025-11-20
+**Last Updated**: 2025-11-21

@@ -19,6 +19,10 @@ def test_item_interactions_are_compiled():
         "target.bar.health": "float",
         "target.bar.money": "float",
         "target.vfs.has_food": "bool",
+        # Item-scoped variables (for self.vfs.* paths)
+        "self.vfs.durability": "float",
+        "self.vfs.freshness": "float",
+        "self.vfs.charges": "float",
     }
 
     # Create manager with schema

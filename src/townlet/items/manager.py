@@ -10,6 +10,7 @@ import torch
 
 if TYPE_CHECKING:
     from townlet.config.items_config import ItemsAppearanceConfig, ItemsCatalogConfig
+    from townlet.vfs.registry import VariableRegistry
 
 from townlet.effects.compiler import CommandCompiler
 from townlet.effects.schema import CommandNode
@@ -46,6 +47,7 @@ class ItemManager:
         max_items: int,
         device: torch.device | str,
         schema: dict[str, str] | None = None,  # NEW: Schema for Effects compilation
+        vfs_registry: VariableRegistry | None = None,  # NEW: VFS registry for item state storage
     ) -> None:
         """Initialize ItemManager.
 
@@ -54,10 +56,12 @@ class ItemManager:
             max_items: Maximum items that can exist simultaneously
             device: PyTorch device
             schema: Variable type schema for Effects compilation
+            vfs_registry: VFS registry for item state storage
         """
         self.catalog = catalog
         self.max_items = max_items
         self.device = torch.device(device) if isinstance(device, str) else device
+        self.vfs_registry = vfs_registry  # Store VFS registry
 
         # Compile item interactions if schema provided
         self.compiled_item_types: list[CompiledItemType] = []
@@ -168,6 +172,21 @@ class ItemManager:
         if not self.vfs_free_slots:
             return None  # No VFS slots available
         vfs_index = self.vfs_free_slots.pop()
+
+        # Initialize item VFS state to defaults
+        if self.vfs_registry is not None:
+            from townlet.vfs.schema import VariableScope
+
+            # Reset all item-scoped variables to their defaults
+            for var_id, var_def in self.vfs_registry.variables.items():
+                if var_def.scope == VariableScope.ITEM:
+                    if var_def.default is not None:
+                        self.vfs_registry.write(
+                            var_id,
+                            var_def.default,
+                            context_index=vfs_index,
+                            scope=VariableScope.ITEM,
+                        )
 
         # Create instance
         instance = ItemInstance(

@@ -19,11 +19,28 @@ Teaching Value:
 Status: Ready for integration with vectorized_env.py
 """
 
+from dataclasses import dataclass
 from typing import Any
 
 import torch
 
+from townlet.config.effects_config import CommandConfig
+from townlet.effects.compiler import CommandCompiler
+from townlet.effects.executor import CommandExecutor, ExecutionContext
+from townlet.effects.parser import CommandParser
+from townlet.effects.schema import CommandNode
 from townlet.environment.temporal_utils import is_affordance_open as canonical_is_affordance_open
+
+
+@dataclass
+class CompiledAffordance:
+    """Pre-compiled Effects commands for affordance lifecycle stages."""
+
+    on_start: list[CommandNode]
+    per_tick: list[CommandNode]
+    on_completion: list[CommandNode]
+    on_early_exit: list[CommandNode]
+    on_failure: list[CommandNode]
 
 
 class AffordanceEngine:
@@ -41,6 +58,9 @@ class AffordanceEngine:
         device: torch.device,
         meter_name_to_idx: dict[str, int],
         modulation_rules: list[dict[str, Any]] | None = None,
+        vfs_registry: Any | None = None,  # NEW: VFS registry for Effects
+        effects_schema: Any | None = None,  # NEW: Effects schema for compilation
+        command_executor: CommandExecutor | None = None,  # NEW: Effects executor
     ):
         """
         Initialize AffordanceEngine.
@@ -50,6 +70,10 @@ class AffordanceEngine:
             num_agents: Number of agents in parallel
             device: torch.device for GPU/CPU
             meter_name_to_idx: Mapping of meter names to indices (from bars_config)
+            modulation_rules: Modulation rules for affordance effectiveness
+            vfs_registry: VFS registry for Effects system (optional)
+            effects_schema: Effects schema for command compilation (optional)
+            command_executor: Effects command executor (optional)
         """
         self.num_agents = num_agents
         self.device = device
@@ -58,9 +82,39 @@ class AffordanceEngine:
 
         self.meter_name_to_idx = meter_name_to_idx
         self.modulation_rules = modulation_rules or []
+        self.vfs_registry = vfs_registry  # NEW
+        self.command_executor = command_executor  # NEW
 
         # Build lookup maps
         self._build_lookup_maps()
+
+        # Compile affordance Effects commands at startup (CRITICAL: Performance)
+        self.compiled_affordances: dict[str, CompiledAffordance] = {}
+
+        if command_executor is not None and effects_schema is not None:
+            parser = CommandParser()
+            compiler = CommandCompiler(schema=effects_schema)
+
+            for affordance in affordance_config:
+                # Check if affordance has interactions attribute
+                if hasattr(affordance, "interactions") and affordance.interactions is not None:
+                    compiled = CompiledAffordance(
+                        on_start=[],
+                        per_tick=[],
+                        on_completion=[],
+                        on_early_exit=[],
+                        on_failure=[],
+                    )
+
+                    for stage in ["on_start", "per_tick", "on_completion", "on_early_exit", "on_failure"]:
+                        commands = affordance.interactions.get(stage, [])
+                        if commands:
+                            command_configs = [CommandConfig(**cmd) if isinstance(cmd, dict) else cmd for cmd in commands]
+                            command_nodes = parser.parse_commands(command_configs)
+                            compiled_commands = compiler.compile_commands(command_nodes)
+                            setattr(compiled, stage, compiled_commands)
+
+                    self.compiled_affordances[affordance.name] = compiled
 
         # Pre-compute tensors for common operations (future optimization)
         # For now, we compute on-the-fly for clarity
@@ -123,8 +177,7 @@ class AffordanceEngine:
             open_hour, close_hour = operating_hours
         except Exception as exc:  # pragma: no cover - defensive
             raise ValueError(
-                f"Affordance '{affordance_name}' has invalid operating_hours; expected [open_hour, close_hour], "
-                f"got: {operating_hours!r}."
+                f"Affordance '{affordance_name}' has invalid operating_hours; expected [open_hour, close_hour], got: {operating_hours!r}."
             ) from exc
 
         return canonical_is_affordance_open(time_of_day, (open_hour, close_hour))
@@ -549,3 +602,55 @@ class AffordanceEngine:
                 meter, amount = next(iter(cost.items()))
                 return meter, float(amount)
         raise ValueError(f"Unsupported cost format: {cost!r}")
+
+    def _execute_affordance_effects(
+        self,
+        affordance_name: str,
+        stage: str,
+        agent_mask: torch.Tensor,
+        meters: torch.Tensor,
+    ) -> torch.Tensor:
+        """Execute pre-compiled Effects commands for affordance lifecycle stage.
+
+        Args:
+            affordance_name: Affordance name
+            stage: Lifecycle stage (on_start, per_tick, on_completion, etc.)
+            agent_mask: Boolean mask of agents interacting [batch]
+            meters: Current meter values [batch, num_meters]
+
+        Returns:
+            Updated meters tensor [batch, num_meters]
+        """
+        if self.command_executor is None:
+            return meters  # No Effects support, return unchanged
+
+        if affordance_name not in self.compiled_affordances:
+            return meters  # No compiled Effects, return unchanged
+
+        compiled = self.compiled_affordances[affordance_name]
+        commands = getattr(compiled, stage)
+
+        if not commands:
+            return meters  # No commands for this stage
+
+        # Execute commands for each agent in mask
+        updated_meters = meters.clone()
+
+        for agent_idx in torch.where(agent_mask)[0]:
+            context = ExecutionContext(
+                target_index=agent_idx.item(),
+                self_index=None,  # Affordances don't have self yet
+                registry=self.vfs_registry,
+                meters=updated_meters,
+                meter_name_to_idx=self.meter_name_to_idx,
+            )
+
+            for command in commands:
+                self.command_executor.execute(command, context)
+
+            # Sync meters from VFS back to tensor
+            for meter_name, meter_idx in self.meter_name_to_idx.items():
+                if meter_name in self.vfs_registry.storage:
+                    updated_meters[agent_idx, meter_idx] = self.vfs_registry.storage[meter_name][agent_idx]
+
+        return updated_meters

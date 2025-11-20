@@ -555,6 +555,9 @@ class VectorizedHamletEnv:
             self.device,
             self.meter_name_to_index,
             modulation_rules=modulation_rules,
+            vfs_registry=self.vfs_registry,  # NEW: Wire VFS registry
+            effects_schema=self.effects_schema,  # NEW: Wire Effects schema
+            command_executor=self.command_executor,  # NEW: Wire Effects system
         )
 
         # Build composed action space from compiler metadata and substrate defaults

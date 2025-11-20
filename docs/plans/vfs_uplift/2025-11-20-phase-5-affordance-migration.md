@@ -8,7 +8,13 @@
 
 **Tech Stack:** Pydantic DTOs, Effects system (CommandCompiler + CommandExecutor), PyTorch tensors, YAML configuration
 
-**Timeline:** 3-4 days (Task 5.1: 1 day, Task 5.2: 1.5 days, Task 5.3: 0.5 days)
+**Timeline:** 4-5 days (Task 5.1: 1.5 days, Task 5.2: 2 days, Task 5.3: 0.5 days)
+
+**CRITICAL FIXES APPLIED:**
+1. ✅ Compile affordance Effects at startup (performance)
+2. ✅ Wire command_executor in VectorizedHamletEnv (integration)
+3. ✅ Extend migration script for multi_tick and effect_pipeline (completeness)
+4. ✅ Preserve costs/costs_per_tick as affordability gates (design correction)
 
 ---
 
@@ -78,13 +84,12 @@ interactions:
 - Only reference config uses `effect_pipeline` (example/documentation)
 - Affordance engine applies effects directly via tensor operations
 
-**Migration Path:**
-1. **Preserve simple effects dict** (backward compatible during migration)
-2. **Add new `interactions` field** with Effects commands
-3. **Update affordance_engine** to execute Effects commands
-4. **Migrate configs** from simple dicts to Effects commands
-5. **Remove `effect_pipeline` and `effects` fields** (breaking change)
-6. **Delete EffectPipeline code**
+**Migration Path (BREAKING CHANGE - No Backwards Compatibility):**
+1. **Add `interactions` field** to AffordanceParamConfig (REQUIRED)
+2. **Integrate CommandExecutor** into AffordanceEngine (Effects-only path)
+3. **Migrate all configs** in single batch (migration script)
+4. **Delete `effect_pipeline` and `effects` fields** immediately
+5. **Delete EffectPipeline code** (no fallback paths)
 
 ---
 
@@ -113,64 +118,44 @@ Add import at top of file:
 from townlet.config.effects_config import CommandConfig
 ```
 
-Update AffordanceParamConfig to add new field after `effect_pipeline`:
+**BREAKING CHANGE**: Remove `effects` and `effect_pipeline` fields, add REQUIRED `interactions` field, KEEP `costs`:
+
 ```python
-    # Effect semantics -------------------------------------------------------
-    effects: dict[str, float] = Field(
+    # Affordability gates (checked BEFORE execution) -------------------------
+    costs: dict[str, float] = Field(
         default_factory=dict,
-        description="Simple instant effects (meter: value). "
-        "For advanced control, use effect_pipeline instead.",
+        description="Resource costs required to use this affordance (affordability check). "
+        "Example: {'energy': 0.2} means agent needs energy >= 0.2 to interact."
     )
-    effect_pipeline: EffectPipeline | None = Field(
-        default=None,
-        description=(
-            "Optional multi-stage effect pipeline. "
-            "When provided, takes precedence over simple effects for runtime behavior."
-        ),
+    costs_per_tick: dict[str, float] = Field(
+        default_factory=dict,
+        description="Resource costs per tick for multi_tick affordances (affordability check)."
     )
 
-    # NEW: Effects commands (unified with Items system)
-    interactions: dict[str, list[CommandConfig]] | None = Field(
-        default=None,
+    # Effect outcomes (applied AFTER affordability check passes) -------------
+    # REMOVED: effects dict and effect_pipeline (legacy systems deleted)
+
+    # NEW: Effects commands (unified with Items system) - REQUIRED
+    interactions: dict[str, list[CommandConfig]] = Field(
         description=(
             "Effects commands for affordance lifecycle stages. "
-            "Replaces effect_pipeline with declarative command system. "
-            "Stages: on_start, per_tick, on_completion, on_early_exit, on_failure"
+            "Unified with Items system (declarative Effects). "
+            "Stages: on_start, per_tick, on_completion, on_early_exit, on_failure. "
+            "NOTE: Use costs/costs_per_tick for affordability gates, interactions for outcomes."
         ),
     )
 ```
 
+**Design Rationale:**
+- **costs/costs_per_tick**: Gating mechanism (pre-check) - "Can agent afford this?"
+- **interactions**: Outcomes (post-check) - "What happens when affordance succeeds?"
+- Separation preserves affordability semantics while unifying outcome logic with Effects
+
 Add validator after `validate_interaction_semantics`:
 ```python
     @model_validator(mode="after")
-    def validate_effects_exclusivity(self) -> "AffordanceParamConfig":
-        """Ensure only one effect system is used."""
-        effects_count = sum([
-            bool(self.effects),
-            self.effect_pipeline is not None,
-            self.interactions is not None,
-        ])
-
-        if effects_count > 1:
-            raise ValueError(
-                f"Affordance '{self.name}': Only one of [effects, effect_pipeline, interactions] "
-                "may be specified. Use 'interactions' for new affordances (Effects system)."
-            )
-
-        if effects_count == 0:
-            raise ValueError(
-                f"Affordance '{self.name}': Must specify one of [effects, effect_pipeline, interactions]. "
-                "Use 'interactions' for new affordances (Effects system)."
-            )
-
-        return self
-
-    @model_validator(mode="after")
     def validate_interaction_stages(self) -> "AffordanceParamConfig":
         """Validate interactions have correct stages for interaction_type."""
-        if self.interactions is None:
-            return self
-
         valid_stages = {"on_start", "per_tick", "on_completion", "on_early_exit", "on_failure"}
         provided_stages = set(self.interactions.keys())
 
@@ -290,9 +275,25 @@ UV_CACHE_DIR=.uv-cache uv run pytest tests/test_townlet/unit/environment/test_af
 Add imports at top:
 ```python
 from townlet.effects.executor import CommandExecutor, ExecutionContext
+from townlet.effects.parser import CommandParser
+from townlet.effects.compiler import CommandCompiler
+from townlet.effects.schema import CommandNode
+from dataclasses import dataclass
 ```
 
-Update `__init__` to accept command_executor:
+Add dataclass for compiled affordances:
+```python
+@dataclass
+class CompiledAffordance:
+    """Pre-compiled Effects commands for affordance lifecycle stages."""
+    on_start: list[CommandNode]
+    per_tick: list[CommandNode]
+    on_completion: list[CommandNode]
+    on_early_exit: list[CommandNode]
+    on_failure: list[CommandNode]
+```
+
+Update `__init__` to compile affordance Effects at startup:
 ```python
     def __init__(
         self,
@@ -317,22 +318,49 @@ Update `__init__` to accept command_executor:
         self.modulations_list = modulations
         self.command_executor = command_executor  # NEW
 
+        # Compile affordance Effects commands at startup (CRITICAL: Performance)
+        self.compiled_affordances: dict[str, CompiledAffordance] = {}
+
+        if command_executor is not None:
+            parser = CommandParser()
+            compiler = CommandCompiler(schema=env.effects_schema)
+
+            for affordance in affordances:
+                if affordance.interactions is not None:
+                    compiled = CompiledAffordance(
+                        on_start=[],
+                        per_tick=[],
+                        on_completion=[],
+                        on_early_exit=[],
+                        on_failure=[],
+                    )
+
+                    for stage in ["on_start", "per_tick", "on_completion", "on_early_exit", "on_failure"]:
+                        commands = affordance.interactions.get(stage, [])
+                        if commands:
+                            command_configs = [CommandConfig(**cmd) if isinstance(cmd, dict) else cmd for cmd in commands]
+                            command_nodes = parser.parse_commands(command_configs)
+                            compiled_commands = compiler.compile_commands(command_nodes)
+                            setattr(compiled, stage, compiled_commands)
+
+                    self.compiled_affordances[affordance.name] = compiled
+
         # ... rest of existing __init__ code
 ```
 
-Add helper method to execute Effects commands:
+Add helper method to execute Effects commands (using pre-compiled commands):
 ```python
     def _execute_affordance_effects(
         self,
-        affordance: AffordanceParamConfig,
+        affordance_name: str,
         stage: str,
         agent_mask: torch.Tensor,
         meters: torch.Tensor,
     ) -> torch.Tensor:
-        """Execute Effects commands for affordance lifecycle stage.
+        """Execute pre-compiled Effects commands for affordance lifecycle stage.
 
         Args:
-            affordance: Affordance configuration
+            affordance_name: Affordance name
             stage: Lifecycle stage (on_start, per_tick, on_completion, etc.)
             agent_mask: Boolean mask of agents interacting [batch]
             meters: Current meter values [batch, num_meters]
@@ -343,23 +371,14 @@ Add helper method to execute Effects commands:
         if self.command_executor is None:
             return meters  # No Effects support, return unchanged
 
-        if affordance.interactions is None:
-            return meters  # No Effects commands, return unchanged
+        if affordance_name not in self.compiled_affordances:
+            return meters  # No compiled Effects, return unchanged
 
-        commands = affordance.interactions.get(stage, [])
+        compiled = self.compiled_affordances[affordance_name]
+        commands = getattr(compiled, stage)
+
         if not commands:
             return meters  # No commands for this stage
-
-        # Parse commands to CommandNode AST (if not already compiled)
-        from townlet.effects.parser import CommandParser
-        from townlet.effects.compiler import CommandCompiler
-
-        parser = CommandParser()
-        compiler = CommandCompiler(schema=self.env.effects_schema)
-
-        command_configs = [CommandConfig(**cmd) if isinstance(cmd, dict) else cmd for cmd in commands]
-        command_nodes = parser.parse_commands(command_configs)
-        compiled_commands = compiler.compile_commands(command_nodes)
 
         # Execute commands for each agent in mask
         updated_meters = meters.clone()
@@ -373,7 +392,8 @@ Add helper method to execute Effects commands:
                 meter_name_to_idx=self.meter_name_to_idx,
             )
 
-            self.command_executor.execute_commands(compiled_commands, context)
+            for command in commands:
+                self.command_executor.execute(command, context)
 
             # Sync meters from VFS back to tensor
             for meter_name, meter_idx in self.meter_name_to_idx.items():
@@ -383,7 +403,7 @@ Add helper method to execute Effects commands:
         return updated_meters
 ```
 
-Update `execute_instant_affordance` to use Effects (after line ~200):
+Update `execute_instant_affordance` to use Effects (replace existing effects logic):
 ```python
     def execute_instant_affordance(
         self,
@@ -392,26 +412,12 @@ Update `execute_instant_affordance` to use Effects (after line ~200):
         agent_mask: torch.Tensor,
     ) -> torch.Tensor:
         """Execute instant affordance interaction."""
-        affordance = self.affordances[affordance_name]
         updated_meters = meters.clone()
 
-        # ... existing code for costs ...
-
-        # Apply effects (THREE PATHS: interactions > effect_pipeline > effects dict)
-
-        # PATH 1: New Effects commands (PREFERRED)
-        if affordance.interactions is not None:
-            updated_meters = self._execute_affordance_effects(
-                affordance, "on_start", agent_mask, updated_meters
-            )
-
-        # PATH 2: EffectPipeline (LEGACY - to be removed)
-        elif hasattr(affordance, "effect_pipeline") and affordance.effect_pipeline:
-            # ... existing effect_pipeline code ...
-
-        # PATH 3: Simple effects dict (LEGACY - to be removed)
-        else:
-            # ... existing effects dict code ...
+        # Execute on_start Effects commands (costs integrated as negative deltas)
+        updated_meters = self._execute_affordance_effects(
+            affordance_name, "on_start", agent_mask, updated_meters
+        )
 
         # Clamp meters to [0, 1]
         updated_meters = torch.clamp(updated_meters, 0.0, 1.0)
@@ -419,11 +425,40 @@ Update `execute_instant_affordance` to use Effects (after line ~200):
         return updated_meters
 ```
 
-**Expected:** AffordanceEngine can execute Effects commands.
+**Expected:** AffordanceEngine compiles Effects at startup and reuses compiled commands (no per-execution parsing).
 
 ---
 
-### Step 5: Run test to verify it passes
+### Step 5: Wire command_executor in VectorizedHamletEnv
+
+**File:** `src/townlet/environment/vectorized_env.py`
+
+Find AffordanceEngine initialization (around line 500-600) and add `command_executor` parameter:
+
+```python
+# Before (old code):
+self.affordance_engine = AffordanceEngine(
+    env=self,
+    affordances=affordances_config.affordances,
+    meter_names=self.meter_names,
+    modulations=affordances_config.modulations,
+)
+
+# After (with command_executor):
+self.affordance_engine = AffordanceEngine(
+    env=self,
+    affordances=affordances_config.affordances,
+    meter_names=self.meter_names,
+    modulations=affordances_config.modulations,
+    command_executor=self.command_executor,  # NEW: Wire Effects system
+)
+```
+
+**Expected:** VectorizedHamletEnv passes command_executor to AffordanceEngine for Effects compilation.
+
+---
+
+### Step 6: Run test to verify it passes
 
 **Command:**
 ```bash
@@ -434,18 +469,27 @@ UV_CACHE_DIR=.uv-cache uv run pytest tests/test_townlet/unit/environment/test_af
 
 ---
 
-### Step 6: Commit schema migration
+### Step 7: Commit schema migration
 
 **Command:**
 ```bash
-git add src/townlet/config/affordances_v2_config.py src/townlet/environment/affordance_engine.py tests/test_townlet/unit/environment/test_affordance_engine.py
-git commit -m "feat(affordances): add Effects commands support via interactions field
+git add src/townlet/config/affordances_v2_config.py src/townlet/environment/affordance_engine.py src/townlet/environment/vectorized_env.py tests/test_townlet/unit/environment/test_affordance_engine.py
+git commit -m "feat(affordances)!: migrate to Effects commands via interactions field
 
-- Add interactions field to AffordanceParamConfig with lifecycle stages
+BREAKING CHANGE: effects dict and effect_pipeline removed from affordances
+
+All affordances now use unified Effects system (interactions field):
+- Add REQUIRED interactions field to AffordanceParamConfig
+- Compile Effects commands at AffordanceEngine startup (performance)
+- Add CompiledAffordance dataclass for pre-compiled command storage
 - Integrate CommandExecutor into AffordanceEngine
-- Add _execute_affordance_effects helper method
-- Backward compatible: interactions > effect_pipeline > effects dict
-- Add test for Effects command execution in affordances
+- Wire command_executor in VectorizedHamletEnv
+- Add _execute_affordance_effects helper using pre-compiled commands
+- Remove all legacy code paths (effects dict, effect_pipeline)
+- Add test for Effects command execution
+
+Effects compiled once at startup (not per-execution) for optimal performance.
+Follows ItemManager pattern.
 
 Part of Phase 5: Affordance Migration
 
@@ -478,14 +522,19 @@ from pathlib import Path
 
 
 def migrate_affordance(affordance: dict) -> dict:
-    """Migrate single affordance from effects dict to interactions commands."""
+    """Migrate single affordance from effects dict to interactions commands.
+
+    Supports three input formats:
+    1. Simple effects dict → interactions.on_start (costs PRESERVED)
+    2. effect_pipeline → interactions (all stages)
+    3. Multi-tick affordances (costs_per_tick PRESERVED)
+
+    NOTE: costs and costs_per_tick fields are PRESERVED as affordability gates.
+    Only effects/effect_pipeline are migrated to interactions.
+    """
     # If already has interactions, skip
     if "interactions" in affordance:
         return affordance
-
-    # Convert effects dict to on_start commands
-    effects = affordance.get("effects", {})
-    costs = affordance.get("costs", {})
 
     interactions = {
         "on_start": [],
@@ -495,23 +544,34 @@ def migrate_affordance(affordance: dict) -> dict:
         "on_failure": [],
     }
 
-    # Convert effects to modify commands
-    for meter, amount in effects.items():
-        interactions["on_start"].append({
-            "modify": f"target.bar.{meter}",
-            "value": f"target.bar.{meter} + {amount}",
-        })
+    # PATH 1: Migrate effect_pipeline (if present)
+    if "effect_pipeline" in affordance:
+        pipeline = affordance["effect_pipeline"]
+        for stage in ["on_start", "per_tick", "on_completion", "on_early_exit", "on_failure"]:
+            for effect in pipeline.get(stage, []):
+                interactions[stage].append({
+                    "modify": f"target.bar.{effect['meter']}",
+                    "value": f"target.bar.{effect['meter']} + {effect['amount']}",
+                })
 
-    # Convert costs to modify commands (negative delta)
-    for meter, cost in costs.items():
-        interactions["on_start"].append({
-            "modify": f"target.bar.{meter}",
-            "value": f"target.bar.{meter} - {cost}",
-        })
+        affordance.pop("effect_pipeline")
 
-    # Remove old fields
-    affordance.pop("effects", None)
-    affordance.pop("costs", None)
+    # PATH 2: Migrate simple effects dict (on_start only)
+    else:
+        effects = affordance.get("effects", {})
+
+        # Convert effects to modify commands (on_start)
+        for meter, amount in effects.items():
+            interactions["on_start"].append({
+                "modify": f"target.bar.{meter}",
+                "value": f"target.bar.{meter} + {amount}",
+            })
+
+        # Remove effects field (migrated to interactions)
+        affordance.pop("effects", None)
+
+        # PRESERVE costs and costs_per_tick fields (affordability gates)
+        # These are NOT migrated - they remain as separate pre-check mechanism
 
     # Add interactions
     affordance["interactions"] = interactions
@@ -570,7 +630,10 @@ if __name__ == "__main__":
     main()
 ```
 
-**Expected:** Script can parse and migrate affordances.yaml files.
+**Expected:** Script can parse and migrate all three affordance formats:
+- Simple effects dict → interactions.on_start
+- effect_pipeline → interactions with all stages
+- costs_per_tick → interactions.per_tick
 
 ---
 
@@ -581,7 +644,7 @@ if __name__ == "__main__":
 python scripts/migrate_affordances_to_effects.py configs/default_curriculum/levels/L0_0_minimal --dry-run
 ```
 
-**Expected:** Output shows migrated YAML with `interactions` field replacing `effects` and `costs`.
+**Expected:** Output shows migrated YAML with `interactions` field replacing `effects`. Note that `costs` and `costs_per_tick` fields are PRESERVED (not migrated).
 
 ---
 
@@ -672,12 +735,15 @@ UV_CACHE_DIR=.uv-cache uv run pytest tests/test_townlet/integration/ -v
 **Command:**
 ```bash
 git add configs/default_curriculum/levels/*/affordances.yaml scripts/migrate_affordances_to_effects.py
-git commit -m "feat(configs): migrate affordances to Effects commands
+git commit -m "feat(configs)!: migrate affordances to Effects commands
 
-- Migrate all 5 curriculum levels from effects dict to interactions
+BREAKING CHANGE: All affordances now require interactions field
+
+- Migrate all 5 curriculum levels to interactions (Effects commands)
 - Add migration script: scripts/migrate_affordances_to_effects.py
-- Convert effects/costs to modify commands with expressions
-- All integration tests passing (verified backward compatibility)
+- Convert effects/costs/costs_per_tick to modify commands
+- Convert effect_pipeline to lifecycle stage commands
+- All integration tests passing (clean migration)
 
 Migrated levels:
 - L0_0_minimal
@@ -685,6 +751,8 @@ Migrated levels:
 - L1_full_observability
 - L2_partial_observability
 - L3_temporal_mechanics
+
+Old configs with effects/effect_pipeline will fail validation.
 
 Part of Phase 5: Affordance Migration
 
@@ -695,92 +763,13 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 ---
 
-## Task 5.3: Code Cleanup & EffectPipeline Removal (0.5 days)
+## Task 5.3: Delete Legacy EffectPipeline Code (0.5 days)
 
-**Goal:** Delete deprecated EffectPipeline code and remove all references.
+**Goal:** Delete effect_pipeline.py and verify all references removed.
 
-### Step 1: Remove effect_pipeline field from AffordanceParamConfig
+**Note:** Fields were already removed in Task 5.1 (clean breaking change).
 
-**File:** `src/townlet/config/affordances_v2_config.py`
-
-Remove import:
-```python
-from townlet.config.effect_pipeline import EffectPipeline  # DELETE THIS LINE
-```
-
-Remove field from AffordanceParamConfig:
-```python
-    # Effect semantics -------------------------------------------------------
-    effects: dict[str, float] = Field(
-        default_factory=dict,
-        description="Simple instant effects (meter: value). "
-        "DEPRECATED: Use interactions field instead.",
-    )
-    # DELETE effect_pipeline field entirely
-
-    interactions: dict[str, list[CommandConfig]] | None = Field(
-        default=None,
-        description=(
-            "Effects commands for affordance lifecycle stages. "
-            "Stages: on_start, per_tick, on_completion, on_early_exit, on_failure"
-        ),
-    )
-```
-
-Update validator to require interactions:
-```python
-    @model_validator(mode="after")
-    def validate_effects_required(self) -> "AffordanceParamConfig":
-        """Ensure interactions field is provided."""
-        if self.interactions is None:
-            raise ValueError(
-                f"Affordance '{self.name}': interactions field is required. "
-                "Simple effects dict is deprecated."
-            )
-        return self
-```
-
-**Expected:** AffordanceParamConfig no longer has effect_pipeline or effects fields.
-
----
-
-### Step 2: Remove EffectPipeline code paths from affordance_engine
-
-**File:** `src/townlet/environment/affordance_engine.py`
-
-In `execute_instant_affordance`, remove PATH 2 and PATH 3:
-```python
-    def execute_instant_affordance(
-        self,
-        affordance_name: str,
-        meters: torch.Tensor,
-        agent_mask: torch.Tensor,
-    ) -> torch.Tensor:
-        """Execute instant affordance interaction."""
-        affordance = self.affordances[affordance_name]
-        updated_meters = meters.clone()
-
-        # Costs are now part of interactions (modify commands with negative delta)
-        # No separate costs processing needed
-
-        # Execute on_start Effects commands
-        updated_meters = self._execute_affordance_effects(
-            affordance, "on_start", agent_mask, updated_meters
-        )
-
-        # Clamp meters to [0, 1]
-        updated_meters = torch.clamp(updated_meters, 0.0, 1.0)
-
-        return updated_meters
-```
-
-Similarly update `execute_multi_tick_affordance_tick` and `execute_dual_mode_affordance_as_instant`.
-
-**Expected:** Affordance engine only uses Effects commands.
-
----
-
-### Step 3: Delete effect_pipeline.py
+### Step 1: Delete effect_pipeline.py
 
 **Command:**
 ```bash
@@ -791,19 +780,7 @@ git rm src/townlet/config/effect_pipeline.py
 
 ---
 
-### Step 4: Remove EffectPipeline from tests
-
-**File:** `tests/test_townlet/unit/environment/test_affordance_engine.py`
-
-Remove all tests that reference EffectPipeline or effect_pipeline.
-
-Update remaining tests to use `interactions` field.
-
-**Expected:** All tests use new Effects system.
-
----
-
-### Step 5: Verify no EffectPipeline references remain
+### Step 2: Verify no EffectPipeline references remain
 
 **Command:**
 ```bash
@@ -814,7 +791,17 @@ grep -r "EffectPipeline\|effect_pipeline" src/ tests/ --include="*.py" | grep -v
 
 ---
 
-### Step 6: Run full test suite
+### Step 3: Update reference config
+
+**File:** `configs/reference_config/reference-config-v2.1-complete.yaml`
+
+Remove all `effect_pipeline` examples and replace with `interactions` using Effects commands.
+
+**Expected:** Reference config demonstrates Effects commands instead of EffectPipeline.
+
+---
+
+### Step 4: Run full test suite
 
 **Command:**
 ```bash
@@ -825,34 +812,18 @@ UV_CACHE_DIR=.uv-cache uv run pytest tests/test_townlet/ -v
 
 ---
 
-### Step 7: Update reference config
-
-**File:** `configs/reference_config/reference-config-v2.1-complete.yaml`
-
-Remove all `effect_pipeline` examples and replace with `interactions` using Effects commands.
-
-**Expected:** Reference config demonstrates Effects commands instead of EffectPipeline.
-
----
-
-### Step 8: Commit cleanup
+### Step 5: Commit cleanup
 
 **Command:**
 ```bash
 git add -A
-git commit -m "refactor(affordances): remove EffectPipeline system
+git commit -m "chore(affordances): delete legacy EffectPipeline code
 
-BREAKING CHANGE: effect_pipeline and effects dict removed from affordances
+- Delete src/townlet/config/effect_pipeline.py (legacy system)
+- Update reference config to use interactions field
+- Verify all EffectPipeline references removed
 
-- Delete src/townlet/config/effect_pipeline.py
-- Remove effect_pipeline field from AffordanceParamConfig
-- Remove effects dict field (deprecated)
-- Simplify affordance_engine to only use Effects commands
-- Update tests to use interactions field
-- Update reference config examples
-
-All affordances now use unified Effects system (interactions field).
-Migration complete - EffectPipeline code fully removed.
+Migration complete - affordances fully unified with Effects system.
 
 Part of Phase 5: Affordance Migration (COMPLETE)
 
@@ -879,44 +850,16 @@ After completing all tasks, verify:
 - [ ] Training loop works with L1_full_observability
 
 **Success Criteria:**
-- ✅ All curriculum levels migrated
-- ✅ EffectPipeline code deleted
+- ✅ All curriculum levels migrated to interactions field
+- ✅ EffectPipeline code completely deleted (no legacy paths)
+- ✅ effects and effect_pipeline fields removed from schema
 - ✅ Zero regressions in existing tests
-- ✅ Affordances use unified Effects system
+- ✅ Affordances use unified Effects system (same as Items)
+- ✅ Effects compiled at startup for optimal performance
 
 ---
 
 ## Troubleshooting
-
-**Issue:** Migration script fails on multi_tick affordances
-
-**Solution:** Extend migration script to handle `costs_per_tick` and map to `per_tick` stage:
-```python
-# In migrate_affordance():
-costs_per_tick = affordance.get("costs_per_tick", {})
-for meter, cost in costs_per_tick.items():
-    interactions["per_tick"].append({
-        "modify": f"target.bar.{meter}",
-        "value": f"target.bar.{meter} - {cost}",
-    })
-```
-
----
-
-**Issue:** Tests fail with "command_executor is None"
-
-**Solution:** Update VectorizedHamletEnv to pass command_executor to AffordanceEngine:
-```python
-self.affordance_engine = AffordanceEngine(
-    env=self,
-    affordances=affordances_config.affordances,
-    meter_names=self.meter_names,
-    modulations=affordances_config.modulations,
-    command_executor=self.command_executor,  # ADD THIS
-)
-```
-
----
 
 **Issue:** Effects modify wrong agent (batch indexing bug)
 
@@ -937,19 +880,15 @@ context = ExecutionContext(
 
 **Optional enhancements** (not required for Phase 5 completion):
 
-1. **Compile affordance Effects at startup** (similar to ItemManager)
-   - Pre-compile CommandNodes during affordance_engine initialization
-   - Avoid parsing YAML strings on every interaction
-
-2. **Add affordance self-reference support**
+1. **Add affordance self-reference support**
    - Enable affordances to have VFS state (like items)
    - Example: `self.vfs.door_locked` for door affordance
 
-3. **Add conditional effects**
+2. **Add conditional effects**
    - Example: "WORK pays more if mood > 0.5"
    - Use `if:` conditions in Effects commands
 
-4. **Add multi-target effects**
+3. **Add multi-target effects**
    - Example: SOCIALIZE affects both agents
    - Use `modify: "agents[*].bar.social"` syntax
 
@@ -957,14 +896,16 @@ context = ExecutionContext(
 
 ## End of Plan
 
-**Estimated Timeline:** 3-4 days
-- Task 5.1: Schema Migration (1 day)
-- Task 5.2: Config Migration (1.5 days)
+**Estimated Timeline:** 4-5 days
+- Task 5.1: Schema Migration (1.5 days) - includes compilation optimization
+- Task 5.2: Config Migration (2 days) - extended migration script
 - Task 5.3: Code Cleanup (0.5 days)
 
 **Total LOC Changes:**
-- Added: ~300 lines (migration script, Effects integration)
-- Modified: ~100 lines (affordance_engine, configs)
+- Added: ~400 lines (migration script, Effects integration, compilation optimization)
+- Modified: ~150 lines (affordance_engine, vectorized_env, configs)
 - Deleted: ~150 lines (effect_pipeline.py, legacy code paths)
 
-**Net Change:** +150 lines, -1 legacy system, +1 unified architecture
+**Net Change:** +400 lines, -1 legacy system, +1 unified architecture
+
+**Performance Impact:** ✅ Positive - Effects compiled once at startup vs per-execution

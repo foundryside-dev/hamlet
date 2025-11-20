@@ -19,7 +19,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
 from townlet.config.base import format_validation_error, load_yaml_section
-from townlet.config.effect_pipeline import EffectPipeline
+from townlet.config.effects_config import CommandConfig
 
 __all__ = [
     "TimeWindowConfig",
@@ -108,24 +108,27 @@ class AffordanceParamConfig(BaseModel):
 
     name: str = Field(min_length=1, description="Affordance name (must match environment.yaml)")
 
-    # Cost semantics ---------------------------------------------------------
+    # Affordability gates (checked BEFORE execution) -------------------------
     costs: dict[str, float] = Field(
         default_factory=dict,
-        description="Instant costs applied when interaction starts (meter: value)",
+        description="Resource costs required to use this affordance (affordability check). "
+        "Example: {'energy': 0.2} means agent needs energy >= 0.2 to interact.",
     )
     costs_per_tick: dict[str, float] = Field(
-        default_factory=dict,
-        description="Per-tick costs for multi-tick/dual affordances (meter: value)",
+        default_factory=dict, description="Resource costs per tick for multi_tick affordances (affordability check)."
     )
 
-    # Effect semantics -------------------------------------------------------
-    effects: dict[str, float] = Field(
-        default_factory=dict,
-        description="Simple instant effects (meter: value). " "For advanced control, use effect_pipeline instead.",
-    )
-    effect_pipeline: EffectPipeline | None = Field(
-        default=None,
-        description=("Optional multi-stage effect pipeline. " "When provided, takes precedence over simple effects for runtime behavior."),
+    # Effect outcomes (applied AFTER affordability check passes) -------------
+    # REMOVED: effects dict and effect_pipeline (legacy systems deleted)
+
+    # NEW: Effects commands (unified with Items system) - REQUIRED
+    interactions: dict[str, list[CommandConfig]] = Field(
+        description=(
+            "Effects commands for affordance lifecycle stages. "
+            "Unified with Items system (declarative Effects). "
+            "Stages: on_start, per_tick, on_completion, on_early_exit, on_failure. "
+            "NOTE: Use costs/costs_per_tick for affordability gates, interactions for outcomes."
+        ),
     )
 
     # Temporal semantics -----------------------------------------------------
@@ -149,10 +152,30 @@ class AffordanceParamConfig(BaseModel):
         interaction = self.interaction_type or "instant"
 
         if interaction in {"multi_tick", "dual"} and self.duration_ticks is None:
-            raise ValueError(f"Affordance '{self.name}': interaction_type='{interaction}' " "requires an explicit duration_ticks value.")
+            raise ValueError(f"Affordance '{self.name}': interaction_type='{interaction}' requires an explicit duration_ticks value.")
 
         if interaction == "instant" and self.duration_ticks is not None:
-            raise ValueError(f"Affordance '{self.name}': duration_ticks is only valid for " "multi_tick or dual interaction types.")
+            raise ValueError(f"Affordance '{self.name}': duration_ticks is only valid for multi_tick or dual interaction types.")
+
+        return self
+
+    @model_validator(mode="after")
+    def validate_interaction_stages(self) -> "AffordanceParamConfig":
+        """Validate interactions have correct stages for interaction_type."""
+        valid_stages = {"on_start", "per_tick", "on_completion", "on_early_exit", "on_failure"}
+        provided_stages = set(self.interactions.keys())
+
+        invalid = provided_stages - valid_stages
+        if invalid:
+            raise ValueError(f"Affordance '{self.name}': Invalid interaction stages: {invalid}. Valid stages: {valid_stages}")
+
+        interaction_type = self.interaction_type or "instant"
+
+        # Instant affordances shouldn't have per_tick effects
+        if interaction_type == "instant" and self.interactions.get("per_tick"):
+            raise ValueError(
+                f"Affordance '{self.name}': instant affordances cannot have per_tick effects. Use multi_tick or dual interaction_type."
+            )
 
         return self
 
@@ -188,8 +211,7 @@ class ModulationParamConfig(BaseModel):
         duplicates = [aff for aff in affordances if affordances.count(aff) > 1]
         if duplicates:
             raise ValueError(
-                f"Duplicate affordance names in modulation: {list(set(duplicates))}. "
-                f"Each affordance must appear only once per modulation."
+                f"Duplicate affordance names in modulation: {list(set(duplicates))}. Each affordance must appear only once per modulation."
             )
         return affordances
 
@@ -225,7 +247,7 @@ class AffordancesV2Config(BaseModel):
         names = [a.name for a in affordances]
         duplicates = [name for name in names if names.count(name) > 1]
         if duplicates:
-            raise ValueError(f"Duplicate affordance names found: {list(set(duplicates))}. " f"Each affordance must have a unique name.")
+            raise ValueError(f"Duplicate affordance names found: {list(set(duplicates))}. Each affordance must have a unique name.")
         return affordances
 
 

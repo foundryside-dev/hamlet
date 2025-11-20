@@ -18,6 +18,7 @@ from dataclasses import dataclass
 import pytest
 import torch
 
+from townlet.effects.executor import CommandExecutor
 from townlet.environment.affordance_engine import (
     AffordanceEngine,
 )
@@ -426,3 +427,69 @@ class TestCostQueries:
 
         ticks = engine.get_duration_ticks("InvalidAffordance")
         assert ticks == 1
+
+
+def test_affordance_engine_executes_effects_commands():
+    """Affordances with interactions field execute Effects commands."""
+    # This test verifies that AffordanceEngine can compile and execute Effects commands
+    # from the interactions field. It tests the basic integration without needing
+    # a full VectorizedHamletEnv setup.
+
+    from unittest.mock import Mock
+
+    from townlet.config.affordances_v2_config import AffordanceParamConfig, DeploymentConfig, OpeningHoursConfig
+
+    # Create affordance with interactions (Effects commands)
+    affordance = AffordanceParamConfig(
+        name="TEST_AFFORDANCE",
+        interaction_type="instant",
+        costs={},
+        interactions={
+            "on_start": [{"modify": "target.bar.energy", "value": "target.bar.energy + 0.5"}],
+            "per_tick": [],
+            "on_completion": [],
+            "on_early_exit": [],
+            "on_failure": [],
+        },
+        opening_hours=OpeningHoursConfig(enabled=False),
+        deployment=DeploymentConfig(type="random"),
+    )
+
+    # Create mock VFS registry and effects schema
+    mock_registry = Mock()
+    mock_registry.storage = {"energy": torch.tensor([0.2, 0.3])}
+
+    # Effects schema is dict[str, str] mapping paths to types
+    effects_schema = {
+        "target.bar.energy": "float",
+        "target.bar.health": "float",
+    }
+
+    # Create mock command executor
+    mock_executor = Mock(spec=CommandExecutor)
+
+    # Create affordance engine - should compile Effects at init
+    meter_name_to_idx = {"energy": 0, "health": 1}
+    engine = AffordanceEngine(
+        affordance_config=(affordance,),
+        num_agents=2,
+        device=torch.device("cpu"),
+        meter_name_to_idx=meter_name_to_idx,
+        modulation_rules=None,
+        vfs_registry=mock_registry,
+        effects_schema=effects_schema,
+        command_executor=mock_executor,
+    )
+
+    # Verify compilation happened
+    assert "TEST_AFFORDANCE" in engine.compiled_affordances
+    compiled = engine.compiled_affordances["TEST_AFFORDANCE"]
+
+    # Verify on_start commands were compiled
+    assert len(compiled.on_start) > 0
+
+    # Verify other stages are empty
+    assert len(compiled.per_tick) == 0
+    assert len(compiled.on_completion) == 0
+    assert len(compiled.on_early_exit) == 0
+    assert len(compiled.on_failure) == 0

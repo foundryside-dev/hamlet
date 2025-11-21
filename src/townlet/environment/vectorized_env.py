@@ -386,47 +386,40 @@ class VectorizedHamletEnv:
         )
         self.runtime_registry: AgentRuntimeRegistry | None = None  # Injected by population/inference controllers
 
-        # EFFECTS INTEGRATION: Initialize EffectManager from compiled effect catalog
-        # TODO(Task 3.6): Add effect_catalog to UniverseCompiler and CompiledUniverse
-        from townlet.effects.catalog import EffectCatalog
+        # EFFECTS INTEGRATION: Use compiled effect catalog from UniverseCompiler
         from townlet.effects.executor import CommandExecutor
         from townlet.effects.manager import EffectManager
 
-        effects_path = self.config_pack_path / "effects.yaml"
-        if not effects_path.exists():
-            raise FileNotFoundError(f"effects.yaml is required for affordance interactions but was not found at {effects_path}")
+        # Use compiled catalog from CompiledUniverse (Task 4.1)
+        effect_catalog = universe.compiled_effect_catalog
+        # Note: Minimal configs without affordances have None catalog (expected behavior)
+        # If affordances exist but catalog missing, compilation would have failed
 
-        import yaml
+        self.command_executor = CommandExecutor()
+        self.effect_manager = (
+            EffectManager(
+                catalog=effect_catalog,
+                command_executor=self.command_executor,
+                device=self.device,
+            )
+            if effect_catalog is not None
+            else None
+        )
 
-        from townlet.config.effects_config import EffectsConfig
-
-        # Build schema for type checking (from VFS and bars)
+        # Rebuild effects schema for affordance compilation
+        # TODO(Task 5): Move affordance compilation to compile-time, then remove this
         effects_schema: dict[str, str] = {}
-        # Add effect-specific variables
-        effects_schema["intensity"] = "float"  # Effect intensity multiplier
-        effects_schema["elapsed_ticks"] = "float"  # Ticks since spawn
-        effects_schema["duration_remaining"] = "float"  # Ticks until despawn
-        # Add bar paths
+        effects_schema["intensity"] = "float"
+        effects_schema["elapsed_ticks"] = "float"
+        effects_schema["duration_remaining"] = "float"
         for bar_name in self.meter_name_to_index.keys():
             effects_schema[f"bar.{bar_name}"] = "float"
             effects_schema[f"target.bar.{bar_name}"] = "float"
-        # Add VFS paths
         for var in self.vfs_variables:
             vfs_type = "bool" if var.type == "bool" else "float"
             effects_schema[f"vfs.{var.id}"] = vfs_type
             effects_schema[f"target.vfs.{var.id}"] = vfs_type
-
         self.effects_schema = effects_schema
-        effects_config_data = yaml.safe_load(effects_path.read_text()) or {}
-        effects_config = EffectsConfig(**effects_config_data)
-        effect_catalog = EffectCatalog.from_config(effects_config, schema=effects_schema)
-
-        self.command_executor = CommandExecutor()
-        self.effect_manager = EffectManager(
-            catalog=effect_catalog,
-            command_executor=self.command_executor,
-            device=self.device,
-        )
 
         # Bars configuration (per-level)
         self.bars_config = level.bars

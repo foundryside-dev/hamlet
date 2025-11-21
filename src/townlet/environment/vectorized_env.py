@@ -24,6 +24,7 @@ from townlet.items import InventoryState, ItemActionHandler, ItemManager
 from townlet.substrate import SpatialSubstrate
 from townlet.substrate.continuous import ContinuousSubstrate
 from townlet.universe.dto import ActionSpaceMetadata, MeterMetadata
+from townlet.vfs.evaluator import EvaluationMode, VFSEvaluator
 from townlet.vfs.registry import VariableRegistry
 
 if TYPE_CHECKING:
@@ -307,6 +308,24 @@ class VectorizedHamletEnv:
 
         self.vfs_variables = list(universe.vfs_variables)
 
+        # Add global variables from vfs_profiles (if present)
+        if universe.compiled_vfs_profiles is not None and universe.compiled_vfs_profiles.global_profile is not None:
+            for var in universe.compiled_vfs_profiles.global_profile.variables:
+                # Convert CompiledVariable to VariableDef for registry
+                # Global variables have empty readable_by/writable_by (managed by evaluator)
+                # VFS profiles use "int"/"float"/"bool" but VariableDef uses "scalar"/"bool"
+                var_def = VariableDef(
+                    id=var.name,
+                    scope="global",
+                    type="scalar",  # int and float both map to scalar
+                    default=var.initial_value,
+                    lifetime="persistent",  # Global variables persist across steps
+                    readable_by=["agent", "engine"],  # Global vars readable by all
+                    writable_by=["engine"],  # Only engine can write
+                    description="Global VFS variable from vfs_profiles.yaml",
+                )
+                self.vfs_variables.append(var_def)
+
         # Load item-scoped variables from variables_reference.yaml
         vfs_ref_path = self.config_pack_path / "variables_reference.yaml"
         if vfs_ref_path.exists():
@@ -327,6 +346,20 @@ class VectorizedHamletEnv:
             device=self.device,
             max_items=max_items_in_world,
         )
+
+        # Initialize VFS evaluator (if profiles present)
+        self.vfs_evaluator: VFSEvaluator | None = None
+        if universe.compiled_vfs_profiles is not None:
+            # Default to mark-and-sweep for efficiency
+            # Can override with EAGER mode via env var for debugging
+            import os
+
+            mode = EvaluationMode.EAGER if os.getenv("VFS_EVAL_MODE") == "eager" else EvaluationMode.MARK_AND_SWEEP
+
+            self.vfs_evaluator = VFSEvaluator(mode=mode)
+            self.vfs_observation_marks = universe.vfs_observation_marks
+        else:
+            self.vfs_observation_marks = None
 
         # Initialize reward strategy (TASK-001: variable meters)
         meter_name_to_index = dict(self.metadata.meter_name_to_index)
@@ -1365,6 +1398,35 @@ class VectorizedHamletEnv:
         # Sync meters back from bars dict (effects may have modified them)
         for bar_name, idx in self.meter_name_to_index.items():
             self.meters[:, idx] = bars_dict[bar_name]
+
+        # 3.6. Evaluate VFS expressions if evaluator present
+        if self.vfs_evaluator is not None and self.universe.compiled_vfs_profiles is not None:
+            # Build execution context from current state
+            bars_dict_vfs = {name: self.meters[:, idx] for name, idx in self.meter_name_to_index.items()}
+
+            # Get current VFS state from registry
+            current_vfs_state = {}
+            for var_name in self.vfs_registry.variables.keys():
+                if var_name in self.vfs_registry._storage:
+                    current_vfs_state[var_name] = self.vfs_registry._storage[var_name]
+
+            # Evaluate global profile
+            global_profile = self.universe.compiled_vfs_profiles.global_profile
+            if global_profile is not None:
+                marks = self.vfs_observation_marks.get("global", set()) if self.vfs_observation_marks else None
+
+                updated_vfs = self.vfs_evaluator.evaluate_global_profile(
+                    profile=global_profile,
+                    bars=bars_dict_vfs,
+                    vfs_state=current_vfs_state,
+                    marks=marks,
+                    device=self.device,
+                )
+
+                # Write updated values back to registry
+                for var_name, value in updated_vfs.items():
+                    if var_name in self.vfs_registry.variables:
+                        self.vfs_registry._storage[var_name] = value
 
         # 4. Check terminal conditions
         self.dones = self.meter_dynamics.check_terminal_conditions(self.meters, self.dones)

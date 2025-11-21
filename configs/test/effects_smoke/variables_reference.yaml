@@ -10,8 +10,9 @@ variables:
     writable_by: [engine]
     description: Normalized agent position in [0, 1]^2 range
     normalization:
-      method: normalize
-      range: [0.0, 1.0]
+      kind: minmax
+      min: [0.0, 0.0]
+      max: [1.0, 1.0]
 
   - id: digesting
     scope: agent

@@ -61,6 +61,8 @@ class AffordanceEngine:
         vfs_registry: Any | None = None,  # NEW: VFS registry for Effects
         effects_schema: Any | None = None,  # NEW: Effects schema for compilation
         command_executor: CommandExecutor | None = None,  # NEW: Effects executor
+        effect_manager: Any | None = None,  # NEW: EffectManager required for Effects commands
+        item_manager: Any | None = None,  # NEW: ItemManager required for spawn_item
     ):
         """
         Initialize AffordanceEngine.
@@ -84,6 +86,8 @@ class AffordanceEngine:
         self.modulation_rules = modulation_rules or []
         self.vfs_registry = vfs_registry  # NEW
         self.command_executor = command_executor  # NEW
+        self.effect_manager = effect_manager or NullEffectManager()
+        self.item_manager = item_manager or NullItemManager()
 
         # Build lookup maps
         self._build_lookup_maps()
@@ -630,6 +634,8 @@ class AffordanceEngine:
                 vfs_registry=self.vfs_registry,
                 self_index=None,  # Affordances don't have self yet
                 target_index=agent_idx.item(),
+                effect_manager=self.effect_manager,
+                item_manager=self.item_manager,
             )
 
             for command in commands:
@@ -644,3 +650,17 @@ class AffordanceEngine:
         updated_meters = pre_effect_meters + deltas * multipliers.unsqueeze(1)
 
         return updated_meters
+
+
+class NullEffectManager:
+    """Fallback EffectManager that raises on spawn when Effects are not configured."""
+
+    def spawn_effect(self, *args: Any, **kwargs: Any) -> None:  # pragma: no cover - defensive only
+        raise RuntimeError("EffectManager not configured; spawn_effect unavailable")
+
+
+class NullItemManager:
+    """Fallback ItemManager that raises on spawn when Items are not configured."""
+
+    def spawn_item(self, *args: Any, **kwargs: Any) -> None:  # pragma: no cover - defensive only
+        raise RuntimeError("ItemManager not configured; spawn_item unavailable")

@@ -28,6 +28,14 @@ class MockVariableRegistry:
         return self.variables.get(key, default)
 
 
+class MockEffectManager:
+    """Mock EffectManager for satisfying ExecutionContext."""
+
+    def spawn_effect(self, *args, **kwargs):
+        """No-op or raise to indicate misuse."""
+        raise RuntimeError("spawn_effect called unexpectedly in MockEffectManager")
+
+
 def test_get_action_picks_up_item():
     """GET action: picks up item at agent position."""
     # Setup
@@ -53,6 +61,7 @@ def test_get_action_picks_up_item():
         command_executor=MockCommandExecutor(),
         vfs_registry=MockVariableRegistry(),
         meter_name_to_index={"energy": 0, "health": 1},
+        effect_manager=MockEffectManager(),
     )
 
     # Spawn item at agent's position
@@ -97,6 +106,7 @@ def test_get_action_fails_when_inventory_full():
         command_executor=MockCommandExecutor(),
         vfs_registry=MockVariableRegistry(),
         meter_name_to_index={"energy": 0, "health": 1},
+        effect_manager=MockEffectManager(),
     )
 
     # Fill inventory
@@ -133,6 +143,7 @@ def test_get_action_fails_when_no_item_at_position():
         command_executor=MockCommandExecutor(),
         vfs_registry=MockVariableRegistry(),
         meter_name_to_index={"energy": 0, "health": 1},
+        effect_manager=MockEffectManager(),
     )
 
     # No item spawned at (3, 5)
@@ -174,6 +185,7 @@ def test_use_slot_action_succeeds_when_slot_occupied():
         command_executor=MockCommandExecutor(),
         vfs_registry=MockVariableRegistry(),
         meter_name_to_index={"energy": 0, "health": 1},
+        effect_manager=MockEffectManager(),
     )
 
     # Add item to inventory
@@ -204,6 +216,7 @@ def test_use_slot_action_fails_when_slot_empty():
         command_executor=MockCommandExecutor(),
         vfs_registry=MockVariableRegistry(),
         meter_name_to_index={"energy": 0, "health": 1},
+        effect_manager=MockEffectManager(),
     )
     meters = torch.zeros((1, 2), dtype=torch.float32)  # [batch, num_meters]
 
@@ -237,6 +250,7 @@ def test_drop_slot_action_removes_from_inventory():
         command_executor=MockCommandExecutor(),
         vfs_registry=MockVariableRegistry(),
         meter_name_to_index={"energy": 0, "health": 1},
+        effect_manager=MockEffectManager(),
     )
 
     # Add item to inventory
@@ -269,6 +283,7 @@ def test_drop_slot_action_fails_when_slot_empty():
         command_executor=MockCommandExecutor(),
         vfs_registry=MockVariableRegistry(),
         meter_name_to_index={"energy": 0, "health": 1},
+        effect_manager=MockEffectManager(),
     )
 
     agent_position = torch.tensor([5, 5], dtype=torch.long)

@@ -33,6 +33,19 @@ if TYPE_CHECKING:
     from townlet.universe.compiled import CompiledUniverse
 
 
+class NullItemManager:
+    """Fallback ItemManager for fail-forward enforcement when items are disabled."""
+
+    def spawn_item(self, *args, **kwargs):
+        raise RuntimeError("ItemManager is not configured; spawn_item is unavailable")
+
+    def tick(self, *args, **kwargs):
+        return None
+
+    def process_respawns(self, *args, **kwargs):
+        return None
+
+
 def _build_bar_index_map(meter_metadata: MeterMetadata) -> dict[str, int]:
     """Build mapping from bar IDs to meter tensor indices.
 
@@ -470,18 +483,6 @@ class VectorizedHamletEnv:
                 }
             )
 
-        # Pass AffordanceParamConfig objects directly (have interactions field for compilation)
-        self.affordance_engine = AffordanceEngine(
-            tuple(level.affordances.affordances),  # AffordanceParamConfig with interactions
-            num_agents,
-            self.device,
-            self.meter_name_to_index,
-            modulation_rules=modulation_rules,
-            vfs_registry=self.vfs_registry,  # NEW: Wire VFS registry
-            effects_schema=self.effects_schema,  # NEW: Wire Effects schema
-            command_executor=self.command_executor,  # NEW: Wire Effects system
-        )
-
         # Build composed action space from compiler metadata and substrate defaults
         self.action_space = self._build_action_space_from_metadata(
             universe.action_space_metadata,
@@ -561,11 +562,46 @@ class VectorizedHamletEnv:
                 command_executor=self.command_executor,
                 vfs_registry=self.vfs_registry,
                 meter_name_to_index=self.meter_name_to_index,
+                effect_manager=self.effect_manager,  # NEW: pass EffectManager for ExecutionContext
             )
         else:
             self.item_manager = None
             self.item_inventory = None
             self.item_handler = None
+
+        # === AFFORDANCE ENGINE INITIALIZATION ===
+        # Requires Effects + Items managers to satisfy fail-forward ExecutionContext
+        modulation_rules = []
+        for entry in self.optimization_data.modulation_data:
+            aff_idx = entry.get("affordance_idx")
+            bar_idx = entry.get("bar_idx")
+            if aff_idx is None or bar_idx is None:
+                continue
+            if aff_idx < 0 or aff_idx >= len(all_affordance_names):
+                continue
+            aff_name = all_affordance_names[aff_idx]
+            modulation_rules.append(
+                {
+                    "affordance": aff_name,
+                    "bar_idx": bar_idx,
+                    "threshold": entry.get("threshold", 0.0),
+                    "min_multiplier": entry.get("min_multiplier", 1.0),
+                }
+            )
+
+        # Pass AffordanceParamConfig objects directly (have interactions field for compilation)
+        self.affordance_engine = AffordanceEngine(
+            tuple(level.affordances.affordances),  # AffordanceParamConfig with interactions
+            num_agents,
+            self.device,
+            self.meter_name_to_index,
+            modulation_rules=modulation_rules,
+            vfs_registry=self.vfs_registry,
+            effects_schema=self.effects_schema,
+            command_executor=self.command_executor,
+            effect_manager=self.effect_manager,
+            item_manager=self.item_manager or NullItemManager(),
+        )
 
         # Exploration module (optional, set by population or external code)
         self.exploration_module: ExplorationStrategy | None = None

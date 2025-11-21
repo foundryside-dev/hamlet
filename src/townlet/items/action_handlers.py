@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import torch
 
@@ -14,7 +14,14 @@ if TYPE_CHECKING:
 from townlet.effects.context import ExecutionContext
 from townlet.effects.executor import CommandExecutor
 
-__all__ = ["ItemActionHandler"]
+__all__ = ["ItemActionHandler", "NullEffectManager"]
+
+
+class NullEffectManager:
+    """Fallback EffectManager to satisfy fail-forward context; raises on spawn_effect."""
+
+    def spawn_effect(self, *args: Any, **kwargs: Any) -> None:
+        raise RuntimeError("EffectManager is not configured; spawn_effect is unavailable")
 
 
 class ItemActionHandler:
@@ -27,6 +34,7 @@ class ItemActionHandler:
         command_executor: CommandExecutor,
         vfs_registry: VariableRegistry,
         meter_name_to_index: dict[str, int],
+        effect_manager: Any | None = None,
     ) -> None:
         """Initialize action handler.
 
@@ -42,6 +50,7 @@ class ItemActionHandler:
         self.command_executor = command_executor
         self.vfs_registry = vfs_registry
         self.meter_name_to_index = meter_name_to_index
+        self.effect_manager = effect_manager or NullEffectManager()
 
     def _execute_interaction(
         self,
@@ -95,6 +104,8 @@ class ItemActionHandler:
             self_index=item_vfs_index,  # NEW: Pass item's vfs_index
             target_index=agent_idx,  # Agent is the target
             self_is_item=True,  # NEW: Mark self as item for VFS routing
+            effect_manager=self.effect_manager,
+            item_manager=self.manager,
         )
 
         # Execute all commands

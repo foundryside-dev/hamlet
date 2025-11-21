@@ -73,6 +73,118 @@ def test_on_interrupt_executes_when_replaced():
     assert bars["mood"][0].item() == pytest.approx(0.8)  # -0.2 mood penalty
 
 
+def test_on_interrupt_executes_on_merge():
+    """on_interrupt should run when merge consumes effect."""
+    executor = CommandExecutor()
+    parser = ExpressionParser()
+
+    catalog = EffectCatalog(
+        effects={
+            "merge_buff": CompiledEffect(
+                id="merge_buff",
+                scope="agent",
+                duration=10,
+                intensity=1.0,
+                reapply_policy="merge",
+                observable=True,
+                on_spawn=[],
+                on_tick=[],
+                on_despawn=[],
+                on_interrupt=[
+                    CommandNode(
+                        type=CommandType.MODIFY,
+                        path="bar.mood",
+                        value_ast=parser.parse("bar.mood - 0.1"),
+                    )
+                ],
+            ),
+        }
+    )
+
+    manager = EffectManager(catalog=catalog, device="cpu", command_executor=executor)
+    bars = {"mood": torch.tensor([1.0])}
+
+    # Spawn first instance
+    manager.spawn_effect(
+        effect_id="merge_buff",
+        target_entity_id=0,
+        scope=EffectScope.AGENT,
+        duration=10,
+        intensity=1.0,
+        current_step=0,
+        bars=bars,
+        vfs_registry=None,
+    )
+
+    # Merge second instance
+    manager.spawn_effect(
+        effect_id="merge_buff",
+        target_entity_id=0,
+        scope=EffectScope.AGENT,
+        duration=10,
+        intensity=2.0,
+        current_step=1,
+        bars=bars,
+        vfs_registry=None,
+    )
+
+    assert bars["mood"][0].item() == pytest.approx(0.9)
+
+
+def test_on_interrupt_executes_on_manual_cancel():
+    """on_interrupt should run when effect is manually cancelled."""
+    executor = CommandExecutor()
+    parser = ExpressionParser()
+
+    catalog = EffectCatalog(
+        effects={
+            "cancel_me": CompiledEffect(
+                id="cancel_me",
+                scope="agent",
+                duration=10,
+                intensity=1.0,
+                reapply_policy="stack",
+                observable=True,
+                on_spawn=[],
+                on_tick=[],
+                on_despawn=[],
+                on_interrupt=[
+                    CommandNode(
+                        type=CommandType.MODIFY,
+                        path="bar.mood",
+                        value_ast=parser.parse("bar.mood - 0.25"),
+                    )
+                ],
+            ),
+        }
+    )
+
+    manager = EffectManager(catalog=catalog, device="cpu", command_executor=executor)
+    bars = {"mood": torch.tensor([1.0])}
+
+    # Spawn effect
+    active = manager.spawn_effect(
+        effect_id="cancel_me",
+        target_entity_id=0,
+        scope=EffectScope.AGENT,
+        duration=10,
+        intensity=1.0,
+        current_step=0,
+        bars=bars,
+        vfs_registry=None,
+    )
+
+    # Cancel manually
+    manager.cancel_effect(
+        instance_id=active.instance_id,
+        bars=bars,
+        vfs_registry=None,
+        current_step=5,
+    )
+
+    assert bars["mood"][0].item() == pytest.approx(0.75)
+
+
 def test_on_interrupt_not_called_for_other_policies():
     """Test on_interrupt only executes for replace policy, not renew/merge/stack."""
     executor = CommandExecutor()

@@ -206,6 +206,8 @@ class CommandExecutor:
             bars=context.bars,
             vfs_registry=context.vfs_registry,
             spawn_depth=context.spawn_depth,
+            agent_positions=getattr(context, "agent_positions", None),
+            item_manager=context.item_manager,
         )
 
         # Return spawned effect instance ID for potential future use
@@ -224,45 +226,50 @@ class CommandExecutor:
         if context.item_manager is None:
             raise ValueError("item_manager not set in context - cannot spawn items")
 
-        # Resolve position from hint to actual coordinates
-        if command.position == "self":
-            if context.agent_positions is None:
-                raise ValueError("agent_positions not set in context - cannot use 'self' position")
-            if context.self_index is None:
-                raise ValueError("self_index not set - cannot use 'self' position")
-            # Get agent position as tuple (round floats to ints for grid coords)
-            pos_tensor = context.agent_positions[context.self_index]
-            position = tuple(int(round(x.item())) for x in pos_tensor)
+        # Resolve position using ItemManager helper (fail-forward on unsupported)
+        raw_position = command.position
+        origin = None
+        explicit_coords = None
+        strategy: str | tuple | list = raw_position
 
-        elif command.position == "target":
-            if context.agent_positions is None:
-                raise ValueError("agent_positions not set in context - cannot use 'target' position")
-            if context.target_index is None:
-                raise ValueError("target_index not set - cannot use 'target' position")
-            pos_tensor = context.agent_positions[context.target_index]
-            position = tuple(int(round(x.item())) for x in pos_tensor)
-
-        elif isinstance(command.position, (list, tuple)):
-            # Explicit coordinates - convert to tuple
-            position = tuple(command.position)
-
+        if raw_position == "self":
+            if context.agent_positions is None or context.self_index is None:
+                raise ValueError("agent_positions and self_index required for position 'self'")
+            origin = tuple(context.agent_positions[context.self_index].tolist())
+            strategy = "self"
+        elif raw_position == "target":
+            if context.agent_positions is None or context.target_index is None:
+                raise ValueError("agent_positions and target_index required for position 'target'")
+            origin = tuple(context.agent_positions[context.target_index].tolist())
+            strategy = "target"
+        elif raw_position == "random":
+            if context.agent_positions is None or context.self_index is None:
+                raise ValueError("agent_positions and self_index required for position 'random'")
+            origin = tuple(context.agent_positions[context.self_index].tolist())
+            strategy = "random"
+        elif isinstance(raw_position, (list, tuple)):
+            explicit_coords = tuple(raw_position)
+            strategy = "explicit"
         else:
             raise ValueError(f"Invalid position: {command.position}")
 
-        # Spawn item(s) with correct signature
         quantity = command.quantity or 1
-        item_instance = None
+        last_instance = None
 
         for _ in range(quantity):
-            item_instance = context.item_manager.spawn_item(
+            position = context.item_manager.find_spawn_location(
+                strategy=strategy,
+                origin=origin,
+                explicit=explicit_coords,
+            )
+            last_instance = context.item_manager.spawn_item(
                 item_type=command.item_id,  # Note: parameter name is item_type, not item_id
                 position=position,
                 current_tick=context.current_tick,
                 initial_state=command.initial_state,
             )
 
-        # Return last spawned item instance ID
-        return item_instance.instance_id if item_instance else None
+        return last_instance.instance_id if last_instance else None
 
     def _execute_if(self, command: CommandNode, context: ExecutionContext) -> None:
         """Execute if command.
@@ -304,7 +311,7 @@ class CommandExecutor:
             command: For each command node with collection, iterator, body
             context: Execution context
         """
-        from townlet.effects.collections import resolve_collection
+        from townlet.effects.collections import MAX_COLLECTION_SIZE, resolve_collection
 
         # Resolve collection to list of indices
         collection_type = command.collection
@@ -315,27 +322,48 @@ class CommandExecutor:
             collection_type=collection_type,
             context=context,
             radius=command.radius,
+            max_count=MAX_COLLECTION_SIZE,
         )
+
+        if len(indices) > MAX_COLLECTION_SIZE:
+            raise RuntimeError(f"for_each collection size {len(indices)} exceeds cap {MAX_COLLECTION_SIZE}")
 
         # Execute body commands for each index
         for idx in indices:
+            target_idx = idx
+            target_is_item = collection_type == "inventory_items"
+            # For inventory_items, map instance_id -> vfs_index if available
+            if target_is_item:
+                inventory = getattr(context, "inventory", None)
+                if inventory is None:
+                    raise ValueError("inventory required for 'inventory_items' collection")
+                item = inventory.items.get(idx)
+                if item is None:
+                    raise ValueError(f"Item instance {idx} not found in inventory metadata")
+                target_idx = item.vfs_index
+
             # Create child context with target_index set to current iteration element
             child_context = ExecutionContext(
                 bars=context.bars,
                 vfs_registry=context.vfs_registry,
                 self_index=context.self_index,
-                target_index=idx,  # Set target to current iteration element
+                target_index=target_idx,  # For items, this is vfs_index
                 effect=context.effect,
                 self_is_item=context.self_is_item,
                 effect_manager=context.effect_manager,
                 item_manager=context.item_manager,
                 spawn_depth=context.spawn_depth,
                 current_tick=context.current_tick,
+                target_is_item=target_is_item,
             )
 
             # Copy agent_positions if present (for nested for_each)
             if hasattr(context, "agent_positions"):
                 child_context.agent_positions = context.agent_positions
+            if hasattr(context, "inventory"):
+                child_context.inventory = context.inventory
+            # Expose iterator value for potential expression use
+            child_context.iterator_value = idx
 
             # Execute body commands with child context
             body = command.body or []

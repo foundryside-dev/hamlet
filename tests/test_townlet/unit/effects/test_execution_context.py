@@ -7,6 +7,16 @@ from townlet.vfs.registry import VariableRegistry
 from townlet.vfs.schema import VariableDef
 
 
+class DummyEffectManager:
+    def spawn_effect(self, *args, **kwargs):
+        raise RuntimeError("spawn_effect not supported in DummyEffectManager")
+
+
+class DummyItemManager:
+    def spawn_item(self, *args, **kwargs):
+        raise RuntimeError("spawn_item not supported in DummyItemManager")
+
+
 def test_execution_context_bar_access():
     """ExecutionContext provides access to bar tensors."""
     bar_storage = {
@@ -19,6 +29,8 @@ def test_execution_context_bar_access():
         vfs_registry=None,
         self_index=None,
         target_index=None,
+        effect_manager=DummyEffectManager(),
+        item_manager=DummyItemManager(),
     )
 
     energy = context.get_path("bar.energy")
@@ -58,6 +70,8 @@ def test_execution_context_vfs_access():
         vfs_registry=registry,
         self_index=None,
         target_index=None,
+        effect_manager=DummyEffectManager(),
+        item_manager=DummyItemManager(),
     )
 
     day_count = context.get_path("vfs.day_count")
@@ -76,6 +90,8 @@ def test_execution_context_target_prefix():
         vfs_registry=None,
         self_index=None,
         target_index=1,  # Target is agent index 1
+        effect_manager=DummyEffectManager(),
+        item_manager=DummyItemManager(),
     )
 
     # target.bar.energy should resolve to energy[1]
@@ -92,6 +108,8 @@ def test_execution_context_set_path():
         vfs_registry=None,
         self_index=None,
         target_index=None,
+        effect_manager=DummyEffectManager(),
+        item_manager=DummyItemManager(),
     )
 
     # Mutate energy

@@ -8,6 +8,11 @@ from townlet.effects.manager import EffectManager
 from townlet.effects.schema import CommandNode, CommandType
 
 
+class DummyItemManager:
+    def spawn_item(self, *args, **kwargs):
+        raise RuntimeError("spawn_item not supported in DummyItemManager")
+
+
 def test_spawn_effect_with_self_target():
     """Test spawn_effect command spawns effect on self."""
     # Create effect catalog with simple effect
@@ -48,6 +53,7 @@ def test_spawn_effect_with_self_target():
         self_index=0,
         target_index=None,
         effect_manager=manager,
+        item_manager=DummyItemManager(),
     )
 
     # Execute command
@@ -97,6 +103,7 @@ def test_spawn_effect_with_target():
         self_index=0,
         target_index=1,  # Target agent 1
         effect_manager=manager,
+        item_manager=DummyItemManager(),
     )
 
     executor.execute(command, context)
@@ -144,6 +151,7 @@ def test_spawn_effect_cascade_depth_limit():
         self_index=0,
         target_index=None,
         effect_manager=manager,
+        item_manager=DummyItemManager(),
         spawn_depth=10,  # At limit
     )
 

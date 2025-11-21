@@ -8,6 +8,16 @@ from townlet.effects.executor import CommandExecutor
 from townlet.effects.schema import CommandNode, CommandType
 
 
+class DummyEffectManager:
+    def spawn_effect(self, *args, **kwargs):
+        raise RuntimeError("spawn_effect not supported in DummyEffectManager")
+
+
+class DummyItemManager:
+    def spawn_item(self, *args, **kwargs):
+        raise RuntimeError("spawn_item not supported in DummyItemManager")
+
+
 def test_executor_modify_bar():
     """Executor modifies bar value via expression."""
     bar_storage = {"energy": torch.tensor([1.0, 0.5, 0.8])}
@@ -17,6 +27,8 @@ def test_executor_modify_bar():
         vfs_registry=None,
         self_index=None,
         target_index=None,
+        effect_manager=DummyEffectManager(),
+        item_manager=DummyItemManager(),
     )
 
     # Create and compile command
@@ -42,6 +54,8 @@ def test_executor_modify_with_target():
         vfs_registry=None,
         self_index=None,
         target_index=1,  # Target agent 1
+        effect_manager=DummyEffectManager(),
+        item_manager=DummyItemManager(),
     )
 
     # Create and compile command
@@ -67,6 +81,8 @@ def test_executor_modify_constant():
         vfs_registry=None,
         self_index=None,
         target_index=None,
+        effect_manager=DummyEffectManager(),
+        item_manager=DummyItemManager(),
     )
 
     # Create and compile command
@@ -108,6 +124,8 @@ def test_executor_if_then():
         vfs_registry=registry,
         self_index=None,
         target_index=None,
+        effect_manager=DummyEffectManager(),
+        item_manager=DummyItemManager(),
     )
 
     # Create and compile if command
@@ -158,6 +176,8 @@ def test_executor_if_else():
         vfs_registry=registry,
         self_index=None,
         target_index=None,
+        effect_manager=DummyEffectManager(),
+        item_manager=DummyItemManager(),
     )
 
     # Create and compile if command

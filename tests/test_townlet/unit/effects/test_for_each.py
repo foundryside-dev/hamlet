@@ -9,6 +9,24 @@ from townlet.effects.executor import CommandExecutor
 from townlet.effects.schema import CommandNode, CommandType
 
 
+class DummyEffectManager:
+    def spawn_effect(self, *args, **kwargs):
+        raise RuntimeError("spawn_effect not supported in DummyEffectManager")
+
+
+class DummyItemManager:
+    def spawn_item(self, *args, **kwargs):
+        raise RuntimeError("spawn_item not supported in DummyItemManager")
+
+
+class DummyInventory:
+    """Minimal inventory stub with slots tensor."""
+
+    def __init__(self, slots: torch.Tensor):
+        self.slots = slots
+        self.items = {}
+
+
 def test_for_each_nearby_agents_with_modify():
     """Test for_each iterates over nearby agents and modifies bars."""
     executor = CommandExecutor()
@@ -49,6 +67,8 @@ def test_for_each_nearby_agents_with_modify():
         vfs_registry=None,
         self_index=0,
         target_index=None,
+        effect_manager=DummyEffectManager(),
+        item_manager=DummyItemManager(),
         agent_positions=agent_positions,  # NEW field needed
     )
 
@@ -90,6 +110,8 @@ def test_for_each_all_agents():
         vfs_registry=None,
         self_index=0,
         target_index=None,
+        effect_manager=DummyEffectManager(),
+        item_manager=DummyItemManager(),
     )
 
     executor.execute(command, context)
@@ -98,6 +120,28 @@ def test_for_each_all_agents():
     assert bars["energy"][0].item() == pytest.approx(0.3)
     assert bars["energy"][1].item() == pytest.approx(0.4)
     assert bars["energy"][2].item() == pytest.approx(0.5)
+
+
+def test_for_each_unknown_collection_raises():
+    """Unknown collection should raise immediately."""
+    executor = CommandExecutor()
+    command = CommandNode(
+        type=CommandType.FOR_EACH,
+        collection="not_a_collection",
+        iterator="x",
+        body=[],
+    )
+    bars = {"energy": torch.tensor([0.2])}
+    context = ExecutionContext(
+        bars=bars,
+        vfs_registry=None,
+        self_index=0,
+        target_index=None,
+        effect_manager=DummyEffectManager(),
+        item_manager=DummyItemManager(),
+    )
+    with pytest.raises(ValueError):
+        executor.execute(command, context)
 
 
 def test_for_each_empty_collection_noop():
@@ -132,6 +176,8 @@ def test_for_each_empty_collection_noop():
         vfs_registry=None,
         self_index=0,
         target_index=None,
+        effect_manager=DummyEffectManager(),
+        item_manager=DummyItemManager(),
         agent_positions=agent_positions,
     )
 
@@ -140,3 +186,95 @@ def test_for_each_empty_collection_noop():
     # Health unchanged (no nearby agents)
     assert bars["health"][0].item() == pytest.approx(0.5)
     assert bars["health"][1].item() == pytest.approx(0.6)
+
+
+def test_for_each_iteration_cap_raises():
+    """for_each enforces collection size cap to prevent runaway iteration."""
+    executor = CommandExecutor()
+
+    command = CommandNode(
+        type=CommandType.FOR_EACH,
+        collection="all_agents",
+        iterator="agent",
+        body=[],
+    )
+
+    bars = {"energy": torch.zeros(100)}  # 100 agents exceeds cap 64
+    context = ExecutionContext(
+        bars=bars,
+        vfs_registry=None,
+        self_index=0,
+        target_index=None,
+        effect_manager=DummyEffectManager(),
+        item_manager=DummyItemManager(),
+    )
+
+    with pytest.raises(RuntimeError):
+        executor.execute(command, context)
+
+
+def test_for_each_inventory_items_skips_empty_and_uses_ints():
+    """inventory_items should skip empty slots and provide int instance ids."""
+    executor = CommandExecutor()
+    command = CommandNode(
+        type=CommandType.FOR_EACH,
+        collection="inventory_items",
+        iterator="item",
+        body=[
+            CommandNode(
+                type=CommandType.MODIFY,
+                path="target.vfs.durability",
+                value_expr="target.vfs.durability + 1.0",
+            )
+        ],
+    )
+
+    schema = {"target.vfs.durability": "float"}
+    compiler = CommandCompiler(schema=schema)
+    for body_cmd in command.body:
+        compiler.compile_command(body_cmd)
+
+    bars = {"health": torch.tensor([0.5, 0.5, 0.5])}
+    # Inventory slots: agent 0 has items 2 and -1 (empty)
+    inventory = DummyInventory(slots=torch.tensor([[2, -1], [-1, -1]], dtype=torch.long))
+
+    # Minimal item metadata mapping instance_id -> ItemInstance-like with vfs_index
+    class DummyItem:
+        def __init__(self, vfs_index):
+            self.vfs_index = vfs_index
+
+    inventory.items[2] = DummyItem(vfs_index=2)
+
+    # Mock VFS registry for item durability values indexed by item_id
+    class DummyVFS:
+        def __init__(self):
+            self.values = {"durability": torch.tensor([5.0, 6.0, 7.0])}
+            self.variables = {"durability": object()}
+
+        def read(self, name, context_index, scope=None):
+            return self.values[name][context_index]
+
+        def write(self, name, value, context_index, scope=None):
+            self.values[name][context_index] = value
+
+        def get(self, name, reader=None):
+            return self.values[name]
+
+    vfs = DummyVFS()
+
+    context = ExecutionContext(
+        bars=bars,
+        vfs_registry=vfs,
+        self_index=0,
+        target_index=None,
+        effect_manager=DummyEffectManager(),
+        item_manager=DummyItemManager(),
+    )
+    context.inventory = inventory
+
+    executor.execute(command, context)
+
+    # Only item id 2 should be touched (durability +1)
+    assert vfs.values["durability"][2].item() == pytest.approx(8.0)
+    assert vfs.values["durability"][0].item() == pytest.approx(5.0)
+    assert vfs.values["durability"][1].item() == pytest.approx(6.0)

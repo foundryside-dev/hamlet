@@ -169,6 +169,39 @@ class ItemManager:
                 else:
                     target_tensor.fill_(default_value)
 
+    def find_spawn_location(
+        self,
+        strategy: str,
+        origin: tuple[int, ...] | tuple[float, ...] | None = None,
+        explicit: tuple[int, ...] | tuple[float, ...] | None = None,
+        retries: int = 3,
+    ) -> tuple[int, ...]:
+        """Resolve spawn position with collision avoidance and fail-fast on unsupported inputs."""
+        if strategy in {"self", "target"}:
+            if origin is None:
+                raise RuntimeError(f"Origin required for strategy '{strategy}'")
+            return tuple(int(round(x)) for x in origin)
+
+        if strategy == "explicit":
+            if explicit is None:
+                raise RuntimeError("Explicit coordinates required for strategy 'explicit'")
+            return tuple(int(round(x)) for x in explicit)
+
+        if strategy == "random":
+            if origin is None:
+                raise RuntimeError("Origin required for strategy 'random'")
+            base = tuple(int(round(x)) for x in origin)
+            occupied = {item.position for item in self.active_items.values()}
+            for _ in range(retries):
+                dx = torch.randint(-1, 2, ()).item()
+                dy = torch.randint(-1, 2, ()).item()
+                candidate = (base[0] + dx, base[1] + dy)
+                if candidate not in occupied:
+                    return candidate
+            raise RuntimeError("Failed to find free position for random spawn_item after retries")
+
+        raise RuntimeError(f"Unsupported spawn strategy '{strategy}'")
+
     def spawn_item(
         self,
         item_type: str,

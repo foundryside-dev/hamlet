@@ -1,5 +1,6 @@
 """Test spawn_item position resolution with real ItemManager."""
 
+import pytest
 import torch
 
 from townlet.config.items_config import (
@@ -12,6 +13,11 @@ from townlet.effects.executor import CommandExecutor
 from townlet.effects.schema import CommandNode, CommandType
 from townlet.items.manager import ItemManager
 from townlet.vfs.registry import VariableRegistry
+
+
+class DummyEffectManager:
+    def spawn_effect(self, *args, **kwargs):
+        raise RuntimeError("spawn_effect not supported in DummyEffectManager")
 
 
 def test_spawn_item_resolves_self_position():
@@ -57,6 +63,7 @@ def test_spawn_item_resolves_self_position():
         self_index=1,  # Agent 1
         target_index=None,
         item_manager=item_manager,
+        effect_manager=DummyEffectManager(),
         agent_positions=agent_positions,
         current_tick=0,
     )
@@ -119,6 +126,7 @@ def test_spawn_item_resolves_target_position():
         self_index=0,
         target_index=2,  # Target agent 2
         item_manager=item_manager,
+        effect_manager=DummyEffectManager(),
         agent_positions=agent_positions,
         current_tick=0,
     )
@@ -171,6 +179,7 @@ def test_spawn_item_with_explicit_position():
         self_index=0,
         target_index=None,
         item_manager=item_manager,
+        effect_manager=DummyEffectManager(),
         agent_positions=torch.tensor([[1.0, 2.0]]),
         current_tick=0,
     )
@@ -246,6 +255,7 @@ def test_spawn_item_with_initial_state():
         self_index=0,
         target_index=None,
         item_manager=item_manager,
+        effect_manager=DummyEffectManager(),
         agent_positions=torch.tensor([[5.0, 5.0]]),
         current_tick=0,
     )
@@ -267,3 +277,61 @@ def test_spawn_item_with_initial_state():
     # Verify custom initial_state applied
     durability = vfs_registry.read("durability", context_index=items[0].vfs_index, scope=VariableScope.ITEM)
     assert durability == 25.0
+
+
+def test_spawn_item_random_fails_when_blocked():
+    """spawn_item with position='random' should fail when no free cell after retries."""
+    catalog = ItemsCatalogConfig(
+        item_types=[
+            ItemTypeConfig(
+                id="blocked_item",
+                vfs_profile="loot",
+                duration=None,
+                cooldown=None,
+                interactions=ItemInteractionsConfig(on_pickup=[], on_use=[], on_drop=[]),
+            )
+        ]
+    )
+
+    item_manager = ItemManager(
+        catalog=catalog,
+        max_items=20,
+        device="cpu",
+        schema=None,
+        vfs_registry=None,
+    )
+
+    # Occupy a 3x3 grid around origin (0,0)
+    class DummyItem:
+        def __init__(self, pos, instance_id):
+            self.position = pos
+            self.instance_id = instance_id
+            self.vfs_index = 0
+
+    positions = [(x, y) for x in (-1, 0, 1) for y in (-1, 0, 1)]
+    for idx, pos in enumerate(positions):
+        item_manager.active_items[idx] = DummyItem(pos, idx)
+
+    agent_positions = torch.tensor([[0.0, 0.0]])
+    context = ExecutionContext(
+        bars={"energy": torch.tensor([1.0])},
+        vfs_registry=None,
+        self_index=0,
+        target_index=None,
+        item_manager=item_manager,
+        effect_manager=DummyEffectManager(),
+        agent_positions=agent_positions,
+        current_tick=0,
+    )
+
+    command = CommandNode(
+        type=CommandType.SPAWN_ITEM,
+        item_id="blocked_item",
+        position="random",
+        quantity=1,
+        initial_state=None,
+    )
+
+    executor = CommandExecutor()
+    with pytest.raises(RuntimeError):
+        executor.execute(command, context)

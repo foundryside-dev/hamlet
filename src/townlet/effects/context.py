@@ -11,6 +11,16 @@ from townlet.vfs.registry import VariableRegistry
 __all__ = ["ExecutionContext"]
 
 
+class _NullEffectManager:
+    def spawn_effect(self, *args: Any, **kwargs: Any) -> None:  # pragma: no cover
+        raise RuntimeError("EffectManager is not configured; spawn_effect unavailable")
+
+
+class _NullItemManager:
+    def spawn_item(self, *args: Any, **kwargs: Any) -> None:  # pragma: no cover
+        raise RuntimeError("ItemManager is not configured; spawn_item unavailable")
+
+
 class ExecutionContext:
     """Runtime context for effect command execution.
 
@@ -26,19 +36,25 @@ class ExecutionContext:
 
     def __init__(
         self,
-        bars: dict[str, torch.Tensor] | None,
-        vfs_registry: VariableRegistry | None,
+        bars: dict[str, torch.Tensor],
+        vfs_registry: VariableRegistry,
         self_index: int | None,
         target_index: int | None,
         effect: Any | None = None,
         self_is_item: bool = False,  # NEW: Track if self refers to item
-        effect_manager: Any | None = None,  # NEW
-        item_manager: Any | None = None,  # NEW
+        effect_manager: Any | None = None,  # REQUIRED
+        item_manager: Any | None = None,  # REQUIRED
         spawn_depth: int = 0,  # NEW (cascade depth tracking)
         agent_positions: torch.Tensor | None = None,  # NEW: [batch, 2] spatial positions
         interrupt_reason: str | None = None,  # NEW: Why effect was interrupted
         current_tick: int = 0,  # NEW
+        target_is_item: bool = False,  # NEW: mark target as item for vfs routing
     ):
+        if effect_manager is None:
+            effect_manager = _NullEffectManager()
+        if item_manager is None:
+            item_manager = _NullItemManager()
+
         self.bars = bars or {}
         self.vfs_registry = vfs_registry
         self.self_index = self_index
@@ -51,6 +67,7 @@ class ExecutionContext:
         self.agent_positions = agent_positions  # NEW
         self.interrupt_reason = interrupt_reason  # NEW
         self.current_tick = current_tick  # NEW
+        self.target_is_item = target_is_item  # NEW
 
     def get_path(self, path: str) -> torch.Tensor:
         """Resolve path to tensor value.
@@ -71,6 +88,22 @@ class ExecutionContext:
 
             # Resolve rest of path and index into target
             rest = path[len("target.") :]
+            # Special handling when target refers to an item VFS
+            if rest.startswith("vfs.") and self.target_is_item:
+                from townlet.vfs.schema import VariableScope
+
+                var_name = rest[len("vfs.") :]
+                if self.vfs_registry is None:
+                    raise ValueError("VFS registry not set in context")
+                value = self.vfs_registry.read(
+                    var_name,
+                    context_index=self.target_index,
+                    scope=VariableScope.ITEM,
+                )
+                if not isinstance(value, torch.Tensor):
+                    value = torch.tensor(value, dtype=torch.float32)
+                return value
+
             tensor = self.get_path(rest)
 
             # If batched tensor, index into it
@@ -144,6 +177,22 @@ class ExecutionContext:
 
             rest = path[len("target.") :]
             # Get original tensor and mutate in-place
+            # Item target VFS handling
+            if rest.startswith("vfs.") and self.target_is_item:
+                from townlet.vfs.schema import VariableScope
+
+                var_name = rest[len("vfs.") :]
+                if self.vfs_registry is None:
+                    raise ValueError("VFS registry not set in context")
+                write_value = value.item() if isinstance(value, torch.Tensor) and value.numel() == 1 else value
+                self.vfs_registry.write(
+                    var_name,
+                    write_value,
+                    context_index=self.target_index,
+                    scope=VariableScope.ITEM,
+                )
+                return
+
             original = self.get_path(rest)
             if original.dim() > 0:
                 original[self.target_index] = value

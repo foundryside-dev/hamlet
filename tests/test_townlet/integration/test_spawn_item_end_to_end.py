@@ -18,6 +18,11 @@ from townlet.vfs.registry import VariableRegistry
 from townlet.vfs.schema import VariableDef, VariableScope
 
 
+class DummyEffectManager:
+    def spawn_effect(self, *args, **kwargs):
+        raise RuntimeError("spawn_effect not supported in DummyEffectManager")
+
+
 def test_effect_on_despawn_spawns_item_with_real_itemmanager():
     """Effect on_despawn should spawn item using real ItemManager."""
     # Create VFS registry with item variables
@@ -223,6 +228,7 @@ def test_spawn_item_respects_itemmanager_capacity():
         self_index=0,
         target_index=None,
         item_manager=item_manager,
+        effect_manager=DummyEffectManager(),
         agent_positions=torch.tensor([[3.0, 3.0]]),
         current_tick=0,
     )
@@ -286,6 +292,7 @@ def test_spawn_item_respects_cooldown():
         self_index=0,
         target_index=None,
         item_manager=item_manager,
+        effect_manager=DummyEffectManager(),
         agent_positions=torch.tensor([[3.0, 3.0]]),
         current_tick=5,  # Still on cooldown
     )

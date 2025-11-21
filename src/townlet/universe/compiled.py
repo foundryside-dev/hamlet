@@ -470,7 +470,8 @@ def _serialize_vfs_profiles(profiles: CompiledVFSProfiles) -> dict[str, Any]:
                     "result_type": var.result_type,
                 }
                 for var in profiles.global_profile.variables
-            ]
+            ],
+            "dependencies": {name: list(deps) for name, deps in profiles.global_profile.dependencies.items()},
         }
     else:
         result["global_profile"] = None
@@ -497,7 +498,9 @@ def _deserialize_vfs_profiles(payload: dict[str, Any]) -> CompiledVFSProfiles:
             )
             for var in payload["global_profile"]["variables"]
         ]
-        global_profile = CompiledGlobalProfile(variables=variables)
+        dependencies = payload["global_profile"].get("dependencies", {})
+        dependencies = {name: tuple(deps) for name, deps in dependencies.items()}
+        global_profile = CompiledGlobalProfile(variables=variables, dependencies=dependencies)
 
     return CompiledVFSProfiles(
         global_profile=global_profile,

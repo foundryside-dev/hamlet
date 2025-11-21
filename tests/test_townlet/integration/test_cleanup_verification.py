@@ -18,9 +18,9 @@ def test_no_runtime_variables_reference_yaml_loading():
     )
 
     # Should find no matches (or only comments)
-    assert result.returncode != 0 or "variables_reference.yaml" not in result.stdout, (
-        f"Found runtime variables_reference.yaml loading:\n{result.stdout}"
-    )
+    assert (
+        result.returncode != 0 or "variables_reference.yaml" not in result.stdout
+    ), f"Found runtime variables_reference.yaml loading:\n{result.stdout}"
 
 
 def test_no_runtime_effects_yaml_loading():
@@ -71,6 +71,6 @@ def test_no_runtime_vfs_profile_loading():
     )
 
     # Should find no matches (or only comments)
-    assert result.returncode != 0 or "vfs_profiles_path.*read_text" not in result.stdout, (
-        f"Found runtime vfs_profiles.yaml loading:\n{result.stdout}"
-    )
+    assert (
+        result.returncode != 0 or "vfs_profiles_path.*read_text" not in result.stdout
+    ), f"Found runtime vfs_profiles.yaml loading:\n{result.stdout}"

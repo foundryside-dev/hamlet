@@ -113,7 +113,7 @@ class InventoryState:
         if slot_idx < 0 or slot_idx >= self.max_items_per_agent:
             raise ValueError(f"Invalid slot_idx: {slot_idx}")
 
-        instance_id = self.slots[agent_idx, slot_idx].item()
+        instance_id = int(self.slots[agent_idx, slot_idx].item())
         return instance_id if instance_id != -1 else None
 
     def is_full(self, agent_idx: int) -> bool:
@@ -122,7 +122,7 @@ class InventoryState:
 
     def count_items(self, agent_idx: int) -> int:
         """Count non-empty slots in agent's inventory."""
-        return (self.slots[agent_idx] != -1).sum().item()
+        return int((self.slots[agent_idx] != -1).sum().item())
 
     def reset(self) -> None:
         """Clear all inventory slots and metadata."""

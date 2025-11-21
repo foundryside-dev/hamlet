@@ -180,21 +180,21 @@ class ItemManager:
         if strategy in {"self", "target"}:
             if origin is None:
                 raise RuntimeError(f"Origin required for strategy '{strategy}'")
-            return tuple(int(round(x)) for x in origin)
+            return tuple(int(round(float(x))) for x in origin)
 
         if strategy == "explicit":
             if explicit is None:
                 raise RuntimeError("Explicit coordinates required for strategy 'explicit'")
-            return tuple(int(round(x)) for x in explicit)
+            return tuple(int(round(float(x))) for x in explicit)
 
         if strategy == "random":
             if origin is None:
                 raise RuntimeError("Origin required for strategy 'random'")
-            base = tuple(int(round(x)) for x in origin)
+            base = tuple(int(round(float(x))) for x in origin)
             occupied = {item.position for item in self.active_items.values()}
             for _ in range(retries):
-                dx = torch.randint(-1, 2, ()).item()
-                dy = torch.randint(-1, 2, ()).item()
+                dx = int(torch.randint(-1, 2, ()).item())
+                dy = int(torch.randint(-1, 2, ()).item())
                 candidate = (base[0] + dx, base[1] + dy)
                 if candidate not in occupied:
                     return candidate
@@ -249,6 +249,10 @@ class ItemManager:
 
             profile_map = self.vfs_registry.item_profile_map[profile_name]
 
+            item_vfs = getattr(self.vfs_registry, "item_vfs", None)
+            if item_vfs is None:
+                raise ValueError("Item VFS storage not allocated in registry")
+
             # Get compiled profile to access initial_value defaults
             if hasattr(self.vfs_registry, "item_profiles") and self.vfs_registry.item_profiles:
                 compiled_profile = self.vfs_registry.item_profiles.get(profile_name)
@@ -257,7 +261,7 @@ class ItemManager:
                     for compiled_var in compiled_profile.variables:
                         if compiled_var.initial_value is not None:
                             var_idx = profile_map[compiled_var.name]
-                            self.vfs_registry.item_vfs[vfs_index, var_idx] = float(compiled_var.initial_value)
+                            item_vfs[vfs_index, var_idx] = float(compiled_var.initial_value)
 
             # Apply initial_state overrides if provided
             if initial_state is not None:
@@ -265,7 +269,7 @@ class ItemManager:
                     if var_name not in profile_map:
                         raise ValueError(f"Variable '{var_name}' not in profile '{profile_name}'")
                     var_idx = profile_map[var_name]
-                    self.vfs_registry.item_vfs[vfs_index, var_idx] = float(value)
+                    item_vfs[vfs_index, var_idx] = float(value)
 
         # Create instance
         instance = ItemInstance(

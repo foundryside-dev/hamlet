@@ -30,6 +30,7 @@ exposed_observations:
   source: position
   scope: agent
   normalization:
+    kind: minmax
     min:
     - 0.0
     - 0.0

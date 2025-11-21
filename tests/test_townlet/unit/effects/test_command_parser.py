@@ -60,6 +60,7 @@ def test_parser_spawn_effect_command():
 
     assert node.type == CommandType.SPAWN_EFFECT
     assert node.effect_id == "poisoned"
+    assert node.target == "self"
     assert node.target_expr == "self"
     assert node.intensity == 2.0
 

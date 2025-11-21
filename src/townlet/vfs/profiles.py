@@ -42,6 +42,7 @@ class CompiledGlobalProfile:
     """Compiled global VFS profile."""
 
     variables: list[CompiledVariable]
+    dependencies: dict[str, tuple[str, ...]]  # In-profile dependencies per variable
 
 
 @dataclass(frozen=True)
@@ -153,14 +154,16 @@ class VFSProfileCompiler:
 
     def topological_sort(
         self, variables: Sequence[GlobalVFSVariableConfig | AgentVFSVariableConfig | ItemVFSVariableConfig]
-    ) -> list[GlobalVFSVariableConfig | AgentVFSVariableConfig | ItemVFSVariableConfig]:
-        """Sort variables in dependency order (dependencies first).
+    ) -> tuple[list[GlobalVFSVariableConfig | AgentVFSVariableConfig | ItemVFSVariableConfig], dict[str, tuple[str, ...]]]:
+        """Sort variables in dependency order and return dependencies.
 
         Args:
             variables: List of variable configs
 
         Returns:
-            Variables sorted in topological order
+            Tuple of:
+            - Variables sorted in topological order
+            - Dependency map {var_name: tuple[dependency_names]}
 
         Raises:
             CircularDependencyError: If circular dependency detected
@@ -181,7 +184,12 @@ class VFSProfileCompiler:
         name_to_var = {v.name: v for v in variables}
         sorted_vars = [name_to_var[name] for name in sorted_names]
 
-        return sorted_vars
+        dependencies: dict[str, tuple[str, ...]] = {}
+        for name in sorted_names:
+            deps = tuple(sorted(graph.predecessors(name)))
+            dependencies[name] = deps
+
+        return sorted_vars, dependencies
 
     def compile_variable(
         self,
@@ -241,7 +249,7 @@ class VFSProfileCompiler:
             Compiled profile with variables in dependency order
         """
         # Sort variables in dependency order
-        sorted_vars = self.topological_sort(profile.variables)
+        sorted_vars, dependencies = self.topological_sort(profile.variables)
 
         # Build type schema for expression type checking
         schema: dict[str, str] = {}
@@ -260,7 +268,7 @@ class VFSProfileCompiler:
             # Add this variable to schema for subsequent variables
             schema[var.name] = var.type
 
-        return CompiledGlobalProfile(variables=compiled_vars)
+        return CompiledGlobalProfile(variables=compiled_vars, dependencies=dependencies)
 
     def compile_item_profile(
         self,
@@ -280,7 +288,7 @@ class VFSProfileCompiler:
             ValueError: If circular dependencies detected
         """
         # Sort variables in dependency order
-        sorted_vars = self.topological_sort(profile.variables)
+        sorted_vars, _ = self.topological_sort(profile.variables)
 
         # Build variable schema (item profiles can reference bars)
         var_schema: dict[str, str] = {}

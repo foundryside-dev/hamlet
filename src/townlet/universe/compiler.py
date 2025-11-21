@@ -54,7 +54,7 @@ from townlet.universe.optimization import OptimizationData
 from townlet.universe.raw_configs_v21 import RawConfigsV21
 from townlet.universe.symbol_table import UniverseSymbolTable
 from townlet.vfs.profiles import CompiledItemProfile, VFSProfileCompiler
-from townlet.vfs.schema import NormalizationSpec, VariableDef
+from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope
 from townlet.vfs.schema import ObservationField as VFSObservationField
 
 from .compiled import CompiledVFSProfiles
@@ -276,7 +276,10 @@ class UniverseCompiler:
         for var in variables:
             # Variables with observable=True are included in observations
             if var.observable:
-                scope_key = var.scope.value if hasattr(var.scope, "value") else str(var.scope)
+                if isinstance(var.scope, VariableScope):
+                    scope_key = var.scope.value
+                else:
+                    scope_key = str(var.scope)
 
                 # Map VariableScope to mark keys
                 if scope_key == "global":
@@ -849,8 +852,9 @@ class UniverseCompiler:
                 invalid_interaction_meters = []
                 for stage_commands in aff.interactions.values():
                     for cmd in stage_commands:
-                        if hasattr(cmd, "modify") and cmd.modify.startswith("target.bar."):
-                            meter_name = cmd.modify.split(".")[-1]
+                        modify = getattr(cmd, "modify", None)
+                        if isinstance(modify, str) and modify.startswith("target.bar."):
+                            meter_name = modify.split(".")[-1]
                             if meter_name not in env_meter_names:
                                 invalid_interaction_meters.append(meter_name)
 
@@ -1404,13 +1408,15 @@ class UniverseCompiler:
             effects_dict = {}
             if aff.interactions and "on_start" in aff.interactions:
                 for cmd in aff.interactions["on_start"]:
-                    if hasattr(cmd, "modify") and cmd.modify.startswith("target.bar."):
-                        meter_name = cmd.modify.split(".")[-1]
+                    modify = getattr(cmd, "modify", None)
+                    if isinstance(modify, str) and modify.startswith("target.bar."):
+                        meter_name = modify.split(".")[-1]
                         # Simple extraction - just parse basic addition (e.g., "target.bar.energy + 0.5")
                         # This is best-effort for metadata; actual execution uses compiled Effects
-                        if hasattr(cmd, "value") and "+" in cmd.value:
+                        value_field = getattr(cmd, "value", None)
+                        if isinstance(value_field, str) and "+" in value_field:
                             try:
-                                value_part = cmd.value.split("+")[-1].strip()
+                                value_part = value_field.split("+")[-1].strip()
                                 effects_dict[meter_name] = float(value_part)
                             except (ValueError, IndexError):
                                 pass  # Skip if not a simple addition

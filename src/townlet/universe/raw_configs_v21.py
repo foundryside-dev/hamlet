@@ -305,8 +305,9 @@ class RawConfigsV21:
                 for stage_commands in aff.interactions.values():
                     for cmd in stage_commands:
                         # Extract meter name from modify path (e.g., "target.bar.energy" -> "energy")
-                        if hasattr(cmd, "modify") and cmd.modify.startswith("target.bar."):
-                            meter_name = cmd.modify.split(".")[-1]
+                        modify = getattr(cmd, "modify", None)
+                        if isinstance(modify, str) and modify.startswith("target.bar."):
+                            meter_name = modify.split(".")[-1]
                             if meter_name not in env_meter_names:
                                 invalid_interaction_meters.append(meter_name)
 

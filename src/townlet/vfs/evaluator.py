@@ -55,7 +55,23 @@ class VFSEvaluator:
         if self.mode == EvaluationMode.MARK_AND_SWEEP:
             if marks is None:
                 marks = set()
-            vars_to_eval = marks
+            # Evaluate marked variables plus their in-profile dependencies
+            dependencies = getattr(profile, "dependencies", {}) or {}
+            var_names = {var.name for var in profile.variables}
+
+            def add_with_deps(var_name: str, acc: set[str]) -> None:
+                """Add variable and its dependencies to evaluation set."""
+                if var_name in acc:
+                    return
+                acc.add(var_name)
+                for dep in dependencies.get(var_name, ()):
+                    add_with_deps(dep, acc)
+
+            vars_to_eval: set[str] = set()
+            for marked in marks:
+                # Ignore marks that are not part of this profile
+                if marked in dependencies or marked in var_names:
+                    add_with_deps(marked, vars_to_eval)
         else:  # EAGER mode
             vars_to_eval = {var.name for var in profile.variables}
 

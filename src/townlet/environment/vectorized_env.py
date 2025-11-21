@@ -12,7 +12,7 @@ import random
 from collections.abc import Callable
 from numbers import Number
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 import torch
 
@@ -26,7 +26,7 @@ from townlet.substrate.continuous import ContinuousSubstrate
 from townlet.universe.dto import ActionSpaceMetadata, MeterMetadata
 from townlet.vfs.evaluator import EvaluationMode, VFSEvaluator
 from townlet.vfs.observation_builder import VFSObservationSpec, build_vfs_observation
-from townlet.vfs.registry import VariableRegistry
+from townlet.vfs.registry import ScopedVariableRegistry, VariableRegistry
 
 if TYPE_CHECKING:
     from townlet.environment.action_config import ActionConfig, ActionSpaceConfig
@@ -303,7 +303,7 @@ class VectorizedHamletEnv:
         # VFS INTEGRATION: Initialize variable registry from compiled VFS variables
         from townlet.vfs.schema import VariableDef
 
-        self.vfs_variables = list(universe.vfs_variables)
+        self.vfs_variables: list[VariableDef] = list(universe.vfs_variables)
 
         # Add global variables from vfs_profiles (if present)
         if universe.compiled_vfs_profiles is not None and universe.compiled_vfs_profiles.global_profile is not None:
@@ -317,7 +317,7 @@ class VectorizedHamletEnv:
                 var_def = VariableDef(
                     id=var.name,
                     scope="global",
-                    type=var_type,
+                    type=cast(Literal["scalar", "bool"], var_type),
                     default=default_value,
                     lifetime="persistent",  # Global variables persist across steps
                     readable_by=["agent", "engine"],  # Global vars readable by all
@@ -356,17 +356,23 @@ class VectorizedHamletEnv:
             if universe.compiled_vfs_profiles.global_profile is not None:
                 # Convert compiled profile back to config format
                 global_profile_cfg = GlobalVFSProfileConfig(
-                    variables=[
-                        {"name": var.name, "type": var.type, "initial_value": var.initial_value}
-                        for var in universe.compiled_vfs_profiles.global_profile.variables
-                    ]
+                    variables=cast(
+                        list[Any],
+                        [
+                            {"name": var.name, "type": var.type, "initial_value": var.initial_value}
+                            for var in universe.compiled_vfs_profiles.global_profile.variables
+                        ],
+                    ),
                 )
 
             agent_profile_cfg = None
             if universe.compiled_vfs_profiles.agent_profile is not None:
                 agent_vars = getattr(universe.compiled_vfs_profiles.agent_profile, "variables", [])
                 agent_profile_cfg = AgentVFSProfileConfig(
-                    variables=[{"name": var.name, "type": var.type, "initial_value": var.initial_value} for var in agent_vars]
+                    variables=cast(
+                        list[Any],
+                        [{"name": var.name, "type": var.type, "initial_value": var.initial_value} for var in agent_vars],
+                    )
                 )
 
             item_profiles_list = []
@@ -376,7 +382,10 @@ class VectorizedHamletEnv:
                     item_profiles_list.append(
                         ItemVFSProfileConfig(
                             profile_name=profile_name,
-                            variables=[{"name": var.name, "type": var.type, "initial_value": var.initial_value} for var in profile_vars],
+                            variables=cast(
+                                list[Any],
+                                [{"name": var.name, "type": var.type, "initial_value": var.initial_value} for var in profile_vars],
+                            ),
                         )
                     )
 
@@ -432,7 +441,7 @@ class VectorizedHamletEnv:
             EffectManager(
                 catalog=effect_catalog,
                 command_executor=self.command_executor,
-                device=self.device,
+                device=str(self.device),
             )
             if effect_catalog is not None
             else None
@@ -447,10 +456,10 @@ class VectorizedHamletEnv:
         for bar_name in self.meter_name_to_index.keys():
             effects_schema[f"bar.{bar_name}"] = "float"
             effects_schema[f"target.bar.{bar_name}"] = "float"
-        for var in self.vfs_variables:
-            vfs_type = "bool" if var.type == "bool" else "float"
-            effects_schema[f"vfs.{var.id}"] = vfs_type
-            effects_schema[f"target.vfs.{var.id}"] = vfs_type
+        for vfs_var in self.vfs_variables:
+            vfs_type = "bool" if vfs_var.type == "bool" else "float"
+            effects_schema[f"vfs.{vfs_var.id}"] = vfs_type
+            effects_schema[f"target.vfs.{vfs_var.id}"] = vfs_type
         self.effects_schema = effects_schema
 
         # Bars configuration (per-level)
@@ -579,6 +588,9 @@ class VectorizedHamletEnv:
 
         # === ITEMS INITIALIZATION ===
         # Must happen AFTER self.meters is initialized because ItemActionHandler needs it
+        self.item_manager: ItemManager | None = None
+        self.item_inventory: InventoryState | None = None
+        self.item_handler: ItemActionHandler | None = None
         if universe.items_catalog is not None:
             # Build schema for item interaction compilation from compiled universe data
             schema: dict[str, str] = {}
@@ -588,10 +600,10 @@ class VectorizedHamletEnv:
                 schema[f"target.bar.{bar_name}"] = "float"
 
             # Add VFS paths from compiled VFS variables
-            for var in self.vfs_variables:
+            for vfs_var in self.vfs_variables:
                 # Simple type inference: bool if type is "bool", else float
-                vfs_type = "bool" if var.type == "bool" else "float"
-                schema[f"target.vfs.{var.id}"] = vfs_type
+                vfs_type = "bool" if vfs_var.type == "bool" else "float"
+                schema[f"target.vfs.{vfs_var.id}"] = vfs_type
 
             # Add self.vfs.* paths from compiled item VFS profiles
             # Items can modify their own VFS state via self.vfs.*
@@ -612,7 +624,7 @@ class VectorizedHamletEnv:
             self.item_inventory = InventoryState(
                 batch_size=num_agents,
                 max_items_per_agent=universe.items_catalog.max_items_per_agent,
-                device=self.device,
+                device=str(self.device),
             )
 
             self.item_handler = ItemActionHandler(
@@ -983,6 +995,7 @@ class VectorizedHamletEnv:
         if self.item_manager is not None and self.level.items_appearance is not None:
             # Get grid size from substrate (only works for Grid2D/Grid3D/GridND)
             # For continuous substrates, this would need different handling
+            grid_size: tuple[int, ...] | None = None
             if hasattr(self.substrate, "width") and hasattr(self.substrate, "height"):
                 if hasattr(self.substrate, "depth"):
                     # Grid3D
@@ -991,6 +1004,7 @@ class VectorizedHamletEnv:
                     # Grid2D
                     grid_size = (self.substrate.width, self.substrate.height)
 
+            if grid_size is not None:
                 self.item_manager.spawn_initial_items(
                     appearance_config=self.level.items_appearance,
                     grid_size=grid_size,
@@ -1148,7 +1162,7 @@ class VectorizedHamletEnv:
                         agent_item_inventory = self.item_inventory.slots
 
                     value = build_vfs_observation(
-                        registry=self.vfs_registry,
+                        registry=cast(ScopedVariableRegistry, self.vfs_registry),
                         spec=self.vfs_observation_spec,
                         batch_size=self.num_agents,
                         agent_item_inventory=agent_item_inventory,
@@ -1431,12 +1445,13 @@ class VectorizedHamletEnv:
         for bar_name, idx in self.meter_name_to_index.items():
             bars_dict[bar_name] = self.meters[:, idx]
 
-        self.effect_manager.tick(
-            bars=bars_dict,
-            vfs_registry=self.vfs_registry,
-            current_step=self.step_counts[0].item() if self.step_counts.numel() > 0 else 0,
-            item_manager=self.item_manager,
-        )
+        if self.effect_manager is not None:
+            self.effect_manager.tick(
+                bars=bars_dict,
+                vfs_registry=self.vfs_registry,
+                current_step=int(self.step_counts[0].item()) if self.step_counts.numel() > 0 else 0,
+                item_manager=self.item_manager,
+            )
 
         # Sync meters back from bars dict (effects may have modified them)
         for bar_name, idx in self.meter_name_to_index.items():
@@ -1480,7 +1495,7 @@ class VectorizedHamletEnv:
         # 5.1. Age items and process periodic respawning (after step count increment)
         # Items age/despawn/respawn based on the NEW tick count after incrementing
         if self.item_manager is not None:
-            current_tick = self.step_counts[0].item() if self.step_counts.numel() > 0 else 0
+            current_tick = int(self.step_counts[0].item()) if self.step_counts.numel() > 0 else 0
             # Age all items (expire items that reach duration limit)
             self.item_manager.tick(current_tick)
             # Respawn items whose spawn_interval timer has expired
@@ -1617,39 +1632,40 @@ class VectorizedHamletEnv:
             except ValueError:
                 pass  # GET action not in action space
 
-            # USE_SLOT_N actions
-            for slot_idx in range(self.item_inventory.max_items_per_agent):
-                use_action_name = f"USE_SLOT_{slot_idx}"
-                try:
-                    use_action_id = self.action_space.get_action_by_name(use_action_name).id
-                    use_mask = actions == use_action_id
-                    if use_mask.any():
-                        for agent_idx in torch.where(use_mask)[0]:
-                            self.item_handler.handle_use_slot_action(
-                                agent_idx=int(agent_idx.item()),
-                                slot_idx=slot_idx,
-                                current_tick=0,  # TODO: Add tick tracking
-                                meters=self.meters,
-                            )
-                except ValueError:
-                    pass  # Action not in action space
+            if self.item_inventory is not None:
+                # USE_SLOT_N actions
+                for slot_idx in range(self.item_inventory.max_items_per_agent):
+                    use_action_name = f"USE_SLOT_{slot_idx}"
+                    try:
+                        use_action_id = self.action_space.get_action_by_name(use_action_name).id
+                        use_mask = actions == use_action_id
+                        if use_mask.any():
+                            for agent_idx in torch.where(use_mask)[0]:
+                                self.item_handler.handle_use_slot_action(
+                                    agent_idx=int(agent_idx.item()),
+                                    slot_idx=slot_idx,
+                                    current_tick=0,  # TODO: Add tick tracking
+                                    meters=self.meters,
+                                )
+                    except ValueError:
+                        pass  # Action not in action space
 
-            # DROP_SLOT_N actions
-            for slot_idx in range(self.item_inventory.max_items_per_agent):
-                drop_action_name = f"DROP_SLOT_{slot_idx}"
-                try:
-                    drop_action_id = self.action_space.get_action_by_name(drop_action_name).id
-                    drop_mask = actions == drop_action_id
-                    if drop_mask.any():
-                        for agent_idx in torch.where(drop_mask)[0]:
-                            self.item_handler.handle_drop_slot_action(
-                                agent_idx=int(agent_idx.item()),
-                                slot_idx=slot_idx,
-                                agent_position=self.positions[agent_idx],
-                                current_tick=0,  # TODO: Add tick tracking
-                            )
-                except ValueError:
-                    pass  # Action not in action space
+                # DROP_SLOT_N actions
+                for slot_idx in range(self.item_inventory.max_items_per_agent):
+                    drop_action_name = f"DROP_SLOT_{slot_idx}"
+                    try:
+                        drop_action_id = self.action_space.get_action_by_name(drop_action_name).id
+                        drop_mask = actions == drop_action_id
+                        if drop_mask.any():
+                            for agent_idx in torch.where(drop_mask)[0]:
+                                self.item_handler.handle_drop_slot_action(
+                                    agent_idx=int(agent_idx.item()),
+                                    slot_idx=slot_idx,
+                                    agent_position=self.positions[agent_idx],
+                                    current_tick=0,  # TODO: Add tick tracking
+                                )
+                    except ValueError:
+                        pass  # Action not in action space
 
         # Handle INTERACT actions
         # Use cached INTERACT index (from ActionSpaceBuilder)

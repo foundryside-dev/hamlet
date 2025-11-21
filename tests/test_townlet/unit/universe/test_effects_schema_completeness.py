@@ -26,12 +26,12 @@ def test_effects_schema_includes_item_vfs_paths():
             for var in profile.variables:
                 # Item VFS paths should be in expression schema for effects
                 # self.vfs.{var_name} and target.vfs.{var_name}
-                assert f"self.vfs.{var.name}" in compiled.vfs_expression_schema, (
-                    f"Missing self.vfs.{var.name} in schema for profile {profile_name}"
-                )
-                assert f"target.vfs.{var.name}" in compiled.vfs_expression_schema, (
-                    f"Missing target.vfs.{var.name} in schema for profile {profile_name}"
-                )
+                assert (
+                    f"self.vfs.{var.name}" in compiled.vfs_expression_schema
+                ), f"Missing self.vfs.{var.name} in schema for profile {profile_name}"
+                assert (
+                    f"target.vfs.{var.name}" in compiled.vfs_expression_schema
+                ), f"Missing target.vfs.{var.name} in schema for profile {profile_name}"
 
 
 def test_effects_schema_includes_bar_paths():

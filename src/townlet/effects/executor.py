@@ -178,29 +178,44 @@ class CommandExecutor:
         if context.spawn_depth >= max_cascade_depth:
             raise RuntimeError(f"Effect cascade depth limit exceeded ({max_cascade_depth}). Check for infinite spawn loops.")
 
-        # Resolve target index
-        if command.target == "self":
+        # Resolve target index (evaluate expression if needed)
+        target_value: str | int | None = command.target
+        if target_value is None and command.target_ast is not None:
+            eval_ctx = self._make_eval_context(context, effect=context.effect)
+            evaluator = Evaluator(eval_ctx)
+            evaluated = evaluator.evaluate(command.target_ast)
+            if evaluated.numel() != 1:
+                raise ValueError("spawn_effect target expression must resolve to a scalar index")
+            target_value = int(evaluated.item())
+
+        if target_value == "self":
             if context.self_index is None:
                 raise ValueError("self_index not set - cannot use 'self' target")
             target_idx = context.self_index
-        elif command.target == "target":
+        elif target_value == "target":
             if context.target_index is None:
                 raise ValueError("target_index not set - cannot use 'target' target")
             target_idx = context.target_index
-        elif isinstance(command.target, int):
-            target_idx = command.target
+        elif isinstance(target_value, int):
+            target_idx = target_value
         else:
-            raise ValueError(f"Invalid target: {command.target}")
+            raise ValueError(f"Invalid target: {target_value}")
 
         # Spawn effect via EffectManager
         # Note: scope hardcoded to AGENT for now (can extend later)
         from townlet.config.effects_config import EffectScope
 
-        spawned = context.effect_manager.spawn_effect(
+        if command.effect_id is None:
+            raise ValueError("spawn_effect command requires 'effect_id'")
+
+        effect_def = context.effect_manager.catalog.get(command.effect_id)
+        resolved_duration = command.duration if command.duration is not None else effect_def.duration
+
+        context.effect_manager.spawn_effect(
             effect_id=command.effect_id,
             target_entity_id=target_idx,
             scope=EffectScope.AGENT,
-            duration=command.duration or 10,
+            duration=resolved_duration,
             intensity=command.intensity or 1.0,
             current_step=context.effect_manager.current_step,
             bars=context.bars,
@@ -209,9 +224,6 @@ class CommandExecutor:
             agent_positions=getattr(context, "agent_positions", None),
             item_manager=context.item_manager,
         )
-
-        # Return spawned effect instance ID for potential future use
-        return spawned.instance_id
 
     def _execute_spawn_item(self, command: CommandNode, context: ExecutionContext) -> None:
         """Execute spawn_item command.
@@ -230,7 +242,7 @@ class CommandExecutor:
         raw_position = command.position
         origin = None
         explicit_coords = None
-        strategy: str | tuple | list = raw_position
+        strategy: str | tuple | list | None = raw_position
 
         if raw_position == "self":
             if context.agent_positions is None or context.self_index is None:
@@ -253,12 +265,14 @@ class CommandExecutor:
         else:
             raise ValueError(f"Invalid position: {command.position}")
 
+        if strategy is None:
+            raise ValueError("spawn_item position strategy could not be resolved")
+
         item_type = command.item_type
         if item_type is None:
             raise ValueError("spawn_item command requires 'item_type'")
 
         quantity = command.quantity or 1
-        last_instance = None
 
         for _ in range(quantity):
             position = context.item_manager.find_spawn_location(
@@ -266,14 +280,13 @@ class CommandExecutor:
                 origin=origin,
                 explicit=explicit_coords,
             )
-            last_instance = context.item_manager.spawn_item(
+            context.item_manager.spawn_item(
                 item_type=item_type,
                 position=position,
                 current_tick=context.current_tick,
                 initial_state=command.initial_state,
             )
-
-        return last_instance.instance_id if last_instance else None
+        return
 
     def _execute_if(self, command: CommandNode, context: ExecutionContext) -> None:
         """Execute if command.

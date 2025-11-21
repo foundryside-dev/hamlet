@@ -29,10 +29,26 @@ class CommandParser:
             )
 
         elif config.spawn_effect is not None:
+            # Normalize target: keep simple values on `target` for executor, preserve expr string
+            raw_target = config.target if config.target is not None else "self"
+            resolved_target: str | int | None
+            if isinstance(raw_target, str):
+                if raw_target in {"self", "target"}:
+                    resolved_target = raw_target
+                else:
+                    try:
+                        # Allow numeric strings (including negatives) to be treated as explicit indices
+                        resolved_target = int(raw_target)
+                    except ValueError:
+                        resolved_target = None  # Expression resolved at runtime
+            else:
+                resolved_target = raw_target
+
             return CommandNode(
                 type=CommandType.SPAWN_EFFECT,
                 effect_id=config.spawn_effect,
-                target_expr=config.target or "self",
+                target=resolved_target,
+                target_expr=str(raw_target) if raw_target is not None else None,
                 intensity=config.intensity or 1.0,
             )
 
@@ -40,6 +56,7 @@ class CommandParser:
             return CommandNode(
                 type=CommandType.SPAWN_ITEM,
                 item_type=config.spawn_item,
+                position=config.position,
                 position_expr=config.position,
             )
 
@@ -54,8 +71,11 @@ class CommandParser:
         elif config.for_each is not None:
             return CommandNode(
                 type=CommandType.FOR_EACH,
+                collection=config.for_each,
                 collection_expr=config.for_each,
+                iterator=config.as_,
                 iterator_var=config.as_,
+                body=[self.parse_command(cmd) for cmd in config.do],
                 do_commands=[self.parse_command(cmd) for cmd in config.do],
             )
 

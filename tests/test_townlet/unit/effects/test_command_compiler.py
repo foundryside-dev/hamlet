@@ -85,3 +85,32 @@ def test_compiler_if_rejects_non_bool_condition():
 
     with pytest.raises(TypeCheckError, match="bool"):
         compiler.compile_command(node)
+
+
+def test_compiler_for_each_accepts_registered_collection_without_expr():
+    """Compiler should accept enum-style for_each collection without collection_expr."""
+    node = CommandNode(
+        type=CommandType.FOR_EACH,
+        collection="all_agents",
+        body=[],
+    )
+
+    compiler = CommandCompiler(schema={})
+    compiled = compiler.compile_command(node)
+
+    assert compiled.collection == "all_agents"
+    assert compiled.collection_ast is None
+
+
+def test_compiler_for_each_rejects_unknown_collection():
+    """Compiler should reject unknown for_each collections early."""
+    node = CommandNode(
+        type=CommandType.FOR_EACH,
+        collection="not_real",
+        body=[],
+    )
+
+    compiler = CommandCompiler(schema={})
+
+    with pytest.raises(TypeCheckError, match="Unknown for_each collection"):
+        compiler.compile_command(node)

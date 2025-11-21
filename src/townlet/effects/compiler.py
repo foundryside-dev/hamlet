@@ -62,10 +62,16 @@ class CommandCompiler:
             node.value_ast = value_ast
 
         elif node.type == CommandType.SPAWN_EFFECT:
-            # Validate and compile target expression
-            if node.target_expr:
+            # Validate and compile target expression only when not a simple literal
+            simple_target = node.target in {"self", "target"} or isinstance(node.target, int)
+            if not simple_target and node.target_expr:
                 target_ast = self.parser.parse(node.target_expr)
-                self.type_checker.check(target_ast)
+                target_type = self.type_checker.check(target_ast)
+                if target_type != "int":
+                    from townlet.world.expression.type_checker import TypeCheckError
+
+                    raise TypeCheckError(f"spawn_effect target expression must be int, got {target_type} for '{node.target_expr}'")
+
                 # ✅ Store compiled AST
                 node.target_ast = target_ast
 
@@ -98,22 +104,40 @@ class CommandCompiler:
 
         elif node.type == CommandType.FOR_EACH:
             # Validate required fields are present
-            if node.collection_expr is None:
-                from townlet.world.expression.type_checker import TypeCheckError
+            from townlet.effects.collections import COLLECTION_RESOLVERS
+            from townlet.world.expression.type_checker import TypeCheckError
 
-                raise TypeCheckError("FOR_EACH command requires 'collection_expr'")
+            has_collection = node.collection is not None
+            has_collection_expr = node.collection_expr is not None
 
-            # Validate collection expression
-            coll_ast = self.parser.parse(node.collection_expr)
-            self.type_checker.check(coll_ast)
+            if not has_collection and not has_collection_expr:
+                raise TypeCheckError("FOR_EACH command requires 'collection'")
 
-            # ✅ Store compiled AST
-            node.collection_ast = coll_ast
+            # Validate simple collection names against registered resolvers
+            if has_collection:
+                if node.collection not in COLLECTION_RESOLVERS:
+                    available = sorted(COLLECTION_RESOLVERS.keys())
+                    raise TypeCheckError(f"Unknown for_each collection '{node.collection}'. Available: {available}")
+
+            # Only parse/type-check collection_expr when explicitly provided
+            if has_collection_expr:
+                coll_expr = node.collection_expr
+                assert coll_expr is not None
+                coll_ast = self.parser.parse(coll_expr)
+                self.type_checker.check(coll_ast)
+                node.collection_ast = coll_ast
 
             # Recursively compile nested commands (with None check for mypy)
-            if node.do_commands is not None:
-                for cmd in node.do_commands:
-                    self.compile_command(cmd)
+            nested: list[CommandNode] = []
+            seen_ids: set[int] = set()
+            for seq in (node.do_commands or [], node.body or []):
+                for cmd in seq:
+                    if id(cmd) in seen_ids:
+                        continue
+                    seen_ids.add(id(cmd))
+                    nested.append(cmd)
+            for cmd in nested:
+                self.compile_command(cmd)
 
         return node
 

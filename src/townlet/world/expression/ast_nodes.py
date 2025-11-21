@@ -40,15 +40,19 @@ class OperatorType(enum.Enum):
     LTE = "<="
 
 
-@dataclass
+@dataclass(frozen=True, kw_only=True)
 class ASTNode:
-    """Base class for all AST nodes.
+    """Base class for all AST nodes with optional source metadata.
 
     Uses Visitor pattern for separating traversal logic (type checking,
     evaluation, pretty printing) from node structure.
 
     Subclasses MUST implement accept(visitor).
     """
+
+    line: int | None = None
+    column: int | None = None
+    type_annotation: str | None = None
 
     def accept(self, visitor: Any) -> Any:
         """Accept a visitor for traversal.
@@ -103,8 +107,16 @@ class ASTVisitor:
         """Visit an IndexAccess node."""
         raise NotImplementedError()
 
+    def visit_switch(self, node: Any) -> Any:  # noqa: ARG002
+        """Visit a Switch node."""
+        raise NotImplementedError()
 
-@dataclass
+    def visit_reduce(self, node: Any) -> Any:  # noqa: ARG002
+        """Visit a Reduce node."""
+        raise NotImplementedError()
+
+
+@dataclass(frozen=True)
 class Constant(ASTNode):
     """Literal values (numbers, booleans, strings).
 
@@ -121,7 +133,7 @@ class Constant(ASTNode):
         return visitor.visit_constant(self)
 
 
-@dataclass
+@dataclass(frozen=True)
 class Variable(ASTNode):
     """A direct variable reference (simple identifier).
 
@@ -139,7 +151,7 @@ class Variable(ASTNode):
         return visitor.visit_variable(self)
 
 
-@dataclass
+@dataclass(frozen=True)
 class PathAccess(ASTNode):
     """Dot-notation access to nested state.
 
@@ -158,7 +170,7 @@ class PathAccess(ASTNode):
         return visitor.visit_path_access(self)
 
 
-@dataclass
+@dataclass(frozen=True)
 class BinaryOp(ASTNode):
     """Binary operations (infix notation).
 
@@ -178,7 +190,7 @@ class BinaryOp(ASTNode):
         return visitor.visit_binary_op(self)
 
 
-@dataclass
+@dataclass(frozen=True)
 class UnaryOp(ASTNode):
     """Unary operations (prefix notation).
 
@@ -196,7 +208,7 @@ class UnaryOp(ASTNode):
         return visitor.visit_unary_op(self)
 
 
-@dataclass
+@dataclass(frozen=True)
 class FunctionCall(ASTNode):
     """Function invocation (standard library or domain-specific).
 
@@ -217,7 +229,7 @@ class FunctionCall(ASTNode):
         return visitor.visit_function_call(self)
 
 
-@dataclass
+@dataclass(frozen=True)
 class IfThenElse(ASTNode):
     """Conditional expression (ternary operator).
 
@@ -238,7 +250,7 @@ class IfThenElse(ASTNode):
         return visitor.visit_if_then_else(self)
 
 
-@dataclass
+@dataclass(frozen=True)
 class IndexAccess(ASTNode):
     """Array/list element access by index.
 
@@ -257,3 +269,41 @@ class IndexAccess(ASTNode):
 
     def accept(self, visitor: Any) -> Any:
         return visitor.visit_index_access(self)
+
+
+@dataclass(frozen=True)
+class Switch(ASTNode):
+    """Switch/case control construct (equality-based matching).
+
+    - switch_expr: expression to evaluate once
+    - cases: list of (when_expr, body) pairs
+    - default: optional body executed when no case matches
+    """
+
+    switch_expr: ASTNode
+    cases: list[tuple[ASTNode, list[Any]]]
+    default: list[Any] | None = None
+
+    def accept(self, visitor: Any) -> Any:
+        return visitor.visit_switch(self)
+
+
+@dataclass(frozen=True)
+class Reduce(ASTNode):
+    """Reduction over a fixed-size collection into an accumulator.
+
+    - collection: expression yielding fixed-size iterable
+    - iterator: iterator variable name
+    - init: expression for initial accumulator
+    - body: expression producing next accumulator from current acc + iterator
+    - target: optional target path/name for storing the result (command layer)
+    """
+
+    collection: ASTNode
+    iterator: str
+    init: ASTNode
+    body: ASTNode
+    target: str | None = None
+
+    def accept(self, visitor: Any) -> Any:
+        return visitor.visit_reduce(self)

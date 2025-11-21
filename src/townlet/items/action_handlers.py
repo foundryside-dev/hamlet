@@ -59,6 +59,7 @@ class ItemActionHandler:
         interaction: Literal["on_pickup", "on_use", "on_drop"],
         meters: torch.Tensor,  # [batch, num_meters] - passed from environment
         item_vfs_index: int | None = None,  # NEW: Item's VFS index for self-modification
+        current_tick: int | None = None,
     ) -> None:
         """Execute Effects commands for item interaction.
 
@@ -106,6 +107,8 @@ class ItemActionHandler:
             self_is_item=True,  # NEW: Mark self as item for VFS routing
             effect_manager=self.effect_manager,
             item_manager=self.manager,
+            scheduler=getattr(self.effect_manager, "scheduler", None),
+            current_tick=current_tick or 0,
         )
 
         # Execute all commands
@@ -156,6 +159,7 @@ class ItemActionHandler:
                 interaction="on_pickup",
                 meters=meters,
                 item_vfs_index=item.vfs_index,  # NEW: Pass vfs_index
+                current_tick=current_tick,
             )
 
         return success
@@ -198,6 +202,7 @@ class ItemActionHandler:
             interaction="on_use",
             meters=meters,
             item_vfs_index=item.vfs_index,  # NEW: Pass vfs_index
+            current_tick=current_tick,
         )
 
         return True
@@ -231,10 +236,6 @@ class ItemActionHandler:
 
         if item is None:
             return False  # Item metadata missing (shouldn't happen)
-
-        # Execute on_drop Effects commands (if any exist and need meters)
-        # Note: Current items have empty on_drop arrays, so this is a no-op
-        # Future: If on_drop Effects require meters, we'd need to pass them here
 
         # Place item back in world at agent's position (preserves VFS state)
         agent_pos_tuple = tuple(agent_position.tolist())

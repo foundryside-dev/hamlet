@@ -257,6 +257,7 @@ class AffordanceEngine:
             agent_mask,
             updated_meters,
             multipliers=multipliers,
+            current_tick=None,
         )
 
         # Clamp meters to [0, 1]
@@ -344,6 +345,7 @@ class AffordanceEngine:
             agent_mask,
             updated_meters,
             multipliers=multipliers,
+            current_tick=current_tick,
         )
 
         duration_ticks = affordance.duration_ticks or 1
@@ -358,6 +360,7 @@ class AffordanceEngine:
                 agent_mask,
                 updated_meters,
                 multipliers=multipliers,
+                current_tick=current_tick,
             )
 
         # Clamp meters to [0, 1]
@@ -509,6 +512,7 @@ class AffordanceEngine:
         meters: torch.Tensor,
         affordance_name: str,
         agent_mask: torch.Tensor,
+        current_tick: int | None = None,
     ) -> torch.Tensor:
         """
         Apply affordance effects to agent meters.
@@ -552,6 +556,7 @@ class AffordanceEngine:
             agent_mask,
             result_meters,
             multipliers=multipliers,
+            current_tick=current_tick,
         )
 
         return result_meters
@@ -586,6 +591,7 @@ class AffordanceEngine:
         agent_mask: torch.Tensor,
         meters: torch.Tensor,
         multipliers: torch.Tensor | None = None,
+        current_tick: int | None = None,
     ) -> torch.Tensor:
         """Execute pre-compiled Effects commands for affordance lifecycle stage.
 
@@ -636,6 +642,8 @@ class AffordanceEngine:
                 target_index=agent_idx.item(),
                 effect_manager=self.effect_manager,
                 item_manager=self.item_manager,
+                scheduler=getattr(self.effect_manager, "scheduler", None),
+                current_tick=current_tick or 0,
             )
 
             for command in commands:

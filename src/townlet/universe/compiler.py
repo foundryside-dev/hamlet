@@ -194,7 +194,9 @@ class UniverseCompiler:
             item_profiles=compiled_item_profiles,
         )
 
-    def _compile_effects_catalog(self, experiment_dir: Path, effects_schema: dict[str, str]) -> EffectCatalog | None:
+    def _compile_effects_catalog(
+        self, experiment_dir: Path, effects_schema: dict[str, str], *, time_enabled: bool = True
+    ) -> EffectCatalog | None:
         """Load and compile effects catalog from experiment directory.
 
         Args:
@@ -219,7 +221,7 @@ class UniverseCompiler:
         effects_config = EffectsConfig(**effects_data)
 
         # Compile catalog with schema validation
-        catalog = EffectCatalog.from_config(effects_config, schema=effects_schema)
+        catalog = EffectCatalog.from_config(effects_config, schema=effects_schema, time_enabled=time_enabled)
 
         return catalog
 
@@ -411,6 +413,7 @@ class UniverseCompiler:
         # Stage 1: load v2.1 configs
         raw = self._stage_1_load_v21_configs(experiment_dir)
         self._validate_v21_semantics(raw, experiment_dir)
+        temporal_supported = raw.stratum.stratum.temporal_support == "enabled"
 
         # Select primary level
         if primary_level is None:
@@ -456,7 +459,11 @@ class UniverseCompiler:
                     effects_schema[f"self.vfs.{var.name}"] = vfs_type
 
         # Compile effects catalog (experiment-level artifact)
-        compiled_effect_catalog = self._compile_effects_catalog(experiment_dir, effects_schema)
+        compiled_effect_catalog = self._compile_effects_catalog(
+            experiment_dir,
+            effects_schema,
+            time_enabled=temporal_supported,
+        )
 
         # Build per-level artifacts
         all_levels: dict[str, CompiledUniverse.LevelMetadata] = {}

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import random
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import torch
 
@@ -48,6 +48,7 @@ class ItemManager:
         device: torch.device | str,
         schema: dict[str, str] | None = None,  # NEW: Schema for Effects compilation
         vfs_registry: VariableRegistry | None = None,  # NEW: VFS registry for item state storage
+        effect_manager: Any | None = None,  # NEW: EffectManager for scheduler cancellation
     ) -> None:
         """Initialize ItemManager.
 
@@ -62,6 +63,7 @@ class ItemManager:
         self.max_items = max_items
         self.device = torch.device(device) if isinstance(device, str) else device
         self.vfs_registry = vfs_registry  # Store VFS registry
+        self.effect_manager = effect_manager
 
         # Compile item interactions if schema provided
         self.compiled_item_types: list[CompiledItemType] = []
@@ -358,6 +360,10 @@ class ItemManager:
         # Unregister item instance from VFS registry
         if self.vfs_registry is not None:
             self.vfs_registry.unregister_item_instance(item.vfs_index)
+
+        # Cancel any scheduled delayed commands targeting this item
+        if self.effect_manager is not None:
+            self.effect_manager.cancel_scheduled_for_entity(scope="item", entity_id=item.vfs_index)
 
         # Free VFS slot
         self.vfs_free_slots.add(item.vfs_index)

@@ -41,6 +41,7 @@ class ExecutionContext:
     target_is_item: bool = False
     iterator_value: Any | None = None
     inventory: Any | None = None
+    scheduler: Any | None = None  # Scheduler for delay commands
 
     def __post_init__(self) -> None:
         if self.effect_manager is None:

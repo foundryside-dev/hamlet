@@ -79,6 +79,18 @@ def test_command_config_modify_requires_value():
         CommandConfig(modify="target.bar.energy")  # Missing value
 
 
+def test_command_config_parallel_not_set():
+    """parallel defaults to None to avoid tripping validation."""
+    cmd = CommandConfig(modify="target.bar.energy", value="5.0")
+    assert cmd.parallel is None
+
+
+def test_command_config_parallel_requires_branch():
+    """parallel command must declare at least one branch."""
+    with pytest.raises(ValidationError, match="parallel command requires at least one branch"):
+        CommandConfig(parallel=[])
+
+
 def test_effect_definition_minimal():
     """EffectDefinitionConfig with minimal required fields."""
     effect = EffectDefinitionConfig(

@@ -20,6 +20,10 @@ class CommandType(enum.Enum):
     SPAWN_ITEM = "spawn_item"
     IF = "if"
     FOR_EACH = "for_each"
+    SWITCH = "switch"
+    REDUCE = "reduce"
+    PARALLEL = "parallel"
+    DELAY = "delay"
 
 
 @dataclass
@@ -68,6 +72,30 @@ class CommandNode:
     do_commands: list[CommandNode] | None = None  # Legacy name
     radius: float | None = None  # Radius for spatial collections (NEW)
 
+    # switch command fields
+    switch_expr: str | None = None
+    switch_ast: Any | None = None
+    cases: list[tuple[str, list[CommandNode]]] | None = None
+    case_asts: list[tuple[Any, list[CommandNode]]] | None = None
+    default_commands: list[CommandNode] | None = None
+
+    # reduce command fields
+    reduce_expr: str | None = None  # collection expression
+    reduce_iterator: str | None = None
+    reduce_init_expr: str | None = None
+    reduce_init_ast: Any | None = None
+    reduce_body_expr: str | None = None  # accumulator update expr (uses acc + iterator)
+    reduce_body_ast: Any | None = None
+    reduce_target: str | None = None
+
+    # parallel command fields
+    parallel_commands: list[CommandNode] | None = None
+
+    # delay command fields
+    delay_ticks_expr: str | None = None
+    delay_ticks_ast: Any | None = None
+    delay_commands: list[CommandNode] | None = None
+
     def __post_init__(self) -> None:
         """Initialize empty lists for nested commands."""
         if self.then_commands is None:
@@ -76,3 +104,11 @@ class CommandNode:
             self.else_commands = []
         if self.do_commands is None:
             self.do_commands = []
+        if self.body is None:
+            self.body = []
+        if self.cases is None:
+            self.cases = []
+        if self.default_commands is None:
+            self.default_commands = []
+        if self.parallel_commands is None:
+            self.parallel_commands = []

@@ -57,7 +57,14 @@ class ActiveEffect:
 class EffectManager:
     """Manages all active effects across all entities."""
 
-    def __init__(self, catalog: EffectCatalog, device: str = "cpu", command_executor: CommandExecutor | None = None) -> None:
+    def __init__(
+        self,
+        catalog: EffectCatalog,
+        device: str = "cpu",
+        command_executor: CommandExecutor | None = None,
+        scheduler: Any | None = None,
+        time_enabled: bool = True,
+    ) -> None:
         """Initialize effect manager with compiled catalog.
 
         Args:
@@ -68,6 +75,9 @@ class EffectManager:
         self.catalog = catalog
         self.device = device
         self.command_executor = command_executor
+        from townlet.effects.scheduler import Scheduler
+
+        self.scheduler = scheduler or Scheduler(time_enabled=time_enabled)
         self.current_step = 0  # Track environment step
         self.next_instance_id = 0
 
@@ -139,6 +149,7 @@ class EffectManager:
                         agent_positions=agent_positions,
                         interrupt_reason="merged_by_effect",
                         current_tick=current_step,
+                        scheduler=self.scheduler,
                     )
 
                     for command in effect_def.on_interrupt:
@@ -146,6 +157,9 @@ class EffectManager:
                 return existing
 
             elif effect_def.reapply_policy == "replace":
+                # Cancel any pending delayed work from the existing effect before replacing
+                self._cancel_scheduled_for_effect(existing)
+
                 # NEW: Execute on_interrupt before removing old effect
                 if effect_def.on_interrupt and self.command_executor and bars is not None:
                     from townlet.effects.context import ExecutionContext
@@ -162,6 +176,7 @@ class EffectManager:
                         agent_positions=agent_positions,
                         interrupt_reason="replaced_by_effect",  # NEW
                         current_tick=current_step,  # NEW
+                        scheduler=self.scheduler,
                     )
 
                     for command in effect_def.on_interrupt:
@@ -205,6 +220,7 @@ class EffectManager:
                 spawn_depth=spawn_depth + 1,  # Increment depth for cascade tracking
                 agent_positions=agent_positions,  # NEW: for for_each spatial queries
                 current_tick=current_step,  # NEW
+                scheduler=self.scheduler,
             )
 
             for command in effect_def.on_spawn:
@@ -283,6 +299,33 @@ class EffectManager:
         if collection is not None and effect in collection:
             collection.remove(effect)
 
+    def _cancel_scheduled_for_effect(self, effect: ActiveEffect) -> None:
+        """Cancel any scheduled commands tied to the effect's scope/entity."""
+        if not self.scheduler:
+            return
+
+        scope_value = effect.scope.value if hasattr(effect.scope, "value") else str(effect.scope)
+
+        if effect.scope == EffectScope.AGENT:
+            self.scheduler.cancel(scope=scope_value, entity_id=effect.target_entity_id)
+        elif effect.scope == EffectScope.ITEM:
+            self.scheduler.cancel(scope=scope_value, entity_id=effect.target_entity_id)
+        elif effect.scope == EffectScope.AFFORDANCE:
+            self.scheduler.cancel(scope=scope_value, entity_id=str(effect.target_entity_id))
+        elif effect.scope == EffectScope.GLOBAL:
+            self.scheduler.cancel(scope=scope_value, entity_id=None)
+
+    def cancel_scheduled_for_entity(self, scope: str, entity_id: int | str | None) -> None:
+        """Cancel scheduled commands for a given scope/entity (external callers)."""
+        if not self.scheduler:
+            return
+        self.scheduler.cancel(scope=scope, entity_id=entity_id)
+
+    def reset_scheduler(self, current_tick: int = 0) -> None:
+        """Reset scheduler and clear all pending delayed work."""
+        if self.scheduler:
+            self.scheduler.reset(current_tick=current_tick)
+
     def tick(
         self,
         bars: dict[str, torch.Tensor],
@@ -290,6 +333,7 @@ class EffectManager:
         current_step: int,
         env_state: Any | None = None,  # Keep for backward compatibility
         item_manager: Any | None = None,  # NEW: ItemManager for spawn_item commands
+        agent_positions: Any | None = None,
     ) -> None:
         """Execute all active effects for one timestep.
 
@@ -307,6 +351,11 @@ class EffectManager:
 
         item_manager = item_manager or NullItemManager()
         self.current_step = current_step
+
+        # Execute any scheduled commands due at this tick before on_tick handlers
+        if self.scheduler:
+            due_items = self.scheduler.advance(current_step)
+            self._execute_scheduled_items(due_items, bars, vfs_registry, item_manager, agent_positions)
 
         # Tick global effects
         for i in range(len(self.global_effects) - 1, -1, -1):
@@ -331,6 +380,80 @@ class EffectManager:
                         item_manager,
                         interrupt_reason=None,
                     )
+
+        # Drain any zero-delay commands scheduled during this tick
+        if self.scheduler:
+            while True:
+                pending_now = self.scheduler.drain_due()
+                if not pending_now:
+                    break
+                self._execute_scheduled_items(pending_now, bars, vfs_registry, item_manager, agent_positions)
+
+    def _execute_scheduled_items(
+        self,
+        scheduled_items: list[Any],
+        bars: dict[str, torch.Tensor],
+        vfs_registry: Any | None,
+        item_manager: Any | None,
+        agent_positions: Any | None,
+    ) -> None:
+        """Execute scheduled commands using the current tick context."""
+
+        if not scheduled_items or self.command_executor is None:
+            return
+
+        from townlet.effects.context import ExecutionContext
+
+        queue = list(scheduled_items)
+        while queue:
+            item = queue.pop(0)
+
+            overrides = dict(getattr(item, "context_overrides", {}) or {})
+            self_index = overrides.pop("self_index", None)
+            target_index = overrides.pop("target_index", None)
+            self_is_item = overrides.pop("self_is_item", False)
+            target_is_item = overrides.pop("target_is_item", False)
+            spawn_depth = overrides.pop("spawn_depth", 0)
+            effect_override = overrides.pop("effect", None)
+
+            # Derive defaults from scope/entity when not explicitly provided
+            if item.scope == "agent" and self_index is None and item.entity_id is not None:
+                try:
+                    self_index = int(item.entity_id)
+                except Exception:
+                    self_index = item.entity_id
+                if target_index is None:
+                    target_index = self_index
+            if item.scope == "item" and self_index is None and item.entity_id is not None:
+                try:
+                    self_index = int(item.entity_id)
+                except Exception:
+                    self_index = item.entity_id
+                self_is_item = True
+
+            ctx = ExecutionContext(
+                bars=bars,
+                vfs_registry=vfs_registry,
+                self_index=self_index,
+                target_index=target_index,
+                effect=effect_override,
+                self_is_item=self_is_item,
+                target_is_item=target_is_item,
+                effect_manager=self,
+                item_manager=item_manager or NullItemManager(),
+                spawn_depth=spawn_depth,
+                agent_positions=agent_positions,
+                current_tick=self.current_step,
+                scheduler=self.scheduler,
+            )
+
+            for cmd in item.commands:
+                self.command_executor.execute(cmd, ctx)
+
+            if self.scheduler:
+                pending_now = self.scheduler.drain_due()
+                if pending_now:
+                    queue.extend(pending_now)
 
     def _tick_effect(
         self,
@@ -359,6 +482,7 @@ class EffectManager:
                     item_manager=item_manager,  # NEW
                     spawn_depth=0,  # Reset depth for top-level tick
                     current_tick=self.current_step,  # NEW
+                    scheduler=self.scheduler,
                 )
 
                 for command in compiled.on_tick:
@@ -382,6 +506,9 @@ class EffectManager:
         if effect.effect_id in self.catalog.effects:
             compiled = self.catalog.effects[effect.effect_id]
 
+            # Cancel any scheduled work before running on_despawn to avoid orphaned commands
+            self._cancel_scheduled_for_effect(effect)
+
             if compiled.on_despawn and self.command_executor:
                 from townlet.effects.context import ExecutionContext
 
@@ -396,6 +523,7 @@ class EffectManager:
                     spawn_depth=0,
                     interrupt_reason=interrupt_reason,
                     current_tick=self.current_step,  # NEW
+                    scheduler=self.scheduler,
                 )
 
                 for command in compiled.on_despawn:
@@ -433,6 +561,7 @@ class EffectManager:
             effect_manager=self,
             item_manager=item_manager or NullItemManager(),
             current_tick=current_tick,
+            scheduler=self.scheduler,
         )
 
     def get_all_active_effects(self) -> list[ActiveEffect]:
@@ -514,6 +643,9 @@ class EffectManager:
         if compiled and compiled.on_interrupt and self.command_executor:
             from townlet.effects.context import ExecutionContext
 
+            # Cancel pending delayed work tied to this effect before interrupt commands run
+            self._cancel_scheduled_for_effect(target_effect)
+
             context = ExecutionContext(
                 bars=bars,
                 vfs_registry=vfs_registry,
@@ -525,6 +657,7 @@ class EffectManager:
                 spawn_depth=0,
                 interrupt_reason="manually_cancelled",
                 current_tick=current_step,
+                scheduler=self.scheduler,
             )
 
             for command in compiled.on_interrupt:

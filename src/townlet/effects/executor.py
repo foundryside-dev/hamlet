@@ -129,6 +129,14 @@ class CommandExecutor:
             self._execute_if(command, context)
         elif command.type == CommandType.FOR_EACH:
             self._execute_for_each(command, context)
+        elif command.type == CommandType.SWITCH:
+            self._execute_switch(command, context)
+        elif command.type == CommandType.REDUCE:
+            self._execute_reduce(command, context)
+        elif command.type == CommandType.PARALLEL:
+            self._execute_parallel(command, context)
+        elif command.type == CommandType.DELAY:
+            self._execute_delay(command, context)
         else:
             raise NotImplementedError(f"Command type {command.type} not implemented")
 
@@ -370,6 +378,159 @@ class CommandExecutor:
             body = command.body or []
             for body_cmd in body:
                 self.execute(body_cmd, child_context)
+
+    def _execute_switch(self, command: CommandNode, context: ExecutionContext) -> None:
+        """Execute switch/case (equality-based, first-match wins)."""
+        if command.switch_ast is None:
+            raise ValueError("SWITCH command missing compiled switch_ast")
+
+        eval_ctx = self._make_eval_context(context, effect=context.effect)
+        evaluator = Evaluator(eval_ctx)
+
+        switch_val = evaluator.evaluate(command.switch_ast)
+
+        def _to_scalar_or_tensor(val: Any) -> Any:
+            import torch
+
+            if isinstance(val, torch.Tensor):
+                return val
+            if isinstance(val, (int, float, bool)):
+                return torch.tensor(val, device=eval_ctx.device)
+            if isinstance(val, str):
+                return val
+            raise ValueError(f"Unsupported switch value type: {type(val).__name__}")
+
+        switch_eval = _to_scalar_or_tensor(switch_val)
+
+        matched = False
+        for when_ast, body in command.case_asts or []:
+            when_val = evaluator.evaluate(when_ast)
+            when_eval = _to_scalar_or_tensor(when_val)
+
+            if isinstance(switch_eval, str) or isinstance(when_eval, str):
+                is_match = switch_eval == when_eval
+            else:
+                # Assume tensors/scalars; allow broadcasting then any().
+                if switch_eval.shape == () and when_eval.shape == ():
+                    is_match = bool(switch_eval.item() == when_eval.item())
+                else:
+                    comp = switch_eval == when_eval
+                    is_match = bool(comp.any().item())
+
+            if is_match:
+                matched = True
+                for cmd in body:
+                    self.execute(cmd, context)
+                break
+
+        if not matched:
+            for cmd in command.default_commands or []:
+                self.execute(cmd, context)
+
+    def _execute_reduce(self, command: CommandNode, context: ExecutionContext) -> None:
+        """Execute reduce over fixed-size collection."""
+        if command.collection_ast is None or command.reduce_init_ast is None or command.reduce_body_ast is None:
+            raise ValueError("REDUCE command missing compiled ASTs")
+
+        eval_ctx = self._make_eval_context(context, effect=context.effect)
+        evaluator = Evaluator(eval_ctx)
+
+        collection_val = evaluator.evaluate(command.collection_ast)
+        acc = evaluator.evaluate(command.reduce_init_ast)
+
+        import torch
+
+        # Accept tensor or Python list; enforce fixed-size by cap
+        if isinstance(collection_val, list):
+            elements = collection_val
+        elif isinstance(collection_val, torch.Tensor):
+            elements = collection_val
+        else:
+            raise ValueError("REDUCE collection must evaluate to list or tensor")
+
+        # Cap enforcement
+        from townlet.effects.collections import MAX_COLLECTION_SIZE
+
+        length = len(elements) if isinstance(elements, list) else elements.shape[0]
+        if length > MAX_COLLECTION_SIZE:
+            raise RuntimeError(f"REDUCE collection size {length} exceeds cap {MAX_COLLECTION_SIZE}")
+
+        # Iterate sequentially (fixed-size expectation)
+        acc_device = acc.device if hasattr(acc, "device") else None
+        for i in range(length):
+            iter_val = elements[i] if isinstance(elements, list) else elements[i]
+
+            # Bind iterator and accumulator in a child eval context by shallow copy of dicts
+            child_eval_ctx = self._make_eval_context(context, effect=context.effect)
+            # Inject iterator and acc into vfs dict for expression resolution
+            child_eval_ctx.vfs = dict(child_eval_ctx.vfs)
+            if isinstance(iter_val, torch.Tensor):
+                child_eval_ctx.vfs[command.reduce_iterator or "iter"] = iter_val
+            else:
+                # Fall back to tensor on available device, otherwise CPU
+                child_eval_ctx.vfs[command.reduce_iterator or "iter"] = (
+                    torch.tensor(iter_val, device=acc_device) if acc_device is not None else torch.tensor(iter_val)
+                )
+            child_eval_ctx.vfs["acc"] = acc
+            child_evaluator = Evaluator(child_eval_ctx)
+            acc = child_evaluator.evaluate(command.reduce_body_ast)
+
+        # Write back result
+        assert command.reduce_target is not None
+        context.set_path(command.reduce_target, acc)
+
+    def _execute_parallel(self, command: CommandNode, context: ExecutionContext) -> None:
+        """Execute branches sequentially (logical parallel) with disjoint writes enforced at compile time."""
+        for branch in command.parallel_commands or []:
+            self.execute(branch, context)
+
+    def _execute_delay(self, command: CommandNode, context: ExecutionContext) -> None:
+        """Enqueue delayed commands via scheduler (if available)."""
+        if command.delay_ticks_ast is None:
+            raise ValueError("delay command missing compiled ticks AST")
+
+        # Check scheduler availability
+        scheduler = getattr(context, "scheduler", None)
+        if scheduler is None:
+            raise RuntimeError("delay command cannot run without scheduler")
+
+        eval_ctx = self._make_eval_context(context, effect=context.effect)
+        evaluator = Evaluator(eval_ctx)
+        ticks_val = evaluator.evaluate(command.delay_ticks_ast)
+
+        import torch
+
+        if isinstance(ticks_val, torch.Tensor):
+            if ticks_val.numel() != 1:
+                raise ValueError("delay ticks expression must resolve to scalar")
+            delay_ticks = int(ticks_val.item())
+        else:
+            delay_ticks = int(ticks_val)
+
+        context_overrides = {
+            "self_index": context.self_index,
+            "target_index": context.target_index,
+            "self_is_item": context.self_is_item,
+            "target_is_item": context.target_is_item,
+            "spawn_depth": getattr(context, "spawn_depth", 0),
+            "effect": context.effect,
+        }
+
+        scope = None
+        if context.self_index is not None:
+            scope = "item" if context.self_is_item else "agent"
+        elif context.effect is not None and getattr(context.effect, "scope", None) is not None:
+            eff_scope = getattr(context.effect, "scope")
+            scope = eff_scope.value if hasattr(eff_scope, "value") else str(eff_scope)
+
+        scheduler.schedule(
+            commands=command.delay_commands or [],
+            delay_ticks=delay_ticks,
+            scope=scope,
+            entity_id=context.self_index,
+            context_overrides=context_overrides,
+            base_tick=None if context.current_tick is None else context.current_tick,
+        )
 
     def _make_eval_context(self, context: ExecutionContext, effect: Any | None = None) -> ExprExecutionContext:
         """Convert ExecutionContext to ExprExecutionContext.

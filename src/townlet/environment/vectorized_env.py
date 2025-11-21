@@ -442,6 +442,7 @@ class VectorizedHamletEnv:
                 catalog=effect_catalog,
                 command_executor=self.command_executor,
                 device=str(self.device),
+                time_enabled=self.temporal_support_enabled,
             )
             if effect_catalog is not None
             else None
@@ -619,6 +620,7 @@ class VectorizedHamletEnv:
                 device=self.device,
                 schema=schema,  # NEW: Enable Effects compilation
                 vfs_registry=self.vfs_registry,  # NEW: Pass VFS registry for item state storage
+                effect_manager=self.effect_manager,  # NEW: allow scheduler cancellation on item despawn
             )
 
             self.item_inventory = InventoryState(
@@ -984,6 +986,14 @@ class VectorizedHamletEnv:
         self._affordance_streaks = {}
         self._unique_affordances_count.zero_()
         self._affordances_seen = [set() for _ in range(self.num_agents)]
+
+        # Reset scheduler/delayed work and cancel agent-scoped pending items between episodes
+        if self.effect_manager is not None:
+            # Clear scheduler state
+            self.effect_manager.reset_scheduler(current_tick=0)
+            # Cancel any lingering agent-scoped items (paranoia if reset called mid-episode)
+            for agent_idx in range(self.num_agents):
+                self.effect_manager.cancel_scheduled_for_entity(scope="agent", entity_id=agent_idx)
 
         # Clear item/inventory state between episodes
         if self.item_manager is not None:
@@ -1428,6 +1438,7 @@ class VectorizedHamletEnv:
             dones: [num_agents] bool
             info: dict with metadata
         """
+        prev_dones = self.dones.clone()
         # 1. Execute actions and track successful interactions
         successful_interactions = self._execute_actions(actions)
 
@@ -1509,6 +1520,13 @@ class VectorizedHamletEnv:
         rewards = self._calculate_shaped_rewards()
         rewards = torch.where(retired, rewards + 1.0, rewards)  # +1 retirement bonus
         self.dones = torch.logical_or(self.dones, retired)
+
+        # Cancel any pending agent-scoped delayed work for agents that just became done
+        if self.effect_manager is not None and self.effect_manager.scheduler is not None:
+            newly_done = torch.logical_and(self.dones, ~prev_dones)
+            if newly_done.any():
+                for idx in torch.nonzero(newly_done, as_tuple=False).flatten():
+                    self.effect_manager.cancel_scheduled_for_entity(scope="agent", entity_id=int(idx))
 
         # 6. Increment time of day only when temporal mechanics are active.
         if self.enable_temporal_mechanics:
@@ -1831,6 +1849,7 @@ class VectorizedHamletEnv:
                 meters=self.meters,
                 affordance_name=affordance_name,
                 agent_mask=at_affordance,
+                current_tick=int(self.step_counts[0].item()) if self.step_counts.numel() > 0 else 0,
             )
 
         # Update affordance tracking after all interactions

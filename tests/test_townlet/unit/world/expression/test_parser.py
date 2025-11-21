@@ -1,5 +1,8 @@
 """Tests for expression parser."""
 
+import pytest
+from pyparsing import ParseException
+
 from townlet.world.expression import (
     BinaryOp,
     Constant,
@@ -476,3 +479,80 @@ def test_parse_nested_index_access():
     assert result.base.base.name == "grid"
     assert result.base.index.name == "x"
     assert result.index.name == "y"
+
+
+def test_parse_float_with_trailing_dot():
+    """Parser treats '1.' as float constant."""
+    parser = ExpressionParser()
+    result = parser.parse("1.")
+
+    assert isinstance(result, Constant)
+    assert isinstance(result.value, float)
+    assert result.value == 1.0
+
+
+def test_parse_scientific_notation_positive_exponent():
+    """Parser handles scientific notation with positive exponent."""
+    parser = ExpressionParser()
+    result = parser.parse("1e3")
+
+    assert isinstance(result, Constant)
+    assert isinstance(result.value, float)
+    assert result.value == 1000.0
+
+
+def test_parse_nested_index_expression():
+    """Parser handles nested index expressions (foo[bar[0]])."""
+    parser = ExpressionParser()
+    result = parser.parse("foo[bar[0]]")
+
+    assert isinstance(result, IndexAccess)
+    assert isinstance(result.base, Variable)
+    assert result.base.name == "foo"
+    assert isinstance(result.index, IndexAccess)
+    assert isinstance(result.index.base, Variable)
+    assert result.index.base.name == "bar"
+    assert isinstance(result.index.index, Constant)
+    assert result.index.index.value == 0
+
+
+def test_parse_raises_on_trailing_operator():
+    """Parser raises ParseException with position for trailing operator."""
+    parser = ExpressionParser()
+
+    with pytest.raises(ParseException) as excinfo:
+        parser.parse("a +")
+
+    assert excinfo.value.col == 3
+
+
+def test_parse_raises_on_unclosed_parenthesis():
+    """Parser raises on missing closing parenthesis."""
+    parser = ExpressionParser()
+
+    with pytest.raises(ParseException):
+        parser.parse("(a + b")
+
+
+def test_parse_raises_on_double_comma_in_arguments():
+    """Parser rejects malformed function arguments with double comma."""
+    parser = ExpressionParser()
+
+    with pytest.raises(ParseException):
+        parser.parse("max(a,,b)")
+
+
+def test_parse_raises_on_invalid_token():
+    """Parser rejects illegal tokens in expressions."""
+    parser = ExpressionParser()
+
+    with pytest.raises(ParseException):
+        parser.parse("a $ b")
+
+
+def test_parse_rejects_keyword_as_identifier():
+    """Parser rejects reserved keywords used as identifiers."""
+    parser = ExpressionParser()
+
+    with pytest.raises(ValueError):
+        parser.parse("and + 1")

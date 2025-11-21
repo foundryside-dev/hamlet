@@ -79,6 +79,45 @@ class CommandParser:
                 do_commands=[self.parse_command(cmd) for cmd in config.do],
             )
 
+        elif config.switch is not None:
+            parsed_cases: list[tuple[str, list[CommandNode]]] = []
+            for case in config.cases:
+                when_expr = case.get("when")
+                do_cmds = case.get("do") or []
+                parsed_cases.append((when_expr, [self.parse_command(cmd) for cmd in do_cmds]))
+
+            default_cmds = [self.parse_command(cmd) for cmd in config.default]
+
+            return CommandNode(
+                type=CommandType.SWITCH,
+                switch_expr=config.switch,
+                cases=parsed_cases,
+                default_commands=default_cmds,
+            )
+
+        elif config.reduce is not None:
+            return CommandNode(
+                type=CommandType.REDUCE,
+                reduce_expr=config.reduce,
+                reduce_iterator=config.reduce_as,
+                reduce_init_expr=config.reduce_init,
+                reduce_body_expr=config.reduce_body,
+                reduce_target=config.reduce_into,
+            )
+
+        elif config.parallel is not None:
+            return CommandNode(
+                type=CommandType.PARALLEL,
+                parallel_commands=[self.parse_command(cmd) for cmd in config.parallel],
+            )
+
+        elif config.delay is not None:
+            return CommandNode(
+                type=CommandType.DELAY,
+                delay_ticks_expr=config.delay,
+                delay_commands=[self.parse_command(cmd) for cmd in config.delay_do],
+            )
+
         else:
             raise ValueError("Invalid command config: no command type set")
 

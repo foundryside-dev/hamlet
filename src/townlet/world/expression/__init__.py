@@ -30,6 +30,8 @@ from townlet.world.expression.ast_nodes import (
     IndexAccess,
     OperatorType,
     PathAccess,
+    Reduce,
+    Switch,
     UnaryOp,
     Variable,
 )
@@ -49,6 +51,8 @@ __all__ = [
     "FunctionCall",
     "IfThenElse",
     "IndexAccess",
+    "Switch",
+    "Reduce",
     "OperatorType",
     "PathAccess",
     "TypeCheckError",

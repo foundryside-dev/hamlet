@@ -40,7 +40,13 @@ class EffectCatalog:
     effects: dict[str, CompiledEffect]
 
     @classmethod
-    def from_config(cls, config: EffectsConfig, schema: dict[str, str] | None = None) -> EffectCatalog:
+    def from_config(
+        cls,
+        config: EffectsConfig,
+        schema: dict[str, str] | None = None,
+        *,
+        time_enabled: bool = True,
+    ) -> EffectCatalog:
         """Compile effects catalog from config.
 
         Args:
@@ -51,7 +57,7 @@ class EffectCatalog:
             Compiled catalog with validated command pipelines
         """
         parser = CommandParser()
-        compiler = CommandCompiler(schema) if schema else None
+        compiler = CommandCompiler(schema, time_enabled=time_enabled) if schema else None
 
         effects = {}
         for defn in config.effect_definitions:

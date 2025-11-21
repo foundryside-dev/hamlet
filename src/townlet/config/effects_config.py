@@ -95,20 +95,61 @@ class CommandConfig(BaseModel):
     as_: str | None = Field(None, alias="as")  # Iterator variable name
     do: list[CommandConfig] = []
 
+    # switch command: Multi-branch equality dispatch
+    switch: str | None = None  # Expression evaluated once
+    cases: list[dict[str, Any]] = []  # List of {when: expr, do: [...]} mappings
+    default: list[CommandConfig] = []  # Default branch commands
+
+    # reduce command: Fixed-size reduction into accumulator
+    reduce: str | None = None  # collection expression
+    reduce_as: str | None = Field(None, alias="reduce_as")  # iterator name
+    reduce_init: str | None = None  # accumulator init expr
+    reduce_body: str | None = None  # accumulator update expr (uses acc + iterator)
+    reduce_into: str | None = None  # target path to store result
+
+    # parallel command: disjoint branch execution
+    parallel: list[CommandConfig] | None = None
+
+    # delay command: schedule commands after N ticks
+    delay: str | None = None  # ticks expression
+    delay_do: list[CommandConfig] = Field(default=[], alias="do")
+
     @model_validator(mode="after")
     def validate_exactly_one_command(self) -> CommandConfig:
         """Exactly one command type must be set."""
-        fields = ["modify", "spawn_effect", "spawn_item", "if_condition", "for_each"]
+        fields = ["modify", "spawn_effect", "spawn_item", "if_condition", "for_each", "switch", "reduce", "parallel", "delay"]
         set_fields = [f for f in fields if getattr(self, f) is not None]
 
         if len(set_fields) != 1:
-            raise ValueError(
-                f"Exactly one command type required (modify/spawn_effect/spawn_item/if/for_each), got {len(set_fields)}: {set_fields}"
-            )
+            allowed = "modify/spawn_effect/spawn_item/if/for_each/switch/reduce/parallel/delay"
+            raise ValueError(f"Exactly one command type required ({allowed}), got {len(set_fields)}: {set_fields}")
 
         # Also validate that modify command has value field
         if self.modify and not self.value:
             raise ValueError("modify command requires 'value' field")
+
+        if self.switch is not None and not self.cases and not self.default:
+            raise ValueError("switch command requires at least one case or default block")
+
+        if self.reduce is not None:
+            missing = [
+                name
+                for name, val in {
+                    "reduce_as": self.reduce_as,
+                    "reduce_init": self.reduce_init,
+                    "reduce_body": self.reduce_body,
+                    "reduce_into": self.reduce_into,
+                }.items()
+                if val is None
+            ]
+            if missing:
+                raise ValueError(f"reduce command missing fields: {missing}")
+
+        if self.parallel is not None and not self.parallel:
+            raise ValueError("parallel command requires at least one branch")
+
+        if self.delay is not None and not self.delay_do:
+            raise ValueError("delay command requires a 'do' block")
 
         return self
 

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from townlet.effects.schema import CommandNode, CommandType
 from townlet.world.expression import ExpressionParser
 from townlet.world.expression.type_checker import TypeChecker
@@ -12,13 +14,15 @@ __all__ = ["CommandCompiler"]
 class CommandCompiler:
     """Compile commands with expression type checking."""
 
-    def __init__(self, schema: dict[str, str]):
+    def __init__(self, schema: dict[str, str], *, time_enabled: bool = True):
         """Initialize compiler with type schema.
 
         Args:
             schema: Type schema for paths (e.g., {"target.bar.energy": "float"})
+            time_enabled: Whether temporal mechanics are enabled (gates delay)
         """
         self.schema = schema
+        self.time_enabled = time_enabled
         self.parser = ExpressionParser()  # type: ignore[no-untyped-call]
         self.type_checker = TypeChecker(schema=schema)
 
@@ -137,6 +141,159 @@ class CommandCompiler:
                     seen_ids.add(id(cmd))
                     nested.append(cmd)
             for cmd in nested:
+                self.compile_command(cmd)
+
+            # Explicitly reject nested for_each until vectorized semantics are defined
+            def _contains_for_each(commands: list[CommandNode]) -> bool:
+                for c in commands:
+                    if c.type == CommandType.FOR_EACH:
+                        return True
+                    nested_cmds: list[CommandNode] = []
+                    for seq in (c.then_commands or [], c.else_commands or [], c.do_commands or [], c.body or [], c.default_commands or []):
+                        nested_cmds.extend(seq)
+                    if nested_cmds and _contains_for_each(nested_cmds):
+                        return True
+                return False
+
+            if _contains_for_each(nested):
+                raise TypeCheckError("Nested for_each is not supported under current vectorized constraints")
+
+        elif node.type == CommandType.SWITCH:
+            from townlet.world.expression.type_checker import TypeCheckError
+
+            if node.switch_expr is None:
+                raise TypeCheckError("SWITCH command requires 'switch' expression")
+
+            switch_ast = self.parser.parse(node.switch_expr)
+            switch_type = self.type_checker.check(switch_ast)
+            node.switch_ast = switch_ast
+
+            compiled_cases: list[tuple[Any, list[CommandNode]]] = []
+            for when_expr, body in node.cases or []:
+                if when_expr is None:
+                    raise TypeCheckError("SWITCH case missing 'when' expression")
+                when_ast = self.parser.parse(when_expr)
+                when_type = self.type_checker.check(when_ast)
+                if when_type != switch_type:
+                    raise TypeCheckError(f"SWITCH case type mismatch: switch is {switch_type}, case is {when_type}")
+                for cmd in body:
+                    self.compile_command(cmd)
+                compiled_cases.append((when_ast, body))
+            node.case_asts = compiled_cases
+
+            for cmd in node.default_commands or []:
+                self.compile_command(cmd)
+
+        elif node.type == CommandType.REDUCE:
+            from townlet.world.expression.type_checker import TypeCheckError
+
+            if (
+                node.reduce_expr is None
+                or node.reduce_iterator is None
+                or node.reduce_init_expr is None
+                or node.reduce_body_expr is None
+                or node.reduce_target is None
+            ):
+                raise TypeCheckError("REDUCE command requires collection, iterator, init, body, and target")
+
+            # Parse expressions
+            coll_ast = self.parser.parse(node.reduce_expr)
+            init_ast = self.parser.parse(node.reduce_init_expr)
+            body_ast = self.parser.parse(node.reduce_body_expr)
+
+            # Type check collection -> must be iterable of known-size tensors/lists (policy: reject unknown/ragged)
+            coll_type = self.type_checker.check(coll_ast)
+            if coll_type not in {"list", "tensor"}:
+                raise TypeCheckError("REDUCE collection must be fixed-size list or tensor under vectorized constraints")
+
+            # Type check init and infer accumulator type
+            acc_type = self.type_checker.check(init_ast)
+
+            # Extend schema with iterator and accumulator symbols for body checking
+            iter_name = node.reduce_iterator
+            # Temporarily augment schema
+            original_schema = dict(self.type_checker.schema)
+            self.type_checker.schema[iter_name] = acc_type  # assume numeric iterator compatible with accumulator
+            self.type_checker.schema["acc"] = acc_type
+            body_type = self.type_checker.check(body_ast)
+            # Restore schema
+            self.type_checker.schema = original_schema
+
+            if body_type != acc_type:
+                raise TypeCheckError(f"REDUCE body must return accumulator type {acc_type}, got {body_type}")
+
+            # Validate target path exists and matches accumulator type
+            if node.reduce_target not in self.schema:
+                raise TypeCheckError(f"Path '{node.reduce_target}' not found in schema")
+            target_type = self.schema[node.reduce_target]
+            if target_type != acc_type:
+                raise TypeCheckError(f"REDUCE target type mismatch: expected {target_type}, got {acc_type}")
+
+            # Store compiled ASTs
+            node.collection_ast = coll_ast
+            node.reduce_init_ast = init_ast
+            node.reduce_body_ast = body_ast
+
+        elif node.type == CommandType.PARALLEL:
+            from townlet.world.expression.type_checker import TypeCheckError
+
+            branches = node.parallel_commands or []
+            if not branches:
+                raise TypeCheckError("PARALLEL command requires at least one branch")
+
+            # Collect target paths written by branches to detect conflicts (modify/reduce targets only for now)
+            def collect_writes(cmd: CommandNode) -> set[str]:
+                writes: set[str] = set()
+                if cmd.type == CommandType.MODIFY and cmd.path:
+                    writes.add(cmd.path)
+                if cmd.type == CommandType.REDUCE and cmd.reduce_target:
+                    writes.add(cmd.reduce_target)
+                # Recurse into nested blocks
+                for seq in (
+                    cmd.then_commands or [],
+                    cmd.else_commands or [],
+                    cmd.do_commands or [],
+                    cmd.body or [],
+                    cmd.default_commands or [],
+                    cmd.parallel_commands or [],
+                ):
+                    for sub in seq:
+                        writes.update(collect_writes(sub))
+                return writes
+
+            branch_writes = [collect_writes(bc) for bc in branches]
+            # Detect conflicts
+            seen: set[str] = set()
+            for writes in branch_writes:
+                overlap = seen.intersection(writes)
+                if overlap:
+                    raise TypeCheckError(f"PARALLEL branches write the same targets: {sorted(overlap)}")
+                seen.update(writes)
+
+            # Compile branches
+            for bc in branches:
+                self.compile_command(bc)
+
+        elif node.type == CommandType.DELAY:
+            from townlet.world.expression.type_checker import TypeCheckError
+
+            if not self.time_enabled:
+                raise TypeCheckError("delay command not allowed when time is disabled")
+            if node.delay_ticks_expr is None:
+                raise TypeCheckError("delay command requires ticks expression")
+            if not node.delay_commands:
+                raise TypeCheckError("delay command requires a non-empty do block")
+
+            ticks_ast = self.parser.parse(node.delay_ticks_expr)
+            ticks_type = self.type_checker.check(ticks_ast)
+            if ticks_type != "int":
+                raise TypeCheckError("delay ticks expression must be int")
+
+            # Store compiled AST
+            node.delay_ticks_ast = ticks_ast
+
+            # Compile nested commands
+            for cmd in node.delay_commands:
                 self.compile_command(cmd)
 
         return node

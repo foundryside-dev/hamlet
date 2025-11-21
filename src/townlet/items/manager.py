@@ -239,41 +239,33 @@ class ItemManager:
             return None  # No VFS slots available
         vfs_index = self.vfs_free_slots.pop()
 
-        # Initialize item VFS state to defaults
-        if self.vfs_registry is not None:
-            from townlet.vfs.schema import VariableScope
+        # Initialize item VFS state from profile defaults + initial_state overrides
+        if self.vfs_registry is not None and item_def.vfs_profile:
+            profile_name = item_def.vfs_profile
 
-            # Reset all item-scoped variables to their defaults
-            for var_id, var_def in self.vfs_registry.variables.items():
-                if var_def.scope == VariableScope.ITEM:
-                    if var_def.default is not None:
-                        self.vfs_registry.write(
-                            var_id,
-                            var_def.default,
-                            context_index=vfs_index,
-                            scope=VariableScope.ITEM,
-                        )
+            # Get profile from registry
+            if profile_name not in self.vfs_registry.item_profile_map:
+                raise ValueError(f"VFS profile '{profile_name}' not found in registry")
+
+            profile_map = self.vfs_registry.item_profile_map[profile_name]
+
+            # Get compiled profile to access initial_value defaults
+            if hasattr(self.vfs_registry, "item_profiles") and self.vfs_registry.item_profiles:
+                compiled_profile = self.vfs_registry.item_profiles.get(profile_name)
+                if compiled_profile:
+                    # Initialize with defaults from compiled profile
+                    for compiled_var in compiled_profile.variables:
+                        if compiled_var.initial_value is not None:
+                            var_idx = profile_map[compiled_var.name]
+                            self.vfs_registry.item_vfs[vfs_index, var_idx] = float(compiled_var.initial_value)
 
             # Apply initial_state overrides if provided
             if initial_state is not None:
-                for var_id, value in initial_state.items():
-                    # Validate variable exists
-                    if var_id not in self.vfs_registry.variables:
-                        raise KeyError(f"Unknown VFS variable for initial_state: {var_id}")
-
-                    var_def = self.vfs_registry.variables[var_id]
-
-                    # Validate scope
-                    if var_def.scope != VariableScope.ITEM:
-                        raise ValueError(f"Variable {var_id} is not item-scoped (scope={var_def.scope})")
-
-                    # Apply override
-                    self.vfs_registry.write(
-                        var_id,
-                        value,
-                        context_index=vfs_index,
-                        scope=VariableScope.ITEM,
-                    )
+                for var_name, value in initial_state.items():
+                    if var_name not in profile_map:
+                        raise ValueError(f"Variable '{var_name}' not in profile '{profile_name}'")
+                    var_idx = profile_map[var_name]
+                    self.vfs_registry.item_vfs[vfs_index, var_idx] = float(value)
 
         # Create instance
         instance = ItemInstance(

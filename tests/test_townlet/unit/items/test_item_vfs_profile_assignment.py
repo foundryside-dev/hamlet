@@ -8,6 +8,7 @@ from townlet.config.items_config import (
     ItemTypeConfig,
 )
 from townlet.items.manager import ItemManager
+from townlet.vfs.profiles import CompiledItemProfile, CompiledVariable
 from townlet.vfs.registry import VariableRegistry
 
 
@@ -39,12 +40,32 @@ def test_item_manager_assigns_vfs_profile_on_spawn():
         max_items_in_world=10,
     )
 
-    # Create minimal registry (no VFS variables needed for this test)
+    # Create compiled item profiles
+    food_profile = CompiledItemProfile(
+        profile_name="food_stats",
+        variables=[
+            CompiledVariable(name="calories", type="int", ast=None, initial_value=100, result_type="int"),
+            CompiledVariable(name="freshness", type="float", ast=None, initial_value=1.0, result_type="float"),
+        ],
+    )
+
+    weapon_profile = CompiledItemProfile(
+        profile_name="weapon_stats",
+        variables=[
+            CompiledVariable(name="damage", type="int", ast=None, initial_value=50, result_type="int"),
+            CompiledVariable(name="durability", type="float", ast=None, initial_value=1.0, result_type="float"),
+        ],
+    )
+
+    item_profiles = {"food_stats": food_profile, "weapon_stats": weapon_profile}
+
+    # Create registry with item profiles
     registry = VariableRegistry(
         variables=[],
         num_agents=1,
         max_items=10,
         device=torch.device("cpu"),
+        item_profiles=item_profiles,
     )
 
     manager = ItemManager(
@@ -99,11 +120,23 @@ def test_item_manager_preserves_vfs_profile_across_operations():
         max_items_in_world=10,
     )
 
+    # Create compiled item profiles
+    consumable_profile = CompiledItemProfile(
+        profile_name="consumable_stats",
+        variables=[
+            CompiledVariable(name="charges", type="int", ast=None, initial_value=3, result_type="int"),
+            CompiledVariable(name="potency", type="float", ast=None, initial_value=1.0, result_type="float"),
+        ],
+    )
+
+    item_profiles = {"consumable_stats": consumable_profile}
+
     registry = VariableRegistry(
         variables=[],
         num_agents=1,
         max_items=10,
         device=torch.device("cpu"),
+        item_profiles=item_profiles,
     )
 
     manager = ItemManager(

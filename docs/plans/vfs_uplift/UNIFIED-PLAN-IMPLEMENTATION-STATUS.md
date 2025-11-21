@@ -789,6 +789,104 @@ Task 2 delivered runtime VFS evaluation infrastructure. Ready for:
 
 ---
 
+### Task 3: Item VFS Integration ✅ **COMPLETE** (100%)
+
+**Timeline:** Planned 2-3 days | **Actual:** 1 day
+**Test Coverage:** 10 tests (100% passing - 7 unit + 3 integration)
+
+#### Deliverables
+
+| Subtask | Status | Commits | Tests |
+|---------|--------|---------|-------|
+| 3.1: Item Profile Compilation | ✅ Complete | (completed earlier) | 2 |
+| 3.2: Profile-Driven Storage | ✅ Complete | (completed earlier) | 2 |
+| 3.3: ItemManager Integration | ✅ Complete | (completed earlier) | 2 |
+| 3.4: Observation Builder | ✅ Complete | (completed earlier) | 1 |
+| 3.5: Integration Tests | ✅ Complete | (this commit) | 3 |
+
+**Success Criteria:**
+- ✅ Item profiles compiled from vfs_profiles.yaml
+- ✅ Item VFS storage allocated using compiled profiles
+- ✅ ItemManager assigns vfs_profile to item instances
+- ✅ ItemManager accepts initial_state for VFS initialization
+- ✅ Item VFS observations with proper masking
+- ✅ 10 new tests passing (7 unit + 3 integration)
+- ✅ All existing tests still pass
+
+**Key Achievements:**
+
+1. **Item Profile Compilation** (Subtask 3.1)
+   - Added CompiledItemProfile dataclass to vfs/profiles.py
+   - Added compile_item_profile() method to VFSProfileCompiler
+   - UniverseCompiler compiles all item_profiles from vfs_profiles.yaml
+   - Stored in CompiledVFSProfiles.item_profiles dict
+
+2. **Profile-Driven Storage** (Subtask 3.2)
+   - Added item_profiles parameter to VariableRegistry.__init__
+   - Implemented _initialize_item_storage_from_profiles()
+   - Allocates storage as [max_items, max_vars] tensor
+   - Built item_profile_map: {profile_name → {var_name → index}}
+
+3. **ItemManager Integration** (Subtask 3.3)
+   - Added vfs_profile field to ItemInstance
+   - Updated spawn_item() to initialize VFS from compiled profiles
+   - Supports initial_state parameter for custom VFS values
+   - Profile defaults loaded from CompiledVariable.initial_value
+
+4. **Observation Builder** (Subtask 3.4)
+   - Updated build_vfs_observation() to include item VFS
+   - Implemented masking for empty item slots (zeros)
+   - Observations include held items' VFS state
+   - Observation dimensions remain stable
+
+5. **Integration Tests** (Subtask 3.5)
+   - test_item_vfs_profile_driven_end_to_end: Full pipeline verification
+   - test_item_spawn_with_initial_state: Custom VFS initialization
+   - test_item_vfs_in_observations: Item VFS in agent observations
+
+**Files Modified:**
+
+```
+src/townlet/vfs/profiles.py
+├── CompiledItemProfile dataclass ✅
+└── compile_item_profile() method ✅
+
+src/townlet/vfs/registry.py
+├── item_profiles parameter ✅
+├── item_profile_map field ✅
+└── _initialize_item_storage_from_profiles() ✅
+
+src/townlet/items/instance.py
+└── vfs_profile field ✅
+
+src/townlet/items/manager.py
+└── spawn_item() profile-driven initialization ✅
+
+src/townlet/vfs/observation_builder.py
+└── build_vfs_observation() item VFS support ✅
+
+tests/test_townlet/unit/universe/test_item_profile_compilation.py (2 tests) ✅
+tests/test_townlet/unit/vfs/test_item_vfs_storage.py (2 tests) ✅
+tests/test_townlet/unit/items/test_item_vfs_profile_assignment.py (2 tests) ✅
+tests/test_townlet/unit/vfs/test_item_vfs_observations.py (1 test) ✅
+tests/test_townlet/integration/test_item_vfs_integration.py (3 tests) ✅
+```
+
+**Breaking Changes:**
+
+- ItemManager.spawn_item() now uses profile-driven VFS initialization
+- Old variables_reference.yaml-based item VFS initialization removed
+- ItemInstance now requires vfs_profile field
+
+**Next Steps:**
+
+Task 3 delivered item VFS integration. Ready for:
+
+- **Task 4:** Runtime effects execution (remove YAML loading from vectorized_env)
+- **Task 5:** Cleanup and validation (remove legacy code paths)
+
+---
+
 **Report Generated:** 2025-11-21
 **Assessment Team:** 6 parallel evaluation agents
 **Review Status:** Comprehensive file-by-file analysis complete

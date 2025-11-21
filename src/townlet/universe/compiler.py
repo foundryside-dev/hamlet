@@ -53,7 +53,7 @@ from townlet.universe.dto import (
 from townlet.universe.optimization import OptimizationData
 from townlet.universe.raw_configs_v21 import RawConfigsV21
 from townlet.universe.symbol_table import UniverseSymbolTable
-from townlet.vfs.profiles import VFSProfileCompiler
+from townlet.vfs.profiles import CompiledItemProfile, VFSProfileCompiler
 from townlet.vfs.schema import NormalizationSpec, VariableDef
 from townlet.vfs.schema import ObservationField as VFSObservationField
 
@@ -178,12 +178,20 @@ class UniverseCompiler:
         if profiles_config.global_profile is not None:
             compiled_global = compiler.compile_global_profile(profiles_config.global_profile, bar_schema=bar_schema)
 
-        # TODO: Compile agent_profile and item_profiles (Task 1.2)
+        # Compile item profiles
+        compiled_item_profiles: dict[str, CompiledItemProfile] = {}
+        if profiles_config.item_profiles:
+            for item_profile_config in profiles_config.item_profiles:
+                compiled_profile = compiler.compile_item_profile(
+                    item_profile_config,
+                    bar_schema=bar_schema,
+                )
+                compiled_item_profiles[compiled_profile.profile_name] = compiled_profile
 
         return CompiledVFSProfiles(
             global_profile=compiled_global,
-            agent_profile=None,  # TODO
-            item_profiles={},  # TODO
+            agent_profile=None,  # TODO: Task 4 or later
+            item_profiles=compiled_item_profiles,
         )
 
     def _compile_effects_catalog(self, experiment_dir: Path, effects_schema: dict[str, str]) -> EffectCatalog | None:

@@ -11,6 +11,7 @@ from townlet.config.vfs_profiles_config import (
     AgentVFSVariableConfig,
     GlobalVFSProfileConfig,
     GlobalVFSVariableConfig,
+    ItemVFSProfileConfig,
     ItemVFSVariableConfig,
 )
 from townlet.world.expression import ASTNode, ExpressionParser, PathAccess, Variable
@@ -21,6 +22,7 @@ __all__ = [
     "CircularDependencyError",
     "CompiledVariable",
     "CompiledGlobalProfile",
+    "CompiledItemProfile",
 ]
 
 
@@ -40,6 +42,19 @@ class CompiledGlobalProfile:
     """Compiled global VFS profile."""
 
     variables: list[CompiledVariable]
+
+
+@dataclass(frozen=True)
+class CompiledItemProfile:
+    """Compiled item VFS profile with variables in topological order."""
+
+    profile_name: str  # Profile name (e.g., "food_stats")
+    variables: list[CompiledVariable]  # Variables in dependency order
+
+    def __post_init__(self):
+        # Make variables tuple for immutability
+        if not isinstance(self.variables, tuple):
+            object.__setattr__(self, "variables", tuple(self.variables))
 
 
 class CircularDependencyError(Exception):
@@ -246,3 +261,45 @@ class VFSProfileCompiler:
             schema[var.name] = var.type
 
         return CompiledGlobalProfile(variables=compiled_vars)
+
+    def compile_item_profile(
+        self,
+        profile: ItemVFSProfileConfig,
+        bar_schema: dict[str, str],
+    ) -> CompiledItemProfile:
+        """Compile item VFS profile.
+
+        Args:
+            profile: Item profile config from vfs_profiles.yaml
+            bar_schema: Type schema for bars (for expression type checking)
+
+        Returns:
+            Compiled item profile with variables in topological order
+
+        Raises:
+            ValueError: If circular dependencies detected
+        """
+        # Sort variables in dependency order
+        sorted_vars = self.topological_sort(profile.variables)
+
+        # Build variable schema (item profiles can reference bars)
+        var_schema: dict[str, str] = {}
+
+        # Items can reference bars but not global/agent VFS
+        # (items are isolated instances)
+        var_schema.update(bar_schema)
+
+        # Compile each variable
+        compiled_vars: list[CompiledVariable] = []
+
+        for var in sorted_vars:
+            compiled = self.compile_variable(var, var_schema)
+            compiled_vars.append(compiled)
+
+            # Add this variable to schema for subsequent variables
+            var_schema[var.name] = var.type
+
+        return CompiledItemProfile(
+            profile_name=profile.profile_name,
+            variables=compiled_vars,
+        )

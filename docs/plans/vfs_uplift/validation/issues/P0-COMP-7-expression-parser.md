@@ -2,7 +2,7 @@
 
 **Priority:** P0 (Critical)
 **Category:** Compiler
-**Status:** MISSING
+**Status:** DONE
 **Effort:** 1 day
 
 ## Description
@@ -57,6 +57,7 @@ Create `src/townlet/world/expression/` module with:
 **Source Report:** gap-report-final.md (lines 27-50), gap-report-compiler.md
 **Related Requirements:** COMP-8 (AST node types), COMP-9 (type checker)
 **Current Workaround:** String-based evaluation in `src/townlet/vfs/evaluator.py`
+**Test Coverage:** `tests/test_townlet/unit/world/expression/test_parser.py`
 
 ## Implementation Notes
 

@@ -34,8 +34,23 @@ from townlet.universe.dto import (
     UniverseMetadata,
 )
 from townlet.universe.optimization import OptimizationData
+from townlet.vfs.profiles import CompiledGlobalProfile
 from townlet.vfs.schema import ObservationField as VfsObservationField
 from townlet.vfs.schema import VariableDef
+
+
+@dataclass(frozen=True)
+class CompiledVFSProfiles:
+    """Compiled VFS profiles (global, agent, item)."""
+
+    global_profile: CompiledGlobalProfile | None = None
+    agent_profile: Any | None = None  # TODO: Add CompiledAgentProfile type
+    item_profiles: dict[str, Any] | None = None  # TODO: Add CompiledItemProfile type
+
+    def __post_init__(self):
+        # Make item_profiles immutable
+        if self.item_profiles is None:
+            object.__setattr__(self, "item_profiles", {})
 
 
 @dataclass(frozen=True)
@@ -60,6 +75,9 @@ class CompiledUniverse:
     actions: ActionsConfig
     agent: AgentConfig
     items_catalog: ItemsCatalogConfig | None = None
+
+    # Compiled VFS profiles (experiment-level artifact)
+    compiled_vfs_profiles: CompiledVFSProfiles | None = None
 
     # Provenance
     experiment_dir: Path | None = None
@@ -126,6 +144,7 @@ class CompiledUniverse:
             actions=deepcopy(self.actions),
             agent=deepcopy(self.agent),
             items_catalog=deepcopy(self.items_catalog) if self.items_catalog is not None else None,
+            compiled_vfs_profiles=deepcopy(self.compiled_vfs_profiles) if self.compiled_vfs_profiles is not None else None,
             experiment_dir=self.experiment_dir,
             drive_hash=self.drive_hash,
             all_levels=deepcopy(self.all_levels),
@@ -159,6 +178,9 @@ class CompiledUniverse:
             "actions": self.actions.model_dump(),
             "agent": self.agent.model_dump(),
             "items_catalog": self.items_catalog.model_dump() if self.items_catalog is not None else None,
+            "compiled_vfs_profiles": (
+                _serialize_vfs_profiles(self.compiled_vfs_profiles) if self.compiled_vfs_profiles is not None else None
+            ),
             "experiment_dir": None if self.experiment_dir is None else str(self.experiment_dir),
             "drive_hash": self.drive_hash,
             "all_levels": (
@@ -261,6 +283,10 @@ class CompiledUniverse:
             environment=EnvironmentConfig.model_validate(payload["environment"]),
             actions=ActionsConfig.model_validate(payload["actions"]),
             agent=AgentConfig.model_validate(payload["agent"]),
+            items_catalog=ItemsCatalogConfig.model_validate(payload["items_catalog"]) if payload.get("items_catalog") is not None else None,
+            compiled_vfs_profiles=(
+                _deserialize_vfs_profiles(payload["compiled_vfs_profiles"]) if payload.get("compiled_vfs_profiles") is not None else None
+            ),
             experiment_dir=None if payload.get("experiment_dir") is None else Path(payload["experiment_dir"]),
             drive_hash=payload.get("drive_hash"),
             all_levels=all_levels,
@@ -394,3 +420,55 @@ def _meter_metadata_from_plain(payload: Mapping[str, Any]) -> MeterMetadata:
 
 def _affordance_metadata_from_plain(payload: Mapping[str, Any]) -> AffordanceMetadata:
     return AffordanceMetadata(affordances=tuple(AffordanceInfo(**entry) for entry in payload.get("affordances", [])))
+
+
+def _serialize_vfs_profiles(profiles: CompiledVFSProfiles) -> dict[str, Any]:
+    """Serialize CompiledVFSProfiles to dict."""
+
+    result: dict[str, Any] = {}
+
+    if profiles.global_profile is not None:
+        result["global_profile"] = {
+            "variables": [
+                {
+                    "name": var.name,
+                    "type": var.type,
+                    "ast": None,  # AST not serialized (reconstruct on load)
+                    "initial_value": var.initial_value,
+                    "result_type": var.result_type,
+                }
+                for var in profiles.global_profile.variables
+            ]
+        }
+    else:
+        result["global_profile"] = None
+
+    result["agent_profile"] = profiles.agent_profile
+    result["item_profiles"] = profiles.item_profiles
+
+    return result
+
+
+def _deserialize_vfs_profiles(payload: dict[str, Any]) -> CompiledVFSProfiles:
+    """Deserialize CompiledVFSProfiles from dict."""
+    from townlet.vfs.profiles import CompiledGlobalProfile, CompiledVariable
+
+    global_profile = None
+    if payload.get("global_profile") is not None:
+        variables = [
+            CompiledVariable(
+                name=var["name"],
+                type=var["type"],
+                ast=None,  # AST not serialized
+                initial_value=var["initial_value"],
+                result_type=var.get("result_type"),
+            )
+            for var in payload["global_profile"]["variables"]
+        ]
+        global_profile = CompiledGlobalProfile(variables=variables)
+
+    return CompiledVFSProfiles(
+        global_profile=global_profile,
+        agent_profile=payload.get("agent_profile"),
+        item_profiles=payload.get("item_profiles"),
+    )

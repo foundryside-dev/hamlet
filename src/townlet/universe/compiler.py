@@ -26,8 +26,10 @@ from townlet.config.drive_as_code import DriveAsCodeConfig
 from townlet.config.environment_config import CascadeConfig
 from townlet.config.environment_config import EnvironmentConfig as EnvConfigV21
 from townlet.config.experiment_config import ExperimentConfig
+from townlet.config.items_config import ItemsCatalogConfig
 from townlet.config.stratum_config import StratumConfig, SubstrateConfig
 from townlet.config.training_v2_config import TrainingV2Config
+from townlet.config.vfs_profiles_config import VFSProfilesConfig
 from townlet.environment.action_config import ActionConfig, ActionSpaceConfig
 from townlet.environment.affordance_config import AffordanceConfig  # Runtime representation
 from townlet.environment.substrate_action_validator import SubstrateActionValidator
@@ -49,9 +51,11 @@ from townlet.universe.dto import (
 from townlet.universe.optimization import OptimizationData
 from townlet.universe.raw_configs_v21 import RawConfigsV21
 from townlet.universe.symbol_table import UniverseSymbolTable
+from townlet.vfs.profiles import VFSProfileCompiler
 from townlet.vfs.schema import NormalizationSpec, VariableDef
 from townlet.vfs.schema import ObservationField as VFSObservationField
 
+from .compiled import CompiledVFSProfiles
 from .cues_compiler import CuesCompiler
 from .errors import CompilationError, CompilationErrorCollector, CompilationMessage
 
@@ -142,6 +146,43 @@ class UniverseCompiler:
             )
 
         return (experiment, stratum, environment, actions, agent, levels_dict)
+
+    def _compile_vfs_profiles(self, experiment_dir: Path, bar_schema: dict[str, str]) -> CompiledVFSProfiles | None:
+        """Load and compile VFS profiles from experiment directory.
+
+        Args:
+            experiment_dir: Experiment root directory
+            bar_schema: Type schema for bars (for expression type checking)
+
+        Returns:
+            Compiled profiles or None if vfs_profiles.yaml not present
+        """
+        profiles_path = experiment_dir / "vfs_profiles.yaml"
+
+        if not profiles_path.exists():
+            logger.debug("vfs_profiles.yaml not found, skipping VFS profile compilation")
+            return None
+
+        # Load YAML
+        profiles_data = yaml.safe_load(profiles_path.read_text())
+
+        # Validate with Pydantic
+        profiles_config = VFSProfilesConfig(**profiles_data)
+
+        # Compile profiles
+        compiler = VFSProfileCompiler()
+
+        compiled_global = None
+        if profiles_config.global_profile is not None:
+            compiled_global = compiler.compile_global_profile(profiles_config.global_profile, bar_schema=bar_schema)
+
+        # TODO: Compile agent_profile and item_profiles (Task 1.2)
+
+        return CompiledVFSProfiles(
+            global_profile=compiled_global,
+            agent_profile=None,  # TODO
+            item_profiles={},  # TODO
+        )
 
     def _validate_vocabulary_consistency(self, environment, levels_dict: dict) -> None:
         """
@@ -277,7 +318,13 @@ class UniverseCompiler:
             logger.info("Compiling level: %s", level_name)
             obs_spec = self._build_observation_spec(raw.stratum, raw.environment, level.curriculum)
             obs_activity = self._build_observation_activity(obs_spec)
-            action_metadata = self._build_action_space_metadata(raw.stratum, raw.actions, level.training, level.affordances)
+            action_metadata = self._build_action_space_metadata(
+                raw.stratum,
+                raw.actions,
+                level.training,
+                level.affordances,
+                raw.items,
+            )
             meter_metadata = self._build_meter_metadata(raw.environment, level.bars)
             affordance_metadata = self._build_affordance_metadata(level.affordances)
             day_length = level.curriculum.curriculum.day_length
@@ -331,6 +378,15 @@ class UniverseCompiler:
             config_mtime=config_mtime,
         )
 
+        # Build bar schema for VFS profile type checking
+        bar_schema = {}
+        primary_level_config = raw.levels[primary_level]
+        for meter in primary_level_config.bars.meters:
+            bar_schema[meter.name] = "float"  # All meters are float
+
+        # Compile VFS profiles (experiment-level)
+        compiled_vfs_profiles = self._compile_vfs_profiles(experiment_dir, bar_schema)
+
         compiled = CompiledUniverse(
             metadata=universe_metadata,
             observation_spec=primary_meta.observation_spec,
@@ -347,6 +403,7 @@ class UniverseCompiler:
             actions=raw.actions,
             agent=raw.agent,
             items_catalog=raw.items,
+            compiled_vfs_profiles=compiled_vfs_profiles,
             experiment_dir=experiment_dir,
             all_levels=all_levels,
         )
@@ -1047,6 +1104,7 @@ class UniverseCompiler:
         actions: ActionsConfig,
         training: TrainingV2Config,
         affordances: AffordancesV2Config,
+        items: ItemsCatalogConfig | None,
     ) -> ActionSpaceMetadata:
         """Build action space metadata using substrate actions + custom actions."""
         entries: list[ActionMetadata] = []
@@ -1083,14 +1141,28 @@ class UniverseCompiler:
                     enabled = False
                 _add(action.name, action.type, "substrate", enabled)
 
+        reserved_names: set[str] = {"INTERACT"}
+        if items is not None:
+            reserved_names.add("GET")
+            for slot_idx in range(items.max_items_per_agent):
+                reserved_names.add(f"USE_SLOT_{slot_idx}")
+                reserved_names.add(f"DROP_SLOT_{slot_idx}")
+
         enabled_custom = set(training.enabled_actions.custom) if training.enabled_actions else set()
         for custom in actions.actions.custom_actions:
-            # Skip custom entries that collide with substrate vocabulary; substrate owns those IDs.
+            if custom.name in reserved_names:
+                raise ValueError(f"Action name '{custom.name}' is reserved for system actions and cannot be overridden")
             if custom.name in substrate_names:
                 continue
             action_type = "passive" if custom.name == "WAIT" else "interaction"
             enabled = custom.enabled_by_default or custom.name in enabled_custom
             _add(custom.name, action_type, "custom", enabled)
+
+        if items is not None:
+            _add("GET", "interaction", "item", True)
+            for slot_idx in range(items.max_items_per_agent):
+                _add(f"USE_SLOT_{slot_idx}", "interaction", "item", True)
+                _add(f"DROP_SLOT_{slot_idx}", "interaction", "item", True)
 
         return ActionSpaceMetadata(total_actions=len(entries), actions=tuple(entries))
 

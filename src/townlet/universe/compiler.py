@@ -215,6 +215,32 @@ class UniverseCompiler:
 
         return catalog
 
+    def _build_vfs_expression_schema(self, bars: BarsV2Config, compiled_vfs_profiles: CompiledVFSProfiles | None) -> dict[str, str]:
+        """Build type schema for VFS expression runtime validation.
+
+        Args:
+            bars: Bars configuration (for bar paths)
+            compiled_vfs_profiles: Compiled VFS profiles (for vfs paths)
+
+        Returns:
+            Type schema mapping path -> type
+        """
+        schema = {}
+
+        # Add bar paths
+        for meter in bars.meters:
+            schema[f"bar.{meter.name}"] = "float"
+
+        # Add VFS paths from global profile
+        if compiled_vfs_profiles and compiled_vfs_profiles.global_profile:
+            for var in compiled_vfs_profiles.global_profile.variables:
+                schema[f"vfs.{var.name}"] = var.type
+
+        # TODO: Add agent profile paths (Task 2)
+        # TODO: Add item profile paths (Task 3)
+
+        return schema
+
     def _validate_vocabulary_consistency(self, environment, levels_dict: dict) -> None:
         """
         Validate that all curriculum levels use the same vocabulary as environment.yaml.
@@ -441,6 +467,9 @@ class UniverseCompiler:
         # Compile VFS profiles (experiment-level)
         compiled_vfs_profiles = self._compile_vfs_profiles(experiment_dir, bar_schema)
 
+        # Build VFS expression schema for runtime validation
+        vfs_expression_schema = self._build_vfs_expression_schema(primary_level_config.bars, compiled_vfs_profiles)
+
         compiled = CompiledUniverse(
             metadata=universe_metadata,
             observation_spec=primary_meta.observation_spec,
@@ -459,6 +488,7 @@ class UniverseCompiler:
             items_catalog=raw.items,
             compiled_vfs_profiles=compiled_vfs_profiles,
             compiled_effect_catalog=compiled_effect_catalog,
+            vfs_expression_schema=vfs_expression_schema,
             experiment_dir=experiment_dir,
             all_levels=all_levels,
         )

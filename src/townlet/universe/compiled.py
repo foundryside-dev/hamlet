@@ -83,6 +83,9 @@ class CompiledUniverse:
     # Compiled effects catalog (per-level artifact)
     compiled_effect_catalog: EffectCatalog | None = None
 
+    # Type schema for runtime VFS expression validation
+    vfs_expression_schema: dict[str, str] | None = None
+
     # Provenance
     experiment_dir: Path | None = None
     drive_hash: str | None = None

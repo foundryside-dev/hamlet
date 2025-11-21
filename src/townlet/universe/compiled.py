@@ -158,6 +158,7 @@ class CompiledUniverse:
             compiled_vfs_profiles=deepcopy(self.compiled_vfs_profiles) if self.compiled_vfs_profiles is not None else None,
             compiled_effect_catalog=deepcopy(self.compiled_effect_catalog) if self.compiled_effect_catalog is not None else None,
             vfs_expression_schema=deepcopy(self.vfs_expression_schema) if self.vfs_expression_schema is not None else None,
+            vfs_observation_marks=deepcopy(self.vfs_observation_marks) if self.vfs_observation_marks is not None else None,
             experiment_dir=self.experiment_dir,
             drive_hash=self.drive_hash,
             all_levels=deepcopy(self.all_levels),
@@ -198,6 +199,9 @@ class CompiledUniverse:
                 _serialize_effect_catalog(self.compiled_effect_catalog) if self.compiled_effect_catalog is not None else None
             ),
             "vfs_expression_schema": self.vfs_expression_schema,
+            "vfs_observation_marks": (
+                {k: list(v) for k, v in self.vfs_observation_marks.items()} if self.vfs_observation_marks is not None else None
+            ),  # Convert sets to lists for JSON serialization
             "experiment_dir": None if self.experiment_dir is None else str(self.experiment_dir),
             "drive_hash": self.drive_hash,
             "all_levels": (
@@ -310,6 +314,11 @@ class CompiledUniverse:
                 else None
             ),
             vfs_expression_schema=payload.get("vfs_expression_schema"),
+            vfs_observation_marks=(
+                {k: set(v) for k, v in payload["vfs_observation_marks"].items()}
+                if payload.get("vfs_observation_marks") is not None
+                else None
+            ),  # Convert lists back to sets
             experiment_dir=None if payload.get("experiment_dir") is None else Path(payload["experiment_dir"]),
             drive_hash=payload.get("drive_hash"),
             all_levels=all_levels,

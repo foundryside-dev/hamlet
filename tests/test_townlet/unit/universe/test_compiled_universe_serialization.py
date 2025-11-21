@@ -109,3 +109,29 @@ def test_compiled_universe_clone_preserves_new_fields(minimal_compiled_universe_
     assert cloned.compiled_vfs_profiles.global_profile is not None
     assert cloned.vfs_expression_schema is not None
     assert cloned.vfs_expression_schema == original.vfs_expression_schema
+
+
+def test_compiled_universe_serializes_vfs_observation_marks(minimal_compiled_universe_with_profiles):
+    """CompiledUniverse.to_dict() should serialize VFS observation marks."""
+    # Exercise
+    data = minimal_compiled_universe_with_profiles.to_dict()
+
+    # Verify
+    assert "vfs_observation_marks" in data
+
+
+def test_compiled_universe_deserializes_vfs_observation_marks(minimal_compiled_universe_with_profiles):
+    """CompiledUniverse.from_dict() should deserialize VFS observation marks."""
+    # Setup: Manually add observation marks to test serialization
+    from dataclasses import replace
+
+    original = minimal_compiled_universe_with_profiles
+    with_marks = replace(original, vfs_observation_marks={"global": {"day_count", "total_earnings"}, "agent": {"motivation"}})
+
+    # Exercise: Round-trip serialization
+    data = with_marks.to_dict()
+    restored = CompiledUniverse.from_dict(data)
+
+    # Verify: Marks preserved (sets converted to lists then back to sets)
+    assert restored.vfs_observation_marks is not None
+    assert restored.vfs_observation_marks == {"global": {"day_count", "total_earnings"}, "agent": {"motivation"}}

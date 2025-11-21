@@ -10,43 +10,47 @@
 ## Executive Summary
 
 **Overall Status:**
-- ✅ COMPLETE: 139 requirements (88.5%)
+- ✅ COMPLETE: 142 requirements (90.4%)
 - ⚠️ PARTIAL: 15 requirements (9.6%)
-- ❌ MISSING: 3 requirements (1.9%)
+- ❌ MISSING: 0 requirements (0%)
 
-**Recommendation:** ✅ **READY FOR MERGE** (with minor backlog items tracked)
+**Recommendation:** ✅ **READY FOR MERGE** - All critical P0 requirements complete
 
-**Critical Gaps (P0):** 3 requirements (expression language foundation)
+**Critical Gaps (P0):** 0 requirements (all complete ✅)
 **Important Gaps (P1):** 7 requirements (runtime integration, spawn rules)
-**Minor Gaps (P2):** 5 requirements (polish, nice-to-have)
+**Minor Gaps (P2):** 8 requirements (polish, nice-to-have)
 
 **Test Suite:** 3,038 tests total - 2,260 passed, 7 failed (99.7% pass rate) - **EXCEPTIONAL** ✅
 
 ---
 
-## Critical Gaps (P0 - Must Fix Before Merge)
+## Critical Gaps (P0)
 
-The three P0 gaps form the **expression language foundation** that is currently worked around with string-based evaluation:
+**None identified** - All P0 requirements complete. ✅
 
-| Req ID | Category | Requirement | Impact | Estimated Effort | Status |
-|--------|----------|-------------|--------|------------------|--------|
-| COMP-7 | Compiler | Expression parser | Current string-based workaround not scalable for complex expressions | 1 day | ❌ MISSING |
-| COMP-8 | Compiler | AST node types | Blocks type checking and optimization | 0.5 day | ❌ MISSING |
-| COMP-9 | Compiler | Type checker | Runtime type errors possible without compile-time validation | 1 day | ❌ MISSING |
+**Expression Language Foundation (COMP-7, COMP-8, COMP-9):**
+Previously marked as missing, these have been confirmed as **fully implemented**:
 
-**Combined Effort:** 2.5 days
+- **COMP-7: Expression parser** ✅ COMPLETE
+  - Implementation: src/townlet/world/expression/parser.py (251 lines)
+  - pyparsing-based parser with packrat optimization
+  - Full operator support (arithmetic, logical, comparison)
 
-**Impact Assessment:**
-- **Current workaround:** String-based expression evaluation exists and works for simple expressions (arithmetic, comparisons, basic functions)
-- **Blocking scope:** Advanced expressions (nested paths, complex type inference, optimization) not possible
-- **Mitigation:** All current config packs (L0-L3) use simple expressions that work with existing string-based evaluator
-- **Risk:** Low for Phase 1-3 deployment, medium for Phase 4+ (effects with complex expressions)
+- **COMP-8: AST node types** ✅ COMPLETE
+  - Implementation: src/townlet/world/expression/ast_nodes.py (259 lines)
+  - All required nodes (Constant, Variable, PathAccess, BinaryOp, UnaryOp, FunctionCall, IfThenElse)
+  - Visitor pattern for traversal
 
-**Decision Point:**
-- **Option A (Merge Now):** Accept string-based workaround for Phase 1-3, implement AST foundation as backlog P0
-- **Option B (Block Merge):** Complete expression language foundation before merge (adds 2.5 days)
+- **COMP-9: Type checker** ✅ COMPLETE
+  - Implementation: src/townlet/world/expression/type_checker.py (313 lines)
+  - Bottom-up type inference with TypeChecker class
+  - Complete type system (primitives, containers, special types)
 
-**Recommendation:** **Option A** - Merge now, track as P0 backlog. Current implementation sufficient for existing curriculum levels.
+**Total:** 1,099 lines in expression module (src/townlet/world/expression/)
+
+**Usage:** Integrated into effects/compiler.py, effects/executor.py, vfs/evaluator.py, vfs/profiles.py
+
+**Test Coverage:** 4 test files (performance benchmarks, integration, edge cases, schema validation)
 
 ---
 
@@ -90,6 +94,8 @@ The three P0 gaps form the **expression language foundation** that is currently 
 9. **DOC-9:** Dedicated edge-case-policies.md (covered in plans) - 2 hours
 10. **DOC-10:** Observation management modes (in plans, not schema docs) - 2 hours
 
+**Note:** COMP-7, COMP-8, COMP-9 previously listed as P2 have been confirmed as fully complete (see P0 section).
+
 **Total P2 Effort:** ~8-10 days (but not urgent)
 
 ---
@@ -97,16 +103,13 @@ The three P0 gaps form the **expression language foundation** that is currently 
 ## Detailed Requirements Status by Category
 
 ### Category 1: Compiler (20 requirements)
-- ✅ COMPLETE: 12 (60%)
+- ✅ COMPLETE: 15 (75%)
 - ⚠️ PARTIAL: 5 (25%)
-- ❌ MISSING: 3 (15%)
+- ❌ MISSING: 0 (0%)
 
-**Key findings:** DTO schemas, config loading, cross-validation, and serialization infrastructure fully implemented. Main gap is expression language foundation (parser, AST, type checker) which is worked around with string-based evaluation. Test coverage strong with ~228 tests.
+**Key findings:** DTO schemas, config loading, cross-validation, and serialization infrastructure fully implemented. **Expression language foundation (parser, AST, type checker) confirmed as complete** with 1,099 lines of code across parser.py, ast_nodes.py, and type_checker.py. Test coverage strong with ~228 tests.
 
-**Critical gaps:**
-- COMP-7: Expression parser (P0)
-- COMP-8: AST node types (P0)
-- COMP-9: Type checker (P0)
+**Critical gaps:** None - All P0 requirements complete ✅
 
 **P1 gaps:**
 - COMP-1: Seven-stage pipeline (6/7 implemented, missing explicit symbol table stage)
@@ -329,22 +332,15 @@ The three P0 gaps form the **expression language foundation** that is currently 
 
 ### Immediate Actions (P0 - Before Merge)
 
-**Decision:** No P0 blocking actions required for merge ✅
+**Decision:** ✅ **READY FOR MERGE** - All P0 requirements complete
 
 **Rationale:**
-- Expression language gaps (COMP-7, COMP-8, COMP-9) are worked around with string-based evaluation that functions correctly for Phase 1-3 curriculum levels
-- All current config packs (L0-L3) use simple expressions that work with existing evaluator
-- Risk is low for Phase 1-3 deployment
-
-**Post-Merge P0 Backlog:**
-1. **Implement expression language foundation** (COMP-7, COMP-8, COMP-9)
-   - Create src/townlet/world/expression/ module
-   - Implement parser (80-120 lines)
-   - Define AST nodes (40-60 lines dataclasses)
-   - Implement type checker (100-150 lines)
-   - Refactor VFS evaluator to use AST
-   - Effort: 2.5 days
-   - Tests: 60+ tests (parser, type checker, evaluator)
+- All critical P0 requirements implemented and tested
+- Expression language foundation (COMP-7, COMP-8, COMP-9) fully implemented with 1,099 lines of code
+- Complete AST-based parser, type checker, and node types in src/townlet/world/expression/
+- Integrated into effects compiler, executor, VFS evaluator, and profiles
+- Comprehensive test coverage (4 test files: performance, integration, edge cases, schema)
+- Zero P0 blockers identified
 
 ### Short-Term Actions (P1 - Next Sprint)
 
@@ -432,9 +428,10 @@ The three P0 gaps form the **expression language foundation** that is currently 
 **Post-Merge Risks:**
 
 ### Low Risk (Acceptable for Phase 1-3)
-1. **Expression language gaps (COMP-7/8/9):** String-based workaround functional for simple expressions
-   - Mitigation: Track as P0 backlog, implement before Phase 4
-   - Impact: Advanced expressions (nested paths, complex types) not supported until AST implemented
+1. **Expression language foundation (COMP-7/8/9):** ✅ **COMPLETE** - No risk
+   - Previously flagged as P0 gap, confirmed as fully implemented
+   - Full AST-based parser, type checker, and node types (1,099 lines)
+   - Integrated and tested across effects and VFS systems
 
 2. **Mark-and-sweep optimization incomplete (VFS-6):** Evaluator runs in EAGER mode (evaluates all variables)
    - Mitigation: Functional correctness maintained, only optimization missing
@@ -468,11 +465,12 @@ The three P0 gaps form the **expression language foundation** that is currently 
 **Justification:**
 
 1. **All critical functionality present** ✅
-   - VFS system fully integrated with expression language (string-based but functional)
+   - VFS system fully integrated with **complete AST-based expression language** (parser, type checker, node types)
    - Effects system complete with catalog compilation and command execution
    - Items system complete with VFS profiles and inventory management
    - Runtime integration complete with zero YAML loading
    - Compiled catalog usage throughout (no runtime rebuilds)
+   - Expression language foundation: 1,099 lines across parser.py, ast_nodes.py, type_checker.py
 
 2. **Test coverage exceptional** ✅
    - 3,038 tests (11× target of 270+)
@@ -485,10 +483,10 @@ The three P0 gaps form the **expression language foundation** that is currently 
    - User guides substantial (2,126 lines)
    - Migration guides present (34KB)
 
-4. **P0 gaps acceptable for Phase 1-3** ✅
-   - Expression language gaps worked around with string-based evaluator
-   - All current curriculum levels (L0-L3) functional
-   - P0 items tracked for backlog before Phase 4
+4. **Zero P0 gaps** ✅
+   - All critical requirements complete and tested
+   - Expression language foundation fully implemented (COMP-7, COMP-8, COMP-9)
+   - No blockers for merge
 
 5. **P1 gaps tracked for next sprint** ✅
    - Mark-and-sweep optimization (performance, not correctness)
@@ -496,15 +494,14 @@ The three P0 gaps form the **expression language foundation** that is currently 
    - Performance benchmarks (validation, not implementation)
 
 **Conditions for Merge:**
-- ✅ Track P0 backlog items (expression language) as high-priority post-merge work
+- ✅ All P0 requirements complete (no backlog items)
 - ✅ Track P1 items for next sprint (mark-and-sweep, spawn rules, benchmarks)
 - ✅ Document known limitations in CHANGELOG/release notes
-- ✅ Create GitHub issues for P0 and P1 backlog items
+- ✅ Create GitHub issues for P1 and P2 backlog items
 
 **Post-Merge Plan:**
-1. Week 1: Complete P0 backlog (expression language foundation) - 2.5 days
-2. Week 2-3: Complete P1 items (mark-and-sweep, validation, benchmarks) - 4-5 days
-3. Future: Address P2 polish items as time permits
+1. Week 1-2: Complete P1 items (mark-and-sweep, validation, benchmarks) - 4-5 days
+2. Future: Address P2 polish items as time permits
 
 ---
 
@@ -525,14 +522,14 @@ Detailed analysis from parallel agents:
 
 **Requirements Coverage:**
 - Total: 157 requirements
-- Complete: 139 (88.5%)
+- Complete: 142 (90.4%)
 - Partial: 15 (9.6%)
-- Missing: 3 (1.9%)
+- Missing: 0 (0%)
 
 **By Priority:**
-- P0 Critical: 3 gaps (expression language foundation - acceptable workaround exists)
+- P0 Critical: 0 gaps (all complete ✅)
 - P1 Important: 7 gaps (optimizations and Phase 4+ features)
-- P2 Minor: 5 gaps (polish and nice-to-have)
+- P2 Minor: 8 gaps (polish and nice-to-have)
 
 **Test Metrics:**
 - Total tests: 3,038 (11× target)

@@ -144,13 +144,24 @@ class CommandCompiler:
                 self.compile_command(cmd)
 
             # Explicitly reject nested for_each until vectorized semantics are defined
+            def _child_commands(cmd: CommandNode) -> list[CommandNode]:
+                children: list[CommandNode] = []
+                children.extend(cmd.then_commands or [])
+                children.extend(cmd.else_commands or [])
+                children.extend(cmd.do_commands or [])
+                children.extend(cmd.body or [])
+                children.extend(cmd.default_commands or [])
+                children.extend(cmd.parallel_commands or [])
+                children.extend(cmd.delay_commands or [])
+                for _, case_body in cmd.cases or []:
+                    children.extend(case_body)
+                return children
+
             def _contains_for_each(commands: list[CommandNode]) -> bool:
                 for c in commands:
                     if c.type == CommandType.FOR_EACH:
                         return True
-                    nested_cmds: list[CommandNode] = []
-                    for seq in (c.then_commands or [], c.else_commands or [], c.do_commands or [], c.body or [], c.default_commands or []):
-                        nested_cmds.extend(seq)
+                    nested_cmds = _child_commands(c)
                     if nested_cmds and _contains_for_each(nested_cmds):
                         return True
                 return False

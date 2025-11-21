@@ -176,6 +176,46 @@ def test_compiler_for_each_rejects_nested_for_each():
         compiler.compile_command(outer)
 
 
+def test_compiler_for_each_rejects_nested_for_each_in_switch_case():
+    """Nested for_each hidden inside switch is rejected."""
+    inner = CommandNode(type=CommandType.FOR_EACH, collection="all_agents", body=[])
+    switch = CommandNode(
+        type=CommandType.SWITCH,
+        switch_expr="mode",
+        cases=[("1", [inner])],
+    )
+    outer = CommandNode(type=CommandType.FOR_EACH, collection="all_agents", body=[switch])
+
+    compiler = CommandCompiler(schema={"mode": "int"})
+
+    with pytest.raises(TypeCheckError, match="Nested for_each"):
+        compiler.compile_command(outer)
+
+
+def test_compiler_for_each_rejects_nested_for_each_in_parallel():
+    """Nested for_each hidden inside parallel is rejected."""
+    inner = CommandNode(type=CommandType.FOR_EACH, collection="all_agents", body=[])
+    parallel = CommandNode(type=CommandType.PARALLEL, parallel_commands=[inner])
+    outer = CommandNode(type=CommandType.FOR_EACH, collection="all_agents", body=[parallel])
+
+    compiler = CommandCompiler(schema={})
+
+    with pytest.raises(TypeCheckError, match="Nested for_each"):
+        compiler.compile_command(outer)
+
+
+def test_compiler_for_each_rejects_nested_for_each_in_delay():
+    """Nested for_each hidden inside delay is rejected."""
+    inner = CommandNode(type=CommandType.FOR_EACH, collection="all_agents", body=[])
+    delay = CommandNode(type=CommandType.DELAY, delay_ticks_expr="1", delay_commands=[inner])
+    outer = CommandNode(type=CommandType.FOR_EACH, collection="all_agents", body=[delay])
+
+    compiler = CommandCompiler(schema={})
+
+    with pytest.raises(TypeCheckError, match="Nested for_each"):
+        compiler.compile_command(outer)
+
+
 def test_compiler_delay_rejects_when_time_disabled():
     """delay commands are gated by time_enabled flag."""
     node = CommandNode(

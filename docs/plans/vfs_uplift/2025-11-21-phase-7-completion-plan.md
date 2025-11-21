@@ -123,10 +123,10 @@ poison:
 
 **Implementation Steps:**
 
-1. **Add effect_manager to ExecutionContext** (2 hours)
-   - Update `ExecutionContext` signature to accept `effect_manager: EffectManager | None`
-   - Pass effect_manager through all command execution paths
-   - Update all callers (affordance_engine, item action handlers, etc.)
+1. **Add effect_manager to ExecutionContext (required)** (2 hours)
+   - Update `ExecutionContext` signature to require `effect_manager: EffectManager` (no None default)
+   - Update all callers in a single sweep (affordance_engine, item action handlers, env step loop, tests)
+   - Fail fast if any path omits the manager (intentional hard break)
 
 2. **Implement spawn_effect in CommandExecutor** (4 hours)
    - Replace stub at `executor.py:90-96`
@@ -146,6 +146,7 @@ poison:
    - Test cascade patterns (effect A spawns effect B, B spawns C)
    - Test spawn_effect in affordance interactions
    - Test spawn_effect in item interactions
+   - Test missing effect_manager/context wiring raises immediately
 
 **Deliverables:**
 - `src/townlet/effects/context.py` (updated with effect_manager)
@@ -190,15 +191,16 @@ defeated_enemy:
 
 **Implementation Steps:**
 
-1. **Add item_manager to ExecutionContext** (1 hour)
-   - Update `ExecutionContext` signature to accept `item_manager: ItemManager | None`
-   - Pass item_manager through command execution paths
+1. **Add item_manager to ExecutionContext (required)** (1 hour)
+   - Update `ExecutionContext` signature to require `item_manager: ItemManager` (no None default)
+   - Pass item_manager through all command execution paths in the same sweep as effect_manager updates
 
 2. **Implement spawn_item in CommandExecutor** (3 hours)
    - Parse spawn_item command YAML (item_id, position, quantity, initial_state)
    - Resolve position: "self", "target", explicit coordinates, "random"
    - Call `context.item_manager.spawn_item(item_id, position, initial_state)`
    - Handle quantity > 1 (spawn multiple items)
+   - Fail fast on unsupported position types or missing spatial data
    - Return spawned item IDs
 
 3. **Add initial_state support to ItemManager** (2 hours)
@@ -213,6 +215,7 @@ defeated_enemy:
    - Test spawn_item with initial_state (durability, quality)
    - Test spawn_item with quantity > 1
    - Test spawn_item in effect lifecycle (on_completion, on_despawn)
+   - Test unsupported position types or missing item_manager raise
 
 **Deliverables:**
 - `src/townlet/effects/executor.py` (spawn_item implemented)
@@ -275,7 +278,7 @@ poison_cloud:
    - Resolve collection based on type and filters
    - For each element, create child ExecutionContext with iterator binding
    - Execute body commands for each iteration
-   - Handle empty collections gracefully
+   - Handle empty collections gracefully; raise on unknown collections
 
 3. **Add collection resolution** (2 hours)
    - "nearby_agents": Get agents within radius of self/target
@@ -290,6 +293,7 @@ poison_cloud:
    - Test nested commands in body (modify, spawn_effect, if)
    - Test iterator variable resolution in expressions
    - Test for_each in different effect lifecycle stages
+   - Test unknown collection type raises clearly
 
 **Deliverables:**
 - `src/townlet/effects/executor.py` (for_each implemented)
@@ -442,10 +446,9 @@ items:
    - Insert at predictable indices (after custom actions, before substrate actions)
 
 2. **Define action index allocation policy** (2 hours)
-   - Order: Custom actions → Item actions → Substrate actions
+   - Order: Custom actions → Item actions → Substrate actions (fixed for new configs; legacy indices may shift)
    - Item action order: GET → USE_SLOT_0..N-1 → DROP_SLOT_0..N-1
-   - Document index stability guarantees (for checkpoint compatibility)
-   - Add assertion: num_inventory_slots must match checkpoint value
+   - Document the new order only; no compatibility or checkpoint guards
 
 3. **Add override mechanism** (2 hours)
    - Allow manual `actions.yaml` to override auto-generated actions
@@ -498,10 +501,10 @@ items:
    - Show minimal config (just items.enabled: true)
    - Explain when to use manual configuration (rare)
 
-3. **Add migration guide** (1 hour)
-   - For users with manual actions.yaml
-   - Explain how to remove manual config and use auto-registration
-   - Document override patterns for custom behavior
+3. **Document fail-forward behavior** (1 hour)
+   - Call out that action indices have changed and old checkpoints/configs may break
+   - Encourage deleting manual actions.yaml unless overriding specific behaviors
+   - Note there is no migration shim; fix configs directly
 
 4. **Update config schema examples** (1 hour)
    - Show auto-registration in `configs/templates/items_template/`
@@ -511,14 +514,13 @@ items:
 **Deliverables:**
 - `docs/config-schemas/items.md` (updated with auto-registration)
 - `docs/guides/world-compiler-guide.md` (Items quick start)
-- `docs/guides/items-migration.md` (NEW: migration from manual config)
 - `configs/templates/items_template/` (updated examples)
 
 **Success Criteria:**
 - ✅ Documentation clearly states items.enabled: true adds actions automatically
 - ✅ Action index allocation documented with table
-- ✅ Migration guide exists for manual config users
 - ✅ Examples show minimal config (no manual actions.yaml)
+- ✅ Fail-forward stance documented (older configs/checkpoints expected to break)
 
 ---
 
@@ -584,7 +586,7 @@ items:
 1. **Compilation Tests** (1 hour)
    - Compile all 5 curriculum levels
    - Verify no compilation errors
-   - Verify obs_dim unchanged (checkpoint compatibility)
+   - Capture obs_dim changes; fail-forward if they shift (no compatibility required)
 
 2. **Smoke Training Tests** (2 hours)
    - Run 100 episodes of L0_0_minimal
@@ -617,7 +619,7 @@ items:
 - ✅ All Phase 7 features work together (no integration bugs)
 - ✅ All curriculum levels compile and train
 - ✅ No performance regressions (<5% overhead)
-- ✅ Checkpoint compatibility maintained
+- ✅ Any obs/action space shifts are intentional and documented (compat not required)
 
 ---
 
@@ -722,18 +724,16 @@ Week 2 (Days 6-10):
 ### High Risk Areas
 
 **1. ExecutionContext Parameter Explosion (Phase 7.1)**
-- **Risk:** Adding effect_manager, item_manager to ExecutionContext breaks all callers
+- **Risk:** Adding required effect_manager/item_manager to ExecutionContext breaks any caller not updated
 - **Mitigation:**
-  - Make parameters optional (default None)
-  - Update callers incrementally (affordances first, then items)
-  - Write adapter if needed to minimize changes
+  - Update all call sites in a single sweep (affordances, items, env, tests)
+  - Hard fail on missing managers to reveal gaps immediately
 
-**2. Action Index Stability (Phase 7.2)**
-- **Risk:** Auto-registration changes action indices, breaks checkpoints
+**2. Action Index Reordering (Phase 7.2)**
+- **Risk:** Auto-registration changes action indices; old checkpoints/configs will break
 - **Mitigation:**
-  - Document index allocation policy clearly
-  - Add assertion in checkpoint loading (verify num_inventory_slots matches)
-  - Provide migration script if needed
+  - Document the new order and fail-fast expectations
+  - Do not provide migration shims; update configs/checkpoints directly
 
 **3. for_each Performance (Phase 7.1.3)**
 - **Risk:** Iterating over many agents per effect tick causes slowdown
@@ -775,7 +775,7 @@ Week 2 (Days 6-10):
 - ✅ Items automatically register actions (no manual config)
 - ✅ All curriculum levels compile and train
 - ✅ <5% performance regression vs Phase 6
-- ✅ Checkpoint compatibility maintained
+- ✅ Obs/action space shifts are intentional and documented (compatibility not preserved)
 
 ### Architectural
 - ✅ Effects can cascade (spawn other effects)
@@ -836,23 +836,23 @@ Week 2 (Days 6-10):
 
 ### D1: ExecutionContext Extension Strategy
 
-**Decision:** Make effect_manager and item_manager optional parameters
+**Decision:** Make effect_manager and item_manager required parameters (fail-forward)
 
 **Rationale:**
-- Backward compatibility with existing callers
-- Gradual rollout (affordances first, then items)
-- Easier testing (can test commands in isolation)
+- No backward compatibility requirement; missing managers should crash loudly
+- Single-sweep update avoids silent gaps across affordances/items/env
+- Simplifies testing (one shape of context everywhere)
 
 **Implementation:**
 ```python
 @dataclass
 class ExecutionContext:
     bars: dict[str, torch.Tensor]
-    vfs_registry: Any | None
-    self_index: int | None
+    vfs_registry: Any
+    self_index: int
     target_index: int | None
-    effect_manager: Any | None = None  # NEW (optional)
-    item_manager: Any | None = None    # NEW (optional)
+    effect_manager: Any  # NEW (required)
+    item_manager: Any    # NEW (required)
     interrupt_reason: str | None = None  # NEW (optional)
 ```
 
@@ -860,12 +860,13 @@ class ExecutionContext:
 
 ### D2: Action Index Allocation Policy
 
-**Decision:** Custom → Item → Substrate (fixed order)
+**Decision:** Custom → Item → Substrate (fixed order; no backward index stability)
 
 **Rationale:**
 - Custom actions first (user-defined, highest priority)
-- Item actions next (auto-generated, stable positions)
+- Item actions next (auto-generated, fixed order for new configs)
 - Substrate actions last (grid movement, always present)
+- Old checkpoints/configs may break; accepted under fail-forward policy
 
 **Allocation:**
 ```
@@ -964,15 +965,15 @@ child_context = context.with_spawn_depth(context.spawn_depth + 1)
 
 1. **ExecutionContext signature change**
    - Impact: All command executors, affordance engine, item handlers
-   - Mitigation: Optional parameters (default None)
+   - Mitigation: Single-sweep update; fail fast on any missing manager
 
 2. **Action space indices shift**
-   - Impact: Checkpoints with Items enabled
-   - Mitigation: Assert num_inventory_slots matches at load time
+   - Impact: Checkpoints/configs with Items enabled will shift/break
+   - Mitigation: Document new ordering; no assertions/migration layer
 
 3. **EffectManager spawn_effect API**
    - Impact: Any external code calling spawn_effect directly (unlikely)
-   - Mitigation: Update callers, add deprecation warning if needed
+   - Mitigation: Update callers; no deprecation path (hard break)
 
 ### Non-Breaking Changes
 

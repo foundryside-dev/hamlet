@@ -86,6 +86,10 @@ class CompiledUniverse:
     # Type schema for runtime VFS expression validation
     vfs_expression_schema: dict[str, str] | None = None
 
+    # Marks for which VFS variables are observed (for mark-and-sweep evaluation)
+    vfs_observation_marks: dict[str, set[str]] | None = None
+    # Format: {"global": {"day_count", "is_night"}, "agent": {"motivation"}, "item": {...}}
+
     # Provenance
     experiment_dir: Path | None = None
     drive_hash: str | None = None

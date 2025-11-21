@@ -241,6 +241,37 @@ class UniverseCompiler:
 
         return schema
 
+    def _extract_vfs_observation_marks(self, variables: tuple[VariableDef, ...]) -> dict[str, set[str]]:
+        """Extract which VFS variables are marked for observation.
+
+        Args:
+            variables: VFS variables from variables_reference.yaml
+
+        Returns:
+            Dict mapping scope to set of observed variable names
+            Example: {"global": {"day_count"}, "agent": {"motivation"}}
+        """
+        marks: dict[str, set[str]] = {
+            "global": set(),
+            "agent": set(),
+            "item": set(),
+        }
+
+        for var in variables:
+            # Variables with observable=True are included in observations
+            if var.observable:
+                scope_key = var.scope.value if hasattr(var.scope, "value") else str(var.scope)
+
+                # Map VariableScope to mark keys
+                if scope_key == "global":
+                    marks["global"].add(var.id)
+                elif scope_key in ("agent", "agent_private"):
+                    marks["agent"].add(var.id)
+                # TODO: Handle item-scoped variables (Task 3)
+
+        # Remove empty scopes
+        return {k: v for k, v in marks.items() if v}
+
     def _validate_vocabulary_consistency(self, environment, levels_dict: dict) -> None:
         """
         Validate that all curriculum levels use the same vocabulary as environment.yaml.
@@ -470,6 +501,16 @@ class UniverseCompiler:
         # Build VFS expression schema for runtime validation
         vfs_expression_schema = self._build_vfs_expression_schema(primary_level_config.bars, compiled_vfs_profiles)
 
+        # Load variables_reference.yaml to extract observation marks
+        # (separate from vfs_variables which only contains system observation primitives)
+        variables_reference_path = experiment_dir / "variables_reference.yaml"
+        vfs_observation_marks: dict[str, set[str]] | None = None
+        if variables_reference_path.exists():
+            from townlet.vfs.schema import load_variables_reference_config
+
+            variables_from_yaml = tuple(load_variables_reference_config(experiment_dir))
+            vfs_observation_marks = self._extract_vfs_observation_marks(variables_from_yaml)
+
         compiled = CompiledUniverse(
             metadata=universe_metadata,
             observation_spec=primary_meta.observation_spec,
@@ -489,6 +530,7 @@ class UniverseCompiler:
             compiled_vfs_profiles=compiled_vfs_profiles,
             compiled_effect_catalog=compiled_effect_catalog,
             vfs_expression_schema=vfs_expression_schema,
+            vfs_observation_marks=vfs_observation_marks,
             experiment_dir=experiment_dir,
             all_levels=all_levels,
         )

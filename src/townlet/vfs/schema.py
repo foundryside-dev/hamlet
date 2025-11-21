@@ -284,6 +284,11 @@ class VariableDef(BaseModel):
         description="Human-readable description of this variable",
     )
 
+    observable: bool = Field(
+        default=False,
+        description="Whether this variable should be included in agent observations (for mark-and-sweep evaluation)",
+    )
+
     @model_validator(mode="after")
     def validate_vector_types(self) -> "VariableDef":
         """Validate that vecNi/vecNf have dims field, scalar/bool do not."""

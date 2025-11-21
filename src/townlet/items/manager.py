@@ -283,6 +283,10 @@ class ItemManager:
         # Store in active items
         self.active_items[instance.instance_id] = instance
 
+        # Register item instance in VFS registry
+        if self.vfs_registry is not None and instance.vfs_profile:
+            self.vfs_registry.register_item_instance(instance.vfs_index, instance.vfs_profile)
+
         return instance
 
     def lift_item(self, instance_id: int) -> ItemInstance | None:
@@ -346,6 +350,10 @@ class ItemManager:
             item = self.held_items.pop(instance_id)
         else:
             return  # Item not found
+
+        # Unregister item instance from VFS registry
+        if self.vfs_registry is not None:
+            self.vfs_registry.unregister_item_instance(item.vfs_index)
 
         # Free VFS slot
         self.vfs_free_slots.add(item.vfs_index)

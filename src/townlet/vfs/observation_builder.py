@@ -141,36 +141,44 @@ def build_vfs_observation(
                 device=registry.device,
             )
         else:
-            # Build item observations with masking
-            # Shape: [batch, max_items_per_agent, max_vars_per_profile]
-            item_vfs_slices = []
+            if spec.item_vfs_dim % spec.max_items_per_agent != 0:
+                raise ValueError("item_vfs_dim must be divisible by max_items_per_agent for item observations.")
 
-            # Calculate vars per slot from item_vfs_dim and max_items_per_agent
+            if agent_item_inventory.dim() != 2 or agent_item_inventory.size(1) != spec.max_items_per_agent:
+                raise ValueError("agent_item_inventory must have shape [batch, max_items_per_agent] when item_vfs_dim is non-zero.")
+
             vars_per_slot = spec.item_vfs_dim // spec.max_items_per_agent
 
-            for agent_idx in range(batch_size):
-                agent_slots = []
-                for slot_idx in range(spec.max_items_per_agent):
-                    item_idx = agent_item_inventory[agent_idx, slot_idx].item()
+            item_vfs_storage = getattr(registry, "item_vfs", None)
+            if item_vfs_storage is None:
+                raise RuntimeError("Item VFS storage is missing; cannot build item observations.")
 
-                    if item_idx == -1:  # Empty slot
-                        # Masked slot: all zeros
-                        agent_slots.append(
-                            torch.zeros(
-                                vars_per_slot,
-                                dtype=torch.float32,
-                                device=registry.device,
-                            )
-                        )
-                    else:
-                        # Extract item VFS state
-                        item_vfs = registry.item_vfs[item_idx, :vars_per_slot]
-                        agent_slots.append(item_vfs)
+            item_vfs_slice = item_vfs_storage[:, :vars_per_slot]
+            if item_vfs_slice.size(1) < vars_per_slot:
+                raise ValueError("Item VFS storage has fewer variables per slot than requested by the observation spec.")
 
-                # Flatten slots: [max_items × vars]
-                item_vfs_slices.append(torch.cat(agent_slots))
+            inventory_indices = agent_item_inventory.to(device=registry.device, dtype=torch.long)
+            max_index = item_vfs_slice.size(0)
+            invalid_positive = (inventory_indices >= max_index) & (inventory_indices != -1)
+            if invalid_positive.any().item():
+                raise IndexError(f"agent_item_inventory references out-of-range item_vfs indices (max valid index: {max_index - 1}).")
 
-            item_obs = torch.stack(item_vfs_slices)  # [batch, item_vfs_dim]
+            sentinel_index = max_index
+            padded_item_vfs = torch.cat(
+                [
+                    item_vfs_slice,
+                    torch.zeros((1, vars_per_slot), dtype=item_vfs_slice.dtype, device=registry.device),
+                ],
+                dim=0,
+            )
+            safe_indices = torch.where(
+                inventory_indices < 0,
+                torch.full_like(inventory_indices, sentinel_index),
+                inventory_indices,
+            )
+
+            gathered = padded_item_vfs[safe_indices]  # [batch, max_items_per_agent, vars_per_slot]
+            item_obs = gathered.reshape(batch_size, spec.item_vfs_dim)
 
         components.append(item_obs)
 

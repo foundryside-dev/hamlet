@@ -425,7 +425,7 @@ class EffectManager:
         vfs_registry = getattr(env_state, "vfs_registry", None)
 
         return ExecutionContext(
-            bars=bars,
+            bars=bars or {},  # Default to empty dict if None
             vfs_registry=vfs_registry,
             self_index=None,  # Not used in effect context
             target_index=effect.target_entity_id,
@@ -461,7 +461,7 @@ class EffectManager:
     ) -> None:
         """Manually cancel an effect instance (fail-forward: on_interrupt then remove)."""
         found_scope = None
-        found_entity = None
+        found_entity: int | str | None = None  # Can be int (agent/item) or str (affordance)
         target_effect: ActiveEffect | None = None
 
         # Check global effects
@@ -534,8 +534,10 @@ class EffectManager:
         if found_scope == EffectScope.GLOBAL:
             self.global_effects.remove(target_effect)
         elif found_scope == EffectScope.AGENT and found_entity is not None:
+            assert isinstance(found_entity, int), "Agent entity must be int"
             self.agent_effects[found_entity].remove(target_effect)
         elif found_scope == EffectScope.ITEM and found_entity is not None:
+            assert isinstance(found_entity, int), "Item entity must be int"
             self.item_effects[found_entity].remove(target_effect)
         elif found_scope == EffectScope.AFFORDANCE and found_entity is not None:
             key = str(found_entity)

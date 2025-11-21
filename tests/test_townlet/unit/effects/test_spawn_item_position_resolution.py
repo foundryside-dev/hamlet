@@ -275,7 +275,8 @@ def test_spawn_item_with_initial_state():
     assert len(items) == 1
 
     # Verify custom initial_state applied
-    durability = vfs_registry.read("durability", context_index=items[0].vfs_index, scope=VariableScope.ITEM)
+    item = items[0]
+    durability = vfs_registry.read_item(item.vfs_profile, "durability", item.vfs_index)
     assert durability == 25.0
 
 

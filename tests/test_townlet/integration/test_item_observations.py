@@ -4,7 +4,6 @@ from pathlib import Path
 
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.universe.compiler import UniverseCompiler
-from townlet.vfs.schema import VariableScope
 
 
 def test_agent_observes_item_durability():
@@ -23,21 +22,21 @@ def test_agent_observes_item_durability():
 
     # Spawn item and modify durability
     item = env.item_manager.spawn_item("medkit", (3, 4), current_tick=0)
-    env.vfs_registry.write(
-        "durability",
-        75.0,
-        context_index=item.vfs_index,
-        scope=VariableScope.ITEM,
+    env.vfs_registry.write_item(
+        profile_name=item.vfs_profile,
+        var_name="durability",
+        value=75.0,
+        vfs_index=item.vfs_index,
     )
 
     # Agent should see item durability in observation
     # (Exact observation index depends on observation_builder layout)
     # For now, verify via VFS registry directly
 
-    durability = env.vfs_registry.read(
-        "durability",
-        context_index=item.vfs_index,
-        scope=VariableScope.ITEM,
+    durability = env.vfs_registry.read_item(
+        profile_name=item.vfs_profile,
+        var_name="durability",
+        vfs_index=item.vfs_index,
     )
 
     assert durability == 75.0

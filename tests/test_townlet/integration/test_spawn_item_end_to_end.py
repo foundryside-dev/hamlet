@@ -180,16 +180,16 @@ def test_effect_on_despawn_spawns_item_with_real_itemmanager():
 
     # Verify rare gem has custom initial_state
     gem = rare_gems[0]
-    durability = vfs_registry.read("durability", context_index=gem.vfs_index, scope=VariableScope.ITEM)
-    quality = vfs_registry.read("quality", context_index=gem.vfs_index, scope=VariableScope.ITEM)
+    durability = vfs_registry.read_item(gem.vfs_profile, "durability", gem.vfs_index)
+    quality = vfs_registry.read_item(gem.vfs_profile, "quality", gem.vfs_index)
 
     assert abs(durability - 80.0) < 0.01
     assert abs(quality - 0.9) < 0.01
 
     # Gold coins should have defaults
     coin = gold_coins[0]
-    durability = vfs_registry.read("durability", context_index=coin.vfs_index, scope=VariableScope.ITEM)
-    quality = vfs_registry.read("quality", context_index=coin.vfs_index, scope=VariableScope.ITEM)
+    durability = vfs_registry.read_item(coin.vfs_profile, "durability", coin.vfs_index)
+    quality = vfs_registry.read_item(coin.vfs_profile, "quality", coin.vfs_index)
 
     assert abs(durability - 100.0) < 0.01  # Default
     assert abs(quality - 1.0) < 0.01  # Default

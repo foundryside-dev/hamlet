@@ -10,9 +10,14 @@ and scope semantics. It handles three scope patterns:
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any
+
 import torch
 
 from townlet.vfs.schema import VariableDef, VariableScope
+
+if TYPE_CHECKING:
+    pass  # CompiledItemProfile not needed for type checking
 
 __all__ = [
     "VariableRegistry",
@@ -54,7 +59,7 @@ class VariableRegistry:
         num_agents: int,
         device: torch.device,
         max_items: int = 0,
-        item_profiles: dict[str, any] | None = None,
+        item_profiles: dict[str, Any] | None = None,
     ):
         """Initialize variable registry.
 
@@ -68,7 +73,7 @@ class VariableRegistry:
         self.num_agents = num_agents
         self.max_items = max_items
         self.device = device
-        self.item_profiles = item_profiles or {}  # Store compiled profiles
+        self.item_profiles: dict[str, Any] = item_profiles or {}  # Store compiled profiles
 
         # Store variable definitions by ID, guarding against duplicate IDs
         self._definitions: dict[str, VariableDef] = {}
@@ -87,6 +92,7 @@ class VariableRegistry:
         self.item_vfs: torch.Tensor | None = None
         self.item_var_to_index: dict[str, int] = {}
         self.item_profile_map: dict[str, dict[str, int]] = {}  # {profile_name → {var_name → index}}
+        self.item_vfs_index_to_profile: dict[int, str] = {}  # {vfs_index → profile_name}
         self._initialize_item_storage_from_profiles()
 
     @property
@@ -365,18 +371,20 @@ class VariableRegistry:
         Returns:
             Variable value
         """
+        # Handle ITEM scope first (may not be in _definitions if from VFS profiles)
+        if scope == VariableScope.ITEM:
+            if self.item_vfs is None:
+                raise RuntimeError("Item VFS storage not allocated")
+            # Get profile for this vfs_index
+            if context_index not in self.item_vfs_index_to_profile:
+                raise KeyError(f"No item registered at vfs_index {context_index}")
+            profile_name = self.item_vfs_index_to_profile[context_index]
+            return self.read_item(profile_name, variable_id, context_index)
+
+        # For other scopes, check _definitions
         var = self._definitions.get(variable_id)
         if var is None:
             raise KeyError(f"Variable {variable_id} not found")
-
-        if scope == VariableScope.ITEM:
-            # Validate scope matches
-            if var.scope != VariableScope.ITEM:
-                raise ValueError(f"Variable '{variable_id}' has scope {var.scope}, cannot read as item")
-            if self.item_vfs is None:
-                raise RuntimeError("Item VFS storage not allocated")
-            var_idx = self.item_var_to_index[variable_id]
-            return self.item_vfs[context_index, var_idx].item()
 
         # For other scopes, use existing get() method with reader="engine"
         # This is a simplified implementation for testing
@@ -397,23 +405,143 @@ class VariableRegistry:
             context_index: Index (agent index for agent scope, item vfs_index for item scope)
             scope: Variable scope
         """
+        # Handle ITEM scope first (may not be in _definitions if from VFS profiles)
+        if scope == VariableScope.ITEM:
+            if self.item_vfs is None:
+                raise RuntimeError("Item VFS storage not allocated")
+            # Get profile for this vfs_index
+            if context_index not in self.item_vfs_index_to_profile:
+                raise KeyError(f"No item registered at vfs_index {context_index}")
+            profile_name = self.item_vfs_index_to_profile[context_index]
+            self.write_item(profile_name, variable_id, value, context_index)
+            return
+
+        # For other scopes, check _definitions
         var = self._definitions.get(variable_id)
         if var is None:
             raise KeyError(f"Variable {variable_id} not found")
 
-        if scope == VariableScope.ITEM:
-            # Validate scope matches
-            if var.scope != VariableScope.ITEM:
-                raise ValueError(f"Variable '{variable_id}' has scope {var.scope}, cannot write as item")
-            if self.item_vfs is None:
-                raise RuntimeError("Item VFS storage not allocated")
-            var_idx = self.item_var_to_index[variable_id]
-            self.item_vfs[context_index, var_idx] = value
-            return
-
         # For other scopes, use existing set() method with writer="engine"
         # This is a simplified implementation for testing
         raise NotImplementedError(f"write() not yet implemented for scope {scope}")
+
+    def list_global(self) -> list[str]:
+        """List all global variable names."""
+        return [var_id for var_id, var_def in self._definitions.items() if var_def.scope == VariableScope.GLOBAL]
+
+    def get_global(self, name: str) -> torch.Tensor:
+        """Get global variable value.
+
+        Args:
+            name: Variable name
+
+        Returns:
+            Global variable value tensor
+
+        Raises:
+            KeyError: If variable not found or not global
+        """
+        if name not in self._definitions:
+            raise KeyError(f"Variable '{name}' not found")
+        var_def = self._definitions[name]
+        if var_def.scope != VariableScope.GLOBAL:
+            raise KeyError(f"Variable '{name}' is not global (scope: {var_def.scope})")
+        return self._storage[name].clone()
+
+    def list_agent(self) -> list[str]:
+        """List all agent variable names (including agent_private)."""
+        return [
+            var_id for var_id, var_def in self._definitions.items() if var_def.scope in (VariableScope.AGENT, VariableScope.AGENT_PRIVATE)
+        ]
+
+    def get_agent(self, name: str) -> torch.Tensor:
+        """Get agent variable value.
+
+        Args:
+            name: Variable name
+
+        Returns:
+            Agent variable value tensor (batch)
+
+        Raises:
+            KeyError: If variable not found or not agent-scoped
+        """
+        if name not in self._definitions:
+            raise KeyError(f"Variable '{name}' not found")
+        var_def = self._definitions[name]
+        if var_def.scope not in (VariableScope.AGENT, VariableScope.AGENT_PRIVATE):
+            raise KeyError(f"Variable '{name}' is not agent-scoped (scope: {var_def.scope})")
+        return self._storage[name].clone()
+
+    def write_item(self, profile_name: str, var_name: str, value: float | torch.Tensor, vfs_index: int) -> None:
+        """Write item variable value.
+
+        Args:
+            profile_name: Item profile name (e.g., "medical", "food")
+            var_name: Variable name
+            value: New value
+            vfs_index: Item VFS index (row in item_vfs tensor)
+
+        Raises:
+            RuntimeError: If item storage not allocated
+            KeyError: If profile or variable not found
+        """
+        if self.item_vfs is None:
+            raise RuntimeError("Item VFS storage not allocated")
+        if profile_name not in self.item_profile_map:
+            raise KeyError(f"Item profile '{profile_name}' not found. Available: {list(self.item_profile_map.keys())}")
+        profile_vars = self.item_profile_map[profile_name]
+        if var_name not in profile_vars:
+            raise KeyError(f"Variable '{var_name}' not found in profile '{profile_name}'. Available: {list(profile_vars.keys())}")
+        var_idx = profile_vars[var_name]
+        self.item_vfs[vfs_index, var_idx] = value
+
+    def read_item(self, profile_name: str, var_name: str, vfs_index: int) -> float:
+        """Read item variable value.
+
+        Args:
+            profile_name: Item profile name (e.g., "medical", "food")
+            var_name: Variable name
+            vfs_index: Item VFS index (row in item_vfs tensor)
+
+        Returns:
+            Variable value as Python float
+
+        Raises:
+            RuntimeError: If item storage not allocated
+            KeyError: If profile or variable not found
+        """
+        if self.item_vfs is None:
+            raise RuntimeError("Item VFS storage not allocated")
+        if profile_name not in self.item_profile_map:
+            raise KeyError(f"Item profile '{profile_name}' not found. Available: {list(self.item_profile_map.keys())}")
+        profile_vars = self.item_profile_map[profile_name]
+        if var_name not in profile_vars:
+            raise KeyError(f"Variable '{var_name}' not found in profile '{profile_name}'. Available: {list(profile_vars.keys())}")
+        var_idx = profile_vars[var_name]
+        return self.item_vfs[vfs_index, var_idx].item()
+
+    def register_item_instance(self, vfs_index: int, profile_name: str) -> None:
+        """Register mapping from vfs_index to profile for an item instance.
+
+        Args:
+            vfs_index: Item VFS index
+            profile_name: Item profile name
+
+        Raises:
+            ValueError: If profile not found
+        """
+        if profile_name not in self.item_profile_map:
+            raise ValueError(f"Profile '{profile_name}' not found. Available: {list(self.item_profile_map.keys())}")
+        self.item_vfs_index_to_profile[vfs_index] = profile_name
+
+    def unregister_item_instance(self, vfs_index: int) -> None:
+        """Unregister item instance when despawned.
+
+        Args:
+            vfs_index: Item VFS index
+        """
+        self.item_vfs_index_to_profile.pop(vfs_index, None)
 
 
 class ScopedVariableRegistry:

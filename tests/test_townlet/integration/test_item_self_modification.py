@@ -6,7 +6,6 @@ import torch
 
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.universe.compiler import UniverseCompiler
-from townlet.vfs.schema import VariableScope
 
 
 def test_item_use_modifies_item_durability():
@@ -38,10 +37,10 @@ def test_item_use_modifies_item_durability():
     obs, reward, done, truncated = env.step(torch.tensor([get_action.id]))
 
     # Check initial durability
-    initial_durability = env.vfs_registry.read(
-        "durability",
-        context_index=medkit_instance.vfs_index,
-        scope=VariableScope.ITEM,
+    initial_durability = env.vfs_registry.read_item(
+        profile_name=medkit_instance.vfs_profile,
+        var_name="durability",
+        vfs_index=medkit_instance.vfs_index,
     )
     assert initial_durability == 100.0
 
@@ -50,10 +49,10 @@ def test_item_use_modifies_item_durability():
     obs, reward, done, truncated = env.step(torch.tensor([use_action.id]))
 
     # Durability should decrease
-    final_durability = env.vfs_registry.read(
-        "durability",
-        context_index=medkit_instance.vfs_index,
-        scope=VariableScope.ITEM,
+    final_durability = env.vfs_registry.read_item(
+        profile_name=medkit_instance.vfs_profile,
+        var_name="durability",
+        vfs_index=medkit_instance.vfs_index,
     )
     assert final_durability < initial_durability
     assert final_durability == 90.0  # Expect -10 per use

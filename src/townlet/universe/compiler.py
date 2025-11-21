@@ -244,8 +244,16 @@ class UniverseCompiler:
             for var in compiled_vfs_profiles.global_profile.variables:
                 schema[f"vfs.{var.name}"] = var.type
 
+        # Add item VFS paths from all item profiles
+        if compiled_vfs_profiles and compiled_vfs_profiles.item_profiles:
+            for profile_name, profile in compiled_vfs_profiles.item_profiles.items():
+                for var in profile.variables:
+                    # Items use self.vfs.* and target.vfs.* paths in effects
+                    # Profile name is implicit (instance determines profile at runtime)
+                    schema[f"self.vfs.{var.name}"] = var.type
+                    schema[f"target.vfs.{var.name}"] = var.type
+
         # TODO: Add agent profile paths (Task 2)
-        # TODO: Add item profile paths (Task 3)
 
         return schema
 

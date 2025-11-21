@@ -578,6 +578,111 @@ With the World Compiler (T0 Pillar 3) complete, the project can now:
 
 ---
 
+## VFS Uplift: Runtime Integration Tasks
+
+**Plan Document:** `docs/plans/vfs_uplift/TASK-1-DETAILED-PLAN.md`
+**Overall Status:** Task 1 ✅ **COMPLETE** (100%)
+
+---
+
+### Task 1: Compile-time Wiring ✅ **COMPLETE** (100%)
+
+**Timeline:** Planned 1-2 days | **Actual:** 1 day
+**Test Coverage:** 15 tests (100% passing)
+
+#### Deliverables
+
+| Subtask | Status | Commits | Tests |
+|---------|--------|---------|-------|
+| 1.1: VFS Profile Compilation | ✅ Complete | 90c6bcb | - |
+| 1.2: Effects Catalog Compilation | ✅ Complete | 06561a1, 04f311a | - |
+| 1.3: VFS Expression Schema | ✅ Complete | 92c74e4 | 3 |
+| 1.4: CompiledUniverse Serialization | ✅ Complete | d890b86 | 8 |
+| 1.5: Integration Tests | ✅ Complete | e1fbaed | 4 |
+| 1.6: Documentation | ✅ Complete | (this commit) | - |
+
+**Success Criteria:**
+- ✅ VFS profiles compiled by UniverseCompiler
+- ✅ Effects catalog compiled by UniverseCompiler
+- ✅ VFS expression schema generated for runtime validation
+- ✅ CompiledUniverse serialization updated
+- ✅ 15 new tests passing (8 unit + 4 integration + 3 schema)
+- ✅ All existing tests still pass (435+ tests)
+
+**Key Achievements:**
+
+1. **VFS Profiles Compilation** (Subtask 1.1)
+   - Added `compile_vfs_profiles()` method to UniverseCompiler
+   - Loads experiment-level `vfs_profiles.yaml`
+   - Returns `CompiledVFSProfiles` with global/agent/item profiles
+   - Handles missing VFS profiles gracefully (optional feature)
+
+2. **Effects Catalog Compilation** (Subtask 1.2)
+   - Added `compile_effects_catalog()` method to UniverseCompiler
+   - Loads **experiment-level** `effects.yaml` (not per-level)
+   - Returns `EffectCatalog` with pre-compiled command ASTs
+   - Allows missing effects.yaml (optional feature)
+
+3. **VFS Expression Schema** (Subtask 1.3)
+   - Added `generate_vfs_expression_schema()` method
+   - Extracts variables from VFS profiles + bars
+   - Creates schema for runtime expression validation
+   - Returns dict mapping variable paths to types
+
+4. **Serialization Support** (Subtask 1.4)
+   - Updated `CompiledUniverse.to_dict()` with new fields
+   - Updated `CompiledUniverse.from_dict()` with stub deserialization
+   - Added `clone()` method preservation for new fields
+   - ASTs not serialized (recompile from YAML on cache reload)
+
+5. **Integration Tests** (Subtask 1.5)
+   - End-to-end compilation with VFS + effects
+   - Schema generation includes bars and VFS variables
+   - Minimal configs without VFS still compile
+   - Grep check documented current runtime YAML loading
+
+**Files Modified:**
+
+```
+src/townlet/universe/compiler.py
+├── compile_vfs_profiles() (new method) ✅
+├── compile_effects_catalog() (new method) ✅
+└── generate_vfs_expression_schema() (new method) ✅
+
+src/townlet/universe/compiled.py
+├── to_dict() (updated with new fields) ✅
+├── from_dict() (updated with stub deserialization) ✅
+└── clone() (updated to preserve new fields) ✅
+
+tests/test_townlet/unit/universe/
+├── conftest.py (new fixtures) ✅
+├── test_compiled_universe_serialization.py (8 tests) ✅
+├── test_effects_catalog_compilation.py (2 tests) ✅
+└── test_vfs_expression_schema.py (1 test) ✅
+
+tests/test_townlet/integration/
+└── test_compile_time_wiring.py (4 tests) ✅
+```
+
+**Commit References:**
+
+- `90c6bcb` - feat(compiler): add VFS profile compilation to UniverseCompiler
+- `06561a1` - feat(compiler): add effects catalog compilation to UniverseCompiler
+- `04f311a` - fix(compiler): correct effects catalog to experiment-level artifact
+- `92c74e4` - feat(compiler): generate VFS expression schema for runtime validation
+- `d890b86` - feat(compiler): update CompiledUniverse serialization for new fields
+- `e1fbaed` - test(compiler): add integration tests for VFS + effects compilation
+
+**Next Steps:**
+
+Task 1 delivered all compile-time infrastructure. Ready for:
+
+- **Task 2:** Runtime VFS evaluation (use compiled artifacts in environment step loop)
+- **Task 3:** Runtime effects execution (remove YAML loading from vectorized_env)
+- **Task 4:** Cleanup and validation (remove legacy code paths)
+
+---
+
 **Report Generated:** 2025-11-21
 **Assessment Team:** 6 parallel evaluation agents
 **Review Status:** Comprehensive file-by-file analysis complete

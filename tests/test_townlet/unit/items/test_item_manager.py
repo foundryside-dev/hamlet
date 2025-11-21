@@ -14,6 +14,7 @@ def test_item_instance_initialization():
         instance_id=42,
         position=(3, 5),  # Grid position
         vfs_index=7,  # Index into item_vfs tensor
+        vfs_profile="food_stats",
         spawn_tick=1000,
         duration_total=200,
         duration_remaining=200,
@@ -33,6 +34,7 @@ def test_item_instance_tracks_age():
         instance_id=1,
         position=(0, 0),
         vfs_index=0,
+        vfs_profile="consumable_stats",
         spawn_tick=500,
         duration_total=None,  # Permanent
         duration_remaining=None,

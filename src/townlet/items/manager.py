@@ -281,6 +281,7 @@ class ItemManager:
             instance_id=self.next_instance_id,
             position=position,
             vfs_index=vfs_index,
+            vfs_profile=item_def.vfs_profile,  # Assign VFS profile from item type
             spawn_tick=current_tick,
             duration_total=item_def.duration,
             duration_remaining=item_def.duration,

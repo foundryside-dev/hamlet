@@ -18,6 +18,7 @@ class ItemInstance:
     instance_id: int  # Unique instance ID (incrementing counter)
     position: tuple[int, ...] | tuple[float, ...]  # Spatial position (grid or continuous)
     vfs_index: int  # Index into item_vfs tensor ([max_items, num_profiles])
+    vfs_profile: str  # VFS profile name (e.g., "food_stats", "weapon_stats")
 
     spawn_tick: int  # When item was spawned
     duration_total: int | None  # Total lifetime (None = permanent)

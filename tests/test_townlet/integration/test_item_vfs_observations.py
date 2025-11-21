@@ -2,10 +2,16 @@
 
 from pathlib import Path
 
+import pytest
 import torch
 
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.universe.compiler import UniverseCompiler
+
+# NOTE: These tests are designed to fail loudly until Task 3 of the Runtime VFS+Effects
+# Integration Plan is complete (see docs/plans/vfs_uplift/2025-11-23-runtime-vfs-effects-integration.md).
+# Task 3 will implement profile-driven item VFS observations.
+# The tests verify test isolation and registry cleanup even when skipped.
 
 
 def spawn_and_pickup_item(
@@ -47,8 +53,19 @@ def spawn_and_pickup_item(
     return item.instance_id
 
 
+@pytest.mark.xfail(
+    reason="Item VFS observations not yet implemented (Task 3 of Runtime VFS+Effects Integration Plan)",
+    strict=True,
+)
 def test_item_vfs_observations_include_held_items():
-    """Agent observations should include VFS state of held items."""
+    """Agent observations should include VFS state of held items.
+
+    This test verifies that:
+    1. Test isolation is correct (VFS registry clean at start)
+    2. Item VFS field exists in observations
+    3. Item VFS values are correctly exposed in observations
+    4. Masking works for empty slots and zero-variable profiles
+    """
     # Setup: Compile items_smoke config
     config_dir = Path("configs/test/items_smoke")
 
@@ -61,6 +78,12 @@ def test_item_vfs_observations_include_held_items():
         num_agents=4,
         device=torch.device("cpu"),
     )
+
+    # Verify test isolation: VFS registry should be clean
+    if env.vfs_registry is not None and env.vfs_registry.item_vfs is not None:
+        assert torch.all(
+            env.vfs_registry.item_vfs == 0.0
+        ), f"VFS registry not clean at test start! Non-zero values found: {env.vfs_registry.item_vfs[env.vfs_registry.item_vfs != 0.0]}"
 
     # Reset to initialize state
     obs = env.reset()
@@ -102,10 +125,9 @@ def test_item_vfs_observations_include_held_items():
             item_vfs_field = field
             break
 
-    if item_vfs_field is None:
-        # Item VFS may not be in observations yet - this is expected if integration not complete
-        # For now, just verify observation dimensions are stable
-        return
+    assert (
+        item_vfs_field is not None
+    ), f"Item VFS field not found in observations! Available fields: {[f.name for f in env.observation_spec.fields]}"
 
     # Extract item VFS slice from observations
     start_idx = item_vfs_field.start_index
@@ -137,8 +159,19 @@ def test_item_vfs_observations_include_held_items():
     assert agent3_item_vfs[0] == 0.0, "Agent 3 slot 0 should be 0.0 (coin has no VFS vars)"
 
 
+@pytest.mark.xfail(
+    reason="Item VFS observations not yet implemented (Task 3 of Runtime VFS+Effects Integration Plan)",
+    strict=True,
+)
 def test_item_vfs_masking_with_different_profiles():
-    """Items with different VFS profiles should mask correctly."""
+    """Items with different VFS profiles should mask correctly.
+
+    This test verifies that:
+    1. Test isolation is correct (VFS registry clean at start)
+    2. initial_state parameter works correctly
+    3. Different profiles with different variable counts mask correctly
+    4. VFS values persist correctly in the registry
+    """
     # Setup: items_smoke has 3 profiles:
     # - food: 1 var (freshness)
     # - medical: 1 var (durability)
@@ -154,6 +187,12 @@ def test_item_vfs_masking_with_different_profiles():
         num_agents=1,
         device=torch.device("cpu"),
     )
+
+    # Verify test isolation: VFS registry should be clean
+    if env.vfs_registry is not None and env.vfs_registry.item_vfs is not None:
+        assert torch.all(
+            env.vfs_registry.item_vfs == 0.0
+        ), f"VFS registry not clean at test start! Non-zero values found: {env.vfs_registry.item_vfs[env.vfs_registry.item_vfs != 0.0]}"
 
     env.reset()
 
@@ -177,16 +216,34 @@ def test_item_vfs_masking_with_different_profiles():
     assert medkit_slot != -1, "Medkit should be in slot 1"
     assert coin_slot != -1, "Coin should be in slot 2"
 
-    # Verify VFS values in registry
+    # Verify VFS values in registry with detailed diagnostics
     food_profile_map = env.vfs_registry.item_profile_map["food"]
     freshness_idx = food_profile_map["freshness"]
     apple_freshness = env.vfs_registry.item_vfs[apple_slot, freshness_idx].item()
-    assert apple_freshness == 75.0, f"Expected freshness=75.0, got {apple_freshness}"
+
+    # DEBUG: Print full VFS state for diagnosis
+    if apple_freshness != 75.0:
+        print("\n=== VFS State Dump (Apple) ===")
+        print(f"Apple slot: {apple_slot}")
+        print(f"Freshness index: {freshness_idx}")
+        print(f"Full item_vfs tensor:\n{env.vfs_registry.item_vfs}")
+        print(f"Apple VFS row: {env.vfs_registry.item_vfs[apple_slot]}")
+        print("===========================\n")
+
+    assert apple_freshness == 75.0, (
+        f"Expected freshness=75.0, got {apple_freshness}. "
+        f"Apple slot={apple_slot}, freshness_idx={freshness_idx}, "
+        f"VFS row={env.vfs_registry.item_vfs[apple_slot]}"
+    )
 
     medical_profile_map = env.vfs_registry.item_profile_map["medical"]
     durability_idx = medical_profile_map["durability"]
     medkit_durability = env.vfs_registry.item_vfs[medkit_slot, durability_idx].item()
-    assert medkit_durability == 50.0, f"Expected durability=50.0, got {medkit_durability}"
+    assert medkit_durability == 50.0, (
+        f"Expected durability=50.0, got {medkit_durability}. "
+        f"Medkit slot={medkit_slot}, durability_idx={durability_idx}, "
+        f"VFS row={env.vfs_registry.item_vfs[medkit_slot]}"
+    )
 
     # Currency profile has 0 variables, so no VFS state to check
 
@@ -200,9 +257,9 @@ def test_item_vfs_masking_with_different_profiles():
             item_vfs_field = field
             break
 
-    if item_vfs_field is None:
-        # Item VFS not in observations yet - test passes trivially
-        return
+    assert (
+        item_vfs_field is not None
+    ), f"Item VFS field not found in observations! Available fields: {[f.name for f in env.observation_spec.fields]}"
 
     # Extract item VFS slice
     start_idx = item_vfs_field.start_index
@@ -212,13 +269,29 @@ def test_item_vfs_masking_with_different_profiles():
     # Verify: Each slot has correct VFS values
     # max_vars_across_profiles = 1 (food and medical both have 1 var)
     # So each slot contributes 1 dimension
-    assert item_vfs_obs[0] == 75.0, f"Slot 0 should have freshness=75.0, got {item_vfs_obs[0]}"
-    assert item_vfs_obs[1] == 50.0, f"Slot 1 should have durability=50.0, got {item_vfs_obs[1]}"
-    assert item_vfs_obs[2] == 0.0, f"Slot 2 should be 0.0 (coin has no vars), got {item_vfs_obs[2]}"
+    assert item_vfs_obs[0] == 75.0, (
+        f"Slot 0 should have freshness=75.0, got {item_vfs_obs[0]}. "
+        f"Full obs slice: {item_vfs_obs}, registry values: {env.vfs_registry.item_vfs[apple_slot]}"
+    )
+    assert item_vfs_obs[1] == 50.0, (
+        f"Slot 1 should have durability=50.0, got {item_vfs_obs[1]}. "
+        f"Full obs slice: {item_vfs_obs}, registry values: {env.vfs_registry.item_vfs[medkit_slot]}"
+    )
+    assert item_vfs_obs[2] == 0.0, f"Slot 2 should be 0.0 (coin has no vars), got {item_vfs_obs[2]}. Full obs slice: {item_vfs_obs}"
 
 
+@pytest.mark.xfail(
+    reason="Item VFS observations not yet implemented (Task 3 of Runtime VFS+Effects Integration Plan)",
+    strict=True,
+)
 def test_item_vfs_updates_in_observations():
-    """Item VFS state changes should appear in observations."""
+    """Item VFS state changes should appear in observations.
+
+    This test verifies that:
+    1. Test isolation is correct (VFS registry clean at start)
+    2. VFS state changes are reflected in subsequent observations
+    3. Manual registry updates propagate to observations correctly
+    """
     # Setup: Compile config with items
     config_dir = Path("configs/test/items_smoke")
 
@@ -231,6 +304,12 @@ def test_item_vfs_updates_in_observations():
         num_agents=1,
         device=torch.device("cpu"),
     )
+
+    # Verify test isolation: VFS registry should be clean
+    if env.vfs_registry is not None and env.vfs_registry.item_vfs is not None:
+        assert torch.all(
+            env.vfs_registry.item_vfs == 0.0
+        ), f"VFS registry not clean at test start! Non-zero values found: {env.vfs_registry.item_vfs[env.vfs_registry.item_vfs != 0.0]}"
 
     env.reset()
 
@@ -262,9 +341,9 @@ def test_item_vfs_updates_in_observations():
             item_vfs_field = field
             break
 
-    if item_vfs_field is None:
-        # Item VFS not in observations yet - test passes trivially
-        return
+    assert (
+        item_vfs_field is not None
+    ), f"Item VFS field not found in observations! Available fields: {[f.name for f in env.observation_spec.fields]}"
 
     # Extract item VFS slice from both observations
     start_idx = item_vfs_field.start_index
@@ -275,5 +354,11 @@ def test_item_vfs_updates_in_observations():
 
     # Verify: Observation reflects updated VFS state
     # Slot 0 should show durability change from 100.0 -> 50.0
-    assert item_vfs_before[0] == 100.0, f"Initial durability should be 100.0, got {item_vfs_before[0]}"
-    assert item_vfs_after[0] == 50.0, f"Updated durability should be 50.0, got {item_vfs_after[0]}"
+    assert (
+        item_vfs_before[0] == 100.0
+    ), f"Initial durability should be 100.0, got {item_vfs_before[0]}. Medkit slot={medkit_slot}, full obs before: {item_vfs_before}"
+    assert item_vfs_after[0] == 50.0, (
+        f"Updated durability should be 50.0, got {item_vfs_after[0]}. "
+        f"Medkit slot={medkit_slot}, full obs after: {item_vfs_after}, "
+        f"registry value: {env.vfs_registry.item_vfs[medkit_slot, durability_idx]}"
+    )

@@ -416,9 +416,17 @@ class UniverseCompiler:
         if primary_level not in raw.levels:
             raise ValueError(f"Primary level '{primary_level}' not found. Available: {list(raw.levels.keys())}")
 
+        # Build bar schema for VFS profile type checking
+        primary_level_config = raw.levels[primary_level]
+        bar_schema = {}
+        for meter in primary_level_config.bars.meters:
+            bar_schema[meter.name] = "float"  # All meters are float
+
+        # Compile VFS profiles (experiment-level) - must happen before building effects schema
+        compiled_vfs_profiles = self._compile_vfs_profiles(experiment_dir, bar_schema)
+
         # Build effects schema for command validation (experiment-level)
         # Use primary level's bars for schema construction
-        primary_level_config = raw.levels[primary_level]
         effects_schema = {}
         effects_schema["intensity"] = "float"
         effects_schema["elapsed_ticks"] = "float"
@@ -436,6 +444,14 @@ class UniverseCompiler:
                 effects_schema[f"vfs.{var.name}"] = vfs_type
                 effects_schema[f"target.vfs.{var.name}"] = vfs_type
 
+        # Add item VFS paths (from compiled VFS profiles)
+        if compiled_vfs_profiles and compiled_vfs_profiles.item_profiles:
+            for profile_name, compiled_profile in compiled_vfs_profiles.item_profiles.items():
+                for var in compiled_profile.variables:
+                    vfs_type = "bool" if var.type == "bool" else "float"
+                    # Items use self.vfs.* (not target.vfs.*) since self IS the item
+                    effects_schema[f"self.vfs.{var.name}"] = vfs_type
+
         # Compile effects catalog (experiment-level artifact)
         compiled_effect_catalog = self._compile_effects_catalog(experiment_dir, effects_schema)
 
@@ -443,7 +459,13 @@ class UniverseCompiler:
         all_levels: dict[str, CompiledUniverse.LevelMetadata] = {}
         for level_name, level in raw.levels.items():
             logger.info("Compiling level: %s", level_name)
-            obs_spec = self._build_observation_spec(raw.stratum, raw.environment, level.curriculum)
+            obs_spec = self._build_observation_spec(
+                raw.stratum,
+                raw.environment,
+                level.curriculum,
+                compiled_vfs_profiles,
+                raw.items,
+            )
             obs_activity = self._build_observation_activity(obs_spec)
             action_metadata = self._build_action_space_metadata(
                 raw.stratum,
@@ -504,15 +526,6 @@ class UniverseCompiler:
             config_hash=config_hash,
             config_mtime=config_mtime,
         )
-
-        # Build bar schema for VFS profile type checking
-        bar_schema = {}
-        primary_level_config = raw.levels[primary_level]
-        for meter in primary_level_config.bars.meters:
-            bar_schema[meter.name] = "float"  # All meters are float
-
-        # Compile VFS profiles (experiment-level)
-        compiled_vfs_profiles = self._compile_vfs_profiles(experiment_dir, bar_schema)
 
         # Build VFS expression schema for runtime validation
         vfs_expression_schema = self._build_vfs_expression_schema(primary_level_config.bars, compiled_vfs_profiles)
@@ -1010,6 +1023,8 @@ class UniverseCompiler:
         stratum: StratumConfig,
         environment: EnvConfigV21,
         curriculum: CurriculumConfig,
+        compiled_vfs_profiles: CompiledVFSProfiles | None = None,
+        items_catalog: ItemsCatalogConfig | None = None,
     ) -> ObservationSpec:
         """Build observation spec using Support/Active pattern for v2.1."""
 
@@ -1213,6 +1228,54 @@ class UniverseCompiler:
                 )
             )
             offset += dims
+
+        # VFS observations (global + agent + item VFS)
+        # Compute total VFS dimensions from VFS profiles
+        vfs_dim = 0
+
+        # Global VFS
+        if compiled_vfs_profiles is not None:
+            if compiled_vfs_profiles.global_profile is not None:
+                vfs_dim += len(compiled_vfs_profiles.global_profile.variables)
+
+            # Agent VFS
+            if compiled_vfs_profiles.agent_profile is not None:
+                # Count agent profile variables
+                agent_vars = getattr(compiled_vfs_profiles.agent_profile, "variables", [])
+                vfs_dim += len(agent_vars)
+
+            # Item VFS: max_items_per_agent × max_vars_per_profile
+            if compiled_vfs_profiles.item_profiles:
+                item_profiles_dict = compiled_vfs_profiles.item_profiles
+                if item_profiles_dict:
+                    # Get max vars across all item profiles
+                    max_vars = 0
+                    for profile in item_profiles_dict.values():
+                        profile_vars = getattr(profile, "variables", [])
+                        max_vars = max(max_vars, len(profile_vars))
+
+                    # Fixed: 3 slots per agent (from items config)
+                    max_items_per_agent = 3
+                    if items_catalog is not None:
+                        max_items_per_agent = items_catalog.max_items_per_agent
+
+                    vfs_dim += max_items_per_agent * max_vars
+
+        if vfs_dim > 0:
+            fields.append(
+                ObservationField(
+                    uuid=None,
+                    name="obs_vfs",
+                    type="vector",
+                    dims=vfs_dim,
+                    start_index=offset,
+                    end_index=offset + vfs_dim,
+                    scope="agent",
+                    description=f"VFS observations (global + agent + item, {vfs_dim} dims)",
+                    semantic_type="custom",
+                )
+            )
+            offset += vfs_dim
 
         # Temporal fields
         if temporal_support == "enabled":

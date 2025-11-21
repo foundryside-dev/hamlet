@@ -2,7 +2,6 @@
 
 from pathlib import Path
 
-import pytest
 import yaml
 
 from tests.test_townlet.helpers.config_builder import prepare_config_dir
@@ -18,10 +17,7 @@ def test_compiler_compiles_effects_catalog_per_level(tmp_path: Path):
     profiles = {"global_profile": {"variables": [{"name": "day_count", "type": "int", "initial_value": 0}]}}
     (experiment_dir / "vfs_profiles.yaml").write_text(yaml.dump(profiles))
 
-    # Get the primary level directory
-    level_dir = experiment_dir / "levels" / "L0_test"
-
-    # Create effects.yaml with a simple effect
+    # Create effects.yaml at EXPERIMENT ROOT (not in level directory)
     effects = {
         "version": "1.0",
         "effect_definitions": [
@@ -38,7 +34,7 @@ def test_compiler_compiles_effects_catalog_per_level(tmp_path: Path):
             }
         ],
     }
-    (level_dir / "effects.yaml").write_text(yaml.dump(effects))
+    (experiment_dir / "effects.yaml").write_text(yaml.dump(effects))
 
     # Exercise
     compiler = UniverseCompiler()
@@ -50,15 +46,23 @@ def test_compiler_compiles_effects_catalog_per_level(tmp_path: Path):
     assert "energy_regen" in compiled.compiled_effect_catalog.effects
 
 
-def test_compiler_fails_if_effects_yaml_missing(tmp_path: Path):
-    """UniverseCompiler should fail if effects.yaml required but missing."""
-    # Setup: Config pack with valid configs but missing level effects.yaml
+def test_compiler_allows_missing_effects_yaml(tmp_path: Path):
+    """UniverseCompiler should allow missing effects.yaml (optional)."""
+    # Setup: Config pack with valid configs but missing effects.yaml
     experiment_dir = prepare_config_dir(tmp_path, name="test_experiment")
 
-    # The skeleton already has valid affordances.yaml
-    # Don't create effects.yaml - we want to test that it fails when missing
+    # Add VFS profiles with a global variable
+    profiles = {"global_profile": {"variables": [{"name": "day_count", "type": "int", "initial_value": 0}]}}
+    (experiment_dir / "vfs_profiles.yaml").write_text(yaml.dump(profiles))
 
-    # Exercise & Verify
+    # Remove effects.yaml (prepare_config_dir copies it from skeleton)
+    effects_yaml = experiment_dir / "effects.yaml"
+    if effects_yaml.exists():
+        effects_yaml.unlink()
+
+    # Exercise
     compiler = UniverseCompiler()
-    with pytest.raises(FileNotFoundError, match="effects.yaml is required"):
-        compiler.compile(experiment_dir, use_cache=False)
+    compiled = compiler.compile(experiment_dir, use_cache=False)
+
+    # Verify: compiled_effect_catalog should be None when file missing
+    assert compiled.compiled_effect_catalog is None

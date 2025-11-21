@@ -108,7 +108,6 @@ class CompiledUniverse:
         vfs_observation_fields: tuple[VfsObservationField, ...]
         vfs_variables: tuple[VariableDef, ...]
         items_appearance: ItemsAppearanceConfig | None = None
-        compiled_effect_catalog: EffectCatalog | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "vfs_observation_fields", tuple(self.vfs_observation_fields))

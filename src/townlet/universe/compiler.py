@@ -186,23 +186,23 @@ class UniverseCompiler:
             item_profiles={},  # TODO
         )
 
-    def _compile_effects_catalog(self, level_dir: Path, effects_schema: dict[str, str]) -> EffectCatalog:
-        """Load and compile effects catalog from level directory.
+    def _compile_effects_catalog(self, experiment_dir: Path, effects_schema: dict[str, str]) -> EffectCatalog | None:
+        """Load and compile effects catalog from experiment directory.
 
         Args:
-            level_dir: Level config directory containing effects.yaml
+            experiment_dir: Experiment config directory containing effects.yaml
             effects_schema: Type schema for effect command validation
 
         Returns:
-            Compiled effects catalog
+            Compiled effects catalog, or None if effects.yaml not found
 
         Raises:
-            FileNotFoundError: If effects.yaml not found
+            None - effects.yaml is optional
         """
-        effects_path = level_dir / "effects.yaml"
+        effects_path = experiment_dir / "effects.yaml"
 
         if not effects_path.exists():
-            raise FileNotFoundError(f"effects.yaml is required for affordance interactions but not found at {effects_path}")
+            return None
 
         # Load YAML
         effects_data = yaml.safe_load(effects_path.read_text())
@@ -343,6 +343,29 @@ class UniverseCompiler:
         if primary_level not in raw.levels:
             raise ValueError(f"Primary level '{primary_level}' not found. Available: {list(raw.levels.keys())}")
 
+        # Build effects schema for command validation (experiment-level)
+        # Use primary level's bars for schema construction
+        primary_level_config = raw.levels[primary_level]
+        effects_schema = {}
+        effects_schema["intensity"] = "float"
+        effects_schema["elapsed_ticks"] = "float"
+        effects_schema["duration_remaining"] = "float"
+
+        # Add bar paths (using primary level bars)
+        for meter in primary_level_config.bars.meters:
+            effects_schema[f"bar.{meter.name}"] = "float"
+            effects_schema[f"target.bar.{meter.name}"] = "float"
+
+        # Add VFS paths (from environment.yaml variables)
+        if raw.environment.environment.variables:
+            for var in raw.environment.environment.variables:
+                vfs_type = "bool" if var.type == "bool" else "float"
+                effects_schema[f"vfs.{var.name}"] = vfs_type
+                effects_schema[f"target.vfs.{var.name}"] = vfs_type
+
+        # Compile effects catalog (experiment-level artifact)
+        compiled_effect_catalog = self._compile_effects_catalog(experiment_dir, effects_schema)
+
         # Build per-level artifacts
         all_levels: dict[str, CompiledUniverse.LevelMetadata] = {}
         for level_name, level in raw.levels.items():
@@ -382,30 +405,6 @@ class UniverseCompiler:
             vfs_fields = self._build_vfs_observation_fields(obs_spec, raw.environment)
             vfs_variables = self._build_vfs_variables(obs_spec, raw.environment)
 
-            # Build effects schema for command validation
-            effects_schema = {}
-            effects_schema["intensity"] = "float"
-            effects_schema["elapsed_ticks"] = "float"
-            effects_schema["duration_remaining"] = "float"
-
-            # Add bar paths (per-level bars)
-            for meter in level.bars.meters:
-                effects_schema[f"bar.{meter.name}"] = "float"
-                effects_schema[f"target.bar.{meter.name}"] = "float"
-
-            # Add VFS paths (from compiled profiles - shared across levels)
-            # Note: We need to compile VFS profiles first, but they're experiment-level
-            # For now, we'll build the schema based on environment.yaml variables
-            if raw.environment.environment.variables:
-                for var in raw.environment.environment.variables:
-                    vfs_type = "bool" if var.type == "bool" else "float"
-                    effects_schema[f"vfs.{var.name}"] = vfs_type
-                    effects_schema[f"target.vfs.{var.name}"] = vfs_type
-
-            # Compile effects catalog for this level
-            level_dir = experiment_dir / "levels" / level_name
-            compiled_effect_catalog = self._compile_effects_catalog(level_dir, effects_schema)
-
             all_levels[level_name] = CompiledUniverse.LevelMetadata(
                 level_name=level_name,
                 bars=level.bars,
@@ -421,7 +420,6 @@ class UniverseCompiler:
                 vfs_observation_fields=vfs_fields,
                 vfs_variables=vfs_variables,
                 items_appearance=level.items_appearance,
-                compiled_effect_catalog=compiled_effect_catalog,
             )
 
         primary_meta = all_levels[primary_level]
@@ -460,7 +458,7 @@ class UniverseCompiler:
             agent=raw.agent,
             items_catalog=raw.items,
             compiled_vfs_profiles=compiled_vfs_profiles,
-            compiled_effect_catalog=primary_meta.compiled_effect_catalog,
+            compiled_effect_catalog=compiled_effect_catalog,
             experiment_dir=experiment_dir,
             all_levels=all_levels,
         )

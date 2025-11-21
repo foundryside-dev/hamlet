@@ -141,33 +141,52 @@ def test_vfs_expression_dependency_chain():
     Tests:
     - Multi-level dependencies (a → b → c)
     - Expression reuse across variables
-    - Mark-and-sweep with dependencies
+    - Eager evaluation (mark-and-sweep would skip unobserved vars)
     """
-    # Setup: Use vfs_profiles_smoke which has dependency chains
+    # Setup: Use vfs_dependency_chain which has dependency chains
     config_dir = Path(__file__).parent.parent.parent.parent / "configs" / "test" / "vfs_dependency_chain"
 
-    compiler = UniverseCompiler()
-    compiled = compiler.compile(config_dir, primary_level="L0_deps", use_cache=False)
+    # Enable eager mode to evaluate all variables (test configs don't expose vars in obs)
+    original_env = os.environ.get("VFS_EVAL_MODE")
+    try:
+        os.environ["VFS_EVAL_MODE"] = "eager"
 
-    # Create environment
-    env = compiled.create_environment(
-        num_agents=4,
-        level_name="L0_deps",
-        device=torch.device("cpu"),
-    )
+        compiler = UniverseCompiler()
+        compiled = compiler.compile(config_dir, primary_level="L0_deps", use_cache=False)
 
-    # Exercise: Reset and step environment
-    env.reset()
-    obs, rewards, dones, info = env.step(torch.zeros(4, dtype=torch.long))
+        # Create environment
+        env = compiled.create_environment(
+            num_agents=4,
+            level_name="L0_deps",
+            device=torch.device("cpu"),
+        )
 
-    # Verify: c should evaluate to (10 + 5) * 2 = 30
-    # This requires a, b, c to be evaluated in dependency order
-    assert hasattr(env, "vfs_registry")
-    # The test config will define:
-    # a = 10 (initial_value)
-    # b = a + 5
-    # c = b * 2
-    # Only c is observed, so in mark-and-sweep mode, only c (and its deps) should be evaluated
+        # Exercise: Reset and step environment
+        env.reset()
+        obs, rewards, dones, info = env.step(torch.zeros(4, dtype=torch.long))
+
+        # Verify: Registry exists and has variables
+        assert hasattr(env, "vfs_registry")
+
+        # Verify values: a = 10 (initial_value), b = a + 5 = 15, c = b * 2 = 30
+        assert "a" in env.vfs_registry._storage, "Variable 'a' not found in registry"
+        assert "b" in env.vfs_registry._storage, "Variable 'b' not found in registry"
+        assert "c" in env.vfs_registry._storage, "Variable 'c' not found in registry"
+
+        a_value = env.vfs_registry._storage["a"]
+        b_value = env.vfs_registry._storage["b"]
+        c_value = env.vfs_registry._storage["c"]
+
+        # Global VFS variables are scalar tensors (shape [])
+        assert a_value.item() == 10.0, f"Expected a=10.0, got {a_value.item()}"
+        assert b_value.item() == 15.0, f"Expected b=15.0, got {b_value.item()}"
+        assert c_value.item() == 30.0, f"Expected c=30.0, got {c_value.item()}"
+    finally:
+        # Restore original environment
+        if original_env is not None:
+            os.environ["VFS_EVAL_MODE"] = original_env
+        elif "VFS_EVAL_MODE" in os.environ:
+            del os.environ["VFS_EVAL_MODE"]
 
 
 def test_vfs_expressions_access_bars():
@@ -181,29 +200,61 @@ def test_vfs_expressions_access_bars():
     # Setup: Use config with VFS var that reads bar.energy
     config_dir = Path(__file__).parent.parent.parent.parent / "configs" / "test" / "vfs_bar_access"
 
-    compiler = UniverseCompiler()
-    compiled = compiler.compile(config_dir, primary_level="L0_bars", use_cache=False)
+    # Enable eager mode to evaluate all variables (test configs don't expose vars in obs)
+    original_env = os.environ.get("VFS_EVAL_MODE")
+    try:
+        os.environ["VFS_EVAL_MODE"] = "eager"
 
-    # Create environment
-    env = compiled.create_environment(
-        num_agents=4,
-        level_name="L0_bars",
-        device=torch.device("cpu"),
-    )
+        compiler = UniverseCompiler()
+        compiled = compiler.compile(config_dir, primary_level="L0_bars", use_cache=False)
 
-    # Exercise: Reset environment
-    env.reset()
+        # Create environment
+        env = compiled.create_environment(
+            num_agents=4,
+            level_name="L0_bars",
+            device=torch.device("cpu"),
+        )
 
-    # Set energy to high value
-    env.bars["energy"] = torch.tensor([0.8, 0.8, 0.8, 0.8], device=env.device)
-    env.step(torch.zeros(4, dtype=torch.long))
+        # Exercise: Reset environment
+        env.reset()
 
-    # Verify: low_energy_flag should be False (energy > 0.3)
-    # (exact verification depends on how VFS variables are exposed)
+        # Verify registry exists
+        assert hasattr(env, "vfs_registry")
+        assert "low_energy_flag" in env.vfs_registry._storage, "Variable 'low_energy_flag' not found in registry"
 
-    # Set energy to low value
-    env.bars["energy"] = torch.tensor([0.2, 0.2, 0.2, 0.2], device=env.device)
-    env.step(torch.zeros(4, dtype=torch.long))
+        # Test 1: Set energy to high value (0.8 > 0.3)
+        # Manually set bars (simulating high energy)
+        energy_idx = env.meter_name_to_index["energy"]
+        env.meters[:, energy_idx] = torch.tensor([0.8, 0.8, 0.8, 0.8], device=env.device)
+        env.step(torch.zeros(4, dtype=torch.long))
 
-    # Verify: low_energy_flag should be True (energy < 0.3)
-    assert hasattr(env, "vfs_registry")
+        # Verify: low_energy_flag should be False (energy > 0.3)
+        low_energy_flag = env.vfs_registry._storage["low_energy_flag"]
+        assert low_energy_flag.dtype == torch.bool, f"Expected bool type, got {low_energy_flag.dtype}"
+        # Global VFS variables with bar access return per-agent results (shape [num_agents])
+        # low_energy_flag = bar.energy < 0.3 → [0.8, 0.8, 0.8, 0.8] < 0.3 → [False, False, False, False]
+        assert low_energy_flag.shape == (4,), f"Expected shape [4], got {low_energy_flag.shape}"
+        assert torch.all(~low_energy_flag), f"Expected all False when energy=0.8, got {low_energy_flag}"
+
+        # Test 2: Set energy to low value (0.2 < 0.3)
+        env.meters[:, energy_idx] = torch.tensor([0.2, 0.2, 0.2, 0.2], device=env.device)
+        env.step(torch.zeros(4, dtype=torch.long))
+
+        # Verify: low_energy_flag should be True (energy < 0.3)
+        low_energy_flag = env.vfs_registry._storage["low_energy_flag"]
+        assert torch.all(low_energy_flag), f"Expected all True when energy=0.2, got {low_energy_flag}"
+
+        # Test 3: Mixed energy values
+        env.meters[:, energy_idx] = torch.tensor([0.1, 0.5, 0.2, 0.9], device=env.device)
+        env.step(torch.zeros(4, dtype=torch.long))
+
+        # Verify: low_energy_flag should match per-agent energy levels
+        low_energy_flag = env.vfs_registry._storage["low_energy_flag"]
+        expected = torch.tensor([True, False, True, False])  # [0.1<0.3, 0.5<0.3, 0.2<0.3, 0.9<0.3]
+        assert torch.equal(low_energy_flag, expected), f"Expected {expected} when energy=[0.1,0.5,0.2,0.9], got {low_energy_flag}"
+    finally:
+        # Restore original environment
+        if original_env is not None:
+            os.environ["VFS_EVAL_MODE"] = original_env
+        elif "VFS_EVAL_MODE" in os.environ:
+            del os.environ["VFS_EVAL_MODE"]

@@ -314,11 +314,14 @@ class VectorizedHamletEnv:
                 # Convert CompiledVariable to VariableDef for registry
                 # Global variables have empty readable_by/writable_by (managed by evaluator)
                 # VFS profiles use "int"/"float"/"bool" but VariableDef uses "scalar"/"bool"
+                # Expression-based variables have initial_value=None, use 0.0 as placeholder (evaluator will overwrite)
+                default_value = var.initial_value if var.initial_value is not None else (0.0 if var.type in ("int", "float") else False)
+                var_type = "scalar" if var.type in ("int", "float") else var.type
                 var_def = VariableDef(
                     id=var.name,
                     scope="global",
-                    type="scalar",  # int and float both map to scalar
-                    default=var.initial_value,
+                    type=var_type,
+                    default=default_value,
                     lifetime="persistent",  # Global variables persist across steps
                     readable_by=["agent", "engine"],  # Global vars readable by all
                     writable_by=["engine"],  # Only engine can write

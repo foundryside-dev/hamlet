@@ -25,6 +25,7 @@ from townlet.substrate import SpatialSubstrate
 from townlet.substrate.continuous import ContinuousSubstrate
 from townlet.universe.dto import ActionSpaceMetadata, MeterMetadata
 from townlet.vfs.evaluator import EvaluationMode, VFSEvaluator
+from townlet.vfs.observation_builder import VFSObservationSpec, build_vfs_observation
 from townlet.vfs.registry import VariableRegistry
 
 if TYPE_CHECKING:
@@ -300,10 +301,6 @@ class VectorizedHamletEnv:
         self.observation_dim = self.observation_spec.total_dims
 
         # VFS INTEGRATION: Initialize variable registry from compiled VFS variables
-        # TEMPORARY WORKAROUND: Manually add item-scoped variables from variables_reference.yaml
-        # TODO: Compiler should load ALL variables, not just observation variables
-        import yaml
-
         from townlet.vfs.schema import VariableDef
 
         self.vfs_variables = list(universe.vfs_variables)
@@ -329,19 +326,6 @@ class VectorizedHamletEnv:
                 )
                 self.vfs_variables.append(var_def)
 
-        # Load item-scoped variables from variables_reference.yaml
-        vfs_ref_path = self.config_pack_path / "variables_reference.yaml"
-        if vfs_ref_path.exists():
-            with vfs_ref_path.open() as f:
-                vfs_data = yaml.safe_load(f)
-                for var_dict in vfs_data.get("variables", []):
-                    if var_dict.get("scope") == "item":
-                        # Create VariableDef for item-scoped variable
-                        # Strip normalization field if it has old format
-                        var_dict_clean = {k: v for k, v in var_dict.items() if k != "normalization"}
-                        var_def = VariableDef(**var_dict_clean)
-                        self.vfs_variables.append(var_def)
-
         max_items_in_world = universe.items_catalog.max_items_in_world if universe.items_catalog else 0
 
         # Extract item profiles from compiled universe
@@ -356,6 +340,51 @@ class VectorizedHamletEnv:
             max_items=max_items_in_world,
             item_profiles=item_profiles,
         )
+
+        # Build VFSObservationSpec for observation generation
+        self.vfs_observation_spec: VFSObservationSpec | None = None
+        if universe.compiled_vfs_profiles is not None:
+            # Extract VFS profiles to build spec
+            from townlet.config.vfs_profiles_config import (
+                AgentVFSProfileConfig,
+                GlobalVFSProfileConfig,
+                ItemVFSProfileConfig,
+            )
+
+            # Build config objects from compiled profiles
+            global_profile_cfg = None
+            if universe.compiled_vfs_profiles.global_profile is not None:
+                # Convert compiled profile back to config format
+                global_profile_cfg = GlobalVFSProfileConfig(
+                    variables=[
+                        {"name": var.name, "type": var.type, "initial_value": var.initial_value}
+                        for var in universe.compiled_vfs_profiles.global_profile.variables
+                    ]
+                )
+
+            agent_profile_cfg = None
+            if universe.compiled_vfs_profiles.agent_profile is not None:
+                agent_vars = getattr(universe.compiled_vfs_profiles.agent_profile, "variables", [])
+                agent_profile_cfg = AgentVFSProfileConfig(
+                    variables=[{"name": var.name, "type": var.type, "initial_value": var.initial_value} for var in agent_vars]
+                )
+
+            item_profiles_list = []
+            if universe.compiled_vfs_profiles.item_profiles:
+                for profile_name, profile in universe.compiled_vfs_profiles.item_profiles.items():
+                    profile_vars = getattr(profile, "variables", [])
+                    item_profiles_list.append(
+                        ItemVFSProfileConfig(
+                            profile_name=profile_name,
+                            variables=[{"name": var.name, "type": var.type, "initial_value": var.initial_value} for var in profile_vars],
+                        )
+                    )
+
+            self.vfs_observation_spec = VFSObservationSpec.from_profiles(
+                global_profile=global_profile_cfg,
+                agent_profile=agent_profile_cfg,
+                item_profiles=item_profiles_list,
+            )
 
         # Initialize VFS evaluator (if profiles present)
         self.vfs_evaluator: VFSEvaluator | None = None
@@ -551,40 +580,26 @@ class VectorizedHamletEnv:
         # === ITEMS INITIALIZATION ===
         # Must happen AFTER self.meters is initialized because ItemActionHandler needs it
         if universe.items_catalog is not None:
-            # Build schema for Effects compilation
-            # Need to load ALL VFS variables (not just observations) from variables_reference.yaml
-            # because the compiler currently only loads exposed_observations into universe.vfs_variables
-            import yaml
-
-            vfs_ref_path = self.config_pack_path / "variables_reference.yaml"
-            all_vfs_vars = []
-            if vfs_ref_path.exists():
-                with vfs_ref_path.open() as f:
-                    vfs_data = yaml.safe_load(f)
-                    all_vfs_vars = vfs_data.get("variables", [])
-
+            # Build schema for item interaction compilation from compiled universe data
             schema: dict[str, str] = {}
+
+            # Add bar paths from compiled meter metadata
             for bar_name in self.meter_name_to_index.keys():
                 schema[f"target.bar.{bar_name}"] = "float"
-            for var in all_vfs_vars:
-                # Simple type inference: bool if type is "bool", else float
-                var_type = var.get("type", "float")
-                vfs_type = "bool" if var_type == "bool" else "float"
-                schema[f"target.vfs.{var['id']}"] = vfs_type
 
-            # Add self.vfs.* paths from item VFS profiles
+            # Add VFS paths from compiled VFS variables
+            for var in self.vfs_variables:
+                # Simple type inference: bool if type is "bool", else float
+                vfs_type = "bool" if var.type == "bool" else "float"
+                schema[f"target.vfs.{var.id}"] = vfs_type
+
+            # Add self.vfs.* paths from compiled item VFS profiles
             # Items can modify their own VFS state via self.vfs.*
-            vfs_profiles_path = self.config_pack_path / "vfs_profiles.yaml"
-            if vfs_profiles_path.exists():
-                with vfs_profiles_path.open() as f:
-                    vfs_profiles_data = yaml.safe_load(f)
-                    item_profiles = vfs_profiles_data.get("item_profiles", [])
-                    for profile in item_profiles:
-                        for var in profile.get("variables", []):
-                            var_name = var["name"]
-                            var_type = var.get("type", "float")
-                            vfs_type = "bool" if var_type == "bool" else "float"
-                            schema[f"self.vfs.{var_name}"] = vfs_type
+            if universe.compiled_vfs_profiles and universe.compiled_vfs_profiles.item_profiles:
+                for profile_name, compiled_profile in universe.compiled_vfs_profiles.item_profiles.items():
+                    for var in compiled_profile.variables:
+                        vfs_type = "bool" if var.type == "bool" else "float"
+                        schema[f"self.vfs.{var.name}"] = vfs_type
 
             self.item_manager = ItemManager(
                 catalog=universe.items_catalog,
@@ -1124,6 +1139,23 @@ class VectorizedHamletEnv:
                         value[:, 2] = day_progress
                     if dims > 3:
                         value[:, 3] = is_night
+            elif name == "obs_vfs":
+                # VFS observations (global + agent + item VFS)
+                if self.vfs_observation_spec is not None:
+                    # Get item inventory if available
+                    agent_item_inventory = None
+                    if self.item_inventory is not None:
+                        agent_item_inventory = self.item_inventory.slots
+
+                    value = build_vfs_observation(
+                        registry=self.vfs_registry,
+                        spec=self.vfs_observation_spec,
+                        batch_size=self.num_agents,
+                        agent_item_inventory=agent_item_inventory,
+                    )
+                else:
+                    # No VFS profiles, emit zeros
+                    value = torch.zeros((self.num_agents, dims), device=self.device)
             else:
                 # Environment variables mapping: expect variables named by obs field
                 if name not in self.vfs_registry._definitions:

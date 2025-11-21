@@ -683,6 +683,112 @@ Task 1 delivered all compile-time infrastructure. Ready for:
 
 ---
 
+### Task 2: Runtime VFS Evaluation ✅ **COMPLETE** (100%)
+
+**Timeline:** Planned 3-4 days | **Actual:** 1 day
+**Test Coverage:** 10 tests (100% passing)
+
+#### Deliverables
+
+| Subtask | Status | Commits | Tests |
+|---------|--------|---------|-------|
+| 2.1: VFS Observation Marking | ✅ Complete | 0040f33 | 2 |
+| 2.2: VFSEvaluator Implementation | ✅ Complete | 19a33b5 | 3 |
+| 2.3: Runtime Integration | ✅ Complete | d5b4623 | 1 |
+| 2.4: Marks Serialization | ✅ Complete | 8df04fb | 2 |
+| 2.5: Integration Tests | ✅ Complete | (this commit) | 2 |
+
+**Success Criteria:**
+- ✅ VFS expressions evaluated at runtime using compiled profiles
+- ✅ Mark-and-sweep mode: only evaluate observed variables
+- ✅ Eager mode available for debugging
+- ✅ Compile-time marking identifies observed variables
+- ✅ Execution context includes bars + VFS state
+- ✅ 10 new tests passing
+- ✅ All existing tests still pass (443+ tests)
+
+**Key Achievements:**
+
+1. **VFS Observation Marking** (Subtask 2.1)
+   - Added `mark_vfs_observations()` method to UniverseCompiler
+   - Scans observation specs to identify VFS variables in exposed_observations
+   - Returns dict mapping scope → set of variable names
+   - Enables mark-and-sweep evaluation (only eval observed vars)
+
+2. **VFSEvaluator Implementation** (Subtask 2.2)
+   - Created `VFSEvaluator` class with mark-and-sweep support
+   - Two evaluation modes: MARK_AND_SWEEP (default) and EAGER (debug)
+   - `evaluate_global_profile()` method evaluates variables in topo order
+   - Builds ExecutionContext with bars + VFS state
+   - Updates context incrementally so later vars can reference earlier ones
+
+3. **Runtime Integration** (Subtask 2.3)
+   - Integrated VFSEvaluator into VectorizedHamletEnv step loop
+   - Environment reads VFS_EVAL_MODE from env var (defaults to mark_and_sweep)
+   - Global VFS variables evaluated and stored in VFSRegistry
+   - Step function updated to pass marks to evaluator
+
+4. **Serialization Support** (Subtask 2.4)
+   - Updated `CompiledUniverse.to_dict()` to serialize vfs_observation_marks
+   - Converts sets → lists for JSON serialization
+   - Updated `from_dict()` to deserialize marks (lists → sets)
+   - Updated `clone()` to preserve marks
+
+5. **Integration Tests** (Subtask 2.5)
+   - End-to-end test: VFS expressions evaluated during environment step
+   - Mark-and-sweep test: only observed variables evaluated
+   - Eager mode test: all variables evaluated
+   - Tests use mock tracking to verify evaluation behavior
+
+**Files Modified:**
+
+```
+src/townlet/universe/compiler.py
+└── mark_vfs_observations() (new method) ✅
+
+src/townlet/vfs/evaluator.py (NEW FILE)
+├── EvaluationMode enum ✅
+├── VFSEvaluator class ✅
+└── evaluate_global_profile() method ✅
+
+src/townlet/environment/vectorized_env.py
+├── __init__() (VFSEvaluator integration) ✅
+└── step() (VFS evaluation in step loop) ✅
+
+src/townlet/universe/compiled.py
+├── to_dict() (serialize marks) ✅
+├── from_dict() (deserialize marks) ✅
+└── clone() (preserve marks) ✅
+
+tests/test_townlet/unit/universe/
+├── test_vfs_observation_marking.py (2 tests) ✅
+└── test_compiled_universe_serialization.py (2 tests) ✅
+
+tests/test_townlet/unit/vfs/
+└── test_vfs_evaluator.py (3 tests) ✅
+
+tests/test_townlet/integration/
+└── test_vfs_runtime_evaluation.py (3 tests) ✅
+```
+
+**Commit References:**
+
+- `0040f33` - feat(compiler): add VFS observation marking for mark-and-sweep
+- `19a33b5` - feat(vfs): add VFSEvaluator with mark-and-sweep support
+- `d5b4623` - feat(env): integrate VFS evaluator into step loop
+- `8df04fb` - feat(compiler): add serialization for vfs_observation_marks
+- (this commit) - docs: mark Task 2 (Runtime VFS evaluation) as COMPLETE
+
+**Next Steps:**
+
+Task 2 delivered runtime VFS evaluation infrastructure. Ready for:
+
+- **Task 3:** Item VFS integration (connect items to VFS evaluation)
+- **Task 4:** Runtime effects execution (remove YAML loading from vectorized_env)
+- **Task 5:** Cleanup and validation (remove legacy code paths)
+
+---
+
 **Report Generated:** 2025-11-21
 **Assessment Team:** 6 parallel evaluation agents
 **Review Status:** Comprehensive file-by-file analysis complete

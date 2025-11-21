@@ -23,6 +23,7 @@ from townlet.config.agent_config import AgentConfig
 from townlet.config.bars_v2_config import BarsV2Config, MeterConfig
 from townlet.config.curriculum_config import CurriculumConfig
 from townlet.config.drive_as_code import DriveAsCodeConfig
+from townlet.config.effects_config import EffectsConfig
 from townlet.config.environment_config import CascadeConfig
 from townlet.config.environment_config import EnvironmentConfig as EnvConfigV21
 from townlet.config.experiment_config import ExperimentConfig
@@ -30,6 +31,7 @@ from townlet.config.items_config import ItemsCatalogConfig
 from townlet.config.stratum_config import StratumConfig, SubstrateConfig
 from townlet.config.training_v2_config import TrainingV2Config
 from townlet.config.vfs_profiles_config import VFSProfilesConfig
+from townlet.effects.catalog import EffectCatalog
 from townlet.environment.action_config import ActionConfig, ActionSpaceConfig
 from townlet.environment.affordance_config import AffordanceConfig  # Runtime representation
 from townlet.environment.substrate_action_validator import SubstrateActionValidator
@@ -183,6 +185,35 @@ class UniverseCompiler:
             agent_profile=None,  # TODO
             item_profiles={},  # TODO
         )
+
+    def _compile_effects_catalog(self, level_dir: Path, effects_schema: dict[str, str]) -> EffectCatalog:
+        """Load and compile effects catalog from level directory.
+
+        Args:
+            level_dir: Level config directory containing effects.yaml
+            effects_schema: Type schema for effect command validation
+
+        Returns:
+            Compiled effects catalog
+
+        Raises:
+            FileNotFoundError: If effects.yaml not found
+        """
+        effects_path = level_dir / "effects.yaml"
+
+        if not effects_path.exists():
+            raise FileNotFoundError(f"effects.yaml is required for affordance interactions but not found at {effects_path}")
+
+        # Load YAML
+        effects_data = yaml.safe_load(effects_path.read_text())
+
+        # Validate with Pydantic
+        effects_config = EffectsConfig(**effects_data)
+
+        # Compile catalog with schema validation
+        catalog = EffectCatalog.from_config(effects_config, schema=effects_schema)
+
+        return catalog
 
     def _validate_vocabulary_consistency(self, environment, levels_dict: dict) -> None:
         """
@@ -351,6 +382,30 @@ class UniverseCompiler:
             vfs_fields = self._build_vfs_observation_fields(obs_spec, raw.environment)
             vfs_variables = self._build_vfs_variables(obs_spec, raw.environment)
 
+            # Build effects schema for command validation
+            effects_schema = {}
+            effects_schema["intensity"] = "float"
+            effects_schema["elapsed_ticks"] = "float"
+            effects_schema["duration_remaining"] = "float"
+
+            # Add bar paths (per-level bars)
+            for meter in level.bars.meters:
+                effects_schema[f"bar.{meter.name}"] = "float"
+                effects_schema[f"target.bar.{meter.name}"] = "float"
+
+            # Add VFS paths (from compiled profiles - shared across levels)
+            # Note: We need to compile VFS profiles first, but they're experiment-level
+            # For now, we'll build the schema based on environment.yaml variables
+            if raw.environment.environment.variables:
+                for var in raw.environment.environment.variables:
+                    vfs_type = "bool" if var.type == "bool" else "float"
+                    effects_schema[f"vfs.{var.name}"] = vfs_type
+                    effects_schema[f"target.vfs.{var.name}"] = vfs_type
+
+            # Compile effects catalog for this level
+            level_dir = experiment_dir / "levels" / level_name
+            compiled_effect_catalog = self._compile_effects_catalog(level_dir, effects_schema)
+
             all_levels[level_name] = CompiledUniverse.LevelMetadata(
                 level_name=level_name,
                 bars=level.bars,
@@ -366,6 +421,7 @@ class UniverseCompiler:
                 vfs_observation_fields=vfs_fields,
                 vfs_variables=vfs_variables,
                 items_appearance=level.items_appearance,
+                compiled_effect_catalog=compiled_effect_catalog,
             )
 
         primary_meta = all_levels[primary_level]
@@ -404,6 +460,7 @@ class UniverseCompiler:
             agent=raw.agent,
             items_catalog=raw.items,
             compiled_vfs_profiles=compiled_vfs_profiles,
+            compiled_effect_catalog=primary_meta.compiled_effect_catalog,
             experiment_dir=experiment_dir,
             all_levels=all_levels,
         )

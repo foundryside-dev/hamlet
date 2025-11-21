@@ -21,6 +21,7 @@ from townlet.config.experiment_config import ExperimentConfig
 from townlet.config.items_config import ItemsAppearanceConfig, ItemsCatalogConfig
 from townlet.config.stratum_config import StratumConfig
 from townlet.config.training_v2_config import TrainingV2Config
+from townlet.effects.catalog import EffectCatalog
 from townlet.universe.dto import (
     ActionMetadata,
     ActionSpaceMetadata,
@@ -79,6 +80,9 @@ class CompiledUniverse:
     # Compiled VFS profiles (experiment-level artifact)
     compiled_vfs_profiles: CompiledVFSProfiles | None = None
 
+    # Compiled effects catalog (per-level artifact)
+    compiled_effect_catalog: EffectCatalog | None = None
+
     # Provenance
     experiment_dir: Path | None = None
     drive_hash: str | None = None
@@ -104,6 +108,7 @@ class CompiledUniverse:
         vfs_observation_fields: tuple[VfsObservationField, ...]
         vfs_variables: tuple[VariableDef, ...]
         items_appearance: ItemsAppearanceConfig | None = None
+        compiled_effect_catalog: EffectCatalog | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "vfs_observation_fields", tuple(self.vfs_observation_fields))
@@ -145,6 +150,7 @@ class CompiledUniverse:
             agent=deepcopy(self.agent),
             items_catalog=deepcopy(self.items_catalog) if self.items_catalog is not None else None,
             compiled_vfs_profiles=deepcopy(self.compiled_vfs_profiles) if self.compiled_vfs_profiles is not None else None,
+            compiled_effect_catalog=deepcopy(self.compiled_effect_catalog) if self.compiled_effect_catalog is not None else None,
             experiment_dir=self.experiment_dir,
             drive_hash=self.drive_hash,
             all_levels=deepcopy(self.all_levels),

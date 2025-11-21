@@ -62,7 +62,7 @@ class ActionConfig(BaseModel):
     # NO DEFAULT: Callers must explicitly pass None or value
     description: str | None = Field(description="Human-readable description. Pass None if not needed.")
     icon: str | None = Field(max_length=10, description="Emoji for UI. Pass None if not needed.")
-    source: Literal["substrate", "custom", "affordance"] = Field(
+    source: Literal["substrate", "custom", "affordance", "item"] = Field(
         description="Where this action came from. REQUIRED: must explicitly specify.",
     )
     source_affordance: str | None = Field(

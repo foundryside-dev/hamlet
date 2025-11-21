@@ -3,9 +3,6 @@ actions:
   substrate_actions:
     inherit: true
   custom_actions:
-    - name: INTERACT
-      description: "Interact"
-      enabled_by_default: true
     - name: WAIT
       description: "Wait"
       enabled_by_default: true

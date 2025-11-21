@@ -456,14 +456,9 @@ actions:
   # --------------------------------------------------------------------------
   # Custom Actions (experiment-specific actions)
   # --------------------------------------------------------------------------
+  # NOTE: Reserved names: INTERACT, GET, USE_SLOT_*, DROP_SLOT_* are managed by
+  # the compiler when affordances/items are enabled and cannot be overridden here.
   custom_actions:
-    - name: INTERACT
-      description: "Interact with affordance at current position"
-      enabled_by_default: true
-      # Optional meter costs/effects (v2.1 UAC validation will ensure meters exist in environment.yaml)
-      costs: {}
-      effects: {}
-
     - name: WAIT
       description: "Do nothing (pass turn)"
       enabled_by_default: true
@@ -487,7 +482,8 @@ actions:
         mood: 0.05
 
   # BREAKING: Adding/removing actions changes action_dim
-  # Current (Grid2D): 8 substrate + 2 enabled custom = 10 actions
+  # Item actions (GET/USE/DROP) are auto-added when items.yaml is present; do not
+  # define them here. INTERACT is reserved by substrate/affordances.
 
   # --------------------------------------------------------------------------
   # Action Labels (UI terminology preset)

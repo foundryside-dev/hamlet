@@ -6,6 +6,8 @@
 # STATUS: Expression language not wired yet (static variables only).
 # - Compiler/runtime accept static variables with explicit defaults/normalization.
 # - Any 'expression' fields in variables_reference.yaml are rejected until DSL support lands.
+# - Items now auto-register GET/USE_SLOT_*/DROP_SLOT_* actions when enabled; these names (and INTERACT)
+#   are reserved and cannot be overridden in actions.yaml.
 #
 # CURRENT IMPLEMENTATION (PHASE 1):
 # - VFS supports statically defined variables (no expressions) with:

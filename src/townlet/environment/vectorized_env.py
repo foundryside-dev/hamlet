@@ -1228,6 +1228,37 @@ class VectorizedHamletEnv:
             device=self.device,
         )
 
+        # Item-specific masks (inventory state)
+        if self.item_inventory is not None:
+            try:
+                get_action_id = self.action_space.get_action_by_name("GET").id
+                inventory_full = ~(self.item_inventory.slots == -1).any(dim=1)
+                if inventory_full.any():
+                    action_masks[inventory_full, get_action_id] = False
+            except ValueError:
+                pass  # GET action not present in action space
+
+            for slot_idx in range(self.item_inventory.max_items_per_agent):
+                try:
+                    use_id = self.action_space.get_action_by_name(f"USE_SLOT_{slot_idx}").id
+                except ValueError:
+                    use_id = None
+                try:
+                    drop_id = self.action_space.get_action_by_name(f"DROP_SLOT_{slot_idx}").id
+                except ValueError:
+                    drop_id = None
+
+                if use_id is None and drop_id is None:
+                    continue
+
+                slot_items = self.item_inventory.slots[:, slot_idx]
+                slot_empty = slot_items == -1
+                if slot_empty.any():
+                    if use_id is not None:
+                        action_masks[slot_empty, use_id] = False
+                    if drop_id is not None:
+                        action_masks[slot_empty, drop_id] = False
+
         # Check boundary constraints (only for discrete grid substrates)
         # Continuous substrates handle boundaries in apply_movement() via boundary modes
         if self.grid_size is not None and self.substrate.position_dim >= 2:

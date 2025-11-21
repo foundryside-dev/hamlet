@@ -55,24 +55,24 @@ def test_items_catalog_validates_with_schema():
     assert len(catalog.item_types) == 3
 
 
-def test_item_actions_defined_in_global_actions():
-    """default_curriculum/actions.yaml has GET/USE_SLOT/DROP_SLOT actions."""
-    import yaml
+def test_item_actions_are_auto_registered():
+    """Item actions are auto-added to the action space when items are enabled."""
+    compiler = UniverseCompiler()
+    universe = compiler.compile(Path("configs/test/items_smoke"), use_cache=False)
 
-    config_path = Path("configs/default_curriculum/actions.yaml")
-    with open(config_path) as f:
-        data = yaml.safe_load(f)
+    env = VectorizedHamletEnv(
+        universe=universe,
+        level_name="L0_smoke",
+        num_agents=1,
+        device="cpu",
+    )
 
-    action_names = [a["name"] for a in data["actions"]["custom_actions"]]
+    action_names = {a.name for a in env.action_space.actions}
 
-    # Item actions
-    assert "GET" in action_names, "GET action missing"
-    assert "USE_SLOT_0" in action_names, "USE_SLOT_0 action missing"
-    assert "USE_SLOT_1" in action_names, "USE_SLOT_1 action missing"
-    assert "USE_SLOT_2" in action_names, "USE_SLOT_2 action missing"
-    assert "DROP_SLOT_0" in action_names, "DROP_SLOT_0 action missing"
-    assert "DROP_SLOT_1" in action_names, "DROP_SLOT_1 action missing"
-    assert "DROP_SLOT_2" in action_names, "DROP_SLOT_2 action missing"
+    assert "GET" in action_names, "GET action missing from auto-registered actions"
+    for slot_idx in range(universe.items_catalog.max_items_per_agent):
+        assert f"USE_SLOT_{slot_idx}" in action_names, f"USE_SLOT_{slot_idx} action missing"
+        assert f"DROP_SLOT_{slot_idx}" in action_names, f"DROP_SLOT_{slot_idx} action missing"
 
 
 def test_env_with_items_initializes():
@@ -190,10 +190,16 @@ def test_drop_slot_action_spawns_item_in_world():
 
     env.reset()
 
+    pickup_pos = (0, 0)
+    # Ensure no other items occupy the pickup position
+    for instance_id, item in list(env.item_manager.active_items.items()):
+        if item.position == pickup_pos:
+            env.item_manager.active_items.pop(instance_id)
+
     # Give agent apple in slot 0
     apple = env.item_manager.spawn_item("apple", position=(0, 0), current_tick=0)
     apple_instance_id = apple.instance_id  # Track the specific apple we spawned
-    env.positions[0] = torch.tensor([0, 0], dtype=torch.long)
+    env.positions[0] = torch.tensor(pickup_pos, dtype=torch.long)
     get_action = env.action_space.get_action_by_name("GET")
     env.step(torch.tensor([get_action.id]))
 

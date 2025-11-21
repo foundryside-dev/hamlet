@@ -18,7 +18,7 @@ class ActionMetadata:
     name: str
     type: Literal["movement", "interaction", "passive", "transaction"]
     enabled: bool
-    source: Literal["substrate", "custom", "affordance"]
+    source: Literal["substrate", "custom", "affordance", "item"]
     costs: Mapping[str, float] = field(default_factory=dict)
     description: str = ""
 

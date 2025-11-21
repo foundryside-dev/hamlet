@@ -153,6 +153,7 @@ class CompiledUniverse:
             items_catalog=deepcopy(self.items_catalog) if self.items_catalog is not None else None,
             compiled_vfs_profiles=deepcopy(self.compiled_vfs_profiles) if self.compiled_vfs_profiles is not None else None,
             compiled_effect_catalog=deepcopy(self.compiled_effect_catalog) if self.compiled_effect_catalog is not None else None,
+            vfs_expression_schema=deepcopy(self.vfs_expression_schema) if self.vfs_expression_schema is not None else None,
             experiment_dir=self.experiment_dir,
             drive_hash=self.drive_hash,
             all_levels=deepcopy(self.all_levels),
@@ -189,6 +190,10 @@ class CompiledUniverse:
             "compiled_vfs_profiles": (
                 _serialize_vfs_profiles(self.compiled_vfs_profiles) if self.compiled_vfs_profiles is not None else None
             ),
+            "compiled_effect_catalog": (
+                _serialize_effect_catalog(self.compiled_effect_catalog) if self.compiled_effect_catalog is not None else None
+            ),
+            "vfs_expression_schema": self.vfs_expression_schema,
             "experiment_dir": None if self.experiment_dir is None else str(self.experiment_dir),
             "drive_hash": self.drive_hash,
             "all_levels": (
@@ -295,6 +300,12 @@ class CompiledUniverse:
             compiled_vfs_profiles=(
                 _deserialize_vfs_profiles(payload["compiled_vfs_profiles"]) if payload.get("compiled_vfs_profiles") is not None else None
             ),
+            compiled_effect_catalog=(
+                _deserialize_effect_catalog(payload["compiled_effect_catalog"])
+                if payload.get("compiled_effect_catalog") is not None
+                else None
+            ),
+            vfs_expression_schema=payload.get("vfs_expression_schema"),
             experiment_dir=None if payload.get("experiment_dir") is None else Path(payload["experiment_dir"]),
             drive_hash=payload.get("drive_hash"),
             all_levels=all_levels,
@@ -480,3 +491,52 @@ def _deserialize_vfs_profiles(payload: dict[str, Any]) -> CompiledVFSProfiles:
         agent_profile=payload.get("agent_profile"),
         item_profiles=payload.get("item_profiles"),
     )
+
+
+def _serialize_effect_catalog(catalog: EffectCatalog) -> dict[str, Any]:
+    """Serialize EffectCatalog to dict.
+
+    Note: Command nodes are not serialized (AST not preserved).
+    Full recompilation from YAML is needed for runtime execution.
+    """
+    return {
+        "effects": {
+            effect_id: {
+                "id": effect.id,
+                "scope": effect.scope,
+                "duration": effect.duration,
+                "intensity": effect.intensity,
+                "reapply_policy": effect.reapply_policy,
+                "observable": effect.observable,
+                # Note: Command nodes not serialized (will be recompiled on load)
+            }
+            for effect_id, effect in catalog.effects.items()
+        }
+    }
+
+
+def _deserialize_effect_catalog(payload: dict[str, Any]) -> EffectCatalog:
+    """Deserialize EffectCatalog from dict.
+
+    Note: Creates stub effects without command nodes (not executable).
+    Full recompilation from YAML is needed for runtime execution.
+    """
+    from townlet.effects.catalog import CompiledEffect
+
+    effects = {
+        effect_id: CompiledEffect(
+            id=effect_data["id"],
+            scope=effect_data["scope"],
+            duration=effect_data["duration"],
+            intensity=effect_data["intensity"],
+            reapply_policy=effect_data["reapply_policy"],
+            observable=effect_data["observable"],
+            on_spawn=[],  # Stub (not executable)
+            on_tick=[],
+            on_despawn=[],
+            on_interrupt=[],
+        )
+        for effect_id, effect_data in payload["effects"].items()
+    }
+
+    return EffectCatalog(effects=effects)

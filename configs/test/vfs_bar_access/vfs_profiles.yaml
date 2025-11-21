@@ -1,0 +1,9 @@
+# VFS Bar Access Test Configuration
+# Tests: VFS expressions accessing bar values
+
+agent_profile:
+  variables:
+    - name: low_energy_flag
+      type: bool
+      expression: "bar.energy < 0.3"
+      description: "True when energy is below 30%"

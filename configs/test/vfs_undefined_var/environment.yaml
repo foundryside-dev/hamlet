@@ -1,0 +1,17 @@
+environment:
+  version: "1.0"
+
+  meters:
+    - name: energy
+      description: Energy
+      range_type: normalized
+
+  cascade_graph: []
+  modulation_graph: []
+  affordances:
+    - name: FOOD
+      description: Eat food
+      category: sustenance
+
+  variables: []
+  cues: []

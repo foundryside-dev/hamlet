@@ -1,0 +1,14 @@
+# VFS Circular Dependency Test Configuration
+# Tests: Circular dependency detection (should fail at compile time)
+
+global_profile:
+  variables:
+    - name: a
+      type: int
+      expression: "b + 1"
+      description: "Depends on b"
+
+    - name: b
+      type: int
+      expression: "a + 1"
+      description: "Depends on a (circular!)"

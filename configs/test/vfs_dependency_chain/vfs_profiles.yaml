@@ -1,0 +1,19 @@
+# VFS Dependency Chain Test Configuration
+# Tests: a → b → c dependency chain with mark-and-sweep
+
+agent_profile:
+  variables:
+    - name: a
+      type: float
+      initial_value: 10.0
+      description: "Base value"
+
+    - name: b
+      type: float
+      expression: "a + 5"
+      description: "Depends on a: a + 5 = 15"
+
+    - name: c
+      type: float
+      expression: "b * 2"
+      description: "Depends on b: b * 2 = 30"

@@ -1,0 +1,9 @@
+# VFS Undefined Variable Test Configuration
+# Tests: Undefined variable reference detection (should fail at compile time)
+
+global_profile:
+  variables:
+    - name: my_var
+      type: int
+      expression: "undefined_var + 1"
+      description: "References undefined_var (should fail)"

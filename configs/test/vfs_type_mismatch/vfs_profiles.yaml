@@ -1,0 +1,9 @@
+# VFS Type Mismatch Test Configuration
+# Tests: Type mismatch detection (should fail at compile time)
+
+global_profile:
+  variables:
+    - name: my_int_var
+      type: int
+      expression: "10 < 5"
+      description: "Returns bool, not int (should fail)"

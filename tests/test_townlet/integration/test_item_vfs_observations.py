@@ -2,7 +2,6 @@
 
 from pathlib import Path
 
-import pytest
 import torch
 
 from townlet.environment.vectorized_env import VectorizedHamletEnv
@@ -45,18 +44,16 @@ def spawn_and_pickup_item(
     if item is None:
         raise RuntimeError(f"Failed to spawn {item_type} at {agent_pos}")
 
-    # Execute GET action to pick up item
+    # Execute GET action to pick up item (only for target agent)
     get_action = env.action_space.get_action_by_name("GET")
-    actions = torch.full((env.num_agents,), get_action.id, dtype=torch.long)
+    wait_action = env.action_space.get_action_by_name("WAIT")
+    actions = torch.full((env.num_agents,), wait_action.id, dtype=torch.long)
+    actions[agent_idx] = get_action.id
     env.step(actions)
 
     return item.instance_id
 
 
-@pytest.mark.xfail(
-    reason="Item VFS observations not yet implemented (Task 3 of Runtime VFS+Effects Integration Plan)",
-    strict=True,
-)
 def test_item_vfs_observations_include_held_items():
     """Agent observations should include VFS state of held items.
 
@@ -118,21 +115,23 @@ def test_item_vfs_observations_include_held_items():
     assert obs.shape[1] == initial_obs_dim, f"Observation dimensions changed: {initial_obs_dim} -> {obs.shape[1]}"
 
     # Calculate item VFS slice indices from observation spec
-    # Find the item VFS field by iterating through observation fields
-    item_vfs_field = None
+    # obs_vfs contains: [global_vfs | agent_vfs | item_vfs]
+    vfs_field = None
     for field in env.observation_spec.fields:
-        if "item" in field.name.lower() and "vfs" in field.name.lower():
-            item_vfs_field = field
+        if field.name == "obs_vfs":
+            vfs_field = field
             break
 
     assert (
-        item_vfs_field is not None
-    ), f"Item VFS field not found in observations! Available fields: {[f.name for f in env.observation_spec.fields]}"
+        vfs_field is not None
+    ), f"obs_vfs field not found in observations! Available fields: {[f.name for f in env.observation_spec.fields]}"
 
-    # Extract item VFS slice from observations
-    start_idx = item_vfs_field.start_index
-    end_idx = item_vfs_field.end_index
-    item_vfs_obs = obs[:, start_idx:end_idx]
+    # Extract full VFS slice, then offset to item portion
+    vfs_obs = obs[:, vfs_field.start_index : vfs_field.end_index]
+
+    # Item VFS starts after global and agent VFS
+    item_vfs_offset = env.vfs_observation_spec.global_vfs_dim + env.vfs_observation_spec.agent_vfs_dim
+    item_vfs_obs = vfs_obs[:, item_vfs_offset : item_vfs_offset + item_vfs_dim]
 
     # Verify shape: [batch, item_vfs_dim]
     assert item_vfs_obs.shape == (4, item_vfs_dim), f"Expected (4, {item_vfs_dim}), got {item_vfs_obs.shape}"
@@ -146,7 +145,7 @@ def test_item_vfs_observations_include_held_items():
     # Agent 1: Should have non-zero value in slot 0 only
     agent1_item_vfs = item_vfs_obs[1]
     assert agent1_item_vfs[0] > 0.0, "Agent 1 slot 0 should be non-zero (apple freshness)"
-    assert agent1_item_vfs[1] == 0.0, "Agent 1 slot 1 should be masked (empty)"
+    assert agent1_item_vfs[1] == 0.0, f"Agent 1 slot 1 should be masked (empty), got {agent1_item_vfs[1]}"
     assert agent1_item_vfs[2] == 0.0, "Agent 1 slot 2 should be masked (empty)"
 
     # Agent 2: All slots should be masked (no items)
@@ -159,10 +158,6 @@ def test_item_vfs_observations_include_held_items():
     assert agent3_item_vfs[0] == 0.0, "Agent 3 slot 0 should be 0.0 (coin has no VFS vars)"
 
 
-@pytest.mark.xfail(
-    reason="Item VFS observations not yet implemented (Task 3 of Runtime VFS+Effects Integration Plan)",
-    strict=True,
-)
 def test_item_vfs_masking_with_different_profiles():
     """Items with different VFS profiles should mask correctly.
 
@@ -208,41 +203,35 @@ def test_item_vfs_masking_with_different_profiles():
 
     # Verify: VFS registry has correct values
     # Find item instance IDs in inventory
-    apple_slot = env.item_inventory.slots[0, 0].item()
-    medkit_slot = env.item_inventory.slots[0, 1].item()
-    coin_slot = env.item_inventory.slots[0, 2].item()
+    apple_instance_id = env.item_inventory.slots[0, 0].item()
+    medkit_instance_id = env.item_inventory.slots[0, 1].item()
+    coin_instance_id = env.item_inventory.slots[0, 2].item()
 
-    assert apple_slot != -1, "Apple should be in slot 0"
-    assert medkit_slot != -1, "Medkit should be in slot 1"
-    assert coin_slot != -1, "Coin should be in slot 2"
+    assert apple_instance_id != -1, "Apple should be in slot 0"
+    assert medkit_instance_id != -1, "Medkit should be in slot 1"
+    assert coin_instance_id != -1, "Coin should be in slot 2"
 
-    # Verify VFS values in registry with detailed diagnostics
+    # Look up ItemInstance to get vfs_index
+    apple_instance = env.item_inventory.items[apple_instance_id]
+    medkit_instance = env.item_inventory.items[medkit_instance_id]
+    # coin_instance not used (currency profile has no VFS vars to check)
+
+    # Verify VFS values in registry
     food_profile_map = env.vfs_registry.item_profile_map["food"]
     freshness_idx = food_profile_map["freshness"]
-    apple_freshness = env.vfs_registry.item_vfs[apple_slot, freshness_idx].item()
+    apple_freshness = env.vfs_registry.item_vfs[apple_instance.vfs_index, freshness_idx].item()
 
-    # DEBUG: Print full VFS state for diagnosis
-    if apple_freshness != 75.0:
-        print("\n=== VFS State Dump (Apple) ===")
-        print(f"Apple slot: {apple_slot}")
-        print(f"Freshness index: {freshness_idx}")
-        print(f"Full item_vfs tensor:\n{env.vfs_registry.item_vfs}")
-        print(f"Apple VFS row: {env.vfs_registry.item_vfs[apple_slot]}")
-        print("===========================\n")
-
-    assert apple_freshness == 75.0, (
-        f"Expected freshness=75.0, got {apple_freshness}. "
-        f"Apple slot={apple_slot}, freshness_idx={freshness_idx}, "
-        f"VFS row={env.vfs_registry.item_vfs[apple_slot]}"
-    )
+    assert (
+        apple_freshness == 75.0
+    ), f"Expected freshness=75.0, got {apple_freshness}. Apple vfs_index={apple_instance.vfs_index}, freshness_idx={freshness_idx}"
 
     medical_profile_map = env.vfs_registry.item_profile_map["medical"]
     durability_idx = medical_profile_map["durability"]
-    medkit_durability = env.vfs_registry.item_vfs[medkit_slot, durability_idx].item()
+    medkit_durability = env.vfs_registry.item_vfs[medkit_instance.vfs_index, durability_idx].item()
     assert medkit_durability == 50.0, (
         f"Expected durability=50.0, got {medkit_durability}. "
-        f"Medkit slot={medkit_slot}, durability_idx={durability_idx}, "
-        f"VFS row={env.vfs_registry.item_vfs[medkit_slot]}"
+        f"Medkit vfs_index={medkit_instance.vfs_index}, durability_idx={durability_idx}, "
+        f"VFS row={env.vfs_registry.item_vfs[medkit_instance.vfs_index]}"
     )
 
     # Currency profile has 0 variables, so no VFS state to check
@@ -250,40 +239,35 @@ def test_item_vfs_masking_with_different_profiles():
     # Get observations and verify masking
     obs = env._get_observations()
 
-    # Try to find item VFS field in observations
-    item_vfs_field = None
+    # Find obs_vfs field in observations
+    vfs_field = None
     for field in env.observation_spec.fields:
-        if "item" in field.name.lower() and "vfs" in field.name.lower():
-            item_vfs_field = field
+        if field.name == "obs_vfs":
+            vfs_field = field
             break
 
     assert (
-        item_vfs_field is not None
-    ), f"Item VFS field not found in observations! Available fields: {[f.name for f in env.observation_spec.fields]}"
+        vfs_field is not None
+    ), f"obs_vfs field not found in observations! Available fields: {[f.name for f in env.observation_spec.fields]}"
 
-    # Extract item VFS slice
-    start_idx = item_vfs_field.start_index
-    end_idx = item_vfs_field.end_index
-    item_vfs_obs = obs[0, start_idx:end_idx]
+    # Extract full VFS slice, then offset to item portion
+    vfs_obs = obs[:, vfs_field.start_index : vfs_field.end_index]
+
+    # Item VFS starts after global and agent VFS
+    item_vfs_offset = env.vfs_observation_spec.global_vfs_dim + env.vfs_observation_spec.agent_vfs_dim
+    max_vars_per_profile = max(len(p.variables) for p in compiled.compiled_vfs_profiles.item_profiles.values())
+    max_items_per_agent = compiled.items_catalog.max_items_per_agent
+    item_vfs_dim = max_items_per_agent * max_vars_per_profile
+    item_vfs_obs = vfs_obs[0, item_vfs_offset : item_vfs_offset + item_vfs_dim]
 
     # Verify: Each slot has correct VFS values
     # max_vars_across_profiles = 1 (food and medical both have 1 var)
     # So each slot contributes 1 dimension
-    assert item_vfs_obs[0] == 75.0, (
-        f"Slot 0 should have freshness=75.0, got {item_vfs_obs[0]}. "
-        f"Full obs slice: {item_vfs_obs}, registry values: {env.vfs_registry.item_vfs[apple_slot]}"
-    )
-    assert item_vfs_obs[1] == 50.0, (
-        f"Slot 1 should have durability=50.0, got {item_vfs_obs[1]}. "
-        f"Full obs slice: {item_vfs_obs}, registry values: {env.vfs_registry.item_vfs[medkit_slot]}"
-    )
-    assert item_vfs_obs[2] == 0.0, f"Slot 2 should be 0.0 (coin has no vars), got {item_vfs_obs[2]}. Full obs slice: {item_vfs_obs}"
+    assert item_vfs_obs[0] == 75.0, f"Slot 0 should have freshness=75.0, got {item_vfs_obs[0]}"
+    assert item_vfs_obs[1] == 50.0, f"Slot 1 should have durability=50.0, got {item_vfs_obs[1]}"
+    assert item_vfs_obs[2] == 0.0, f"Slot 2 should be 0.0 (coin has no vars), got {item_vfs_obs[2]}"
 
 
-@pytest.mark.xfail(
-    reason="Item VFS observations not yet implemented (Task 3 of Runtime VFS+Effects Integration Plan)",
-    strict=True,
-)
 def test_item_vfs_updates_in_observations():
     """Item VFS state changes should appear in observations.
 
@@ -322,43 +306,44 @@ def test_item_vfs_updates_in_observations():
     # Verify medkit is in inventory
     assert env.item_inventory.count_items(0) == 1, "Medkit should be in inventory"
 
-    # Find medkit instance ID
-    medkit_slot = env.item_inventory.slots[0, 0].item()
-    assert medkit_slot != -1, "Medkit should be in slot 0"
+    # Find medkit instance ID and VFS index
+    medkit_instance_id = env.item_inventory.slots[0, 0].item()
+    assert medkit_instance_id != -1, "Medkit should be in slot 0"
+    medkit_instance = env.item_inventory.items[medkit_instance_id]
 
     # Manually modify medkit durability via VFS registry (simulates effect execution)
     medical_profile_map = env.vfs_registry.item_profile_map["medical"]
     durability_idx = medical_profile_map["durability"]
-    env.vfs_registry.item_vfs[medkit_slot, durability_idx] = 50.0
+    env.vfs_registry.item_vfs[medkit_instance.vfs_index, durability_idx] = 50.0
 
     # Get observation after VFS update
     obs_after = env._get_observations()
 
-    # Try to find item VFS field in observations
-    item_vfs_field = None
+    # Find obs_vfs field in observations
+    vfs_field = None
     for field in env.observation_spec.fields:
-        if "item" in field.name.lower() and "vfs" in field.name.lower():
-            item_vfs_field = field
+        if field.name == "obs_vfs":
+            vfs_field = field
             break
 
     assert (
-        item_vfs_field is not None
-    ), f"Item VFS field not found in observations! Available fields: {[f.name for f in env.observation_spec.fields]}"
+        vfs_field is not None
+    ), f"obs_vfs field not found in observations! Available fields: {[f.name for f in env.observation_spec.fields]}"
 
-    # Extract item VFS slice from both observations
-    start_idx = item_vfs_field.start_index
-    end_idx = item_vfs_field.end_index
+    # Extract full VFS slice from both observations, then offset to item portion
+    vfs_obs_before = obs_before[:, vfs_field.start_index : vfs_field.end_index]
+    vfs_obs_after = obs_after[:, vfs_field.start_index : vfs_field.end_index]
 
-    item_vfs_before = obs_before[0, start_idx:end_idx]
-    item_vfs_after = obs_after[0, start_idx:end_idx]
+    # Item VFS starts after global and agent VFS
+    item_vfs_offset = env.vfs_observation_spec.global_vfs_dim + env.vfs_observation_spec.agent_vfs_dim
+    max_vars_per_profile = max(len(p.variables) for p in compiled.compiled_vfs_profiles.item_profiles.values())
+    max_items_per_agent = compiled.items_catalog.max_items_per_agent
+    item_vfs_dim = max_items_per_agent * max_vars_per_profile
+
+    item_vfs_before = vfs_obs_before[0, item_vfs_offset : item_vfs_offset + item_vfs_dim]
+    item_vfs_after = vfs_obs_after[0, item_vfs_offset : item_vfs_offset + item_vfs_dim]
 
     # Verify: Observation reflects updated VFS state
     # Slot 0 should show durability change from 100.0 -> 50.0
-    assert (
-        item_vfs_before[0] == 100.0
-    ), f"Initial durability should be 100.0, got {item_vfs_before[0]}. Medkit slot={medkit_slot}, full obs before: {item_vfs_before}"
-    assert item_vfs_after[0] == 50.0, (
-        f"Updated durability should be 50.0, got {item_vfs_after[0]}. "
-        f"Medkit slot={medkit_slot}, full obs after: {item_vfs_after}, "
-        f"registry value: {env.vfs_registry.item_vfs[medkit_slot, durability_idx]}"
-    )
+    assert item_vfs_before[0] == 100.0, f"Initial durability should be 100.0, got {item_vfs_before[0]}"
+    assert item_vfs_after[0] == 50.0, f"Updated durability should be 50.0, got {item_vfs_after[0]}"

@@ -340,11 +340,18 @@ class VectorizedHamletEnv:
                         self.vfs_variables.append(var_def)
 
         max_items_in_world = universe.items_catalog.max_items_in_world if universe.items_catalog else 0
+
+        # Extract item profiles from compiled universe
+        item_profiles = None
+        if universe.compiled_vfs_profiles is not None:
+            item_profiles = universe.compiled_vfs_profiles.item_profiles
+
         self.vfs_registry = VariableRegistry(
             variables=self.vfs_variables,
             num_agents=num_agents,
             device=self.device,
             max_items=max_items_in_world,
+            item_profiles=item_profiles,
         )
 
         # Initialize VFS evaluator (if profiles present)
@@ -569,11 +576,19 @@ class VectorizedHamletEnv:
                 vfs_type = "bool" if var_type == "bool" else "float"
                 schema[f"target.vfs.{var['id']}"] = vfs_type
 
-                # NEW: Add self.vfs.* paths for item-scoped variables
-                # Items can modify their own VFS state via self.vfs.*
-                var_scope = var.get("scope", "agent")
-                if var_scope == "item":
-                    schema[f"self.vfs.{var['id']}"] = vfs_type
+            # Add self.vfs.* paths from item VFS profiles
+            # Items can modify their own VFS state via self.vfs.*
+            vfs_profiles_path = self.config_pack_path / "vfs_profiles.yaml"
+            if vfs_profiles_path.exists():
+                with vfs_profiles_path.open() as f:
+                    vfs_profiles_data = yaml.safe_load(f)
+                    item_profiles = vfs_profiles_data.get("item_profiles", [])
+                    for profile in item_profiles:
+                        for var in profile.get("variables", []):
+                            var_name = var["name"]
+                            var_type = var.get("type", "float")
+                            vfs_type = "bool" if var_type == "bool" else "float"
+                            schema[f"self.vfs.{var_name}"] = vfs_type
 
             self.item_manager = ItemManager(
                 catalog=universe.items_catalog,

@@ -54,6 +54,7 @@ class VariableRegistry:
         num_agents: int,
         device: torch.device,
         max_items: int = 0,
+        item_profiles: dict[str, any] | None = None,
     ):
         """Initialize variable registry.
 
@@ -62,10 +63,12 @@ class VariableRegistry:
             num_agents: Number of agents in the environment
             device: PyTorch device (cpu or cuda)
             max_items: Maximum items (for item-scoped variables)
+            item_profiles: Compiled item profiles (profile_name → CompiledItemProfile)
         """
         self.num_agents = num_agents
         self.max_items = max_items
         self.device = device
+        self.item_profiles = item_profiles or {}  # Store compiled profiles
 
         # Store variable definitions by ID, guarding against duplicate IDs
         self._definitions: dict[str, VariableDef] = {}
@@ -83,7 +86,8 @@ class VariableRegistry:
         # Initialize item-scoped storage
         self.item_vfs: torch.Tensor | None = None
         self.item_var_to_index: dict[str, int] = {}
-        self._initialize_item_storage()
+        self.item_profile_map: dict[str, dict[str, int]] = {}  # {profile_name → {var_name → index}}
+        self._initialize_item_storage_from_profiles()
 
     @property
     def variables(self) -> dict[str, VariableDef]:
@@ -300,30 +304,50 @@ class VariableRegistry:
             tensor[:copy_len] = default_tensor
         return tensor
 
-    def _initialize_item_storage(self) -> None:
-        """Initialize item-scoped variable storage."""
-        # Get all item-scoped variables
-        item_vars = [v for v in self._definitions.values() if v.scope == VariableScope.ITEM]
+    def _initialize_item_storage_from_profiles(self) -> None:
+        """Initialize item VFS storage from compiled profiles.
 
-        if item_vars and self.max_items > 0:
-            # Allocate item_vfs: [max_items, num_item_vars]
-            self.item_vfs = torch.zeros(
-                (self.max_items, len(item_vars)),
-                dtype=torch.float32,
-                device=self.device,
+        Creates:
+        - item_vfs: [max_items, max_profile_vars] tensor
+        - item_profile_map: {profile_name → {var_name → tensor_index}}
+
+        Item storage is profile-agnostic: all profiles share the same tensor layout
+        using max_profile_vars across all profiles. Unused slots are masked.
+        """
+        # Validate: Reject item-scoped variables in variables list
+        item_vars = [v for v in self._definitions.values() if v.scope == VariableScope.ITEM]
+        if item_vars:
+            raise ValueError(
+                f"Item-scoped variables in variables_reference.yaml are deprecated. "
+                f"Found {len(item_vars)} item variables: {[v.id for v in item_vars]}. "
+                f"Use vfs_profiles.yaml item_profiles instead."
             )
 
-            # Set default values
-            for idx, var in enumerate(item_vars):
-                if var.default is not None:
-                    if isinstance(var.default, (int, float)):
-                        self.item_vfs[:, idx] = var.default
-                    elif isinstance(var.default, list):
-                        # Vector defaults (if needed in future)
-                        self.item_vfs[:, idx] = var.default[0]
+        # Profile-driven path
+        if self.max_items == 0 or not self.item_profiles:
+            # No items or no profiles
+            self.item_vfs = None
+            self.item_profile_map = {}
+            return
 
-            # Map variable IDs to indices for item scope
-            self.item_var_to_index = {v.id: idx for idx, v in enumerate(item_vars)}
+        # Calculate max variables across all profiles
+        max_vars = 0
+        for profile in self.item_profiles.values():
+            max_vars = max(max_vars, len(profile.variables))
+
+        # Allocate storage: [max_items, max_vars]
+        self.item_vfs = torch.zeros(
+            (self.max_items, max_vars),
+            dtype=torch.float32,
+            device=self.device,
+        )
+
+        # Build profile map: {profile_name → {var_name → index}}
+        for profile_name, profile in self.item_profiles.items():
+            var_map = {}
+            for idx, var in enumerate(profile.variables):
+                var_map[var.name] = idx
+            self.item_profile_map[profile_name] = var_map
 
     def read(
         self,

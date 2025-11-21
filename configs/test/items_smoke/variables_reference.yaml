@@ -10,8 +10,9 @@ variables:
     writable_by: [engine]
     description: Normalized agent position in [0, 1]^2 range
     normalization:
-      method: normalize
-      range: [0.0, 1.0]
+      kind: minmax
+      min: 0.0
+      max: 1.0
 
   - id: has_food
     scope: agent
@@ -22,43 +23,6 @@ variables:
     writable_by: [engine, actions, bac]
     description: "Agent has picked up food (set by on_pickup Effects)"
 
-  # Item-scoped variables (per-item state)
-  - id: durability
-    scope: item
-    type: scalar
-    default: 100.0
-    lifetime: persistent
-    readable_by: [agent, engine]
-    writable_by: [actions, engine]
-    description: "Item durability (0-100). Decreases on use."
-    normalization:
-      method: normalize
-      range: [0.0, 100.0]
-
-  - id: freshness
-    scope: item
-    type: scalar
-    default: 100.0
-    lifetime: persistent
-    readable_by: [agent, engine]
-    writable_by: [engine]
-    description: "Item freshness (0-100). Decreases over time for perishables."
-    normalization:
-      method: normalize
-      range: [0.0, 100.0]
-
-  - id: charges
-    scope: item
-    type: scalar
-    default: 3.0
-    lifetime: persistent
-    readable_by: [agent, engine]
-    writable_by: [actions, engine]
-    description: "Number of uses remaining for consumables."
-    normalization:
-      method: normalize
-      range: [0.0, 10.0]
-
 exposed_observations:
   - id: obs_position
     shape: [2]
@@ -68,24 +32,3 @@ exposed_observations:
     normalization:
       min: [0.0, 0.0]
       max: [1.0, 1.0]
-
-  # Item observations (expose item properties to agents)
-  - id: obs_item_durability
-    shape: [1]
-    type: scalar
-    source: durability
-    scope: item
-    normalization:
-      min: 0.0
-      max: 100.0
-    description: "Durability of nearest item (0-100)"
-
-  - id: obs_item_freshness
-    shape: [1]
-    type: scalar
-    source: freshness
-    scope: item
-    normalization:
-      min: 0.0
-      max: 100.0
-    description: "Freshness of nearest item (0-100)"

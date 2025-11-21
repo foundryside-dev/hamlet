@@ -27,27 +27,24 @@ agent_profiles:
       min: 0.0
       max: 1.0
 
-# Item VFS profiles (2 profiles - minimal but demonstrates multiple profiles)
+# Item VFS profiles (3 profiles for food, medical, currency)
 item_profiles:
-  - id: item_durability
-    scope: item
-    type: scalar
-    initial_value: 1.0
-    description: "Item durability (1.0 = pristine, 0.0 = broken)"
-    normalization:
-      kind: minmax
-      min: 0.0
-      max: 1.0
+  - profile_name: food
+    variables:
+      - name: freshness
+        type: float
+        initial_value: 100.0
+        description: "Food freshness (100.0 = fresh, 0.0 = spoiled)"
 
-  - id: item_uses_remaining
-    scope: item
-    type: scalar
-    initial_value: 3.0
-    description: "Number of uses remaining before item consumed"
-    normalization:
-      kind: minmax
-      min: 0.0
-      max: 10.0
+  - profile_name: medical
+    variables:
+      - name: durability
+        type: float
+        initial_value: 100.0
+        description: "Medical item durability (100.0 = pristine, 0.0 = broken)"
+
+  - profile_name: currency
+    variables: []  # Currency items have no per-item state
 
 # Phase 1 Note: All profiles are static (initial_value only).
 # Expression-based profiles (with deps/expression fields) deferred to Phase 2+.

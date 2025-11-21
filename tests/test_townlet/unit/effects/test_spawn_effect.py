@@ -158,3 +158,43 @@ def test_spawn_effect_cascade_depth_limit():
     # Should raise RuntimeError
     with pytest.raises(RuntimeError, match="cascade depth limit exceeded"):
         executor.execute(command, context)
+
+
+def test_spawn_effect_passes_spawn_depth_unchanged():
+    """Executor should forward spawn_depth without incrementing."""
+    from types import SimpleNamespace
+
+    class RecordingManager:
+        def __init__(self) -> None:
+            self.last_spawn_depth: int | None = None
+            self.current_step = 0
+
+        def spawn_effect(self, **kwargs):
+            self.last_spawn_depth = kwargs.get("spawn_depth")
+            return SimpleNamespace(instance_id=1)
+
+    manager = RecordingManager()
+    executor = CommandExecutor()
+
+    command = CommandNode(
+        type=CommandType.SPAWN_EFFECT,
+        effect_id="any",
+        target="self",
+        duration=1,
+        intensity=1.0,
+    )
+
+    bars = {"health": torch.tensor([1.0])}
+    context = ExecutionContext(
+        bars=bars,
+        vfs_registry=None,
+        self_index=0,
+        target_index=None,
+        effect_manager=manager,
+        item_manager=DummyItemManager(),
+        spawn_depth=3,
+    )
+
+    executor.execute(command, context)
+
+    assert manager.last_spawn_depth == 3

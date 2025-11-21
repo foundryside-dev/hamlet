@@ -205,7 +205,7 @@ class CommandExecutor:
             current_step=context.effect_manager.current_step,
             bars=context.bars,
             vfs_registry=context.vfs_registry,
-            spawn_depth=context.spawn_depth,
+            spawn_depth=context.spawn_depth,  # manager increments for the spawned effect's on_spawn
             agent_positions=getattr(context, "agent_positions", None),
             item_manager=context.item_manager,
         )
@@ -253,6 +253,10 @@ class CommandExecutor:
         else:
             raise ValueError(f"Invalid position: {command.position}")
 
+        item_type = command.item_type
+        if item_type is None:
+            raise ValueError("spawn_item command requires 'item_type'")
+
         quantity = command.quantity or 1
         last_instance = None
 
@@ -263,7 +267,7 @@ class CommandExecutor:
                 explicit=explicit_coords,
             )
             last_instance = context.item_manager.spawn_item(
-                item_type=command.item_id,  # Note: parameter name is item_type, not item_id
+                item_type=item_type,
                 position=position,
                 current_tick=context.current_tick,
                 initial_state=command.initial_state,
@@ -343,27 +347,11 @@ class CommandExecutor:
                 target_idx = item.vfs_index
 
             # Create child context with target_index set to current iteration element
-            child_context = ExecutionContext(
-                bars=context.bars,
-                vfs_registry=context.vfs_registry,
-                self_index=context.self_index,
+            child_context = context.copy(
                 target_index=target_idx,  # For items, this is vfs_index
-                effect=context.effect,
-                self_is_item=context.self_is_item,
-                effect_manager=context.effect_manager,
-                item_manager=context.item_manager,
-                spawn_depth=context.spawn_depth,
-                current_tick=context.current_tick,
                 target_is_item=target_is_item,
+                iterator_value=idx,
             )
-
-            # Copy agent_positions if present (for nested for_each)
-            if hasattr(context, "agent_positions"):
-                child_context.agent_positions = context.agent_positions
-            if hasattr(context, "inventory"):
-                child_context.inventory = context.inventory
-            # Expose iterator value for potential expression use
-            child_context.iterator_value = idx
 
             # Execute body commands with child context
             body = command.body or []

@@ -71,7 +71,7 @@ def test_spawn_item_resolves_self_position():
     # Create spawn_item command with position="self"
     command = CommandNode(
         type=CommandType.SPAWN_ITEM,
-        item_id="health_potion",
+        item_type="health_potion",
         position="self",
         quantity=1,
         initial_state=None,
@@ -133,7 +133,7 @@ def test_spawn_item_resolves_target_position():
 
     command = CommandNode(
         type=CommandType.SPAWN_ITEM,
-        item_id="loot_drop",
+        item_type="loot_drop",
         position="target",
         quantity=1,
         initial_state=None,
@@ -187,7 +187,7 @@ def test_spawn_item_with_explicit_position():
     # Explicit coordinates
     command = CommandNode(
         type=CommandType.SPAWN_ITEM,
-        item_id="treasure",
+        item_type="treasure",
         position=[10, 15],  # Explicit (x, y)
         quantity=1,
         initial_state=None,
@@ -262,7 +262,7 @@ def test_spawn_item_with_initial_state():
 
     command = CommandNode(
         type=CommandType.SPAWN_ITEM,
-        item_id="damaged_sword",
+        item_type="damaged_sword",
         position="self",
         quantity=1,
         initial_state={"durability": 25.0},  # Damaged item
@@ -326,7 +326,7 @@ def test_spawn_item_random_fails_when_blocked():
 
     command = CommandNode(
         type=CommandType.SPAWN_ITEM,
-        item_id="blocked_item",
+        item_type="blocked_item",
         position="random",
         quantity=1,
         initial_state=None,

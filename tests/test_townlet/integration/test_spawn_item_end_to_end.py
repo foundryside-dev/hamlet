@@ -105,14 +105,14 @@ def test_effect_on_despawn_spawns_item_with_real_itemmanager():
         on_despawn=[
             CommandNode(
                 type=CommandType.SPAWN_ITEM,
-                item_id="gold_coin",
+                item_type="gold_coin",
                 position=[5, 7],  # Explicit position instead of "self"
                 quantity=3,
                 initial_state=None,
             ),
             CommandNode(
                 type=CommandType.SPAWN_ITEM,
-                item_id="rare_gem",
+                item_type="rare_gem",
                 position=[5, 7],  # Explicit position instead of "self"
                 quantity=1,
                 initial_state={"durability": 80.0, "quality": 0.9},
@@ -238,7 +238,7 @@ def test_spawn_item_respects_itemmanager_capacity():
     # Spawn 5 items (should only spawn 2 due to capacity)
     command = CommandNode(
         type=CommandType.SPAWN_ITEM,
-        item_id="trash",
+        item_type="trash",
         position="self",
         quantity=5,
         initial_state=None,
@@ -301,7 +301,7 @@ def test_spawn_item_respects_cooldown():
 
     command = CommandNode(
         type=CommandType.SPAWN_ITEM,
-        item_id="rare_item",
+        item_type="rare_item",
         position="self",
         quantity=1,
         initial_state=None,

@@ -45,8 +45,7 @@ class CommandNode:
     intensity: float | None = 1.0  # Intensity multiplier
 
     # spawn_item command fields
-    item_type: str | None = None  # Item type ID (legacy name, kept for compatibility)
-    item_id: str | None = None  # Item ID to spawn (NEW - preferred)
+    item_type: str | None = None  # Item type ID (canonical)
     position: Any | None = None  # Simple position ("self", "target", or coordinates)
     position_expr: str | None = None  # Expression string (for complex expressions)
     position_ast: Any | None = None  # ✅ Pre-compiled AST

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field, replace
 from typing import Any
 
 import torch
@@ -21,53 +22,38 @@ class _NullItemManager:
         raise RuntimeError("ItemManager is not configured; spawn_item unavailable")
 
 
+@dataclass
 class ExecutionContext:
-    """Runtime context for effect command execution.
+    """Runtime context for effect command execution."""
 
-    Provides access to:
-    - bars: Meter tensors (energy, health, etc.)
-    - vfs: VFS variable registry
-    - self: Current agent/item index
-    - target: Target agent/item index
-    - effect_manager: EffectManager for spawning effects (NEW)
-    - item_manager: ItemManager for spawning items (NEW)
-    - current_tick: Current environment tick (NEW)
-    """
+    bars: dict[str, torch.Tensor] = field(default_factory=dict)
+    vfs_registry: VariableRegistry | None = None
+    self_index: int | None = None
+    target_index: int | None = None
+    effect: Any | None = None
+    self_is_item: bool = False
+    effect_manager: Any | None = None
+    item_manager: Any | None = None
+    spawn_depth: int = 0
+    agent_positions: torch.Tensor | None = None
+    interrupt_reason: str | None = None
+    current_tick: int = 0
+    target_is_item: bool = False
+    iterator_value: Any | None = None
+    inventory: Any | None = None
 
-    def __init__(
-        self,
-        bars: dict[str, torch.Tensor],
-        vfs_registry: VariableRegistry,
-        self_index: int | None,
-        target_index: int | None,
-        effect: Any | None = None,
-        self_is_item: bool = False,  # NEW: Track if self refers to item
-        effect_manager: Any | None = None,  # REQUIRED
-        item_manager: Any | None = None,  # REQUIRED
-        spawn_depth: int = 0,  # NEW (cascade depth tracking)
-        agent_positions: torch.Tensor | None = None,  # NEW: [batch, 2] spatial positions
-        interrupt_reason: str | None = None,  # NEW: Why effect was interrupted
-        current_tick: int = 0,  # NEW
-        target_is_item: bool = False,  # NEW: mark target as item for vfs routing
-    ):
-        if effect_manager is None:
-            effect_manager = _NullEffectManager()
-        if item_manager is None:
-            item_manager = _NullItemManager()
+    def __post_init__(self) -> None:
+        if self.effect_manager is None:
+            self.effect_manager = _NullEffectManager()
+        if self.item_manager is None:
+            self.item_manager = _NullItemManager()
+        if self.bars is None:
+            self.bars = {}
 
-        self.bars = bars or {}
-        self.vfs_registry = vfs_registry
-        self.self_index = self_index
-        self.target_index = target_index
-        self.effect = effect  # ActiveEffect instance for effect-specific variables
-        self.self_is_item = self_is_item  # NEW
-        self.effect_manager = effect_manager  # NEW
-        self.item_manager = item_manager  # NEW
-        self.spawn_depth = spawn_depth  # NEW
-        self.agent_positions = agent_positions  # NEW
-        self.interrupt_reason = interrupt_reason  # NEW
-        self.current_tick = current_tick  # NEW
-        self.target_is_item = target_is_item  # NEW
+    def copy(self, **overrides: Any) -> ExecutionContext:
+        """Shallow copy with field overrides for child contexts."""
+
+        return replace(self, **overrides)
 
     def get_path(self, path: str) -> torch.Tensor:
         """Resolve path to tensor value.

@@ -171,3 +171,64 @@ def test_item_vfs_in_observations():
     # without knowing the exact structure of the observation vector. That would
     # require inspecting the VFSObservationSpec and calculating offsets.
     # The important property is that obs_dim is stable (verified above).
+
+
+def test_item_profile_switch_updates_vfs_layout():
+    """Switching item profile should update VFS storage layout.
+
+    Tests profile-based VFS allocation:
+    - Spawn item with profile A (food: 1 var)
+    - Despawn and spawn different item type with profile B (medical: 1 var)
+    - Verify storage uses profile B layout
+    """
+    # Setup: Config with multiple item profiles
+    config_dir = Path("configs/test/items_smoke")
+
+    compiler = UniverseCompiler()
+    compiled = compiler.compile(config_dir, use_cache=False)
+
+    env = VectorizedHamletEnv(
+        universe=compiled,
+        level_name="L0_smoke",
+        num_agents=1,
+        device=torch.device("cpu"),
+    )
+
+    env.reset()
+
+    # Exercise: Spawn apple (food profile)
+    apple = env.item_manager.spawn_item("apple", position=(2, 2), current_tick=0)
+    assert apple is not None, "Failed to spawn apple"
+    assert apple.vfs_profile == "food", f"Expected food profile, got {apple.vfs_profile}"
+
+    # Verify: Apple VFS storage uses food profile map
+    apple_vfs_index = apple.vfs_index
+    food_profile_map = env.vfs_registry.item_profile_map["food"]
+    assert "freshness" in food_profile_map, "freshness variable not in food profile map"
+    freshness_idx = food_profile_map["freshness"]
+    freshness_value = env.vfs_registry.item_vfs[apple_vfs_index, freshness_idx].item()
+    assert freshness_value == 100.0, f"Expected freshness=100.0, got {freshness_value}"
+
+    # Exercise: Despawn apple
+    current_tick = env.step_counts[0].item() if env.step_counts.numel() > 0 else 0
+    env.item_manager.despawn_item(apple.instance_id, current_tick=current_tick)
+    assert apple.instance_id not in env.item_manager.active_items, "Apple should be despawned"
+
+    # Exercise: Spawn medkit (medical profile) - reuses the same VFS slot
+    medkit = env.item_manager.spawn_item("medkit", position=(3, 3), current_tick=0)
+    assert medkit is not None, "Failed to spawn medkit"
+    assert medkit.vfs_profile == "medical", f"Expected medical profile, got {medkit.vfs_profile}"
+
+    # Verify: Medkit VFS storage uses medical profile map
+    medkit_vfs_index = medkit.vfs_index
+    medical_profile_map = env.vfs_registry.item_profile_map["medical"]
+    assert "durability" in medical_profile_map, "durability variable not in medical profile map"
+    durability_idx = medical_profile_map["durability"]
+    durability_value = env.vfs_registry.item_vfs[medkit_vfs_index, durability_idx].item()
+    assert durability_value == 100.0, f"Expected durability=100.0, got {durability_value}"
+
+    # Verify: Profile switching works correctly
+    # The VFS slot was reused when medkit spawned after apple despawned
+    # The key property is that medkit uses durability_idx correctly via profile map
+    # This test verifies that the profile map correctly routes to the right variables
+    # (Medical profile doesn't use freshness, so the old freshness value is irrelevant)

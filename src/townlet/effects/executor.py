@@ -224,11 +224,10 @@ class CommandExecutor:
         if context.item_manager is None:
             raise ValueError("item_manager not set in context - cannot spawn items")
 
-        if context.agent_positions is None:
-            raise ValueError("agent_positions not set in context - cannot resolve position")
-
         # Resolve position from hint to actual coordinates
         if command.position == "self":
+            if context.agent_positions is None:
+                raise ValueError("agent_positions not set in context - cannot use 'self' position")
             if context.self_index is None:
                 raise ValueError("self_index not set - cannot use 'self' position")
             # Get agent position as tuple (round floats to ints for grid coords)
@@ -236,6 +235,8 @@ class CommandExecutor:
             position = tuple(int(round(x.item())) for x in pos_tensor)
 
         elif command.position == "target":
+            if context.agent_positions is None:
+                raise ValueError("agent_positions not set in context - cannot use 'target' position")
             if context.target_index is None:
                 raise ValueError("target_index not set - cannot use 'target' position")
             pos_tensor = context.agent_positions[context.target_index]

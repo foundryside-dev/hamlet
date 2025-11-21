@@ -85,6 +85,7 @@ def build_vfs_observation(
     registry: ScopedVariableRegistry,
     spec: VFSObservationSpec,
     batch_size: int,
+    agent_item_inventory: torch.Tensor | None = None,
 ) -> torch.Tensor:
     """Build VFS observation vector for agents.
 
@@ -92,6 +93,8 @@ def build_vfs_observation(
         registry: Variable registry with global/agent/item state
         spec: Observation specification (dims)
         batch_size: Number of agents
+        agent_item_inventory: Item indices for each agent slot [batch, max_items_per_agent]
+                              or None for zero stubs. -1 indicates empty slot.
 
     Returns:
         Observation tensor with shape [batch, total_vfs_dim]
@@ -128,9 +131,47 @@ def build_vfs_observation(
             agent_obs = torch.cat(agent_vars, dim=1)  # [batch, agent_dim]
             components.append(agent_obs)
 
-    # Item VFS: stubbed for Phase 2 (zero-filled)
+    # Item VFS: Include item state with masking
     if spec.item_vfs_dim > 0:
-        item_obs = torch.zeros(batch_size, spec.item_vfs_dim, device=registry.device)
+        if agent_item_inventory is None:
+            # No item system yet, use zero stub
+            item_obs = torch.zeros(
+                (batch_size, spec.item_vfs_dim),
+                dtype=torch.float32,
+                device=registry.device,
+            )
+        else:
+            # Build item observations with masking
+            # Shape: [batch, max_items_per_agent, max_vars_per_profile]
+            item_vfs_slices = []
+
+            # Calculate vars per slot from item_vfs_dim and max_items_per_agent
+            vars_per_slot = spec.item_vfs_dim // spec.max_items_per_agent
+
+            for agent_idx in range(batch_size):
+                agent_slots = []
+                for slot_idx in range(spec.max_items_per_agent):
+                    item_idx = agent_item_inventory[agent_idx, slot_idx].item()
+
+                    if item_idx == -1:  # Empty slot
+                        # Masked slot: all zeros
+                        agent_slots.append(
+                            torch.zeros(
+                                vars_per_slot,
+                                dtype=torch.float32,
+                                device=registry.device,
+                            )
+                        )
+                    else:
+                        # Extract item VFS state
+                        item_vfs = registry.item_vfs[item_idx, :vars_per_slot]
+                        agent_slots.append(item_vfs)
+
+                # Flatten slots: [max_items × vars]
+                item_vfs_slices.append(torch.cat(agent_slots))
+
+            item_obs = torch.stack(item_vfs_slices)  # [batch, item_vfs_dim]
+
         components.append(item_obs)
 
     # Concatenate all components

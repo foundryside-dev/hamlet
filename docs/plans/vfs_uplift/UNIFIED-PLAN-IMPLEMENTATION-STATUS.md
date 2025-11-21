@@ -891,7 +891,7 @@ Task 3 delivered item VFS integration. Ready for:
 
 **Status:** 100% complete
 **Timeline:** Planned 1-2 days | Actual: 1 day
-**Test Coverage:** 3 tests (100% passing)
+**Test Coverage:** 6 tests (100% passing - 2 schema unit + 2 env unit + 2 integration)
 
 **Deliverables:**
 - ✅ Runtime uses compiled effect catalog from UniverseCompiler
@@ -904,6 +904,7 @@ Task 3 delivered item VFS integration. Ready for:
 - `333a4d7` - docs: create detailed implementation plan for Task 4 (Effects runtime usage)
 - `a09d154` - feat(env): use compiled effect catalog from UniverseCompiler
 - `891a81f` - feat(compiler): add item VFS paths to effects schema
+- `294cbdc` - docs: mark Task 4 (Effects runtime usage) as COMPLETE
 
 **Grep Verification:**
 - ✅ No runtime effects.yaml reads in vectorized_env.py

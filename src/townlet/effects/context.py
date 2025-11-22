@@ -362,6 +362,8 @@ class ExecutionContext:
         if self.vfs_registry is None:
             return None
         if scope == "item":
+            if index is None:
+                return None
             profile_name = (
                 self.vfs_registry.get_item_profile_for_index(index) if hasattr(self.vfs_registry, "get_item_profile_for_index") else None
             )
@@ -372,6 +374,8 @@ class ExecutionContext:
 
     def _write_agent_vfs_value(self, var_name: str, index: int, value: torch.Tensor) -> None:
         """Write an agent-scoped VFS variable for a specific agent."""
+        if self.vfs_registry is None:
+            raise RuntimeError("VFS registry is not configured; cannot write VFS variable")
         batch = self.vfs_registry.get(var_name, reader="engine")
         if batch.dim() == 0:
             raise ValueError(f"VFS variable '{var_name}' is not agent-scoped; cannot index by agent.")

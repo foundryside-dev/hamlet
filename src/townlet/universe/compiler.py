@@ -1108,7 +1108,11 @@ class UniverseCompiler:
 
         # Agent drive references
         if getattr(raw.agent, "agent", None) and getattr(raw.agent.agent, "drive", None):
-            self._validate_dac_references(raw.agent.agent.drive, symbol_table, errors)
+            # DriveConfig and DriveAsCodeConfig have identical structure
+            from typing import cast
+
+            drive_config = cast(DriveAsCodeConfig, raw.agent.agent.drive)
+            self._validate_dac_references(drive_config, symbol_table, errors)
 
         errors.check_and_raise(stage_label="Stage 3: Reference Resolution")
 
@@ -1819,12 +1823,12 @@ class UniverseCompiler:
 
         if compiled_vfs_profiles is not None:
             if compiled_vfs_profiles.global_profile is not None:
-                for var in compiled_vfs_profiles.global_profile.variables:
-                    vfs_dim += _var_flat_dim(var)
+                for compiled_var in compiled_vfs_profiles.global_profile.variables:
+                    vfs_dim += _var_flat_dim(compiled_var)
 
             if compiled_vfs_profiles.agent_profile is not None:
-                for var in getattr(compiled_vfs_profiles.agent_profile, "variables", []):
-                    vfs_dim += _var_flat_dim(var)
+                for compiled_var in getattr(compiled_vfs_profiles.agent_profile, "variables", []):
+                    vfs_dim += _var_flat_dim(compiled_var)
 
             # Item VFS: max_items_per_agent × max(flat_dim across profiles)
             if compiled_vfs_profiles.item_profiles:
@@ -1834,8 +1838,8 @@ class UniverseCompiler:
                     for profile in item_profiles_dict.values():
                         profile_vars = getattr(profile, "variables", [])
                         profile_dim = 0
-                        for var in profile_vars:
-                            profile_dim += _var_flat_dim(var)
+                        for item_profile_var in profile_vars:
+                            profile_dim += _var_flat_dim(item_profile_var)
                         max_profile_dim = max(max_profile_dim, profile_dim)
 
                     max_items_per_agent: int | None = 3
@@ -2338,25 +2342,91 @@ class UniverseCompiler:
             is_vector = bool(raw_dims and raw_dims > 1 and not is_tensor)
 
             dims = raw_dims if is_vector else None
-            default = 0.0
+            user_var_default: list[float] | float | None = 0.0
             if is_tensor:
                 # For tensors, allow shape-backed default broadcasting; use zeros placeholder here.
-                default = None
+                user_var_default = None
             elif is_vector and raw_dims is not None:
-                default = [0.0] * raw_dims
+                user_var_default = [0.0] * raw_dims
 
             normalization = _convert_normalization(var.name, getattr(var, "normalization", None))
+
+            # Determine final type for VariableDef
+            # Use cast to narrow str to the Literal type expected by VariableDef
+            from typing import Literal as LiteralType
+            from typing import cast
+
+            if var_type is None:
+                final_type = cast(
+                    LiteralType[
+                        "scalar",
+                        "vec2i",
+                        "vec3i",
+                        "vec2f",
+                        "vec3f",
+                        "vecNi",
+                        "vecNf",
+                        "bool",
+                        "agent_ref",
+                        "item_ref",
+                        "tensor1d",
+                        "tensor2d",
+                        "tensor3d",
+                        "tensorNd",
+                    ],
+                    "vecNf" if is_vector else "scalar",
+                )
+            elif is_tensor:
+                final_type = cast(
+                    LiteralType[
+                        "scalar",
+                        "vec2i",
+                        "vec3i",
+                        "vec2f",
+                        "vec3f",
+                        "vecNi",
+                        "vecNf",
+                        "bool",
+                        "agent_ref",
+                        "item_ref",
+                        "tensor1d",
+                        "tensor2d",
+                        "tensor3d",
+                        "tensorNd",
+                    ],
+                    var_type,
+                )
+            else:
+                final_type = cast(
+                    LiteralType[
+                        "scalar",
+                        "vec2i",
+                        "vec3i",
+                        "vec2f",
+                        "vec3f",
+                        "vecNi",
+                        "vecNf",
+                        "bool",
+                        "agent_ref",
+                        "item_ref",
+                        "tensor1d",
+                        "tensor2d",
+                        "tensor3d",
+                        "tensorNd",
+                    ],
+                    "vecNf" if is_vector else "scalar",
+                )
 
             vars_out.append(
                 VariableDef(
                     id=var.name,
                     scope=var.scope,
-                    type=var_type if is_tensor else ("vecNf" if is_vector else "scalar"),
+                    type=final_type,
                     dims=dims,
                     lifetime="tick",
                     readable_by=["agent", "engine"],
                     writable_by=["engine"],
-                    default=default,
+                    default=user_var_default,
                     description=var.description,
                     normalization=normalization,
                     shape=shape,

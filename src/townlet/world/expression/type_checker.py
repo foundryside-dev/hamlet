@@ -383,9 +383,18 @@ class TypeChecker(ASTVisitor):
 
         if func == "abs":
             _assert_args(1)
-            if not _is_numeric(arg_types[0]):
-                raise TypeCheckError(f"Function 'abs' requires numeric arg, got {arg_types[0]}")
-            return arg_types[0]
+            arg_type = arg_types[0]
+            if not _is_numeric(arg_type):
+                raise TypeCheckError(f"Function 'abs' requires numeric arg, got {arg_type}")
+            # Type narrowing: after _is_numeric check, we know it's int or float
+            # Return str literal to satisfy return type
+            if arg_type == "int":
+                return "int"
+            elif arg_type == "float":
+                return "float"
+            else:
+                # Fallback for Any or unexpected types (shouldn't happen after validation)
+                return "float"
 
         if func == "clamp":
             _assert_args(3)

@@ -102,11 +102,11 @@ class VFSObservationSpec:
         # Agent VFS dimensions
         agent_dim = 0
         if agent_profile is not None:
-            for var in agent_profile.variables:
+            for agent_var in agent_profile.variables:
                 agent_dim += _variable_observation_dim(
-                    var.type,
-                    getattr(var, "shape", None),
-                    dims=getattr(var, "dims", None),
+                    agent_var.type,
+                    getattr(agent_var, "shape", None),
+                    dims=getattr(agent_var, "dims", None),
                     max_elements=cls.max_tensor_elements,
                 )
 
@@ -117,12 +117,12 @@ class VFSObservationSpec:
             profile_dims = []
             for profile in item_profiles:
                 dim_sum = 0
-                for var in profile.variables:
+                for item_var in profile.variables:
                     dim_sum += _variable_observation_dim(
-                        var.type,
-                        getattr(var, "shape", None),
+                        item_var.type,
+                        getattr(item_var, "shape", None),
                         scope="item",
-                        dims=getattr(var, "dims", None),
+                        dims=getattr(item_var, "dims", None),
                         max_elements=cls.max_tensor_elements,
                     )
                 profile_dims.append(dim_sum)

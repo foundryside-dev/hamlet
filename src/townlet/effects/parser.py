@@ -82,7 +82,7 @@ class CommandParser:
             # for_each can be a registered collection name OR an arbitrary expression.
             # Only set collection when it matches a known resolver; otherwise treat as expression.
             collection = None
-            collection_expr = config.for_each
+            collection_expr: str | None = config.for_each
             if isinstance(config.for_each, str):
                 try:
                     from townlet.effects import collections as _collections
@@ -108,6 +108,8 @@ class CommandParser:
             parsed_cases: list[tuple[str, list[CommandNode]]] = []
             for case in config.cases:
                 when_expr = case.get("when")
+                if when_expr is None:
+                    raise ValueError("Switch case 'when' expression is required")
                 do_cmds = case.get("do") or []
                 parsed_cases.append((when_expr, [self.parse_command(cmd) for cmd in do_cmds]))
 

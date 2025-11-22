@@ -540,6 +540,7 @@ class ItemManager:
             return positions
 
         if placement_mode == "fixed":
+            assert isinstance(placement, SpawnPlacementConfig)  # Type narrowing for mypy
             for pos in placement.fixed_positions or []:
                 if len(positions) >= count:
                     break
@@ -549,6 +550,7 @@ class ItemManager:
             return positions
 
         if placement_mode == "grid":
+            assert isinstance(placement, SpawnPlacementConfig)  # Type narrowing for mypy
             spacing = placement.grid_spacing or 1
             for x in range(0, grid_size[0], spacing):
                 for y in range(0, grid_size[1], spacing):
@@ -561,10 +563,14 @@ class ItemManager:
             return positions
 
         if placement_mode == "scripted":
+            assert isinstance(placement, SpawnPlacementConfig)  # Type narrowing for mypy
             script = placement.script or []
             start_idx = self.script_indices.get(rule.item_type, 0)
             # Advance past events before current_tick
-            while start_idx < len(script) and script[start_idx].get("tick") < current_tick:
+            while start_idx < len(script):
+                tick = script[start_idx].get("tick")
+                if tick is None or tick >= current_tick:
+                    break
                 start_idx += 1
             for idx in range(start_idx, len(script)):
                 if len(positions) >= count:
@@ -588,6 +594,7 @@ class ItemManager:
         placement_mode = placement.mode if isinstance(placement, SpawnPlacementConfig) else None
         if placement_mode != "scripted":
             return None
+        assert isinstance(placement, SpawnPlacementConfig)  # Type narrowing for mypy
         script = placement.script or []
         for event in script:
             tick = event.get("tick")
@@ -607,6 +614,7 @@ class ItemManager:
             return [tuple(random.randint(0, size - 1) for size in self.grid_size or (1,)) for _ in range(count)]
 
         if placement_mode == "fixed":
+            assert isinstance(placement, SpawnPlacementConfig)  # Type narrowing for mypy
             for pos in placement.fixed_positions or []:
                 if len(positions) >= count:
                     break
@@ -615,6 +623,7 @@ class ItemManager:
             return positions
 
         if placement_mode == "grid":
+            assert isinstance(placement, SpawnPlacementConfig)  # Type narrowing for mypy
             spacing = placement.grid_spacing or 1
             grid_size = self.grid_size or (0,)
             for x in range(0, grid_size[0], spacing):
@@ -628,10 +637,14 @@ class ItemManager:
             return positions
 
         if placement_mode == "scripted":
+            assert isinstance(placement, SpawnPlacementConfig)  # Type narrowing for mypy
             script = placement.script or []
             start_idx = self.script_indices.get(rule.item_type, 0)
             # Advance past events before current_tick
-            while start_idx < len(script) and script[start_idx].get("tick") < current_tick:
+            while start_idx < len(script):
+                tick = script[start_idx].get("tick")
+                if tick is None or tick >= current_tick:
+                    break
                 start_idx += 1
             for idx in range(start_idx, len(script)):
                 if len(positions) >= count:

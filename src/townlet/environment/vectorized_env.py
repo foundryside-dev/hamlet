@@ -503,9 +503,7 @@ class VectorizedHamletEnv:
             effects_schema[f"bar.{bar_name}"] = "float"
             effects_schema[f"target.bar.{bar_name}"] = "float"
         for vfs_var in self.vfs_variables:
-            vfs_type = vfs_var.type
-            if vfs_type not in {"bool", "agent_ref", "item_ref"}:
-                vfs_type = "float"
+            vfs_type: str = vfs_var.type if vfs_var.type in {"bool", "agent_ref", "item_ref"} else "float"
             effects_schema[f"vfs.{vfs_var.id}"] = vfs_type
             effects_schema[f"target.vfs.{vfs_var.id}"] = vfs_type
         self.effects_schema = effects_schema
@@ -652,16 +650,20 @@ class VectorizedHamletEnv:
             # Add VFS paths from compiled VFS variables
             for vfs_var in self.vfs_variables:
                 # Preserve declared type so reference traversal is allowed.
-                vfs_type = vfs_var.type if vfs_var.type in {"agent_ref", "item_ref", "affordance_ref", "effect_ref", "bool"} else "float"
-                schema[f"target.vfs.{vfs_var.id}"] = vfs_type
+                vfs_type_target: str = (
+                    vfs_var.type if vfs_var.type in {"agent_ref", "item_ref", "affordance_ref", "effect_ref", "bool"} else "float"
+                )
+                schema[f"target.vfs.{vfs_var.id}"] = vfs_type_target
 
             # Add self.vfs.* paths from compiled item VFS profiles
             # Items can modify their own VFS state via self.vfs.*
             if universe.compiled_vfs_profiles and universe.compiled_vfs_profiles.item_profiles:
                 for profile_name, compiled_profile in universe.compiled_vfs_profiles.item_profiles.items():
                     for var in compiled_profile.variables:
-                        vfs_type = var.type if var.type in {"agent_ref", "item_ref", "affordance_ref", "effect_ref", "bool"} else "float"
-                        schema[f"self.vfs.{var.name}"] = vfs_type
+                        vfs_type_item: str = (
+                            var.type if var.type in {"agent_ref", "item_ref", "affordance_ref", "effect_ref", "bool"} else "float"
+                        )
+                        schema[f"self.vfs.{var.name}"] = vfs_type_item
 
             self.item_manager = ItemManager(
                 catalog=universe.items_catalog,
@@ -891,7 +893,7 @@ class VectorizedHamletEnv:
             action.source = source_lookup.get(action.name, "substrate")
             delta_override = movement_delta_lookup.get(action.name)
             if delta_override is not None:
-                action.delta = tuple(delta_override)
+                action.delta = list(delta_override)
             actions.append(action)
 
         for meta_action in action_metadata.actions:
@@ -908,7 +910,7 @@ class VectorizedHamletEnv:
                 type=meta_action.type,
                 costs={},
                 effects={},
-                delta=tuple(meta_action.movement_delta) if meta_action.movement_delta is not None else None,
+                delta=list(meta_action.movement_delta) if meta_action.movement_delta is not None else None,
                 teleport_to=None,
                 enabled=meta_action.enabled,
                 description=meta_action.description or None,

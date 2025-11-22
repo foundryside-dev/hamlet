@@ -16,6 +16,10 @@ CONFIGS_ROOT = REPO_ROOT / "configs"
 # - `reference_config`: Documentation only, not a runnable experiment
 EXCLUDED_DIRS = {"templates", "aspatial_test", "reference_config"}
 
+# Packs that are expected to fail validation (negative test fixtures). We assert
+# they do fail; a successful validation here means a regression in error handling.
+EXPECTED_FAIL_DIRS = {"vfs_circular_dependency"}
+
 
 def iter_config_dirs(base: Path) -> list[Path]:
     """Recursively find all v2.1 experiment directories (containing experiment.yaml)."""
@@ -39,9 +43,14 @@ def iter_config_dirs(base: Path) -> list[Path]:
     return dirs
 
 
-def run_cli_validate(config_dir: Path) -> None:
+def run_cli_validate(config_dir: Path, expect_failure: bool = False) -> None:
     cmd = [sys.executable, "-m", "townlet.compiler", "validate", str(config_dir)]
-    subprocess.run(cmd, check=True, cwd=REPO_ROOT)
+    result = subprocess.run(cmd, cwd=REPO_ROOT)
+    if expect_failure:
+        if result.returncode == 0:
+            raise RuntimeError(f"Expected validation to fail for {config_dir}, but it succeeded")
+    else:
+        result.check_returncode()
 
 
 def main() -> int:
@@ -63,8 +72,13 @@ def main() -> int:
             display_path = config_dir.relative_to(REPO_ROOT)
         except ValueError:
             display_path = config_dir
-        print(f"🔧 Validating {display_path} via CLI ...")
-        run_cli_validate(config_dir)
+        expect_fail = config_dir.name in EXPECTED_FAIL_DIRS
+        print(f"🔧 Validating {display_path} via CLI ...", end="")
+        if expect_fail:
+            print(" (expected failure fixture)")
+        else:
+            print()
+        run_cli_validate(config_dir, expect_failure=expect_fail)
 
     print("✅ Universe compiler CLI validation passed")
     return 0

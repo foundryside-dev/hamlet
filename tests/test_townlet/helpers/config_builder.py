@@ -18,6 +18,8 @@ TOP_LEVEL_FILES = [
     "actions.yaml",
     "agent.yaml",
     "effects.yaml",
+    "vfs_profiles.yaml",
+    "items.yaml",
 ]
 
 # Level-local files (curriculum-level configs).

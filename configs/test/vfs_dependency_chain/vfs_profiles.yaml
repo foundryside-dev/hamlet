@@ -1,7 +1,3 @@
-# VFS Dependency Chain Test Configuration
-# Tests: a → b → c dependency chain with mark-and-sweep
-# Note: Using global_profile for runtime testing (agent_profile evaluation not yet implemented)
-
 version: "1.0"
 
 global_profile:
@@ -9,14 +5,14 @@ global_profile:
     - name: a
       type: float
       initial_value: 10.0
-      description: "Base value"
-
     - name: b
       type: float
       expression: "a + 5"
-      description: "Depends on a: a + 5 = 15"
-
     - name: c
       type: float
       expression: "b * 2"
-      description: "Depends on b: b * 2 = 30"
+
+agent_profile: null
+item_profiles:
+  - profile_name: default_item
+    variables: []

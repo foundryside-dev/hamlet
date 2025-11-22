@@ -1,7 +1,3 @@
-# VFS Bar Access Test Configuration
-# Tests: VFS expressions accessing bar values
-# Note: Using global_profile for runtime testing (agent_profile evaluation not yet implemented)
-
 version: "1.0"
 
 global_profile:
@@ -9,4 +5,8 @@ global_profile:
     - name: low_energy_flag
       type: bool
       expression: "bar.energy < 0.3"
-      description: "True when energy is below 30%"
+
+agent_profile: null
+item_profiles:
+  - profile_name: default_item
+    variables: []

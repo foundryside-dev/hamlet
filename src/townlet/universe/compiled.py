@@ -495,14 +495,37 @@ def _serialize_vfs_profiles(profiles: CompiledVFSProfiles) -> dict[str, Any]:
         result["global_profile"] = None
 
     result["agent_profile"] = profiles.agent_profile
-    result["item_profiles"] = profiles.item_profiles
+
+    if profiles.item_profiles:
+        item_profiles_serialized: dict[str, Any] = {}
+        for name, profile in profiles.item_profiles.items():
+            item_profiles_serialized[name] = {
+                "profile_name": profile.profile_name,
+                "variables": [
+                    {
+                        "name": var.name,
+                        "type": var.type,
+                        "expression": getattr(var, "expression", None),
+                        "initial_value": var.initial_value,
+                        "result_type": var.result_type,
+                        "shape": var.shape,
+                        "initial_value_mode": var.initial_value_mode,
+                        "initial_value_params": var.initial_value_params,
+                        "dims": var.dims,
+                    }
+                    for var in profile.variables
+                ],
+            }
+        result["item_profiles"] = item_profiles_serialized
+    else:
+        result["item_profiles"] = None
 
     return result
 
 
 def _deserialize_vfs_profiles(payload: dict[str, Any]) -> CompiledVFSProfiles:
     """Deserialize CompiledVFSProfiles from dict."""
-    from townlet.vfs.profiles import CompiledGlobalProfile, CompiledVariable
+    from townlet.vfs.profiles import CompiledGlobalProfile, CompiledItemProfile, CompiledVariable
     from townlet.world.expression import ExpressionParser
 
     global_profile = None
@@ -522,10 +545,32 @@ def _deserialize_vfs_profiles(payload: dict[str, Any]) -> CompiledVFSProfiles:
         dependencies = {name: tuple(deps) for name, deps in dependencies.items()}
         global_profile = CompiledGlobalProfile(variables=variables, dependencies=dependencies)
 
+    item_profiles = None
+    raw_items = payload.get("item_profiles")
+    if raw_items:
+        item_profiles = {}
+        for name, profile in raw_items.items():
+            variables = [
+                CompiledVariable(
+                    name=var["name"],
+                    type=var["type"],
+                    expression=var.get("expression"),
+                    ast=ExpressionParser().parse(var["expression"]) if var.get("expression") else None,
+                    initial_value=var.get("initial_value"),
+                    result_type=var.get("result_type"),
+                    shape=var.get("shape"),
+                    initial_value_mode=var.get("initial_value_mode"),
+                    initial_value_params=var.get("initial_value_params"),
+                    dims=var.get("dims"),
+                )
+                for var in profile.get("variables", [])
+            ]
+            item_profiles[name] = CompiledItemProfile(profile_name=profile["profile_name"], variables=variables)
+
     return CompiledVFSProfiles(
         global_profile=global_profile,
         agent_profile=payload.get("agent_profile"),
-        item_profiles=payload.get("item_profiles"),
+        item_profiles=item_profiles,
     )
 
 

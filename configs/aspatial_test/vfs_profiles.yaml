@@ -1,0 +1,4 @@
+version: '1.0'
+item_profiles:
+- profile_name: default_item
+  variables: []

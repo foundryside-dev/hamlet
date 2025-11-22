@@ -39,9 +39,11 @@ def test_compiler_handles_minimal_config_without_vfs():
     compiler = UniverseCompiler()
     compiled = compiler.compile(config_dir, primary_level="L0_masking", use_cache=False)
 
-    # Verify: No profiles, but compilation succeeds
-    assert compiled.compiled_vfs_profiles is None
-    # Effects catalog should still compile (no VFS dependencies)
+    # Verify: Minimal profiles compile (no globals/agent vars)
+    assert compiled.compiled_vfs_profiles is not None
+    assert compiled.compiled_vfs_profiles.global_profile is None
+    assert compiled.compiled_vfs_profiles.agent_profile is None
+    # Effects catalog should still compile (no VFS dependencies required)
     assert compiled.compiled_effect_catalog is not None
 
 

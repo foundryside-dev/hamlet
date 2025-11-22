@@ -37,6 +37,9 @@ class TestVisionRangeNoDefaults:
             "environment.yaml",
             "actions.yaml",
             "agent.yaml",
+            "vfs_profiles.yaml",
+            "items.yaml",
+            "effects.yaml",
         ]:
             shutil.copy(default_pack / shared_file, config_dir / shared_file)
 

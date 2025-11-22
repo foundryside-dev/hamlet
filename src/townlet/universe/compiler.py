@@ -382,6 +382,9 @@ class UniverseCompiler:
 
         self._validate_config_dir(experiment_dir)
 
+        # Stage 0: scoping preflight (no YAML parsing yet)
+        self._validate_scoping(experiment_dir)
+
         # Optional cache fast-path
         cache_path = self._cache_artifact_path(experiment_dir)
         config_hash: str | None = None
@@ -497,6 +500,60 @@ class UniverseCompiler:
         )
         return compiled
 
+    def _validate_scoping(self, experiment_dir: Path) -> None:
+        """Enforce experiment-vs-level scoping for shared catalogs (effects/VFS/items)."""
+        from townlet.universe.errors import CompilationErrorCollector
+
+        errors = CompilationErrorCollector(stage="Stage 0: Scoping Validation")
+        # Shared catalogs required at experiment root (effects remain optional)
+        required_experiment_files: list[str] = ["vfs_profiles.yaml", "items.yaml"]
+        forbidden_level_files = ["vfs_profiles.yaml", "effects.yaml"]
+
+        for filename in required_experiment_files:
+            root_path = experiment_dir / filename
+            if not root_path.exists():
+                errors.add(
+                    f"Missing required experiment-level file: {filename}",
+                    code="SCOPING_MISSING_EXPERIMENT_FILE",
+                    location=str(root_path),
+                )
+
+        levels_root = experiment_dir / "levels"
+        if levels_root.exists():
+            for level_dir in sorted(levels_root.iterdir()):
+                if not level_dir.is_dir():
+                    continue
+                for forbidden in forbidden_level_files:
+                    forbidden_path = level_dir / forbidden
+                    if forbidden_path.exists():
+                        errors.add(
+                            f"Found {forbidden} at level scope ({forbidden_path}). " "This file must live at the experiment root only.",
+                            code="SCOPING_FORBIDDEN_LEVEL_FILE",
+                            location=str(forbidden_path),
+                        )
+                # Allow level items.yaml only when using the ItemsAppearance (v1.0) schema
+                level_items = level_dir / "items.yaml"
+                if level_items.exists():
+                    level_version: str | None = None
+                    try:
+                        with level_items.open() as handle:
+                            data = yaml.safe_load(handle) or {}
+                        if isinstance(data, dict):
+                            level_version = data.get("version")
+                    except yaml.YAMLError:
+                        level_version = None
+
+                    if level_version != "1.0":
+                        errors.add(
+                            f"Found items.yaml at level scope ({level_items}). "
+                            "Level item spawns must use the v1.0 ItemsAppearance schema; "
+                            "shared item catalogs belong at the experiment root.",
+                            code="SCOPING_FORBIDDEN_LEVEL_FILE",
+                            location=str(level_items),
+                        )
+
+        errors.check_and_raise()
+
     def _validate_config_dir(self, config_dir: Path) -> None:
         """Validate config_dir for security and sanity.
 
@@ -581,6 +638,31 @@ class UniverseCompiler:
         """Validate v2.1 semantic constraints (no defaults, no BC)."""
 
         errors = CompilationErrorCollector(stage="Stage 1b: v2.1 Semantic Validation")
+
+        # 0) Scoping: enforce experiment-level shared catalogs and forbid level overrides
+        required_experiment_files = ["vfs_profiles.yaml", "items.yaml"]
+        for filename in required_experiment_files:
+            path = experiment_dir / filename
+            if not path.exists():
+                errors.add(
+                    f"Missing required experiment-level file: {filename}",
+                    code="SCOPING_MISSING_EXPERIMENT_FILE",
+                    location=str(path),
+                )
+
+        levels_root = experiment_dir / "levels"
+        if levels_root.exists():
+            for level_dir in sorted(levels_root.iterdir()):
+                if not level_dir.is_dir():
+                    continue
+                for forbidden in ("vfs_profiles.yaml", "effects.yaml"):
+                    forbidden_path = level_dir / forbidden
+                    if forbidden_path.exists():
+                        errors.add(
+                            f"Found {forbidden} at level scope ({forbidden_path}). " "This file must live at the experiment root only.",
+                            code="SCOPING_FORBIDDEN_LEVEL_FILE",
+                            location=str(forbidden_path),
+                        )
 
         # 1) Temporal requirements
         temporal_supported = raw.stratum.stratum.temporal_support == "enabled"

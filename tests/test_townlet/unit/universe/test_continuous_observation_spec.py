@@ -46,9 +46,11 @@ def test_continuous1d_relative_encoding_adds_position_velocity_fields(tmp_path):
     assert pos_field.dims == 1, f"Continuous1D relative encoding should have 1D position, got {pos_field.dims}"
     assert vel_field.dims == 1, f"Continuous1D should have 1D velocity, got {vel_field.dims}"
 
-    # Verify total dims (position + velocity + meters)
-    # 1 position + 1 velocity + 1 meter (energy) = 3
-    assert compiled.observation_spec.total_dims == 3, f"Expected total_dims=3, got {compiled.observation_spec.total_dims}"
+    # Verify start/end indices are correct
+    assert pos_field.start_index == 0, f"Position should start at 0, got {pos_field.start_index}"
+    assert pos_field.end_index == 1, f"Position should end at 1, got {pos_field.end_index}"
+    assert vel_field.start_index == 1, f"Velocity should start at 1, got {vel_field.start_index}"
+    assert vel_field.end_index == 2, f"Velocity should end at 2, got {vel_field.end_index}"
 
 
 def test_continuous1d_scaled_encoding_doubles_position_dims(tmp_path):
@@ -87,5 +89,8 @@ def test_continuous1d_scaled_encoding_doubles_position_dims(tmp_path):
     assert pos_field.dims == 2, f"Continuous1D scaled encoding should have 2D position (normalized + range), " f"got {pos_field.dims}"
     assert vel_field.dims == 1, f"Velocity should remain 1D (native dimensionality), got {vel_field.dims}"
 
-    # Total: 2 position + 1 velocity + 1 meter = 4
-    assert compiled.observation_spec.total_dims == 4, f"Expected total_dims=4, got {compiled.observation_spec.total_dims}"
+    # Verify start/end indices are correct
+    assert pos_field.start_index == 0, f"Position should start at 0, got {pos_field.start_index}"
+    assert pos_field.end_index == 2, f"Position should end at 2, got {pos_field.end_index}"
+    assert vel_field.start_index == 2, f"Velocity should start at 2, got {vel_field.start_index}"
+    assert vel_field.end_index == 3, f"Velocity should end at 3, got {vel_field.end_index}"

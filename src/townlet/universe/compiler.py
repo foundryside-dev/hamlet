@@ -1534,16 +1534,72 @@ class UniverseCompiler:
                 )
                 offset += dims
 
-        # Position / velocity (discrete spatial substrates only)
-        position_dim = 0
-        if substrate.type in {"grid", "grid3d"} and substrate.grid is not None:
-            if substrate.grid.topology == "cubic":
-                position_dim = 3
-            else:
-                position_dim = 2
-        elif substrate.type == "gridnd" and substrate.gridnd is not None:
-            position_dim = len(substrate.gridnd.dimension_sizes)
+        # Position / velocity (all spatial substrates)
+        #
+        # Position dimensions depend on substrate type and observation encoding:
+        # - Grid2D/Grid3D: 2D or 3D (fixed)
+        # - GridND: N dimensions (N=4 to 100)
+        # - Continuous/ContinuousND: N or 2N depending on observation_encoding
+        #   - relative: N dims (normalized [0,1])
+        #   - scaled: 2N dims (normalized + range sizes)
+        #   - absolute: N dims (raw coordinates)
+        # - Aspatial: 0 dims (no position)
+        #
+        # For continuous substrates, we build a temporary instance to query
+        # get_observation_dim() for accurate dimensions based on encoding mode.
 
+        position_dim = 0
+        velocity_dim = 0  # May differ from position_dim for scaled encoding
+
+        if substrate.type == "aspatial":
+            # Aspatial substrates have no position
+            position_dim = 0
+            velocity_dim = 0
+
+        elif substrate.type in {"grid", "grid3d"}:
+            # Discrete grid substrates: position_dim = spatial dimensions
+            if substrate.grid is not None:
+                if substrate.grid.topology == "cubic":
+                    position_dim = 3
+                else:
+                    position_dim = 2
+            velocity_dim = position_dim  # Velocity matches position dims
+
+        elif substrate.type == "gridnd":
+            # High-dimensional discrete grids
+            if substrate.gridnd is not None:
+                position_dim = len(substrate.gridnd.dimension_sizes)
+            velocity_dim = position_dim
+
+        elif substrate.type in {"continuous", "continuousnd"}:
+            # Continuous substrates: observation dims depend on encoding mode
+            # Build temporary instance to query actual observation dimensions
+            try:
+                substrate_instance = SubstrateFactory.build(substrate, torch.device("cpu"))
+                position_dim = substrate_instance.get_observation_dim()
+
+                # Velocity always uses substrate's native dimensionality (not encoding)
+                # e.g., 2D continuous with scaled encoding: position=4, velocity=2
+                velocity_dim = substrate_instance.position_dim
+
+            except Exception as exc:
+                # Fallback: use position_dim from config (may be inaccurate for scaled)
+                import warnings
+
+                if substrate.type == "continuous" and substrate.continuous is not None:
+                    position_dim = substrate.continuous.dimensions
+                    velocity_dim = substrate.continuous.dimensions
+                elif substrate.type == "continuousnd" and substrate.continuous is not None:
+                    position_dim = len(substrate.continuous.bounds)
+                    velocity_dim = len(substrate.continuous.bounds)
+
+                warnings.warn(
+                    f"Failed to build substrate instance for observation dim calculation: {exc}. "
+                    f"Using fallback dims (may be inaccurate for scaled encoding).",
+                    UserWarning,
+                )
+
+        # Add position observation field
         if position_dim:
             fields.append(
                 ObservationField(
@@ -1559,20 +1615,23 @@ class UniverseCompiler:
                 )
             )
             offset += position_dim
+
+        # Add velocity observation field (use velocity_dim, not position_dim)
+        if velocity_dim:
             fields.append(
                 ObservationField(
                     uuid=None,
                     name="obs_velocity",
                     type="vector",
-                    dims=position_dim,
+                    dims=velocity_dim,
                     start_index=offset,
-                    end_index=offset + position_dim,
+                    end_index=offset + velocity_dim,
                     scope="agent",
-                    description=f"Agent velocity ({position_dim}D)",
+                    description=f"Agent velocity ({velocity_dim}D)",
                     semantic_type="spatial",
                 )
             )
-            offset += position_dim
+            offset += velocity_dim
 
         # Meters
         meter_count = len(environment.environment.meters)

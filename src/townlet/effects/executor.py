@@ -131,6 +131,8 @@ class CommandExecutor:
             self._execute_spawn_effect(command, context)
         elif command.type == CommandType.SPAWN_ITEM:
             self._execute_spawn_item(command, context)
+        elif command.type == CommandType.SAMPLE:
+            self._execute_sample(command, context)
         elif command.type == CommandType.IF:
             self._execute_if(command, context)
         elif command.type == CommandType.FOR_EACH:
@@ -299,6 +301,94 @@ class CommandExecutor:
                 current_tick=context.current_tick,
                 initial_state=command.initial_state,
             )
+        return
+
+    def _execute_sample(self, command: CommandNode, context: ExecutionContext) -> None:
+        """Sample from a distribution and store the result."""
+        if command.sample_store_path is None:
+            raise ValueError("sample command missing store path")
+        dist = (command.sample_distribution or "").lower()
+        if not dist:
+            raise ValueError("sample command missing distribution")
+
+        eval_ctx = self._make_eval_context(context, effect=context.effect)
+        evaluator = Evaluator(eval_ctx)
+
+        # Initialize or reuse RNG on the correct device
+        generator = getattr(context, "rng", None)
+        if generator is None:
+            generator = torch.Generator(device=eval_ctx.device)
+            base_seed = context.seed if context.seed is not None else 0
+            tick_seed = context.current_tick if context.current_tick is not None else 0
+            generator.manual_seed(int(base_seed + tick_seed))
+            context.rng = generator
+
+        def _eval_param(value: Any) -> torch.Tensor:
+            if isinstance(value, torch.Tensor):
+                return value.to(eval_ctx.device)
+            if isinstance(value, (int, float, bool)):
+                return torch.tensor(value, device=eval_ctx.device)
+            raise ValueError(f"Unsupported param value type: {type(value).__name__}")
+
+        def _eval_ast(ast: Any) -> torch.Tensor:
+            val = evaluator.evaluate(ast)
+            return _eval_param(val)
+
+        target_tensor = context.get_path(command.sample_store_path)
+        target_shape = tuple(target_tensor.shape) if hasattr(target_tensor, "shape") else ()
+        shape = target_shape if target_shape else ()
+
+        param_asts = command.sample_param_asts or {}
+
+        if dist == "uniform":
+            min_val = _eval_ast(param_asts["min"])
+            max_val = _eval_ast(param_asts["max"])
+            rand = torch.rand(shape or (), device=eval_ctx.device, generator=generator)
+            result = min_val + rand * (max_val - min_val)
+        elif dist == "normal":
+            mean = _eval_ast(param_asts["mean"])
+            std = _eval_ast(param_asts["std"])
+            noise = torch.randn(shape or (), device=eval_ctx.device, generator=generator)
+            result = mean + std * noise
+        elif dist == "lognormal":
+            mean = _eval_ast(param_asts["mean"])
+            std = _eval_ast(param_asts["std"])
+            noise = torch.randn(shape or (), device=eval_ctx.device, generator=generator)
+            result = torch.exp(mean + std * noise)
+        elif dist == "exponential":
+            rate = _eval_ast(param_asts["rate"])
+            # Clamp rate to avoid divide-by-zero
+            rate = torch.clamp(rate, min=1e-8)
+            rand = torch.rand(shape or (), device=eval_ctx.device, generator=generator)
+            result = -torch.log(torch.clamp(rand, min=1e-8)) / rate
+        elif dist == "bernoulli":
+            p_val = _eval_ast(param_asts["p"])
+            rand = torch.rand(shape or (), device=eval_ctx.device, generator=generator)
+            result = (rand < p_val).to(dtype=target_tensor.dtype if target_tensor.is_floating_point() else torch.bool)
+        elif dist == "categorical":
+            ast_list = param_asts.get("probs")
+            if ast_list is None:
+                raise ValueError("categorical sample requires 'probs'")
+            prob_tensors = [_eval_ast(ast) for ast in ast_list]
+            probs_tensor = torch.stack(prob_tensors).to(eval_ctx.device)
+            probs_sum = probs_tensor.sum()
+            if probs_sum <= 0:
+                raise ValueError("categorical probs must sum to > 0")
+            probs_tensor = probs_tensor / probs_sum
+            sample_count = int(torch.tensor(shape).prod().item()) if shape else 1
+            sampled = torch.multinomial(probs_tensor, num_samples=sample_count, replacement=True, generator=generator)
+            result = sampled.reshape(shape) if shape else sampled[0]
+            # Align dtype with target (int or float)
+            target_dtype = target_tensor.dtype if hasattr(target_tensor, "dtype") else torch.int64
+            result = result.to(dtype=target_dtype, device=eval_ctx.device)
+        else:
+            raise ValueError(f"Unsupported sample distribution '{dist}'")
+
+        # Broadcast scalar results to target shape if needed
+        if not shape and hasattr(target_tensor, "shape") and target_tensor.dim() > 0:
+            result = result.expand_as(target_tensor)
+
+        context.set_path(command.sample_store_path, result)
         return
 
     def _execute_if(self, command: CommandNode, context: ExecutionContext) -> None:

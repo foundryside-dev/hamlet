@@ -79,6 +79,77 @@ class CommandCompiler:
                 # ✅ Store compiled AST
                 node.target_ast = target_ast
 
+        elif node.type == CommandType.SAMPLE:
+            from townlet.world.expression.type_checker import TypeCheckError
+
+            dist = (node.sample_distribution or "").lower()
+            if not dist:
+                raise TypeCheckError("SAMPLE command requires 'sample_distribution'")
+            if node.sample_store_path is None:
+                raise TypeCheckError("SAMPLE command requires 'sample_store_path'")
+            if node.sample_store_path not in self.schema:
+                raise TypeCheckError(f"Path '{node.sample_store_path}' not found in schema. Available: {list(self.schema.keys())}")
+
+            required_params: dict[str, tuple[str, ...]] = {
+                "uniform": ("min", "max"),
+                "normal": ("mean", "std"),
+                "lognormal": ("mean", "std"),
+                "exponential": ("rate",),
+                "bernoulli": ("p",),
+                "categorical": ("probs",),
+            }
+            if dist not in required_params:
+                raise TypeCheckError(f"Unsupported sample distribution '{dist}'")
+
+            params = node.sample_params or {}
+            missing = [p for p in required_params[dist] if p not in params]
+            if missing:
+                raise TypeCheckError(f"SAMPLE '{dist}' missing params: {missing}")
+
+            target_type = self.schema[node.sample_store_path]
+            expected_type = {
+                "uniform": "float",
+                "normal": "float",
+                "lognormal": "float",
+                "exponential": "float",
+                "bernoulli": "bool",
+                "categorical": "int",
+            }[dist]
+
+            allowed_target_types = {expected_type}
+            if dist == "bernoulli":
+                allowed_target_types.add("float")
+            if dist == "categorical":
+                allowed_target_types.add("float")
+
+            if target_type not in allowed_target_types:
+                raise TypeCheckError(f"SAMPLE target '{node.sample_store_path}' expects type {target_type}, got {expected_type}")
+
+            param_asts: dict[str, Any] = {}
+            for name, raw_val in params.items():
+                if dist == "categorical" and name == "probs":
+                    if not isinstance(raw_val, (list, tuple)):
+                        raise TypeCheckError("categorical probs must be a list")
+                    ast_list = []
+                    for idx, prob in enumerate(raw_val):
+                        expr = prob if isinstance(prob, str) else str(prob)
+                        ast = self.parser.parse(expr)
+                        prob_type = self.type_checker.check(ast)
+                        if prob_type not in {"int", "float"}:
+                            raise TypeCheckError(f"categorical probs[{idx}] must be numeric, got {prob_type}")
+                        ast_list.append(ast)
+                    param_asts[name] = ast_list
+                    continue
+
+                expr = raw_val if isinstance(raw_val, str) else str(raw_val)
+                ast = self.parser.parse(expr)
+                arg_type = self.type_checker.check(ast)
+                if arg_type not in {"int", "float"}:
+                    raise TypeCheckError(f"SAMPLE param '{name}' must be numeric, got {arg_type}")
+                param_asts[name] = ast
+
+            node.sample_param_asts = param_asts
+
         elif node.type == CommandType.IF:
             # Validate required fields are present
             if node.condition_expr is None:

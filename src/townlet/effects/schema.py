@@ -22,6 +22,7 @@ class CommandType(enum.Enum):
     MODIFY = "modify"
     SPAWN_EFFECT = "spawn_effect"
     SPAWN_ITEM = "spawn_item"
+    SAMPLE = "sample"
     IF = "if"
     FOR_EACH = "for_each"
     SWITCH = "switch"
@@ -59,6 +60,12 @@ class CommandNode:
     position_ast: Any | None = None  # ✅ Pre-compiled AST
     quantity: int | None = None  # Number of items to spawn (NEW)
     initial_state: dict | None = None  # Initial VFS state (NEW)
+
+    # sample command fields
+    sample_distribution: str | None = None
+    sample_params: dict[str, Any] | None = None  # Raw params (may contain expr strings)
+    sample_param_asts: dict[str, Any] | None = None  # Pre-compiled param ASTs
+    sample_store_path: str | None = None
 
     # if command fields
     condition_expr: str | None = None  # Boolean expression string

@@ -116,6 +116,11 @@ class CommandConfig(BaseModel):
         elif cmd_type == "delay":
             normalized.setdefault("delay", data.get("delay"))
             normalized.setdefault("delay_do", data.get("do", []))
+        elif cmd_type == "sample":
+            normalized.setdefault("sample", data.get("sample") or data.get("distribution"))
+            normalized.setdefault("distribution", data.get("distribution") or data.get("sample"))
+            normalized.setdefault("params", data.get("params", {}))
+            normalized.setdefault("store_in", data.get("store_in"))
 
         return normalized
 
@@ -161,14 +166,43 @@ class CommandConfig(BaseModel):
     delay: str | None = None  # ticks expression
     delay_do: list[CommandConfig] = Field(default=[], alias="do")
 
+    # sample command: draw from distribution into path
+    sample: str | None = None  # distribution name (e.g., "uniform")
+    distribution: str | None = None  # optional alias for sample
+    params: dict[str, Any] = Field(default_factory=dict)
+    store_in: str | None = None
+
     @model_validator(mode="after")
     def validate_exactly_one_command(self) -> CommandConfig:
         """Exactly one command type must be set."""
-        fields = ["modify", "spawn_effect", "spawn_item", "if_condition", "for_each", "switch", "reduce", "parallel", "delay"]
+        # Normalize sample/distribution alias to a single field to avoid double-counting
+        if self.sample is None and self.distribution is not None:
+            self.sample = self.distribution
+            self.distribution = None
+        elif self.sample is not None and self.distribution is None:
+            # Keep distribution unset to avoid duplicate command counting
+            self.distribution = None
+        elif self.sample is not None and self.distribution is not None:
+            # Prefer explicit sample field, drop alias
+            self.distribution = None
+
+        fields = [
+            "modify",
+            "spawn_effect",
+            "spawn_item",
+            "if_condition",
+            "for_each",
+            "switch",
+            "reduce",
+            "parallel",
+            "delay",
+            "sample",
+            "distribution",
+        ]
         set_fields = [f for f in fields if getattr(self, f) is not None]
 
         if len(set_fields) != 1:
-            allowed = "modify/spawn_effect/spawn_item/if/for_each/switch/reduce/parallel/delay"
+            allowed = "modify/spawn_effect/spawn_item/if/for_each/switch/reduce/parallel/delay/sample"
             raise ValueError(f"Exactly one command type required ({allowed}), got {len(set_fields)}: {set_fields}")
 
         # Also validate that modify command has value field
@@ -197,6 +231,30 @@ class CommandConfig(BaseModel):
 
         if self.delay is not None and not self.delay_do:
             raise ValueError("delay command requires a 'do' block")
+
+        sample_set = self.sample is not None
+        if sample_set:
+            if not self.store_in:
+                raise ValueError("sample command requires 'store_in'")
+            if not self.sample:
+                raise ValueError("sample command requires 'sample' distribution name")
+            if not isinstance(self.params, dict):
+                raise ValueError("sample command params must be a mapping")
+
+            dist = self.sample.lower()
+            required: dict[str, tuple[str, ...]] = {
+                "uniform": ("min", "max"),
+                "normal": ("mean", "std"),
+                "lognormal": ("mean", "std"),
+                "exponential": ("rate",),
+                "bernoulli": ("p",),
+                "categorical": ("probs",),
+            }
+            if dist not in required:
+                raise ValueError(f"Unsupported sample distribution '{self.sample}'")
+            missing = [k for k in required[dist] if k not in self.params]
+            if missing:
+                raise ValueError(f"sample '{dist}' missing params: {missing}")
 
         return self
 

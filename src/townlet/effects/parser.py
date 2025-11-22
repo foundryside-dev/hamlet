@@ -60,6 +60,16 @@ class CommandParser:
                 position_expr=config.position,
             )
 
+        elif config.sample is not None or config.distribution is not None:
+            distribution = config.sample or config.distribution
+            assert distribution is not None
+            return CommandNode(
+                type=CommandType.SAMPLE,
+                sample_distribution=distribution,
+                sample_params=config.params,
+                sample_store_path=config.store_in,
+            )
+
         elif config.if_condition is not None:
             return CommandNode(
                 type=CommandType.IF,

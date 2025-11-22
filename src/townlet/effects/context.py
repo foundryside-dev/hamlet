@@ -43,6 +43,8 @@ class ExecutionContext:
     iterator_value: Any | None = None
     inventory: Any | None = None
     scheduler: Any | None = None  # Scheduler for delay commands
+    rng: torch.Generator | None = None
+    seed: int | None = None  # Optional deterministic seed for sampling
 
     def __post_init__(self) -> None:
         if self.effect_manager is None:

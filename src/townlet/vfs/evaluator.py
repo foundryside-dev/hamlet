@@ -54,25 +54,28 @@ class VFSEvaluator:
         """
         # Determine which variables to evaluate
         if self.mode == EvaluationMode.MARK_AND_SWEEP:
+            # When no marks are provided, fall back to evaluating all variables
+            # so expressions do not silently skip and leave stale defaults.
             if marks is None:
-                marks = set()
-            # Evaluate marked variables plus their in-profile dependencies
-            dependencies = getattr(profile, "dependencies", {}) or {}
-            var_names = {var.name for var in profile.variables}
+                vars_to_eval = {var.name for var in profile.variables}
+            else:
+                # Evaluate marked variables plus their in-profile dependencies
+                dependencies = getattr(profile, "dependencies", {}) or {}
+                var_names = {var.name for var in profile.variables}
 
-            def add_with_deps(var_name: str, acc: set[str]) -> None:
-                """Add variable and its dependencies to evaluation set."""
-                if var_name in acc:
-                    return
-                acc.add(var_name)
-                for dep in dependencies.get(var_name, ()):
-                    add_with_deps(dep, acc)
+                def add_with_deps(var_name: str, acc: set[str]) -> None:
+                    """Add variable and its dependencies to evaluation set."""
+                    if var_name in acc:
+                        return
+                    acc.add(var_name)
+                    for dep in dependencies.get(var_name, ()):
+                        add_with_deps(dep, acc)
 
-            vars_to_eval: set[str] = set()
-            for marked in marks:
-                # Ignore marks that are not part of this profile
-                if marked in dependencies or marked in var_names:
-                    add_with_deps(marked, vars_to_eval)
+                vars_to_eval: set[str] = set()
+                for marked in marks:
+                    # Ignore marks that are not part of this profile
+                    if marked in dependencies or marked in var_names:
+                        add_with_deps(marked, vars_to_eval)
         else:  # EAGER mode
             vars_to_eval = {var.name for var in profile.variables}
 

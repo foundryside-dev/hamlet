@@ -144,8 +144,8 @@ class ItemManager:
         # Respawn timers (item_type -> tick when should respawn)
         self.respawn_timers: dict[str, int] = {}
 
-        # Track cumulative spawns per item_type for max_total enforcement
-        self.spawn_counts: dict[str, int] = {}
+        # Track cumulative spawns per appearance rule for max_total enforcement
+        self.rule_spawn_counts: dict[str, int] = {}
 
         # Track next scheduled spawn tick for normal/poisson schedules per item_type
         self.next_scheduled_tick: dict[str, int] = {}
@@ -164,7 +164,7 @@ class ItemManager:
         self.grid_size = None
         self.respawn_timers.clear()
         self.next_instance_id = 0
-        self.spawn_counts.clear()
+        self.rule_spawn_counts.clear()
         self.next_scheduled_tick.clear()
         self.script_indices.clear()
 
@@ -256,11 +256,6 @@ class ItemManager:
         if len(self.active_items) >= self.max_items:
             return None
 
-        # Enforce per-rule max_total if configured via appearance (tracked by item_type)
-        if self.spawn_counts.get(item_type, 0) < 0:
-            # Defensive guard, should never happen
-            self.spawn_counts[item_type] = 0
-
         # Check cooldown
         if item_type in self.cooldown_until:
             if current_tick < self.cooldown_until[item_type]:
@@ -323,9 +318,6 @@ class ItemManager:
 
         # Store in active items
         self.active_items[instance.instance_id] = instance
-
-        # Track total spawned for max_total enforcement
-        self.spawn_counts[item_type] = self.spawn_counts.get(item_type, 0) + 1
 
         # Register item instance in VFS registry
         if self.vfs_registry is not None and instance.vfs_profile:
@@ -720,6 +712,7 @@ class ItemManager:
             if not any(t.id == rule.item_type for t in self.catalog.item_types):
                 # Skip unknown item types (e.g., energy_drink in test config)
                 continue
+            rule_key = getattr(rule, "_rule_key", f"rule_{id(rule)}")
 
             if not self._schedule_allows_spawn(rule, current_tick=current_tick):
                 continue
@@ -727,15 +720,18 @@ class ItemManager:
             if not self._should_spawn_rule(rule, bars=bars, temporal=temporal, current_tick=current_tick):
                 continue
 
-            count = max(0, rule.spawn_count)
-            if count == 0:
+            count = rule.spawn_count if rule.spawn_count is not None else 1
+            if count <= 0:
                 continue
             positions = self._iter_positions(rule, grid_size, current_tick=current_tick, count=count)
+            current_total = self.rule_spawn_counts.get(rule_key, 0)
             for position in positions:
                 max_total = getattr(rule, "max_total", None)
-                if max_total is not None and self.spawn_counts.get(rule.item_type, 0) >= max_total:
+                if max_total is not None and current_total >= max_total:
                     continue
                 self.spawn_item(rule.item_type, position, current_tick)
+                current_total += 1
+                self.rule_spawn_counts[rule_key] = current_total
 
     def set_appearance_config(
         self,
@@ -751,9 +747,13 @@ class ItemManager:
         self.appearance_config = appearance_config
         self.grid_size = grid_size
         # Reset spawn counts when a new appearance config is applied
-        self.spawn_counts.clear()
+        self.rule_spawn_counts.clear()
         self.next_scheduled_tick.clear()
         self.script_indices.clear()
+        for idx, rule in enumerate(appearance_config.items):
+            rule_key = f"rule_{idx}_{rule.item_type}"
+            setattr(rule, "_rule_key", rule_key)
+            self.rule_spawn_counts[rule_key] = 0
 
     def process_respawns(
         self,
@@ -784,6 +784,7 @@ class ItemManager:
                 # Rule removed from config, clear timer
                 del self.respawn_timers[item_type]
                 continue
+            rule_key = getattr(rule, "_rule_key", f"rule_{id(rule)}")
 
             if not self._schedule_allows_spawn(rule, current_tick=current_tick):
                 # Reschedule according to schedule type
@@ -810,11 +811,14 @@ class ItemManager:
                 continue
 
             max_total = getattr(rule, "max_total", None)
-            if max_total is not None and self.spawn_counts.get(item_type, 0) >= max_total:
+            current_total = self.rule_spawn_counts.get(rule_key, 0)
+            if max_total is not None and current_total >= max_total:
                 continue
 
-            count = max(0, getattr(rule, "spawn_count", 1))
-            if count == 0:
+            count = getattr(rule, "spawn_count", 1)
+            if count is None:
+                count = 1
+            if count <= 0:
                 del self.respawn_timers[item_type]
                 continue
             positions = self._resolve_respawn_positions(rule, current_tick=current_tick, count=count)
@@ -823,6 +827,7 @@ class ItemManager:
                 spawned = self.spawn_item(item_type, position, current_tick)
                 if spawned is not None:
                     spawned_any = True
+                    self.rule_spawn_counts[rule_key] = current_total + 1
                     break  # respawn one per timer
 
             schedule = getattr(rule, "schedule", None)

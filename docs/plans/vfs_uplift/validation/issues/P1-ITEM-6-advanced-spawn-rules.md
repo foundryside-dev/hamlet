@@ -2,8 +2,8 @@
 
 **Priority:** P1 (Important)
 **Category:** Items
-**Status:** PARTIAL
-**Effort:** 2-3 days
+**Status:** IMPLEMENTED
+**Effort:** done
 
 ## Description
 

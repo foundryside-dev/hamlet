@@ -18,7 +18,7 @@ EXCLUDED_DIRS = {"templates", "aspatial_test", "reference_config"}
 
 # Packs that are expected to fail validation (negative test fixtures). We assert
 # they do fail; a successful validation here means a regression in error handling.
-EXPECTED_FAIL_DIRS = {"vfs_circular_dependency"}
+EXPECTED_FAIL_DIRS = {"vfs_circular_dependency", "vfs_type_mismatch"}
 
 
 def iter_config_dirs(base: Path) -> list[Path]:

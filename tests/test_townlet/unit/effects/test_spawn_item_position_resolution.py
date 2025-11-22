@@ -203,26 +203,31 @@ def test_spawn_item_with_explicit_position():
 
 def test_spawn_item_with_initial_state():
     """spawn_item should pass initial_state to ItemManager."""
-    from townlet.vfs.schema import VariableDef, VariableScope
+    from townlet.vfs.profiles import CompiledItemProfile, CompiledVariable
 
-    # Create VFS registry
-    variables = [
-        VariableDef(
-            id="durability",
-            type="scalar",
-            scope=VariableScope.ITEM,
-            lifetime="episode",
-            readable_by=["agent"],
-            writable_by=["actions"],
-            default=100.0,
-        ),
-    ]
+    # Create VFS registry using compiled item profiles (no legacy item vars)
+    item_profiles = {
+        "weapon": CompiledItemProfile(
+            profile_name="weapon",
+            variables=[
+                CompiledVariable(
+                    name="durability",
+                    type="float",
+                    expression=None,
+                    ast=None,
+                    initial_value=100.0,
+                    result_type="float",
+                )
+            ],
+        )
+    }
 
     vfs_registry = VariableRegistry(
-        variables=variables,
+        variables=[],
         num_agents=1,
         max_items=10,
         device="cpu",
+        item_profiles=item_profiles,
     )
 
     catalog = ItemsCatalogConfig(

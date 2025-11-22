@@ -1477,6 +1477,7 @@ class UniverseCompiler:
         # VFS observations (global + agent + item VFS)
         # Compute total VFS dimensions from VFS profiles
         vfs_dim = 0
+        item_vfs_dim = 0
 
         # Global VFS
         if compiled_vfs_profiles is not None:
@@ -1500,11 +1501,27 @@ class UniverseCompiler:
                         max_vars = max(max_vars, len(profile_vars))
 
                     # Fixed: 3 slots per agent (from items config)
-                    max_items_per_agent = 3
+                    max_items_per_agent: int | None = 3
                     if items_catalog is not None:
                         max_items_per_agent = items_catalog.max_items_per_agent
+                    else:
+                        max_items_per_agent = None
 
-                    vfs_dim += max_items_per_agent * max_vars
+                    if max_items_per_agent is None:
+                        raise ValueError(
+                            "VFS observation includes item variables but no items catalog is configured. "
+                            "Provide items.yaml with item profiles enabled or remove item VFS profiles."
+                        )
+
+                    item_vfs_dim = max_items_per_agent * max_vars
+                    vfs_dim += item_vfs_dim
+
+        # Fail fast if item VFS dims are requested without an active item system
+        if item_vfs_dim > 0 and items_catalog is None:
+            raise ValueError(
+                "Observation spec includes item VFS dimensions, but items are disabled (no items catalog). "
+                "Enable items or remove item VFS profiles."
+            )
 
         if vfs_dim > 0:
             fields.append(

@@ -14,8 +14,8 @@ from townlet.effects.executor import CommandExecutor
 from townlet.effects.manager import EffectManager
 from townlet.effects.schema import CommandNode, CommandType
 from townlet.items.manager import ItemManager
+from townlet.vfs.profiles import CompiledItemProfile, CompiledVariable
 from townlet.vfs.registry import VariableRegistry
-from townlet.vfs.schema import VariableDef, VariableScope
 
 
 class DummyEffectManager:
@@ -25,35 +25,38 @@ class DummyEffectManager:
 
 def test_effect_on_despawn_spawns_item_with_real_itemmanager():
     """Effect on_despawn should spawn item using real ItemManager."""
-    # Create VFS registry with item variables
-    variables = [
-        VariableDef(
-            id="durability",
-            type="scalar",
-            scope=VariableScope.ITEM,
-            default=100.0,
-            lifetime="persistent",
-            readable_by=["agent"],
-            writable_by=["actions"],
-            description="Item durability",
+    # Create VFS registry with compiled item profiles (no legacy item variables)
+    item_profiles = {
+        "currency": CompiledItemProfile(profile_name="currency", variables=[]),
+        "treasure": CompiledItemProfile(
+            profile_name="treasure",
+            variables=[
+                CompiledVariable(
+                    name="durability",
+                    type="float",
+                    expression=None,
+                    ast=None,
+                    initial_value=100.0,
+                    result_type="float",
+                ),
+                CompiledVariable(
+                    name="quality",
+                    type="float",
+                    expression=None,
+                    ast=None,
+                    initial_value=1.0,
+                    result_type="float",
+                ),
+            ],
         ),
-        VariableDef(
-            id="quality",
-            type="scalar",
-            scope=VariableScope.ITEM,
-            default=1.0,
-            lifetime="persistent",
-            readable_by=["agent"],
-            writable_by=["actions"],
-            description="Item quality",
-        ),
-    ]
+    }
 
     vfs_registry = VariableRegistry(
-        variables=variables,
+        variables=[],
         num_agents=3,
         max_items=10,
         device=torch.device("cpu"),
+        item_profiles=item_profiles,
     )
 
     # Create ItemManager with loot catalog
@@ -185,14 +188,6 @@ def test_effect_on_despawn_spawns_item_with_real_itemmanager():
 
     assert abs(durability - 80.0) < 0.01
     assert abs(quality - 0.9) < 0.01
-
-    # Gold coins should have defaults
-    coin = gold_coins[0]
-    durability = vfs_registry.read_item(coin.vfs_profile, "durability", coin.vfs_index)
-    quality = vfs_registry.read_item(coin.vfs_profile, "quality", coin.vfs_index)
-
-    assert abs(durability - 100.0) < 0.01  # Default
-    assert abs(quality - 1.0) < 0.01  # Default
 
 
 def test_spawn_item_respects_itemmanager_capacity():

@@ -10,7 +10,6 @@ and scope semantics. It handles three scope patterns:
 
 from __future__ import annotations
 
-from types import SimpleNamespace
 from typing import TYPE_CHECKING, Any
 
 import torch
@@ -94,7 +93,6 @@ class VariableRegistry:
         self.item_var_to_index: dict[str, int] = {}
         self.item_profile_map: dict[str, dict[str, int]] = {}  # {profile_name → {var_name → index}}
         self.item_vfs_index_to_profile: dict[int, str] = {}  # {vfs_index → profile_name}
-        self._legacy_item_profile_name = "__legacy__"
         self._initialize_item_storage_from_profiles()
 
     @property
@@ -323,78 +321,34 @@ class VariableRegistry:
         using max_profile_vars across all profiles. Unused slots are masked.
         """
         item_vars = [v for v in self._definitions.values() if v.scope == VariableScope.ITEM]
-
-        # Profile-driven path
-        if self.item_profiles:
-            if self.max_items == 0:
-                self.item_vfs = None
-                self.item_profile_map = {}
-                return
-
-            # Calculate max variables across all profiles
-            max_vars = 0
-            for profile in self.item_profiles.values():
-                max_vars = max(max_vars, len(profile.variables))
-
-            # Allocate storage: [max_items, max_vars]
-            self.item_vfs = torch.zeros(
-                (self.max_items, max_vars),
-                dtype=torch.float32,
-                device=self.device,
-            )
-
-            # Build profile map: {profile_name → {var_name → index}}
-            for profile_name, profile in self.item_profiles.items():
-                var_map = {}
-                for idx, var in enumerate(profile.variables):
-                    var_map[var.name] = idx
-                self.item_profile_map[profile_name] = var_map
-            return
-
-        # Legacy path: allow item-scoped variables without compiled profiles
         if item_vars:
-            if self.max_items == 0:
-                self.item_vfs = None
-                self.item_profile_map = {}
-                return
-
-            max_vars = len(item_vars)
-            self.item_vfs = torch.zeros(
-                (self.max_items, max_vars),
-                dtype=torch.float32,
-                device=self.device,
+            raise ValueError(
+                "Item-scoped variables in variables_reference.yaml are not supported. Use vfs_profiles.yaml item_profiles instead."
             )
 
-            # Single legacy layout shared across all profiles
-            legacy_map = {var.id: idx for idx, var in enumerate(item_vars)}
-            self.item_profile_map[self._legacy_item_profile_name] = legacy_map
+        if self.max_items > 0 and not self.item_profiles:
+            raise ValueError("Item VFS requested (max_items>0) but no item_profiles were provided.")
 
-            # Seed default profile definitions so ItemManager can initialize defaults
-            legacy_profile = SimpleNamespace(
-                profile_name=self._legacy_item_profile_name,
-                variables=[SimpleNamespace(name=var.id, initial_value=var.default) for var in item_vars],
-            )
-            self.item_profiles[self._legacy_item_profile_name] = legacy_profile
+        if not self.item_profiles or self.max_items == 0:
+            self.item_vfs = None
+            self.item_profile_map = {}
             return
 
-        # No items or no profiles
-        self.item_vfs = None
-        self.item_profile_map = {}
+        max_vars = 0
+        for profile in self.item_profiles.values():
+            max_vars = max(max_vars, len(profile.variables))
 
-    def _ensure_item_profile(self, profile_name: str) -> None:
-        """Ensure a profile map exists, falling back to legacy layout if present."""
-        if profile_name in self.item_profile_map:
-            return
-        legacy_map = self.item_profile_map.get(self._legacy_item_profile_name)
-        if legacy_map is not None:
-            self.item_profile_map[profile_name] = legacy_map
-            legacy_profile = self.item_profiles.get(self._legacy_item_profile_name)
-            if legacy_profile is not None:
-                self.item_profiles[profile_name] = legacy_profile
+        self.item_vfs = torch.zeros(
+            (self.max_items, max_vars),
+            dtype=torch.float32,
+            device=self.device,
+        )
 
-    def ensure_item_profile(self, profile_name: str) -> None:
-        """Public wrapper to ensure profile map exists (for ItemManager)."""
-        self._ensure_item_profile(profile_name)
+        for profile_name, profile in self.item_profiles.items():
+            var_map = {}
+            for idx, var in enumerate(profile.variables):
+                var_map[var.name] = idx
+            self.item_profile_map[profile_name] = var_map
 
     def read(
         self,
@@ -529,7 +483,6 @@ class VariableRegistry:
         """
         if self.item_vfs is None:
             raise RuntimeError("Item VFS storage not allocated")
-        self._ensure_item_profile(profile_name)
         if profile_name not in self.item_profile_map:
             raise KeyError(f"Item profile '{profile_name}' not found. Available: {list(self.item_profile_map.keys())}")
         profile_vars = self.item_profile_map[profile_name]
@@ -555,7 +508,6 @@ class VariableRegistry:
         """
         if self.item_vfs is None:
             raise RuntimeError("Item VFS storage not allocated")
-        self._ensure_item_profile(profile_name)
         if profile_name not in self.item_profile_map:
             raise KeyError(f"Item profile '{profile_name}' not found. Available: {list(self.item_profile_map.keys())}")
         profile_vars = self.item_profile_map[profile_name]
@@ -574,7 +526,6 @@ class VariableRegistry:
         Raises:
             ValueError: If profile not found
         """
-        self._ensure_item_profile(profile_name)
         if profile_name not in self.item_profile_map:
             raise ValueError(f"Profile '{profile_name}' not found. Available: {list(self.item_profile_map.keys())}")
         self.item_vfs_index_to_profile[vfs_index] = profile_name

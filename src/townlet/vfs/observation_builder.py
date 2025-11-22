@@ -133,6 +133,8 @@ def build_vfs_observation(
 
     # Item VFS: Include item state with masking
     if spec.item_vfs_dim > 0:
+        if registry.item_vfs is None:
+            raise RuntimeError("Item VFS storage is missing; cannot build item observations.")
         if agent_item_inventory is None:
             # No item system yet, use zero stub
             item_obs = torch.zeros(

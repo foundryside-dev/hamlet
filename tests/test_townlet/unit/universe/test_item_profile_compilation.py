@@ -34,6 +34,25 @@ def test_compiler_compiles_item_profiles(tmp_path: Path):
 
     (experiment_dir / "vfs_profiles.yaml").write_text(yaml.dump(vfs_profiles))
 
+    # Enable item system so item VFS dims are valid
+    items_catalog = {
+        "items": {
+            "version": "1.0",
+            "max_items_per_agent": 3,
+            "max_items_in_world": 10,
+            "item_types": [
+                {
+                    "id": "apple",
+                    "vfs_profile": "food_stats",
+                    "duration": None,
+                    "cooldown": None,
+                    "interactions": {"on_pickup": [], "on_use": [], "on_drop": []},
+                }
+            ],
+        }
+    }
+    (experiment_dir / "items.yaml").write_text(yaml.dump(items_catalog))
+
     # Exercise
     compiler = UniverseCompiler()
     compiled = compiler.compile(experiment_dir, use_cache=False)

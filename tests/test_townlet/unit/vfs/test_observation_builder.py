@@ -147,8 +147,8 @@ def test_build_vfs_observation_complete():
     # Agent: 1 variable (batch=2)
     registry.set_agent("motivation", torch.tensor([1.0, 0.8]))
 
-    # Items: Stub for now (will implement in Phase 4)
-    # For Phase 2, just allocate zero-filled slots
+    # Items: Provide zero-initialized storage to satisfy the non-legacy path
+    registry.item_vfs = torch.zeros((3, 1), dtype=torch.float32, device=registry.device)
 
     spec = VFSObservationSpec(
         global_vfs_dim=1,

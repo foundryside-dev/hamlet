@@ -603,6 +603,11 @@ class VectorizedHamletEnv:
         self.item_inventory: InventoryState | None = None
         self.item_handler: ItemActionHandler | None = None
         if universe.items_catalog is not None:
+            if universe.compiled_vfs_profiles is None or not universe.compiled_vfs_profiles.item_profiles:
+                raise ValueError(
+                    "items_catalog provided but compiled_vfs_profiles.item_profiles is missing. "
+                    "Define item VFS profiles in vfs_profiles.yaml for all item types."
+                )
             # Build schema for item interaction compilation from compiled universe data
             schema: dict[str, str] = {}
 

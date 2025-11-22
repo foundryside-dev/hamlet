@@ -223,6 +223,33 @@ items:
 3. **Spawn Interval Positive**: `spawn_interval` must be >= 1 if specified
 4. **Condition is Boolean**: `when` must type-check to bool against bars/VFS/temporal schema (temporal symbols only when temporal mechanics enabled)
 
+### Spawn Condition Examples
+
+```yaml
+# Weather-dependent spawn
+items:
+  - item_type: "rain_boots"
+    spawn_count: 2
+    spawn_position: random
+    spawn_interval: 50
+    when: "vfs.is_raining"
+
+# Time-gated spawn (requires temporal mechanics enabled)
+  - item_type: "night_flower"
+    spawn_count: 1
+    spawn_position: random
+    when: "temporal.tick % 1000 > 500"  # Only after halfway through the day
+
+# State-based gate with boolean logic
+  - item_type: "health_potion"
+    spawn_count: 3
+    spawn_interval: 25
+    spawn_position: random
+    when: "(bar.energy < 0.4) and vfs.danger_level >= 3"
+```
+
+Supported symbols: `bar.<meter>`, `vfs.<variable>`, `temporal.tick` (only when temporal mechanics are enabled). All standard comparison operators and boolean logic (`and`, `or`, `not`) are available via the expression language.
+
 ---
 
 ## Catalog vs Appearance Separation

@@ -15,6 +15,8 @@ if TYPE_CHECKING:
 from townlet.effects.compiler import CommandCompiler
 from townlet.effects.schema import CommandNode
 from townlet.items.instance import ItemInstance
+from townlet.world.expression.context import ExecutionContext as ExprExecutionContext
+from townlet.world.expression.evaluator import Evaluator
 
 __all__ = ["ItemManager", "CompiledItemType"]
 
@@ -421,11 +423,59 @@ class ItemManager:
         """Get all active items (for testing/debugging)."""
         return list(self.active_items.values())
 
+    def _should_spawn_rule(
+        self,
+        rule: Any,
+        *,
+        bars: dict[str, torch.Tensor] | None,
+        temporal: dict[str, torch.Tensor] | None,
+        current_tick: int,
+    ) -> bool:
+        """Evaluate spawn predicate if provided."""
+
+        if rule.when is None:
+            return True
+
+        if rule.when_ast is None:
+            raise RuntimeError("Spawn condition provided without compiled AST. Run UniverseCompiler before using spawn conditions.")
+
+        if bars is None:
+            raise RuntimeError("Spawn conditions require bar context; pass bars when invoking spawn routines")
+
+        vfs_state: dict[str, torch.Tensor] = {}
+        if self.vfs_registry is not None:
+            for var_id, _ in self.vfs_registry.variables.items():
+                vfs_state[var_id] = self.vfs_registry._storage[var_id]
+
+        temporal_context = temporal or {"tick": torch.tensor(current_tick, device=self.device)}
+
+        context = ExprExecutionContext(
+            bars=bars,
+            vfs=vfs_state,
+            affordances={},
+            temporal=temporal_context,
+            device=self.device,
+        )
+
+        evaluator = Evaluator(context)
+        result = evaluator.evaluate(rule.when_ast)
+
+        if isinstance(result, torch.Tensor):
+            if result.numel() == 1:
+                return bool(result.item())
+            # Vectorized contexts emit per-agent tensors; require all agents to satisfy.
+            return bool(torch.all(result).item())
+
+        return bool(result)
+
     def spawn_initial_items(
         self,
         appearance_config: ItemsAppearanceConfig,
         grid_size: tuple[int, ...],
         current_tick: int,
+        *,
+        bars: dict[str, torch.Tensor] | None = None,
+        temporal: dict[str, torch.Tensor] | None = None,
     ) -> None:
         """Spawn items at level start based on ItemsAppearanceConfig.
 
@@ -441,6 +491,9 @@ class ItemManager:
             # Validate item type exists in catalog
             if not any(t.id == rule.item_type for t in self.catalog.item_types):
                 # Skip unknown item types (e.g., energy_drink in test config)
+                continue
+
+            if not self._should_spawn_rule(rule, bars=bars, temporal=temporal, current_tick=current_tick):
                 continue
 
             # Spawn count items
@@ -469,7 +522,13 @@ class ItemManager:
         self.appearance_config = appearance_config
         self.grid_size = grid_size
 
-    def process_respawns(self, current_tick: int) -> None:
+    def process_respawns(
+        self,
+        current_tick: int,
+        *,
+        bars: dict[str, torch.Tensor] | None = None,
+        temporal: dict[str, torch.Tensor] | None = None,
+    ) -> None:
         """Process periodic item respawning based on timers.
 
         Args:
@@ -500,6 +559,9 @@ class ItemManager:
             else:
                 # TODO: Support fixed positions when needed
                 position = tuple(random.randint(0, size - 1) for size in self.grid_size)
+
+            if not self._should_spawn_rule(rule, bars=bars, temporal=temporal, current_tick=current_tick):
+                continue
 
             # Attempt spawn (may fail if at capacity or on cooldown)
             spawned = self.spawn_item(item_type, position, current_tick)

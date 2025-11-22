@@ -119,6 +119,7 @@ def test_items_appearance_minimal():
                 item_type="apple",
                 spawn_count=3,
                 spawn_interval=100,
+                when=None,
             ),
         ],
     )
@@ -126,6 +127,23 @@ def test_items_appearance_minimal():
     assert len(appearance.items) == 1
     assert appearance.items[0].item_type == "apple"
     assert appearance.items[0].spawn_count == 3
+
+
+def test_items_appearance_accepts_when():
+    """Spawn conditions can be declared on appearance rules."""
+    appearance = ItemsAppearanceConfig(
+        items=[
+            ItemAppearanceRuleConfig(
+                item_type="apple",
+                spawn_count=1,
+                spawn_interval=None,
+                when="bar.energy > 0.5",
+            ),
+        ],
+    )
+
+    assert appearance.items[0].when == "bar.energy > 0.5"
+    assert appearance.items[0].when_ast is None
 
 
 def test_items_appearance_empty_allowed():

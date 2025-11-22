@@ -157,6 +157,8 @@ class ItemsCatalogConfig(BaseModel):
 class ItemAppearanceRuleConfig(BaseModel):
     """Spawn rule for an item type in a specific level."""
 
+    model_config = ConfigDict(extra="forbid", arbitrary_types_allowed=True)
+
     item_type: str = Field(..., description="Item type ID from catalog")
 
     spawn_count: int = Field(
@@ -177,6 +179,15 @@ class ItemAppearanceRuleConfig(BaseModel):
     )
 
     # TODO: Add fixed_position field for spawn_position="fixed"
+
+    # Optional spawn predicate (compiled to when_ast at compile time)
+    when: str | None = Field(
+        default=None,
+        description="Condition expression (bool) gating the spawn rule",
+    )
+
+    # Stored compiled expression AST (set by UniverseCompiler)
+    when_ast: Any | None = Field(default=None, exclude=True, repr=False)
 
 
 class ItemsAppearanceConfig(BaseModel):

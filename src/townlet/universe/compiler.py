@@ -57,6 +57,8 @@ from townlet.universe.symbol_table import UniverseSymbolTable
 from townlet.vfs.profiles import CompiledItemProfile, VFSProfileCompiler
 from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope
 from townlet.vfs.schema import ObservationField as VFSObservationField
+from townlet.world.expression import ExpressionParser
+from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
 
 from .compiled import CompiledVFSProfiles
 from .cues_compiler import CuesCompiler
@@ -1094,6 +1096,7 @@ class UniverseCompiler:
                 raw.items,
             )
             obs_activity = self._build_observation_activity(obs_spec)
+            bar_schema = {meter.name: "float" for meter in level.bars.meters}
             action_metadata = self._build_action_space_metadata(
                 raw.stratum,
                 raw.actions,
@@ -1103,6 +1106,15 @@ class UniverseCompiler:
             )
             meter_metadata = self._build_meter_metadata(raw.environment, level.bars)
             affordance_metadata = self._build_affordance_metadata(level.affordances)
+
+            # Compile item spawn predicates (type-check and store AST on rules)
+            self._compile_item_spawn_conditions(
+                level.items_appearance,
+                bar_schema=bar_schema,
+                env_vars=getattr(raw.environment.environment, "variables", []) or [],
+                compiled_vfs_profiles=compiled_vfs_profiles,
+                temporal_supported=temporal_supported and level.curriculum.curriculum.active_temporal,
+            )
             day_length = level.curriculum.curriculum.day_length
             if temporal_supported and level.curriculum.curriculum.active_temporal:
                 if day_length is None or day_length <= 0:
@@ -1245,6 +1257,95 @@ class UniverseCompiler:
                     f"Item '{item_def.id}' references undefined vfs_profile '{item_def.vfs_profile}'. "
                     f"Available profiles: {sorted(available_profiles)}.{suggestion}"
                 )
+
+    def _build_spawn_condition_schema(
+        self,
+        *,
+        bar_schema: dict[str, str],
+        env_vars: list[Any],
+        compiled_vfs_profiles: CompiledVFSProfiles | None,
+        temporal_supported: bool,
+    ) -> dict[str, str]:
+        """Construct type schema for spawn condition expressions."""
+
+        schema: dict[str, str] = {}
+
+        for bar_name in bar_schema:
+            schema[f"bar.{bar_name}"] = "float"
+
+        for var in env_vars:
+            vfs_type = "bool" if getattr(var, "type", None) == "bool" else "float"
+            schema[f"vfs.{var.name}"] = vfs_type
+
+        if compiled_vfs_profiles and compiled_vfs_profiles.global_profile:
+            for var in compiled_vfs_profiles.global_profile.variables:
+                vfs_type = "bool" if getattr(var, "type", None) == "bool" else "float"
+                schema.setdefault(f"vfs.{var.name}", vfs_type)
+
+        if temporal_supported:
+            schema["temporal.tick"] = "int"
+
+        return schema
+
+    def _ast_uses_temporal(self, node: Any) -> bool:
+        """Detect whether an AST references temporal.* paths."""
+
+        from townlet.world.expression.ast_nodes import PathAccess
+
+        if isinstance(node, PathAccess) and node.segments and node.segments[0] == "temporal":
+            return True
+
+        for attr in ("left", "right", "operand", "condition", "true_branch", "false_branch", "base", "index"):
+            child = getattr(node, attr, None)
+            if child is not None and self._ast_uses_temporal(child):
+                return True
+
+        if hasattr(node, "arguments") and node.arguments:
+            for arg in node.arguments:
+                if self._ast_uses_temporal(arg):
+                    return True
+
+        return False
+
+    def _compile_item_spawn_conditions(
+        self,
+        items_appearance: Any | None,
+        *,
+        bar_schema: dict[str, str],
+        env_vars: list[Any],
+        compiled_vfs_profiles: CompiledVFSProfiles | None,
+        temporal_supported: bool,
+    ) -> None:
+        """Parse and type-check spawn conditions, storing AST on each rule."""
+
+        if items_appearance is None:
+            return
+
+        condition_schema = self._build_spawn_condition_schema(
+            bar_schema=bar_schema,
+            env_vars=env_vars,
+            compiled_vfs_profiles=compiled_vfs_profiles,
+            temporal_supported=temporal_supported,
+        )
+
+        parser = ExpressionParser()
+        type_checker = TypeChecker(schema=condition_schema)
+
+        for rule in items_appearance.items:
+            rule.when_ast = None
+            if rule.when is None:
+                continue
+
+            ast = parser.parse(rule.when)
+
+            if not temporal_supported and self._ast_uses_temporal(ast):
+                raise TypeCheckError("Spawn condition references temporal.* but temporal mechanics are disabled for this level")
+
+            result_type = type_checker.check(ast)
+            if result_type != "bool":
+                raise TypeCheckError(f"Spawn condition must return bool, got {result_type}")
+
+            rule.when_ast = ast
 
     # ------------------------------------------------------------------
     # v2.1 helpers

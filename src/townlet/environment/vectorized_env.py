@@ -1030,10 +1030,14 @@ class VectorizedHamletEnv:
                     grid_size = (self.substrate.width, self.substrate.height)
 
             if grid_size is not None:
+                bars_dict_spawn = {name: self.meters[:, idx] for name, idx in self.meter_name_to_index.items()}
+                temporal_context = {"tick": torch.tensor(0, device=self.device)} if self.enable_temporal_mechanics else None
                 self.item_manager.spawn_initial_items(
                     appearance_config=self.level.items_appearance,
                     grid_size=grid_size,
                     current_tick=0,
+                    bars=bars_dict_spawn,
+                    temporal=temporal_context,
                 )
 
         return self._get_observations()
@@ -1525,7 +1529,9 @@ class VectorizedHamletEnv:
             # Age all items (expire items that reach duration limit)
             self.item_manager.tick(current_tick)
             # Respawn items whose spawn_interval timer has expired
-            self.item_manager.process_respawns(current_tick)
+            bars_dict_spawn = {name: self.meters[:, idx] for name, idx in self.meter_name_to_index.items()}
+            temporal_context = {"tick": torch.tensor(current_tick, device=self.device)} if self.enable_temporal_mechanics else None
+            self.item_manager.process_respawns(current_tick, bars=bars_dict_spawn, temporal=temporal_context)
 
         # 5.5. Check for retirement (reached maximum lifespan)
         # Agents that reach their lifespan retire with a bonus reward

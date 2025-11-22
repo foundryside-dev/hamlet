@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-import networkx as nx
+import networkx as nx  # type: ignore[import-untyped]
 
 from townlet.config.vfs_profiles_config import (
     AgentVFSVariableConfig,

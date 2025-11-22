@@ -1,9 +1,24 @@
 # P2-COMP-24: Continuous Substrates Missing Position/Velocity in Observation Spec
 
+**Status:** ✅ RESOLVED (2025-11-22)
+
+**Resolution:**
+- Modified `compiler.py:_build_observation_spec()` to build substrate instances for continuous types
+- Query `get_observation_dim()` to account for observation_encoding (relative/scaled/absolute)
+- Separate `velocity_dim` handling for scaled encoding
+- All tests passing, no regressions
+
+**Commits:**
+- test: add failing tests for continuous substrate observation spec
+- fix(compiler): add position/velocity observations for continuous substrates
+- test: add ContinuousND 4D observation spec test
+
+---
+
 **Priority:** P2 (MINOR)
 **Category:** COMP (Compiler)
-**Status:** OPEN
-**Effort:** 2-3 hours
+**Status:** ✅ RESOLVED
+**Effort:** 2-3 hours (actual)
 
 ---
 

@@ -333,136 +333,27 @@ elif config.type == "continuousnd":
 
 ---
 
-## ⚠️ Continuous Substrates Observation Gap
+## ✅ Continuous Substrates Observation Spec (RESOLVED)
 
-### Issue Identified: Position/Velocity Not in Observation Spec
+### Status: ✅ FIXED (2025-11-22)
 
-**Severity:** ⚠️ MINOR (tests pass, functionality works, but spec incomplete)
+**Problem:** Compiler omitted position/velocity fields from observation spec for continuous substrates.
 
-#### Problem Description
+**Solution Applied:**
+- Modified `compiler.py:_build_observation_spec()` (lines 1537-1600)
+- Build substrate instance using `SubstrateFactory.build()`
+- Query `substrate_instance.get_observation_dim()` for accurate position dims
+- Use `substrate_instance.position_dim` for velocity dims (native dimensionality)
+- Added try/except fallback for robustness
 
-The compiler's observation spec generation (lines 1537-1575) **only adds position/velocity observations for discrete substrates** (grid, grid3d, gridnd), but **NOT for continuous substrates** (continuous, continuousnd).
+**Verification Results:**
+- ✅ Continuous1D relative: position=1, velocity=1, total=7
+- ✅ Continuous1D scaled: position=2, velocity=1, total=8
+- ✅ ContinuousND 4D: position=4, velocity=4, total=9
+- ✅ Grid2D regression: position=2, velocity=2 (unchanged)
+- ✅ All integration tests passing
 
-**Code Evidence:**
-```python
-# compiler.py:1537-1576
-# Position / velocity (discrete spatial substrates only)  ← ⚠️ COMMENT SAYS "DISCRETE ONLY"
-position_dim = 0
-if substrate.type in {"grid", "grid3d"} and substrate.grid is not None:
-    if substrate.grid.topology == "cubic":
-        position_dim = 3
-    else:
-        position_dim = 2
-elif substrate.type == "gridnd" and substrate.gridnd is not None:
-    position_dim = len(substrate.gridnd.dimension_sizes)
-# ⚠️ MISSING: No handling for substrate.type in {"continuous", "continuousnd"}
-
-if position_dim:  # ← This is 0 for continuous substrates
-    fields.append(ObservationField(name="obs_position", dims=position_dim, ...))
-    offset += position_dim
-    fields.append(ObservationField(name="obs_velocity", dims=position_dim, ...))
-    offset += position_dim
-```
-
-**Test Evidence:**
-```bash
-# Compiled continuous1d successfully
-Universe        : Action Space Continuous1D
-Substrate       : continuous
-Observation Dim : 5
-
-# Observation Spec Fields:
-obs_meters                     dims= 3 [  0:  3] type=bars
-obs_affordance_at_position     dims= 2 [  3:  5] type=affordance
-
-# ⚠️ MISSING: obs_position (should be 1 dim for 1D continuous)
-# ⚠️ MISSING: obs_velocity (should be 1 dim for 1D continuous)
-```
-
-**Expected Observation Spec:**
-- obs_position: 1 dim [5:6] - normalized [0, 1] position (observation_encoding="relative")
-- obs_velocity: 1 dim [6:7] - velocity
-- Total dims: **7** (not 5)
-
-#### Impact Assessment
-
-**Why Tests Still Pass:**
-
-The runtime has fallback logic in `vectorized_env.py:1348-1364`:
-```python
-def _encode_position_observation(self) -> torch.Tensor | None:
-    # Try encode_position_features first (not implemented)
-    public_encoder = getattr(self.substrate, "encode_position_features", None)
-    if callable(public_encoder):
-        return public_encoder(self.positions, self.affordances)
-
-    # ✅ FALLBACK: Try encode_observation (continuous substrates implement this)
-    encode_observation = getattr(self.substrate, "encode_observation", None)
-    if callable(encode_observation):
-        return encode_observation(self.positions, self.affordances)
-
-    # Final fallback: normalize_positions
-    normalizer = getattr(self.substrate, "normalize_positions", None)
-    if callable(normalizer):
-        return normalizer(self.positions)
-
-    return None
-```
-
-**Key Question:** Does the runtime actually use the observation spec fields, or does it build observations independently?
-
-Looking at `vectorized_env.py:1126-1160`, the runtime **does** iterate over observation spec fields:
-```python
-for field in self.vfs_observation_spec.fields:
-    name = field.name
-    dims = field.dims
-
-    if name == "obs_position":
-        pos = self._encode_position_observation()  # ← Calls substrate.encode_observation()
-        value = pos
-```
-
-**Hypothesis:** The observation spec is used for dimension validation and metadata, but the runtime builds observations by calling substrate methods regardless of whether fields exist in the spec.
-
-#### Recommendation
-
-**Priority:** P2 (MINOR) - Document as known gap, fix in cleanup sprint
-
-**Fix Required:**
-```python
-# compiler.py:1537-1576
-# Position / velocity (spatial substrates)
-position_dim = 0
-if substrate.type in {"grid", "grid3d"} and substrate.grid is not None:
-    if substrate.grid.topology == "cubic":
-        position_dim = 3
-    else:
-        position_dim = 2
-elif substrate.type == "gridnd" and substrate.gridnd is not None:
-    position_dim = len(substrate.gridnd.dimension_sizes)
-# ✅ ADD THIS:
-elif substrate.type == "continuous" and substrate.continuous is not None:
-    # For continuous substrates, position_dim depends on observation_encoding
-    # But we need the actual substrate instance to compute get_observation_dim()
-    # So we use self._infer_position_dim() which returns dimensions count
-    position_dim = substrate.continuous.dimensions
-elif substrate.type == "continuousnd" and substrate.continuous is not None:
-    position_dim = len(substrate.continuous.bounds)
-```
-
-**Alternatively:** Build temporary substrate instance and call `get_observation_dim()`:
-```python
-# Build substrate to get actual observation dimensions
-substrate_instance = SubstrateFactory.build(substrate, torch.device("cpu"))
-position_dim = substrate_instance.get_observation_dim()
-```
-
-**Caveat:** This requires accounting for observation_encoding:
-- **relative:** N dims
-- **scaled:** 2N dims (normalized + sizes)
-- **absolute:** N dims
-
-The current code assumes position observations are always N-dimensional, which is wrong for **scaled encoding** (2N dims).
+**Issue Ticket:** P2-COMP-24 ✅ CLOSED
 
 ---
 

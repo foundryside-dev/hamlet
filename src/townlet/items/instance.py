@@ -14,6 +14,10 @@ class ItemInstance:
     Tracks position, VFS state index, lifecycle timers.
     """
 
+    name: str | None
+    icon: str | None
+    tags: tuple[str, ...]
+
     item_type: str  # Reference to ItemTypeConfig.id
     instance_id: int  # Unique instance ID (incrementing counter)
     position: tuple[int, ...] | tuple[float, ...]  # Spatial position (grid or continuous)
@@ -23,6 +27,7 @@ class ItemInstance:
     spawn_tick: int  # When item was spawned
     duration_total: int | None  # Total lifetime (None = permanent)
     duration_remaining: int | None  # Ticks until despawn (None = permanent)
+    holder_agent_id: int | None = None  # Agent holding the item (None when on ground)
 
     def tick(self) -> None:
         """Advance lifecycle by one tick."""

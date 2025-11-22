@@ -45,6 +45,9 @@ def test_compiler_compiles_item_profiles(tmp_path: Path):
             "item_types": [
                 {
                     "id": "apple",
+                    "name": "Apple",
+                    "icon": "apple",
+                    "tags": ["food"],
                     "vfs_profile": "food_stats",
                     "duration": None,
                     "cooldown": None,
@@ -97,6 +100,9 @@ def test_compiler_rejects_unknown_item_vfs_profile(tmp_path: Path):
             "item_types": [
                 {
                     "id": "apple",
+                    "name": "Apple",
+                    "icon": "apple",
+                    "tags": ["food"],
                     "vfs_profile": "food_stats",
                     "duration": None,
                     "cooldown": None,
@@ -104,6 +110,9 @@ def test_compiler_rejects_unknown_item_vfs_profile(tmp_path: Path):
                 },
                 {
                     "id": "ghost_item",
+                    "name": "Ghost",
+                    "icon": "ghost",
+                    "tags": ["spectral"],
                     "vfs_profile": "missing_profile",
                     "duration": None,
                     "cooldown": None,

@@ -23,6 +23,15 @@ class DummyEffectManager:
         raise RuntimeError("spawn_effect not supported in DummyEffectManager")
 
 
+def _catalog(item_types):
+    return ItemsCatalogConfig(
+        version="1.0",
+        item_types=item_types,
+        max_items_per_agent=3,
+        max_items_in_world=10,
+    )
+
+
 def test_effect_on_despawn_spawns_item_with_real_itemmanager():
     """Effect on_despawn should spawn item using real ItemManager."""
     # Create VFS registry with compiled item profiles (no legacy item variables)
@@ -60,10 +69,13 @@ def test_effect_on_despawn_spawns_item_with_real_itemmanager():
     )
 
     # Create ItemManager with loot catalog
-    items_catalog = ItemsCatalogConfig(
-        item_types=[
+    items_catalog = _catalog(
+        [
             ItemTypeConfig(
                 id="gold_coin",
+                name="Gold Coin",
+                icon="🪙",
+                tags=["currency"],
                 vfs_profile="currency",
                 duration=None,
                 cooldown=None,
@@ -75,6 +87,9 @@ def test_effect_on_despawn_spawns_item_with_real_itemmanager():
             ),
             ItemTypeConfig(
                 id="rare_gem",
+                name="Rare Gem",
+                icon="💎",
+                tags=["treasure"],
                 vfs_profile="treasure",
                 duration=200,
                 cooldown=50,
@@ -192,10 +207,13 @@ def test_effect_on_despawn_spawns_item_with_real_itemmanager():
 
 def test_spawn_item_respects_itemmanager_capacity():
     """spawn_item should respect ItemManager max_items capacity."""
-    catalog = ItemsCatalogConfig(
-        item_types=[
+    catalog = _catalog(
+        [
             ItemTypeConfig(
                 id="trash",
+                name="Trash",
+                icon="🗑️",
+                tags=["junk"],
                 vfs_profile="junk",
                 duration=None,
                 cooldown=None,
@@ -249,10 +267,13 @@ def test_spawn_item_respects_itemmanager_capacity():
 
 def test_spawn_item_respects_cooldown():
     """spawn_item should respect ItemManager cooldown."""
-    catalog = ItemsCatalogConfig(
-        item_types=[
+    catalog = _catalog(
+        [
             ItemTypeConfig(
                 id="rare_item",
+                name="Rare Item",
+                icon="✨",
+                tags=["rare"],
                 vfs_profile="rare",
                 duration=None,
                 cooldown=10,  # 10 tick cooldown

@@ -19,7 +19,14 @@ class TestItemTypeConfigValidation:
         return ItemInteractionsConfig(on_pickup=[], on_use=[], on_drop=[])
 
     def test_valid_minimal_item(self):
-        item = ItemTypeConfig(id="apple", vfs_profile="food", interactions=self._base_interactions())
+        item = ItemTypeConfig(
+            id="apple",
+            name="Apple",
+            icon="🍎",
+            tags=["food"],
+            vfs_profile="food",
+            interactions=self._base_interactions(),
+        )
         assert item.id == "apple"
         assert item.duration is None
         assert item.cooldown is None
@@ -35,11 +42,24 @@ class TestItemTypeConfigValidation:
     )
     def test_invalid_ids_rejected(self, bad_id: str):
         with pytest.raises(ValidationError):
-            ItemTypeConfig(id=bad_id, vfs_profile="food", interactions=self._base_interactions())
+            ItemTypeConfig(
+                id=bad_id,
+                name="Bad",
+                icon="❌",
+                tags=["bad"],
+                vfs_profile="food",
+                interactions=self._base_interactions(),
+            )
 
     def test_missing_vfs_profile(self):
         with pytest.raises(ValidationError):
-            ItemTypeConfig(id="apple", interactions=self._base_interactions())  # type: ignore[arg-type]
+            ItemTypeConfig(
+                id="apple",
+                name="Apple",
+                icon="🍎",
+                tags=["food"],
+                interactions=self._base_interactions(),  # type: ignore[arg-type]
+            )
 
     def test_interactions_require_known_commands(self):
         with pytest.raises(ValidationError, match="Command must have one of"):
@@ -147,10 +167,18 @@ class TestItemAppearanceRuleConfigValidation:
 
 class TestItemsCatalogConfigValidation:
     def _base_item(self, id_: str = "apple") -> ItemTypeConfig:
-        return ItemTypeConfig(id=id_, vfs_profile="food", interactions=ItemInteractionsConfig(on_pickup=[], on_use=[], on_drop=[]))
+        return ItemTypeConfig(
+            id=id_,
+            name=id_.capitalize(),
+            icon="🧰",
+            tags=["tag"],
+            vfs_profile="food",
+            interactions=ItemInteractionsConfig(on_pickup=[], on_use=[], on_drop=[]),
+        )
 
     def test_valid_catalog_multiple_items(self):
         catalog = ItemsCatalogConfig(
+            version="1.0",
             item_types=[self._base_item("apple"), self._base_item("banana")],
             max_items_per_agent=2,
             max_items_in_world=5,
@@ -160,21 +188,27 @@ class TestItemsCatalogConfigValidation:
         assert {i.id for i in catalog.item_types} == {"apple", "banana"}
 
     def test_valid_empty_catalog(self):
-        catalog = ItemsCatalogConfig(item_types=[])
+        catalog = ItemsCatalogConfig(version="1.0", item_types=[], max_items_per_agent=1, max_items_in_world=1)
         assert catalog.item_types == []
 
     def test_duplicate_ids_rejected(self):
         with pytest.raises(ValidationError, match="Duplicate item type IDs"):
-            ItemsCatalogConfig(item_types=[self._base_item("apple"), self._base_item("apple")])
+            ItemsCatalogConfig(
+                version="1.0",
+                item_types=[self._base_item("apple"), self._base_item("apple")],
+                max_items_per_agent=2,
+                max_items_in_world=2,
+            )
 
 
 class TestItemsAppearanceConfigValidation:
     def test_empty_appearance_allowed(self):
-        cfg = ItemsAppearanceConfig(items=[])
+        cfg = ItemsAppearanceConfig(version="1.0", items=[])
         assert cfg.items == []
 
     def test_valid_appearance_rule(self):
         cfg = ItemsAppearanceConfig(
+            version="1.0",
             items=[
                 ItemAppearanceRuleConfig(
                     item_type="apple",
@@ -182,7 +216,7 @@ class TestItemsAppearanceConfigValidation:
                     placement=SpawnPlacementConfig(mode="random"),
                     schedule=SpawnScheduleConfig(type="periodic", period=5),
                 )
-            ]
+            ],
         )
         assert len(cfg.items) == 1
         assert cfg.items[0].schedule.period == 5

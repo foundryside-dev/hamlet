@@ -12,6 +12,15 @@ from townlet.vfs.profiles import CompiledItemProfile, CompiledVariable
 from townlet.vfs.registry import VariableRegistry
 
 
+def _catalog(item_types):
+    return ItemsCatalogConfig(
+        version="1.0",
+        item_types=item_types,
+        max_items_per_agent=3,
+        max_items_in_world=10,
+    )
+
+
 def test_spawn_item_with_initial_state():
     """spawn_item should accept initial_state parameter (profile-driven path)."""
     # NOTE: initial_state only works with deprecated variable-based system
@@ -49,10 +58,13 @@ def test_spawn_item_with_initial_state():
     )
 
     # Create minimal catalog
-    catalog = ItemsCatalogConfig(
-        item_types=[
+    catalog = _catalog(
+        [
             ItemTypeConfig(
                 id="sword",
+                name="Sword",
+                icon="🗡️",
+                tags=["weapon"],
                 vfs_profile="weapon",
                 duration=None,
                 cooldown=None,
@@ -120,10 +132,13 @@ def test_spawn_item_without_initial_state_uses_defaults():
         item_profiles={"weapon": weapon_profile},
     )
 
-    catalog = ItemsCatalogConfig(
-        item_types=[
+    catalog = _catalog(
+        [
             ItemTypeConfig(
                 id="sword",
+                name="Sword",
+                icon="🗡️",
+                tags=["weapon"],
                 vfs_profile="weapon",
                 duration=None,
                 cooldown=None,

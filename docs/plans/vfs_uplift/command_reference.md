@@ -140,6 +140,39 @@ Scope: Effects command language (YAML) used by the World/Effects compiler. Expre
       value: "5"
 ```
 
+### Item custom verbs (local & inventory)
+
+**Status:** ✅ PRODUCTION
+
+**Purpose**: Per-item actions beyond GET/USE/DROP, gated by proximity (local) or possession (inventory).
+
+**Config surface** (`items.yaml` experiment catalog):
+- `interactions.local_commands[]` and `interactions.inventory_commands[]` entries shaped as:
+  ```yaml
+  local_commands:
+    - name: OPEN_CHEST
+      description: "Open chest on the ground"
+      effects:
+        - modify: target.bar.energy
+          value: target.bar.energy + 0.1
+  inventory_commands:
+    - name: DRINK_POTION
+      description: "Drink while held"
+      effects:
+        - modify: target.bar.health
+          value: target.bar.health + 0.2
+  ```
+- Item metadata is required: `name`, `icon`, `tags` (enforced in DTOs).
+
+**Action naming**: Compiler emits stable action names:
+- Local: `ITEM_LOCAL_<ITEM_ID>_<COMMAND_NAME>` (uppercase)
+- Inventory: `ITEM_INVENTORY_<ITEM_ID>_<COMMAND_NAME>`
+
+**Masking & dispatch**:
+- Local verbs enabled only when the matching item type is co-located with the agent.
+- Inventory verbs enabled only when the agent holds an instance of the matching item type.
+- Commands execute through the Effects runtime (same validation/caps as other commands).
+
 ### while / repeat-until (guarded loops)
 
 **Status:** ❌ NOT IMPLEMENTED (planned for future)

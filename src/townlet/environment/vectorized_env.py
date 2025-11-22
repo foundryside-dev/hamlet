@@ -1441,6 +1441,10 @@ class VectorizedHamletEnv:
                     if drop_id is not None:
                         action_masks[slot_empty, drop_id] = False
 
+        # Custom item verbs (local/inventory) mask based on availability
+        if self.item_handler is not None:
+            self.item_handler.compute_custom_action_masks(self.action_space, action_masks, self.positions)
+
         # Check boundary constraints (only for discrete grid substrates)
         # Continuous substrates handle boundaries in apply_movement() via boundary modes
         if self.grid_size is not None and self.substrate.position_dim >= 2:
@@ -1798,6 +1802,23 @@ class VectorizedHamletEnv:
                                 )
                     except ValueError:
                         pass  # Action not in action space
+
+            # Custom item verbs (local and inventory scoped)
+            for action_name in self.item_handler.custom_action_specs.keys():
+                try:
+                    action_id = self.action_space.get_action_by_name(action_name).id
+                except ValueError:
+                    continue
+                action_mask = actions == action_id
+                if action_mask.any():
+                    for agent_idx in torch.where(action_mask)[0]:
+                        self.item_handler.handle_custom_action(
+                            action_name=action_name,
+                            agent_idx=int(agent_idx.item()),
+                            agent_position=self.positions[agent_idx],
+                            current_tick=int(current_ticks[agent_idx].item()),
+                            meters=self.meters,
+                        )
 
         # Handle INTERACT actions (if present in the action space)
         interact_action_idx = self.action_ids.get("INTERACT")

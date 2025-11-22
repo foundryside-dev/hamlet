@@ -72,6 +72,7 @@ class InventoryState:
         self.slots[agent_idx, slot_idx] = item.instance_id
 
         # Store item metadata
+        item.holder_agent_id = agent_idx
         self.items[item.instance_id] = item
 
         return True
@@ -97,6 +98,9 @@ class InventoryState:
         # Remove from metadata (keep for respawn tracking)
         # Actually DON'T remove - need it for DROP action
         # self.items.pop(instance_id, None)
+        item = self.items.get(instance_id)
+        if item is not None:
+            item.holder_agent_id = None
 
         return instance_id
 

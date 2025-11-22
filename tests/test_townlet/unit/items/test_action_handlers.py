@@ -8,6 +8,16 @@ from townlet.items.inventory import InventoryState
 from townlet.items.manager import ItemManager
 
 
+def _catalog(item_types):
+    """Helper to build ItemsCatalogConfig with required fields."""
+    return ItemsCatalogConfig(
+        version="1.0",
+        item_types=item_types,
+        max_items_per_agent=3,
+        max_items_in_world=10,
+    )
+
+
 # Stubs for testing
 class MockCommandExecutor:
     """Mock CommandExecutor for testing."""
@@ -39,10 +49,13 @@ class MockEffectManager:
 def test_get_action_picks_up_item():
     """GET action: picks up item at agent position."""
     # Setup
-    catalog = ItemsCatalogConfig(
-        item_types=[
+    catalog = _catalog(
+        [
             ItemTypeConfig(
                 id="apple",
+                name="Apple",
+                icon="🍎",
+                tags=["food"],
                 vfs_profile="food",
                 interactions=ItemInteractionsConfig(
                     on_pickup=[{"modify": "target.vfs.has_food", "value": "true"}],
@@ -50,7 +63,7 @@ def test_get_action_picks_up_item():
                     on_drop=[],
                 ),
             )
-        ],
+        ]
     )
 
     manager = ItemManager(catalog=catalog, max_items=10, device="cpu")
@@ -88,14 +101,17 @@ def test_get_action_picks_up_item():
 
 def test_get_action_fails_when_inventory_full():
     """GET action: DENY_PICKUP when inventory full."""
-    catalog = ItemsCatalogConfig(
-        item_types=[
+    catalog = _catalog(
+        [
             ItemTypeConfig(
                 id="apple",
+                name="Apple",
+                icon="🍎",
+                tags=["food"],
                 vfs_profile="food",
                 interactions=ItemInteractionsConfig(on_pickup=[], on_use=[], on_drop=[]),
             )
-        ],
+        ]
     )
 
     manager = ItemManager(catalog=catalog, max_items=10, device="cpu")
@@ -134,7 +150,7 @@ def test_get_action_fails_when_inventory_full():
 
 def test_get_action_fails_when_no_item_at_position():
     """GET action: fails when no item at agent position."""
-    catalog = ItemsCatalogConfig(item_types=[])
+    catalog = _catalog([])
     manager = ItemManager(catalog=catalog, max_items=10, device="cpu")
     inventory = InventoryState(batch_size=1, max_items_per_agent=3, device="cpu")
     handler = ItemActionHandler(
@@ -163,10 +179,13 @@ def test_get_action_fails_when_no_item_at_position():
 
 def test_use_slot_action_succeeds_when_slot_occupied():
     """USE_SLOT_N: succeeds when slot has item."""
-    catalog = ItemsCatalogConfig(
-        item_types=[
+    catalog = _catalog(
+        [
             ItemTypeConfig(
                 id="medkit",
+                name="Medkit",
+                icon="💊",
+                tags=["medical"],
                 vfs_profile="medical",
                 interactions=ItemInteractionsConfig(
                     on_use=[{"modify": "target.bar.health", "value": "0.5"}],
@@ -174,7 +193,7 @@ def test_use_slot_action_succeeds_when_slot_occupied():
                     on_drop=[],
                 ),
             )
-        ],
+        ]
     )
 
     manager = ItemManager(catalog=catalog, max_items=10, device="cpu")
@@ -207,7 +226,7 @@ def test_use_slot_action_succeeds_when_slot_occupied():
 
 def test_use_slot_action_fails_when_slot_empty():
     """USE_SLOT_N: fails when slot is empty."""
-    catalog = ItemsCatalogConfig(item_types=[])
+    catalog = _catalog([])
     manager = ItemManager(catalog=catalog, max_items=10, device="cpu")
     inventory = InventoryState(batch_size=1, max_items_per_agent=3, device="cpu")
     handler = ItemActionHandler(
@@ -232,14 +251,17 @@ def test_use_slot_action_fails_when_slot_empty():
 
 def test_drop_slot_action_removes_from_inventory():
     """DROP_SLOT_N: removes item from inventory."""
-    catalog = ItemsCatalogConfig(
-        item_types=[
+    catalog = _catalog(
+        [
             ItemTypeConfig(
                 id="apple",
+                name="Apple",
+                icon="🍎",
+                tags=["food"],
                 vfs_profile="food",
                 interactions=ItemInteractionsConfig(on_pickup=[], on_use=[], on_drop=[]),
             )
-        ],
+        ]
     )
 
     manager = ItemManager(catalog=catalog, max_items=10, device="cpu")
@@ -274,7 +296,7 @@ def test_drop_slot_action_removes_from_inventory():
 
 def test_drop_slot_action_fails_when_slot_empty():
     """DROP_SLOT_N: fails when slot is empty."""
-    catalog = ItemsCatalogConfig(item_types=[])
+    catalog = _catalog([])
     manager = ItemManager(catalog=catalog, max_items=10, device="cpu")
     inventory = InventoryState(batch_size=1, max_items_per_agent=3, device="cpu")
     handler = ItemActionHandler(

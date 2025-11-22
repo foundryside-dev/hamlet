@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 import random
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 import torch
 
@@ -13,7 +13,11 @@ if TYPE_CHECKING:
     from townlet.config.items_config import ItemsAppearanceConfig, ItemsCatalogConfig
     from townlet.vfs.registry import VariableRegistry
 
-from townlet.config.items_config import SpawnPlacementConfig, SpawnScheduleConfig
+from townlet.config.items_config import (
+    SpawnPlacementConfig,
+    SpawnScheduleConfig,
+    build_item_command_action_name,
+)
 from townlet.effects.compiler import CommandCompiler
 from townlet.effects.schema import CommandNode
 from townlet.items.instance import ItemInstance
@@ -35,11 +39,16 @@ class CompiledItemType:
     vfs_profile: str
     duration: int | None
     cooldown: int | None
+    name: str | None
+    icon: str | None
+    tags: tuple[str, ...]
 
     # Pre-compiled Effects commands (ready for CommandExecutor)
     compiled_on_pickup: list[CommandNode]
     compiled_on_use: list[CommandNode]
     compiled_on_drop: list[CommandNode]
+    compiled_local_commands: dict[str, list[CommandNode]]
+    compiled_inventory_commands: dict[str, list[CommandNode]]
 
 
 class ItemManager:
@@ -71,6 +80,7 @@ class ItemManager:
 
         # Compile item interactions if schema provided
         self.compiled_item_types: list[CompiledItemType] = []
+        self.custom_action_specs: list[tuple[str, str, Literal["local", "inventory"], str]] = []
 
         if schema is not None:
             from townlet.config.effects_config import CommandConfig
@@ -84,16 +94,27 @@ class ItemManager:
                 on_pickup_configs = [CommandConfig(**cmd) for cmd in item_type.interactions.on_pickup]
                 on_use_configs = [CommandConfig(**cmd) for cmd in item_type.interactions.on_use]
                 on_drop_configs = [CommandConfig(**cmd) for cmd in item_type.interactions.on_drop]
+                # Custom verbs
+                local_custom_cfgs: dict[str, list[CommandConfig]] = {}
+                inventory_custom_cfgs: dict[str, list[CommandConfig]] = {}
+                for custom in item_type.interactions.local_commands:
+                    local_custom_cfgs[custom.name] = [CommandConfig(**cmd) for cmd in custom.effects]
+                for custom in item_type.interactions.inventory_commands:
+                    inventory_custom_cfgs[custom.name] = [CommandConfig(**cmd) for cmd in custom.effects]
 
                 # Parse CommandConfig objects to CommandNode AST
                 on_pickup_nodes = parser.parse_commands(on_pickup_configs)
                 on_use_nodes = parser.parse_commands(on_use_configs)
                 on_drop_nodes = parser.parse_commands(on_drop_configs)
+                local_custom_nodes = {name: parser.parse_commands(cmds) for name, cmds in local_custom_cfgs.items()}
+                inventory_custom_nodes = {name: parser.parse_commands(cmds) for name, cmds in inventory_custom_cfgs.items()}
 
                 # Compile with type checking and AST storage
                 compiled_on_pickup = compiler.compile_commands(on_pickup_nodes)
                 compiled_on_use = compiler.compile_commands(on_use_nodes)
                 compiled_on_drop = compiler.compile_commands(on_drop_nodes)
+                compiled_local_commands = {name: compiler.compile_commands(cmds) for name, cmds in local_custom_nodes.items()}
+                compiled_inventory_commands = {name: compiler.compile_commands(cmds) for name, cmds in inventory_custom_nodes.items()}
 
                 self.compiled_item_types.append(
                     CompiledItemType(
@@ -101,11 +122,22 @@ class ItemManager:
                         vfs_profile=item_type.vfs_profile,
                         duration=item_type.duration,
                         cooldown=item_type.cooldown,
+                        name=item_type.name,
+                        icon=item_type.icon,
+                        tags=tuple(item_type.tags),
                         compiled_on_pickup=compiled_on_pickup,
                         compiled_on_use=compiled_on_use,
                         compiled_on_drop=compiled_on_drop,
+                        compiled_local_commands=compiled_local_commands,
+                        compiled_inventory_commands=compiled_inventory_commands,
                     )
                 )
+                for name in local_custom_cfgs:
+                    action_name = build_item_command_action_name(item_type.id, name, "local")
+                    self.custom_action_specs.append((action_name, item_type.id, "local", name))
+                for name in inventory_custom_cfgs:
+                    action_name = build_item_command_action_name(item_type.id, name, "inventory")
+                    self.custom_action_specs.append((action_name, item_type.id, "inventory", name))
         else:
             # No schema - store raw types without compilation
             # (Used in unit tests that don't need Effects)
@@ -116,11 +148,22 @@ class ItemManager:
                         vfs_profile=item_type.vfs_profile,
                         duration=item_type.duration,
                         cooldown=item_type.cooldown,
+                        name=item_type.name,
+                        icon=item_type.icon,
+                        tags=tuple(item_type.tags),
                         compiled_on_pickup=[],
                         compiled_on_use=[],
                         compiled_on_drop=[],
+                        compiled_local_commands={},
+                        compiled_inventory_commands={},
                     )
                 )
+                for custom in item_type.interactions.local_commands:
+                    action_name = build_item_command_action_name(item_type.id, custom.name, "local")
+                    self.custom_action_specs.append((action_name, item_type.id, "local", custom.name))
+                for custom in item_type.interactions.inventory_commands:
+                    action_name = build_item_command_action_name(item_type.id, custom.name, "inventory")
+                    self.custom_action_specs.append((action_name, item_type.id, "inventory", custom.name))
 
         self.next_instance_id = 0
 
@@ -310,9 +353,13 @@ class ItemManager:
             position=position,
             vfs_index=vfs_index,
             vfs_profile=item_def.vfs_profile,  # Assign VFS profile from item type
+            name=item_def.name,
+            icon=item_def.icon,
+            tags=tuple(item_def.tags),
             spawn_tick=current_tick,
             duration_total=item_def.duration,
             duration_remaining=item_def.duration,
+            holder_agent_id=None,
         )
         self.next_instance_id += 1
 
@@ -367,6 +414,7 @@ class ItemManager:
         # Move from held to active
         item = self.held_items.pop(instance_id)
         item.position = position
+        item.holder_agent_id = None
         self.active_items[instance_id] = item
 
         return item
@@ -474,6 +522,10 @@ class ItemManager:
     def get_all_items(self) -> list[ItemInstance]:
         """Get all active items (for testing/debugging)."""
         return list(self.active_items.values())
+
+    def get_custom_action_specs(self) -> list[tuple[str, str, Literal["local", "inventory"], str]]:
+        """Return (action_name, item_type, scope, command_name) tuples for custom item verbs."""
+        return list(self.custom_action_specs)
 
     def _should_spawn_rule(
         self,

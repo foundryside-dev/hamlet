@@ -20,13 +20,25 @@ class DummyEffectManager:
         raise RuntimeError("spawn_effect not supported in DummyEffectManager")
 
 
+def _catalog(item_types):
+    return ItemsCatalogConfig(
+        version="1.0",
+        item_types=item_types,
+        max_items_per_agent=3,
+        max_items_in_world=10,
+    )
+
+
 def test_spawn_item_resolves_self_position():
     """spawn_item with position='self' should use self agent position."""
     # Create ItemManager with minimal catalog
-    catalog = ItemsCatalogConfig(
-        item_types=[
+    catalog = _catalog(
+        [
             ItemTypeConfig(
                 id="health_potion",
+                name="Health Potion",
+                icon="🧪",
+                tags=["consumable"],
                 vfs_profile="consumable",
                 duration=None,
                 cooldown=None,
@@ -88,10 +100,13 @@ def test_spawn_item_resolves_self_position():
 
 def test_spawn_item_resolves_target_position():
     """spawn_item with position='target' should use target agent position."""
-    catalog = ItemsCatalogConfig(
-        item_types=[
+    catalog = _catalog(
+        [
             ItemTypeConfig(
                 id="loot_drop",
+                name="Loot Drop",
+                icon="🎁",
+                tags=["loot"],
                 vfs_profile="loot",
                 duration=100,
                 cooldown=None,
@@ -149,10 +164,13 @@ def test_spawn_item_resolves_target_position():
 
 def test_spawn_item_with_explicit_position():
     """spawn_item with explicit coordinates should use those coords."""
-    catalog = ItemsCatalogConfig(
-        item_types=[
+    catalog = _catalog(
+        [
             ItemTypeConfig(
                 id="treasure",
+                name="Treasure",
+                icon="💰",
+                tags=["loot"],
                 vfs_profile="rare",
                 duration=None,
                 cooldown=None,
@@ -230,10 +248,13 @@ def test_spawn_item_with_initial_state():
         item_profiles=item_profiles,
     )
 
-    catalog = ItemsCatalogConfig(
-        item_types=[
+    catalog = _catalog(
+        [
             ItemTypeConfig(
                 id="damaged_sword",
+                name="Damaged Sword",
+                icon="🗡️",
+                tags=["weapon"],
                 vfs_profile="weapon",
                 duration=None,
                 cooldown=None,
@@ -287,10 +308,13 @@ def test_spawn_item_with_initial_state():
 
 def test_spawn_item_random_fails_when_blocked():
     """spawn_item with position='random' should fail when no free cell after retries."""
-    catalog = ItemsCatalogConfig(
-        item_types=[
+    catalog = _catalog(
+        [
             ItemTypeConfig(
                 id="blocked_item",
+                name="Blocked Item",
+                icon="🚫",
+                tags=["blocked"],
                 vfs_profile="loot",
                 duration=None,
                 cooldown=None,

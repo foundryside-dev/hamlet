@@ -60,7 +60,7 @@
 **DONE:**
 - ✅ CFG-REQ-001: Items config split (experiment vs level)
 - ✅ CFG-REQ-002: VFS profiles file (experiment-level)
-- ✅ DTO-REQ-001: DTOs with no defaults (VFS profiles now forbid extra fields)
+- ✅ DTO-REQ-001: DTOs with no defaults (VFS profiles forbid extras; items/catalog/appearance schemas refortified to forbid extras and require explicit limits/version)
 
 ---
 

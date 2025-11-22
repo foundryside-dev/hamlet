@@ -28,7 +28,7 @@ from townlet.config.effects_config import EffectsConfig
 from townlet.config.environment_config import CascadeConfig
 from townlet.config.environment_config import EnvironmentConfig as EnvConfigV21
 from townlet.config.experiment_config import ExperimentConfig
-from townlet.config.items_config import ItemsCatalogConfig
+from townlet.config.items_config import ItemsCatalogConfig, build_item_command_action_name
 from townlet.config.stratum_config import StratumConfig, SubstrateConfig
 from townlet.config.training_v2_config import TrainingV2Config
 from townlet.config.vfs_profiles_config import VFSProfilesConfig
@@ -1972,6 +1972,11 @@ class UniverseCompiler:
             for slot_idx in range(items.max_items_per_agent):
                 reserved_names.add(f"USE_SLOT_{slot_idx}")
                 reserved_names.add(f"DROP_SLOT_{slot_idx}")
+            for item in items.item_types:
+                for custom in item.interactions.local_commands:
+                    reserved_names.add(build_item_command_action_name(item.id, custom.name, "local"))
+                for custom in item.interactions.inventory_commands:
+                    reserved_names.add(build_item_command_action_name(item.id, custom.name, "inventory"))
 
         enabled_custom = set(training.enabled_actions.custom) if training.enabled_actions else set()
         for custom in actions.actions.custom_actions:
@@ -1988,6 +1993,21 @@ class UniverseCompiler:
             for slot_idx in range(items.max_items_per_agent):
                 _add(f"USE_SLOT_{slot_idx}", "interaction", "item", True)
                 _add(f"DROP_SLOT_{slot_idx}", "interaction", "item", True)
+            for item in items.item_types:
+                for custom in item.interactions.local_commands:
+                    _add(
+                        build_item_command_action_name(item.id, custom.name, "local"),
+                        "interaction",
+                        "item",
+                        True,
+                    )
+                for custom in item.interactions.inventory_commands:
+                    _add(
+                        build_item_command_action_name(item.id, custom.name, "inventory"),
+                        "interaction",
+                        "item",
+                        True,
+                    )
 
         # Build action labels (compiler is the single source of truth)
         labels_path = config_pack_path / "action_labels.yaml"

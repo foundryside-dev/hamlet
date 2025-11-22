@@ -19,10 +19,14 @@ def _compile_when(rule: ItemAppearanceRuleConfig, schema: dict[str, str]) -> Non
     rule.when_ast = ast
 
 
+def _appearance(items):
+    return ItemsAppearanceConfig(version="1.0", items=items)
+
+
 def test_spawn_initial_items_gated_by_bar_condition() -> None:
     catalog = ItemsCatalogConfig.from_yaml(path=Path("configs/test/items_smoke/items.yaml"))
 
-    appearance = ItemsAppearanceConfig(
+    appearance = _appearance(
         items=[
             {
                 "item_type": "apple",
@@ -50,7 +54,7 @@ def test_spawn_initial_items_gated_by_bar_condition() -> None:
 def test_process_respawns_respects_condition() -> None:
     catalog = ItemsCatalogConfig.from_yaml(path=Path("configs/test/items_smoke/items.yaml"))
 
-    appearance = ItemsAppearanceConfig(
+    appearance = _appearance(
         items=[
             {
                 "item_type": "apple",
@@ -82,7 +86,7 @@ def test_process_respawns_respects_condition() -> None:
 def test_vfs_condition_gates_spawn() -> None:
     catalog = ItemsCatalogConfig.from_yaml(path=Path("configs/test/items_smoke/items.yaml"))
 
-    appearance = ItemsAppearanceConfig(
+    appearance = _appearance(
         items=[
             {
                 "item_type": "apple",
@@ -133,7 +137,7 @@ def test_vfs_condition_gates_spawn() -> None:
 
 def test_temporal_condition_and_boolean_logic() -> None:
     catalog = ItemsCatalogConfig.from_yaml(path=Path("configs/test/items_smoke/items.yaml"))
-    appearance = ItemsAppearanceConfig(
+    appearance = _appearance(
         items=[
             {
                 "item_type": "apple",
@@ -183,7 +187,7 @@ def test_temporal_condition_and_boolean_logic() -> None:
 
 def test_comparison_variants_and_vector_reduction() -> None:
     catalog = ItemsCatalogConfig.from_yaml(path=Path("configs/test/items_smoke/items.yaml"))
-    appearance = ItemsAppearanceConfig(
+    appearance = _appearance(
         items=[
             {
                 "item_type": "apple",
@@ -224,7 +228,7 @@ def test_unknown_symbol_rejected_at_compile_time() -> None:
 
 def test_missing_ast_raises_runtime_error() -> None:
     catalog = ItemsCatalogConfig.from_yaml(path=Path("configs/test/items_smoke/items.yaml"))
-    appearance = ItemsAppearanceConfig(
+    appearance = _appearance(
         items=[
             ItemAppearanceRuleConfig(
                 item_type="apple",
@@ -247,7 +251,7 @@ def test_equality_and_inequality_operators() -> None:
     catalog = ItemsCatalogConfig.from_yaml(path=Path("configs/test/items_smoke/items.yaml"))
 
     # Test == operator
-    appearance_eq = ItemsAppearanceConfig(
+    appearance_eq = _appearance(
         items=[
             {
                 "item_type": "apple",
@@ -296,7 +300,7 @@ def test_equality_and_inequality_operators() -> None:
 
     # Test != operator
     manager.active_items.clear()
-    appearance_neq = ItemsAppearanceConfig(
+    appearance_neq = _appearance(
         items=[
             {
                 "item_type": "apple",
@@ -325,7 +329,7 @@ def test_or_and_not_boolean_operators() -> None:
     catalog = ItemsCatalogConfig.from_yaml(path=Path("configs/test/items_smoke/items.yaml"))
 
     # Test OR operator
-    appearance_or = ItemsAppearanceConfig(
+    appearance_or = _appearance(
         items=[
             {
                 "item_type": "apple",
@@ -384,7 +388,7 @@ def test_or_and_not_boolean_operators() -> None:
 
     # Test NOT operator
     manager.active_items.clear()
-    appearance_not = ItemsAppearanceConfig(
+    appearance_not = _appearance(
         items=[
             {
                 "item_type": "apple",
@@ -413,7 +417,7 @@ def test_less_than_operators() -> None:
     catalog = ItemsCatalogConfig.from_yaml(path=Path("configs/test/items_smoke/items.yaml"))
 
     # Test < operator
-    appearance_lt = ItemsAppearanceConfig(
+    appearance_lt = _appearance(
         items=[
             {
                 "item_type": "apple",
@@ -440,7 +444,7 @@ def test_less_than_operators() -> None:
 
     # Test <= operator
     manager.active_items.clear()
-    appearance_lte = ItemsAppearanceConfig(
+    appearance_lte = _appearance(
         items=[
             {
                 "item_type": "apple",
@@ -464,7 +468,7 @@ def test_unconditional_spawn_has_no_overhead() -> None:
     catalog = ItemsCatalogConfig.from_yaml(path=Path("configs/test/items_smoke/items.yaml"))
 
     # Unconditional spawn rule (no when field)
-    appearance = ItemsAppearanceConfig(
+    appearance = _appearance(
         items=[
             {
                 "item_type": "apple",

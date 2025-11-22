@@ -16,9 +16,13 @@ def _bars(val: float, count: int = 1) -> dict[str, torch.Tensor]:
     return {"energy": torch.tensor([val] * count)}
 
 
+def _appearance(items):
+    return ItemsAppearanceConfig(version="1.0", items=items)
+
+
 def test_fixed_placement_spawns_at_given_positions() -> None:
     catalog = ItemsCatalogConfig.from_yaml(path=Path("configs/test/items_smoke/items.yaml"))
-    appearance = ItemsAppearanceConfig(
+    appearance = _appearance(
         items=[
             ItemAppearanceRuleConfig(
                 item_type="apple",
@@ -36,7 +40,7 @@ def test_fixed_placement_spawns_at_given_positions() -> None:
 
 def test_grid_placement_respects_spacing_and_count() -> None:
     catalog = ItemsCatalogConfig.from_yaml(path=Path("configs/test/items_smoke/items.yaml"))
-    appearance = ItemsAppearanceConfig(
+    appearance = _appearance(
         items=[
             ItemAppearanceRuleConfig(
                 item_type="apple",
@@ -57,7 +61,7 @@ def test_grid_placement_respects_spacing_and_count() -> None:
 def test_scripted_initial_spawns_only_matching_tick() -> None:
     catalog = ItemsCatalogConfig.from_yaml(path=Path("configs/test/items_smoke/items.yaml"))
     script = [{"tick": 1, "position": (0, 0)}, {"tick": 2, "position": (1, 1)}]
-    appearance = ItemsAppearanceConfig(
+    appearance = _appearance(
         items=[
             ItemAppearanceRuleConfig(
                 item_type="apple",
@@ -77,7 +81,7 @@ def test_scripted_initial_spawns_only_matching_tick() -> None:
 
 def test_time_window_gates_initial_spawn() -> None:
     catalog = ItemsCatalogConfig.from_yaml(path=Path("configs/test/items_smoke/items.yaml"))
-    appearance = ItemsAppearanceConfig(
+    appearance = _appearance(
         items=[
             ItemAppearanceRuleConfig(
                 item_type="apple",
@@ -96,7 +100,7 @@ def test_time_window_gates_initial_spawn() -> None:
 def test_poisson_respawn_probabilistic_gate() -> None:
     torch.manual_seed(0)
     catalog = ItemsCatalogConfig.from_yaml(path=Path("configs/test/items_smoke/items.yaml"))
-    appearance = ItemsAppearanceConfig(
+    appearance = _appearance(
         items=[
             ItemAppearanceRuleConfig(
                 item_type="apple",
@@ -115,7 +119,7 @@ def test_poisson_respawn_probabilistic_gate() -> None:
 def test_normal_respawn_samples_future_tick() -> None:
     torch.manual_seed(0)
     catalog = ItemsCatalogConfig.from_yaml(path=Path("configs/test/items_smoke/items.yaml"))
-    appearance = ItemsAppearanceConfig(
+    appearance = _appearance(
         items=[
             ItemAppearanceRuleConfig(
                 item_type="apple",
@@ -141,7 +145,7 @@ def test_normal_respawn_samples_future_tick() -> None:
 
 def test_max_total_caps_spawns() -> None:
     catalog = ItemsCatalogConfig.from_yaml(path=Path("configs/test/items_smoke/items.yaml"))
-    appearance = ItemsAppearanceConfig(
+    appearance = _appearance(
         items=[
             ItemAppearanceRuleConfig(
                 item_type="apple",
@@ -158,7 +162,7 @@ def test_max_total_caps_spawns() -> None:
 
 def test_time_window_respawn_stops_after_end() -> None:
     catalog = ItemsCatalogConfig.from_yaml(path=Path("configs/test/items_smoke/items.yaml"))
-    appearance = ItemsAppearanceConfig(
+    appearance = _appearance(
         items=[
             ItemAppearanceRuleConfig(
                 item_type="apple",
@@ -183,7 +187,7 @@ def test_time_window_respawn_stops_after_end() -> None:
 def test_scripted_respawn_consumes_events_by_tick() -> None:
     catalog = ItemsCatalogConfig.from_yaml(path=Path("configs/test/items_smoke/items.yaml"))
     script = [{"tick": 1, "position": (0, 0)}, {"tick": 2, "position": (1, 1)}]
-    appearance = ItemsAppearanceConfig(
+    appearance = _appearance(
         items=[
             ItemAppearanceRuleConfig(
                 item_type="apple",
@@ -206,7 +210,7 @@ def test_scripted_respawn_consumes_events_by_tick() -> None:
 
 def test_fixed_placement_skips_occupied_and_oob() -> None:
     catalog = ItemsCatalogConfig.from_yaml(path=Path("configs/test/items_smoke/items.yaml"))
-    appearance = ItemsAppearanceConfig(
+    appearance = _appearance(
         items=[
             ItemAppearanceRuleConfig(
                 item_type="apple",

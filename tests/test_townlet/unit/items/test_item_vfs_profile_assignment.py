@@ -12,13 +12,25 @@ from townlet.vfs.profiles import CompiledItemProfile, CompiledVariable
 from townlet.vfs.registry import VariableRegistry
 
 
+def _catalog(item_types):
+    return ItemsCatalogConfig(
+        version="1.0",
+        item_types=item_types,
+        max_items_per_agent=3,
+        max_items_in_world=10,
+    )
+
+
 def test_item_manager_assigns_vfs_profile_on_spawn():
     """ItemManager should assign vfs_profile from item type on spawn."""
     # Setup: Catalog with item types that have vfs_profile
-    catalog = ItemsCatalogConfig(
-        item_types=[
+    catalog = _catalog(
+        [
             ItemTypeConfig(
                 id="apple",
+                name="Apple",
+                icon="🍎",
+                tags=["food"],
                 vfs_profile="food_stats",
                 interactions=ItemInteractionsConfig(
                     on_pickup=[],
@@ -28,6 +40,9 @@ def test_item_manager_assigns_vfs_profile_on_spawn():
             ),
             ItemTypeConfig(
                 id="sword",
+                name="Sword",
+                icon="🗡️",
+                tags=["weapon"],
                 vfs_profile="weapon_stats",
                 interactions=ItemInteractionsConfig(
                     on_pickup=[],
@@ -35,9 +50,7 @@ def test_item_manager_assigns_vfs_profile_on_spawn():
                     on_drop=[],
                 ),
             ),
-        ],
-        max_items_per_agent=3,
-        max_items_in_world=10,
+        ]
     )
 
     # Create compiled item profiles
@@ -104,10 +117,13 @@ def test_item_manager_assigns_vfs_profile_on_spawn():
 def test_item_manager_preserves_vfs_profile_across_operations():
     """VFS profile should be preserved when item is lifted/placed."""
     # Setup
-    catalog = ItemsCatalogConfig(
-        item_types=[
+    catalog = _catalog(
+        [
             ItemTypeConfig(
                 id="potion",
+                name="Potion",
+                icon="🧪",
+                tags=["consumable"],
                 vfs_profile="consumable_stats",
                 interactions=ItemInteractionsConfig(
                     on_pickup=[],
@@ -115,9 +131,7 @@ def test_item_manager_preserves_vfs_profile_across_operations():
                     on_drop=[],
                 ),
             )
-        ],
-        max_items_per_agent=3,
-        max_items_in_world=10,
+        ]
     )
 
     # Create compiled item profiles

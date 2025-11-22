@@ -10,6 +10,9 @@ from townlet.items.manager import ItemManager
 def test_item_instance_initialization():
     """ItemInstance stores runtime state."""
     item = ItemInstance(
+        name="Apple",
+        icon="🍎",
+        tags=("food",),
         item_type="apple",
         instance_id=42,
         position=(3, 5),  # Grid position
@@ -30,6 +33,9 @@ def test_item_instance_initialization():
 def test_item_instance_tracks_age():
     """ItemInstance calculates age from spawn_tick."""
     item = ItemInstance(
+        name="Medkit",
+        icon="💊",
+        tags=("medical",),
         item_type="medkit",
         instance_id=1,
         position=(0, 0),
@@ -51,10 +57,14 @@ def items_catalog():
     from townlet.config.items_config import ItemInteractionsConfig, ItemTypeConfig
 
     return ItemsCatalogConfig(
+        version="1.0",
         max_items_per_agent=3,
         max_items_in_world=10,
         item_types=[
             ItemTypeConfig(
+                name="Apple",
+                icon="🍎",
+                tags=["food"],
                 id="apple",
                 vfs_profile="food",
                 duration=200,
@@ -62,6 +72,9 @@ def items_catalog():
                 interactions=ItemInteractionsConfig(on_pickup=[], on_use=[], on_drop=[]),
             ),
             ItemTypeConfig(
+                name="Medkit",
+                icon="💊",
+                tags=["medical"],
                 id="medkit",
                 vfs_profile="medical",
                 duration=None,  # Permanent

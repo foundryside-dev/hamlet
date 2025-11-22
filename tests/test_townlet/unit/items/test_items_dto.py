@@ -5,10 +5,12 @@ from pydantic import ValidationError
 
 from townlet.config.items_config import (
     ItemAppearanceRuleConfig,
+    ItemCustomCommand,
     ItemInteractionsConfig,
     ItemsAppearanceConfig,
     ItemsCatalogConfig,
     ItemTypeConfig,
+    build_item_command_action_name,
 )
 
 
@@ -16,6 +18,9 @@ def test_item_type_minimal():
     """ItemTypeConfig requires id, vfs_profile, interactions."""
     item = ItemTypeConfig(
         id="apple",
+        name="Apple",
+        icon="🍎",
+        tags=["food"],
         vfs_profile="food",
         interactions=ItemInteractionsConfig(
             on_pickup=[],
@@ -33,6 +38,9 @@ def test_item_type_with_lifecycle():
     """ItemTypeConfig supports duration and cooldown."""
     item = ItemTypeConfig(
         id="mushroom",
+        name="Mushroom",
+        icon="🍄",
+        tags=["food"],
         vfs_profile="food",
         interactions=ItemInteractionsConfig(
             on_pickup=[],
@@ -63,26 +71,35 @@ def test_item_interactions_use_effects_syntax():
 
 
 def test_item_type_rejects_custom_commands():
-    """Phase 1-3: Custom item commands are NOT supported."""
-    with pytest.raises(ValidationError, match="Extra inputs are not permitted"):
-        ItemTypeConfig(
-            id="umbrella",
-            vfs_profile="tool",
-            interactions=ItemInteractionsConfig(
-                on_pickup=[],
-                on_use=[],
-                on_drop=[],
-                local_commands=[{"name": "OPEN_UMBRELLA"}],  # REJECTED
-            ),
-        )
+    """Custom item commands are supported via ItemCustomCommand."""
+    cfg = ItemTypeConfig(
+        id="umbrella",
+        name="Umbrella",
+        icon="☂️",
+        tags=["tool"],
+        vfs_profile="tool",
+        interactions=ItemInteractionsConfig(
+            on_pickup=[],
+            on_use=[],
+            on_drop=[],
+            local_commands=[
+                ItemCustomCommand(name="OPEN_UMBRELLA", description=None, effects=[{"modify": "target.bar.energy", "value": "1.0"}])
+            ],
+        ),
+    )
+    assert cfg.interactions.local_commands[0].name == "OPEN_UMBRELLA"
 
 
 def test_items_catalog_minimal():
-    """ItemsCatalogConfig requires item_types list."""
+    """ItemsCatalogConfig requires item_types list and explicit limits/version."""
     catalog = ItemsCatalogConfig(
+        version="1.0",
         item_types=[
             ItemTypeConfig(
                 id="apple",
+                name="Apple",
+                icon="🍎",
+                tags=["food"],
                 vfs_profile="food",
                 interactions=ItemInteractionsConfig(
                     on_pickup=[],
@@ -91,29 +108,47 @@ def test_items_catalog_minimal():
                 ),
             ),
         ],
+        max_items_per_agent=3,
+        max_items_in_world=10,
     )
 
     assert len(catalog.item_types) == 1
-    assert catalog.max_items_per_agent == 3  # Default
-    assert catalog.max_items_in_world == 10  # Default
+    assert catalog.max_items_per_agent == 3
+    assert catalog.max_items_in_world == 10
 
 
 def test_items_catalog_rejects_duplicate_ids():
     """ItemsCatalogConfig validates unique item type IDs."""
     with pytest.raises(ValidationError, match="Duplicate item type IDs"):
         ItemsCatalogConfig(
+            version="1.0",
             item_types=[
-                ItemTypeConfig(id="apple", vfs_profile="food", interactions=ItemInteractionsConfig(on_pickup=[], on_use=[], on_drop=[])),
                 ItemTypeConfig(
-                    id="apple", vfs_profile="food", interactions=ItemInteractionsConfig(on_pickup=[], on_use=[], on_drop=[])
+                    id="apple",
+                    name="Apple",
+                    icon="🍎",
+                    tags=["food"],
+                    vfs_profile="food",
+                    interactions=ItemInteractionsConfig(on_pickup=[], on_use=[], on_drop=[]),
+                ),
+                ItemTypeConfig(
+                    id="apple",
+                    name="Apple2",
+                    icon="🍏",
+                    tags=["food"],
+                    vfs_profile="food",
+                    interactions=ItemInteractionsConfig(on_pickup=[], on_use=[], on_drop=[]),
                 ),  # Duplicate
             ],
+            max_items_per_agent=3,
+            max_items_in_world=10,
         )
 
 
 def test_items_appearance_minimal():
     """ItemsAppearanceConfig defines level-specific spawn rules."""
     appearance = ItemsAppearanceConfig(
+        version="1.0",
         items=[
             ItemAppearanceRuleConfig(
                 item_type="apple",
@@ -133,6 +168,7 @@ def test_items_appearance_minimal():
 def test_items_appearance_accepts_when():
     """Spawn conditions can be declared on appearance rules."""
     appearance = ItemsAppearanceConfig(
+        version="1.0",
         items=[
             ItemAppearanceRuleConfig(
                 item_type="apple",
@@ -149,7 +185,7 @@ def test_items_appearance_accepts_when():
 
 def test_items_appearance_empty_allowed():
     """Level can have no items (appearance.items = [])."""
-    appearance = ItemsAppearanceConfig(items=[])
+    appearance = ItemsAppearanceConfig(version="1.0", items=[])
     assert appearance.items == []
 
 
@@ -191,3 +227,66 @@ def test_items_appearance_from_yaml():
     assert appearance.items[0].schedule is not None
     assert appearance.items[0].schedule.type == "periodic"
     assert appearance.items[0].schedule.period == 100
+
+
+def test_items_catalog_requires_version_and_limits():
+    """Missing version or limits should fail validation."""
+    with pytest.raises(ValidationError):
+        ItemsCatalogConfig(
+            item_types=[
+                ItemTypeConfig(
+                    id="apple",
+                    name="Apple",
+                    icon="🍎",
+                    tags=["food"],
+                    vfs_profile="food",
+                    interactions=ItemInteractionsConfig(on_pickup=[], on_use=[], on_drop=[]),
+                )
+            ],
+            max_items_in_world=10,
+        )
+    with pytest.raises(ValidationError):
+        ItemsCatalogConfig(
+            version="1.0",
+            item_types=[
+                ItemTypeConfig(
+                    id="apple",
+                    name="Apple",
+                    icon="🍎",
+                    tags=["food"],
+                    vfs_profile="food",
+                    interactions=ItemInteractionsConfig(on_pickup=[], on_use=[], on_drop=[]),
+                )
+            ],
+            max_items_per_agent=3,
+        )
+
+
+def test_items_catalog_rejects_unknown_fields():
+    """Unknown fields are forbidden on ItemsCatalogConfig."""
+    with pytest.raises(ValidationError, match="Extra inputs are not permitted"):
+        ItemsCatalogConfig(
+            version="1.0",
+            item_types=[],
+            max_items_per_agent=1,
+            max_items_in_world=1,
+            unknown_field=123,  # type: ignore[arg-type]
+        )
+
+
+def test_item_custom_commands_schema_and_naming():
+    """Custom commands accept effects and generate stable action names."""
+    cmd = ItemCustomCommand(
+        name="OPEN_UMBRELLA",
+        description="Open it",
+        effects=[{"modify": "target.bar.energy", "value": "1.0"}],
+    )
+    interactions = ItemInteractionsConfig(
+        on_pickup=[],
+        on_use=[],
+        on_drop=[],
+        local_commands=[cmd],
+        inventory_commands=[],
+    )
+    assert interactions.local_commands[0].name == "OPEN_UMBRELLA"
+    assert build_item_command_action_name("umbrella", "OPEN_UMBRELLA", "local") == "ITEM_LOCAL_UMBRELLA_OPEN_UMBRELLA"

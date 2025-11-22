@@ -68,19 +68,22 @@ You are analyzing the **Compiler System** for VFS uplift gap analysis.
 **Source:** docs/plans/vfs_uplift/validation/requirements-checklist.md (Category 1)
 
 **Primary files to examine:**
-- src/townlet/universe/compiler.py (compilation pipeline)
-- src/townlet/universe/compiled.py (CompiledUniverse schema)
-- src/townlet/config/vfs_profiles_config.py (VFS profile DTOs)
-- src/townlet/config/effects_config.py (Effects catalog DTOs)
-- src/townlet/config/items_config.py (Items catalog DTOs)
+- src/townlet/universe/compiler.py (line 81: UniverseCompiler class, line 375: compile() method, line 420-477: seven-stage pipeline)
+- src/townlet/universe/compiled.py (line 58: CompiledUniverse class)
+- src/townlet/config/vfs_profiles_config.py (line 20: GlobalVFSProfileConfig, line 99: AgentVFSProfileConfig, line 154: ItemVFSProfileConfig DTOs)
+- src/townlet/config/effects_config.py (line 157: EffectDefinitionConfig, line 193: EffectsConfig DTOs)
+- src/townlet/config/items_config.py (line 58: ItemTypeConfig, line 101: ItemsCatalogConfig DTOs)
 
 **Test files:**
-- tests/test_townlet/unit/universe/test_compiler.py
-- tests/test_townlet/unit/universe/test_compiled.py
+- tests/test_townlet/unit/universe/test_compiler_pipeline.py
+- tests/test_townlet/unit/universe/test_compiler_comprehensive.py
+- tests/test_townlet/unit/universe/test_compiled_universe.py
+- tests/test_townlet/unit/universe/test_compiler_cli.py
+- tests/test_townlet/unit/universe/test_compiler_cache.py
 
 **Adjacent systems (reference but don't report):**
-- src/townlet/vfs/profiles.py (VFS compilation - verify integration only)
-- src/townlet/effects/catalog.py (Effects compilation - verify integration only)
+- src/townlet/vfs/profiles.py (line 68: VFSProfileCompiler - verify compiler.py imports at line 57 and calls at line 182)
+- src/townlet/effects/catalog.py (line 34: EffectCatalog, line 43: from_config() - verify compiler.py imports at line 35 and calls at line 231)
 
 **Your task:**
 
@@ -121,14 +124,15 @@ You are analyzing the **Compiler System** for VFS uplift gap analysis.
 
 | Req ID | Requirement | Status | Evidence | Notes |
 |--------|-------------|--------|----------|-------|
-| COMP-1 | Seven-stage pipeline | ✅ COMPLETE | src/townlet/universe/compiler.py:145-892 | All 7 stages present |
-| COMP-2 | Load VFS profiles | ❌ MISSING | Not found | No vfs_profiles.yaml loading in compiler |
+| COMP-1 | Seven-stage pipeline | ✅ COMPLETE | src/townlet/universe/compiler.py:420-477 | All 7 stages: load→symbol→resolve→validate→enrich→compile→emit |
+| COMP-2 | VFS profile compilation | ✅ COMPLETE | src/townlet/universe/compiler.py:182 | Calls VFSProfileCompiler from vfs/profiles.py:68 |
+| COMP-3 | Effects catalog compilation | ✅ COMPLETE | src/townlet/universe/compiler.py:231 | Calls EffectCatalog.from_config() |
 [... continue for all COMP-* ...]
 
 ## Adjacent Systems Referenced
 
-- VFS compilation (VFS agent's scope): Verified compiler calls VFSProfileCompiler.compile()
-- Effects compilation (Effects agent's scope): Verified compiler calls EffectCatalog.from_config()
+- VFS compilation (VFS agent's scope): Verified compiler imports VFSProfileCompiler (line 57) and instantiates it (line 182)
+- Effects compilation (Effects agent's scope): Verified compiler imports EffectCatalog (line 35) and calls from_config() (line 231)
 ```
 
 **Important:**
@@ -152,16 +156,17 @@ You are analyzing the **VFS System** for VFS uplift gap analysis.
 **Source:** docs/plans/vfs_uplift/validation/requirements-checklist.md (Category 2)
 
 **Primary files to examine:**
-- src/townlet/vfs/registry.py (VariableRegistry, scoped storage)
-- src/townlet/vfs/profiles.py (VFS profile compilation)
-- src/townlet/vfs/schema.py (VariableDef, scopes)
-- src/townlet/vfs/evaluator.py (VFS expression evaluation)
-- src/townlet/vfs/observation_builder.py (obs_vfs field)
+- src/townlet/vfs/registry.py (line 35: VariableRegistry class - scoped storage with GPU tensors)
+- src/townlet/vfs/profiles.py (line 68: VFSProfileCompiler class - THE MAIN VFS COMPILER - compiles global/agent/item profiles)
+- src/townlet/vfs/schema.py (VariableDef, scopes: global/agent/item)
+- src/townlet/vfs/evaluator.py (line 23: VFSEvaluator class, line 34: evaluate_global_profile method)
+- src/townlet/vfs/observation_builder.py (line 22: VFSObservationSpec, line 31: item_vfs_dim field, line 136: item_vfs_storage access)
 
 **Test files:**
 - tests/test_townlet/unit/vfs/test_registry.py
-- tests/test_townlet/unit/vfs/test_profiles_dto.py
+- tests/test_townlet/unit/config/test_vfs_profiles_dto.py (NOTE: under config/, not vfs/)
 - tests/test_townlet/unit/vfs/test_observation_builder.py
+- tests/test_townlet/unit/universe/test_vfs_profile_compilation.py (compiler integration tests)
 - tests/test_townlet/integration/test_vfs_runtime_evaluation.py
 
 **Adjacent systems (reference but don't report):**
@@ -186,10 +191,13 @@ You are analyzing the **VFS System** for VFS uplift gap analysis.
 **Template:** Same structure as Agent 1, adapted for VFS-* requirements
 
 **Critical requirements to verify:**
-- VFS-1: Expression language support (evaluator module exists and works)
-- VFS-2: Three scopes (global/agent/item all functional)
-- VFS-8: Mark-and-sweep evaluation (not just eager mode)
-- VFS-12: Item VFS profile-driven storage (not variables_reference.yaml)
+- VFS-1: Expression language support (evaluator module exists at vfs/evaluator.py:23 and works)
+- VFS-2: Three scopes (global/agent/item all functional in registry and schema)
+- VFS-8: Mark-and-sweep evaluation (check if VFSEvaluator has mark-and-sweep mode vs eager)
+- VFS-12: Item VFS profile-driven storage (vfs_profile field in ItemTypeConfig, not variables_reference.yaml)
+
+**CRITICAL - VFS Compiler Verification:**
+The VFSProfileCompiler class EXISTS at src/townlet/vfs/profiles.py:68. If you cannot find it, you are looking in the wrong file. This is the MAIN VFS COMPILER that compiles global/agent/item profiles with expression dependency resolution. It is imported and used by UniverseCompiler.
 ```
 
 ---
@@ -206,17 +214,20 @@ You are analyzing the **Effects System** for VFS uplift gap analysis.
 **Source:** docs/plans/vfs_uplift/validation/requirements-checklist.md (Category 3)
 
 **Primary files to examine:**
-- src/townlet/effects/catalog.py (EffectCatalog compilation)
-- src/townlet/effects/executor.py (Command execution)
-- src/townlet/effects/manager.py (ActiveEffect lifecycle)
-- src/townlet/effects/schema.py (EffectDef, CommandNode)
-- src/townlet/effects/context.py (ExecutionContext)
-- src/townlet/config/effects_config.py (DTOs)
+- src/townlet/effects/catalog.py (line 34: EffectCatalog class, line 43: from_config method)
+- src/townlet/effects/executor.py (line 101: CommandExecutor class, line 112: execute method)
+- src/townlet/effects/manager.py (line 57: EffectManager class, line 23: NullItemManager)
+- src/townlet/effects/schema.py (line 30: CommandNode class, line 15: CommandType enum - NOTE: NO EffectDef in this file)
+- src/townlet/effects/context.py (line 26: ExecutionContext class)
+- src/townlet/config/effects_config.py (line 157: EffectDefinitionConfig DTO, line 193: EffectsConfig)
 
 **Test files:**
 - tests/test_townlet/unit/effects/test_catalog_compilation.py
-- tests/test_townlet/unit/effects/test_command_pipeline.py
-- tests/test_townlet/unit/effects/test_effect_lifecycle.py
+- tests/test_townlet/unit/effects/test_command_executor.py
+- tests/test_townlet/unit/effects/test_command_compiler.py
+- tests/test_townlet/unit/effects/test_command_parser.py
+- tests/test_townlet/unit/effects/test_effect_manager.py
+- tests/test_townlet/unit/effects/test_lifecycle_interrupt.py
 - tests/test_townlet/integration/test_effects_compiled_catalog.py
 
 **Adjacent systems (reference but don't report):**
@@ -255,10 +266,11 @@ You are analyzing the **Items System** for VFS uplift gap analysis.
 **Source:** docs/plans/vfs_uplift/validation/requirements-checklist.md (Category 4)
 
 **Primary files to examine:**
-- src/townlet/items/manager.py (ItemManager, spawn/despawn)
-- src/townlet/items/inventory.py (Agent inventory state)
-- src/townlet/items/instance.py (ItemInstance dataclass)
-- src/townlet/config/items_config.py (DTOs)
+- src/townlet/items/manager.py (line 45: ItemManager class - spawn/despawn/lifecycle)
+- src/townlet/items/inventory.py (line 15: InventoryState class - per-agent inventory tracking)
+- src/townlet/items/instance.py (line 11: ItemInstance dataclass - runtime item representation)
+- src/townlet/items/action_handlers.py (GET/DROP/USE action implementations)
+- src/townlet/config/items_config.py (line 58: ItemTypeConfig with vfs_profile field, line 101: ItemsCatalogConfig)
 
 **Test files:**
 - tests/test_townlet/unit/items/test_item_manager.py
@@ -303,8 +315,8 @@ You are analyzing **Runtime Integration** for VFS uplift gap analysis.
 **Source:** docs/plans/vfs_uplift/validation/requirements-checklist.md (Category 5)
 
 **Primary files to examine:**
-- src/townlet/environment/vectorized_env.py (main environment)
-- src/townlet/vfs/observation_builder.py (obs construction)
+- src/townlet/environment/vectorized_env.py (main environment - check step() method for VFS evaluation calls)
+- src/townlet/vfs/observation_builder.py (line 18: build_vfs_observation function - verify line 136-180 for item_vfs handling)
 
 **Test files:**
 - tests/test_townlet/integration/test_vfs_runtime_evaluation.py

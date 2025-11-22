@@ -190,10 +190,9 @@ class TestBuildMovementDeltas:
 
         deltas = env._build_movement_deltas()
 
-        # Should return tensor with shape [substrate_action_count, position_dim]
-        # For Grid2D: 6 substrate actions (UP, DOWN, LEFT, RIGHT, INTERACT, WAIT)
+        # Should return tensor with shape [action_dim, position_dim]
         assert isinstance(deltas, torch.Tensor)
-        assert deltas.shape[0] == env.action_space.substrate_action_count
+        assert deltas.shape[0] == env.action_dim
         assert deltas.shape[1] == env.substrate.position_dim
 
     def test_build_movement_deltas_correct_values_grid2d(self, cpu_env_factory):
@@ -277,7 +276,8 @@ class TestVectorizedHamletEnvStep:
         env = env.universe.create_environment(num_agents=1, level_name="L3_temporal_mechanics", device=env.device)
         env.reset()
 
-        actions = torch.tensor([env.wait_action_idx], device=env.device)
+        wait_action_idx = env.action_ids["WAIT"]
+        actions = torch.tensor([wait_action_idx], device=env.device)
         env.step(actions)
         assert env.time_of_day == 1
 
@@ -292,7 +292,8 @@ class TestVectorizedHamletEnvStep:
         env.agent_lifespan = 5
         env.reset()
 
-        actions = torch.tensor([env.wait_action_idx], device=env.device)
+        wait_action_idx = env.action_ids["WAIT"]
+        actions = torch.tensor([wait_action_idx], device=env.device)
         for _ in range(4):
             _, _, dones, _ = env.step(actions)
             assert not dones[0]
@@ -331,7 +332,8 @@ class TestExecuteActions:
         initial_position = env.positions[0].clone()
 
         # Execute UP action (action 0 for Grid2D)
-        actions = torch.tensor([0], device=env.device)
+        up_idx = env.action_ids["UP"]
+        actions = torch.tensor([up_idx], device=env.device)
         env._execute_actions(actions)
 
         # Position should change
@@ -345,7 +347,8 @@ class TestExecuteActions:
         initial_position = env.positions[0].clone()
 
         # Execute WAIT action using runtime index
-        actions = torch.tensor([env.wait_action_idx], device=env.device)
+        wait_action_idx = env.action_ids["WAIT"]
+        actions = torch.tensor([wait_action_idx], device=env.device)
         env._execute_actions(actions)
 
         # Position should not change
@@ -359,8 +362,10 @@ class TestExecuteActions:
         initial_position = env.positions[0].clone()
 
         # Execute INTERACT action using runtime index
-        actions = torch.tensor([env.interact_action_idx], device=env.device)
-        env._execute_actions(actions)
+        interact_idx = env.action_ids.get("INTERACT")
+        if interact_idx is not None:
+            actions = torch.tensor([interact_idx], device=env.device)
+            env._execute_actions(actions)
 
         # Position should not change
         assert torch.all(env.positions[0] == initial_position).item()
@@ -499,11 +504,12 @@ class TestGetActionMasks:
 
         env.time_of_day = 10  # Bar closed mid-morning
         closed_masks = env.get_action_masks()
-        assert not closed_masks[0, env.interact_action_idx]
+        interact_idx = env.action_ids["INTERACT"]
+        assert not closed_masks[0, interact_idx]
 
         env.time_of_day = 20  # Bar open in evening
         open_masks = env.get_action_masks()
-        assert open_masks[0, env.interact_action_idx]
+        assert open_masks[0, interact_idx]
 
     def test_get_action_masks_respect_training_enabled_actions(self, custom_env_builder):
         env = custom_env_builder(
@@ -616,7 +622,7 @@ class TestApplyCustomAction:
         env.reset()
 
         # Find REST action
-        rest_action = env._get_optional_action_idx("REST")
+        rest_action = env.action_ids.get("REST")
         if rest_action is not None:
             action_config = env.action_space.get_action_by_id(rest_action)
 
@@ -634,7 +640,7 @@ class TestApplyCustomAction:
         env.reset()
 
         # Find MEDITATE action
-        meditate_action = env._get_optional_action_idx("MEDITATE")
+        meditate_action = env.action_ids.get("MEDITATE")
         if meditate_action is not None:
             action_config = env.action_space.get_action_by_id(meditate_action)
 
@@ -647,17 +653,15 @@ class TestApplyCustomAction:
             assert isinstance(env.meters, torch.Tensor)
             assert env.meters.shape == (1, 8)
 
-    def test_get_optional_action_idx_returns_int_or_none(self, cpu_env_factory):
-        """Should return action index for valid actions, None otherwise."""
+    def test_action_id_lookup_returns_int_or_none(self, cpu_env_factory):
+        """action_ids lookup returns int for valid actions, None otherwise."""
         env = cpu_env_factory()
         env.reset()
 
-        # Valid action
-        rest_idx = env._get_optional_action_idx("REST")
+        rest_idx = env.action_ids.get("REST")
         assert rest_idx is None or isinstance(rest_idx, int)
 
-        # Invalid action
-        invalid_idx = env._get_optional_action_idx("NONEXISTENT_ACTION")
+        invalid_idx = env.action_ids.get("NONEXISTENT_ACTION")
         assert invalid_idx is None
 
 

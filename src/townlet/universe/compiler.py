@@ -34,6 +34,7 @@ from townlet.config.training_v2_config import TrainingV2Config
 from townlet.config.vfs_profiles_config import VFSProfilesConfig
 from townlet.effects.catalog import EffectCatalog
 from townlet.environment.action_config import ActionConfig, ActionSpaceConfig
+from townlet.environment.action_labels import get_labels
 from townlet.environment.affordance_config import AffordanceConfig  # Runtime representation
 from townlet.environment.substrate_action_validator import SubstrateActionValidator
 from townlet.environment.temporal_utils import is_affordance_open
@@ -375,6 +376,7 @@ class UniverseCompiler:
     def compile(self, experiment_dir: Path, primary_level: str | None = None, use_cache: bool = True) -> CompiledUniverse:
         """Compile v2.1 hierarchical configs into a multi-level CompiledUniverse."""
         experiment_dir = Path(experiment_dir).resolve()
+        self.config_pack_path = experiment_dir
 
         self._validate_config_dir(experiment_dir)
 
@@ -1103,6 +1105,7 @@ class UniverseCompiler:
                 level.training,
                 level.affordances,
                 raw.items,
+                self.config_pack_path,
             )
             meter_metadata = self._build_meter_metadata(raw.environment, level.bars)
             affordance_metadata = self._build_affordance_metadata(level.affordances)
@@ -1704,12 +1707,13 @@ class UniverseCompiler:
         training: TrainingV2Config,
         affordances: AffordancesV2Config,
         items: ItemsCatalogConfig | None,
+        config_pack_path: Path,
     ) -> ActionSpaceMetadata:
         """Build action space metadata using substrate actions + custom actions."""
         entries: list[ActionMetadata] = []
         next_id = 0
 
-        def _add(name: str, action_type: str, source: str, enabled: bool) -> None:
+        def _add(name: str, action_type: str, source: str, enabled: bool, movement_delta: tuple[float, ...] | None = None) -> None:
             nonlocal next_id
             entries.append(
                 ActionMetadata(
@@ -1720,6 +1724,7 @@ class UniverseCompiler:
                     source=source,  # type: ignore[arg-type]
                     costs={},
                     description="",
+                    movement_delta=movement_delta,
                 )
             )
             next_id += 1
@@ -1738,7 +1743,10 @@ class UniverseCompiler:
                 enabled = True
                 if action.name == "INTERACT" and not allow_interact:
                     enabled = False
-                _add(action.name, action.type, "substrate", enabled)
+                movement_delta: tuple[float, ...] | None = None
+                if action.type == "movement" and action.delta is not None:
+                    movement_delta = tuple(float(d) for d in action.delta)
+                _add(action.name, action.type, "substrate", enabled, movement_delta=movement_delta)
 
         reserved_names: set[str] = {"INTERACT"}
         if items is not None:
@@ -1763,7 +1771,32 @@ class UniverseCompiler:
                 _add(f"USE_SLOT_{slot_idx}", "interaction", "item", True)
                 _add(f"DROP_SLOT_{slot_idx}", "interaction", "item", True)
 
-        return ActionSpaceMetadata(total_actions=len(entries), actions=tuple(entries))
+        # Build action labels (compiler is the single source of truth)
+        labels_path = config_pack_path / "action_labels.yaml"
+        custom_labels: dict[int, str] | None = None
+        if labels_path.exists():
+            import yaml
+
+            data = yaml.safe_load(labels_path.read_text()) or {}
+            raw_custom = data.get("custom")
+            if isinstance(raw_custom, dict):
+                custom_labels = {int(k): str(v) for k, v in raw_custom.items()}
+
+        label_config = actions.actions.labels
+        label_preset = label_config.preset
+        action_labels = get_labels(
+            preset=label_preset if custom_labels is None else None,
+            custom_labels=custom_labels,
+            substrate_position_dim=self._infer_position_dim(stratum.stratum.substrate),
+        )
+
+        return ActionSpaceMetadata(
+            total_actions=len(entries),
+            actions=tuple(entries),
+            labels=action_labels.get_all_labels(),
+            label_description=action_labels.description,
+            label_domain=action_labels.domain,
+        )
 
     def _build_meter_metadata(
         self,

@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING, Any, Literal, cast
 import torch
 
 from townlet.environment.action_builder import ComposedActionSpace
+from townlet.environment.action_labels import ActionLabels
 from townlet.environment.affordance_engine import AffordanceEngine
 from townlet.environment.dac_engine import DACEngine
 from townlet.environment.meter_dynamics import MeterDynamics
@@ -166,36 +167,17 @@ class VectorizedHamletEnv:
 
         self.substrate = SubstrateFactory.build(self.universe.stratum.stratum.substrate, device=torch_device)
 
-        from townlet.environment.action_labels import get_labels
+        # Action labels are provided by the compiler via ActionSpaceMetadata.
+        compiled_labels = getattr(universe.action_space_metadata, "labels", {}) or {}
+        if not compiled_labels:
+            raise ValueError("Compiled action labels missing; recompile configs to generate ActionSpaceMetadata.labels.")
 
-        # Support optional override via action_labels.yaml alongside actions.yaml.
-        # When present, this file should define a top-level 'custom' mapping from
-        # canonical indices to labels (0: 'PORT', 1: 'STARBOARD', ...).
-        custom_labels: dict[int, str] | None = None
-        labels_path = self.config_pack_path / "action_labels.yaml"
-        if labels_path.exists():
-            try:
-                import yaml
-
-                data = yaml.safe_load(labels_path.read_text()) or {}
-                raw_custom = data.get("custom")
-                if isinstance(raw_custom, dict):
-                    custom_labels = {int(k): str(v) for k, v in raw_custom.items()}
-            except Exception:  # pragma: no cover - defensive
-                custom_labels = None
-
-        if custom_labels:
-            self.action_labels = get_labels(
-                preset=None,
-                custom_labels=custom_labels,
-                substrate_position_dim=self.substrate.position_dim,
-            )
-        else:
-            action_labels_config = self.universe.actions.actions.labels
-            self.action_labels = get_labels(
-                preset=action_labels_config.preset,
-                substrate_position_dim=self.substrate.position_dim,
-            )
+        # Rehydrate into ActionLabels for downstream helpers
+        self.action_labels = ActionLabels(
+            labels=dict(compiled_labels),
+            description=getattr(universe.action_space_metadata, "label_description", ""),
+            domain=getattr(universe.action_space_metadata, "label_domain", ""),
+        )
 
         # Metadata and observation activity
         self.metadata = self.universe.metadata
@@ -574,10 +556,7 @@ class VectorizedHamletEnv:
             self.substrate,
         )
         self.action_dim = self.action_space.action_dim
-        self.interact_action_idx = self.action_space.get_action_by_name("INTERACT").id
-        self.wait_action_idx = self.action_space.get_action_by_name("WAIT").id
-        self.up_z_action_idx = self._get_optional_action_idx("UP_Z")
-        self.down_z_action_idx = self._get_optional_action_idx("DOWN_Z")
+        self.action_ids: dict[str, int] = {action.name: action.id for action in self.action_space.actions}
         self._movement_deltas = self._build_movement_deltas()
 
         # State tensors (initialized in reset)
@@ -742,13 +721,6 @@ class VectorizedHamletEnv:
         """
         self.exploration_module = exploration
 
-    def _get_optional_action_idx(self, action_name: str) -> int | None:
-        """Return action index if available in composed action space."""
-        try:
-            return self.action_space.get_action_by_name(action_name).id
-        except ValueError:
-            return None
-
     def _apply_configured_affordance_positions(self) -> None:
         """Load static affordance positions from config/optimization data."""
 
@@ -852,6 +824,7 @@ class VectorizedHamletEnv:
         id_lookup = {a.name: a.id for a in action_metadata.actions}
         type_lookup = {a.name: a.type for a in action_metadata.actions}
         source_lookup = {a.name: a.source for a in action_metadata.actions}
+        movement_delta_lookup = {a.name: a.movement_delta for a in action_metadata.actions}
 
         for action in substrate_actions:
             if action.name not in id_lookup:
@@ -861,6 +834,9 @@ class VectorizedHamletEnv:
             action.enabled = enabled
             action.type = type_lookup.get(action.name, action.type)
             action.source = source_lookup.get(action.name, "substrate")
+            delta_override = movement_delta_lookup.get(action.name)
+            if delta_override is not None:
+                action.delta = tuple(delta_override)
             actions.append(action)
 
         for meta_action in action_metadata.actions:
@@ -877,7 +853,7 @@ class VectorizedHamletEnv:
                 type=meta_action.type,
                 costs={},
                 effects={},
-                delta=None,
+                delta=tuple(meta_action.movement_delta) if meta_action.movement_delta is not None else None,
                 teleport_to=None,
                 enabled=meta_action.enabled,
                 description=meta_action.description or None,
@@ -902,23 +878,22 @@ class VectorizedHamletEnv:
         )
 
     def _build_movement_deltas(self) -> torch.Tensor:
-        """Build movement delta tensor from substrate default actions.
+        """Build movement delta tensor from action space (metadata-driven).
 
         Returns:
-            [substrate_action_count, position_dim] tensor of movement deltas
+            [action_dim, position_dim] tensor of movement deltas
         """
-        substrate_action_count = self.action_space.substrate_action_count
         position_dim = self.substrate.position_dim
 
         # Initialize zero deltas for all actions
         deltas = torch.zeros(
-            (substrate_action_count, position_dim),
+            (self.action_dim, position_dim),
             device=self.device,
             dtype=self.substrate.position_dtype,
         )
 
         # Fill in deltas from any action that declares a delta
-        for action in self.action_space.actions[:substrate_action_count]:
+        for action in self.action_space.actions:
             if action.type == "movement" and action.delta is not None:
                 deltas[action.id] = torch.tensor(
                     action.delta,
@@ -1387,11 +1362,31 @@ class VectorizedHamletEnv:
             at_left = self.positions[:, 0] == 0  # x == 0
             at_right = self.positions[:, 0] == self.grid_size - 1  # x == max
 
-            # Mask invalid movements
-            action_masks[at_top, 0] = False  # Can't go UP at top edge
-            action_masks[at_bottom, 1] = False  # Can't go DOWN at bottom edge
-            action_masks[at_left, 2] = False  # Can't go LEFT at left edge
-            action_masks[at_right, 3] = False  # Can't go RIGHT at right edge
+            # Mask invalid movements using movement deltas (metadata-driven, no hardcoded names)
+            deltas = self._movement_deltas
+            # Up/down along y-axis
+            up_action_ids = torch.nonzero(deltas[:, 1] < 0, as_tuple=False).squeeze(1)
+            down_action_ids = torch.nonzero(deltas[:, 1] > 0, as_tuple=False).squeeze(1)
+            # Left/right along x-axis
+            left_action_ids = torch.nonzero(deltas[:, 0] < 0, as_tuple=False).squeeze(1)
+            right_action_ids = torch.nonzero(deltas[:, 0] > 0, as_tuple=False).squeeze(1)
+
+            if up_action_ids.numel() > 0:
+                rows = at_top.nonzero(as_tuple=True)[0]
+                if rows.numel() > 0:
+                    action_masks[rows.unsqueeze(1), up_action_ids] = False
+            if down_action_ids.numel() > 0:
+                rows = at_bottom.nonzero(as_tuple=True)[0]
+                if rows.numel() > 0:
+                    action_masks[rows.unsqueeze(1), down_action_ids] = False
+            if left_action_ids.numel() > 0:
+                rows = at_left.nonzero(as_tuple=True)[0]
+                if rows.numel() > 0:
+                    action_masks[rows.unsqueeze(1), left_action_ids] = False
+            if right_action_ids.numel() > 0:
+                rows = at_right.nonzero(as_tuple=True)[0]
+                if rows.numel() > 0:
+                    action_masks[rows.unsqueeze(1), right_action_ids] = False
 
         # 3D-specific: mask Z-axis movements at floor/ceiling (discrete grids only)
         if self.grid_size is not None and self.substrate.position_dim == 3:
@@ -1402,10 +1397,17 @@ class VectorizedHamletEnv:
             else:
                 at_ceiling = torch.zeros(self.num_agents, dtype=torch.bool, device=self.device)
 
-            if self.up_z_action_idx is not None:
-                action_masks[at_ceiling, self.up_z_action_idx] = False  # Can't go UP_Z at ceiling
-            if self.down_z_action_idx is not None:
-                action_masks[at_floor, self.down_z_action_idx] = False  # Can't go DOWN_Z at floor
+            deltas = self._movement_deltas
+            up_z_action_ids = torch.nonzero(deltas[:, 2] > 0, as_tuple=False).squeeze(1)
+            down_z_action_ids = torch.nonzero(deltas[:, 2] < 0, as_tuple=False).squeeze(1)
+            if up_z_action_ids.numel() > 0:
+                rows = at_ceiling.nonzero(as_tuple=True)[0]
+                if rows.numel() > 0:
+                    action_masks[rows.unsqueeze(1), up_z_action_ids] = False
+            if down_z_action_ids.numel() > 0:
+                rows = at_floor.nonzero(as_tuple=True)[0]
+                if rows.numel() > 0:
+                    action_masks[rows.unsqueeze(1), down_z_action_ids] = False
 
         # Mask INTERACT - only valid when on an open affordance
         # P1.4: Removed affordability check - agents can attempt INTERACT even when broke
@@ -1413,7 +1415,7 @@ class VectorizedHamletEnv:
         # wastes a turn (passive decay) and teaches economic planning
 
         # Use cached INTERACT index (from ActionSpaceBuilder)
-        interact_action_idx = self.interact_action_idx
+        interact_action_idx = self.action_ids.get("INTERACT")
 
         on_valid_affordance = torch.zeros(self.num_agents, dtype=torch.bool, device=self.device)
 
@@ -1425,9 +1427,10 @@ class VectorizedHamletEnv:
             on_this_affordance = self.substrate.is_on_position(self.positions, affordance_pos)
             on_valid_affordance |= on_this_affordance
 
-        base_interact_mask = action_masks[:, interact_action_idx].clone()
-        # Respect config-disabled INTERACT entries by preserving the base mask.
-        action_masks[:, interact_action_idx] = base_interact_mask & on_valid_affordance
+        if interact_action_idx is not None:
+            base_interact_mask = action_masks[:, interact_action_idx].clone()
+            # Respect config-disabled INTERACT entries by preserving the base mask.
+            action_masks[:, interact_action_idx] = base_interact_mask & on_valid_affordance
 
         # P3.1: Mask all actions for dead agents according to terminal conditions.
         # This must be LAST to override all other masking. Terminal conditions are
@@ -1570,8 +1573,7 @@ class VectorizedHamletEnv:
         Execute movement, interaction, and wait actions.
 
         Args:
-            actions: [num_agents] tensor
-                0=UP, 1=DOWN, 2=LEFT, 3=RIGHT, 4=INTERACT, 5=WAIT
+            actions: [num_agents] tensor of action IDs from the composed action space
 
         Returns:
             Dictionary mapping agent indices to affordance names for successful interactions
@@ -1706,24 +1708,24 @@ class VectorizedHamletEnv:
                     except ValueError:
                         pass  # Action not in action space
 
-        # Handle INTERACT actions
-        # Use cached INTERACT index (from ActionSpaceBuilder)
-        interact_action_idx = self.interact_action_idx
+        # Handle INTERACT actions (if present in the action space)
+        interact_action_idx = self.action_ids.get("INTERACT")
 
         successful_interactions = {}
-        interact_mask = (actions == interact_action_idx) & substrate_mask
-        if interact_mask.any():
-            # Apply interaction costs from bars.yaml (per-level BarsV2Config).
-            interaction_costs = torch.zeros(self.meter_count, device=self.device)
-            for bar in self.bars_config.meters:
-                idx = self.meter_name_to_index.get(bar.name)
-                if idx is not None:
-                    interaction_costs[idx] = float(bar.depletion.interact)
+        if interact_action_idx is not None:
+            interact_mask = (actions == interact_action_idx) & substrate_mask
+            if interact_mask.any():
+                # Apply interaction costs from bars.yaml (per-level BarsV2Config).
+                interaction_costs = torch.zeros(self.meter_count, device=self.device)
+                for bar in self.bars_config.meters:
+                    idx = self.meter_name_to_index.get(bar.name)
+                    if idx is not None:
+                        interaction_costs[idx] = float(bar.depletion.interact)
 
-            self.meters[interact_mask] -= interaction_costs.unsqueeze(0)
-            self.meters = torch.clamp(self.meters, 0.0, 1.0)
+                self.meters[interact_mask] -= interaction_costs.unsqueeze(0)
+                self.meters = torch.clamp(self.meters, 0.0, 1.0)
 
-            successful_interactions = self._handle_interactions(interact_mask)
+                successful_interactions = self._handle_interactions(interact_mask)
 
         return successful_interactions
 

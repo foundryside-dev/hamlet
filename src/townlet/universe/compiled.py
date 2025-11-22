@@ -443,6 +443,9 @@ def _action_space_metadata_from_plain(payload: Mapping[str, Any]) -> ActionSpace
     return ActionSpaceMetadata(
         total_actions=payload["total_actions"],
         actions=tuple(ActionMetadata(**entry) for entry in payload.get("actions", [])),
+        labels=payload.get("labels", {}),
+        label_description=payload.get("label_description"),
+        label_domain=payload.get("label_domain"),
     )
 
 

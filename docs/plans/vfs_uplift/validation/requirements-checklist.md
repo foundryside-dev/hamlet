@@ -21,6 +21,18 @@
 
 **Evidence Format:** file:line or test:name for every claim
 
+**Agent Map (10 agents):**
+- Agent 1: Compiler & Schema (COMP-*)
+- Agent 2: VFS System (VFS-*)
+- Agent 3: Effects & Runtime Expressions (EFF-*)
+- Agent 4: Item VFS & Inventory (ITEM-*)
+- Agent 5: Runtime Integration (RUN-*)
+- Agent 6: Observations & Training (OBS-*, RUN overlap)
+- Agent 7: Testing (TEST-*)
+- Agent 8: Documentation (DOC-*)
+- Agent 9: Performance & Benchmarks (PERF-*)
+- Agent 10: Synthesis (final integration)
+
 ---
 
 ## Category 1: Compiler (COMP-*)

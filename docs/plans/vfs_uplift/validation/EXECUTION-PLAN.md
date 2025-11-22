@@ -2,26 +2,48 @@
 
 **Status:** Ready to Execute
 **Created:** 2025-11-22
-**Estimated Duration:** 6-12 hours (parallel execution)
-**Baseline Commit:** da4adcf
+**Total Requirements:** 157 (124 explicit + 33 derived)
+**Baseline Commit:** ac67272
+**Agents:** 10 (9 parallel + 1 synthesis)
 
 ---
 
 ## Objective
 
-Execute systematic gap analysis of VFS uplift implementation by dispatching 6 parallel agents, each verifying their assigned requirements with file:line evidence, then synthesizing results into a final gap report.
+Execute systematic gap analysis of VFS uplift implementation by dispatching **10 parallel agents**, each verifying their assigned requirements with file:line evidence, then synthesizing results into a final gap report.
+
+---
+
+## Agent Division (No Overlap)
+
+| Agent | Scope | Requirements | Count |
+|-------|-------|--------------|-------|
+| 1 | Compiler & Schema | COMP-1 to COMP-20 | 20 |
+| 2 | VFS System | VFS-1 to VFS-15 | 15 |
+| 3 | Effects System | EFF-1 to EFF-20 | 20 |
+| 4 | Items System | ITEM-1 to ITEM-16 | 16 |
+| 5 | Runtime Integration | RUN-1 to RUN-12 | 12 |
+| 6 | Testing | TEST-1 to TEST-22 | 22 |
+| 7 | Documentation | DOC-1 to DOC-10 | 10 |
+| 8 | Breaking Changes | BREAK-1 to BREAK-9 | 9 |
+| 9 | Success Criteria | Derived requirements (33) | 33 |
+| 10 | Synthesis | Aggregate all 9 reports | - |
+
+**Total:** 157 requirements
 
 ---
 
 ## Prerequisites
 
 **Before starting:**
+
 - [ ] Baseline commit recorded: `git rev-parse HEAD > validation/baseline-commit.txt`
 - [ ] All 435+ existing tests pass
 - [ ] Working directory clean (no uncommitted changes that would interfere)
 - [ ] Read `requirements-checklist.md` to understand scope (157 requirements)
 
 **Verify prerequisites:**
+
 ```bash
 cd /home/john/hamlet
 
@@ -37,405 +59,413 @@ git status --short  # Should be clean or only docs/plans/vfs_uplift/validation/ 
 
 ---
 
-## Phase 1: Parallel Agent Dispatch (4-8 hours)
+## Phase 1: Parallel Agent Dispatch
 
 ### Execution Command
 
-**Dispatch all 6 agents in a single message using multiple Task tool calls:**
+**Dispatch all 9 analysis agents in a single message using multiple Task tool calls:**
 
 ```markdown
-I need you to dispatch 6 gap analysis agents in parallel to verify VFS uplift requirements. Use the Task tool with 6 separate invocations in a single message.
+I need you to dispatch 9 gap analysis agents in parallel to verify VFS uplift requirements. Use the Task tool with 9 separate invocations in a single message.
 
 Base your work on:
 - Requirements: docs/plans/vfs_uplift/validation/requirements-checklist.md
 - Evidence standards: docs/plans/vfs_uplift/validation/evidence-standards.md
-- Agent assignments: docs/plans/vfs_uplift/validation/agent-assignment-template.md
+- Agent assignments: See EXECUTION-PLAN-CORRECTED.md
 
 Each agent should output their gap report to docs/plans/vfs_uplift/validation/reports/ directory.
 ```
 
 ---
 
-### Agent 1: Compiler System (COMP-*)
+## Agent 1: Compiler & Schema (COMP-1 to COMP-20)
 
-**Prompt:**
-
-```
-You are analyzing the **Compiler System** for VFS uplift gap analysis.
-
-**Your scope:** Requirements COMP-1 through COMP-20 (20 total)
-
-**Source:** docs/plans/vfs_uplift/validation/requirements-checklist.md (Category 1)
+**Scope:** 20 requirements
 
 **Primary files to examine:**
-- src/townlet/universe/compiler.py (line 81: UniverseCompiler class, line 375: compile() method, line 420-477: seven-stage pipeline)
-- src/townlet/universe/compiled.py (line 58: CompiledUniverse class)
-- src/townlet/config/vfs_profiles_config.py (line 20: GlobalVFSProfileConfig, line 99: AgentVFSProfileConfig, line 154: ItemVFSProfileConfig DTOs)
-- src/townlet/config/effects_config.py (line 157: EffectDefinitionConfig, line 193: EffectsConfig DTOs)
-- src/townlet/config/items_config.py (line 58: ItemTypeConfig, line 101: ItemsCatalogConfig DTOs)
+
+- `src/townlet/universe/compiler.py` (UniverseCompiler class, seven-stage pipeline)
+- `src/townlet/universe/compiled.py` (CompiledUniverse class)
+- `src/townlet/config/vfs_profiles_config.py` (VFS profile DTOs)
+- `src/townlet/config/effects_config.py` (Effects catalog DTOs)
+- `src/townlet/config/items_config.py` (Items catalog DTOs)
+- `src/townlet/world/expression/parser.py` (expression parser)
+- `src/townlet/world/expression/type_checker.py` (type checker)
+- `src/townlet/world/expression/evaluator.py` (evaluator)
 
 **Test files:**
-- tests/test_townlet/unit/universe/test_compiler_pipeline.py
-- tests/test_townlet/unit/universe/test_compiler_comprehensive.py
-- tests/test_townlet/unit/universe/test_compiled_universe.py
-- tests/test_townlet/unit/universe/test_compiler_cli.py
-- tests/test_townlet/unit/universe/test_compiler_cache.py
 
-**Adjacent systems (reference but don't report):**
-- src/townlet/vfs/profiles.py (line 68: VFSProfileCompiler - verify compiler.py imports at line 57 and calls at line 182)
-- src/townlet/effects/catalog.py (line 34: EffectCatalog, line 43: from_config() - verify compiler.py imports at line 35 and calls at line 231)
+- `tests/test_townlet/unit/universe/test_compiler_pipeline.py`
+- `tests/test_townlet/unit/universe/test_compiler_comprehensive.py`
+- `tests/test_townlet/unit/universe/test_compiled_universe.py`
+- `tests/test_townlet/unit/universe/test_compiler_cli.py`
+- `tests/test_townlet/unit/config/test_vfs_profiles_dto.py`
+- `tests/test_townlet/unit/config/test_effects_config_dto.py`
+- `tests/test_townlet/unit/config/test_items_config_dto.py`
+- `tests/test_townlet/unit/world/expression/test_parser.py`
+- `tests/test_townlet/unit/world/expression/test_type_checker.py`
+- `tests/test_townlet/unit/world/expression/test_evaluator.py`
 
-**Your task:**
+**Critical requirements:**
 
-1. Read docs/plans/vfs_uplift/validation/requirements-checklist.md Category 1 (COMP-*)
-2. Read docs/plans/vfs_uplift/validation/evidence-standards.md for verification standards
-3. For each COMP-* requirement:
-   - Find implementation (file:line)
-   - Find tests (test file:name)
-   - Verify error handling exists
-   - Assign status: ✅ COMPLETE, ⚠️ PARTIAL, ❌ MISSING, 🔍 UNCLEAR
-4. For adjacent systems, note "not examined - [AGENT]'s scope"
-5. Document evidence in table format
+- COMP-1: Seven-stage pipeline exists and works
+- COMP-2: VFS profiles loaded at compile time
+- COMP-3: Effects catalog compiled (not runtime)
+- COMP-7: Expression parser with precedence
+- COMP-9: Type checker with error reporting
+- COMP-13: Error reporting with file context
+- COMP-18: No-defaults enforcement
 
-**Output:** docs/plans/vfs_uplift/validation/reports/gap-report-compiler.md
-
-**Use this exact template:**
-
-```markdown
-# Gap Report: Compiler System (COMP-*)
-
-**Agent:** Compiler Agent
-**Date:** 2025-11-22
-**Baseline:** [commit SHA]
-**Requirements:** COMP-1 to COMP-20 (20 total)
-
-## Summary
-
-- ✅ COMPLETE: X requirements
-- ⚠️ PARTIAL: X requirements
-- ❌ MISSING: X requirements
-- 🔍 UNCLEAR: X requirements
-
-## Critical Gaps (P0)
-
-[Table of ❌ MISSING requirements that are critical]
-
-## Evidence Table
-
-| Req ID | Requirement | Status | Evidence | Notes |
-|--------|-------------|--------|----------|-------|
-| COMP-1 | Seven-stage pipeline | ✅ COMPLETE | src/townlet/universe/compiler.py:420-477 | All 7 stages: load→symbol→resolve→validate→enrich→compile→emit |
-| COMP-2 | VFS profile compilation | ✅ COMPLETE | src/townlet/universe/compiler.py:182 | Calls VFSProfileCompiler from vfs/profiles.py:68 |
-| COMP-3 | Effects catalog compilation | ✅ COMPLETE | src/townlet/universe/compiler.py:231 | Calls EffectCatalog.from_config() |
-[... continue for all COMP-* ...]
-
-## Adjacent Systems Referenced
-
-- VFS compilation (VFS agent's scope): Verified compiler imports VFSProfileCompiler (line 57) and instantiates it (line 182)
-- Effects compilation (Effects agent's scope): Verified compiler imports EffectCatalog (line 35) and calls from_config() (line 231)
-```
-
-**Important:**
-- Every claim MUST have file:line evidence
-- Use grep/glob to find implementation
-- Run tests to verify they pass
-- Mark adjacent work as "not examined"
-```
+**Output:** `docs/plans/vfs_uplift/validation/reports/gap-report-01-compiler.md`
 
 ---
 
-### Agent 2: VFS System (VFS-*)
+## Agent 2: VFS System (VFS-1 to VFS-15)
 
-**Prompt:**
-
-```
-You are analyzing the **VFS System** for VFS uplift gap analysis.
-
-**Your scope:** Requirements VFS-1 through VFS-15 (15 total)
-
-**Source:** docs/plans/vfs_uplift/validation/requirements-checklist.md (Category 2)
+**Scope:** 15 requirements
 
 **Primary files to examine:**
-- src/townlet/vfs/registry.py (line 35: VariableRegistry class - scoped storage with GPU tensors)
-- src/townlet/vfs/profiles.py (line 68: VFSProfileCompiler class - THE MAIN VFS COMPILER - compiles global/agent/item profiles)
-- src/townlet/vfs/schema.py (VariableDef, scopes: global/agent/item)
-- src/townlet/vfs/evaluator.py (line 23: VFSEvaluator class, line 34: evaluate_global_profile method)
-- src/townlet/vfs/observation_builder.py (line 22: VFSObservationSpec, line 31: item_vfs_dim field, line 136: item_vfs_storage access)
+
+- `src/townlet/vfs/registry.py` (VariableRegistry - scoped storage)
+- `src/townlet/vfs/profiles.py` (VFSProfileCompiler - THE MAIN VFS COMPILER)
+- `src/townlet/vfs/schema.py` (VariableDef, scopes)
+- `src/townlet/vfs/evaluator.py` (VFSEvaluator - mark-and-sweep evaluation)
+- `src/townlet/vfs/observation_builder.py` (observation specs, item VFS)
 
 **Test files:**
-- tests/test_townlet/unit/vfs/test_registry.py
-- tests/test_townlet/unit/config/test_vfs_profiles_dto.py (NOTE: under config/, not vfs/)
-- tests/test_townlet/unit/vfs/test_observation_builder.py
-- tests/test_townlet/unit/universe/test_vfs_profile_compilation.py (compiler integration tests)
-- tests/test_townlet/integration/test_vfs_runtime_evaluation.py
 
-**Adjacent systems (reference but don't report):**
-- src/townlet/world/expression/ (expression parser - shared with Effects)
-- src/townlet/universe/compiler.py (compiler integration)
+- `tests/test_townlet/unit/vfs/test_registry.py`
+- `tests/test_townlet/unit/vfs/test_observation_builder.py`
+- `tests/test_townlet/unit/vfs/test_variable_registry_tensor.py`
+- `tests/test_townlet/unit/universe/test_vfs_profile_compilation.py`
+- `tests/test_townlet/integration/test_vfs_runtime_evaluation.py`
 
-**Your task:**
+**Critical requirements:**
 
-1. Read docs/plans/vfs_uplift/validation/requirements-checklist.md Category 2 (VFS-*)
-2. Read docs/plans/vfs_uplift/validation/evidence-standards.md
-3. For each VFS-* requirement:
-   - Find implementation (file:line)
-   - Find tests (test file:name)
-   - Verify expression evaluation works (run tests)
-   - Assign status with evidence
-4. Check for VFS-1 (expression language) - does evaluator.py execute expressions?
-5. Check for VFS-8 (mark-and-sweep) - does it exist and work?
-6. Check for VFS-12 (item VFS) - is storage profile-driven?
+- VFS-1: Expression language support (evaluator exists and works)
+- VFS-2: Three scopes (global/agent/item all functional)
+- VFS-6: Mark-and-sweep evaluation (not eager-only)
+- VFS-8: Profile-driven item storage (not variables_reference.yaml)
+- VFS-10: Item VFS observations (not zero stubs)
+- VFS-15: VFS in ExecutionContext (accessible to effects)
 
-**Output:** docs/plans/vfs_uplift/validation/reports/gap-report-vfs.md
-
-**Template:** Same structure as Agent 1, adapted for VFS-* requirements
-
-**Critical requirements to verify:**
-- VFS-1: Expression language support (evaluator module exists at vfs/evaluator.py:23 and works)
-- VFS-2: Three scopes (global/agent/item all functional in registry and schema)
-- VFS-8: Mark-and-sweep evaluation (check if VFSEvaluator has mark-and-sweep mode vs eager)
-- VFS-12: Item VFS profile-driven storage (vfs_profile field in ItemTypeConfig, not variables_reference.yaml)
-
-**CRITICAL - VFS Compiler Verification:**
-The VFSProfileCompiler class EXISTS at src/townlet/vfs/profiles.py:68. If you cannot find it, you are looking in the wrong file. This is the MAIN VFS COMPILER that compiles global/agent/item profiles with expression dependency resolution. It is imported and used by UniverseCompiler.
-```
+**Output:** `docs/plans/vfs_uplift/validation/reports/gap-report-02-vfs.md`
 
 ---
 
-### Agent 3: Effects System (EFF-*)
+## Agent 3: Effects System (EFF-1 to EFF-20)
 
-**Prompt:**
-
-```
-You are analyzing the **Effects System** for VFS uplift gap analysis.
-
-**Your scope:** Requirements EFF-1 through EFF-20 (20 total)
-
-**Source:** docs/plans/vfs_uplift/validation/requirements-checklist.md (Category 3)
+**Scope:** 20 requirements
 
 **Primary files to examine:**
-- src/townlet/effects/catalog.py (line 34: EffectCatalog class, line 43: from_config method)
-- src/townlet/effects/executor.py (line 101: CommandExecutor class, line 112: execute method)
-- src/townlet/effects/manager.py (line 57: EffectManager class, line 23: NullItemManager)
-- src/townlet/effects/schema.py (line 30: CommandNode class, line 15: CommandType enum - NOTE: NO EffectDef in this file)
-- src/townlet/effects/context.py (line 26: ExecutionContext class)
-- src/townlet/config/effects_config.py (line 157: EffectDefinitionConfig DTO, line 193: EffectsConfig)
+
+- `src/townlet/effects/catalog.py` (EffectCatalog compilation)
+- `src/townlet/effects/executor.py` (CommandExecutor)
+- `src/townlet/effects/manager.py` (EffectManager, NullItemManager)
+- `src/townlet/effects/schema.py` (CommandNode, CommandType)
+- `src/townlet/effects/context.py` (ExecutionContext)
+- `src/townlet/config/effects_config.py` (EffectDefinitionConfig)
 
 **Test files:**
-- tests/test_townlet/unit/effects/test_catalog_compilation.py
-- tests/test_townlet/unit/effects/test_command_executor.py
-- tests/test_townlet/unit/effects/test_command_compiler.py
-- tests/test_townlet/unit/effects/test_command_parser.py
-- tests/test_townlet/unit/effects/test_effect_manager.py
-- tests/test_townlet/unit/effects/test_lifecycle_interrupt.py
-- tests/test_townlet/integration/test_effects_compiled_catalog.py
 
-**Adjacent systems (reference but don't report):**
-- src/townlet/vfs/registry.py (VFS writes - verify API usage only)
-- src/townlet/universe/compiler.py (catalog compilation)
+- `tests/test_townlet/unit/effects/test_catalog_compilation.py`
+- `tests/test_townlet/unit/effects/test_command_executor.py`
+- `tests/test_townlet/unit/effects/test_command_compiler.py`
+- `tests/test_townlet/unit/effects/test_command_parser.py`
+- `tests/test_townlet/unit/effects/test_effect_manager.py`
+- `tests/test_townlet/unit/effects/test_lifecycle_interrupt.py`
+- `tests/test_townlet/unit/effects/test_reference_types_runtime.py`
+- `tests/test_townlet/integration/test_effects_compiled_catalog.py`
 
-**Your task:**
+**Critical requirements:**
 
-1. Read docs/plans/vfs_uplift/validation/requirements-checklist.md Category 3 (EFF-*)
-2. For each EFF-* requirement:
-   - Find implementation (file:line)
-   - Find tests (test file:name)
-   - Verify command types work (modify, spawn_effect, if, for_each, etc.)
-   - Assign status with evidence
-
-**Output:** docs/plans/vfs_uplift/validation/reports/gap-report-effects.md
-
-**Critical requirements to verify:**
 - EFF-1: Effects catalog as compiled artifact (in CompiledUniverse)
-- EFF-5: Command pipeline execution (all command types work)
-- EFF-10: Reapply policies (stack/renew/merge/replace all implemented)
-- EFF-15: VFS path resolution (self.vfs.*, target.vfs.* work)
-```
+- EFF-2: Command pipeline execution (all stages work)
+- EFF-6: Reapply policies (stack/renew/merge/replace)
+- EFF-8 to EFF-12: All command types work
+- EFF-13: Path notation (self.vfs.*, target.vfs.*, target.bar.*)
+- EFF-14: Expression language integration
+- EFF-15: Type safety in commands
+
+**Output:** `docs/plans/vfs_uplift/validation/reports/gap-report-03-effects.md`
 
 ---
 
-### Agent 4: Items System (ITEM-*)
+## Agent 4: Items System (ITEM-1 to ITEM-16)
 
-**Prompt:**
-
-```
-You are analyzing the **Items System** for VFS uplift gap analysis.
-
-**Your scope:** Requirements ITEM-1 through ITEM-16 (16 total)
-
-**Source:** docs/plans/vfs_uplift/validation/requirements-checklist.md (Category 4)
+**Scope:** 16 requirements
 
 **Primary files to examine:**
-- src/townlet/items/manager.py (line 45: ItemManager class - spawn/despawn/lifecycle)
-- src/townlet/items/inventory.py (line 15: InventoryState class - per-agent inventory tracking)
-- src/townlet/items/instance.py (line 11: ItemInstance dataclass - runtime item representation)
-- src/townlet/items/action_handlers.py (GET/DROP/USE action implementations)
-- src/townlet/config/items_config.py (line 58: ItemTypeConfig with vfs_profile field, line 101: ItemsCatalogConfig)
+
+- `src/townlet/items/manager.py` (ItemManager - spawn/despawn/lifecycle)
+- `src/townlet/items/inventory.py` (InventoryState - per-agent inventory)
+- `src/townlet/items/instance.py` (ItemInstance dataclass)
+- `src/townlet/items/action_handlers.py` (GET/DROP/USE actions)
+- `src/townlet/config/items_config.py` (ItemTypeConfig with vfs_profile field)
 
 **Test files:**
-- tests/test_townlet/unit/items/test_item_manager.py
-- tests/test_townlet/unit/items/test_inventory.py
-- tests/test_townlet/integration/test_items_integration.py
-- tests/test_townlet/integration/test_item_vfs_observations.py
 
-**Adjacent systems (reference but don't report):**
-- src/townlet/vfs/registry.py (item VFS allocation - verify API calls only)
-- src/townlet/effects/executor.py (spawn_item command)
-- src/townlet/universe/compiler.py (catalog compilation)
+- `tests/test_townlet/unit/items/test_item_manager.py`
+- `tests/test_townlet/unit/items/test_inventory.py`
+- `tests/test_townlet/integration/test_items_integration.py`
+- `tests/test_townlet/integration/test_item_vfs_observations.py`
 
-**Your task:**
+**Critical requirements:**
 
-1. Read docs/plans/vfs_uplift/validation/requirements-checklist.md Category 4 (ITEM-*)
-2. For each ITEM-* requirement:
-   - Find implementation (file:line)
-   - Find tests (test file:name)
-   - Verify vfs_profile field is honored
-   - Assign status with evidence
+- ITEM-1: Item VFS profiles binding (vfs_profile field exists)
+- ITEM-2: Inventory management (max_items_per_agent enforced)
+- ITEM-5: Action handlers (GET/DROP/USE all work)
+- ITEM-9: Item interactions via Effects (spawn_item command)
+- ITEM-13: Item position tracking
+- ITEM-14: Item VFS state allocation (profile-driven)
+- ITEM-16: INTERACT action for affordances
 
-**Output:** docs/plans/vfs_uplift/validation/reports/gap-report-items.md
-
-**Critical requirements to verify:**
-- ITEM-1: Item VFS profiles (vfs_profile field exists and functional)
-- ITEM-5: vfs_profile field honored (items use correct profile on spawn)
-- ITEM-8: Item VFS in observations (agents see held item VFS state)
-- ITEM-12: GET/DROP/USE actions (all three work with inventory)
-```
+**Output:** `docs/plans/vfs_uplift/validation/reports/gap-report-04-items.md`
 
 ---
 
-### Agent 5: Runtime Integration (RUN-*)
+## Agent 5: Runtime Integration (RUN-1 to RUN-12)
 
-**Prompt:**
-
-```
-You are analyzing **Runtime Integration** for VFS uplift gap analysis.
-
-**Your scope:** Requirements RUN-1 through RUN-12 (12 total)
-
-**Source:** docs/plans/vfs_uplift/validation/requirements-checklist.md (Category 5)
+**Scope:** 12 requirements
 
 **Primary files to examine:**
-- src/townlet/environment/vectorized_env.py (main environment - check step() method for VFS evaluation calls)
-- src/townlet/vfs/observation_builder.py (line 18: build_vfs_observation function - verify line 136-180 for item_vfs handling)
+
+- `src/townlet/environment/vectorized_env.py` (main environment - VFS/effects integration)
+- `src/townlet/vfs/observation_builder.py` (build_vfs_observation function)
+- `src/townlet/effects/manager.py` (effect step integration)
+- `src/townlet/items/manager.py` (item spawn with profiles)
 
 **Test files:**
-- tests/test_townlet/integration/test_vfs_runtime_evaluation.py
-- tests/test_townlet/integration/test_item_vfs_observations.py
-- tests/test_townlet/integration/test_effects_compiled_catalog.py
 
-**Adjacent systems (reference ALL - this agent verifies integration):**
-- src/townlet/vfs/evaluator.py (VFS evaluation)
-- src/townlet/effects/manager.py (effects execution)
-- src/townlet/items/manager.py (item spawning)
-- src/townlet/universe/compiler.py (compiled artifacts usage)
+- `tests/test_townlet/integration/test_vfs_runtime_evaluation.py`
+- `tests/test_townlet/integration/test_item_vfs_observations.py`
+- `tests/test_townlet/integration/test_effects_compiled_catalog.py`
 
-**Your task:**
+**Critical requirements:**
 
-1. Read docs/plans/vfs_uplift/validation/requirements-checklist.md Category 5 (RUN-*)
-2. For each RUN-* requirement:
-   - Find where vectorized_env.py integrates the feature
-   - Verify it uses compiled artifacts (not runtime YAML)
-   - Find integration tests
-   - Assign status with evidence
-3. Use grep to verify NO runtime YAML loading:
-   ```bash
-   grep -n "variables_reference.yaml" src/townlet/environment/vectorized_env.py
-   grep -n "effects.yaml" src/townlet/environment/vectorized_env.py
-   ```
-
-**Output:** docs/plans/vfs_uplift/validation/reports/gap-report-runtime.md
-
-**Critical requirements to verify:**
 - RUN-1: Mark-and-sweep VFS evaluation (env.step() calls evaluator)
-- RUN-2: Item VFS observations (not zero stubs - actual values)
-- RUN-3: Use compiled catalog (no EffectCatalog.from_yaml() at runtime)
-- RUN-7: No runtime variables_reference.yaml for item vars (grep verification)
+- RUN-2: Item VFS observations (actual values, not zero stubs)
+- RUN-3: Compiled catalog usage (NO EffectCatalog.from_yaml() at runtime)
+- RUN-4: ExecutionContext construction (correct state access)
+- RUN-8: Performance target (<5% overhead)
+- RUN-11: VFS evaluation at runtime (verify happens every step)
+- RUN-12: Zero regressions (all 435+ tests pass)
+
+**Verification commands:**
+
+```bash
+# Verify NO runtime YAML loading
+grep -n "variables_reference.yaml" src/townlet/environment/vectorized_env.py  # Should be empty
+grep -n "effects.yaml" src/townlet/environment/vectorized_env.py  # Should be empty
+grep -n "EffectCatalog.from_yaml" src/townlet/environment/vectorized_env.py  # Should be empty
+
+# Verify compiled artifacts are used
+grep -n "compiled_universe" src/townlet/environment/vectorized_env.py  # Should exist
 ```
+
+**Output:** `docs/plans/vfs_uplift/validation/reports/gap-report-05-runtime.md`
 
 ---
 
-### Agent 6: Testing & Documentation (TEST-*, DOC-*)
+## Agent 6: Testing (TEST-1 to TEST-22)
 
-**Prompt:**
+**Scope:** 22 requirements
 
-```
-You are analyzing **Testing & Documentation** for VFS uplift gap analysis.
+**Primary files to examine:**
 
-**Your scope:** Requirements TEST-1 through TEST-22, DOC-1 through DOC-10 (32 total)
+- All test files under `tests/test_townlet/`
+- Test configuration fixtures
 
-**Source:** docs/plans/vfs_uplift/validation/requirements-checklist.md (Categories 6 & 7)
+**Critical requirements:**
 
-**Files to examine:**
-- tests/ (all test files - count and verify pass)
-- docs/config-schemas/ (schema documentation)
-- docs/guides/ (user guides)
+- TEST-1: 270+ tests total (count via pytest --co)
+- TEST-2 to TEST-18: Category-specific test coverage
+- TEST-19: Complete pipeline tests (E2E)
+- TEST-20: Performance validation benchmarks
+- TEST-21: Runtime integration tests
+- TEST-22: Test config packs
 
-**Your task:**
+**Verification commands:**
 
-1. Read docs/plans/vfs_uplift/validation/requirements-checklist.md Categories 6 & 7
-2. For TEST-* requirements:
-   - Count total tests: `pytest --co -q | wc -l`
-   - Verify test pass rate: `pytest tests/ --tb=short`
-   - Check coverage by system (grep for test files per module)
-3. For DOC-* requirements:
-   - Check if doc file exists
-   - Verify it's not a stub (>100 lines with actual content)
-   - Assign status with evidence
-
-**Test counting commands:**
 ```bash
-# Total tests
+# Total test count
 UV_CACHE_DIR=.uv-cache uv run pytest tests/ --co -q | wc -l
 
 # Tests by category
-find tests/test_townlet/unit/vfs -name "test_*.py" -exec wc -l {} + | tail -1
-find tests/test_townlet/unit/effects -name "test_*.py" -exec wc -l {} + | tail -1
-find tests/test_townlet/unit/items -name "test_*.py" -exec wc -l {} + | tail -1
-find tests/test_townlet/integration -name "test_*.py" -exec wc -l {} + | tail -1
+find tests/test_townlet/unit/universe -name "test_*.py" | wc -l
+find tests/test_townlet/unit/vfs -name "test_*.py" | wc -l
+find tests/test_townlet/unit/effects -name "test_*.py" | wc -l
+find tests/test_townlet/unit/items -name "test_*.py" | wc -l
+find tests/test_townlet/integration -name "test_*.py" | wc -l
+find tests/test_townlet/performance -name "test_*.py" | wc -l
 
-# Run tests
-UV_CACHE_DIR=.uv-cache uv run pytest tests/ -v --tb=short 2>&1 | tail -50
+# Run all tests to verify pass rate
+UV_CACHE_DIR=.uv-cache uv run pytest tests/ -v --tb=short 2>&1 | tail -100
 ```
 
-**Documentation verification:**
-```bash
-ls -lh docs/config-schemas/expressions.md 2>/dev/null || echo "MISSING"
-ls -lh docs/config-schemas/vfs-profiles.md 2>/dev/null || echo "MISSING"
-ls -lh docs/config-schemas/effects.md 2>/dev/null || echo "MISSING"
-ls -lh docs/config-schemas/items.md 2>/dev/null || echo "MISSING"
-ls -lh docs/guides/world-compiler-guide.md 2>/dev/null || echo "MISSING"
-```
-
-**Output:** docs/plans/vfs_uplift/validation/reports/gap-report-testing-docs.md
-
-**Critical requirements to verify:**
-- TEST-1: 270+ tests passing (from unified plan)
-- TEST-20: Performance benchmarks (<5% regression target)
-- DOC-1: Expression language reference (docs/config-schemas/expressions.md)
-- DOC-2: VFS profiles schema (docs/config-schemas/vfs-profiles.md)
-- DOC-5: World Compiler guide (docs/guides/world-compiler-guide.md)
-```
+**Output:** `docs/plans/vfs_uplift/validation/reports/gap-report-06-testing.md`
 
 ---
 
-## Phase 2: Report Collection (immediate)
+## Agent 7: Documentation (DOC-1 to DOC-10)
 
-**After all 6 agents complete:**
+**Scope:** 10 requirements
+
+**Files to examine:**
+
+- `docs/config-schemas/expressions.md`
+- `docs/config-schemas/vfs-profiles.md`
+- `docs/config-schemas/effects.md`
+- `docs/config-schemas/items.md`
+- `docs/guides/world-compiler-guide.md`
+- Reference config packs in `configs/`
+- Migration guides
+
+**Critical requirements:**
+
+- DOC-1: Expression language reference (comprehensive syntax guide)
+- DOC-2: VFS profiles schema docs (all fields documented)
+- DOC-3: Effects catalog schema docs (command types, reapply policies)
+- DOC-4: Items schema docs (vfs_profile field, spawn rules)
+- DOC-5: World Compiler user guide (how to use compiler CLI)
+- DOC-6: Reference config updates (L0-L3 all use new schemas)
+- DOC-7: Migration guide (old → new patterns)
+
+**Verification commands:**
+
+```bash
+# Check docs exist and are substantial (not stubs)
+for doc in expressions.md vfs-profiles.md effects.md items.md; do
+  if [ -f "docs/config-schemas/$doc" ]; then
+    lines=$(wc -l < "docs/config-schemas/$doc")
+    echo "$doc: $lines lines"
+    if [ $lines -lt 100 ]; then
+      echo "  WARNING: Likely a stub (< 100 lines)"
+    fi
+  else
+    echo "$doc: MISSING"
+  fi
+done
+
+# Check migration guide
+ls -lh docs/guides/*migration* 2>/dev/null || echo "Migration guide: MISSING"
+```
+
+**Output:** `docs/plans/vfs_uplift/validation/reports/gap-report-07-documentation.md`
+
+---
+
+## Agent 8: Breaking Changes (BREAK-1 to BREAK-9)
+
+**Scope:** 9 requirements
+
+**Primary files to examine:**
+
+- All config DTOs (verify no fallbacks for old formats)
+- Error messages for breaking changes
+- Migration documentation
+
+**Critical requirements:**
+
+- BREAK-1: No variables_reference.yaml at level scope (experiment-only)
+- BREAK-2: No effects.yaml at level scope (experiment-only)
+- BREAK-3: Items use vfs_profile field (not inline variables)
+- BREAK-4: Clear error messages for old configs
+- BREAK-5: No fallback mechanisms (fail loudly)
+- BREAK-6: No backwards compatibility code
+- BREAK-7: Deleted deprecated code paths
+- BREAK-8: Updated all reference configs
+- BREAK-9: Migration guide exists
+
+**Verification commands:**
+
+```bash
+# Verify no level-scoped VFS/effects files
+for level in configs/L*/; do
+  if [ -f "$level/variables_reference.yaml" ]; then
+    echo "VIOLATION: $level has variables_reference.yaml (should be experiment-level only)"
+  fi
+  if [ -f "$level/effects.yaml" ]; then
+    echo "VIOLATION: $level has effects.yaml (should be experiment-level only)"
+  fi
+done
+
+# Check for backwards compatibility code (antipatterns)
+grep -r "for backward.*compatibility" src/townlet/ || echo "✓ No backwards compat comments"
+grep -r "hasattr.*old.*field" src/townlet/ || echo "✓ No old field checks"
+grep -r "legacy.*support" src/townlet/ || echo "✓ No legacy support code"
+```
+
+**Output:** `docs/plans/vfs_uplift/validation/reports/gap-report-08-breaking-changes.md`
+
+---
+
+## Agent 9: Success Criteria & Cross-Cutting Concerns
+
+**Scope:** 33 derived requirements from success criteria
+
+**Areas to verify:**
+
+1. **Error Handling** (compile-time validation, clear error messages)
+2. **Type Safety** (expression type checking, command type validation)
+3. **Performance** (<5% overhead, benchmarks exist and pass)
+4. **Pedagogical** (clean abstractions, no opaque dicts)
+5. **Integration** (cross-system dependencies verified)
+
+**Primary files:**
+
+- Performance benchmarks: `tests/test_townlet/performance/test_component_benchmarks.py`
+- Integration tests: `tests/test_townlet/integration/`
+- Error handling: Check error messages in all DTOs and compiler stages
+
+**Critical verifications:**
+
+- Performance benchmarks exist and show <5% overhead
+- All cross-system integrations have tests
+- Type checker prevents invalid configs at compile time
+- Error messages include file context and suggestions
+- No opaque dictionaries in item VFS storage
+
+**Verification commands:**
+
+```bash
+# Run performance benchmarks
+UV_CACHE_DIR=.uv-cache uv run pytest tests/test_townlet/performance/ -v
+
+# Check for opaque dict usage
+grep -r "Dict\[str, Any\]" src/townlet/items/ | grep -v "# type: ignore" || echo "✓ No opaque dicts"
+
+# Verify type safety in DTOs
+grep -r "Optional\[" src/townlet/config/*_config.py | wc -l  # Should be minimal
+```
+
+**Output:** `docs/plans/vfs_uplift/validation/reports/gap-report-09-success-criteria.md`
+
+---
+
+## Phase 2: Report Collection
+
+**After all 9 agents complete:**
 
 1. Verify all reports exist:
+
 ```bash
 ls -lh docs/plans/vfs_uplift/validation/reports/gap-report-*.md
 ```
 
-Expected:
-- gap-report-compiler.md
-- gap-report-vfs.md
-- gap-report-effects.md
-- gap-report-items.md
-- gap-report-runtime.md
-- gap-report-testing-docs.md
+Expected files:
+- `gap-report-01-compiler.md`
+- `gap-report-02-vfs.md`
+- `gap-report-03-effects.md`
+- `gap-report-04-items.md`
+- `gap-report-05-runtime.md`
+- `gap-report-06-testing.md`
+- `gap-report-07-documentation.md`
+- `gap-report-08-breaking-changes.md`
+- `gap-report-09-success-criteria.md`
 
 2. Quick scan for critical gaps:
+
 ```bash
 grep -h "❌ MISSING" docs/plans/vfs_uplift/validation/reports/*.md | wc -l
 grep -h "## Critical Gaps" -A 10 docs/plans/vfs_uplift/validation/reports/*.md
@@ -443,46 +473,28 @@ grep -h "## Critical Gaps" -A 10 docs/plans/vfs_uplift/validation/reports/*.md
 
 ---
 
-## Phase 3: Synthesis (2-4 hours)
+## Phase 3: Synthesis
 
-### Synthesis Agent Task
+### Agent 10: Synthesis & Final Report
 
-**Prompt:**
+**Task:** Synthesize all 9 gap reports into a final comprehensive report
 
-```
-You are synthesizing the gap analysis results from 6 parallel agents.
+**Input:** All 9 gap reports from Phase 2
 
-**Your task:**
+**Output:** `docs/plans/vfs_uplift/validation/reports/gap-report-final.md`
 
-1. Read all 6 gap reports from docs/plans/vfs_uplift/validation/reports/
+**Process:**
 
-2. Create a merged gap report at docs/plans/vfs_uplift/validation/reports/gap-report-final.md
-
-3. For each requirement (157 total):
-   - Collect status from appropriate agent
-   - Verify ADJACENT markers match (if Agent A says "VFS-12 not examined", verify Agent 2 examined VFS-12)
-   - Resolve conflicts (if two agents claim same requirement)
-
-4. Identify integration gaps:
-   - Agent A calls Agent B's API but Agent B didn't verify the API works
-   - Cross-system dependencies with no tests
-
-5. Prioritize all gaps:
-   - P0 (Critical): Breaks core functionality, must fix before merge
-   - P1 (Important): Missing feature or incomplete implementation, should fix
-   - P2 (Minor): Polish or nice-to-have, can defer
-
-6. Calculate statistics:
-   - Total requirements: 157
-   - Complete: X (Y%)
-   - Partial: X
-   - Missing: X
-   - Unclear: X
-
-7. Create action plan:
-   - For each P0 gap: What needs to be done, estimated effort
-   - For each P1 gap: What's missing, priority ranking
-   - For P2 gaps: List for backlog
+1. Read all 9 gap reports
+2. Aggregate status for all 157 requirements
+3. Identify integration gaps (where Agent A calls Agent B's API)
+4. Prioritize gaps:
+   - **P0 (Critical):** Breaks core functionality, must fix before merge
+   - **P1 (Important):** Missing feature, should fix soon
+   - **P2 (Minor):** Polish/nice-to-have, can defer
+5. Calculate statistics (% complete/partial/missing)
+6. Create action plan with effort estimates
+7. Provide merge recommendation
 
 **Template:**
 
@@ -490,9 +502,9 @@ You are synthesizing the gap analysis results from 6 parallel agents.
 # VFS Uplift Gap Analysis - Final Report
 
 **Date:** 2025-11-22
-**Baseline Commit:** [SHA]
-**Analysts:** 6 parallel agents + synthesis
-**Total Requirements:** 157
+**Baseline Commit:** ac67272
+**Analysts:** 9 parallel agents + synthesis
+**Total Requirements:** 157 (124 explicit + 33 derived)
 
 ---
 
@@ -506,9 +518,9 @@ You are synthesizing the gap analysis results from 6 parallel agents.
 
 **Recommendation:** [READY FOR MERGE / NEEDS WORK / BLOCKED]
 
-**Critical Gaps:** X (must fix before merge)
-**Important Gaps:** X (should fix soon)
-**Minor Gaps:** X (backlog)
+**Critical Gaps (P0):** X (must fix before merge)
+**Important Gaps (P1):** X (should fix soon)
+**Minor Gaps (P2):** X (backlog)
 
 ---
 
@@ -516,9 +528,7 @@ You are synthesizing the gap analysis results from 6 parallel agents.
 
 | Req ID | Category | Requirement | Impact | Estimated Effort | Owner |
 |--------|----------|-------------|--------|------------------|-------|
-| RUN-1 | Runtime | Mark-and-sweep evaluation | No VFS evaluation at runtime | 3-4 days | VFS team |
-| RUN-2 | Runtime | Item VFS observations | Observations are zero stubs | 2-3 days | Items team |
-[... list all P0 gaps ...]
+| ... | ... | ... | ... | ... | ... |
 
 **Total P0 Effort:** X days
 
@@ -526,9 +536,7 @@ You are synthesizing the gap analysis results from 6 parallel agents.
 
 ## Important Gaps (P1 - Should Fix)
 
-[Table of P1 gaps with effort estimates]
-
-**Total P1 Effort:** X days
+[Table of P1 gaps]
 
 ---
 
@@ -538,13 +546,13 @@ You are synthesizing the gap analysis results from 6 parallel agents.
 
 ---
 
-## Detailed Requirements Status
+## Detailed Requirements Status by Category
 
-### Category 1: Compiler (20 requirements)
-[Status table for COMP-1 to COMP-20]
+### Category 1: Compiler (20/20)
+[Status table]
 
-### Category 2: VFS System (15 requirements)
-[Status table for VFS-1 to VFS-15]
+### Category 2: VFS System (15/15)
+[Status table]
 
 [... continue for all 8 categories ...]
 
@@ -553,10 +561,10 @@ You are synthesizing the gap analysis results from 6 parallel agents.
 ## Integration Analysis
 
 **Cross-System Dependencies Verified:**
-- ✅ Compiler → VFS: VFSProfileCompiler integration works
-- ✅ Compiler → Effects: EffectCatalog compilation works
-- ❌ Runtime → VFS: Evaluator not called in env.step()
-- ⚠️ Items → VFS: API integration works but no E2E test
+- ✅ Compiler → VFS: Integration works
+- ✅ Compiler → Effects: Compilation works
+- ❌ Runtime → VFS: Evaluator not called
+- ⚠️ Items → VFS: API works but no E2E test
 
 **Integration Gaps:**
 [List any missing integration points]
@@ -567,27 +575,21 @@ You are synthesizing the gap analysis results from 6 parallel agents.
 
 ### Immediate (Before Merge - P0 Gaps)
 
-1. **RUN-1: Implement mark-and-sweep VFS evaluation**
-   - File: src/townlet/vfs/evaluator.py
-   - What: Create VFSEvaluator class with mark-and-sweep mode
-   - Effort: 3-4 days
-   - Blocker: Critical
-
-2. **RUN-2: Wire item VFS observations**
-   - File: src/townlet/vfs/observation_builder.py
-   - What: Replace zero stub with actual item VFS values
-   - Effort: 2-3 days
-   - Blocker: Critical
+1. **[REQ-ID]: [Requirement]**
+   - File: [file path]
+   - What: [description]
+   - Effort: [time estimate]
+   - Blocker: [yes/no]
 
 [... list all P0 action items ...]
 
 ### Short-Term (P1 Gaps - Next Sprint)
 
-[List P1 action items with effort]
+[List P1 action items]
 
 ### Backlog (P2 Gaps)
 
-[List P2 items for future work]
+[List P2 items]
 
 ---
 
@@ -596,16 +598,14 @@ You are synthesizing the gap analysis results from 6 parallel agents.
 **High Risk (Merge Blockers):**
 - X critical gaps (P0)
 - Estimated X days to resolve
-- [Any specific technical risks]
+- [Specific technical risks]
 
 **Medium Risk:**
 - X important gaps (P1)
-- May cause issues in production
-- Can be addressed post-merge with hotfix
+- Can be addressed post-merge
 
 **Low Risk:**
 - X minor gaps (P2)
-- Polish and documentation
 - Safe to defer
 
 ---
@@ -621,7 +621,7 @@ You are synthesizing the gap analysis results from 6 parallel agents.
 
 **If CONDITIONAL:**
 - Can merge if: [conditions]
-- Must track: [P1 gaps as issues]
+- Must track P1 gaps as issues
 - Timeline: [when to address]
 
 **If READY:**
@@ -633,13 +633,15 @@ You are synthesizing the gap analysis results from 6 parallel agents.
 
 ## Appendix: Agent Reports
 
-- [gap-report-compiler.md](./gap-report-compiler.md)
-- [gap-report-vfs.md](./gap-report-vfs.md)
-- [gap-report-effects.md](./gap-report-effects.md)
-- [gap-report-items.md](./gap-report-items.md)
-- [gap-report-runtime.md](./gap-report-runtime.md)
-- [gap-report-testing-docs.md](./gap-report-testing-docs.md)
-```
+- [gap-report-01-compiler.md](./gap-report-01-compiler.md)
+- [gap-report-02-vfs.md](./gap-report-02-vfs.md)
+- [gap-report-03-effects.md](./gap-report-03-effects.md)
+- [gap-report-04-items.md](./gap-report-04-items.md)
+- [gap-report-05-runtime.md](./gap-report-05-runtime.md)
+- [gap-report-06-testing.md](./gap-report-06-testing.md)
+- [gap-report-07-documentation.md](./gap-report-07-documentation.md)
+- [gap-report-08-breaking-changes.md](./gap-report-08-breaking-changes.md)
+- [gap-report-09-success-criteria.md](./gap-report-09-success-criteria.md)
 ```
 
 ---
@@ -647,19 +649,18 @@ You are synthesizing the gap analysis results from 6 parallel agents.
 ## Success Criteria
 
 **Phase 1 Success:**
-- [ ] All 6 agents complete without errors
-- [ ] All 6 gap reports generated
-- [ ] Every requirement has status assigned
+- [ ] All 9 analysis agents complete without errors
+- [ ] All 9 gap reports generated
+- [ ] Every requirement (157 total) has status assigned
 - [ ] All claims have file:line evidence
 
 **Phase 2 Success:**
-- [ ] All reports collected and readable
+- [ ] All 9 reports collected and readable
 - [ ] Critical gaps identified (grep verification)
 
 **Phase 3 Success:**
-- [ ] Final report synthesized
+- [ ] Final report synthesized by Agent 10
 - [ ] All 157 requirements accounted for
-- [ ] ADJACENT markers resolved
 - [ ] Integration gaps identified
 - [ ] Action plan created with effort estimates
 - [ ] Merge recommendation provided
@@ -675,66 +676,45 @@ You are synthesizing the gap analysis results from 6 parallel agents.
 4. Continue with others
 
 **If synthesis fails:**
-1. Verify all 6 reports exist and are readable
-2. Check for conflicting status (two agents claim same req)
+1. Verify all 9 reports exist and are readable
+2. Check for conflicting status
 3. Manually resolve conflicts
-4. Re-run synthesis
-
----
-
-## Post-Execution
-
-**After final report complete:**
-
-1. Commit all reports:
-```bash
-git add docs/plans/vfs_uplift/validation/reports/
-git add docs/plans/vfs_uplift/validation/baseline-commit.txt
-git commit -m "docs(validation): gap analysis results - [DATE]
-
-6 parallel agents verified 157 requirements:
-- ✅ Complete: X (Y%)
-- ⚠️ Partial: X (Y%)
-- ❌ Missing: X (Y%)
-
-Critical gaps (P0): X
-Important gaps (P1): X
-Minor gaps (P2): X
-
-Recommendation: [READY/NOT READY/CONDITIONAL]
-
-See gap-report-final.md for details."
-```
-
-2. Review with team:
-   - Share gap-report-final.md
-   - Discuss P0 gaps and timeline
-   - Assign action items
-
-3. Track gaps as issues:
-```bash
-# Create issues for P0 gaps
-gh issue create --title "P0: [REQ-ID] [Requirement]" --body "See gap-report-final.md"
-```
+4. Re-run synthesis agent
 
 ---
 
 ## Timeline Estimate
 
 **Optimistic (6 hours):**
-- Phase 1: 4 hours (all agents fast)
+- Phase 1: 4 hours (all 9 agents fast)
 - Phase 2: 30 minutes (quick scan)
-- Phase 3: 2 hours (synthesis)
+- Phase 3: 1.5 hours (synthesis)
 
 **Realistic (8-10 hours):**
 - Phase 1: 6-8 hours (some agents slow)
 - Phase 2: 30 minutes
-- Phase 3: 3-4 hours (complex synthesis)
+- Phase 3: 2-3 hours (synthesis with conflict resolution)
 
 **Pessimistic (12+ hours):**
 - Phase 1: 8-10 hours (agents encounter issues)
 - Phase 2: 1 hour (report issues)
-- Phase 3: 4-6 hours (conflicts to resolve)
+- Phase 3: 4-6 hours (complex conflicts)
+
+---
+
+## Notes
+
+**Line Number References:**
+All line numbers in this plan are approximate and based on baseline commit ac67272. Code may have shifted slightly. Use grep/glob to find exact locations.
+
+**Evidence Standards:**
+Every claim MUST have file:line evidence. "I think it exists" or "probably implemented" is not acceptable. Use grep, read files, run tests to verify.
+
+**No Overlap:**
+Each agent has a distinct scope. If you find a requirement outside your scope, note it as "not examined - [AGENT]'s scope" and continue.
+
+**Cross-System Integration:**
+Note where you call APIs from other agents' modules. The synthesis agent will verify these integration points.
 
 ---
 
@@ -742,11 +722,10 @@ gh issue create --title "P0: [REQ-ID] [Requirement]" --body "See gap-report-fina
 
 This plan is ready for immediate execution. To start:
 
-1. Verify prerequisites
-2. Dispatch all 6 agents in parallel (single message, 6 Task tool calls)
-3. Wait for completion (4-8 hours)
-4. Run synthesis agent
-5. Review final report
-6. Create action plan
+1. Verify prerequisites (baseline commit, tests pass, clean directory)
+2. Dispatch all 9 agents in parallel (single message, 9 Task tool calls)
+3. Wait for completion (6-10 hours estimated)
+4. Run synthesis agent (Agent 10)
+5. Review final report and create action plan
 
-**Command to execute:** See "Phase 1: Parallel Agent Dispatch" above
+**Next Step:** Copy the "Execution Command" from Phase 1 and paste it to Claude to begin.

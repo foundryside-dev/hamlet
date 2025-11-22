@@ -4,99 +4,103 @@
 
 ---
 
-## Agent 1: Compiler System (COMP-*)
+## Agent 1: Compiler & Schema (COMP-*)
 
-**Scope:** UniverseCompiler and compilation pipeline
-- Requirements: COMP-1 through COMP-20 (20 total)
-- Files: `src/townlet/universe/compiler.py`, `src/townlet/universe/compiled.py`
-- Dependencies: May reference VFS/Effects compilation but only report on compiler integration
+**Scope:** UniverseCompiler, compiled DTOs, schema/versioning
+- Requirements: COMP-1 through COMP-20
+- Files: `src/townlet/universe/compiler.py`, `src/townlet/universe/compiled.py`, `src/townlet/vfs/schema.py`
+- Dependencies: References VFS/effects compilation but reports only on compiler/schema integration
 
-**Adjacent Systems (reference but don't report):**
-- VFS compilation (VFS agent's scope)
-- Effects catalog building (Effects agent's scope)
-- Items catalog loading (Items agent's scope)
-
-**Deliverable:** `gap-report-compiler.md` with COMP-* requirements verified
+**Deliverable:** `gap-report-compiler.md`
 
 ---
 
 ## Agent 2: VFS System (VFS-*)
 
 **Scope:** Variable & Feature System (profiles, registry, expressions)
-- Requirements: VFS-1 through VFS-15 (15 total)
+- Requirements: VFS-1 through VFS-15
 - Files: `src/townlet/vfs/*.py`, `src/townlet/config/vfs_profiles_config.py`
-- Dependencies: May reference expression language, observation builder
+- Dependencies: Expression language, observation builder
 
-**Adjacent Systems (reference but don't report):**
-- Expression parser (shared with Effects)
-- Compiler integration (Compiler agent's scope)
-- Item VFS allocation (report integration only)
-
-**Deliverable:** `gap-report-vfs.md` with VFS-* requirements verified
+**Deliverable:** `gap-report-vfs.md`
 
 ---
 
-## Agent 3: Effects System (EFF-*)
+## Agent 3: Effects & Runtime Expressions (EFF-*)
 
-**Scope:** Effects catalog, commands, execution, lifecycle
-- Requirements: EFF-1 through EFF-20 (20 total)
-- Files: `src/townlet/effects/*.py`, `src/townlet/config/effects_config.py`
-- Dependencies: May reference command execution, VFS mutations
+**Scope:** Effects catalog, commands, execution, expression/type checking
+- Requirements: EFF-1 through EFF-20
+- Files: `src/townlet/effects/*.py`, `src/townlet/world/expression/*.py`, `src/townlet/config/effects_config.py`
 
-**Adjacent Systems (reference but don't report):**
-- VFS registry writes (verify API usage only)
-- Item spawning (verify command exists only)
-- Compiler catalog building (Compiler agent's scope)
-
-**Deliverable:** `gap-report-effects.md` with EFF-* requirements verified
+**Deliverable:** `gap-report-effects.md`
 
 ---
 
-## Agent 4: Items System (ITEM-*)
+## Agent 4: Item VFS & Inventory (ITEM-*)
 
-**Scope:** Items catalog, inventory, spawning, interactions
-- Requirements: ITEM-1 through ITEM-16 (16 total)
-- Files: `src/townlet/items/*.py`, `src/townlet/config/items_config.py`
-- Dependencies: May reference VFS profiles, effects integration
+**Scope:** Items catalog, inventory, spawning, VFS profile binding
+- Requirements: ITEM-1 through ITEM-16
+- Files: `src/townlet/items/*.py`, `src/townlet/config/items_config.py`, `src/townlet/vfs/registry.py`
 
-**Adjacent Systems (reference but don't report):**
-- VFS profile application (verify API usage only)
-- Effects spawning (verify command calls only)
-- Compiler catalog building (Compiler agent's scope)
-
-**Deliverable:** `gap-report-items.md` with ITEM-* requirements verified
+**Deliverable:** `gap-report-items.md`
 
 ---
 
 ## Agent 5: Runtime Integration (RUN-*)
 
 **Scope:** Environment integration, observation building, evaluation
-- Requirements: RUN-1 through RUN-12 (12 total)
+- Requirements: RUN-1 through RUN-12
 - Files: `src/townlet/environment/vectorized_env.py`, `src/townlet/vfs/observation_builder.py`
-- Dependencies: Integrates ALL other systems
 
-**Adjacent Systems (reference but don't report):**
-- All compile-time artifacts (verify API contracts only)
-- VFS evaluator (VFS agent's scope)
-- Effects manager (Effects agent's scope)
-- Items manager (Items agent's scope)
-
-**Deliverable:** `gap-report-runtime.md` with RUN-* requirements verified
+**Deliverable:** `gap-report-runtime.md`
 
 ---
 
-## Agent 6: Testing & Documentation (TEST-*, DOC-*)
+## Agent 6: Observations & Training (OBS-*, RUN overlap)
 
-**Scope:** Test coverage, documentation completeness
-- Requirements: TEST-1 through TEST-22, DOC-1 through DOC-10 (32 total)
-- Files: `tests/`, `docs/config-schemas/`, `docs/guides/`
-- Dependencies: Verifies ALL systems have tests and docs
+**Scope:** Observation shapes/dims, delivery to training loops
+- Requirements: OBS-related RUN/TEST items
+- Files: `src/townlet/vfs/observation_builder.py`, `src/townlet/environment/vectorized_env.py`
 
-**Adjacent Systems (reference but don't report):**
-- Feature implementation (other agents' scope)
-- Only verify: tests exist, docs exist, coverage ≥ target
+**Deliverable:** `gap-report-observations.md`
 
-**Deliverable:** `gap-report-testing-docs.md` with TEST-*/DOC-* requirements verified
+---
+
+## Agent 7: Testing (TEST-*)
+
+**Scope:** Test coverage and execution
+- Requirements: TEST-1 through TEST-22
+- Files: `tests/`
+
+**Deliverable:** `gap-report-testing.md`
+
+---
+
+## Agent 8: Documentation (DOC-*)
+
+**Scope:** Documentation completeness and quality
+- Requirements: DOC-1 through DOC-10
+- Files: `docs/config-schemas/`, `docs/guides/`
+
+**Deliverable:** `gap-report-docs.md`
+
+---
+
+## Agent 9: Performance & Benchmarks (PERF-*)
+
+**Scope:** Performance/benchmark scenarios (if defined)
+- Requirements: PERF-* (as applicable)
+- Files: `tests/test_townlet/performance/`, profiling/benchmark docs
+
+**Deliverable:** `gap-report-performance.md`
+
+---
+
+## Agent 10: Synthesis (Final)
+
+**Scope:** Merge all gap reports, resolve cross-cutting issues, produce final summary.
+
+**Deliverable:** `gap-report-final.md`
 
 ---
 

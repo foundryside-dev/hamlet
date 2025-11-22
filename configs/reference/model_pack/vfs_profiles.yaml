@@ -1,0 +1,26 @@
+version: "1.0"
+
+global_profile:
+  variables:
+    - name: is_night
+      type: float
+      expression: "0.0"  # placeholder; no deps
+
+agent_profile:
+  variables:
+    - name: inventory_weight
+      type: float
+      initial_value: 0.0
+    - name: is_encumbered
+      type: float
+      expression: "inventory_weight > 1.0"
+
+item_profiles:
+  - profile_name: default_item
+    variables:
+      - name: freshness
+        type: float
+        initial_value: 1.0
+      - name: calories
+        type: float
+        initial_value: 10.0

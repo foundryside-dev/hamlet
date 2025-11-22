@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
 __all__ = [
     "GlobalVFSVariableConfig",
@@ -84,6 +84,8 @@ class GlobalVFSVariableConfig(BaseModel):
             raise ValueError(f"Variable '{self.name}' should not set 'dims' when type is '{self.type}'")
         return self
 
+    model_config = ConfigDict(extra="forbid")
+
 
 class GlobalVFSProfileConfig(BaseModel):
     """Configuration for global VFS profile.
@@ -104,6 +106,8 @@ class GlobalVFSProfileConfig(BaseModel):
             raise ValueError(f"Duplicate variable names: {duplicates}")
 
         return variables
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class AgentVFSVariableConfig(BaseModel):
@@ -175,6 +179,8 @@ class AgentVFSVariableConfig(BaseModel):
             raise ValueError(f"Variable '{self.name}' should not set 'dims' when type is '{self.type}'")
         return self
 
+    model_config = ConfigDict(extra="forbid")
+
 
 class AgentVFSProfileConfig(BaseModel):
     """Configuration for agent VFS profile.
@@ -195,6 +201,8 @@ class AgentVFSProfileConfig(BaseModel):
             raise ValueError(f"Duplicate variable names: {duplicates}")
 
         return variables
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class ItemVFSVariableConfig(BaseModel):
@@ -237,6 +245,8 @@ class ItemVFSVariableConfig(BaseModel):
             raise ValueError(f"Tensor VFS variables are not supported for item profiles yet (variable '{self.name}').")
         return self
 
+    model_config = ConfigDict(extra="forbid")
+
 
 class ItemVFSProfileConfig(BaseModel):
     """Configuration for item VFS profile.
@@ -259,6 +269,8 @@ class ItemVFSProfileConfig(BaseModel):
             raise ValueError(f"Duplicate variable names: {duplicates}")
 
         return variables
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class VFSProfilesConfig(BaseModel):
@@ -286,3 +298,5 @@ class VFSProfilesConfig(BaseModel):
             raise ValueError(f"Duplicate item profile names: {duplicates}")
 
         return profiles
+
+    model_config = ConfigDict(extra="forbid")

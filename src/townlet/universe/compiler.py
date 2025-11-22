@@ -697,8 +697,10 @@ class UniverseCompiler:
                     location=str(experiment_dir / "levels" / level_name / "curriculum.yaml"),
                 )
 
+        substrate = raw.stratum.stratum.substrate
+
         # 3) Action/substrate compatibility: treat warnings as errors to enforce explicit action sets
-        validator = SubstrateActionValidator(raw.stratum.stratum.substrate, raw.actions)
+        validator = SubstrateActionValidator(substrate, raw.actions)
         validation_result = validator.validate()
         for err in validation_result.errors:
             errors.add(
@@ -712,6 +714,16 @@ class UniverseCompiler:
                 code="SUBSTRATE_ACTION_WARNING_AS_ERROR",
                 location=str(experiment_dir / "actions.yaml"),
             )
+
+        # 3b) Continuous substrates must declare an explicit interaction_radius
+        if substrate.type in {"continuous", "continuousnd"}:
+            continuous_cfg = getattr(substrate, "continuous", None)
+            if continuous_cfg is None or getattr(continuous_cfg, "interaction_radius", None) is None:
+                errors.add(
+                    "Continuous substrates require an explicit interaction_radius; no defaults are applied.",
+                    code="INTERACTION_RADIUS_MISSING",
+                    location=str(experiment_dir / "stratum.yaml"),
+                )
 
         # 4) Environment↔level vocabulary alignment and cascades/modulations coverage
         env_meter_names = {m.name for m in raw.environment.environment.meters}
@@ -749,7 +761,6 @@ class UniverseCompiler:
 
         # Grid capacity (hard error)
         grid_capacity: int | None = None
-        substrate = raw.stratum.stratum.substrate
         grid_config = getattr(substrate, "grid", None)
         if getattr(substrate, "type", None) == "grid" and grid_config is not None:
             width = grid_config.width

@@ -1,0 +1,78 @@
+affordances:
+  version: "1.0"
+
+  affordances:
+    - name: EAT
+      interaction_type: instant
+      costs:
+        energy: 0.05
+      costs_per_tick: {}
+      interactions:
+        on_start:
+          - modify: "target.bar.mood"
+            value: "target.bar.mood + 0.05"
+        per_tick: []
+        on_completion:
+          - modify: "target.bar.energy"
+            value: "target.bar.energy + 0.2"
+        on_early_exit: []
+        on_failure: []
+      opening_hours:
+        enabled: true
+        schedule:
+          - start: 0
+            end: 24
+      deployment:
+        type: fixed
+        positions: [[2, 2]]
+
+    - name: SLEEP
+      interaction_type: multi_tick
+      duration_ticks: 3
+      costs: {}
+      costs_per_tick:
+        energy: 0.005
+      interactions:
+        on_start: []
+        per_tick:
+          - modify: "target.bar.energy"
+            value: "target.bar.energy + 0.1"
+        on_completion: []
+        on_early_exit: []
+        on_failure: []
+      opening_hours:
+        enabled: true
+        schedule:
+          - start: 0
+            end: 24
+      deployment:
+        type: fixed
+        positions: [[1, 1]]
+
+    - name: WORK
+      interaction_type: dual
+      duration_ticks: 2
+      costs:
+        energy: 0.05
+      costs_per_tick:
+        energy: 0.05
+      interactions:
+        on_start: []
+        per_tick:
+          - modify: "target.bar.energy"
+            value: "target.bar.energy - 0.01"
+          - modify: "target.bar.mood"
+            value: "target.bar.mood + 0.05"
+        on_completion: []
+        on_early_exit: []
+        on_failure: []
+      opening_hours:
+        enabled: true
+        schedule:
+          - start: 0
+            end: 24
+      deployment:
+        type: fixed
+        positions: [[3, 3]]
+
+  modulations: []

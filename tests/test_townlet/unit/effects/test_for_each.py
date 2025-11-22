@@ -3,6 +3,7 @@
 import pytest
 import torch
 
+from townlet.effects.collections import MAX_COLLECTION_SIZE
 from townlet.effects.compiler import CommandCompiler
 from townlet.effects.context import ExecutionContext
 from townlet.effects.executor import CommandExecutor
@@ -241,7 +242,7 @@ def test_for_each_iteration_cap_raises():
         body=[],
     )
 
-    bars = {"energy": torch.zeros(100)}  # 100 agents exceeds cap 64
+    bars = {"energy": torch.zeros(MAX_COLLECTION_SIZE + 1)}  # exceed collection cap
     context = ExecutionContext(
         bars=bars,
         vfs_registry=None,

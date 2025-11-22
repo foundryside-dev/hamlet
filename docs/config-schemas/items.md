@@ -214,12 +214,14 @@ items:
 | `spawn_count` | int | 1 | Number to spawn at level start (0 = don't spawn) |
 | `spawn_interval` | int \| null | null | Ticks between respawns (null = no periodic respawn) |
 | `spawn_position` | enum | random | Position strategy: `random` or `fixed` |
+| `when` | string \| null | null | Boolean expression gating spawn (e.g., `bar.energy > 0.5`) |
 
 ### Validation Rules
 
 1. **Item Type Exists**: `item_type` must reference existing catalog item
 2. **Spawn Count Non-Negative**: `spawn_count` must be >= 0
 3. **Spawn Interval Positive**: `spawn_interval` must be >= 1 if specified
+4. **Condition is Boolean**: `when` must type-check to bool against bars/VFS/temporal schema (temporal symbols only when temporal mechanics enabled)
 
 ---
 

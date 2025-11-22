@@ -156,6 +156,10 @@ class ItemTypeConfig(BaseModel):
         min_length=1,
         description="Categorization tags for expressions/UI",
     )
+    exclusive: bool = Field(
+        default=True,
+        description="True for single-holder items, False for shared/environmental items",
+    )
 
     id: str = Field(..., description="Unique item type identifier")
 

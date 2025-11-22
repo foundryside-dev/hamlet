@@ -58,6 +58,14 @@ class InventoryState:
         Returns:
             True if added, False if inventory full
         """
+        # Prevent duplicates per agent
+        if self.has_item(agent_idx, item.instance_id):
+            return False
+
+        # Enforce exclusive items (single holder)
+        if item.exclusive and item.holder_agent_ids and agent_idx not in item.holder_agent_ids:
+            return False
+
         # Find first empty slot
         agent_slots = self.slots[agent_idx]
         empty_mask = agent_slots == -1
@@ -72,8 +80,8 @@ class InventoryState:
         self.slots[agent_idx, slot_idx] = item.instance_id
 
         # Store item metadata
-        item.holder_agent_id = agent_idx
         self.items[item.instance_id] = item
+        item.holder_agent_ids.add(agent_idx)
 
         return True
 
@@ -99,8 +107,8 @@ class InventoryState:
         # Actually DON'T remove - need it for DROP action
         # self.items.pop(instance_id, None)
         item = self.items.get(instance_id)
-        if item is not None:
-            item.holder_agent_id = None
+        if item is not None and agent_idx in item.holder_agent_ids:
+            item.holder_agent_ids.discard(agent_idx)
 
         return instance_id
 
@@ -132,3 +140,7 @@ class InventoryState:
         """Clear all inventory slots and metadata."""
         self.slots.fill_(-1)
         self.items.clear()
+
+    def has_item(self, agent_idx: int, instance_id: int) -> bool:
+        """Check whether an agent already holds a given instance."""
+        return bool((self.slots[agent_idx] == instance_id).any())

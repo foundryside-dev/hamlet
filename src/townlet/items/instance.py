@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 __all__ = ["ItemInstance"]
 
@@ -27,7 +27,8 @@ class ItemInstance:
     spawn_tick: int  # When item was spawned
     duration_total: int | None  # Total lifetime (None = permanent)
     duration_remaining: int | None  # Ticks until despawn (None = permanent)
-    holder_agent_id: int | None = None  # Agent holding the item (None when on ground)
+    exclusive: bool = True  # Single-holder (exclusive) vs shared (multi-holder)
+    holder_agent_ids: set[int] = field(default_factory=set)  # Agents holding this item (empty when on ground)
 
     def tick(self) -> None:
         """Advance lifecycle by one tick."""
@@ -37,3 +38,11 @@ class ItemInstance:
     def is_expired(self) -> bool:
         """Check if item should despawn."""
         return self.duration_remaining is not None and self.duration_remaining <= 0
+
+    @property
+    def holder_agent_id(self) -> int | None:
+        """Return an arbitrary holder (for compatibility with single-holder APIs)."""
+
+        if not self.holder_agent_ids:
+            return None
+        return next(iter(self.holder_agent_ids))

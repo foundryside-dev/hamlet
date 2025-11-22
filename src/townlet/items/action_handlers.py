@@ -176,8 +176,9 @@ class ItemActionHandler:
         success = self.inventory.add_item(agent_idx, item)
 
         if success:
-            # Move item from world to held state (preserves VFS state)
-            self.manager.lift_item(item.instance_id)
+            # Exclusive items leave the world when picked up; shared items remain in place.
+            if item.exclusive:
+                self.manager.lift_item(item.instance_id)
 
             # Execute on_pickup Effects commands
             self._execute_interaction(
@@ -376,11 +377,12 @@ class ItemActionHandler:
         if item is None:
             return False  # Item metadata missing (shouldn't happen)
 
-        # Place item back in world at agent's position (preserves VFS state)
-        agent_pos_tuple = tuple(agent_position.tolist())
-        self.manager.place_item(
-            instance_id=instance_id,  # Use existing instance (NOT spawn_item)
-            position=agent_pos_tuple,
-        )
+        # Shared items remain in the world; exclusive items return to the grid.
+        if item.exclusive:
+            agent_pos_tuple = tuple(agent_position.tolist())
+            self.manager.place_item(
+                instance_id=instance_id,  # Use existing instance (NOT spawn_item)
+                position=agent_pos_tuple,
+            )
 
         return True

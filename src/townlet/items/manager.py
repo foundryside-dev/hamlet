@@ -42,6 +42,7 @@ class CompiledItemType:
     name: str | None
     icon: str | None
     tags: tuple[str, ...]
+    exclusive: bool
 
     # Pre-compiled Effects commands (ready for CommandExecutor)
     compiled_on_pickup: list[CommandNode]
@@ -125,6 +126,7 @@ class ItemManager:
                         name=item_type.name,
                         icon=item_type.icon,
                         tags=tuple(item_type.tags),
+                        exclusive=item_type.exclusive,
                         compiled_on_pickup=compiled_on_pickup,
                         compiled_on_use=compiled_on_use,
                         compiled_on_drop=compiled_on_drop,
@@ -151,6 +153,7 @@ class ItemManager:
                         name=item_type.name,
                         icon=item_type.icon,
                         tags=tuple(item_type.tags),
+                        exclusive=item_type.exclusive,
                         compiled_on_pickup=[],
                         compiled_on_use=[],
                         compiled_on_drop=[],
@@ -359,7 +362,7 @@ class ItemManager:
             spawn_tick=current_tick,
             duration_total=item_def.duration,
             duration_remaining=item_def.duration,
-            holder_agent_id=None,
+            exclusive=item_def.exclusive,
         )
         self.next_instance_id += 1
 
@@ -385,6 +388,11 @@ class ItemManager:
         """
         if instance_id not in self.active_items:
             return None
+
+        item = self.active_items[instance_id]
+        if not item.exclusive:
+            # Shared items stay in the world even when held.
+            return item
 
         # Move from active to held (do NOT free VFS slot - item still exists)
         item = self.active_items.pop(instance_id)
@@ -414,7 +422,7 @@ class ItemManager:
         # Move from held to active
         item = self.held_items.pop(instance_id)
         item.position = position
-        item.holder_agent_id = None
+        item.holder_agent_ids.clear()
         self.active_items[instance_id] = item
 
         return item

@@ -69,10 +69,25 @@ class CommandParser:
             )
 
         elif config.for_each is not None:
+            # for_each can be a registered collection name OR an arbitrary expression.
+            # Only set collection when it matches a known resolver; otherwise treat as expression.
+            collection = None
+            collection_expr = config.for_each
+            if isinstance(config.for_each, str):
+                try:
+                    from townlet.effects import collections as _collections
+
+                    collection_resolvers = _collections.COLLECTION_RESOLVERS
+                except Exception:
+                    collection_resolvers = {}
+                if config.for_each in collection_resolvers:
+                    collection = config.for_each
+                    collection_expr = None
+
             return CommandNode(
                 type=CommandType.FOR_EACH,
-                collection=config.for_each,
-                collection_expr=config.for_each,
+                collection=collection,
+                collection_expr=collection_expr,
                 iterator=config.as_,
                 iterator_var=config.as_,
                 body=[self.parse_command(cmd) for cmd in config.do],

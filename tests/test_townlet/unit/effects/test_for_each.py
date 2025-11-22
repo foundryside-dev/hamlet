@@ -7,6 +7,7 @@ from townlet.effects.compiler import CommandCompiler
 from townlet.effects.context import ExecutionContext
 from townlet.effects.executor import CommandExecutor
 from townlet.effects.schema import CommandNode, CommandType
+from townlet.world.expression import ExpressionParser
 
 
 class DummyEffectManager:
@@ -142,6 +143,47 @@ def test_for_each_unknown_collection_raises():
     )
     with pytest.raises(ValueError):
         executor.execute(command, context)
+
+
+def test_for_each_collection_expression_executes():
+    """Expression-based collection should be evaluated at runtime."""
+    executor = CommandExecutor()
+    parser = ExpressionParser()
+    coll_ast = parser.parse("0")
+    command = CommandNode(
+        type=CommandType.FOR_EACH,
+        collection=None,
+        collection_expr="0",
+        collection_ast=coll_ast,
+        iterator="idx",
+        body=[
+            CommandNode(
+                type=CommandType.MODIFY,
+                path="target.bar.energy",
+                value_expr="target.bar.energy + 1",
+            )
+        ],
+    )
+
+    # Compile nested modify command
+    schema = {"target.bar.energy": "float"}
+    compiler = CommandCompiler(schema=schema)
+    for body_cmd in command.body:
+        compiler.compile_command(body_cmd)
+
+    bars = {"energy": torch.tensor([0.0, 5.0])}
+    context = ExecutionContext(
+        bars=bars,
+        vfs_registry=None,
+        self_index=0,
+        target_index=None,
+        effect_manager=DummyEffectManager(),
+        item_manager=DummyItemManager(),
+    )
+
+    executor.execute(command, context)
+
+    assert torch.allclose(bars["energy"], torch.tensor([1.0, 5.0]))
 
 
 def test_for_each_empty_collection_noop():

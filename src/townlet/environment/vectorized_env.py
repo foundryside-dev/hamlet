@@ -170,15 +170,16 @@ class VectorizedHamletEnv:
         self.substrate = SubstrateFactory.build(self.universe.stratum.stratum.substrate, device=torch_device)
 
         # Action labels are provided by the compiler via ActionSpaceMetadata.
-        compiled_labels = getattr(universe.action_space_metadata, "labels", {}) or {}
+        level_action_metadata = level.action_metadata
+        compiled_labels = getattr(level_action_metadata, "labels", {}) or {}
         if not compiled_labels:
             raise ValueError("Compiled action labels missing; recompile configs to generate ActionSpaceMetadata.labels.")
 
         # Rehydrate into ActionLabels for downstream helpers
         self.action_labels = ActionLabels(
             labels=dict(compiled_labels),
-            description=getattr(universe.action_space_metadata, "label_description", ""),
-            domain=getattr(universe.action_space_metadata, "label_domain", ""),
+            description=getattr(level_action_metadata, "label_description", ""),
+            domain=getattr(level_action_metadata, "label_domain", ""),
         )
 
         # Metadata and observation activity
@@ -560,12 +561,12 @@ class VectorizedHamletEnv:
             return None
 
         # Affordance vocabulary and positions from compiled metadata
-        metadata_affordance_lookup = dict(self.metadata.affordance_id_to_index)
+        level_affordance_lookup = {info.name: idx for idx, info in enumerate(level.affordance_metadata.affordances)}
         self.affordance_name_to_id = {aff.name: aff.name for aff in affordances_list}
         self.affordance_name_to_mask_idx = {
-            name: metadata_affordance_lookup.get(aff_id)
+            name: level_affordance_lookup.get(aff_id)
             for name, aff_id in self.affordance_name_to_id.items()
-            if metadata_affordance_lookup.get(aff_id) is not None
+            if level_affordance_lookup.get(aff_id) is not None
         }
         self.affordance_positions_from_config = {aff.name: _extract_position(aff) for aff in affordances_list}
         optimization_position_map = getattr(self.optimization_data, "affordance_position_map", {})
@@ -606,7 +607,7 @@ class VectorizedHamletEnv:
 
         # Build composed action space from compiler metadata and substrate defaults
         self.action_space = self._build_action_space_from_metadata(
-            universe.action_space_metadata,
+            level_action_metadata,
             self.substrate,
         )
         self.action_dim = self.action_space.action_dim
@@ -1743,6 +1744,9 @@ class VectorizedHamletEnv:
 
         # === ITEM ACTION DISPATCH ===
         if self.item_handler is not None:
+            # Capture current tick per agent for item action scheduling
+            # step_counts stores ticks per agent; use scalar int for handlers
+            current_ticks = self.step_counts.clone()
             # GET action
             try:
                 get_action_id = self.action_space.get_action_by_name("GET").id
@@ -1752,7 +1756,7 @@ class VectorizedHamletEnv:
                         self.item_handler.handle_get_action(
                             agent_idx=int(agent_idx.item()),
                             agent_position=self.positions[agent_idx],
-                            current_tick=0,  # TODO: Add tick tracking
+                            current_tick=int(current_ticks[agent_idx].item()),
                             meters=self.meters,
                         )
             except ValueError:
@@ -1770,7 +1774,7 @@ class VectorizedHamletEnv:
                                 self.item_handler.handle_use_slot_action(
                                     agent_idx=int(agent_idx.item()),
                                     slot_idx=slot_idx,
-                                    current_tick=0,  # TODO: Add tick tracking
+                                    current_tick=int(current_ticks[agent_idx].item()),
                                     meters=self.meters,
                                 )
                     except ValueError:
@@ -1788,7 +1792,7 @@ class VectorizedHamletEnv:
                                     agent_idx=int(agent_idx.item()),
                                     slot_idx=slot_idx,
                                     agent_position=self.positions[agent_idx],
-                                    current_tick=0,  # TODO: Add tick tracking
+                                    current_tick=int(current_ticks[agent_idx].item()),
                                 )
                     except ValueError:
                         pass  # Action not in action space

@@ -36,8 +36,10 @@ class _TargetAwareExecutionContext(ExprExecutionContext):
         vfs_registry: Any | None = None,  # NEW: For item-scoped VFS lookups
         self_index: int | None = None,  # NEW
         self_is_item: bool = False,  # NEW
+        device: torch.device | str | None = None,
     ):
-        super().__init__(bars=bars, vfs=vfs, affordances={}, temporal={})
+        resolved_device = torch.device(device) if device is not None else torch.device("cpu")
+        super().__init__(bars=bars, vfs=vfs, affordances={}, temporal={}, device=resolved_device)
         self.target_bars = target_bars
         self.target_vfs = target_vfs
         self.self_bars = self_bars or {}  # NEW
@@ -87,7 +89,9 @@ class _TargetAwareExecutionContext(ExprExecutionContext):
                 )
                 # Convert to tensor if needed
                 if not isinstance(value, torch.Tensor):
-                    value = torch.tensor(value, dtype=torch.float32)
+                    value = torch.tensor(value, dtype=torch.float32, device=self.device)
+                else:
+                    value = value.to(self.device)
                 return value
             elif parts[1] == "bar" and len(parts) == 3:
                 return self.self_bars[parts[2]]
@@ -338,18 +342,31 @@ class CommandExecutor:
             context: Execution context
         """
         from townlet.effects.collections import MAX_COLLECTION_SIZE, resolve_collection
+        from townlet.world.expression.evaluator import Evaluator
 
-        # Resolve collection to list of indices
+        # Resolve collection to list of indices (resolver or expression)
+        indices = []
         collection_type = command.collection
-        if not collection_type:
-            raise ValueError("for_each command missing collection field")
-
-        indices = resolve_collection(
-            collection_type=collection_type,
-            context=context,
-            radius=command.radius,
-            max_count=MAX_COLLECTION_SIZE,
-        )
+        if collection_type:
+            indices = resolve_collection(
+                collection_type=collection_type,
+                context=context,
+                radius=command.radius,
+                max_count=MAX_COLLECTION_SIZE,
+            )
+        elif command.collection_ast is not None:
+            eval_ctx = self._make_eval_context(context, effect=context.effect)
+            evaluator = Evaluator(eval_ctx)
+            value = evaluator.evaluate(command.collection_ast)
+            if isinstance(value, torch.Tensor):
+                flat = value.flatten()
+                indices = [int(v.item()) for v in flat]
+            elif isinstance(value, (list, tuple)):
+                indices = [int(v) for v in value]
+            else:
+                indices = [int(value)]
+        else:
+            raise ValueError("for_each command missing collection field (resolver or expression required)")
 
         if len(indices) > MAX_COLLECTION_SIZE:
             raise RuntimeError(f"for_each collection size {len(indices)} exceeds cap {MAX_COLLECTION_SIZE}")
@@ -549,13 +566,22 @@ class CommandExecutor:
         # Build dictionaries for ExprExecutionContext
         bars_dict = {}
         vfs_dict = {}
+        # Resolve device from bars (preferred) or fallback to executor/device attribute
+        device = None
+        if context.bars:
+            try:
+                sample = next(iter(context.bars.values()))
+                device = sample.device
+            except StopIteration:
+                device = None
+        if device is None:
+            device = getattr(self, "device", torch.device("cpu"))
+        if isinstance(device, str):
+            device = torch.device(device)
 
         # Add effect-specific variables (if available)
         if active_effect:
             # Make effect variables available as scalars
-            import torch
-
-            device = self.device if hasattr(self, "device") else "cpu"
             vfs_dict["intensity"] = torch.tensor(active_effect.intensity, device=device)
             vfs_dict["elapsed_ticks"] = torch.tensor(active_effect.elapsed_ticks, device=device)
             vfs_dict["duration_remaining"] = torch.tensor(active_effect.duration_remaining, device=device)
@@ -575,64 +601,40 @@ class CommandExecutor:
                     # Variable not initialized yet, skip
                     pass
 
-        # Handle target. prefix by creating a modified version of bars/vfs for target
+        # Build target/self scoped views when present
+        target_bars = {}
+        target_vfs = {}
         if context.target_index is not None:
-            # Create target-scoped bars
-            target_bars = {}
             for bar_name, tensor in bars_dict.items():
-                if tensor.dim() > 0:
-                    target_bars[bar_name] = tensor[context.target_index]
-                else:
-                    target_bars[bar_name] = tensor
-
-            # Create target-scoped vfs
-            target_vfs = {}
+                target_bars[bar_name] = tensor if tensor.dim() == 0 else tensor[context.target_index]
             for var_name, tensor in vfs_dict.items():
-                if tensor.dim() > 0:
-                    target_vfs[var_name] = tensor[context.target_index]
-                else:
-                    target_vfs[var_name] = tensor
+                target_vfs[var_name] = tensor if tensor.dim() == 0 else tensor[context.target_index]
 
-            # NEW: Create self-scoped bars/vfs if self_index is set
-            # BUT: Only do this if self is NOT an item (items don't have bars)
-            self_bars = {}
-            self_vfs = {}
-            if context.self_index is not None and not context.self_is_item:
-                # Self is an agent - index into agent-scoped tensors
-                for bar_name, tensor in bars_dict.items():
-                    if tensor.dim() > 0:
-                        self_bars[bar_name] = tensor[context.self_index]
-                    else:
-                        self_bars[bar_name] = tensor
+        self_bars = {}
+        self_vfs = {}
+        if context.self_index is not None and not context.self_is_item:
+            for bar_name, tensor in bars_dict.items():
+                self_bars[bar_name] = tensor if tensor.dim() == 0 else tensor[context.self_index]
+            for var_name, tensor in vfs_dict.items():
+                self_vfs[var_name] = tensor if tensor.dim() == 0 else tensor[context.self_index]
 
-                for var_name, tensor in vfs_dict.items():
-                    if tensor.dim() > 0:
-                        self_vfs[var_name] = tensor[context.self_index]
-                    else:
-                        self_vfs[var_name] = tensor
-            # If self is an item, self_bars/self_vfs stay empty
-            # Item-scoped VFS lookups are handled directly in _TargetAwareExecutionContext.get()
-
-            # Build a custom get() function that handles target. and self. prefix
+        # Always use the prefix-aware context when self or target indices are present
+        if context.target_index is not None or context.self_index is not None:
             return _TargetAwareExecutionContext(
                 bars=bars_dict,
                 vfs=vfs_dict,
                 target_bars=target_bars,
                 target_vfs=target_vfs,
-                self_bars=self_bars,  # NEW
-                self_vfs=self_vfs,  # NEW
-                vfs_registry=context.vfs_registry,  # NEW: For item-scoped lookups
-                self_index=context.self_index,  # NEW
-                self_is_item=context.self_is_item,  # NEW
+                self_bars=self_bars,
+                self_vfs=self_vfs,
+                vfs_registry=context.vfs_registry,
+                self_index=context.self_index,
+                self_is_item=context.self_is_item,
+                device=device,
             )
 
-        # No target, return standard context
-        return ExprExecutionContext(
-            bars=bars_dict,
-            vfs=vfs_dict,
-            affordances={},
-            temporal={},
-        )
+        # No self/target: fall back to basic context
+        return ExprExecutionContext(bars=bars_dict, vfs=vfs_dict, affordances={}, temporal={}, device=device)
 
     def execute_commands(self, commands: list[CommandNode], context: ExecutionContext) -> None:
         """Execute list of commands in order.

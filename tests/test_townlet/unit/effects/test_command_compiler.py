@@ -116,6 +116,22 @@ def test_compiler_for_each_rejects_unknown_collection():
         compiler.compile_command(node)
 
 
+def test_compiler_for_each_accepts_collection_expression():
+    """Compiler should accept expression-based for_each collections (no resolver lookup)."""
+    node = CommandNode(
+        type=CommandType.FOR_EACH,
+        collection=None,
+        collection_expr="target.inventory.items",
+        body=[],
+    )
+
+    compiler = CommandCompiler(schema={"target.inventory.items": "list"})
+    compiled = compiler.compile_command(node)
+
+    assert compiled.collection is None
+    assert compiled.collection_ast is not None
+
+
 def test_compiler_switch_happy_path():
     """Compiler type-checks switch equality cases."""
     node = CommandNode(

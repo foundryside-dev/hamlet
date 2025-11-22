@@ -117,19 +117,18 @@ class CommandCompiler:
             if not has_collection and not has_collection_expr:
                 raise TypeCheckError("FOR_EACH command requires 'collection'")
 
-            # Validate simple collection names against registered resolvers
-            if has_collection:
-                if node.collection not in COLLECTION_RESOLVERS:
-                    available = sorted(COLLECTION_RESOLVERS.keys())
-                    raise TypeCheckError(f"Unknown for_each collection '{node.collection}'. Available: {available}")
-
-            # Only parse/type-check collection_expr when explicitly provided
+            # If an explicit collection expression is provided, parse/type-check it and
+            # skip resolver validation. Otherwise, validate resolver name.
             if has_collection_expr:
                 coll_expr = node.collection_expr
                 assert coll_expr is not None
-                coll_ast = self.parser.parse(coll_expr)
+                coll_ast = self.parser.parse(str(coll_expr))
                 self.type_checker.check(coll_ast)
                 node.collection_ast = coll_ast
+            elif has_collection:
+                if node.collection not in COLLECTION_RESOLVERS:
+                    available = sorted(COLLECTION_RESOLVERS.keys())
+                    raise TypeCheckError(f"Unknown for_each collection '{node.collection}'. Available: {available}")
 
             # Recursively compile nested commands (with None check for mypy)
             nested: list[CommandNode] = []

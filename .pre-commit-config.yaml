@@ -12,11 +12,6 @@ repos:
         name: Ruff Linter (auto-fix)
         description: Run ruff linter with auto-fix on staged files
 
-      # Run ruff formatter
-      - id: ruff-format
-        name: Ruff Formatter
-        description: Format code with ruff
-
   # Black - Python code formatter
   - repo: https://github.com/psf/black
     rev: 25.11.0

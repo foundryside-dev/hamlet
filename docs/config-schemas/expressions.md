@@ -90,6 +90,7 @@ self.position              # Item's position (in item expressions)
 - `temporal.*` - Time-based values (tick, day, hour, is_night)
 - `target.*` - Target entity in effects (agent, item, affordance)
 - `self.*` - Current entity in expressions (item age, position)
+- `item.*` - Item-local state when evaluating item rules (e.g., `item.vfs.durability`)
 
 **Type checking**: Paths must exist in the schema. Invalid paths fail at compile time.
 
@@ -164,6 +165,78 @@ bar.energy < 0.2 or bar.health < 0.2        # Any crisis
 bar.energy > 0.5 and vfs.is_night           # Energy and night
 not (bar.health > 50)                       # Health not above 50
 ```
+
+## Integration Examples
+
+### VFS Variables
+
+```yaml
+vfs_profiles:
+  agent_profiles:
+    player:
+      variables:
+        is_critical:
+          type: bool
+          expression: "bar.energy < 0.2 or bar.health < 0.3"
+```
+
+### Effect Conditions
+
+```yaml
+effects_catalog:
+  effects:
+    regeneration:
+      commands:
+        - type: "if"
+          condition: "target.bar.health < 0.5"
+          then:
+            - type: "modify"
+              path: "target.bar.health"
+              operation: "add"
+              value: 0.1
+```
+
+### Spawn Conditions (Items)
+
+```yaml
+spawn_rules:
+  - item_type: "apple"
+    when: "not vfs:is_winter and bar.energy < 0.8"
+```
+
+## Type System Reference
+
+- **int**: Integer values (1, 42, -10)
+- **float**: Floating-point values (0.5, 3.14, -2.7)
+- **bool**: Boolean values (true, false)
+- **str**: String values ("energy")
+- **list**: Homogeneous lists (Phase 1 limited support)
+
+**Implicit conversions**
+
+✅ Allowed: int → float (e.g., `bar.energy * 10` promotes 10 to 10.0)
+
+❌ Forbidden: bool ↔ numeric. Use explicit comparisons:
+- Wrong: `bar.energy and bar.health`
+- Right: `bar.energy > 0 and bar.health > 0`
+
+## Troubleshooting
+
+- **Undefined variable**: `Path 'vfs.foo' not found in schema` → Ensure the variable is declared in the relevant profile.
+- **Type mismatch**: `Logical operator and requires bool operands` → Wrap numeric expressions in comparisons.
+- **Unknown path**: `Path 'item.vfs.durability' not found` → Ensure schema includes item VFS variables for item contexts.
+
+## Phase 2 Roadmap (Deferred Operators)
+
+The following operators are planned but not yet implemented:
+
+**Trigonometric:** `sin`, `cos`, `tan`, `asin`, `acos`, `atan`
+
+**Spatial:** `distance(pos1, pos2)`, `within_radius(pos, center, radius)`
+
+**Statistical:** `mean(list)`, `sum(list)`, `count(list)`, `min(list)`, `max(list)`
+
+**Stochastic:** `random()`, `bernoulli(p)`, `normal(mean, std)`
 
 #### Operator Precedence
 

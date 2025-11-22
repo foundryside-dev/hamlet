@@ -1,333 +1,186 @@
-# VFS Uplift Validation Suite
+# VFS Uplift Validation Suite – Final Run (Run 3)
 
-**Purpose:** Systematic gap analysis for VFS uplift implementation readiness
-
+**Status:** Ready for Final Validation Run
+**Expected Completion:** 90-95%
 **Created:** 2025-11-22
-**Status:** Ready for use
+**Updated:** 2025-11-23 (Cleaned for Run 3)
 
 ---
 
 ## Overview
 
-This validation suite provides tools for comprehensive gap analysis of the VFS uplift implementation against the master requirements extracted from four foundational plan documents.
+This is the **third and final validation run** for VFS uplift implementation. After two previous runs that identified and resolved critical gaps, we expect 90-95% completion.
 
-**Source Plans:**
-1. `2025-11-19-unified-world-compiler-plan.md` - Overall architecture and phasing
-2. `2025-11-18-items-and-vfs-profiles.md` - Items system and VFS profiles design
-3. `2025-11-19-effects-system-design.md` - Effects system architecture
-4. `2025-11-23-runtime-vfs-effects-integration.md` - Runtime integration plan
+**Dual-Source Validation:**
+- **Primary:** `docs/plans/vfs_uplift/master_requirements.md` (98 requirements - what was built to)
+- **Cross-validation:** `requirements-checklist.md` (~124 requirements - Claude-inferred from docs)
 
----
+**Strategy:** Validate against both sources to catch everything - the master requirements plus valuable extras Claude inferred that might have been missed.
 
-## Documents in This Suite
-
-### 1. requirements-checklist.md
-**Purpose:** Master list of all 157 requirements extracted from plans
-
-**Structure:**
-- 8 categories (Compiler, VFS, Effects, Items, Runtime, Testing, Documentation, Breaking Changes)
-- Each requirement has:
-  - Unique ID (e.g., COMP-1, VFS-5, EFF-10)
-  - Source reference (plan file and line number)
-  - Detailed requirement text
-  - Evidence checklist (what to verify)
-- Summary statistics and cross-cutting concerns
-
-**Use this to:**
-- Get comprehensive view of all requirements
-- Understand requirement dependencies
-- Identify which requirements belong together
+**Goal:** Generate final burn-down list of remaining work before merge (expected 5-10 items).
 
 ---
 
-### 2. gap-report-template.md
-**Purpose:** Template for generating gap analysis reports
+## Quick Start
 
-**Structure:**
-- Executive summary (status counts, critical gaps)
-- Critical gaps table (P0 - must fix before merge)
-- Important gaps table (P1 - should fix soon)
-- Minor gaps table (P2 - nice to have)
-- Detailed verification evidence (all 157 requirements)
-- Summary by category
-- Priority breakdown with effort estimates
-- Recommendations (immediate actions, follow-up work, future work)
-- Risk assessment
-- Conclusion and next steps
-- Verification commands (grep patterns, test counts)
-
-**Use this to:**
-- Generate gap analysis reports
-- Track implementation progress
-- Communicate status to stakeholders
-- Plan sprints based on priority breakdown
-
----
-
-### 3. evidence-standards.md
-**Purpose:** Define what counts as valid evidence for each status level
-
-**Structure:**
-- Evidence quality levels (✅ COMPLETE, ⚠️ PARTIAL, ❌ MISSING, 🔍 UNCLEAR)
-- Evidence requirements by requirement type (Config/Schema, Compiler, Runtime, Expression/AST, VFS, Effects, Items, Testing, Documentation, Breaking Changes)
-- Common pitfalls (false positives/negatives)
-- Verification workflow (7-step process)
-- Evidence template
-- Quality checklist
-
-**Use this to:**
-- Understand what evidence is needed for each requirement
-- Avoid common mistakes in gap analysis
-- Ensure consistent evidence quality across analysts
-- Know when to mark something as COMPLETE vs PARTIAL
-
----
-
-## How to Perform Gap Analysis
-
-### Step 1: Review Requirements
+### 1. Review Requirements
 ```bash
-# Read the master checklist
-cat docs/plans/vfs_uplift/validation/requirements-checklist.md
-
-# Focus on a specific category (e.g., Runtime Integration)
-grep -A 5 "Category 5: Runtime Integration" docs/plans/vfs_uplift/validation/requirements-checklist.md
+# Read the master requirements (98 atomic requirements)
+cat docs/plans/vfs_uplift/master_requirements.md
 ```
 
-### Step 2: Set Up Evidence Standards
+### 2. Execute Validation
 ```bash
-# Read evidence standards to understand what counts as "complete"
-cat docs/plans/vfs_uplift/validation/evidence-standards.md
-
-# Focus on relevant requirement types (e.g., Runtime Requirements)
-grep -A 20 "### Runtime Requirements" docs/plans/vfs_uplift/validation/evidence-standards.md
+# See EXECUTION-GUIDE.md for detailed agent dispatch instructions
+cat docs/plans/vfs_uplift/validation/EXECUTION-GUIDE.md
 ```
 
-### Step 3: Verify Each Requirement
-For each requirement in the checklist:
-
-1. **Search for implementation**
-   ```bash
-   # Example: VFS evaluation (RUN-1)
-   grep -r "mark_and_sweep" src/townlet/vfs/
-   grep -r "VFSEvaluator" src/townlet/
-   find src/townlet/vfs/ -name "*evaluator*"
-   ```
-
-2. **Search for tests**
-   ```bash
-   # Example: VFS evaluation tests
-   find tests/test_townlet/unit/vfs/ -name "*evaluator*"
-   grep -r "mark_and_sweep" tests/test_townlet/
-   pytest --collect-only tests/test_townlet/unit/vfs/
-   ```
-
-3. **Read implementation** (verify semantics match requirement)
-
-4. **Read tests** (verify coverage of happy path + error cases)
-
-5. **Check integration** (verify wired into environment/compiler)
-
-6. **Check documentation** (verify schema docs/guides exist)
-
-7. **Assign status** using evidence-standards.md criteria
-
-### Step 4: Fill Out Gap Report
+### 3. Review Progress from Runs 1-2
 ```bash
-# Copy template
-cp docs/plans/vfs_uplift/validation/gap-report-template.md \
-   docs/plans/vfs_uplift/validation/gap-report-2025-11-22.md
-
-# Fill in:
-# - Date, analyzer, baseline commit
-# - Status for each requirement (using evidence from Step 3)
-# - Summary statistics
-# - Critical/important/minor gaps tables
-# - Recommendations with effort estimates
-# - Risk assessment
-```
-
-### Step 5: Review and Iterate
-1. **Sanity check:** Do summary statistics match detailed evidence?
-2. **Completeness check:** All 157 requirements have status?
-3. **Priority check:** Are P0 gaps truly blocking merge?
-4. **Effort check:** Do estimates seem reasonable?
-5. **Recommendation check:** Are next steps actionable?
-
----
-
-## Quick Start: Focus on High-Risk Areas
-
-If short on time, focus gap analysis on these high-risk categories first:
-
-### Priority 1: Runtime Integration (RUN-*)
-**Why critical:** Core functionality, determines if system works end-to-end
-
-**Key requirements:**
-- RUN-1: Mark-and-sweep VFS evaluation
-- RUN-2: Item VFS observations
-- RUN-3: Compiled catalog usage
-- RUN-11: VFS evaluation at runtime
-
-**Verification:**
-```bash
-# Check if VFS evaluator exists
-find src/townlet/vfs/ -name "*evaluator*" -o -name "*eval*"
-
-# Check if item VFS obs are real data (not zeros)
-grep -A 5 "item_vfs" src/townlet/vfs/observation_builder.py
-
-# Check if env uses compiled catalogs (not runtime YAML)
-grep "EffectCatalog" src/townlet/environment/vectorized_env.py
-grep "effects.yaml" src/townlet/environment/vectorized_env.py
-```
-
-### Priority 2: Compiler Integration (COMP-2, COMP-3, COMP-14)
-**Why critical:** Determines if compiled artifacts are available at runtime
-
-**Key requirements:**
-- COMP-2: VFS profiles compiled into CompiledUniverse
-- COMP-3: Effects catalog compiled into CompiledUniverse
-- COMP-14: CompiledUniverse schema extensions
-
-**Verification:**
-```bash
-# Check CompiledUniverse fields
-grep "compiled_vfs_profiles\|compiled_effect_catalog" src/townlet/universe/compiled.py
-
-# Check compiler loads profiles/effects
-grep "vfs_profiles.yaml\|effects.yaml" src/townlet/universe/compiler.py
-```
-
-### Priority 3: Test Coverage (TEST-1, TEST-20, TEST-21)
-**Why critical:** Prevents regressions, validates functionality
-
-**Key requirements:**
-- TEST-1: 270+ tests total (baseline met, new tests needed)
-- TEST-20: Performance validation (<5% overhead)
-- TEST-21: Runtime integration tests
-
-**Verification:**
-```bash
-# Count tests by category
-pytest --collect-only tests/test_townlet/unit/world/expression/ | grep "test_"
-pytest --collect-only tests/test_townlet/unit/vfs/ | grep "test_"
-pytest --collect-only tests/test_townlet/unit/effects/ | grep "test_"
-pytest --collect-only tests/test_townlet/unit/items/ | grep "test_"
-
-# Check for performance benchmarks
-find tests/ -name "*benchmark*" -o -name "*perf*"
-
-# Check for runtime integration tests
-grep -r "compiled.*catalog\|mark_and_sweep" tests/test_townlet/integration/
+# See what's been fixed since the first two runs
+cat docs/plans/vfs_uplift/validation/issues/INDEX.md
+ls docs/plans/vfs_uplift/validation/issues/done/
 ```
 
 ---
 
-## Expected Timeline
+## Documentation Structure
 
-**Full gap analysis:** 1-2 days
-- Requirement verification: 4-6 hours
-- Evidence collection: 4-6 hours
-- Report writing: 2-3 hours
-- Review and iteration: 1-2 hours
+### Core Documents
 
-**Quick gap analysis (high-risk only):** 4-6 hours
-- Focus on RUN-*, COMP-2/3/14, TEST-20/21
-- Minimal evidence collection
-- Executive summary only
+**EXECUTION-GUIDE.md**
+Agent dispatch plan for Run 3. Defines 10 agents:
+- Agents 1-9: Validate 98 primary requirements from master_requirements.md
+- Agent 10: Cross-validate ~26 extras from requirements-checklist.md + synthesize final report
 
----
+**requirements-checklist.md**
+Claude-inferred requirements (~124 total) extracted from plan documents. Used for cross-validation to catch valuable requirements not in master.
 
-## Integration with Development Workflow
+**evidence-standards.md**
+What counts as valid evidence for each requirement type. Agents use this to classify requirements as DONE/PARTIAL/MISSING.
 
-### Before Starting Implementation
-1. Run gap analysis to establish baseline
-2. Identify P0 gaps (blockers)
-3. Create task plan based on gap report recommendations
+**quick-reference.md**
+Common grep patterns and verification commands for quick validation.
 
-### During Implementation
-1. Update gap report after each completed task
-2. Track status changes (❌ → ⚠️ → ✅)
-3. Verify test counts meet targets
+### Reference Guides
 
-### Before Merge/PR
-1. Run final gap analysis
-2. Verify all P0 gaps closed
-3. Document remaining P1/P2 gaps for follow-up
-4. Confirm zero regressions (RUN-12)
+**observation_modes_guide.md**
+Reference for OBS-REQ-002 (observation modes: full_auto, max_compact, full_manual).
 
----
+**interaction_radius_guide.md**
+Reference for COMP-REQ-008 (continuous substrate interaction radius requirements).
 
-## Output Format Examples
+**additional-requirements.md**
+Supplementary requirements referenced by master_requirements.md (extensions, edge cases, policies).
 
-### Executive Summary Format
-```
-**Total Requirements:** 157
-**Complete (✅):** 105 (67%)
-**Partial (⚠️):** 28 (18%)
-**Missing (❌):** 18 (11%)
-**Unclear (🔍):** 6 (4%)
+### Progress Tracking
 
-**Overall Status:** NEEDS WORK
-**Critical Gaps:** 3 (runtime VFS evaluation, item VFS obs, compiled catalogs)
-```
+**issues/**
+Issue tracking from Runs 1-2. See `issues/INDEX.md` for summary of completed work.
 
-### Gap Table Format
-```
-| Req ID | Category | Requirement | Impact | Evidence | Priority |
-|--------|----------|-------------|--------|----------|----------|
-| RUN-1 | Runtime | Mark-and-sweep VFS eval | Core feature missing | No evaluator at src/townlet/vfs/evaluator.py | P0 |
-| RUN-2 | Runtime | Item VFS observations | Returns zero stubs | observation_builder.py:XXX hardcoded zeros | P0 |
-```
+**issues/done/**
+23 resolved issues demonstrating progress toward 90-95% completion target.
 
-### Recommendation Format
-```
-### Immediate Actions (Before Merge)
-1. **Implement runtime VFS evaluation** (RUN-1, VFS-6)
-   - Create vfs/evaluator.py module
-   - Mark-and-sweep + eager modes
-   - Wire into env.step()
-   - Target: 3-4 days
-
-2. **Fix item VFS observations** (RUN-2, VFS-10)
-   - Replace zero stubs with real data
-   - Target: 1-2 days
-```
+**reports/**
+Output directory for Run 3 gap analysis reports (will be generated fresh).
 
 ---
 
-## Maintenance
+## Validation Workflow
 
-### When to Update This Suite
+### Step 1: Prerequisites
+```bash
+# Record baseline commit
+git rev-parse HEAD > docs/plans/vfs_uplift/validation/baseline-commit.txt
 
-**Update requirements-checklist.md when:**
-- New plan documents added
-- Requirements change in existing plans
-- New cross-cutting concerns identified
+# Verify tests pass
+UV_CACHE_DIR=.uv-cache uv run pytest tests/ --tb=short -q | tail -20
+```
 
-**Update gap-report-template.md when:**
-- New verification commands needed
-- New report sections required
-- Priority breakdown structure changes
+### Step 2: Dispatch Agents
+Follow EXECUTION-GUIDE.md to dispatch 9 parallel agents validating their assigned requirements.
 
-**Update evidence-standards.md when:**
-- New requirement types added (e.g., "Curriculum Requirements")
-- Common pitfalls discovered
-- Verification workflow improvements
+### Step 3: Generate Reports
+Agents output gap reports to `reports/` directory:
+- **Primary validation** (Agents 1-9):
+  - `gap-report-01-config-dtos.md` (CFG-REQ, DTO-REQ)
+  - `gap-report-02-compiler.md` (COMP-REQ)
+  - `gap-report-03-vfs.md` (VFS-REQ)
+  - `gap-report-04-items.md` (ITEM-REQ)
+  - `gap-report-05-effects.md` (EFF-REQ)
+  - `gap-report-06-commands.md` (CMD-REQ)
+  - `gap-report-07-obs-runtime.md` (OBS-REQ, RUN-REQ, MIG-REQ)
+  - `gap-report-08-qa-testing.md` (QA-REQ, PERF-REQ)
+  - `gap-report-09-policy-docs.md` (BREAK-REQ, POLICY-REQ, LIMIT-REQ, DOC-REQ)
+- **Cross-validation** (Agent 10):
+  - `gap-report-10-cross-validation.md` (extras from requirements-checklist.md)
+
+### Step 4: Synthesize
+Agent 10 aggregates all 10 reports into `gap-report-FINAL.md` with:
+- Primary requirements status (98 reqs)
+- Cross-validation findings (~26 extras)
+- Valuable catches (important reqs not in master)
+- Final burn-down list (5-10 items)
+
+---
+
+## Evidence Standards
+
+Agents classify each requirement as:
+
+- ✅ **DONE**: Full implementation + tests + integration + docs (where required)
+- 🟡 **PARTIAL**: Implementation exists but incomplete (missing tests/docs/error handling)
+- ❌ **MISSING**: Not implemented
+- 📝 **N/A**: Documentation-only or policy requirement (no code needed)
+
+See `evidence-standards.md` for detailed criteria.
+
+---
+
+## Expected Outcomes for Run 3
+
+Based on progress from Runs 1-2 (23 completed issues), we expect:
+
+**High Confidence (Should be DONE):**
+- Compiler: Seven-stage pipeline, profile loading, effects compilation
+- VFS: Scoped engine, profiles, observation integration
+- Effects: Catalog schema, reapply policies, runtime manager
+- Items: Manager runtime, inventory, profile-driven VFS
+- Commands: Core DSL (modify, spawn_effect, if, for_each)
+- Expression: Parser, AST, type checker, evaluator
+
+**Likely Remaining (PARTIAL/MISSING):**
+- Advanced spawn rules (grid/scripted placement, complex schedules)
+- Mark-and-sweep VFS evaluation (may still be in eager mode)
+- Advanced commands (switch, parallel, reduce, delay)
+- Performance benchmarks validation
+- Documentation polish (reference configs, guides)
+
+**Final Burn-Down List:**
+Run 3 will produce definitive list of remaining work before merge, likely 5-10 items.
+
+---
+
+## Progress Context (Runs 1-2)
+
+**Run 1:** Identified ~40 gaps across all systems
+**Run 2:** Resolved 23 critical issues, refined requirements
+**Run 3:** Expected to find ~5-10 remaining gaps (5-10% of 98 requirements)
+
+See `issues/INDEX.md` for detailed progress tracking.
 
 ---
 
 ## Related Documentation
+
+**Master Requirements:**
+- `docs/plans/vfs_uplift/master_requirements.md` (98 requirements)
 
 **Plan Documents:**
 - `docs/plans/vfs_uplift/2025-11-19-unified-world-compiler-plan.md`
 - `docs/plans/vfs_uplift/2025-11-18-items-and-vfs-profiles.md`
 - `docs/plans/vfs_uplift/2025-11-19-effects-system-design.md`
 - `docs/plans/vfs_uplift/2025-11-23-runtime-vfs-effects-integration.md`
-
-**Implementation Status:**
-- `docs/plans/vfs_uplift/UNIFIED-PLAN-IMPLEMENTATION-STATUS.md`
 
 **VFS System Docs:**
 - `docs/vfs-integration-guide.md`
@@ -338,9 +191,11 @@ grep -r "compiled.*catalog\|mark_and_sweep" tests/test_townlet/integration/
 ## Questions?
 
 For questions about:
-- **Requirement interpretation:** Check source plan document (line numbers in requirements-checklist.md)
+- **Execution:** See EXECUTION-GUIDE.md
 - **Evidence standards:** See evidence-standards.md
-- **Gap report format:** See gap-report-template.md
-- **Verification commands:** See gap-report-template.md Appendix A
+- **Requirement interpretation:** Check master_requirements.md Source column
+- **Verification patterns:** See quick-reference.md
 
-For issues with this validation suite, contact the VFS uplift team or create an issue.
+---
+
+**Ready for Run 3.** Expected status: 90-95% complete. Goal: Final burn-down list for merge.

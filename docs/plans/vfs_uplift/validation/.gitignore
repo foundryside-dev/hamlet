@@ -1,0 +1,10 @@
+# Build artifacts
+.coverage
+.benchmarks/
+.uv-cache/
+*.pyc
+__pycache__/
+.pytest_cache/
+
+# Temporary reports (commit final reports only)
+reports/*.tmp

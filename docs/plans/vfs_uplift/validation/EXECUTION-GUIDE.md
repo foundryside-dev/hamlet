@@ -1,24 +1,28 @@
-# VFS Uplift Gap Analysis - Execution Plan (Master Requirements)
+# VFS Uplift Gap Analysis - Execution Guide (Final Run 3)
 
 **Status:** Ready to Execute
-**Updated:** 2025-11-23 (Based on master_requirements.md)
-**Total Requirements:** 98
+**Updated:** 2025-11-23 (Dual-source validation)
+**Primary Requirements:** 98 (master_requirements.md)
+**Secondary Requirements:** ~124 (requirements-checklist.md - Claude-inferred)
 **Baseline Commit:** TBD (run git rev-parse HEAD)
-**Agents:** 10 (9 parallel + 1 synthesis)
-**Source:** docs/plans/vfs_uplift/master_requirements.md
+**Agents:** 10 (9 primary validation + 1 cross-validation/synthesis)
+**Expected Completion:** 90-95%
 
 ---
 
 ## Objective
 
-Execute systematic gap analysis of VFS uplift implementation by dispatching **9 parallel agents**, each verifying their assigned requirements with file:line evidence from the codebase, then synthesizing results into a final gap report.
+Execute **final validation run (Run 3)** with dual-source verification:
+1. **Primary validation** (Agents 1-9): Verify 98 master requirements from `master_requirements.md`
+2. **Cross-validation** (Agent 10): Check ~26 extras from `requirements-checklist.md` not in master
+3. **Synthesis** (Agent 10): Aggregate all findings into final burn-down list
 
 ---
 
 ## Agent Division (By Requirement Prefix)
 
-| Agent | Scope | Requirements | Count |
-|-------|-------|--------------|-------|
+| Agent | Scope | Primary Source | Count |
+|-------|-------|----------------|-------|
 | 1 | Config & DTOs | CFG-REQ-001..002, DTO-REQ-001 | **3** |
 | 2 | Compiler | COMP-REQ-001..013 | **13** |
 | 3 | VFS System | VFS-REQ-001..009 | **9** |
@@ -28,9 +32,9 @@ Execute systematic gap analysis of VFS uplift implementation by dispatching **9 
 | 7 | Observations & Runtime | OBS-REQ-001..006, RUN-REQ-001..002, MIG-REQ-001 | **10** |
 | 8 | QA & Testing | QA-REQ-001..011, PERF-REQ-001 | **12** |
 | 9 | Policy & Docs | BREAK-REQ-001..002, POLICY-REQ-001..002, LIMIT-REQ-001, DOC-REQ-001..008 | **12** |
-| 10 | Synthesis | Aggregate all 9 reports | **—** |
+| 10 | Cross-Validation + Synthesis | Extras from requirements-checklist.md + aggregate all reports | **~26 + synthesis** |
 
-**Total:** 98 requirements
+**Total:** 98 master requirements + ~26 cross-validation extras = ~124 requirements
 
 ---
 
@@ -329,32 +333,59 @@ Each agent will:
 
 ---
 
-## Agent 10: Synthesis
+## Agent 10: Cross-Validation + Synthesis
 
-**Scope:** Aggregate all 9 agent reports into final gap report
+**Scope:** Validate extras from requirements-checklist.md + aggregate all reports
 
 **Wait for:** All 9 agent reports completed
 
-**Tasks:**
-1. Read all 9 gap reports
+**Phase 1: Cross-Validation (~26 extras from requirements-checklist.md)**
+
+Identify and validate requirements from `requirements-checklist.md` that are **NOT** in `master_requirements.md`:
+
+**Focus areas:**
+- Granular test coverage requirements (COMP-*, VFS-*, EFF-* subtests)
+- Inferred edge cases not explicitly in master
+- Additional documentation requirements
+- Runtime validation details
+
+**Validation approach:**
+1. Compare requirements-checklist.md against master_requirements.md
+2. Extract unique requirements (those not covered by master's 98 reqs)
+3. Classify each extra as DONE/PARTIAL/MISSING/VALUABLE/REDUNDANT
+4. Flag any "valuable catches" - important requirements master missed
+
+**Output:** `validation/reports/gap-report-10-cross-validation.md`
+
+**Phase 2: Synthesis**
+
+1. Read all 10 gap reports (9 primary + 1 cross-validation)
 2. Count requirements by status (DONE, PARTIAL, MISSING, N/A)
 3. Identify P0 blockers (requirements marked MISSING with high priority)
 4. Summarize implementation status by category
-5. Recommend next steps
+5. Highlight "valuable catches" from cross-validation
+6. Generate final burn-down list (expected 5-10 items)
 
 **Output:** `validation/reports/gap-report-FINAL.md`
 
 **Template:**
 ```markdown
-# VFS Uplift Gap Analysis - Final Report
+# VFS Uplift Gap Analysis - Final Report (Run 3)
 
 ## Executive Summary
 
-Total Requirements: 98
+**Primary Requirements (master_requirements.md):** 98
 - ✅ DONE: X (Y%)
 - 🟡 PARTIAL: X (Y%)
 - ❌ MISSING: X (Y%)
 - 📝 N/A: X (Y%)
+
+**Cross-Validation Extras (requirements-checklist.md):** ~26
+- ✅ DONE: X
+- 🟡 PARTIAL: X
+- ❌ MISSING: X
+- 🔄 REDUNDANT: X (covered by master)
+- ⭐ VALUABLE: X (important catches not in master)
 
 ## P0 Blockers (Critical Missing Requirements)
 

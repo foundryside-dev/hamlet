@@ -1,20 +1,27 @@
-# HAMLET Configuration System v2.1 - Complete Reference
+# HAMLET Configuration System v2.1.1 - Reference Specification
 # =======================================================
-# This file shows ALL configuration options in the v2.1 design.
-# In practice, these would be split across multiple files in the hierarchy.
-# Use this as a reference guide for available options and their semantics.
+# This document is the authoritative reference for HAMLET configuration v2.1.1.
+# It describes every field and its intent; treat examples as normative schemas,
+# not runnable defaults. Configs are split across files in practice; this single
+# reference consolidates them for clarity.
+#
+# Semantic versioning for the spec:
+#   - MAJOR: Breaking changes to layout/semantics (obs_dim, file shapes, schema)
+#   - MINOR: Backwards-compatible additive fields/sections
+#   - PATCH: Clarifications and non-behavioral edits (documentation only)
 #
 # REVISION HISTORY:
 # - v2.1.0: Initial complete reference
-# - v2.1.1: Clarifications based on structured review:
+# - v2.1.1: Clarifications + VFS/Items/Effects uplift scaffolding:
 #   * Vision support dimension formulas now show grid-size dependency explicitly
 #   * VFS normalization method semantics documented (clip, normalize, standardize, none)
 #   * Hyperparameter override hierarchy clarified (agent.yaml defaults, training.yaml overrides)
 #   * Implicit substrate fields (position, velocity) now explicitly documented
 #   * Curriculum-level action control added to training.yaml
+#   * New reference sections added for vfs_profiles.yaml, items.yaml, effects.yaml
 #   * Future v3.0 enhancements noted (hidden affordances)
 #
-# Directory Structure:
+# Directory Structure (reference layout):
 # configs/my_experiment/
 # ├── experiment.yaml      # Section 1
 # ├── stratum.yaml         # Section 2
@@ -68,8 +75,8 @@ experiment:
   #   - If a setting can change obs_dim, it lives at the experiment level.
   #   - If it only changes values/masking, it lives at the curriculum/level.
   #
-  # NOTE: Observation management modes are a forward-looking design hook; current
-  #       implementations behave like a constrained "full_auto" with explicit specs.
+  # Reference note: Observation modes are defined here for completeness; current
+  # implementations behave like a constrained "full_auto" with explicit specs.
   observation_management_mode: full_auto
 
 # =============================================================================
@@ -348,66 +355,7 @@ environment:
   # BREAKING: Adding/removing affordances changes obs_dim (+1 per affordance)
   # Current: 14 affordances = +14 dims
 
-  # --------------------------------------------------------------------------
-  # VFS Variables (BREAKING - variable vocabulary affects obs_dim)
-  # --------------------------------------------------------------------------
-  # Variable & Feature System - declarative state space configuration
-  #
-  # NOTE (Phase 1 semantics):
-  #   - variables_reference.yaml defines VariableDef entries (id/scope/type/dims/default/normalization).
-  #   - exposures for these variables are interpreted by VFSObservationSpecBuilder with
-  #     the following SPEC-LEVEL defaults when omitted in exposure entries:
-  #       * exposed_to: ["agent"]
-  #       * shape: inferred from VariableDef.type/dims
-  #       * curriculum_active: true
-  #       * semantic_type: "custom"
-  #   - These defaults shape how BAC and structured encoders see variables, but do not
-  #     alter the underlying VariableDef; future phases may tighten this to require all
-  #     fields explicitly in experiment-level exposure configs.
-  variables:
-    - name: deficit_energy
-      type: scalar
-      dims: 1
-      scope: agent  # Options: global (shared), agent (per-agent), agent_private (hidden)
-      description: "How far below target energy (0.0 = at/above target)"
-      normalization:
-        method: clip  # Options: clip, normalize, standardize, none
-        # Normalization method semantics:
-        # - clip: Clamp values to [range[0], range[1]], no scaling
-        # - normalize: Divide by range[1] to map [0, range[1]] → [0, 1]
-        # - standardize: (value - mean) / std (requires mean/std tracking)
-        # - none: Pass through raw values
-        range: [0.0, 1.0]
-
-    - name: deficit_satiation
-      type: scalar
-      dims: 1
-      scope: agent
-      description: "How far below target satiation"
-      normalization:
-        method: clip
-        range: [0.0, 1.0]
-
-    - name: time_since_last_eat
-      type: scalar
-      dims: 1
-      scope: agent
-      description: "Timesteps since last EAT action"
-      normalization:
-        method: normalize
-        range: [0.0, 100.0]  # Normalize to [0, 1] assuming max 100 steps
-
-    - name: time_since_last_sleep
-      type: scalar
-      dims: 1
-      scope: agent
-      description: "Timesteps since last SLEEP action"
-      normalization:
-        method: normalize
-        range: [0.0, 100.0]
-
-  # BREAKING: Adding/removing variables changes obs_dim (dims per variable)
-  # Current: 4 variables = +4 dims
+  # VFS variables are defined in vfs_profiles.yaml (Section 10).
 
   # --------------------------------------------------------------------------
   # Cues (NOT BREAKING - UI metadata only)
@@ -1109,7 +1057,7 @@ training:
 # ✅ temporal_support (affects whether temporal fields exist)
 # ✅ meters (adding/removing changes obs_dim)
 # ✅ affordances (adding/removing changes obs_dim)
-# ✅ vfs variables (adding/removing changes obs_dim)
+# ✅ vfs profiles/variables (adding/removing changes obs_dim)
 # ✅ actions (adding/removing changes action_dim)
 #
 # NOT BREAKING (behavior only):
@@ -1122,6 +1070,135 @@ training:
 # ❌ training hyperparameters (learning_rate, gamma, etc.)
 # ❌ drive configuration (reward function)
 # ❌ cues, labels, metadata
+
+# =============================================================================
+# SECTION 10: vfs_profiles.yaml (Dynamic Variable Definitions)
+# =============================================================================
+# Location: configs/my_experiment/vfs_profiles.yaml
+# Purpose: Defines dynamic VFS profiles (Global, Agent, Item) using expressions
+# Breaking: YES - profile definitions affect obs_dim via exposure settings
+# Source: 2025-11-18-items-and-vfs-profiles.md
+
+vfs_profiles:
+  version: "1.0"
+
+  # GLOBAL SCOPE (World state)
+  global:
+    - id: is_night
+      type: bool
+      expression: "time_of_day >= 20 || time_of_day < 6"
+      observation:
+        exposed_to: [agent]  # Adds 1 dim to observation
+        semantic_type: temporal
+
+  # AGENT SCOPE (Per-agent state)
+  agent:
+    - id: is_encumbered
+      type: bool
+      expression: "vfs.inventory_weight > 10.0"
+      observation:
+        exposed_to: [agent]
+
+    - id: nearest_food_dist
+      type: scalar
+      expression: "distance_to_nearest(item_tag='food')"
+      observation:
+        exposed_to: [agent]
+
+  # ITEM SCOPE (Per-item state)
+  item:
+    - id: freshness
+      type: scalar
+      initial_value: 1.0  # Default if not spawned with explicit state
+      observation:
+        exposed_to: [agent] # Visible when item is held or inspected
+
+    - id: calories
+      type: scalar
+      initial_value: 0.0
+
+# =============================================================================
+# SECTION 11: items.yaml (Item Catalog & Appearance)
+# =============================================================================
+# Location:
+#   1. Catalog: configs/my_experiment/items.yaml
+#   2. Appearance: configs/my_experiment/levels/L1.../items.yaml
+# Purpose: Defines Item Types (Catalog) and Spawning/Inventory (Appearance)
+# Breaking: YES - Catalog changes affect obs_dim (if new VFS profiles involved)
+# Source: 2025-11-18-items-and-vfs-profiles.md
+
+# --- PART A: EXPERIMENT-LEVEL CATALOG ---
+items:
+  version: "1.0"
+
+  item_types:
+    - id: apple
+      name: "Red Apple"
+      icon: "🍎"
+      tags: [food, perishable]
+      vfs_profiles: [freshness, calories]  # Links to Section 10
+      interactions:
+        pickup:
+          commands:
+            - modify: target.vfs.inventory_weight
+              value: target.vfs.inventory_weight + 0.5
+        use:
+          commands:
+            - spawn_effect:
+                effect_id: ate_food
+                target: agent
+                intensity: self.vfs.calories
+            - delete: self
+
+# --- PART B: LEVEL-LEVEL APPEARANCE ---
+# (Inside configs/my_experiment/levels/L1.../items.yaml)
+items:
+  inventory:
+    max_items_per_agent: 3  # HARD CAP. Adds GET/DROP/USE to action space.
+
+  spawn_rules:
+    - type_id: apple
+      placement:
+        mode: random
+      schedule:
+        kind: poisson
+        params: { rate: 0.1 }
+      limits:
+        max_simultaneous: 5
+      lifecycle:
+        duration_steps: 100
+      initial_state:
+        calories: 50.0   # Overrides default from VFS profile
+
+# =============================================================================
+# SECTION 12: effects.yaml (Reusable Effect Catalog)
+# =============================================================================
+# Location: configs/my_experiment/effects.yaml
+# Purpose: Defines reusable behavioral pipelines (Effects)
+# Breaking: NO - effects logic doesn't change dimensions
+# Source: 2025-11-19-effects-system-design.md
+
+effects:
+  version: "1.0"
+
+  effect_definitions:
+    - id: ate_food
+      scope: agent
+      duration: 10
+      reapply_policy: stack  # stack | renew | merge | replace
+      observable: true       # Agent sees "ate_food: true" in VFS obs
+
+      on_spawn:
+        - modify: target.vfs.is_digesting
+          value: true
+
+      on_tick:
+        - modify: target.bar.energy
+          value: target.bar.energy + (0.05 * intensity)
+
+      on_despawn:
+        - modify: target.vfs.is_digesting
+          value: false
 
 # =============================================================================
 # END OF REFERENCE CONFIG

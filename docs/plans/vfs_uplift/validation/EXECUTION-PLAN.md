@@ -1,10 +1,11 @@
-# VFS Uplift Gap Analysis - Execution Plan
+# VFS Uplift Gap Analysis - Execution Plan (EXPANDED)
 
 **Status:** Ready to Execute
-**Created:** 2025-11-22
-**Total Requirements:** 157 (124 explicit + 33 derived)
+**Updated:** 2025-11-23 (Expanded from 5 source documents)
+**Total Requirements:** 246 (157 original + 89 new)
 **Baseline Commit:** ac67272
 **Agents:** 10 (9 parallel + 1 synthesis)
+**Sources:** unified-world-compiler-plan.md, items-and-vfs-profiles.md, effects-system-design.md, runtime-vfs-effects-integration.md, command_reference.md
 
 ---
 
@@ -16,20 +17,25 @@ Execute systematic gap analysis of VFS uplift implementation by dispatching **10
 
 ## Agent Division (No Overlap)
 
-| Agent | Scope | Requirements | Count |
-|-------|-------|--------------|-------|
-| 1 | Compiler & Schema | COMP-1 to COMP-20 | 20 |
-| 2 | VFS System | VFS-1 to VFS-15 | 15 |
-| 3 | Effects System | EFF-1 to EFF-20 | 20 |
-| 4 | Items System | ITEM-1 to ITEM-16 | 16 |
-| 5 | Runtime Integration | RUN-1 to RUN-12 | 12 |
-| 6 | Testing | TEST-1 to TEST-22 | 22 |
-| 7 | Documentation | DOC-1 to DOC-10 | 10 |
-| 8 | Breaking Changes | BREAK-1 to BREAK-9 | 9 |
-| 9 | Success Criteria | Derived requirements (33) | 33 |
-| 10 | Synthesis | Aggregate all 9 reports | - |
+| Agent | Scope | Original | New | Total |
+|-------|-------|----------|-----|-------|
+| 1 | Compiler & Schema | COMP (20) | COMP-EXT (8) | **28** |
+| 2 | VFS System | VFS (15) | VFS-EXT (8) | **23** |
+| 3 | Effects System | EFF (20) | EFF-EXT (8) | **28** |
+| 4 | **Commands** | — | CMD (22) | **22** |
+| 5 | Items System | ITEM (16) | ITEM-EXT (16) | **32** |
+| 6 | Runtime Integration | RUN (12) | RUN-EXT (7), LIMITS (7) | **26** |
+| 7 | Testing | TEST (22) | TEST-EXT (8) | **30** |
+| 8 | Documentation | DOC (10) | DOC-EXT (7) | **17** |
+| 9 | Breaking Changes | BREAK (9), Derived (33) | — | **42** |
+| 10 | Synthesis | Aggregate all 9 reports | — | **—** |
 
-**Total:** 157 requirements
+**Total:** 246 requirements (157 original + 89 new)
+
+**New Categories:**
+- **CMD**: Command-specific implementations (switch, for_each, parallel, reduce, delay, while, emit)
+- **LIMITS**: Runtime limits and safeguards (collection size, effect depth, delay caps, queue limits)
+- ***-EXT**: Extensions to existing categories with detailed implementation requirements
 
 ---
 
@@ -38,9 +44,11 @@ Execute systematic gap analysis of VFS uplift implementation by dispatching **10
 **Before starting:**
 
 - [ ] Baseline commit recorded: `git rev-parse HEAD > validation/baseline-commit.txt`
-- [ ] All 435+ existing tests pass
+- [ ] All 1945+ existing tests pass
 - [ ] Working directory clean (no uncommitted changes that would interfere)
-- [ ] Read `requirements-checklist.md` to understand scope (157 requirements)
+- [ ] Read `requirements-summary-expanded.md` to understand scope (246 requirements)
+- [ ] Read `additional-requirements.md` for new categories (CMD, LIMITS, *-EXT)
+- [ ] Read original `requirements-checklist.md` (157 baseline requirements)
 
 **Verify prerequisites:**
 
@@ -78,9 +86,9 @@ Each agent should output their gap report to docs/plans/vfs_uplift/validation/re
 
 ---
 
-## Agent 1: Compiler & Schema (COMP-1 to COMP-20)
+## Agent 1: Compiler & Schema (COMP-1 to COMP-20, COMP-EXT-1 to COMP-EXT-8)
 
-**Scope:** 20 requirements
+**Scope:** 28 requirements (20 original + 8 extensions)
 
 **Primary files to examine:**
 
@@ -120,9 +128,14 @@ Each agent should output their gap report to docs/plans/vfs_uplift/validation/re
 
 ---
 
-## Agent 2: VFS System (VFS-1 to VFS-15)
+## Agent 2: VFS System (VFS-1 to VFS-15, VFS-EXT-1 to VFS-EXT-8)
 
-**Scope:** 15 requirements
+**Scope:** 23 requirements (15 original + 8 extensions)
+
+**Priority Extensions:**
+- **VFS-EXT-1 (P0)**: Expression XOR initial_value enforcement - CRITICAL for correctness
+- **VFS-EXT-7 (P1)**: Evaluation ordering (global → agent → item) - core feature
+- **VFS-EXT-8 (P1)**: Item profile defaults - core feature
 
 **Primary files to examine:**
 
@@ -153,9 +166,9 @@ Each agent should output their gap report to docs/plans/vfs_uplift/validation/re
 
 ---
 
-## Agent 3: Effects System (EFF-1 to EFF-20)
+## Agent 3: Effects System (EFF-1 to EFF-20, EFF-EXT-1 to EFF-EXT-8)
 
-**Scope:** 20 requirements
+**Scope:** 28 requirements (20 original + 8 extensions)
 
 **Primary files to examine:**
 
@@ -191,9 +204,53 @@ Each agent should output their gap report to docs/plans/vfs_uplift/validation/re
 
 ---
 
-## Agent 4: Items System (ITEM-1 to ITEM-16)
+## Agent 4: Commands (CMD-SWITCH-1 to CMD-EMIT-1) - NEW AGENT
 
-**Scope:** 16 requirements
+**Scope:** 22 requirements (all new from command_reference.md)
+
+**Primary files to examine:**
+
+- `src/townlet/effects/executor.py` (CommandExecutor - all command implementations)
+- `src/townlet/effects/compiler.py` (CommandCompiler - command AST compilation)
+- `src/townlet/effects/parser.py` (CommandParser - YAML to AST)
+- `src/townlet/effects/schema.py` (CommandNode, CommandType)
+- `src/townlet/effects/scheduler.py` (Scheduler for delay commands)
+- `src/townlet/effects/collections.py` (Collection resolvers: all_agents, nearby_agents, etc.)
+
+**Test files:**
+
+- `tests/test_townlet/unit/effects/test_command_executor.py`
+- `tests/test_townlet/unit/effects/test_command_compiler.py`
+- `tests/test_townlet/unit/effects/test_for_each.py`
+- `tests/test_townlet/unit/effects/test_switch_executor.py`
+- `tests/test_townlet/unit/effects/test_parallel_compiler.py`
+- `tests/test_townlet/unit/effects/test_reduce_executor.py`
+- `tests/test_townlet/unit/effects/test_delay_executor.py`
+- `tests/test_townlet/unit/effects/test_delay_alignment.py`
+- `tests/test_townlet/unit/effects/test_scheduler.py`
+
+**Critical requirements:**
+
+- **CMD-FOREACH-1 (P0)**: MAX_COLLECTION_SIZE = 256 enforcement (safety)
+- **CMD-FOREACH-2 (P0)**: Nested for_each prohibition (safety)
+- **CMD-SWITCH-1, CMD-SWITCH-2, CMD-SWITCH-3 (P1)**: Switch implementation (equality matching, type validation, tensor broadcasting)
+- **CMD-PARALLEL-1, CMD-PARALLEL-2 (P1)**: Parallel semantics (disjoint writes, sequential execution)
+- **CMD-REDUCE-1, CMD-REDUCE-2, CMD-REDUCE-3 (P1)**: Reduce implementation (fixed-size, type consistency, required fields)
+- **CMD-DELAY-1 through CMD-DELAY-5 (P1)**: Delay implementation (time_enabled, limits, queue cap, zero-delay, persistence)
+- **CMD-WHILE-1 (P3)**: While loop NOT IMPLEMENTED (future work)
+- **CMD-EMIT-1 (P3)**: Emit event NOT IMPLEMENTED (future work)
+
+**Output:** `docs/plans/vfs_uplift/validation/reports/gap-report-04-commands.md`
+
+---
+
+## Agent 5: Items System (ITEM-1 to ITEM-16, ITEM-EXT-1 to ITEM-EXT-16)
+
+**Scope:** 32 requirements (16 original + 16 extensions)
+
+**Priority Extensions:**
+- **ITEM-EXT-5 (P1)**: Conditional spawn with VFS predicates - core feature
+- **ITEM-EXT-1 through ITEM-EXT-4 (P2)**: Item spawn features (placement, schedule, limits, priority)
 
 **Primary files to examine:**
 
@@ -224,9 +281,19 @@ Each agent should output their gap report to docs/plans/vfs_uplift/validation/re
 
 ---
 
-## Agent 5: Runtime Integration (RUN-1 to RUN-12)
+## Agent 6: Runtime Integration (RUN-1 to RUN-12, RUN-EXT-1 to RUN-EXT-7, LIMITS-1 to LIMITS-7)
 
-**Scope:** 12 requirements
+**Scope:** 26 requirements (12 original + 7 runtime extensions + 7 limits)
+
+**Priority Requirements:**
+- **LIMITS-1 through LIMITS-7 (P0)**: All runtime caps (safety-critical)
+  - MAX_COLLECTION_SIZE = 256
+  - Effect spawn depth = 10
+  - MAX_DELAY_TICKS = 1,000
+  - MAX_SCHEDULED_ITEMS = 10,000
+  - Item pool caps, profile counts, spawn rules
+- **RUN-EXT-5 (P0)**: Zero-stub removal - correctness critical
+- **RUN-EXT-1 (P1)**: Eager fallback mode - debug essential
 
 **Primary files to examine:**
 
@@ -267,9 +334,15 @@ grep -n "compiled_universe" src/townlet/environment/vectorized_env.py  # Should 
 
 ---
 
-## Agent 6: Testing (TEST-1 to TEST-22)
+## Agent 7: Testing (TEST-1 to TEST-22, TEST-EXT-1 to TEST-EXT-8)
 
-**Scope:** 22 requirements
+**Scope:** 30 requirements (22 original + 8 extensions)
+
+**Priority Extensions:**
+- **TEST-EXT-1 (P1)**: Dimension regression tests (obs_dim stability)
+- **TEST-EXT-2 (P1)**: Checkpoint roundtrip tests (item VFS state)
+- **TEST-EXT-5 (P1)**: Type safety negative tests (compile errors)
+- **TEST-EXT-6 (P1)**: Reapply policy tests (one per policy)
 
 **Primary files to examine:**
 
@@ -307,9 +380,14 @@ UV_CACHE_DIR=.uv-cache uv run pytest tests/ -v --tb=short 2>&1 | tail -100
 
 ---
 
-## Agent 7: Documentation (DOC-1 to DOC-10)
+## Agent 8: Documentation (DOC-1 to DOC-10, DOC-EXT-1 to DOC-EXT-7)
 
-**Scope:** 10 requirements
+**Scope:** 17 requirements (10 original + 7 extensions)
+
+**Priority Extensions:**
+- **DOC-EXT-1 (P2)**: Command reference (comprehensive DSL guide)
+- **DOC-EXT-5 (P2)**: Type system reference (all types documented)
+- **DOC-EXT-2 (P3)**: Observation modes (full_auto, max_compact, full_manual)
 
 **Files to examine:**
 
@@ -355,9 +433,11 @@ ls -lh docs/guides/*migration* 2>/dev/null || echo "Migration guide: MISSING"
 
 ---
 
-## Agent 8: Breaking Changes (BREAK-1 to BREAK-9)
+## Agent 9: Breaking Changes & Success Criteria (BREAK-1 to BREAK-9, Derived requirements)
 
-**Scope:** 9 requirements
+**Scope:** 42 requirements (9 breaking changes + 33 derived)
+
+**Note:** No new extensions for this category, but total includes all derived success criteria from original analysis
 
 **Primary files to examine:**
 
@@ -400,9 +480,11 @@ grep -r "legacy.*support" src/townlet/ || echo "✓ No legacy support code"
 
 ---
 
-## Agent 9: Success Criteria & Cross-Cutting Concerns
+## Agent 10: Synthesis & Final Report
 
-**Scope:** 33 derived requirements from success criteria
+**Scope:** Aggregate all 9 agent reports
+
+**Input:** 9 gap reports (246 requirements total)
 
 **Areas to verify:**
 
@@ -475,18 +557,10 @@ grep -h "## Critical Gaps" -A 10 docs/plans/vfs_uplift/validation/reports/*.md
 
 ## Phase 3: Synthesis
 
-### Agent 10: Synthesis & Final Report
-
-**Task:** Synthesize all 9 gap reports into a final comprehensive report
-
-**Input:** All 9 gap reports from Phase 2
-
-**Output:** `docs/plans/vfs_uplift/validation/reports/gap-report-final.md`
-
-**Process:**
+#**Process:**
 
 1. Read all 9 gap reports
-2. Aggregate status for all 157 requirements
+2. Aggregate status for all 246 requirements
 3. Identify integration gaps (where Agent A calls Agent B's API)
 4. Prioritize gaps:
    - **P0 (Critical):** Breaks core functionality, must fix before merge
@@ -501,10 +575,10 @@ grep -h "## Critical Gaps" -A 10 docs/plans/vfs_uplift/validation/reports/*.md
 ```markdown
 # VFS Uplift Gap Analysis - Final Report
 
-**Date:** 2025-11-22
+**Date:** 2025-11-23 (Expanded)
 **Baseline Commit:** ac67272
 **Analysts:** 9 parallel agents + synthesis
-**Total Requirements:** 157 (124 explicit + 33 derived)
+**Total Requirements:** 246 (157 original + 89 new)
 
 ---
 

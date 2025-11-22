@@ -16,6 +16,7 @@ def test_compiler_generates_vfs_expression_schema(tmp_path: Path):
     # Add vfs_profiles.yaml at experiment root with global variables
     vfs_profiles_yaml = experiment_dir / "vfs_profiles.yaml"
     vfs_profiles = {
+        "version": "1.0",
         "global_profile": {
             "variables": [
                 {
@@ -43,7 +44,7 @@ def test_compiler_generates_vfs_expression_schema(tmp_path: Path):
                     "writable_by": ["engine"],
                 },
             ],
-        }
+        },
     }
     vfs_profiles_yaml.write_text(yaml.dump(vfs_profiles, sort_keys=False))
 

@@ -63,4 +63,3 @@ bars:
       target: energy
       threshold: 0.2
       strength: 0.01
-

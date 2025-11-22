@@ -15,6 +15,7 @@ def test_compiler_compiles_item_profiles(tmp_path: Path):
     experiment_dir = prepare_config_dir(tmp_path, name="experiment")
 
     vfs_profiles = {
+        "version": "1.0",
         "item_profiles": [
             {
                 "profile_name": "food_stats",
@@ -30,7 +31,7 @@ def test_compiler_compiles_item_profiles(tmp_path: Path):
                     {"name": "durability", "type": "float", "initial_value": 1.0},
                 ],
             },
-        ]
+        ],
     }
 
     (experiment_dir / "vfs_profiles.yaml").write_text(yaml.dump(vfs_profiles))
@@ -76,6 +77,7 @@ def test_compiler_rejects_unknown_item_vfs_profile(tmp_path: Path):
     experiment_dir = prepare_config_dir(tmp_path, name="experiment")
 
     vfs_profiles = {
+        "version": "1.0",
         "item_profiles": [
             {
                 "profile_name": "food_stats",
@@ -83,7 +85,7 @@ def test_compiler_rejects_unknown_item_vfs_profile(tmp_path: Path):
                     {"name": "calories", "type": "int", "initial_value": 100},
                 ],
             }
-        ]
+        ],
     }
     (experiment_dir / "vfs_profiles.yaml").write_text(yaml.dump(vfs_profiles))
 
@@ -123,7 +125,10 @@ def test_compiler_handles_missing_item_profiles(tmp_path: Path):
     experiment_dir = prepare_config_dir(tmp_path, name="experiment")
 
     # Create vfs_profiles.yaml without item_profiles
-    vfs_profiles = {"global_profile": {"variables": [{"name": "day_count", "type": "int", "initial_value": 0}]}}
+    vfs_profiles = {
+        "version": "1.0",
+        "global_profile": {"variables": [{"name": "day_count", "type": "int", "initial_value": 0}]},
+    }
 
     (experiment_dir / "vfs_profiles.yaml").write_text(yaml.dump(vfs_profiles))
 

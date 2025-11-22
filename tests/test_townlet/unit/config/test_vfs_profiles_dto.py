@@ -171,6 +171,7 @@ def test_item_vfs_profile_multiple_variables():
 def test_vfs_profiles_config_complete():
     """VFSProfilesConfig loads global + agent + item profiles."""
     config = VFSProfilesConfig(
+        version="1.0",
         global_profile=GlobalVFSProfileConfig(
             variables=[
                 GlobalVFSVariableConfig(name="day_count", type="int", initial_value=0),
@@ -199,6 +200,7 @@ def test_vfs_profiles_config_complete():
 def test_vfs_profiles_config_optional_sections():
     """VFSProfilesConfig allows missing sections."""
     config = VFSProfilesConfig(
+        version="1.0",
         global_profile=None,
         agent_profile=AgentVFSProfileConfig(variables=[]),
         item_profiles=[],
@@ -207,3 +209,14 @@ def test_vfs_profiles_config_optional_sections():
     assert config.global_profile is None
     assert config.agent_profile is not None
     assert len(config.item_profiles) == 0
+
+
+def test_vfs_profiles_config_requires_supported_version():
+    """Version must be explicitly supported."""
+    with pytest.raises(ValidationError):
+        VFSProfilesConfig(
+            version="0.9",
+            global_profile=None,
+            agent_profile=None,
+            item_profiles=[],
+        )

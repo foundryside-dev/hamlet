@@ -8,6 +8,7 @@ from collections.abc import Mapping
 from dataclasses import FrozenInstanceError, is_dataclass
 from pathlib import Path
 
+import msgpack  # type: ignore[import]
 import pytest
 import torch
 
@@ -119,3 +120,23 @@ def test_compiled_universe_msgpack_round_trip(tmp_path: Path) -> None:
     )
     with pytest.raises(FrozenInstanceError):
         reconstructed.metadata = None  # type: ignore[attr-defined]
+
+
+def test_compiled_universe_schema_version_guard(tmp_path: Path) -> None:
+    compiler = UniverseCompiler()
+    compiled = compiler.compile(Path("configs/test/model_config"), use_cache=False)
+    artifact_path = tmp_path / "compiled.msgpack"
+    compiled.save_to_cache(artifact_path)
+
+    # Fresh artifact should load normally
+    loaded = CompiledUniverse.load_from_cache(artifact_path)
+    assert loaded.metadata == compiled.metadata
+
+    # Tamper with schema version to simulate stale cache
+    payload = msgpack.unpackb(artifact_path.read_bytes(), raw=False, strict_map_key=False)
+    payload["compiled_schema_version"] = "0.0-test"
+    tampered_path = tmp_path / "tampered.msgpack"
+    tampered_path.write_bytes(msgpack.packb(payload, use_bin_type=True))
+
+    with pytest.raises(ValueError, match="schema mismatch"):
+        CompiledUniverse.load_from_cache(tampered_path)

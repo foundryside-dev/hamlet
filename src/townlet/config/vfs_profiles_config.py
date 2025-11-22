@@ -183,6 +183,7 @@ class VFSProfilesConfig(BaseModel):
     - item_profiles: Named profiles for item types (food_stats, weapon_stats)
     """
 
+    version: Literal["1.0"]
     global_profile: GlobalVFSProfileConfig | None = None
     agent_profile: AgentVFSProfileConfig | None = None
     item_profiles: list[ItemVFSProfileConfig] = []

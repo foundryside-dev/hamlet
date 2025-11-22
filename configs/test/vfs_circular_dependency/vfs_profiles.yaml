@@ -1,6 +1,8 @@
 # VFS Circular Dependency Test Configuration
 # Tests: Circular dependency detection (should fail at compile time)
 
+version: "1.0"
+
 global_profile:
   variables:
     - name: a

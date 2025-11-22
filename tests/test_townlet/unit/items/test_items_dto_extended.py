@@ -111,9 +111,10 @@ class TestSpawnPlacementConfigValidation:
 
 class TestItemAppearanceRuleConfigValidation:
     def _rule(self, **kwargs) -> ItemAppearanceRuleConfig:
+        spawn_count = kwargs.pop("spawn_count", 1)
         return ItemAppearanceRuleConfig(
             item_type="apple",
-            spawn_count=1,
+            spawn_count=spawn_count,
             schedule=None,
             placement=None,
             when=None,

@@ -1,6 +1,8 @@
 # VFS Type Mismatch Test Configuration
 # Tests: Type mismatch detection (should fail at compile time)
 
+version: "1.0"
+
 global_profile:
   variables:
     - name: my_int_var

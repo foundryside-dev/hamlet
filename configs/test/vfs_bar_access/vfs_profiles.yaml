@@ -2,6 +2,8 @@
 # Tests: VFS expressions accessing bar values
 # Note: Using global_profile for runtime testing (agent_profile evaluation not yet implemented)
 
+version: "1.0"
+
 global_profile:
   variables:
     - name: low_energy_flag

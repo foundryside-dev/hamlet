@@ -13,7 +13,9 @@ from townlet.world.expression.evaluator import Evaluator
 
 # NOTE: No ExpressionParser import - ASTs are pre-compiled by CommandCompiler!
 
-__all__ = ["CommandExecutor"]
+MAX_CASCADE_DEPTH = 10
+
+__all__ = ["CommandExecutor", "MAX_CASCADE_DEPTH"]
 
 
 class _TargetAwareExecutionContext(ExprExecutionContext):
@@ -182,9 +184,8 @@ class CommandExecutor:
             raise ValueError("effect_manager not set in context - cannot spawn effects")
 
         # Check cascade depth limit
-        max_cascade_depth = 10
-        if context.spawn_depth >= max_cascade_depth:
-            raise RuntimeError(f"Effect cascade depth limit exceeded ({max_cascade_depth}). Check for infinite spawn loops.")
+        if context.spawn_depth >= MAX_CASCADE_DEPTH:
+            raise RuntimeError(f"Effect cascade depth limit exceeded ({MAX_CASCADE_DEPTH}). Check for infinite spawn loops.")
 
         # Resolve target index (evaluate expression if needed)
         target_value: str | int | None = command.target

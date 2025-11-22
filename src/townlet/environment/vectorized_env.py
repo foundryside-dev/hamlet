@@ -91,6 +91,8 @@ class VectorizedHamletEnv:
     All state is stored as PyTorch tensors on specified device.
     """
 
+    EFFECT_OBS_SLOTS = 8  # Fixed number of observable effect slots per agent
+
     def __init__(
         self,
         *,
@@ -439,6 +441,7 @@ class VectorizedHamletEnv:
             if effect_catalog is not None
             else None
         )
+        self.effect_observation_slots = getattr(universe, "effect_observation_slots", self.EFFECT_OBS_SLOTS)
 
         # Rebuild effects schema for affordance compilation
         # TODO(Task 5): Move affordance compilation to compile-time, then remove this
@@ -1128,6 +1131,8 @@ class VectorizedHamletEnv:
                 value = self.meters
             elif name in {"obs_affordance_at_position", "obs_affordances"}:
                 value = self._build_affordance_encoding(dims)
+            elif name == "obs_effects":
+                value = self._build_effects_observation(dims)
             elif name == "obs_temporal":
                 # Temporal observation behavior:
                 # - If temporal_support is disabled at experiment level, obs_temporal should not exist.
@@ -1240,6 +1245,35 @@ class VectorizedHamletEnv:
 
         padded = torch.zeros(self.num_agents, dims, device=self.device)
         padded[:, :total_dims] = affordance_encoding
+        return padded
+
+    def _build_effects_observation(self, dims: int) -> torch.Tensor:
+        """Encode observable effects into a fixed-size tensor."""
+        if dims <= 0:
+            return torch.zeros(self.num_agents, 0, device=self.device)
+
+        if self.effect_manager is None or self.effect_observation_slots <= 0:
+            return torch.zeros(self.num_agents, dims, device=self.device)
+
+        slots = max(1, min(self.effect_observation_slots, dims // 3))
+        effect_obs = torch.zeros(self.num_agents, slots, 3, device=self.device)
+
+        for agent_idx in range(self.num_agents):
+            for slot_idx, effect in enumerate(self.effect_manager.get_observable_agent_effects(agent_idx)[:slots]):
+                effect_obs[agent_idx, slot_idx, 0] = float(getattr(effect, "effect_index", -1))
+                total = max(1, int(getattr(effect, "duration_total", 1)))
+                remaining = max(0, int(getattr(effect, "duration_remaining", 0)))
+                effect_obs[agent_idx, slot_idx, 1] = float(remaining) / float(total)
+                effect_obs[agent_idx, slot_idx, 2] = 1.0
+
+        flat = effect_obs.reshape(self.num_agents, slots * 3)
+        if flat.shape[1] == dims:
+            return flat
+        if flat.shape[1] > dims:
+            return flat[:, :dims]
+
+        padded = torch.zeros(self.num_agents, dims, device=self.device)
+        padded[:, : flat.shape[1]] = flat
         return padded
 
     def _encode_position_observation(self) -> torch.Tensor | None:

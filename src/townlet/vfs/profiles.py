@@ -68,8 +68,16 @@ class CircularDependencyError(Exception):
 class VFSProfileCompiler:
     """Compiles VFS profiles with expression dependency resolution."""
 
+    SUPPORTED_VERSIONS = ("1.0",)
+
     def __init__(self):
         self.parser = ExpressionParser()
+
+    def validate_version(self, version: str) -> None:
+        """Ensure the provided config version is supported."""
+        if version not in self.SUPPORTED_VERSIONS:
+            supported = ", ".join(self.SUPPORTED_VERSIONS)
+            raise ValueError(f"Unsupported VFS profiles version '{version}'. Supported versions: {supported}")
 
     def build_dependency_graph(
         self, variables: Sequence[GlobalVFSVariableConfig | AgentVFSVariableConfig | ItemVFSVariableConfig]

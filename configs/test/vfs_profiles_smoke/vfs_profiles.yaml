@@ -1,6 +1,8 @@
 # VFS Profiles Smoke Test Configuration
 # Tests: global variables, agent variables, item profiles
 
+version: "1.0"
+
 global_profile:
   variables:
     - name: day_count

@@ -1,6 +1,8 @@
 # Effects Smoke Test - VFS Profiles Configuration
 # Minimal global profile for testing Task 1 (compile-time wiring)
 
+version: "1.0"
+
 global_profile:
   variables:
     - name: day_count

@@ -17,12 +17,13 @@ def minimal_compiled_universe_with_profiles(tmp_path: Path):
 
     # Add VFS profiles with global variables
     profiles = {
+        "version": "1.0",
         "global_profile": {
             "variables": [
                 {"name": "day_count", "type": "int", "initial_value": 0},
                 {"name": "total_earnings", "type": "float", "initial_value": 0.0},
             ]
-        }
+        },
     }
     (experiment_dir / "vfs_profiles.yaml").write_text(yaml.dump(profiles))
 
@@ -40,7 +41,10 @@ def minimal_compiled_universe_with_effects(tmp_path: Path):
     experiment_dir = prepare_config_dir(tmp_path, name="test_effects")
 
     # Add VFS profiles (required for effects)
-    profiles = {"global_profile": {"variables": [{"name": "day_count", "type": "int", "initial_value": 0}]}}
+    profiles = {
+        "version": "1.0",
+        "global_profile": {"variables": [{"name": "day_count", "type": "int", "initial_value": 0}]},
+    }
     (experiment_dir / "vfs_profiles.yaml").write_text(yaml.dump(profiles))
 
     # Add effects.yaml

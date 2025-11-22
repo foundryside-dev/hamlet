@@ -14,7 +14,10 @@ def test_compiler_compiles_effects_catalog_per_level(tmp_path: Path):
     experiment_dir = prepare_config_dir(tmp_path, name="test_experiment")
 
     # Add VFS profiles with a global variable
-    profiles = {"global_profile": {"variables": [{"name": "day_count", "type": "int", "initial_value": 0}]}}
+    profiles = {
+        "version": "1.0",
+        "global_profile": {"variables": [{"name": "day_count", "type": "int", "initial_value": 0}]},
+    }
     (experiment_dir / "vfs_profiles.yaml").write_text(yaml.dump(profiles))
 
     # Create effects.yaml at EXPERIMENT ROOT (not in level directory)
@@ -52,7 +55,10 @@ def test_compiler_allows_missing_effects_yaml(tmp_path: Path):
     experiment_dir = prepare_config_dir(tmp_path, name="test_experiment")
 
     # Add VFS profiles with a global variable
-    profiles = {"global_profile": {"variables": [{"name": "day_count", "type": "int", "initial_value": 0}]}}
+    profiles = {
+        "version": "1.0",
+        "global_profile": {"variables": [{"name": "day_count", "type": "int", "initial_value": 0}]},
+    }
     (experiment_dir / "vfs_profiles.yaml").write_text(yaml.dump(profiles))
 
     # Remove effects.yaml (prepare_config_dir copies it from skeleton)

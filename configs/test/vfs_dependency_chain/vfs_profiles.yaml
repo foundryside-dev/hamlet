@@ -2,6 +2,8 @@
 # Tests: a → b → c dependency chain with mark-and-sweep
 # Note: Using global_profile for runtime testing (agent_profile evaluation not yet implemented)
 
+version: "1.0"
+
 global_profile:
   variables:
     - name: a

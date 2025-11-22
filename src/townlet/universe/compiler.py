@@ -77,6 +77,7 @@ MAX_ACTIONS = 300  # Increased for discretized continuous actions (32×7 = 195+)
 MAX_VARIABLES = 200
 MAX_GRID_CELLS = 10000  # 100×100 maximum (DoS protection)
 MAX_CACHE_FILE_SIZE = 10 * 1024 * 1024  # 10MB (cache bomb protection)
+EFFECT_OBSERVATION_SLOTS = 8  # Fixed slots per agent for observable effects
 
 
 class UniverseCompiler:
@@ -181,6 +182,7 @@ class UniverseCompiler:
 
         # Compile profiles
         compiler = VFSProfileCompiler()
+        compiler.validate_version(profiles_config.version)
 
         compiled_global = None
         if profiles_config.global_profile is not None:
@@ -470,6 +472,7 @@ class UniverseCompiler:
             experiment_dir,
             primary_level=primary_level,
             compiled_vfs_profiles=compiled_vfs_profiles,
+            compiled_effect_catalog=compiled_effect_catalog,
             config_hash=config_hash,
             config_mtime=config_mtime,
             temporal_supported=temporal_supported,
@@ -477,6 +480,7 @@ class UniverseCompiler:
 
         # Stage 7: emit artifact + cache
         self._log_stage(7, "Emit compiled universe")
+        effect_observation_slots = EFFECT_OBSERVATION_SLOTS if compiled_effect_catalog and compiled_effect_catalog.effects else 0
         compiled = self._stage_7_emit_artifact(
             raw,
             experiment_dir,
@@ -489,6 +493,7 @@ class UniverseCompiler:
             compiled_effect_catalog,
             vfs_expression_schema,
             vfs_observation_marks,
+            effect_observation_slots,
         )
         return compiled
 
@@ -1076,6 +1081,7 @@ class UniverseCompiler:
         *,
         primary_level: str,
         compiled_vfs_profiles: CompiledVFSProfiles | None,
+        compiled_effect_catalog: EffectCatalog | None,
         config_hash: str | None,
         config_mtime: float | None,
         temporal_supported: bool,
@@ -1096,6 +1102,7 @@ class UniverseCompiler:
                 level.curriculum,
                 compiled_vfs_profiles,
                 raw.items,
+                compiled_effect_catalog,
             )
             obs_activity = self._build_observation_activity(obs_spec)
             bar_schema = {meter.name: "float" for meter in level.bars.meters}
@@ -1194,6 +1201,7 @@ class UniverseCompiler:
         compiled_effect_catalog: EffectCatalog | None,
         vfs_expression_schema: dict[str, str],
         vfs_observation_marks: dict[str, set[str]] | None,
+        effect_observation_slots: int,
     ) -> CompiledUniverse:
         """Stage 7 – emit the compiled artifact and persist cache."""
         compiled = CompiledUniverse(
@@ -1214,6 +1222,7 @@ class UniverseCompiler:
             items_catalog=raw.items,
             compiled_vfs_profiles=compiled_vfs_profiles,
             compiled_effect_catalog=compiled_effect_catalog,
+            effect_observation_slots=effect_observation_slots,
             vfs_expression_schema=vfs_expression_schema,
             vfs_observation_marks=vfs_observation_marks,
             experiment_dir=experiment_dir,
@@ -1404,6 +1413,7 @@ class UniverseCompiler:
         curriculum: CurriculumConfig,
         compiled_vfs_profiles: CompiledVFSProfiles | None = None,
         items_catalog: ItemsCatalogConfig | None = None,
+        compiled_effect_catalog: EffectCatalog | None = None,
     ) -> ObservationSpec:
         """Build observation spec using Support/Active pattern for v2.1."""
 
@@ -1589,6 +1599,25 @@ class UniverseCompiler:
             )
         )
         offset += affordance_dim
+
+        # Observable effects (fixed slots; filtered by observable flag)
+        if compiled_effect_catalog is not None and compiled_effect_catalog.effects:
+            effect_slots = EFFECT_OBSERVATION_SLOTS
+            effect_dims = effect_slots * 3  # [effect_id, remaining_norm, active_flag]
+            fields.append(
+                ObservationField(
+                    uuid=None,
+                    name="obs_effects",
+                    type="vector",
+                    dims=effect_dims,
+                    start_index=offset,
+                    end_index=offset + effect_dims,
+                    scope="agent",
+                    description=f"Observable effects (up to {effect_slots} slots)",
+                    semantic_type="effects",
+                )
+            )
+            offset += effect_dims
 
         # VFS variables (environment-declared)
         for var in environment.environment.variables:

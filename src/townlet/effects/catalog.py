@@ -38,6 +38,14 @@ class EffectCatalog:
     """
 
     effects: dict[str, CompiledEffect]
+    effect_name_to_id: dict[str, int] | None = None
+    effect_id_to_name: dict[int, str] | None = None
+
+    def __post_init__(self) -> None:
+        # Build deterministic ID mapping for encoding effects in observations.
+        ordered_ids = sorted(self.effects.keys())
+        self.effect_name_to_id = {name: idx for idx, name in enumerate(ordered_ids)}
+        self.effect_id_to_name = {idx: name for name, idx in self.effect_name_to_id.items()}
 
     @classmethod
     def from_config(
@@ -114,3 +122,9 @@ class EffectCatalog:
     def __len__(self) -> int:
         """Number of effects in catalog."""
         return len(self.effects)
+
+    def get_effect_index(self, effect_id: str) -> int:
+        """Return deterministic integer ID for an effect, -1 if unknown."""
+        if self.effect_name_to_id is None:
+            return -1
+        return self.effect_name_to_id.get(effect_id, -1)

@@ -39,6 +39,8 @@ from townlet.vfs.profiles import CompiledGlobalProfile
 from townlet.vfs.schema import ObservationField as VfsObservationField
 from townlet.vfs.schema import VariableDef
 
+COMPILED_SCHEMA_VERSION = "1.1"
+
 
 @dataclass(frozen=True)
 class CompiledVFSProfiles:
@@ -82,6 +84,7 @@ class CompiledUniverse:
 
     # Compiled effects catalog (per-level artifact)
     compiled_effect_catalog: EffectCatalog | None = None
+    effect_observation_slots: int = 0
 
     # Type schema for runtime VFS expression validation
     vfs_expression_schema: dict[str, str] | None = None
@@ -157,6 +160,7 @@ class CompiledUniverse:
             items_catalog=deepcopy(self.items_catalog) if self.items_catalog is not None else None,
             compiled_vfs_profiles=deepcopy(self.compiled_vfs_profiles) if self.compiled_vfs_profiles is not None else None,
             compiled_effect_catalog=deepcopy(self.compiled_effect_catalog) if self.compiled_effect_catalog is not None else None,
+            effect_observation_slots=self.effect_observation_slots,
             vfs_expression_schema=deepcopy(self.vfs_expression_schema) if self.vfs_expression_schema is not None else None,
             vfs_observation_marks=deepcopy(self.vfs_observation_marks) if self.vfs_observation_marks is not None else None,
             experiment_dir=self.experiment_dir,
@@ -167,6 +171,7 @@ class CompiledUniverse:
     def to_dict(self) -> dict[str, Any]:
         """Convert to a serialization-friendly dictionary."""
         return {
+            "compiled_schema_version": COMPILED_SCHEMA_VERSION,
             "metadata": _dataclass_to_plain(self.metadata),
             "observation_spec": _dataclass_to_plain(self.observation_spec),
             "observation_activity": _dataclass_to_plain(self.observation_activity),
@@ -198,6 +203,7 @@ class CompiledUniverse:
             "compiled_effect_catalog": (
                 _serialize_effect_catalog(self.compiled_effect_catalog) if self.compiled_effect_catalog is not None else None
             ),
+            "effect_observation_slots": self.effect_observation_slots,
             "vfs_expression_schema": self.vfs_expression_schema,
             "vfs_observation_marks": (
                 {k: list(v) for k, v in self.vfs_observation_marks.items()} if self.vfs_observation_marks is not None else None
@@ -313,6 +319,7 @@ class CompiledUniverse:
                 if payload.get("compiled_effect_catalog") is not None
                 else None
             ),
+            effect_observation_slots=payload.get("effect_observation_slots", 0),
             vfs_expression_schema=payload.get("vfs_expression_schema"),
             vfs_observation_marks=(
                 {k: set(v) for k, v in payload["vfs_observation_marks"].items()}
@@ -333,7 +340,14 @@ class CompiledUniverse:
     @classmethod
     def load_from_cache(cls, path: Path) -> CompiledUniverse:
         """Deserialize a compiled universe from MessagePack file."""
-        payload = msgpack.unpackb(path.read_bytes(), raw=False)
+        payload = msgpack.unpackb(path.read_bytes(), raw=False, strict_map_key=False)
+        schema_version = payload.get("compiled_schema_version")
+        if schema_version != COMPILED_SCHEMA_VERSION:
+            raise ValueError(
+                f"Compiled universe schema mismatch for {path}: "
+                f"found '{schema_version}', expected '{COMPILED_SCHEMA_VERSION}'. "
+                "Recompile the config pack with `python -m townlet.compiler compile <config_dir>`."
+            )
         return cls.from_dict(payload)
 
     # Runtime adapters -----------------------------------------------------

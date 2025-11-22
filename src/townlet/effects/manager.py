@@ -52,6 +52,8 @@ class ActiveEffect:
     duration_remaining: int  # Ticks until despawn
     elapsed_ticks: int  # How long active
     spawn_step: int  # When it was created
+    observable: bool  # Whether the effect is exposed in observations
+    effect_index: int  # Stable integer ID for observation encoding
 
 
 class EffectManager:
@@ -120,6 +122,8 @@ class EffectManager:
         """
         # Get compiled effect definition (validates effect_id exists)
         effect_def = self.catalog.effects[effect_id]
+        effect_index = self.catalog.get_effect_index(effect_id) if hasattr(self.catalog, "get_effect_index") else -1
+        observable = getattr(effect_def, "observable", False)
 
         # Check for existing effect on same target
         existing = self._find_existing(effect_id, target_entity_id, scope)
@@ -199,6 +203,8 @@ class EffectManager:
             duration_remaining=duration,
             elapsed_ticks=0,
             spawn_step=current_step,
+            observable=observable,
+            effect_index=effect_index,
         )
         self.next_instance_id += 1
 
@@ -298,6 +304,11 @@ class EffectManager:
         collection = self._get_scope_collection(effect.target_entity_id, effect.scope)
         if collection is not None and effect in collection:
             collection.remove(effect)
+
+    def get_observable_agent_effects(self, agent_id: int) -> list[ActiveEffect]:
+        """Return observable effects attached to a specific agent."""
+        effects = self.agent_effects.get(agent_id, [])
+        return [eff for eff in effects if getattr(eff, "observable", False)]
 
     def _cancel_scheduled_for_effect(self, effect: ActiveEffect) -> None:
         """Cancel any scheduled commands tied to the effect's scope/entity."""

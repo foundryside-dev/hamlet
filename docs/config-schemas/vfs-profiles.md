@@ -58,6 +58,8 @@ VFS Profiles are defined in `configs/<config_pack>/vfs_profiles.yaml`.
 
 ```yaml
 # Top-level structure
+version: "1.0"  # Required schema version (strict)
+
 global_profile:
   variables: [...]
 
@@ -70,6 +72,10 @@ item_profiles:
   - profile_name: weapon_stats
     variables: [...]
 ```
+
+### Schema Version
+
+- **1.0** (2025-11-22): Initial VFS profiles schema with explicit `version`, global/agent/item scopes, expressions, and dependency resolution.
 
 ## Variable Scopes
 

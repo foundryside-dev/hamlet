@@ -65,7 +65,15 @@ def test_universe_metadata_round_trip() -> None:
 
     def _action_meta_factory(payload: dict) -> ActionSpaceMetadata:
         actions = tuple(ActionMetadata(**action) for action in payload["actions"])
-        return ActionSpaceMetadata(total_actions=payload["total_actions"], actions=actions)
+        labels_raw = payload.get("labels", {})
+        labels = {int(k): v for k, v in labels_raw.items()}
+        return ActionSpaceMetadata(
+            total_actions=payload["total_actions"],
+            actions=actions,
+            labels=labels,
+            label_description=payload.get("label_description"),
+            label_domain=payload.get("label_domain"),
+        )
 
     def _meter_meta_factory(payload: dict) -> MeterMetadata:
         meters = tuple(MeterInfo(**meter) for meter in payload["meters"])

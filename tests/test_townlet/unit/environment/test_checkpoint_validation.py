@@ -1,14 +1,9 @@
-"""Unit tests for checkpoint validation and error handling.
+"""Unit tests for checkpoint validation, action labels, and error handling.
 
-This module tests edge cases and error paths in checkpoint save/load that are
-not covered by integration tests:
+This module covers edge cases not exercised by integration tests:
 - Legacy checkpoint detection (missing position_dim)
 - Position dimension mismatch validation
-- Custom action label loading from config
-
-Coverage targets:
-- src/townlet/environment/vectorized_env.py:878-910 (checkpoint validation)
-- src/townlet/environment/vectorized_env.py:106-119 (action label loading)
+- Action labels flowing from compiler metadata (custom + preset) rather than runtime file loading
 """
 
 import shutil
@@ -17,7 +12,18 @@ from pathlib import Path
 import pytest
 import yaml
 
+from tests.test_townlet.utils import builders
 from tests.test_townlet.utils.builders import make_vectorized_env_from_pack
+
+
+@pytest.fixture(autouse=True)
+def invalidate_compiled_cache(test_config_pack_path):
+    """Force recompilation so action labels from the compiler are present."""
+    pack_path = Path(test_config_pack_path).resolve()
+    compiled_artifact = pack_path / ".compiled" / "universe.msgpack"
+    builders._UNIVERSE_CACHE.pop(pack_path, None)
+    if compiled_artifact.exists():
+        compiled_artifact.unlink()
 
 
 class TestCheckpointValidation:
@@ -39,12 +45,9 @@ class TestCheckpointValidation:
             device=cpu_device,
         )
 
-        # Create legacy checkpoint data (missing position_dim field)
-        legacy_checkpoint = {
-            "positions": {"Bed": [3, 4], "Hospital": [1, 2]},
-            "ordering": ["Bed", "Hospital"],
-            # NOTE: position_dim field is missing (legacy format)
-        }
+        # Create legacy checkpoint data by removing position_dim from a valid payload
+        legacy_checkpoint = env.get_affordance_positions()
+        legacy_checkpoint.pop("position_dim", None)
 
         # Should raise ValueError with helpful message
         with pytest.raises(ValueError) as exc_info:
@@ -73,11 +76,9 @@ class TestCheckpointValidation:
         )
 
         # Create checkpoint with wrong position_dim (pretend it came from 3D substrate)
-        checkpoint_3d = {
-            "positions": {"Bed": [3, 4, 2], "Hospital": [1, 2, 5]},  # 3D positions
-            "ordering": ["Bed", "Hospital"],
-            "position_dim": 3,  # Wrong dimension!
-        }
+        checkpoint_3d = env_2d.get_affordance_positions()
+        checkpoint_3d["position_dim"] = env_2d.substrate.position_dim + 1
+        checkpoint_3d["positions"] = {name: coords + [0] for name, coords in checkpoint_3d["positions"].items()}
 
         # Should raise ValueError about dimension mismatch
         with pytest.raises(ValueError) as exc_info:
@@ -102,35 +103,27 @@ class TestCheckpointValidation:
             device=cpu_device,
         )
 
-        # Create valid checkpoint with correct position_dim using known affordances
-        first_two = list(env.affordances.keys())[:2]
-        assert len(first_two) == 2  # sanity check for test config
-        positions = {first_two[0]: [3, 4], first_two[1]: [1, 2]}
-        valid_checkpoint = {
-            "positions": positions,
-            "ordering": first_two,
-            "position_dim": env.substrate.position_dim,  # Matches substrate dimension (2D Grid)
-        }
+        # Create valid checkpoint using runtime-generated payload
+        valid_checkpoint = env.get_affordance_positions()
 
         # Should load successfully (no exception)
         env.set_affordance_positions(valid_checkpoint)
 
         # Verify positions were loaded
-        for name, expected in positions.items():
+        for name, expected in valid_checkpoint["positions"].items():
             assert name in env.affordances
             assert env.affordances[name].tolist() == expected
 
 
 class TestActionLabelLoading:
-    """Test custom action label loading from config."""
+    """Test action labels provided via compiler metadata."""
 
     def test_custom_action_labels_from_config(self, cpu_device, tmp_path):
-        """Should load custom action labels from action_labels.yaml.
+        """Should propagate custom action labels through compiler metadata.
 
-        This tests the optional action label loading feature where users can
-        provide custom terminology for actions (e.g., submarine controls).
-
-        Coverage target: lines 106-119 (custom action label loading)
+        Users can supply `action_labels.yaml`; the compiler should embed those
+        labels into ActionSpaceMetadata and VectorizedHamletEnv should reflect
+        them at runtime.
         """
         config_dir = tmp_path / "custom_labels_config"
         # Use model_config as v2.1-compatible base pack.
@@ -155,20 +148,18 @@ class TestActionLabelLoading:
             device=cpu_device,
         )
 
-        # Verify custom labels were loaded (action_labels is an ActionLabels object with labels dict)
-        assert env.action_labels is not None
-        labels_dict = env.action_labels.labels
-        label_values = list(labels_dict.values())
+        # Labels should be present in compiler metadata and exposed on the env.
+        compiled_labels = env.universe.action_space_metadata.labels
+        assert env.action_labels is not None  # Rehydrated ActionLabels wrapper
+        assert env.action_labels.labels == compiled_labels  # runtime view mirrors compiler metadata
+        label_values = list(compiled_labels.values())
         assert "PORT" in label_values, "Custom label 'PORT' should be loaded"
         assert "STARBOARD" in label_values, "Custom label 'STARBOARD' should be loaded"
         assert "AFT" in label_values, "Custom label 'AFT' should be loaded"
         assert "FORE" in label_values, "Custom label 'FORE' should be loaded"
 
     def test_default_action_labels_when_no_config(self, cpu_device, test_config_pack_path):
-        """Should use default 'gaming' preset when no action_labels.yaml exists.
-
-        Coverage target: lines 120-122 (default label fallback)
-        """
+        """Should use default 'gaming' preset when no action_labels.yaml exists."""
         # test_config_pack_path doesn't have action_labels.yaml, so should use default
         env = make_vectorized_env_from_pack(
             test_config_pack_path,
@@ -176,12 +167,16 @@ class TestActionLabelLoading:
             device=cpu_device,
         )
 
-        # Verify default gaming labels are used (action_labels is an ActionLabels object)
+        # Verify default labels are embedded via compiler metadata and match runtime view
+        compiled_labels = env.universe.action_space_metadata.labels
         assert env.action_labels is not None
-        labels_dict = env.action_labels.labels
-        label_values = list(labels_dict.values())
-        # Gaming preset uses: UP, DOWN, LEFT, RIGHT for 2D
-        assert "UP" in label_values or "DOWN" in label_values, "Default gaming labels should be present"
+        assert env.action_labels.labels == compiled_labels
+        # Default preset should cover canonical movement + meta actions
+        assert set(compiled_labels.keys()) == {0, 1, 2, 3, 4, 5}
+        assert "UP" in compiled_labels.values()
+        assert "DOWN" in compiled_labels.values()
+        assert "LEFT" in compiled_labels.values()
+        assert "RIGHT" in compiled_labels.values()
 
 
 class TestAffordancePositionSerialization:

@@ -215,6 +215,9 @@ items:
 | `spawn_interval` | int \| null | null | Ticks between respawns (null = no periodic respawn) |
 | `spawn_position` | enum | random | Position strategy: `random` or `fixed` |
 | `when` | string \| null | null | Boolean expression gating spawn (e.g., `bar.energy > 0.5`) |
+| `placement` | object | null | Advanced placement: `random` (default), `fixed` with `fixed_positions`, `grid` with `grid_spacing`, `scripted` with `script` events |
+| `schedule` | object | null | Advanced scheduling: `periodic`, `time_window` (start_tick/end_tick), `poisson` (rate), `normal` (mean/std_dev) |
+| `max_total` | int \| null | null | Maximum total spawns for this rule (caps all attempts) |
 
 ### Validation Rules
 
@@ -249,6 +252,56 @@ items:
 ```
 
 Supported symbols: `bar.<meter>`, `vfs.<variable>`, `temporal.tick` (only when temporal mechanics are enabled). All standard comparison operators and boolean logic (`and`, `or`, `not`) are available via the expression language.
+
+### Advanced Spawn Rules Examples
+
+```yaml
+# Fixed placement with max_total
+- item_type: "apple"
+  spawn_count: 2
+  placement:
+    mode: fixed
+    fixed_positions: [[0, 0], [1, 1]]
+  max_total: 2
+
+# Grid placement every 3 cells
+- item_type: "coin"
+  spawn_count: 4
+  placement:
+    mode: grid
+    grid_spacing: 3
+
+# Scripted spawns at specific ticks
+- item_type: "medkit"
+  spawn_count: 2
+  placement:
+    mode: scripted
+    script:
+      - {tick: 5, position: [0, 0]}
+      - {tick: 10, position: [2, 2]}
+
+# Time-windowed + Poisson respawn
+- item_type: "enemy"
+  schedule:
+    type: time_window
+    start_tick: 100
+    end_tick: 300
+  placement:
+    mode: random
+  # respawns governed by poisson when timer fires
+  # (set respawn timer via despawn handling)
+
+# Normal-distributed respawn timing
+- item_type: "rare_drop"
+  schedule:
+    type: normal
+    mean: 200
+    std_dev: 10
+```
+
+Notes:
+- `placement` supersedes legacy `spawn_position`; `schedule` supersedes legacy `spawn_interval`.
+- `max_total` counts all successful spawns (initial and respawn) and stops further spawns when reached.
 
 ---
 

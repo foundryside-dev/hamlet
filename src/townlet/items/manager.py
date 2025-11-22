@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import random
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
@@ -12,6 +13,7 @@ if TYPE_CHECKING:
     from townlet.config.items_config import ItemsAppearanceConfig, ItemsCatalogConfig
     from townlet.vfs.registry import VariableRegistry
 
+from townlet.config.items_config import SpawnPlacementConfig, SpawnScheduleConfig
 from townlet.effects.compiler import CommandCompiler
 from townlet.effects.schema import CommandNode
 from townlet.items.instance import ItemInstance
@@ -142,6 +144,15 @@ class ItemManager:
         # Respawn timers (item_type -> tick when should respawn)
         self.respawn_timers: dict[str, int] = {}
 
+        # Track cumulative spawns per item_type for max_total enforcement
+        self.spawn_counts: dict[str, int] = {}
+
+        # Track next scheduled spawn tick for normal/poisson schedules per item_type
+        self.next_scheduled_tick: dict[str, int] = {}
+
+        # Track per-item scripted pointer (next event index) to avoid reusing past events
+        self.script_indices: dict[str, int] = {}
+
     def reset_state(self) -> None:
         """Clear all item runtime state for a fresh episode."""
 
@@ -153,6 +164,9 @@ class ItemManager:
         self.grid_size = None
         self.respawn_timers.clear()
         self.next_instance_id = 0
+        self.spawn_counts.clear()
+        self.next_scheduled_tick.clear()
+        self.script_indices.clear()
 
         if self.vfs_registry is not None and self.vfs_registry.item_vfs is not None:
             from townlet.vfs.schema import VariableScope
@@ -206,6 +220,20 @@ class ItemManager:
 
         raise RuntimeError(f"Unsupported spawn strategy '{strategy}'")
 
+    def _valid_position(self, position: tuple[int, ...]) -> bool:
+        """Check position within grid bounds if grid_size known."""
+
+        if self.grid_size is None:
+            return True
+        if len(position) != len(self.grid_size):
+            return False
+        return all(0 <= coord < dim for coord, dim in zip(position, self.grid_size))
+
+    def _position_occupied(self, position: tuple[int, ...]) -> bool:
+        """Check whether a position is occupied by an active item."""
+
+        return any(item.position == position for item in self.active_items.values())
+
     def spawn_item(
         self,
         item_type: str,
@@ -227,6 +255,11 @@ class ItemManager:
         # Check max_items capacity
         if len(self.active_items) >= self.max_items:
             return None
+
+        # Enforce per-rule max_total if configured via appearance (tracked by item_type)
+        if self.spawn_counts.get(item_type, 0) < 0:
+            # Defensive guard, should never happen
+            self.spawn_counts[item_type] = 0
 
         # Check cooldown
         if item_type in self.cooldown_until:
@@ -290,6 +323,9 @@ class ItemManager:
 
         # Store in active items
         self.active_items[instance.instance_id] = instance
+
+        # Track total spawned for max_total enforcement
+        self.spawn_counts[item_type] = self.spawn_counts.get(item_type, 0) + 1
 
         # Register item instance in VFS registry
         if self.vfs_registry is not None and instance.vfs_profile:
@@ -385,9 +421,33 @@ class ItemManager:
                 None,
             )
 
-            if rule is not None and rule.spawn_interval is not None:
-                # Schedule respawn
-                self.respawn_timers[item.item_type] = current_tick + rule.spawn_interval
+            if rule is not None:
+                schedule = getattr(rule, "schedule", None)
+
+                if schedule is not None and isinstance(schedule, SpawnScheduleConfig):
+                    if schedule.type == "periodic" and schedule.period is not None:
+                        self.respawn_timers[item.item_type] = current_tick + schedule.period
+                    elif schedule.type == "normal" and schedule.mean is not None and schedule.std_dev is not None:
+                        next_tick = int(
+                            max(
+                                0.0,
+                                torch.normal(
+                                    mean=torch.tensor(schedule.mean),
+                                    std=torch.tensor(schedule.std_dev),
+                                ).item(),
+                            )
+                        )
+                        self.respawn_timers[item.item_type] = next_tick
+                    elif schedule.type == "poisson" and schedule.rate is not None and schedule.rate > 0:
+                        self.respawn_timers[item.item_type] = current_tick + 1
+                    elif schedule.type == "time_window":
+                        if schedule.start_tick is not None and current_tick < schedule.start_tick:
+                            self.respawn_timers[item.item_type] = schedule.start_tick
+                        else:
+                            self.respawn_timers[item.item_type] = current_tick + 1
+                else:
+                    # No schedule: do not queue respawns automatically
+                    pass
 
     def tick(self, current_tick: int) -> None:
         """Advance all item lifecycles by one tick.
@@ -468,6 +528,174 @@ class ItemManager:
 
         return bool(result)
 
+    def _iter_positions(
+        self,
+        rule: Any,
+        grid_size: tuple[int, ...],
+        *,
+        current_tick: int,
+        count: int,
+    ) -> list[tuple[int, ...]]:
+        """Generate up to `count` positions for a spawn event based on placement config."""
+
+        positions: list[tuple[int, ...]] = []
+        placement = getattr(rule, "placement", None)
+        placement_mode = placement.mode if isinstance(placement, SpawnPlacementConfig) else None
+
+        if placement_mode is None or placement_mode == "random":
+            for _ in range(count):
+                positions.append(tuple(random.randint(0, size - 1) for size in grid_size))
+            return positions
+
+        if placement_mode == "fixed":
+            for pos in placement.fixed_positions or []:
+                if len(positions) >= count:
+                    break
+                if not self._valid_position(pos) or self._position_occupied(pos):
+                    continue
+                positions.append(pos)
+            return positions
+
+        if placement_mode == "grid":
+            spacing = placement.grid_spacing or 1
+            for x in range(0, grid_size[0], spacing):
+                for y in range(0, grid_size[1], spacing):
+                    if len(positions) >= count:
+                        return positions
+                    pos = (x, y)
+                    if self._position_occupied(pos):
+                        continue
+                    positions.append(pos)
+            return positions
+
+        if placement_mode == "scripted":
+            script = placement.script or []
+            start_idx = self.script_indices.get(rule.item_type, 0)
+            # Advance past events before current_tick
+            while start_idx < len(script) and script[start_idx].get("tick") < current_tick:
+                start_idx += 1
+            for idx in range(start_idx, len(script)):
+                if len(positions) >= count:
+                    break
+                event = script[idx]
+                tick = event.get("tick")
+                if tick is None or tick != current_tick:
+                    break
+                pos = tuple(event.get("position", ()))
+                if not self._valid_position(pos) or self._position_occupied(pos):
+                    continue
+                positions.append(pos)
+                start_idx = idx + 1
+            self.script_indices[rule.item_type] = start_idx
+            return positions
+
+        return positions
+
+    def _next_script_tick(self, rule: Any, current_tick: int) -> int | None:
+        placement = getattr(rule, "placement", None)
+        placement_mode = placement.mode if isinstance(placement, SpawnPlacementConfig) else None
+        if placement_mode != "scripted":
+            return None
+        script = placement.script or []
+        for event in script:
+            tick = event.get("tick")
+            if tick is not None and tick > current_tick:
+                return int(tick)
+        return None
+
+    def _resolve_respawn_positions(self, rule: Any, *, current_tick: int, count: int) -> list[tuple[int, ...]]:
+        """Resolve placement for respawns; honor count and scripted tick alignment."""
+
+        placement = getattr(rule, "placement", None)
+        placement_mode = placement.mode if isinstance(placement, SpawnPlacementConfig) else None
+
+        positions: list[tuple[int, ...]] = []
+
+        if placement_mode is None or placement_mode == "random":
+            return [tuple(random.randint(0, size - 1) for size in self.grid_size or (1,)) for _ in range(count)]
+
+        if placement_mode == "fixed":
+            for pos in placement.fixed_positions or []:
+                if len(positions) >= count:
+                    break
+                if self._valid_position(pos) and not self._position_occupied(pos):
+                    positions.append(pos)
+            return positions
+
+        if placement_mode == "grid":
+            spacing = placement.grid_spacing or 1
+            grid_size = self.grid_size or (0,)
+            for x in range(0, grid_size[0], spacing):
+                for y in range(0, grid_size[1], spacing):
+                    if len(positions) >= count:
+                        return positions
+                    pos = (x, y)
+                    if self._position_occupied(pos):
+                        continue
+                    positions.append(pos)
+            return positions
+
+        if placement_mode == "scripted":
+            script = placement.script or []
+            start_idx = self.script_indices.get(rule.item_type, 0)
+            # Advance past events before current_tick
+            while start_idx < len(script) and script[start_idx].get("tick") < current_tick:
+                start_idx += 1
+            for idx in range(start_idx, len(script)):
+                if len(positions) >= count:
+                    break
+                event = script[idx]
+                tick = event.get("tick")
+                if tick is None or tick != current_tick:
+                    break
+                pos = tuple(event.get("position", ()))
+                if not self._valid_position(pos) or self._position_occupied(pos):
+                    continue
+                positions.append(pos)
+                start_idx = idx + 1
+            self.script_indices[rule.item_type] = start_idx
+            return positions
+
+        return positions
+
+    def _schedule_allows_spawn(self, rule: Any, current_tick: int) -> bool:
+        """Check advanced schedule gating (time_window, poisson, normal)."""
+
+        schedule = getattr(rule, "schedule", None)
+        if schedule is None or not isinstance(schedule, SpawnScheduleConfig):
+            return True
+
+        if schedule.type == "time_window":
+            if schedule.start_tick is not None and current_tick < schedule.start_tick:
+                return False
+            if schedule.end_tick is not None and current_tick > schedule.end_tick:
+                return False
+            return True
+
+        if schedule.type == "poisson":
+            rate = schedule.rate or 0.0
+            if rate <= 0.0:
+                return False
+            prob = 1.0 - torch.exp(torch.tensor(-rate))
+            if prob >= 0.9999:
+                return True
+            return bool(torch.rand((), device=self.device) < prob)
+
+        if schedule.type == "normal":
+            next_tick = self.next_scheduled_tick.get(rule.item_type)
+            if next_tick is None:
+                next_tick = current_tick + 1
+                self.next_scheduled_tick[rule.item_type] = next_tick
+            if current_tick < next_tick:
+                return False
+            # Schedule next window based on mean (deterministic cadence)
+            mean_tick = schedule.mean or 1.0
+            self.next_scheduled_tick[rule.item_type] = int(max(current_tick + 1, math.ceil(mean_tick)))
+            return True
+
+        # periodic handled via timers, default allow here
+        return True
+
     def spawn_initial_items(
         self,
         appearance_config: ItemsAppearanceConfig,
@@ -493,19 +721,20 @@ class ItemManager:
                 # Skip unknown item types (e.g., energy_drink in test config)
                 continue
 
+            if not self._schedule_allows_spawn(rule, current_tick=current_tick):
+                continue
+
             if not self._should_spawn_rule(rule, bars=bars, temporal=temporal, current_tick=current_tick):
                 continue
 
-            # Spawn count items
-            for _ in range(rule.spawn_count):
-                # Generate random position within grid bounds
-                if rule.spawn_position == "random":
-                    position = tuple(random.randint(0, size - 1) for size in grid_size)
-                else:
-                    # TODO: Support fixed positions when needed
-                    position = tuple(random.randint(0, size - 1) for size in grid_size)
-
-                # Attempt spawn (may fail if at capacity)
+            count = max(0, rule.spawn_count)
+            if count == 0:
+                continue
+            positions = self._iter_positions(rule, grid_size, current_tick=current_tick, count=count)
+            for position in positions:
+                max_total = getattr(rule, "max_total", None)
+                if max_total is not None and self.spawn_counts.get(rule.item_type, 0) >= max_total:
+                    continue
                 self.spawn_item(rule.item_type, position, current_tick)
 
     def set_appearance_config(
@@ -521,6 +750,10 @@ class ItemManager:
         """
         self.appearance_config = appearance_config
         self.grid_size = grid_size
+        # Reset spawn counts when a new appearance config is applied
+        self.spawn_counts.clear()
+        self.next_scheduled_tick.clear()
+        self.script_indices.clear()
 
     def process_respawns(
         self,
@@ -537,7 +770,6 @@ class ItemManager:
         if self.appearance_config is None or self.grid_size is None:
             return  # No appearance config, no respawning
 
-        # Check which timers have expired
         expired_types = [item_type for item_type, respawn_tick in self.respawn_timers.items() if current_tick >= respawn_tick]
 
         # Attempt to spawn each expired type
@@ -553,26 +785,66 @@ class ItemManager:
                 del self.respawn_timers[item_type]
                 continue
 
-            # Generate random position
-            if rule.spawn_position == "random":
-                position = tuple(random.randint(0, size - 1) for size in self.grid_size)
-            else:
-                # TODO: Support fixed positions when needed
-                position = tuple(random.randint(0, size - 1) for size in self.grid_size)
+            if not self._schedule_allows_spawn(rule, current_tick=current_tick):
+                # Reschedule according to schedule type
+                schedule = getattr(rule, "schedule", None)
+                if schedule and isinstance(schedule, SpawnScheduleConfig):
+                    if schedule.type == "poisson" and schedule.rate and schedule.rate > 0:
+                        self.respawn_timers[item_type] = current_tick + 1
+                    elif schedule.type == "time_window":
+                        if schedule.end_tick is not None and current_tick > schedule.end_tick:
+                            del self.respawn_timers[item_type]
+                        else:
+                            next_tick = max(current_tick + 1, schedule.start_tick or current_tick + 1)
+                            self.respawn_timers[item_type] = next_tick
+                    elif schedule.type == "normal" and schedule.mean is not None and schedule.std_dev is not None:
+                        sampled = torch.normal(
+                            mean=torch.tensor(schedule.mean),
+                            std=torch.tensor(schedule.std_dev),
+                        ).item()
+                        next_tick_int = int(max(current_tick + 1, math.ceil(sampled)))
+                        self.respawn_timers[item_type] = next_tick_int
+                continue
 
             if not self._should_spawn_rule(rule, bars=bars, temporal=temporal, current_tick=current_tick):
                 continue
 
-            # Attempt spawn (may fail if at capacity or on cooldown)
-            spawned = self.spawn_item(item_type, position, current_tick)
+            max_total = getattr(rule, "max_total", None)
+            if max_total is not None and self.spawn_counts.get(item_type, 0) >= max_total:
+                continue
 
-            if spawned is not None:
-                # Successfully spawned, clear timer
+            count = max(0, getattr(rule, "spawn_count", 1))
+            if count == 0:
                 del self.respawn_timers[item_type]
+                continue
+            positions = self._resolve_respawn_positions(rule, current_tick=current_tick, count=count)
+            spawned_any = False
+            for position in positions:
+                spawned = self.spawn_item(item_type, position, current_tick)
+                if spawned is not None:
+                    spawned_any = True
+                    break  # respawn one per timer
 
-                # If spawn_interval exists, schedule next respawn when this item despawns
-                # (Timer will be set by despawn_item when this item expires)
+            schedule = getattr(rule, "schedule", None)
+            if spawned_any:
+                placement = getattr(rule, "placement", None)
+                placement_mode = placement.mode if isinstance(placement, SpawnPlacementConfig) else None
+                if placement_mode == "scripted":
+                    next_script_tick = self._next_script_tick(rule, current_tick)
+                    if next_script_tick is not None:
+                        self.respawn_timers[item_type] = next_script_tick
+                    else:
+                        del self.respawn_timers[item_type]
+                else:
+                    del self.respawn_timers[item_type]
             else:
-                # Failed to spawn (at capacity or cooldown), keep timer for retry next tick
-                # Don't delete timer - will retry on next process_respawns call
-                pass
+                # Reschedule retry
+                if schedule and isinstance(schedule, SpawnScheduleConfig):
+                    if schedule.type == "poisson" and schedule.rate and schedule.rate > 0:
+                        self.respawn_timers[item_type] = current_tick + 1
+                    elif schedule.type == "time_window":
+                        next_tick = max(current_tick + 1, schedule.start_tick or current_tick + 1)
+                        self.respawn_timers[item_type] = next_tick
+                    elif schedule.type == "normal" and schedule.mean is not None:
+                        next_tick_int = self.next_scheduled_tick.get(item_type, current_tick + 1)
+                        self.respawn_timers[item_type] = next_tick_int

@@ -2,10 +2,6 @@
 
 Tests complex interactions:
   Item Pickup → Effect Spawned → Cascade Triggered → Meters Updated
-
-NOTE: Tests currently XFAIL because items_smoke config pack has old affordances.yaml
-format (uses `effects` field instead of `interactions` field). Config migration
-is out of scope for Phase 6.
 """
 
 from pathlib import Path
@@ -35,7 +31,6 @@ def items_test_env():
 class TestItemsEffectsCascade:
     """Test Items triggering Effects triggering Cascades."""
 
-    @pytest.mark.xfail(reason="items_smoke config has old affordances.yaml format - needs VFS migration")
     def test_item_pickup_spawns_effect(self, items_test_env):
         """Picking up item spawns effect."""
         # Verify ItemManager has compiled item types with Effects
@@ -52,7 +47,6 @@ class TestItemsEffectsCascade:
         assert isinstance(apple_type.compiled_on_use, list)
         assert isinstance(apple_type.compiled_on_drop, list)
 
-    @pytest.mark.xfail(reason="items_smoke config has old affordances.yaml format - needs VFS migration")
     def test_effect_modifies_bars_triggers_cascade(self, items_test_env):
         """Effect modifying bar triggers cascade to other bars."""
         # Test that cascades are configured in the environment
@@ -67,7 +61,6 @@ class TestItemsEffectsCascade:
         # Bars are in vectorized environment state
         assert hasattr(items_test_env, "bars")
 
-    @pytest.mark.xfail(reason="items_smoke config has old affordances.yaml format - needs VFS migration")
     def test_full_chain_item_to_cascade(self, items_test_env):
         """Complete chain: Item → Effect → Bar → Cascade → Bar."""
         # Full integration test: Environment initializes with all systems

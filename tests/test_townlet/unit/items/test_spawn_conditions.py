@@ -27,7 +27,7 @@ def test_spawn_initial_items_gated_by_bar_condition() -> None:
             {
                 "item_type": "apple",
                 "spawn_count": 1,
-                "spawn_position": "random",
+                "placement": {"mode": "random"},
                 "when": "bar.energy > 0.5",
             }
         ]
@@ -54,9 +54,9 @@ def test_process_respawns_respects_condition() -> None:
         items=[
             {
                 "item_type": "apple",
-                "spawn_count": 0,
-                "spawn_interval": 1,
-                "spawn_position": "random",
+                "spawn_count": 1,
+                "schedule": {"type": "periodic", "period": 1},
+                "placement": {"mode": "random"},
                 "when": "bar.energy > 0.5",
             }
         ]
@@ -87,7 +87,7 @@ def test_vfs_condition_gates_spawn() -> None:
             {
                 "item_type": "apple",
                 "spawn_count": 1,
-                "spawn_position": "random",
+                "placement": {"mode": "random"},
                 "when": "vfs.is_raining",
             }
         ]
@@ -138,7 +138,7 @@ def test_temporal_condition_and_boolean_logic() -> None:
             {
                 "item_type": "apple",
                 "spawn_count": 1,
-                "spawn_position": "random",
+                "placement": {"mode": "random"},
                 "when": "vfs.is_raining and temporal.tick > 5",
             }
         ]
@@ -188,7 +188,7 @@ def test_comparison_variants_and_vector_reduction() -> None:
             {
                 "item_type": "apple",
                 "spawn_count": 1,
-                "spawn_position": "random",
+                "placement": {"mode": "random"},
                 "when": "bar.energy >= 0.5",
             }
         ]
@@ -252,7 +252,7 @@ def test_equality_and_inequality_operators() -> None:
             {
                 "item_type": "apple",
                 "spawn_count": 1,
-                "spawn_position": "random",
+                "placement": {"mode": "random"},
                 "when": "vfs.mode == 1",
             }
         ]
@@ -301,7 +301,7 @@ def test_equality_and_inequality_operators() -> None:
             {
                 "item_type": "apple",
                 "spawn_count": 1,
-                "spawn_position": "random",
+                "placement": {"mode": "random"},
                 "when": "vfs.mode != 0",
             }
         ]
@@ -330,7 +330,7 @@ def test_or_and_not_boolean_operators() -> None:
             {
                 "item_type": "apple",
                 "spawn_count": 1,
-                "spawn_position": "random",
+                "placement": {"mode": "random"},
                 "when": "vfs.is_day or vfs.is_special",
             }
         ]
@@ -389,7 +389,7 @@ def test_or_and_not_boolean_operators() -> None:
             {
                 "item_type": "apple",
                 "spawn_count": 1,
-                "spawn_position": "random",
+                "placement": {"mode": "random"},
                 "when": "not vfs.is_day",
             }
         ]
@@ -418,7 +418,7 @@ def test_less_than_operators() -> None:
             {
                 "item_type": "apple",
                 "spawn_count": 1,
-                "spawn_position": "random",
+                "placement": {"mode": "random"},
                 "when": "bar.energy < 0.3",
             }
         ]
@@ -445,7 +445,7 @@ def test_less_than_operators() -> None:
             {
                 "item_type": "apple",
                 "spawn_count": 1,
-                "spawn_position": "random",
+                "placement": {"mode": "random"},
                 "when": "bar.energy <= 0.3",
             }
         ]
@@ -469,7 +469,7 @@ def test_unconditional_spawn_has_no_overhead() -> None:
             {
                 "item_type": "apple",
                 "spawn_count": 1,
-                "spawn_position": "random",
+                "placement": {"mode": "random"},
                 # No 'when' field
             }
         ]

@@ -154,6 +154,80 @@ class ItemsCatalogConfig(BaseModel):
         return cls(**data["items"])
 
 
+class SpawnScheduleConfig(BaseModel):
+    """Scheduling options for item spawns."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    type: Literal["periodic", "time_window", "poisson", "normal"] = Field(
+        default="periodic",
+        description="Scheduling strategy: periodic | time_window | poisson | normal",
+    )
+
+    period: int | None = Field(
+        default=None,
+        description="Ticks between spawns for periodic schedule (required for periodic)",
+        ge=1,
+    )
+
+    start_tick: int | None = Field(
+        default=None,
+        description="Inclusive start tick for time_window schedule",
+        ge=0,
+    )
+
+    end_tick: int | None = Field(
+        default=None,
+        description="Inclusive end tick for time_window schedule",
+        ge=0,
+    )
+
+    rate: float | None = Field(
+        default=None,
+        description="Poisson rate (lambda) per tick for poisson schedule",
+        ge=0.0,
+    )
+
+    mean: float | None = Field(
+        default=None,
+        description="Mean tick for normal schedule",
+        ge=0.0,
+    )
+
+    std_dev: float | None = Field(
+        default=None,
+        description="Standard deviation for normal schedule",
+        gt=0.0,
+    )
+
+
+class SpawnPlacementConfig(BaseModel):
+    """Placement options for item spawns."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    mode: Literal["random", "fixed", "grid", "scripted"] = Field(
+        default="random",
+        description="Placement mode: random | fixed | grid | scripted",
+    )
+
+    fixed_positions: list[tuple[int, int]] | None = Field(
+        default=None,
+        description="Explicit positions for fixed placement",
+    )
+
+    grid_spacing: int | None = Field(
+        default=None,
+        description="Grid spacing for grid placement (cells)",
+        ge=1,
+    )
+
+    script: list[dict[str, Any]] | None = Field(
+        default=None,
+        description="Scripted spawn events: list of {tick: int, position: (x,y)}",
+    )
+
+
 class ItemAppearanceRuleConfig(BaseModel):
     """Spawn rule for an item type in a specific level."""
 
@@ -169,16 +243,30 @@ class ItemAppearanceRuleConfig(BaseModel):
 
     spawn_interval: int | None = Field(
         default=None,
-        description="Ticks between spawns (None = only spawn at level start)",
+        description="Ticks between spawns (None = only spawn at level start). Superseded by schedule when provided.",
         ge=1,
     )
 
     spawn_position: Literal["random", "fixed"] = Field(
         default="random",
-        description="How to choose spawn position",
+        description="How to choose spawn position (legacy). Superseded by placement when provided.",
     )
 
-    # TODO: Add fixed_position field for spawn_position="fixed"
+    placement: SpawnPlacementConfig | None = Field(
+        default=None,
+        description="Advanced placement configuration (fixed/grid/scripted)",
+    )
+
+    schedule: SpawnScheduleConfig | None = Field(
+        default=None,
+        description="Advanced scheduling configuration (time_window/poisson/normal)",
+    )
+
+    max_total: int | None = Field(
+        default=None,
+        description="Maximum total spawns for this rule (cumulative)",
+        ge=1,
+    )
 
     # Optional spawn predicate (compiled to when_ast at compile time)
     when: str | None = Field(

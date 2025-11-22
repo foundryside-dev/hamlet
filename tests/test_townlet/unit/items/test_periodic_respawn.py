@@ -18,8 +18,8 @@ def test_respawn_timer_initialized_on_despawn():
             {
                 "item_type": "apple",
                 "spawn_count": 1,
-                "spawn_interval": 100,
-                "spawn_position": "random",
+                "placement": {"mode": "random"},
+                "schedule": {"type": "periodic", "period": 100},
             }
         ],
     )
@@ -56,8 +56,8 @@ def test_respawn_timer_not_set_without_spawn_interval():
             {
                 "item_type": "apple",
                 "spawn_count": 1,
-                "spawn_interval": None,  # No periodic respawn
-                "spawn_position": "random",
+                "placement": {"mode": "random"},
+                "schedule": None,  # No periodic respawn
             }
         ],
     )
@@ -89,8 +89,8 @@ def test_process_respawns_spawns_item_when_timer_expires():
             {
                 "item_type": "apple",
                 "spawn_count": 1,
-                "spawn_interval": 100,
-                "spawn_position": "random",
+                "placement": {"mode": "random"},
+                "schedule": {"type": "periodic", "period": 100},
             }
         ],
     )

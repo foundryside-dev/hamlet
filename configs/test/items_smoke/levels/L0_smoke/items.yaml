@@ -5,15 +5,24 @@ version: "1.0"
 items:
   - item_type: apple
     spawn_count: 3       # Spawn 3 apples at level start
-    spawn_interval: 100  # Respawn every 100 ticks
-    spawn_position: random
+    placement:
+      mode: random
+    schedule:
+      type: periodic
+      period: 100  # Respawn every 100 ticks
 
   - item_type: medkit
     spawn_count: 1
-    spawn_interval: 200
-    spawn_position: random
+    placement:
+      mode: random
+    schedule:
+      type: periodic
+      period: 200
 
   - item_type: coin
     spawn_count: 0
-    spawn_interval: 150
-    spawn_position: random
+    placement:
+      mode: random
+    schedule:
+      type: periodic
+      period: 150

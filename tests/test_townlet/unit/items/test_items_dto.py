@@ -118,7 +118,8 @@ def test_items_appearance_minimal():
             ItemAppearanceRuleConfig(
                 item_type="apple",
                 spawn_count=3,
-                spawn_interval=100,
+                placement={"mode": "random"},
+                schedule={"type": "periodic", "period": 100},
                 when=None,
             ),
         ],
@@ -136,7 +137,7 @@ def test_items_appearance_accepts_when():
             ItemAppearanceRuleConfig(
                 item_type="apple",
                 spawn_count=1,
-                spawn_interval=None,
+                schedule=None,
                 when="bar.energy > 0.5",
             ),
         ],
@@ -187,4 +188,6 @@ def test_items_appearance_from_yaml():
     assert len(appearance.items) == 3
     assert appearance.items[0].item_type == "apple"
     assert appearance.items[0].spawn_count == 3
-    assert appearance.items[0].spawn_interval == 100
+    assert appearance.items[0].schedule is not None
+    assert appearance.items[0].schedule.type == "periodic"
+    assert appearance.items[0].schedule.period == 100

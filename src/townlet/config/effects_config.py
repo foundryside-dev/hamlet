@@ -72,6 +72,53 @@ class CommandConfig(BaseModel):
 
     model_config = ConfigDict(populate_by_name=True)  # Allow both "if" and "if_condition"
 
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_type_based_commands(cls, data: Any) -> Any:
+        """Allow {type: ...} style command dictionaries from legacy tests/fixtures."""
+        if not isinstance(data, dict) or "type" not in data:
+            return data
+
+        cmd_type = data.get("type")
+        normalized = dict(data)
+        normalized.pop("type", None)
+
+        if cmd_type == "modify":
+            normalized.setdefault("modify", data.get("path"))
+            normalized.setdefault("value", data.get("value"))
+        elif cmd_type == "spawn_effect":
+            normalized.setdefault("spawn_effect", data.get("effect_id") or data.get("spawn_effect"))
+            normalized.setdefault("target", data.get("target"))
+            normalized.setdefault("intensity", data.get("intensity"))
+        elif cmd_type == "spawn_item":
+            normalized.setdefault("spawn_item", data.get("item_type") or data.get("spawn_item"))
+            normalized.setdefault("position", data.get("position"))
+        elif cmd_type == "if":
+            normalized.setdefault("if_condition", data.get("condition"))
+            normalized.setdefault("then", data.get("then", []))
+            normalized.setdefault("else", data.get("else", []))
+        elif cmd_type == "for_each":
+            normalized.setdefault("for_each", data.get("collection"))
+            normalized.setdefault("as_", data.get("iterator"))
+            normalized.setdefault("do", data.get("body") or data.get("do", []))
+        elif cmd_type == "switch":
+            normalized.setdefault("switch", data.get("switch"))
+            normalized.setdefault("cases", data.get("cases", []))
+            normalized.setdefault("default", data.get("default", []))
+        elif cmd_type == "reduce":
+            normalized.setdefault("reduce", data.get("reduce"))
+            normalized.setdefault("reduce_as", data.get("reduce_as"))
+            normalized.setdefault("reduce_init", data.get("reduce_init"))
+            normalized.setdefault("reduce_body", data.get("reduce_body"))
+            normalized.setdefault("reduce_into", data.get("reduce_into"))
+        elif cmd_type == "parallel":
+            normalized.setdefault("parallel", data.get("parallel", []))
+        elif cmd_type == "delay":
+            normalized.setdefault("delay", data.get("delay"))
+            normalized.setdefault("delay_do", data.get("do", []))
+
+        return normalized
+
     # modify command: Mutate VFS/bar variable
     modify: str | None = None
     value: str | None = None  # Expression to evaluate

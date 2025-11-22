@@ -6,9 +6,13 @@ import enum
 from dataclasses import dataclass
 from typing import Any
 
+from townlet.config.effects_config import EffectScope
+
 __all__ = [
     "CommandType",
     "CommandNode",
+    "EffectDefinition",
+    "EffectScope",
 ]
 
 
@@ -112,3 +116,28 @@ class CommandNode:
             self.default_commands = []
         if self.parallel_commands is None:
             self.parallel_commands = []
+
+
+@dataclass
+class EffectDefinition:
+    """Lightweight effect definition for tests/benchmarks.
+
+    Mirrors the compiled effect fields accessed by EffectManager.
+    """
+
+    id: str
+    scope: EffectScope
+    duration: int
+    reapply_policy: str
+    observable: bool = True
+    intensity: float = 1.0
+    on_spawn: list[CommandNode] | None = None
+    on_tick: list[CommandNode] | None = None
+    on_despawn: list[CommandNode] | None = None
+    on_interrupt: list[CommandNode] | None = None
+
+    def __post_init__(self) -> None:
+        self.on_spawn = self.on_spawn or []
+        self.on_tick = self.on_tick or []
+        self.on_despawn = self.on_despawn or []
+        self.on_interrupt = self.on_interrupt or []

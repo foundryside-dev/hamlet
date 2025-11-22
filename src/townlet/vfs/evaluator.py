@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from enum import Enum
+from typing import Any
 
 import torch
 
@@ -106,3 +107,16 @@ class VFSEvaluator:
             context.vfs[var.name] = value
 
         return result
+
+    def evaluate_all(self, registry: Any) -> dict[str, torch.Tensor]:
+        """Utility for benchmarks: return a snapshot of current VFS values."""
+        snapshot: dict[str, torch.Tensor] = {}
+        # Capture globals
+        if hasattr(registry, "list_global") and hasattr(registry, "get_global"):
+            for name in registry.list_global():
+                snapshot[f"global.{name}"] = registry.get_global(name)
+        # Capture agent values (batched tensors)
+        if hasattr(registry, "list_agent") and hasattr(registry, "get_agent"):
+            for name in registry.list_agent():
+                snapshot[f"agent.{name}"] = registry.get_agent(name)
+        return snapshot

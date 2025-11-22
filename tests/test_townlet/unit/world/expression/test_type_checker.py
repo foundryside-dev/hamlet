@@ -180,6 +180,110 @@ class TestPathAccess:
 
         assert result_type == "bool"
 
+    def test_type_check_agent_reference_traversal(self):
+        """Agent references resolve through target.* schema entries."""
+        schema = {
+            "vfs.friend": "agent_ref",
+            "target.vfs.energy": "float",
+            "target.bar.energy": "float",
+        }
+        checker = TypeChecker(schema=schema)
+
+        vfs_path = PathAccess(segments=["vfs", "friend", "vfs", "energy"])
+        bar_path = PathAccess(segments=["vfs", "friend", "bar", "energy"])
+
+        assert checker.check(vfs_path) == "float"
+        assert checker.check(bar_path) == "float"
+
+    def test_type_check_item_reference_traversal(self):
+        """Item references map into self.vfs schema entries."""
+        schema = {
+            "vfs.held_item": "item_ref",
+            "self.vfs.quality": "float",
+        }
+        checker = TypeChecker(schema=schema)
+
+        vfs_path = PathAccess(segments=["vfs", "held_item", "vfs", "quality"])
+
+        assert checker.check(vfs_path) == "float"
+
+    def test_type_check_target_reference_traversal(self):
+        """Reference traversal under target.* prefix is supported."""
+        schema = {
+            "target.vfs.friend": "agent_ref",
+            "target.vfs.held_item": "item_ref",
+            "target.vfs.energy": "float",
+            "target.bar.energy": "float",
+            "self.vfs.quality": "float",
+        }
+        checker = TypeChecker(schema=schema)
+
+        agent_ref_path = PathAccess(segments=["target", "vfs", "friend", "vfs", "energy"])
+        bar_ref_path = PathAccess(segments=["target", "vfs", "friend", "bar", "energy"])
+        item_ref_path = PathAccess(segments=["target", "vfs", "held_item", "vfs", "quality"])
+
+        assert checker.check(agent_ref_path) == "float"
+        assert checker.check(bar_ref_path) == "float"
+        assert checker.check(item_ref_path) == "float"
+
+    def test_type_check_self_reference_traversal(self):
+        """Reference traversal under self.* prefix is supported."""
+        schema = {
+            "self.vfs.friend": "agent_ref",
+            "target.vfs.energy": "float",
+            "target.bar.energy": "float",
+        }
+        checker = TypeChecker(schema=schema)
+
+        agent_ref_path = PathAccess(segments=["self", "vfs", "friend", "vfs", "energy"])
+        bar_ref_path = PathAccess(segments=["self", "vfs", "friend", "bar", "energy"])
+
+        assert checker.check(agent_ref_path) == "float"
+        assert checker.check(bar_ref_path) == "float"
+
+    def test_type_check_multi_hop_reference_traversal(self):
+        """Nested reference chains resolve recursively."""
+        schema = {
+            "vfs.friend": "agent_ref",
+            "target.vfs.friend": "agent_ref",
+            "target.vfs.energy": "float",
+            "target.bar.energy": "float",
+            "target.vfs.held_item": "item_ref",
+            "self.vfs.quality": "float",
+        }
+        checker = TypeChecker(schema=schema)
+
+        double_agent = PathAccess(segments=["vfs", "friend", "vfs", "friend", "vfs", "energy"])
+        agent_bar = PathAccess(segments=["vfs", "friend", "vfs", "friend", "bar", "energy"])
+        item_chain = PathAccess(segments=["vfs", "friend", "vfs", "held_item", "vfs", "quality"])
+
+        assert checker.check(double_agent) == "float"
+        assert checker.check(agent_bar) == "float"
+        assert checker.check(item_chain) == "float"
+
+    def test_type_check_nested_reference_traversal(self):
+        """Nested references are resolved recursively."""
+        schema = {
+            "vfs.friend": "agent_ref",
+            "target.vfs.friend": "agent_ref",
+            "target.vfs.energy": "float",
+        }
+        checker = TypeChecker(schema=schema)
+
+        nested = PathAccess(segments=["vfs", "friend", "vfs", "friend", "vfs", "energy"])
+        assert checker.check(nested) == "float"
+
+    def test_type_check_target_prefixed_multi_hop_reference(self):
+        """Reference chains rooted at target.* resolve across multiple hops."""
+        schema = {
+            "target.vfs.friend": "agent_ref",
+            "target.vfs.energy": "float",
+        }
+        checker = TypeChecker(schema=schema)
+
+        nested = PathAccess(segments=["target", "vfs", "friend", "vfs", "friend", "vfs", "energy"])
+        assert checker.check(nested) == "float"
+
 
 class TestVariable:
     """Test type checking for variables."""

@@ -296,17 +296,58 @@ class VectorizedHamletEnv:
                 # Global variables have empty readable_by/writable_by (managed by evaluator)
                 # VFS profiles use "int"/"float"/"bool" but VariableDef uses "scalar"/"bool"
                 # Expression-based variables have initial_value=None, use 0.0 as placeholder (evaluator will overwrite)
-                default_value = var.initial_value if var.initial_value is not None else (0.0 if var.type in ("int", "float") else False)
-                var_type = "scalar" if var.type in ("int", "float") else var.type
+                if var.type in ("agent_ref", "item_ref"):
+                    default_value = var.initial_value  # None -> sentinel (-1) in registry
+                else:
+                    default_value = var.initial_value if var.initial_value is not None else (0.0 if var.type in ("int", "float") else False)
+                if var.type in ("int", "float"):
+                    var_type = "scalar"
+                elif var.type in {"tensor1d", "tensor2d", "tensor3d", "tensorNd"}:
+                    var_type = var.type
+                else:
+                    var_type = var.type
                 var_def = VariableDef(
                     id=var.name,
                     scope="global",
-                    type=cast(Literal["scalar", "bool"], var_type),
+                    type=cast(Literal["scalar", "bool", "tensor1d", "tensor2d", "tensor3d", "tensorNd"], var_type),
                     default=default_value,
                     lifetime="persistent",  # Global variables persist across steps
                     readable_by=["agent", "engine"],  # Global vars readable by all
                     writable_by=["engine"],  # Only engine can write
                     description="Global VFS variable from vfs_profiles.yaml",
+                    shape=getattr(var, "shape", None),
+                    dims=getattr(var, "dims", None),
+                    initial_value_mode=getattr(var, "initial_value_mode", None),
+                    initial_value_params=getattr(var, "initial_value_params", None),
+                )
+                self.vfs_variables.append(var_def)
+
+        # Add agent variables from vfs_profiles (if present)
+        if universe.compiled_vfs_profiles is not None and universe.compiled_vfs_profiles.agent_profile is not None:
+            for var in universe.compiled_vfs_profiles.agent_profile.variables:
+                if var.type in ("agent_ref", "item_ref"):
+                    default_value = var.initial_value  # None -> sentinel (-1) in registry
+                else:
+                    default_value = var.initial_value if var.initial_value is not None else (0.0 if var.type in ("int", "float") else False)
+                if var.type in ("int", "float"):
+                    var_type = "scalar"
+                elif var.type in {"tensor1d", "tensor2d", "tensor3d", "tensorNd"}:
+                    var_type = var.type
+                else:
+                    var_type = var.type
+                var_def = VariableDef(
+                    id=var.name,
+                    scope="agent",
+                    type=cast(Literal["scalar", "bool", "tensor1d", "tensor2d", "tensor3d", "tensorNd"], var_type),
+                    default=default_value,
+                    lifetime="episode",
+                    readable_by=["agent", "engine"],
+                    writable_by=["engine"],  # Engine updates via evaluator
+                    description="Agent VFS variable from vfs_profiles.yaml",
+                    shape=getattr(var, "shape", None),
+                    dims=getattr(var, "dims", None),
+                    initial_value_mode=getattr(var, "initial_value_mode", None),
+                    initial_value_params=getattr(var, "initial_value_params", None),
                 )
                 self.vfs_variables.append(var_def)
 
@@ -346,6 +387,14 @@ class VectorizedHamletEnv:
                 else:
                     # Preserve existing behavior but stay valid for pydantic (will raise if both missing)
                     payload["initial_value"] = None
+                if getattr(var, "shape", None) is not None:
+                    payload["shape"] = var.shape
+                if getattr(var, "dims", None) is not None:
+                    payload["dims"] = var.dims
+                if getattr(var, "initial_value_mode", None) is not None:
+                    payload["initial_value_mode"] = var.initial_value_mode
+                if getattr(var, "initial_value_params", None) is not None:
+                    payload["initial_value_params"] = var.initial_value_params
                 return payload
 
             # Build config objects from compiled profiles
@@ -453,7 +502,9 @@ class VectorizedHamletEnv:
             effects_schema[f"bar.{bar_name}"] = "float"
             effects_schema[f"target.bar.{bar_name}"] = "float"
         for vfs_var in self.vfs_variables:
-            vfs_type = "bool" if vfs_var.type == "bool" else "float"
+            vfs_type = vfs_var.type
+            if vfs_type not in {"bool", "agent_ref", "item_ref"}:
+                vfs_type = "float"
             effects_schema[f"vfs.{vfs_var.id}"] = vfs_type
             effects_schema[f"target.vfs.{vfs_var.id}"] = vfs_type
         self.effects_schema = effects_schema
@@ -599,8 +650,8 @@ class VectorizedHamletEnv:
 
             # Add VFS paths from compiled VFS variables
             for vfs_var in self.vfs_variables:
-                # Simple type inference: bool if type is "bool", else float
-                vfs_type = "bool" if vfs_var.type == "bool" else "float"
+                # Preserve declared type so reference traversal is allowed.
+                vfs_type = vfs_var.type if vfs_var.type in {"agent_ref", "item_ref", "affordance_ref", "effect_ref", "bool"} else "float"
                 schema[f"target.vfs.{vfs_var.id}"] = vfs_type
 
             # Add self.vfs.* paths from compiled item VFS profiles
@@ -608,7 +659,7 @@ class VectorizedHamletEnv:
             if universe.compiled_vfs_profiles and universe.compiled_vfs_profiles.item_profiles:
                 for profile_name, compiled_profile in universe.compiled_vfs_profiles.item_profiles.items():
                     for var in compiled_profile.variables:
-                        vfs_type = "bool" if var.type == "bool" else "float"
+                        vfs_type = var.type if var.type in {"agent_ref", "item_ref", "affordance_ref", "effect_ref", "bool"} else "float"
                         schema[f"self.vfs.{var.name}"] = vfs_type
 
             self.item_manager = ItemManager(

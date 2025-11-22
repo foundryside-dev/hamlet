@@ -1056,15 +1056,24 @@ class UniverseCompiler:
             effects_schema[f"target.bar.{meter.name}"] = "float"
 
         for var in getattr(raw.environment.environment, "variables", []) or []:
-            vfs_type = "bool" if getattr(var, "type", None) == "bool" else "float"
-            effects_schema[f"vfs.{var.name}"] = vfs_type
-            effects_schema[f"target.vfs.{var.name}"] = vfs_type
+            var_type = getattr(var, "type", None)
+            if var_type in ("agent_ref", "item_ref"):
+                effects_schema[f"vfs.{var.name}"] = var_type
+                effects_schema[f"target.vfs.{var.name}"] = var_type
+            else:
+                vfs_type = "bool" if var_type == "bool" else "float"
+                effects_schema[f"vfs.{var.name}"] = vfs_type
+                effects_schema[f"target.vfs.{var.name}"] = vfs_type
 
         if compiled_vfs_profiles and compiled_vfs_profiles.item_profiles:
             for compiled_profile in compiled_vfs_profiles.item_profiles.values():
                 for var in compiled_profile.variables:
-                    vfs_type = "bool" if getattr(var, "type", None) == "bool" else "float"
-                    effects_schema[f"self.vfs.{var.name}"] = vfs_type
+                    var_type = getattr(var, "type", None)
+                    if var_type in ("agent_ref", "item_ref"):
+                        effects_schema[f"self.vfs.{var.name}"] = var_type
+                    else:
+                        vfs_type = "bool" if var_type == "bool" else "float"
+                        effects_schema[f"self.vfs.{var.name}"] = vfs_type
 
         compiled_effect_catalog = self._compile_effects_catalog(
             experiment_dir,
@@ -1638,32 +1647,56 @@ class UniverseCompiler:
             offset += dims
 
         # VFS observations (global + agent + item VFS)
-        # Compute total VFS dimensions from VFS profiles
+        # Compute total VFS dimensions from VFS profiles (flatten tensors/vectors).
         vfs_dim = 0
         item_vfs_dim = 0
 
-        # Global VFS
+        def _var_flat_dim(var: Any) -> int:
+            """Flattened observation width for a compiled VFS variable."""
+            vtype = getattr(var, "type", None)
+            if vtype in {"int", "float", "bool", "agent_ref", "item_ref", "affordance_ref", "effect_ref"}:
+                return 1
+            if vtype in {"vec2i", "vec2f"}:
+                return 2
+            if vtype in {"vec3i", "vec3f"}:
+                return 3
+            if vtype in {"vecNi", "vecNf"}:
+                dims_val = getattr(var, "dims", None)
+                if dims_val is None:
+                    raise ValueError(f"Vector VFS variable '{getattr(var, 'name', '')}' is missing dims for obs_dim calculation.")
+                return int(dims_val)
+            if vtype in {"tensor1d", "tensor2d", "tensor3d", "tensorNd"}:
+                shape = getattr(var, "shape", None)
+                if not shape:
+                    raise ValueError(f"Tensor VFS variable '{getattr(var, 'name', '')}' is missing shape for obs_dim calculation.")
+                prod = 1
+                for dim in shape:
+                    prod *= dim
+                return prod
+            # Default: treat as scalar
+            return 1
+
         if compiled_vfs_profiles is not None:
             if compiled_vfs_profiles.global_profile is not None:
-                vfs_dim += len(compiled_vfs_profiles.global_profile.variables)
+                for var in compiled_vfs_profiles.global_profile.variables:
+                    vfs_dim += _var_flat_dim(var)
 
-            # Agent VFS
             if compiled_vfs_profiles.agent_profile is not None:
-                # Count agent profile variables
-                agent_vars = getattr(compiled_vfs_profiles.agent_profile, "variables", [])
-                vfs_dim += len(agent_vars)
+                for var in getattr(compiled_vfs_profiles.agent_profile, "variables", []):
+                    vfs_dim += _var_flat_dim(var)
 
-            # Item VFS: max_items_per_agent × max_vars_per_profile
+            # Item VFS: max_items_per_agent × max(flat_dim across profiles)
             if compiled_vfs_profiles.item_profiles:
                 item_profiles_dict = compiled_vfs_profiles.item_profiles
                 if item_profiles_dict:
-                    # Get max vars across all item profiles
-                    max_vars = 0
+                    max_profile_dim = 0
                     for profile in item_profiles_dict.values():
                         profile_vars = getattr(profile, "variables", [])
-                        max_vars = max(max_vars, len(profile_vars))
+                        profile_dim = 0
+                        for var in profile_vars:
+                            profile_dim += _var_flat_dim(var)
+                        max_profile_dim = max(max_profile_dim, profile_dim)
 
-                    # Fixed: 3 slots per agent (from items config)
                     max_items_per_agent: int | None = 3
                     if items_catalog is not None:
                         max_items_per_agent = items_catalog.max_items_per_agent
@@ -1676,7 +1709,7 @@ class UniverseCompiler:
                             "Provide items.yaml with item profiles enabled or remove item VFS profiles."
                         )
 
-                    item_vfs_dim = max_items_per_agent * max_vars
+                    item_vfs_dim = max_items_per_agent * max_profile_dim
                     vfs_dim += item_vfs_dim
 
         # Fail fast if item VFS dims are requested without an active item system
@@ -2051,8 +2084,10 @@ class UniverseCompiler:
             env_norm_by_name[var.name] = _convert_normalization(var.name, getattr(var, "normalization", None))
 
         fields: list[VFSObservationField] = []
+        allowed_semantic = {"bars", "spatial", "affordance", "temporal", "custom"}
         for field in obs_spec.fields:
             norm = env_norm_by_name.get(field.name)
+            semantic = field.semantic_type if field.semantic_type in allowed_semantic else "custom"
             fields.append(
                 VFSObservationField(
                     id=field.name,
@@ -2060,7 +2095,7 @@ class UniverseCompiler:
                     exposed_to=["agent"],
                     shape=[field.dims],
                     normalization=norm,
-                    semantic_type=field.semantic_type or "custom",  # type: ignore[arg-type]  # semantic_type is Literal type
+                    semantic_type=semantic,  # type: ignore[arg-type]  # semantic_type is Literal type
                     curriculum_active="MASKED" not in (field.description or ""),
                 )
             )
@@ -2154,17 +2189,28 @@ class UniverseCompiler:
         # User-defined variables (explicit declaration from environment.yaml)
         for var in environment.environment.variables:
             raw_dims = getattr(var, "dims", None)
-            # Treat dims == 1 as scalar; dims > 1 become vecNf
-            is_vector = bool(raw_dims and raw_dims > 1)
+            # Tensor support: expect shape metadata on var.shape when present
+            shape = getattr(var, "shape", None)
+            var_type = getattr(var, "type", None)
+
+            is_tensor = var_type in {"tensor1d", "tensor2d", "tensor3d", "tensorNd"}
+            is_vector = bool(raw_dims and raw_dims > 1 and not is_tensor)
+
             dims = raw_dims if is_vector else None
-            default = [0.0] * raw_dims if is_vector and raw_dims is not None else 0.0
+            default = 0.0
+            if is_tensor:
+                # For tensors, allow shape-backed default broadcasting; use zeros placeholder here.
+                default = None
+            elif is_vector and raw_dims is not None:
+                default = [0.0] * raw_dims
+
             normalization = _convert_normalization(var.name, getattr(var, "normalization", None))
 
             vars_out.append(
                 VariableDef(
                     id=var.name,
                     scope=var.scope,
-                    type="vecNf" if is_vector else "scalar",
+                    type=var_type if is_tensor else ("vecNf" if is_vector else "scalar"),
                     dims=dims,
                     lifetime="tick",
                     readable_by=["agent", "engine"],
@@ -2172,6 +2218,9 @@ class UniverseCompiler:
                     default=default,
                     description=var.description,
                     normalization=normalization,
+                    shape=shape,
+                    initial_value_mode=getattr(var, "initial_value_mode", None),
+                    initial_value_params=getattr(var, "initial_value_params", None),
                 )
             )
         return tuple(vars_out)

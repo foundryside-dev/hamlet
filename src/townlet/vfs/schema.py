@@ -246,9 +246,22 @@ class VariableDef(BaseModel):
         description="Scope: global (shared), agent (per-agent public), agent_private (per-agent private), item (per-item)",
     )
 
-    type: Literal["scalar", "vec2i", "vec3i", "vec2f", "vec3f", "vecNi", "vecNf", "bool"] = Field(
-        description="Variable type (scalar, vector, or bool)",
-    )
+    type: Literal[
+        "scalar",
+        "vec2i",
+        "vec3i",
+        "vec2f",
+        "vec3f",
+        "vecNi",
+        "vecNf",
+        "bool",
+        "agent_ref",
+        "item_ref",
+        "tensor1d",
+        "tensor2d",
+        "tensor3d",
+        "tensorNd",
+    ] = Field(description="Variable type (scalar, vector, bool, reference, or tensor)")
 
     dims: int | None = Field(
         default=None,
@@ -272,6 +285,21 @@ class VariableDef(BaseModel):
 
     default: Any = Field(
         description="Default value (type depends on 'type' field)",
+    )
+
+    shape: list[int] | None = Field(
+        default=None,
+        description="Shape for tensor types (e.g., [10] for tensor1d, [4,4] for tensor2d)",
+    )
+
+    initial_value_mode: Literal["zeros", "ones", "eye", "random_normal", "random_uniform"] | None = Field(
+        default=None,
+        description="Initialization mode for tensor types (defaults to zeros when omitted)",
+    )
+
+    initial_value_params: dict[str, Any] | None = Field(
+        default=None,
+        description="Optional parameters for initialization (mean/std for random_normal, low/high for random_uniform)",
     )
 
     normalization: NormalizationSpec | None = Field(
@@ -299,6 +327,24 @@ class VariableDef(BaseModel):
             if self.dims is not None:
                 raise ValueError(f"Variable '{self.id}' with type '{self.type}' should not have 'dims' field")
         # vec2i, vec3i, vec2f, vec3f have implicit dims (2, 3) - no dims field needed
+
+        # Tensor types require explicit shape and do not use dims
+        if self.type in {"tensor1d", "tensor2d", "tensor3d", "tensorNd"}:
+            if not self.shape:
+                raise ValueError(f"Variable '{self.id}' with type '{self.type}' requires a non-empty 'shape' list")
+            if self.dims is not None:
+                raise ValueError(f"Variable '{self.id}' with type '{self.type}' should not set 'dims'; use 'shape' instead")
+
+            rank = len(self.shape)
+            if self.type == "tensor1d" and rank != 1:
+                raise ValueError(f"Variable '{self.id}' with type 'tensor1d' must have 1D shape, got rank {rank}")
+            if self.type == "tensor2d" and rank != 2:
+                raise ValueError(f"Variable '{self.id}' with type 'tensor2d' must have 2D shape, got rank {rank}")
+            if self.type == "tensor3d" and rank != 3:
+                raise ValueError(f"Variable '{self.id}' with type 'tensor3d' must have 3D shape, got rank {rank}")
+            if self.type == "tensorNd" and rank < 1:
+                raise ValueError(f"Variable '{self.id}' with type 'tensorNd' must have shape of rank ≥1")
+
         return self
 
 

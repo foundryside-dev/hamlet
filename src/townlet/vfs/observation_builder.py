@@ -19,6 +19,38 @@ __all__ = [
 ]
 
 
+def _variable_observation_dim(
+    var_type: str,
+    shape: list[int] | None,
+    scope: str | None = None,
+    *,
+    dims: int | None = None,
+    max_elements: int | None = None,
+) -> int:
+    """Return flattened observation dimensions for a VFS variable type."""
+    if var_type in {"int", "float", "bool", "agent_ref", "item_ref", "affordance_ref", "effect_ref"}:
+        return 1
+    if var_type == "vec2i" or var_type == "vec2f":
+        return 2
+    if var_type == "vec3i" or var_type == "vec3f":
+        return 3
+    if var_type in {"vecNi", "vecNf"}:
+        if dims is None:
+            raise ValueError(f"Vector variable requires dims to compute observation dim (type={var_type}).")
+        return dims
+    if var_type in {"tensor1d", "tensor2d", "tensor3d", "tensorNd"}:
+        if not shape:
+            raise ValueError(f"Tensor variable requires shape to compute observation dim (type={var_type}).")
+        prod = 1
+        for dim in shape:
+            prod *= dim
+        if max_elements is not None and prod > max_elements:
+            raise ValueError(f"Tensor observation dim too large ({prod} > {max_elements}) for type={var_type}, shape={shape}.")
+        return prod
+    # Fallback: treat unknown as scalar to preserve previous behavior
+    return 1
+
+
 @dataclass
 class VFSObservationSpec:
     """Observation dimension specification for VFS variables.
@@ -32,6 +64,7 @@ class VFSObservationSpec:
 
     max_items_per_agent: int = 3  # Fixed inventory size
     max_item_profiles: int = 5  # Fixed profile count for transfer learning
+    max_tensor_elements: int = 1_000_000  # Guardrail for tensor flattening
 
     @property
     def total_vfs_dim(self) -> int:
@@ -58,21 +91,43 @@ class VFSObservationSpec:
         # Global VFS dimensions
         global_dim = 0
         if global_profile is not None:
-            global_dim = len(global_profile.variables)
+            for var in global_profile.variables:
+                global_dim += _variable_observation_dim(
+                    var.type,
+                    getattr(var, "shape", None),
+                    dims=getattr(var, "dims", None),
+                    max_elements=cls.max_tensor_elements,
+                )
 
         # Agent VFS dimensions
         agent_dim = 0
         if agent_profile is not None:
-            agent_dim = len(agent_profile.variables)
+            for var in agent_profile.variables:
+                agent_dim += _variable_observation_dim(
+                    var.type,
+                    getattr(var, "shape", None),
+                    dims=getattr(var, "dims", None),
+                    max_elements=cls.max_tensor_elements,
+                )
 
         # Item VFS dimensions: max_items × max_profiles × vars_per_profile
-        # For now, assume all profiles have same number of variables
-        # (will refactor in Phase 4 with actual item system)
         item_dim = 0
         if item_profiles:
-            # Fixed slots: 3 items × 5 profiles × vars_per_profile
-            max_vars_per_profile = max(len(p.variables) for p in item_profiles)
-            item_dim = 3 * max_vars_per_profile  # Simplified for Phase 2
+            # Compute the maximum flattened dim across profiles; restrict to supported scalar/bool/ref/vector for now.
+            profile_dims = []
+            for profile in item_profiles:
+                dim_sum = 0
+                for var in profile.variables:
+                    dim_sum += _variable_observation_dim(
+                        var.type,
+                        getattr(var, "shape", None),
+                        scope="item",
+                        dims=getattr(var, "dims", None),
+                        max_elements=cls.max_tensor_elements,
+                    )
+                profile_dims.append(dim_sum)
+            max_profile_dim = max(profile_dims) if profile_dims else 0
+            item_dim = cls.max_items_per_agent * max_profile_dim
 
         return cls(
             global_vfs_dim=global_dim,
@@ -106,12 +161,9 @@ def build_vfs_observation(
         global_vars = []
         for var_name in registry.list_global():
             value = registry.get_global(var_name)
-            # Convert bool to float, broadcast to batch
-            if value.dtype == torch.bool:
+            if not torch.is_floating_point(value):
                 value = value.float()
-            # Broadcast singleton to batch
-            value = value.expand(batch_size)
-            global_vars.append(value.unsqueeze(1))  # [batch, 1]
+            global_vars.append(_flatten_to_batch(value, batch_size))
 
         if global_vars:
             global_obs = torch.cat(global_vars, dim=1)  # [batch, global_dim]
@@ -122,10 +174,9 @@ def build_vfs_observation(
         agent_vars = []
         for var_name in registry.list_agent():
             value = registry.get_agent(var_name)
-            # Convert bool to float
-            if value.dtype == torch.bool:
+            if not torch.is_floating_point(value):
                 value = value.float()
-            agent_vars.append(value.unsqueeze(1))  # [batch, 1]
+            agent_vars.append(_flatten_to_batch(value, batch_size, expect_batch=True))
 
         if agent_vars:
             agent_obs = torch.cat(agent_vars, dim=1)  # [batch, agent_dim]
@@ -186,3 +237,28 @@ def build_vfs_observation(
         return torch.cat(components, dim=1)  # [batch, total_vfs_dim]
     else:
         return torch.zeros(batch_size, 0, device=registry.device)
+
+
+def _flatten_to_batch(value: torch.Tensor, batch_size: int, expect_batch: bool = False) -> torch.Tensor:
+    """Ensure value is [batch, flat_dim] and float."""
+    if not torch.is_floating_point(value):
+        value = value.float()
+
+    if expect_batch:
+        if value.dim() == 1:
+            value = value.unsqueeze(1)
+        if value.shape[0] != batch_size:
+            raise ValueError(f"Expected batch size {batch_size}, got {value.shape[0]}")
+        flat = value.reshape(batch_size, -1)
+        return flat
+
+    # Global values: broadcast to batch if missing leading dim
+    if value.dim() >= 1 and value.shape[0] == batch_size:
+        # Already batched; don't double-broadcast
+        pass
+    elif value.dim() == 0:
+        value = value.expand(batch_size)
+    elif value.dim() >= 1:
+        value = value.unsqueeze(0).expand(batch_size, *value.shape)
+    flat = value.reshape(batch_size, -1)
+    return flat

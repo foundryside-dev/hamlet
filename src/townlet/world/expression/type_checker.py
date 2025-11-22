@@ -82,7 +82,6 @@ class TypeChecker(ASTVisitor):
             TypeCheckError: If type checking fails
         """
         result = node.accept(self)
-        # Type cast for mypy - visitor methods return str
         return str(result)
 
     def visit_constant(self, node: Constant) -> str:
@@ -138,10 +137,102 @@ class TypeChecker(ASTVisitor):
         """
         path_str = ".".join(node.segments)
 
-        if path_str not in self.schema:
-            raise TypeCheckError(f"Path '{path_str}' not found in schema. Available paths: {list(self.schema.keys())}")
+        # Direct lookup first
+        if path_str in self.schema:
+            return self.schema[path_str]
 
-        return self.schema[path_str]
+        # Handle reference traversal for vfs.*, self.vfs.*, and target.vfs.* roots.
+        resolved = self._resolve_reference_path(node.segments)
+        if resolved is not None:
+            return resolved
+
+        raise TypeCheckError(f"Path '{path_str}' not found in schema. Available paths: {list(self.schema.keys())}")
+
+    def _resolve_reference_path(self, segments: list[str]) -> str | None:
+        """Resolve reference traversals recursively from vfs./target.vfs./self.vfs. roots."""
+        if len(segments) < 2:
+            return None
+
+        # Normalize starting prefix and strip root tokens
+        prefix: str | None = None
+        remaining = segments
+        if remaining[0] in {"target", "self"}:
+            if len(remaining) < 3 or remaining[1] != "vfs":
+                return None
+            prefix = remaining[0]
+            remaining = remaining[1:]
+        elif remaining[0] != "vfs":
+            return None
+
+        def resolve(current_prefix: str | None, segs: list[str]) -> str:
+            if len(segs) < 2 or segs[0] != "vfs":
+                raise TypeCheckError(f"Invalid reference traversal starting at '{'.'.join(segs)}'")
+
+            ref_name = segs[1]
+            key_prefix = f"{current_prefix}." if current_prefix else ""
+            key = f"{key_prefix}vfs.{ref_name}"
+            ref_type = self.schema.get(key)
+            if ref_type is None:
+                raise TypeCheckError(f"Reference traversal requires schema entry for '{key}'")
+
+            tail = segs[2:]
+
+            # Reference hop
+            if ref_type in {"agent_ref", "item_ref"}:
+                if not tail:
+                    raise TypeCheckError(f"Reference '{ref_name}' must be followed by '.vfs.<name>' or '.bar.<name>'")
+                hop_kind, *rest = tail
+                next_prefix = "target" if ref_type == "agent_ref" else "self"
+
+                if hop_kind == "bar":
+                    if not rest:
+                        raise TypeCheckError("Reference traversal missing bar name")
+                    bar_key = f"{next_prefix}.bar.{'.'.join(rest)}"
+                    inferred = self.schema.get(bar_key)
+                    if inferred is None:
+                        raise TypeCheckError(
+                            f"Path '{'.'.join(segments)}' not found in schema after reference resolution. Checked '{bar_key}'."
+                        )
+                    return inferred
+
+                if hop_kind != "vfs":
+                    raise TypeCheckError(f"Invalid reference traversal segment '{hop_kind}'. Expected 'vfs' or 'bar' after reference.")
+
+                # Recurse into next reference chain
+                return resolve(next_prefix, ["vfs", *rest])
+
+            # Non-reference leaf
+            if tail:
+                raise TypeCheckError(f"Cannot traverse beyond non-reference variable '{ref_name}' (path '{'.'.join(segments)}').")
+            return ref_type
+
+        return resolve(prefix, remaining)
+
+    def _lookup_ref_type(self, prefix: str | None, ref_name: str) -> str | None:
+        """Look up ref type from available schema keys."""
+        candidate_keys = []
+        if prefix:
+            candidate_keys.append(f"{prefix}.vfs.{ref_name}")
+        for key in (f"vfs.{ref_name}", f"target.vfs.{ref_name}", f"self.vfs.{ref_name}"):
+            if key not in candidate_keys:
+                candidate_keys.append(key)
+        return next((self.schema[key] for key in candidate_keys if key in self.schema), None)
+
+    def _fallback_target_lookup(self, tail: list[str], path_str: str) -> str:
+        """Fallback: look up tail as target.vfs.<...> after recursion."""
+        target_path = f"target.vfs.{'.'.join(tail[1:])}"
+        inferred = self.schema.get(target_path)
+        if inferred is None:
+            raise TypeCheckError(f"Path '{path_str}' not found in schema after reference resolution. Checked '{target_path}'.")
+        return inferred
+
+    def _fallback_item_lookup(self, tail: list[str], path_str: str) -> str:
+        """Fallback: look up tail as self.vfs.<...> after recursion for item refs."""
+        target_path = f"self.vfs.{'.'.join(tail[1:])}"
+        inferred = self.schema.get(target_path)
+        if inferred is None:
+            raise TypeCheckError(f"Path '{path_str}' not found in schema after reference resolution. Checked '{target_path}'.")
+        return inferred
 
     def visit_binary_op(self, node: BinaryOp) -> str:
         """Type check binary operation.

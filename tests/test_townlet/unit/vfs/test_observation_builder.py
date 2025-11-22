@@ -1,5 +1,6 @@
 """Tests for VFS observation builder integration."""
 
+import pytest
 import torch
 
 from townlet.config.vfs_profiles_config import (
@@ -54,6 +55,23 @@ def test_vfs_obs_spec_agent_variables():
     assert spec.global_vfs_dim == 0
     assert spec.agent_vfs_dim == 3
     assert spec.total_vfs_dim == 3
+
+
+def test_vfs_obs_spec_vecn_dimensions():
+    """Variable dims are honored for vecNi/vecNf variables."""
+    agent_profile = AgentVFSProfileConfig(
+        variables=[
+            AgentVFSVariableConfig(name="heading", type="vecNi", dims=4, initial_value=[0, 0, 1, 0]),
+        ]
+    )
+
+    spec = VFSObservationSpec.from_profiles(
+        global_profile=None,
+        agent_profile=agent_profile,
+        item_profiles=[],
+    )
+
+    assert spec.agent_vfs_dim == 4
 
 
 def test_vfs_obs_spec_complete():
@@ -119,22 +137,26 @@ def test_build_vfs_observation_agent_only():
     registry = ScopedVariableRegistry(device=torch.device("cpu"))
     registry.set_agent("motivation", torch.tensor([1.0, 0.8, 1.2]))
     registry.set_agent("is_crisis", torch.tensor([False, True, False]))
+    registry.set_agent("target_ref", torch.tensor([1, 0, 2], dtype=torch.long))
+    registry.set_agent("tensor_feat", torch.ones((3, 2, 2)))
 
     spec = VFSObservationSpec(
         global_vfs_dim=0,
-        agent_vfs_dim=2,
+        agent_vfs_dim=7,
         item_vfs_dim=0,
     )
 
     batch_size = 3
     obs = build_vfs_observation(registry, spec, batch_size)
 
-    # Shape: [batch, total_vfs_dim] = [3, 2]
-    assert obs.shape == (batch_size, 2)
+    # Shape: [batch, total_vfs_dim] = [3, 7]
+    assert obs.shape == (batch_size, 7)
 
     # Agent values per agent
     assert torch.equal(obs[:, 0], torch.tensor([1.0, 0.8, 1.2]))
     assert torch.equal(obs[:, 1], torch.tensor([0.0, 1.0, 0.0]))  # bool -> float
+    assert torch.equal(obs[:, 2], torch.tensor([1.0, 0.0, 2.0]))  # long -> float
+    assert torch.equal(obs[:, 3:], torch.ones(batch_size, 4))  # flattened tensor_feat
 
 
 def test_build_vfs_observation_complete():
@@ -170,6 +192,62 @@ def test_build_vfs_observation_complete():
 
     # Item slots zero-filled (stubbed for Phase 2)
     assert torch.equal(obs[:, 2:5], torch.zeros(batch_size, 3))
+
+
+def test_build_vfs_observation_flattens_tensors():
+    """Tensor-shaped values are flattened per agent."""
+    registry = ScopedVariableRegistry(device=torch.device("cpu"))
+    # Global 2x2 tensor -> 4 dims
+    registry.set_global("matrix", torch.tensor([[1.0, 2.0], [3.0, 4.0]]))
+    # Agent 2x2 tensor -> 4 dims
+    registry.set_agent("embedding", torch.ones((3, 2, 2)))
+
+    spec = VFSObservationSpec(
+        global_vfs_dim=4,
+        agent_vfs_dim=4,
+        item_vfs_dim=0,
+    )
+
+    batch_size = 3
+    obs = build_vfs_observation(registry, spec, batch_size)
+
+    assert obs.shape == (batch_size, 8)
+    # First four dims: broadcasted global tensor flattened
+    expected_global = torch.tensor([[1.0, 2.0, 3.0, 4.0]]).expand(batch_size, -1)
+    assert torch.equal(obs[:, :4], expected_global)
+    # Next four dims: agent tensor flattened per agent
+    assert torch.equal(obs[:, 4:], torch.ones(batch_size, 4))
+
+
+def test_vfs_observation_spec_tensor_dims_with_guardrail():
+    """Spec computation respects tensor shape and guardrails."""
+    global_profile = GlobalVFSProfileConfig(
+        variables=[
+            GlobalVFSVariableConfig(name="g_tensor", type="tensor1d", shape=[4], initial_value_mode="ones"),
+        ]
+    )
+
+    spec = VFSObservationSpec.from_profiles(
+        global_profile=global_profile,
+        agent_profile=None,
+        item_profiles=[],
+    )
+
+    assert spec.global_vfs_dim == 4
+    assert spec.agent_vfs_dim == 0
+
+    # Guardrail: too-large tensor should raise
+    big_global_profile = GlobalVFSProfileConfig(
+        variables=[
+            GlobalVFSVariableConfig(name="big", type="tensor2d", shape=[2000, 2000], initial_value=0),
+        ]
+    )
+    with pytest.raises(ValueError):
+        VFSObservationSpec.from_profiles(
+            global_profile=big_global_profile,
+            agent_profile=None,
+            item_profiles=[],
+        )
 
 
 # Step 5: obs_dim stability test

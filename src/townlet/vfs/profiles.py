@@ -36,6 +36,10 @@ class CompiledVariable:
     ast: ASTNode | None = None  # None if initial_value
     initial_value: int | float | bool | list | None = None
     result_type: str | None = None  # Inferred type from type checker
+    shape: list[int] | None = None
+    initial_value_mode: str | None = None
+    initial_value_params: dict | None = None
+    dims: int | None = None
 
 
 @dataclass
@@ -230,6 +234,10 @@ class VFSProfileCompiler:
                 ast=None,
                 initial_value=var.initial_value,
                 result_type=var.type,
+                shape=getattr(var, "shape", None),
+                initial_value_mode=getattr(var, "initial_value_mode", None),
+                initial_value_params=getattr(var, "initial_value_params", None),
+                dims=getattr(var, "dims", None),
             )
 
         # Variable with expression
@@ -251,6 +259,10 @@ class VFSProfileCompiler:
             ast=ast,
             initial_value=None,
             result_type=result_type,
+            shape=getattr(var, "shape", None),
+            initial_value_mode=getattr(var, "initial_value_mode", None),
+            initial_value_params=getattr(var, "initial_value_params", None),
+            dims=getattr(var, "dims", None),
         )
 
     def compile_global_profile(self, profile: GlobalVFSProfileConfig, bar_schema: dict[str, str] | None = None) -> CompiledGlobalProfile:

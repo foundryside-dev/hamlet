@@ -74,6 +74,8 @@ class VariableRegistry:
         self.max_items = max_items
         self.device = device
         self.item_profiles: dict[str, Any] = item_profiles or {}  # Store compiled profiles
+        # Guardrail for tensor allocations
+        self._max_tensor_elements = 1_000_000
 
         # Store variable definitions by ID, guarding against duplicate IDs
         self._definitions: dict[str, VariableDef] = {}
@@ -92,8 +94,12 @@ class VariableRegistry:
         self.item_vfs: torch.Tensor | None = None
         self.item_var_to_index: dict[str, int] = {}
         self.item_profile_map: dict[str, dict[str, int]] = {}  # {profile_name → {var_name → index}}
+        self.item_profile_type_map: dict[str, dict[str, str]] = {}  # {profile_name → {var_name → type}}
         self.item_vfs_index_to_profile: dict[int, str] = {}  # {vfs_index → profile_name}
         self._initialize_item_storage_from_profiles()
+
+        # Guardrail for tensor allocations
+        self._max_tensor_elements = 1_000_000
 
     @property
     def variables(self) -> dict[str, VariableDef]:
@@ -134,6 +140,20 @@ class VariableRegistry:
                         device=self.device,
                         dtype=torch.float32,
                     )
+            elif var_def.type in ("agent_ref", "item_ref"):
+                default_value = -1 if var_def.default is None else var_def.default
+                dtype = torch.long
+                if var_def.scope == "global":
+                    tensor = torch.tensor(default_value, device=self.device, dtype=dtype)
+                else:
+                    tensor = torch.full(
+                        (self.num_agents,),
+                        default_value,
+                        device=self.device,
+                        dtype=dtype,
+                    )
+            elif var_def.type in ("tensor1d", "tensor2d", "tensor3d", "tensorNd"):
+                tensor = self._initialize_tensor(var_def)
             elif var_def.type in ("vecNi", "vecNf", "vec2i", "vec3i"):
                 base_default = self._build_vector_default(var_def)
 
@@ -176,11 +196,17 @@ class VariableRegistry:
             agent scalar: (num_agents,)
             agent vector (dims=2): (num_agents, 2)
         """
-        if var_def.type == "scalar" or var_def.type == "bool":
+        if var_def.type in ("scalar", "bool", "agent_ref", "item_ref"):
             if var_def.scope == "global":
                 return ()  # Shape []
             else:
                 return (self.num_agents,)  # Shape [num_agents]
+        if var_def.type in ("tensor1d", "tensor2d", "tensor3d", "tensorNd"):
+            if not var_def.shape:
+                raise ValueError(f"Tensor variable '{var_def.id}' requires a shape")
+            if var_def.scope == "global":
+                return tuple(var_def.shape)
+            return (self.num_agents, *tuple(var_def.shape))
 
         elif var_def.type == "vec2i":
             dims = 2
@@ -310,6 +336,75 @@ class VariableRegistry:
             tensor[:copy_len] = default_tensor
         return tensor
 
+    def _initialize_tensor(self, var_def: VariableDef) -> torch.Tensor:
+        """Initialize tensor variables (tensor1d/2d/3d/Nd) with optional modes."""
+        if not var_def.shape:
+            raise ValueError(f"Tensor variable '{var_def.id}' is missing required shape")
+
+        shape = list(var_def.shape)
+        total_elements = 1
+        for dim in shape:
+            total_elements *= dim
+        if total_elements > self._max_tensor_elements:
+            raise ValueError(f"Tensor variable '{var_def.id}' shape {shape} exceeds max supported elements ({self._max_tensor_elements}).")
+        mode = var_def.initial_value_mode or "zeros"
+        params = var_def.initial_value_params or {}
+
+        # Build full shape including batch dim for agent/agent_private scopes
+        if var_def.scope in (VariableScope.AGENT, VariableScope.AGENT_PRIVATE):
+            full_shape = [self.num_agents, *shape]
+        elif var_def.scope == VariableScope.GLOBAL:
+            full_shape = shape
+        else:
+            # ITEM tensors are not supported in VariableRegistry; handled via item_vfs_profiles.
+            raise ValueError(f"Tensor variables are not supported for scope '{var_def.scope}' in VariableRegistry.")
+
+        if mode == "zeros":
+            base = torch.zeros(full_shape, device=self.device, dtype=torch.float32)
+        elif mode == "ones":
+            base = torch.ones(full_shape, device=self.device, dtype=torch.float32)
+        elif mode == "eye":
+            if len(shape) != 2 or shape[0] != shape[1]:
+                raise ValueError(f"initial_value_mode 'eye' requires square 2D shape; got {shape}")
+            eye = torch.eye(shape[0], device=self.device, dtype=torch.float32)
+            base = eye.unsqueeze(0).expand(full_shape[0], -1, -1).clone() if var_def.scope != VariableScope.GLOBAL else eye
+        elif mode == "random_normal":
+            mean = float(params.get("mean", 0.0))
+            std = float(params.get("std", 1.0))
+            base = torch.normal(mean, std, size=tuple(full_shape), device=self.device)
+        elif mode == "random_uniform":
+            low = float(params.get("low", 0.0))
+            high = float(params.get("high", 1.0))
+            base = torch.rand(tuple(full_shape), device=self.device) * (high - low) + low
+        else:
+            raise ValueError(f"Unknown initial_value_mode '{mode}' for tensor variable '{var_def.id}'")
+
+        if var_def.default is not None:
+            # Allow explicit default override if provided; broadcast if necessary.
+            explicit = torch.tensor(var_def.default, device=self.device, dtype=torch.float32)
+            if var_def.scope in (VariableScope.AGENT, VariableScope.AGENT_PRIVATE):
+                if explicit.dim() == len(shape):
+                    explicit = explicit.unsqueeze(0)
+                elif explicit.dim() == len(shape) + 1 and explicit.shape[0] not in {1, full_shape[0]}:
+                    raise ValueError(
+                        f"Default for tensor variable '{var_def.id}' must have leading dim 1 or {full_shape[0]}, "
+                        f"got {tuple(explicit.shape)}"
+                    )
+
+            if explicit.shape == torch.Size(full_shape):
+                pass
+            else:
+                try:
+                    explicit = explicit.expand(full_shape)
+                except RuntimeError as exc:
+                    raise ValueError(
+                        f"Cannot broadcast default for tensor variable '{var_def.id}' from shape {tuple(explicit.shape)} "
+                        f"to {tuple(full_shape)}"
+                    ) from exc
+            base = explicit.clone()
+
+        return base
+
     def _initialize_item_storage_from_profiles(self) -> None:
         """Initialize item VFS storage from compiled profiles.
 
@@ -346,9 +441,12 @@ class VariableRegistry:
 
         for profile_name, profile in self.item_profiles.items():
             var_map = {}
+            type_map = {}
             for idx, var in enumerate(profile.variables):
                 var_map[var.name] = idx
+                type_map[var.name] = getattr(var, "type", "scalar")
             self.item_profile_map[profile_name] = var_map
+            self.item_profile_type_map[profile_name] = type_map
 
     def read(
         self,
@@ -537,6 +635,19 @@ class VariableRegistry:
             vfs_index: Item VFS index
         """
         self.item_vfs_index_to_profile.pop(vfs_index, None)
+
+    def get_variable_type(self, variable_id: str) -> str | None:
+        """Return declared type for a variable (agent/global scopes)."""
+        var = self._definitions.get(variable_id)
+        return getattr(var, "type", None) if var else None
+
+    def get_item_variable_type(self, profile_name: str, variable_id: str) -> str | None:
+        """Return declared type for an item-scoped variable."""
+        return self.item_profile_type_map.get(profile_name, {}).get(variable_id)
+
+    def get_item_profile_for_index(self, vfs_index: int) -> str | None:
+        """Return profile name for a given item VFS index (if registered)."""
+        return self.item_vfs_index_to_profile.get(vfs_index)
 
 
 class ScopedVariableRegistry:

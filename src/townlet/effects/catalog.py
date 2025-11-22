@@ -77,10 +77,13 @@ class EffectCatalog:
 
             # Compile (validate) if schema provided
             if compiler:
-                compiler.compile_commands(on_spawn)
-                compiler.compile_commands(on_tick)
-                compiler.compile_commands(on_despawn)
-                compiler.compile_commands(on_interrupt)
+                try:
+                    compiler.compile_commands(on_spawn)
+                    compiler.compile_commands(on_tick)
+                    compiler.compile_commands(on_despawn)
+                    compiler.compile_commands(on_interrupt)
+                except Exception as exc:  # pragma: no cover - error path
+                    raise type(exc)(f"Effect '{defn.id}' failed to compile: {exc}") from exc
 
             compiled = CompiledEffect(
                 id=defn.id,

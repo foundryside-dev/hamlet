@@ -52,8 +52,8 @@ class ActiveEffect:
     duration_remaining: int  # Ticks until despawn
     elapsed_ticks: int  # How long active
     spawn_step: int  # When it was created
-    observable: bool  # Whether the effect is exposed in observations
-    effect_index: int  # Stable integer ID for observation encoding
+    observable: bool = True  # Whether the effect is exposed in observations
+    effect_index: int = -1  # Stable integer ID for observation encoding
 
 
 class EffectManager:

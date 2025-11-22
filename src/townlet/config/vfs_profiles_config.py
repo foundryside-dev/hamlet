@@ -24,20 +24,64 @@ class GlobalVFSVariableConfig(BaseModel):
     """
 
     name: str
-    type: Literal["int", "float", "bool", "vec2i", "vec3i", "agent_ref", "item_ref"]
+    type: Literal[
+        "int",
+        "float",
+        "bool",
+        "vec2i",
+        "vec3i",
+        "vecNi",
+        "vecNf",
+        "agent_ref",
+        "item_ref",
+        "tensor1d",
+        "tensor2d",
+        "tensor3d",
+        "tensorNd",
+    ]
+    dims: int | None = None
+    shape: list[int] | None = None
     initial_value: int | float | bool | list | None = None
+    initial_value_mode: Literal["zeros", "ones", "eye", "random_normal", "random_uniform"] | None = None
+    initial_value_params: dict | None = None
     expression: str | None = None
     description: str | None = None
 
     @model_validator(mode="after")
     def validate_value_xor_expression(self):
-        """Exactly one of initial_value or expression must be set."""
+        """Exactly one init source (initial_value or initial_value_mode) or expression must be set."""
         has_value = self.initial_value is not None
+        has_mode = self.initial_value_mode is not None
         has_expr = self.expression is not None
 
-        if has_value == has_expr:  # Both true or both false
-            raise ValueError(f"Variable '{self.name}' must have exactly one of initial_value or expression (not both, not neither)")
+        provided = int(has_value) + int(has_mode) + int(has_expr)
+        if provided == 0:
+            raise ValueError(f"Variable '{self.name}' must provide exactly one of initial_value, initial_value_mode, or expression")
+        if provided > 1:
+            raise ValueError(f"Variable '{self.name}' must choose exactly one of initial_value, initial_value_mode, or expression")
 
+        return self
+
+    @model_validator(mode="after")
+    def validate_tensor_shape(self):
+        """Tensor types require shape metadata."""
+        if self.type in {"tensor1d", "tensor2d", "tensor3d", "tensorNd"}:
+            if not self.shape:
+                raise ValueError(f"Variable '{self.name}' with type '{self.type}' requires a non-empty shape list")
+            rank = len(self.shape)
+            if self.type == "tensor1d" and rank != 1:
+                raise ValueError(f"Variable '{self.name}' with type 'tensor1d' must have 1D shape")
+            if self.type == "tensor2d" and rank != 2:
+                raise ValueError(f"Variable '{self.name}' with type 'tensor2d' must have 2D shape")
+            if self.type == "tensor3d" and rank != 3:
+                raise ValueError(f"Variable '{self.name}' with type 'tensor3d' must have 3D shape")
+            if self.type == "tensorNd" and rank < 1:
+                raise ValueError(f"Variable '{self.name}' with type 'tensorNd' must have shape of rank ≥1")
+        if self.type in {"vecNi", "vecNf"}:
+            if self.dims is None or self.dims < 1:
+                raise ValueError(f"Variable '{self.name}' with type '{self.type}' requires a positive dims value")
+        elif self.dims is not None:
+            raise ValueError(f"Variable '{self.name}' should not set 'dims' when type is '{self.type}'")
         return self
 
 
@@ -75,24 +119,60 @@ class AgentVFSVariableConfig(BaseModel):
         "bool",
         "vec2i",
         "vec3i",
+        "vecNi",
+        "vecNf",
         "agent_ref",
         "item_ref",
         "affordance_ref",
         "effect_ref",
+        "tensor1d",
+        "tensor2d",
+        "tensor3d",
+        "tensorNd",
     ]
+    dims: int | None = None
     initial_value: int | float | bool | list | None = None
+    shape: list[int] | None = None
+    initial_value_mode: Literal["zeros", "ones", "eye", "random_normal", "random_uniform"] | None = None
+    initial_value_params: dict | None = None
     expression: str | None = None
     description: str | None = None
 
     @model_validator(mode="after")
     def validate_value_xor_expression(self):
-        """Exactly one of initial_value or expression must be set."""
+        """Exactly one init source (initial_value or initial_value_mode) or expression must be set."""
         has_value = self.initial_value is not None
+        has_mode = self.initial_value_mode is not None
         has_expr = self.expression is not None
 
-        if has_value == has_expr:
-            raise ValueError(f"Variable '{self.name}' must have exactly one of initial_value or expression (not both, not neither)")
+        provided = int(has_value) + int(has_mode) + int(has_expr)
+        if provided == 0:
+            raise ValueError(f"Variable '{self.name}' must provide exactly one of initial_value, initial_value_mode, or expression")
+        if provided > 1:
+            raise ValueError(f"Variable '{self.name}' must choose exactly one of initial_value, initial_value_mode, or expression")
 
+        return self
+
+    @model_validator(mode="after")
+    def validate_tensor_shape(self):
+        """Tensor types require shape metadata."""
+        if self.type in {"tensor1d", "tensor2d", "tensor3d", "tensorNd"}:
+            if not self.shape:
+                raise ValueError(f"Variable '{self.name}' with type '{self.type}' requires a non-empty shape list")
+            rank = len(self.shape)
+            if self.type == "tensor1d" and rank != 1:
+                raise ValueError(f"Variable '{self.name}' with type 'tensor1d' must have 1D shape")
+            if self.type == "tensor2d" and rank != 2:
+                raise ValueError(f"Variable '{self.name}' with type 'tensor2d' must have 2D shape")
+            if self.type == "tensor3d" and rank != 3:
+                raise ValueError(f"Variable '{self.name}' with type 'tensor3d' must have 3D shape")
+            if self.type == "tensorNd" and rank < 1:
+                raise ValueError(f"Variable '{self.name}' with type 'tensorNd' must have shape of rank ≥1")
+        if self.type in {"vecNi", "vecNf"}:
+            if self.dims is None or self.dims < 1:
+                raise ValueError(f"Variable '{self.name}' with type '{self.type}' requires a positive dims value")
+        elif self.dims is not None:
+            raise ValueError(f"Variable '{self.name}' should not set 'dims' when type is '{self.type}'")
         return self
 
 
@@ -148,6 +228,13 @@ class ItemVFSVariableConfig(BaseModel):
         if has_value == has_expr:
             raise ValueError(f"Variable '{self.name}' must have exactly one of initial_value or expression (not both, not neither)")
 
+        return self
+
+    @model_validator(mode="after")
+    def validate_tensor_disallowed(self):
+        """Reject tensor types for item profiles until storage/layout is supported."""
+        if self.type in {"tensor1d", "tensor2d", "tensor3d", "tensorNd"}:
+            raise ValueError(f"Tensor VFS variables are not supported for item profiles yet (variable '{self.name}').")
         return self
 
 

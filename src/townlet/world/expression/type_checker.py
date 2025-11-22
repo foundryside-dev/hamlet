@@ -354,7 +354,37 @@ class TypeChecker(ASTVisitor):
         Raises:
             TypeCheckError: If function unknown or argument types don't match signature
         """
-        raise NotImplementedError("Function call type checking deferred to Phase 2 (requires function registry with signatures)")
+        func = node.function_name
+        arg_types = [arg.accept(self) for arg in node.arguments]
+
+        def _assert_args(expected_count: int) -> None:
+            if len(arg_types) != expected_count:
+                raise TypeCheckError(f"Function '{func}' expects {expected_count} args, got {len(arg_types)}")
+
+        def _is_numeric(t: str) -> bool:
+            return t in {"int", "float"}
+
+        if func in {"max", "min"}:
+            _assert_args(2)
+            if not all(_is_numeric(t) for t in arg_types):
+                raise TypeCheckError(f"Function '{func}' requires numeric args, got {arg_types}")
+            # Promote to float if any float present
+            return "float" if "float" in arg_types else "int"
+
+        if func == "abs":
+            _assert_args(1)
+            if not _is_numeric(arg_types[0]):
+                raise TypeCheckError(f"Function 'abs' requires numeric arg, got {arg_types[0]}")
+            return arg_types[0]
+
+        if func == "clamp":
+            _assert_args(3)
+            if not all(_is_numeric(t) for t in arg_types):
+                raise TypeCheckError(f"Function 'clamp' requires numeric args, got {arg_types}")
+            # Clamp preserves input numeric type
+            return arg_types[0] if arg_types[0] in {"int", "float"} else "float"
+
+        raise TypeCheckError(f"Unknown function '{func}'")
 
     def visit_if_then_else(self, node: IfThenElse) -> str:
         """Type check conditional expression.

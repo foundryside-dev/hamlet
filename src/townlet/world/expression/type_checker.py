@@ -287,11 +287,21 @@ class TypeChecker(ASTVisitor):
             OperatorType.LTE,
             OperatorType.GTE,
         }:
-            if not is_numeric(left_type) or not is_numeric(right_type):
-                raise TypeCheckError(
-                    f"Comparison operator {node.op.value} requires numeric operands, got incompatible types {left_type} and {right_type}"
-                )
-            return "bool"
+            if node.op in {OperatorType.EQ, OperatorType.NEQ}:
+                # Equality/inequality: allow matching types or numeric pair with promotion
+                if left_type == right_type:
+                    return "bool"
+                if is_numeric(left_type) and is_numeric(right_type):
+                    return "bool"
+                raise TypeCheckError(f"Comparison operator {node.op.value} requires compatible operands, got {left_type} and {right_type}")
+            else:
+                # Ordering comparisons are numeric-only
+                if not is_numeric(left_type) or not is_numeric(right_type):
+                    raise TypeCheckError(
+                        f"Comparison operator {node.op.value} requires numeric operands, got incompatible types "
+                        f"{left_type} and {right_type}"
+                    )
+                return "bool"
 
         # Logical operators
         elif node.op in {OperatorType.AND, OperatorType.OR}:

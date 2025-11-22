@@ -81,6 +81,22 @@ class TestBinaryOperators:
 
         assert result_type == "bool"
 
+    def test_type_check_equality_allows_matching_types(self):
+        """Equality supports bool, str, and numeric combos."""
+        checker = TypeChecker(schema={})
+
+        bool_eq = BinaryOp(left=Constant(value=True), op=OperatorType.EQ, right=Constant(value=False))
+        str_eq = BinaryOp(left=Constant(value="a"), op=OperatorType.NEQ, right=Constant(value="b"))
+        mixed_numeric = BinaryOp(left=Constant(value=1), op=OperatorType.EQ, right=Constant(value=1.0))
+
+        assert checker.check(bool_eq) == "bool"
+        assert checker.check(str_eq) == "bool"
+        assert checker.check(mixed_numeric) == "bool"
+
+        bad = BinaryOp(left=Constant(value=True), op=OperatorType.EQ, right=Constant(value="x"))
+        with pytest.raises(TypeCheckError):
+            checker.check(bad)
+
     def test_type_check_logical_operators(self):
         """Logical operators require bool operands."""
         checker = TypeChecker(schema={})

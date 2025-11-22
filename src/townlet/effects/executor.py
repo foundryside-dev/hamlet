@@ -145,6 +145,8 @@ class CommandExecutor:
             self._execute_parallel(command, context)
         elif command.type == CommandType.DELAY:
             self._execute_delay(command, context)
+        elif command.type == CommandType.TRIGGER_CASCADE:
+            self._execute_trigger_cascade(command, context)
         else:
             raise NotImplementedError(f"Command type {command.type} not implemented")
 
@@ -639,6 +641,26 @@ class CommandExecutor:
             context_overrides=context_overrides,
             base_tick=None if context.current_tick is None else context.current_tick,
         )
+
+    def _execute_trigger_cascade(self, command: CommandNode, context: ExecutionContext) -> None:
+        """Invoke a named cascade on current meters."""
+        if context.meter_dynamics is None:
+            raise RuntimeError("trigger_cascade command requires meter_dynamics on ExecutionContext")
+        if command.cascade_id is None:
+            raise ValueError("trigger_cascade requires cascade_id")
+        strength = command.cascade_strength if command.cascade_strength is not None else 1.0
+        if strength <= 0:
+            raise ValueError("trigger_cascade cascade_strength must be positive")
+
+        cascade_fn = getattr(context.meter_dynamics, "apply_named_cascade", None)
+        if cascade_fn is None:
+            raise RuntimeError("MeterDynamics does not expose apply_named_cascade")
+
+        # Expect bars tensors in context.bars (batch-first)
+        updated = cascade_fn(command.cascade_id, context.bars, strength=strength)
+        # Sync bars back into context
+        for name, tensor in updated.items():
+            context.bars[name] = tensor
 
     def _make_eval_context(self, context: ExecutionContext, effect: Any | None = None) -> ExprExecutionContext:
         """Convert ExecutionContext to ExprExecutionContext.

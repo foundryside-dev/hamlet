@@ -172,6 +172,10 @@ class CommandConfig(BaseModel):
     params: dict[str, Any] = Field(default_factory=dict)
     store_in: str | None = None
 
+    # trigger_cascade command: manually trigger a cascade rule
+    trigger_cascade: str | None = None  # cascade_id from optimization data
+    cascade_strength: float | None = 1.0  # strength multiplier
+
     @model_validator(mode="after")
     def validate_exactly_one_command(self) -> CommandConfig:
         """Exactly one command type must be set."""
@@ -198,6 +202,7 @@ class CommandConfig(BaseModel):
             "delay",
             "sample",
             "distribution",
+            "trigger_cascade",
         ]
         set_fields = [f for f in fields if getattr(self, f) is not None]
 
@@ -255,6 +260,12 @@ class CommandConfig(BaseModel):
             missing = [k for k in required[dist] if k not in self.params]
             if missing:
                 raise ValueError(f"sample '{dist}' missing params: {missing}")
+
+        if self.trigger_cascade is not None:
+            if not self.trigger_cascade.strip():
+                raise ValueError("trigger_cascade must be a non-empty cascade_id")
+            if self.cascade_strength is not None and self.cascade_strength <= 0:
+                raise ValueError("cascade_strength must be positive")
 
         return self
 

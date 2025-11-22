@@ -29,10 +29,11 @@ from townlet.config.environment_config import CascadeConfig
 from townlet.config.environment_config import EnvironmentConfig as EnvConfigV21
 from townlet.config.experiment_config import ExperimentConfig
 from townlet.config.items_config import ItemsCatalogConfig, build_item_command_action_name
-from townlet.config.stratum_config import StratumConfig, SubstrateConfig
+from townlet.config.stratum_config import ObservationModeConfig, StratumConfig, SubstrateConfig
 from townlet.config.training_v2_config import TrainingV2Config
 from townlet.config.vfs_profiles_config import VFSProfilesConfig
 from townlet.effects.catalog import EffectCatalog
+from townlet.effects.schema import CommandType
 from townlet.environment.action_config import ActionConfig, ActionSpaceConfig
 from townlet.environment.action_labels import get_labels
 from townlet.environment.affordance_config import AffordanceConfig  # Runtime representation
@@ -78,6 +79,9 @@ MAX_VARIABLES = 200
 MAX_GRID_CELLS = 10000  # 100×100 maximum (DoS protection)
 MAX_CACHE_FILE_SIZE = 10 * 1024 * 1024  # 10MB (cache bomb protection)
 EFFECT_OBSERVATION_SLOTS = 8  # Fixed slots per agent for observable effects
+MAX_ITEM_TYPES = 200
+MAX_VFS_PROFILES = 200
+MAX_SPAWN_RULES_PER_ITEM = 200
 
 
 class UniverseCompiler:
@@ -179,6 +183,19 @@ class UniverseCompiler:
 
         # Validate with Pydantic
         profiles_config = VFSProfilesConfig(**profiles_data)
+
+        profile_count = (
+            int(profiles_config.global_profile is not None)
+            + int(profiles_config.agent_profile is not None)
+            + len(profiles_config.item_profiles or [])
+        )
+        if profile_count > MAX_VFS_PROFILES:
+            raise ValueError(
+                "vfs_profiles.yaml exceeds safety limit for profile count.\n"
+                f"  Experiment: {experiment_dir}\n"
+                f"  Profiles: {profile_count} (max {MAX_VFS_PROFILES})\n"
+                "Reduce VFS profile count to keep config size within guardrails."
+            )
 
         # Compile profiles
         compiler = VFSProfileCompiler()
@@ -1251,6 +1268,8 @@ class UniverseCompiler:
                 action_metadata,
                 day_length=day_length,
             )
+            if compiled_effect_catalog is not None:
+                self._validate_trigger_cascade_ids(compiled_effect_catalog, optimization_data, level_name=level_name)
             vfs_fields = self._build_vfs_observation_fields(obs_spec, raw.environment)
             vfs_variables = self._build_vfs_variables(obs_spec, raw.environment)
 
@@ -1511,6 +1530,34 @@ class UniverseCompiler:
             group_slices=group_slices,
             active_field_uuids=tuple(active_uuids_list),
         )
+
+    @staticmethod
+    def _apply_observation_mode(
+        fields: list[ObservationField],
+        mode_cfg: ObservationModeConfig,
+    ) -> list[ObservationField]:
+        """Filter observation fields based on observation_mode selection."""
+
+        if mode_cfg.mode == "full_auto":
+            return fields
+
+        if mode_cfg.mode == "max_compact":
+            return [f for f in fields if "MASKED" not in (f.description or "")]
+
+        if mode_cfg.mode == "full_manual":
+            includes = mode_cfg.include_fields or []
+            field_lookup = {field.name: field for field in fields}
+            missing = [name for name in includes if name not in field_lookup]
+            if missing:
+                raise ValueError(
+                    f"full_manual observation_mode requested unknown fields: {sorted(missing)}. "
+                    "Check names against ObservationSpec fields."
+                )
+            if not includes:
+                raise ValueError("full_manual observation_mode produced an empty field set; include_fields must match existing fields.")
+            return [field_lookup[name] for name in includes]
+
+        raise ValueError(f"Unsupported observation_mode '{mode_cfg.mode}'.")
 
     def _build_observation_spec(
         self,
@@ -1916,7 +1963,30 @@ class UniverseCompiler:
             )
             offset += temporal_dims
 
-        return ObservationSpec.from_fields(fields=fields)
+        mode_cfg: ObservationModeConfig = getattr(stratum.stratum, "observation_mode", ObservationModeConfig())
+        filtered_fields = self._apply_observation_mode(fields, mode_cfg)
+
+        # Re-index fields after filtering to keep contiguous start/end spans
+        reindexed: list[ObservationField] = []
+        offset = 0
+        for field in filtered_fields:
+            reindexed.append(
+                ObservationField(
+                    uuid=field.uuid,
+                    name=field.name,
+                    type=field.type,
+                    dims=field.dims,
+                    start_index=offset,
+                    end_index=offset + field.dims,
+                    scope=field.scope,
+                    description=field.description,
+                    semantic_type=field.semantic_type,
+                    categorical_labels=field.categorical_labels,
+                )
+            )
+            offset += field.dims
+
+        return ObservationSpec.from_fields(fields=reindexed)
 
     def _build_action_space_metadata(
         self,
@@ -2114,6 +2184,7 @@ class UniverseCompiler:
                 base_depletions[idx] = float(bar.depletion.passive)
 
         cascade_entries: list[dict[str, Any]] = []
+        cascade_by_id: dict[str, list[dict[str, Any]]] = {}
         for cascade in bars.cascades:
             source_idx = meter_lookup.get(cascade.source)
             target_idx = meter_lookup.get(cascade.target)
@@ -2127,14 +2198,15 @@ class UniverseCompiler:
                     parts.append(f"  Unknown target meter: {cascade.target!r}")
                 parts.append("  Valid meters: " + ", ".join(sorted(meter_lookup.keys())))
                 raise ValueError("\n".join(parts))
-            cascade_entries.append(
-                {
-                    "source_idx": source_idx,
-                    "target_idx": target_idx,
-                    "threshold": float(cascade.threshold),
-                    "strength": float(cascade.strength),
-                }
-            )
+            entry = {
+                "source_idx": source_idx,
+                "target_idx": target_idx,
+                "threshold": float(cascade.threshold),
+                "strength": float(cascade.strength),
+            }
+            cascade_entries.append(entry)
+            pair_id = f"{cascade.source}->{cascade.target}"
+            cascade_by_id[pair_id] = cascade_by_id.get(pair_id, []) + [entry]
 
         modulation_entries: list[dict[str, Any]] = []
         for modulation in affordances.modulations:
@@ -2201,11 +2273,79 @@ class UniverseCompiler:
             # v2.1: BarsV2Config does not classify cascades by tier; all
             # meter-to-meter cascades are exposed under a single category
             # consumed by MeterDynamics.apply_secondary_to_primary_effects.
-            cascade_data={"primary_to_pivotal": cascade_entries},
+            cascade_data={"primary_to_pivotal": cascade_entries, **cascade_by_id},
             modulation_data=modulation_entries,
             action_mask_table=action_mask_table,
             affordance_position_map={aff.name: None for aff in affordance_metadata.affordances},
         )
+
+    def _validate_trigger_cascade_ids(
+        self,
+        compiled_effect_catalog: EffectCatalog,
+        optimization_data: OptimizationData,
+        *,
+        level_name: str,
+    ) -> None:
+        """Ensure trigger_cascade commands reference cascades compiled for this level."""
+        valid_ids = set(optimization_data.cascade_data.keys())
+        if not valid_ids:
+            for effect in compiled_effect_catalog.effects.values():
+                for cmd in self._walk_commands(effect):
+                    if cmd.type == CommandType.TRIGGER_CASCADE:
+                        raise ValueError(
+                            "trigger_cascade referenced but no cascades are defined in bars.yaml.\n"
+                            f"  Level: {level_name}\n"
+                            f"  Effect: {effect.id}\n"
+                            "  Define cascades in bars.cascades before using trigger_cascade."
+                        )
+            return
+
+        for effect in compiled_effect_catalog.effects.values():
+            for cmd in self._walk_commands(effect):
+                if cmd.type == CommandType.TRIGGER_CASCADE:
+                    cascade_id = cmd.cascade_id
+                    if not cascade_id or cascade_id not in valid_ids:
+                        raise ValueError(
+                            "trigger_cascade references unknown cascade_id.\n"
+                            f"  Level: {level_name}\n"
+                            f"  Effect: {effect.id}\n"
+                            f"  cascade_id: {cascade_id!r}\n"
+                            f"  Valid cascade ids: {sorted(valid_ids)}"
+                        )
+
+    @staticmethod
+    def _walk_commands(effect: Any):
+        """Yield all CommandNodes from a compiled effect (recursively)."""
+
+        def walk(cmd):
+            yield cmd
+            if cmd.type == CommandType.IF:
+                for child in cmd.then_commands or []:
+                    yield from walk(child)
+                for child in cmd.else_commands or []:
+                    yield from walk(child)
+            elif cmd.type == CommandType.FOR_EACH:
+                for child in cmd.body or cmd.do_commands or []:
+                    yield from walk(child)
+            elif cmd.type == CommandType.SWITCH:
+                for _, body in cmd.cases or []:
+                    for child in body:
+                        yield from walk(child)
+                for child in cmd.default_commands or []:
+                    yield from walk(child)
+            elif cmd.type == CommandType.REDUCE:
+                # reduce has no nested commands; accumulator logic uses expressions only
+                pass
+            elif cmd.type == CommandType.PARALLEL:
+                for child in cmd.parallel_commands or []:
+                    yield from walk(child)
+            elif cmd.type == CommandType.DELAY:
+                for child in cmd.delay_commands or []:
+                    yield from walk(child)
+
+        pipelines = list(effect.on_spawn) + list(effect.on_tick) + list(effect.on_despawn) + list(getattr(effect, "on_interrupt", []) or [])
+        for command in pipelines:
+            yield from walk(command)
 
     def _build_vfs_observation_fields(self, obs_spec: ObservationSpec, environment: EnvConfigV21) -> tuple[VFSObservationField, ...]:
         """Mirror ObservationSpec fields into VFS observation fields for runtime consumption."""
@@ -3032,6 +3172,8 @@ class UniverseCompiler:
             (len(raw_configs.cascades), MAX_CASCADES, "cascades.yaml", "cascades"),
             (len(raw_configs.global_actions.actions), MAX_ACTIONS, "configs/global_actions.yaml", "actions"),
             (len(raw_configs.variables_reference), MAX_VARIABLES, "variables_reference.yaml", "variables"),
+            (len(getattr(raw_configs, "item_types", []) or []), MAX_ITEM_TYPES, "items.yaml", "item types"),
+            (len(getattr(raw_configs, "compiled_vfs_profiles", []) or []), MAX_VFS_PROFILES, "vfs_profiles.yaml", "vfs profiles"),
         )
 
         for count, limit, location, label in checks:
@@ -3789,20 +3931,22 @@ class UniverseCompiler:
             base_depletions[index] = float(getattr(bar, "base_depletion", 0.0))
 
         cascade_data: dict[str, list[dict[str, float]]] = defaultdict(list)
+        cascade_by_id: dict[str, list[dict[str, float]]] = defaultdict(list)
         for cascade in raw_configs.cascades:
             source_idx = meter_lookup.get(cascade.source)
             target_idx = meter_lookup.get(cascade.target)
             if source_idx is None or target_idx is None:
                 continue
             category_key = cascade.category or "uncategorized"
-            cascade_data[category_key].append(
-                {
-                    "source_idx": source_idx,
-                    "target_idx": target_idx,
-                    "threshold": cascade.threshold,
-                    "strength": cascade.strength,
-                }
-            )
+            entry = {
+                "source_idx": source_idx,
+                "target_idx": target_idx,
+                "threshold": cascade.threshold,
+                "strength": cascade.strength,
+            }
+            cascade_data[category_key].append(entry)
+            pair_id = f"{cascade.source}->{cascade.target}"
+            cascade_by_id[pair_id].append(entry)
 
         for category, entries in cascade_data.items():
             entries.sort(key=lambda entry: entry["target_idx"])
@@ -3825,9 +3969,12 @@ class UniverseCompiler:
             aff.id: self._tensorize_affordance_position(getattr(aff, "position", None), torch_device) for aff in raw_configs.affordances
         }
 
+        cascade_payload = dict(cascade_data)
+        cascade_payload.update(cascade_by_id)
+
         return OptimizationData(
             base_depletions=base_depletions,
-            cascade_data=dict(cascade_data),
+            cascade_data=cascade_payload,
             modulation_data=modulation_data,
             action_mask_table=action_mask_table,
             affordance_position_map=affordance_position_map,

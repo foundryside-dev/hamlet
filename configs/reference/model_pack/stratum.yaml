@@ -14,3 +14,5 @@ stratum:
 
   vision_support: both  # global + partial allocated
   temporal_support: enabled
+  observation_mode:
+    mode: full_auto  # full_auto | max_compact | full_manual (manual requires include_fields)

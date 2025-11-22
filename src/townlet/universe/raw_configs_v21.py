@@ -25,6 +25,9 @@ MAX_CASCADES = 500
 MAX_ACTIONS = 300
 MAX_VARIABLES = 200
 MAX_GRID_CELLS = 10_000  # 100×100 maximum (DoS protection)
+MAX_ITEM_TYPES = 200
+MAX_VFS_PROFILES = 200
+MAX_SPAWN_RULES_PER_ITEM = 200
 
 logger = logging.getLogger(__name__)
 
@@ -95,6 +98,16 @@ class RawConfigsV21:
                     f"  Experiment: {self.experiment_dir}\n"
                     f"  File: {filename}\n"
                     "This may indicate config injection, duplication, or an unsafe configuration size."
+                )
+
+        if self.items is not None:
+            item_count = len(self.items.item_types)
+            if item_count > MAX_ITEM_TYPES:
+                raise ValueError(
+                    "items.yaml item_types exceeds safety limit for v2.1 configs.\n"
+                    f"  Experiment: {self.experiment_dir}\n"
+                    f"  Item types: {item_count} (max {MAX_ITEM_TYPES})\n"
+                    "Reduce catalog size; oversized catalogs are rejected."
                 )
 
         # ------------------------------------------------------------------
@@ -229,6 +242,20 @@ class RawConfigsV21:
         for level_name, level in self.levels.items():
             level_meter_names = {meter.name for meter in level.bars.meters}
             level_affordance_names = {aff.name for aff in level.affordances.affordances}
+
+            if level.items_appearance is not None:
+                per_item_rule_counts: dict[str, int] = {}
+                for rule in level.items_appearance.items:
+                    per_item_rule_counts[rule.item_type] = per_item_rule_counts.get(rule.item_type, 0) + 1
+                    if per_item_rule_counts[rule.item_type] > MAX_SPAWN_RULES_PER_ITEM:
+                        raise ValueError(
+                            "items.yaml spawn rules exceed safety limit for a single item type.\n"
+                            f"  Experiment: {self.experiment_dir}\n"
+                            f"  Level: {level_name}\n"
+                            f"  Item type: {rule.item_type}\n"
+                            f"  Rules: {per_item_rule_counts[rule.item_type]} (max {MAX_SPAWN_RULES_PER_ITEM})\n"
+                            "Reduce spawn rules per item to avoid unbounded spawn scheduling."
+                        )
 
             # Vocabulary consistency
             if level_meter_names != env_meter_names:

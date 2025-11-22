@@ -63,21 +63,7 @@ experiment:
     - L2_partial_observability
     - L3_temporal_mechanics
 
-  # Observation management mode (experiment-level, affects obs_dim semantics)
-  # Options:
-  #   - full_auto: System derives observation layout from config, using masking where possible.
-  #   - max_compact: System always drops inactive/unused fields to minimize obs_dim
-  #                  (different curricula may have different obs_dims).
-  #   - full_manual: User specifies the full observation layout explicitly and binds each
-  #                  slice to a variable/profile/preset; obs_dim is fixed by design.
-  #
-  # Rule of thumb:
-  #   - If a setting can change obs_dim, it lives at the experiment level.
-  #   - If it only changes values/masking, it lives at the curriculum/level.
-  #
-  # Reference note: Observation modes are defined here for completeness; current
-  # implementations behave like a constrained "full_auto" with explicit specs.
-  observation_management_mode: full_auto
+  # Observation mode is defined in stratum.yaml (see Section 2).
 
 # =============================================================================
 # SECTION 2: stratum.yaml (World Topology & Supported Observations)
@@ -167,6 +153,14 @@ stratum:
   #   partial : Local window (POMDP) only.
   #   both    : Allocates both; curriculum masks one view.
   #   none    : Blind agent (meters/internal state only).
+
+  # Observation mode (layout strategy)
+  #   full_auto   : include all configured fields (masked fields remain allocated)
+  #   max_compact : drop masked/unused fields to minimize obs_dim
+  #   full_manual : include only explicit include_fields (required)
+  observation_mode:
+    mode: full_auto
+    # include_fields: ["obs_grid_encoding", "obs_meters"]  # required when mode=full_manual
 
   # ---------------------------------------------------------------------------
   # [CONFIG] Temporal Support

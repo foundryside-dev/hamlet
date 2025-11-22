@@ -11,17 +11,17 @@
 
 ### Overall Status
 
-**Total Requirements Evaluated: 97** (QA-REQ-001 not defined, skipped)
+**Total Requirements Evaluated: 97** (QA-REQ-001 skipped)
 
 | Status | Count | Percentage |
 |--------|-------|------------|
-| ✅ **DONE** | **74** | **76.3%** |
-| 🟡 **PARTIAL** | **10** | **10.3%** |
-| ❌ **MISSING** | **11** | **11.3%** |
+| ✅ **DONE** | **85** | **87.6%** |
+| 🟡 **PARTIAL** | **9** | **9.3%** |
+| ❌ **MISSING** | **2** | **2.1%** |
 | 📝 **N/A** | **1** | **1.0%** |
 | ⏭️ **Skipped** | **1** | **1.0%** |
 
-**Key Finding:** The VFS uplift implementation is **76% complete** with strong core infrastructure in place. The 11 remaining missing requirements are primarily item system features and observation modes.
+**Key Finding:** The uplift is **~88% complete**. Major gaps are limited to exclusive/shared item semantics, runtime debug/assertion plumbing, explicit feature-flag gating, and a few doc/QA follow-ups.
 
 ---
 
@@ -37,17 +37,13 @@
 
 ### High Priority Gaps (Should Fix Soon)
 
-1. **Item metadata fields**: Tags, visual metadata, holder tracking - MISSING
-   - Impact: Cannot categorize items, UI lacks metadata, expressions can't query holders
-   - Effort: ~4 hours total for all 3 features
-   - Priority: P2
+- ❌ ITEM-REQ-015: Exclusive vs shared item semantics (runtime + validation + tests)
+- ❌ RUN-REQ-001: Debug instrumentation for spawns/holds/VFS evaluations
+- 🟡 COMP-REQ-010: Explicit feature-flag gating (currently implicit)
+- 🟡 VFS-REQ-006: Profile-level metadata (id/exposed_to/semantic_type/deps)
+- 🟡 QA-REQ-003/004: Metadata-mask parity test and static raw-YAML usage check
 
-2. **Observation modes**: full_auto/max_compact/full_manual - NOT IMPLEMENTED
-   - Impact: Cannot optimize observation dimensions vs stability trade-offs
-   - Effort: ~1-2 days design + implementation
-   - Priority: P2
-
-**Recently cleared:** Continuous substrate interaction_radius validation and VFS profile DTO strictness are now enforced; MAX_COLLECTION_SIZE raised to 256.
+**Recently cleared:** Observation modes (full_auto/max_compact/full_manual) implemented with tests; effects runtime toggles (affordance availability, trigger_cascade) completed end-to-end; cascade IDs now validated against real bars.yaml cascades; resource count limits (MAX_ITEM_TYPES/MAX_VFS_PROFILES/MAX_SPAWN_RULES_PER_ITEM); interaction_radius guard + guide; DTO strictness reaffirmed.
 
 ---
 
@@ -87,7 +83,7 @@
 
 ### Agent 3: VFS System (9 requirements)
 
-**Status:** 6 DONE, 2 PARTIAL, 1 MISSING
+**Status:** 7 DONE, 2 PARTIAL, 0 MISSING
 
 **Key Strengths:**
 - Scoped VFS engine (global/agent/item) fully operational
@@ -112,7 +108,7 @@
 
 ### Agent 4: Items System (17 requirements)
 
-**Status:** 12 DONE, 5 MISSING
+**Status:** 16 DONE, 1 MISSING
 
 **Key Strengths:**
 - Excellent core infrastructure (ItemManager, spawn scheduling, lifecycle, VFS integration)
@@ -121,21 +117,19 @@
 - Conditional spawning with VFS/bar predicates
 
 **MISSING:**
-- ❌ ITEM-REQ-009: Item-scoped custom verbs (local_commands, inventory_commands)
-  - Config schema actively rejects these fields
-  - Implementation needed for range-based and inventory-based item commands
-- ❌ ITEM-REQ-010: Item tags for categorization
-- ❌ ITEM-REQ-011: Item visual metadata (icon, name for UI)
-- ❌ ITEM-REQ-012: Holder agent tracking
 - ❌ ITEM-REQ-015: Exclusive vs shared items
 
-**Recommendation:** Add item metadata fields (holder_agent_id, name, icon, tags) and implement item-scoped custom verbs (local_commands, inventory_commands).
+**Resolved since last report:**
+- ✅ ITEM-REQ-009: Item-scoped custom verbs (local/inventory) compiled, masked, and executed
+- ✅ ITEM-REQ-010/011/012: Tags, visual metadata, and holder tracking required in config and wired through runtime/inventory
+
+**Recommendation:** Implement exclusive vs shared items semantics (ITEM-REQ-015).
 
 ---
 
 ### Agent 5: Effects System (11 requirements)
 
-**Status:** 9 DONE, 2 MISSING
+**Status:** 11 DONE, 0 MISSING
 
 **Key Strengths:**
 - Complete lifecycle management with all 4 reapply policies
@@ -144,22 +138,15 @@
 - Sample command with 6 distributions
 - 23 test files with comprehensive coverage
 
-**MISSING:**
-- ❌ EFF-REQ-007: Affordance availability commands
-  - No runtime modification of `affordance.available`
-  - Impact: Cannot dynamically enable/disable affordances via effects
-
-- ❌ EFF-REQ-008: Cascade trigger command
-  - No explicit `trigger_cascade` command
-  - Impact: Cannot manually trigger cascade rules from effects
-
-**Recommendation:** Implement the 2 missing commands (additive, not blocking current usage).
+**Resolved since last report:**
+- ✅ EFF-REQ-007: Affordance availability commands (effects can toggle `affordance.available`)
+- ✅ EFF-REQ-008: Cascade trigger command (trigger_cascade wired through parser/executor)
 
 ---
 
 ### Agent 6: Commands (11 requirements)
 
-**Status:** 9 DONE, 1 N/A, 1 DOCUMENTATION ISSUE
+**Status:** 9 DONE, 1 PARTIAL (documentation), 1 N/A
 
 **Key Strengths:**
 - Complete implementation of all documented commands
@@ -170,7 +157,7 @@
 **N/A:**
 - 📝 CMD-REQ-011: While loop - explicitly not implemented (as designed)
 
-**DOCUMENTATION ISSUE:**
+**PARTIAL (documentation):**
 - ⚠️ CMD-REQ-009: emit_event status unclear
   - Requirement claims "supported" but documentation marks as "NOT IMPLEMENTED"
   - **Needs clarification:** Should be marked as future work
@@ -184,7 +171,7 @@
 
 ### Agent 7: Observations & Runtime (10 requirements)
 
-**Status:** 6 DONE, 2 PARTIAL, 2 MISSING
+**Status:** 7 DONE, 2 PARTIAL, 1 MISSING
 
 **Key Strengths:**
 - Excellent VFS integration in observations
@@ -193,10 +180,6 @@
 - No zero-stub item VFS (real data populated)
 
 **MISSING:**
-- ❌ OBS-REQ-002: Observation modes (full_auto/max_compact/full_manual)
-  - Design documents specify these modes but not implemented
-  - Impact: Cannot optimize obs_dim vs stability trade-offs
-
 - ❌ RUN-REQ-001: Debug instrumentation
   - No debug flags for logging item spawns/despawns, inventory changes, VFS evaluations
   - Impact: Harder to troubleshoot runtime behavior
@@ -210,7 +193,10 @@
   - Interaction stages implemented with Effects
   - Legacy EffectPipeline references may remain in compiler
 
-**Recommendation:** Implement observation modes (medium priority); add debug instrumentation (nice-to-have).
+**Resolved since report:**
+- ✅ OBS-REQ-002: Observation modes implemented (full_auto/max_compact/full_manual) with spec filtering and tests
+
+**Recommendation:** Add debug instrumentation (nice-to-have).
 
 ---
 
@@ -240,7 +226,7 @@
 
 ### Agent 9: Policy & Documentation (12 requirements)
 
-**Status:** 8 DONE, 3 PARTIAL, 1 MISSING
+**Status:** 11 DONE, 1 PARTIAL, 0 MISSING
 
 **Key Strengths:**
 - Excellent policy enforcement (level-scoped VFS/effects banned)
@@ -248,25 +234,15 @@
 - Comprehensive reference docs for items, VFS profiles, effects
 - Command DSL reference complete
 - Reapply policy examples with timelines
-
-**MISSING:**
-- ❌ DOC-REQ-005: Interaction radius guide
-  - **Critical for continuous substrates**
-  - Impact: Users don't know how to configure interaction_radius
+- Resource count guardrails (item types, VFS profiles, spawn rules) codified with tests
 
 **PARTIAL:**
-- 🟡 LIMIT-REQ-001: Resource count limits
-  - max_items enforced ✅
-  - **Missing:** No limits on profile counts or spawn rule counts
-  - Impact: Config bombs possible (1000s of profiles/rules)
-
-- 🟡 DOC-REQ-003: Observation modes guide
-  - Design exists but no user-facing guide
-
 - 🟡 DOC-REQ-008: Expression context reference
   - Expression paths documented but context variables not consolidated
 
-**Recommendation:** Add resource count limits (P1); create interaction radius guide (P1); consolidate docs (P2).
+**Resolved since last report:** Observation modes guide published; resource guardrails documented; interaction radius guide added.
+
+**Recommendation:** Consolidate expression context doc and add brief emit_event status note.
 
 ---
 
@@ -284,48 +260,18 @@ All safety-critical requirements are implemented:
 
 ## Recommendations by Priority
 
-### Immediate (P1 - Fix This Week)
+### High Priority (P1 – closeout)
+1. **ITEM-REQ-015:** Add exclusive vs shared item semantics (config flag, ItemManager enforcement, inventory ops, tests).
+2. **RUN-REQ-001/002:** Add debug hooks for spawns/despawns/holds/VFS evals and enforce hard inventory bounds instead of silent clipping.
+3. **COMP-REQ-010 + VFS-REQ-006:** Add explicit feature flag gating and profile-level metadata (id/exposed_to/semantic_type/deps) to unblock observation-mode bookkeeping.
 
-All prior immediate code items are done (MAX_COLLECTION_SIZE, interaction_radius guard, VFS profile DTO strictness). Remaining immediate work is documentation-only (interaction radius guide), deferred per current focus.
+### Medium Priority (P2 – follow-up)
+4. **QA-REQ-003/004:** Metadata-mask parity integration test and CI static check that bans raw YAML reads.
+5. **VFS-REQ-008 + CMD-REQ-009:** Clarify/extend update-rule DSL expectations; document emit_event status (supported vs future work).
+6. **DOC-REQ-008:** Publish the expression context reference (variables available to expressions; link to new commands).
 
-### High Priority (P1 - Fix Next Week)
-
-5. **Add item metadata fields:**
-   - holder_agent_id: int | None (1 hour)
-   - name: str, icon: str (30 min)
-   - tags: list[str] (1 hour)
-
-6. **Implement item-scoped custom verbs:**
-   - local_commands (range-based action masking) (4-6 hours)
-   - inventory_commands (held-only action masking) (4-6 hours)
-
-7. **Add resource count limits:**
-   - MAX_ITEM_TYPES, MAX_VFS_PROFILES, MAX_SPAWN_RULES_PER_ITEM (2-3 hours)
-
-8. **Implement missing effects commands:**
-   - Affordance availability modification (EFF-REQ-007) - 2-3 hours
-   - Cascade trigger command (EFF-REQ-008) - 2-3 hours
-
-**Estimated Effort:** 18-24 hours total
-
-### Medium Priority (P2 - Next Sprint)
-
-9. **Implement observation modes** (OBS-REQ-002) - 1-2 days
-10. **Add debug instrumentation** (RUN-REQ-001) - 4-6 hours
-11. **Add profile-level metadata** (VFS-REQ-006) - 4-6 hours
-12. **Add QA tests:**
-    - Metadata-mask parity integration test (QA-REQ-003) - 1 hour
-    - Static usage verification in CI (QA-REQ-004) - 1 hour
-
-**Estimated Effort:** 3-4 days total
-
-### Low Priority (P3 - Backlog)
-
-13. **Clarify VFS-REQ-008** (update rule DSL vs general expressions)
-14. **Clarify CMD-REQ-009** (emit_event status)
-15. **Add exclusive vs shared items** (ITEM-REQ-015) - future enhancement
-16. **Consolidate expression context docs** (DOC-REQ-008)
-17. **Create observation modes guide** (DOC-REQ-003)
+### Low Priority (P3 – hygiene)
+7. **MIG-REQ-001:** Sweep any remaining EffectPipeline references after trigger_cascade/affordance wiring; keep QA watch on new commands.
 
 ---
 
@@ -361,32 +307,18 @@ All prior immediate code items are done (MAX_COLLECTION_SIZE, interaction_radius
 
 ### Areas for Improvement
 
-1. **Observation Modes:** Not implemented (design exists but no code)
-2. **Item Metadata:** Missing tags, visual metadata, holder tracking (quick wins)
-3. **Resource Limits:** Need profile/spawn count caps to prevent config bombs
-4. **Documentation:** Missing interaction radius guide (critical for continuous substrates)
-5. **Minor Discrepancies:** emit_event status
+1. **Exclusive/Shared semantics:** ITEM-REQ-015 still missing; needs config surface + runtime enforcement.
+2. **Gating/metadata:** Explicit feature flag gating (COMP-REQ-010) and profile-level metadata (VFS-REQ-006); clarify update-rule DSL (VFS-REQ-008).
+3. **Runtime visibility:** Add debug hooks and stricter inventory assertions (RUN-REQ-001/002); clean any remaining EffectPipeline references (MIG-REQ-001).
+4. **Docs/QA polish:** Expression context reference, emit_event status note, metadata-mask parity test, and static raw-YAML usage check.
 
 ---
 
 ## Overall Assessment
 
-**Implementation Quality: EXCELLENT (74% complete, strong foundation)**
+**Implementation Quality: EXCELLENT (~88% complete, strong foundation)**
 
-The VFS uplift is production-ready for basic use cases with:
-- ✅ All safety-critical requirements implemented
-- ✅ Robust core infrastructure across all subsystems
-- ✅ Comprehensive test coverage (2,351 tests)
-- ✅ Clean breaking changes without backward compatibility debt
-
-The 12 missing requirements are primarily:
-- **5 item features** (metadata fields + custom verbs - now in scope)
-- **2 effects commands** (affordance/cascade - additive features)
-- **2 observation features** (modes, debug instrumentation - medium effort)
-- **1 compiler validation** (continuous interaction guard - 10 lines)
-- **2 documentation gaps** (interaction radius guide, obs modes guide)
-
-**Recommendation:** Fix P1 items this week (4-6 hours), then address P1 items next week (18-24 hours including item custom verbs). The codebase is ready for merge after P1 fixes with P2 items tracked as follow-up work.
+The uplift now includes observation modes, effect runtime toggles (affordance overrides + trigger_cascade), resource guardrails, and comprehensive tests. Remaining work is tightly scoped (exclusive/shared items, instrumentation/assertions, gating/metadata, doc/QA polish). After those are closed, the branch is ready to merge.
 
 ---
 

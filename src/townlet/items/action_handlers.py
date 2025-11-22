@@ -35,6 +35,8 @@ class ItemActionHandler:
         vfs_registry: VariableRegistry,
         meter_name_to_index: dict[str, int],
         effect_manager: Any | None = None,
+        affordance_overrides: dict[str, bool] | None = None,
+        meter_dynamics: Any | None = None,
     ) -> None:
         """Initialize action handler.
 
@@ -51,6 +53,8 @@ class ItemActionHandler:
         self.vfs_registry = vfs_registry
         self.meter_name_to_index = meter_name_to_index
         self.effect_manager = effect_manager or NullEffectManager()
+        self.affordance_overrides = affordance_overrides
+        self.meter_dynamics = meter_dynamics
         # Cache custom verb specs for masking/dispatch
         self.custom_action_specs = {
             name: (item_type, scope, command_name) for name, item_type, scope, command_name in manager.get_custom_action_specs()
@@ -113,6 +117,8 @@ class ItemActionHandler:
             item_manager=self.manager,
             scheduler=getattr(self.effect_manager, "scheduler", None),
             current_tick=current_tick or 0,
+            affordance_overrides=self.affordance_overrides,
+            meter_dynamics=self.meter_dynamics,
         )
 
         # Execute all commands
@@ -252,6 +258,8 @@ class ItemActionHandler:
             item_manager=self.manager,
             scheduler=getattr(self.effect_manager, "scheduler", None),
             current_tick=current_tick,
+            affordance_overrides=self.affordance_overrides,
+            meter_dynamics=self.meter_dynamics,
         )
 
         for command in commands:

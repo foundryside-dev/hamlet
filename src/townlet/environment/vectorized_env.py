@@ -481,12 +481,15 @@ class VectorizedHamletEnv:
         # If affordances exist but catalog missing, compilation would have failed
 
         self.command_executor = CommandExecutor()
+        self.affordance_overrides: dict[str, bool] = {}
         self.effect_manager = (
             EffectManager(
                 catalog=effect_catalog,
                 command_executor=self.command_executor,
                 device=str(self.device),
                 time_enabled=self.temporal_support_enabled,
+                affordance_overrides=self.affordance_overrides,
+                meter_dynamics=None,  # Patched after meter_dynamics constructed
             )
             if effect_catalog is not None
             else None
@@ -541,6 +544,8 @@ class VectorizedHamletEnv:
             meter_name_to_index=meter_name_to_index,
             device=self.device,
         )
+        if self.effect_manager is not None:
+            self.effect_manager.meter_dynamics = self.meter_dynamics
 
         # Cache action mask table (24 × affordance_count) for temporal mechanics
         self.action_mask_table = self.optimization_data.action_mask_table.to(self.device).clone()
@@ -687,6 +692,8 @@ class VectorizedHamletEnv:
                 vfs_registry=self.vfs_registry,
                 meter_name_to_index=self.meter_name_to_index,
                 effect_manager=self.effect_manager,  # NEW: pass EffectManager for ExecutionContext
+                affordance_overrides=self.affordance_overrides,
+                meter_dynamics=self.meter_dynamics,
             )
         else:
             self.item_manager = None
@@ -725,6 +732,8 @@ class VectorizedHamletEnv:
             command_executor=self.command_executor,
             effect_manager=self.effect_manager,
             item_manager=self.item_manager or NullItemManager(),
+            affordance_overrides=self.affordance_overrides,
+            meter_dynamics=self.meter_dynamics,
         )
 
         # Exploration module (optional, set by population or external code)
@@ -834,6 +843,9 @@ class VectorizedHamletEnv:
 
     def _is_affordance_open(self, affordance_name: str, hour: int | None = None) -> bool:
         """Return True if an affordance is open for the specified (or current) hour."""
+
+        if affordance_name in self.affordance_overrides:
+            return bool(self.affordance_overrides[affordance_name])
 
         if not self.enable_temporal_mechanics:
             return True
@@ -1033,6 +1045,8 @@ class VectorizedHamletEnv:
         self._affordance_streaks = {}
         self._unique_affordances_count.zero_()
         self._affordances_seen = [set() for _ in range(self.num_agents)]
+        # Clear any runtime overrides so each episode starts from configured availability
+        self.affordance_overrides.clear()
 
         # Reset scheduler/delayed work and cancel agent-scoped pending items between episodes
         if self.effect_manager is not None:

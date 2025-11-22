@@ -45,6 +45,8 @@ class ExecutionContext:
     scheduler: Any | None = None  # Scheduler for delay commands
     rng: torch.Generator | None = None
     seed: int | None = None  # Optional deterministic seed for sampling
+    affordance_overrides: dict[str, bool] | None = None  # Runtime affordance availability overrides
+    meter_dynamics: Any | None = None  # Optional MeterDynamics for trigger_cascade
 
     def __post_init__(self) -> None:
         if self.effect_manager is None:
@@ -53,6 +55,8 @@ class ExecutionContext:
             self.item_manager = _NullItemManager()
         if self.bars is None:
             self.bars = {}
+        if self.affordance_overrides is None:
+            self.affordance_overrides = {}
 
     def copy(self, **overrides: Any) -> ExecutionContext:
         """Shallow copy with field overrides for child contexts."""
@@ -142,6 +146,15 @@ class ExecutionContext:
             if bar_name not in self.bars:
                 raise KeyError(f"Bar '{bar_name}' not found. Available: {list(self.bars.keys())}")
             return self.bars[bar_name]
+
+        # Handle affordance availability
+        if path.startswith("affordance.") and path.endswith(".available"):
+            parts = path.split(".")
+            if len(parts) != 3:
+                raise ValueError(f"Invalid affordance path: {path}")
+            aff_name = parts[1]
+            available = True if self.affordance_overrides is None else self.affordance_overrides.get(aff_name, True)
+            return torch.tensor(bool(available), device=self.bars[next(iter(self.bars))].device if self.bars else torch.device("cpu"))
 
         # Handle vfs.* paths
         if path.startswith("vfs."):
@@ -250,6 +263,20 @@ class ExecutionContext:
             if bar_name not in self.bars:
                 raise KeyError(f"Bar '{bar_name}' not found")
             self.bars[bar_name] = value
+            return
+
+        # Handle affordance availability overrides
+        if path.startswith("affordance.") and path.endswith(".available"):
+            parts = path.split(".")
+            if len(parts) != 3:
+                raise ValueError(f"Invalid affordance path: {path}")
+            aff_name = parts[1]
+            if self.affordance_overrides is None:
+                self.affordance_overrides = {}
+            scalar = value
+            if isinstance(value, torch.Tensor):
+                scalar = bool(value.item())
+            self.affordance_overrides[aff_name] = bool(scalar)
             return
 
         # Handle vfs.* paths

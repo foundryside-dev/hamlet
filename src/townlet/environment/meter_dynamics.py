@@ -124,6 +124,40 @@ class MeterDynamics:
 
         return self._apply_cascades(meters, ["secondary_to_pivotal_weak"])
 
+    def apply_named_cascade(self, cascade_name: str, bars: dict[str, torch.Tensor], *, strength: float = 1.0) -> dict[str, torch.Tensor]:
+        """Apply a specific cascade to bar tensors and return updated mapping."""
+        if cascade_name not in self._cascade_tables:
+            raise ValueError(f"Unknown cascade_id '{cascade_name}' for trigger_cascade")
+        if strength <= 0:
+            raise ValueError("cascade_strength must be positive")
+
+        updated = {name: tensor.clone() for name, tensor in bars.items()}
+        cascades = self._cascade_tables[cascade_name]
+        for cascade in cascades:
+            source_name = self._meter_name_by_idx(cascade["source_idx"])
+            target_name = self._meter_name_by_idx(cascade["target_idx"])
+            source_values = updated[source_name]
+            target_values = updated[target_name]
+            low_mask = source_values < cascade["threshold"]
+            if not low_mask.any():
+                continue
+            deficit = (cascade["threshold"] - source_values[low_mask]) / cascade["threshold"]
+            penalty = (cascade["strength"] * strength) * deficit
+            target_values = target_values.clone()
+            target_values[low_mask] = torch.clamp(
+                target_values[low_mask] - penalty,
+                0.0,
+                1.0,
+            )
+            updated[target_name] = target_values
+        return updated
+
+    def _meter_name_by_idx(self, idx: int) -> str:
+        for name, index in self.meter_name_to_index.items():
+            if index == idx:
+                return name
+        raise KeyError(f"Meter index {idx} not found in meter_name_to_index")
+
     def check_terminal_conditions(self, meters: torch.Tensor, dones: torch.Tensor) -> torch.Tensor:
         """Evaluate terminal conditions using compiler-provided thresholds.
 

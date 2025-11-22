@@ -133,10 +133,11 @@ def build_vfs_observation(
 
     # Item VFS: Include item state with masking
     if spec.item_vfs_dim > 0:
-        if registry.item_vfs is None:
+        item_vfs_storage = getattr(registry, "item_vfs", None)
+        if item_vfs_storage is None:
             raise RuntimeError("Item VFS storage is missing; cannot build item observations.")
         if agent_item_inventory is None:
-            # No item system yet, use zero stub
+            # No item inventory provided, return zeros for item slots
             item_obs = torch.zeros(
                 (batch_size, spec.item_vfs_dim),
                 dtype=torch.float32,
@@ -150,10 +151,6 @@ def build_vfs_observation(
                 raise ValueError("agent_item_inventory must have shape [batch, max_items_per_agent] when item_vfs_dim is non-zero.")
 
             vars_per_slot = spec.item_vfs_dim // spec.max_items_per_agent
-
-            item_vfs_storage = getattr(registry, "item_vfs", None)
-            if item_vfs_storage is None:
-                raise RuntimeError("Item VFS storage is missing; cannot build item observations.")
 
             item_vfs_slice = item_vfs_storage[:, :vars_per_slot]
             if item_vfs_slice.size(1) < vars_per_slot:

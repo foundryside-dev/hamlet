@@ -2,6 +2,7 @@
 
 from pathlib import Path
 
+import pytest
 import yaml
 
 from tests.test_townlet.helpers.config_builder import prepare_config_dir
@@ -68,6 +69,52 @@ def test_compiler_compiles_item_profiles(tmp_path: Path):
     assert len(food_profile.variables) == 2
     assert food_profile.variables[0].name == "calories"
     assert food_profile.variables[1].name == "freshness"
+
+
+def test_compiler_rejects_unknown_item_vfs_profile(tmp_path: Path):
+    """Compiler should fail when an item references a missing vfs_profile."""
+    experiment_dir = prepare_config_dir(tmp_path, name="experiment")
+
+    vfs_profiles = {
+        "item_profiles": [
+            {
+                "profile_name": "food_stats",
+                "variables": [
+                    {"name": "calories", "type": "int", "initial_value": 100},
+                ],
+            }
+        ]
+    }
+    (experiment_dir / "vfs_profiles.yaml").write_text(yaml.dump(vfs_profiles))
+
+    items_catalog = {
+        "items": {
+            "version": "1.0",
+            "max_items_per_agent": 3,
+            "max_items_in_world": 10,
+            "item_types": [
+                {
+                    "id": "apple",
+                    "vfs_profile": "food_stats",
+                    "duration": None,
+                    "cooldown": None,
+                    "interactions": {"on_pickup": [], "on_use": [], "on_drop": []},
+                },
+                {
+                    "id": "ghost_item",
+                    "vfs_profile": "missing_profile",
+                    "duration": None,
+                    "cooldown": None,
+                    "interactions": {"on_pickup": [], "on_use": [], "on_drop": []},
+                },
+            ],
+        }
+    }
+    (experiment_dir / "items.yaml").write_text(yaml.dump(items_catalog))
+
+    compiler = UniverseCompiler()
+    with pytest.raises(ValueError):
+        compiler.compile(experiment_dir, use_cache=False)
 
 
 def test_compiler_handles_missing_item_profiles(tmp_path: Path):

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import difflib
 import hashlib
 import logging
 import math
@@ -1033,6 +1034,7 @@ class UniverseCompiler:
         bar_schema: dict[str, str] = {meter.name: "float" for meter in primary_level_config.bars.meters}
 
         compiled_vfs_profiles = self._compile_vfs_profiles(experiment_dir, bar_schema)
+        self._validate_item_profile_bindings(raw.items, compiled_vfs_profiles)
 
         effects_schema: dict[str, str] = {
             "intensity": "float",
@@ -1215,6 +1217,34 @@ class UniverseCompiler:
         self._validate_drive_references_v21(raw, primary_meta, compiled)
         self._validate_economic_balance_v21(raw)
         return compiled
+
+    # ------------------------------------------------------------------
+    def _validate_item_profile_bindings(
+        self,
+        items_catalog: ItemsCatalogConfig | None,
+        compiled_vfs_profiles: CompiledVFSProfiles | None,
+    ) -> None:
+        """Ensure every item vfs_profile exists in compiled VFS item profiles."""
+        if items_catalog is None:
+            return
+        if compiled_vfs_profiles is None or not compiled_vfs_profiles.item_profiles:
+            if any(item.vfs_profile for item in items_catalog.item_types):
+                raise ValueError(
+                    "Items catalog specifies vfs_profile entries, but no item_profiles were compiled from vfs_profiles.yaml. "
+                    "Add item_profiles or remove vfs_profile references."
+                )
+            return
+
+        available_profiles = set(compiled_vfs_profiles.item_profiles.keys())
+
+        for item_def in items_catalog.item_types:
+            if item_def.vfs_profile and item_def.vfs_profile not in available_profiles:
+                close = difflib.get_close_matches(item_def.vfs_profile, available_profiles, n=1)
+                suggestion = f" Did you mean '{close[0]}'?" if close else ""
+                raise ValueError(
+                    f"Item '{item_def.id}' references undefined vfs_profile '{item_def.vfs_profile}'. "
+                    f"Available profiles: {sorted(available_profiles)}.{suggestion}"
+                )
 
     # ------------------------------------------------------------------
     # v2.1 helpers

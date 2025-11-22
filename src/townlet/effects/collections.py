@@ -7,7 +7,7 @@ from typing import Any
 
 import torch
 
-MAX_COLLECTION_SIZE = 256
+MAX_COLLECTION_SIZE = 64
 
 CollectionResolver = Callable[..., list[int]]
 

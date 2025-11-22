@@ -2,7 +2,7 @@
 
 **Priority:** P1 (Important)
 **Category:** Compiler
-**Status:** PARTIAL
+**Status:** DONE
 **Effort:** 4 hours
 
 ## Description
@@ -11,16 +11,16 @@ Universe Compiler should have explicit seven-stage pipeline structure with clear
 
 ## Current State
 
-Compiler implements 6 of 7 stages but stages are not explicitly separated:
-- ✅ Stage 1: Parse (raw configs → DTO objects)
-- ⚠️ Stage 2: Symbol table construction (implicit, not explicit stage)
-- ⚠️ Stage 3: Resolve (implicit, not explicit stage)
-- ✅ Stage 4: Cross-validate (explicit in code)
-- ✅ Stage 5: Metadata enrichment (implicit)
-- ✅ Stage 6: Optimization (compile sub-systems)
-- ✅ Stage 7: Emit/Cache (serialize CompiledUniverse)
+Compiler now emits seven explicit stages:
+- ✅ Stage 1: Parse (raw configs → DTO objects) via `_stage_1_load_v21_configs`
+- ✅ Stage 2: Symbol table construction via `_stage_2_build_symbol_table`
+- ✅ Stage 3: Resolve via `_stage_3_resolve_references`
+- ✅ Stage 4: Cross-validate (`_validate_v21_semantics`)
+- ✅ Stage 5: Metadata enrichment (`_stage_5_prepare_shared_artifacts`)
+- ✅ Stage 6: Optimization/compile per-level (`_stage_6_compile_levels`)
+- ✅ Stage 7: Emit/cache (`_stage_7_emit_artifact`)
 
-Symbol table construction and resolution happen implicitly during parsing/validation but are not explicit stages with clear markers.
+Symbol table covers meters, cascades, affordances, variables, actions, and items; resolution validates affordance costs/interactions, training selectors, item spawns, and DAC references. Stage markers log in order for traceability.
 
 **Location:** `src/townlet/universe/compiler.py`
 
@@ -50,21 +50,21 @@ Symbol table construction and resolution happen implicitly during parsing/valida
 
 ## Acceptance Criteria
 
-- [ ] Explicit `_stage_2_build_symbol_table()` method
-- [ ] Explicit `_stage_3_resolve_references()` method
-- [ ] All 7 stages have clear method boundaries
-- [ ] Stage logging shows execution flow
-- [ ] Symbol table contains all named entities (bars, affordances, cascades, items, VFS vars)
-- [ ] Resolution validates all references exist
-- [ ] Updated documentation reflects explicit 7-stage structure
-- [ ] Stage sequence test validates pipeline order
+- [x] Explicit `_stage_2_build_symbol_table()` method
+- [x] Explicit `_stage_3_resolve_references()` method
+- [x] All 7 stages have clear method boundaries
+- [x] Stage logging shows execution flow
+- [x] Symbol table contains all named entities (bars, affordances, cascades, items, VFS vars)
+- [x] Resolution validates all references exist
+- [x] Updated documentation reflects explicit 7-stage structure
+- [x] Stage sequence test validates pipeline order
 - [ ] No regression in existing compilation behavior
 
 ## Evidence
 
 **Source Report:** gap-report-final.md (lines 55-68), gap-report-compiler.md
 **Related Requirements:** None (architectural clarity)
-**Current Implementation:** `src/townlet/universe/compiler.py` (implicit stages)
+**Current Implementation:** `src/townlet/universe/compiler.py` (explicit stage methods and logging)
 
 ## Implementation Notes
 

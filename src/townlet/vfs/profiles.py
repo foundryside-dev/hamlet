@@ -32,9 +32,10 @@ class CompiledVariable:
 
     name: str
     type: str
-    ast: ASTNode | None  # None if initial_value
-    initial_value: int | float | bool | list | None
-    result_type: str | None  # Inferred type from type checker
+    expression: str | None = None
+    ast: ASTNode | None = None  # None if initial_value
+    initial_value: int | float | bool | list | None = None
+    result_type: str | None = None  # Inferred type from type checker
 
 
 @dataclass
@@ -154,20 +155,24 @@ class VFSProfileCompiler:
 
     def topological_sort(
         self, variables: Sequence[GlobalVFSVariableConfig | AgentVFSVariableConfig | ItemVFSVariableConfig]
-    ) -> tuple[list[GlobalVFSVariableConfig | AgentVFSVariableConfig | ItemVFSVariableConfig], dict[str, tuple[str, ...]]]:
-        """Sort variables in dependency order and return dependencies.
+    ) -> list[GlobalVFSVariableConfig | AgentVFSVariableConfig | ItemVFSVariableConfig]:
+        """Sort variables in dependency order.
 
-        Args:
-            variables: List of variable configs
-
-        Returns:
-            Tuple of:
-            - Variables sorted in topological order
-            - Dependency map {var_name: tuple[dependency_names]}
-
-        Raises:
-            CircularDependencyError: If circular dependency detected
+        Returns list of variables sorted topologically.
+        Raises CircularDependencyError if dependency cycles exist.
         """
+        sorted_vars, _ = self._topological_sort_internal(variables)
+        return sorted_vars
+
+    def topological_sort_with_dependencies(
+        self, variables: Sequence[GlobalVFSVariableConfig | AgentVFSVariableConfig | ItemVFSVariableConfig]
+    ) -> tuple[list[GlobalVFSVariableConfig | AgentVFSVariableConfig | ItemVFSVariableConfig], dict[str, tuple[str, ...]]]:
+        """Return both sorted variables and dependency map."""
+        return self._topological_sort_internal(variables)
+
+    def _topological_sort_internal(
+        self, variables: Sequence[GlobalVFSVariableConfig | AgentVFSVariableConfig | ItemVFSVariableConfig]
+    ) -> tuple[list[GlobalVFSVariableConfig | AgentVFSVariableConfig | ItemVFSVariableConfig], dict[str, tuple[str, ...]]]:
         graph = self.build_dependency_graph(variables)
 
         # Check for cycles
@@ -213,6 +218,7 @@ class VFSProfileCompiler:
             return CompiledVariable(
                 name=var.name,
                 type=var.type,
+                expression=None,
                 ast=None,
                 initial_value=var.initial_value,
                 result_type=var.type,
@@ -233,6 +239,7 @@ class VFSProfileCompiler:
         return CompiledVariable(
             name=var.name,
             type=var.type,
+            expression=var.expression,
             ast=ast,
             initial_value=None,
             result_type=result_type,
@@ -249,7 +256,7 @@ class VFSProfileCompiler:
             Compiled profile with variables in dependency order
         """
         # Sort variables in dependency order
-        sorted_vars, dependencies = self.topological_sort(profile.variables)
+        sorted_vars, dependencies = self.topological_sort_with_dependencies(profile.variables)
 
         # Build type schema for expression type checking
         schema: dict[str, str] = {}
@@ -288,7 +295,7 @@ class VFSProfileCompiler:
             ValueError: If circular dependencies detected
         """
         # Sort variables in dependency order
-        sorted_vars, _ = self.topological_sort(profile.variables)
+        sorted_vars, _ = self.topological_sort_with_dependencies(profile.variables)
 
         # Build variable schema (item profiles can reference bars)
         var_schema: dict[str, str] = {}

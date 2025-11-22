@@ -40,6 +40,9 @@ metadata, optimization tensors, and runtime views.
 The compiler is intentionally pure and deterministic: given the same YAML content and compiler version, the emitted artifact (including
 `.metadata.config_hash` and `.metadata.provenance_id`) is stable, which unlocks cache hits and checkpoint validation.
 
+**Tracing:** Each stage emits an INFO log marker (`Stage N: …`) from `townlet.universe.compiler` so pipeline order is observable in tests
+and runtime diagnostics.
+
 ## 3. Key Data Structures
 
 - `RawConfigs`: staged DTO bundle exposing convenient properties (`.bars`, `.affordances`, `.cues`, `.substrate`, etc.) while preserving

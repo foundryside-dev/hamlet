@@ -351,6 +351,19 @@ class VectorizedHamletEnv:
                 ItemVFSProfileConfig,
             )
 
+            def _compiled_var_to_cfg_payload(var: Any) -> dict[str, Any]:
+                """Convert compiled variable to config payload with expression or initial_value."""
+                payload: dict[str, Any] = {"name": var.name, "type": var.type}
+                expression = getattr(var, "expression", None)
+                if var.initial_value is not None:
+                    payload["initial_value"] = var.initial_value
+                elif expression is not None:
+                    payload["expression"] = expression
+                else:
+                    # Preserve existing behavior but stay valid for pydantic (will raise if both missing)
+                    payload["initial_value"] = None
+                return payload
+
             # Build config objects from compiled profiles
             global_profile_cfg = None
             if universe.compiled_vfs_profiles.global_profile is not None:
@@ -358,10 +371,7 @@ class VectorizedHamletEnv:
                 global_profile_cfg = GlobalVFSProfileConfig(
                     variables=cast(
                         list[Any],
-                        [
-                            {"name": var.name, "type": var.type, "initial_value": var.initial_value}
-                            for var in universe.compiled_vfs_profiles.global_profile.variables
-                        ],
+                        [_compiled_var_to_cfg_payload(var) for var in universe.compiled_vfs_profiles.global_profile.variables],
                     ),
                 )
 
@@ -371,7 +381,7 @@ class VectorizedHamletEnv:
                 agent_profile_cfg = AgentVFSProfileConfig(
                     variables=cast(
                         list[Any],
-                        [{"name": var.name, "type": var.type, "initial_value": var.initial_value} for var in agent_vars],
+                        [_compiled_var_to_cfg_payload(var) for var in agent_vars],
                     )
                 )
 
@@ -384,7 +394,7 @@ class VectorizedHamletEnv:
                             profile_name=profile_name,
                             variables=cast(
                                 list[Any],
-                                [{"name": var.name, "type": var.type, "initial_value": var.initial_value} for var in profile_vars],
+                                [_compiled_var_to_cfg_payload(var) for var in profile_vars],
                             ),
                         )
                     )

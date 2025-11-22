@@ -246,6 +246,8 @@ class ItemManager:
             profile_name = item_def.vfs_profile
 
             # Get profile from registry
+            if hasattr(self.vfs_registry, "ensure_item_profile"):
+                self.vfs_registry.ensure_item_profile(profile_name)
             if profile_name not in self.vfs_registry.item_profile_map:
                 raise ValueError(f"VFS profile '{profile_name}' not found in registry")
 

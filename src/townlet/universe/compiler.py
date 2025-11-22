@@ -87,6 +87,10 @@ class UniverseCompiler:
         self._affordance_metadata: AffordanceMetadata | None = None
         self._optimization_data: OptimizationData | None = None
 
+    def _log_stage(self, number: int, description: str) -> None:
+        """Emit a concise stage marker for pipeline tracing."""
+        logger.info("Stage %d: %s", number, description)
+
     def _load_experiment_structure(self, experiment_dir: Path) -> tuple:
         """
         Load all config files from hierarchical v2.1 structure.
@@ -411,7 +415,19 @@ class UniverseCompiler:
         self._phase_0_validate_yaml_syntax(experiment_dir)
 
         # Stage 1: load v2.1 configs
+        self._log_stage(1, "Parse v2.1 configs")
         raw = self._stage_1_load_v21_configs(experiment_dir)
+
+        # Stage 2: symbol table
+        self._log_stage(2, "Build symbol table")
+        symbol_table = self._stage_2_build_symbol_table(raw)
+
+        # Stage 3: resolve references
+        self._log_stage(3, "Resolve references")
+        self._stage_3_resolve_references(raw, symbol_table, experiment_dir)
+
+        # Stage 4: cross-validate semantics
+        self._log_stage(4, "Cross-validate semantics")
         self._validate_v21_semantics(raw, experiment_dir)
         temporal_supported = raw.stratum.stratum.temporal_support == "enabled"
 
@@ -422,171 +438,53 @@ class UniverseCompiler:
         if primary_level not in raw.levels:
             raise ValueError(f"Primary level '{primary_level}' not found. Available: {list(raw.levels.keys())}")
 
-        # Build bar schema for VFS profile type checking
-        primary_level_config = raw.levels[primary_level]
-        bar_schema = {}
-        for meter in primary_level_config.bars.meters:
-            bar_schema[meter.name] = "float"  # All meters are float
-
-        # Compile VFS profiles (experiment-level) - must happen before building effects schema
-        compiled_vfs_profiles = self._compile_vfs_profiles(experiment_dir, bar_schema)
-
-        # Build effects schema for command validation (experiment-level)
-        # Use primary level's bars for schema construction
-        effects_schema = {}
-        effects_schema["intensity"] = "float"
-        effects_schema["elapsed_ticks"] = "float"
-        effects_schema["duration_remaining"] = "float"
-
-        # Add bar paths (using primary level bars)
-        for meter in primary_level_config.bars.meters:
-            effects_schema[f"bar.{meter.name}"] = "float"
-            effects_schema[f"target.bar.{meter.name}"] = "float"
-
-        # Add VFS paths (from environment.yaml variables)
-        if raw.environment.environment.variables:
-            for var in raw.environment.environment.variables:
-                vfs_type = "bool" if var.type == "bool" else "float"
-                effects_schema[f"vfs.{var.name}"] = vfs_type
-                effects_schema[f"target.vfs.{var.name}"] = vfs_type
-
-        # Add item VFS paths (from compiled VFS profiles)
-        if compiled_vfs_profiles and compiled_vfs_profiles.item_profiles:
-            for profile_name, compiled_profile in compiled_vfs_profiles.item_profiles.items():
-                for var in compiled_profile.variables:
-                    vfs_type = "bool" if var.type == "bool" else "float"
-                    # Items use self.vfs.* (not target.vfs.*) since self IS the item
-                    effects_schema[f"self.vfs.{var.name}"] = vfs_type
-
-        # Compile effects catalog (experiment-level artifact)
-        compiled_effect_catalog = self._compile_effects_catalog(
+        # Stage 5: shared artifact enrichment
+        self._log_stage(5, "Enrich shared schemas and effects")
+        (
+            _bar_schema,
+            compiled_vfs_profiles,
+            _effects_schema,
+            compiled_effect_catalog,
+        ) = self._stage_5_prepare_shared_artifacts(
+            raw,
             experiment_dir,
-            effects_schema,
-            time_enabled=temporal_supported,
+            primary_level=primary_level,
+            temporal_supported=temporal_supported,
         )
 
-        # Build per-level artifacts
-        all_levels: dict[str, CompiledUniverse.LevelMetadata] = {}
-        for level_name, level in raw.levels.items():
-            logger.info("Compiling level: %s", level_name)
-            obs_spec = self._build_observation_spec(
-                raw.stratum,
-                raw.environment,
-                level.curriculum,
-                compiled_vfs_profiles,
-                raw.items,
-            )
-            obs_activity = self._build_observation_activity(obs_spec)
-            action_metadata = self._build_action_space_metadata(
-                raw.stratum,
-                raw.actions,
-                level.training,
-                level.affordances,
-                raw.items,
-            )
-            meter_metadata = self._build_meter_metadata(raw.environment, level.bars)
-            affordance_metadata = self._build_affordance_metadata(level.affordances)
-            day_length = level.curriculum.curriculum.day_length
-            temporal_supported = raw.stratum.stratum.temporal_support == "enabled"
-            if temporal_supported and level.curriculum.curriculum.active_temporal:
-                if day_length is None or day_length <= 0:
-                    raise ValueError(
-                        "curriculum.day_length is required when temporal mechanics are declared in stratum.temporal_support.\n"
-                        f"  Experiment: {experiment_dir}\n"
-                        f"  Level: {level_name}\n"
-                        "Provide an explicit positive day_length; no defaults are applied."
-                    )
-            else:
-                # No temporal mechanics active; normalize to zero-length day
-                day_length = 0
-            optimization_data = self._build_optimization_data(
-                level.bars,
-                level.affordances,
-                meter_metadata,
-                affordance_metadata,
-                action_metadata,
-                day_length=day_length,
-            )
-            vfs_fields = self._build_vfs_observation_fields(obs_spec, raw.environment)
-            vfs_variables = self._build_vfs_variables(obs_spec, raw.environment)
-
-            all_levels[level_name] = CompiledUniverse.LevelMetadata(
-                level_name=level_name,
-                bars=level.bars,
-                affordances=level.affordances,
-                curriculum=level.curriculum,
-                training=level.training,
-                observation_spec=obs_spec,
-                observation_activity=obs_activity,
-                action_metadata=action_metadata,
-                meter_metadata=meter_metadata,
-                affordance_metadata=affordance_metadata,
-                optimization_data=optimization_data,
-                vfs_observation_fields=vfs_fields,
-                vfs_variables=vfs_variables,
-                items_appearance=level.items_appearance,
-            )
-
-        primary_meta = all_levels[primary_level]
-
-        universe_metadata = self._build_universe_metadata(
-            raw,
+        # Stage 6: level compilation + optimization
+        self._log_stage(6, "Compile levels and optimization data")
+        (
+            all_levels,
             primary_meta,
-            experiment_dir=experiment_dir,
+            universe_metadata,
+            vfs_expression_schema,
+            vfs_observation_marks,
+        ) = self._stage_6_compile_levels(
+            raw,
+            experiment_dir,
+            primary_level=primary_level,
+            compiled_vfs_profiles=compiled_vfs_profiles,
             config_hash=config_hash,
             config_mtime=config_mtime,
+            temporal_supported=temporal_supported,
         )
 
-        # Build VFS expression schema for runtime validation
-        vfs_expression_schema = self._build_vfs_expression_schema(primary_level_config.bars, compiled_vfs_profiles)
-
-        # Load variables_reference.yaml to extract observation marks
-        # (separate from vfs_variables which only contains system observation primitives)
-        variables_reference_path = experiment_dir / "variables_reference.yaml"
-        vfs_observation_marks: dict[str, set[str]] | None = None
-        if variables_reference_path.exists():
-            from townlet.vfs.schema import load_variables_reference_config
-
-            variables_from_yaml = tuple(load_variables_reference_config(experiment_dir))
-            vfs_observation_marks = self._extract_vfs_observation_marks(variables_from_yaml)
-
-        compiled = CompiledUniverse(
-            metadata=universe_metadata,
-            observation_spec=primary_meta.observation_spec,
-            observation_activity=primary_meta.observation_activity,
-            vfs_observation_fields=primary_meta.vfs_observation_fields,
-            vfs_variables=primary_meta.vfs_variables,
-            action_space_metadata=primary_meta.action_metadata,
-            meter_metadata=primary_meta.meter_metadata,
-            affordance_metadata=primary_meta.affordance_metadata,
-            optimization_data=primary_meta.optimization_data,
-            experiment=raw.experiment,
-            stratum=raw.stratum,
-            environment=raw.environment,
-            actions=raw.actions,
-            agent=raw.agent,
-            items_catalog=raw.items,
-            compiled_vfs_profiles=compiled_vfs_profiles,
-            compiled_effect_catalog=compiled_effect_catalog,
-            vfs_expression_schema=vfs_expression_schema,
-            vfs_observation_marks=vfs_observation_marks,
-            experiment_dir=experiment_dir,
-            all_levels=all_levels,
+        # Stage 7: emit artifact + cache
+        self._log_stage(7, "Emit compiled universe")
+        compiled = self._stage_7_emit_artifact(
+            raw,
+            experiment_dir,
+            cache_path,
+            use_cache,
+            universe_metadata,
+            primary_meta,
+            all_levels,
+            compiled_vfs_profiles,
+            compiled_effect_catalog,
+            vfs_expression_schema,
+            vfs_observation_marks,
         )
-
-        # Best-effort cache write for future runs
-        if use_cache:
-            try:
-                cache_dir = self._cache_directory_for(experiment_dir)
-                self._prepare_cache_directory(cache_dir)
-                compiled.save_to_cache(cache_path)
-                logger.info("Saved compiled universe cache to %s", cache_path)
-            except Exception as exc:  # pragma: no cover - defensive
-                logger.warning("Failed to write cache artifact to %s: %s", cache_path, exc)
-
-        self._validate_drive_references_v21(raw, primary_meta, compiled)
-        # Emit economic balance warnings for v2.1 configs (non-blocking).
-        self._validate_economic_balance_v21(raw)
         return compiled
 
     def _validate_config_dir(self, config_dir: Path) -> None:
@@ -981,6 +879,342 @@ class UniverseCompiler:
     def _stage_1_load_v21_configs(self, experiment_dir: Path) -> RawConfigsV21:
         """Stage 1 – load v2.1 hierarchical configs."""
         return RawConfigsV21.from_experiment_dir(experiment_dir)
+
+    def _stage_2_build_symbol_table(self, raw: RawConfigsV21) -> UniverseSymbolTable:
+        """Stage 2 – collect all named entities into a symbol table."""
+        errors = CompilationErrorCollector(stage="Stage 2: Symbol Table")
+        table = UniverseSymbolTable()
+
+        def _register(register_fn, payload) -> None:
+            try:
+                register_fn(payload)
+            except CompilationError as exc:
+                errors.extend(exc.issues)
+
+        env = raw.environment.environment
+        for meter in getattr(env, "meters", []) or []:
+            _register(table.register_meter, meter)
+
+        for cascade in getattr(env, "cascade_graph", []) or []:
+            _register(table.register_cascade, cascade)
+
+        for affordance in getattr(env, "affordances", []) or []:
+            _register(table.register_affordance, affordance)
+
+        for variable in getattr(env, "variables", []) or []:
+            _register(table.register_variable, variable)
+
+        for action in getattr(raw.actions.actions, "custom_actions", []) or []:
+            _register(table.register_action, action)
+
+        if raw.items is not None:
+            for item in getattr(raw.items, "item_types", []) or []:
+                _register(table.register_item, item)
+
+        errors.check_and_raise(stage_label="Stage 2: Symbol Table")
+        return table
+
+    def _stage_3_resolve_references(
+        self,
+        raw: RawConfigsV21,
+        symbol_table: UniverseSymbolTable,
+        experiment_dir: Path,
+    ) -> None:
+        """Stage 3 – resolve and validate symbolic references."""
+        errors = CompilationErrorCollector(stage="Stage 3: Reference Resolution")
+
+        meter_names = set(symbol_table.meters.keys())
+        affordance_names = set(symbol_table.affordances_by_name.keys())
+        variable_ids = set(symbol_table.variables.keys())
+        item_ids = set(symbol_table.items.keys())
+
+        for level_name, level in raw.levels.items():
+            level_dir = experiment_dir / "levels" / level_name
+
+            # Cascades reference valid meters
+            for cascade in getattr(level.bars, "cascades", []) or []:
+                if cascade.source not in meter_names:
+                    errors.add(
+                        CompilationMessage(
+                            code="UAC-RES-CASCADE",
+                            message=f"Cascade references unknown source meter '{cascade.source}'.",
+                            location=str(level_dir / "bars.yaml"),
+                        )
+                    )
+                if cascade.target not in meter_names:
+                    errors.add(
+                        CompilationMessage(
+                            code="UAC-RES-CASCADE",
+                            message=f"Cascade references unknown target meter '{cascade.target}'.",
+                            location=str(level_dir / "bars.yaml"),
+                        )
+                    )
+
+            # Enabled affordances reference known affordance names
+            enabled_affordances = getattr(level.training, "enabled_affordances", None)
+            if enabled_affordances is not None:
+                requested = {str(name) for name in enabled_affordances}
+                unknown = requested - affordance_names
+                if unknown:
+                    errors.add(
+                        CompilationMessage(
+                            code="UAC-RES-AFF",
+                            message=f"training.enabled_affordances contains unknown entries: {sorted(unknown)}",
+                            location=str(level_dir / "training.yaml"),
+                        )
+                    )
+
+            # Affordance costs and interaction references
+            for affordance in getattr(level.affordances, "affordances", []) or []:
+                invalid_costs = [meter for meter in affordance.costs.keys() if meter not in meter_names]
+                if invalid_costs:
+                    errors.add(
+                        CompilationMessage(
+                            code="UAC-RES-AFF",
+                            message=f"Affordance '{affordance.name}' references unknown meters in costs: {sorted(invalid_costs)}",
+                            location=str(level_dir / "affordances.yaml"),
+                        )
+                    )
+
+                for stage_commands in (affordance.interactions or {}).values():
+                    for cmd in stage_commands:
+                        modify_target = getattr(cmd, "modify", None)
+                        if isinstance(modify_target, str) and modify_target.startswith("target.bar."):
+                            meter_name = modify_target.split(".")[-1]
+                            if meter_name not in meter_names:
+                                errors.add(
+                                    CompilationMessage(
+                                        code="UAC-RES-AFF",
+                                        message=f"Affordance '{affordance.name}' interaction references unknown meter '{meter_name}'.",
+                                        location=str(level_dir / "affordances.yaml"),
+                                    )
+                                )
+                        if isinstance(modify_target, str):
+                            vfs_prefixes = ("vfs.", "target.vfs.", "self.vfs.")
+                            if modify_target.startswith(vfs_prefixes):
+                                var_name = modify_target.split(".")[-1]
+                                if var_name not in variable_ids:
+                                    errors.add(
+                                        CompilationMessage(
+                                            code="UAC-RES-VFS",
+                                            message=(f"Affordance '{affordance.name}' interaction uses unknown VFS variable '{var_name}'."),
+                                            location=str(level_dir / "affordances.yaml"),
+                                        )
+                                    )
+
+            # Item appearance rules reference known items
+            if level.items_appearance is not None:
+                for rule in level.items_appearance.items:
+                    if rule.item_type not in item_ids:
+                        errors.add(
+                            CompilationMessage(
+                                code="UAC-RES-ITEM",
+                                message=f"Item appearance references unknown item_type '{rule.item_type}'.",
+                                location=str(level_dir / "items.yaml"),
+                            )
+                        )
+
+        # Agent drive references
+        if getattr(raw.agent, "agent", None) and getattr(raw.agent.agent, "drive", None):
+            self._validate_dac_references(raw.agent.agent.drive, symbol_table, errors)
+
+        errors.check_and_raise(stage_label="Stage 3: Reference Resolution")
+
+    def _stage_5_prepare_shared_artifacts(
+        self,
+        raw: RawConfigsV21,
+        experiment_dir: Path,
+        *,
+        primary_level: str,
+        temporal_supported: bool,
+    ) -> tuple[dict[str, str], CompiledVFSProfiles | None, dict[str, str], EffectCatalog | None]:
+        """Stage 5 – build shared schemas (bars/VFS) and compile effects catalog."""
+        primary_level_config = raw.levels[primary_level]
+        bar_schema: dict[str, str] = {meter.name: "float" for meter in primary_level_config.bars.meters}
+
+        compiled_vfs_profiles = self._compile_vfs_profiles(experiment_dir, bar_schema)
+
+        effects_schema: dict[str, str] = {
+            "intensity": "float",
+            "elapsed_ticks": "float",
+            "duration_remaining": "float",
+        }
+
+        for meter in primary_level_config.bars.meters:
+            effects_schema[f"bar.{meter.name}"] = "float"
+            effects_schema[f"target.bar.{meter.name}"] = "float"
+
+        for var in getattr(raw.environment.environment, "variables", []) or []:
+            vfs_type = "bool" if getattr(var, "type", None) == "bool" else "float"
+            effects_schema[f"vfs.{var.name}"] = vfs_type
+            effects_schema[f"target.vfs.{var.name}"] = vfs_type
+
+        if compiled_vfs_profiles and compiled_vfs_profiles.item_profiles:
+            for compiled_profile in compiled_vfs_profiles.item_profiles.values():
+                for var in compiled_profile.variables:
+                    vfs_type = "bool" if getattr(var, "type", None) == "bool" else "float"
+                    effects_schema[f"self.vfs.{var.name}"] = vfs_type
+
+        compiled_effect_catalog = self._compile_effects_catalog(
+            experiment_dir,
+            effects_schema,
+            time_enabled=temporal_supported,
+        )
+
+        return bar_schema, compiled_vfs_profiles, effects_schema, compiled_effect_catalog
+
+    def _stage_6_compile_levels(
+        self,
+        raw: RawConfigsV21,
+        experiment_dir: Path,
+        *,
+        primary_level: str,
+        compiled_vfs_profiles: CompiledVFSProfiles | None,
+        config_hash: str | None,
+        config_mtime: float | None,
+        temporal_supported: bool,
+    ) -> tuple[
+        dict[str, CompiledUniverse.LevelMetadata],
+        CompiledUniverse.LevelMetadata,
+        UniverseMetadata,
+        dict[str, str],
+        dict[str, set[str]] | None,
+    ]:
+        """Stage 6 – compile level metadata, optimization data, and derived schemas."""
+        all_levels: dict[str, CompiledUniverse.LevelMetadata] = {}
+        for level_name, level in raw.levels.items():
+            logger.info("Compiling level: %s", level_name)
+            obs_spec = self._build_observation_spec(
+                raw.stratum,
+                raw.environment,
+                level.curriculum,
+                compiled_vfs_profiles,
+                raw.items,
+            )
+            obs_activity = self._build_observation_activity(obs_spec)
+            action_metadata = self._build_action_space_metadata(
+                raw.stratum,
+                raw.actions,
+                level.training,
+                level.affordances,
+                raw.items,
+            )
+            meter_metadata = self._build_meter_metadata(raw.environment, level.bars)
+            affordance_metadata = self._build_affordance_metadata(level.affordances)
+            day_length = level.curriculum.curriculum.day_length
+            if temporal_supported and level.curriculum.curriculum.active_temporal:
+                if day_length is None or day_length <= 0:
+                    raise ValueError(
+                        "curriculum.day_length is required when temporal mechanics are declared in stratum.temporal_support.\n"
+                        f"  Experiment: {experiment_dir}\n"
+                        f"  Level: {level_name}\n"
+                        "Provide an explicit positive day_length; no defaults are applied."
+                    )
+            else:
+                day_length = 0
+
+            optimization_data = self._build_optimization_data(
+                level.bars,
+                level.affordances,
+                meter_metadata,
+                affordance_metadata,
+                action_metadata,
+                day_length=day_length,
+            )
+            vfs_fields = self._build_vfs_observation_fields(obs_spec, raw.environment)
+            vfs_variables = self._build_vfs_variables(obs_spec, raw.environment)
+
+            all_levels[level_name] = CompiledUniverse.LevelMetadata(
+                level_name=level_name,
+                bars=level.bars,
+                affordances=level.affordances,
+                curriculum=level.curriculum,
+                training=level.training,
+                observation_spec=obs_spec,
+                observation_activity=obs_activity,
+                action_metadata=action_metadata,
+                meter_metadata=meter_metadata,
+                affordance_metadata=affordance_metadata,
+                optimization_data=optimization_data,
+                vfs_observation_fields=vfs_fields,
+                vfs_variables=vfs_variables,
+                items_appearance=level.items_appearance,
+            )
+
+        primary_meta = all_levels[primary_level]
+        primary_level_config = raw.levels[primary_level]
+
+        universe_metadata = self._build_universe_metadata(
+            raw,
+            primary_meta,
+            experiment_dir=experiment_dir,
+            config_hash=config_hash,
+            config_mtime=config_mtime,
+        )
+
+        vfs_expression_schema = self._build_vfs_expression_schema(primary_level_config.bars, compiled_vfs_profiles)
+
+        variables_reference_path = experiment_dir / "variables_reference.yaml"
+        vfs_observation_marks: dict[str, set[str]] | None = None
+        if variables_reference_path.exists():
+            from townlet.vfs.schema import load_variables_reference_config
+
+            variables_from_yaml = tuple(load_variables_reference_config(experiment_dir))
+            vfs_observation_marks = self._extract_vfs_observation_marks(variables_from_yaml)
+
+        return all_levels, primary_meta, universe_metadata, vfs_expression_schema, vfs_observation_marks
+
+    def _stage_7_emit_artifact(
+        self,
+        raw: RawConfigsV21,
+        experiment_dir: Path,
+        cache_path: Path,
+        use_cache: bool,
+        universe_metadata: UniverseMetadata,
+        primary_meta: CompiledUniverse.LevelMetadata,
+        all_levels: dict[str, CompiledUniverse.LevelMetadata],
+        compiled_vfs_profiles: CompiledVFSProfiles | None,
+        compiled_effect_catalog: EffectCatalog | None,
+        vfs_expression_schema: dict[str, str],
+        vfs_observation_marks: dict[str, set[str]] | None,
+    ) -> CompiledUniverse:
+        """Stage 7 – emit the compiled artifact and persist cache."""
+        compiled = CompiledUniverse(
+            metadata=universe_metadata,
+            observation_spec=primary_meta.observation_spec,
+            observation_activity=primary_meta.observation_activity,
+            vfs_observation_fields=primary_meta.vfs_observation_fields,
+            vfs_variables=primary_meta.vfs_variables,
+            action_space_metadata=primary_meta.action_metadata,
+            meter_metadata=primary_meta.meter_metadata,
+            affordance_metadata=primary_meta.affordance_metadata,
+            optimization_data=primary_meta.optimization_data,
+            experiment=raw.experiment,
+            stratum=raw.stratum,
+            environment=raw.environment,
+            actions=raw.actions,
+            agent=raw.agent,
+            items_catalog=raw.items,
+            compiled_vfs_profiles=compiled_vfs_profiles,
+            compiled_effect_catalog=compiled_effect_catalog,
+            vfs_expression_schema=vfs_expression_schema,
+            vfs_observation_marks=vfs_observation_marks,
+            experiment_dir=experiment_dir,
+            all_levels=all_levels,
+        )
+
+        if use_cache:
+            try:
+                cache_dir = self._cache_directory_for(experiment_dir)
+                self._prepare_cache_directory(cache_dir)
+                compiled.save_to_cache(cache_path)
+                logger.info("Saved compiled universe cache to %s", cache_path)
+            except Exception as exc:  # pragma: no cover - defensive
+                logger.warning("Failed to write cache artifact to %s: %s", cache_path, exc)
+
+        self._validate_drive_references_v21(raw, primary_meta, compiled)
+        self._validate_economic_balance_v21(raw)
+        return compiled
 
     # ------------------------------------------------------------------
     # v2.1 helpers
@@ -2021,28 +2255,31 @@ class UniverseCompiler:
         """
         # Validate modifier sources
         for mod_name, mod_config in dac_config.modifiers.items():
-            if mod_config.bar:
-                if mod_config.bar not in symbol_table.meters:
+            bar_ref = getattr(mod_config, "bar", None)
+            variable_ref = getattr(mod_config, "variable", None)
+            if bar_ref:
+                if bar_ref not in symbol_table.meters:
                     errors.add(
                         CompilationMessage(
                             code="DAC-REF-001",
-                            message=f"Modifier '{mod_name}' references undefined bar: {mod_config.bar}",
+                            message=f"Modifier '{mod_name}' references undefined bar: {bar_ref}",
                             location=f"drive_as_code.yaml:modifiers.{mod_name}",
                         )
                     )
-            elif mod_config.variable:
-                if mod_config.variable not in symbol_table.vfs_variables:
+            elif variable_ref:
+                if variable_ref not in symbol_table.vfs_variables:
                     errors.add(
                         CompilationMessage(
                             code="DAC-REF-002",
-                            message=f"Modifier '{mod_name}' references undefined VFS variable: {mod_config.variable}",
+                            message=f"Modifier '{mod_name}' references undefined VFS variable: {variable_ref}",
                             location=f"drive_as_code.yaml:modifiers.{mod_name}",
                         )
                     )
 
         # Validate extrinsic strategy bar references
-        if dac_config.extrinsic.bars:
-            for bar in dac_config.extrinsic.bars:
+        extrinsic_bars = getattr(dac_config.extrinsic, "bars", None)
+        if extrinsic_bars:
+            for bar in extrinsic_bars:
                 if bar not in symbol_table.meters:
                     errors.add(
                         CompilationMessage(
@@ -2053,23 +2290,25 @@ class UniverseCompiler:
                     )
 
         # Validate extrinsic bar_bonuses (if present)
-        for idx, bonus in enumerate(dac_config.extrinsic.bar_bonuses):
-            if bonus.bar not in symbol_table.meters:
+        for idx, bonus in enumerate(getattr(dac_config.extrinsic, "bar_bonuses", []) or []):
+            bonus_bar = getattr(bonus, "bar", None)
+            if bonus_bar and bonus_bar not in symbol_table.meters:
                 errors.add(
                     CompilationMessage(
                         code="DAC-REF-004",
-                        message=f"Extrinsic bar bonus references undefined bar: {bonus.bar}",
+                        message=f"Extrinsic bar bonus references undefined bar: {bonus_bar}",
                         location=f"drive_as_code.yaml:extrinsic.bar_bonuses[{idx}]",
                     )
                 )
 
         # Validate extrinsic variable_bonuses (if present)
-        for idx, var_bonus in enumerate(dac_config.extrinsic.variable_bonuses):
-            if var_bonus.variable not in symbol_table.vfs_variables:
+        for idx, var_bonus in enumerate(getattr(dac_config.extrinsic, "variable_bonuses", []) or []):
+            var_ref = getattr(var_bonus, "variable", None)
+            if var_ref and var_ref not in symbol_table.vfs_variables:
                 errors.add(
                     CompilationMessage(
                         code="DAC-REF-005",
-                        message=f"Extrinsic variable bonus references undefined VFS variable: {var_bonus.variable}",
+                        message=f"Extrinsic variable bonus references undefined VFS variable: {var_ref}",
                         location=f"drive_as_code.yaml:extrinsic.variable_bonuses[{idx}]",
                     )
                 )
@@ -2078,74 +2317,81 @@ class UniverseCompiler:
         for idx, shaping in enumerate(dac_config.shaping):
             # Validate affordance references
             if shaping.type == "approach_reward":
-                if shaping.target_affordance not in symbol_table.affordances:
+                target_aff = getattr(shaping, "target_affordance", None) or getattr(shaping, "target", None)
+                if target_aff and target_aff not in symbol_table.affordances:
                     errors.add(
                         CompilationMessage(
                             code="DAC-REF-006",
-                            message=f"Shaping bonus references undefined affordance: {shaping.target_affordance}",
+                            message=f"Shaping bonus references undefined affordance: {target_aff}",
                             location=f"drive_as_code.yaml:shaping[{idx}]",
                         )
                     )
             elif shaping.type == "completion_bonus":
-                if shaping.affordance not in symbol_table.affordances:
+                aff_ref = getattr(shaping, "affordance", None)
+                if aff_ref and aff_ref not in symbol_table.affordances:
                     errors.add(
                         CompilationMessage(
                             code="DAC-REF-007",
-                            message=f"Shaping bonus (completion_bonus) references undefined affordance: {shaping.affordance}",
+                            message=f"Shaping bonus (completion_bonus) references undefined affordance: {aff_ref}",
                             location=f"drive_as_code.yaml:shaping[{idx}]",
                         )
                     )
             elif shaping.type == "streak_bonus":
-                if shaping.affordance not in symbol_table.affordances:
+                aff_ref = getattr(shaping, "affordance", None)
+                if aff_ref and aff_ref not in symbol_table.affordances:
                     errors.add(
                         CompilationMessage(
                             code="DAC-REF-008",
-                            message=f"Shaping bonus (streak_bonus) references undefined affordance: {shaping.affordance}",
+                            message=f"Shaping bonus (streak_bonus) references undefined affordance: {aff_ref}",
                             location=f"drive_as_code.yaml:shaping[{idx}]",
                         )
                     )
             elif shaping.type == "timing_bonus":
                 for time_range_idx, time_range in enumerate(shaping.time_ranges):
-                    if time_range.affordance not in symbol_table.affordances:
+                    aff_ref = getattr(time_range, "affordance", None)
+                    if aff_ref and aff_ref not in symbol_table.affordances:
                         errors.add(
                             CompilationMessage(
                                 code="DAC-REF-009",
-                                message=f"Shaping bonus (timing_bonus) references undefined affordance: {time_range.affordance}",
+                                message=f"Shaping bonus (timing_bonus) references undefined affordance: {aff_ref}",
                                 location=f"drive_as_code.yaml:shaping[{idx}].time_ranges[{time_range_idx}]",
                             )
                         )
 
             # Validate bar references
             elif shaping.type == "efficiency_bonus":
-                if shaping.bar not in symbol_table.meters:
+                bar_ref = getattr(shaping, "bar", None)
+                if bar_ref and bar_ref not in symbol_table.meters:
                     errors.add(
                         CompilationMessage(
                             code="DAC-REF-010",
-                            message=f"Shaping bonus (efficiency_bonus) references undefined bar: {shaping.bar}",
+                            message=f"Shaping bonus (efficiency_bonus) references undefined bar: {bar_ref}",
                             location=f"drive_as_code.yaml:shaping[{idx}]",
                         )
                     )
             elif shaping.type == "crisis_avoidance":
-                if shaping.bar not in symbol_table.meters:
+                bar_ref = getattr(shaping, "bar", None)
+                if bar_ref and bar_ref not in symbol_table.meters:
                     errors.add(
                         CompilationMessage(
                             code="DAC-REF-011",
-                            message=f"Shaping bonus (crisis_avoidance) references undefined bar: {shaping.bar}",
+                            message=f"Shaping bonus (crisis_avoidance) references undefined bar: {bar_ref}",
                             location=f"drive_as_code.yaml:shaping[{idx}]",
                         )
                     )
             elif shaping.type == "economic_efficiency":
-                if shaping.money_bar not in symbol_table.meters:
+                money_bar = getattr(shaping, "money_bar", None)
+                if money_bar and money_bar not in symbol_table.meters:
                     errors.add(
                         CompilationMessage(
                             code="DAC-REF-012",
-                            message=f"Shaping bonus (economic_efficiency) references undefined bar: {shaping.money_bar}",
+                            message=f"Shaping bonus (economic_efficiency) references undefined bar: {money_bar}",
                             location=f"drive_as_code.yaml:shaping[{idx}]",
                         )
                     )
             elif shaping.type == "balance_bonus":
-                for bar in shaping.bars:
-                    if bar not in symbol_table.meters:
+                for bar in getattr(shaping, "bars", []) or []:
+                    if bar and bar not in symbol_table.meters:
                         errors.add(
                             CompilationMessage(
                                 code="DAC-REF-013",
@@ -2154,23 +2400,25 @@ class UniverseCompiler:
                             )
                         )
             elif shaping.type == "state_achievement":
-                for condition_idx, condition in enumerate(shaping.conditions):
-                    if condition.bar not in symbol_table.meters:
+                for condition_idx, condition in enumerate(getattr(shaping, "conditions", []) or []):
+                    condition_bar = getattr(condition, "bar", None)
+                    if condition_bar and condition_bar not in symbol_table.meters:
                         errors.add(
                             CompilationMessage(
                                 code="DAC-REF-014",
-                                message=f"Shaping bonus (state_achievement) references undefined bar: {condition.bar}",
+                                message=f"Shaping bonus (state_achievement) references undefined bar: {condition_bar}",
                                 location=f"drive_as_code.yaml:shaping[{idx}].conditions[{condition_idx}]",
                             )
                         )
 
             # Validate VFS variable references
             elif shaping.type == "vfs_variable":
-                if shaping.variable not in symbol_table.vfs_variables:
+                var_ref = getattr(shaping, "variable", None)
+                if var_ref and var_ref not in symbol_table.vfs_variables:
                     errors.add(
                         CompilationMessage(
                             code="DAC-REF-015",
-                            message=f"Shaping bonus (vfs_variable) references undefined VFS variable: {shaping.variable}",
+                            message=f"Shaping bonus (vfs_variable) references undefined VFS variable: {var_ref}",
                             location=f"drive_as_code.yaml:shaping[{idx}]",
                         )
                     )

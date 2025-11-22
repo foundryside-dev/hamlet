@@ -237,7 +237,7 @@ def test_automatic_item_spawning_at_reset():
     # Reset should spawn items according to levels/L0_smoke/items.yaml
     # - 3 apples
     # - 1 medkit
-    # - 2 energy_drink (but energy_drink not in catalog, should skip)
+    # (coin appearance present but spawn_count=0 for this fixture)
     env.reset()
 
     # Count items by type

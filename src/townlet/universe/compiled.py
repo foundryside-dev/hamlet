@@ -465,6 +465,7 @@ def _serialize_vfs_profiles(profiles: CompiledVFSProfiles) -> dict[str, Any]:
                 {
                     "name": var.name,
                     "type": var.type,
+                    "expression": getattr(var, "expression", None),
                     "ast": None,  # AST not serialized (reconstruct on load)
                     "initial_value": var.initial_value,
                     "result_type": var.result_type,
@@ -485,6 +486,7 @@ def _serialize_vfs_profiles(profiles: CompiledVFSProfiles) -> dict[str, Any]:
 def _deserialize_vfs_profiles(payload: dict[str, Any]) -> CompiledVFSProfiles:
     """Deserialize CompiledVFSProfiles from dict."""
     from townlet.vfs.profiles import CompiledGlobalProfile, CompiledVariable
+    from townlet.world.expression import ExpressionParser
 
     global_profile = None
     if payload.get("global_profile") is not None:
@@ -492,7 +494,8 @@ def _deserialize_vfs_profiles(payload: dict[str, Any]) -> CompiledVFSProfiles:
             CompiledVariable(
                 name=var["name"],
                 type=var["type"],
-                ast=None,  # AST not serialized
+                expression=var.get("expression"),
+                ast=ExpressionParser().parse(var["expression"]) if var.get("expression") else None,
                 initial_value=var["initial_value"],
                 result_type=var.get("result_type"),
             )

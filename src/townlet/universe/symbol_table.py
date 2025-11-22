@@ -23,6 +23,7 @@ class UniverseSymbolTable:
     variables: dict[str, VariableDef] = field(default_factory=dict)
     actions: dict[int, ActionConfig] = field(default_factory=dict)
     cues: dict[str, SimpleCueConfig | CompoundCueConfig] = field(default_factory=dict)
+    items: dict[str, Any] = field(default_factory=dict)
 
     def register_meter(self, config: Any) -> None:
         if config.name in self.meters:
@@ -30,32 +31,58 @@ class UniverseSymbolTable:
         self.meters[config.name] = config
 
     def register_variable(self, config: VariableDef) -> None:
-        if config.id in self.variables:
-            raise CompilationError("Stage 2: Symbol Table", [f"Duplicate variable '{config.id}' detected."])
-        self.variables[config.id] = config
+        var_id = getattr(config, "id", None) or getattr(config, "name", None)
+        if var_id is None:
+            raise CompilationError("Stage 2: Symbol Table", ["Variable missing identifier during registration."])
+        if var_id in self.variables:
+            raise CompilationError("Stage 2: Symbol Table", [f"Duplicate variable '{var_id}' detected."])
+        self.variables[var_id] = config
 
     def register_action(self, config: ActionConfig) -> None:
-        if config.id in self.actions:
-            raise CompilationError("Stage 2: Symbol Table", [f"Duplicate action id '{config.id}' detected."])
-        self.actions[config.id] = config
+        action_id = getattr(config, "id", None)
+        if action_id is None:
+            action_id = getattr(config, "name", None)
+        if action_id is None:
+            raise CompilationError("Stage 2: Symbol Table", ["Action missing identifier during registration."])
+        if action_id in self.actions:
+            raise CompilationError("Stage 2: Symbol Table", [f"Duplicate action id '{action_id}' detected."])
+        self.actions[action_id] = config
 
     def register_cascade(self, config: Any) -> None:
-        if config.name in self.cascades:
-            raise CompilationError("Stage 2: Symbol Table", [f"Duplicate cascade '{config.name}' detected."])
-        self.cascades[config.name] = config
+        cascade_name = getattr(config, "name", None)
+        if cascade_name is None:
+            source = getattr(config, "source", None)
+            target = getattr(config, "target", None)
+            cascade_name = f"{source}->{target}"
+        if cascade_name in self.cascades:
+            raise CompilationError("Stage 2: Symbol Table", [f"Duplicate cascade '{cascade_name}' detected."])
+        self.cascades[cascade_name] = config
 
     def register_affordance(self, config: Any) -> None:
-        if config.id in self.affordances:
-            raise CompilationError("Stage 2: Symbol Table", [f"Duplicate affordance '{config.id}' detected."])
-        if config.name in self.affordances_by_name:
-            raise CompilationError("Stage 2: Symbol Table", [f"Duplicate affordance name '{config.name}' detected."])
-        self.affordances[config.id] = config
-        self.affordances_by_name[config.name] = config
+        aff_id = getattr(config, "id", None) or getattr(config, "name", None)
+        aff_name = getattr(config, "name", aff_id)
+        if aff_id is None or aff_name is None:
+            raise CompilationError("Stage 2: Symbol Table", ["Affordance missing identifier during registration."])
+        if aff_id in self.affordances:
+            raise CompilationError("Stage 2: Symbol Table", [f"Duplicate affordance '{aff_id}' detected."])
+        if aff_name in self.affordances_by_name:
+            raise CompilationError("Stage 2: Symbol Table", [f"Duplicate affordance name '{aff_name}' detected."])
+        self.affordances[aff_id] = config
+        self.affordances_by_name[aff_name] = config
 
     def register_cue(self, cue: SimpleCueConfig | CompoundCueConfig) -> None:
         if cue.cue_id in self.cues:
             raise CompilationError("Stage 2: Symbol Table", [f"Duplicate cue '{cue.cue_id}' detected."])
         self.cues[cue.cue_id] = cue
+
+    def register_item(self, item: Any) -> None:
+        """Register items by id (preferred) or name to validate references."""
+        identifier = getattr(item, "id", None) or getattr(item, "name", None)
+        if identifier is None:
+            raise CompilationError("Stage 2: Symbol Table", ["Item missing required identifier during registration."])
+        if identifier in self.items:
+            raise CompilationError("Stage 2: Symbol Table", [f"Duplicate item '{identifier}' detected."])
+        self.items[identifier] = item
 
     def get_meter(self, name: str) -> Any:
         return self.meters[name]

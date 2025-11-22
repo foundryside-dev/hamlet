@@ -13,7 +13,7 @@ items:
     spawn_interval: 200
     spawn_position: random
 
-  - item_type: energy_drink
-    spawn_count: 2
+  - item_type: coin
+    spawn_count: 0
     spawn_interval: 150
     spawn_position: random

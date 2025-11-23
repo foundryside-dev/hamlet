@@ -47,19 +47,12 @@ class ExecutionContext:
         if parts[0] == "temporal" and len(parts) == 2:
             return self.temporal[parts[1]]
         if parts[0] == "vfs":
-            tail = parts[1:]
-            # Normalize ref hops: drop explicit ref tokens
-            tail = [p for p in tail if p != "ref"]
-            # If tail looks like <ref>.bar.<name> or <ref>.vfs.<name>, drop the ref name
-            if len(tail) >= 2 and tail[1] in {"bar", "vfs"}:
-                tail = tail[1:]
+            tail = [p for p in parts[1:] if p != "ref"]
             if not tail:
                 raise KeyError(f"Path '{path}' not found in execution context")
-            if tail[0] == "bar":
-                if len(tail) < 2:
-                    raise KeyError(f"Path '{path}' not found in execution context")
-                return self.bars[tail[1]]
-            key = ".".join(tail if tail[0] != "vfs" else tail[1:])
+            if tail[0] == "vfs":
+                tail = tail[1:]
+            key = ".".join(tail)
             if key in self.vfs:
                 return self.vfs[key]
         if parts[0] in {"target", "self"}:
@@ -71,7 +64,9 @@ class ExecutionContext:
                 if len(tail) < 2:
                     raise KeyError(f"Path '{path}' not found in execution context")
                 return self.bars[tail[1]]
-            key = ".".join(tail[1:] if tail[0] == "vfs" else tail)
+            if tail[0] == "vfs":
+                tail = tail[1:]
+            key = ".".join(tail)
             if key in self.vfs:
                 return self.vfs[key]
         if len(parts) == 1 and path in self.vfs:

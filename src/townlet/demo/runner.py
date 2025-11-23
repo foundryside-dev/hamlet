@@ -610,8 +610,8 @@ class DemoRunner:
                 last_agent_state: BatchedAgentState | None = None
 
                 for step in range(max_steps):
-                    # Check for shutdown request every 10 steps for faster Ctrl+C response
-                    if step % 10 == 0 and self.should_shutdown:
+                    # Check for shutdown request every step for immediate response
+                    if self.should_shutdown:
                         logger.info(f"[Training] Shutdown requested during episode {self.current_episode + 1}, step {step}/{max_steps}")
                         break
 

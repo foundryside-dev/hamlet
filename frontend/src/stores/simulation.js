@@ -86,8 +86,9 @@ export const useSimulationStore = defineStore('simulation', () => {
   const transitionData = ref(null)
 
   // Q-values and affordance stats (for agent behavior panel)
-  const qValues = ref([])  // Q-values for all 6 actions (UP, DOWN, LEFT, RIGHT, INTERACT, WAIT)
-  const actionMasks = ref([true, true, true, true, true, true])  // Which actions are valid
+  const actionLabels = ref({})  // Dynamic action labels (received at connection time)
+  const qValues = ref([])  // Q-values for all actions (dynamic length based on action space)
+  const actionMasks = ref([])  // Which actions are valid (dynamic length)
   const affordanceStats = ref([])  // Affordance interaction counts
 
   // Temporal mechanics state
@@ -97,10 +98,8 @@ export const useSimulationStore = defineStore('simulation', () => {
   const agentAge = ref(0)  // Agent age in steps
   const lifetimeProgress = ref(0)  // Progress to retirement (0-1)
 
-  // Reward tracking (baseline-relative)
+  // Reward tracking
   const stepReward = ref(1.0)  // Reward for current step (0-1 range)
-  const projectedReward = ref(0)  // Current step - baseline (real-time learning signal)
-  const baselineSurvival = ref(100)  // Expected survival of random-walking agent
 
   // Computed
   const averageSurvivalTime = computed(() => {
@@ -254,6 +253,10 @@ export const useSimulationStore = defineStore('simulation', () => {
     switch (message.type) {
       case 'connected':
         availableModels.value = message.available_models || []
+        // Capture dynamic action labels (static for session)
+        if (message.action_labels) {
+          actionLabels.value = message.action_labels
+        }
         // Handle checkpoint progress (inference mode)
         if (message.checkpoint_episode !== undefined) {
           checkpointEpisode.value = message.checkpoint_episode
@@ -404,6 +407,8 @@ export const useSimulationStore = defineStore('simulation', () => {
 
     // Handle Q-values and affordance stats (agent behavior panel)
     if (message.q_values) {
+      console.log('[DEBUG Q-VALUES] Received:', message.q_values, 'Type:', typeof message.q_values, 'Length:', message.q_values.length)
+      console.log('[DEBUG Q-VALUES] First 3 elements:', message.q_values.slice(0, 3))
       qValues.value = message.q_values
     }
     if (message.action_masks) {
@@ -429,12 +434,6 @@ export const useSimulationStore = defineStore('simulation', () => {
     // Handle baseline-relative reward tracking
     if (message.step_reward !== undefined) {
       stepReward.value = message.step_reward
-    }
-    if (message.projected_reward !== undefined) {
-      projectedReward.value = message.projected_reward
-    }
-    if (message.baseline_survival !== undefined) {
-      baselineSurvival.value = message.baseline_survival
     }
 
     // Handle epsilon updates (exploration rate)
@@ -562,7 +561,6 @@ export const useSimulationStore = defineStore('simulation', () => {
     }
 
     ws.value.send(JSON.stringify({
-      type: 'control',
       command,
       ...params
     }))
@@ -634,6 +632,7 @@ export const useSimulationStore = defineStore('simulation', () => {
     averageSurvivalTime,
     rndMetrics,
     transitionData,
+    actionLabels,
     qValues,
     actionMasks,
     affordanceStats,
@@ -643,8 +642,6 @@ export const useSimulationStore = defineStore('simulation', () => {
     agentAge,
     lifetimeProgress,
     stepReward,
-    projectedReward,
-    baselineSurvival,
 
     // Training state
     isTraining,
@@ -660,6 +657,7 @@ export const useSimulationStore = defineStore('simulation', () => {
     checkServerAvailability,
     connect,
     disconnect,
+    sendCommand,
     setSpeed,
     setZoom,
     loadModel,

@@ -72,4 +72,3 @@ agent:
 
     loss:
       type: smooth_l1
-      huber_delta: 1.0

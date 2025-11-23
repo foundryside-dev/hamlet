@@ -188,12 +188,27 @@ def main():
             logger.exception("Full traceback:")
         sys.exit(1)
 
-    # Register signal handlers for graceful shutdown
+    # Register signal handlers for graceful shutdown with escalation
+    shutdown_count = [0]  # Mutable container to track shutdown attempts
+
     def signal_handler(signum, frame):
-        """Handle SIGINT (Ctrl+C) and SIGTERM."""
+        """Handle SIGINT (Ctrl+C) and SIGTERM with escalating response."""
+        shutdown_count[0] += 1
         signal_name = signal.Signals(signum).name
-        logger.info(f"\nShutdown signal received ({signal_name}). Gracefully stopping...")
-        server.stop()
+
+        if shutdown_count[0] == 1:
+            # First signal: graceful shutdown
+            logger.info(f"\nShutdown signal received ({signal_name}). Gracefully stopping...")
+            logger.info("(Press Ctrl+C again to force immediate exit)")
+            server.stop()
+        elif shutdown_count[0] == 2:
+            # Second signal: warn but continue graceful shutdown
+            logger.warning("\nSecond shutdown signal received. Waiting for training thread to finish current episode...")
+            logger.warning("(Press Ctrl+C again to force immediate exit)")
+        else:
+            # Third+ signal: immediate exit
+            logger.error("\nForce shutdown! Exiting immediately without cleanup.")
+            sys.exit(1)
 
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)

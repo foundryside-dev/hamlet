@@ -585,7 +585,6 @@ agent:
     # Loss function (experiment-level defaults)
     loss:
       type: smooth_l1        # Options: smooth_l1, mse, huber
-      huber_delta: 1.0       # Used for huber/smooth_l1 variants
 
 # =============================================================================
 # SECTION 6: curriculum.yaml (Curriculum-Level Active Field Control)

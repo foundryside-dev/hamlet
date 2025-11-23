@@ -19,6 +19,14 @@ class CurriculumManager(ABC):
     that specify depletion rates, active meters, and reward mode.
     """
 
+    def initialize_population(self, num_agents: int) -> None:
+        """
+        Optional hook to prepare per-agent state before training starts.
+
+        Implementations can override; default is a no-op for static curricula.
+        """
+        return None
+
     @abstractmethod
     def get_batch_decisions(
         self,

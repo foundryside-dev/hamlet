@@ -32,6 +32,24 @@ from townlet.universe.compiler import UniverseCompiler
 
 logger = logging.getLogger(__name__)
 
+# UI icons for affordances (emoji codepoints escaped to keep ASCII source)
+AFFORDANCE_ICON_MAP: dict[str, str] = {
+    "EAT": "\U0001f37d\ufe0f",
+    "SLEEP": "\U0001f6cf\ufe0f",
+    "SHOWER": "\U0001f6bf",
+    "EXERCISE": "\U0001f4aa",
+    "WORK": "\U0001f4bc",
+    "SOCIALIZE": "\U0001f5e3\ufe0f",
+    "MEDITATE": "\U0001f9d8",
+    "DRINK_WATER": "\U0001f4a7",
+    "BRUSH_TEETH": "\U0001faa5",
+    "LAUNDRY": "\U0001f9fa",
+    "COOK": "\U0001f373",
+    "CLEAN_HOUSE": "\U0001f9f9",
+    "ENTERTAINMENT": "\U0001f3ae",
+    "DOCTOR": "\u2695\ufe0f",
+}
+
 TELEMETRY_SCHEMA_VERSION = "1.0.0"
 
 
@@ -438,12 +456,43 @@ class LiveInferenceServer:
             self.population.q_network.load_state_dict(checkpoint["population_state"]["q_network"])
             logger.info("Loaded Q-network weights")
 
-        # Calculate epsilon based on training progress
-        # For inference, we estimate epsilon from episode number (linear decay from 1.0 to 0.05)
-        epsilon = checkpoint.get("epsilon", None)
-        logger.info(f"Checkpoint contains epsilon: {epsilon} (type: {type(epsilon).__name__})")
+            # Debug: Check network output dimensions
+            with torch.no_grad():
+                dummy_obs = torch.zeros(1, self.population.current_obs.shape[1], device=self.device)
+                if self.population.is_recurrent:
+                    dummy_output, _ = self.population.q_network(dummy_obs)
+                else:
+                    dummy_output = self.population.q_network(dummy_obs)
+                if dummy_output.shape[1] != self.env.action_dim:
+                    logger.warning(
+                        f"Network action space mismatch: Network outputs {dummy_output.shape[1]} actions "
+                        f"but env has {self.env.action_dim} actions"
+                    )
+
+        # Load epsilon from checkpoint (nested in exploration_state)
+        epsilon = None
+
+        # Try to load from nested exploration_state (correct path)
+        if "population_state" in checkpoint and "exploration_state" in checkpoint["population_state"]:
+            exploration_state = checkpoint["population_state"]["exploration_state"]
+
+            # Check for epsilon directly in exploration_state (epsilon_greedy)
+            if "epsilon" in exploration_state:
+                epsilon = exploration_state["epsilon"]
+                logger.info(f"Loaded epsilon from exploration_state: {epsilon:.3f}")
+            # Check for epsilon in rnd_state (RND/adaptive strategies)
+            elif "rnd_state" in exploration_state and "epsilon" in exploration_state["rnd_state"]:
+                epsilon = exploration_state["rnd_state"]["epsilon"]
+                logger.info(f"Loaded epsilon from rnd_state: {epsilon:.3f}")
+
+        # Fallback: try old top-level path for backwards compatibility
         if epsilon is None:
-            # Estimate epsilon based on training progress (assuming linear decay over total_episodes)
+            epsilon = checkpoint.get("epsilon", None)
+            if epsilon is not None:
+                logger.info(f"Loaded epsilon from top-level (legacy): {epsilon:.3f}")
+
+        # Last resort: estimate from training progress
+        if epsilon is None:
             progress = episode_num / self.total_episodes if self.total_episodes > 0 else 0
             epsilon = max(0.05, 1.0 - (progress * 0.95))  # Decay from 1.0 to 0.05
             logger.info(
@@ -453,8 +502,6 @@ class LiveInferenceServer:
                 progress,
                 epsilon,
             )
-        else:
-            logger.info(f"Loaded epsilon from checkpoint: {epsilon:.3f}")
 
         # Update tracking
         self.current_checkpoint_path = latest_checkpoint
@@ -481,7 +528,8 @@ class LiveInferenceServer:
         self.clients.add(websocket)
         logger.info(f"Client connected. Total clients: {len(self.clients)}")
 
-        # Send connection message with substrate metadata
+        # Send connection message with substrate metadata and action labels
+        action_labels = self.env.get_action_label_names() if self.env else {}
         await websocket.send_json(
             {
                 "type": "connected",
@@ -494,6 +542,7 @@ class LiveInferenceServer:
                 "epsilon": self.current_epsilon,
                 "auto_checkpoint_mode": self.auto_checkpoint_mode,
                 "substrate": self._build_substrate_metadata(),
+                "action_labels": action_labels,  # Dynamic action space labels
             }
         )
 
@@ -784,7 +833,10 @@ class LiveInferenceServer:
         affordances = []
         for name, pos in self.env.affordances.items():
             pos_list = pos.cpu().tolist()
-            affordance_data = {"type": name}  # Frontend expects 'type' not 'name'
+            affordance_data = {
+                "type": name,  # Frontend expects 'type' not 'name'
+                "icon": AFFORDANCE_ICON_MAP.get(name),
+            }
 
             # Add position data based on substrate dimensionality
             if self.env.substrate.position_dim == 2:
@@ -815,17 +867,12 @@ class LiveInferenceServer:
             {"name": name, "count": count} for name, count in sorted(self.affordance_interactions.items(), key=lambda x: x[1], reverse=True)
         ]
 
-        # TODO: Remove projected_reward from frontend (baseline tracking removed in PDR-002)
-        # Legacy field - set to 0.0 for backwards compatibility with frontend
-        projected_reward = 0.0
-
         # Build state update message
         update = {
             "type": "state_update",
             "step": self.current_step,
             "cumulative_reward": cumulative_reward,
             "step_reward": step_reward,  # Reward for this specific step (0-1 range)
-            "projected_reward": projected_reward,  # Legacy field (always 0.0, baseline tracking removed)
             "epsilon": self.current_epsilon,  # Current exploration rate
             "checkpoint_episode": self.current_checkpoint_episode,  # For training progress bar
             "total_episodes": self.total_episodes,  # For training progress bar
@@ -1095,7 +1142,9 @@ class LiveInferenceServer:
                     "last_action": step_data["action"],
                 }
             ],
-            "affordances": [{"type": name, "x": pos[0], "y": pos[1]} for name, pos in affordances.items()],
+            "affordances": [
+                {"type": name, "x": pos[0], "y": pos[1], "icon": AFFORDANCE_ICON_MAP.get(name)} for name, pos in affordances.items()
+            ],
         }
 
         # Build meter state

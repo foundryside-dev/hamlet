@@ -1,16 +1,16 @@
 <template>
-  <!-- Projected reward indicator bar (below time of day) -->
-  <div class="projected-reward-bar" role="region" aria-label="Projected reward indicator">
-    <!-- Gradient bar showing learning progress -->
+  <!-- Step reward indicator bar - shows real-time reward signal (0.0-1.0) -->
+  <div class="projected-reward-bar" role="region" aria-label="Step reward indicator">
+    <!-- Gradient bar showing current step reward -->
     <div class="reward-bar-container">
       <!-- Small label above bar -->
       <div class="reward-label-header">
-        <span>🎁</span>
-        <span>PROJECTED REWARD</span>
+        <span>⚡</span>
+        <span>STEP REWARD</span>
       </div>
 
       <div class="reward-bar-background" :style="{ background: backgroundColor }">
-        <!-- Progress indicator with glow -->
+        <!-- Progress indicator with glow (0-100% based on step_reward 0.0-1.0) -->
         <div
           class="reward-progress"
           :style="{
@@ -49,66 +49,43 @@
 import { computed } from 'vue'
 
 const props = defineProps({
-  currentStep: {
-    type: Number,
-    default: 0
-  },
-  baselineSurvival: {
-    type: Number,
-    default: 100
-  },
   stepReward: {
     type: Number,
-    default: 1.0
+    default: 1.0  // Server sends 0.0-1.0 range
   }
 })
 
-// Calculate real-time projected reward (currentStep - baseline)
-const projectedReward = computed(() => {
-  return props.currentStep - props.baselineSurvival
-})
-
-// Calculate tier (0-4) based on how many times we've exceeded baseline
-const currentTier = computed(() => {
-  if (props.baselineSurvival === 0) return 0
-  const tier = Math.floor(props.currentStep / props.baselineSurvival)
-  return Math.min(tier, 3)  // Cap at tier 3 (4 total tiers: 0, 1, 2, 3)
-})
-
-// Calculate progress percentage within current tier (wraps at 100%)
+// Progress bar shows step_reward as percentage (0.0 = 0%, 1.0 = 100%)
 const progressPercent = computed(() => {
-  if (props.baselineSurvival === 0) return 0
-  const progressInTier = props.currentStep % props.baselineSurvival
-  return (progressInTier / props.baselineSurvival) * 100
+  // Clamp to 0-100 range for safety
+  return Math.max(0, Math.min(100, props.stepReward * 100))
 })
 
-// Baseline position - shows where the bar will wrap (always at 100% of current tier)
-const baselinePercent = computed(() => {
-  // The baseline marker stays at 100% to show where the wrap happens
-  // This is the target the agent is trying to reach in the current tier
-  return 100
-})
-
-// Format reward with sign
+// Format reward as percentage
 const formattedReward = computed(() => {
-  const reward = projectedReward.value
-  if (reward > 0) return `+${reward.toFixed(1)}`
-  return reward.toFixed(1)
+  return `${(props.stepReward * 100).toFixed(0)}%`
 })
 
-// Calculate cumulative percentage (continues past 100%)
-const cumulativePercent = computed(() => {
-  if (props.baselineSurvival === 0) return 0
-  return Math.floor((props.currentStep / props.baselineSurvival) * 100)
+// Determine tier based on step_reward value
+// 0-25% = Critical (red)
+// 25-50% = Low (yellow)
+// 50-75% = Good (green)
+// 75-100% = Excellent (blue)
+const currentTier = computed(() => {
+  const percent = props.stepReward * 100
+  if (percent < 25) return 0  // Critical
+  if (percent < 50) return 1  // Low
+  if (percent < 75) return 2  // Good
+  return 3  // Excellent
 })
 
 // Status text based on tier
 const statusText = computed(() => {
   const tier = currentTier.value
-  if (tier === 0) return 'Struggling'
-  if (tier === 1) return 'Learning'
-  if (tier === 2) return 'Thriving'
-  return 'Mastered'  // tier 3
+  if (tier === 0) return 'Critical'
+  if (tier === 1) return 'Low'
+  if (tier === 2) return 'Good'
+  return 'Excellent'  // tier 3
 })
 
 // Status icon based on tier
@@ -116,8 +93,8 @@ const statusIcon = computed(() => {
   const tier = currentTier.value
   if (tier === 0) return '🔴'
   if (tier === 1) return '🟡'
-  if (tier === 2) return '�'
-  return '�'  // tier 3
+  if (tier === 2) return '🟢'
+  return '🔵'  // tier 3
 })
 
 // CSS class for reward text color based on tier
@@ -129,24 +106,24 @@ const rewardStatusClass = computed(() => {
   return 'reward-tier-3'
 })
 
-// Dynamic progress glow color based on tier - gradient to next tier color
+// Dynamic progress glow color based on tier
 const progressGlowColor = computed(() => {
   const tier = currentTier.value
 
-  // Tier 0: Red → Yellow (struggling → learning)
+  // Tier 0: Red (critical)
   if (tier === 0) {
-    return 'linear-gradient(to right, rgba(244, 67, 54, 0.9), rgba(255, 235, 59, 0.7))'
+    return 'linear-gradient(to right, rgba(244, 67, 54, 0.9), rgba(239, 83, 80, 0.7))'
   }
-  // Tier 1: Yellow → Green (learning → thriving)
+  // Tier 1: Yellow (low)
   if (tier === 1) {
-    return 'linear-gradient(to right, rgba(255, 235, 59, 0.9), rgba(76, 175, 80, 0.7))'
+    return 'linear-gradient(to right, rgba(255, 235, 59, 0.9), rgba(255, 238, 88, 0.7))'
   }
-  // Tier 2: Green → Blue (thriving → mastered)
+  // Tier 2: Green (good)
   if (tier === 2) {
-    return 'linear-gradient(to right, rgba(76, 175, 80, 0.9), rgba(33, 150, 243, 0.7))'
+    return 'linear-gradient(to right, rgba(76, 175, 80, 0.9), rgba(102, 187, 106, 0.7))'
   }
-  // Tier 3: Blue (mastered) - stays blue
-  return 'linear-gradient(to right, rgba(33, 150, 243, 0.9), rgba(33, 150, 243, 0.7))'
+  // Tier 3: Blue (excellent)
+  return 'linear-gradient(to right, rgba(33, 150, 243, 0.9), rgba(66, 165, 245, 0.7))'
 })
 
 // Marker color matches tier
@@ -158,13 +135,9 @@ const markerColor = computed(() => {
   return '#2196f3'  // Blue
 })
 
-// Background color - shows previous tier color being "painted over"
+// Background color - subtle gradient
 const backgroundColor = computed(() => {
-  const tier = currentTier.value
-  if (tier === 0) return 'rgba(255, 255, 255, 0.1)'  // Gray - starting tier
-  if (tier === 1) return 'rgba(244, 67, 54, 0.3)'    // Red - painting over red with yellow
-  if (tier === 2) return 'rgba(255, 235, 59, 0.3)'   // Yellow - painting over yellow with green
-  return 'rgba(76, 175, 80, 0.3)'                    // Green - painting over green with blue
+  return 'rgba(255, 255, 255, 0.1)'  // Neutral background
 })
 
 // Step reward color (0 = dark red, 1 = bright green)

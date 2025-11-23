@@ -35,7 +35,7 @@ from townlet.config.vfs_profiles_config import VFSProfilesConfig
 from townlet.effects.catalog import EffectCatalog
 from townlet.effects.schema import CommandType
 from townlet.environment.action_config import ActionConfig, ActionSpaceConfig
-from townlet.environment.action_labels import get_labels
+from townlet.environment.action_labels import PRESET_LABELS, CanonicalAction
 from townlet.environment.affordance_config import AffordanceConfig  # Runtime representation
 from townlet.environment.substrate_action_validator import SubstrateActionValidator
 from townlet.environment.temporal_utils import is_affordance_open
@@ -2092,30 +2092,68 @@ class UniverseCompiler:
                     )
 
         # Build action labels (compiler is the single source of truth)
+        # Get preset labels for name-based mapping (e.g., UP/DOWN/LEFT/RIGHT for gaming preset)
+        label_config = actions.actions.labels
+        label_preset = label_config.preset
+
+        # Load custom label overrides if present
         labels_path = config_pack_path / "action_labels.yaml"
-        custom_labels: dict[int, str] | None = None
+        custom_label_overrides: dict[int, str] | None = None
         if labels_path.exists():
             import yaml
 
             data = yaml.safe_load(labels_path.read_text()) or {}
             raw_custom = data.get("custom")
             if isinstance(raw_custom, dict):
-                custom_labels = {int(k): str(v) for k, v in raw_custom.items()}
+                custom_label_overrides = {int(k): str(v) for k, v in raw_custom.items()}
 
-        label_config = actions.actions.labels
-        label_preset = label_config.preset
-        action_labels = get_labels(
-            preset=label_preset if custom_labels is None else None,
-            custom_labels=custom_labels,
-            substrate_position_dim=self._infer_position_dim(stratum.stratum.substrate),
-        )
+        # Build preset label mapping by name (e.g., "UP" -> "UP" for gaming, "UP" -> "NORTH" for cardinal)
+        preset_label_map: dict[str, str] = {}
+        if label_preset and label_preset in PRESET_LABELS:
+            preset_labels_obj = PRESET_LABELS[label_preset]
+            # Map canonical action names to preset labels
+            for canonical_idx, label in preset_labels_obj.labels.items():
+                # Get canonical action name from CanonicalAction enum
+                canonical_name = CanonicalAction(canonical_idx).name
+                # Convert canonical name to substrate action name (e.g., MOVE_Y_POSITIVE -> UP)
+                if canonical_name == "MOVE_X_NEGATIVE":
+                    preset_label_map["LEFT"] = label
+                elif canonical_name == "MOVE_X_POSITIVE":
+                    preset_label_map["RIGHT"] = label
+                elif canonical_name == "MOVE_Y_NEGATIVE":
+                    preset_label_map["DOWN"] = label
+                elif canonical_name == "MOVE_Y_POSITIVE":
+                    preset_label_map["UP"] = label
+                elif canonical_name == "MOVE_Z_POSITIVE":
+                    preset_label_map["FORWARD"] = label
+                elif canonical_name == "MOVE_Z_NEGATIVE":
+                    preset_label_map["BACKWARD"] = label
+                elif canonical_name == "INTERACT":
+                    preset_label_map["INTERACT"] = label
+                elif canonical_name == "WAIT":
+                    preset_label_map["WAIT"] = label
+
+        # Build complete label dictionary for ALL actions (substrate + custom + item)
+        complete_labels: dict[int, str] = {}
+        label_description = PRESET_LABELS[label_preset].description if label_preset and label_preset in PRESET_LABELS else "Custom labels"
+        label_domain = PRESET_LABELS[label_preset].domain if label_preset and label_preset in PRESET_LABELS else "custom"
+
+        for entry in entries:
+            # Priority: custom label override > preset mapping > action name
+            if custom_label_overrides and entry.id in custom_label_overrides:
+                complete_labels[entry.id] = custom_label_overrides[entry.id]
+            elif entry.name in preset_label_map:
+                complete_labels[entry.id] = preset_label_map[entry.name]
+            else:
+                # No preset mapping (diagonal moves, custom actions, item actions) - use name
+                complete_labels[entry.id] = entry.name
 
         return ActionSpaceMetadata(
             total_actions=len(entries),
             actions=tuple(entries),
-            labels=action_labels.get_all_labels(),
-            label_description=action_labels.description,
-            label_domain=action_labels.domain,
+            labels=complete_labels,
+            label_description=label_description,
+            label_domain=label_domain,
         )
 
     def _build_meter_metadata(

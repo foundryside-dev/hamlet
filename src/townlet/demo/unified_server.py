@@ -61,8 +61,12 @@ class UnifiedServer:
             inference_port: Port for inference WebSocket server
         """
         self.config_dir = Path(config_dir)
-        # training_config_path is optional but must point to a v2.1 level training.yaml when provided
-        self.training_config_path = Path(training_config_path) if training_config_path else None
+        # training_config_path is optional; default to the selected level's training.yaml
+        if training_config_path:
+            self.training_config_path = Path(training_config_path)
+        else:
+            inferred_path = self.config_dir / "levels" / level_name / "training.yaml"
+            self.training_config_path = inferred_path if inferred_path.exists() else None
         if self.training_config_path is not None and not self.training_config_path.exists():
             raise FileNotFoundError(f"training_config_path provided but not found: {self.training_config_path}")
         self.total_episodes = total_episodes
@@ -348,7 +352,6 @@ class UnifiedServer:
                 db_path=str(db_path),
                 checkpoint_dir=str(self.checkpoint_dir),
                 max_episodes=self.total_episodes,
-                training_config_path=str(self.training_config_path) if self.training_config_path is not None else None,
             )
 
             logger.info("[Training] Starting training loop...")

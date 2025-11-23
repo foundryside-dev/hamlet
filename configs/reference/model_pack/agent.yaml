@@ -80,4 +80,3 @@ agent:
       target_update_frequency: 1000
     loss:
       type: smooth_l1
-      huber_delta: 1.0

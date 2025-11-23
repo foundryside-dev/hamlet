@@ -2,17 +2,17 @@
 
 **Date:** 2025-11-24 (updated)
 **Baseline Commit:** b085877dd45ffb9647a2bc3295ee6ce8c94ad845
-**Overall Completion:** 97.9% (96/98 primary requirements DONE)
+**Overall Completion:** 100% of remaining scope (97/98 primary requirements DONE, 1 N/A)
 
 ---
 
 ## Executive Summary
 
 **Validation Complete:** All 10 agents finished
-- **Primary requirements (master_requirements.md):** 96/98 DONE (97.9%)
+- **Primary requirements (master_requirements.md):** 97/98 DONE (last outstanding doc delivered)
 - **Partial implementations:** 0 requirements
-- **Missing implementations:** 1 requirement
-- **N/A (by design):** 2 requirements (while command, intentionally deferred DSL ops)
+- **Missing implementations:** 0 requirements
+- **N/A (by design):** 1 requirement (while command, intentionally deferred DSL ops)
 
 **Cross-validation:** 2 valuable catches identified
 - COMP-19: Config version tracking ⭐
@@ -22,7 +22,7 @@
 
 ---
 
-## Final Burn-Down List: 1 Item
+## Final Burn-Down List: 0 Items (done)
 
 ### P1 - Important (Short-Term: 1-2 weeks)
 
@@ -50,12 +50,9 @@
 **Status:** ✅ DONE
 **Notes:** Added evaluator coverage for `vfs.ref.*` and nested reference resolution.
 
-#### 6. DOC-REQ-005: Interaction radius guide (MISSING)
-**Status:** ❌ MISSING
-**What's needed:** Standalone guide for continuous substrate interaction_radius parameter
-**Impact:** User documentation gap
-**Effort:** 1-2 hours
-**Priority:** P2 - Documentation completeness
+#### 6. DOC-REQ-005: Interaction radius guide (DONE)
+**Status:** ✅ DONE
+**Notes:** Standalone guide documents config, validation rules, and tuning tips for continuous/continuousnd interaction_radius.
 
 ---
 

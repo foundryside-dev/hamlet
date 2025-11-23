@@ -36,12 +36,13 @@ stratum:
       interaction_radius: 0.8  # REQUIRED
 ```
 
-## Validation Rules
+## Validation Rules (enforced in compiler/runtime)
 
+- Must be **provided** for continuous/continuousnd; missing values hard-fail in the compiler.
 - Must be **positive** (`gt 0`).
 - Must be **≤ each dimension’s range**; oversized radii are rejected.
-- Compiler enforces presence for continuous/continuousnd; missing values fail early.
-- Substrate emits a **warning** if `interaction_radius < movement_delta` (too small to reach neighbors per step).
+- Runtime **warns** if `interaction_radius < movement_delta` (too small to reliably reach neighbors).
+- Factory passes the value through untouched; there are **no defaults or fallbacks**.
 
 ## Usage Semantics
 
@@ -54,3 +55,4 @@ stratum:
 - Start with `interaction_radius == movement_delta` for symmetric step-and-interact behavior.
 - Increase slightly (e.g., `movement_delta * 1.2`) if agents frequently “just miss” interactions due to float positioning.
 - Keep well below the smallest dimension size to avoid all-encompassing proximity.
+- For ContinuousND, use the **smallest dimension size** as the upper bound when tuning.

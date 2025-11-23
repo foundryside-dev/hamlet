@@ -102,7 +102,7 @@ class Evaluator(ASTVisitor):
         if spec is None:
             raise NotImplementedError(f"Function '{node.function_name}' not implemented.")
 
-        return spec.eval_fn(args)
+        return spec.eval_fn(args, self.context.device)
 
     def visit_if_then_else(self, node: IfThenElse) -> torch.Tensor:
         """Execute vectorized conditional logic using torch.where().

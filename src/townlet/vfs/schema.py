@@ -237,6 +237,8 @@ class VariableDef(BaseModel):
         )
     """
 
+    model_config = ConfigDict(extra="forbid")
+
     id: str = Field(
         min_length=1,
         description="Unique identifier for this variable",

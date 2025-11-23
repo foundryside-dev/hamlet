@@ -1,0 +1,29 @@
+version: "1.0"
+description: "Feedforward Q-network for L0"
+architecture:
+  type: feedforward
+  feedforward:
+    hidden_layers:
+    - 256
+    - 128
+    activation: relu
+    dropout: 0.0
+    layer_norm: true
+optimizer:
+  type: adam
+  learning_rate: 0.0001
+  adam_beta1: 0.9
+  adam_beta2: 0.999
+  adam_eps: 1.0e-08
+  weight_decay: 0.0
+  schedule:
+    type: constant
+q_learning:
+  gamma: 0.99
+  target_update_frequency: 1000
+  use_double_dqn: true
+loss:
+  type: smooth_l1
+replay:
+  capacity: 10000
+  prioritized: false

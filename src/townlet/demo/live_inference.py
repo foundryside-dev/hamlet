@@ -14,7 +14,7 @@ import torch
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
-from townlet.agent.brain_config import compute_brain_hash
+from townlet.config.brain_config import compute_brain_hash
 from townlet.curriculum.adversarial import AdversarialCurriculum
 from townlet.curriculum.factory import build_curriculum
 from townlet.demo.database import DemoDatabase
@@ -365,9 +365,9 @@ class LiveInferenceServer:
         )
 
         # Derive brain configuration from agent.yaml (v2.1 AgentConfig)
-        from townlet.agent.brain_config import apply_training_overrides, build_brain_config_from_agent
+        from townlet.config.brain_config import apply_training_overrides
 
-        base_brain_config = build_brain_config_from_agent(self.compiled_universe.agent, training_cfg)
+        base_brain_config = self.compiled_universe.brain
         brain_hash = compute_brain_hash(base_brain_config)
         logger.info(f"Brain config derived from agent.yaml: {base_brain_config.description}")
         logger.info(f"Brain hash: {brain_hash[:16]}... (SHA256)")
@@ -857,7 +857,7 @@ class LiveInferenceServer:
 
         # Log Q-values and chosen action to file for debugging
         action_names_dict = self.env.get_action_label_names()
-        log_line = f"Step {self.current_step}: Action={action_names_dict.get(last_action, 'UNKNOWN')}, " f"Q-values: {q_values_list}\n"
+        log_line = f"Step {self.current_step}: Action={action_names_dict.get(last_action, 'UNKNOWN')}, Q-values: {q_values_list}\n"
         if self._qvalue_log_file:
             self._qvalue_log_file.write(log_line)
             self._qvalue_log_file.flush()

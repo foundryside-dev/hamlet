@@ -8,9 +8,10 @@ from pathlib import Path
 
 from townlet.config.actions_config import ActionsConfig
 from townlet.config.affordances_v2_config import AffordancesV2Config, load_affordances_v2_config
-from townlet.config.agent_config import AgentConfig
 from townlet.config.bars_v2_config import BarsV2Config, load_bars_v2_config
+from townlet.config.brain_config import BrainConfig, load_brain_config
 from townlet.config.curriculum_config import CurriculumConfig
+from townlet.config.drive_as_code import DriveAsCodeConfig
 from townlet.config.environment_config import EnvironmentConfig
 from townlet.config.experiment_config import ExperimentConfig
 from townlet.config.items_config import ItemsAppearanceConfig, ItemsCatalogConfig
@@ -40,6 +41,7 @@ class CurriculumLevel:
     curriculum: CurriculumConfig
     bars: BarsV2Config
     affordances: AffordancesV2Config
+    drive: DriveAsCodeConfig
     training: TrainingV2Config
     items_appearance: ItemsAppearanceConfig | None = None
 
@@ -58,7 +60,7 @@ class RawConfigsV21:
     stratum: StratumConfig
     environment: EnvironmentConfig
     actions: ActionsConfig
-    agent: AgentConfig
+    brain: BrainConfig
 
     # Curriculum levels (per-level parameters)
     levels: dict[str, CurriculumLevel]
@@ -422,13 +424,12 @@ class RawConfigsV21:
         errors = CompilationErrorCollector(stage="Stage 1: Load v2.1 Configs")
 
         # Shared experiment-level configs
-        experiment = stratum = environment = actions = agent = items = None
+        experiment = stratum = environment = actions = brain = items = None
         shared_specs = [
             ("experiment.yaml", ExperimentConfig, "experiment"),
             ("stratum.yaml", StratumConfig, "stratum"),
             ("environment.yaml", EnvironmentConfig, "environment"),
             ("actions.yaml", ActionsConfig, "actions"),
-            ("agent.yaml", AgentConfig, "agent"),
         ]
 
         for filename, loader_cls, label in shared_specs:
@@ -451,8 +452,17 @@ class RawConfigsV21:
                 environment = loaded
             elif label == "actions":
                 actions = loaded
-            elif label == "agent":
-                agent = loaded
+
+        # Load brain.yaml
+        brain_path = experiment_dir / "brain.yaml"
+        try:
+            brain = load_brain_config(experiment_dir)
+        except Exception as exc:
+            errors.add(
+                f"Failed to load brain from brain.yaml: {exc}",
+                code="LOAD_ERROR",
+                location=str(brain_path),
+            )
 
         # Load items.yaml (optional)
         items_path = experiment_dir / "items.yaml"
@@ -497,6 +507,14 @@ class RawConfigsV21:
                 affordances = load_affordances_v2_config(level_dir)
                 training = load_training_v2_config(level_dir)
 
+                # Load drive.yaml
+                drive_path = level_dir / "drive.yaml"
+                import yaml
+
+                with open(drive_path) as f:
+                    drive_data = yaml.safe_load(f)
+                drive = DriveAsCodeConfig(**drive_data["drive"])
+
                 # Load level-specific items.yaml if exists
                 items_appearance = None
                 level_items_path = level_dir / "items.yaml"
@@ -512,6 +530,7 @@ class RawConfigsV21:
                     curriculum=curriculum,
                     bars=bars,
                     affordances=affordances,
+                    drive=drive,
                     training=training,
                     items_appearance=items_appearance,
                 )
@@ -536,7 +555,7 @@ class RawConfigsV21:
             stratum=stratum,  # type: ignore[arg-type]
             environment=environment,  # type: ignore[arg-type]
             actions=actions,  # type: ignore[arg-type]
-            agent=agent,  # type: ignore[arg-type]
+            brain=brain,  # type: ignore[arg-type]
             items=items,
             levels=levels,
             experiment_dir=experiment_dir,

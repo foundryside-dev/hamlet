@@ -468,7 +468,7 @@ class VectorizedHamletEnv:
 
         # Instantiate DACEngine using agent drive config (v2.1)
         self.dac_engine = DACEngine(
-            dac_config=self.universe.agent.agent.drive,
+            dac_config=self.level.drive,
             vfs_registry=self.vfs_registry,
             device=self.device,
             num_agents=self.num_agents,

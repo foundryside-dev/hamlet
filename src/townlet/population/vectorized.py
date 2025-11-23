@@ -14,11 +14,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F  # noqa: N812
 
-from townlet.agent.brain_config import BrainConfig
 from townlet.agent.loss_factory import LossFactory
 from townlet.agent.network_factory import NetworkFactory
 from townlet.agent.networks import RecurrentSpatialQNetwork
 from townlet.agent.optimizer_factory import OptimizerFactory
+from townlet.config.brain_config import BrainConfig
 from townlet.curriculum.base import CurriculumManager
 from townlet.exploration.action_selection import epsilon_greedy_action_selection
 from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
@@ -112,9 +112,7 @@ class VectorizedPopulation(PopulationManager):
         target_update_frequency = brain_config.q_learning.target_update_frequency
 
         if action_dim is None:
-            raise ValueError(
-                "action_dim is required and must be sourced from compiler metadata; " "no fallback to env defaults is allowed."
-            )
+            raise ValueError("action_dim is required and must be sourced from compiler metadata; no fallback to env defaults is allowed.")
         self.action_dim = action_dim
 
         # Agent runtime metrics (telemetry + reward baseline source of truth)
@@ -199,9 +197,7 @@ class VectorizedPopulation(PopulationManager):
                 action_dim=action_dim,
             ).to(device)
         else:
-            raise ValueError(
-                f"Unsupported architecture type: {brain_config.architecture.type}. " f"Supported: feedforward, recurrent, dueling"
-            )
+            raise ValueError(f"Unsupported architecture type: {brain_config.architecture.type}. Supported: feedforward, recurrent, dueling")
 
         # Initialize common target network state
         self.target_network.load_state_dict(self.q_network.state_dict())

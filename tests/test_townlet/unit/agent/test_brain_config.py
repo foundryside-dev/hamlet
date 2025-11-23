@@ -2,7 +2,6 @@
 
 import pytest
 from pydantic import ValidationError
-
 from townlet.agent.brain_config import (
     ArchitectureConfig,
     BrainConfig,
@@ -430,6 +429,7 @@ def test_compute_brain_hash_differs_for_different_configs():
 def test_apply_training_overrides_merges_q_learning_and_replay():
     """apply_training_overrides should respect TrainingV2Config overrides."""
     from townlet.agent.brain_config import ReplayConfig, ScheduleConfig
+
     from townlet.config.training_v2_config import (
         AdversarialCurriculumConfig,
         CheckpointingConfig,

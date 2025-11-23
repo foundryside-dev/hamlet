@@ -10,8 +10,8 @@ from typing import TYPE_CHECKING
 
 import torch.nn as nn
 
-from townlet.agent.brain_config import DuelingConfig, FeedforwardConfig, RecurrentConfig
 from townlet.agent.networks import DuelingQNetwork, RecurrentSpatialQNetwork
+from townlet.config.brain_config import DuelingConfig, FeedforwardConfig, RecurrentConfig
 
 if TYPE_CHECKING:
     from townlet.universe.dto import ObservationSpec

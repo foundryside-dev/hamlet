@@ -14,7 +14,7 @@ from torch.optim.lr_scheduler import (
     StepLR,
 )
 
-from townlet.agent.brain_config import OptimizerConfig, ScheduleConfig
+from townlet.config.brain_config import OptimizerConfig, ScheduleConfig
 
 
 class OptimizerFactory:

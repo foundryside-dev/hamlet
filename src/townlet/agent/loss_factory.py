@@ -5,7 +5,7 @@ Builds PyTorch loss functions from BrainConfig specifications.
 
 import torch.nn as nn
 
-from townlet.agent.brain_config import LossConfig
+from townlet.config.brain_config import LossConfig
 
 
 class LossFactory:

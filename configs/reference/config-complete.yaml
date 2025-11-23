@@ -27,13 +27,14 @@
 # ├── stratum.yaml         # Section 2
 # ├── environment.yaml     # Section 3
 # ├── actions.yaml         # Section 4
-# ├── agent.yaml           # Section 5
+# ├── brain.yaml           # Section 5
 # └── levels/
 #     ├── L1_full_obs/
 #     │   ├── curriculum.yaml    # Section 6
 #     │   ├── bars.yaml          # Section 7
 #     │   ├── affordances.yaml   # Section 8
-#     │   └── training.yaml      # Section 9
+#     │   ├── drive.yaml         # Section 9
+#     │   └── training.yaml      # Section 10
 #     └── L2_partial_obs/
 #         └── ...
 
@@ -445,146 +446,55 @@ actions:
     #   math    : +X, -X, +Y, -Y, +Z, -Z, ...
 
 # =============================================================================
-# SECTION 5: agent.yaml (Agent Perception + Drive + Brain)
+# SECTION 5: brain.yaml (Network Architecture)
 # =============================================================================
-# Location: configs/my_experiment/agent.yaml
-# Purpose: Defines how the agent perceives and processes information.
-# Tags: Mostly NON-BREAKING; network/mask shapes must still match obs_dim.
+# Location: configs/my_experiment/brain.yaml
+# Purpose: Defines the neural network architecture and optimization.
+# Tags: NON-BREAKING (must still align with obs_dim/action_dim)
 
-agent:
+brain:
   version: "1.0"
+  description: "Reference Brain Configuration"
 
-  # ---------------------------------------------------------------------------
-  # [CONFIG] Perception
-  # [TAGS]   NON-BREAKING
-  # ---------------------------------------------------------------------------
-  # Encoding/normalization behavior only; does not add dimensions.
-  perception:
-    # Note: observation_encoding moved to stratum.yaml (substrate behavioral param)
-    # This section is for perception-specific settings that don't affect obs_dim
-
-  # ---------------------------------------------------------------------------
-  # [CONFIG] Drive (Reward Function Configuration)
-  # [TAGS]   NON-BREAKING
-  # ---------------------------------------------------------------------------
-  # Drive As Code (DAC) - declarative reward function (values only).
-  drive:
-    version: "1.0"
-
-    # Modifiers (context-sensitive reward adjustment)
-    modifiers:
-      energy_crisis:
-        type: range_multiplier
-        source: energy  # Bar or VFS variable
-        ranges:
-          - min: 0.0
-            max: 0.2
-            multiplier: 0.0  # Suppress intrinsic when energy critical
-          - min: 0.2
-            max: 1.0
-            multiplier: 1.0  # Normal intrinsic weight
-
-    # Extrinsic Strategies (base reward from bar states)
-    extrinsic:
-      type: constant_base_with_shaped_bonus  # Options: multiplicative, additive_unweighted, weighted_sum, etc.
-      base: 0.01  # Small positive baseline (prevents "low energy delirium")
-      bonuses:
-        - bar: energy
-          weight: 0.5
-          transform: linear  # Options: linear, quadratic, exponential
-        - bar: health
-          weight: 0.5
-          transform: linear
-
-    # Intrinsic Strategies (exploration drive)
-    intrinsic:
-      strategy: adaptive_rnd  # Options: rnd, icm, count_based, adaptive_rnd, none
-      base_weight: 0.1
-      apply_modifiers: [energy_crisis]  # Apply crisis suppression
-
-      # Adaptive RND specific settings
-      annealing:
-        enabled: true
-        threshold: 100.0  # Start annealing when mean survival > 100 steps
-        decay_rate: 0.995
-        min_weight: 0.01
-
-    # Shaping Bonuses (behavioral incentives)
-    shaping:
-      - type: approach_reward
-        target: EAT
-        weight: 0.01
-        max_distance: 5.0
-
-      - type: completion_bonus
-        action: INTERACT
-        affordance: SLEEP
-        bonus: 0.1
-
-    # Composition
-    composition:
-      normalize: false
-      clip: null
-      log_components: true  # Log reward breakdown for debugging
-      log_modifiers: true
-
-  # ---------------------------------------------------------------------------
-  # [CONFIG] Brain (Network Architecture)
-  # [TAGS]   NON-BREAKING (must still align with obs_dim/action_dim)
-  # ---------------------------------------------------------------------------
-  # Hyperparameter override hierarchy:
-  # - This section sets experiment-level defaults.
-  # - training.yaml may override per curriculum level.
-  # - training.yaml wins on conflict.
-  brain:
-    architecture: feedforward  # Options: feedforward, recurrent
-
-    # Feedforward-specific settings
-    feedforward:
-      hidden_sizes: [256, 128]
-      activation: relu  # Options: relu, tanh, elu, gelu
-
-    # Recurrent-specific settings (when architecture: recurrent)
-    recurrent:
-      vision_encoder:
-        conv_channels: [32, 64]
-        kernel_size: 3
-        stride: 1
-        output_dim: 128
-
-      position_encoder:
-        hidden_size: 32
-
-      meter_encoder:
-        hidden_size: 32
-
-      lstm:
-        hidden_size: 256
-        num_layers: 1
-
-      q_head:
-        hidden_sizes: [128]
-
-    # Optimizer settings (experiment-level defaults)
-    optimizer:
-      type: adam  # Options: adam, sgd, rmsprop
-      learning_rate: 0.0001  # Can be overridden in training.yaml per level
-      adam_beta1: 0.9        # Required when type: adam
-      adam_beta2: 0.999      # Required when type: adam
-      adam_eps: 1.0e-8       # Required when type: adam
-      weight_decay: 0.0      # L2 weight decay
-      schedule:
-        type: constant       # Options: constant, step_decay, cosine, exponential
-
-    # Q-Learning algorithm (experiment-level defaults)
-    q_learning:
-      algorithm: double_dqn  # Options: dqn (vanilla), double_dqn
-      gamma: 0.99              # Can be overridden in training.yaml per level
-      target_update_frequency: 1000  # Can be overridden in training.yaml per level
-
-    # Loss function (experiment-level defaults)
-    loss:
-      type: smooth_l1        # Options: smooth_l1, mse, huber
+  architecture: feedforward
+  feedforward:
+    hidden_layers: [256, 128]
+    activation: relu
+    dropout: 0.0
+    layer_norm: true
+  recurrent:
+    vision_encoder:
+      conv_channels: [32, 64]
+      kernel_size: 3
+      stride: 1
+      output_dim: 128
+    position_encoder:
+      hidden_size: 32
+    meter_encoder:
+      hidden_size: 32
+    lstm:
+      hidden_size: 256
+      num_layers: 1
+    q_head:
+      hidden_sizes: [128]
+  optimizer:
+    type: adam
+    learning_rate: 0.0001
+    adam_beta1: 0.9
+    adam_beta2: 0.999
+    adam_eps: 1.0e-8
+    weight_decay: 0.0
+    schedule:
+      type: constant
+  q_learning:
+    gamma: 0.99
+    target_update_frequency: 1000
+    use_double_dqn: true
+  loss:
+    type: smooth_l1
+  replay:
+    capacity: 10000
+    prioritized: false
 
 # =============================================================================
 # SECTION 6: curriculum.yaml (Curriculum-Level Active Field Control)
@@ -894,7 +804,61 @@ affordances:
       min_multiplier: 0.7
 
 # =============================================================================
-# SECTION 9: training.yaml (Runtime Orchestration)
+# =============================================================================
+# SECTION 9: drive.yaml (Reward Function Configuration)
+# =============================================================================
+# Location: configs/my_experiment/levels/<level>/drive.yaml
+# Purpose: Defines the reward function (Drive As Code).
+# Tags: NON-BREAKING
+
+drive:
+  version: "1.0"
+  modifiers:
+    energy_crisis:
+      type: range_multiplier
+      source: energy
+      ranges:
+        - min: 0.0
+          max: 0.2
+          multiplier: 0.0
+        - min: 0.2
+          max: 1.0
+          multiplier: 1.0
+  extrinsic:
+    type: constant_base_with_shaped_bonus
+    base: 0.01
+    bonuses:
+      - bar: energy
+        weight: 0.5
+        transform: linear
+      - bar: health
+        weight: 0.5
+        transform: linear
+  intrinsic:
+    strategy: adaptive_rnd
+    base_weight: 0.1
+    apply_modifiers: [energy_crisis]
+    annealing:
+      enabled: true
+      threshold: 50.0
+      decay_rate: 0.995
+      min_weight: 0.01
+  shaping:
+    - type: approach_reward
+      target: EAT
+      weight: 0.01
+    - type: completion_bonus
+      action: INTERACT
+      affordance: SLEEP
+      bonus: 0.1
+  composition:
+    normalize: false
+    clip: null
+    log_components: true
+    log_modifiers: true
+
+# =============================================================================
+# SECTION 10: training.yaml (Runtime Orchestration)
 # =============================================================================
 # Location: configs/my_experiment/levels/<level>/training.yaml
 # Purpose: Controls training process and runtime behavior.
@@ -1084,7 +1048,7 @@ training:
 # ❌ cues, labels, metadata
 
 # =============================================================================
-# SECTION 10: vfs_profiles.yaml (Dynamic Variable Definitions)
+# SECTION 11: vfs_profiles.yaml (Dynamic Variable Definitions)
 # =============================================================================
 # Location: configs/my_experiment/vfs_profiles.yaml
 # Purpose: Defines dynamic VFS profiles (Global, Agent, Item) using expressions.
@@ -1130,7 +1094,7 @@ vfs_profiles:
       initial_value: 0.0
 
 # =============================================================================
-# SECTION 11: items.yaml (Item Catalog & Appearance)
+# SECTION 12: items.yaml (Item Catalog & Appearance)
 # =============================================================================
 # Location:
 #   1) Catalog:   configs/my_experiment/items.yaml
@@ -1183,7 +1147,7 @@ items:
         calories: 50.0   # Overrides default from VFS profile
 
 # =============================================================================
-# SECTION 12: effects.yaml (Reusable Effect Catalog)
+# SECTION 13: effects.yaml (Reusable Effect Catalog)
 # =============================================================================
 # Location: configs/my_experiment/effects.yaml
 # Purpose: Defines reusable behavioral pipelines (Effects).

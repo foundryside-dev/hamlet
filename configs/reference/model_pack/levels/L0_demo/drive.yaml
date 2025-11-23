@@ -1,0 +1,45 @@
+drive:
+  version: "1.0"
+  modifiers:
+    energy_crisis:
+      type: range_multiplier
+      source: energy
+      ranges:
+        - min: 0.0
+          max: 0.2
+          multiplier: 0.0
+        - min: 0.2
+          max: 1.0
+          multiplier: 1.0
+  extrinsic:
+    type: constant_base_with_shaped_bonus
+    base: 0.01
+    bonuses:
+      - bar: energy
+        weight: 0.5
+        transform: linear
+      - bar: health
+        weight: 0.5
+        transform: linear
+  intrinsic:
+    strategy: adaptive_rnd
+    base_weight: 0.1
+    apply_modifiers: [energy_crisis]
+    annealing:
+      enabled: true
+      threshold: 50.0
+      decay_rate: 0.995
+      min_weight: 0.01
+  shaping:
+    - type: approach_reward
+      target: EAT
+      weight: 0.01
+    - type: completion_bonus
+      action: INTERACT
+      affordance: SLEEP
+      bonus: 0.1
+  composition:
+    normalize: false
+    clip: null
+    log_components: false
+    log_modifiers: false

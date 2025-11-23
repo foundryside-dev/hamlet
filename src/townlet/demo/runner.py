@@ -12,7 +12,7 @@ from typing import Any
 
 import torch
 
-from townlet.agent.brain_config import BrainConfig, compute_brain_hash
+from townlet.config.brain_config import compute_brain_hash
 from townlet.curriculum.factory import build_curriculum
 from townlet.demo.database import DemoDatabase
 from townlet.environment.vectorized_env import VectorizedHamletEnv
@@ -67,7 +67,7 @@ class DemoRunner:
         # - v2.1 packs: levels/<level_name>/training.yaml (mandatory)
         if training_config_path is not None:
             raise ValueError(
-                "training_config_path override is no longer supported; " "use levels/<level_name>/training.yaml with explicit level_name."
+                "training_config_path override is no longer supported; use levels/<level_name>/training.yaml with explicit level_name."
             )
         if level_name is None:
             raise ValueError("level_name is required for v2.1 config packs; legacy single-file training.yaml is no longer supported.")
@@ -111,7 +111,7 @@ class DemoRunner:
         if level_name is None:
             available_levels = getattr(self.compiled, "available_levels", [])
             if not available_levels:
-                raise ValueError("Compiled universe has no curriculum levels; " "DemoRunner requires at least one level to be available.")
+                raise ValueError("Compiled universe has no curriculum levels; DemoRunner requires at least one level to be available.")
             self.level_name: str = available_levels[0]
             logger.info("No level_name specified; defaulting to %s", self.level_name)
         else:
@@ -123,7 +123,7 @@ class DemoRunner:
         self.stratum_config = self.compiled.stratum
         self.environment_config = self.compiled.environment
         self.actions_config = self.compiled.actions
-        self.agent_config = self.compiled.agent
+        self.brain_config = self.compiled.brain
         self.curriculum_config = level_config.curriculum
         self.bars_config = level_config.bars
         self.affordances_config = level_config.affordances
@@ -153,7 +153,7 @@ class DemoRunner:
         self.recorder = None  # Episode recorder (initialized if recording enabled)
 
         # TASK-005 Phase 1: Brain As Code configuration derived from agent.yaml + training.yaml
-        self.brain_config: BrainConfig | None = None
+        # self.brain_config is already set from self.compiled.brain
         self.brain_hash: str | None = None
 
         # Shutdown flag
@@ -358,7 +358,7 @@ class DemoRunner:
         # P1.1: Check checkpoint version
         checkpoint_version = checkpoint.get("version")
         if checkpoint_version != 3:
-            raise ValueError(f"Unsupported checkpoint version: {checkpoint_version}\n" f"Expected version 3. Please retrain from scratch.")
+            raise ValueError(f"Unsupported checkpoint version: {checkpoint_version}\nExpected version 3. Please retrain from scratch.")
 
         self.current_episode = checkpoint["episode"]
 
@@ -477,9 +477,9 @@ class DemoRunner:
         agent_ids = [f"agent_{i}" for i in range(num_agents)]
 
         # Derive brain configuration from agent.yaml (v2.1 AgentConfig)
-        from townlet.agent.brain_config import apply_training_overrides, build_brain_config_from_agent
+        from townlet.config.brain_config import apply_training_overrides
 
-        base_brain_config = build_brain_config_from_agent(self.agent_config, self.training_config)
+        base_brain_config = self.brain_config
         brain_hash = compute_brain_hash(base_brain_config)
         logger.info(f"Brain config derived from agent.yaml: {base_brain_config.description}")
         logger.info(f"Brain hash: {brain_hash[:16]}... (SHA256)")
@@ -959,4 +959,4 @@ class DemoRunner:
 
 
 if __name__ == "__main__":  # pragma: no cover
-    raise SystemExit("townlet.demo.runner is no longer a direct CLI entry point.\n" "Use scripts/run_demo.py for the unified demo server.")
+    raise SystemExit("townlet.demo.runner is no longer a direct CLI entry point.\nUse scripts/run_demo.py for the unified demo server.")

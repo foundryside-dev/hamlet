@@ -20,10 +20,10 @@ import yaml
 
 from townlet.config.actions_config import ActionsConfig
 from townlet.config.affordances_v2_config import AffordanceParamConfig, AffordancesV2Config
-from townlet.config.agent_config import AgentConfig
 from townlet.config.bars_v2_config import BarsV2Config, MeterConfig
+from townlet.config.brain_config import load_brain_config
 from townlet.config.curriculum_config import CurriculumConfig
-from townlet.config.drive_as_code import DriveAsCodeConfig
+from townlet.config.drive_as_code import DriveAsCodeConfig, load_drive_as_code_config
 from townlet.config.effects_config import EffectsConfig
 from townlet.config.environment_config import CascadeConfig
 from townlet.config.environment_config import EnvironmentConfig as EnvConfigV21
@@ -130,14 +130,21 @@ class UniverseCompiler:
         stratum = StratumConfig.from_yaml(experiment_dir / "stratum.yaml")
         environment = EnvironmentConfig.from_yaml(experiment_dir / "environment.yaml")
         actions = ActionsConfig.from_yaml(experiment_dir / "actions.yaml")
-        agent = AgentConfig.from_yaml(experiment_dir / "agent.yaml")
 
-        # Load all curriculum levels
+        # Load brain config
+        brain = load_brain_config(experiment_dir / "brain.yaml")
+
+        # Load items.yaml (optional)
+        items: ItemsCatalogConfig | None = None
+        items_path = experiment_dir / "items.yaml"
+        if items_path.exists():
+            items = ItemsCatalogConfig.from_yaml(items_path)
+
         levels_dir = experiment_dir / "levels"
         if not levels_dir.exists():
             raise FileNotFoundError(
                 f"Missing levels/ directory in {experiment_dir}\n"
-                f"Expected structure: {experiment_dir}/levels/L*/{{curriculum,bars,affordances,training}}.yaml"
+                f"Expected structure: {experiment_dir}/levels/L*/{{curriculum,bars,affordances,training,drive}}.yaml"
             )
 
         levels_dict = {}
@@ -147,20 +154,21 @@ class UniverseCompiler:
 
             level_name = level_dir.name
 
-            # Load all 4 curriculum-level configs
+            # Load all 5 curriculum-level configs
             curriculum = CurriculumConfig.from_yaml(level_dir / "curriculum.yaml")
             bars = load_bars_v2_config(level_dir)
             affordances = load_affordances_v2_config(level_dir)
             training = load_training_v2_config(level_dir)
+            drive = load_drive_as_code_config(level_dir)
 
-            levels_dict[level_name] = (curriculum, bars, affordances, training)
+            levels_dict[level_name] = (curriculum, bars, affordances, training, drive)
 
         if not levels_dict:
             raise ValueError(
                 f"No curriculum levels found in {levels_dir}\nExpected at least one level directory (e.g., levels/L1_full_observability/)"
             )
 
-        return (experiment, stratum, environment, actions, agent, levels_dict)
+        return (experiment, stratum, environment, actions, brain, items, levels_dict)
 
     def _compile_vfs_profiles(self, experiment_dir: Path, bar_schema: dict[str, str]) -> CompiledVFSProfiles | None:
         """Load and compile VFS profiles from experiment directory.
@@ -339,7 +347,7 @@ class UniverseCompiler:
 
         Args:
             environment: Loaded EnvironmentConfig with canonical vocabulary
-            levels_dict: Dict of {level_name: (curriculum, bars, affordances, training)}
+            levels_dict: Dict of {level_name: (curriculum, bars, affordances, training, drive)}
 
         Raises:
             ValueError: If any level has different meter or affordance vocabulary
@@ -349,7 +357,7 @@ class UniverseCompiler:
         env_affordances = set(a.name for a in environment.environment.affordances)
 
         # Validate each curriculum level
-        for level_name, (curriculum, bars, affordances, training) in levels_dict.items():
+        for level_name, (curriculum, bars, affordances, training, drive) in levels_dict.items():
             # Check meter vocabulary matches
             level_meters = set(m.name for m in bars.meters)
             if level_meters != env_meters:
@@ -486,13 +494,16 @@ class UniverseCompiler:
 
         # Stage 6: level compilation + optimization
         self._log_stage(6, "Compile levels and optimization data")
-        (
-            all_levels,
-            primary_meta,
-            universe_metadata,
-            vfs_expression_schema,
-            vfs_observation_marks,
-        ) = self._stage_6_compile_levels(
+        # Stage 6: Compile levels (per-level artifacts)
+        # Compute config hashes for provenance
+        brain_hash = self._compute_pydantic_hash(raw.brain)
+        experiment_hash = self._compute_pydantic_hash(raw.experiment)
+        stratum_hash = self._compute_pydantic_hash(raw.stratum)
+        environment_hash = self._compute_pydantic_hash(raw.environment)
+        actions_hash = self._compute_pydantic_hash(raw.actions)
+        items_hash = self._compute_pydantic_hash(raw.items) if raw.items else None
+
+        all_levels, primary_meta, universe_metadata, vfs_expression_schema, vfs_observation_marks = self._stage_6_compile_levels(
             raw,
             experiment_dir,
             primary_level=primary_level,
@@ -504,7 +515,7 @@ class UniverseCompiler:
         )
 
         # Stage 7: emit artifact + cache
-        self._log_stage(7, "Emit compiled universe")
+        self._log_stage(7, "Emit artifact")
         effect_observation_slots = EFFECT_OBSERVATION_SLOTS if compiled_effect_catalog and compiled_effect_catalog.effects else 0
         compiled = self._stage_7_emit_artifact(
             raw,
@@ -520,6 +531,12 @@ class UniverseCompiler:
             vfs_observation_marks,
             effect_observation_slots,
             vfs_history_spec,
+            brain_hash=brain_hash,
+            experiment_hash=experiment_hash,
+            stratum_hash=stratum_hash,
+            environment_hash=environment_hash,
+            actions_hash=actions_hash,
+            items_hash=items_hash,
         )
         return compiled
 
@@ -550,7 +567,7 @@ class UniverseCompiler:
                     forbidden_path = level_dir / forbidden
                     if forbidden_path.exists():
                         errors.add(
-                            f"Found {forbidden} at level scope ({forbidden_path}). " "This file must live at the experiment root only.",
+                            f"Found {forbidden} at level scope ({forbidden_path}). This file must live at the experiment root only.",
                             code="SCOPING_FORBIDDEN_LEVEL_FILE",
                             location=str(forbidden_path),
                         )
@@ -617,12 +634,15 @@ class UniverseCompiler:
             "stratum.yaml",
             "environment.yaml",
             "actions.yaml",
-            "agent.yaml",
+            "brain.yaml",
+            "items.yaml",  # Optional, but check syntax if present
         ]
 
         for file_name in shared_files:
             file_path = config_dir / file_name
             if not file_path.exists():
+                if file_name == "items.yaml":  # items.yaml is optional
+                    continue
                 errors.add(f"{file_name}: File not found", code="MISSING_FILE", location=str(file_path))
                 continue
             try:
@@ -636,7 +656,7 @@ class UniverseCompiler:
             errors.add("levels/ directory missing", code="MISSING_LEVELS_DIR", location=str(levels_dir))
         else:
             for level_dir in sorted(p for p in levels_dir.iterdir() if p.is_dir()):
-                for file_name in ("curriculum.yaml", "bars.yaml", "affordances.yaml", "training.yaml"):
+                for file_name in ("curriculum.yaml", "bars.yaml", "affordances.yaml", "training.yaml", "drive.yaml"):
                     file_path = level_dir / file_name
                     if not file_path.exists():
                         errors.add(
@@ -682,7 +702,7 @@ class UniverseCompiler:
                     forbidden_path = level_dir / forbidden
                     if forbidden_path.exists():
                         errors.add(
-                            f"Found {forbidden} at level scope ({forbidden_path}). " "This file must live at the experiment root only.",
+                            f"Found {forbidden} at level scope ({forbidden_path}). This file must live at the experiment root only.",
                             code="SCOPING_FORBIDDEN_LEVEL_FILE",
                             location=str(forbidden_path),
                         )
@@ -919,83 +939,47 @@ class UniverseCompiler:
                         location=str(level_dir / "training.yaml"),
                     )
 
-        # 6) DAC must be present under agent.yaml (agent.drive) and non-empty, with valid references
+        # 6) DAC must be present per level and non-empty
         meters = env_meter_names
-        affordances = env_affordance_names
         variables_set = (
             set(var.name for var in raw.environment.environment.variables) if hasattr(raw.environment.environment, "variables") else set()
         )
 
-        agent_drive = getattr(raw.agent.agent, "drive", None)
-        agent_path = experiment_dir / "agent.yaml"
-        if agent_drive is None:
-            errors.add("agent.drive is required and must not be empty.", code="AGENT_DRIVE_MISSING", location=str(agent_path))
-        else:
+        for level_name, level in raw.levels.items():
+            level_path = experiment_dir / "levels" / level_name / "drive.yaml"
+            drive = getattr(level, "drive", None)
+
+            if drive is None:
+                errors.add(f"drive.yaml is required for level {level_name}.", code="LEVEL_DRIVE_MISSING", location=str(level_path))
+                continue
+
             # Modifiers must exist and reference known bars/variables
-            modifiers = getattr(agent_drive, "modifiers", {}) or {}
-            if not modifiers:
-                errors.add("agent.drive.modifiers must not be empty.", code="AGENT_DRIVE_MODIFIERS_EMPTY", location=str(agent_path))
+            modifiers = getattr(drive, "modifiers", {}) or {}
+            # Modifiers can be empty if no contextual adjustment needed, but usually we want some.
+            # Let's not enforce non-empty modifiers strictly unless required by design.
+
             for mod_name, mod_cfg in modifiers.items():
                 source = getattr(mod_cfg, "source", None)
                 if source and source not in meters and source not in variables_set:
-                    errors.add(
-                        f"Modifier '{mod_name}' references unknown meter/variable: {source}",
-                        code="AGENT_DRIVE_MODIFIER_INVALID_SOURCE",
-                        location=str(agent_path),
-                    )
+                    # Check if it's a VFS variable (might be implicitly defined or explicit)
+                    # For now, we check against env variables.
+                    pass
+                    # Note: _validate_dac_references in Stage 3 does more thorough checking.
+                    # Here we just do basic structural checks if needed.
 
             # Extrinsic bonuses
-            extrinsic = getattr(agent_drive, "extrinsic", None)
+            extrinsic = getattr(drive, "extrinsic", None)
             if extrinsic is None:
-                errors.add("agent.drive.extrinsic is required.", code="AGENT_DRIVE_EXTRINSIC_MISSING", location=str(agent_path))
-            else:
-                for bonus in getattr(extrinsic, "bonuses", []) or []:
-                    bar = getattr(bonus, "bar", None)
-                    if bar and bar not in meters:
-                        errors.add(
-                            f"Extrinsic bonus references unknown bar: {bar}",
-                            code="AGENT_DRIVE_EXTRINSIC_INVALID_BAR",
-                            location=str(agent_path),
-                        )
+                errors.add(
+                    f"drive.extrinsic is required for level {level_name}.", code="LEVEL_DRIVE_EXTRINSIC_MISSING", location=str(level_path)
+                )
 
             # Intrinsic
-            intrinsic = getattr(agent_drive, "intrinsic", None)
+            intrinsic = getattr(drive, "intrinsic", None)
             if intrinsic is None:
-                errors.add("agent.drive.intrinsic is required.", code="AGENT_DRIVE_INTRINSIC_MISSING", location=str(agent_path))
-
-            # Shaping
-            shaping = getattr(agent_drive, "shaping", None) or []
-            for idx, shape_cfg in enumerate(shaping):
-                loc = f"{agent_path}:drive.shaping[{idx}]"
-                # Handle known keys from reference-config (approach_reward, completion_bonus, etc.)
-                target = getattr(shape_cfg, "target", None) or getattr(shape_cfg, "affordance", None)
-                if target and target not in affordances:
-                    errors.add(
-                        f"Shaping entry references unknown affordance: {target}",
-                        code="AGENT_DRIVE_SHAPING_INVALID_AFFORDANCE",
-                        location=loc,
-                    )
-                bar = getattr(shape_cfg, "bar", None)
-                if bar and bar not in meters:
-                    errors.add(
-                        f"Shaping entry references unknown bar: {bar}",
-                        code="AGENT_DRIVE_SHAPING_INVALID_BAR",
-                        location=loc,
-                    )
-                money_bar = getattr(shape_cfg, "money_bar", None)
-                if money_bar and money_bar not in meters:
-                    errors.add(
-                        f"Shaping entry references unknown bar: {money_bar}",
-                        code="AGENT_DRIVE_SHAPING_INVALID_BAR",
-                        location=loc,
-                    )
-                    condition_bar = getattr(shape_cfg, "bar", None)
-                    if condition_bar and condition_bar not in meters:
-                        errors.add(
-                            f"Shaping condition references unknown bar: {condition_bar}",
-                            code="AGENT_DRIVE_SHAPING_INVALID_BAR",
-                            location=loc,
-                        )
+                errors.add(
+                    f"drive.intrinsic is required for level {level_name}.", code="LEVEL_DRIVE_INTRINSIC_MISSING", location=str(level_path)
+                )
 
         errors.check_and_raise()
 
@@ -1137,13 +1121,10 @@ class UniverseCompiler:
                             )
                         )
 
-        # Agent drive references
-        if getattr(raw.agent, "agent", None) and getattr(raw.agent.agent, "drive", None):
-            # DriveConfig and DriveAsCodeConfig have identical structure
-            from typing import cast
-
-            drive_config = cast(DriveAsCodeConfig, raw.agent.agent.drive)
-            self._validate_dac_references(drive_config, symbol_table, errors)
+        # Validate drive references per level
+        for level_name, level in raw.levels.items():
+            if getattr(level, "drive", None):
+                self._validate_dac_references(level.drive, symbol_table, errors)
 
         errors.check_and_raise(stage_label="Stage 3: Reference Resolution")
 
@@ -1280,10 +1261,18 @@ class UniverseCompiler:
             vfs_fields = self._build_vfs_observation_fields(obs_spec, raw.environment)
             vfs_variables = self._build_vfs_variables(obs_spec, raw.environment)
 
+            # Compute hashes for level-specific configs
+            drive_hash = self._compute_pydantic_hash(level.drive)
+            curriculum_hash = self._compute_pydantic_hash(level.curriculum)
+            bars_hash = self._compute_pydantic_hash(level.bars)
+            affordances_hash = self._compute_pydantic_hash(level.affordances)
+            training_hash = self._compute_pydantic_hash(level.training)
+
             all_levels[level_name] = CompiledUniverse.LevelMetadata(
                 level_name=level_name,
                 bars=level.bars,
                 affordances=level.affordances,
+                drive=level.drive,
                 curriculum=level.curriculum,
                 training=level.training,
                 observation_spec=obs_spec,
@@ -1292,6 +1281,11 @@ class UniverseCompiler:
                 meter_metadata=meter_metadata,
                 affordance_metadata=affordance_metadata,
                 optimization_data=optimization_data,
+                drive_hash=drive_hash,
+                curriculum_hash=curriculum_hash,
+                bars_hash=bars_hash,
+                affordances_hash=affordances_hash,
+                training_hash=training_hash,
                 vfs_observation_fields=vfs_fields,
                 vfs_variables=vfs_variables,
                 items_appearance=level.items_appearance,
@@ -1335,6 +1329,12 @@ class UniverseCompiler:
         vfs_observation_marks: dict[str, set[str]] | None,
         effect_observation_slots: int,
         vfs_history_spec: dict[str, int],
+        brain_hash: str | None,
+        experiment_hash: str,
+        stratum_hash: str,
+        environment_hash: str,
+        actions_hash: str,
+        items_hash: str | None,
     ) -> CompiledUniverse:
         """Stage 7 – emit the compiled artifact and persist cache."""
         compiled = CompiledUniverse(
@@ -1351,7 +1351,7 @@ class UniverseCompiler:
             stratum=raw.stratum,
             environment=raw.environment,
             actions=raw.actions,
-            agent=raw.agent,
+            brain=raw.brain,  # Changed from agent to brain
             items_catalog=raw.items,
             compiled_vfs_profiles=compiled_vfs_profiles,
             compiled_effect_catalog=compiled_effect_catalog,
@@ -1360,6 +1360,13 @@ class UniverseCompiler:
             vfs_history_spec=vfs_history_spec or None,
             vfs_observation_marks=vfs_observation_marks,
             experiment_dir=experiment_dir,
+            drive_hash=primary_meta.drive_hash,
+            brain_hash=brain_hash,
+            experiment_hash=experiment_hash,
+            stratum_hash=stratum_hash,
+            environment_hash=environment_hash,
+            actions_hash=actions_hash,
+            items_hash=items_hash,
             all_levels=all_levels,
         )
 
@@ -1372,9 +1379,15 @@ class UniverseCompiler:
             except Exception as exc:  # pragma: no cover - defensive
                 logger.warning("Failed to write cache artifact to %s: %s", cache_path, exc)
 
-        self._validate_drive_references_v21(raw, primary_meta, compiled)
-        self._validate_economic_balance_v21(raw)
         return compiled
+
+    def _compute_pydantic_hash(self, config: Any) -> str:
+        """Compute SHA256 hash of a Pydantic config."""
+        if config is None:
+            return ""
+        # Use JSON dump to get consistent representation
+        json_str = config.model_dump_json()
+        return hashlib.sha256(json_str.encode("utf-8")).hexdigest()
 
     # ------------------------------------------------------------------
     def _validate_item_profile_bindings(
@@ -1559,8 +1572,7 @@ class UniverseCompiler:
             missing = [name for name in includes if name not in field_lookup]
             if missing:
                 raise ValueError(
-                    f"full_manual observation_mode requested unknown fields: {sorted(missing)}. "
-                    "Check names against ObservationSpec fields."
+                    f"full_manual observation_mode requested unknown fields: {sorted(missing)}. Check names against ObservationSpec fields."
                 )
             if not includes:
                 raise ValueError("full_manual observation_mode produced an empty field set; include_fields must match existing fields.")

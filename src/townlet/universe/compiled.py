@@ -13,9 +13,10 @@ import torch
 
 from townlet.config.actions_config import ActionsConfig
 from townlet.config.affordances_v2_config import AffordancesV2Config
-from townlet.config.agent_config import AgentConfig
 from townlet.config.bars_v2_config import BarsV2Config
+from townlet.config.brain_config import BrainConfig
 from townlet.config.curriculum_config import CurriculumConfig
+from townlet.config.drive_as_code import DriveAsCodeConfig
 from townlet.config.environment_config import EnvironmentConfig
 from townlet.config.experiment_config import ExperimentConfig
 from townlet.config.items_config import ItemsAppearanceConfig, ItemsCatalogConfig
@@ -39,7 +40,7 @@ from townlet.vfs.profiles import CompiledGlobalProfile
 from townlet.vfs.schema import ObservationField as VfsObservationField
 from townlet.vfs.schema import VariableDef
 
-COMPILED_SCHEMA_VERSION = "1.2"
+COMPILED_SCHEMA_VERSION = "1.3"
 
 
 @dataclass(frozen=True)
@@ -76,7 +77,7 @@ class CompiledUniverse:
     stratum: StratumConfig
     environment: EnvironmentConfig
     actions: ActionsConfig
-    agent: AgentConfig
+    brain: BrainConfig
     items_catalog: ItemsCatalogConfig | None = None
 
     # Compiled VFS profiles (experiment-level artifact)
@@ -99,6 +100,12 @@ class CompiledUniverse:
     # Provenance
     experiment_dir: Path | None = None
     drive_hash: str | None = None
+    brain_hash: str | None = None
+    experiment_hash: str | None = None
+    stratum_hash: str | None = None
+    environment_hash: str | None = None
+    actions_hash: str | None = None
+    items_hash: str | None = None
 
     # Multi-level support
     all_levels: dict[str, CompiledUniverse.LevelMetadata] | None = None
@@ -110,6 +117,7 @@ class CompiledUniverse:
         level_name: str
         bars: BarsV2Config
         affordances: AffordancesV2Config
+        drive: DriveAsCodeConfig
         curriculum: CurriculumConfig
         training: TrainingV2Config
         observation_spec: ObservationSpec
@@ -120,6 +128,12 @@ class CompiledUniverse:
         optimization_data: OptimizationData
         vfs_observation_fields: tuple[VfsObservationField, ...]
         vfs_variables: tuple[VariableDef, ...]
+        vfs_variables: tuple[VariableDef, ...]
+        drive_hash: str | None = None
+        curriculum_hash: str | None = None
+        bars_hash: str | None = None
+        affordances_hash: str | None = None
+        training_hash: str | None = None
         items_appearance: ItemsAppearanceConfig | None = None
 
     def __post_init__(self) -> None:
@@ -159,7 +173,7 @@ class CompiledUniverse:
             stratum=deepcopy(self.stratum),
             environment=deepcopy(self.environment),
             actions=deepcopy(self.actions),
-            agent=deepcopy(self.agent),
+            brain=deepcopy(self.brain),
             items_catalog=deepcopy(self.items_catalog) if self.items_catalog is not None else None,
             compiled_vfs_profiles=deepcopy(self.compiled_vfs_profiles) if self.compiled_vfs_profiles is not None else None,
             compiled_effect_catalog=deepcopy(self.compiled_effect_catalog) if self.compiled_effect_catalog is not None else None,
@@ -169,6 +183,12 @@ class CompiledUniverse:
             vfs_observation_marks=deepcopy(self.vfs_observation_marks) if self.vfs_observation_marks is not None else None,
             experiment_dir=self.experiment_dir,
             drive_hash=self.drive_hash,
+            brain_hash=self.brain_hash,
+            experiment_hash=self.experiment_hash,
+            stratum_hash=self.stratum_hash,
+            environment_hash=self.environment_hash,
+            actions_hash=self.actions_hash,
+            items_hash=self.items_hash,
             all_levels=deepcopy(self.all_levels),
         )
 
@@ -199,7 +219,7 @@ class CompiledUniverse:
             "stratum": self.stratum.model_dump(),
             "environment": self.environment.model_dump(),
             "actions": self.actions.model_dump(),
-            "agent": self.agent.model_dump(),
+            "brain": self.brain.model_dump(),
             "items_catalog": self.items_catalog.model_dump() if self.items_catalog is not None else None,
             "compiled_vfs_profiles": (
                 _serialize_vfs_profiles(self.compiled_vfs_profiles) if self.compiled_vfs_profiles is not None else None
@@ -215,6 +235,12 @@ class CompiledUniverse:
             ),  # Convert sets to lists for JSON serialization
             "experiment_dir": None if self.experiment_dir is None else str(self.experiment_dir),
             "drive_hash": self.drive_hash,
+            "brain_hash": self.brain_hash,
+            "experiment_hash": self.experiment_hash,
+            "stratum_hash": self.stratum_hash,
+            "environment_hash": self.environment_hash,
+            "actions_hash": self.actions_hash,
+            "items_hash": self.items_hash,
             "all_levels": (
                 None
                 if self.all_levels is None
@@ -223,6 +249,12 @@ class CompiledUniverse:
                         "level_name": meta.level_name,
                         "bars": meta.bars.model_dump(),
                         "affordances": meta.affordances.model_dump(),
+                        "drive": meta.drive.model_dump(),
+                        "drive_hash": meta.drive_hash,
+                        "curriculum_hash": meta.curriculum_hash,
+                        "bars_hash": meta.bars_hash,
+                        "affordances_hash": meta.affordances_hash,
+                        "training_hash": meta.training_hash,
                         "curriculum": meta.curriculum.model_dump(),
                         "training": meta.training.model_dump(),
                         "observation_spec": _dataclass_to_plain(meta.observation_spec),
@@ -276,6 +308,12 @@ class CompiledUniverse:
                     level_name=meta["level_name"],
                     bars=BarsV2Config.model_validate(meta["bars"]),
                     affordances=AffordancesV2Config.model_validate(meta["affordances"]),
+                    drive=DriveAsCodeConfig.model_validate(meta["drive"]),
+                    drive_hash=meta.get("drive_hash"),
+                    curriculum_hash=meta.get("curriculum_hash"),
+                    bars_hash=meta.get("bars_hash"),
+                    affordances_hash=meta.get("affordances_hash"),
+                    training_hash=meta.get("training_hash"),
                     curriculum=CurriculumConfig.model_validate(meta["curriculum"]),
                     training=TrainingV2Config.model_validate(meta["training"]),
                     observation_spec=_observation_spec_from_plain(meta["observation_spec"]),
@@ -314,7 +352,7 @@ class CompiledUniverse:
             stratum=StratumConfig.model_validate(payload["stratum"]),
             environment=EnvironmentConfig.model_validate(payload["environment"]),
             actions=ActionsConfig.model_validate(payload["actions"]),
-            agent=AgentConfig.model_validate(payload["agent"]),
+            brain=BrainConfig.model_validate(payload["brain"]),
             items_catalog=ItemsCatalogConfig.model_validate(payload["items_catalog"]) if payload.get("items_catalog") is not None else None,
             compiled_vfs_profiles=(
                 _deserialize_vfs_profiles(payload["compiled_vfs_profiles"]) if payload.get("compiled_vfs_profiles") is not None else None
@@ -334,6 +372,12 @@ class CompiledUniverse:
             ),  # Convert lists back to sets
             experiment_dir=None if payload.get("experiment_dir") is None else Path(payload["experiment_dir"]),
             drive_hash=payload.get("drive_hash"),
+            brain_hash=payload.get("brain_hash"),
+            experiment_hash=payload.get("experiment_hash"),
+            stratum_hash=payload.get("stratum_hash"),
+            environment_hash=payload.get("environment_hash"),
+            actions_hash=payload.get("actions_hash"),
+            items_hash=payload.get("items_hash"),
             all_levels=all_levels,
         )
 
@@ -370,10 +414,11 @@ class CompiledUniverse:
             "stratum": self.stratum,
             "environment": self.environment,
             "actions": self.actions,
-            "agent": self.agent,
+            "brain": self.brain,
             "curriculum": level.curriculum,
             "bars": level.bars,
             "affordances": level.affordances,
+            "drive": level.drive,
             "training": level.training,
         }
 

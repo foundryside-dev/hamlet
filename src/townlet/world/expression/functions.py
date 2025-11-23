@@ -114,6 +114,48 @@ def _affordance_position(context: ExecutionContext, name: str) -> torch.Tensor |
     return pos
 
 
+def _fade(t: torch.Tensor) -> torch.Tensor:
+    return t * t * t * (t * (t * 6 - 15) + 10)
+
+
+def _lerp(a: torch.Tensor, b: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
+    return a + t * (b - a)
+
+
+def _gradient(hash_tensor: torch.Tensor, xf: torch.Tensor, yf: torch.Tensor) -> torch.Tensor:
+    gradients = torch.tensor([[1.0, 0.0], [-1.0, 0.0], [0.0, 1.0], [0.0, -1.0]], device=hash_tensor.device)
+    g = gradients[hash_tensor % 4]
+    return g[..., 0] * xf + g[..., 1] * yf
+
+
+def _perlin_2d(x: torch.Tensor, y: torch.Tensor, seed: int = 0) -> torch.Tensor:
+    x = x.to(dtype=torch.float32)
+    y = y.to(dtype=torch.float32)
+
+    xi = torch.floor(x).to(dtype=torch.int64)
+    yi = torch.floor(y).to(dtype=torch.int64)
+    xf = x - xi.to(dtype=torch.float32)
+    yf = y - yi.to(dtype=torch.float32)
+
+    def _hash(ix: torch.Tensor, iy: torch.Tensor) -> torch.Tensor:
+        return (ix * 374761393 + iy * 668265263 + seed * 1446648777) & 0xFFFFFFFF
+
+    aa = _hash(xi, yi)
+    ab = _hash(xi, yi + 1)
+    ba = _hash(xi + 1, yi)
+    bb = _hash(xi + 1, yi + 1)
+
+    x1 = _gradient(aa, xf, yf)
+    x2 = _gradient(ba, xf - 1, yf)
+    y1 = _lerp(x1, x2, _fade(xf))
+
+    x3 = _gradient(ab, xf, yf - 1)
+    x4 = _gradient(bb, xf - 1, yf - 1)
+    y2 = _lerp(x3, x4, _fade(xf))
+
+    return _lerp(y1, y2, _fade(yf))
+
+
 FUNCTION_SPECS: dict[str, FunctionSpec] = {}
 
 
@@ -130,6 +172,47 @@ _register(
         return_type=_return_numeric,
         validate_args=lambda args: (_ensure_arg_count("max", args, 2, 2), _ensure_all_numeric("max", args)),
         eval_fn=lambda ts, context, arg_nodes: torch.max(ts[0], ts[1]),
+    )
+)
+
+
+# --- Noise ---
+
+
+_register(
+    FunctionSpec(
+        name="perlin_noise",
+        min_args=1,
+        max_args=3,
+        return_type=_return_float,
+        validate_args=lambda args: (
+            _ensure_arg_count("perlin_noise", args, 1, 3),
+            _ensure_all_numeric("perlin_noise", args[:2]),
+        ),
+        eval_fn=lambda ts, context, arg_nodes: _perlin_2d(
+            ts[0],
+            ts[1] if len(ts) > 1 else torch.zeros_like(ts[0]),
+            int(ts[2].item()) if len(ts) > 2 and isinstance(ts[2], torch.Tensor) else (int(ts[2]) if len(ts) > 2 else 0),
+        ),
+    )
+)
+
+
+_register(
+    FunctionSpec(
+        name="simplex_noise",
+        min_args=1,
+        max_args=3,
+        return_type=_return_float,
+        validate_args=lambda args: (
+            _ensure_arg_count("simplex_noise", args, 1, 3),
+            _ensure_all_numeric("simplex_noise", args[:2]),
+        ),
+        eval_fn=lambda ts, context, arg_nodes: _perlin_2d(
+            ts[0],
+            ts[1] if len(ts) > 1 else torch.zeros_like(ts[0]),
+            int(ts[2].item()) if len(ts) > 2 and isinstance(ts[2], torch.Tensor) else (int(ts[2]) if len(ts) > 2 else 0),
+        ),
     )
 )
 

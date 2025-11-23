@@ -1630,6 +1630,11 @@ class VectorizedHamletEnv:
                     step=int(self.step_counts[0].item()) if self.step_counts.numel() > 0 else None,
                     agent_positions=self.positions.to(dtype=torch.float32, device=self.device),
                     affordance_positions={k: v.to(dtype=torch.float32, device=self.device) for k, v in self.affordances.items()},
+                    vfs_types={name: var.type for name, var in self.vfs_registry.variables.items()},
+                    num_agents=self.num_agents,
+                    item_vfs=getattr(self.vfs_registry, "item_vfs", None),
+                    item_profile_map=getattr(self.vfs_registry, "item_profile_map", None),
+                    item_index_to_profile=getattr(self.vfs_registry, "item_vfs_index_to_profile", None),
                 )
 
                 # Write updated values back to registry

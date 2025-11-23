@@ -94,6 +94,11 @@ class VFSEvaluator:
         step: int | None = None,
         agent_positions: torch.Tensor | None = None,
         affordance_positions: dict[str, torch.Tensor] | None = None,
+        vfs_types: dict[str, str] | None = None,
+        num_agents: int | None = None,
+        item_vfs: torch.Tensor | None = None,
+        item_profile_map: dict[str, dict[str, int]] | None = None,
+        item_index_to_profile: dict[int, str] | None = None,
     ) -> dict[str, torch.Tensor]:
         """Evaluate global VFS profile expressions.
 
@@ -148,6 +153,11 @@ class VFSEvaluator:
             agent_positions=agent_positions,
             temporal={},  # TODO: Add temporal support (Task 3)
             device=device,
+            vfs_types=vfs_types,
+            num_agents=num_agents,
+            item_vfs=item_vfs,
+            item_profile_map=item_profile_map,
+            item_index_to_profile=item_index_to_profile,
             history=self._history,
             step=step,
         )

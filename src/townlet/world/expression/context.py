@@ -44,21 +44,36 @@ class ExecutionContext:
         parts = path.split(".")
         if parts[0] == "bar" and len(parts) == 2:
             return self.bars[parts[1]]
-        elif parts[0] == "vfs" and len(parts) >= 2:
-            # Support reference paths like vfs.ref.foo or nested vfs.ref.ref.bar
-            if parts[1] == "ref":
-                target_parts = parts[2:]
-                while target_parts and target_parts[0] == "ref":
-                    target_parts = target_parts[1:]
-                key = ".".join(target_parts)
-                return self.vfs[key]
-            return self.vfs[".".join(parts[1:])]
-        elif parts[0] == "temporal" and len(parts) == 2:
+        if parts[0] == "temporal" and len(parts) == 2:
             return self.temporal[parts[1]]
-        elif len(parts) == 1:
-            # Plain variable name - check vfs first
-            if path in self.vfs:
-                return self.vfs[path]
-            raise KeyError(f"Variable '{path}' not found in VFS context")
-        else:
-            raise KeyError(f"Path '{path}' not found in execution context")
+        if parts[0] == "vfs":
+            tail = parts[1:]
+            # Normalize ref hops: drop explicit ref tokens
+            tail = [p for p in tail if p != "ref"]
+            # If tail looks like <ref>.bar.<name> or <ref>.vfs.<name>, drop the ref name
+            if len(tail) >= 2 and tail[1] in {"bar", "vfs"}:
+                tail = tail[1:]
+            if not tail:
+                raise KeyError(f"Path '{path}' not found in execution context")
+            if tail[0] == "bar":
+                if len(tail) < 2:
+                    raise KeyError(f"Path '{path}' not found in execution context")
+                return self.bars[tail[1]]
+            key = ".".join(tail if tail[0] != "vfs" else tail[1:])
+            if key in self.vfs:
+                return self.vfs[key]
+        if parts[0] in {"target", "self"}:
+            # Normalize target/self.vfs.* or target/self.bar.*
+            tail = parts[1:]
+            if not tail:
+                raise KeyError(f"Path '{path}' not found in execution context")
+            if tail[0] == "bar":
+                if len(tail) < 2:
+                    raise KeyError(f"Path '{path}' not found in execution context")
+                return self.bars[tail[1]]
+            key = ".".join(tail[1:] if tail[0] == "vfs" else tail)
+            if key in self.vfs:
+                return self.vfs[key]
+        if len(parts) == 1 and path in self.vfs:
+            return self.vfs[path]
+        raise KeyError(f"Path '{path}' not found in execution context")

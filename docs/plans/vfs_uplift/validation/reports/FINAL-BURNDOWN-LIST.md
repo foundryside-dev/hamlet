@@ -2,16 +2,16 @@
 
 **Date:** 2025-11-24 (updated)
 **Baseline Commit:** b085877dd45ffb9647a2bc3295ee6ce8c94ad845
-**Overall Completion:** 95.9% (94/98 primary requirements DONE)
+**Overall Completion:** 97.9% (96/98 primary requirements DONE)
 
 ---
 
 ## Executive Summary
 
 **Validation Complete:** All 10 agents finished
-- **Primary requirements (master_requirements.md):** 94/98 DONE (95.9%)
-- **Partial implementations:** 2 requirements
-- **Missing implementations:** 2 requirements
+- **Primary requirements (master_requirements.md):** 96/98 DONE (97.9%)
+- **Partial implementations:** 0 requirements
+- **Missing implementations:** 1 requirement
 - **N/A (by design):** 2 requirements (while command, intentionally deferred DSL ops)
 
 **Cross-validation:** 2 valuable catches identified
@@ -22,7 +22,7 @@
 
 ---
 
-## Final Burn-Down List: 4 Items
+## Final Burn-Down List: 1 Item
 
 ### P1 - Important (Short-Term: 1-2 weeks)
 
@@ -38,26 +38,17 @@
 **Status:** ✅ DONE
 **Notes:** Integration coverage ensures observation_activity masks and vfs_observation_fields.curriculum_active align with curriculum vision modes.
 
-#### 4. PERF-REQ-001: Performance <5% overhead assertion (MISSING)
-**Status:** ❌ MISSING (benchmarks exist but no automated threshold)
-**What's needed:** CI assertion that VFS/effects overhead is <5% vs baseline
-**Impact:** Ensures performance target is met and monitored
-**Effort:** 4-6 hours
-**Implementation:**
-- Add performance threshold to existing benchmark suite
-- Fail CI if overhead exceeds 5%
-**Priority:** P1 - Success criterion validation
+#### 4. PERF-REQ-001: Performance <5% overhead assertion (DONE)
+**Status:** ✅ DONE
+**Notes:** Added perf guardrail test comparing baseline curriculum vs VFS/effects/items config and enforcing <5% overhead.
 
 ---
 
 ### P2 - Nice-to-Have (Long-Term: Future sprints)
 
-#### 5. COMP-REQ-009: Reference type deep path tests (PARTIAL)
-**Status:** 🟡 PARTIAL
-**What's missing:** 5-8 integration tests for deep path traversal (e.g., `vfs.ref.vfs.field`)
-**Impact:** Edge case coverage for reference resolution
-**Effort:** 2-3 hours
-**Priority:** P2 - TypeChecker implementation complete, just needs test coverage
+#### 5. COMP-REQ-009: Reference type deep path tests (DONE)
+**Status:** ✅ DONE
+**Notes:** Added evaluator coverage for `vfs.ref.*` and nested reference resolution.
 
 #### 6. DOC-REQ-005: Interaction radius guide (MISSING)
 **Status:** ❌ MISSING

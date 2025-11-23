@@ -193,3 +193,100 @@ def test_vfs_evaluator_eager_mode_evaluates_all_vars():
     # Verify: Both variables evaluated
     assert "var1" in result
     assert "var2" in result
+
+
+def test_vfs_evaluator_handles_reference_path_access():
+    """Reference paths (vfs.ref.vfs.field) should resolve via context."""
+    parser = ExpressionParser()
+
+    variables = [
+        CompiledVariable(
+            name="ref_target",
+            type="float",
+            ast=None,
+            initial_value=3.0,
+            result_type="float",
+            exposed_to=("agent",),
+            semantic_type="custom",
+        ),
+        CompiledVariable(
+            name="use_ref",
+            type="float",
+            ast=parser.parse("vfs.ref.ref_target * 2"),
+            initial_value=None,
+            result_type="float",
+            exposed_to=("agent",),
+            semantic_type="custom",
+        ),
+    ]
+
+    profile = CompiledGlobalProfile(
+        variables=variables,
+        dependencies={"ref_target": tuple(), "use_ref": ("ref_target",)},
+    )
+
+    bars = {}
+    vfs_state = {"ref_target": torch.tensor(4.0)}  # Should be overwritten by initial_value/default
+
+    evaluator = VFSEvaluator(mode=EvaluationMode.EAGER)
+    result = evaluator.evaluate_global_profile(
+        profile=profile,
+        bars=bars,
+        vfs_state=vfs_state,
+        device=torch.device("cpu"),
+    )
+
+    assert result["ref_target"].item() == pytest.approx(3.0)
+    assert result["use_ref"].item() == pytest.approx(6.0)
+
+
+def test_vfs_evaluator_handles_nested_reference_paths():
+    """Deep reference chains (vfs.ref.vfs.ref.*) are resolved transitively."""
+    parser = ExpressionParser()
+
+    variables = [
+        CompiledVariable(
+            name="a",
+            type="float",
+            ast=None,
+            initial_value=1.5,
+            result_type="float",
+            exposed_to=("agent",),
+            semantic_type="custom",
+        ),
+        CompiledVariable(
+            name="b",
+            type="float",
+            ast=parser.parse("vfs.ref.a + 1.0"),
+            initial_value=None,
+            result_type="float",
+            exposed_to=("agent",),
+            semantic_type="custom",
+        ),
+        CompiledVariable(
+            name="c",
+            type="float",
+            ast=parser.parse("vfs.ref.b * 2.0"),
+            initial_value=None,
+            result_type="float",
+            exposed_to=("agent",),
+            semantic_type="custom",
+        ),
+    ]
+
+    profile = CompiledGlobalProfile(
+        variables=variables,
+        dependencies={"a": tuple(), "b": ("a",), "c": ("b",)},
+    )
+
+    evaluator = VFSEvaluator(mode=EvaluationMode.EAGER)
+    result = evaluator.evaluate_global_profile(
+        profile=profile,
+        bars={},
+        vfs_state={},
+        device=torch.device("cpu"),
+    )
+
+    assert result["a"].item() == pytest.approx(1.5)
+    assert result["b"].item() == pytest.approx(2.5)
+    assert result["c"].item() == pytest.approx(5.0)

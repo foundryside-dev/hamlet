@@ -39,6 +39,13 @@ class ExecutionContext:
         if parts[0] == "bar" and len(parts) == 2:
             return self.bars[parts[1]]
         elif parts[0] == "vfs" and len(parts) >= 2:
+            # Support reference paths like vfs.ref.foo or nested vfs.ref.ref.bar
+            if parts[1] == "ref":
+                target_parts = parts[2:]
+                while target_parts and target_parts[0] == "ref":
+                    target_parts = target_parts[1:]
+                key = ".".join(target_parts)
+                return self.vfs[key]
             return self.vfs[".".join(parts[1:])]
         elif parts[0] == "temporal" and len(parts) == 2:
             return self.temporal[parts[1]]

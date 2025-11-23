@@ -230,9 +230,9 @@ class ItemsCatalogConfig(BaseModel):
         description="Item type definitions",
     )
 
-    max_items_per_agent: int = Field(..., description="Maximum items agent can carry", ge=1, le=10)
+    max_items_per_agent: int = Field(..., description="Maximum items agent can carry", ge=0, le=10)
 
-    max_items_in_world: int = Field(..., description="Maximum items that can exist in world simultaneously", ge=1, le=1000)
+    max_items_in_world: int = Field(..., description="Maximum items that can exist in world simultaneously", ge=0, le=1000)
 
     @field_validator("item_types")
     @classmethod

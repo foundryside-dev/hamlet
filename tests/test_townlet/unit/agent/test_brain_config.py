@@ -438,6 +438,7 @@ def test_apply_training_overrides_merges_q_learning_and_replay():
         IntrinsicConfig,
         ReplayBufferConfig,
         RNDConfig,
+        RunMetadataConfig,
         TrainingLoopConfig,
         TrainingV2Config,
     )
@@ -541,6 +542,7 @@ def test_apply_training_overrides_merges_q_learning_and_replay():
                 min_steps_at_stage=100,
             ),
         ),
+        run_metadata=RunMetadataConfig(output_subdir="unit-test"),
     )
 
     effective = apply_training_overrides(base_brain, training_cfg)

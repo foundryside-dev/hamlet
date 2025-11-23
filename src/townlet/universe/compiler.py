@@ -964,34 +964,31 @@ class UniverseCompiler:
                 errors.add("agent.drive.intrinsic is required.", code="AGENT_DRIVE_INTRINSIC_MISSING", location=str(agent_path))
 
             # Shaping
-            shaping = getattr(agent_drive, "shaping", None)
-            if not shaping:
-                errors.add("agent.drive.shaping must not be empty.", code="AGENT_DRIVE_SHAPING_EMPTY", location=str(agent_path))
-            else:
-                for idx, shape_cfg in enumerate(shaping):
-                    loc = f"{agent_path}:drive.shaping[{idx}]"
-                    # Handle known keys from reference-config (approach_reward, completion_bonus, etc.)
-                    target = getattr(shape_cfg, "target", None) or getattr(shape_cfg, "affordance", None)
-                    if target and target not in affordances:
-                        errors.add(
-                            f"Shaping entry references unknown affordance: {target}",
-                            code="AGENT_DRIVE_SHAPING_INVALID_AFFORDANCE",
-                            location=loc,
-                        )
-                    bar = getattr(shape_cfg, "bar", None)
-                    if bar and bar not in meters:
-                        errors.add(
-                            f"Shaping entry references unknown bar: {bar}",
-                            code="AGENT_DRIVE_SHAPING_INVALID_BAR",
-                            location=loc,
-                        )
-                    money_bar = getattr(shape_cfg, "money_bar", None)
-                    if money_bar and money_bar not in meters:
-                        errors.add(
-                            f"Shaping entry references unknown bar: {money_bar}",
-                            code="AGENT_DRIVE_SHAPING_INVALID_BAR",
-                            location=loc,
-                        )
+            shaping = getattr(agent_drive, "shaping", None) or []
+            for idx, shape_cfg in enumerate(shaping):
+                loc = f"{agent_path}:drive.shaping[{idx}]"
+                # Handle known keys from reference-config (approach_reward, completion_bonus, etc.)
+                target = getattr(shape_cfg, "target", None) or getattr(shape_cfg, "affordance", None)
+                if target and target not in affordances:
+                    errors.add(
+                        f"Shaping entry references unknown affordance: {target}",
+                        code="AGENT_DRIVE_SHAPING_INVALID_AFFORDANCE",
+                        location=loc,
+                    )
+                bar = getattr(shape_cfg, "bar", None)
+                if bar and bar not in meters:
+                    errors.add(
+                        f"Shaping entry references unknown bar: {bar}",
+                        code="AGENT_DRIVE_SHAPING_INVALID_BAR",
+                        location=loc,
+                    )
+                money_bar = getattr(shape_cfg, "money_bar", None)
+                if money_bar and money_bar not in meters:
+                    errors.add(
+                        f"Shaping entry references unknown bar: {money_bar}",
+                        code="AGENT_DRIVE_SHAPING_INVALID_BAR",
+                        location=loc,
+                    )
                     condition_bar = getattr(shape_cfg, "bar", None)
                     if condition_bar and condition_bar not in meters:
                         errors.add(

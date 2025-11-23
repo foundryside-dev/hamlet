@@ -459,7 +459,11 @@ class RawConfigsV21:
         if items_path.exists():
             try:
                 loaded_items = ItemsCatalogConfig.from_yaml(items_path)
-                items = loaded_items
+                # Treat zero-capacity catalogs as disabled to remove item actions/obs.
+                if loaded_items.max_items_in_world == 0 or loaded_items.max_items_per_agent == 0:
+                    items = None
+                else:
+                    items = loaded_items
             except Exception as exc:  # noqa: BLE001
                 errors.add(
                     f"Failed to load items from items.yaml: {exc}",

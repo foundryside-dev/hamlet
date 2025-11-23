@@ -1,0 +1,39 @@
+bars:
+  version: "1.0"
+
+  meters:
+    - name: energy
+      initial: 1.0
+
+      depletion:
+        passive: 0.01
+        move: 0.02
+        interact: 0.05
+
+      recovery:
+        natural: 0.0
+
+      bounds:
+        min: 0.0
+        max: 1.0
+        lethal_min: true
+        lethal_max: false
+
+    - name: health
+      initial: 1.0
+
+      depletion:
+        passive: 0.005
+        move: 0.0
+        interact: 0.0
+
+      recovery:
+        natural: 0.0
+
+      bounds:
+        min: 0.0
+        max: 1.0
+        lethal_min: true
+        lethal_max: false
+
+  cascades: []

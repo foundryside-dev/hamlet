@@ -11,7 +11,6 @@ from pathlib import Path
 from typing import Any
 
 import torch
-import yaml
 
 from townlet.agent.brain_config import BrainConfig, compute_brain_hash
 from townlet.curriculum.factory import build_curriculum
@@ -129,10 +128,14 @@ class DemoRunner:
         self.bars_config = level_config.bars
         self.affordances_config = level_config.affordances
         self.training_config = level_config.training
-
-        # Also load raw YAML for optional sections (e.g., recording)
-        with open(self.training_config_path) as f:
-            self.config = yaml.safe_load(f)
+        # Expose training config in the legacy dict shape for downstream callers/tests
+        self.config: dict[str, Any] = {
+            "training": self.training_config.model_dump(exclude_none=True),
+        }
+        if self.training_config.run_metadata is not None:
+            self.config["run_metadata"] = self.training_config.run_metadata.model_dump(exclude_none=True)
+        if self.training_config.recording is not None:
+            self.config["recording"] = self.training_config.recording.model_dump(exclude_none=True)
 
         # Set max_episodes: use provided value, otherwise read from curriculum training config
         if max_episodes is not None:
@@ -307,7 +310,7 @@ class DemoRunner:
             checkpoint["epsilon"] = self.population._get_current_epsilon_value()
 
         # Persist the training configuration for provenance
-        checkpoint["training_config"] = self.config
+        checkpoint["training_config"] = self.training_config.model_dump()
         checkpoint["config_dir"] = str(self.config_dir)
 
         # TASK-005 Phase 1: Add brain_hash for checkpoint provenance
@@ -512,16 +515,17 @@ class DemoRunner:
         self.curriculum.initialize_population(num_agents)
 
         # Initialize episode recorder if enabled
-        recording_cfg = self.config.get("recording", {})
-        if recording_cfg.get("enabled", False):
+        recording_cfg = self.training_config.recording
+        if recording_cfg and recording_cfg.enabled:
             from townlet.recording.recorder import EpisodeRecorder
 
+            recording_payload = recording_cfg.model_dump(exclude_none=True)
             # Create recording output directory
-            recording_output_dir = self.checkpoint_dir / recording_cfg.get("output_dir", "recordings")
+            recording_output_dir = self.checkpoint_dir / (recording_cfg.output_dir or "recordings")
             recording_output_dir.mkdir(parents=True, exist_ok=True)
 
             self.recorder = EpisodeRecorder(
-                config=recording_cfg,
+                config=recording_payload,
                 output_dir=recording_output_dir,
                 database=self.db,
                 curriculum=self.curriculum,

@@ -52,6 +52,8 @@ class TestTrainingV2ConfigLoading:
         training_yaml = config_dir / "training.yaml"
         training_yaml.write_text(
             """
+run_metadata:
+  output_subdir: test-level
 training:
   version: "1.0"
   # population, replay_buffer, exploration, etc. deliberately omitted

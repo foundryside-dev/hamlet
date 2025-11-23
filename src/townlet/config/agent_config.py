@@ -61,6 +61,7 @@ class ExtrinsicConfig(BaseModel):
     type: str = Field(..., description="Extrinsic strategy type")
     base: float = Field(..., description="Base reward value")
     bonuses: list[ExtrinsicBonus] | None = Field(None, description="Bonus terms (for constant_base_with_shaped_bonus)")
+    bars: list[str] | None = Field(None, description="Bar names (for multiplicative strategy)")
 
     model_config = ConfigDict(extra="forbid")
 

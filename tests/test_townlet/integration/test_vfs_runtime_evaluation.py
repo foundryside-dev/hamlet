@@ -49,9 +49,9 @@ def test_mark_and_sweep_only_evaluates_observed_vars():
     evaluated_vars = []
     original_evaluate = VFSEvaluator.evaluate_global_profile
 
-    def track_evaluation(self, profile, bars, vfs_state, marks=None, device=None):
+    def track_evaluation(self, profile, bars, vfs_state, marks=None, device=None, **kwargs):
         """Track which variables are evaluated."""
-        result = original_evaluate(self, profile, bars, vfs_state, marks, device)
+        result = original_evaluate(self, profile, bars, vfs_state, marks, device, **kwargs)
         evaluated_vars.extend(result.keys())
         return result
 
@@ -100,9 +100,9 @@ def test_eager_mode_evaluates_all_vars():
         evaluated_vars = []
         original_evaluate = VFSEvaluator.evaluate_global_profile
 
-        def track_evaluation(self, profile, bars, vfs_state, marks=None, device=None):
+        def track_evaluation(self, profile, bars, vfs_state, marks=None, device=None, **kwargs):
             """Track which variables are evaluated."""
-            result = original_evaluate(self, profile, bars, vfs_state, marks, device)
+            result = original_evaluate(self, profile, bars, vfs_state, marks, device, **kwargs)
             evaluated_vars.extend(result.keys())
             return result
 

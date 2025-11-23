@@ -55,6 +55,12 @@ class ExecutionContext:
             key = ".".join(tail)
             if key in self.vfs:
                 return self.vfs[key]
+        if parts[0] == "global" and len(parts) >= 2:
+            # Support global.vfs.* lookups by dropping the prefix
+            if parts[1] == "vfs":
+                key = ".".join(parts[2:]) if len(parts) > 2 else ""
+                if key and key in self.vfs:
+                    return self.vfs[key]
         if parts[0] in {"target", "self"}:
             # Normalize target/self.vfs.* or target/self.bar.*
             tail = parts[1:]

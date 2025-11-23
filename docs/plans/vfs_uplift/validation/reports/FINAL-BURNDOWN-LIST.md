@@ -1,16 +1,16 @@
 # VFS Uplift Final Validation - Burn-Down List (Run 4)
 
-**Date:** 2025-11-24
+**Date:** 2025-11-24 (updated)
 **Baseline Commit:** b085877dd45ffb9647a2bc3295ee6ce8c94ad845
-**Overall Completion:** 93.9% (92/98 primary requirements DONE)
+**Overall Completion:** 95.9% (94/98 primary requirements DONE)
 
 ---
 
 ## Executive Summary
 
 **Validation Complete:** All 10 agents finished
-- **Primary requirements (master_requirements.md):** 92/98 DONE (93.9%)
-- **Partial implementations:** 4 requirements
+- **Primary requirements (master_requirements.md):** 94/98 DONE (95.9%)
+- **Partial implementations:** 2 requirements
 - **Missing implementations:** 2 requirements
 - **N/A (by design):** 2 requirements (while command, intentionally deferred DSL ops)
 
@@ -22,7 +22,7 @@
 
 ---
 
-## Final Burn-Down List: 6 Items
+## Final Burn-Down List: 4 Items
 
 ### P1 - Important (Short-Term: 1-2 weeks)
 
@@ -30,23 +30,13 @@
 **Status:** ✅ DONE
 **Notes:** `exposed_to`/`semantic_type` now flow through schema → compiled payloads → env reconstruction → observation builder; strict extra-field validation restored.
 
-#### 2. RUN-REQ-001: Debug instrumentation (MISSING)
-**Status:** ❌ MISSING
-**What's needed:** Optional logging for item spawns/despawns, inventory changes, VFS evaluations
-**Impact:** Quality-of-life for debugging production issues
-**Effort:** 1-2 days
-**Implementation:**
-- Add logger instances to ItemManager, VFSEvaluator
-- Environment variable gates (HAMLET_DEBUG_ITEMS, HAMLET_DEBUG_VFS)
-- Conditional logging at key events
-**Priority:** P1 - Improves troubleshooting
+#### 2. RUN-REQ-001: Debug instrumentation (DONE)
+**Status:** ✅ DONE
+**Notes:** HAMLET_DEBUG_ITEMS and HAMLET_DEBUG_VFS env gates add debug logging for item spawns/despawns and VFS evaluation.
 
-#### 3. QA-REQ-003: Metadata-mask parity tests (MISSING)
-**Status:** ❌ MISSING
-**What's needed:** Integration tests asserting observation masks align with compiled VFS profile metadata
-**Impact:** Ensures curriculum_active and other exposure flags work correctly
-**Effort:** 4-6 hours (3-5 tests)
-**Priority:** P1 - Validation gap
+#### 3. QA-REQ-003: Metadata-mask parity tests (DONE)
+**Status:** ✅ DONE
+**Notes:** Integration coverage ensures observation_activity masks and vfs_observation_fields.curriculum_active align with curriculum vision modes.
 
 #### 4. PERF-REQ-001: Performance <5% overhead assertion (MISSING)
 **Status:** ❌ MISSING (benchmarks exist but no automated threshold)

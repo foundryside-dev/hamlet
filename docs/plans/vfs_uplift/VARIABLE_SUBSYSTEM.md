@@ -3,34 +3,41 @@
 #
 # Purpose: Define custom variables that represent environmental phenomena or derived features.
 #
-# STATUS: Expression language not wired yet (static variables only).
-# - Compiler/runtime accept static variables with explicit defaults/normalization.
-# - Any 'expression' fields in variables_reference.yaml are rejected until DSL support lands.
-# - Items now auto-register GET/USE_SLOT_*/DROP_SLOT_* actions when enabled; these names (and INTERACT)
+# STATUS: Expression language is partially wired.
+# - Static variables with explicit defaults/normalization are supported.
+# - Expression DSL is available for arithmetic/comparison/logical ops plus the function set below.
+# - Unknown fields in variables_reference.yaml are rejected (extra="forbid").
+# - Items auto-register GET/USE_SLOT_*/DROP_SLOT_* actions when enabled; these names (and INTERACT)
 #   are reserved and cannot be overridden in actions.yaml.
 #
-# CURRENT IMPLEMENTATION (PHASE 1):
-# - VFS supports statically defined variables (no expressions) with:
+# CURRENT IMPLEMENTATION:
+# - VFS supports statically defined variables with:
 #   * Scoped storage: global, agent, agent_private.
 #   * Typed shapes: scalar, vec2i/vec3i, vecNi/vecNf, bool.
 #   * Access control and lifetime semantics.
-# - Observation exposure is handled via ObservationField + spec builder.
-#   * exposures entries are interpreted by VFSObservationSpecBuilder with the following defaults
-#     (when individual keys are omitted in exposure config):
-#       - exposed_to: ["agent"]           # Who can see this observation (agent-only by default)
-#       - shape: inferred from VariableDef.type/dims (scalar → [], vec2i → [2], vecNf → [dims], etc.)
-#       - curriculum_active: true         # Included in active curriculum by default
-#       - semantic_type: "custom"         # Grouping tag for structured encoders (bars/spatial/affordance/temporal/custom)
-#   * These defaults are applied at SPEC level only; they do not change the underlying VariableDef
-#     and are intended as Phase 1 ergonomics for BAC integration.
-# - Variable expressions in this document are DESIGN TARGETS ONLY (do not rely on them in configs yet).
+# - Observation exposure is handled via ObservationField + spec builder with defaults:
+#     - exposed_to: ["agent"] (who can see this observation)
+#     - shape: inferred from VariableDef.type/dims (scalar → [], vec2i → [2], vecNf → [dims], etc.)
+#     - curriculum_active: true (included in active curriculum by default)
+#     - semantic_type: "custom" (grouping tag for structured encoders)
+#   These defaults live at the spec level; they do not alter the VariableDef.
 #
-# FUTURE DIRECTION (PHASE 2+ / BAC INTEGRATION):
-# - Introduce an expression DSL compiled by the Behavioral Action Compiler (BAC).
-# - Allow variables to be derived from:
-#   * Bars, other VFS variables, affordances, temporal state, and item state.
-#   * Noise sources and temporal operators (moving averages, windows, trends, etc.).
-# - Extend scopes to include item-local state and profile-based grouping (see profiles section below).
+# EXPRESSION DSL – IMPLEMENTED NOW:
+# - Operators: arithmetic/comparison/logical, ternary, indexing (with type checking).
+# - Functions (vectorized, device-aware): max, min, abs, clamp, clamp01, sigmoid, tanh,
+#   smoothstep, mean, variance, sum, product, normalize, min_all, max_all, count_where,
+#   argmin, argmax, threshold, normal_dist, uniform.
+#
+# EXPRESSION DSL – STILL TO DO (ordered easiest → harder):
+# 1) Temporal/history (needs small buffers): delta, lag, moving_average, ema,
+#    rate_of_change, falling_edge, rising_edge.
+# 2) Spatial queries (needs batched distance helpers): distance_to_affordance,
+#    in_range, direction_to_affordance.
+# 3) Advanced noise (needs efficient generators): perlin_noise, simplex_noise.
+#
+# DESIGN PRINCIPLE: Variables must have grounding
+# 1. Environmental phenomena: Describe the world state (weather, lighting, noise)
+# 2. Derived features: Computed from observable state (ratios, deficits, progress)
 #
 # DESIGN PRINCIPLE: Variables must have grounding
 # 1. Environmental phenomena: Describe the world state (weather, lighting, noise)

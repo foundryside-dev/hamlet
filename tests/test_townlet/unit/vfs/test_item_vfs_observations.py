@@ -20,6 +20,8 @@ def test_vfs_observation_includes_item_vfs_with_masking():
                 ast=None,
                 initial_value=100,
                 result_type="int",
+                exposed_to=("agent",),
+                semantic_type="custom",
             ),
             CompiledVariable(
                 name="freshness",
@@ -27,6 +29,8 @@ def test_vfs_observation_includes_item_vfs_with_masking():
                 ast=None,
                 initial_value=1.0,
                 result_type="float",
+                exposed_to=("agent",),
+                semantic_type="custom",
             ),
         ],
     )
@@ -108,6 +112,8 @@ def test_vfs_observation_handles_no_item_inventory():
                 ast=None,
                 initial_value=100,
                 result_type="int",
+                exposed_to=("agent",),
+                semantic_type="custom",
             ),
         ],
     )

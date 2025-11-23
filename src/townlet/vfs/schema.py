@@ -242,6 +242,16 @@ class VariableDef(BaseModel):
         description="Unique identifier for this variable",
     )
 
+    exposed_to: list[str] = Field(
+        default_factory=list,
+        description="Who can observe this variable (e.g., ['agent', 'engine'])",
+    )
+
+    semantic_type: Literal["bars", "spatial", "affordance", "temporal", "custom"] = Field(
+        default="custom",
+        description="Semantic grouping for structured encoders (bars, spatial, affordance, temporal, custom)",
+    )
+
     scope: VariableScope | Literal["global", "agent", "agent_private", "item"] = Field(
         description="Scope: global (shared), agent (per-agent public), agent_private (per-agent private), item (per-item)",
     )
@@ -320,6 +330,8 @@ class VariableDef(BaseModel):
     @model_validator(mode="after")
     def validate_vector_types(self) -> "VariableDef":
         """Validate that vecNi/vecNf have dims field, scalar/bool do not."""
+        if not self.exposed_to:
+            self.exposed_to = ["agent"]
         if self.type in ("vecNi", "vecNf"):
             if self.dims is None:
                 raise ValueError(f"Variable '{self.id}' with type '{self.type}' requires 'dims' field")

@@ -47,6 +47,8 @@ def test_effect_on_despawn_spawns_item_with_real_itemmanager():
                     ast=None,
                     initial_value=100.0,
                     result_type="float",
+                    exposed_to=("agent",),
+                    semantic_type="custom",
                 ),
                 CompiledVariable(
                     name="quality",
@@ -55,6 +57,8 @@ def test_effect_on_despawn_spawns_item_with_real_itemmanager():
                     ast=None,
                     initial_value=1.0,
                     result_type="float",
+                    exposed_to=("agent",),
+                    semantic_type="custom",
                 ),
             ],
         ),

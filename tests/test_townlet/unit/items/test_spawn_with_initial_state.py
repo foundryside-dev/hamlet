@@ -37,6 +37,8 @@ def test_spawn_item_with_initial_state():
                 ast=None,
                 initial_value=100.0,
                 result_type="scalar",
+                exposed_to=("agent",),
+                semantic_type="custom",
             ),
             CompiledVariable(
                 name="quality",
@@ -44,6 +46,8 @@ def test_spawn_item_with_initial_state():
                 ast=None,
                 initial_value=1.0,
                 result_type="scalar",
+                exposed_to=("agent",),
+                semantic_type="custom",
             ),
         ],
     )
@@ -119,6 +123,8 @@ def test_spawn_item_without_initial_state_uses_defaults():
                 ast=None,
                 initial_value=100.0,
                 result_type="scalar",
+                exposed_to=("agent",),
+                semantic_type="custom",
             ),
         ],
     )

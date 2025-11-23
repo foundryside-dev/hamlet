@@ -379,7 +379,12 @@ class VectorizedHamletEnv:
 
             def _compiled_var_to_cfg_payload(var: Any) -> dict[str, Any]:
                 """Convert compiled variable to config payload with expression or initial_value."""
-                payload: dict[str, Any] = {"name": var.name, "type": var.type}
+                payload: dict[str, Any] = {
+                    "name": var.name,
+                    "type": var.type,
+                    "exposed_to": tuple(getattr(var, "exposed_to", []) or ["agent"]),
+                    "semantic_type": getattr(var, "semantic_type", "custom"),
+                }
                 expression = getattr(var, "expression", None)
                 if var.initial_value is not None:
                     payload["initial_value"] = var.initial_value

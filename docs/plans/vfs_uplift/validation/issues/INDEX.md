@@ -17,7 +17,7 @@ This directory contains individual issue files for each gap identified in the VF
 
 **Status Summary:**
 - **P0 (Critical):** 0 issues - All critical requirements complete ✅
-- **P1 (Important):** 7 issues - Runtime integration, spawn rules, benchmarks (8-10 days total effort)
+- **P1 (Important):** 8 issues - Runtime integration, spawn rules, benchmarks, DSL operators (10-12 days total effort)
 - **P2 (Minor):** 8 issues - Polish, nice-to-have features (18-22 days total effort)
 
 **Note:** COMP-7, COMP-8, COMP-9 (expression language foundation) previously listed as P0 gaps have been confirmed as fully implemented and removed from issue tracking.
@@ -243,6 +243,7 @@ Each issue file contains:
 **Browse by system:**
 - Compiler: COMP-1, COMP-13, COMP-17, COMP-19 (removed COMP-7, COMP-8, COMP-9 - confirmed complete)
 - VFS: VFS-4, VFS-6, VFS-12
+- VFS DSL: VFS-operators (new)
 - Effects: EFF-7, EFF-17
 - Items: ITEM-6, ITEM-8, ITEM-12
 - Runtime: RUN-8

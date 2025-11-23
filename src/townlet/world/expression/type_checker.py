@@ -353,57 +353,21 @@ class TypeChecker(ASTVisitor):
             raise TypeCheckError(f"Unknown unary operator: {node.op}")
 
     def visit_function_call(self, node: FunctionCall) -> str:
-        """Type check function call.
+        """Type check function call using shared function registry."""
+        from townlet.world.expression.functions import FUNCTION_SPECS
 
-        Args:
-            node: FunctionCall AST node
-
-        Returns:
-            Return type from function signature
-
-        Raises:
-            TypeCheckError: If function unknown or argument types don't match signature
-        """
         func = node.function_name
         arg_types = [arg.accept(self) for arg in node.arguments]
+        spec = FUNCTION_SPECS.get(func)
+        if spec is None:
+            raise TypeCheckError(f"Unknown function '{func}'")
 
-        def _assert_args(expected_count: int) -> None:
-            if len(arg_types) != expected_count:
-                raise TypeCheckError(f"Function '{func}' expects {expected_count} args, got {len(arg_types)}")
+        try:
+            spec.validate_args(arg_types)
+        except ValueError as exc:
+            raise TypeCheckError(str(exc)) from exc
 
-        def _is_numeric(t: str) -> bool:
-            return t in {"int", "float"}
-
-        if func in {"max", "min"}:
-            _assert_args(2)
-            if not all(_is_numeric(t) for t in arg_types):
-                raise TypeCheckError(f"Function '{func}' requires numeric args, got {arg_types}")
-            # Promote to float if any float present
-            return "float" if "float" in arg_types else "int"
-
-        if func == "abs":
-            _assert_args(1)
-            arg_type = arg_types[0]
-            if not _is_numeric(arg_type):
-                raise TypeCheckError(f"Function 'abs' requires numeric arg, got {arg_type}")
-            # Type narrowing: after _is_numeric check, we know it's int or float
-            # Return str literal to satisfy return type
-            if arg_type == "int":
-                return "int"
-            elif arg_type == "float":
-                return "float"
-            else:
-                # Fallback for Any or unexpected types (shouldn't happen after validation)
-                return "float"
-
-        if func == "clamp":
-            _assert_args(3)
-            if not all(_is_numeric(t) for t in arg_types):
-                raise TypeCheckError(f"Function 'clamp' requires numeric args, got {arg_types}")
-            # Clamp preserves input numeric type
-            return arg_types[0] if arg_types[0] in {"int", "float"} else "float"
-
-        raise TypeCheckError(f"Unknown function '{func}'")
+        return spec.return_type(arg_types)
 
     def visit_if_then_else(self, node: IfThenElse) -> str:
         """Type check conditional expression.
@@ -450,4 +414,9 @@ class TypeChecker(ASTVisitor):
         Raises:
             TypeCheckError: If base not indexable or index not int
         """
-        raise NotImplementedError("Index access type checking deferred to Phase 4 (requires tensor/array types)")
+        _ = node.base.accept(self)  # Ensure base is valid/known in schema
+        index_type = node.index.accept(self)
+        if index_type != "int":
+            raise TypeCheckError(f"Index access requires int index, got {index_type}")
+        # Container element type is unknown; treat as numeric by default for downstream arithmetic.
+        return "float"

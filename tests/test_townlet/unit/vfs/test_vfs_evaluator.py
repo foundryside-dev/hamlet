@@ -20,6 +20,8 @@ def test_vfs_evaluator_evaluates_expressions_in_topo_order():
             ast=None,
             initial_value=5,
             result_type="int",
+            exposed_to=("agent",),
+            semantic_type="custom",
         ),
         CompiledVariable(
             name="b",
@@ -27,6 +29,8 @@ def test_vfs_evaluator_evaluates_expressions_in_topo_order():
             ast=parser.parse("a + 10"),  # Depends on "a"
             initial_value=None,
             result_type="int",
+            exposed_to=("agent",),
+            semantic_type="custom",
         ),
     ]
 
@@ -59,8 +63,24 @@ def test_vfs_evaluator_mark_and_sweep_evaluates_marks_only_when_independent():
     parser = ExpressionParser()
 
     variables = [
-        CompiledVariable(name="observed", type="int", ast=parser.parse("1 + 1"), initial_value=None, result_type="int"),
-        CompiledVariable(name="unobserved", type="int", ast=parser.parse("2 + 2"), initial_value=None, result_type="int"),
+        CompiledVariable(
+            name="observed",
+            type="int",
+            ast=parser.parse("1 + 1"),
+            initial_value=None,
+            result_type="int",
+            exposed_to=("agent",),
+            semantic_type="custom",
+        ),
+        CompiledVariable(
+            name="unobserved",
+            type="int",
+            ast=parser.parse("2 + 2"),
+            initial_value=None,
+            result_type="int",
+            exposed_to=("agent",),
+            semantic_type="custom",
+        ),
     ]
 
     profile = CompiledGlobalProfile(
@@ -94,6 +114,8 @@ def test_vfs_evaluator_mark_and_sweep_recomputes_dependencies():
             ast=parser.parse("bar.energy + 1"),
             initial_value=None,
             result_type="float",
+            exposed_to=("agent",),
+            semantic_type="custom",
         ),
         CompiledVariable(
             name="b",
@@ -101,6 +123,8 @@ def test_vfs_evaluator_mark_and_sweep_recomputes_dependencies():
             ast=parser.parse("a * 2"),
             initial_value=None,
             result_type="float",
+            exposed_to=("agent",),
+            semantic_type="custom",
         ),
     ]
 
@@ -131,8 +155,24 @@ def test_vfs_evaluator_eager_mode_evaluates_all_vars():
     parser = ExpressionParser()
 
     variables = [
-        CompiledVariable(name="var1", type="int", ast=parser.parse("1"), initial_value=None, result_type="int"),
-        CompiledVariable(name="var2", type="int", ast=parser.parse("2"), initial_value=None, result_type="int"),
+        CompiledVariable(
+            name="var1",
+            type="int",
+            ast=parser.parse("1"),
+            initial_value=None,
+            result_type="int",
+            exposed_to=("agent",),
+            semantic_type="custom",
+        ),
+        CompiledVariable(
+            name="var2",
+            type="int",
+            ast=parser.parse("2"),
+            initial_value=None,
+            result_type="int",
+            exposed_to=("agent",),
+            semantic_type="custom",
+        ),
     ]
 
     profile = CompiledGlobalProfile(

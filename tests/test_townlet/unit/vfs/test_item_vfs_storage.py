@@ -12,16 +12,48 @@ def test_registry_initializes_item_storage_from_profiles():
     food_profile = CompiledItemProfile(
         profile_name="food_stats",
         variables=[
-            CompiledVariable(name="calories", type="int", ast=None, initial_value=100, result_type="int"),
-            CompiledVariable(name="freshness", type="float", ast=None, initial_value=1.0, result_type="float"),
+            CompiledVariable(
+                name="calories",
+                type="int",
+                ast=None,
+                initial_value=100,
+                result_type="int",
+                exposed_to=("agent",),
+                semantic_type="custom",
+            ),
+            CompiledVariable(
+                name="freshness",
+                type="float",
+                ast=None,
+                initial_value=1.0,
+                result_type="float",
+                exposed_to=("agent",),
+                semantic_type="custom",
+            ),
         ],
     )
 
     weapon_profile = CompiledItemProfile(
         profile_name="weapon_stats",
         variables=[
-            CompiledVariable(name="damage", type="int", ast=None, initial_value=50, result_type="int"),
-            CompiledVariable(name="durability", type="float", ast=None, initial_value=1.0, result_type="float"),
+            CompiledVariable(
+                name="damage",
+                type="int",
+                ast=None,
+                initial_value=50,
+                result_type="int",
+                exposed_to=("agent",),
+                semantic_type="custom",
+            ),
+            CompiledVariable(
+                name="durability",
+                type="float",
+                ast=None,
+                initial_value=1.0,
+                result_type="float",
+                exposed_to=("agent",),
+                semantic_type="custom",
+            ),
         ],
     )
 
@@ -54,15 +86,39 @@ def test_registry_item_storage_has_correct_shape():
     profile1 = CompiledItemProfile(
         profile_name="profile1",
         variables=[
-            CompiledVariable(name="var1", type="int", ast=None, initial_value=0, result_type="int"),
-            CompiledVariable(name="var2", type="int", ast=None, initial_value=0, result_type="int"),
+            CompiledVariable(
+                name="var1",
+                type="int",
+                ast=None,
+                initial_value=0,
+                result_type="int",
+                exposed_to=("agent",),
+                semantic_type="custom",
+            ),
+            CompiledVariable(
+                name="var2",
+                type="int",
+                ast=None,
+                initial_value=0,
+                result_type="int",
+                exposed_to=("agent",),
+                semantic_type="custom",
+            ),
         ],
     )
 
     profile2 = CompiledItemProfile(
         profile_name="profile2",
         variables=[
-            CompiledVariable(name="var1", type="int", ast=None, initial_value=0, result_type="int"),
+            CompiledVariable(
+                name="var1",
+                type="int",
+                ast=None,
+                initial_value=0,
+                result_type="int",
+                exposed_to=("agent",),
+                semantic_type="custom",
+            ),
         ],
     )
 

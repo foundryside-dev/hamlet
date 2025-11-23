@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 __all__ = [
     "GlobalVFSVariableConfig",
@@ -22,6 +22,11 @@ class GlobalVFSVariableConfig(BaseModel):
 
     Global variables are shared across all agents (e.g., day_count, is_night).
     """
+
+    # Metadata
+    id: str | None = None
+    exposed_to: list[str] = Field(default_factory=list)
+    semantic_type: Literal["bars", "spatial", "affordance", "temporal", "custom"] = "custom"
 
     name: str
     type: Literal[
@@ -107,6 +112,16 @@ class GlobalVFSProfileConfig(BaseModel):
 
         return variables
 
+    @model_validator(mode="after")
+    def default_metadata(self):
+        """Populate optional metadata defaults to align with VFS-REQ-006."""
+        for var in self.variables:
+            if var.id is None:
+                var.id = var.name
+            if not var.exposed_to:
+                var.exposed_to = ["agent"]
+        return self
+
     model_config = ConfigDict(extra="forbid")
 
 
@@ -115,6 +130,11 @@ class AgentVFSVariableConfig(BaseModel):
 
     Agent variables are per-agent state (e.g., motivation, is_crisis).
     """
+
+    # Metadata
+    id: str | None = None
+    exposed_to: list[str] = Field(default_factory=list)
+    semantic_type: Literal["bars", "spatial", "affordance", "temporal", "custom"] = "custom"
 
     name: str
     type: Literal[
@@ -202,6 +222,16 @@ class AgentVFSProfileConfig(BaseModel):
 
         return variables
 
+    @model_validator(mode="after")
+    def default_metadata(self):
+        """Populate optional metadata defaults to align with VFS-REQ-006."""
+        for var in self.variables:
+            if var.id is None:
+                var.id = var.name
+            if not var.exposed_to:
+                var.exposed_to = ["agent"]
+        return self
+
     model_config = ConfigDict(extra="forbid")
 
 
@@ -210,6 +240,11 @@ class ItemVFSVariableConfig(BaseModel):
 
     Item variables are per-item-instance state (e.g., nutrition, age, is_spoiled).
     """
+
+    # Metadata
+    id: str | None = None
+    exposed_to: list[str] = Field(default_factory=list)
+    semantic_type: Literal["bars", "spatial", "affordance", "temporal", "custom"] = "custom"
 
     name: str
     type: Literal[
@@ -269,6 +304,16 @@ class ItemVFSProfileConfig(BaseModel):
             raise ValueError(f"Duplicate variable names: {duplicates}")
 
         return variables
+
+    @model_validator(mode="after")
+    def default_metadata(self):
+        """Populate optional metadata defaults to align with VFS-REQ-006."""
+        for var in self.variables:
+            if var.id is None:
+                var.id = var.name
+            if not var.exposed_to:
+                var.exposed_to = ["agent"]
+        return self
 
     model_config = ConfigDict(extra="forbid")
 

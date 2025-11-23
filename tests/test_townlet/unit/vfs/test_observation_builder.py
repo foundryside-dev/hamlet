@@ -57,6 +57,44 @@ def test_vfs_obs_spec_agent_variables():
     assert spec.total_vfs_dim == 3
 
 
+def test_vfs_obs_spec_respects_exposed_to():
+    """Only variables exposed to agents contribute to obs_dim."""
+    from townlet.config.vfs_profiles_config import ItemVFSProfileConfig, ItemVFSVariableConfig
+
+    global_profile = GlobalVFSProfileConfig(
+        variables=[
+            GlobalVFSVariableConfig(name="g_visible", type="int", initial_value=0, exposed_to=["agent"]),
+            GlobalVFSVariableConfig(name="g_hidden", type="int", initial_value=1, exposed_to=["engine"]),
+        ]
+    )
+    agent_profile = AgentVFSProfileConfig(
+        variables=[
+            AgentVFSVariableConfig(name="a_visible", type="bool", initial_value=True, exposed_to=["agent"]),
+            AgentVFSVariableConfig(name="a_hidden", type="bool", initial_value=False, exposed_to=["engine"]),
+        ]
+    )
+    item_profile = ItemVFSProfileConfig(
+        profile_name="item_stats",
+        variables=[
+            ItemVFSVariableConfig(name="i_visible", type="float", initial_value=0.5, exposed_to=["agent"]),
+            ItemVFSVariableConfig(name="i_hidden", type="float", initial_value=0.1, exposed_to=["engine"]),
+        ],
+    )
+
+    spec = VFSObservationSpec.from_profiles(
+        global_profile=global_profile,
+        agent_profile=agent_profile,
+        item_profiles=[item_profile],
+    )
+
+    assert spec.global_vfs_dim == 1
+    assert spec.agent_vfs_dim == 1
+    assert spec.item_vfs_dim == spec.max_items_per_agent * 1  # only exposed item var counted
+    assert spec.global_vars == ("g_visible",)
+    assert spec.agent_vars == ("a_visible",)
+    assert spec.item_profile_vars["item_stats"] == ("i_visible",)
+
+
 def test_vfs_obs_spec_vecn_dimensions():
     """Variable dims are honored for vecNi/vecNf variables."""
     agent_profile = AgentVFSProfileConfig(

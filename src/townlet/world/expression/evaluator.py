@@ -93,40 +93,16 @@ class Evaluator(ASTVisitor):
     def visit_function_call(self, node: FunctionCall) -> torch.Tensor:
         """Execute function calls.
 
-        Supports basic math functions:
-        - max(a, b): element-wise maximum
-        - min(a, b): element-wise minimum
-        - abs(x): absolute value
-        - clamp(x, min, max): clamp to range
-
-        Phase 2 will add domain-specific functions (distance_to_affordance, etc.)
+        Uses shared registry to keep signatures and implementations aligned with the type checker.
         """
-        # Recursively evaluate all arguments
-        args = [arg.accept(self) for arg in node.arguments]
+        from townlet.world.expression.functions import FUNCTION_SPECS
 
-        # Built-in math functions
-        if node.function_name == "max":
-            if len(args) != 2:
-                raise ValueError(f"max() requires 2 arguments, got {len(args)}")
-            return torch.max(args[0], args[1])  # type: ignore[no-any-return]
-        elif node.function_name == "min":
-            if len(args) != 2:
-                raise ValueError(f"min() requires 2 arguments, got {len(args)}")
-            return torch.min(args[0], args[1])  # type: ignore[no-any-return]
-        elif node.function_name == "abs":
-            if len(args) != 1:
-                raise ValueError(f"abs() requires 1 argument, got {len(args)}")
-            return torch.abs(args[0])  # type: ignore[no-any-return]
-        elif node.function_name == "clamp":
-            if len(args) != 3:
-                raise ValueError(f"clamp() requires 3 arguments, got {len(args)}")
-            return torch.clamp(args[0], min=args[1], max=args[2])  # type: ignore[no-any-return]
-        else:
-            raise NotImplementedError(
-                f"Function '{node.function_name}' not implemented. "
-                "Domain-specific functions (distance_to_affordance, etc.) "
-                "will be added in Phase 2."
-            )
+        args = [arg.accept(self) for arg in node.arguments]
+        spec = FUNCTION_SPECS.get(node.function_name)
+        if spec is None:
+            raise NotImplementedError(f"Function '{node.function_name}' not implemented.")
+
+        return spec.eval_fn(args)
 
     def visit_if_then_else(self, node: IfThenElse) -> torch.Tensor:
         """Execute vectorized conditional logic using torch.where().

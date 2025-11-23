@@ -57,16 +57,48 @@ def test_item_manager_assigns_vfs_profile_on_spawn():
     food_profile = CompiledItemProfile(
         profile_name="food_stats",
         variables=[
-            CompiledVariable(name="calories", type="int", ast=None, initial_value=100, result_type="int"),
-            CompiledVariable(name="freshness", type="float", ast=None, initial_value=1.0, result_type="float"),
+            CompiledVariable(
+                name="calories",
+                type="int",
+                ast=None,
+                initial_value=100,
+                result_type="int",
+                exposed_to=("agent",),
+                semantic_type="custom",
+            ),
+            CompiledVariable(
+                name="freshness",
+                type="float",
+                ast=None,
+                initial_value=1.0,
+                result_type="float",
+                exposed_to=("agent",),
+                semantic_type="custom",
+            ),
         ],
     )
 
     weapon_profile = CompiledItemProfile(
         profile_name="weapon_stats",
         variables=[
-            CompiledVariable(name="damage", type="int", ast=None, initial_value=50, result_type="int"),
-            CompiledVariable(name="durability", type="float", ast=None, initial_value=1.0, result_type="float"),
+            CompiledVariable(
+                name="damage",
+                type="int",
+                ast=None,
+                initial_value=50,
+                result_type="int",
+                exposed_to=("agent",),
+                semantic_type="custom",
+            ),
+            CompiledVariable(
+                name="durability",
+                type="float",
+                ast=None,
+                initial_value=1.0,
+                result_type="float",
+                exposed_to=("agent",),
+                semantic_type="custom",
+            ),
         ],
     )
 
@@ -138,8 +170,24 @@ def test_item_manager_preserves_vfs_profile_across_operations():
     consumable_profile = CompiledItemProfile(
         profile_name="consumable_stats",
         variables=[
-            CompiledVariable(name="charges", type="int", ast=None, initial_value=3, result_type="int"),
-            CompiledVariable(name="potency", type="float", ast=None, initial_value=1.0, result_type="float"),
+            CompiledVariable(
+                name="charges",
+                type="int",
+                ast=None,
+                initial_value=3,
+                result_type="int",
+                exposed_to=("agent",),
+                semantic_type="custom",
+            ),
+            CompiledVariable(
+                name="potency",
+                type="float",
+                ast=None,
+                initial_value=1.0,
+                result_type="float",
+                exposed_to=("agent",),
+                semantic_type="custom",
+            ),
         ],
     )
 

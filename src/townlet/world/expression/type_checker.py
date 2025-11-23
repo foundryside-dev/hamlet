@@ -153,6 +153,9 @@ class TypeChecker(ASTVisitor):
         if len(segments) < 2:
             return None
 
+        # Drop explicit ref markers to mirror runtime resolver
+        segments = [s for s in segments if s != "ref"]
+
         # Normalize starting prefix and strip root tokens
         prefix: str | None = None
         remaining = segments

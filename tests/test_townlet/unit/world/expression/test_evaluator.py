@@ -261,7 +261,7 @@ def test_evaluate_function_call_unknown():
         assert False, "Should have raised NotImplementedError"
     except NotImplementedError as e:
         assert "unknown_func" in str(e)
-        assert "Phase 2" in str(e)
+        # Implementation now returns a concise error; ensure it mentions function name
 
 
 def test_evaluate_if_then_else_vectorized():

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+import os
 from enum import Enum
 from typing import Any
 
@@ -31,6 +33,8 @@ class VFSEvaluator:
             mode: Evaluation mode (mark_and_sweep or eager)
         """
         self.mode = mode
+        self._debug_vfs = os.getenv("HAMLET_DEBUG_VFS", "").strip().lower() in {"1", "true", "yes", "on"}
+        self._logger = logging.getLogger("hamlet.vfs")
 
     def evaluate_global_profile(
         self,
@@ -109,6 +113,15 @@ class VFSEvaluator:
             # Update context so later variables can reference this one
             context.vfs[var.name] = value
 
+        if self._debug_vfs:
+            self._logger.debug(
+                "vfs_evaluation",
+                extra={
+                    "mode": self.mode.value,
+                    "evaluated": sorted(result.keys()),
+                    "marks": sorted(marks) if marks is not None else None,
+                },
+            )
         return result
 
     def evaluate_all(self, registry: Any) -> dict[str, torch.Tensor]:

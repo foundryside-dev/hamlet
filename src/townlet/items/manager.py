@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import logging
 import math
+import os
 import random
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Literal
@@ -78,6 +80,8 @@ class ItemManager:
         self.device = torch.device(device) if isinstance(device, str) else device
         self.vfs_registry = vfs_registry  # Store VFS registry
         self.effect_manager = effect_manager
+        self._debug_items = os.getenv("HAMLET_DEBUG_ITEMS", "").strip().lower() in {"1", "true", "yes", "on"}
+        self._logger = logging.getLogger("hamlet.items")
 
         # Compile item interactions if schema provided
         self.compiled_item_types: list[CompiledItemType] = []
@@ -198,6 +202,12 @@ class ItemManager:
 
         # Track per-item scripted pointer (next event index) to avoid reusing past events
         self.script_indices: dict[str, int] = {}
+
+    def _log_items(self, message: str, **kwargs: Any) -> None:
+        """Emit debug logs when HAMLET_DEBUG_ITEMS is enabled."""
+        if not self._debug_items:
+            return
+        self._logger.debug(message, extra=kwargs)
 
     def reset_state(self) -> None:
         """Clear all item runtime state for a fresh episode."""
@@ -373,6 +383,13 @@ class ItemManager:
         if self.vfs_registry is not None and instance.vfs_profile:
             self.vfs_registry.register_item_instance(instance.vfs_index, instance.vfs_profile)
 
+        self._log_items(
+            "spawn_item",
+            instance_id=instance.instance_id,
+            item_type=item_type,
+            position=tuple(position),
+            vfs_index=vfs_index,
+        )
         return instance
 
     def lift_item(self, instance_id: int) -> ItemInstance | None:
@@ -496,6 +513,14 @@ class ItemManager:
                 else:
                     # No schedule: do not queue respawns automatically
                     pass
+
+        self._log_items(
+            "despawn_item",
+            instance_id=instance_id,
+            item_type=item.item_type,
+            vfs_index=item.vfs_index,
+            current_tick=current_tick,
+        )
 
     def tick(self, current_tick: int) -> None:
         """Advance all item lifecycles by one tick.

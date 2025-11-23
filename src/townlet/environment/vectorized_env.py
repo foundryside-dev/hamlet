@@ -453,7 +453,7 @@ class VectorizedHamletEnv:
 
             mode = EvaluationMode.EAGER if os.getenv("VFS_EVAL_MODE") == "eager" else EvaluationMode.MARK_AND_SWEEP
 
-            self.vfs_evaluator = VFSEvaluator(mode=mode)
+            self.vfs_evaluator = VFSEvaluator(mode=mode, history_spec=getattr(universe, "vfs_history_spec", None))
             self.vfs_observation_marks = universe.vfs_observation_marks
         else:
             self.vfs_observation_marks = None
@@ -1061,6 +1061,10 @@ class VectorizedHamletEnv:
             for agent_idx in range(self.num_agents):
                 self.effect_manager.cancel_scheduled_for_entity(scope="agent", entity_id=agent_idx)
 
+        # Reset temporal history so temporal VFS ops don't leak across episodes
+        if self.vfs_evaluator is not None:
+            self.vfs_evaluator.reset()
+
         # Clear item/inventory state between episodes
         if self.item_manager is not None:
             self.item_manager.reset_state()
@@ -1623,6 +1627,9 @@ class VectorizedHamletEnv:
                     vfs_state=current_vfs_state,
                     marks=marks,
                     device=self.device,
+                    step=int(self.step_counts[0].item()) if self.step_counts.numel() > 0 else None,
+                    agent_positions=self.positions.to(dtype=torch.float32, device=self.device),
+                    affordance_positions={k: v.to(dtype=torch.float32, device=self.device) for k, v in self.affordances.items()},
                 )
 
                 # Write updated values back to registry

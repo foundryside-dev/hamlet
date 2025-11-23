@@ -28,6 +28,8 @@ class Evaluator(ASTVisitor):
 
     def visit_constant(self, node: Constant) -> torch.Tensor:
         """Convert constant to tensor."""
+        if isinstance(node.value, str):
+            return node.value  # type: ignore[return-value]
         return torch.tensor(node.value, device=self.context.device)
 
     def visit_variable(self, node: Variable) -> torch.Tensor:
@@ -102,7 +104,7 @@ class Evaluator(ASTVisitor):
         if spec is None:
             raise NotImplementedError(f"Function '{node.function_name}' not implemented.")
 
-        return spec.eval_fn(args, self.context.device)
+        return spec.eval_fn(args, self.context, node.arguments)
 
     def visit_if_then_else(self, node: IfThenElse) -> torch.Tensor:
         """Execute vectorized conditional logic using torch.where().

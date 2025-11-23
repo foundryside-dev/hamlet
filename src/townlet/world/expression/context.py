@@ -5,6 +5,8 @@ from typing import Any
 
 import torch
 
+from townlet.world.expression.history import TemporalHistory
+
 
 @dataclass
 class ExecutionContext:
@@ -21,7 +23,11 @@ class ExecutionContext:
     vfs: dict[str, torch.Tensor]
     affordances: dict[str, Any]  # Affordance state
     temporal: dict[str, torch.Tensor]  # Time values
+    affordance_positions: dict[str, torch.Tensor] | None = None
+    agent_positions: torch.Tensor | None = None
     device: torch.device = torch.device("cpu")
+    history: TemporalHistory | None = None
+    step: int | None = None
 
     def get(self, path: str) -> torch.Tensor:
         """Resolve dotted path to tensor value.

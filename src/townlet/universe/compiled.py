@@ -39,7 +39,7 @@ from townlet.vfs.profiles import CompiledGlobalProfile
 from townlet.vfs.schema import ObservationField as VfsObservationField
 from townlet.vfs.schema import VariableDef
 
-COMPILED_SCHEMA_VERSION = "1.1"
+COMPILED_SCHEMA_VERSION = "1.2"
 
 
 @dataclass(frozen=True)
@@ -88,6 +88,9 @@ class CompiledUniverse:
 
     # Type schema for runtime VFS expression validation
     vfs_expression_schema: dict[str, str] | None = None
+
+    # Temporal history requirements for VFS expressions
+    vfs_history_spec: dict[str, int] | None = None
 
     # Marks for which VFS variables are observed (for mark-and-sweep evaluation)
     vfs_observation_marks: dict[str, set[str]] | None = None
@@ -162,6 +165,7 @@ class CompiledUniverse:
             compiled_effect_catalog=deepcopy(self.compiled_effect_catalog) if self.compiled_effect_catalog is not None else None,
             effect_observation_slots=self.effect_observation_slots,
             vfs_expression_schema=deepcopy(self.vfs_expression_schema) if self.vfs_expression_schema is not None else None,
+            vfs_history_spec=deepcopy(self.vfs_history_spec) if self.vfs_history_spec is not None else None,
             vfs_observation_marks=deepcopy(self.vfs_observation_marks) if self.vfs_observation_marks is not None else None,
             experiment_dir=self.experiment_dir,
             drive_hash=self.drive_hash,
@@ -205,6 +209,7 @@ class CompiledUniverse:
             ),
             "effect_observation_slots": self.effect_observation_slots,
             "vfs_expression_schema": self.vfs_expression_schema,
+            "vfs_history_spec": self.vfs_history_spec,
             "vfs_observation_marks": (
                 {k: list(v) for k, v in self.vfs_observation_marks.items()} if self.vfs_observation_marks is not None else None
             ),  # Convert sets to lists for JSON serialization
@@ -321,6 +326,7 @@ class CompiledUniverse:
             ),
             effect_observation_slots=payload.get("effect_observation_slots", 0),
             vfs_expression_schema=payload.get("vfs_expression_schema"),
+            vfs_history_spec=payload.get("vfs_history_spec"),
             vfs_observation_marks=(
                 {k: set(v) for k, v in payload["vfs_observation_marks"].items()}
                 if payload.get("vfs_observation_marks") is not None

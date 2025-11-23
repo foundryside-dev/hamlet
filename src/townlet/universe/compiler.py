@@ -472,6 +472,7 @@ class UniverseCompiler:
             compiled_vfs_profiles,
             _effects_schema,
             compiled_effect_catalog,
+            vfs_history_spec,
         ) = self._stage_5_prepare_shared_artifacts(
             raw,
             experiment_dir,
@@ -514,6 +515,7 @@ class UniverseCompiler:
             vfs_expression_schema,
             vfs_observation_marks,
             effect_observation_slots,
+            vfs_history_spec,
         )
         return compiled
 
@@ -1151,13 +1153,17 @@ class UniverseCompiler:
         *,
         primary_level: str,
         temporal_supported: bool,
-    ) -> tuple[dict[str, str], CompiledVFSProfiles | None, dict[str, str], EffectCatalog | None]:
+    ) -> tuple[dict[str, str], CompiledVFSProfiles | None, dict[str, str], EffectCatalog | None, dict[str, int]]:
         """Stage 5 – build shared schemas (bars/VFS) and compile effects catalog."""
         primary_level_config = raw.levels[primary_level]
         bar_schema: dict[str, str] = {meter.name: "float" for meter in primary_level_config.bars.meters}
 
         compiled_vfs_profiles = self._compile_vfs_profiles(experiment_dir, bar_schema)
         self._validate_item_profile_bindings(raw.items, compiled_vfs_profiles)
+
+        from townlet.vfs.history import collect_history_requirements
+
+        vfs_history_spec = collect_history_requirements(compiled_vfs_profiles.global_profile if compiled_vfs_profiles else None)
 
         effects_schema: dict[str, str] = {
             "intensity": "float",
@@ -1195,7 +1201,7 @@ class UniverseCompiler:
             time_enabled=temporal_supported,
         )
 
-        return bar_schema, compiled_vfs_profiles, effects_schema, compiled_effect_catalog
+        return bar_schema, compiled_vfs_profiles, effects_schema, compiled_effect_catalog, vfs_history_spec
 
     def _stage_6_compile_levels(
         self,
@@ -1327,6 +1333,7 @@ class UniverseCompiler:
         vfs_expression_schema: dict[str, str],
         vfs_observation_marks: dict[str, set[str]] | None,
         effect_observation_slots: int,
+        vfs_history_spec: dict[str, int],
     ) -> CompiledUniverse:
         """Stage 7 – emit the compiled artifact and persist cache."""
         compiled = CompiledUniverse(
@@ -1349,6 +1356,7 @@ class UniverseCompiler:
             compiled_effect_catalog=compiled_effect_catalog,
             effect_observation_slots=effect_observation_slots,
             vfs_expression_schema=vfs_expression_schema,
+            vfs_history_spec=vfs_history_spec or None,
             vfs_observation_marks=vfs_observation_marks,
             experiment_dir=experiment_dir,
             all_levels=all_levels,

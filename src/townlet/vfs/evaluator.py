@@ -12,6 +12,7 @@ import torch
 from townlet.vfs.profiles import CompiledGlobalProfile
 from townlet.world.expression.context import ExecutionContext
 from townlet.world.expression.evaluator import Evaluator
+from townlet.world.expression.history import TemporalHistory
 
 __all__ = ["VFSEvaluator", "EvaluationMode"]
 
@@ -26,7 +27,7 @@ class EvaluationMode(str, Enum):
 class VFSEvaluator:
     """Evaluates VFS expressions using compiled profiles."""
 
-    def __init__(self, mode: EvaluationMode = EvaluationMode.MARK_AND_SWEEP):
+    def __init__(self, mode: EvaluationMode = EvaluationMode.MARK_AND_SWEEP, history_spec: dict[str, int] | None = None):
         """Initialize VFS evaluator.
 
         Args:
@@ -35,6 +36,53 @@ class VFSEvaluator:
         self.mode = mode
         self._debug_vfs = os.getenv("HAMLET_DEBUG_VFS", "").strip().lower() in {"1", "true", "yes", "on"}
         self._logger = logging.getLogger("hamlet.vfs")
+        self.history_spec = history_spec or {}
+        self._history: TemporalHistory | None = TemporalHistory(self.history_spec, torch.device("cpu")) if self.history_spec else None
+        self._last_history_step: int | None = None
+
+    def _prepare_history(self, device: torch.device) -> None:
+        if self._history is None:
+            return
+        if self._history.device != device:
+            self._history.to(device)
+
+    def _push_history(
+        self,
+        bars: dict[str, torch.Tensor],
+        vfs_values: dict[str, torch.Tensor],
+        device: torch.device,
+        step: int | None,
+    ) -> None:
+        if self._history is None:
+            return
+
+        if step is not None and self._last_history_step == step:
+            return
+        if step is None:
+            step = -1 if self._last_history_step is None else self._last_history_step + 1
+
+        self._prepare_history(device)
+
+        for key in self.history_spec:
+            if key.startswith("bar."):
+                bar_name = key.split(".", 1)[1]
+                value = bars.get(bar_name)
+            elif key.startswith("vfs."):
+                var_name = key.split(".", 1)[1]
+                value = vfs_values.get(var_name)
+            else:
+                value = None
+
+            if value is not None:
+                self._history.push(key, value)
+
+        self._last_history_step = step
+
+    def reset(self) -> None:
+        """Reset temporal history between episodes."""
+        if self._history is not None:
+            self._history.reset()
+        self._last_history_step = None
 
     def evaluate_global_profile(
         self,
@@ -43,6 +91,9 @@ class VFSEvaluator:
         vfs_state: dict[str, torch.Tensor],
         marks: set[str] | None = None,
         device: torch.device = torch.device("cpu"),
+        step: int | None = None,
+        agent_positions: torch.Tensor | None = None,
+        affordance_positions: dict[str, torch.Tensor] | None = None,
     ) -> dict[str, torch.Tensor]:
         """Evaluate global VFS profile expressions.
 
@@ -83,13 +134,22 @@ class VFSEvaluator:
         else:  # EAGER mode
             vars_to_eval = {var.name for var in profile.variables}
 
+        # Temporal history requires variables to be evaluated even if unmarked
+        history_vfs_vars = {key.split(".", 1)[1] for key in self.history_spec if key.startswith("vfs.")}
+        vars_to_eval.update(history_vfs_vars)
+
         # Build execution context
+        self._prepare_history(device)
         context = ExecutionContext(
             bars=bars,
             vfs=vfs_state.copy(),  # Copy so we can update during evaluation
-            affordances={},  # TODO: Add affordance support (Task 3)
+            affordances={},  # TODO: Add affordance state support (Task 3)
+            affordance_positions=affordance_positions,
+            agent_positions=agent_positions,
             temporal={},  # TODO: Add temporal support (Task 3)
             device=device,
+            history=self._history,
+            step=step,
         )
 
         evaluator = Evaluator(context)
@@ -112,6 +172,9 @@ class VFSEvaluator:
             result[var.name] = value
             # Update context so later variables can reference this one
             context.vfs[var.name] = value
+
+        # Push history after evaluating current step
+        self._push_history(bars=bars, vfs_values=context.vfs, device=device, step=step)
 
         if self._debug_vfs:
             self._logger.debug(

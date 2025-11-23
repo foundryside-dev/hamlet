@@ -154,7 +154,7 @@ class VariableRegistry:
                     )
             elif var_def.type in ("tensor1d", "tensor2d", "tensor3d", "tensorNd"):
                 tensor = self._initialize_tensor(var_def)
-            elif var_def.type in ("vecNi", "vecNf", "vec2i", "vec3i"):
+            elif var_def.type in ("vecNi", "vecNf", "vec2i", "vec3i", "vec2f", "vec3f"):
                 base_default = self._build_vector_default(var_def)
 
                 if var_def.scope == "global":
@@ -208,9 +208,9 @@ class VariableRegistry:
                 return tuple(var_def.shape)
             return (self.num_agents, *tuple(var_def.shape))
 
-        elif var_def.type == "vec2i":
+        elif var_def.type in {"vec2i", "vec2f"}:
             dims = 2
-        elif var_def.type == "vec3i":
+        elif var_def.type in {"vec3i", "vec3f"}:
             dims = 3
         elif var_def.type in ("vecNi", "vecNf"):
             if var_def.dims is None:
@@ -310,9 +310,9 @@ class VariableRegistry:
 
     def _get_vector_dims(self, var_def: VariableDef) -> int:
         """Return expected dimensionality for vector variables."""
-        if var_def.type == "vec2i":
+        if var_def.type in {"vec2i", "vec2f"}:
             return 2
-        if var_def.type == "vec3i":
+        if var_def.type in {"vec3i", "vec3f"}:
             return 3
         if var_def.type in ("vecNi", "vecNf"):
             if var_def.dims is None:

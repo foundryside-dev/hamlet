@@ -205,6 +205,10 @@ class UniverseCompiler:
         if profiles_config.global_profile is not None:
             compiled_global = compiler.compile_global_profile(profiles_config.global_profile, bar_schema=bar_schema)
 
+        compiled_agent = None
+        if profiles_config.agent_profile is not None:
+            compiled_agent = compiler.compile_global_profile(profiles_config.agent_profile, bar_schema=bar_schema)
+
         # Compile item profiles
         compiled_item_profiles: dict[str, CompiledItemProfile] = {}
         if profiles_config.item_profiles:
@@ -217,7 +221,7 @@ class UniverseCompiler:
 
         return CompiledVFSProfiles(
             global_profile=compiled_global,
-            agent_profile=None,  # TODO: Task 4 or later
+            agent_profile=compiled_agent,
             item_profiles=compiled_item_profiles,
         )
 

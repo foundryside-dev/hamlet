@@ -1,17 +1,26 @@
 version: "1.0"
-description: "Feedforward Q-network for L0"
+description: "Dueling Q-network with prioritized replay for L0"
 architecture:
-  type: feedforward
-  feedforward:
-    hidden_layers:
+  type: dueling
+  dueling:
+    shared_layers:
+    - 512
     - 256
     - 128
+    value_stream:
+      hidden_layers:
+      - 256
+      activation: relu
+    advantage_stream:
+      hidden_layers:
+      - 256
+      activation: relu
     activation: relu
-    dropout: 0.0
+    dropout: 0.05
     layer_norm: true
 optimizer:
   type: adam
-  learning_rate: 0.0001
+  learning_rate: 0.0002
   adam_beta1: 0.9
   adam_beta2: 0.999
   adam_eps: 1.0e-08
@@ -25,5 +34,8 @@ q_learning:
 loss:
   type: smooth_l1
 replay:
-  capacity: 10000
-  prioritized: false
+  capacity: 200000
+  prioritized: true
+  priority_alpha: 0.6
+  priority_beta: 0.4
+  priority_beta_annealing: true

@@ -11,6 +11,9 @@ environment:
     - name: money
       description: "Economic resource for purchasing"
       range_type: normalized
+    - name: sustenance
+      description: "Food and nutrition for maintaining energy"
+      range_type: normalized
 
   cascade_graph: []
 
@@ -26,6 +29,9 @@ environment:
     - name: WORK
       description: "Earn money at the cost of energy"
       category: money
+    - name: COOK
+      description: "Cook food to restore energy"
+      category: sustenance
 
   variables:
     - name: deficit_energy
@@ -60,6 +66,24 @@ environment:
       dims: 1
       scope: agent
       description: "Timesteps since last DOCTOR action"
+      normalization:
+        method: normalize
+        range: [0.0, 100.0]
+
+    - name: deficit_satiation
+      type: scalar
+      dims: 1
+      scope: agent
+      description: "How far below max satiation (0.0 = at/above target)"
+      normalization:
+        method: clip
+        range: [0.0, 1.0]
+
+    - name: time_since_last_cook
+      type: scalar
+      dims: 1
+      scope: agent
+      description: "Timesteps since last COOK action"
       normalization:
         method: normalize
         range: [0.0, 100.0]

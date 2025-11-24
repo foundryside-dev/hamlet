@@ -2,7 +2,7 @@
 
 import pytest
 
-from townlet.agent.brain_config import (
+from townlet.config.brain_config import (
     ArchitectureConfig,
     BrainConfig,
     FeedforwardConfig,
@@ -454,13 +454,13 @@ class TestRecurrentNetworkSupport:
         minimal_brain_config,
     ):
         """VectorizedPopulation should build RecurrentSpatialQNetwork from recurrent config."""
-        from townlet.agent.brain_config import (
+        from townlet.agent.networks import RecurrentSpatialQNetwork
+        from townlet.config.brain_config import (
             CNNEncoderConfig,
             LSTMConfig,
             MLPEncoderConfig,
             RecurrentConfig,
         )
-        from townlet.agent.networks import RecurrentSpatialQNetwork
 
         brain_config = BrainConfig(
             version="1.0",
@@ -542,7 +542,7 @@ class TestRecurrentNetworkSupport:
         minimal_brain_config,
     ):
         """CRITICAL: is_recurrent flag must come from brain_config.architecture.type, not network_type parameter."""
-        from townlet.agent.brain_config import (
+        from townlet.config.brain_config import (
             CNNEncoderConfig,
             LSTMConfig,
             MLPEncoderConfig,
@@ -665,7 +665,7 @@ class TestRecurrentNetworkSupport:
         minimal_brain_config,
     ):
         """Recurrent network should have dimensions from config."""
-        from townlet.agent.brain_config import (
+        from townlet.config.brain_config import (
             CNNEncoderConfig,
             LSTMConfig,
             MLPEncoderConfig,

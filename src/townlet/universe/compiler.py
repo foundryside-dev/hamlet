@@ -131,8 +131,8 @@ class UniverseCompiler:
         environment = EnvironmentConfig.from_yaml(experiment_dir / "environment.yaml")
         actions = ActionsConfig.from_yaml(experiment_dir / "actions.yaml")
 
-        # Load brain config
-        brain = load_brain_config(experiment_dir / "brain.yaml")
+        # Load brain config (expects directory, not file path)
+        brain = load_brain_config(experiment_dir)
 
         # Load items.yaml (optional)
         items: ItemsCatalogConfig | None = None
@@ -515,7 +515,7 @@ class UniverseCompiler:
         )
 
         # Stage 7: emit artifact + cache
-        self._log_stage(7, "Emit artifact")
+        self._log_stage(7, "Emit compiled universe")
         effect_observation_slots = EFFECT_OBSERVATION_SLOTS if compiled_effect_catalog and compiled_effect_catalog.effects else 0
         compiled = self._stage_7_emit_artifact(
             raw,
@@ -2043,6 +2043,13 @@ class UniverseCompiler:
         substrate_actions: list[ActionConfig] = []
         substrate_names: set[str] = set()
 
+        allowed_names_raw = training.enabled_actions.custom if training.enabled_actions else None
+        custom_action_names = {custom.name for custom in actions.actions.custom_actions}
+        apply_global_filter = False
+        if allowed_names_raw is not None:
+            apply_global_filter = any(name not in custom_action_names for name in allowed_names_raw)
+        allowed_names = set(allowed_names_raw) if allowed_names_raw is not None else None
+
         if substrate_actions_cfg.inherit:
             # Build substrate instance using validated stratum config to derive canonical actions.
             substrate = SubstrateFactory.build(stratum.stratum.substrate, torch.device("cpu"))
@@ -2050,6 +2057,8 @@ class UniverseCompiler:
             substrate_names = {a.name for a in substrate_actions}
             for action in substrate_actions:
                 enabled = True
+                if apply_global_filter and allowed_names is not None:
+                    enabled = action.name in allowed_names
                 if action.name == "INTERACT" and not allow_interact:
                     enabled = False
                 movement_delta: tuple[float, ...] | None = None
@@ -2069,35 +2078,54 @@ class UniverseCompiler:
                 for custom in item.interactions.inventory_commands:
                     reserved_names.add(build_item_command_action_name(item.id, custom.name, "inventory"))
 
-        enabled_custom = set(training.enabled_actions.custom) if training.enabled_actions else set()
+        enabled_custom = set(allowed_names) if allowed_names is not None else set()
         for custom in actions.actions.custom_actions:
             if custom.name in reserved_names:
                 raise ValueError(f"Action name '{custom.name}' is reserved for system actions and cannot be overridden")
             if custom.name in substrate_names:
                 continue
             action_type = "passive" if custom.name == "WAIT" else "interaction"
-            enabled = custom.enabled_by_default or custom.name in enabled_custom
+            if apply_global_filter and allowed_names is not None:
+                enabled = custom.name in allowed_names
+            else:
+                enabled = custom.enabled_by_default or custom.name in enabled_custom
             _add(custom.name, action_type, "custom", enabled)
 
-        if items is not None:
-            _add("GET", "interaction", "item", True)
+        if items is not None and items.max_items_per_agent > 0 and items.max_items_in_world > 0:
+            get_enabled = True
+            if apply_global_filter and allowed_names is not None:
+                get_enabled = "GET" in allowed_names
+            _add("GET", "interaction", "item", get_enabled)
             for slot_idx in range(items.max_items_per_agent):
-                _add(f"USE_SLOT_{slot_idx}", "interaction", "item", True)
-                _add(f"DROP_SLOT_{slot_idx}", "interaction", "item", True)
+                use_enabled = True
+                drop_enabled = True
+                if apply_global_filter and allowed_names is not None:
+                    use_enabled = f"USE_SLOT_{slot_idx}" in allowed_names
+                    drop_enabled = f"DROP_SLOT_{slot_idx}" in allowed_names
+                _add(f"USE_SLOT_{slot_idx}", "interaction", "item", use_enabled)
+                _add(f"DROP_SLOT_{slot_idx}", "interaction", "item", drop_enabled)
             for item in items.item_types:
                 for custom in item.interactions.local_commands:
+                    name = build_item_command_action_name(item.id, custom.name, "local")
+                    enabled = True
+                    if apply_global_filter and allowed_names is not None:
+                        enabled = name in allowed_names
                     _add(
-                        build_item_command_action_name(item.id, custom.name, "local"),
+                        name,
                         "interaction",
                         "item",
-                        True,
+                        enabled,
                     )
                 for custom in item.interactions.inventory_commands:
+                    name = build_item_command_action_name(item.id, custom.name, "inventory")
+                    enabled = True
+                    if apply_global_filter and allowed_names is not None:
+                        enabled = name in allowed_names
                     _add(
-                        build_item_command_action_name(item.id, custom.name, "inventory"),
+                        name,
                         "interaction",
                         "item",
-                        True,
+                        enabled,
                     )
 
         # Build action labels (compiler is the single source of truth)

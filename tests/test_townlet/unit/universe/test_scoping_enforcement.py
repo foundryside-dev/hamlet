@@ -17,12 +17,66 @@ def _write_minimal_experiment(root: Path) -> None:
         "version: 2.1\n" "meters: []\n" "affordances: []\n" "cascade_graph: []\n" "modulation_graph: []\n" "variables: []\n"
     )
     (root / "actions.yaml").write_text("version: 2.1\ncustom_actions: []\n")
-    (root / "agent.yaml").write_text("version: 2.1\n")
+    (root / "brain.yaml").write_text(
+        'version: "1.0"\n'
+        'description: "Minimal brain for scoping tests"\n'
+        "architecture:\n"
+        "  type: feedforward\n"
+        "  feedforward:\n"
+        "    hidden_layers: [16]\n"
+        "    activation: relu\n"
+        "    dropout: 0.0\n"
+        "    layer_norm: false\n"
+        "optimizer:\n"
+        "  type: adam\n"
+        "  learning_rate: 0.001\n"
+        "  weight_decay: 0.0\n"
+        "  schedule:\n"
+        "    type: constant\n"
+        "  adam_beta1: 0.9\n"
+        "  adam_beta2: 0.999\n"
+        "  adam_eps: 1.0e-8\n"
+        "loss:\n"
+        "  type: smooth_l1\n"
+        "q_learning:\n"
+        "  gamma: 0.99\n"
+        "  target_update_frequency: 10\n"
+        "  use_double_dqn: false\n"
+        "replay:\n"
+        "  capacity: 1000\n"
+        "  prioritized: false\n"
+    )
     levels_dir = root / "levels" / "L1"
     levels_dir.mkdir(parents=True)
     (levels_dir / "curriculum.yaml").write_text("version: 2.1\ncurriculum:\n  active_temporal: false\n  active_vision: global\n")
     (levels_dir / "bars.yaml").write_text("version: 2.1\nmeters: []\ncascades: []\n")
     (levels_dir / "affordances.yaml").write_text("version: 2.1\naffordances: []\nmodulations: []\n")
+    (levels_dir / "drive.yaml").write_text(
+        "drive:\n"
+        '  version: "1.0"\n'
+        "  modifiers: {}\n"
+        "  extrinsic:\n"
+        "    type: constant_base_with_shaped_bonus\n"
+        "    base_reward: 0.0\n"
+        "    bar_bonuses: []\n"
+        "    variable_bonuses: []\n"
+        "    apply_modifiers: []\n"
+        "  intrinsic:\n"
+        "    strategy: adaptive_rnd\n"
+        "    base_weight: 0.0\n"
+        "    apply_modifiers: []\n"
+        "    adaptive_config:\n"
+        "      enabled: false\n"
+        "      threshold: 0.0\n"
+        "      decay_rate: 1.0\n"
+        "      min_weight: 0.0\n"
+        "  shaping: []\n"
+        "  composition:\n"
+        "    normalize: false\n"
+        "    clip: null\n"
+        "    log_components: false\n"
+        "    log_modifiers: false\n"
+    )
     (levels_dir / "training.yaml").write_text("version: 2.1\npopulation:\n  size: 1\n")
 
 

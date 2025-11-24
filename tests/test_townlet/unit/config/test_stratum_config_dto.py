@@ -39,7 +39,7 @@ class TestStratumConfigLoading:
         assert substrate.grid.boundary == "clamp"
         assert substrate.grid.distance_metric == "manhattan"
         assert substrate.grid.observation_encoding == "relative"
-        assert substrate.grid.diagonals is True
+        assert substrate.grid.diagonals is False
 
         # Only one substrate block should be populated
         assert substrate.gridnd is None

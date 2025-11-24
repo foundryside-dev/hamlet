@@ -8,13 +8,8 @@ actions:
     - name: WAIT
       description: "Do nothing (pass turn)"
       enabled_by_default: true
-
     - name: REST
-      description: "Passive energy recovery (slower than SLEEP)"
-      enabled_by_default: false
-
-    - name: MEDITATE
-      description: "Passive mood boost (slower than MEDITATE affordance)"
+      description: "Passive energy recovery (test action)"
       enabled_by_default: false
 
   labels:

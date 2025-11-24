@@ -36,7 +36,7 @@ class TestVisionRangeNoDefaults:
             "stratum.yaml",
             "environment.yaml",
             "actions.yaml",
-            "agent.yaml",
+            "brain.yaml",
             "vfs_profiles.yaml",
             "items.yaml",
             "effects.yaml",

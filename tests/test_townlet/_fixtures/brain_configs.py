@@ -11,7 +11,7 @@ Usage:
 
 import pytest
 
-from townlet.agent.brain_config import load_brain_config
+from townlet.config.brain_config import load_brain_config
 
 
 @pytest.fixture

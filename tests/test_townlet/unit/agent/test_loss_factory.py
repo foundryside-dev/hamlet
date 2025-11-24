@@ -3,8 +3,8 @@
 import torch
 import torch.nn as nn
 
-from townlet.agent.brain_config import LossConfig
 from townlet.agent.loss_factory import LossFactory
+from townlet.config.brain_config import LossConfig
 
 
 def test_build_mse():

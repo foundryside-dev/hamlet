@@ -4,7 +4,7 @@ affordances:
     - name: SLEEP
       interaction_type: instant
       costs:
-        energy: 0.0
+        money: 0.05
       opening_hours:
         enabled: false
       deployment:
@@ -12,8 +12,8 @@ affordances:
         positions:
           - - 0
             - 0
-          - - 7
-            - 7
+          - - 3
+            - 3
       interactions:
         on_start:
           - modify: target.bar.energy
@@ -22,18 +22,40 @@ affordances:
         on_completion: []
         on_early_exit: []
         on_failure: []
+    - name: WORK
+      interaction_type: instant
+      costs:
+        energy: 0.1
+      opening_hours:
+        enabled: true
+        schedule:
+          - start: 0
+            end: 24
+      deployment:
+        type: fixed
+        positions:
+          - - 2
+            - 2
+      interactions:
+        on_start:
+          - modify: target.bar.money
+            value: target.bar.money + 0.5
+        per_tick: []
+        on_completion: []
+        on_early_exit: []
+        on_failure: []
     - name: DOCTOR
       interaction_type: instant
       costs:
-        energy: 0.0
+        money: 0.1
       opening_hours:
         enabled: false
       deployment:
         type: fixed
         positions:
           - - 0
-            - 7
-          - - 7
+            - 1
+          - - 1
             - 0
       interactions:
         on_start:

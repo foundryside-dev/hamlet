@@ -2,7 +2,8 @@
 
 import pytest
 from pydantic import ValidationError
-from townlet.agent.brain_config import (
+
+from townlet.config.brain_config import (
     ArchitectureConfig,
     BrainConfig,
     FeedforwardConfig,
@@ -79,7 +80,7 @@ def test_feedforward_config_rejects_dropout_gte_1():
 
 def test_optimizer_config_adam():
     """OptimizerConfig accepts Adam configuration."""
-    from townlet.agent.brain_config import ScheduleConfig
+    from townlet.config.brain_config import ScheduleConfig
 
     config = OptimizerConfig(
         type="adam",
@@ -96,7 +97,7 @@ def test_optimizer_config_adam():
 
 def test_optimizer_config_sgd():
     """OptimizerConfig accepts SGD configuration."""
-    from townlet.agent.brain_config import ScheduleConfig
+    from townlet.config.brain_config import ScheduleConfig
 
     config = OptimizerConfig(
         type="sgd",
@@ -112,7 +113,7 @@ def test_optimizer_config_sgd():
 
 def test_optimizer_config_rejects_negative_lr():
     """OptimizerConfig rejects negative learning rate."""
-    from townlet.agent.brain_config import ScheduleConfig
+    from townlet.config.brain_config import ScheduleConfig
 
     with pytest.raises(ValidationError) as exc_info:
         OptimizerConfig(
@@ -149,7 +150,7 @@ def test_loss_config_rejects_negative_huber_delta():
 
 def test_brain_config_feedforward():
     """BrainConfig accepts feedforward architecture."""
-    from townlet.agent.brain_config import ReplayConfig, ScheduleConfig
+    from townlet.config.brain_config import ReplayConfig, ScheduleConfig
 
     config = BrainConfig(
         version="1.0",
@@ -189,7 +190,7 @@ def test_brain_config_feedforward():
 
 def test_brain_config_requires_feedforward_when_type_feedforward():
     """BrainConfig requires feedforward field when type=feedforward."""
-    from townlet.agent.brain_config import ScheduleConfig
+    from townlet.config.brain_config import ScheduleConfig
 
     with pytest.raises(ValidationError) as exc_info:
         BrainConfig(
@@ -305,7 +306,7 @@ q_learning:
 
 def test_compute_brain_hash():
     """compute_brain_hash returns deterministic SHA256 hash."""
-    from townlet.agent.brain_config import ReplayConfig, ScheduleConfig
+    from townlet.config.brain_config import ReplayConfig, ScheduleConfig
 
     config = BrainConfig(
         version="1.0",
@@ -352,7 +353,7 @@ def test_compute_brain_hash():
 
 def test_compute_brain_hash_differs_for_different_configs():
     """compute_brain_hash produces different hashes for different configs."""
-    from townlet.agent.brain_config import ReplayConfig, ScheduleConfig
+    from townlet.config.brain_config import ReplayConfig, ScheduleConfig
 
     config1 = BrainConfig(
         version="1.0",
@@ -428,8 +429,7 @@ def test_compute_brain_hash_differs_for_different_configs():
 
 def test_apply_training_overrides_merges_q_learning_and_replay():
     """apply_training_overrides should respect TrainingV2Config overrides."""
-    from townlet.agent.brain_config import ReplayConfig, ScheduleConfig
-
+    from townlet.config.brain_config import ReplayConfig, ScheduleConfig
     from townlet.config.training_v2_config import (
         AdversarialCurriculumConfig,
         CheckpointingConfig,
@@ -564,7 +564,7 @@ def test_apply_training_overrides_merges_q_learning_and_replay():
 
 def test_optimizer_config_adam_requires_adam_params():
     """OptimizerConfig type=adam requires adam_beta1, adam_beta2, adam_eps."""
-    from townlet.agent.brain_config import ScheduleConfig
+    from townlet.config.brain_config import ScheduleConfig
 
     with pytest.raises(ValidationError) as exc_info:
         OptimizerConfig(
@@ -580,7 +580,7 @@ def test_optimizer_config_adam_requires_adam_params():
 
 def test_optimizer_config_sgd_requires_sgd_params():
     """OptimizerConfig type=sgd requires sgd_momentum and sgd_nesterov."""
-    from townlet.agent.brain_config import ScheduleConfig
+    from townlet.config.brain_config import ScheduleConfig
 
     with pytest.raises(ValidationError) as exc_info:
         OptimizerConfig(
@@ -596,7 +596,7 @@ def test_optimizer_config_sgd_requires_sgd_params():
 
 def test_optimizer_config_rmsprop_requires_rmsprop_params():
     """OptimizerConfig type=rmsprop requires rmsprop_alpha and rmsprop_eps."""
-    from townlet.agent.brain_config import ScheduleConfig
+    from townlet.config.brain_config import ScheduleConfig
 
     with pytest.raises(ValidationError) as exc_info:
         OptimizerConfig(
@@ -615,7 +615,7 @@ def test_optimizer_config_rmsprop_requires_rmsprop_params():
 
 def test_cnn_encoder_config_valid():
     """CNNEncoderConfig accepts valid CNN parameters."""
-    from townlet.agent.brain_config import CNNEncoderConfig
+    from townlet.config.brain_config import CNNEncoderConfig
 
     config = CNNEncoderConfig(
         channels=[16, 32],
@@ -630,7 +630,7 @@ def test_cnn_encoder_config_valid():
 
 def test_cnn_encoder_config_rejects_mismatched_lengths():
     """CNNEncoderConfig requires all lists to have same length."""
-    from townlet.agent.brain_config import CNNEncoderConfig
+    from townlet.config.brain_config import CNNEncoderConfig
 
     with pytest.raises(ValidationError) as exc_info:
         CNNEncoderConfig(
@@ -645,7 +645,7 @@ def test_cnn_encoder_config_rejects_mismatched_lengths():
 
 def test_mlp_encoder_config_valid():
     """MLPEncoderConfig accepts valid MLP parameters."""
-    from townlet.agent.brain_config import MLPEncoderConfig
+    from townlet.config.brain_config import MLPEncoderConfig
 
     config = MLPEncoderConfig(
         hidden_sizes=[32],
@@ -656,7 +656,7 @@ def test_mlp_encoder_config_valid():
 
 def test_lstm_config_valid():
     """LSTMConfig accepts valid LSTM parameters."""
-    from townlet.agent.brain_config import LSTMConfig
+    from townlet.config.brain_config import LSTMConfig
 
     config = LSTMConfig(
         hidden_size=256,
@@ -669,7 +669,7 @@ def test_lstm_config_valid():
 
 def test_lstm_config_rejects_zero_hidden_size():
     """LSTMConfig rejects hidden_size=0."""
-    from townlet.agent.brain_config import LSTMConfig
+    from townlet.config.brain_config import LSTMConfig
 
     with pytest.raises(ValidationError) as exc_info:
         LSTMConfig(
@@ -682,7 +682,7 @@ def test_lstm_config_rejects_zero_hidden_size():
 
 def test_recurrent_config_valid():
     """RecurrentConfig accepts complete recurrent architecture."""
-    from townlet.agent.brain_config import (
+    from townlet.config.brain_config import (
         CNNEncoderConfig,
         LSTMConfig,
         MLPEncoderConfig,
@@ -727,7 +727,7 @@ def test_recurrent_config_valid():
 
 def test_schedule_config_constant():
     """ScheduleConfig accepts constant (no schedule)."""
-    from townlet.agent.brain_config import ScheduleConfig
+    from townlet.config.brain_config import ScheduleConfig
 
     config = ScheduleConfig(type="constant")
     assert config.type == "constant"
@@ -735,7 +735,7 @@ def test_schedule_config_constant():
 
 def test_schedule_config_step_decay():
     """ScheduleConfig accepts StepLR parameters."""
-    from townlet.agent.brain_config import ScheduleConfig
+    from townlet.config.brain_config import ScheduleConfig
 
     config = ScheduleConfig(
         type="step_decay",
@@ -749,7 +749,7 @@ def test_schedule_config_step_decay():
 
 def test_schedule_config_cosine():
     """ScheduleConfig accepts CosineAnnealingLR parameters."""
-    from townlet.agent.brain_config import ScheduleConfig
+    from townlet.config.brain_config import ScheduleConfig
 
     config = ScheduleConfig(
         type="cosine",
@@ -762,7 +762,7 @@ def test_schedule_config_cosine():
 
 def test_schedule_config_exponential():
     """ScheduleConfig accepts ExponentialLR parameters."""
-    from townlet.agent.brain_config import ScheduleConfig
+    from townlet.config.brain_config import ScheduleConfig
 
     config = ScheduleConfig(
         type="exponential",
@@ -774,7 +774,7 @@ def test_schedule_config_exponential():
 
 def test_schedule_config_requires_params_for_step_decay():
     """ScheduleConfig validates step_decay requires step_size and gamma."""
-    from townlet.agent.brain_config import ScheduleConfig
+    from townlet.config.brain_config import ScheduleConfig
 
     # Valid step_decay needs both params (will validate in model_validator)
     config = ScheduleConfig(
@@ -787,7 +787,7 @@ def test_schedule_config_requires_params_for_step_decay():
 
 def test_schedule_config_rejects_step_decay_without_params():
     """ScheduleConfig rejects step_decay without required parameters."""
-    from townlet.agent.brain_config import ScheduleConfig
+    from townlet.config.brain_config import ScheduleConfig
 
     with pytest.raises(ValidationError) as exc_info:
         ScheduleConfig(type="step_decay")
@@ -796,7 +796,7 @@ def test_schedule_config_rejects_step_decay_without_params():
 
 def test_schedule_config_rejects_cosine_without_params():
     """ScheduleConfig rejects cosine without required parameters."""
-    from townlet.agent.brain_config import ScheduleConfig
+    from townlet.config.brain_config import ScheduleConfig
 
     with pytest.raises(ValidationError) as exc_info:
         ScheduleConfig(type="cosine")
@@ -805,7 +805,7 @@ def test_schedule_config_rejects_cosine_without_params():
 
 def test_schedule_config_rejects_exponential_without_params():
     """ScheduleConfig rejects exponential without required parameters."""
-    from townlet.agent.brain_config import ScheduleConfig
+    from townlet.config.brain_config import ScheduleConfig
 
     with pytest.raises(ValidationError) as exc_info:
         ScheduleConfig(type="exponential")
@@ -821,7 +821,7 @@ def test_architecture_config_rejects_recurrent_without_recurrent_config():
 
 def test_cnn_encoder_config_rejects_empty_channels():
     """CNNEncoderConfig rejects empty channels list."""
-    from townlet.agent.brain_config import CNNEncoderConfig
+    from townlet.config.brain_config import CNNEncoderConfig
 
     with pytest.raises(ValidationError) as exc_info:
         CNNEncoderConfig(
@@ -836,7 +836,7 @@ def test_cnn_encoder_config_rejects_empty_channels():
 
 def test_cnn_encoder_config_rejects_negative_channels():
     """CNNEncoderConfig rejects negative or zero channel values."""
-    from townlet.agent.brain_config import CNNEncoderConfig
+    from townlet.config.brain_config import CNNEncoderConfig
 
     with pytest.raises(ValidationError) as exc_info:
         CNNEncoderConfig(
@@ -851,7 +851,7 @@ def test_cnn_encoder_config_rejects_negative_channels():
 
 def test_mlp_encoder_config_rejects_negative_hidden_sizes():
     """MLPEncoderConfig rejects negative or zero hidden sizes."""
-    from townlet.agent.brain_config import MLPEncoderConfig
+    from townlet.config.brain_config import MLPEncoderConfig
 
     with pytest.raises(ValidationError) as exc_info:
         MLPEncoderConfig(
@@ -866,7 +866,7 @@ def test_mlp_encoder_config_rejects_negative_hidden_sizes():
 
 def test_dueling_stream_config_valid():
     """DuelingStreamConfig accepts valid parameters."""
-    from townlet.agent.brain_config import DuelingStreamConfig
+    from townlet.config.brain_config import DuelingStreamConfig
 
     config = DuelingStreamConfig(
         hidden_layers=[256, 128],
@@ -877,7 +877,7 @@ def test_dueling_stream_config_valid():
 
 def test_dueling_config_valid():
     """DuelingConfig accepts complete dueling architecture."""
-    from townlet.agent.brain_config import DuelingConfig, DuelingStreamConfig
+    from townlet.config.brain_config import DuelingConfig, DuelingStreamConfig
 
     config = DuelingConfig(
         shared_layers=[256, 128],
@@ -900,7 +900,7 @@ def test_dueling_config_valid():
 
 def test_dueling_config_rejects_empty_shared_layers():
     """DuelingConfig requires at least one shared layer."""
-    from townlet.agent.brain_config import DuelingConfig, DuelingStreamConfig
+    from townlet.config.brain_config import DuelingConfig, DuelingStreamConfig
 
     with pytest.raises(ValidationError) as exc_info:
         DuelingConfig(
@@ -925,7 +925,7 @@ def test_dueling_config_rejects_empty_shared_layers():
 
 def test_replay_config_standard():
     """ReplayConfig accepts standard replay buffer."""
-    from townlet.agent.brain_config import ReplayConfig
+    from townlet.config.brain_config import ReplayConfig
 
     config = ReplayConfig(
         capacity=10000,
@@ -937,7 +937,7 @@ def test_replay_config_standard():
 
 def test_replay_config_prioritized():
     """ReplayConfig accepts prioritized replay parameters."""
-    from townlet.agent.brain_config import ReplayConfig
+    from townlet.config.brain_config import ReplayConfig
 
     config = ReplayConfig(
         capacity=10000,
@@ -953,7 +953,7 @@ def test_replay_config_prioritized():
 
 def test_replay_config_rejects_invalid_alpha():
     """ReplayConfig rejects priority_alpha outside [0, 1]."""
-    from townlet.agent.brain_config import ReplayConfig
+    from townlet.config.brain_config import ReplayConfig
 
     with pytest.raises(ValidationError) as exc_info:
         ReplayConfig(

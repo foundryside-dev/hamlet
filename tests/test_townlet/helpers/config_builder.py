@@ -16,7 +16,7 @@ TOP_LEVEL_FILES = [
     "stratum.yaml",
     "environment.yaml",
     "actions.yaml",
-    "agent.yaml",
+    "brain.yaml",
     "effects.yaml",
     "vfs_profiles.yaml",
     "items.yaml",
@@ -27,6 +27,7 @@ LEVEL_FILES = [
     "bars.yaml",
     "affordances.yaml",
     "curriculum.yaml",
+    "drive.yaml",
 ]
 
 # Source skeletons: v2.1 test experiment + level template.
@@ -99,6 +100,7 @@ def prepare_config_dir(tmp_path: Path, modifier: Callable[[dict], None] | None =
     if modifier is not None:
         modifier(config_data)
     _write_training_yaml(level_dir, config_data)
+
     return config_dir
 
 
@@ -111,12 +113,12 @@ def mutate_training_yaml(config_dir: Path, mutator: Callable[[dict], None]) -> N
     _write_training_yaml(level_dir, data)
 
 
-def mutate_agent_yaml(config_dir: Path, mutator: Callable[[dict], None]) -> None:
-    """Load agent.yaml, apply mutator, and write back."""
-    agent_yaml = config_dir / "agent.yaml"
-    data = yaml.safe_load(agent_yaml.read_text())
+def mutate_brain_yaml(config_dir: Path, mutator: Callable[[dict], None]) -> None:
+    """Load brain.yaml, apply mutator, and write back."""
+    brain_yaml = config_dir / "brain.yaml"
+    data = yaml.safe_load(brain_yaml.read_text())
     mutator(data)
-    with open(agent_yaml, "w") as handle:
+    with open(brain_yaml, "w") as handle:
         yaml.safe_dump(data, handle, sort_keys=False)
 
 
@@ -136,4 +138,14 @@ def mutate_curriculum_yaml(config_dir: Path, mutator: Callable[[dict], None]) ->
     data = yaml.safe_load(curriculum_yaml.read_text())
     mutator(data)
     with open(curriculum_yaml, "w") as handle:
+        yaml.safe_dump(data, handle, sort_keys=False)
+
+
+def mutate_drive_yaml(config_dir: Path, mutator: Callable[[dict], None]) -> None:
+    """Load the primary level's drive.yaml, apply mutator, and write back."""
+    level_dir = _get_primary_level_dir(config_dir)
+    drive_yaml = level_dir / "drive.yaml"
+    data = yaml.safe_load(drive_yaml.read_text())
+    mutator(data)
+    with open(drive_yaml, "w") as handle:
         yaml.safe_dump(data, handle, sort_keys=False)

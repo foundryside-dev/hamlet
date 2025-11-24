@@ -4,8 +4,8 @@ import torch
 import torch.nn as nn
 from torch.optim.lr_scheduler import CosineAnnealingLR, ExponentialLR, StepLR
 
-from townlet.agent.brain_config import OptimizerConfig, ScheduleConfig
 from townlet.agent.optimizer_factory import OptimizerFactory
+from townlet.config.brain_config import OptimizerConfig, ScheduleConfig
 
 
 def test_build_adam():

@@ -382,6 +382,11 @@ class UnifiedServer:
         from townlet.demo.live_inference import LiveInferenceServer
 
         try:
+            # Silence noisy inference logging so training output stays readable.
+            inference_logger = logging.getLogger("townlet.demo.live_inference")
+            inference_logger.setLevel(logging.WARNING)
+            inference_logger.propagate = False
+
             logger.info("[Inference] Initializing LiveInferenceServer...")
 
             # Type narrowing: checkpoint_dir is guaranteed to be set by start()

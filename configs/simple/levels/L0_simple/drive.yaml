@@ -1,42 +1,63 @@
 drive:
-  version: '1.0'
+  version: "1.0"
   modifiers:
     energy_crisis:
       bar: energy
       ranges:
-      - name: "critical"
-        min: 0.0
-        max: 0.2
-        multiplier: 0.0
-      - name: "normal"
-        min: 0.2
-        max: 1.0
-        multiplier: 1.0
+        - name: "critical"
+          min: 0.0
+          max: 0.2
+          multiplier: 0.0
+        - name: "normal"
+          min: 0.2
+          max: 1.0
+          multiplier: 1.0
     health_crisis:
       bar: health
       ranges:
-      - name: "critical"
-        min: 0.0
-        max: 0.2
-        multiplier: 0.0
-      - name: "normal"
-        min: 0.2
-        max: 1.0
-        multiplier: 1.0
+        - name: "critical"
+          min: 0.0
+          max: 0.2
+          multiplier: 0.0
+        - name: "normal"
+          min: 0.2
+          max: 1.0
+          multiplier: 1.0
+    money_crisis:
+      bar: money
+      ranges:
+        - name: "critical"
+          min: 0.0
+          max: 0.2
+          multiplier: 0.0
+        - name: "normal"
+          min: 0.2
+          max: 1.0
+          multiplier: 1.0
   extrinsic:
     type: constant_base_with_shaped_bonus
-    base_reward: 1.0
-    bar_bonuses: []
+    base_reward: 0.01
+    bar_bonuses:
+      - bar: energy
+        center: 0.0
+        scale: 0.5
+      - bar: health
+        center: 0.0
+        scale: 0.5
+      - bar: money
+        center: 0.0
+        scale: 0.3
   intrinsic:
     strategy: adaptive_rnd
     base_weight: 0.1
     apply_modifiers:
-    - energy_crisis
-    - health_crisis
+      - energy_crisis
+      - health_crisis
+      - money_crisis
     adaptive_config:
       enabled: true
       threshold: 100.0
-      decay_rate: 0.995
+      decay_rate: 0.998
       min_weight: 0.01
   shaping: []
   composition:

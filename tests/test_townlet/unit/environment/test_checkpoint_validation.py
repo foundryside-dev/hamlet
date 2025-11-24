@@ -171,12 +171,9 @@ class TestActionLabelLoading:
         compiled_labels = env.universe.action_space_metadata.labels
         assert env.action_labels is not None
         assert env.action_labels.labels == compiled_labels
-        # Default preset should cover canonical movement + meta actions
-        assert set(compiled_labels.keys()) == {0, 1, 2, 3, 4, 5}
-        assert "UP" in compiled_labels.values()
-        assert "DOWN" in compiled_labels.values()
-        assert "LEFT" in compiled_labels.values()
-        assert "RIGHT" in compiled_labels.values()
+        # Default preset should cover canonical movement + meta actions (custom actions may extend the set)
+        base_labels = {"UP", "DOWN", "LEFT", "RIGHT", "INTERACT", "WAIT"}
+        assert base_labels.issubset(set(compiled_labels.values()))
 
 
 class TestAffordancePositionSerialization:

@@ -11,15 +11,15 @@ training:
   enabled_affordances:
     - SLEEP
     - DOCTOR
-
-  randomize_affordances: true
+    - WORK
+  randomize_affordances: false
 
   enabled_actions:
     custom: []
 
   q_learning:
     use_double_dqn: false
-    gamma: 0.99
+    gamma: 0.995
     learning_rate: 0.0001
     target_update_frequency: 500
 
@@ -30,8 +30,8 @@ training:
 
   exploration:
     epsilon_start: 1.0
-    epsilon_end: 0.01
-    epsilon_decay: 0.995
+    epsilon_end: 0.001
+    epsilon_decay: 0.99
 
   intrinsic:
     rnd:
@@ -40,14 +40,14 @@ training:
 
     annealing:
       threshold: 100.0
-      decay_rate: 0.995
+      decay_rate: 0.99
       min_weight: 0.001
-    initial_weight: 1.0
-    min_survival_fraction: 0.4
+    initial_weight: 0.05
+    min_survival_fraction: 0.1
     survival_window: 100
 
   training_loop:
-    max_episodes: 10000
+    max_episodes: 1000
     max_steps_per_episode: 1000
     train_frequency: 4
     sequence_length: 8

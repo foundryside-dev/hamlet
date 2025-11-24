@@ -10,6 +10,7 @@ from typing import Any
 
 import pytest
 import torch
+import yaml
 
 from tests.test_townlet._fixtures.config import _apply_config_overrides
 from tests.test_townlet._fixtures.instant_affordances_helper import convert_to_instant_mode
@@ -241,6 +242,22 @@ def custom_env_builder(
         shutil.copytree(source_path, target_dir)
 
         if overrides:
+            overrides = dict(overrides)
+
+            # Allow enabling temporal mechanics via curriculum when requested.
+            env_overrides = overrides.pop("environment", None) or {}
+            if env_overrides.get("enable_temporal_mechanics"):
+                level_dir = _get_primary_level_dir(target_dir)
+                curriculum_yaml = level_dir / "curriculum.yaml"
+                curriculum_data = yaml.safe_load(curriculum_yaml.read_text())
+                curriculum_section = curriculum_data.get("curriculum", {}) or {}
+                curriculum_section["active_temporal"] = True
+                # Provide a sane default day_length if not specified by override
+                curriculum_section["day_length"] = env_overrides.get("day_length", 24)
+                curriculum_data["curriculum"] = curriculum_section
+                curriculum_yaml.write_text(yaml.safe_dump(curriculum_data, sort_keys=False))
+
+            # Training overrides (default path)
             mutate_training_yaml(target_dir, lambda data: _apply_config_overrides(data, overrides))
 
         return env_factory(

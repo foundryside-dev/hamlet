@@ -11,7 +11,7 @@ import sqlite3
 
 import pytest
 
-from tests.test_townlet.helpers.config_builder import mutate_agent_yaml
+from tests.test_townlet.helpers.config_builder import mutate_brain_yaml
 from townlet.demo.runner import DemoRunner
 from townlet.universe.errors import CompilationError
 
@@ -20,10 +20,7 @@ LEVEL_NAME = "L0_test"
 
 def _force_huber_loss(config_dir) -> None:
     """Align agent loss with schema (huber requires huber_delta)."""
-    mutate_agent_yaml(
-        config_dir,
-        lambda data: data.setdefault("agent", {}).setdefault("brain", {}).update({"loss": {"type": "huber", "huber_delta": 1.0}}),
-    )
+    mutate_brain_yaml(config_dir, lambda brain: brain.update({"loss": {"type": "huber", "huber_delta": 1.0}}))
 
 
 class TestRunnerRecordingIntegration:

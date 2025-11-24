@@ -8,6 +8,9 @@ environment:
     - name: health
       description: "Basic well-being; recover at doctor"
       range_type: normalized
+    - name: money
+      description: "Economic resource for purchasing"
+      range_type: normalized
 
   cascade_graph: []
 
@@ -20,6 +23,9 @@ environment:
     - name: DOCTOR
       description: "Medical checkup to restore health"
       category: health
+    - name: WORK
+      description: "Earn money at the cost of energy"
+      category: money
 
   variables:
     - name: deficit_energy

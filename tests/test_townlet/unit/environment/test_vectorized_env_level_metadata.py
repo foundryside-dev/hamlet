@@ -25,6 +25,28 @@ def _build_two_level_pack(tmp_path: Path, config_pack_factory) -> Path:
 
     pack_dir = config_pack_factory(name="two_level_pack")
 
+    # Ensure REST/MEDITATE are present in the action vocabulary so enabling works.
+    actions_path = pack_dir / "actions.yaml"
+    actions_data = yaml.safe_load(actions_path.read_text())
+    custom_actions = actions_data["actions"].setdefault("custom_actions", [])
+    existing = {action["name"] for action in custom_actions}
+
+    def _add_action(name: str, description: str):
+        if name in existing:
+            return
+        custom_actions.append(
+            {
+                "name": name,
+                "description": description,
+                "enabled_by_default": False,
+            }
+        )
+        existing.add(name)
+
+    _add_action("REST", "Passive energy recovery (test)")
+    _add_action("MEDITATE", "Passive mood/health recovery (test)")
+    actions_path.write_text(yaml.safe_dump(actions_data, sort_keys=False))
+
     # Extend experiment curriculum_levels with a second level.
     experiment_path = pack_dir / "experiment.yaml"
     experiment_data = yaml.safe_load(experiment_path.read_text())

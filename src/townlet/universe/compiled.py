@@ -128,7 +128,6 @@ class CompiledUniverse:
         optimization_data: OptimizationData
         vfs_observation_fields: tuple[VfsObservationField, ...]
         vfs_variables: tuple[VariableDef, ...]
-        vfs_variables: tuple[VariableDef, ...]
         drive_hash: str | None = None
         curriculum_hash: str | None = None
         bars_hash: str | None = None

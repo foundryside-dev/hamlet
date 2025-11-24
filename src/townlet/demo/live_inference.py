@@ -463,6 +463,7 @@ class LiveInferenceServer:
                     dummy_output, _ = self.population.q_network(dummy_obs)
                 else:
                     dummy_output = self.population.q_network(dummy_obs)
+                assert self.env is not None, "Environment must be initialized before loading checkpoint"
                 if dummy_output.shape[1] != self.env.action_dim:
                     logger.warning(
                         f"Network action space mismatch: Network outputs {dummy_output.shape[1]} actions "

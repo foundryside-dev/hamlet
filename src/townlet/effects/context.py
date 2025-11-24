@@ -273,10 +273,12 @@ class ExecutionContext:
             aff_name = parts[1]
             if self.affordance_overrides is None:
                 self.affordance_overrides = {}
-            scalar = value
+            scalar_value: bool
             if isinstance(value, torch.Tensor):
-                scalar = bool(value.item())
-            self.affordance_overrides[aff_name] = bool(scalar)
+                scalar_value = bool(value.item())
+            else:
+                scalar_value = bool(value)
+            self.affordance_overrides[aff_name] = scalar_value
             return
 
         # Handle vfs.* paths

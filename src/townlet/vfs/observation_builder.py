@@ -269,7 +269,7 @@ def build_vfs_observation(
                         profile_name = (
                             registry.item_vfs_index_to_profile.get(vfs_idx) if hasattr(registry, "item_vfs_index_to_profile") else None
                         )
-                        indices = profile_indices.get(profile_name, [])
+                        indices = profile_indices.get(profile_name, []) if profile_name is not None else []
                         if not indices:
                             indices = list(range(vars_per_slot))  # Fallback to first vars_per_slot columns
                         dest_start = slot_idx * vars_per_slot

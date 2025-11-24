@@ -116,6 +116,7 @@ class VFSEvaluator:
         if self.mode == EvaluationMode.MARK_AND_SWEEP:
             # When no marks are provided, fall back to evaluating all variables
             # so expressions do not silently skip and leave stale defaults.
+            vars_to_eval: set[str]
             if marks is None:
                 vars_to_eval = {var.name for var in profile.variables}
             else:
@@ -131,7 +132,7 @@ class VFSEvaluator:
                     for dep in dependencies.get(var_name, ()):
                         add_with_deps(dep, acc)
 
-                vars_to_eval: set[str] = set()
+                vars_to_eval = set()
                 for marked in marks:
                     # Ignore marks that are not part of this profile
                     if marked in dependencies or marked in var_names:

@@ -215,7 +215,12 @@ class UniverseCompiler:
 
         compiled_agent = None
         if profiles_config.agent_profile is not None:
-            compiled_agent = compiler.compile_global_profile(profiles_config.agent_profile, bar_schema=bar_schema)
+            # Agent profile is structurally compatible with global profile for compilation
+            from typing import cast
+
+            from townlet.config.vfs_profiles_config import GlobalVFSProfileConfig as GlobalProfileType
+
+            compiled_agent = compiler.compile_global_profile(cast(GlobalProfileType, profiles_config.agent_profile), bar_schema=bar_schema)
 
         # Compile item profiles
         compiled_item_profiles: dict[str, CompiledItemProfile] = {}
@@ -2073,10 +2078,10 @@ class UniverseCompiler:
                 reserved_names.add(f"USE_SLOT_{slot_idx}")
                 reserved_names.add(f"DROP_SLOT_{slot_idx}")
             for item in items.item_types:
-                for custom in item.interactions.local_commands:
-                    reserved_names.add(build_item_command_action_name(item.id, custom.name, "local"))
-                for custom in item.interactions.inventory_commands:
-                    reserved_names.add(build_item_command_action_name(item.id, custom.name, "inventory"))
+                for item_cmd in item.interactions.local_commands:
+                    reserved_names.add(build_item_command_action_name(item.id, item_cmd.name, "local"))
+                for item_cmd in item.interactions.inventory_commands:
+                    reserved_names.add(build_item_command_action_name(item.id, item_cmd.name, "inventory"))
 
         enabled_custom = set(allowed_names) if allowed_names is not None else set()
         for custom in actions.actions.custom_actions:
@@ -2105,8 +2110,8 @@ class UniverseCompiler:
                 _add(f"USE_SLOT_{slot_idx}", "interaction", "item", use_enabled)
                 _add(f"DROP_SLOT_{slot_idx}", "interaction", "item", drop_enabled)
             for item in items.item_types:
-                for custom in item.interactions.local_commands:
-                    name = build_item_command_action_name(item.id, custom.name, "local")
+                for item_cmd in item.interactions.local_commands:
+                    name = build_item_command_action_name(item.id, item_cmd.name, "local")
                     enabled = True
                     if apply_global_filter and allowed_names is not None:
                         enabled = name in allowed_names
@@ -2116,8 +2121,8 @@ class UniverseCompiler:
                         "item",
                         enabled,
                     )
-                for custom in item.interactions.inventory_commands:
-                    name = build_item_command_action_name(item.id, custom.name, "inventory")
+                for item_cmd in item.interactions.inventory_commands:
+                    name = build_item_command_action_name(item.id, item_cmd.name, "inventory")
                     enabled = True
                     if apply_global_filter and allowed_names is not None:
                         enabled = name in allowed_names
@@ -2707,8 +2712,10 @@ class UniverseCompiler:
         - Extrinsic bonuses reference valid meters.
 
         ShapingConfig is intentionally left free-form for now; its internal fields are not validated here.
+
+        Note: This function is currently unused (dead code) and needs refactoring for v2.1 schema.
         """
-        drive = raw.agent.agent.drive
+        drive = raw.agent.agent.drive  # type: ignore[attr-defined]  # TODO: Fix for v2.1 schema (function is unused)
 
         meter_names = {m.name for m in primary_meta.meter_metadata.meters}
         vfs_var_ids = {var.id for var in compiled.vfs_variables}

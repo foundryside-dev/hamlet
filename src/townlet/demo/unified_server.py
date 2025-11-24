@@ -62,6 +62,7 @@ class UnifiedServer:
         """
         self.config_dir = Path(config_dir)
         # training_config_path is optional; default to the selected level's training.yaml
+        self.training_config_path: Path | None
         if training_config_path:
             self.training_config_path = Path(training_config_path)
         else:

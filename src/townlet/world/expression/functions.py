@@ -52,6 +52,12 @@ def _ensure_int(name: str, arg: str) -> None:
         raise ValueError(f"Function '{name}' requires integer argument, got {arg}")
 
 
+def _run_validators(*validators: Callable[[], None]) -> None:
+    """Execute multiple validator functions in sequence and return None."""
+    for validator in validators:
+        validator()
+
+
 def _return_numeric(args: list[str]) -> str:
     return "float" if "float" in args else "int"
 
@@ -98,6 +104,13 @@ def _temporal_key(arg_node: ASTNode) -> str:
 def _require_history(context: ExecutionContext) -> None:
     if context.history is None:
         raise RuntimeError("Temporal operators require a TemporalHistory on the execution context")
+
+
+def _get_history(context: ExecutionContext):
+    """Get history from context, asserting it exists for type narrowing."""
+    _require_history(context)
+    assert context.history is not None  # Type narrowing for mypy
+    return context.history
 
 
 def _require_positions(context: ExecutionContext) -> torch.Tensor:
@@ -170,7 +183,7 @@ _register(
         min_args=2,
         max_args=2,
         return_type=_return_numeric,
-        validate_args=lambda args: (_ensure_arg_count("max", args, 2, 2), _ensure_all_numeric("max", args)),
+        validate_args=lambda args: _run_validators(lambda: _ensure_arg_count("max", args, 2, 2), lambda: _ensure_all_numeric("max", args)),
         eval_fn=lambda ts, context, arg_nodes: torch.max(ts[0], ts[1]),
     )
 )
@@ -185,9 +198,8 @@ _register(
         min_args=1,
         max_args=3,
         return_type=_return_float,
-        validate_args=lambda args: (
-            _ensure_arg_count("perlin_noise", args, 1, 3),
-            _ensure_all_numeric("perlin_noise", args[:2]),
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("perlin_noise", args, 1, 3), lambda: _ensure_all_numeric("perlin_noise", args[:2])
         ),
         eval_fn=lambda ts, context, arg_nodes: _perlin_2d(
             ts[0],
@@ -204,9 +216,8 @@ _register(
         min_args=1,
         max_args=3,
         return_type=_return_float,
-        validate_args=lambda args: (
-            _ensure_arg_count("simplex_noise", args, 1, 3),
-            _ensure_all_numeric("simplex_noise", args[:2]),
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("simplex_noise", args, 1, 3), lambda: _ensure_all_numeric("simplex_noise", args[:2])
         ),
         eval_fn=lambda ts, context, arg_nodes: _perlin_2d(
             ts[0],
@@ -222,7 +233,7 @@ _register(
         min_args=2,
         max_args=2,
         return_type=_return_numeric,
-        validate_args=lambda args: (_ensure_arg_count("min", args, 2, 2), _ensure_all_numeric("min", args)),
+        validate_args=lambda args: _run_validators(lambda: _ensure_arg_count("min", args, 2, 2), lambda: _ensure_all_numeric("min", args)),
         eval_fn=lambda ts, context, arg_nodes: torch.min(ts[0], ts[1]),
     )
 )
@@ -233,7 +244,7 @@ _register(
         min_args=1,
         max_args=1,
         return_type=_return_numeric,
-        validate_args=lambda args: (_ensure_arg_count("abs", args, 1, 1), _ensure_all_numeric("abs", args)),
+        validate_args=lambda args: _run_validators(lambda: _ensure_arg_count("abs", args, 1, 1), lambda: _ensure_all_numeric("abs", args)),
         eval_fn=lambda ts, context, arg_nodes: torch.abs(ts[0]),
     )
 )
@@ -244,7 +255,9 @@ _register(
         min_args=3,
         max_args=3,
         return_type=_return_numeric,
-        validate_args=lambda args: (_ensure_arg_count("clamp", args, 3, 3), _ensure_all_numeric("clamp", args)),
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("clamp", args, 3, 3), lambda: _ensure_all_numeric("clamp", args)
+        ),
         eval_fn=lambda ts, context, arg_nodes: torch.clamp(ts[0], min=ts[1], max=ts[2]),
     )
 )
@@ -255,7 +268,9 @@ _register(
         min_args=1,
         max_args=1,
         return_type=_return_numeric,
-        validate_args=lambda args: (_ensure_arg_count("clamp01", args, 1, 1), _ensure_all_numeric("clamp01", args)),
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("clamp01", args, 1, 1), lambda: _ensure_all_numeric("clamp01", args)
+        ),
         eval_fn=lambda ts, context, arg_nodes: torch.clamp(ts[0], min=0.0, max=1.0),
     )
 )
@@ -266,7 +281,9 @@ _register(
         min_args=1,
         max_args=1,
         return_type=_return_float,
-        validate_args=lambda args: (_ensure_arg_count("sigmoid", args, 1, 1), _ensure_all_numeric("sigmoid", args)),
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("sigmoid", args, 1, 1), lambda: _ensure_all_numeric("sigmoid", args)
+        ),
         eval_fn=lambda ts, context, arg_nodes: torch.sigmoid(ts[0]),
     )
 )
@@ -277,7 +294,9 @@ _register(
         min_args=1,
         max_args=1,
         return_type=_return_float,
-        validate_args=lambda args: (_ensure_arg_count("tanh", args, 1, 1), _ensure_all_numeric("tanh", args)),
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("tanh", args, 1, 1), lambda: _ensure_all_numeric("tanh", args)
+        ),
         eval_fn=lambda ts, context, arg_nodes: torch.tanh(ts[0]),
     )
 )
@@ -288,7 +307,9 @@ _register(
         min_args=3,
         max_args=3,
         return_type=_return_float,
-        validate_args=lambda args: (_ensure_arg_count("smoothstep", args, 3, 3), _ensure_all_numeric("smoothstep", args)),
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("smoothstep", args, 3, 3), lambda: _ensure_all_numeric("smoothstep", args)
+        ),
         eval_fn=lambda ts, context, arg_nodes: (
             lambda edge0, edge1, x: (lambda t: t * t * (3 - 2 * t))(torch.clamp((x - edge0) / (edge1 - edge0 + 1e-8), 0.0, 1.0))
         )(ts[0], ts[1], ts[2]),
@@ -301,7 +322,9 @@ _register(
         min_args=1,
         max_args=None,
         return_type=_return_float,
-        validate_args=lambda args: (_ensure_arg_count("mean", args, 1, None), _ensure_all_numeric("mean", args)),
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("mean", args, 1, None), lambda: _ensure_all_numeric("mean", args)
+        ),
         eval_fn=lambda ts, context, arg_nodes: torch.mean(torch.stack(ts, dim=0), dim=0),
     )
 )
@@ -312,7 +335,9 @@ _register(
         min_args=1,
         max_args=None,
         return_type=_return_float,
-        validate_args=lambda args: (_ensure_arg_count("variance", args, 1, None), _ensure_all_numeric("variance", args)),
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("variance", args, 1, None), lambda: _ensure_all_numeric("variance", args)
+        ),
         eval_fn=lambda ts, context, arg_nodes: torch.var(torch.stack(ts, dim=0), dim=0, unbiased=False),
     )
 )
@@ -323,7 +348,9 @@ _register(
         min_args=1,
         max_args=None,
         return_type=_return_float,
-        validate_args=lambda args: (_ensure_arg_count("sum", args, 1, None), _ensure_all_numeric("sum", args)),
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("sum", args, 1, None), lambda: _ensure_all_numeric("sum", args)
+        ),
         eval_fn=lambda ts, context, arg_nodes: torch.sum(torch.stack(ts, dim=0), dim=0),
     )
 )
@@ -334,7 +361,9 @@ _register(
         min_args=1,
         max_args=None,
         return_type=_return_float,
-        validate_args=lambda args: (_ensure_arg_count("product", args, 1, None), _ensure_all_numeric("product", args)),
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("product", args, 1, None), lambda: _ensure_all_numeric("product", args)
+        ),
         eval_fn=lambda ts, context, arg_nodes: torch.prod(torch.stack(ts, dim=0), dim=0),
     )
 )
@@ -345,7 +374,9 @@ _register(
         min_args=1,
         max_args=None,
         return_type=_return_float,
-        validate_args=lambda args: (_ensure_arg_count("normalize", args, 1, None), _ensure_all_numeric("normalize", args)),
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("normalize", args, 1, None), lambda: _ensure_all_numeric("normalize", args)
+        ),
         eval_fn=lambda ts, context, arg_nodes: (
             lambda stacked: stacked / torch.clamp(torch.sum(torch.abs(stacked), dim=0, keepdim=True), min=1e-8)
         )(torch.stack(ts, dim=0)),
@@ -358,7 +389,9 @@ _register(
         min_args=1,
         max_args=None,
         return_type=_return_numeric,
-        validate_args=lambda args: (_ensure_arg_count("min_all", args, 1, None), _ensure_all_numeric("min_all", args)),
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("min_all", args, 1, None), lambda: _ensure_all_numeric("min_all", args)
+        ),
         eval_fn=lambda ts, context, arg_nodes: torch.min(torch.stack(ts, dim=0), dim=0).values,
     )
 )
@@ -369,7 +402,9 @@ _register(
         min_args=1,
         max_args=None,
         return_type=_return_numeric,
-        validate_args=lambda args: (_ensure_arg_count("max_all", args, 1, None), _ensure_all_numeric("max_all", args)),
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("max_all", args, 1, None), lambda: _ensure_all_numeric("max_all", args)
+        ),
         eval_fn=lambda ts, context, arg_nodes: torch.max(torch.stack(ts, dim=0), dim=0).values,
     )
 )
@@ -380,7 +415,9 @@ _register(
         min_args=1,
         max_args=None,
         return_type=_return_int,
-        validate_args=lambda args: (_ensure_arg_count("count_where", args, 1, None), _ensure_all_bool("count_where", args)),
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("count_where", args, 1, None), lambda: _ensure_all_bool("count_where", args)
+        ),
         eval_fn=lambda ts, context, arg_nodes: torch.sum(torch.stack([t.to(dtype=torch.int64) for t in ts], dim=0), dim=0),
     )
 )
@@ -391,7 +428,9 @@ _register(
         min_args=1,
         max_args=None,
         return_type=_return_int,
-        validate_args=lambda args: (_ensure_arg_count("argmin", args, 1, None), _ensure_all_numeric("argmin", args)),
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("argmin", args, 1, None), lambda: _ensure_all_numeric("argmin", args)
+        ),
         eval_fn=lambda ts, context, arg_nodes: torch.argmin(torch.stack(ts, dim=0), dim=0),
     )
 )
@@ -402,7 +441,9 @@ _register(
         min_args=1,
         max_args=None,
         return_type=_return_int,
-        validate_args=lambda args: (_ensure_arg_count("argmax", args, 1, None), _ensure_all_numeric("argmax", args)),
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("argmax", args, 1, None), lambda: _ensure_all_numeric("argmax", args)
+        ),
         eval_fn=lambda ts, context, arg_nodes: torch.argmax(torch.stack(ts, dim=0), dim=0),
     )
 )
@@ -413,7 +454,9 @@ _register(
         min_args=3,
         max_args=3,
         return_type=_return_bool,
-        validate_args=lambda args: (_ensure_arg_count("threshold", args, 3, 3), _ensure_all_numeric("threshold", args)),
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("threshold", args, 3, 3), lambda: _ensure_all_numeric("threshold", args)
+        ),
         eval_fn=lambda ts, context, arg_nodes: torch.where(ts[0] >= ts[2], torch.ones_like(ts[0], dtype=torch.bool), ts[0] > ts[1]),
     )
 )
@@ -426,9 +469,8 @@ _register(
         min_args=0,
         max_args=2,
         return_type=_return_float,
-        validate_args=lambda args: (
-            _ensure_arg_count("normal_dist", args, 0, 2),
-            None if not args else _ensure_all_numeric("normal_dist", args),
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("normal_dist", args, 0, 2), lambda: None if not args else _ensure_all_numeric("normal_dist", args)
         ),
         eval_fn=lambda ts, context, arg_nodes: (
             torch.randn((), device=_resolve_device(ts, context))
@@ -444,9 +486,8 @@ _register(
         min_args=0,
         max_args=2,
         return_type=_return_float,
-        validate_args=lambda args: (
-            _ensure_arg_count("uniform", args, 0, 2),
-            None if not args else _ensure_all_numeric("uniform", args),
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("uniform", args, 0, 2), lambda: None if not args else _ensure_all_numeric("uniform", args)
         ),
         eval_fn=lambda ts, context, arg_nodes: (
             torch.rand((), device=_resolve_device(ts, context))
@@ -482,16 +523,11 @@ _register(
         min_args=2,
         max_args=2,
         return_type=_return_numeric,
-        validate_args=lambda args: (
-            _ensure_arg_count("lag", args, 2, 2),
-            _ensure_all_numeric("lag", [args[0]]),
-            _ensure_int("lag", args[1]),
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("lag", args, 2, 2), lambda: _ensure_all_numeric("lag", [args[0]]), lambda: _ensure_int("lag", args[1])
         ),
-        eval_fn=lambda ts, context, arg_nodes: (
-            (
-                _require_history(context),
-                context.history.lag(_ensure_history_key("lag", arg_nodes), _scalar_int(ts[1], "lag"), torch.zeros_like(ts[0])),
-            )[1]
+        eval_fn=lambda ts, context, arg_nodes: _get_history(context).lag(
+            _ensure_history_key("lag", arg_nodes), _scalar_int(ts[1], "lag"), torch.zeros_like(ts[0])
         ),
     )
 )
@@ -503,11 +539,12 @@ _register(
         min_args=1,
         max_args=1,
         return_type=_return_numeric,
-        validate_args=lambda args: (_ensure_arg_count("delta", args, 1, 1), _ensure_all_numeric("delta", args)),
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("delta", args, 1, 1), lambda: _ensure_all_numeric("delta", args)
+        ),
         eval_fn=lambda ts, context, arg_nodes: (
-            _require_history(context),
-            (
-                lambda key: (
+            lambda key: (
+                lambda history: (
                     lambda lagged, valid: (
                         (lambda mask: torch.where(mask, ts[0] - lagged, torch.zeros_like(ts[0])))(
                             (lambda m: ((lambda mm: mm if mm.dim() == ts[0].dim() else mm.unsqueeze(-1).expand_as(ts[0]))(m)))(
@@ -516,11 +553,11 @@ _register(
                         )
                     )
                 )(
-                    context.history.lag(key, 1, torch.zeros_like(ts[0])),
-                    context.history.has_history(key, 1),
+                    history.lag(key, 1, torch.zeros_like(ts[0])),
+                    history.has_history(key, 1),
                 )
-            )(_ensure_history_key("delta", arg_nodes)),
-        )[1],
+            )(_get_history(context))
+        )(_ensure_history_key("delta", arg_nodes)),
     )
 )
 
@@ -531,18 +568,13 @@ _register(
         min_args=2,
         max_args=2,
         return_type=_return_float,
-        validate_args=lambda args: (
-            _ensure_arg_count("moving_average", args, 2, 2),
-            _ensure_all_numeric("moving_average", [args[0]]),
-            _ensure_int("moving_average", args[1]),
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("moving_average", args, 2, 2),
+            lambda: _ensure_all_numeric("moving_average", [args[0]]),
+            lambda: _ensure_int("moving_average", args[1]),
         ),
-        eval_fn=lambda ts, context, arg_nodes: (
-            (
-                _require_history(context),
-                context.history.moving_average(
-                    _ensure_history_key("moving_average", arg_nodes), _scalar_int(ts[1], "moving_average"), ts[0]
-                ),
-            )[1]
+        eval_fn=lambda ts, context, arg_nodes: _get_history(context).moving_average(
+            _ensure_history_key("moving_average", arg_nodes), _scalar_int(ts[1], "moving_average"), ts[0]
         ),
     )
 )
@@ -554,13 +586,13 @@ _register(
         min_args=2,
         max_args=2,
         return_type=_return_float,
-        validate_args=lambda args: (
-            _ensure_arg_count("ema", args, 2, 2),
-            _ensure_all_numeric("ema", [args[0]]),
-            _ensure_all_numeric("ema", [args[1]]),
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("ema", args, 2, 2),
+            lambda: _ensure_all_numeric("ema", [args[0]]),
+            lambda: _ensure_all_numeric("ema", [args[1]]),
         ),
-        eval_fn=lambda ts, context, arg_nodes: (
-            (_require_history(context), context.history.ema(_ensure_history_key("ema", arg_nodes), _scalar_float(ts[1], "ema"), ts[0]))[1]
+        eval_fn=lambda ts, context, arg_nodes: _get_history(context).ema(
+            _ensure_history_key("ema", arg_nodes), _scalar_float(ts[1], "ema"), ts[0]
         ),
     )
 )
@@ -572,18 +604,13 @@ _register(
         min_args=2,
         max_args=2,
         return_type=_return_float,
-        validate_args=lambda args: (
-            _ensure_arg_count("rate_of_change", args, 2, 2),
-            _ensure_all_numeric("rate_of_change", [args[0]]),
-            _ensure_int("rate_of_change", args[1]),
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("rate_of_change", args, 2, 2),
+            lambda: _ensure_all_numeric("rate_of_change", [args[0]]),
+            lambda: _ensure_int("rate_of_change", args[1]),
         ),
-        eval_fn=lambda ts, context, arg_nodes: (
-            (
-                _require_history(context),
-                context.history.rate_of_change(
-                    _ensure_history_key("rate_of_change", arg_nodes), _scalar_int(ts[1], "rate_of_change"), ts[0]
-                ),
-            )[1]
+        eval_fn=lambda ts, context, arg_nodes: _get_history(context).rate_of_change(
+            _ensure_history_key("rate_of_change", arg_nodes), _scalar_int(ts[1], "rate_of_change"), ts[0]
         ),
     )
 )
@@ -595,11 +622,12 @@ _register(
         min_args=1,
         max_args=1,
         return_type=_return_bool,
-        validate_args=lambda args: (_ensure_arg_count("rising_edge", args, 1, 1), _ensure_all_bool("rising_edge", args)),
-        eval_fn=lambda ts, context, arg_nodes: (
-            _require_history(context),
-            context.history.edge(_ensure_history_key("rising_edge", arg_nodes), ts[0], rising=True),
-        )[1],
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("rising_edge", args, 1, 1), lambda: _ensure_all_bool("rising_edge", args)
+        ),
+        eval_fn=lambda ts, context, arg_nodes: _get_history(context).edge(
+            _ensure_history_key("rising_edge", arg_nodes), ts[0], rising=True
+        ),
     )
 )
 
@@ -610,14 +638,12 @@ _register(
         min_args=1,
         max_args=1,
         return_type=_return_bool,
-        validate_args=lambda args: (
-            _ensure_arg_count("falling_edge", args, 1, 1),
-            _ensure_all_bool("falling_edge", args),
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("falling_edge", args, 1, 1), lambda: _ensure_all_bool("falling_edge", args)
         ),
-        eval_fn=lambda ts, context, arg_nodes: (
-            _require_history(context),
-            context.history.edge(_ensure_history_key("falling_edge", arg_nodes), ts[0], rising=False),
-        )[1],
+        eval_fn=lambda ts, context, arg_nodes: _get_history(context).edge(
+            _ensure_history_key("falling_edge", arg_nodes), ts[0], rising=False
+        ),
     )
 )
 
@@ -654,20 +680,20 @@ _register(
         min_args=1,
         max_args=2,
         return_type=_return_float,
-        validate_args=lambda args: (
-            _ensure_arg_count("distance_to_affordance", args, 1, 2),
-            _ensure_all_string("distance_to_affordance", [args[0]]),
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("distance_to_affordance", args, 1, 2), lambda: _ensure_all_string("distance_to_affordance", [args[0]])
         ),
         eval_fn=lambda ts, context, arg_nodes: (
-            _require_positions(context),
-            (
+            lambda agent_positions: (
                 lambda name, metric: (
-                    torch.full((context.agent_positions.shape[0],), float("inf"), device=context.agent_positions.device)
-                    if (target := _affordance_position(context, name)) is None
-                    else _distance(context.agent_positions, target, metric)
-                )
-            )(ts[0] if isinstance(ts[0], str) else str(ts[0]), _scalar_metric("distance_to_affordance", ts[1:])),
-        )[1],
+                    lambda target: (
+                        torch.full((agent_positions.shape[0],), float("inf"), device=agent_positions.device)
+                        if target is None
+                        else _distance(agent_positions, target, metric)
+                    )
+                )(_affordance_position(context, name))
+            )(ts[0] if isinstance(ts[0], str) else str(ts[0]), _scalar_metric("distance_to_affordance", ts[1:]))
+        )(_require_positions(context)),
     )
 )
 
@@ -678,29 +704,30 @@ _register(
         min_args=2,
         max_args=3,
         return_type=_return_bool,
-        validate_args=lambda args: (
-            _ensure_arg_count("in_range", args, 2, 3),
-            _ensure_all_string("in_range", [args[0]]),
-            _ensure_all_numeric("in_range", [args[1]]),
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("in_range", args, 2, 3),
+            lambda: _ensure_all_string("in_range", [args[0]]),
+            lambda: _ensure_all_numeric("in_range", [args[1]]),
         ),
         eval_fn=lambda ts, context, arg_nodes: (
-            _require_positions(context),
-            (
+            lambda agent_positions: (
                 lambda name, radius, metric: (
                     (_ for _ in ()).throw(ValueError("in_range radius must be >= 0")) if radius < 0 else None,
                     (
-                        torch.full((context.agent_positions.shape[0],), float("inf"), device=context.agent_positions.device)
-                        if (target := _affordance_position(context, name)) is None
-                        else _distance(context.agent_positions, target, metric)
-                    )
+                        lambda target: (
+                            torch.full((agent_positions.shape[0],), float("inf"), device=agent_positions.device)
+                            if target is None
+                            else _distance(agent_positions, target, metric)
+                        )
+                    )(_affordance_position(context, name))
                     <= radius,
                 )[1]
             )(
                 ts[0] if isinstance(ts[0], str) else str(ts[0]),
                 float(ts[1]) if not isinstance(ts[1], torch.Tensor) else float(ts[1].item()),
                 _scalar_metric("in_range", ts[2:]),
-            ),
-        )[1],
+            )
+        )(_require_positions(context)),
     )
 )
 
@@ -711,22 +738,23 @@ _register(
         min_args=1,
         max_args=2,
         return_type=_return_float,
-        validate_args=lambda args: (
-            _ensure_arg_count("direction_to_affordance", args, 1, 2),
-            _ensure_all_string("direction_to_affordance", [args[0]]),
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("direction_to_affordance", args, 1, 2),
+            lambda: _ensure_all_string("direction_to_affordance", [args[0]]),
         ),
         eval_fn=lambda ts, context, arg_nodes: (
-            _require_positions(context),
-            (
+            lambda agent_positions: (
                 lambda name, metric: (
-                    torch.zeros_like(context.agent_positions)
-                    if (target := _affordance_position(context, name)) is None
-                    else (lambda vec, norm: torch.where(norm.unsqueeze(-1) > 0, vec / norm.unsqueeze(-1), torch.zeros_like(vec)))(
-                        target.unsqueeze(0) - context.agent_positions,
-                        _distance(context.agent_positions, target, metric),
+                    lambda target: (
+                        torch.zeros_like(agent_positions)
+                        if target is None
+                        else (lambda vec, norm: torch.where(norm.unsqueeze(-1) > 0, vec / norm.unsqueeze(-1), torch.zeros_like(vec)))(
+                            target.unsqueeze(0) - agent_positions,
+                            _distance(agent_positions, target, metric),
+                        )
                     )
-                )
-            )(ts[0] if isinstance(ts[0], str) else str(ts[0]), _scalar_metric("direction_to_affordance", ts[1:])),
-        )[1],
+                )(_affordance_position(context, name))
+            )(ts[0] if isinstance(ts[0], str) else str(ts[0]), _scalar_metric("direction_to_affordance", ts[1:]))
+        )(_require_positions(context)),
     )
 )

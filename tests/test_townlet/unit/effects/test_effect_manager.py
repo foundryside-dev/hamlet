@@ -390,3 +390,290 @@ def test_spawn_effect_skips_on_spawn_without_bars():
     # Verify effect created but on_spawn NOT executed
     assert effect.effect_id == "poisoned"
     assert not mock_executor.execute_commands_called
+
+
+# --- NullItemManager tests ---
+
+
+def test_null_item_manager_spawn_item_raises():
+    """NullItemManager.spawn_item() raises RuntimeError."""
+    from townlet.effects.manager import NullItemManager
+
+    manager = NullItemManager()
+
+    with pytest.raises(RuntimeError, match="ItemManager is not configured"):
+        manager.spawn_item("item_type")
+
+
+def test_null_item_manager_tick_returns_none():
+    """NullItemManager.tick() returns None."""
+    from townlet.effects.manager import NullItemManager
+
+    manager = NullItemManager()
+    result = manager.tick()
+
+    assert result is None
+
+
+def test_null_item_manager_process_respawns_returns_none():
+    """NullItemManager.process_respawns() returns None."""
+    from townlet.effects.manager import NullItemManager
+
+    manager = NullItemManager()
+    result = manager.process_respawns()
+
+    assert result is None
+
+
+# --- Item and affordance scope tests ---
+
+
+def test_spawn_effect_item_scope(catalog_fixture):
+    """EffectManager handles ITEM scope effects."""
+    # Add item-scoped effect to catalog
+    catalog_fixture.effects["item_decay"] = catalog_fixture.effects["regen"].__class__(
+        id="item_decay",
+        scope=EffectScope.ITEM,
+        duration=100,
+        intensity=1.0,
+        reapply_policy="stack",
+        observable=True,
+        on_spawn=[],
+        on_tick=[],
+        on_despawn=[],
+        on_interrupt=[],
+    )
+
+    manager = EffectManager(catalog=catalog_fixture, device="cpu")
+
+    effect = manager.spawn_effect(
+        effect_id="item_decay",
+        target_entity_id=42,  # Item ID
+        scope=EffectScope.ITEM,
+        duration=100,
+        intensity=1.0,
+        current_step=0,
+    )
+
+    assert effect.scope == EffectScope.ITEM
+    assert 42 in manager.item_effects
+    assert effect in manager.item_effects[42]
+
+
+def test_spawn_effect_affordance_scope(catalog_fixture):
+    """EffectManager handles AFFORDANCE scope effects."""
+    # Add affordance-scoped effect to catalog
+    catalog_fixture.effects["depleted"] = catalog_fixture.effects["regen"].__class__(
+        id="depleted",
+        scope=EffectScope.AFFORDANCE,
+        duration=100,
+        intensity=1.0,
+        reapply_policy="stack",
+        observable=True,
+        on_spawn=[],
+        on_tick=[],
+        on_despawn=[],
+        on_interrupt=[],
+    )
+
+    manager = EffectManager(catalog=catalog_fixture, device="cpu")
+
+    effect = manager.spawn_effect(
+        effect_id="depleted",
+        target_entity_id=7,  # Affordance index
+        scope=EffectScope.AFFORDANCE,
+        duration=100,
+        intensity=1.0,
+        current_step=0,
+    )
+
+    assert effect.scope == EffectScope.AFFORDANCE
+    assert "7" in manager.affordance_effects  # Keyed by string
+    assert effect in manager.affordance_effects["7"]
+
+
+def test_get_all_active_effects_includes_all_scopes(catalog_fixture):
+    """get_all_active_effects() returns effects from all scopes."""
+    # Add effects for different scopes
+    catalog_fixture.effects["item_decay"] = catalog_fixture.effects["regen"].__class__(
+        id="item_decay",
+        scope=EffectScope.ITEM,
+        duration=100,
+        intensity=1.0,
+        reapply_policy="stack",
+        observable=True,
+        on_spawn=[],
+        on_tick=[],
+        on_despawn=[],
+        on_interrupt=[],
+    )
+    catalog_fixture.effects["depleted"] = catalog_fixture.effects["regen"].__class__(
+        id="depleted",
+        scope=EffectScope.AFFORDANCE,
+        duration=100,
+        intensity=1.0,
+        reapply_policy="stack",
+        observable=True,
+        on_spawn=[],
+        on_tick=[],
+        on_despawn=[],
+        on_interrupt=[],
+    )
+    catalog_fixture.effects["global_buff"] = catalog_fixture.effects["regen"].__class__(
+        id="global_buff",
+        scope=EffectScope.GLOBAL,
+        duration=100,
+        intensity=1.0,
+        reapply_policy="stack",
+        observable=True,
+        on_spawn=[],
+        on_tick=[],
+        on_despawn=[],
+        on_interrupt=[],
+    )
+
+    manager = EffectManager(catalog=catalog_fixture, device="cpu")
+
+    # Spawn effects in different scopes
+    global_eff = manager.spawn_effect("global_buff", 0, EffectScope.GLOBAL, 100, 1.0, 0)
+    agent_eff = manager.spawn_effect("regen", 1, EffectScope.AGENT, 100, 1.0, 0)
+    item_eff = manager.spawn_effect("item_decay", 42, EffectScope.ITEM, 100, 1.0, 0)
+    aff_eff = manager.spawn_effect("depleted", 7, EffectScope.AFFORDANCE, 100, 1.0, 0)
+
+    all_effects = manager.get_all_active_effects()
+
+    assert len(all_effects) == 4
+    assert global_eff in all_effects
+    assert agent_eff in all_effects
+    assert item_eff in all_effects
+    assert aff_eff in all_effects
+
+
+# --- cancel_effect tests ---
+
+
+def test_cancel_effect_agent_scope(catalog_fixture):
+    """cancel_effect() removes agent-scoped effect."""
+    import torch
+
+    manager = EffectManager(catalog=catalog_fixture, device="cpu")
+    effect = manager.spawn_effect("regen", 3, EffectScope.AGENT, 100, 1.0, 0)
+
+    bars = {"health": torch.tensor([1.0] * 4)}
+    manager.cancel_effect(effect.instance_id, bars, None, current_step=10)
+
+    assert 3 not in manager.agent_effects or effect not in manager.agent_effects.get(3, [])
+
+
+def test_cancel_effect_global_scope(catalog_fixture):
+    """cancel_effect() removes global-scoped effect."""
+    import torch
+
+    # Add global effect to catalog
+    catalog_fixture.effects["global_buff"] = catalog_fixture.effects["regen"].__class__(
+        id="global_buff",
+        scope=EffectScope.GLOBAL,
+        duration=100,
+        intensity=1.0,
+        reapply_policy="stack",
+        observable=True,
+        on_spawn=[],
+        on_tick=[],
+        on_despawn=[],
+        on_interrupt=[],
+    )
+
+    manager = EffectManager(catalog=catalog_fixture, device="cpu")
+    effect = manager.spawn_effect("global_buff", 0, EffectScope.GLOBAL, 100, 1.0, 0)
+
+    bars = {"health": torch.tensor([1.0])}
+    manager.cancel_effect(effect.instance_id, bars, None, current_step=10)
+
+    assert effect not in manager.global_effects
+
+
+def test_cancel_effect_item_scope(catalog_fixture):
+    """cancel_effect() removes item-scoped effect."""
+    import torch
+
+    # Add item effect to catalog
+    catalog_fixture.effects["item_decay"] = catalog_fixture.effects["regen"].__class__(
+        id="item_decay",
+        scope=EffectScope.ITEM,
+        duration=100,
+        intensity=1.0,
+        reapply_policy="stack",
+        observable=True,
+        on_spawn=[],
+        on_tick=[],
+        on_despawn=[],
+        on_interrupt=[],
+    )
+
+    manager = EffectManager(catalog=catalog_fixture, device="cpu")
+    effect = manager.spawn_effect("item_decay", 42, EffectScope.ITEM, 100, 1.0, 0)
+
+    bars = {"health": torch.tensor([1.0])}
+    manager.cancel_effect(effect.instance_id, bars, None, current_step=10)
+
+    assert 42 not in manager.item_effects or effect not in manager.item_effects.get(42, [])
+
+
+def test_cancel_effect_affordance_scope(catalog_fixture):
+    """cancel_effect() removes affordance-scoped effect."""
+    import torch
+
+    # Add affordance effect to catalog
+    catalog_fixture.effects["depleted"] = catalog_fixture.effects["regen"].__class__(
+        id="depleted",
+        scope=EffectScope.AFFORDANCE,
+        duration=100,
+        intensity=1.0,
+        reapply_policy="stack",
+        observable=True,
+        on_spawn=[],
+        on_tick=[],
+        on_despawn=[],
+        on_interrupt=[],
+    )
+
+    manager = EffectManager(catalog=catalog_fixture, device="cpu")
+    effect = manager.spawn_effect("depleted", 7, EffectScope.AFFORDANCE, 100, 1.0, 0)
+
+    bars = {"health": torch.tensor([1.0])}
+    manager.cancel_effect(effect.instance_id, bars, None, current_step=10)
+
+    assert "7" not in manager.affordance_effects or effect not in manager.affordance_effects.get("7", [])
+
+
+def test_cancel_effect_not_found_raises(catalog_fixture):
+    """cancel_effect() raises when effect not found."""
+    import torch
+
+    manager = EffectManager(catalog=catalog_fixture, device="cpu")
+
+    bars = {"health": torch.tensor([1.0])}
+    with pytest.raises(ValueError, match="not found"):
+        manager.cancel_effect(instance_id=99999, bars=bars, vfs_registry=None, current_step=10)
+
+
+# --- Scheduler tests ---
+
+
+def test_reset_scheduler(catalog_fixture):
+    """reset_scheduler() clears pending work."""
+    manager = EffectManager(catalog=catalog_fixture, device="cpu")
+
+    # Reset should not raise
+    manager.reset_scheduler(current_tick=100)
+
+    # Scheduler should be reset
+    assert manager.scheduler.current_tick == 100
+
+
+def test_cancel_scheduled_for_entity(catalog_fixture):
+    """cancel_scheduled_for_entity() delegates to scheduler."""
+    manager = EffectManager(catalog=catalog_fixture, device="cpu")
+
+    # Should not raise
+    manager.cancel_scheduled_for_entity(scope="agent", entity_id=5)

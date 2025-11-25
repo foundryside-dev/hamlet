@@ -1,4 +1,4 @@
-"""CLI entry point for the Universe compiler (python -m townlet.compiler)."""
+"""CLI entry point for the Universe compiler (python -m townlet.universe)."""
 
 from __future__ import annotations
 
@@ -17,8 +17,8 @@ from townlet.universe.errors import CompilationError
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="python -m townlet.compiler",
-        description="Utility commands for the UniverseCompiler (TASK-004A CLI).",
+        prog="python -m townlet.universe",
+        description="Utility commands for the UniverseCompiler (UAC CLI).",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 

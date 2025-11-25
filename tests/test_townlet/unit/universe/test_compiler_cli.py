@@ -6,7 +6,7 @@ import json
 import shutil
 from pathlib import Path
 
-from townlet.compiler import __main__ as compiler_cli
+from townlet.universe import __main__ as compiler_cli
 
 
 def _copy_experiment(tmp_path: Path) -> Path:

@@ -1,4 +1,4 @@
-"""Tests for the `python -m townlet.compiler` CLI."""
+"""Tests for the `python -m townlet.universe` CLI."""
 
 from __future__ import annotations
 

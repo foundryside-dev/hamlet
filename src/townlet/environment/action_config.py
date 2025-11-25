@@ -1,4 +1,11 @@
-"""Action configuration schemas for composable action space."""
+"""Action configuration schemas for composable action space.
+
+RUNTIME DTO: This module defines runtime action configuration used by the environment
+stack during simulation. For parse-time YAML validation DTOs, see:
+    townlet.config.actions_config
+
+Action configs are compiled from the parse-time DTOs by the UniverseCompiler.
+"""
 
 from pathlib import Path
 from typing import Literal

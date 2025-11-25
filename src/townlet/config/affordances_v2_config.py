@@ -1,5 +1,9 @@
 """Affordances configuration DTO for Config v2.1 (curriculum-level).
 
+PARSE-TIME DTO: This module validates affordances.yaml structure during compilation.
+For runtime affordance objects used by the environment, see:
+    townlet.environment.affordance_config
+
 Philosophy: All behavioral parameters must be explicitly specified.
 No implicit defaults. Operator accountability.
 

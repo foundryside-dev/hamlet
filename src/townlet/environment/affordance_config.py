@@ -1,9 +1,11 @@
-"""
-Affordance configuration models for runtime.
+"""Affordance configuration models for runtime.
 
-This module defines runtime affordance DTOs used by the environment
-stack. Config v2.1 compiles affordance metadata from hierarchical
-YAML packs; this module does not perform any YAML loading.
+RUNTIME DTO: This module defines runtime affordance objects used by the environment
+stack during simulation. For parse-time YAML validation DTOs, see:
+    townlet.config.affordances_v2_config
+
+Config v2.1 compiles affordance metadata from hierarchical YAML packs;
+this module does not perform any YAML loading.
 """
 
 from __future__ import annotations

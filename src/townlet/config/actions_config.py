@@ -1,5 +1,9 @@
 """Actions-level configuration DTO.
 
+PARSE-TIME DTO: This module validates actions from training.yaml during compilation.
+For runtime action configuration used by the environment, see:
+    townlet.environment.action_config
+
 This module defines the Pydantic DTO for actions.yaml files in the v2.1
 configuration system. An actions config defines substrate actions, custom
 actions, and action label presets.

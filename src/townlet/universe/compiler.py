@@ -550,6 +550,23 @@ class UniverseCompiler:
         from townlet.universe.errors import CompilationErrorCollector
 
         errors = CompilationErrorCollector(stage="Stage 0: Scoping Validation")
+
+        # Detect if user is trying to validate a level directory directly
+        # Level directories have curriculum.yaml but NOT experiment.yaml
+        has_curriculum = (experiment_dir / "curriculum.yaml").exists()
+        has_experiment = (experiment_dir / "experiment.yaml").exists()
+        has_environment = (experiment_dir / "environment.yaml").exists()
+
+        if has_curriculum and not has_experiment and not has_environment:
+            # This looks like a level directory, not an experiment root
+            parent_experiment = experiment_dir.parent.parent  # levels/<level> -> experiment
+            errors.add(
+                f"Cannot validate level directory directly. " f"Please validate from the experiment root: {parent_experiment}",
+                code="SCOPING_LEVEL_DIRECTORY",
+                location=str(experiment_dir),
+            )
+            errors.check_and_raise()
+
         # Shared catalogs required at experiment root (effects remain optional)
         required_experiment_files: list[str] = ["vfs_profiles.yaml", "items.yaml"]
         forbidden_level_files = ["vfs_profiles.yaml", "effects.yaml"]
@@ -4277,7 +4294,8 @@ class UniverseCompiler:
         if levels_dir.exists():
             yaml_files.extend(sorted(levels_dir.rglob("*.yaml")))
 
-        yaml_files.append(Path("configs") / "global_actions.yaml")
+        # Note: global_actions.yaml was removed in v2.1 migration.
+        # Actions are now per-experiment via actions.yaml or embedded in training.yaml.
 
         digest = hashlib.sha256()
         for file_path in yaml_files:
@@ -4291,17 +4309,15 @@ class UniverseCompiler:
     def _compute_config_mtime(self, config_dir: Path) -> float:
         """Compute maximum modification time of all config files.
 
-        Returns the latest mtime across all YAML files in the config directory
-        and global_actions.yaml. This ensures cache is invalidated when ANY
-        config file changes (including comment/whitespace-only changes).
+        Returns the latest mtime across all YAML files in the config directory.
+        This ensures cache is invalidated when ANY config file changes
+        (including comment/whitespace-only changes).
         """
         yaml_files = sorted(config_dir.glob("*.yaml"))
 
         levels_dir = config_dir / "levels"
         if levels_dir.exists():
             yaml_files.extend(sorted(levels_dir.rglob("*.yaml")))
-
-        yaml_files.append(Path("configs") / "global_actions.yaml")
 
         max_mtime = 0.0
         for file_path in yaml_files:

@@ -559,7 +559,7 @@ The 4 Core Training subsystems integrate as follows:
 - Templates in `configs/templates/` provide reference implementations
 
 **CLI Validation**:
-- `python -m townlet.compiler validate <config_dir>` - Validates DTOs without compiling
+- `python -m townlet.universe validate <config_dir>` - Validates DTOs without compiling
 - Pydantic errors surfaced with helpful context
 
 #### Confidence Level
@@ -781,10 +781,10 @@ Runtime Execution
    - Enables runtime switching between curriculum levels without recompilation
 
 **CLI Integration**:
-- `python -m townlet.compiler compile <config_dir>` - Compile with caching
-- `python -m townlet.compiler compile --no-cache` - Force recompile
-- `python -m townlet.compiler validate <config_dir>` - Lint-style check (no cache)
-- `python -m townlet.compiler inspect <artifact>` - Inspect compiled artifact
+- `python -m townlet.universe compile <config_dir>` - Compile with caching
+- `python -m townlet.universe compile --no-cache` - Force recompile
+- `python -m townlet.universe validate <config_dir>` - Lint-style check (no cache)
+- `python -m townlet.universe inspect <artifact>` - Inspect compiled artifact
 
 **CI/CD Integration**:
 - `.github/workflows/config-validation.yml` - Validates all config packs in CI
@@ -810,7 +810,7 @@ Runtime Execution
 
 #### Key Components
 
-- `__main__.py`: CLI entry point (`python -m townlet.compiler`)
+- `__main__.py`: CLI entry point (`python -m townlet.universe`)
   - `main()`: Argument parsing and command dispatch
   - `_build_parser()`: Argparse configuration for subcommands
   - `_cmd_compile()`: Compile command implementation
@@ -918,23 +918,23 @@ print("Validation succeeded")
 - name: Validate configs
   run: |
     for config in configs/*/; do
-      python -m townlet.compiler validate "$config"
+      python -m townlet.universe validate "$config"
     done
 ```
 
 **Pre-Commit Hook Usage**:
 ```bash
 # Pre-commit hook (conceptual)
-python -m townlet.compiler validate configs/L1_full_observability
+python -m townlet.universe validate configs/L1_full_observability
 ```
 
 **Artifact Inspection**:
 ```bash
 # Human-readable summary
-python -m townlet.compiler inspect configs/L1_full_observability
+python -m townlet.universe inspect configs/L1_full_observability
 
 # Machine-readable JSON
-python -m townlet.compiler inspect configs/L1_full_observability --format json | jq '.metadata.observation_dim'
+python -m townlet.universe inspect configs/L1_full_observability --format json | jq '.metadata.observation_dim'
 ```
 
 #### Confidence Level

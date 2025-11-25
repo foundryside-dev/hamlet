@@ -234,7 +234,7 @@ Pydantic DTOs enforcing no-defaults principle. TrainingV2Config, BarsV2Config, A
 7-stage compilation pipeline: parse → symbol table → resolve → validate → enrich → optimize → emit CompiledUniverse. Pre-computes tensors, validates cross-references, generates observation specs.
 
 **7. compiler** (`src/townlet/compiler/`)
-CLI interface (`python -m townlet.compiler`) with commands: compile, inspect, validate. Integrated into CI pipeline via GitHub Actions config-validation.yml.
+CLI interface (`python -m townlet.universe`) with commands: compile, inspect, validate. Integrated into CI pipeline via GitHub Actions config-validation.yml.
 
 ### Group 3: State Systems
 
@@ -295,7 +295,7 @@ Episode recording and replay system. Captures agent state, observations, actions
 - Runtime code trusts all references are valid (no defensive checks needed)
 - Config changes require recompilation (prevents accidental live edits)
 
-**Example**: Changing affordance cost in `affordances.yaml` → requires `python -m townlet.compiler compile` → generates new `universe.msgpack` with updated pre-computed tensors.
+**Example**: Changing affordance cost in `affordances.yaml` → requires `python -m townlet.universe compile` → generates new `universe.msgpack` with updated pre-computed tensors.
 
 ### 2. GPU-Native Vectorization
 
@@ -734,7 +734,7 @@ This section describes the 7-stage compilation pipeline at a conceptual level. F
 
 **Invocation**:
 ```bash
-python -m townlet.compiler compile configs/default_curriculum/levels/L1_full_observability
+python -m townlet.universe compile configs/default_curriculum/levels/L1_full_observability
 ```
 
 **Stage 0: Scoping**:
@@ -799,7 +799,7 @@ python -m townlet.compiler compile configs/default_curriculum/levels/L1_full_obs
 **Cache Behavior**:
 - If `.compiled/universe.msgpack` exists and SHA256 + mtime match → load from cache (5x faster)
 - If any YAML changed → recompile
-- Force recompile: `python -m townlet.compiler compile --no-cache`
+- Force recompile: `python -m townlet.universe compile --no-cache`
 
 ### State Management Approach
 
@@ -1264,7 +1264,7 @@ This architecture analysis consists of 4 documents in `docs/arch-analysis-2025-1
 - **Reproducibility**: Checkpoint includes config_hash, drive_hash, brain_hash
 
 **CI/CD**:
-- **Config Validation**: `.github/workflows/config-validation.yml` runs `python -m townlet.compiler validate` on all levels
+- **Config Validation**: `.github/workflows/config-validation.yml` runs `python -m townlet.universe validate` on all levels
 - **Unit Tests**: `uv run pytest tests/test_townlet/unit/` (fast, <1 min)
 - **Integration Tests**: `uv run pytest tests/test_townlet/test_integration.py` (slow, ~5 min)
 - **Linting**: `uv run ruff check src/townlet/`
@@ -1279,7 +1279,7 @@ This architecture analysis consists of 4 documents in `docs/arch-analysis-2025-1
 - **Out of Memory**: Reduce `population_size`, reduce `replay_buffer_capacity`
 - **Slow Training**: Check GPU utilization (`nvidia-smi`), reduce `batch_size`
 - **Checkpoint Mismatch**: Recompile universe, ensure same config_hash
-- **Compilation Errors**: Run `python -m townlet.compiler validate`, fix YAML syntax
+- **Compilation Errors**: Run `python -m townlet.universe validate`, fix YAML syntax
 
 ---
 

@@ -71,7 +71,7 @@ configs/L3_temporal_mechanics/affordances.yaml ✅ Modern format
 # Verify all configs compile
 for dir in configs/L0_0_minimal configs/L0_5_dual_resource configs/L1_* configs/L2_* configs/L3_*; do
     echo "Testing $dir..."
-    python -m townlet.compiler compile "$dir" || echo "FAILED: $dir"
+    python -m townlet.universe compile "$dir" || echo "FAILED: $dir"
 done
 ```
 

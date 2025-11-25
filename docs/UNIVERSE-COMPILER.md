@@ -329,19 +329,19 @@ The repository now ships a lightweight CLI so ops/dev workflow can run compiler 
 
 ```bash
 # Compile a pack (writes .compiled/universe.msgpack by default)
-python -m townlet.compiler compile configs/L1_full_observability
+python -m townlet.universe compile configs/L1_full_observability
 
 # Inspect an existing artifact (auto-resolves config directory to artifact path)
-python -m townlet.compiler inspect configs/L1_full_observability
+python -m townlet.universe inspect configs/L1_full_observability
 
 # Inspect as JSON (for automation/CI logs)
-python -m townlet.compiler inspect --format json configs/L1_full_observability
+python -m townlet.universe inspect --format json configs/L1_full_observability
 
 # Can also pass full artifact path directly
-python -m townlet.compiler inspect configs/L1_full_observability/.compiled/universe.msgpack
+python -m townlet.universe inspect configs/L1_full_observability/.compiled/universe.msgpack
 
 # Validate config packs without touching cache (useful for CI lint checks)
-python -m townlet.compiler validate configs/L1_full_observability
+python -m townlet.universe validate configs/L1_full_observability
 
 # Validate every config pack via CLI (script wraps the commands above)
 python scripts/validate_compiler_cli.py

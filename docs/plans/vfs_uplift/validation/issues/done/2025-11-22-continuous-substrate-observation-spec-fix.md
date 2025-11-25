@@ -489,7 +489,7 @@ Verify discrete substrates still work:
 ```bash
 # Recompile L0_0_minimal (Grid2D)
 rm -rf configs/L0_0_minimal/.compiled
-python -m townlet.compiler compile configs/L0_0_minimal/
+python -m townlet.universe compile configs/L0_0_minimal/
 
 # Verify Grid2D still has 2D position/velocity
 python << 'EOF'
@@ -672,7 +672,7 @@ Part of: P2-COMP-24"
 rm -rf configs/test/action_space/continuous1d/.compiled
 
 # Recompile with fix
-python -m townlet.compiler compile configs/test/action_space/continuous1d/
+python -m townlet.universe compile configs/test/action_space/continuous1d/
 ```
 
 Expected output:
@@ -876,7 +876,7 @@ Expected: All pass ✅
 for level in configs/L0_0_minimal configs/L0_5_dual_resource configs/L1_full_observability configs/L2_partial_observability configs/L3_temporal_mechanics; do
     echo "Recompiling $level..."
     rm -rf "$level/.compiled"
-    python -m townlet.compiler compile "$level" --no-cache || exit 1
+    python -m townlet.universe compile "$level" --no-cache || exit 1
 done
 ```
 

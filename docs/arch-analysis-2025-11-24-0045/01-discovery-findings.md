@@ -71,7 +71,7 @@ src/townlet/
 - Usage: `python run_demo.py --config configs/default_curriculum --level L1_full_observability --episodes 10000`
 
 ### CLI Tools
-**`python -m townlet.compiler`** - Universe compiler CLI
+**`python -m townlet.universe`** - Universe compiler CLI
 - Commands: `compile`, `inspect`, `validate`
 - Compiles YAML configs → optimized runtime artifacts
 - Integrated into CI via `.github/workflows/config-validation.yml`

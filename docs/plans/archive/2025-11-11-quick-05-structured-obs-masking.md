@@ -2114,9 +2114,9 @@ Expected: All tests pass
 **Step 2: Validate configs**
 
 ```bash
-python -m townlet.compiler validate configs/L0_0_minimal
-python -m townlet.compiler validate configs/L0_5_dual_resource
-python -m townlet.compiler validate configs/L1_full_observability
+python -m townlet.universe validate configs/L0_0_minimal
+python -m townlet.universe validate configs/L0_5_dual_resource
+python -m townlet.universe validate configs/L1_full_observability
 ```
 
 Expected: All validate successfully

@@ -255,13 +255,13 @@ training:
 
 ```bash
 # Validate configs (no cache)
-python -m townlet.compiler validate my_experiment/
+python -m townlet.universe validate my_experiment/
 
 # Compile configs (generates cache)
-python -m townlet.compiler compile my_experiment/
+python -m townlet.universe compile my_experiment/
 
 # Inspect compiled artifact
-python -m townlet.compiler inspect my_experiment/.compiled/universe.msgpack
+python -m townlet.universe inspect my_experiment/.compiled/universe.msgpack
 ```
 
 ---
@@ -523,7 +523,7 @@ The World Compiler provides three CLI commands:
 **Purpose**: Check configs for errors without touching cache.
 
 ```bash
-python -m townlet.compiler validate <config_dir>
+python -m townlet.universe validate <config_dir>
 ```
 
 **What it checks**:
@@ -540,7 +540,7 @@ python -m townlet.compiler validate <config_dir>
 **Example**:
 ```bash
 # Validate default curriculum
-python -m townlet.compiler validate configs/default_curriculum/
+python -m townlet.universe validate configs/default_curriculum/
 
 # Expected output:
 # ✓ Loaded experiment config
@@ -555,7 +555,7 @@ python -m townlet.compiler validate configs/default_curriculum/
 **Purpose**: Compile configs and generate cached artifact.
 
 ```bash
-python -m townlet.compiler compile <config_dir> [--no-cache]
+python -m townlet.universe compile <config_dir> [--no-cache]
 ```
 
 **What it does**:
@@ -578,7 +578,7 @@ python -m townlet.compiler compile <config_dir> [--no-cache]
 **Example**:
 ```bash
 # Compile and cache
-python -m townlet.compiler compile configs/default_curriculum/
+python -m townlet.universe compile configs/default_curriculum/
 
 # Expected output:
 # Compiling experiment: default_curriculum
@@ -594,7 +594,7 @@ python -m townlet.compiler compile configs/default_curriculum/
 **Purpose**: Inspect compiled universe artifact contents.
 
 ```bash
-python -m townlet.compiler inspect <config_dir_or_artifact> [--format table|json]
+python -m townlet.universe inspect <config_dir_or_artifact> [--format table|json]
 ```
 
 **What it shows**:
@@ -611,7 +611,7 @@ python -m townlet.compiler inspect <config_dir_or_artifact> [--format table|json
 **Example**:
 ```bash
 # Inspect compiled artifact (table format)
-python -m townlet.compiler inspect configs/default_curriculum/
+python -m townlet.universe inspect configs/default_curriculum/
 
 # Expected output:
 # ======= UNIVERSE METADATA =======
@@ -922,10 +922,10 @@ cascades:
 **Debugging**:
 ```bash
 # Check observation dimensions
-python -m townlet.compiler inspect configs/my_experiment/ | grep "Dimensions:"
+python -m townlet.universe inspect configs/my_experiment/ | grep "Dimensions:"
 
 # Check action count
-python -m townlet.compiler inspect configs/my_experiment/ | grep "Actions:"
+python -m townlet.universe inspect configs/my_experiment/ | grep "Actions:"
 
 # Check for device errors in logs
 grep "device" training_output.log
@@ -1054,7 +1054,7 @@ Enable debug logging to see compilation details:
 
 ```bash
 export LOG_LEVEL=DEBUG
-python -m townlet.compiler compile configs/my_experiment/
+python -m townlet.universe compile configs/my_experiment/
 ```
 
 **Output includes**:
@@ -1332,7 +1332,7 @@ Before training across levels:
 
 ```bash
 # Validate all levels use same vocabulary
-python -m townlet.compiler validate configs/my_experiment/
+python -m townlet.universe validate configs/my_experiment/
 
 # Expected: ✓ Vocabulary consistent across levels
 ```

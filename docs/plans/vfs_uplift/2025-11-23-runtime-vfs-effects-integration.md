@@ -171,7 +171,7 @@ As a pre-release project with zero users, these breaking changes are acceptable:
 
 - Update all config packs with items to include `vfs_profiles.yaml`
 - Move item-scoped variables from `variables_reference.yaml` to profiles
-- Verify effect catalog compiles with `python -m townlet.compiler compile <config>`
+- Verify effect catalog compiles with `python -m townlet.universe compile <config>`
 
 ---
 

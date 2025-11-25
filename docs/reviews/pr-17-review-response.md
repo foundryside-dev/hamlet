@@ -322,7 +322,7 @@ env = compiled.create_environment(num_agents=4)
 **Low Priority**:
 3. **Test Coverage**: Fill gaps in observation_builder (65%), registry (67%), schema (72%)
 4. **Performance Profiling**: Add `--profile` flag to CLI for stage timing analysis
-5. **Cache Management**: Add `python -m townlet.compiler clean` command
+5. **Cache Management**: Add `python -m townlet.universe clean` command
 6. **Economic Validation v2**: Model agent concurrency and capacity constraints
 
 ### 💬 Suggested Review Comments

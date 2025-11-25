@@ -170,7 +170,7 @@ elif substrate.type in {"continuous", "continuousnd"}:
 1. **Compile continuous1d config:**
    ```bash
    rm -rf /home/john/hamlet/configs/test/action_space/continuous1d/.compiled
-   python -m townlet.compiler compile /home/john/hamlet/configs/test/action_space/continuous1d/
+   python -m townlet.universe compile /home/john/hamlet/configs/test/action_space/continuous1d/
    ```
 
    **Expected Output:**

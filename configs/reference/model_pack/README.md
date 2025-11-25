@@ -23,5 +23,5 @@ Layout:
 How to validate:
 
 ```
-uv run python -m townlet.compiler validate configs/reference/model_pack
+uv run python -m townlet.universe validate configs/reference/model_pack
 ```

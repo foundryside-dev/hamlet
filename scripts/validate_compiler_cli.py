@@ -54,7 +54,7 @@ def run_cli_validate(config_dir: Path, expect_failure: bool = False) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Validate config packs via python -m townlet.compiler validate")
+    parser = argparse.ArgumentParser(description="Validate config packs via python -m townlet.universe validate")
     parser.add_argument("config", nargs="?", help="Optional single config directory to validate")
     args = parser.parse_args()
 

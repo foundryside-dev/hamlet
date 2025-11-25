@@ -383,7 +383,7 @@ primary_env = compiled.create_environment()
 
 ```bash
 # CLI usage
-python -m townlet.compiler compile configs/default_curriculum --level L1_full_observability
+python -m townlet.universe compile configs/default_curriculum --level L1_full_observability
 ```
 
 ---

@@ -395,7 +395,7 @@ class CompiledUniverse:
             raise ValueError(
                 f"Compiled universe schema mismatch for {path}: "
                 f"found '{schema_version}', expected '{COMPILED_SCHEMA_VERSION}'. "
-                "Recompile the config pack with `python -m townlet.compiler compile <config_dir>`."
+                "Recompile the config pack with `python -m townlet.universe compile <config_dir>`."
             )
         return cls.from_dict(payload)
 

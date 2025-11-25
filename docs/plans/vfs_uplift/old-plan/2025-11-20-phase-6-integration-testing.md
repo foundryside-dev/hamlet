@@ -1613,10 +1613,10 @@ items:
 
 ```bash
 # Compile config pack
-python -m townlet.compiler compile my_experiment/
+python -m townlet.universe compile my_experiment/
 
 # Validate without caching
-python -m townlet.compiler validate my_experiment/
+python -m townlet.universe validate my_experiment/
 ```
 
 ## Common Patterns

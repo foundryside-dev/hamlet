@@ -377,7 +377,7 @@ def test_spawn_effect_skips_on_spawn_without_bars():
     mock_executor = MockCommandExecutor()
     manager = EffectManager(catalog=catalog, device="cpu", command_executor=mock_executor)
 
-    # Spawn effect WITHOUT bars (backward compatibility)
+    # Spawn effect without bars (commands require bars to execute)
     effect = manager.spawn_effect(
         effect_id="poisoned",
         target_entity_id=2,

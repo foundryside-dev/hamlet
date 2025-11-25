@@ -486,13 +486,8 @@ class LiveInferenceServer:
                 epsilon = exploration_state["rnd_state"]["epsilon"]
                 logger.info(f"Loaded epsilon from rnd_state: {epsilon:.3f}")
 
-        # Fallback: try old top-level path for backwards compatibility
-        if epsilon is None:
-            epsilon = checkpoint.get("epsilon", None)
-            if epsilon is not None:
-                logger.info(f"Loaded epsilon from top-level (legacy): {epsilon:.3f}")
-
-        # Last resort: estimate from training progress
+        # Epsilon not found in checkpoint - estimate from training progress
+        # This handles checkpoints saved before epsilon tracking was added
         if epsilon is None:
             progress = episode_num / self.total_episodes if self.total_episodes > 0 else 0
             epsilon = max(0.05, 1.0 - (progress * 0.95))  # Decay from 1.0 to 0.05

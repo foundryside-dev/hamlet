@@ -52,8 +52,8 @@ def env_builder(env_factory, cpu_device):
 
 
 def _init_curriculum(curriculum, num_agents: int) -> None:
-    if hasattr(curriculum, "initialize_population"):
-        curriculum.initialize_population(num_agents)
+    """Initialize curriculum with population size (required method)."""
+    curriculum.initialize_population(num_agents)
 
 
 def _select_active_meters(env, limit: int = 6) -> list[str]:

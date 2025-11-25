@@ -3728,9 +3728,10 @@ class UniverseCompiler:
     def _affordance_open_for_hour(self, affordance: AffordanceParamConfig, hour: int) -> bool:
         """Return True if an affordance is open for the given hour.
 
-        v2.1 semantics: availability is defined *only* via opening_hours on
+        v2.1 semantics: availability is defined via opening_hours on
         curriculum-level affordances (AffordanceParamConfig from AffordancesV2Config).
-        Legacy operating_hours fields are no longer supported.
+        The compiler converts opening_hours config to operating_hours runtime tuples
+        for use with temporal_utils.is_affordance_open().
         """
         opening_hours = getattr(affordance, "opening_hours", None)
         if opening_hours is None:
@@ -3887,7 +3888,7 @@ class UniverseCompiler:
             errors.add(issue)
 
     def _get_meter(self, entry: object | None) -> str | None:
-        """Extract meter name from Effects command or legacy effect entry."""
+        """Extract meter name from Effects command."""
         if entry is None:
             return None
         if isinstance(entry, dict):
@@ -3896,13 +3897,11 @@ class UniverseCompiler:
                 modify = entry["modify"]
                 if isinstance(modify, str) and modify.startswith("target.bar."):
                     return modify.split(".")[-1]
-                return None
-            # Legacy effect entry
-            return entry.get("meter")
-        return getattr(entry, "meter", None)
+            return None
+        return None
 
     def _get_amount(self, entry: object | None) -> float | None:
-        """Extract meter delta from Effects command or legacy effect entry."""
+        """Extract meter delta from Effects command."""
         if entry is None:
             return None
 
@@ -3926,13 +3925,6 @@ class UniverseCompiler:
                             return -float(parts[1].strip())
                         except ValueError:
                             return None
-                return None
-            return None
-
-        # Legacy effect entry
-        value = entry.get("amount") if isinstance(entry, dict) else getattr(entry, "amount", None)
-        if isinstance(value, int | float):
-            return float(value)
         return None
 
     @staticmethod

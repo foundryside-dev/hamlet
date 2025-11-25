@@ -112,38 +112,6 @@ VALID_CUES_CONFIG = {
 }
 
 # ==============================================================================
-# INVALID PARAMETER VARIATIONS (for negative testing)
-# ==============================================================================
-
-# Device values
-VALID_DEVICES = ["cpu", "cuda", "mps"]
-INVALID_DEVICES = ["gpu", "invalid", ""]
-
-# Epsilon constraints
-EPSILON_MIN = 0.0
-EPSILON_MAX = 1.0
-EPSILON_DECAY_MIN_EXCLUSIVE = 0.0  # Must be > 0.0
-EPSILON_DECAY_MAX_EXCLUSIVE = 1.0  # Must be < 1.0
-
-# Network types
-VALID_NETWORK_TYPES = ["simple", "recurrent"]
-INVALID_NETWORK_TYPES = ["mlp", "lstm", "transformer"]
-
-# Grid size
-MIN_GRID_SIZE = 1
-TYPICAL_GRID_SIZES = [3, 7, 8, 16]
-LARGE_GRID_SIZE = 100
-
-# Vision range
-MIN_VISION_RANGE = 0
-TYPICAL_VISION_RANGES = [0, 2, 4, 8]
-
-# Thresholds (0.0 to 1.0)
-MIN_THRESHOLD = 0.0
-MAX_THRESHOLD = 1.0
-TYPICAL_THRESHOLDS = [0.3, 0.5, 0.7]
-
-# ==============================================================================
 # UTILITY FUNCTIONS
 # ==============================================================================
 

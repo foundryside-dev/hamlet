@@ -38,6 +38,39 @@ class RuntimePipeline:
 
 
 @dataclass
+class TimeWindow:
+    """Time window for opening hours schedule."""
+
+    start: int
+    end: int
+
+
+@dataclass
+class OpeningHours:
+    """Opening hours configuration for affordances."""
+
+    enabled: bool
+    schedule: list[TimeWindow] | None = None
+
+
+def make_opening_hours(hours: tuple[int, int]) -> OpeningHours:
+    """Helper to convert (open, close) tuple to OpeningHours object.
+
+    Args:
+        hours: Tuple of (open_hour, close_hour), e.g., (8, 18) for 8am-6pm.
+               Use (0, 24) for 24/7 availability.
+
+    Returns:
+        OpeningHours object with appropriate enabled flag and schedule.
+    """
+    open_hour, close_hour = hours
+    # (0, 24) means 24/7 - disable opening hours restriction
+    if open_hour == 0 and close_hour == 24:
+        return OpeningHours(enabled=False)
+    return OpeningHours(enabled=True, schedule=[TimeWindow(start=open_hour, end=close_hour)])
+
+
+@dataclass
 class RuntimeAffordance:
     """Lightweight runtime affordance representation for AffordanceEngine tests."""
 
@@ -48,7 +81,7 @@ class RuntimeAffordance:
     costs: list[dict[str, float]]
     costs_per_tick: list[dict[str, float]]
     effect_pipeline: RuntimePipeline | None
-    operating_hours: list[int]
+    opening_hours: OpeningHours
 
 
 @dataclass
@@ -61,7 +94,7 @@ class DictCostAffordance:
     costs: dict[str, float]
     costs_per_tick: dict[str, float]
     interactions: dict
-    operating_hours: list[int]
+    opening_hours: OpeningHours
     id: str | None = None
 
 
@@ -106,7 +139,7 @@ def affordance_engine_components(cpu_device):
                 per_tick=[RuntimeEffect(meter="energy", amount=0.05)],
                 on_completion=[RuntimeEffect(meter="energy", amount=0.25)],
             ),
-            operating_hours=[0, 24],  # Always available
+            opening_hours=make_opening_hours((0, 24)),  # Always available
         ),
         # Shower: instant/dual hygiene affordance ($0.03, +0.4 hygiene)
         RuntimeAffordance(
@@ -121,7 +154,7 @@ def affordance_engine_components(cpu_device):
                 per_tick=[],
                 on_completion=[],
             ),
-            operating_hours=[0, 24],
+            opening_hours=make_opening_hours((0, 24)),
         ),
         # FastFood: dual-mode convenience food ($0.05, 2 ticks)
         RuntimeAffordance(
@@ -136,7 +169,7 @@ def affordance_engine_components(cpu_device):
                 per_tick=[RuntimeEffect(meter="satiation", amount=0.225)],
                 on_completion=[RuntimeEffect(meter="satiation", amount=0.225)],
             ),
-            operating_hours=[0, 24],
+            opening_hours=make_opening_hours((0, 24)),
         ),
         # Job: dual-mode income source (4 ticks)
         RuntimeAffordance(
@@ -154,7 +187,7 @@ def affordance_engine_components(cpu_device):
                 ],
                 on_completion=[RuntimeEffect(meter="money", amount=0.05625)],
             ),
-            operating_hours=[8, 18],  # 8am-6pm
+            opening_hours=make_opening_hours((8, 18)),  # 8am-6pm
         ),
         # Hospital: instant health restore ($0.15)
         RuntimeAffordance(
@@ -169,7 +202,7 @@ def affordance_engine_components(cpu_device):
                 per_tick=[],
                 on_completion=[],
             ),
-            operating_hours=[0, 24],
+            opening_hours=make_opening_hours((0, 24)),
         ),
         # Bar: social/mood/health trade-off ($0.15, wraparound hours)
         RuntimeAffordance(
@@ -188,7 +221,7 @@ def affordance_engine_components(cpu_device):
                 per_tick=[],
                 on_completion=[],
             ),
-            operating_hours=[18, 28],  # 6pm-4am
+            opening_hours=make_opening_hours((18, 28)),  # 6pm-4am
         ),
         # Park: free recreation (no costs)
         RuntimeAffordance(
@@ -207,7 +240,7 @@ def affordance_engine_components(cpu_device):
                 per_tick=[],
                 on_completion=[],
             ),
-            operating_hours=[0, 24],
+            opening_hours=make_opening_hours((0, 24)),
         ),
     )
 
@@ -458,7 +491,7 @@ class TestDictCostAffordances:
             costs={"energy": 0.2, "money": 0.1},
             costs_per_tick={},
             interactions={},
-            operating_hours=[0, 24],
+            opening_hours=make_opening_hours((0, 24)),
         )
         engine = self._build_engine((affordance,), cpu_device)
         meters = torch.tensor([[1.0, 0.5]], device=cpu_device)
@@ -477,7 +510,7 @@ class TestDictCostAffordances:
             costs={"energy": 0.6},
             costs_per_tick={},
             interactions={},
-            operating_hours=[0, 24],
+            opening_hours=make_opening_hours((0, 24)),
         )
         engine = self._build_engine((affordance,), cpu_device)
         meters = torch.tensor([[0.5, 1.0]], device=cpu_device)
@@ -494,7 +527,7 @@ class TestDictCostAffordances:
             costs={},
             costs_per_tick={"money": 0.1},
             interactions={},
-            operating_hours=[0, 24],
+            opening_hours=make_opening_hours((0, 24)),
         )
         engine = self._build_engine((affordance,), cpu_device)
         meters = torch.tensor([[1.0, 1.0]], device=cpu_device)
@@ -512,7 +545,7 @@ class TestDictCostAffordances:
             costs={"money": 0.25},
             costs_per_tick={},
             interactions={},
-            operating_hours=[0, 24],
+            opening_hours=make_opening_hours((0, 24)),
         )
         engine = self._build_engine((affordance,), cpu_device)
 

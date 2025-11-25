@@ -5,7 +5,7 @@ verifying that the algorithm works correctly in production scenarios.
 
 Tasks verified:
 - Full training loop with Double DQN enabled
-- Full training loop with vanilla DQN (backward compatibility)
+- Full training loop with vanilla DQN (use_double_dqn=False)
 - Checkpoint persistence of use_double_dqn flag
 """
 
@@ -119,7 +119,7 @@ class TestDoubleDoubleTraining:
         assert episode_count == 10, f"Database should have 10 episode records, got {episode_count}"
 
     def test_training_with_vanilla_dqn(self, tmp_path, config_pack_factory):
-        """Full training loop should work with vanilla DQN (backward compatibility).
+        """Full training loop should work with vanilla DQN (use_double_dqn=False).
 
         Verifies:
         - No crashes during training

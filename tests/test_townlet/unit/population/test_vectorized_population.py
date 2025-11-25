@@ -525,7 +525,6 @@ class TestRecurrentNetworkSupport:
             exploration=epsilon_greedy_exploration,
             device=cpu_device,
             brain_config=brain_config,
-            sequence_length=brain_config.q_learning.sequence_length if hasattr(brain_config.q_learning, "sequence_length") else 1,
         )
 
         # Should build RecurrentSpatialQNetwork
@@ -1032,80 +1031,6 @@ class TestSchedulerIntegration:
 
         # Verify scheduler state restored
         assert population2.scheduler.last_epoch == initial_step_count
-
-    def test_checkpoint_without_scheduler_state_is_backward_compatible(
-        self,
-        basic_env,
-        adversarial_curriculum,
-        epsilon_greedy_exploration,
-        cpu_device,
-        minimal_brain_config,
-    ):
-        """Loading old checkpoints without scheduler state should not crash."""
-        brain_config = BrainConfig(
-            version="1.0",
-            description="Test backward compatibility",
-            architecture=ArchitectureConfig(
-                type="feedforward",
-                feedforward=FeedforwardConfig(
-                    hidden_layers=[128],
-                    activation="relu",
-                    dropout=0.0,
-                    layer_norm=False,
-                ),
-            ),
-            optimizer=OptimizerConfig(
-                type="adam",
-                learning_rate=0.001,
-                adam_beta1=0.9,
-                adam_beta2=0.999,
-                adam_eps=1e-8,
-                weight_decay=0.0,
-                schedule=ScheduleConfig(
-                    type="step_decay",
-                    step_size=100,
-                    gamma=0.1,
-                ),
-            ),
-            loss=LossConfig(type="mse"),
-            q_learning=QLearningConfig(
-                gamma=0.99,
-                target_update_frequency=100,
-                use_double_dqn=False,
-            ),
-            replay=ReplayConfig(
-                capacity=10000,
-                prioritized=False,
-            ),
-        )
-
-        # Create population
-        population = _make_population(
-            env=basic_env,
-            curriculum=adversarial_curriculum,
-            exploration=epsilon_greedy_exploration,
-            device=cpu_device,
-            brain_config=brain_config,
-        )
-
-        # Create checkpoint without scheduler state (simulating old checkpoint)
-        checkpoint = population.get_checkpoint_state()
-        del checkpoint["scheduler"]  # Remove scheduler state to simulate old checkpoint
-
-        # Create new population
-        population2 = _make_population(
-            env=basic_env,
-            curriculum=adversarial_curriculum,
-            exploration=epsilon_greedy_exploration,
-            device=cpu_device,
-            brain_config=brain_config,
-        )
-
-        # Load checkpoint should not crash
-        population2.load_checkpoint_state(checkpoint)
-
-        # Scheduler should remain at initial state (step 0)
-        assert population2.scheduler.last_epoch == 0
 
 
 def test_brain_config_none_raises_valueerror(basic_env, adversarial_curriculum, epsilon_greedy_exploration, cpu_device):

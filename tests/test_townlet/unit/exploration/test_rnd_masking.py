@@ -40,7 +40,7 @@ class TestRNDNetworkMasking:
         # (This is implicit - we're just checking no errors occur)
 
     def test_rnd_network_without_mask_unchanged(self):
-        """RNDNetwork should work without active_mask (backward compatibility)."""
+        """RNDNetwork should work without active_mask (optional parameter)."""
         obs_dim = 41
 
         network = RNDNetwork(obs_dim=obs_dim, embed_dim=128)
@@ -92,7 +92,7 @@ class TestRNDExplorationMasking:
         assert torch.all(intrinsic_rewards >= 0)  # Intrinsic rewards are non-negative
 
     def test_rnd_exploration_without_mask_unchanged(self):
-        """RNDExploration should work without active_mask (backward compatibility)."""
+        """RNDExploration should work without active_mask (optional parameter)."""
         obs_dim = 41
 
         rnd = RNDExploration(

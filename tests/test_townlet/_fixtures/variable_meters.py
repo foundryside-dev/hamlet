@@ -781,32 +781,6 @@ def task001_env_4meter(
 
 
 @pytest.fixture
-def task001_env_4meter_pomdp(
-    compile_universe: Callable[[Path | str], CompiledUniverse],
-    cpu_device: torch.device,
-    task001_config_4meter: Path,
-) -> VectorizedHamletEnv:
-    """4-meter POMDP environment for TASK-001 recurrent network testing.
-
-    Args:
-        cpu_device: CPU device for deterministic behavior
-        task001_config_4meter: Path to 4-meter config pack
-
-    Returns:
-        VectorizedHamletEnv instance with 4 meters and partial observability
-    """
-    pomdp_config = task001_config_4meter
-    universe = compile_universe(pomdp_config)
-    target_level = getattr(universe, "primary_level", None) or (universe.available_levels[0] if universe.available_levels else None)
-    return VectorizedHamletEnv.from_universe(
-        universe,
-        level_name=target_level,
-        num_agents=1,
-        device=cpu_device,
-    )
-
-
-@pytest.fixture
 def task001_env_12meter(
     compile_universe: Callable[[Path | str], CompiledUniverse],
     cpu_device: torch.device,
@@ -826,23 +800,6 @@ def task001_env_12meter(
     return VectorizedHamletEnv.from_universe(
         universe,
         level_name=target_level,
-        num_agents=1,
-        device=cpu_device,
-    )
-
-
-@pytest.fixture
-def task001_env_12meter_pomdp(
-    compile_universe: Callable[[Path | str], CompiledUniverse],
-    cpu_device: torch.device,
-    task001_config_12meter: Path,
-) -> VectorizedHamletEnv:
-    """12-meter POMDP environment for TASK-001 testing."""
-
-    pomdp_config = task001_config_12meter
-    universe = compile_universe(pomdp_config)
-    return VectorizedHamletEnv.from_universe(
-        universe,
         num_agents=1,
         device=cpu_device,
     )

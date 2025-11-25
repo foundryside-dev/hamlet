@@ -31,22 +31,17 @@ class TestEffectsCompilationPipeline:
                     "intensity": 1.0,
                     "on_spawn": [
                         {
-                            "type": "modify",
-                            "path": "target.bar.health",
-                            "operation": "add",
-                            "value": "0.1 * target.bar.energy",
+                            "modify": "target.bar.health",
+                            "value": "target.bar.health + 0.1 * target.bar.energy",
                         }
                     ],
                     "on_tick": [
                         {
-                            "type": "if",
-                            "condition": "target.bar.health < 0.5",
+                            "if": "target.bar.health < 0.5",
                             "then": [
                                 {
-                                    "type": "modify",
-                                    "path": "target.bar.health",
-                                    "operation": "add",
-                                    "value": "0.2",
+                                    "modify": "target.bar.health",
+                                    "value": "target.bar.health + 0.2",
                                 }
                             ],
                             "else": [],
@@ -68,7 +63,7 @@ class TestEffectsCompilationPipeline:
         # on_spawn modify should have precompiled value_ast
         spawn_cmd = effect.on_spawn[0]
         assert spawn_cmd.type == CommandType.MODIFY
-        assert spawn_cmd.value_expr == "0.1 * target.bar.energy"
+        assert spawn_cmd.value_expr == "target.bar.health + 0.1 * target.bar.energy"
         assert spawn_cmd.value_ast is not None
 
         # on_tick if should have condition_ast and nested modify with value_ast
@@ -96,10 +91,8 @@ class TestEffectsCompilationPipeline:
                     "intensity": 1.0,
                     "on_spawn": [
                         {
-                            "type": "modify",
-                            "path": "target.bar.health",
-                            "operation": "add",
-                            "value": "0.1 +",  # Syntax error
+                            "modify": "target.bar.health",
+                            "value": "target.bar.health + 0.1 +",  # Syntax error
                         }
                     ],
                     "on_tick": [],

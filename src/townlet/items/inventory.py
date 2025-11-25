@@ -144,3 +144,19 @@ class InventoryState:
     def has_item(self, agent_idx: int, instance_id: int) -> bool:
         """Check whether an agent already holds a given instance."""
         return bool((self.slots[agent_idx] == instance_id).any())
+
+    def purge_instance(self, instance_id: int) -> None:
+        """Remove despawned item from all inventories (I2 memory leak fix).
+
+        Called when ItemManager despawns an item to clean up stale references.
+        This prevents unbounded growth of self.items dict.
+
+        Args:
+            instance_id: Item instance ID that was despawned
+        """
+        # Clear from all agent slots
+        mask = self.slots == instance_id
+        self.slots[mask] = -1
+
+        # Remove from metadata dict
+        self.items.pop(instance_id, None)

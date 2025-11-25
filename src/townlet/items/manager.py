@@ -5,7 +5,6 @@ from __future__ import annotations
 import logging
 import math
 import os
-import random
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Literal
 
@@ -65,6 +64,7 @@ class ItemManager:
         schema: dict[str, str] | None = None,  # NEW: Schema for Effects compilation
         vfs_registry: VariableRegistry | None = None,  # NEW: VFS registry for item state storage
         effect_manager: Any | None = None,  # NEW: EffectManager for scheduler cancellation
+        inventory: Any | None = None,  # NEW: InventoryState for cleanup on despawn (I2 fix)
     ) -> None:
         """Initialize ItemManager.
 
@@ -74,12 +74,14 @@ class ItemManager:
             device: PyTorch device
             schema: Variable type schema for Effects compilation
             vfs_registry: VFS registry for item state storage
+            inventory: InventoryState reference for cleanup on despawn
         """
         self.catalog = catalog
         self.max_items = max_items
         self.device = torch.device(device) if isinstance(device, str) else device
         self.vfs_registry = vfs_registry  # Store VFS registry
         self.effect_manager = effect_manager
+        self.inventory = inventory  # Store inventory for despawn cleanup (I2 fix)
         self._debug_items = os.getenv("HAMLET_DEBUG_ITEMS", "").strip().lower() in {"1", "true", "yes", "on"}
         self._logger = logging.getLogger("hamlet.items")
 
@@ -203,6 +205,10 @@ class ItemManager:
         # Track per-item scripted pointer (next event index) to avoid reusing past events
         self.script_indices: dict[str, int] = {}
 
+        # Position index for O(1) occupancy checks (I1 performance fix)
+        # Maps position -> set of instance_ids at that position
+        self._position_index: dict[tuple[int, ...], set[int]] = {}
+
     def _log_items(self, message: str, **kwargs: Any) -> None:
         """Emit debug logs when HAMLET_DEBUG_ITEMS is enabled."""
         if not self._debug_items:
@@ -223,6 +229,7 @@ class ItemManager:
         self.rule_spawn_counts.clear()
         self.next_scheduled_tick.clear()
         self.script_indices.clear()
+        self._position_index.clear()
 
         if self.vfs_registry is not None and self.vfs_registry.item_vfs is not None:
             from townlet.vfs.schema import VariableScope
@@ -286,9 +293,8 @@ class ItemManager:
         return all(0 <= coord < dim for coord, dim in zip(position, self.grid_size))
 
     def _position_occupied(self, position: tuple[int, ...]) -> bool:
-        """Check whether a position is occupied by an active item."""
-
-        return any(item.position == position for item in self.active_items.values())
+        """Check whether a position is occupied by an active item (O(1) lookup)."""
+        return bool(self._position_index.get(position))
 
     def spawn_item(
         self,
@@ -379,6 +385,12 @@ class ItemManager:
         # Store in active items
         self.active_items[instance.instance_id] = instance
 
+        # Update position index (I1 performance fix)
+        pos_key = tuple(int(c) for c in position)
+        if pos_key not in self._position_index:
+            self._position_index[pos_key] = set()
+        self._position_index[pos_key].add(instance.instance_id)
+
         # Register item instance in VFS registry
         if self.vfs_registry is not None and instance.vfs_profile:
             self.vfs_registry.register_item_instance(instance.vfs_index, instance.vfs_profile)
@@ -415,6 +427,14 @@ class ItemManager:
         item = self.active_items.pop(instance_id)
         self.held_items[instance_id] = item
 
+        # Remove from position index (I1 performance fix)
+        if item.position is not None:
+            pos_key = tuple(int(c) for c in item.position)
+            if pos_key in self._position_index:
+                self._position_index[pos_key].discard(instance_id)
+                if not self._position_index[pos_key]:
+                    del self._position_index[pos_key]
+
         return item
 
     def place_item(
@@ -442,6 +462,12 @@ class ItemManager:
         item.holder_agent_ids.clear()
         self.active_items[instance_id] = item
 
+        # Update position index (I1 performance fix)
+        pos_key = tuple(int(c) for c in position)
+        if pos_key not in self._position_index:
+            self._position_index[pos_key] = set()
+        self._position_index[pos_key].add(instance_id)
+
         return item
 
     def despawn_item(self, instance_id: int, current_tick: int) -> None:
@@ -454,6 +480,13 @@ class ItemManager:
         # Check active items first
         if instance_id in self.active_items:
             item = self.active_items.pop(instance_id)
+            # Remove from position index (I1 performance fix)
+            if item.position is not None:
+                pos_key = tuple(int(c) for c in item.position)
+                if pos_key in self._position_index:
+                    self._position_index[pos_key].discard(instance_id)
+                    if not self._position_index[pos_key]:
+                        del self._position_index[pos_key]
         # Then check held items
         elif instance_id in self.held_items:
             item = self.held_items.pop(instance_id)
@@ -463,6 +496,10 @@ class ItemManager:
         # Unregister item instance from VFS registry
         if self.vfs_registry is not None:
             self.vfs_registry.unregister_item_instance(item.vfs_index)
+
+        # Clean up inventory references (I2 memory leak fix)
+        if self.inventory is not None:
+            self.inventory.purge_instance(instance_id)
 
         # Cancel any scheduled delayed commands targeting this item
         if self.effect_manager is not None:
@@ -621,7 +658,8 @@ class ItemManager:
 
         if placement_mode is None or placement_mode == "random":
             for _ in range(count):
-                positions.append(tuple(random.randint(0, size - 1) for size in grid_size))
+                # Use torch.randint for GPU-friendly random (I3 performance fix)
+                positions.append(tuple(int(torch.randint(0, size, ()).item()) for size in grid_size))
             return positions
 
         if placement_mode == "fixed":
@@ -696,7 +734,8 @@ class ItemManager:
         positions: list[tuple[int, ...]] = []
 
         if placement_mode is None or placement_mode == "random":
-            return [tuple(random.randint(0, size - 1) for size in self.grid_size or (1,)) for _ in range(count)]
+            # Use torch.randint for GPU-friendly random (I3 performance fix)
+            return [tuple(int(torch.randint(0, size, ()).item()) for size in self.grid_size or (1,)) for _ in range(count)]
 
         if placement_mode == "fixed":
             assert isinstance(placement, SpawnPlacementConfig)  # Type narrowing for mypy

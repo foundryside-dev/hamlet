@@ -377,6 +377,28 @@ class CommandCompiler:
             for cmd in node.delay_commands:
                 self.compile_command(cmd)
 
+        elif node.type == CommandType.SPAWN_ITEM:
+            from townlet.world.expression.type_checker import TypeCheckError
+
+            if not node.item_type:
+                raise TypeCheckError("SPAWN_ITEM command requires 'item_type'")
+
+            # Validate position expression if provided (not simple "random"/"self"/"target")
+            simple_position = node.position in {"random", "self", "target"} or node.position is None
+            if not simple_position and node.position_expr:
+                position_ast = self.parser.parse(node.position_expr)
+                # Position expressions should produce coordinates - type check for sanity
+                self.type_checker.check(position_ast)
+                node.position_ast = position_ast
+
+        elif node.type == CommandType.TRIGGER_CASCADE:
+            from townlet.world.expression.type_checker import TypeCheckError
+
+            if not node.cascade_id:
+                raise TypeCheckError("TRIGGER_CASCADE command requires 'cascade_id'")
+            if node.cascade_strength is not None and node.cascade_strength <= 0:
+                raise TypeCheckError("TRIGGER_CASCADE 'cascade_strength' must be positive")
+
         return node
 
     def compile_commands(self, nodes: list[CommandNode]) -> list[CommandNode]:

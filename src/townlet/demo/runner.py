@@ -492,6 +492,7 @@ class DemoRunner:
         effective_brain_config = apply_training_overrides(base_brain_config, self.training_config)
 
         # Create population (effective_brain_config provides network/optimizer/Q-learning parameters)
+        # observation_spec is now read directly from env (POP-005 simplification)
         self.population = VectorizedPopulation(
             env=self.env,
             curriculum=self.curriculum,
@@ -509,7 +510,6 @@ class DemoRunner:
             brain_config=effective_brain_config,
             max_episodes=self.max_episodes,  # For PER beta annealing
             max_steps_per_episode=loop_cfg.max_steps_per_episode,  # For PER beta annealing
-            observation_spec=obs_spec,
         )
 
         self.curriculum.initialize_population(num_agents)

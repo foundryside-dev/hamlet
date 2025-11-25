@@ -28,6 +28,7 @@ def _make_population(
     params = {
         "obs_dim": env.observation_dim,
         "action_dim": env.action_dim,
+        "vision_window_size": 5,
         "train_frequency": 1,
         "batch_size": 32,
         "sequence_length": 1,
@@ -1047,9 +1048,133 @@ def test_brain_config_none_raises_valueerror(basic_env, adversarial_curriculum, 
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=basic_env.observation_dim,
+            action_dim=basic_env.action_dim,
+            vision_window_size=5,
             train_frequency=1,
             batch_size=32,
             sequence_length=1,
             max_grad_norm=10.0,
             brain_config=None,  # Should raise ValueError
         )
+
+
+def test_observation_spec_none_raises_valueerror(
+    basic_env, adversarial_curriculum, epsilon_greedy_exploration, cpu_device, minimal_brain_config
+):
+    """VectorizedPopulation raises ValueError when env.observation_spec is None (POP-005).
+
+    Per CLAUDE.md "no implicit defaults" philosophy, we require env.observation_spec
+    to be explicitly set rather than silently falling back.
+    """
+    import pytest
+
+    from townlet.population.vectorized import VectorizedPopulation
+
+    # Mock env without observation_spec
+    basic_env.observation_spec = None
+
+    with pytest.raises(ValueError, match="observation_spec is required"):
+        VectorizedPopulation(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            agent_ids=["agent_0"],
+            device=cpu_device,
+            obs_dim=basic_env.observation_dim,
+            action_dim=basic_env.action_dim,
+            vision_window_size=5,
+            train_frequency=1,
+            batch_size=32,
+            sequence_length=1,
+            max_grad_norm=10.0,
+            brain_config=minimal_brain_config,
+        )
+
+
+def test_observation_spec_missing_attribute_raises_valueerror(
+    basic_env, adversarial_curriculum, epsilon_greedy_exploration, cpu_device, minimal_brain_config
+):
+    """VectorizedPopulation raises ValueError when env has no observation_spec attribute (POP-005).
+
+    Covers the case where the env object doesn't have the attribute at all
+    (not just when it's set to None).
+    """
+    import pytest
+
+    from townlet.population.vectorized import VectorizedPopulation
+
+    # Delete the observation_spec attribute entirely
+    if hasattr(basic_env, "observation_spec"):
+        delattr(basic_env, "observation_spec")
+
+    with pytest.raises(ValueError, match="observation_spec is required"):
+        VectorizedPopulation(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            agent_ids=["agent_0"],
+            device=cpu_device,
+            obs_dim=basic_env.observation_dim,
+            action_dim=basic_env.action_dim,
+            vision_window_size=5,
+            train_frequency=1,
+            batch_size=32,
+            sequence_length=1,
+            max_grad_norm=10.0,
+            brain_config=minimal_brain_config,
+        )
+
+
+def test_device_mismatch_in_step_all_raises_runtime_error(
+    basic_env, adversarial_curriculum, epsilon_greedy_exploration, cpu_device, minimal_brain_config
+):
+    """step_all raises RuntimeError when observation tensor is on wrong device (POP-004).
+
+    Device mismatches cause cryptic PyTorch errors deep in computation graphs.
+    This validation provides clear error messages.
+
+    Note: This test uses monkeypatching to simulate device mismatch since actual
+    device mismatch requires CUDA hardware.
+    """
+    import pytest
+    import torch
+
+    from townlet.population.vectorized import VectorizedPopulation
+
+    population = VectorizedPopulation(
+        env=basic_env,
+        curriculum=adversarial_curriculum,
+        exploration=epsilon_greedy_exploration,
+        agent_ids=["agent_0"],
+        device=cpu_device,
+        obs_dim=basic_env.observation_dim,
+        action_dim=basic_env.action_dim,
+        vision_window_size=5,
+        train_frequency=1,
+        batch_size=32,
+        sequence_length=1,
+        max_grad_norm=10.0,
+        brain_config=minimal_brain_config,
+    )
+
+    # Create a mock tensor with a different device
+    # We can't actually use a different device without CUDA, so we mock the device property
+    class MockTensor:
+        """Mock tensor that reports a different device for testing."""
+
+        def __init__(self, real_tensor):
+            self._real = real_tensor
+            self.device = torch.device("meta")  # Different from cpu_device
+
+        def __getattr__(self, name):
+            return getattr(self._real, name)
+
+    # Replace current_obs with our mock
+    original_obs = population.current_obs
+    population.current_obs = MockTensor(original_obs)
+
+    # Create action mask (required for step_population)
+    action_mask = torch.ones(1, basic_env.action_dim, dtype=torch.bool)
+
+    with pytest.raises(RuntimeError, match="Observation tensor on"):
+        population.step_population(action_mask)

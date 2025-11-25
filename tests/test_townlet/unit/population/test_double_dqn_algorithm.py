@@ -12,6 +12,7 @@ def _make_population(env, curriculum, exploration, brain_config, **overrides):
     params = {
         "obs_dim": env.observation_dim,
         "action_dim": env.action_dim,
+        "vision_window_size": 5,
         "train_frequency": 1,
         "batch_size": 4,
         "sequence_length": 1,

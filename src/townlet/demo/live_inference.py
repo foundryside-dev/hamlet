@@ -395,6 +395,7 @@ class LiveInferenceServer:
                 vision_window_size = root
                 break
 
+        # observation_spec is now read directly from env (POP-005 simplification)
         self.population = VectorizedPopulation(
             env=self.env,
             curriculum=self.curriculum,
@@ -411,7 +412,6 @@ class LiveInferenceServer:
             brain_config=effective_brain_config,
             max_episodes=None,  # Not used by live inference
             max_steps_per_episode=None,  # Not used by live inference
-            observation_spec=obs_spec,
         )
 
         self.curriculum.initialize_population(num_agents)

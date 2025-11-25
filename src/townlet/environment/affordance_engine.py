@@ -29,6 +29,7 @@ from townlet.effects.compiler import CommandCompiler
 from townlet.effects.executor import CommandExecutor, ExecutionContext
 from townlet.effects.parser import CommandParser
 from townlet.effects.schema import CommandNode
+from townlet.environment.null_managers import NullItemManager
 from townlet.environment.temporal_utils import is_affordance_open as canonical_is_affordance_open
 
 
@@ -241,7 +242,7 @@ class AffordanceEngine:
         multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
         for cost in self._iter_costs(affordance.costs):
             meter_name, amount = self._cost_fields(cost)
-            meter_idx = self.meter_name_to_idx[meter_name]
+            meter_idx = self._get_meter_idx(meter_name, f"affordance '{affordance_name}' cost")
             updated_meters[agent_mask, meter_idx] -= amount * multipliers[agent_mask]
 
         # Execute compiled Effects commands (on_start stage for instant affordances)
@@ -329,7 +330,7 @@ class AffordanceEngine:
         multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
         for cost in self._iter_costs(affordance.costs_per_tick):
             meter_name, amount = self._cost_fields(cost)
-            meter_idx = self.meter_name_to_idx[meter_name]
+            meter_idx = self._get_meter_idx(meter_name, f"affordance '{affordance_name}' per-tick cost")
             updated_meters[agent_mask, meter_idx] -= amount * multipliers[agent_mask]
 
         # Execute compiled Effects commands (per_tick stage)
@@ -378,7 +379,7 @@ class AffordanceEngine:
 
         for cost in self._iter_costs(costs):
             meter, amount = self._cost_fields(cost)
-            meter_idx = self.meter_name_to_idx[meter]
+            meter_idx = self._get_meter_idx(meter, "affordability check")
             can_afford = can_afford & (meters[:, meter_idx] >= amount)
 
         return can_afford
@@ -540,7 +541,7 @@ class AffordanceEngine:
         # Apply costs first
         for cost in self._iter_costs(affordance.costs):
             meter_name, amount = self._cost_fields(cost)
-            meter_idx = self.meter_name_to_idx[meter_name]
+            meter_idx = self._get_meter_idx(meter_name, f"affordance '{affordance_name}' cost")
             result_meters[agent_mask, meter_idx] -= amount * multipliers[agent_mask]
 
         # Execute compiled Effects commands (on_start stage)
@@ -577,6 +578,24 @@ class AffordanceEngine:
                 meter, amount = next(iter(cost.items()))
                 return meter, float(amount)
         raise ValueError(f"Unsupported cost format: {cost!r}")
+
+    def _get_meter_idx(self, meter_name: str, context: str = "") -> int:
+        """Get meter index with validation and helpful error messages.
+
+        Args:
+            meter_name: Name of the meter to look up
+            context: Context for error message (e.g., "affordance 'sleep' cost")
+
+        Returns:
+            Index of the meter in the meters tensor
+
+        Raises:
+            KeyError: If meter name not found in meter_name_to_idx
+        """
+        if meter_name not in self.meter_name_to_idx:
+            ctx_msg = f" in {context}" if context else ""
+            raise KeyError(f"Unknown meter '{meter_name}'{ctx_msg}. " f"Available meters: {sorted(self.meter_name_to_idx.keys())}")
+        return self.meter_name_to_idx[meter_name]
 
     def _execute_affordance_effects(
         self,
@@ -661,10 +680,3 @@ class NullEffectManager:
 
     def spawn_effect(self, *args: Any, **kwargs: Any) -> None:  # pragma: no cover - defensive only
         raise RuntimeError("EffectManager not configured; spawn_effect unavailable")
-
-
-class NullItemManager:
-    """Fallback ItemManager that raises on spawn when Items are not configured."""
-
-    def spawn_item(self, *args: Any, **kwargs: Any) -> None:  # pragma: no cover - defensive only
-        raise RuntimeError("ItemManager not configured; spawn_item unavailable")

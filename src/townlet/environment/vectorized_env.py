@@ -36,17 +36,33 @@ if TYPE_CHECKING:
     from townlet.universe.compiled import CompiledUniverse
 
 
-class NullItemManager:
-    """Fallback ItemManager for fail-forward enforcement when items are disabled."""
+# Import consolidated NullItemManager (ENV-009)
+from townlet.environment.null_managers import NullItemManager
 
-    def spawn_item(self, *args, **kwargs):
-        raise RuntimeError("ItemManager is not configured; spawn_item is unavailable")
+# Valid VFS variable types for VariableDef
+_VALID_VFS_TYPES = frozenset({"scalar", "bool", "tensor1d", "tensor2d", "tensor3d", "tensorNd", "agent_ref", "item_ref"})
 
-    def tick(self, *args, **kwargs):
-        return None
 
-    def process_respawns(self, *args, **kwargs):
-        return None
+def _normalize_vfs_type(raw_type: str, var_id: str) -> str:
+    """Normalize VFS variable type to canonical form.
+
+    Args:
+        raw_type: Type string from config (e.g., "int", "float", "scalar", "bool")
+        var_id: Variable ID for error messages
+
+    Returns:
+        Normalized type string compatible with VariableDef
+
+    Raises:
+        ValueError: If type is not recognized
+    """
+    # Map common aliases to canonical types
+    if raw_type in ("int", "float"):
+        return "scalar"
+    if raw_type in _VALID_VFS_TYPES:
+        return raw_type
+
+    raise ValueError(f"Unsupported VFS variable type '{raw_type}' for variable '{var_id}'. " f"Valid types: {sorted(_VALID_VFS_TYPES)}")
 
 
 def _build_bar_index_map(meter_metadata: MeterMetadata) -> dict[str, int]:
@@ -219,11 +235,21 @@ class VectorizedHamletEnv:
         # Uses the same semantics as the v2.1 compiler:
         #   radius = ceil(vision_range * (grid_size / 2))
         #   window_size = 2 * radius + 1 (clamped to grid_size)
+        # Safety: Max radius of 50 prevents OOM with large grids (101x101 window max).
+        max_vision_radius = 50
         self.vision_radius: int = 0
         self.local_window_size: int = 0
         if self.partial_observability and self.grid_size is not None:
             grid_size = float(self.grid_size)
-            self.vision_radius = max(1, int(math.ceil(self.vision_range * (grid_size / 2.0))))
+            raw_radius = int(math.ceil(self.vision_range * (grid_size / 2.0)))
+            if raw_radius > max_vision_radius:
+                raise ValueError(
+                    f"Vision radius {raw_radius} exceeds maximum {max_vision_radius}. "
+                    f"This would create a {2*raw_radius+1}x{2*raw_radius+1} observation window, "
+                    f"causing OOM. Reduce vision_range ({self.vision_range}) or grid_size ({self.grid_size}). "
+                    f"Max supported configuration: vision_range * (grid_size / 2) <= {max_vision_radius}"
+                )
+            self.vision_radius = max(1, raw_radius)
             self.local_window_size = min((2 * self.vision_radius) + 1, int(grid_size))
 
         # Validate partial observability support
@@ -301,12 +327,7 @@ class VectorizedHamletEnv:
                     default_value = var.initial_value  # None -> sentinel (-1) in registry
                 else:
                     default_value = var.initial_value if var.initial_value is not None else (0.0 if var.type in ("int", "float") else False)
-                if var.type in ("int", "float"):
-                    var_type = "scalar"
-                elif var.type in {"tensor1d", "tensor2d", "tensor3d", "tensorNd"}:
-                    var_type = var.type
-                else:
-                    var_type = var.type
+                var_type = _normalize_vfs_type(var.type, var.name)
                 var_def = VariableDef(
                     id=var.name,
                     scope="global",
@@ -330,12 +351,7 @@ class VectorizedHamletEnv:
                     default_value = var.initial_value  # None -> sentinel (-1) in registry
                 else:
                     default_value = var.initial_value if var.initial_value is not None else (0.0 if var.type in ("int", "float") else False)
-                if var.type in ("int", "float"):
-                    var_type = "scalar"
-                elif var.type in {"tensor1d", "tensor2d", "tensor3d", "tensorNd"}:
-                    var_type = var.type
-                else:
-                    var_type = var.type
+                var_type = _normalize_vfs_type(var.type, var.name)
                 var_def = VariableDef(
                     id=var.name,
                     scope="agent",
@@ -554,7 +570,14 @@ class VectorizedHamletEnv:
 
         # Cache action mask table (24 × affordance_count) for temporal mechanics
         self.action_mask_table = self.optimization_data.action_mask_table.to(self.device).clone()
-        self.hours_per_day = self.action_mask_table.shape[0] if self.action_mask_table.ndim > 0 else 24
+        # Guard against division by zero if action mask table is empty (shape[0] == 0)
+        self.hours_per_day = max(1, self.action_mask_table.shape[0]) if self.action_mask_table.ndim > 0 else 24
+        # Explicit validation instead of assert (assertions can be disabled with -O)
+        if self.hours_per_day <= 0:
+            raise ValueError(
+                f"hours_per_day must be positive to avoid division by zero (got {self.hours_per_day}). "
+                f"Check action_mask_table configuration."
+            )
 
         # Initialize affordance engine with AffordanceParamConfig directly
         # No RuntimeAffordanceConfig conversion needed - AffordanceEngine uses interactions field
@@ -594,24 +617,7 @@ class VectorizedHamletEnv:
         self.affordance_names = all_affordance_names
         self.num_affordance_types = len(all_affordance_names)
 
-        # Build modulation rules mapping to affordance names
-        modulation_rules = []
-        for entry in self.optimization_data.modulation_data:
-            aff_idx = entry.get("affordance_idx")
-            bar_idx = entry.get("bar_idx")
-            if aff_idx is None or bar_idx is None:
-                continue
-            if aff_idx < 0 or aff_idx >= len(all_affordance_names):
-                continue
-            aff_name = all_affordance_names[aff_idx]
-            modulation_rules.append(
-                {
-                    "affordance": aff_name,
-                    "bar_idx": bar_idx,
-                    "threshold": entry.get("threshold", 0.0),
-                    "min_multiplier": entry.get("min_multiplier", 1.0),
-                }
-            )
+        # NOTE: modulation_rules is built later, just before AffordanceEngine init (ENV-010: removed dead code)
 
         # Build composed action space from compiler metadata and substrate defaults
         self.action_space = self._build_action_space_from_metadata(
@@ -1435,8 +1441,14 @@ class VectorizedHamletEnv:
 
         # Item-specific masks (inventory state and position)
         if self.item_inventory is not None:
+            # Narrow try-except to only catch ValueError from get_action_by_name
             try:
-                get_action_id = self.action_space.get_action_by_name("GET").id
+                get_action = self.action_space.get_action_by_name("GET")
+            except ValueError:
+                get_action = None  # GET action not present in action space
+
+            if get_action is not None:
+                get_action_id = get_action.id
 
                 # Mask GET when inventory is full
                 inventory_full = ~(self.item_inventory.slots == -1).any(dim=1)
@@ -1461,9 +1473,6 @@ class VectorizedHamletEnv:
                         # Mask GET if no item at position
                         if not item_at_position:
                             action_masks[agent_idx, get_action_id] = False
-
-            except ValueError:
-                pass  # GET action not present in action space
 
             for slot_idx in range(self.item_inventory.max_items_per_agent):
                 try:
@@ -1806,9 +1815,14 @@ class VectorizedHamletEnv:
             # Capture current tick per agent for item action scheduling
             # step_counts stores ticks per agent; use scalar int for handlers
             current_ticks = self.step_counts.clone()
-            # GET action
+            # GET action - narrow try-except to only catch action lookup failure
             try:
-                get_action_id = self.action_space.get_action_by_name("GET").id
+                get_action = self.action_space.get_action_by_name("GET")
+            except ValueError:
+                get_action = None  # GET action not in action space
+
+            if get_action is not None:
+                get_action_id = get_action.id
                 get_mask = actions == get_action_id
                 if get_mask.any():
                     for agent_idx in torch.where(get_mask)[0]:
@@ -1818,15 +1832,18 @@ class VectorizedHamletEnv:
                             current_tick=int(current_ticks[agent_idx].item()),
                             meters=self.meters,
                         )
-            except ValueError:
-                pass  # GET action not in action space
 
             if self.item_inventory is not None:
-                # USE_SLOT_N actions
+                # USE_SLOT_N actions - narrow try-except to only catch action lookup failure
                 for slot_idx in range(self.item_inventory.max_items_per_agent):
                     use_action_name = f"USE_SLOT_{slot_idx}"
                     try:
-                        use_action_id = self.action_space.get_action_by_name(use_action_name).id
+                        use_action = self.action_space.get_action_by_name(use_action_name)
+                    except ValueError:
+                        use_action = None  # Action not in action space
+
+                    if use_action is not None:
+                        use_action_id = use_action.id
                         use_mask = actions == use_action_id
                         if use_mask.any():
                             for agent_idx in torch.where(use_mask)[0]:
@@ -1836,14 +1853,17 @@ class VectorizedHamletEnv:
                                     current_tick=int(current_ticks[agent_idx].item()),
                                     meters=self.meters,
                                 )
-                    except ValueError:
-                        pass  # Action not in action space
 
-                # DROP_SLOT_N actions
+                # DROP_SLOT_N actions - narrow try-except to only catch action lookup failure
                 for slot_idx in range(self.item_inventory.max_items_per_agent):
                     drop_action_name = f"DROP_SLOT_{slot_idx}"
                     try:
-                        drop_action_id = self.action_space.get_action_by_name(drop_action_name).id
+                        drop_action = self.action_space.get_action_by_name(drop_action_name)
+                    except ValueError:
+                        drop_action = None  # Action not in action space
+
+                    if drop_action is not None:
+                        drop_action_id = drop_action.id
                         drop_mask = actions == drop_action_id
                         if drop_mask.any():
                             for agent_idx in torch.where(drop_mask)[0]:
@@ -1853,8 +1873,6 @@ class VectorizedHamletEnv:
                                     agent_position=self.positions[agent_idx],
                                     current_tick=int(current_ticks[agent_idx].item()),
                                 )
-                    except ValueError:
-                        pass  # Action not in action space
 
             # Custom item verbs (local and inventory scoped)
             for action_name in self.item_handler.custom_action_specs.keys():
@@ -2254,20 +2272,27 @@ class VectorizedHamletEnv:
             if name in self.affordances:
                 self.affordances[name] = torch.tensor(pos, device=self.device, dtype=self.substrate.position_dtype)
 
-    def _get_meter_index(self, meter_name: str) -> int | None:
-        """Get meter index by name.
+    def _get_meter_index(self, meter_name: str, context: str = "") -> int:
+        """Get meter index by name with validation.
 
         Args:
             meter_name: Meter name (e.g., "energy", "mood")
+            context: Context string for error messages (e.g., "custom action 'REST'")
 
         Returns:
-            Meter index, or None if meter doesn't exist
+            Meter index
+
+        Raises:
+            ValueError: If meter_name_to_index not initialized
+            KeyError: If meter name doesn't exist
         """
         mapping: dict[str, int] | None = getattr(self, "meter_name_to_index", None)
         if mapping is None:
-            return None
-        result: int | None = mapping.get(meter_name)
-        return result
+            raise ValueError("meter_name_to_index not initialized")
+        if meter_name not in mapping:
+            ctx_msg = f" in {context}" if context else ""
+            raise KeyError(f"Unknown meter '{meter_name}'{ctx_msg}. " f"Available meters: {sorted(mapping.keys())}")
+        return mapping[meter_name]
 
     def _apply_custom_action(self, agent_idx: int, action: ActionConfig):
         """Apply custom action effects, movement delta, and teleportation.
@@ -2275,18 +2300,21 @@ class VectorizedHamletEnv:
         Args:
             agent_idx: Agent index
             action: Custom action config
+
+        Raises:
+            KeyError: If a cost/effect references an unknown meter
         """
+        action_context = f"custom action '{action.name}' costs"
         # Apply costs (negative costs = restoration)
         for meter_name, cost in action.costs.items():
-            meter_idx = self._get_meter_index(meter_name)
-            if meter_idx is not None:
-                self.meters[agent_idx, meter_idx] -= cost  # Subtract cost (negative = add)
+            meter_idx = self._get_meter_index(meter_name, context=action_context)
+            self.meters[agent_idx, meter_idx] -= cost  # Subtract cost (negative = add)
 
         # Apply effects
+        action_context = f"custom action '{action.name}' effects"
         for meter_name, effect in action.effects.items():
-            meter_idx = self._get_meter_index(meter_name)
-            if meter_idx is not None:
-                self.meters[agent_idx, meter_idx] += effect  # Add effect
+            meter_idx = self._get_meter_index(meter_name, context=action_context)
+            self.meters[agent_idx, meter_idx] += effect  # Add effect
 
         # Apply movement delta (for movement-type custom actions like SPRINT)
         if action.delta is not None:

@@ -661,3 +661,63 @@ def test_affordance_effects_apply_modulation_multiplier():
 
     # Interaction delta is 0.4 but should be scaled by multiplier (0.5 at energy=0.0)
     assert updated[0, 0].item() == pytest.approx(0.2)
+
+
+def test_get_meter_idx_validation_raises_on_unknown_meter():
+    """_get_meter_idx should raise KeyError with helpful message for unknown meters (ENV-005).
+
+    The error message should include:
+    1. The unknown meter name
+    2. The context (if provided)
+    3. List of available meters
+    """
+    from townlet.effects.executor import CommandExecutor
+
+    @dataclass
+    class SimpleAffordance:
+        id: str
+        name: str
+        interaction_type: str
+        duration_ticks: int | None
+        costs: list[dict]
+        costs_per_tick: list[dict]
+        effect_pipeline: None
+        opening_hours: OpeningHours
+
+    # Create an affordance with an unknown meter in costs
+    affordance_with_bad_meter = SimpleAffordance(
+        id="test",
+        name="BadMeterAffordance",
+        interaction_type="instant",
+        duration_ticks=None,
+        costs=[{"meter": "nonexistent_bar", "amount": 0.1}],  # This meter doesn't exist
+        costs_per_tick=[],
+        effect_pipeline=None,
+        opening_hours=make_opening_hours((0, 24)),
+    )
+
+    # Only define "energy" as valid meter, not "nonexistent_bar"
+    engine = AffordanceEngine(
+        affordance_config=(affordance_with_bad_meter,),
+        num_agents=1,
+        device=torch.device("cpu"),
+        meter_name_to_idx={"energy": 0, "health": 1},
+        modulation_rules=[],
+        vfs_registry=None,
+        effects_schema={},
+        command_executor=CommandExecutor(),
+    )
+
+    meters = torch.tensor([[1.0, 1.0]], dtype=torch.float32)
+
+    # Trying to apply this affordance should raise KeyError with context
+    with pytest.raises(KeyError) as excinfo:
+        engine.apply_instant_interaction(meters, "BadMeterAffordance", torch.tensor([True]))
+
+    error_msg = str(excinfo.value)
+    # Should mention the unknown meter
+    assert "nonexistent_bar" in error_msg
+    # Should mention the affordance context
+    assert "BadMeterAffordance" in error_msg or "affordance" in error_msg.lower()
+    # Should list available meters
+    assert "energy" in error_msg or "Available" in error_msg

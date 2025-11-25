@@ -19,6 +19,7 @@ def _make_population(env, curriculum, exploration, agent_ids, brain_config, **ov
     params = {
         "obs_dim": env.observation_dim,
         "action_dim": env.action_dim,
+        "vision_window_size": 5,
         "train_frequency": 1,
         "batch_size": 8,
         "sequence_length": 1,
@@ -530,8 +531,6 @@ class TestSnapshotAndMetrics:
         curriculum = StaticCurriculum(difficulty_level=0.5)
         exploration = EpsilonGreedyExploration(epsilon=1.0, epsilon_min=0.1, epsilon_decay=0.999)
 
-        obs_spec = env.observation_spec
-
         population = _make_population(
             env=env,
             curriculum=curriculum,
@@ -542,7 +541,6 @@ class TestSnapshotAndMetrics:
             train_frequency=4,
             sequence_length=4,
             max_grad_norm=10.0,
-            observation_spec=obs_spec,
         )
 
         assert population.is_recurrent is True

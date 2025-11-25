@@ -16,7 +16,7 @@ from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
 from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
 from townlet.population.vectorized import VectorizedPopulation
 
-TRAIN_KWARGS = dict(train_frequency=1, batch_size=16, sequence_length=1, max_grad_norm=1.0)
+TRAIN_KWARGS = dict(train_frequency=1, batch_size=16, sequence_length=1, max_grad_norm=1.0, vision_window_size=5)
 LEVEL_NAME = "L0_test"
 
 # =============================================================================

@@ -31,7 +31,7 @@ from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
 from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
 from townlet.population.vectorized import VectorizedPopulation
 
-TRAIN_KWARGS = dict(train_frequency=1, batch_size=32, sequence_length=1, max_grad_norm=1.0)
+TRAIN_KWARGS = dict(train_frequency=1, batch_size=32, sequence_length=1, max_grad_norm=1.0, vision_window_size=5)
 LEVEL_NAME = "L0_test"
 
 
@@ -195,6 +195,7 @@ class TestPopulationCheckpointing:
             sequence_length=1,
             max_grad_norm=1.0,
             action_dim=basic_env.action_dim,
+            vision_window_size=5,
         )
 
         # Get checkpoint
@@ -250,6 +251,7 @@ class TestPopulationCheckpointing:
             sequence_length=1,
             max_grad_norm=1.0,
             action_dim=env.action_dim,
+            vision_window_size=5,
         )
 
         # Train for a bit to change weights
@@ -283,6 +285,7 @@ class TestPopulationCheckpointing:
             sequence_length=1,
             max_grad_norm=1.0,
             action_dim=env.action_dim,
+            vision_window_size=5,
         )
 
         pop2.load_checkpoint_state(checkpoint)
@@ -322,6 +325,7 @@ class TestPopulationCheckpointing:
             sequence_length=1,
             max_grad_norm=1.0,
             action_dim=env.action_dim,
+            vision_window_size=5,
         )
 
         # Fill replay buffer with experiences
@@ -350,6 +354,7 @@ class TestPopulationCheckpointing:
             sequence_length=1,
             max_grad_norm=1.0,
             action_dim=env.action_dim,
+            vision_window_size=5,
         )
 
         # Before load, buffer should be empty
@@ -602,6 +607,7 @@ class TestRunnerCheckpointing:
                     sequence_length=1,
                     max_grad_norm=1.0,
                     action_dim=runner.env.action_dim,
+                    vision_window_size=5,
                 )
 
                 # Save checkpoint
@@ -657,6 +663,7 @@ class TestRunnerCheckpointing:
                     sequence_length=1,
                     max_grad_norm=1.0,
                     action_dim=runner1.env.action_dim,
+                    vision_window_size=5,
                 )
                 runner1.current_episode = 42
                 runner1.save_checkpoint()
@@ -685,6 +692,7 @@ class TestRunnerCheckpointing:
                     sequence_length=1,
                     max_grad_norm=1.0,
                     action_dim=runner2.env.action_dim,
+                    vision_window_size=5,
                 )
                 runner2.load_checkpoint()
                 assert runner2.current_episode == 42, "Episode number should be preserved after load"
@@ -726,6 +734,7 @@ class TestRunnerCheckpointing:
                     sequence_length=1,
                     max_grad_norm=1.0,
                     action_dim=runner1.env.action_dim,
+                    vision_window_size=5,
                 )
 
                 runner1.population.reset()
@@ -764,6 +773,7 @@ class TestRunnerCheckpointing:
                     sequence_length=1,
                     max_grad_norm=1.0,
                     action_dim=runner2.env.action_dim,
+                    vision_window_size=5,
                 )
 
                 runner2.load_checkpoint()

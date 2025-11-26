@@ -112,8 +112,16 @@ def test_get_action_picks_up_item():
     # Reset to initialize state
     env.reset()
 
+    # Clear any items at target position to avoid collision with random spawns
+    target_pos = (2, 2)
+    for instance_id, existing_item in list(env.item_manager.active_items.items()):
+        if existing_item.position == target_pos:
+            env.item_manager.despawn_item(instance_id, current_tick=0)
+    # Clear cooldowns that may have been set by despawning
+    env.item_manager.cooldown_until.clear()
+
     # Spawn coin at (2, 2) - has on_pickup: money +0.1 (10 out of max 100)
-    item = env.item_manager.spawn_item("coin", position=(2, 2), current_tick=0)
+    item = env.item_manager.spawn_item("coin", position=target_pos, current_tick=0)
     assert item is not None
 
     # Record initial money

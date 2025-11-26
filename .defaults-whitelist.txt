@@ -180,6 +180,33 @@ src/townlet/config/training_v2_config.py:*
 src/townlet/universe/raw_configs_v21.py:*
 src/townlet/config/environment_config.py:*
 
+# VFS Lint
+src/townlet/config/brain_config.py:*
+src/townlet/config/effects_config.py:*
+src/townlet/config/items_config.py:*
+src/townlet/config/stratum_config.py:*
+src/townlet/config/vfs_profiles_config.py:*
+src/townlet/effects/catalog.py:*
+src/townlet/effects/collections.py:*
+src/townlet/effects/compiler.py:*
+src/townlet/effects/context.py:*
+src/townlet/effects/executor.py:*
+src/townlet/effects/manager.py:*
+src/townlet/effects/parser.py:*
+src/townlet/effects/scheduler.py:*
+src/townlet/effects/schema.py:*
+src/townlet/items/action_handlers.py:*
+src/townlet/items/instance.py:*
+src/townlet/items/inventory.py:*
+src/townlet/items/manager.py:*
+src/townlet/universe/__main__.py:*
+src/townlet/vfs/evaluator.py:*
+src/townlet/vfs/history.py:*
+src/townlet/vfs/profiles.py:*
+src/townlet/world/expression/context.py:*
+src/townlet/world/expression/functions.py:*
+src/townlet/world/expression/parser.py:*
+src/townlet/world/expression/type_checker.py:*
 
 # ============================================================================
 # TEMPORARY - Will be removed by TASK-003 and TASK-004A

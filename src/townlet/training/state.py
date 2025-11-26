@@ -121,6 +121,7 @@ class BatchedAgentState:
             survival_times=self.survival_times.to(device),
             curriculum_difficulties=self.curriculum_difficulties.to(device),
             device=device,
+            info=self.info,  # CRIT-05: Preserve info dict on device transfer
         )
 
     def detach_cpu_summary(self) -> dict[str, np.ndarray]:

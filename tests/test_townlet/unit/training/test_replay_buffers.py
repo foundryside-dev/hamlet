@@ -607,6 +607,179 @@ class TestReplayBufferStatsAPI:
         assert stats["memory_bytes"] == 0
 
 
+class TestReplayBufferValidation:
+    """Test input validation for replay buffer (CRIT-01)."""
+
+    def test_batch_size_exceeds_capacity_raises_error(self):
+        """CRIT-01: batch_size > capacity should raise ValueError to prevent corruption."""
+        buffer = ReplayBuffer(capacity=5, device=CPU)
+
+        # Try to push batch larger than capacity
+        batch_size = 7
+        obs = torch.randn(batch_size, 3)
+        actions = torch.randint(0, 4, (batch_size,))
+        rewards_ext = torch.randn(batch_size)
+        rewards_int = torch.randn(batch_size)
+        next_obs = torch.randn(batch_size, 3)
+        dones = torch.rand(batch_size) > 0.5
+
+        with pytest.raises(ValueError, match="batch_size.*exceeds buffer capacity"):
+            buffer.push(obs, actions, rewards_ext, rewards_int, next_obs, dones)
+
+    def test_batch_size_equals_capacity_is_allowed(self):
+        """Batch size equal to capacity should work (fills buffer exactly)."""
+        buffer = ReplayBuffer(capacity=5, device=CPU)
+
+        batch_size = 5
+        obs = torch.randn(batch_size, 3)
+        actions = torch.randint(0, 4, (batch_size,))
+        rewards_ext = torch.randn(batch_size)
+        rewards_int = torch.randn(batch_size)
+        next_obs = torch.randn(batch_size, 3)
+        dones = torch.rand(batch_size) > 0.5
+
+        # Should not raise
+        buffer.push(obs, actions, rewards_ext, rewards_int, next_obs, dones)
+
+        assert len(buffer) == 5
+        assert buffer.size == 5
+
+
+class TestReplayBufferSerialization:
+    """Test serialization and deserialization (CRIT-02)."""
+
+    def test_serialize_without_wraparound(self):
+        """Serialization should work correctly when buffer hasn't wrapped."""
+        buffer = ReplayBuffer(capacity=10, device=CPU)
+
+        # Add 5 transitions (no wraparound)
+        for i in range(5):
+            obs = torch.tensor([[float(i)]])
+            buffer.push(
+                obs,
+                torch.tensor([i]),
+                torch.tensor([float(i)]),
+                torch.tensor([float(i) * 0.1]),
+                torch.tensor([[float(i + 1)]]),
+                torch.tensor([i == 4]),
+            )
+
+        state = buffer.serialize()
+
+        assert state["size"] == 5
+        assert state["position"] == 5
+        assert state["capacity"] == 10
+        assert state["observations"].shape == (5, 1)
+
+        # Check temporal order (should be 0, 1, 2, 3, 4)
+        for i in range(5):
+            assert state["observations"][i, 0] == float(i)
+
+    def test_serialize_after_wraparound_preserves_temporal_order(self):
+        """CRIT-02: Serialization after wraparound should maintain temporal order."""
+        buffer = ReplayBuffer(capacity=5, device=CPU)
+
+        # Fill buffer and wrap around (add 8 transitions to capacity-5 buffer)
+        # This means buffer will have: [5, 6, 7, 3, 4] at indices [0,1,2,3,4]
+        # Temporal order should be: 3, 4, 5, 6, 7 (oldest to newest)
+        for i in range(8):
+            obs = torch.tensor([[float(i)]])
+            buffer.push(
+                obs,
+                torch.tensor([i % 4]),
+                torch.tensor([float(i)]),
+                torch.tensor([float(i) * 0.1]),
+                torch.tensor([[float(i + 1)]]),
+                torch.tensor([False]),
+            )
+
+        assert buffer.position == 8
+        assert buffer.size == 5
+
+        state = buffer.serialize()
+
+        # After serialization, data should be in temporal order (oldest first)
+        assert state["size"] == 5
+        assert state["position"] == 5  # Reset to size since data is contiguous
+
+        # Expected temporal order: 3, 4, 5, 6, 7
+        expected = [3.0, 4.0, 5.0, 6.0, 7.0]
+        for i, expected_val in enumerate(expected):
+            assert state["observations"][i, 0] == expected_val, f"Index {i}: expected {expected_val}, got {state['observations'][i, 0]}"
+
+    def test_serialize_deserialize_roundtrip_with_wraparound(self):
+        """Serialization and deserialization should preserve data after wraparound."""
+        buffer1 = ReplayBuffer(capacity=5, device=CPU)
+
+        # Fill and wrap
+        for i in range(8):
+            obs = torch.tensor([[float(i), float(i * 2)]])
+            buffer1.push(
+                obs,
+                torch.tensor([i % 4]),
+                torch.tensor([float(i)]),
+                torch.tensor([float(i) * 0.1]),
+                torch.tensor([[float(i + 1), float((i + 1) * 2)]]),
+                torch.tensor([i == 7]),
+            )
+
+        state = buffer1.serialize()
+
+        # Create new buffer and restore
+        buffer2 = ReplayBuffer(capacity=5, device=CPU)
+        buffer2.load_from_serialized(state)
+
+        assert buffer2.size == 5
+        assert buffer2.position == 5
+
+        # Sample from restored buffer should work
+        batch = buffer2.sample(batch_size=3, intrinsic_weight=0.5)
+        assert batch["observations"].shape == (3, 2)
+
+    def test_serialize_empty_buffer(self):
+        """Serialization should handle empty buffer."""
+        buffer = ReplayBuffer(capacity=10, device=CPU)
+
+        state = buffer.serialize()
+
+        assert state["size"] == 0
+        assert state["position"] == 0
+        assert state["observations"] is None
+
+    def test_load_from_serialized_empty(self):
+        """Loading empty serialized state should work."""
+        buffer = ReplayBuffer(capacity=10, device=CPU)
+
+        # Add some data first
+        obs = torch.randn(3, 4)
+        buffer.push(
+            obs,
+            torch.randint(0, 4, (3,)),
+            torch.randn(3),
+            torch.randn(3),
+            torch.randn(3, 4),
+            torch.rand(3) > 0.5,
+        )
+
+        # Load empty state
+        empty_state = {
+            "size": 0,
+            "position": 0,
+            "capacity": 10,
+            "observations": None,
+            "actions": None,
+            "rewards_extrinsic": None,
+            "rewards_intrinsic": None,
+            "next_observations": None,
+            "dones": None,
+        }
+
+        buffer.load_from_serialized(empty_state)
+
+        assert buffer.size == 0
+        assert buffer.position == 0
+
+
 class TestReplayBufferEdgeCases:
     """Test edge cases and boundary conditions."""
 

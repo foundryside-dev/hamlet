@@ -46,9 +46,19 @@ class ReplayBuffer:
         """Add batch of transitions to buffer.
 
         Uses FIFO eviction when buffer is full.
+
+        Raises:
+            ValueError: If batch_size > capacity (would corrupt buffer state)
         """
         batch_size = observations.shape[0]
         obs_dim = observations.shape[1]
+
+        # CRIT-01: Prevent buffer corruption from oversized batches
+        if batch_size > self.capacity:
+            raise ValueError(
+                f"batch_size ({batch_size}) exceeds buffer capacity ({self.capacity}). "
+                f"This would corrupt the circular buffer. Either increase capacity or reduce batch_size."
+            )
 
         # Initialize storage on first push
         if self.observations is None:
@@ -218,16 +228,37 @@ class ReplayBuffer:
         assert self.next_observations is not None
         assert self.dones is not None
 
+        # CRIT-02: Handle wrap-around correctly to preserve temporal order
+        # When buffer has wrapped, data is not contiguous from index 0.
+        # Oldest data is at index (position % capacity), newest at ((position-1) % capacity).
+        if self.position > self.capacity:
+            # Buffer has wrapped - reorder to temporal sequence (oldest first)
+            wrap_point = self.position % self.capacity
+            observations = torch.cat([self.observations[wrap_point:], self.observations[:wrap_point]], dim=0).cpu().clone()
+            actions = torch.cat([self.actions[wrap_point:], self.actions[:wrap_point]], dim=0).cpu().clone()
+            rewards_extrinsic = torch.cat([self.rewards_extrinsic[wrap_point:], self.rewards_extrinsic[:wrap_point]], dim=0).cpu().clone()
+            rewards_intrinsic = torch.cat([self.rewards_intrinsic[wrap_point:], self.rewards_intrinsic[:wrap_point]], dim=0).cpu().clone()
+            next_observations = torch.cat([self.next_observations[wrap_point:], self.next_observations[:wrap_point]], dim=0).cpu().clone()
+            dones = torch.cat([self.dones[wrap_point:], self.dones[:wrap_point]], dim=0).cpu().clone()
+        else:
+            # Buffer hasn't wrapped - data is already in temporal order
+            observations = self.observations[: self.size].cpu().clone()
+            actions = self.actions[: self.size].cpu().clone()
+            rewards_extrinsic = self.rewards_extrinsic[: self.size].cpu().clone()
+            rewards_intrinsic = self.rewards_intrinsic[: self.size].cpu().clone()
+            next_observations = self.next_observations[: self.size].cpu().clone()
+            dones = self.dones[: self.size].cpu().clone()
+
         return {
             "size": self.size,
-            "position": self.position,
+            "position": self.size,  # Reset position to size since data is now contiguous
             "capacity": self.capacity,
-            "observations": self.observations[: self.size].cpu().clone(),
-            "actions": self.actions[: self.size].cpu().clone(),
-            "rewards_extrinsic": self.rewards_extrinsic[: self.size].cpu().clone(),
-            "rewards_intrinsic": self.rewards_intrinsic[: self.size].cpu().clone(),
-            "next_observations": self.next_observations[: self.size].cpu().clone(),
-            "dones": self.dones[: self.size].cpu().clone(),
+            "observations": observations,
+            "actions": actions,
+            "rewards_extrinsic": rewards_extrinsic,
+            "rewards_intrinsic": rewards_intrinsic,
+            "next_observations": next_observations,
+            "dones": dones,
         }
 
     def load_from_serialized(self, state: dict[str, Any]) -> None:

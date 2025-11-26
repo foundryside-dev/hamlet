@@ -18,7 +18,7 @@ EXCLUDED_DIRS = {"templates", "aspatial_test", "reference_config"}
 
 # Packs that are expected to fail validation (negative test fixtures). We assert
 # they do fail; a successful validation here means a regression in error handling.
-EXPECTED_FAIL_DIRS = {"vfs_circular_dependency", "vfs_type_mismatch"}
+EXPECTED_FAIL_DIRS = {"vfs_circular_dependency", "vfs_type_mismatch", "vfs_undefined_var"}
 
 
 def iter_config_dirs(base: Path) -> list[Path]:
@@ -44,7 +44,7 @@ def iter_config_dirs(base: Path) -> list[Path]:
 
 
 def run_cli_validate(config_dir: Path, expect_failure: bool = False) -> None:
-    cmd = [sys.executable, "-m", "townlet.compiler", "validate", str(config_dir)]
+    cmd = [sys.executable, "-m", "townlet.universe", "validate", str(config_dir)]
     result = subprocess.run(cmd, cwd=REPO_ROOT)
     if expect_failure:
         if result.returncode == 0:

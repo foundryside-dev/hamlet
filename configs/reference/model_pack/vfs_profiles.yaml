@@ -12,7 +12,7 @@ agent_profile:
       type: float
       initial_value: 0.0
     - name: is_encumbered
-      type: float
+      type: bool
       expression: "inventory_weight > 1.0"
 
 item_profiles:

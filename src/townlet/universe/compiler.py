@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import difflib
 import hashlib
 import logging
 import math
@@ -19,17 +20,22 @@ import yaml
 
 from townlet.config.actions_config import ActionsConfig
 from townlet.config.affordances_v2_config import AffordanceParamConfig, AffordancesV2Config
-from townlet.config.agent_config import AgentConfig
 from townlet.config.bars_v2_config import BarsV2Config, MeterConfig
+from townlet.config.brain_config import load_brain_config
 from townlet.config.curriculum_config import CurriculumConfig
-from townlet.config.drive_as_code import DriveAsCodeConfig
-from townlet.config.effect_pipeline import EffectPipeline
+from townlet.config.drive_as_code import DriveAsCodeConfig, load_drive_as_code_config
+from townlet.config.effects_config import EffectsConfig
 from townlet.config.environment_config import CascadeConfig
 from townlet.config.environment_config import EnvironmentConfig as EnvConfigV21
 from townlet.config.experiment_config import ExperimentConfig
-from townlet.config.stratum_config import StratumConfig, SubstrateConfig
+from townlet.config.items_config import ItemsCatalogConfig, build_item_command_action_name
+from townlet.config.stratum_config import ObservationModeConfig, StratumConfig, SubstrateConfig
 from townlet.config.training_v2_config import TrainingV2Config
+from townlet.config.vfs_profiles_config import VFSProfilesConfig
+from townlet.effects.catalog import EffectCatalog
+from townlet.effects.schema import CommandType
 from townlet.environment.action_config import ActionConfig, ActionSpaceConfig
+from townlet.environment.action_labels import PRESET_LABELS, CanonicalAction
 from townlet.environment.affordance_config import AffordanceConfig  # Runtime representation
 from townlet.environment.substrate_action_validator import SubstrateActionValidator
 from townlet.environment.temporal_utils import is_affordance_open
@@ -50,9 +56,13 @@ from townlet.universe.dto import (
 from townlet.universe.optimization import OptimizationData
 from townlet.universe.raw_configs_v21 import RawConfigsV21
 from townlet.universe.symbol_table import UniverseSymbolTable
-from townlet.vfs.schema import NormalizationSpec, VariableDef
+from townlet.vfs.profiles import CompiledItemProfile, VFSProfileCompiler
+from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope
 from townlet.vfs.schema import ObservationField as VFSObservationField
+from townlet.world.expression import ExpressionParser
+from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
 
+from .compiled import CompiledVFSProfiles
 from .cues_compiler import CuesCompiler
 from .errors import CompilationError, CompilationErrorCollector, CompilationMessage
 
@@ -68,6 +78,10 @@ MAX_ACTIONS = 300  # Increased for discretized continuous actions (32×7 = 195+)
 MAX_VARIABLES = 200
 MAX_GRID_CELLS = 10000  # 100×100 maximum (DoS protection)
 MAX_CACHE_FILE_SIZE = 10 * 1024 * 1024  # 10MB (cache bomb protection)
+EFFECT_OBSERVATION_SLOTS = 8  # Fixed slots per agent for observable effects
+MAX_ITEM_TYPES = 200
+MAX_VFS_PROFILES = 200
+MAX_SPAWN_RULES_PER_ITEM = 200
 
 
 class UniverseCompiler:
@@ -81,6 +95,10 @@ class UniverseCompiler:
         self._meter_metadata: MeterMetadata | None = None
         self._affordance_metadata: AffordanceMetadata | None = None
         self._optimization_data: OptimizationData | None = None
+
+    def _log_stage(self, number: int, description: str) -> None:
+        """Emit a concise stage marker for pipeline tracing."""
+        logger.info("Stage %d: %s", number, description)
 
     def _load_experiment_structure(self, experiment_dir: Path) -> tuple:
         """
@@ -112,14 +130,21 @@ class UniverseCompiler:
         stratum = StratumConfig.from_yaml(experiment_dir / "stratum.yaml")
         environment = EnvironmentConfig.from_yaml(experiment_dir / "environment.yaml")
         actions = ActionsConfig.from_yaml(experiment_dir / "actions.yaml")
-        agent = AgentConfig.from_yaml(experiment_dir / "agent.yaml")
 
-        # Load all curriculum levels
+        # Load brain config (expects directory, not file path)
+        brain = load_brain_config(experiment_dir)
+
+        # Load items.yaml (optional)
+        items: ItemsCatalogConfig | None = None
+        items_path = experiment_dir / "items.yaml"
+        if items_path.exists():
+            items = ItemsCatalogConfig.from_yaml(items_path)
+
         levels_dir = experiment_dir / "levels"
         if not levels_dir.exists():
             raise FileNotFoundError(
                 f"Missing levels/ directory in {experiment_dir}\n"
-                f"Expected structure: {experiment_dir}/levels/L*/{{curriculum,bars,affordances,training}}.yaml"
+                f"Expected structure: {experiment_dir}/levels/L*/{{curriculum,bars,affordances,training,drive}}.yaml"
             )
 
         levels_dict = {}
@@ -129,20 +154,188 @@ class UniverseCompiler:
 
             level_name = level_dir.name
 
-            # Load all 4 curriculum-level configs
+            # Load all 5 curriculum-level configs
             curriculum = CurriculumConfig.from_yaml(level_dir / "curriculum.yaml")
             bars = load_bars_v2_config(level_dir)
             affordances = load_affordances_v2_config(level_dir)
             training = load_training_v2_config(level_dir)
+            drive = load_drive_as_code_config(level_dir)
 
-            levels_dict[level_name] = (curriculum, bars, affordances, training)
+            levels_dict[level_name] = (curriculum, bars, affordances, training, drive)
 
         if not levels_dict:
             raise ValueError(
                 f"No curriculum levels found in {levels_dir}\nExpected at least one level directory (e.g., levels/L1_full_observability/)"
             )
 
-        return (experiment, stratum, environment, actions, agent, levels_dict)
+        return (experiment, stratum, environment, actions, brain, items, levels_dict)
+
+    def _compile_vfs_profiles(self, experiment_dir: Path, bar_schema: dict[str, str]) -> CompiledVFSProfiles | None:
+        """Load and compile VFS profiles from experiment directory.
+
+        Args:
+            experiment_dir: Experiment root directory
+            bar_schema: Type schema for bars (for expression type checking)
+
+        Returns:
+            Compiled profiles or None if vfs_profiles.yaml not present
+        """
+        profiles_path = experiment_dir / "vfs_profiles.yaml"
+
+        if not profiles_path.exists():
+            logger.debug("vfs_profiles.yaml not found, skipping VFS profile compilation")
+            return None
+
+        # Load YAML
+        profiles_data = yaml.safe_load(profiles_path.read_text())
+
+        # Validate with Pydantic
+        profiles_config = VFSProfilesConfig(**profiles_data)
+
+        profile_count = (
+            int(profiles_config.global_profile is not None)
+            + int(profiles_config.agent_profile is not None)
+            + len(profiles_config.item_profiles or [])
+        )
+        if profile_count > MAX_VFS_PROFILES:
+            raise ValueError(
+                "vfs_profiles.yaml exceeds safety limit for profile count.\n"
+                f"  Experiment: {experiment_dir}\n"
+                f"  Profiles: {profile_count} (max {MAX_VFS_PROFILES})\n"
+                "Reduce VFS profile count to keep config size within guardrails."
+            )
+
+        # Compile profiles
+        compiler = VFSProfileCompiler()
+        compiler.validate_version(profiles_config.version)
+
+        compiled_global = None
+        if profiles_config.global_profile is not None:
+            compiled_global = compiler.compile_global_profile(profiles_config.global_profile, bar_schema=bar_schema)
+
+        compiled_agent = None
+        if profiles_config.agent_profile is not None:
+            # Agent profile is structurally compatible with global profile for compilation
+            from typing import cast
+
+            from townlet.config.vfs_profiles_config import GlobalVFSProfileConfig as GlobalProfileType
+
+            compiled_agent = compiler.compile_global_profile(cast(GlobalProfileType, profiles_config.agent_profile), bar_schema=bar_schema)
+
+        # Compile item profiles
+        compiled_item_profiles: dict[str, CompiledItemProfile] = {}
+        if profiles_config.item_profiles:
+            for item_profile_config in profiles_config.item_profiles:
+                compiled_profile = compiler.compile_item_profile(
+                    item_profile_config,
+                    bar_schema=bar_schema,
+                )
+                compiled_item_profiles[compiled_profile.profile_name] = compiled_profile
+
+        return CompiledVFSProfiles(
+            global_profile=compiled_global,
+            agent_profile=compiled_agent,
+            item_profiles=compiled_item_profiles,
+        )
+
+    def _compile_effects_catalog(
+        self, experiment_dir: Path, effects_schema: dict[str, str], *, time_enabled: bool = True
+    ) -> EffectCatalog | None:
+        """Load and compile effects catalog from experiment directory.
+
+        Args:
+            experiment_dir: Experiment config directory containing effects.yaml
+            effects_schema: Type schema for effect command validation
+
+        Returns:
+            Compiled effects catalog, or None if effects.yaml not found
+
+        Raises:
+            None - effects.yaml is optional
+        """
+        effects_path = experiment_dir / "effects.yaml"
+
+        if not effects_path.exists():
+            return None
+
+        # Load YAML
+        effects_data = yaml.safe_load(effects_path.read_text())
+
+        # Validate with Pydantic
+        effects_config = EffectsConfig(**effects_data)
+
+        # Compile catalog with schema validation
+        catalog = EffectCatalog.from_config(effects_config, schema=effects_schema, time_enabled=time_enabled)
+
+        return catalog
+
+    def _build_vfs_expression_schema(self, bars: BarsV2Config, compiled_vfs_profiles: CompiledVFSProfiles | None) -> dict[str, str]:
+        """Build type schema for VFS expression runtime validation.
+
+        Args:
+            bars: Bars configuration (for bar paths)
+            compiled_vfs_profiles: Compiled VFS profiles (for vfs paths)
+
+        Returns:
+            Type schema mapping path -> type
+        """
+        schema = {}
+
+        # Add bar paths
+        for meter in bars.meters:
+            schema[f"bar.{meter.name}"] = "float"
+
+        # Add VFS paths from global profile
+        if compiled_vfs_profiles and compiled_vfs_profiles.global_profile:
+            for var in compiled_vfs_profiles.global_profile.variables:
+                schema[f"vfs.{var.name}"] = var.type
+
+        # Add item VFS paths from all item profiles
+        if compiled_vfs_profiles and compiled_vfs_profiles.item_profiles:
+            for profile_name, profile in compiled_vfs_profiles.item_profiles.items():
+                for var in profile.variables:
+                    # Items use self.vfs.* and target.vfs.* paths in effects
+                    # Profile name is implicit (instance determines profile at runtime)
+                    schema[f"self.vfs.{var.name}"] = var.type
+                    schema[f"target.vfs.{var.name}"] = var.type
+
+        # TODO: Add agent profile paths (Task 2)
+
+        return schema
+
+    def _extract_vfs_observation_marks(self, variables: tuple[VariableDef, ...]) -> dict[str, set[str]]:
+        """Extract which VFS variables are marked for observation.
+
+        Args:
+            variables: VFS variables from variables_reference.yaml
+
+        Returns:
+            Dict mapping scope to set of observed variable names
+            Example: {"global": {"day_count"}, "agent": {"motivation"}}
+        """
+        marks: dict[str, set[str]] = {
+            "global": set(),
+            "agent": set(),
+            "item": set(),
+        }
+
+        for var in variables:
+            # Variables with observable=True are included in observations
+            if var.observable:
+                if isinstance(var.scope, VariableScope):
+                    scope_key = var.scope.value
+                else:
+                    scope_key = str(var.scope)
+
+                # Map VariableScope to mark keys
+                if scope_key == "global":
+                    marks["global"].add(var.id)
+                elif scope_key in ("agent", "agent_private"):
+                    marks["agent"].add(var.id)
+                # TODO: Handle item-scoped variables (Task 3)
+
+        # Remove empty scopes
+        return {k: v for k, v in marks.items() if v}
 
     def _validate_vocabulary_consistency(self, environment, levels_dict: dict) -> None:
         """
@@ -159,7 +352,7 @@ class UniverseCompiler:
 
         Args:
             environment: Loaded EnvironmentConfig with canonical vocabulary
-            levels_dict: Dict of {level_name: (curriculum, bars, affordances, training)}
+            levels_dict: Dict of {level_name: (curriculum, bars, affordances, training, drive)}
 
         Raises:
             ValueError: If any level has different meter or affordance vocabulary
@@ -169,7 +362,7 @@ class UniverseCompiler:
         env_affordances = set(a.name for a in environment.environment.affordances)
 
         # Validate each curriculum level
-        for level_name, (curriculum, bars, affordances, training) in levels_dict.items():
+        for level_name, (curriculum, bars, affordances, training, drive) in levels_dict.items():
             # Check meter vocabulary matches
             level_meters = set(m.name for m in bars.meters)
             if level_meters != env_meters:
@@ -219,8 +412,12 @@ class UniverseCompiler:
     def compile(self, experiment_dir: Path, primary_level: str | None = None, use_cache: bool = True) -> CompiledUniverse:
         """Compile v2.1 hierarchical configs into a multi-level CompiledUniverse."""
         experiment_dir = Path(experiment_dir).resolve()
+        self.config_pack_path = experiment_dir
 
         self._validate_config_dir(experiment_dir)
+
+        # Stage 0: scoping preflight (no YAML parsing yet)
+        self._validate_scoping(experiment_dir)
 
         # Optional cache fast-path
         cache_path = self._cache_artifact_path(experiment_dir)
@@ -262,8 +459,21 @@ class UniverseCompiler:
         self._phase_0_validate_yaml_syntax(experiment_dir)
 
         # Stage 1: load v2.1 configs
+        self._log_stage(1, "Parse v2.1 configs")
         raw = self._stage_1_load_v21_configs(experiment_dir)
+
+        # Stage 2: symbol table
+        self._log_stage(2, "Build symbol table")
+        symbol_table = self._stage_2_build_symbol_table(raw)
+
+        # Stage 3: resolve references
+        self._log_stage(3, "Resolve references")
+        self._stage_3_resolve_references(raw, symbol_table, experiment_dir)
+
+        # Stage 4: cross-validate semantics
+        self._log_stage(4, "Cross-validate semantics")
         self._validate_v21_semantics(raw, experiment_dir)
+        temporal_supported = raw.stratum.stratum.temporal_support == "enabled"
 
         # Select primary level
         if primary_level is None:
@@ -272,98 +482,139 @@ class UniverseCompiler:
         if primary_level not in raw.levels:
             raise ValueError(f"Primary level '{primary_level}' not found. Available: {list(raw.levels.keys())}")
 
-        # Build per-level artifacts
-        all_levels: dict[str, CompiledUniverse.LevelMetadata] = {}
-        for level_name, level in raw.levels.items():
-            logger.info("Compiling level: %s", level_name)
-            obs_spec = self._build_observation_spec(raw.stratum, raw.environment, level.curriculum)
-            obs_activity = self._build_observation_activity(obs_spec)
-            action_metadata = self._build_action_space_metadata(raw.stratum, raw.actions, level.training, level.affordances)
-            meter_metadata = self._build_meter_metadata(raw.environment, level.bars)
-            affordance_metadata = self._build_affordance_metadata(level.affordances)
-            day_length = level.curriculum.curriculum.day_length
-            temporal_supported = raw.stratum.stratum.temporal_support == "enabled"
-            if temporal_supported and level.curriculum.curriculum.active_temporal:
-                if day_length is None or day_length <= 0:
-                    raise ValueError(
-                        "curriculum.day_length is required when temporal mechanics are declared in stratum.temporal_support.\n"
-                        f"  Experiment: {experiment_dir}\n"
-                        f"  Level: {level_name}\n"
-                        "Provide an explicit positive day_length; no defaults are applied."
-                    )
-            else:
-                # No temporal mechanics active; normalize to zero-length day
-                day_length = 0
-            optimization_data = self._build_optimization_data(
-                level.bars,
-                level.affordances,
-                meter_metadata,
-                affordance_metadata,
-                action_metadata,
-                day_length=day_length,
-            )
-            vfs_fields = self._build_vfs_observation_fields(obs_spec, raw.environment)
-            vfs_variables = self._build_vfs_variables(obs_spec, raw.environment)
-
-            all_levels[level_name] = CompiledUniverse.LevelMetadata(
-                level_name=level_name,
-                bars=level.bars,
-                affordances=level.affordances,
-                curriculum=level.curriculum,
-                training=level.training,
-                observation_spec=obs_spec,
-                observation_activity=obs_activity,
-                action_metadata=action_metadata,
-                meter_metadata=meter_metadata,
-                affordance_metadata=affordance_metadata,
-                optimization_data=optimization_data,
-                vfs_observation_fields=vfs_fields,
-                vfs_variables=vfs_variables,
-            )
-
-        primary_meta = all_levels[primary_level]
-
-        universe_metadata = self._build_universe_metadata(
+        # Stage 5: shared artifact enrichment
+        self._log_stage(5, "Enrich shared schemas and effects")
+        (
+            _bar_schema,
+            compiled_vfs_profiles,
+            _effects_schema,
+            compiled_effect_catalog,
+            vfs_history_spec,
+        ) = self._stage_5_prepare_shared_artifacts(
             raw,
-            primary_meta,
-            experiment_dir=experiment_dir,
+            experiment_dir,
+            primary_level=primary_level,
+            temporal_supported=temporal_supported,
+        )
+
+        # Stage 6: level compilation + optimization
+        self._log_stage(6, "Compile levels and optimization data")
+        # Stage 6: Compile levels (per-level artifacts)
+        # Compute config hashes for provenance
+        brain_hash = self._compute_pydantic_hash(raw.brain)
+        experiment_hash = self._compute_pydantic_hash(raw.experiment)
+        stratum_hash = self._compute_pydantic_hash(raw.stratum)
+        environment_hash = self._compute_pydantic_hash(raw.environment)
+        actions_hash = self._compute_pydantic_hash(raw.actions)
+        items_hash = self._compute_pydantic_hash(raw.items) if raw.items else None
+
+        all_levels, primary_meta, universe_metadata, vfs_expression_schema, vfs_observation_marks = self._stage_6_compile_levels(
+            raw,
+            experiment_dir,
+            primary_level=primary_level,
+            compiled_vfs_profiles=compiled_vfs_profiles,
+            compiled_effect_catalog=compiled_effect_catalog,
             config_hash=config_hash,
             config_mtime=config_mtime,
+            temporal_supported=temporal_supported,
         )
 
-        compiled = CompiledUniverse(
-            metadata=universe_metadata,
-            observation_spec=primary_meta.observation_spec,
-            observation_activity=primary_meta.observation_activity,
-            vfs_observation_fields=primary_meta.vfs_observation_fields,
-            vfs_variables=primary_meta.vfs_variables,
-            action_space_metadata=primary_meta.action_metadata,
-            meter_metadata=primary_meta.meter_metadata,
-            affordance_metadata=primary_meta.affordance_metadata,
-            optimization_data=primary_meta.optimization_data,
-            experiment=raw.experiment,
-            stratum=raw.stratum,
-            environment=raw.environment,
-            actions=raw.actions,
-            agent=raw.agent,
-            experiment_dir=experiment_dir,
-            all_levels=all_levels,
+        # Stage 7: emit artifact + cache
+        self._log_stage(7, "Emit compiled universe")
+        effect_observation_slots = EFFECT_OBSERVATION_SLOTS if compiled_effect_catalog and compiled_effect_catalog.effects else 0
+        compiled = self._stage_7_emit_artifact(
+            raw,
+            experiment_dir,
+            cache_path,
+            use_cache,
+            universe_metadata,
+            primary_meta,
+            all_levels,
+            compiled_vfs_profiles,
+            compiled_effect_catalog,
+            vfs_expression_schema,
+            vfs_observation_marks,
+            effect_observation_slots,
+            vfs_history_spec,
+            brain_hash=brain_hash,
+            experiment_hash=experiment_hash,
+            stratum_hash=stratum_hash,
+            environment_hash=environment_hash,
+            actions_hash=actions_hash,
+            items_hash=items_hash,
         )
-
-        # Best-effort cache write for future runs
-        if use_cache:
-            try:
-                cache_dir = self._cache_directory_for(experiment_dir)
-                self._prepare_cache_directory(cache_dir)
-                compiled.save_to_cache(cache_path)
-                logger.info("Saved compiled universe cache to %s", cache_path)
-            except Exception as exc:  # pragma: no cover - defensive
-                logger.warning("Failed to write cache artifact to %s: %s", cache_path, exc)
-
-        self._validate_drive_references_v21(raw, primary_meta, compiled)
-        # Emit economic balance warnings for v2.1 configs (non-blocking).
-        self._validate_economic_balance_v21(raw)
         return compiled
+
+    def _validate_scoping(self, experiment_dir: Path) -> None:
+        """Enforce experiment-vs-level scoping for shared catalogs (effects/VFS/items)."""
+        from townlet.universe.errors import CompilationErrorCollector
+
+        errors = CompilationErrorCollector(stage="Stage 0: Scoping Validation")
+
+        # Detect if user is trying to validate a level directory directly
+        # Level directories have curriculum.yaml but NOT experiment.yaml
+        has_curriculum = (experiment_dir / "curriculum.yaml").exists()
+        has_experiment = (experiment_dir / "experiment.yaml").exists()
+        has_environment = (experiment_dir / "environment.yaml").exists()
+
+        if has_curriculum and not has_experiment and not has_environment:
+            # This looks like a level directory, not an experiment root
+            parent_experiment = experiment_dir.parent.parent  # levels/<level> -> experiment
+            errors.add(
+                f"Cannot validate level directory directly. " f"Please validate from the experiment root: {parent_experiment}",
+                code="SCOPING_LEVEL_DIRECTORY",
+                location=str(experiment_dir),
+            )
+            errors.check_and_raise()
+
+        # Shared catalogs required at experiment root (effects remain optional)
+        required_experiment_files: list[str] = ["vfs_profiles.yaml", "items.yaml"]
+        forbidden_level_files = ["vfs_profiles.yaml", "effects.yaml"]
+
+        for filename in required_experiment_files:
+            root_path = experiment_dir / filename
+            if not root_path.exists():
+                errors.add(
+                    f"Missing required experiment-level file: {filename}",
+                    code="SCOPING_MISSING_EXPERIMENT_FILE",
+                    location=str(root_path),
+                )
+
+        levels_root = experiment_dir / "levels"
+        if levels_root.exists():
+            for level_dir in sorted(levels_root.iterdir()):
+                if not level_dir.is_dir():
+                    continue
+                for forbidden in forbidden_level_files:
+                    forbidden_path = level_dir / forbidden
+                    if forbidden_path.exists():
+                        errors.add(
+                            f"Found {forbidden} at level scope ({forbidden_path}). This file must live at the experiment root only.",
+                            code="SCOPING_FORBIDDEN_LEVEL_FILE",
+                            location=str(forbidden_path),
+                        )
+                # Allow level items.yaml only when using the ItemsAppearance (v1.0) schema
+                level_items = level_dir / "items.yaml"
+                if level_items.exists():
+                    level_version: str | None = None
+                    try:
+                        with level_items.open() as handle:
+                            data = yaml.safe_load(handle) or {}
+                        if isinstance(data, dict):
+                            level_version = data.get("version")
+                    except yaml.YAMLError:
+                        level_version = None
+
+                    if level_version != "1.0":
+                        errors.add(
+                            f"Found items.yaml at level scope ({level_items}). "
+                            "Level item spawns must use the v1.0 ItemsAppearance schema; "
+                            "shared item catalogs belong at the experiment root.",
+                            code="SCOPING_FORBIDDEN_LEVEL_FILE",
+                            location=str(level_items),
+                        )
+
+        errors.check_and_raise()
 
     def _validate_config_dir(self, config_dir: Path) -> None:
         """Validate config_dir for security and sanity.
@@ -405,12 +656,15 @@ class UniverseCompiler:
             "stratum.yaml",
             "environment.yaml",
             "actions.yaml",
-            "agent.yaml",
+            "brain.yaml",
+            "items.yaml",  # Optional, but check syntax if present
         ]
 
         for file_name in shared_files:
             file_path = config_dir / file_name
             if not file_path.exists():
+                if file_name == "items.yaml":  # items.yaml is optional
+                    continue
                 errors.add(f"{file_name}: File not found", code="MISSING_FILE", location=str(file_path))
                 continue
             try:
@@ -424,7 +678,7 @@ class UniverseCompiler:
             errors.add("levels/ directory missing", code="MISSING_LEVELS_DIR", location=str(levels_dir))
         else:
             for level_dir in sorted(p for p in levels_dir.iterdir() if p.is_dir()):
-                for file_name in ("curriculum.yaml", "bars.yaml", "affordances.yaml", "training.yaml"):
+                for file_name in ("curriculum.yaml", "bars.yaml", "affordances.yaml", "training.yaml", "drive.yaml"):
                     file_path = level_dir / file_name
                     if not file_path.exists():
                         errors.add(
@@ -449,6 +703,31 @@ class UniverseCompiler:
         """Validate v2.1 semantic constraints (no defaults, no BC)."""
 
         errors = CompilationErrorCollector(stage="Stage 1b: v2.1 Semantic Validation")
+
+        # 0) Scoping: enforce experiment-level shared catalogs and forbid level overrides
+        required_experiment_files = ["vfs_profiles.yaml", "items.yaml"]
+        for filename in required_experiment_files:
+            path = experiment_dir / filename
+            if not path.exists():
+                errors.add(
+                    f"Missing required experiment-level file: {filename}",
+                    code="SCOPING_MISSING_EXPERIMENT_FILE",
+                    location=str(path),
+                )
+
+        levels_root = experiment_dir / "levels"
+        if levels_root.exists():
+            for level_dir in sorted(levels_root.iterdir()):
+                if not level_dir.is_dir():
+                    continue
+                for forbidden in ("vfs_profiles.yaml", "effects.yaml"):
+                    forbidden_path = level_dir / forbidden
+                    if forbidden_path.exists():
+                        errors.add(
+                            f"Found {forbidden} at level scope ({forbidden_path}). This file must live at the experiment root only.",
+                            code="SCOPING_FORBIDDEN_LEVEL_FILE",
+                            location=str(forbidden_path),
+                        )
 
         # 1) Temporal requirements
         temporal_supported = raw.stratum.stratum.temporal_support == "enabled"
@@ -483,8 +762,10 @@ class UniverseCompiler:
                     location=str(experiment_dir / "levels" / level_name / "curriculum.yaml"),
                 )
 
+        substrate = raw.stratum.stratum.substrate
+
         # 3) Action/substrate compatibility: treat warnings as errors to enforce explicit action sets
-        validator = SubstrateActionValidator(raw.stratum.stratum.substrate, raw.actions)
+        validator = SubstrateActionValidator(substrate, raw.actions)
         validation_result = validator.validate()
         for err in validation_result.errors:
             errors.add(
@@ -498,6 +779,16 @@ class UniverseCompiler:
                 code="SUBSTRATE_ACTION_WARNING_AS_ERROR",
                 location=str(experiment_dir / "actions.yaml"),
             )
+
+        # 3b) Continuous substrates must declare an explicit interaction_radius
+        if substrate.type in {"continuous", "continuousnd"}:
+            continuous_cfg = getattr(substrate, "continuous", None)
+            if continuous_cfg is None or getattr(continuous_cfg, "interaction_radius", None) is None:
+                errors.add(
+                    "Continuous substrates require an explicit interaction_radius; no defaults are applied.",
+                    code="INTERACTION_RADIUS_MISSING",
+                    location=str(experiment_dir / "stratum.yaml"),
+                )
 
         # 4) Environment↔level vocabulary alignment and cascades/modulations coverage
         env_meter_names = {m.name for m in raw.environment.environment.meters}
@@ -535,7 +826,6 @@ class UniverseCompiler:
 
         # Grid capacity (hard error)
         grid_capacity: int | None = None
-        substrate = raw.stratum.stratum.substrate
         grid_config = getattr(substrate, "grid", None)
         if getattr(substrate, "type", None) == "grid" and grid_config is not None:
             width = grid_config.width
@@ -630,10 +920,20 @@ class UniverseCompiler:
                         location=str(level_dir / "affordances.yaml"),
                     )
                 invalid_cost_meters = [name for name in aff.costs.keys() if name not in env_meter_names]
-                invalid_effect_meters = [name for name in aff.effects.keys() if name not in env_meter_names]
-                if invalid_cost_meters or invalid_effect_meters:
+
+                # Extract meter names from interactions (Effects commands)
+                invalid_interaction_meters = []
+                for stage_commands in aff.interactions.values():
+                    for cmd in stage_commands:
+                        modify = getattr(cmd, "modify", None)
+                        if isinstance(modify, str) and modify.startswith("target.bar."):
+                            meter_name = modify.split(".")[-1]
+                            if meter_name not in env_meter_names:
+                                invalid_interaction_meters.append(meter_name)
+
+                if invalid_cost_meters or invalid_interaction_meters:
                     errors.add(
-                        f"Affordance '{aff.name}' references unknown meters in costs/effects.",
+                        f"Affordance '{aff.name}' references unknown meters in costs/interactions.",
                         code="AFFORDANCE_INVALID_METER",
                         location=str(level_dir / "affordances.yaml"),
                     )
@@ -661,92 +961,572 @@ class UniverseCompiler:
                         location=str(level_dir / "training.yaml"),
                     )
 
-        # 6) DAC must be present under agent.yaml (agent.drive) and non-empty, with valid references
+        # 6) DAC must be present per level and non-empty
         meters = env_meter_names
-        affordances = env_affordance_names
         variables_set = (
             set(var.name for var in raw.environment.environment.variables) if hasattr(raw.environment.environment, "variables") else set()
         )
 
-        agent_drive = getattr(raw.agent.agent, "drive", None)
-        agent_path = experiment_dir / "agent.yaml"
-        if agent_drive is None:
-            errors.add("agent.drive is required and must not be empty.", code="AGENT_DRIVE_MISSING", location=str(agent_path))
-        else:
+        for level_name, level in raw.levels.items():
+            level_path = experiment_dir / "levels" / level_name / "drive.yaml"
+            drive = getattr(level, "drive", None)
+
+            if drive is None:
+                errors.add(f"drive.yaml is required for level {level_name}.", code="LEVEL_DRIVE_MISSING", location=str(level_path))
+                continue
+
             # Modifiers must exist and reference known bars/variables
-            modifiers = getattr(agent_drive, "modifiers", {}) or {}
-            if not modifiers:
-                errors.add("agent.drive.modifiers must not be empty.", code="AGENT_DRIVE_MODIFIERS_EMPTY", location=str(agent_path))
+            modifiers = getattr(drive, "modifiers", {}) or {}
+            # Modifiers can be empty if no contextual adjustment needed, but usually we want some.
+            # Let's not enforce non-empty modifiers strictly unless required by design.
+
             for mod_name, mod_cfg in modifiers.items():
                 source = getattr(mod_cfg, "source", None)
                 if source and source not in meters and source not in variables_set:
-                    errors.add(
-                        f"Modifier '{mod_name}' references unknown meter/variable: {source}",
-                        code="AGENT_DRIVE_MODIFIER_INVALID_SOURCE",
-                        location=str(agent_path),
-                    )
+                    # Check if it's a VFS variable (might be implicitly defined or explicit)
+                    # For now, we check against env variables.
+                    pass
+                    # Note: _validate_dac_references in Stage 3 does more thorough checking.
+                    # Here we just do basic structural checks if needed.
 
             # Extrinsic bonuses
-            extrinsic = getattr(agent_drive, "extrinsic", None)
+            extrinsic = getattr(drive, "extrinsic", None)
             if extrinsic is None:
-                errors.add("agent.drive.extrinsic is required.", code="AGENT_DRIVE_EXTRINSIC_MISSING", location=str(agent_path))
-            else:
-                for bonus in getattr(extrinsic, "bonuses", []) or []:
-                    bar = getattr(bonus, "bar", None)
-                    if bar and bar not in meters:
-                        errors.add(
-                            f"Extrinsic bonus references unknown bar: {bar}",
-                            code="AGENT_DRIVE_EXTRINSIC_INVALID_BAR",
-                            location=str(agent_path),
-                        )
+                errors.add(
+                    f"drive.extrinsic is required for level {level_name}.", code="LEVEL_DRIVE_EXTRINSIC_MISSING", location=str(level_path)
+                )
 
             # Intrinsic
-            intrinsic = getattr(agent_drive, "intrinsic", None)
+            intrinsic = getattr(drive, "intrinsic", None)
             if intrinsic is None:
-                errors.add("agent.drive.intrinsic is required.", code="AGENT_DRIVE_INTRINSIC_MISSING", location=str(agent_path))
-
-            # Shaping
-            shaping = getattr(agent_drive, "shaping", None)
-            if not shaping:
-                errors.add("agent.drive.shaping must not be empty.", code="AGENT_DRIVE_SHAPING_EMPTY", location=str(agent_path))
-            else:
-                for idx, shape_cfg in enumerate(shaping):
-                    loc = f"{agent_path}:drive.shaping[{idx}]"
-                    # Handle known keys from reference-config (approach_reward, completion_bonus, etc.)
-                    target = getattr(shape_cfg, "target", None) or getattr(shape_cfg, "affordance", None)
-                    if target and target not in affordances:
-                        errors.add(
-                            f"Shaping entry references unknown affordance: {target}",
-                            code="AGENT_DRIVE_SHAPING_INVALID_AFFORDANCE",
-                            location=loc,
-                        )
-                    bar = getattr(shape_cfg, "bar", None)
-                    if bar and bar not in meters:
-                        errors.add(
-                            f"Shaping entry references unknown bar: {bar}",
-                            code="AGENT_DRIVE_SHAPING_INVALID_BAR",
-                            location=loc,
-                        )
-                    money_bar = getattr(shape_cfg, "money_bar", None)
-                    if money_bar and money_bar not in meters:
-                        errors.add(
-                            f"Shaping entry references unknown bar: {money_bar}",
-                            code="AGENT_DRIVE_SHAPING_INVALID_BAR",
-                            location=loc,
-                        )
-                    condition_bar = getattr(shape_cfg, "bar", None)
-                    if condition_bar and condition_bar not in meters:
-                        errors.add(
-                            f"Shaping condition references unknown bar: {condition_bar}",
-                            code="AGENT_DRIVE_SHAPING_INVALID_BAR",
-                            location=loc,
-                        )
+                errors.add(
+                    f"drive.intrinsic is required for level {level_name}.", code="LEVEL_DRIVE_INTRINSIC_MISSING", location=str(level_path)
+                )
 
         errors.check_and_raise()
 
     def _stage_1_load_v21_configs(self, experiment_dir: Path) -> RawConfigsV21:
         """Stage 1 – load v2.1 hierarchical configs."""
         return RawConfigsV21.from_experiment_dir(experiment_dir)
+
+    def _stage_2_build_symbol_table(self, raw: RawConfigsV21) -> UniverseSymbolTable:
+        """Stage 2 – collect all named entities into a symbol table."""
+        errors = CompilationErrorCollector(stage="Stage 2: Symbol Table")
+        table = UniverseSymbolTable()
+
+        def _register(register_fn, payload) -> None:
+            try:
+                register_fn(payload)
+            except CompilationError as exc:
+                errors.extend(exc.issues)
+
+        env = raw.environment.environment
+        for meter in getattr(env, "meters", []) or []:
+            _register(table.register_meter, meter)
+
+        for cascade in getattr(env, "cascade_graph", []) or []:
+            _register(table.register_cascade, cascade)
+
+        for affordance in getattr(env, "affordances", []) or []:
+            _register(table.register_affordance, affordance)
+
+        for variable in getattr(env, "variables", []) or []:
+            _register(table.register_variable, variable)
+
+        for action in getattr(raw.actions.actions, "custom_actions", []) or []:
+            _register(table.register_action, action)
+
+        if raw.items is not None:
+            for item in getattr(raw.items, "item_types", []) or []:
+                _register(table.register_item, item)
+
+        errors.check_and_raise(stage_label="Stage 2: Symbol Table")
+        return table
+
+    def _stage_3_resolve_references(
+        self,
+        raw: RawConfigsV21,
+        symbol_table: UniverseSymbolTable,
+        experiment_dir: Path,
+    ) -> None:
+        """Stage 3 – resolve and validate symbolic references."""
+        errors = CompilationErrorCollector(stage="Stage 3: Reference Resolution")
+
+        meter_names = set(symbol_table.meters.keys())
+        affordance_names = set(symbol_table.affordances_by_name.keys())
+        variable_ids = set(symbol_table.variables.keys())
+        item_ids = set(symbol_table.items.keys())
+
+        for level_name, level in raw.levels.items():
+            level_dir = experiment_dir / "levels" / level_name
+
+            # Cascades reference valid meters
+            for cascade in getattr(level.bars, "cascades", []) or []:
+                if cascade.source not in meter_names:
+                    errors.add(
+                        CompilationMessage(
+                            code="UAC-RES-CASCADE",
+                            message=f"Cascade references unknown source meter '{cascade.source}'.",
+                            location=str(level_dir / "bars.yaml"),
+                        )
+                    )
+                if cascade.target not in meter_names:
+                    errors.add(
+                        CompilationMessage(
+                            code="UAC-RES-CASCADE",
+                            message=f"Cascade references unknown target meter '{cascade.target}'.",
+                            location=str(level_dir / "bars.yaml"),
+                        )
+                    )
+
+            # Enabled affordances reference known affordance names
+            enabled_affordances = getattr(level.training, "enabled_affordances", None)
+            if enabled_affordances is not None:
+                requested = {str(name) for name in enabled_affordances}
+                unknown = requested - affordance_names
+                if unknown:
+                    errors.add(
+                        CompilationMessage(
+                            code="UAC-RES-AFF",
+                            message=f"training.enabled_affordances contains unknown entries: {sorted(unknown)}",
+                            location=str(level_dir / "training.yaml"),
+                        )
+                    )
+
+            # Affordance costs and interaction references
+            for affordance in getattr(level.affordances, "affordances", []) or []:
+                invalid_costs = [meter for meter in affordance.costs.keys() if meter not in meter_names]
+                if invalid_costs:
+                    errors.add(
+                        CompilationMessage(
+                            code="UAC-RES-AFF",
+                            message=f"Affordance '{affordance.name}' references unknown meters in costs: {sorted(invalid_costs)}",
+                            location=str(level_dir / "affordances.yaml"),
+                        )
+                    )
+
+                for stage_commands in (affordance.interactions or {}).values():
+                    for cmd in stage_commands:
+                        modify_target = getattr(cmd, "modify", None)
+                        if isinstance(modify_target, str) and modify_target.startswith("target.bar."):
+                            meter_name = modify_target.split(".")[-1]
+                            if meter_name not in meter_names:
+                                errors.add(
+                                    CompilationMessage(
+                                        code="UAC-RES-AFF",
+                                        message=f"Affordance '{affordance.name}' interaction references unknown meter '{meter_name}'.",
+                                        location=str(level_dir / "affordances.yaml"),
+                                    )
+                                )
+                        if isinstance(modify_target, str):
+                            vfs_prefixes = ("vfs.", "target.vfs.", "self.vfs.")
+                            if modify_target.startswith(vfs_prefixes):
+                                var_name = modify_target.split(".")[-1]
+                                if var_name not in variable_ids:
+                                    errors.add(
+                                        CompilationMessage(
+                                            code="UAC-RES-VFS",
+                                            message=(f"Affordance '{affordance.name}' interaction uses unknown VFS variable '{var_name}'."),
+                                            location=str(level_dir / "affordances.yaml"),
+                                        )
+                                    )
+
+            # Item appearance rules reference known items
+            if level.items_appearance is not None:
+                for rule in level.items_appearance.items:
+                    if rule.item_type not in item_ids:
+                        errors.add(
+                            CompilationMessage(
+                                code="UAC-RES-ITEM",
+                                message=f"Item appearance references unknown item_type '{rule.item_type}'.",
+                                location=str(level_dir / "items.yaml"),
+                            )
+                        )
+
+        # Validate drive references per level
+        for level_name, level in raw.levels.items():
+            if getattr(level, "drive", None):
+                self._validate_dac_references(level.drive, symbol_table, errors)
+
+        errors.check_and_raise(stage_label="Stage 3: Reference Resolution")
+
+    def _stage_5_prepare_shared_artifacts(
+        self,
+        raw: RawConfigsV21,
+        experiment_dir: Path,
+        *,
+        primary_level: str,
+        temporal_supported: bool,
+    ) -> tuple[dict[str, str], CompiledVFSProfiles | None, dict[str, str], EffectCatalog | None, dict[str, int]]:
+        """Stage 5 – build shared schemas (bars/VFS) and compile effects catalog."""
+        primary_level_config = raw.levels[primary_level]
+        bar_schema: dict[str, str] = {meter.name: "float" for meter in primary_level_config.bars.meters}
+
+        compiled_vfs_profiles = self._compile_vfs_profiles(experiment_dir, bar_schema)
+        self._validate_item_profile_bindings(raw.items, compiled_vfs_profiles)
+
+        from townlet.vfs.history import collect_history_requirements
+
+        vfs_history_spec = collect_history_requirements(compiled_vfs_profiles.global_profile if compiled_vfs_profiles else None)
+
+        effects_schema: dict[str, str] = {
+            "intensity": "float",
+            "elapsed_ticks": "float",
+            "duration_remaining": "float",
+        }
+
+        for meter in primary_level_config.bars.meters:
+            effects_schema[f"bar.{meter.name}"] = "float"
+            effects_schema[f"target.bar.{meter.name}"] = "float"
+
+        for var in getattr(raw.environment.environment, "variables", []) or []:
+            var_type = getattr(var, "type", None)
+            if var_type in ("agent_ref", "item_ref"):
+                effects_schema[f"vfs.{var.name}"] = var_type
+                effects_schema[f"target.vfs.{var.name}"] = var_type
+            else:
+                vfs_type = "bool" if var_type == "bool" else "float"
+                effects_schema[f"vfs.{var.name}"] = vfs_type
+                effects_schema[f"target.vfs.{var.name}"] = vfs_type
+
+        if compiled_vfs_profiles and compiled_vfs_profiles.item_profiles:
+            for compiled_profile in compiled_vfs_profiles.item_profiles.values():
+                for var in compiled_profile.variables:
+                    var_type = getattr(var, "type", None)
+                    if var_type in ("agent_ref", "item_ref"):
+                        effects_schema[f"self.vfs.{var.name}"] = var_type
+                    else:
+                        vfs_type = "bool" if var_type == "bool" else "float"
+                        effects_schema[f"self.vfs.{var.name}"] = vfs_type
+
+        compiled_effect_catalog = self._compile_effects_catalog(
+            experiment_dir,
+            effects_schema,
+            time_enabled=temporal_supported,
+        )
+
+        return bar_schema, compiled_vfs_profiles, effects_schema, compiled_effect_catalog, vfs_history_spec
+
+    def _stage_6_compile_levels(
+        self,
+        raw: RawConfigsV21,
+        experiment_dir: Path,
+        *,
+        primary_level: str,
+        compiled_vfs_profiles: CompiledVFSProfiles | None,
+        compiled_effect_catalog: EffectCatalog | None,
+        config_hash: str | None,
+        config_mtime: float | None,
+        temporal_supported: bool,
+    ) -> tuple[
+        dict[str, CompiledUniverse.LevelMetadata],
+        CompiledUniverse.LevelMetadata,
+        UniverseMetadata,
+        dict[str, str],
+        dict[str, set[str]] | None,
+    ]:
+        """Stage 6 – compile level metadata, optimization data, and derived schemas."""
+        all_levels: dict[str, CompiledUniverse.LevelMetadata] = {}
+        for level_name, level in raw.levels.items():
+            logger.info("Compiling level: %s", level_name)
+            obs_spec = self._build_observation_spec(
+                raw.stratum,
+                raw.environment,
+                level.curriculum,
+                compiled_vfs_profiles,
+                raw.items,
+                compiled_effect_catalog,
+            )
+            obs_activity = self._build_observation_activity(obs_spec)
+            bar_schema = {meter.name: "float" for meter in level.bars.meters}
+            action_metadata = self._build_action_space_metadata(
+                raw.stratum,
+                raw.actions,
+                level.training,
+                level.affordances,
+                raw.items,
+                self.config_pack_path,
+            )
+            meter_metadata = self._build_meter_metadata(raw.environment, level.bars)
+            affordance_metadata = self._build_affordance_metadata(level.affordances)
+
+            # Compile item spawn predicates (type-check and store AST on rules)
+            self._compile_item_spawn_conditions(
+                level.items_appearance,
+                bar_schema=bar_schema,
+                env_vars=getattr(raw.environment.environment, "variables", []) or [],
+                compiled_vfs_profiles=compiled_vfs_profiles,
+                temporal_supported=temporal_supported and level.curriculum.curriculum.active_temporal,
+            )
+            day_length = level.curriculum.curriculum.day_length
+            if temporal_supported and level.curriculum.curriculum.active_temporal:
+                if day_length is None or day_length <= 0:
+                    raise ValueError(
+                        "curriculum.day_length is required when temporal mechanics are declared in stratum.temporal_support.\n"
+                        f"  Experiment: {experiment_dir}\n"
+                        f"  Level: {level_name}\n"
+                        "Provide an explicit positive day_length; no defaults are applied."
+                    )
+            else:
+                day_length = 0
+
+            optimization_data = self._build_optimization_data(
+                level.bars,
+                level.affordances,
+                meter_metadata,
+                affordance_metadata,
+                action_metadata,
+                day_length=day_length,
+            )
+            if compiled_effect_catalog is not None:
+                self._validate_trigger_cascade_ids(compiled_effect_catalog, optimization_data, level_name=level_name)
+            vfs_fields = self._build_vfs_observation_fields(obs_spec, raw.environment)
+            vfs_variables = self._build_vfs_variables(obs_spec, raw.environment)
+
+            # Compute hashes for level-specific configs
+            drive_hash = self._compute_pydantic_hash(level.drive)
+            curriculum_hash = self._compute_pydantic_hash(level.curriculum)
+            bars_hash = self._compute_pydantic_hash(level.bars)
+            affordances_hash = self._compute_pydantic_hash(level.affordances)
+            training_hash = self._compute_pydantic_hash(level.training)
+
+            all_levels[level_name] = CompiledUniverse.LevelMetadata(
+                level_name=level_name,
+                bars=level.bars,
+                affordances=level.affordances,
+                drive=level.drive,
+                curriculum=level.curriculum,
+                training=level.training,
+                observation_spec=obs_spec,
+                observation_activity=obs_activity,
+                action_metadata=action_metadata,
+                meter_metadata=meter_metadata,
+                affordance_metadata=affordance_metadata,
+                optimization_data=optimization_data,
+                drive_hash=drive_hash,
+                curriculum_hash=curriculum_hash,
+                bars_hash=bars_hash,
+                affordances_hash=affordances_hash,
+                training_hash=training_hash,
+                vfs_observation_fields=vfs_fields,
+                vfs_variables=vfs_variables,
+                items_appearance=level.items_appearance,
+            )
+
+        primary_meta = all_levels[primary_level]
+        primary_level_config = raw.levels[primary_level]
+
+        universe_metadata = self._build_universe_metadata(
+            raw,
+            primary_meta,
+            experiment_dir=experiment_dir,
+            config_hash=config_hash,
+            config_mtime=config_mtime,
+        )
+
+        vfs_expression_schema = self._build_vfs_expression_schema(primary_level_config.bars, compiled_vfs_profiles)
+
+        variables_reference_path = experiment_dir / "variables_reference.yaml"
+        vfs_observation_marks: dict[str, set[str]] | None = None
+        if variables_reference_path.exists():
+            from townlet.vfs.schema import load_variables_reference_config
+
+            variables_from_yaml = tuple(load_variables_reference_config(experiment_dir))
+            vfs_observation_marks = self._extract_vfs_observation_marks(variables_from_yaml)
+
+        return all_levels, primary_meta, universe_metadata, vfs_expression_schema, vfs_observation_marks
+
+    def _stage_7_emit_artifact(
+        self,
+        raw: RawConfigsV21,
+        experiment_dir: Path,
+        cache_path: Path,
+        use_cache: bool,
+        universe_metadata: UniverseMetadata,
+        primary_meta: CompiledUniverse.LevelMetadata,
+        all_levels: dict[str, CompiledUniverse.LevelMetadata],
+        compiled_vfs_profiles: CompiledVFSProfiles | None,
+        compiled_effect_catalog: EffectCatalog | None,
+        vfs_expression_schema: dict[str, str],
+        vfs_observation_marks: dict[str, set[str]] | None,
+        effect_observation_slots: int,
+        vfs_history_spec: dict[str, int],
+        brain_hash: str | None,
+        experiment_hash: str,
+        stratum_hash: str,
+        environment_hash: str,
+        actions_hash: str,
+        items_hash: str | None,
+    ) -> CompiledUniverse:
+        """Stage 7 – emit the compiled artifact and persist cache."""
+        compiled = CompiledUniverse(
+            metadata=universe_metadata,
+            observation_spec=primary_meta.observation_spec,
+            observation_activity=primary_meta.observation_activity,
+            vfs_observation_fields=primary_meta.vfs_observation_fields,
+            vfs_variables=primary_meta.vfs_variables,
+            action_space_metadata=primary_meta.action_metadata,
+            meter_metadata=primary_meta.meter_metadata,
+            affordance_metadata=primary_meta.affordance_metadata,
+            optimization_data=primary_meta.optimization_data,
+            experiment=raw.experiment,
+            stratum=raw.stratum,
+            environment=raw.environment,
+            actions=raw.actions,
+            brain=raw.brain,  # Changed from agent to brain
+            items_catalog=raw.items,
+            compiled_vfs_profiles=compiled_vfs_profiles,
+            compiled_effect_catalog=compiled_effect_catalog,
+            effect_observation_slots=effect_observation_slots,
+            vfs_expression_schema=vfs_expression_schema,
+            vfs_history_spec=vfs_history_spec or None,
+            vfs_observation_marks=vfs_observation_marks,
+            experiment_dir=experiment_dir,
+            drive_hash=primary_meta.drive_hash,
+            brain_hash=brain_hash,
+            experiment_hash=experiment_hash,
+            stratum_hash=stratum_hash,
+            environment_hash=environment_hash,
+            actions_hash=actions_hash,
+            items_hash=items_hash,
+            all_levels=all_levels,
+        )
+
+        if use_cache:
+            try:
+                cache_dir = self._cache_directory_for(experiment_dir)
+                self._prepare_cache_directory(cache_dir)
+                compiled.save_to_cache(cache_path)
+                logger.info("Saved compiled universe cache to %s", cache_path)
+            except Exception as exc:  # pragma: no cover - defensive
+                logger.warning("Failed to write cache artifact to %s: %s", cache_path, exc)
+
+        return compiled
+
+    def _compute_pydantic_hash(self, config: Any) -> str:
+        """Compute SHA256 hash of a Pydantic config."""
+        if config is None:
+            return ""
+        # Use JSON dump to get consistent representation
+        json_str = config.model_dump_json()
+        return hashlib.sha256(json_str.encode("utf-8")).hexdigest()
+
+    # ------------------------------------------------------------------
+    def _validate_item_profile_bindings(
+        self,
+        items_catalog: ItemsCatalogConfig | None,
+        compiled_vfs_profiles: CompiledVFSProfiles | None,
+    ) -> None:
+        """Ensure every item vfs_profile exists in compiled VFS item profiles."""
+        if items_catalog is None:
+            return
+        if compiled_vfs_profiles is None or not compiled_vfs_profiles.item_profiles:
+            if any(item.vfs_profile for item in items_catalog.item_types):
+                raise ValueError(
+                    "Items catalog specifies vfs_profile entries, but no item_profiles were compiled from vfs_profiles.yaml. "
+                    "Add item_profiles or remove vfs_profile references."
+                )
+            return
+
+        available_profiles = set(compiled_vfs_profiles.item_profiles.keys())
+
+        for item_def in items_catalog.item_types:
+            if item_def.vfs_profile and item_def.vfs_profile not in available_profiles:
+                close = difflib.get_close_matches(item_def.vfs_profile, available_profiles, n=1)
+                suggestion = f" Did you mean '{close[0]}'?" if close else ""
+                raise ValueError(
+                    f"Item '{item_def.id}' references undefined vfs_profile '{item_def.vfs_profile}'. "
+                    f"Available profiles: {sorted(available_profiles)}.{suggestion}"
+                )
+
+    def _build_spawn_condition_schema(
+        self,
+        *,
+        bar_schema: dict[str, str],
+        env_vars: list[Any],
+        compiled_vfs_profiles: CompiledVFSProfiles | None,
+        temporal_supported: bool,
+    ) -> dict[str, str]:
+        """Construct type schema for spawn condition expressions."""
+
+        schema: dict[str, str] = {}
+
+        for bar_name in bar_schema:
+            schema[f"bar.{bar_name}"] = "float"
+
+        for var in env_vars:
+            vfs_type = "bool" if getattr(var, "type", None) == "bool" else "float"
+            schema[f"vfs.{var.name}"] = vfs_type
+
+        if compiled_vfs_profiles and compiled_vfs_profiles.global_profile:
+            for var in compiled_vfs_profiles.global_profile.variables:
+                vfs_type = "bool" if getattr(var, "type", None) == "bool" else "float"
+                schema.setdefault(f"vfs.{var.name}", vfs_type)
+
+        if temporal_supported:
+            schema["temporal.tick"] = "int"
+
+        return schema
+
+    def _ast_uses_temporal(self, node: Any) -> bool:
+        """Detect whether an AST references temporal.* paths."""
+
+        from townlet.world.expression.ast_nodes import PathAccess
+
+        if isinstance(node, PathAccess) and node.segments and node.segments[0] == "temporal":
+            return True
+
+        for attr in ("left", "right", "operand", "condition", "true_branch", "false_branch", "base", "index"):
+            child = getattr(node, attr, None)
+            if child is not None and self._ast_uses_temporal(child):
+                return True
+
+        if hasattr(node, "arguments") and node.arguments:
+            for arg in node.arguments:
+                if self._ast_uses_temporal(arg):
+                    return True
+
+        return False
+
+    def _compile_item_spawn_conditions(
+        self,
+        items_appearance: Any | None,
+        *,
+        bar_schema: dict[str, str],
+        env_vars: list[Any],
+        compiled_vfs_profiles: CompiledVFSProfiles | None,
+        temporal_supported: bool,
+    ) -> None:
+        """Parse and type-check spawn conditions, storing AST on each rule."""
+
+        if items_appearance is None:
+            return
+
+        condition_schema = self._build_spawn_condition_schema(
+            bar_schema=bar_schema,
+            env_vars=env_vars,
+            compiled_vfs_profiles=compiled_vfs_profiles,
+            temporal_supported=temporal_supported,
+        )
+
+        parser = ExpressionParser()
+        type_checker = TypeChecker(schema=condition_schema)
+
+        for rule in items_appearance.items:
+            rule.when_ast = None
+            if rule.when is None:
+                continue
+
+            ast = parser.parse(rule.when)
+
+            if not temporal_supported and self._ast_uses_temporal(ast):
+                raise TypeCheckError("Spawn condition references temporal.* but temporal mechanics are disabled for this level")
+
+            result_type = type_checker.check(ast)
+            if result_type != "bool":
+                raise TypeCheckError(f"Spawn condition must return bool, got {result_type}")
+
+            rule.when_ast = ast
 
     # ------------------------------------------------------------------
     # v2.1 helpers
@@ -795,11 +1575,41 @@ class UniverseCompiler:
             active_field_uuids=tuple(active_uuids_list),
         )
 
+    @staticmethod
+    def _apply_observation_mode(
+        fields: list[ObservationField],
+        mode_cfg: ObservationModeConfig,
+    ) -> list[ObservationField]:
+        """Filter observation fields based on observation_mode selection."""
+
+        if mode_cfg.mode == "full_auto":
+            return fields
+
+        if mode_cfg.mode == "max_compact":
+            return [f for f in fields if "MASKED" not in (f.description or "")]
+
+        if mode_cfg.mode == "full_manual":
+            includes = mode_cfg.include_fields or []
+            field_lookup = {field.name: field for field in fields}
+            missing = [name for name in includes if name not in field_lookup]
+            if missing:
+                raise ValueError(
+                    f"full_manual observation_mode requested unknown fields: {sorted(missing)}. Check names against ObservationSpec fields."
+                )
+            if not includes:
+                raise ValueError("full_manual observation_mode produced an empty field set; include_fields must match existing fields.")
+            return [field_lookup[name] for name in includes]
+
+        raise ValueError(f"Unsupported observation_mode '{mode_cfg.mode}'.")
+
     def _build_observation_spec(
         self,
         stratum: StratumConfig,
         environment: EnvConfigV21,
         curriculum: CurriculumConfig,
+        compiled_vfs_profiles: CompiledVFSProfiles | None = None,
+        items_catalog: ItemsCatalogConfig | None = None,
+        compiled_effect_catalog: EffectCatalog | None = None,
     ) -> ObservationSpec:
         """Build observation spec using Support/Active pattern for v2.1."""
 
@@ -911,16 +1721,72 @@ class UniverseCompiler:
                 )
                 offset += dims
 
-        # Position / velocity (discrete spatial substrates only)
-        position_dim = 0
-        if substrate.type in {"grid", "grid3d"} and substrate.grid is not None:
-            if substrate.grid.topology == "cubic":
-                position_dim = 3
-            else:
-                position_dim = 2
-        elif substrate.type == "gridnd" and substrate.gridnd is not None:
-            position_dim = len(substrate.gridnd.dimension_sizes)
+        # Position / velocity (all spatial substrates)
+        #
+        # Position dimensions depend on substrate type and observation encoding:
+        # - Grid2D/Grid3D: 2D or 3D (fixed)
+        # - GridND: N dimensions (N=4 to 100)
+        # - Continuous/ContinuousND: N or 2N depending on observation_encoding
+        #   - relative: N dims (normalized [0,1])
+        #   - scaled: 2N dims (normalized + range sizes)
+        #   - absolute: N dims (raw coordinates)
+        # - Aspatial: 0 dims (no position)
+        #
+        # For continuous substrates, we build a temporary instance to query
+        # get_observation_dim() for accurate dimensions based on encoding mode.
 
+        position_dim = 0
+        velocity_dim = 0  # May differ from position_dim for scaled encoding
+
+        if substrate.type == "aspatial":
+            # Aspatial substrates have no position
+            position_dim = 0
+            velocity_dim = 0
+
+        elif substrate.type in {"grid", "grid3d"}:
+            # Discrete grid substrates: position_dim = spatial dimensions
+            if substrate.grid is not None:
+                if substrate.grid.topology == "cubic":
+                    position_dim = 3
+                else:
+                    position_dim = 2
+            velocity_dim = position_dim  # Velocity matches position dims
+
+        elif substrate.type == "gridnd":
+            # High-dimensional discrete grids
+            if substrate.gridnd is not None:
+                position_dim = len(substrate.gridnd.dimension_sizes)
+            velocity_dim = position_dim
+
+        elif substrate.type in {"continuous", "continuousnd"}:
+            # Continuous substrates: observation dims depend on encoding mode
+            # Build temporary instance to query actual observation dimensions
+            try:
+                substrate_instance = SubstrateFactory.build(substrate, torch.device("cpu"))
+                position_dim = substrate_instance.get_observation_dim()
+
+                # Velocity always uses substrate's native dimensionality (not encoding)
+                # e.g., 2D continuous with scaled encoding: position=4, velocity=2
+                velocity_dim = substrate_instance.position_dim
+
+            except Exception as exc:
+                # Fallback: use position_dim from config (may be inaccurate for scaled)
+                import warnings
+
+                if substrate.type == "continuous" and substrate.continuous is not None:
+                    position_dim = substrate.continuous.dimensions
+                    velocity_dim = substrate.continuous.dimensions
+                elif substrate.type == "continuousnd" and substrate.continuous is not None:
+                    position_dim = len(substrate.continuous.bounds)
+                    velocity_dim = len(substrate.continuous.bounds)
+
+                warnings.warn(
+                    f"Failed to build substrate instance for observation dim calculation: {exc}. "
+                    f"Using fallback dims (may be inaccurate for scaled encoding).",
+                    UserWarning,
+                )
+
+        # Add position observation field
         if position_dim:
             fields.append(
                 ObservationField(
@@ -936,20 +1802,23 @@ class UniverseCompiler:
                 )
             )
             offset += position_dim
+
+        # Add velocity observation field (use velocity_dim, not position_dim)
+        if velocity_dim:
             fields.append(
                 ObservationField(
                     uuid=None,
                     name="obs_velocity",
                     type="vector",
-                    dims=position_dim,
+                    dims=velocity_dim,
                     start_index=offset,
-                    end_index=offset + position_dim,
+                    end_index=offset + velocity_dim,
                     scope="agent",
-                    description=f"Agent velocity ({position_dim}D)",
+                    description=f"Agent velocity ({velocity_dim}D)",
                     semantic_type="spatial",
                 )
             )
-            offset += position_dim
+            offset += velocity_dim
 
         # Meters
         meter_count = len(environment.environment.meters)
@@ -986,6 +1855,25 @@ class UniverseCompiler:
         )
         offset += affordance_dim
 
+        # Observable effects (fixed slots; filtered by observable flag)
+        if compiled_effect_catalog is not None and compiled_effect_catalog.effects:
+            effect_slots = EFFECT_OBSERVATION_SLOTS
+            effect_dims = effect_slots * 3  # [effect_id, remaining_norm, active_flag]
+            fields.append(
+                ObservationField(
+                    uuid=None,
+                    name="obs_effects",
+                    type="vector",
+                    dims=effect_dims,
+                    start_index=offset,
+                    end_index=offset + effect_dims,
+                    scope="agent",
+                    description=f"Observable effects (up to {effect_slots} slots)",
+                    semantic_type="effects",
+                )
+            )
+            offset += effect_dims
+
         # VFS variables (environment-declared)
         for var in environment.environment.variables:
             dims = getattr(var, "dims", 1)
@@ -1003,6 +1891,95 @@ class UniverseCompiler:
                 )
             )
             offset += dims
+
+        # VFS observations (global + agent + item VFS)
+        # Compute total VFS dimensions from VFS profiles (flatten tensors/vectors).
+        vfs_dim = 0
+        item_vfs_dim = 0
+
+        def _var_flat_dim(var: Any) -> int:
+            """Flattened observation width for a compiled VFS variable."""
+            vtype = getattr(var, "type", None)
+            if vtype in {"int", "float", "bool", "agent_ref", "item_ref", "affordance_ref", "effect_ref"}:
+                return 1
+            if vtype in {"vec2i", "vec2f"}:
+                return 2
+            if vtype in {"vec3i", "vec3f"}:
+                return 3
+            if vtype in {"vecNi", "vecNf"}:
+                dims_val = getattr(var, "dims", None)
+                if dims_val is None:
+                    raise ValueError(f"Vector VFS variable '{getattr(var, 'name', '')}' is missing dims for obs_dim calculation.")
+                return int(dims_val)
+            if vtype in {"tensor1d", "tensor2d", "tensor3d", "tensorNd"}:
+                shape = getattr(var, "shape", None)
+                if not shape:
+                    raise ValueError(f"Tensor VFS variable '{getattr(var, 'name', '')}' is missing shape for obs_dim calculation.")
+                prod = 1
+                for dim in shape:
+                    prod *= dim
+                return prod
+            # Default: treat as scalar
+            return 1
+
+        if compiled_vfs_profiles is not None:
+            if compiled_vfs_profiles.global_profile is not None:
+                for compiled_var in compiled_vfs_profiles.global_profile.variables:
+                    vfs_dim += _var_flat_dim(compiled_var)
+
+            if compiled_vfs_profiles.agent_profile is not None:
+                for compiled_var in getattr(compiled_vfs_profiles.agent_profile, "variables", []):
+                    vfs_dim += _var_flat_dim(compiled_var)
+
+            # Item VFS: max_items_per_agent × max(flat_dim across profiles)
+            if compiled_vfs_profiles.item_profiles:
+                item_profiles_dict = compiled_vfs_profiles.item_profiles
+                if item_profiles_dict:
+                    max_profile_dim = 0
+                    for profile in item_profiles_dict.values():
+                        profile_vars = getattr(profile, "variables", [])
+                        profile_dim = 0
+                        for item_profile_var in profile_vars:
+                            profile_dim += _var_flat_dim(item_profile_var)
+                        max_profile_dim = max(max_profile_dim, profile_dim)
+
+                    max_items_per_agent: int | None = 3
+                    if items_catalog is not None:
+                        max_items_per_agent = items_catalog.max_items_per_agent
+                    else:
+                        max_items_per_agent = None
+
+                    if max_items_per_agent is None:
+                        raise ValueError(
+                            "VFS observation includes item variables but no items catalog is configured. "
+                            "Provide items.yaml with item profiles enabled or remove item VFS profiles."
+                        )
+
+                    item_vfs_dim = max_items_per_agent * max_profile_dim
+                    vfs_dim += item_vfs_dim
+
+        # Fail fast if item VFS dims are requested without an active item system
+        if item_vfs_dim > 0 and items_catalog is None:
+            raise ValueError(
+                "Observation spec includes item VFS dimensions, but items are disabled (no items catalog). "
+                "Enable items or remove item VFS profiles."
+            )
+
+        if vfs_dim > 0:
+            fields.append(
+                ObservationField(
+                    uuid=None,
+                    name="obs_vfs",
+                    type="vector",
+                    dims=vfs_dim,
+                    start_index=offset,
+                    end_index=offset + vfs_dim,
+                    scope="agent",
+                    description=f"VFS observations (global + agent + item, {vfs_dim} dims)",
+                    semantic_type="custom",
+                )
+            )
+            offset += vfs_dim
 
         # Temporal fields
         if temporal_support == "enabled":
@@ -1029,7 +2006,30 @@ class UniverseCompiler:
             )
             offset += temporal_dims
 
-        return ObservationSpec.from_fields(fields=fields)
+        mode_cfg: ObservationModeConfig = getattr(stratum.stratum, "observation_mode", ObservationModeConfig())
+        filtered_fields = self._apply_observation_mode(fields, mode_cfg)
+
+        # Re-index fields after filtering to keep contiguous start/end spans
+        reindexed: list[ObservationField] = []
+        offset = 0
+        for field in filtered_fields:
+            reindexed.append(
+                ObservationField(
+                    uuid=field.uuid,
+                    name=field.name,
+                    type=field.type,
+                    dims=field.dims,
+                    start_index=offset,
+                    end_index=offset + field.dims,
+                    scope=field.scope,
+                    description=field.description,
+                    semantic_type=field.semantic_type,
+                    categorical_labels=field.categorical_labels,
+                )
+            )
+            offset += field.dims
+
+        return ObservationSpec.from_fields(fields=reindexed)
 
     def _build_action_space_metadata(
         self,
@@ -1037,12 +2037,14 @@ class UniverseCompiler:
         actions: ActionsConfig,
         training: TrainingV2Config,
         affordances: AffordancesV2Config,
+        items: ItemsCatalogConfig | None,
+        config_pack_path: Path,
     ) -> ActionSpaceMetadata:
         """Build action space metadata using substrate actions + custom actions."""
         entries: list[ActionMetadata] = []
         next_id = 0
 
-        def _add(name: str, action_type: str, source: str, enabled: bool) -> None:
+        def _add(name: str, action_type: str, source: str, enabled: bool, movement_delta: tuple[float, ...] | None = None) -> None:
             nonlocal next_id
             entries.append(
                 ActionMetadata(
@@ -1053,6 +2055,7 @@ class UniverseCompiler:
                     source=source,  # type: ignore[arg-type]
                     costs={},
                     description="",
+                    movement_delta=movement_delta,
                 )
             )
             next_id += 1
@@ -1062,6 +2065,13 @@ class UniverseCompiler:
         substrate_actions: list[ActionConfig] = []
         substrate_names: set[str] = set()
 
+        allowed_names_raw = training.enabled_actions.custom if training.enabled_actions else None
+        custom_action_names = {custom.name for custom in actions.actions.custom_actions}
+        apply_global_filter = False
+        if allowed_names_raw is not None:
+            apply_global_filter = any(name not in custom_action_names for name in allowed_names_raw)
+        allowed_names = set(allowed_names_raw) if allowed_names_raw is not None else None
+
         if substrate_actions_cfg.inherit:
             # Build substrate instance using validated stratum config to derive canonical actions.
             substrate = SubstrateFactory.build(stratum.stratum.substrate, torch.device("cpu"))
@@ -1069,20 +2079,141 @@ class UniverseCompiler:
             substrate_names = {a.name for a in substrate_actions}
             for action in substrate_actions:
                 enabled = True
+                if apply_global_filter and allowed_names is not None:
+                    enabled = action.name in allowed_names
                 if action.name == "INTERACT" and not allow_interact:
                     enabled = False
-                _add(action.name, action.type, "substrate", enabled)
+                movement_delta: tuple[float, ...] | None = None
+                if action.type == "movement" and action.delta is not None:
+                    movement_delta = tuple(float(d) for d in action.delta)
+                _add(action.name, action.type, "substrate", enabled, movement_delta=movement_delta)
 
-        enabled_custom = set(training.enabled_actions.custom) if training.enabled_actions else set()
+        reserved_names: set[str] = {"INTERACT"}
+        if items is not None:
+            reserved_names.add("GET")
+            for slot_idx in range(items.max_items_per_agent):
+                reserved_names.add(f"USE_SLOT_{slot_idx}")
+                reserved_names.add(f"DROP_SLOT_{slot_idx}")
+            for item in items.item_types:
+                for item_cmd in item.interactions.local_commands:
+                    reserved_names.add(build_item_command_action_name(item.id, item_cmd.name, "local"))
+                for item_cmd in item.interactions.inventory_commands:
+                    reserved_names.add(build_item_command_action_name(item.id, item_cmd.name, "inventory"))
+
+        enabled_custom = set(allowed_names) if allowed_names is not None else set()
         for custom in actions.actions.custom_actions:
-            # Skip custom entries that collide with substrate vocabulary; substrate owns those IDs.
+            if custom.name in reserved_names:
+                raise ValueError(f"Action name '{custom.name}' is reserved for system actions and cannot be overridden")
             if custom.name in substrate_names:
                 continue
             action_type = "passive" if custom.name == "WAIT" else "interaction"
-            enabled = custom.enabled_by_default or custom.name in enabled_custom
+            if apply_global_filter and allowed_names is not None:
+                enabled = custom.name in allowed_names
+            else:
+                enabled = custom.enabled_by_default or custom.name in enabled_custom
             _add(custom.name, action_type, "custom", enabled)
 
-        return ActionSpaceMetadata(total_actions=len(entries), actions=tuple(entries))
+        if items is not None and items.max_items_per_agent > 0 and items.max_items_in_world > 0:
+            get_enabled = True
+            if apply_global_filter and allowed_names is not None:
+                get_enabled = "GET" in allowed_names
+            _add("GET", "interaction", "item", get_enabled)
+            for slot_idx in range(items.max_items_per_agent):
+                use_enabled = True
+                drop_enabled = True
+                if apply_global_filter and allowed_names is not None:
+                    use_enabled = f"USE_SLOT_{slot_idx}" in allowed_names
+                    drop_enabled = f"DROP_SLOT_{slot_idx}" in allowed_names
+                _add(f"USE_SLOT_{slot_idx}", "interaction", "item", use_enabled)
+                _add(f"DROP_SLOT_{slot_idx}", "interaction", "item", drop_enabled)
+            for item in items.item_types:
+                for item_cmd in item.interactions.local_commands:
+                    name = build_item_command_action_name(item.id, item_cmd.name, "local")
+                    enabled = True
+                    if apply_global_filter and allowed_names is not None:
+                        enabled = name in allowed_names
+                    _add(
+                        name,
+                        "interaction",
+                        "item",
+                        enabled,
+                    )
+                for item_cmd in item.interactions.inventory_commands:
+                    name = build_item_command_action_name(item.id, item_cmd.name, "inventory")
+                    enabled = True
+                    if apply_global_filter and allowed_names is not None:
+                        enabled = name in allowed_names
+                    _add(
+                        name,
+                        "interaction",
+                        "item",
+                        enabled,
+                    )
+
+        # Build action labels (compiler is the single source of truth)
+        # Get preset labels for name-based mapping (e.g., UP/DOWN/LEFT/RIGHT for gaming preset)
+        label_config = actions.actions.labels
+        label_preset = label_config.preset
+
+        # Load custom label overrides if present
+        labels_path = config_pack_path / "action_labels.yaml"
+        custom_label_overrides: dict[int, str] | None = None
+        if labels_path.exists():
+            import yaml
+
+            data = yaml.safe_load(labels_path.read_text()) or {}
+            raw_custom = data.get("custom")
+            if isinstance(raw_custom, dict):
+                custom_label_overrides = {int(k): str(v) for k, v in raw_custom.items()}
+
+        # Build preset label mapping by name (e.g., "UP" -> "UP" for gaming, "UP" -> "NORTH" for cardinal)
+        preset_label_map: dict[str, str] = {}
+        if label_preset and label_preset in PRESET_LABELS:
+            preset_labels_obj = PRESET_LABELS[label_preset]
+            # Map canonical action names to preset labels
+            for canonical_idx, label in preset_labels_obj.labels.items():
+                # Get canonical action name from CanonicalAction enum
+                canonical_name = CanonicalAction(canonical_idx).name
+                # Convert canonical name to substrate action name (e.g., MOVE_Y_POSITIVE -> UP)
+                if canonical_name == "MOVE_X_NEGATIVE":
+                    preset_label_map["LEFT"] = label
+                elif canonical_name == "MOVE_X_POSITIVE":
+                    preset_label_map["RIGHT"] = label
+                elif canonical_name == "MOVE_Y_NEGATIVE":
+                    preset_label_map["DOWN"] = label
+                elif canonical_name == "MOVE_Y_POSITIVE":
+                    preset_label_map["UP"] = label
+                elif canonical_name == "MOVE_Z_POSITIVE":
+                    preset_label_map["FORWARD"] = label
+                elif canonical_name == "MOVE_Z_NEGATIVE":
+                    preset_label_map["BACKWARD"] = label
+                elif canonical_name == "INTERACT":
+                    preset_label_map["INTERACT"] = label
+                elif canonical_name == "WAIT":
+                    preset_label_map["WAIT"] = label
+
+        # Build complete label dictionary for ALL actions (substrate + custom + item)
+        complete_labels: dict[int, str] = {}
+        label_description = PRESET_LABELS[label_preset].description if label_preset and label_preset in PRESET_LABELS else "Custom labels"
+        label_domain = PRESET_LABELS[label_preset].domain if label_preset and label_preset in PRESET_LABELS else "custom"
+
+        for entry in entries:
+            # Priority: custom label override > preset mapping > action name
+            if custom_label_overrides and entry.id in custom_label_overrides:
+                complete_labels[entry.id] = custom_label_overrides[entry.id]
+            elif entry.name in preset_label_map:
+                complete_labels[entry.id] = preset_label_map[entry.name]
+            else:
+                # No preset mapping (diagonal moves, custom actions, item actions) - use name
+                complete_labels[entry.id] = entry.name
+
+        return ActionSpaceMetadata(
+            total_actions=len(entries),
+            actions=tuple(entries),
+            labels=complete_labels,
+            label_description=label_description,
+            label_domain=label_domain,
+        )
 
     def _build_meter_metadata(
         self,
@@ -1111,12 +2242,30 @@ class UniverseCompiler:
         """Affordance metadata derived from per-level affordances.yaml."""
         infos: list[AffordanceInfo] = []
         for aff in affordances.affordances:
+            # Extract effects from interactions (on_start stage for metadata)
+            # This is for visualization/UI purposes - the actual Effects execution uses compiled commands
+            effects_dict = {}
+            if aff.interactions and "on_start" in aff.interactions:
+                for cmd in aff.interactions["on_start"]:
+                    modify = getattr(cmd, "modify", None)
+                    if isinstance(modify, str) and modify.startswith("target.bar."):
+                        meter_name = modify.split(".")[-1]
+                        # Simple extraction - just parse basic addition (e.g., "target.bar.energy + 0.5")
+                        # This is best-effort for metadata; actual execution uses compiled Effects
+                        value_field = getattr(cmd, "value", None)
+                        if isinstance(value_field, str) and "+" in value_field:
+                            try:
+                                value_part = value_field.split("+")[-1].strip()
+                                effects_dict[meter_name] = float(value_part)
+                            except (ValueError, IndexError):
+                                pass  # Skip if not a simple addition
+
             infos.append(
                 AffordanceInfo(
                     id=aff.name,
                     name=aff.name,
                     enabled=True,
-                    effects=aff.effects,
+                    effects=effects_dict,
                     cost=float(aff.costs.get("money", 0.0)) if hasattr(aff, "costs") else 0.0,
                     category=None,
                     description="",
@@ -1144,6 +2293,7 @@ class UniverseCompiler:
                 base_depletions[idx] = float(bar.depletion.passive)
 
         cascade_entries: list[dict[str, Any]] = []
+        cascade_by_id: dict[str, list[dict[str, Any]]] = {}
         for cascade in bars.cascades:
             source_idx = meter_lookup.get(cascade.source)
             target_idx = meter_lookup.get(cascade.target)
@@ -1157,14 +2307,15 @@ class UniverseCompiler:
                     parts.append(f"  Unknown target meter: {cascade.target!r}")
                 parts.append("  Valid meters: " + ", ".join(sorted(meter_lookup.keys())))
                 raise ValueError("\n".join(parts))
-            cascade_entries.append(
-                {
-                    "source_idx": source_idx,
-                    "target_idx": target_idx,
-                    "threshold": float(cascade.threshold),
-                    "strength": float(cascade.strength),
-                }
-            )
+            entry = {
+                "source_idx": source_idx,
+                "target_idx": target_idx,
+                "threshold": float(cascade.threshold),
+                "strength": float(cascade.strength),
+            }
+            cascade_entries.append(entry)
+            pair_id = f"{cascade.source}->{cascade.target}"
+            cascade_by_id[pair_id] = cascade_by_id.get(pair_id, []) + [entry]
 
         modulation_entries: list[dict[str, Any]] = []
         for modulation in affordances.modulations:
@@ -1231,11 +2382,79 @@ class UniverseCompiler:
             # v2.1: BarsV2Config does not classify cascades by tier; all
             # meter-to-meter cascades are exposed under a single category
             # consumed by MeterDynamics.apply_secondary_to_primary_effects.
-            cascade_data={"primary_to_pivotal": cascade_entries},
+            cascade_data={"primary_to_pivotal": cascade_entries, **cascade_by_id},
             modulation_data=modulation_entries,
             action_mask_table=action_mask_table,
             affordance_position_map={aff.name: None for aff in affordance_metadata.affordances},
         )
+
+    def _validate_trigger_cascade_ids(
+        self,
+        compiled_effect_catalog: EffectCatalog,
+        optimization_data: OptimizationData,
+        *,
+        level_name: str,
+    ) -> None:
+        """Ensure trigger_cascade commands reference cascades compiled for this level."""
+        valid_ids = set(optimization_data.cascade_data.keys())
+        if not valid_ids:
+            for effect in compiled_effect_catalog.effects.values():
+                for cmd in self._walk_commands(effect):
+                    if cmd.type == CommandType.TRIGGER_CASCADE:
+                        raise ValueError(
+                            "trigger_cascade referenced but no cascades are defined in bars.yaml.\n"
+                            f"  Level: {level_name}\n"
+                            f"  Effect: {effect.id}\n"
+                            "  Define cascades in bars.cascades before using trigger_cascade."
+                        )
+            return
+
+        for effect in compiled_effect_catalog.effects.values():
+            for cmd in self._walk_commands(effect):
+                if cmd.type == CommandType.TRIGGER_CASCADE:
+                    cascade_id = cmd.cascade_id
+                    if not cascade_id or cascade_id not in valid_ids:
+                        raise ValueError(
+                            "trigger_cascade references unknown cascade_id.\n"
+                            f"  Level: {level_name}\n"
+                            f"  Effect: {effect.id}\n"
+                            f"  cascade_id: {cascade_id!r}\n"
+                            f"  Valid cascade ids: {sorted(valid_ids)}"
+                        )
+
+    @staticmethod
+    def _walk_commands(effect: Any):
+        """Yield all CommandNodes from a compiled effect (recursively)."""
+
+        def walk(cmd):
+            yield cmd
+            if cmd.type == CommandType.IF:
+                for child in cmd.then_commands or []:
+                    yield from walk(child)
+                for child in cmd.else_commands or []:
+                    yield from walk(child)
+            elif cmd.type == CommandType.FOR_EACH:
+                for child in cmd.body or cmd.do_commands or []:
+                    yield from walk(child)
+            elif cmd.type == CommandType.SWITCH:
+                for _, body in cmd.cases or []:
+                    for child in body:
+                        yield from walk(child)
+                for child in cmd.default_commands or []:
+                    yield from walk(child)
+            elif cmd.type == CommandType.REDUCE:
+                # reduce has no nested commands; accumulator logic uses expressions only
+                pass
+            elif cmd.type == CommandType.PARALLEL:
+                for child in cmd.parallel_commands or []:
+                    yield from walk(child)
+            elif cmd.type == CommandType.DELAY:
+                for child in cmd.delay_commands or []:
+                    yield from walk(child)
+
+        pipelines = list(effect.on_spawn) + list(effect.on_tick) + list(effect.on_despawn) + list(getattr(effect, "on_interrupt", []) or [])
+        for command in pipelines:
+            yield from walk(command)
 
     def _build_vfs_observation_fields(self, obs_spec: ObservationSpec, environment: EnvConfigV21) -> tuple[VFSObservationField, ...]:
         """Mirror ObservationSpec fields into VFS observation fields for runtime consumption."""
@@ -1290,8 +2509,10 @@ class UniverseCompiler:
             env_norm_by_name[var.name] = _convert_normalization(var.name, getattr(var, "normalization", None))
 
         fields: list[VFSObservationField] = []
+        allowed_semantic = {"bars", "spatial", "affordance", "temporal", "custom"}
         for field in obs_spec.fields:
             norm = env_norm_by_name.get(field.name)
+            semantic = field.semantic_type if field.semantic_type in allowed_semantic else "custom"
             fields.append(
                 VFSObservationField(
                     id=field.name,
@@ -1299,7 +2520,7 @@ class UniverseCompiler:
                     exposed_to=["agent"],
                     shape=[field.dims],
                     normalization=norm,
-                    semantic_type=field.semantic_type or "custom",  # type: ignore[arg-type]  # semantic_type is Literal type
+                    semantic_type=semantic,  # type: ignore[arg-type]  # semantic_type is Literal type
                     curriculum_active="MASKED" not in (field.description or ""),
                 )
             )
@@ -1393,24 +2614,104 @@ class UniverseCompiler:
         # User-defined variables (explicit declaration from environment.yaml)
         for var in environment.environment.variables:
             raw_dims = getattr(var, "dims", None)
-            # Treat dims == 1 as scalar; dims > 1 become vecNf
-            is_vector = bool(raw_dims and raw_dims > 1)
+            # Tensor support: expect shape metadata on var.shape when present
+            shape = getattr(var, "shape", None)
+            var_type = getattr(var, "type", None)
+
+            is_tensor = var_type in {"tensor1d", "tensor2d", "tensor3d", "tensorNd"}
+            is_vector = bool(raw_dims and raw_dims > 1 and not is_tensor)
+
             dims = raw_dims if is_vector else None
-            default = [0.0] * raw_dims if is_vector and raw_dims is not None else 0.0
+            user_var_default: list[float] | float | None = 0.0
+            if is_tensor:
+                # For tensors, allow shape-backed default broadcasting; use zeros placeholder here.
+                user_var_default = None
+            elif is_vector and raw_dims is not None:
+                user_var_default = [0.0] * raw_dims
+
             normalization = _convert_normalization(var.name, getattr(var, "normalization", None))
+
+            # Determine final type for VariableDef
+            # Use cast to narrow str to the Literal type expected by VariableDef
+            from typing import Literal as LiteralType
+            from typing import cast
+
+            if var_type is None:
+                final_type = cast(
+                    LiteralType[
+                        "scalar",
+                        "vec2i",
+                        "vec3i",
+                        "vec2f",
+                        "vec3f",
+                        "vecNi",
+                        "vecNf",
+                        "bool",
+                        "agent_ref",
+                        "item_ref",
+                        "tensor1d",
+                        "tensor2d",
+                        "tensor3d",
+                        "tensorNd",
+                    ],
+                    "vecNf" if is_vector else "scalar",
+                )
+            elif is_tensor:
+                final_type = cast(
+                    LiteralType[
+                        "scalar",
+                        "vec2i",
+                        "vec3i",
+                        "vec2f",
+                        "vec3f",
+                        "vecNi",
+                        "vecNf",
+                        "bool",
+                        "agent_ref",
+                        "item_ref",
+                        "tensor1d",
+                        "tensor2d",
+                        "tensor3d",
+                        "tensorNd",
+                    ],
+                    var_type,
+                )
+            else:
+                final_type = cast(
+                    LiteralType[
+                        "scalar",
+                        "vec2i",
+                        "vec3i",
+                        "vec2f",
+                        "vec3f",
+                        "vecNi",
+                        "vecNf",
+                        "bool",
+                        "agent_ref",
+                        "item_ref",
+                        "tensor1d",
+                        "tensor2d",
+                        "tensor3d",
+                        "tensorNd",
+                    ],
+                    "vecNf" if is_vector else "scalar",
+                )
 
             vars_out.append(
                 VariableDef(
                     id=var.name,
                     scope=var.scope,
-                    type="vecNf" if is_vector else "scalar",
+                    type=final_type,
                     dims=dims,
                     lifetime="tick",
                     readable_by=["agent", "engine"],
                     writable_by=["engine"],
-                    default=default,
+                    default=user_var_default,
                     description=var.description,
                     normalization=normalization,
+                    shape=shape,
+                    initial_value_mode=getattr(var, "initial_value_mode", None),
+                    initial_value_params=getattr(var, "initial_value_params", None),
                 )
             )
         return tuple(vars_out)
@@ -1428,8 +2729,10 @@ class UniverseCompiler:
         - Extrinsic bonuses reference valid meters.
 
         ShapingConfig is intentionally left free-form for now; its internal fields are not validated here.
+
+        Note: This function is currently unused (dead code) and needs refactoring for v2.1 schema.
         """
-        drive = raw.agent.agent.drive
+        drive = raw.agent.agent.drive  # type: ignore[attr-defined]  # TODO: Fix for v2.1 schema (function is unused)
 
         meter_names = {m.name for m in primary_meta.meter_metadata.meters}
         vfs_var_ids = {var.id for var in compiled.vfs_variables}
@@ -1704,28 +3007,31 @@ class UniverseCompiler:
         """
         # Validate modifier sources
         for mod_name, mod_config in dac_config.modifiers.items():
-            if mod_config.bar:
-                if mod_config.bar not in symbol_table.meters:
+            bar_ref = getattr(mod_config, "bar", None)
+            variable_ref = getattr(mod_config, "variable", None)
+            if bar_ref:
+                if bar_ref not in symbol_table.meters:
                     errors.add(
                         CompilationMessage(
                             code="DAC-REF-001",
-                            message=f"Modifier '{mod_name}' references undefined bar: {mod_config.bar}",
+                            message=f"Modifier '{mod_name}' references undefined bar: {bar_ref}",
                             location=f"drive_as_code.yaml:modifiers.{mod_name}",
                         )
                     )
-            elif mod_config.variable:
-                if mod_config.variable not in symbol_table.vfs_variables:
+            elif variable_ref:
+                if variable_ref not in symbol_table.vfs_variables:
                     errors.add(
                         CompilationMessage(
                             code="DAC-REF-002",
-                            message=f"Modifier '{mod_name}' references undefined VFS variable: {mod_config.variable}",
+                            message=f"Modifier '{mod_name}' references undefined VFS variable: {variable_ref}",
                             location=f"drive_as_code.yaml:modifiers.{mod_name}",
                         )
                     )
 
         # Validate extrinsic strategy bar references
-        if dac_config.extrinsic.bars:
-            for bar in dac_config.extrinsic.bars:
+        extrinsic_bars = getattr(dac_config.extrinsic, "bars", None)
+        if extrinsic_bars:
+            for bar in extrinsic_bars:
                 if bar not in symbol_table.meters:
                     errors.add(
                         CompilationMessage(
@@ -1736,23 +3042,25 @@ class UniverseCompiler:
                     )
 
         # Validate extrinsic bar_bonuses (if present)
-        for idx, bonus in enumerate(dac_config.extrinsic.bar_bonuses):
-            if bonus.bar not in symbol_table.meters:
+        for idx, bonus in enumerate(getattr(dac_config.extrinsic, "bar_bonuses", []) or []):
+            bonus_bar = getattr(bonus, "bar", None)
+            if bonus_bar and bonus_bar not in symbol_table.meters:
                 errors.add(
                     CompilationMessage(
                         code="DAC-REF-004",
-                        message=f"Extrinsic bar bonus references undefined bar: {bonus.bar}",
+                        message=f"Extrinsic bar bonus references undefined bar: {bonus_bar}",
                         location=f"drive_as_code.yaml:extrinsic.bar_bonuses[{idx}]",
                     )
                 )
 
         # Validate extrinsic variable_bonuses (if present)
-        for idx, var_bonus in enumerate(dac_config.extrinsic.variable_bonuses):
-            if var_bonus.variable not in symbol_table.vfs_variables:
+        for idx, var_bonus in enumerate(getattr(dac_config.extrinsic, "variable_bonuses", []) or []):
+            var_ref = getattr(var_bonus, "variable", None)
+            if var_ref and var_ref not in symbol_table.vfs_variables:
                 errors.add(
                     CompilationMessage(
                         code="DAC-REF-005",
-                        message=f"Extrinsic variable bonus references undefined VFS variable: {var_bonus.variable}",
+                        message=f"Extrinsic variable bonus references undefined VFS variable: {var_ref}",
                         location=f"drive_as_code.yaml:extrinsic.variable_bonuses[{idx}]",
                     )
                 )
@@ -1761,74 +3069,81 @@ class UniverseCompiler:
         for idx, shaping in enumerate(dac_config.shaping):
             # Validate affordance references
             if shaping.type == "approach_reward":
-                if shaping.target_affordance not in symbol_table.affordances:
+                target_aff = getattr(shaping, "target_affordance", None) or getattr(shaping, "target", None)
+                if target_aff and target_aff not in symbol_table.affordances:
                     errors.add(
                         CompilationMessage(
                             code="DAC-REF-006",
-                            message=f"Shaping bonus references undefined affordance: {shaping.target_affordance}",
+                            message=f"Shaping bonus references undefined affordance: {target_aff}",
                             location=f"drive_as_code.yaml:shaping[{idx}]",
                         )
                     )
             elif shaping.type == "completion_bonus":
-                if shaping.affordance not in symbol_table.affordances:
+                aff_ref = getattr(shaping, "affordance", None)
+                if aff_ref and aff_ref not in symbol_table.affordances:
                     errors.add(
                         CompilationMessage(
                             code="DAC-REF-007",
-                            message=f"Shaping bonus (completion_bonus) references undefined affordance: {shaping.affordance}",
+                            message=f"Shaping bonus (completion_bonus) references undefined affordance: {aff_ref}",
                             location=f"drive_as_code.yaml:shaping[{idx}]",
                         )
                     )
             elif shaping.type == "streak_bonus":
-                if shaping.affordance not in symbol_table.affordances:
+                aff_ref = getattr(shaping, "affordance", None)
+                if aff_ref and aff_ref not in symbol_table.affordances:
                     errors.add(
                         CompilationMessage(
                             code="DAC-REF-008",
-                            message=f"Shaping bonus (streak_bonus) references undefined affordance: {shaping.affordance}",
+                            message=f"Shaping bonus (streak_bonus) references undefined affordance: {aff_ref}",
                             location=f"drive_as_code.yaml:shaping[{idx}]",
                         )
                     )
             elif shaping.type == "timing_bonus":
                 for time_range_idx, time_range in enumerate(shaping.time_ranges):
-                    if time_range.affordance not in symbol_table.affordances:
+                    aff_ref = getattr(time_range, "affordance", None)
+                    if aff_ref and aff_ref not in symbol_table.affordances:
                         errors.add(
                             CompilationMessage(
                                 code="DAC-REF-009",
-                                message=f"Shaping bonus (timing_bonus) references undefined affordance: {time_range.affordance}",
+                                message=f"Shaping bonus (timing_bonus) references undefined affordance: {aff_ref}",
                                 location=f"drive_as_code.yaml:shaping[{idx}].time_ranges[{time_range_idx}]",
                             )
                         )
 
             # Validate bar references
             elif shaping.type == "efficiency_bonus":
-                if shaping.bar not in symbol_table.meters:
+                bar_ref = getattr(shaping, "bar", None)
+                if bar_ref and bar_ref not in symbol_table.meters:
                     errors.add(
                         CompilationMessage(
                             code="DAC-REF-010",
-                            message=f"Shaping bonus (efficiency_bonus) references undefined bar: {shaping.bar}",
+                            message=f"Shaping bonus (efficiency_bonus) references undefined bar: {bar_ref}",
                             location=f"drive_as_code.yaml:shaping[{idx}]",
                         )
                     )
             elif shaping.type == "crisis_avoidance":
-                if shaping.bar not in symbol_table.meters:
+                bar_ref = getattr(shaping, "bar", None)
+                if bar_ref and bar_ref not in symbol_table.meters:
                     errors.add(
                         CompilationMessage(
                             code="DAC-REF-011",
-                            message=f"Shaping bonus (crisis_avoidance) references undefined bar: {shaping.bar}",
+                            message=f"Shaping bonus (crisis_avoidance) references undefined bar: {bar_ref}",
                             location=f"drive_as_code.yaml:shaping[{idx}]",
                         )
                     )
             elif shaping.type == "economic_efficiency":
-                if shaping.money_bar not in symbol_table.meters:
+                money_bar = getattr(shaping, "money_bar", None)
+                if money_bar and money_bar not in symbol_table.meters:
                     errors.add(
                         CompilationMessage(
                             code="DAC-REF-012",
-                            message=f"Shaping bonus (economic_efficiency) references undefined bar: {shaping.money_bar}",
+                            message=f"Shaping bonus (economic_efficiency) references undefined bar: {money_bar}",
                             location=f"drive_as_code.yaml:shaping[{idx}]",
                         )
                     )
             elif shaping.type == "balance_bonus":
-                for bar in shaping.bars:
-                    if bar not in symbol_table.meters:
+                for bar in getattr(shaping, "bars", []) or []:
+                    if bar and bar not in symbol_table.meters:
                         errors.add(
                             CompilationMessage(
                                 code="DAC-REF-013",
@@ -1837,23 +3152,25 @@ class UniverseCompiler:
                             )
                         )
             elif shaping.type == "state_achievement":
-                for condition_idx, condition in enumerate(shaping.conditions):
-                    if condition.bar not in symbol_table.meters:
+                for condition_idx, condition in enumerate(getattr(shaping, "conditions", []) or []):
+                    condition_bar = getattr(condition, "bar", None)
+                    if condition_bar and condition_bar not in symbol_table.meters:
                         errors.add(
                             CompilationMessage(
                                 code="DAC-REF-014",
-                                message=f"Shaping bonus (state_achievement) references undefined bar: {condition.bar}",
+                                message=f"Shaping bonus (state_achievement) references undefined bar: {condition_bar}",
                                 location=f"drive_as_code.yaml:shaping[{idx}].conditions[{condition_idx}]",
                             )
                         )
 
             # Validate VFS variable references
             elif shaping.type == "vfs_variable":
-                if shaping.variable not in symbol_table.vfs_variables:
+                var_ref = getattr(shaping, "variable", None)
+                if var_ref and var_ref not in symbol_table.vfs_variables:
                     errors.add(
                         CompilationMessage(
                             code="DAC-REF-015",
-                            message=f"Shaping bonus (vfs_variable) references undefined VFS variable: {shaping.variable}",
+                            message=f"Shaping bonus (vfs_variable) references undefined VFS variable: {var_ref}",
                             location=f"drive_as_code.yaml:shaping[{idx}]",
                         )
                     )
@@ -1966,6 +3283,8 @@ class UniverseCompiler:
             (len(raw_configs.cascades), MAX_CASCADES, "cascades.yaml", "cascades"),
             (len(raw_configs.global_actions.actions), MAX_ACTIONS, "configs/global_actions.yaml", "actions"),
             (len(raw_configs.variables_reference), MAX_VARIABLES, "variables_reference.yaml", "variables"),
+            (len(getattr(raw_configs, "item_types", []) or []), MAX_ITEM_TYPES, "items.yaml", "item types"),
+            (len(getattr(raw_configs, "compiled_vfs_profiles", []) or []), MAX_VFS_PROFILES, "vfs_profiles.yaml", "vfs profiles"),
         )
 
         for count, limit, location, label in checks:
@@ -2151,11 +3470,12 @@ class UniverseCompiler:
                     )
                 )
 
-            pipeline = affordance.effect_pipeline
-            if pipeline is not None and not isinstance(pipeline, EffectPipeline):
-                pipeline = EffectPipeline.model_validate(pipeline)
+            # Validate interactions field (Effects commands)
+            interactions = getattr(affordance, "interactions", {})
             if multi_tick_caps:
-                if pipeline is None or (not pipeline.per_tick and not pipeline.on_completion):
+                has_per_tick = bool(interactions.get("per_tick"))
+                has_on_completion = bool(interactions.get("on_completion"))
+                if not has_per_tick and not has_on_completion:
                     errors.add(
                         formatter(
                             "UAC-VAL-008",
@@ -2166,7 +3486,7 @@ class UniverseCompiler:
                 else:
                     cap = multi_tick_caps[0]
                     early_exit_allowed = bool(self._get_attr_value(cap, "early_exit_allowed"))
-                    if pipeline.on_early_exit and not early_exit_allowed:
+                    if interactions.get("on_early_exit") and not early_exit_allowed:
                         errors.add_warning(
                             formatter(
                                 "UAC-VAL-008",
@@ -2174,7 +3494,7 @@ class UniverseCompiler:
                                 f"affordances.yaml:{affordance.id}",
                             )
                         )
-            elif pipeline and pipeline.per_tick:
+            elif interactions.get("per_tick"):
                 errors.add_warning(
                     formatter(
                         "UAC-VAL-008",
@@ -2232,34 +3552,29 @@ class UniverseCompiler:
                             )
                         )
 
-            # UAC-VAL-011: Validate probabilistic effect pipeline completeness
+            # UAC-VAL-011: Validate probabilistic interactions completeness
             has_probabilistic = any(self._get_attr_value(cap, "type") == "probabilistic" for cap in capabilities)
 
             if has_probabilistic:
-                if pipeline is None:
+                # interactions is already defined earlier in this method
+                has_on_completion = bool(interactions.get("on_completion"))
+                has_on_failure = bool(interactions.get("on_failure"))
+
+                missing_stages = []
+                if not has_on_completion:
+                    missing_stages.append("on_completion (success path)")
+                if not has_on_failure:
+                    missing_stages.append("on_failure (failure path)")
+
+                if missing_stages:
                     errors.add(
                         formatter(
                             "UAC-VAL-011",
-                            f"Probabilistic affordance '{affordance.id}' must define effect_pipeline with on_completion and on_failure",
-                            f"affordances.yaml:{affordance.id}",
+                            f"Probabilistic affordance '{affordance.id}' should define both success and failure effects. "
+                            f"Missing: {', '.join(missing_stages)}",
+                            f"affordances.yaml:{affordance.id}:interactions",
                         )
                     )
-                else:
-                    missing_stages = []
-                    if not pipeline.on_completion:
-                        missing_stages.append("on_completion (success path)")
-                    if not pipeline.on_failure:
-                        missing_stages.append("on_failure (failure path)")
-
-                    if missing_stages:
-                        errors.add(
-                            formatter(
-                                "UAC-VAL-011",
-                                f"Probabilistic affordance '{affordance.id}' should define both success and failure effects. "
-                                f"Missing: {', '.join(missing_stages)}",
-                                f"affordances.yaml:{affordance.id}:effect_pipeline",
-                            )
-                        )
 
     def _validate_affordance_positions(
         self,
@@ -2354,17 +3669,13 @@ class UniverseCompiler:
     def _compute_max_income(self, affordances: list[AffordanceParamConfig]) -> float:
         total = 0.0
         for affordance in affordances:
-            pipeline = getattr(affordance, "effect_pipeline", None)
-            if pipeline is not None:
-                total += self._sum_money_entries(pipeline.on_start, positive_only=True)
-                total += self._sum_money_entries(pipeline.per_tick, positive_only=True)
-                total += self._sum_money_entries(pipeline.on_completion, positive_only=True)
-                total += self._sum_money_entries(pipeline.on_early_exit, positive_only=True)
-                total += self._sum_money_entries(pipeline.on_failure, positive_only=True)
-            else:
-                total += self._sum_money_entries(getattr(affordance, "effects", []), positive_only=True)
-                total += self._sum_money_entries(getattr(affordance, "effects_per_tick", []), positive_only=True)
-                total += self._sum_money_entries(getattr(affordance, "completion_bonus", []), positive_only=True)
+            # Extract from interactions field (Effects commands)
+            interactions = getattr(affordance, "interactions", {})
+            total += self._sum_money_entries(interactions.get("on_start", []), positive_only=True)
+            total += self._sum_money_entries(interactions.get("per_tick", []), positive_only=True)
+            total += self._sum_money_entries(interactions.get("on_completion", []), positive_only=True)
+            total += self._sum_money_entries(interactions.get("on_early_exit", []), positive_only=True)
+            total += self._sum_money_entries(interactions.get("on_failure", []), positive_only=True)
         return total
 
     def _sum_money_entries(self, entries: object | None, *, positive_only: bool) -> float:
@@ -2434,9 +3745,10 @@ class UniverseCompiler:
     def _affordance_open_for_hour(self, affordance: AffordanceParamConfig, hour: int) -> bool:
         """Return True if an affordance is open for the given hour.
 
-        v2.1 semantics: availability is defined *only* via opening_hours on
+        v2.1 semantics: availability is defined via opening_hours on
         curriculum-level affordances (AffordanceParamConfig from AffordancesV2Config).
-        Legacy operating_hours fields are no longer supported.
+        The compiler converts opening_hours config to operating_hours runtime tuples
+        for use with temporal_utils.is_affordance_open().
         """
         opening_hours = getattr(affordance, "opening_hours", None)
         if opening_hours is None:
@@ -2457,21 +3769,15 @@ class UniverseCompiler:
         return False
 
     def _affordance_positive_amount_for_meter(self, affordance: AffordanceParamConfig | AffordanceConfig, meter_name: str) -> float:
-        pipeline = getattr(affordance, "effect_pipeline", None)
+        # Extract from interactions field (Effects commands)
+        interactions = getattr(affordance, "interactions", {})
         total = 0.0
-        if pipeline is not None and not isinstance(pipeline, EffectPipeline):
-            pipeline = EffectPipeline.model_validate(pipeline)
 
-        if pipeline is not None:
-            total += self._sum_positive_meter_entries(pipeline.on_start, meter_name)
-            total += self._sum_positive_meter_entries(pipeline.per_tick, meter_name)
-            total += self._sum_positive_meter_entries(pipeline.on_completion, meter_name)
-            total += self._sum_positive_meter_entries(pipeline.on_early_exit, meter_name)
-            total += self._sum_positive_meter_entries(pipeline.on_failure, meter_name)
-        else:
-            total += self._sum_positive_meter_entries(getattr(affordance, "effects", []), meter_name)
-            total += self._sum_positive_meter_entries(getattr(affordance, "effects_per_tick", []), meter_name)
-            total += self._sum_positive_meter_entries(getattr(affordance, "completion_bonus", []), meter_name)
+        total += self._sum_positive_meter_entries(interactions.get("on_start", []), meter_name)
+        total += self._sum_positive_meter_entries(interactions.get("per_tick", []), meter_name)
+        total += self._sum_positive_meter_entries(interactions.get("on_completion", []), meter_name)
+        total += self._sum_positive_meter_entries(interactions.get("on_early_exit", []), meter_name)
+        total += self._sum_positive_meter_entries(interactions.get("on_failure", []), meter_name)
 
         return total
 
@@ -2599,18 +3905,43 @@ class UniverseCompiler:
             errors.add(issue)
 
     def _get_meter(self, entry: object | None) -> str | None:
+        """Extract meter name from Effects command."""
         if entry is None:
             return None
         if isinstance(entry, dict):
-            return entry.get("meter")
-        return getattr(entry, "meter", None)
+            # Effects command: extract from "modify" field
+            if "modify" in entry:
+                modify = entry["modify"]
+                if isinstance(modify, str) and modify.startswith("target.bar."):
+                    return modify.split(".")[-1]
+            return None
+        return None
 
     def _get_amount(self, entry: object | None) -> float | None:
+        """Extract meter delta from Effects command."""
         if entry is None:
             return None
-        value = entry.get("amount") if isinstance(entry, dict) else getattr(entry, "amount", None)
-        if isinstance(value, int | float):
-            return float(value)
+
+        # Effects command: parse simple addition from "value" expression
+        if isinstance(entry, dict) and "value" in entry:
+            value_expr = entry["value"]
+            if isinstance(value_expr, str):
+                # Parse simple pattern: "target.bar.X + Y" or "target.bar.X - Y"
+                # For more complex expressions, return None (heuristic validation only)
+                if " + " in value_expr:
+                    parts = value_expr.split(" + ")
+                    if len(parts) == 2:
+                        try:
+                            return float(parts[1].strip())
+                        except ValueError:
+                            return None
+                elif " - " in value_expr:
+                    parts = value_expr.split(" - ")
+                    if len(parts) == 2:
+                        try:
+                            return -float(parts[1].strip())
+                        except ValueError:
+                            return None
         return None
 
     @staticmethod
@@ -2703,20 +4034,22 @@ class UniverseCompiler:
             base_depletions[index] = float(getattr(bar, "base_depletion", 0.0))
 
         cascade_data: dict[str, list[dict[str, float]]] = defaultdict(list)
+        cascade_by_id: dict[str, list[dict[str, float]]] = defaultdict(list)
         for cascade in raw_configs.cascades:
             source_idx = meter_lookup.get(cascade.source)
             target_idx = meter_lookup.get(cascade.target)
             if source_idx is None or target_idx is None:
                 continue
             category_key = cascade.category or "uncategorized"
-            cascade_data[category_key].append(
-                {
-                    "source_idx": source_idx,
-                    "target_idx": target_idx,
-                    "threshold": cascade.threshold,
-                    "strength": cascade.strength,
-                }
-            )
+            entry = {
+                "source_idx": source_idx,
+                "target_idx": target_idx,
+                "threshold": cascade.threshold,
+                "strength": cascade.strength,
+            }
+            cascade_data[category_key].append(entry)
+            pair_id = f"{cascade.source}->{cascade.target}"
+            cascade_by_id[pair_id].append(entry)
 
         for category, entries in cascade_data.items():
             entries.sort(key=lambda entry: entry["target_idx"])
@@ -2739,9 +4072,12 @@ class UniverseCompiler:
             aff.id: self._tensorize_affordance_position(getattr(aff, "position", None), torch_device) for aff in raw_configs.affordances
         }
 
+        cascade_payload = dict(cascade_data)
+        cascade_payload.update(cascade_by_id)
+
         return OptimizationData(
             base_depletions=base_depletions,
-            cascade_data=dict(cascade_data),
+            cascade_data=cascade_payload,
             modulation_data=modulation_data,
             action_mask_table=action_mask_table,
             affordance_position_map=affordance_position_map,
@@ -2958,7 +4294,8 @@ class UniverseCompiler:
         if levels_dir.exists():
             yaml_files.extend(sorted(levels_dir.rglob("*.yaml")))
 
-        yaml_files.append(Path("configs") / "global_actions.yaml")
+        # Note: global_actions.yaml was removed in v2.1 migration.
+        # Actions are now per-experiment via actions.yaml or embedded in training.yaml.
 
         digest = hashlib.sha256()
         for file_path in yaml_files:
@@ -2972,17 +4309,15 @@ class UniverseCompiler:
     def _compute_config_mtime(self, config_dir: Path) -> float:
         """Compute maximum modification time of all config files.
 
-        Returns the latest mtime across all YAML files in the config directory
-        and global_actions.yaml. This ensures cache is invalidated when ANY
-        config file changes (including comment/whitespace-only changes).
+        Returns the latest mtime across all YAML files in the config directory.
+        This ensures cache is invalidated when ANY config file changes
+        (including comment/whitespace-only changes).
         """
         yaml_files = sorted(config_dir.glob("*.yaml"))
 
         levels_dir = config_dir / "levels"
         if levels_dir.exists():
             yaml_files.extend(sorted(levels_dir.rglob("*.yaml")))
-
-        yaml_files.append(Path("configs") / "global_actions.yaml")
 
         max_mtime = 0.0
         for file_path in yaml_files:
@@ -3046,17 +4381,13 @@ class UniverseCompiler:
                 if meter and amount is not None:
                     totals[meter] += amount
 
-        pipeline = getattr(affordance, "effect_pipeline", None)
-        if pipeline is not None:
-            _add_entries(pipeline.on_start)
-            _add_entries(pipeline.per_tick)
-            _add_entries(pipeline.on_completion)
-            _add_entries(pipeline.on_early_exit)
-            _add_entries(pipeline.on_failure)
-        else:
-            _add_entries(getattr(affordance, "effects", []))
-            _add_entries(getattr(affordance, "effects_per_tick", []))
-            _add_entries(getattr(affordance, "completion_bonus", []))
+        # Extract from interactions field (Effects commands)
+        interactions = getattr(affordance, "interactions", {})
+        _add_entries(interactions.get("on_start", []))
+        _add_entries(interactions.get("per_tick", []))
+        _add_entries(interactions.get("on_completion", []))
+        _add_entries(interactions.get("on_early_exit", []))
+        _add_entries(interactions.get("on_failure", []))
 
         return dict(totals)
 

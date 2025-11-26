@@ -7,6 +7,7 @@ Manages Q-networks, replay buffers, and training loops.
 
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING, cast
 
 import numpy as np
@@ -14,11 +15,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F  # noqa: N812
 
-from townlet.agent.brain_config import BrainConfig
 from townlet.agent.loss_factory import LossFactory
 from townlet.agent.network_factory import NetworkFactory
 from townlet.agent.networks import RecurrentSpatialQNetwork
 from townlet.agent.optimizer_factory import OptimizerFactory
+from townlet.config.brain_config import BrainConfig
 from townlet.curriculum.base import CurriculumManager
 from townlet.exploration.action_selection import epsilon_greedy_action_selection
 from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
@@ -32,6 +33,8 @@ from townlet.training.state import BatchedAgentState, CurriculumDecision, Popula
 
 if TYPE_CHECKING:
     from townlet.environment.vectorized_env import VectorizedHamletEnv
+
+_logger = logging.getLogger(__name__)
 
 EpisodeContainer = dict[str, list[torch.Tensor]]
 
@@ -57,18 +60,17 @@ class VectorizedPopulation(PopulationManager):
         batch_size: int,
         sequence_length: int,
         max_grad_norm: float,
-        action_dim: int | None = None,
-        vision_window_size: int = 5,
+        action_dim: int,
+        vision_window_size: int,
         tb_logger=None,
         max_episodes: int | None = None,
         max_steps_per_episode: int | None = None,
-        observation_spec=None,
     ):
         """
         Initialize vectorized population.
 
         Args:
-            env: Vectorized environment
+            env: Vectorized environment (must have observation_spec attribute)
             curriculum: Curriculum manager
             exploration: Exploration strategy
             agent_ids: List of agent identifiers
@@ -95,6 +97,14 @@ class VectorizedPopulation(PopulationManager):
                 "See docs/config-schemas/brain.md for examples."
             )
 
+        # ✅ POP-005: Validate observation_spec exists on env (no silent fallback)
+        if not hasattr(env, "observation_spec") or env.observation_spec is None:
+            raise ValueError(
+                "env.observation_spec is required. Environment must have a valid observation_spec "
+                "from the compiled universe. This is set automatically by VectorizedHamletEnv."
+            )
+        self.observation_spec = env.observation_spec
+
         self.env = env
         self.curriculum = curriculum
         self.exploration = exploration
@@ -111,10 +121,6 @@ class VectorizedPopulation(PopulationManager):
         self.use_double_dqn = brain_config.q_learning.use_double_dqn
         target_update_frequency = brain_config.q_learning.target_update_frequency
 
-        if action_dim is None:
-            raise ValueError(
-                "action_dim is required and must be sourced from compiler metadata; " "no fallback to env defaults is allowed."
-            )
         self.action_dim = action_dim
 
         # Agent runtime metrics (telemetry + reward baseline source of truth)
@@ -130,38 +136,16 @@ class VectorizedPopulation(PopulationManager):
         self.last_q_values_mean = 0.0
         self.last_training_step = 0
         self.last_rnd_loss = 0.0  # RND predictor loss (for monitoring intrinsic exploration)
+        self._per_beta_warning_logged = False  # POP-006: Track if we've warned about missing annealing params
 
         # Q-network (shared across all agents for now)
-        self.q_network: nn.Module
+        # Store params needed for network building helper
+        self._vision_window_size = vision_window_size
+        self._obs_dim = obs_dim
 
-        # Build network from brain_config (always provided)
-        if brain_config.architecture.type == "feedforward":
-            assert brain_config.architecture.feedforward is not None, "feedforward config must be present"
-            self.q_network = NetworkFactory.build_feedforward(
-                config=brain_config.architecture.feedforward,
-                obs_dim=obs_dim,
-                action_dim=action_dim,
-            ).to(device)
-        elif brain_config.architecture.type == "recurrent":
-            assert brain_config.architecture.recurrent is not None, "recurrent config must be present"
-            self.q_network = NetworkFactory.build_recurrent(
-                config=brain_config.architecture.recurrent,
-                action_dim=action_dim,
-                window_size=vision_window_size,
-                position_dim=env.substrate.position_dim,
-                num_meters=env.meter_count,
-                num_affordance_types=env.num_affordance_types,
-                observation_spec=getattr(env, "observation_spec", None) if observation_spec is None else observation_spec,
-            ).to(device)
-        elif brain_config.architecture.type == "dueling":
-            assert brain_config.architecture.dueling is not None, "dueling config must be present"
-            self.q_network = NetworkFactory.build_dueling(
-                config=brain_config.architecture.dueling,
-                obs_dim=obs_dim,
-                action_dim=action_dim,
-            ).to(device)
-        else:
-            raise ValueError(f"Unsupported architecture type: {brain_config.architecture.type}. Supported: feedforward, recurrent, dueling")
+        # Build network using DRY helper (POP-001)
+        # observation_spec comes from self.observation_spec (validated above)
+        self.q_network: nn.Module = self._build_network(brain_config, obs_dim, action_dim, env, vision_window_size).to(device)
 
         # Set is_recurrent flag from brain_config
         self.is_recurrent = brain_config.architecture.type == "recurrent"
@@ -170,38 +154,8 @@ class VectorizedPopulation(PopulationManager):
         self.is_dueling = brain_config.architecture.type == "dueling"
 
         # Target network (stabilises training for both feed-forward and recurrent agents)
-        self.target_network: nn.Module
-
-        # Initialize target network (brain_config always provided)
-        if brain_config.architecture.type == "feedforward":
-            assert brain_config.architecture.feedforward is not None
-            self.target_network = NetworkFactory.build_feedforward(
-                config=brain_config.architecture.feedforward,
-                obs_dim=obs_dim,
-                action_dim=action_dim,
-            ).to(device)
-        elif brain_config.architecture.type == "recurrent":
-            assert brain_config.architecture.recurrent is not None
-            self.target_network = NetworkFactory.build_recurrent(
-                config=brain_config.architecture.recurrent,
-                action_dim=action_dim,
-                window_size=vision_window_size,
-                position_dim=env.substrate.position_dim,
-                num_meters=env.meter_count,
-                num_affordance_types=env.num_affordance_types,
-                observation_spec=getattr(env, "observation_spec", None) if observation_spec is None else observation_spec,
-            ).to(device)
-        elif brain_config.architecture.type == "dueling":
-            assert brain_config.architecture.dueling is not None
-            self.target_network = NetworkFactory.build_dueling(
-                config=brain_config.architecture.dueling,
-                obs_dim=obs_dim,
-                action_dim=action_dim,
-            ).to(device)
-        else:
-            raise ValueError(
-                f"Unsupported architecture type: {brain_config.architecture.type}. " f"Supported: feedforward, recurrent, dueling"
-            )
+        # Build using DRY helper (POP-001)
+        self.target_network: nn.Module = self._build_network(brain_config, obs_dim, action_dim, env, vision_window_size).to(device)
 
         # Initialize common target network state
         self.target_network.load_state_dict(self.q_network.state_dict())
@@ -319,6 +273,77 @@ class VectorizedPopulation(PopulationManager):
             "rewards_intrinsic": [],
             "dones": [],
         }
+
+    # ------------------------------------------------------------------ #
+    # TensorBoard logging helper (POP-002 DRY)
+    # ------------------------------------------------------------------ #
+    def _log_network_histograms(self) -> None:
+        """Log network weight/gradient histograms to TensorBoard.
+
+        Called during training to monitor parameter distributions.
+        Only logs every 100 steps to avoid performance overhead.
+        """
+        if self.tb_logger is None or self.total_steps % 100 != 0:
+            return
+        for name, param in self.q_network.named_parameters():
+            self.tb_logger.writer.add_histogram(f"Network/Weights/{name}", param.data, self.total_steps)
+            if param.grad is not None:
+                self.tb_logger.writer.add_histogram(f"Network/Gradients/{name}", param.grad, self.total_steps)
+
+    # ------------------------------------------------------------------ #
+    # Network building helper (POP-001 DRY)
+    # ------------------------------------------------------------------ #
+    def _build_network(
+        self,
+        brain_config: BrainConfig,
+        obs_dim: int,
+        action_dim: int,
+        env: VectorizedHamletEnv,
+        vision_window_size: int,
+    ) -> nn.Module:
+        """Build network from brain_config (DRY helper for q_network and target_network).
+
+        Args:
+            brain_config: Brain configuration specifying architecture
+            obs_dim: Observation dimension
+            action_dim: Action dimension
+            env: Environment for substrate/meter info (recurrent networks)
+            vision_window_size: Vision window size (recurrent networks)
+
+        Returns:
+            Constructed network module (not yet moved to device)
+
+        Note:
+            For recurrent networks, uses self.observation_spec (validated in __init__).
+        """
+        arch = brain_config.architecture
+        if arch.type == "feedforward":
+            assert arch.feedforward is not None, "feedforward config must be present"
+            return NetworkFactory.build_feedforward(
+                config=arch.feedforward,
+                obs_dim=obs_dim,
+                action_dim=action_dim,
+            )
+        elif arch.type == "recurrent":
+            assert arch.recurrent is not None, "recurrent config must be present"
+            return NetworkFactory.build_recurrent(
+                config=arch.recurrent,
+                action_dim=action_dim,
+                window_size=vision_window_size,
+                position_dim=env.substrate.position_dim,
+                num_meters=env.meter_count,
+                num_affordance_types=env.num_affordance_types,
+                observation_spec=self.observation_spec,  # POP-005: Always use validated spec
+            )
+        elif arch.type == "dueling":
+            assert arch.dueling is not None, "dueling config must be present"
+            return NetworkFactory.build_dueling(
+                config=arch.dueling,
+                obs_dim=obs_dim,
+                action_dim=action_dim,
+            )
+        else:
+            raise ValueError(f"Unsupported architecture type: {arch.type}. Supported: feedforward, recurrent, dueling")
 
     def _store_episode_and_reset(self, agent_idx: int) -> bool:
         """Store accumulated episode for agent and reset buffers."""
@@ -535,6 +560,26 @@ class VectorizedPopulation(PopulationManager):
         Returns:
             BatchedAgentState with all agent data after step
         """
+
+        # POP-004: Validate device consistency to prevent cryptic PyTorch errors
+        # Compare device types robustly - cuda:0 == cuda (default device)
+        def _same_device(a: torch.device, b: torch.device) -> bool:
+            """Check if two devices are the same, handling cuda vs cuda:0."""
+            if a.type != b.type:
+                return False
+            if a.type == "cuda":
+                # cuda (no index) means device 0, same as cuda:0
+                a_idx = a.index if a.index is not None else 0
+                b_idx = b.index if b.index is not None else 0
+                return a_idx == b_idx
+            return True
+
+        if not _same_device(self.current_obs.device, self.device):
+            raise RuntimeError(
+                f"Observation tensor on {self.current_obs.device} but population on {self.device}. "
+                f"Ensure environment and population use the same device."
+            )
+
         # 1. Get Q-values from network
         with torch.no_grad():
             if self.is_recurrent:
@@ -732,19 +777,20 @@ class VectorizedPopulation(PopulationManager):
 
                 # P2.2: Apply mask to prevent gradients from post-terminal garbage
                 # TASK-005 Phase 1: Use configured loss type (element-wise for masking)
-                if self.brain_config is not None and self.brain_config.loss.type == "huber":
+                # POP-003: Removed redundant None checks - brain_config is required in __init__
+                if self.brain_config.loss.type == "huber":
                     losses = F.huber_loss(
                         q_pred_all,
                         q_target_all,
                         reduction="none",
                         delta=self.loss_delta,  # Already set in __init__ with proper type
                     )
-                elif self.brain_config is not None and self.brain_config.loss.type == "smooth_l1":
+                elif self.brain_config.loss.type == "smooth_l1":
                     losses = F.smooth_l1_loss(q_pred_all, q_target_all, reduction="none")
-                elif self.brain_config is not None and self.brain_config.loss.type == "mse":
+                elif self.brain_config.loss.type == "mse":
                     losses = F.mse_loss(q_pred_all, q_target_all, reduction="none")
                 else:
-                    raise ValueError("Unsupported loss configuration; brain_config.loss.type must be one of {'huber','smooth_l1','mse'}.")
+                    raise ValueError(f"Unsupported loss type: {self.brain_config.loss.type}. Must be one of {{'huber','smooth_l1','mse'}}.")
                 mask = batch["mask"].float()  # [batch, seq_len] - True for valid timesteps
                 masked_loss = (losses * mask).sum() / mask.sum().clamp_min(1)
                 loss: torch.Tensor = masked_loss
@@ -770,12 +816,8 @@ class VectorizedPopulation(PopulationManager):
                 if self.scheduler is not None:
                     self.scheduler.step()
 
-                # Log network statistics to TensorBoard (every 100 training steps)
-                if self.tb_logger is not None and self.total_steps % 100 == 0:
-                    for name, param in self.q_network.named_parameters():
-                        self.tb_logger.writer.add_histogram(f"Network/Weights/{name}", param.data, self.total_steps)
-                        if param.grad is not None:
-                            self.tb_logger.writer.add_histogram(f"Network/Gradients/{name}", param.grad, self.total_steps)
+                # Log network statistics to TensorBoard (POP-002 DRY helper)
+                self._log_network_histograms()
 
                 # Update target network periodically
                 self.training_step_counter += 1
@@ -861,18 +903,22 @@ class VectorizedPopulation(PopulationManager):
                         if self.max_episodes is not None and self.max_steps_per_episode is not None:
                             total_steps = self.max_episodes * self.max_steps_per_episode
                             per_buffer.anneal_beta(total_steps, self.total_steps)
+                        elif not self._per_beta_warning_logged:
+                            # POP-006: Warn once if beta annealing is enabled but params are missing
+                            _logger.warning(
+                                "PER beta_annealing enabled but max_episodes/max_steps_per_episode not set. "
+                                "Beta will remain at initial value, which may reduce training efficiency. "
+                                "Set max_episodes and max_steps_per_episode in training.yaml to enable annealing."
+                            )
+                            self._per_beta_warning_logged = True
 
                 # Periodically sync target network for stability
                 self.training_step_counter += 1
                 if self.training_step_counter % self.target_update_frequency == 0:
                     self.target_network.load_state_dict(self.q_network.state_dict())
 
-                # Log network statistics to TensorBoard (every 100 training steps)
-                if self.tb_logger is not None and self.total_steps % 100 == 0:
-                    for name, param in self.q_network.named_parameters():
-                        self.tb_logger.writer.add_histogram(f"Network/Weights/{name}", param.data, self.total_steps)
-                        if param.grad is not None:
-                            self.tb_logger.writer.add_histogram(f"Network/Gradients/{name}", param.grad, self.total_steps)
+                # Log network statistics to TensorBoard (POP-002 DRY helper)
+                self._log_network_histograms()
 
         # 10. Update current state
         self.current_obs = next_obs
@@ -1006,13 +1052,9 @@ class VectorizedPopulation(PopulationManager):
             "action_dim": self.action_dim,  # From environment action space (TASK-002B Phase 4.1)
         }
 
-        # Target network (recurrent mode only)
-        if self.target_network is not None:
-            checkpoint["target_network"] = self.target_network.state_dict()
-            checkpoint["training_step_counter"] = self.training_step_counter
-        else:
-            checkpoint["target_network"] = None
-            checkpoint["training_step_counter"] = 0
+        # Target network (always initialized - POP-008 simplified)
+        checkpoint["target_network"] = self.target_network.state_dict()
+        checkpoint["training_step_counter"] = self.training_step_counter
 
         # Replay buffer
         # All buffer types implement serialize(), but mypy doesn't infer it for unions
@@ -1055,13 +1097,10 @@ class VectorizedPopulation(PopulationManager):
         checkpoint_obs_dim = metadata.get("obs_dim")
         current_obs_dim = self.env.observation_dim
         if checkpoint_obs_dim != current_obs_dim:
-            import warnings
-
-            warnings.warn(
+            _logger.warning(
                 f"Checkpoint obs_dim mismatch: checkpoint has {checkpoint_obs_dim}, "
                 f"current env has {current_obs_dim}. This may indicate grid size or "
-                f"observability mode differences. Proceeding with caution.",
-                UserWarning,
+                f"observability mode differences. Proceeding with caution."
             )
 
         # Restore Q-network
@@ -1078,11 +1117,11 @@ class VectorizedPopulation(PopulationManager):
         # Restore training counters
         self.total_steps = checkpoint.get("total_steps", 0)
 
-        # Restore target network (if exists)
+        # Restore target network (if exists in checkpoint)
+        # POP-008: Removed redundant self.target_network is not None check - always initialized
         if "target_network" in checkpoint and checkpoint["target_network"] is not None:
-            if self.target_network is not None:
-                self.target_network.load_state_dict(checkpoint["target_network"])
-                self.training_step_counter = checkpoint.get("training_step_counter", 0)
+            self.target_network.load_state_dict(checkpoint["target_network"])
+            self.training_step_counter = checkpoint.get("training_step_counter", 0)
 
         # Restore replay buffer
         if "replay_buffer" in checkpoint:

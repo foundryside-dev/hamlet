@@ -11,9 +11,8 @@ from pathlib import Path
 from typing import Any
 
 import torch
-import yaml
 
-from townlet.agent.brain_config import BrainConfig, compute_brain_hash
+from townlet.config.brain_config import compute_brain_hash
 from townlet.curriculum.factory import build_curriculum
 from townlet.demo.database import DemoDatabase
 from townlet.environment.vectorized_env import VectorizedHamletEnv
@@ -68,7 +67,7 @@ class DemoRunner:
         # - v2.1 packs: levels/<level_name>/training.yaml (mandatory)
         if training_config_path is not None:
             raise ValueError(
-                "training_config_path override is no longer supported; " "use levels/<level_name>/training.yaml with explicit level_name."
+                "training_config_path override is no longer supported; use levels/<level_name>/training.yaml with explicit level_name."
             )
         if level_name is None:
             raise ValueError("level_name is required for v2.1 config packs; legacy single-file training.yaml is no longer supported.")
@@ -112,7 +111,7 @@ class DemoRunner:
         if level_name is None:
             available_levels = getattr(self.compiled, "available_levels", [])
             if not available_levels:
-                raise ValueError("Compiled universe has no curriculum levels; " "DemoRunner requires at least one level to be available.")
+                raise ValueError("Compiled universe has no curriculum levels; DemoRunner requires at least one level to be available.")
             self.level_name: str = available_levels[0]
             logger.info("No level_name specified; defaulting to %s", self.level_name)
         else:
@@ -124,15 +123,19 @@ class DemoRunner:
         self.stratum_config = self.compiled.stratum
         self.environment_config = self.compiled.environment
         self.actions_config = self.compiled.actions
-        self.agent_config = self.compiled.agent
+        self.brain_config = self.compiled.brain
         self.curriculum_config = level_config.curriculum
         self.bars_config = level_config.bars
         self.affordances_config = level_config.affordances
         self.training_config = level_config.training
-
-        # Also load raw YAML for optional sections (e.g., recording)
-        with open(self.training_config_path) as f:
-            self.config = yaml.safe_load(f)
+        # Expose training config in the legacy dict shape for downstream callers/tests
+        self.config: dict[str, Any] = {
+            "training": self.training_config.model_dump(exclude_none=True),
+        }
+        if self.training_config.run_metadata is not None:
+            self.config["run_metadata"] = self.training_config.run_metadata.model_dump(exclude_none=True)
+        if self.training_config.recording is not None:
+            self.config["recording"] = self.training_config.recording.model_dump(exclude_none=True)
 
         # Set max_episodes: use provided value, otherwise read from curriculum training config
         if max_episodes is not None:
@@ -150,7 +153,7 @@ class DemoRunner:
         self.recorder = None  # Episode recorder (initialized if recording enabled)
 
         # TASK-005 Phase 1: Brain As Code configuration derived from agent.yaml + training.yaml
-        self.brain_config: BrainConfig | None = None
+        # self.brain_config is already set from self.compiled.brain
         self.brain_hash: str | None = None
 
         # Shutdown flag
@@ -307,7 +310,7 @@ class DemoRunner:
             checkpoint["epsilon"] = self.population._get_current_epsilon_value()
 
         # Persist the training configuration for provenance
-        checkpoint["training_config"] = self.config
+        checkpoint["training_config"] = self.training_config.model_dump()
         checkpoint["config_dir"] = str(self.config_dir)
 
         # TASK-005 Phase 1: Add brain_hash for checkpoint provenance
@@ -355,7 +358,7 @@ class DemoRunner:
         # P1.1: Check checkpoint version
         checkpoint_version = checkpoint.get("version")
         if checkpoint_version != 3:
-            raise ValueError(f"Unsupported checkpoint version: {checkpoint_version}\n" f"Expected version 3. Please retrain from scratch.")
+            raise ValueError(f"Unsupported checkpoint version: {checkpoint_version}\nExpected version 3. Please retrain from scratch.")
 
         self.current_episode = checkpoint["episode"]
 
@@ -474,9 +477,9 @@ class DemoRunner:
         agent_ids = [f"agent_{i}" for i in range(num_agents)]
 
         # Derive brain configuration from agent.yaml (v2.1 AgentConfig)
-        from townlet.agent.brain_config import apply_training_overrides, build_brain_config_from_agent
+        from townlet.config.brain_config import apply_training_overrides
 
-        base_brain_config = build_brain_config_from_agent(self.agent_config, self.training_config)
+        base_brain_config = self.brain_config
         brain_hash = compute_brain_hash(base_brain_config)
         logger.info(f"Brain config derived from agent.yaml: {base_brain_config.description}")
         logger.info(f"Brain hash: {brain_hash[:16]}... (SHA256)")
@@ -489,6 +492,7 @@ class DemoRunner:
         effective_brain_config = apply_training_overrides(base_brain_config, self.training_config)
 
         # Create population (effective_brain_config provides network/optimizer/Q-learning parameters)
+        # observation_spec is now read directly from env (POP-005 simplification)
         self.population = VectorizedPopulation(
             env=self.env,
             curriculum=self.curriculum,
@@ -506,22 +510,22 @@ class DemoRunner:
             brain_config=effective_brain_config,
             max_episodes=self.max_episodes,  # For PER beta annealing
             max_steps_per_episode=loop_cfg.max_steps_per_episode,  # For PER beta annealing
-            observation_spec=obs_spec,
         )
 
         self.curriculum.initialize_population(num_agents)
 
         # Initialize episode recorder if enabled
-        recording_cfg = self.config.get("recording", {})
-        if recording_cfg.get("enabled", False):
+        recording_cfg = self.training_config.recording
+        if recording_cfg and recording_cfg.enabled:
             from townlet.recording.recorder import EpisodeRecorder
 
+            recording_payload = recording_cfg.model_dump(exclude_none=True)
             # Create recording output directory
-            recording_output_dir = self.checkpoint_dir / recording_cfg.get("output_dir", "recordings")
+            recording_output_dir = self.checkpoint_dir / (recording_cfg.output_dir or "recordings")
             recording_output_dir.mkdir(parents=True, exist_ok=True)
 
             self.recorder = EpisodeRecorder(
-                config=recording_cfg,
+                config=recording_payload,
                 output_dir=recording_output_dir,
                 database=self.db,
                 curriculum=self.curriculum,
@@ -610,8 +614,8 @@ class DemoRunner:
                 last_agent_state: BatchedAgentState | None = None
 
                 for step in range(max_steps):
-                    # Check for shutdown request every 10 steps for faster Ctrl+C response
-                    if step % 10 == 0 and self.should_shutdown:
+                    # Check for shutdown request every step for immediate response
+                    if self.should_shutdown:
                         logger.info(f"[Training] Shutdown requested during episode {self.current_episode + 1}, step {step}/{max_steps}")
                         break
 
@@ -955,4 +959,4 @@ class DemoRunner:
 
 
 if __name__ == "__main__":  # pragma: no cover
-    raise SystemExit("townlet.demo.runner is no longer a direct CLI entry point.\n" "Use scripts/run_demo.py for the unified demo server.")
+    raise SystemExit("townlet.demo.runner is no longer a direct CLI entry point.\nUse scripts/run_demo.py for the unified demo server.")

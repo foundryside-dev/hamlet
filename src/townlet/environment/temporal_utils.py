@@ -11,7 +11,9 @@ operating hours logic elsewhere - it creates drift and bugs (see JANK-09).
 def is_affordance_open(time_of_day: int, operating_hours: tuple[int, int]) -> bool:
     """Check if affordance is open at given time (CANONICAL IMPLEMENTATION).
 
-    This is the single source of truth for operating hours logic.
+    This is the single source of truth for time window logic. The operating_hours
+    parameter is a runtime tuple format (open_hour, close_hour), distinct from the
+    YAML config format which uses structured opening_hours with schedules.
     All other implementations (AffordanceEngine, compiler, env) must delegate to this.
 
     Supports three notations:

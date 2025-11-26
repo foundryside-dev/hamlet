@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from townlet.vfs.schema import NormalizationSpec, ObservationField
+from townlet.vfs.schema import ObservationField
 
 
 class TestSemanticTypeField:
@@ -85,19 +85,3 @@ class TestCurriculumActiveField:
             curriculum_active="yes",  # Coerced to True
         )
         assert field.curriculum_active is True
-
-
-class TestBackwardCompatibility:
-    def test_existing_fields_without_new_metadata_still_work(self):
-        """Fields created without semantic_type/curriculum_active should use defaults."""
-        # This simulates loading old configs that don't have the new fields
-        field = ObservationField(
-            id="legacy_field",
-            source_variable="energy",
-            exposed_to=["agent"],
-            shape=[1],
-            normalization=NormalizationSpec(kind="minmax", min=0.0, max=1.0),
-        )
-
-        assert field.semantic_type == "custom"  # Default
-        assert field.curriculum_active is True  # Default

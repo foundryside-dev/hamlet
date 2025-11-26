@@ -1,0 +1,29 @@
+version: '1.0'
+description: Brain config for vfs_bar_access (migrated from agent.yaml)
+architecture:
+  type: feedforward
+  feedforward:
+    hidden_layers:
+    - 64
+    - 32
+    activation: relu
+    dropout: 0.0
+    layer_norm: false
+optimizer:
+  type: adam
+  learning_rate: 0.001
+  weight_decay: 0.0
+  schedule:
+    type: constant
+  adam_beta1: 0.9
+  adam_beta2: 0.999
+  adam_eps: 1.0e-08
+loss:
+  type: smooth_l1
+q_learning:
+  gamma: 0.99
+  target_update_frequency: 100
+  use_double_dqn: true
+replay:
+  capacity: 1000
+  prioritized: false

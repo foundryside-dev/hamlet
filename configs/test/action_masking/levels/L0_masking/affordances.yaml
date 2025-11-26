@@ -1,76 +1,116 @@
 affordances:
-  version: "1.0"
-
+  version: '1.0'
   affordances:
-    - name: Bed
-      interaction_type: instant
-      costs:
-        energy: 0.0
-        money: 0.05
-      effects:
-        energy: 0.5
-        health: 0.02
-      opening_hours:
-        enabled: false
-      deployment:
-        type: fixed
-        positions: [[1, 1]]
-
-    - name: Hospital
-      interaction_type: instant
-      costs:
-        money: 0.15
-      effects:
-        health: 0.4
-      opening_hours:
-        enabled: false
-      deployment:
-        type: fixed
-        positions: [[2, 2]]
-
-    - name: Job
-      interaction_type: instant
-      costs: {}
-      effects:
-        money: 0.28
-        energy: -0.15
-      opening_hours:
-        enabled: true
-        schedule:
-          - start: 8
-            end: 18
-      deployment:
-        type: fixed
-        positions: [[3, 3]]
-
-    - name: Bar
-      interaction_type: instant
-      costs:
-        money: 0.15
-      effects:
-        social: 0.5
-        mood: 0.25
-        health: -0.05
-      opening_hours:
-        enabled: true
-        schedule:
-          - start: 18
-            end: 28
-      deployment:
-        type: fixed
-        positions: [[4, 4]]
-
-    - name: Park
-      interaction_type: instant
-      costs: {}
-      effects:
-        social: 0.1
-        fitness: 0.05
-        mood: 0.05
-      opening_hours:
-        enabled: false
-      deployment:
-        type: fixed
-        positions: [[5, 5]]
-
+  - name: Bed
+    interaction_type: instant
+    costs:
+      energy: 0.0
+      money: 0.05
+    opening_hours:
+      enabled: false
+    deployment:
+      type: fixed
+      positions:
+      - - 1
+        - 1
+    interactions:
+      on_start:
+      - modify: target.bar.energy
+        value: target.bar.energy + 0.5
+      - modify: target.bar.health
+        value: target.bar.health + 0.02
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
+  - name: Hospital
+    interaction_type: instant
+    costs:
+      money: 0.15
+    opening_hours:
+      enabled: false
+    deployment:
+      type: fixed
+      positions:
+      - - 2
+        - 2
+    interactions:
+      on_start:
+      - modify: target.bar.health
+        value: target.bar.health + 0.4
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
+  - name: Job
+    interaction_type: instant
+    costs: {}
+    opening_hours:
+      enabled: true
+      schedule:
+      - start: 8
+        end: 18
+    deployment:
+      type: fixed
+      positions:
+      - - 3
+        - 3
+    interactions:
+      on_start:
+      - modify: target.bar.money
+        value: target.bar.money + 0.28
+      - modify: target.bar.energy
+        value: target.bar.energy + -0.15
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
+  - name: Bar
+    interaction_type: instant
+    costs:
+      money: 0.15
+    opening_hours:
+      enabled: true
+      schedule:
+      - start: 18
+        end: 28
+    deployment:
+      type: fixed
+      positions:
+      - - 4
+        - 4
+    interactions:
+      on_start:
+      - modify: target.bar.social
+        value: target.bar.social + 0.5
+      - modify: target.bar.mood
+        value: target.bar.mood + 0.25
+      - modify: target.bar.health
+        value: target.bar.health + -0.05
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
+  - name: Park
+    interaction_type: instant
+    costs: {}
+    opening_hours:
+      enabled: false
+    deployment:
+      type: fixed
+      positions:
+      - - 5
+        - 5
+    interactions:
+      on_start:
+      - modify: target.bar.social
+        value: target.bar.social + 0.1
+      - modify: target.bar.fitness
+        value: target.bar.fitness + 0.05
+      - modify: target.bar.mood
+        value: target.bar.mood + 0.05
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
   modulations: []

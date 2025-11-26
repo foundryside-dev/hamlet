@@ -39,9 +39,9 @@ class TestMovementCosts:
         expected_energy = initial_energy - (base_depletion + move_cost)
         actual_energy = env.meters[0, 0].item()
 
-        assert abs(actual_energy - expected_energy) < 1e-4, (
-            f"Movement should apply base_depletion + base_move_depletion. " f"Expected {expected_energy:.4f}, got {actual_energy:.4f}"
-        )
+        assert (
+            abs(actual_energy - expected_energy) < 1e-4
+        ), f"Movement should apply base_depletion + base_move_depletion. Expected {expected_energy:.4f}, got {actual_energy:.4f}"
 
     def test_movement_costs_per_meter_from_bars(self, cpu_env_factory):
         """Only energy should have movement cost; other meters should not."""
@@ -64,9 +64,9 @@ class TestMovementCosts:
         move_cost = next(bar.depletion.move for bar in env.bars_config.meters if bar.name == "energy")
         expected_delta = base_depletion + move_cost
         energy_delta = meter_deltas[0, 0].item()
-        assert abs(energy_delta - expected_delta) < 1e-4, (
-            f"Energy should deplete by base_depletion + base_move_depletion. " f"Expected {expected_delta:.4f}, got {energy_delta:.4f}"
-        )
+        assert (
+            abs(energy_delta - expected_delta) < 1e-4
+        ), f"Energy should deplete by base_depletion + base_move_depletion. Expected {expected_delta:.4f}, got {energy_delta:.4f}"
 
 
 class TestInteractionCosts:
@@ -83,7 +83,7 @@ class TestInteractionCosts:
         interaction_cost = next(bar.depletion.interact for bar in env.bars_config.meters if bar.name == "energy")
 
         # Execute INTERACT action - typically index 4 in Grid2D
-        interact_action = env.interact_action_idx
+        interact_action = env.action_ids["INTERACT"]
         actions = torch.tensor([interact_action], device=env.device)
 
         # One step includes: base_depletion + interaction cost
@@ -92,9 +92,9 @@ class TestInteractionCosts:
         expected_energy = initial_energy - (base_depletion + interaction_cost)
         actual_energy = env.meters[0, 0].item()
 
-        assert abs(actual_energy - expected_energy) < 1e-4, (
-            f"INTERACT should apply base_depletion + base_interaction_cost. " f"Expected {expected_energy:.4f}, got {actual_energy:.4f}"
-        )
+        assert (
+            abs(actual_energy - expected_energy) < 1e-4
+        ), f"INTERACT should apply base_depletion + base_interaction_cost. Expected {expected_energy:.4f}, got {actual_energy:.4f}"
 
 
 class TestWaitActionIsolation:
@@ -123,9 +123,9 @@ class TestWaitActionIsolation:
         expected_energy = initial_energy - (base_depletion + wait_cost)
         actual_energy = env.meters[0, 0].item()
 
-        assert abs(actual_energy - expected_energy) < 1e-4, (
-            f"WAIT should only apply base_depletion. " f"Expected {expected_energy:.4f}, got {actual_energy:.4f}"
-        )
+        assert (
+            abs(actual_energy - expected_energy) < 1e-4
+        ), f"WAIT should only apply base_depletion. Expected {expected_energy:.4f}, got {actual_energy:.4f}"
 
     def test_wait_vs_movement_cost_difference(self, cpu_env_factory):
         """WAIT should cost less than movement (demonstrates meaningful action choice)."""

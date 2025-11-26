@@ -3280,7 +3280,7 @@ except Exception as e:
 
 - Benchmarking + performance budget (<100ms without cache)
 - Caching (1-5ms with cache)
-- Can compile offline: `python -m townlet.compiler compile configs/L1`
+- Can compile offline: `python -m townlet.universe compile configs/L1`
 
 **Likelihood**: Very low (compilation is fast, caching is very fast)
 **Impact**: Negligible
@@ -3582,13 +3582,13 @@ Start with high-value validations, add more incrementally:
 
 ```bash
 # Compile universe
-python -m townlet.compiler compile configs/L1
+python -m townlet.universe compile configs/L1
 
 # Inspect compiled universe
-python -m townlet.compiler inspect configs/L1/.compiled/universe.msgpack
+python -m townlet.universe inspect configs/L1/.compiled/universe.msgpack
 
 # Validate without caching
-python -m townlet.compiler validate configs/L1
+python -m townlet.universe validate configs/L1
 ```
 
 ### 4. Performance Optimization

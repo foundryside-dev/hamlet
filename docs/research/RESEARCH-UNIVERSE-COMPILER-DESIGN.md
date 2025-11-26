@@ -544,8 +544,8 @@ meter_count = universe.metadata.meter_count
 
 ✅ **Flexible**:
 
-- Can compile offline: `python -m townlet.compiler compile configs/L1`
-- Can inspect compiled universe: `python -m townlet.compiler inspect .compiled/universe.msgpack`
+- Can compile offline: `python -m townlet.universe compile configs/L1`
+- Can inspect compiled universe: `python -m townlet.universe inspect .compiled/universe.msgpack`
 
 ---
 
@@ -1787,9 +1787,9 @@ def test_compilation_performance():
 
 **8. CLI Tool** (2-3 hours)
 
-- `python -m townlet.compiler compile configs/L1`
-- `python -m townlet.compiler inspect .compiled/universe.msgpack`
-- `python -m townlet.compiler validate configs/L1`
+- `python -m townlet.universe compile configs/L1`
+- `python -m townlet.universe inspect .compiled/universe.msgpack`
+- `python -m townlet.universe validate configs/L1`
 
 **9. Optimization Pre-Compute** (3-4 hours)
 

@@ -19,6 +19,28 @@ import yaml
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
+class ObservationModeConfig(BaseModel):
+    """Observation mode selection for runtime observation layout."""
+
+    mode: Literal["full_auto", "max_compact", "full_manual"] = Field(
+        default="full_auto",
+        description="Observation layout strategy: full_auto (include all), max_compact (drop masked), or full_manual (explicit list).",
+    )
+    include_fields: list[str] | None = Field(
+        default=None,
+        description="Field names to include when mode=full_manual. Must be non-empty and match observation field names.",
+    )
+
+    model_config = ConfigDict(extra="forbid")
+
+    @model_validator(mode="after")
+    def validate_manual(self) -> "ObservationModeConfig":
+        if self.mode == "full_manual":
+            if not self.include_fields:
+                raise ValueError("full_manual observation_mode requires include_fields to be provided and non-empty.")
+        return self
+
+
 class GridConfig(BaseModel):
     """Grid substrate configuration."""
 
@@ -184,6 +206,10 @@ class StratumConfigRoot(BaseModel):
     substrate: SubstrateConfig = Field(..., description="Substrate configuration")
     vision_support: Literal["global", "partial", "both", "none"] = Field(..., description="Vision modes supported by this stratum")
     temporal_support: Literal["enabled", "disabled"] = Field(..., description="Whether temporal mechanics are supported")
+    observation_mode: ObservationModeConfig = Field(
+        default_factory=ObservationModeConfig,
+        description="Observation layout mode: full_auto | max_compact | full_manual (requires include_fields).",
+    )
 
     model_config = ConfigDict(extra="forbid")
 

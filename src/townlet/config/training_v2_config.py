@@ -7,6 +7,9 @@ Design: Validates training.yaml structure from v2.1 hierarchical configs.
 Includes runtime orchestration settings for this curriculum level.
 
 Structure:
+    run_metadata:
+      output_subdir: ...
+    recording: {...}            # Optional recording configuration
     training:
       version: "1.0"
       population: {...}
@@ -20,11 +23,12 @@ Structure:
 """
 
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
+import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
-from townlet.config.base import format_validation_error, load_yaml_section
+from townlet.config.base import format_validation_error
 
 __all__ = [
     "PopulationConfig",
@@ -40,6 +44,8 @@ __all__ = [
     "TrainingLoopConfig",
     "AdversarialCurriculumConfig",
     "CurriculumStrategyConfig",
+    "RunMetadataConfig",
+    "RecordingConfig",
     "TrainingV2Config",
     "load_training_v2_config",
 ]
@@ -299,6 +305,35 @@ class CurriculumStrategyConfig(BaseModel):
         return self
 
 
+class RunMetadataConfig(BaseModel):
+    """Run-level metadata used for run directory naming and provenance."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    output_subdir: str = Field(description="Directory name segment for this training run (e.g., L0_0_minimal).")
+
+    @field_validator("output_subdir")
+    @classmethod
+    def validate_output_subdir(cls, value: str) -> str:
+        """Ensure output_subdir is non-empty after trimming whitespace."""
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("run_metadata.output_subdir must be a non-empty string.")
+        return normalized
+
+
+class RecordingConfig(BaseModel):
+    """Optional episode recording configuration (telemetry / replay)."""
+
+    model_config = ConfigDict(extra="allow")
+
+    enabled: bool = Field(description="Enable episode recording and replay export.")
+    output_dir: str | None = Field(default=None, description="Relative output directory for recordings.")
+    max_queue_size: int | None = Field(default=None, gt=0, description="Queue size for recording writer.")
+    compression: str | None = Field(default=None, description="Compression codec (e.g., lz4, none).")
+    criteria: dict[str, Any] | None = Field(default=None, description="Recording criteria configuration.")
+
+
 class TrainingV2Config(BaseModel):
     """Training configuration for Config v2.1.
 
@@ -351,6 +386,8 @@ class TrainingV2Config(BaseModel):
     intrinsic: IntrinsicConfig = Field(description="Intrinsic exploration configuration")
     training_loop: TrainingLoopConfig = Field(description="Training loop configuration")
     curriculum: CurriculumStrategyConfig = Field(description="Curriculum progression strategy")
+    run_metadata: RunMetadataConfig | None = Field(default=None, description="Run-level metadata for outputs and provenance")
+    recording: RecordingConfig | None = Field(default=None, description="Optional recording configuration (telemetry/replay)")
 
 
 def load_training_v2_config(config_dir: Path) -> TrainingV2Config:
@@ -371,8 +408,35 @@ def load_training_v2_config(config_dir: Path) -> TrainingV2Config:
         >>> print(f"Population size: {config.population.size}")
         Population size: 512
     """
+    config_file = config_dir / "training.yaml"
+    if not config_file.exists():
+        raise FileNotFoundError(
+            f"Config file not found: {config_file}\n"
+            f"Expected: {config_dir}/training.yaml\n"
+            "Provide a v2.1 training.yaml with run_metadata, recording (optional), and training sections."
+        )
+
+    with config_file.open() as handle:
+        data = yaml.safe_load(handle)
+
+    if data is None:
+        raise ValueError(f"Config file is empty: {config_file}")
+
+    if not isinstance(data, dict):
+        raise ValueError(f"Expected mapping at root of {config_file}, got {type(data).__name__}")
+
+    if "training" not in data:
+        available_sections = list(data.keys())
+        raise KeyError(
+            f"Section 'training' not found in training.yaml\n" f"Available sections: {available_sections}\n" f"File path: {config_file}"
+        )
+
+    training_section = data.get("training") or {}
+    payload = dict(training_section)
+    payload["run_metadata"] = data.get("run_metadata")
+    payload["recording"] = data.get("recording")
+
     try:
-        data = load_yaml_section(config_dir, "training.yaml", "training")
-        return TrainingV2Config(**data)
+        return TrainingV2Config(**payload)
     except ValidationError as e:
         raise ValueError(format_validation_error(e, "training.yaml")) from e

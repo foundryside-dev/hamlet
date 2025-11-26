@@ -24,7 +24,6 @@ from typing import Literal
 
 import torch
 
-from townlet.environment.affordance_config import AffordanceConfig, AffordanceEffect
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.recording.data_structures import EpisodeMetadata, RecordedStep
 from townlet.substrate.grid2d import Grid2DSubstrate
@@ -495,7 +494,7 @@ def make_vectorized_env_from_pack(
 
 
 # =============================================================================
-# LEGACY TEST DATA BUILDERS (from tests.test_townlet.builders)
+# TEST DATA BUILDERS
 # =============================================================================
 
 
@@ -503,141 +502,6 @@ def make_test_meters() -> tuple[float, ...]:
     """Return canonical 8-meter tuple used across recording/config tests."""
 
     return (1.0, 0.9, 0.8, 0.5, 0.7, 0.6, 0.95, 0.85)
-
-
-def make_test_bar(
-    name: str = "energy",
-    index: int = 0,
-    tier: Literal["pivotal", "primary", "secondary", "resource"] = "pivotal",
-    initial: float = 1.0,
-    base_depletion: float = 0.01,
-    base_move_depletion: float = 0.0,
-    base_interaction_cost: float = 0.0,
-    description: str | None = None,
-) -> BarConfig:
-    """Construct a single BarConfig with sensible defaults."""
-
-    if description is None:
-        description = f"{name.capitalize()} meter"
-
-    return BarConfig(
-        name=name,
-        index=index,
-        tier=tier,
-        initial=initial,
-        base_depletion=base_depletion,
-        base_move_depletion=base_move_depletion,
-        base_interaction_cost=base_interaction_cost,
-        description=description,
-    )
-
-
-def make_test_terminal_condition(
-    meter: str = "energy",
-    operator: Literal["<=", ">=", "<", ">", "=="] = "<=",
-    value: float = 0.0,
-    description: str | None = None,
-) -> TerminalCondition:
-    """Construct a minimal terminal condition for meter depletion tests."""
-
-    if description is None:
-        description = f"Death by {meter} {operator} {value}"
-
-    return TerminalCondition(
-        meter=meter,
-        operator=operator,
-        value=value,
-        description=description,
-    )
-
-
-def make_test_bars_config(
-    num_meters: int = 8,
-    include_terminal: bool = True,
-) -> BarsConfig:
-    """Canonical BarsConfig (up to 8 meters) used in unit tests."""
-
-    meter_names = [
-        "energy",
-        "health",
-        "satiation",
-        "money",
-        "mood",
-        "social",
-        "fitness",
-        "hygiene",
-    ]
-    tiers: list[Literal["pivotal", "primary", "secondary", "resource"]] = [
-        "pivotal",
-        "pivotal",
-        "primary",
-        "resource",
-        "secondary",
-        "secondary",
-        "secondary",
-        "secondary",
-    ]
-
-    if num_meters > len(meter_names):
-        raise ValueError("make_test_bars_config supports up to 8 meters")
-
-    bars = [
-        make_test_bar(
-            name=meter_names[i],
-            index=i,
-            tier=tiers[i],
-            initial=1.0,
-            base_depletion=0.01 if i < 2 else 0.005,
-        )
-        for i in range(num_meters)
-    ]
-
-    terminal_conditions: list[TerminalCondition] = []
-    if include_terminal:
-        terminal_conditions.append(
-            make_test_terminal_condition(
-                meter="energy",
-                operator="<=",
-                value=0.0,
-            )
-        )
-
-    return BarsConfig(
-        version="1.0",
-        description="Test bars configuration",
-        bars=bars,
-        terminal_conditions=terminal_conditions,
-    )
-
-
-def make_test_affordance(
-    id: str = "Bed",
-    name: str | None = None,
-    category: str = "energy_restoration",
-    interaction_type: Literal["instant", "multi_tick", "continuous", "dual"] = "instant",
-    required_ticks: int | None = None,
-    effects: list[tuple[str, float]] | None = None,
-    operating_hours: tuple[int, int] = (0, 24),
-) -> AffordanceConfig:
-    """Construct a lightweight AffordanceConfig for tests."""
-
-    if name is None:
-        name = id
-
-    if interaction_type in {"multi_tick", "dual"} and required_ticks is None:
-        required_ticks = 5
-
-    effect_list = [AffordanceEffect(meter=meter, amount=amount) for (meter, amount) in (effects or [("energy", 0.5)])]
-
-    return AffordanceConfig(
-        id=id,
-        name=name,
-        category=category,
-        interaction_type=interaction_type,
-        required_ticks=required_ticks,
-        effects=effect_list,
-        operating_hours=list(operating_hours),
-    )
 
 
 def make_test_episode_metadata(

@@ -10,8 +10,9 @@ variables:
     writable_by: [engine]
     description: Normalized agent position (4D) in [0, 1]^4 range
     normalization:
-      method: normalize
-      range: [0.0, 1.0]
+      kind: minmax
+      min: [0.0, 0.0, 0.0, 0.0]
+      max: [1.0, 1.0, 1.0, 1.0]
 exposed_observations:
   - id: obs_position
     shape: [4]
@@ -19,5 +20,6 @@ exposed_observations:
     source: position
     scope: agent
     normalization:
+      kind: minmax
       min: [0.0, 0.0, 0.0, 0.0]
       max: [1.0, 1.0, 1.0, 1.0]

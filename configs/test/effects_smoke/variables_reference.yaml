@@ -1,0 +1,44 @@
+version: "1.0"
+variables:
+  - id: position
+    scope: agent
+    type: vec2f
+    dims: 2
+    default: [0.0, 0.0]
+    lifetime: tick
+    readable_by: [agent, engine]
+    writable_by: [engine]
+    description: Normalized agent position in [0, 1]^2 range
+    normalization:
+      kind: minmax
+      min: [0.0, 0.0]
+      max: [1.0, 1.0]
+
+  - id: digesting
+    scope: agent
+    type: bool
+    default: false
+    lifetime: tick
+    readable_by: [agent, engine]
+    writable_by: [engine, actions]
+    description: "Agent is currently digesting food (set by effects)"
+
+  - id: is_wet
+    scope: agent
+    type: bool
+    default: false
+    lifetime: tick
+    readable_by: [agent, engine]
+    writable_by: [engine]
+    description: "Agent is wet (set by effects)"
+
+exposed_observations:
+  - id: obs_position
+    shape: [2]
+    type: vec2f
+    source: position
+    scope: agent
+    normalization:
+      kind: minmax
+      min: [0.0, 0.0]
+      max: [1.0, 1.0]

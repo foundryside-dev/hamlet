@@ -13,6 +13,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+from tests.test_townlet.helpers.config_builder import mutate_brain_yaml
 from townlet.demo.runner import DemoRunner
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.population.vectorized import VectorizedPopulation
@@ -28,53 +29,8 @@ def test_demorunner_threads_training_loop_hyperparameters(tmp_path: Path, monkey
     experiment_dir = tmp_path / "experiment"
     shutil.copytree(src_experiment, experiment_dir)
 
-    # Ensure agent.yaml loss config matches BrainConfig expectations (no smooth_l1 defaults).
-    agent_path = experiment_dir / "agent.yaml"
-    agent_data = yaml.safe_load(agent_path.read_text())
-    agent_brain = agent_data["agent"]["brain"]
-    agent_brain["loss"]["type"] = "huber"
-    agent_brain["loss"]["huber_delta"] = 1.0
-    agent_path.write_text(yaml.safe_dump(agent_data, sort_keys=False))
-
-    # Add minimal brain.yaml required by BrainConfig schema.
-    brain_yaml = experiment_dir / "brain.yaml"
-    brain_yaml.write_text(
-        """
-version: "1.0"
-description: "Test feedforward network"
-
-architecture:
-  type: feedforward
-  feedforward:
-    hidden_layers: [128, 64]
-    activation: relu
-    dropout: 0.0
-    layer_norm: true
-
-optimizer:
-  type: adam
-  learning_rate: 0.001
-  adam_beta1: 0.9
-  adam_beta2: 0.999
-  adam_eps: 1.0e-8
-  weight_decay: 0.0
-  schedule:
-    type: constant
-
-loss:
-  type: huber
-  huber_delta: 1.0
-
-q_learning:
-  gamma: 0.99
-  target_update_frequency: 100
-  use_double_dqn: false
-
-replay:
-  capacity: 10000
-  prioritized: false
-"""
-    )
+    # Ensure brain.yaml uses huber loss with explicit delta (no hidden defaults).
+    mutate_brain_yaml(experiment_dir, lambda brain: brain.update({"loss": {"type": "huber", "huber_delta": 1.0}}))
 
     level_name = "L0_0_minimal"
     training_path = experiment_dir / "levels" / level_name / "training.yaml"

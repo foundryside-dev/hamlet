@@ -270,7 +270,7 @@ export UV_CACHE_DIR=.uv-cache
 uv run pytest tests/test_townlet/integration/test_substrate_migration.py -xvs
 
 # Check observation dimensions
-uv run python -m townlet.compiler inspect configs/L1_continuous_2D
+uv run python -m townlet.universe inspect configs/L1_continuous_2D
 
 # Run training
 uv run scripts/run_demo.py --config configs/L1_continuous_2D

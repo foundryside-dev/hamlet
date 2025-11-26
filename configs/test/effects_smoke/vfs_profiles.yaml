@@ -1,0 +1,13 @@
+version: "1.0"
+
+global_profile:
+  variables:
+    - name: day_count
+      type: int
+      initial_value: 0
+
+agent_profile: null
+
+item_profiles:
+  - profile_name: default_item
+    variables: []

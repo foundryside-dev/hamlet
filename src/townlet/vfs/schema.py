@@ -8,6 +8,7 @@ Phase 1: Basic types and validation
 Phase 2: Derivation graphs, complex types, expression parsing
 """
 
+from enum import Enum
 from pathlib import Path
 from typing import Any, Literal
 
@@ -19,8 +20,18 @@ __all__ = [
     "WriteSpec",
     "ObservationField",
     "VariableDef",
+    "VariableScope",
     "load_variables_reference_config",
 ]
+
+
+class VariableScope(str, Enum):
+    """Variable scope determines storage layout and access patterns."""
+
+    GLOBAL = "global"  # Shared across all agents (world state)
+    AGENT = "agent"  # Per-agent state ([batch, ...])
+    AGENT_PRIVATE = "agent_private"  # Hidden from agent observations
+    ITEM = "item"  # Per-item state ([max_items, ...])
 
 
 class NormalizationSpec(BaseModel):
@@ -226,18 +237,43 @@ class VariableDef(BaseModel):
         )
     """
 
+    model_config = ConfigDict(extra="forbid")
+
     id: str = Field(
         min_length=1,
         description="Unique identifier for this variable",
     )
 
-    scope: Literal["global", "agent", "agent_private"] = Field(
-        description="Scope: global (shared), agent (per-agent public), agent_private (per-agent private)",
+    exposed_to: list[str] = Field(
+        default_factory=list,
+        description="Who can observe this variable (e.g., ['agent', 'engine'])",
     )
 
-    type: Literal["scalar", "vec2i", "vec3i", "vecNi", "vecNf", "bool"] = Field(
-        description="Variable type (scalar, vector, or bool)",
+    semantic_type: Literal["bars", "spatial", "affordance", "temporal", "custom"] = Field(
+        default="custom",
+        description="Semantic grouping for structured encoders (bars, spatial, affordance, temporal, custom)",
     )
+
+    scope: VariableScope | Literal["global", "agent", "agent_private", "item"] = Field(
+        description="Scope: global (shared), agent (per-agent public), agent_private (per-agent private), item (per-item)",
+    )
+
+    type: Literal[
+        "scalar",
+        "vec2i",
+        "vec3i",
+        "vec2f",
+        "vec3f",
+        "vecNi",
+        "vecNf",
+        "bool",
+        "agent_ref",
+        "item_ref",
+        "tensor1d",
+        "tensor2d",
+        "tensor3d",
+        "tensorNd",
+    ] = Field(description="Variable type (scalar, vector, bool, reference, or tensor)")
 
     dims: int | None = Field(
         default=None,
@@ -245,8 +281,8 @@ class VariableDef(BaseModel):
         description="Number of dimensions for vecNi/vecNf types (required for those types)",
     )
 
-    lifetime: Literal["tick", "episode"] = Field(
-        description="Lifetime: tick (recomputed each step) or episode (persistent)",
+    lifetime: Literal["tick", "episode", "persistent"] = Field(
+        description="Lifetime: tick (recomputed each step), episode (persistent within episode), or persistent (survives episodes)",
     )
 
     readable_by: list[str] = Field(
@@ -263,6 +299,21 @@ class VariableDef(BaseModel):
         description="Default value (type depends on 'type' field)",
     )
 
+    shape: list[int] | None = Field(
+        default=None,
+        description="Shape for tensor types (e.g., [10] for tensor1d, [4,4] for tensor2d)",
+    )
+
+    initial_value_mode: Literal["zeros", "ones", "eye", "random_normal", "random_uniform"] | None = Field(
+        default=None,
+        description="Initialization mode for tensor types (defaults to zeros when omitted)",
+    )
+
+    initial_value_params: dict[str, Any] | None = Field(
+        default=None,
+        description="Optional parameters for initialization (mean/std for random_normal, low/high for random_uniform)",
+    )
+
     normalization: NormalizationSpec | None = Field(
         default=None,
         description="Normalization specification applied when exposing this variable",
@@ -273,16 +324,41 @@ class VariableDef(BaseModel):
         description="Human-readable description of this variable",
     )
 
+    observable: bool = Field(
+        default=False,
+        description="Whether this variable should be included in agent observations (for mark-and-sweep evaluation)",
+    )
+
     @model_validator(mode="after")
     def validate_vector_types(self) -> "VariableDef":
         """Validate that vecNi/vecNf have dims field, scalar/bool do not."""
+        if not self.exposed_to:
+            self.exposed_to = ["agent"]
         if self.type in ("vecNi", "vecNf"):
             if self.dims is None:
                 raise ValueError(f"Variable '{self.id}' with type '{self.type}' requires 'dims' field")
         elif self.type in ("scalar", "bool"):
             if self.dims is not None:
                 raise ValueError(f"Variable '{self.id}' with type '{self.type}' should not have 'dims' field")
-        # vec2i, vec3i have implicit dims (2, 3) - no dims field needed
+        # vec2i, vec3i, vec2f, vec3f have implicit dims (2, 3) - no dims field needed
+
+        # Tensor types require explicit shape and do not use dims
+        if self.type in {"tensor1d", "tensor2d", "tensor3d", "tensorNd"}:
+            if not self.shape:
+                raise ValueError(f"Variable '{self.id}' with type '{self.type}' requires a non-empty 'shape' list")
+            if self.dims is not None:
+                raise ValueError(f"Variable '{self.id}' with type '{self.type}' should not set 'dims'; use 'shape' instead")
+
+            rank = len(self.shape)
+            if self.type == "tensor1d" and rank != 1:
+                raise ValueError(f"Variable '{self.id}' with type 'tensor1d' must have 1D shape, got rank {rank}")
+            if self.type == "tensor2d" and rank != 2:
+                raise ValueError(f"Variable '{self.id}' with type 'tensor2d' must have 2D shape, got rank {rank}")
+            if self.type == "tensor3d" and rank != 3:
+                raise ValueError(f"Variable '{self.id}' with type 'tensor3d' must have 3D shape, got rank {rank}")
+            if self.type == "tensorNd" and rank < 1:
+                raise ValueError(f"Variable '{self.id}' with type 'tensorNd' must have shape of rank ≥1")
+
         return self
 
 

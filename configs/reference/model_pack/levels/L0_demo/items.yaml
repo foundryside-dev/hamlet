@@ -1,0 +1,10 @@
+version: "1.0"
+
+items:
+  - item_type: apple
+    spawn_count: 2
+    placement:
+      mode: random
+    schedule:
+      type: periodic
+      period: 100

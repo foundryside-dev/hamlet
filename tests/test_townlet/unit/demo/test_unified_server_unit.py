@@ -17,7 +17,61 @@ def minimal_config_dir(tmp_path: Path) -> Path:
     config_dir = tmp_path / "config_pack"
     config_dir.mkdir()
     training_yaml = config_dir / "training.yaml"
-    training_yaml.write_text("run_metadata:\n  output_subdir: 'Phase 1: Demo'\nenvironment:\n  grid_size: 8\n")
+    training_yaml.write_text(
+        "\n".join(
+            [
+                "run_metadata:",
+                "  output_subdir: 'Phase 1: Demo'",
+                "recording:",
+                "  enabled: false",
+                "training:",
+                '  version: "1.0"',
+                "  population:",
+                "    size: 1",
+                "  enabled_affordances: []",
+                "  randomize_affordances: false",
+                "  enabled_actions: null",
+                "  q_learning:",
+                "    use_double_dqn: true",
+                "    gamma: 0.9",
+                "    learning_rate: 0.001",
+                "    target_update_frequency: 1",
+                "  replay_buffer:",
+                "    capacity: 10",
+                "    batch_size: 1",
+                "    min_size: 1",
+                "  exploration:",
+                "    epsilon_start: 1.0",
+                "    epsilon_end: 0.1",
+                "    epsilon_decay: 0.9",
+                "  intrinsic:",
+                "    rnd:",
+                "      feature_dim: 1",
+                "      learning_rate: 0.001",
+                "    annealing:",
+                "      threshold: 1.0",
+                "      decay_rate: 0.5",
+                "      min_weight: 0.0",
+                "    initial_weight: 0.1",
+                "    min_survival_fraction: 0.1",
+                "    survival_window: 1",
+                "  training_loop:",
+                "    max_episodes: 1",
+                "    max_steps_per_episode: 1",
+                "    train_frequency: 1",
+                "    sequence_length: 1",
+                "    max_grad_norm: 1.0",
+                "    evaluation:",
+                "      interval: 1",
+                "      num_episodes: 1",
+                "    checkpointing:",
+                "      interval: 1",
+                "      keep_last: 1",
+                "  curriculum:",
+                "    strategy: static",
+            ]
+        )
+    )
     return config_dir
 
 

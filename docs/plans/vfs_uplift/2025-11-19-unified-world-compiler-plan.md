@@ -4,6 +4,11 @@
 **Date:** 2025-11-19
 **Owner:** World Compiler (T0 Pillar 3)
 **Components:** Expression Language + VFS Profiles + Effects + Items
+**Compiler Entry Point:** `UniverseCompiler` (master compiler orchestrating schema validation, world compilation, and brain/agent compilation; no separate `world_compiler.py`)
+**Compiler Subsystems:** `UniverseCompiler` encapsulates three subcompilers:
+- Stratum compiler (spatial substrate shape: GridND, ContinuousND, Aspatial, Grid2D/3D)
+- World compiler (expressions, VFS profiles, Effects, Items)
+- Agent/Brain compiler (actions, drives, networks)
 
 ---
 
@@ -99,7 +104,7 @@ src/townlet/world/
 │   └── tensor.py            # tensor1d, tensor2d, tensor3d, tensorNd
 └── compiler/
     ├── __init__.py
-    └── world_compiler.py    # Main compilation orchestrator
+    └── (Integrated inside UniverseCompiler; no standalone world_compiler.py)
 
 configs/test/expression_smoke/
 └── expressions.yaml         # Test expressions for validation
@@ -565,91 +570,132 @@ Week 7:    Phase 5 (Affordance Migration) + Phase 6 (Integration)
 
 ---
 
-## Open Questions (To Resolve Before Starting)
+## Architectural Decisions (RESOLVED 2025-11-19)
 
-### Q1: Expression Language Implementation
-**Question:** Use pyparsing library or hand-written recursive descent?
+### ✅ D1: Expression Language Implementation
 
-**Option A: pyparsing**
-- Pro: Mature library, less code to write
-- Con: Additional dependency, learning curve
+**Decision:** Use pyparsing library
 
-**Option B: Hand-written**
-- Pro: Full control, no dependencies
-- Con: More code, potential parser bugs
+**Rationale:**
 
-**Recommendation:** Option A (pyparsing) for faster development
+- **Faster to working code**: Phase 1 is already 6-8 days. Hand-written parser adds 2-3 days of parser debugging
+- **Well-defined syntax**: Standard expressions (`target.bar.energy + 0.05`), not novel syntax
+- **Mature library**: pyparsing used by Markdown parsers, SQL parsers. Well-tested.
+- **Low dependency cost**: Pure Python, no native code. Simple `pip install pyparsing`
+- **Pre-release freedom**: Can rewrite later if needed (no users to support)
 
----
-
-### Q2: VFS Expression Evaluation Timing
-**Question:** When do VFS variables evaluate their expressions?
-
-**Option A: Lazy (on-demand)**
-- Evaluate when accessed in observation building
-- Pro: Only compute what's needed
-- Con: Unpredictable cost
-
-**Option B: Eager (every step)**
-- Evaluate all VFS variables at step start
-- Pro: Predictable cost, simpler debugging
-- Con: Wasted computation for unused variables
-
-**Option C: Hybrid (mark-and-sweep)**
-- Mark used variables (via observation spec)
-- Only evaluate marked variables
-- Pro: Best of both
-- Con: More complexity
-
-**Recommendation:** Option B (eager) for Phase 2, optimize to C if profiling shows need
+**Implementation:** Task 1.2 will use pyparsing's `ParserElement` classes
 
 ---
 
-### Q3: Item VFS State Allocation
-**Question:** How to allocate item VFS state in fixed-size tensors?
+### ✅ D2: VFS Expression Evaluation Timing
 
-**Option A: Pre-allocate max_items pool**
-```python
-# Fixed pool [max_items, num_profiles]
-item_vfs = torch.zeros(max_items, num_profiles)
+**Decision:** Hybrid (mark-and-sweep) with eager fallback option
+
+**Rationale:**
+
+- **Future vision alignment**: Enables user-controlled `expose_to_obs` per-variable in Phase 5+
+- **Performance**: Only evaluate VFS variables that go into observations (marked at compile-time)
+- **Implementation cost**: ~200 lines vs ~100 for eager (acceptable for long-term benefits)
+- **Escape hatch**: Trivial fallback to eager if mark-and-sweep proves buggy
+
+**Implementation:**
+
+1. **Compile-time**: ObservationBuilder marks VFS variables that appear in obs spec
+2. **Runtime**: VariableRegistry evaluates only marked variables (topological sort for dependencies)
+3. **Fallback**: `eval_mode="eager"` flag to evaluate all variables if needed
+
+**Acceptance Criteria for Hybrid:**
+
+- ✅ Topological sort works (dependency tests pass)
+- ✅ Performance ≥ Eager (profiling shows no regression)
+- ✅ obs_dim stable (marked vars produce correct obs shape)
+
+**Trigger for Eager Fallback:**
+
+- ❌ Topological sort bugs persist after 2 days debugging
+- ❌ Profiling shows >5% overhead vs Eager
+- ❌ Need to log/inspect non-obs VFS variables
+
+**Future Benefit:**
+
+```yaml
+# Phase 5+: User explicitly controls observability
+agent_profile:
+  distance_to_food:
+    expression: "..."
+    expose_to_obs: true   # ← Evaluated (marked)
+
+  debug_helper:
+    expression: "..."
+    expose_to_obs: false  # ← Not evaluated (not marked)
 ```
-- Pro: Simple, GPU-friendly
-- Con: Wastes memory if few items spawned
-
-**Option B: Dynamic allocation**
-```python
-# Grow/shrink as items spawn/despawn
-item_vfs = {}  # item_id -> tensor
-```
-- Pro: Memory efficient
-- Con: Complex, potential fragmentation
-
-**Recommendation:** Option A (pre-allocate) for simplicity, revisit if memory issues
 
 ---
 
-### Q4: Observable Effects in Observations
-**Question:** How should `observable: true` effects appear in observations?
+### ✅ D3: Item VFS State Allocation
 
-**Option A: Fixed effect slots**
-- Reserve N slots in obs vector
-- Mask unused slots
-- Pro: Stable obs_dim
-- Con: Limited to N effects
+**Decision:** Pre-allocate max_items pool (fixed-size tensors)
 
-**Option B: Effect summary features**
-- Add `num_active_effects` (scalar)
-- Add `effect_intensity_sum` (scalar)
-- Pro: Bounded contribution
-- Con: Loses effect identity
+**Rationale:**
 
-**Option C: Defer to VFS**
-- Effects write to VFS variables
-- VFS variables already in observations
-- Pro: Reuses existing mechanism
-- Con: Manual wiring
+- **GPU-native**: Fixed-size tensors required for efficient GPU computation
+- **Tiny memory cost**: Even 1000 items × 10 profiles × 4 bytes = 40KB per batch
+- **Architectural consistency**: Already pre-allocate affordance slots (14 affordances even if only 3 deployed)
+- **Checkpoint serialization**: Fixed-size tensor dumps trivially to checkpoint
 
-**Recommendation:** Option C (VFS) - effects set VFS flags, VFS handles obs
+**Implementation:**
+
+```python
+# ItemManager allocates fixed pool
+item_vfs = torch.zeros(max_items, num_profiles)  # [max_items, num_profiles]
+active_items_mask = torch.zeros(max_items, dtype=torch.bool)  # [max_items]
+```
+
+**Reconsider only if:**
+
+- Need 10,000+ items per world (unlikely for pedagogical environment)
+- Profiling shows memory pressure (also unlikely)
+
+---
+
+### ✅ D4: Observable Effects in Observations
+
+**Decision:** Effects write to VFS variables, VFS handles obs inclusion
+
+**Rationale:**
+
+- **Pedagogical clarity**: Students see semantic meaning (`is_wet: true`) not abstraction (`effect #7 active`)
+- **Reuses existing mechanism**: VFS already handles obs inclusion with access control
+- **Zero implementation cost**: Effects already need to mutate something (bars or VFS)
+- **Teaching moment**: Distinction between implementation detail (effect active) vs observable state (effect's consequences)
+
+**Implementation:**
+
+```yaml
+# effects.yaml
+wet:
+  on_apply:
+    - modify: "vfs.agent.is_wet"
+      value: true
+  on_despawn:
+    - modify: "vfs.agent.is_wet"
+      value: false
+
+# vfs_profiles.yaml
+agent_profile:
+  is_wet:
+    type: bool
+    scope: agent
+    writers: [effects]
+    readable_by: [agent]  # ← Goes into observations automatically
+```
+
+**Pedagogical Win:**
+
+- ❌ Option A (Fixed slots): Students see "effect #7 active" - meaningless abstraction
+- ❌ Option B (Summary): Students see "num_active_effects: 3" - also meaningless
+- ✅ Option C (VFS): Students see "is_wet: true" - **semantic meaning**
 
 ---
 
@@ -658,12 +704,14 @@ item_vfs = {}  # item_id -> tensor
 ### Recommended: Subagent-Driven Development
 
 **Approach:**
+
 1. Use `superpowers:subagent-driven-development` skill
 2. Execute one phase at a time
 3. Review code after each task (fail-fast on issues)
 4. Run tests between tasks (continuous validation)
 
 **Commands:**
+
 ```bash
 # Phase 1
 "Use subagent-driven development to execute Phase 1: Expression Language Foundation from docs/plans/vfs_uplift/2025-11-19-unified-world-compiler-plan.md"
@@ -675,6 +723,7 @@ item_vfs = {}  # item_id -> tensor
 ```
 
 **Advantages:**
+
 - Tight feedback loop (catch issues early)
 - Can course-correct between tasks
 - Easier to debug (smaller changes)
@@ -693,18 +742,21 @@ item_vfs = {}  # item_id -> tensor
 ## Next Steps
 
 **Before Implementation:**
+
 1. ✅ Review this plan with team
-2. ⬜ Resolve open questions (Q1-Q4)
+2. ✅ Resolve architectural decisions (D1-D4) - **COMPLETE 2025-11-19**
 3. ⬜ Create feature branch: `feature/world-compiler`
 4. ⬜ Set up worktree (optional): `git worktree add`
 
 **To Start Implementation:**
+
 1. Read Phase 1 task list
 2. Use subagent-driven development skill
 3. Execute tasks sequentially with review checkpoints
 4. Mark phases complete as tests pass
 
 **Questions?**
+
 - Stuck on implementation? Use `superpowers:systematic-debugging`
 - Tests failing? Use `superpowers:test-driven-development`
 - Need code review? Use `superpowers:requesting-code-review`

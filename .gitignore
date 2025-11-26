@@ -60,6 +60,10 @@ dmypy.json
 .ipynb_checkpoints/
 *.ipynb
 
+# Build/cache artifacts
+.cache/
+.pre-commit-cache/
+
 # Environment variables
 .env
 .env.local

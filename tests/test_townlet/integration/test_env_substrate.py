@@ -205,13 +205,13 @@ def test_vectorized_env_loads_composed_action_space(cpu_env_factory):
     # action_dim should match action_space
     assert env.action_dim == env.action_space.action_dim
 
-    # Should have cached action indices (no more hardcoded formulas)
-    assert hasattr(env, "interact_action_idx"), "Should cache INTERACT action index"
-    assert hasattr(env, "wait_action_idx"), "Should cache WAIT action index"
+    # Should expose action name→id mapping (no hardcoded formulas)
+    assert "INTERACT" in env.action_ids
+    assert "WAIT" in env.action_ids
 
     # Indices should be valid (within action space bounds)
-    assert 0 <= env.interact_action_idx < env.action_dim
-    assert 0 <= env.wait_action_idx < env.action_dim
+    assert 0 <= env.action_ids["INTERACT"] < env.action_dim
+    assert 0 <= env.action_ids["WAIT"] < env.action_dim
 
 
 def test_action_masks_include_base_masking(cpu_env_factory):

@@ -109,16 +109,23 @@ class TestDualVsInstant:
                 aff["interaction_type"] = "dual"
                 aff["duration_ticks"] = 5
                 aff["costs_per_tick"] = {"money": 0.01}
-                aff["effect_pipeline"] = {
+                aff["interactions"] = {
                     "on_start": [],
-                    "per_tick": [{"meter": "energy", "amount": 0.05}],
-                    "on_completion": [{"meter": "energy", "amount": 0.25}],
+                    "per_tick": [{"modify": "target.bar.energy", "value": "target.bar.energy + 0.05"}],
+                    "on_completion": [{"modify": "target.bar.energy", "value": "target.bar.energy + 0.25"}],
+                    "on_early_exit": [],
+                    "on_failure": [],
                 }
         if isinstance(data["affordances"], dict):
             data["affordances"]["affordances"] = aff_list
         else:
             data["affordances"] = aff_list
         aff_path.write_text(yaml.safe_dump(data, sort_keys=False))
+        curriculum_path = level_dir / "curriculum.yaml"
+        curriculum = yaml.safe_load(curriculum_path.read_text())
+        curriculum.setdefault("curriculum", {})["active_temporal"] = True
+        curriculum["curriculum"]["day_length"] = 24
+        curriculum_path.write_text(yaml.safe_dump(curriculum, sort_keys=False))
 
         # Instant variant: copy pack and convert Bed to instant with same total effect
         config_dir_instant = config_pack_factory(name="bed_instant_variant")
@@ -133,16 +140,28 @@ class TestDualVsInstant:
                 aff["interaction_type"] = "instant"
                 aff.pop("duration_ticks", None)
                 aff.pop("costs_per_tick", None)
-                aff["effect_pipeline"] = {
-                    "on_start": [{"meter": "energy", "amount": 0.05 * 5 + 0.25}],
+                aff["interactions"] = {
+                    "on_start": [
+                        {
+                            "modify": "target.bar.energy",
+                            "value": "target.bar.energy + (0.05 * 5 + 0.25)",
+                        }
+                    ],
                     "per_tick": [],
                     "on_completion": [],
+                    "on_early_exit": [],
+                    "on_failure": [],
                 }
         if isinstance(data_inst["affordances"], dict):
             data_inst["affordances"]["affordances"] = aff_list_inst
         else:
             data_inst["affordances"] = aff_list_inst
         aff_path_inst.write_text(yaml.safe_dump(data_inst, sort_keys=False))
+        curriculum_path_inst = level_dir_inst / "curriculum.yaml"
+        curriculum_inst = yaml.safe_load(curriculum_path_inst.read_text())
+        curriculum_inst.setdefault("curriculum", {})["active_temporal"] = True
+        curriculum_inst["curriculum"]["day_length"] = 24
+        curriculum_path_inst.write_text(yaml.safe_dump(curriculum_inst, sort_keys=False))
 
         env_dual = cpu_env_factory(config_dir=config_dir, level_name="L0_test", num_agents=1)
         env_inst = cpu_env_factory(config_dir=config_dir_instant, level_name="L0_test", num_agents=1)
@@ -155,12 +174,17 @@ class TestDualVsInstant:
         env_inst.meters[0, 0] = 0.3
         env_dual.meters[0, 3] = 0.5
         env_inst.meters[0, 3] = 0.5
+        money_idx = env_dual.meter_name_to_index.get("money")
+        if money_idx is not None:
+            env_dual.meters[0, money_idx] = 1.0
+            env_inst.meters[0, money_idx] = 1.0
 
+        interact_id = env_dual.action_ids["INTERACT"]
         for _ in range(5):
-            env_dual.step(torch.tensor([4], device=env_dual.device))
+            env_dual.step(torch.tensor([interact_id], device=env_dual.device))
         dual_gain = env_dual.meters[0, 0].item() - 0.3
 
-        env_inst.step(torch.tensor([4], device=env_inst.device))
+        env_inst.step(torch.tensor([interact_id], device=env_inst.device))
         inst_gain = env_inst.meters[0, 0].item() - 0.3
 
         assert pytest.approx(inst_gain, rel=0.05) == dual_gain

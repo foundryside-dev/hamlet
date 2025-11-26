@@ -2,7 +2,9 @@
 
 import torch
 
-from townlet.agent.brain_config import (
+from townlet.agent.network_factory import NetworkFactory
+from townlet.agent.networks import RecurrentSpatialQNetwork
+from townlet.config.brain_config import (
     CNNEncoderConfig,
     DuelingConfig,
     DuelingStreamConfig,
@@ -11,8 +13,6 @@ from townlet.agent.brain_config import (
     MLPEncoderConfig,
     RecurrentConfig,
 )
-from townlet.agent.network_factory import NetworkFactory
-from townlet.agent.networks import RecurrentSpatialQNetwork
 from townlet.universe.dto import ObservationField, ObservationSpec
 
 

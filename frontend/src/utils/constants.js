@@ -25,6 +25,22 @@ export const ACTION_ICONS = {
 
 // Affordance display
 export const AFFORDANCE_ICONS = {
+  // Current v2.1 affordance ids (all-caps)
+  EAT: '🍽️',
+  SLEEP: '🛌',
+  SHOWER: '🚿',
+  EXERCISE: '💪',
+  WORK: '💼',
+  SOCIALIZE: '🗣️',
+  MEDITATE: '🧘',
+  DRINK_WATER: '💧',
+  BRUSH_TEETH: '🪥',
+  LAUNDRY: '🧺',
+  COOK: '🍳',
+  CLEAN_HOUSE: '🧹',
+  ENTERTAINMENT: '🎮',
+  DOCTOR: '⚕️',
+  // Legacy camel-case ids
   Bed: '🛏️',
   LuxuryBed: '🛌',  // Luxury bed (tier 2 rest)
   Shower: '🚿',

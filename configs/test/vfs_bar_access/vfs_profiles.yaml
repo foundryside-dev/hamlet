@@ -1,0 +1,12 @@
+version: "1.0"
+
+global_profile:
+  variables:
+    - name: low_energy_flag
+      type: bool
+      expression: "bar.energy < 0.3"
+
+agent_profile: null
+item_profiles:
+  - profile_name: default_item
+    variables: []

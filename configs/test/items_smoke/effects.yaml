@@ -1,0 +1,66 @@
+version: "1.0"
+
+effect_definitions:
+  # Effect that modifies item VFS (durability decay)
+  - id: "wear_and_tear"
+    scope: item
+    duration: 10
+    intensity: 1.0
+    reapply_policy: renew
+    observable: true
+
+    on_spawn: []
+
+    on_tick:
+      - modify: self.vfs.durability
+        value: "self.vfs.durability - (1.0 * intensity)"
+
+    on_despawn: []
+
+  # Effect that reads item VFS and triggers cascade
+  - id: "item_degradation"
+    scope: item
+    duration: 5
+    intensity: 1.0
+    reapply_policy: stack
+    observable: true
+
+    on_spawn:
+      - modify: self.vfs.durability
+        value: "self.vfs.durability - 5.0"
+
+    on_tick: []
+
+    on_despawn: []
+
+  # Effect that spawns on item with low durability (cascade trigger)
+  - id: "item_break"
+    scope: item
+    duration: 1
+    intensity: 1.0
+    reapply_policy: replace
+    observable: true
+
+    on_spawn:
+      - modify: self.vfs.durability
+        value: "0.0"
+
+    on_tick: []
+
+    on_despawn: []
+
+  # Effect that reads item freshness (food items)
+  - id: "food_decay"
+    scope: item
+    duration: 15
+    intensity: 1.0
+    reapply_policy: renew
+    observable: true
+
+    on_spawn: []
+
+    on_tick:
+      - modify: self.vfs.freshness
+        value: "self.vfs.freshness - (2.0 * intensity)"
+
+    on_despawn: []

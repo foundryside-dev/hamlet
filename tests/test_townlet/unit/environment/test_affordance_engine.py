@@ -18,6 +18,7 @@ from dataclasses import dataclass
 import pytest
 import torch
 
+from townlet.effects.executor import CommandExecutor
 from townlet.environment.affordance_engine import (
     AffordanceEngine,
 )
@@ -37,6 +38,39 @@ class RuntimePipeline:
 
 
 @dataclass
+class TimeWindow:
+    """Time window for opening hours schedule."""
+
+    start: int
+    end: int
+
+
+@dataclass
+class OpeningHours:
+    """Opening hours configuration for affordances."""
+
+    enabled: bool
+    schedule: list[TimeWindow] | None = None
+
+
+def make_opening_hours(hours: tuple[int, int]) -> OpeningHours:
+    """Helper to convert (open, close) tuple to OpeningHours object.
+
+    Args:
+        hours: Tuple of (open_hour, close_hour), e.g., (8, 18) for 8am-6pm.
+               Use (0, 24) for 24/7 availability.
+
+    Returns:
+        OpeningHours object with appropriate enabled flag and schedule.
+    """
+    open_hour, close_hour = hours
+    # (0, 24) means 24/7 - disable opening hours restriction
+    if open_hour == 0 and close_hour == 24:
+        return OpeningHours(enabled=False)
+    return OpeningHours(enabled=True, schedule=[TimeWindow(start=open_hour, end=close_hour)])
+
+
+@dataclass
 class RuntimeAffordance:
     """Lightweight runtime affordance representation for AffordanceEngine tests."""
 
@@ -47,7 +81,21 @@ class RuntimeAffordance:
     costs: list[dict[str, float]]
     costs_per_tick: list[dict[str, float]]
     effect_pipeline: RuntimePipeline | None
-    operating_hours: list[int]
+    opening_hours: OpeningHours
+
+
+@dataclass
+class DictCostAffordance:
+    """Affordance shape that mirrors AffordanceParamConfig (dict-based costs)."""
+
+    name: str
+    interaction_type: str
+    duration_ticks: int | None
+    costs: dict[str, float]
+    costs_per_tick: dict[str, float]
+    interactions: dict
+    opening_hours: OpeningHours
+    id: str | None = None
 
 
 @pytest.fixture
@@ -91,7 +139,7 @@ def affordance_engine_components(cpu_device):
                 per_tick=[RuntimeEffect(meter="energy", amount=0.05)],
                 on_completion=[RuntimeEffect(meter="energy", amount=0.25)],
             ),
-            operating_hours=[0, 24],  # Always available
+            opening_hours=make_opening_hours((0, 24)),  # Always available
         ),
         # Shower: instant/dual hygiene affordance ($0.03, +0.4 hygiene)
         RuntimeAffordance(
@@ -106,7 +154,7 @@ def affordance_engine_components(cpu_device):
                 per_tick=[],
                 on_completion=[],
             ),
-            operating_hours=[0, 24],
+            opening_hours=make_opening_hours((0, 24)),
         ),
         # FastFood: dual-mode convenience food ($0.05, 2 ticks)
         RuntimeAffordance(
@@ -121,7 +169,7 @@ def affordance_engine_components(cpu_device):
                 per_tick=[RuntimeEffect(meter="satiation", amount=0.225)],
                 on_completion=[RuntimeEffect(meter="satiation", amount=0.225)],
             ),
-            operating_hours=[0, 24],
+            opening_hours=make_opening_hours((0, 24)),
         ),
         # Job: dual-mode income source (4 ticks)
         RuntimeAffordance(
@@ -139,7 +187,7 @@ def affordance_engine_components(cpu_device):
                 ],
                 on_completion=[RuntimeEffect(meter="money", amount=0.05625)],
             ),
-            operating_hours=[8, 18],  # 8am-6pm
+            opening_hours=make_opening_hours((8, 18)),  # 8am-6pm
         ),
         # Hospital: instant health restore ($0.15)
         RuntimeAffordance(
@@ -154,7 +202,7 @@ def affordance_engine_components(cpu_device):
                 per_tick=[],
                 on_completion=[],
             ),
-            operating_hours=[0, 24],
+            opening_hours=make_opening_hours((0, 24)),
         ),
         # Bar: social/mood/health trade-off ($0.15, wraparound hours)
         RuntimeAffordance(
@@ -173,7 +221,7 @@ def affordance_engine_components(cpu_device):
                 per_tick=[],
                 on_completion=[],
             ),
-            operating_hours=[18, 28],  # 6pm-4am
+            opening_hours=make_opening_hours((18, 28)),  # 6pm-4am
         ),
         # Park: free recreation (no costs)
         RuntimeAffordance(
@@ -192,7 +240,7 @@ def affordance_engine_components(cpu_device):
                 per_tick=[],
                 on_completion=[],
             ),
-            operating_hours=[0, 24],
+            opening_hours=make_opening_hours((0, 24)),
         ),
     )
 
@@ -426,3 +474,250 @@ class TestCostQueries:
 
         ticks = engine.get_duration_ticks("InvalidAffordance")
         assert ticks == 1
+
+
+class TestDictCostAffordances:
+    """Regression coverage for dict-style costs from AffordanceParamConfig."""
+
+    def _build_engine(self, affordances: tuple, cpu_device):
+        meter_map = {"energy": 0, "money": 1}
+        return AffordanceEngine(affordances, num_agents=1, device=cpu_device, meter_name_to_idx=meter_map)
+
+    def test_apply_instant_interaction_handles_dict_costs(self, cpu_device):
+        affordance = DictCostAffordance(
+            name="Eat",
+            interaction_type="instant",
+            duration_ticks=None,
+            costs={"energy": 0.2, "money": 0.1},
+            costs_per_tick={},
+            interactions={},
+            opening_hours=make_opening_hours((0, 24)),
+        )
+        engine = self._build_engine((affordance,), cpu_device)
+        meters = torch.tensor([[1.0, 0.5]], device=cpu_device)
+        mask = torch.tensor([True], device=cpu_device)
+
+        updated = engine.apply_instant_interaction(meters, "Eat", mask, check_affordability=True)
+
+        assert torch.isclose(updated[0, 0], torch.tensor(0.8, device=cpu_device))  # energy
+        assert torch.isclose(updated[0, 1], torch.tensor(0.4, device=cpu_device))  # money
+
+    def test_check_affordability_with_dict_costs(self, cpu_device):
+        affordance = DictCostAffordance(
+            name="Expensive",
+            interaction_type="instant",
+            duration_ticks=None,
+            costs={"energy": 0.6},
+            costs_per_tick={},
+            interactions={},
+            opening_hours=make_opening_hours((0, 24)),
+        )
+        engine = self._build_engine((affordance,), cpu_device)
+        meters = torch.tensor([[0.5, 1.0]], device=cpu_device)
+
+        result = engine._check_affordability(meters, affordance.costs)
+
+        assert torch.equal(result, torch.tensor([False], device=cpu_device))
+
+    def test_apply_multi_tick_with_dict_costs_per_tick(self, cpu_device):
+        affordance = DictCostAffordance(
+            name="Train",
+            interaction_type="multi_tick",
+            duration_ticks=2,
+            costs={},
+            costs_per_tick={"money": 0.1},
+            interactions={},
+            opening_hours=make_opening_hours((0, 24)),
+        )
+        engine = self._build_engine((affordance,), cpu_device)
+        meters = torch.tensor([[1.0, 1.0]], device=cpu_device)
+        mask = torch.tensor([True], device=cpu_device)
+
+        updated = engine.apply_multi_tick_interaction(meters, "Train", current_tick=0, agent_mask=mask, check_affordability=True)
+
+        assert torch.isclose(updated[0, 1], torch.tensor(0.9, device=cpu_device))
+
+    def test_get_affordance_cost_reads_money_from_dict(self, cpu_device):
+        affordance = DictCostAffordance(
+            name="Taxi",
+            interaction_type="instant",
+            duration_ticks=None,
+            costs={"money": 0.25},
+            costs_per_tick={},
+            interactions={},
+            opening_hours=make_opening_hours((0, 24)),
+        )
+        engine = self._build_engine((affordance,), cpu_device)
+
+        assert engine.get_affordance_cost("Taxi", cost_mode="instant") == 0.25
+
+
+def test_affordance_engine_executes_effects_commands():
+    """Affordances with interactions field execute Effects commands."""
+    # This test verifies that AffordanceEngine can compile and execute Effects commands
+    # from the interactions field. It tests the basic integration without needing
+    # a full VectorizedHamletEnv setup.
+
+    from unittest.mock import Mock
+
+    from townlet.config.affordances_v2_config import AffordanceParamConfig, DeploymentConfig, OpeningHoursConfig
+
+    # Create affordance with interactions (Effects commands)
+    affordance = AffordanceParamConfig(
+        name="TEST_AFFORDANCE",
+        interaction_type="instant",
+        costs={},
+        interactions={
+            "on_start": [{"modify": "target.bar.energy", "value": "target.bar.energy + 0.5"}],
+            "per_tick": [],
+            "on_completion": [],
+            "on_early_exit": [],
+            "on_failure": [],
+        },
+        opening_hours=OpeningHoursConfig(enabled=False),
+        deployment=DeploymentConfig(type="random"),
+    )
+
+    # Create mock VFS registry and effects schema
+    mock_registry = Mock()
+    mock_registry.storage = {"energy": torch.tensor([0.2, 0.3])}
+
+    # Effects schema is dict[str, str] mapping paths to types
+    effects_schema = {
+        "target.bar.energy": "float",
+        "target.bar.health": "float",
+    }
+
+    # Create mock command executor
+    mock_executor = Mock(spec=CommandExecutor)
+
+    # Create affordance engine - should compile Effects at init
+    meter_name_to_idx = {"energy": 0, "health": 1}
+    engine = AffordanceEngine(
+        affordance_config=(affordance,),
+        num_agents=2,
+        device=torch.device("cpu"),
+        meter_name_to_idx=meter_name_to_idx,
+        modulation_rules=None,
+        vfs_registry=mock_registry,
+        effects_schema=effects_schema,
+        command_executor=mock_executor,
+    )
+
+    # Verify compilation happened
+    assert "TEST_AFFORDANCE" in engine.compiled_affordances
+    compiled = engine.compiled_affordances["TEST_AFFORDANCE"]
+
+    # Verify on_start commands were compiled
+    assert len(compiled.on_start) > 0
+
+    # Verify other stages are empty
+    assert len(compiled.per_tick) == 0
+    assert len(compiled.on_completion) == 0
+    assert len(compiled.on_early_exit) == 0
+    assert len(compiled.on_failure) == 0
+
+
+def test_affordance_effects_apply_modulation_multiplier():
+    """Effect deltas inherit the modulation multiplier (not just costs)."""
+    from townlet.config.affordances_v2_config import AffordanceParamConfig, DeploymentConfig, OpeningHoursConfig
+
+    affordance = AffordanceParamConfig(
+        name="TEST_AFFORDANCE",
+        interaction_type="instant",
+        costs={},
+        interactions={
+            "on_start": [{"modify": "target.bar.energy", "value": "target.bar.energy + 0.4"}],
+            "per_tick": [],
+            "on_completion": [],
+            "on_early_exit": [],
+            "on_failure": [],
+        },
+        opening_hours=OpeningHoursConfig(enabled=False),
+        deployment=DeploymentConfig(type="random"),
+    )
+
+    effects_schema = {
+        "target.bar.energy": "float",
+    }
+
+    modulation_rules = [
+        {"affordance": "TEST_AFFORDANCE", "bar_idx": 0, "threshold": 1.0, "min_multiplier": 0.5},
+    ]
+
+    engine = AffordanceEngine(
+        affordance_config=(affordance,),
+        num_agents=1,
+        device=torch.device("cpu"),
+        meter_name_to_idx={"energy": 0},
+        modulation_rules=modulation_rules,
+        vfs_registry=None,
+        effects_schema=effects_schema,
+        command_executor=CommandExecutor(),
+    )
+
+    meters = torch.tensor([[0.0]], dtype=torch.float32)
+    updated = engine.apply_instant_interaction(meters, "TEST_AFFORDANCE", torch.tensor([True]))
+
+    # Interaction delta is 0.4 but should be scaled by multiplier (0.5 at energy=0.0)
+    assert updated[0, 0].item() == pytest.approx(0.2)
+
+
+def test_get_meter_idx_validation_raises_on_unknown_meter():
+    """_get_meter_idx should raise KeyError with helpful message for unknown meters (ENV-005).
+
+    The error message should include:
+    1. The unknown meter name
+    2. The context (if provided)
+    3. List of available meters
+    """
+    from townlet.effects.executor import CommandExecutor
+
+    @dataclass
+    class SimpleAffordance:
+        id: str
+        name: str
+        interaction_type: str
+        duration_ticks: int | None
+        costs: list[dict]
+        costs_per_tick: list[dict]
+        effect_pipeline: None
+        opening_hours: OpeningHours
+
+    # Create an affordance with an unknown meter in costs
+    affordance_with_bad_meter = SimpleAffordance(
+        id="test",
+        name="BadMeterAffordance",
+        interaction_type="instant",
+        duration_ticks=None,
+        costs=[{"meter": "nonexistent_bar", "amount": 0.1}],  # This meter doesn't exist
+        costs_per_tick=[],
+        effect_pipeline=None,
+        opening_hours=make_opening_hours((0, 24)),
+    )
+
+    # Only define "energy" as valid meter, not "nonexistent_bar"
+    engine = AffordanceEngine(
+        affordance_config=(affordance_with_bad_meter,),
+        num_agents=1,
+        device=torch.device("cpu"),
+        meter_name_to_idx={"energy": 0, "health": 1},
+        modulation_rules=[],
+        vfs_registry=None,
+        effects_schema={},
+        command_executor=CommandExecutor(),
+    )
+
+    meters = torch.tensor([[1.0, 1.0]], dtype=torch.float32)
+
+    # Trying to apply this affordance should raise KeyError with context
+    with pytest.raises(KeyError) as excinfo:
+        engine.apply_instant_interaction(meters, "BadMeterAffordance", torch.tensor([True]))
+
+    error_msg = str(excinfo.value)
+    # Should mention the unknown meter
+    assert "nonexistent_bar" in error_msg
+    # Should mention the affordance context
+    assert "BadMeterAffordance" in error_msg or "affordance" in error_msg.lower()
+    # Should list available meters
+    assert "energy" in error_msg or "Available" in error_msg

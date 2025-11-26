@@ -10,9 +10,9 @@ from typing import Any
 
 import pytest
 import torch
+import yaml
 
 from tests.test_townlet._fixtures.config import _apply_config_overrides
-from tests.test_townlet._fixtures.instant_affordances_helper import convert_to_instant_mode
 from tests.test_townlet.helpers.config_builder import _get_primary_level_dir, mutate_training_yaml
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.universe.compiled import CompiledUniverse
@@ -41,50 +41,6 @@ def basic_env(
         VectorizedHamletEnv instance
     """
     universe = compile_universe(test_config_pack_path)
-    return VectorizedHamletEnv.from_universe(
-        universe,
-        level_name="L0_test",
-        num_agents=1,
-        device=device,
-    )
-
-
-@pytest.fixture
-def instant_env(
-    compile_universe: Callable[[Path | str], CompiledUniverse],
-    test_config_pack_path: Path,
-    device: torch.device,
-    tmp_path: Path,
-) -> VectorizedHamletEnv:
-    """Create an environment with INSTANT-mode affordances for testing immediate effects.
-
-    This fixture is for tests that verify instant affordance effects (e.g., "Doctor restores health").
-    All affordances are converted to interaction_type: instant, removing duration_ticks and multi-tick mechanics.
-
-    Configuration:
-        - 1 agent
-        - 8×8 grid
-        - Full observability
-        - No temporal mechanics
-        - ALL AFFORDANCES IN INSTANT MODE
-        - Device: CUDA if available, else CPU
-
-    Use this instead of basic_env when testing immediate effects, not temporal progression.
-
-    Returns:
-        VectorizedHamletEnv instance with instant-mode affordances
-    """
-    # Copy test config to temp directory (canonical v2.1 model config pack)
-    instant_config_pack = tmp_path / "instant_config"
-    shutil.copytree(test_config_pack_path, instant_config_pack)
-
-    # Resolve primary level from experiment.yaml and convert that level's
-    # affordances to instant mode.
-    level_dir = _get_primary_level_dir(instant_config_pack)
-    convert_to_instant_mode(level_dir / "affordances.yaml")
-
-    # Compile and return environment
-    universe = compile_universe(instant_config_pack)
     return VectorizedHamletEnv.from_universe(
         universe,
         level_name="L0_test",
@@ -241,6 +197,22 @@ def custom_env_builder(
         shutil.copytree(source_path, target_dir)
 
         if overrides:
+            overrides = dict(overrides)
+
+            # Allow enabling temporal mechanics via curriculum when requested.
+            env_overrides = overrides.pop("environment", None) or {}
+            if env_overrides.get("enable_temporal_mechanics"):
+                level_dir = _get_primary_level_dir(target_dir)
+                curriculum_yaml = level_dir / "curriculum.yaml"
+                curriculum_data = yaml.safe_load(curriculum_yaml.read_text())
+                curriculum_section = curriculum_data.get("curriculum", {}) or {}
+                curriculum_section["active_temporal"] = True
+                # Provide a sane default day_length if not specified by override
+                curriculum_section["day_length"] = env_overrides.get("day_length", 24)
+                curriculum_data["curriculum"] = curriculum_section
+                curriculum_yaml.write_text(yaml.safe_dump(curriculum_data, sort_keys=False))
+
+            # Training overrides (default path)
             mutate_training_yaml(target_dir, lambda data: _apply_config_overrides(data, overrides))
 
         return env_factory(

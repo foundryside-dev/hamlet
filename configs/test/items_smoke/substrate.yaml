@@ -1,0 +1,7 @@
+substrate:
+  type: grid
+  grid_size: 5
+  boundary_mode: clamp
+  distance_metric: manhattan
+  observation_encoding: relative
+  initial_placement: random

@@ -1,47 +1,52 @@
-# Items Smoke Test - Item Catalog (Experiment-Level)
-# Single item type for minimal testing
-
-version: "1.0"
-
-item_types:
-  - id: test_item
-    name: "Test Item"
-    icon: "🔹"
-    tags: ["test", "consumable"]
-
-    # VFS profiles this item uses (references vfs_profiles.yaml)
-    vfs_profiles:
-      - item_durability
-      - item_uses_remaining
-
-    # Interaction effects (Phase 1: stored as opaque dicts, validated in Phase 3)
+items:
+  version: '1.0'
+  item_types:
+  - id: apple
+    vfs_profile: food
+    description: Restores energy when used
+    duration: null
+    cooldown: null
     interactions:
-      # Pickup effect (triggered by GET action)
-      pickup:
-        bars: []
-        agent_vfs: []
-        item_vfs: []
-
-      # Use effect (triggered by USE_SLOT_N action)
-      use:
-        bars:
-          - name: energy
-            delta: 0.2  # Using item restores 20% energy
-        item_vfs:
-          - name: item_uses_remaining
-            delta: -1.0  # Decrement uses
-          - name: item_durability
-            delta: -0.1  # Slight durability loss
-        # Note: Item consumed when uses_remaining reaches 0 (Phase 3 logic)
-
-      # Drop effect (triggered by DROP_SLOT_N action)
-      drop:
-        bars: []
-        agent_vfs: []
-        item_vfs: []
-
-# Expected behavior:
-# - Agent can pickup test_item (adds to inventory slot)
-# - Agent can use test_item (restores energy, decrements uses/durability)
-# - Agent can drop test_item (returns to world)
-# - Item despawns after 3 uses or when durability = 0
+      on_pickup: []
+      on_use:
+      - modify: target.bar.energy
+        value: target.bar.energy + 0.3
+      on_drop: []
+    name: Apple
+    icon: "\U0001F34E"
+    tags:
+    - apple
+  - id: medkit
+    vfs_profile: medical
+    description: Restores health when used
+    duration: 100
+    cooldown: 50
+    interactions:
+      on_pickup: []
+      on_use:
+      - modify: target.bar.health
+        value: target.bar.health + 0.5
+      - modify: self.vfs.durability
+        value: self.vfs.durability - 10
+      on_drop: []
+    name: Medkit
+    icon: "\U0001F48A"
+    tags:
+    - medkit
+  - id: coin
+    vfs_profile: currency
+    description: Adds money when picked up
+    duration: null
+    cooldown: null
+    interactions:
+      on_pickup:
+      - modify: target.bar.money
+        value: target.bar.money + 0.1
+      on_use: []
+      on_drop: []
+    name: Coin
+    icon: "\U0001FA99"
+    tags:
+    - coin
+  max_items_per_agent: 3
+  max_items_in_world: 10

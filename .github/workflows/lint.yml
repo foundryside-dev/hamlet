@@ -79,5 +79,5 @@ jobs:
           echo ""
           echo "Note: Config validation (including substrate/stratum configs)"
           echo "      is handled by the 'Config Validation' workflow via the"
-          echo "      Universe Compiler (python -m townlet.compiler validate)"
+          echo "      Universe Compiler (python -m townlet.universe validate)"
           echo "════════════════════════════════════════════════════════════"

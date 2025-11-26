@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from typing import Any
 
+import torch
+
 from townlet.curriculum.base import CurriculumManager
 from townlet.training.state import BatchedAgentState, CurriculumDecision
 
@@ -41,6 +43,15 @@ class StaticCurriculum(CurriculumManager):
         self.reward_mode = reward_mode
         self.active_meters = active_meters or ["energy", "hygiene", "satiation", "money", "mood", "social"]
         self.depletion_multiplier = depletion_multiplier
+        self.transition_events: list[dict[str, Any]] = []
+        self.num_agents: int | None = None
+        self.tracker: _StaticTracker | None = None
+
+    def initialize_population(self, num_agents: int) -> None:
+        """Static curriculum has no per-agent state; record agent count and reset events."""
+        self.num_agents = num_agents
+        self.transition_events.clear()
+        self.tracker = _StaticTracker(num_agents)
 
     def get_batch_decisions(
         self,
@@ -93,3 +104,23 @@ class StaticCurriculum(CurriculumManager):
         self.reward_mode = state["reward_mode"]
         self.active_meters = state["active_meters"]
         self.depletion_multiplier = state["depletion_multiplier"]
+
+    def state_dict(self) -> dict[str, Any]:
+        """PyTorch-style alias for checkpoint_state() for API consistency."""
+        return self.checkpoint_state()
+
+    def load_state_dict(self, state: dict[str, Any]) -> None:
+        """PyTorch-style alias for load_state() for API consistency."""
+        self.load_state(state)
+
+
+class _StaticTracker:
+    """Minimal tracker so logging paths can read curriculum stage tensors."""
+
+    def __init__(self, num_agents: int):
+        self.num_agents = num_agents
+        self.agent_stages = torch.zeros(num_agents, dtype=torch.long)
+
+    def update_step(self, rewards: torch.Tensor, dones: torch.Tensor) -> None:  # noqa: ARG002
+        # Static curriculum does not change stage; no-op
+        return None

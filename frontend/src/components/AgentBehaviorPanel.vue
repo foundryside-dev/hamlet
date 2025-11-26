@@ -83,6 +83,7 @@
         Q-VALUES
       </h4>
       <div class="q-values-list">
+        <!-- DEBUG: Rendering {{ actionProbabilities.length }} Q-value bars -->
         <div
           v-for="(prob, index) in actionProbabilities"
           :key="index"
@@ -143,6 +144,7 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
+import { AFFORDANCE_ICONS } from '../utils/constants.js'
 
 const props = defineProps({
   // Episode performance
@@ -176,13 +178,17 @@ const props = defineProps({
   },
 
   // Q-values and affordance stats (from backend)
+  actionLabels: {
+    type: Object,
+    default: () => ({})  // Dynamic action labels {0: 'UP', 1: 'DOWN', ...}
+  },
   qValues: {
     type: Array,
     default: () => []
   },
   actionMasks: {
     type: Array,
-    default: () => [true, true, true, true, true, true]  // All 6 actions valid by default
+    default: () => []  // Dynamic length based on action space
   },
   affordanceStats: {
     type: Array,
@@ -190,23 +196,35 @@ const props = defineProps({
   }
 })
 
-// Action mapping
-const actionMap = {
-  0: { icon: '⬆️', name: 'Move Up' },
-  1: { icon: '⬇️', name: 'Move Down' },
-  2: { icon: '⬅️', name: 'Move Left' },
-  3: { icon: '➡️', name: 'Move Right' },
-  4: { icon: '⚡', name: 'Interact' },
-  5: { icon: '⏸️', name: 'Wait' }
+// Action icon mapping (defaults based on common action names)
+const getActionIcon = (actionName) => {
+  const name = actionName.toUpperCase()
+  if (name.includes('UP') || name === 'NORTH' || name === '+Y') return '⬆️'
+  if (name.includes('DOWN') || name === 'SOUTH' || name === '-Y') return '⬇️'
+  if (name.includes('LEFT') || name === 'WEST' || name === '-X') return '⬅️'
+  if (name.includes('RIGHT') || name === 'EAST' || name === '+X') return '➡️'
+  if (name.includes('INTERACT') || name.includes('USE')) return '⚡'
+  if (name.includes('WAIT') || name.includes('IDLE')) return '⏸️'
+  if (name.includes('FORWARD') || name === '+Z') return '⬆️'
+  if (name.includes('BACK') || name === '-Z') return '⬇️'
+  if (name.includes('REST') || name.includes('SLEEP')) return '😴'
+  if (name.includes('MEDITATE')) return '🧘'
+  return '🔘'  // Default icon for unknown actions
 }
 
-// Affordance icon mapping
-const affordanceIconMap = {
-  'Bed': '🛏️',
-  'Shower': '🚿',
-  'Fridge': '🍔',
-  'Job': '💼'
-}
+// Dynamic action mapping from backend labels
+const actionMap = computed(() => {
+  const map = {}
+  Object.entries(props.actionLabels).forEach(([index, label]) => {
+    map[parseInt(index)] = {
+      icon: getActionIcon(label),
+      name: label
+    }
+  })
+  return map
+})
+
+// Affordance icon mapping - imported from constants.js (supports all v2.1 affordances)
 
 // Action history trail (last 5 actions)
 const recentActions = ref([])
@@ -224,7 +242,7 @@ watch(() => props.currentStep, (newStep, oldStep) => {
   // Add action only if this is a new step we haven't processed yet
   if (newStep > lastProcessedStep.value && newStep > 0 && props.lastAction !== null) {
     recentActions.value.unshift({
-      icon: actionMap[props.lastAction]?.icon || '❓',
+      icon: actionMap.value[props.lastAction]?.icon || '❓',
       timestamp: Date.now()
     })
 
@@ -239,12 +257,12 @@ watch(() => props.currentStep, (newStep, oldStep) => {
 
 const actionIcon = computed(() => {
   if (props.lastAction === null) return '⏸️'
-  return actionMap[props.lastAction]?.icon || '❓'
+  return actionMap.value[props.lastAction]?.icon || '❓'
 })
 
 const actionName = computed(() => {
   if (props.lastAction === null) return 'Waiting'
-  return actionMap[props.lastAction]?.name || 'Unknown'
+  return actionMap.value[props.lastAction]?.name || 'Unknown'
 })
 
 // Reward formatting
@@ -268,7 +286,6 @@ const rewardIcon = computed(() => {
 
 // Epsilon formatting
 const formattedEpsilon = computed(() => {
-  console.log('Epsilon value:', props.epsilon)
   return props.epsilon.toFixed(3)
 })
 
@@ -277,12 +294,6 @@ const epsilonPercent = computed(() => (1 - props.epsilon) * 100)
 
 // Training progress
 const progressPercent = computed(() => {
-  console.log('Training progress:', {
-    checkpointEpisode: props.checkpointEpisode,
-    totalEpisodes: props.totalEpisodes,
-    percent: (props.checkpointEpisode / props.totalEpisodes) * 100
-  })
-
   if (props.totalEpisodes === 0) return 0
   // Prevent showing progress > 100% if checkpoint > total (data error)
   if (props.checkpointEpisode > props.totalEpisodes) return 100
@@ -302,15 +313,12 @@ const progressGradient = computed(() => {
 
 // Q-Values (from backend via props)
 const displayQValues = computed(() => {
-  // Use real Q-values if available, otherwise return zeros
-  if (props.qValues && props.qValues.length >= 5) {
-    // If backend sends 5 values (old), pad with 0 for Wait action
-    if (props.qValues.length === 5) {
-      return [...props.qValues, 0]
-    }
+  // Use real Q-values if available, otherwise return empty array
+  if (props.qValues && props.qValues.length > 0) {
     return props.qValues
   }
-  return [0, 0, 0, 0, 0, 0]  // 6 actions: UP, DOWN, LEFT, RIGHT, INTERACT, WAIT
+  // Default to empty array if no Q-values received yet
+  return []
 })
 
 // Action probabilities - show relative strength of each Q-value
@@ -320,7 +328,7 @@ const actionProbabilities = computed(() => {
 
   // Safety check for empty or invalid data
   if (!qvals || qvals.length === 0 || !masks || masks.length === 0) {
-    return [0, 0, 0, 0, 0, 0]
+    return []  // Return empty array if no data yet
   }
 
   // Filter to only valid (unmasked) actions for normalization
@@ -378,16 +386,6 @@ const mockConfidence = computed(() => {
   const exploitationFactor = 1 - props.epsilon
   const confidence = separation * exploitationFactor
 
-  console.log('Confidence calc:', {
-    validCount: validProbs.length,
-    bestProb,
-    secondBestProb,
-    separation,
-    epsilon: props.epsilon,
-    exploitationFactor,
-    confidence
-  })
-
   return Math.round(confidence)
 })
 
@@ -409,7 +407,7 @@ const mockFavorites = computed(() => {
 
   // Map backend data to display format with icons
   return props.affordanceStats.map(stat => ({
-    icon: affordanceIconMap[stat.name] || '❓',
+    icon: AFFORDANCE_ICONS[stat.name] || '❓',
     name: stat.name,
     count: stat.count
   }))
@@ -431,10 +429,10 @@ const topFavorite = computed(() => {
 .agent-behavior-panel {
   background: var(--color-bg-secondary);
   border-radius: var(--border-radius-md);
-  padding: var(--spacing-lg);
+  padding: var(--spacing-md);
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xs);
   height: 100%;
 }
 
@@ -443,7 +441,7 @@ const topFavorite = computed(() => {
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
 }
 
 .panel-header h3 {
@@ -457,8 +455,8 @@ const topFavorite = computed(() => {
 .section {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
-  padding-bottom: var(--spacing-md);
+  gap: var(--spacing-xs);
+  padding-bottom: var(--spacing-sm);
 }
 
 .section:not(:last-child) {
@@ -466,7 +464,7 @@ const topFavorite = computed(() => {
 }
 
 .section-header {
-  margin: 0 0 var(--spacing-sm) 0;
+  margin: 0 0 var(--spacing-xs) 0;
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
   text-transform: uppercase;
@@ -498,8 +496,8 @@ const topFavorite = computed(() => {
 .immediate-info {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
-  padding: var(--spacing-lg);
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
   background: linear-gradient(135deg,
     rgba(16, 185, 129, 0.05),
     rgba(16, 185, 129, 0.02)
@@ -670,7 +668,7 @@ const topFavorite = computed(() => {
 }
 
 .epsilon-bar .bar-track {
-  height: 24px;
+  height: 18px;
   background: var(--color-bg-tertiary);
   border-radius: var(--border-radius-full);
   overflow: hidden;
@@ -706,7 +704,7 @@ const topFavorite = computed(() => {
 }
 
 .progress-bar .bar-track {
-  height: 24px;
+  height: 18px;
   background: var(--color-bg-tertiary);
   border-radius: var(--border-radius-full);
   overflow: hidden;
@@ -823,14 +821,14 @@ const topFavorite = computed(() => {
 .q-values-list {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xs);
+  gap: 2px;
 }
 
 .q-value-item {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  padding: var(--spacing-xs) var(--spacing-sm);
+  padding: 2px var(--spacing-sm);
   background: var(--color-bg-primary);
   border-radius: var(--border-radius-sm);
   border-left: 2px solid var(--color-bg-tertiary);
@@ -861,7 +859,7 @@ const topFavorite = computed(() => {
 
 .q-value-bar-container {
   flex: 1;
-  height: 14px;
+  height: 12px;
   background: var(--color-bg-tertiary);
   border-radius: var(--border-radius-full);
   overflow: hidden;
@@ -924,7 +922,7 @@ const topFavorite = computed(() => {
 }
 
 .confidence-bar-container {
-  height: 20px;
+  height: 18px;
   background: var(--color-bg-tertiary);
   border-radius: var(--border-radius-full);
   overflow: hidden;

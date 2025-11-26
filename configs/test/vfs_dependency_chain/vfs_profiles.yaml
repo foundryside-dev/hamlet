@@ -1,0 +1,18 @@
+version: "1.0"
+
+global_profile:
+  variables:
+    - name: a
+      type: float
+      initial_value: 10.0
+    - name: b
+      type: float
+      expression: "a + 5"
+    - name: c
+      type: float
+      expression: "b * 2"
+
+agent_profile: null
+item_profiles:
+  - profile_name: default_item
+    variables: []

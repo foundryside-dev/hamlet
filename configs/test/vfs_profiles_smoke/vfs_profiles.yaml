@@ -1,0 +1,58 @@
+# VFS Profiles Smoke Test Configuration
+# Tests: global variables, agent variables, item profiles
+
+version: "1.0"
+
+global_profile:
+  variables:
+    - name: day_count
+      type: int
+      initial_value: 0
+      description: "Number of days elapsed"
+
+    - name: is_night
+      type: bool
+      expression: "temporal.tick % 24 >= 18"
+      description: "True during night hours (18:00-6:00)"
+
+agent_profile:
+  variables:
+    - name: motivation
+      type: float
+      initial_value: 1.0
+      description: "Agent's intrinsic motivation multiplier"
+
+    - name: is_crisis
+      type: bool
+      expression: "bar.energy < 0.2 or bar.health < 0.2"
+      description: "True when agent is in resource crisis"
+
+    - name: crisis_duration
+      type: int
+      initial_value: 0
+      description: "Ticks spent in crisis state"
+
+item_profiles:
+  - profile_name: food_stats
+    variables:
+      - name: nutrition
+        type: float
+        initial_value: 0.5
+        description: "Energy restored when consumed"
+
+      - name: is_spoiled
+        type: bool
+        expression: "self.age > 100"
+        description: "True when food has spoiled"
+
+  - profile_name: weapon_stats
+    variables:
+      - name: damage
+        type: float
+        initial_value: 10.0
+        description: "Damage dealt per use"
+
+      - name: durability
+        type: int
+        initial_value: 100
+        description: "Remaining uses before breaking"

@@ -20,7 +20,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-import yaml
+from townlet.config.training_v2_config import TrainingV2Config, load_training_v2_config
 
 # Import DemoRunner at module level to avoid Python 3.13 atexit threading issues
 # (importing TensorBoard/TensorFlow in background threads triggers atexit registration errors)
@@ -61,15 +61,20 @@ class UnifiedServer:
             inference_port: Port for inference WebSocket server
         """
         self.config_dir = Path(config_dir)
-        # training_config_path is optional but must point to a v2.1 level training.yaml when provided
-        self.training_config_path = Path(training_config_path) if training_config_path else None
+        # training_config_path is optional; default to the selected level's training.yaml
+        self.training_config_path: Path | None
+        if training_config_path:
+            self.training_config_path = Path(training_config_path)
+        else:
+            inferred_path = self.config_dir / "levels" / level_name / "training.yaml"
+            self.training_config_path = inferred_path if inferred_path.exists() else None
         if self.training_config_path is not None and not self.training_config_path.exists():
             raise FileNotFoundError(f"training_config_path provided but not found: {self.training_config_path}")
         self.total_episodes = total_episodes
         self.checkpoint_dir = Path(checkpoint_dir) if checkpoint_dir else None
         self.inference_port = inference_port
         self.level_name = level_name
-        self._config_cache: dict | None = None
+        self._training_config: TrainingV2Config | None = None
 
         # Component handles (initialized in start())
         self.training_thread: threading.Thread | None = None
@@ -196,17 +201,18 @@ class UnifiedServer:
 
         logger.info("UnifiedServer.start() exiting")
 
-    def _load_config(self) -> dict:
-        """Load and cache the YAML configuration."""
-        if self._config_cache is None:
-            if self.training_config_path is not None:
-                with open(self.training_config_path) as f:
-                    data = yaml.safe_load(f) or {}
-                self._config_cache = data
-            else:
-                # No single training.yaml; synthesize minimal run metadata
-                self._config_cache = {}
-        return self._config_cache
+    def _load_training_config(self) -> TrainingV2Config:
+        """Load and cache the v2.1 training config for this level."""
+        if self._training_config is not None:
+            return self._training_config
+
+        if self.training_config_path is not None:
+            config_dir = self.training_config_path.parent
+        else:
+            config_dir = self.config_dir / "levels" / self.level_name
+
+        self._training_config = load_training_v2_config(config_dir)
+        return self._training_config
 
     def _determine_run_directory(self, timestamp: str) -> Path:
         """
@@ -215,14 +221,14 @@ class UnifiedServer:
         Prefers explicit output_subdir specified in config; falls back to
         explicit training run naming. No implicit defaults are applied.
         """
-        config = self._load_config()
-        run_metadata = config.get("run_metadata") or {}
-        output_subdir = run_metadata.get("output_subdir")
-
-        if not output_subdir:
+        training_cfg = self._load_training_config()
+        run_metadata = training_cfg.run_metadata
+        if run_metadata is None:
             raise ValueError(
                 "run_metadata.output_subdir is required in training config; " "no defaults or inference are applied for run folder naming."
             )
+
+        output_subdir = run_metadata.output_subdir
 
         level_name = self._sanitize_folder_name(str(output_subdir))
         if not level_name:
@@ -348,7 +354,6 @@ class UnifiedServer:
                 db_path=str(db_path),
                 checkpoint_dir=str(self.checkpoint_dir),
                 max_episodes=self.total_episodes,
-                training_config_path=str(self.training_config_path) if self.training_config_path is not None else None,
             )
 
             logger.info("[Training] Starting training loop...")
@@ -378,6 +383,11 @@ class UnifiedServer:
         from townlet.demo.live_inference import LiveInferenceServer
 
         try:
+            # Silence noisy inference logging so training output stays readable.
+            inference_logger = logging.getLogger("townlet.demo.live_inference")
+            inference_logger.setLevel(logging.WARNING)
+            inference_logger.propagate = False
+
             logger.info("[Inference] Initializing LiveInferenceServer...")
 
             # Type narrowing: checkpoint_dir is guaranteed to be set by start()

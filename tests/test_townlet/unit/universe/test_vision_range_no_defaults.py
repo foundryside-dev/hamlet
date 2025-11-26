@@ -36,7 +36,10 @@ class TestVisionRangeNoDefaults:
             "stratum.yaml",
             "environment.yaml",
             "actions.yaml",
-            "agent.yaml",
+            "brain.yaml",
+            "vfs_profiles.yaml",
+            "items.yaml",
+            "effects.yaml",
         ]:
             shutil.copy(default_pack / shared_file, config_dir / shared_file)
 

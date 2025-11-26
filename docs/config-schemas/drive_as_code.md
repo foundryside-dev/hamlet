@@ -1424,10 +1424,10 @@ extrinsic:
 **CLI**:
 ```bash
 # Compile with DAC validation
-python -m townlet.compiler compile configs/L0_0_minimal
+python -m townlet.universe compile configs/L0_0_minimal
 
 # Inspect compiled universe (includes drive_hash)
-python -m townlet.compiler inspect configs/L0_0_minimal
+python -m townlet.universe inspect configs/L0_0_minimal
 ```
 
 ---

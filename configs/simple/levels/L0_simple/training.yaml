@@ -1,0 +1,76 @@
+run_metadata:
+  output_subdir: "L0_simple"
+
+training:
+  version: "1.0"
+
+  population:
+    size: 1
+
+  # Environment runtime controls
+  enabled_affordances:
+    - SLEEP
+    - DOCTOR
+    - COOK
+    - WORK
+  randomize_affordances: true
+
+  enabled_actions:
+    custom: []
+
+  q_learning:
+    use_double_dqn: true
+    gamma: 0.997
+    learning_rate: 0.0002
+    target_update_frequency: 750
+
+  replay_buffer:
+    capacity: 200000
+    batch_size: 128
+    min_size: 10000
+
+  exploration:
+    epsilon_start: 1.0
+    epsilon_end: 0.05
+    epsilon_decay: 0.997
+
+  intrinsic:
+    rnd:
+      feature_dim: 256
+      learning_rate: 0.0001
+
+    annealing:
+      threshold: 100.0
+      decay_rate: 0.995
+      min_weight: 0.01
+    initial_weight: 0.1
+    min_survival_fraction: 0.1
+    survival_window: 200
+
+  training_loop:
+    max_episodes: 5000
+    max_steps_per_episode: 1200
+    train_frequency: 4
+    sequence_length: 8
+    max_grad_norm: 10.0
+
+    evaluation:
+      interval: 500
+      num_episodes: 10
+
+    checkpointing:
+      interval: 500
+      keep_last: 10
+
+  curriculum:
+    strategy: static
+
+    adversarial:
+      difficulty_metric: survival_rate
+      adaptation_rate: 0.1
+      min_difficulty: 0.2
+      max_difficulty: 1.0
+      survival_advance_threshold: 0.7
+      survival_retreat_threshold: 0.3
+      entropy_gate: 0.5
+      min_steps_at_stage: 1000

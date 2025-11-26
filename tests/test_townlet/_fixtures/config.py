@@ -32,9 +32,26 @@ def _apply_config_overrides(config_data: dict[str, Any], overrides: dict[str, An
         return
 
     for section, updates in overrides.items():
-        current = config_data.get(section) or {}
-        current.update(updates)
-        config_data[section] = current
+        if section in config_data:
+            current = config_data.get(section) or {}
+            current.update(updates)
+            config_data[section] = current
+            continue
+
+        # Convenience: allow top-level overrides for training.* keys without nesting
+        training = config_data.get("training")
+        if isinstance(training, dict):
+            current = training.get(section) or {}
+            if isinstance(updates, dict):
+                current.update(updates)
+            else:
+                current = updates
+            training[section] = current
+            config_data["training"] = training
+            continue
+
+        # Fallback: add new top-level section
+        config_data[section] = updates
 
 
 @pytest.fixture(scope="session")

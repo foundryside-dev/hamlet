@@ -1,0 +1,31 @@
+drive:
+  version: '1.0'
+  modifiers:
+    neutral:
+      bar: energy
+      ranges:
+      - name: range_0
+        min: 0.0
+        max: 1.0
+        multiplier: 1.0
+  extrinsic:
+    type: constant_base_with_shaped_bonus
+    base_reward: 0.0
+    bar_bonuses: []
+    variable_bonuses: []
+    apply_modifiers: []
+  intrinsic:
+    strategy: adaptive_rnd
+    base_weight: 0.0
+    apply_modifiers: []
+    adaptive_config:
+      enabled: false
+      threshold: 0.0
+      decay_rate: 1.0
+      min_weight: 0.0
+  shaping: []
+  composition:
+    normalize: false
+    clip: null
+    log_components: false
+    log_modifiers: false

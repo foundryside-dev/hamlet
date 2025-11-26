@@ -13,13 +13,16 @@ import torch
 
 from townlet.config.actions_config import ActionsConfig
 from townlet.config.affordances_v2_config import AffordancesV2Config
-from townlet.config.agent_config import AgentConfig
 from townlet.config.bars_v2_config import BarsV2Config
+from townlet.config.brain_config import BrainConfig
 from townlet.config.curriculum_config import CurriculumConfig
+from townlet.config.drive_as_code import DriveAsCodeConfig
 from townlet.config.environment_config import EnvironmentConfig
 from townlet.config.experiment_config import ExperimentConfig
+from townlet.config.items_config import ItemsAppearanceConfig, ItemsCatalogConfig
 from townlet.config.stratum_config import StratumConfig
 from townlet.config.training_v2_config import TrainingV2Config
+from townlet.effects.catalog import EffectCatalog
 from townlet.universe.dto import (
     ActionMetadata,
     ActionSpaceMetadata,
@@ -33,8 +36,25 @@ from townlet.universe.dto import (
     UniverseMetadata,
 )
 from townlet.universe.optimization import OptimizationData
+from townlet.vfs.profiles import CompiledGlobalProfile
 from townlet.vfs.schema import ObservationField as VfsObservationField
 from townlet.vfs.schema import VariableDef
+
+COMPILED_SCHEMA_VERSION = "1.3"
+
+
+@dataclass(frozen=True)
+class CompiledVFSProfiles:
+    """Compiled VFS profiles (global, agent, item)."""
+
+    global_profile: CompiledGlobalProfile | None = None
+    agent_profile: Any | None = None  # TODO: Add CompiledAgentProfile type
+    item_profiles: dict[str, Any] | None = None  # TODO: Add CompiledItemProfile type
+
+    def __post_init__(self):
+        # Make item_profiles immutable
+        if self.item_profiles is None:
+            object.__setattr__(self, "item_profiles", {})
 
 
 @dataclass(frozen=True)
@@ -57,11 +77,35 @@ class CompiledUniverse:
     stratum: StratumConfig
     environment: EnvironmentConfig
     actions: ActionsConfig
-    agent: AgentConfig
+    brain: BrainConfig
+    items_catalog: ItemsCatalogConfig | None = None
+
+    # Compiled VFS profiles (experiment-level artifact)
+    compiled_vfs_profiles: CompiledVFSProfiles | None = None
+
+    # Compiled effects catalog (per-level artifact)
+    compiled_effect_catalog: EffectCatalog | None = None
+    effect_observation_slots: int = 0
+
+    # Type schema for runtime VFS expression validation
+    vfs_expression_schema: dict[str, str] | None = None
+
+    # Temporal history requirements for VFS expressions
+    vfs_history_spec: dict[str, int] | None = None
+
+    # Marks for which VFS variables are observed (for mark-and-sweep evaluation)
+    vfs_observation_marks: dict[str, set[str]] | None = None
+    # Format: {"global": {"day_count", "is_night"}, "agent": {"motivation"}, "item": {...}}
 
     # Provenance
     experiment_dir: Path | None = None
     drive_hash: str | None = None
+    brain_hash: str | None = None
+    experiment_hash: str | None = None
+    stratum_hash: str | None = None
+    environment_hash: str | None = None
+    actions_hash: str | None = None
+    items_hash: str | None = None
 
     # Multi-level support
     all_levels: dict[str, CompiledUniverse.LevelMetadata] | None = None
@@ -73,6 +117,7 @@ class CompiledUniverse:
         level_name: str
         bars: BarsV2Config
         affordances: AffordancesV2Config
+        drive: DriveAsCodeConfig
         curriculum: CurriculumConfig
         training: TrainingV2Config
         observation_spec: ObservationSpec
@@ -83,6 +128,12 @@ class CompiledUniverse:
         optimization_data: OptimizationData
         vfs_observation_fields: tuple[VfsObservationField, ...]
         vfs_variables: tuple[VariableDef, ...]
+        drive_hash: str | None = None
+        curriculum_hash: str | None = None
+        bars_hash: str | None = None
+        affordances_hash: str | None = None
+        training_hash: str | None = None
+        items_appearance: ItemsAppearanceConfig | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "vfs_observation_fields", tuple(self.vfs_observation_fields))
@@ -121,15 +172,29 @@ class CompiledUniverse:
             stratum=deepcopy(self.stratum),
             environment=deepcopy(self.environment),
             actions=deepcopy(self.actions),
-            agent=deepcopy(self.agent),
+            brain=deepcopy(self.brain),
+            items_catalog=deepcopy(self.items_catalog) if self.items_catalog is not None else None,
+            compiled_vfs_profiles=deepcopy(self.compiled_vfs_profiles) if self.compiled_vfs_profiles is not None else None,
+            compiled_effect_catalog=deepcopy(self.compiled_effect_catalog) if self.compiled_effect_catalog is not None else None,
+            effect_observation_slots=self.effect_observation_slots,
+            vfs_expression_schema=deepcopy(self.vfs_expression_schema) if self.vfs_expression_schema is not None else None,
+            vfs_history_spec=deepcopy(self.vfs_history_spec) if self.vfs_history_spec is not None else None,
+            vfs_observation_marks=deepcopy(self.vfs_observation_marks) if self.vfs_observation_marks is not None else None,
             experiment_dir=self.experiment_dir,
             drive_hash=self.drive_hash,
+            brain_hash=self.brain_hash,
+            experiment_hash=self.experiment_hash,
+            stratum_hash=self.stratum_hash,
+            environment_hash=self.environment_hash,
+            actions_hash=self.actions_hash,
+            items_hash=self.items_hash,
             all_levels=deepcopy(self.all_levels),
         )
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to a serialization-friendly dictionary."""
         return {
+            "compiled_schema_version": COMPILED_SCHEMA_VERSION,
             "metadata": _dataclass_to_plain(self.metadata),
             "observation_spec": _dataclass_to_plain(self.observation_spec),
             "observation_activity": _dataclass_to_plain(self.observation_activity),
@@ -153,9 +218,28 @@ class CompiledUniverse:
             "stratum": self.stratum.model_dump(),
             "environment": self.environment.model_dump(),
             "actions": self.actions.model_dump(),
-            "agent": self.agent.model_dump(),
+            "brain": self.brain.model_dump(),
+            "items_catalog": self.items_catalog.model_dump() if self.items_catalog is not None else None,
+            "compiled_vfs_profiles": (
+                _serialize_vfs_profiles(self.compiled_vfs_profiles) if self.compiled_vfs_profiles is not None else None
+            ),
+            "compiled_effect_catalog": (
+                _serialize_effect_catalog(self.compiled_effect_catalog) if self.compiled_effect_catalog is not None else None
+            ),
+            "effect_observation_slots": self.effect_observation_slots,
+            "vfs_expression_schema": self.vfs_expression_schema,
+            "vfs_history_spec": self.vfs_history_spec,
+            "vfs_observation_marks": (
+                {k: list(v) for k, v in self.vfs_observation_marks.items()} if self.vfs_observation_marks is not None else None
+            ),  # Convert sets to lists for JSON serialization
             "experiment_dir": None if self.experiment_dir is None else str(self.experiment_dir),
             "drive_hash": self.drive_hash,
+            "brain_hash": self.brain_hash,
+            "experiment_hash": self.experiment_hash,
+            "stratum_hash": self.stratum_hash,
+            "environment_hash": self.environment_hash,
+            "actions_hash": self.actions_hash,
+            "items_hash": self.items_hash,
             "all_levels": (
                 None
                 if self.all_levels is None
@@ -164,6 +248,12 @@ class CompiledUniverse:
                         "level_name": meta.level_name,
                         "bars": meta.bars.model_dump(),
                         "affordances": meta.affordances.model_dump(),
+                        "drive": meta.drive.model_dump(),
+                        "drive_hash": meta.drive_hash,
+                        "curriculum_hash": meta.curriculum_hash,
+                        "bars_hash": meta.bars_hash,
+                        "affordances_hash": meta.affordances_hash,
+                        "training_hash": meta.training_hash,
                         "curriculum": meta.curriculum.model_dump(),
                         "training": meta.training.model_dump(),
                         "observation_spec": _dataclass_to_plain(meta.observation_spec),
@@ -217,6 +307,12 @@ class CompiledUniverse:
                     level_name=meta["level_name"],
                     bars=BarsV2Config.model_validate(meta["bars"]),
                     affordances=AffordancesV2Config.model_validate(meta["affordances"]),
+                    drive=DriveAsCodeConfig.model_validate(meta["drive"]),
+                    drive_hash=meta.get("drive_hash"),
+                    curriculum_hash=meta.get("curriculum_hash"),
+                    bars_hash=meta.get("bars_hash"),
+                    affordances_hash=meta.get("affordances_hash"),
+                    training_hash=meta.get("training_hash"),
                     curriculum=CurriculumConfig.model_validate(meta["curriculum"]),
                     training=TrainingV2Config.model_validate(meta["training"]),
                     observation_spec=_observation_spec_from_plain(meta["observation_spec"]),
@@ -255,9 +351,32 @@ class CompiledUniverse:
             stratum=StratumConfig.model_validate(payload["stratum"]),
             environment=EnvironmentConfig.model_validate(payload["environment"]),
             actions=ActionsConfig.model_validate(payload["actions"]),
-            agent=AgentConfig.model_validate(payload["agent"]),
+            brain=BrainConfig.model_validate(payload["brain"]),
+            items_catalog=ItemsCatalogConfig.model_validate(payload["items_catalog"]) if payload.get("items_catalog") is not None else None,
+            compiled_vfs_profiles=(
+                _deserialize_vfs_profiles(payload["compiled_vfs_profiles"]) if payload.get("compiled_vfs_profiles") is not None else None
+            ),
+            compiled_effect_catalog=(
+                _deserialize_effect_catalog(payload["compiled_effect_catalog"])
+                if payload.get("compiled_effect_catalog") is not None
+                else None
+            ),
+            effect_observation_slots=payload.get("effect_observation_slots", 0),
+            vfs_expression_schema=payload.get("vfs_expression_schema"),
+            vfs_history_spec=payload.get("vfs_history_spec"),
+            vfs_observation_marks=(
+                {k: set(v) for k, v in payload["vfs_observation_marks"].items()}
+                if payload.get("vfs_observation_marks") is not None
+                else None
+            ),  # Convert lists back to sets
             experiment_dir=None if payload.get("experiment_dir") is None else Path(payload["experiment_dir"]),
             drive_hash=payload.get("drive_hash"),
+            brain_hash=payload.get("brain_hash"),
+            experiment_hash=payload.get("experiment_hash"),
+            stratum_hash=payload.get("stratum_hash"),
+            environment_hash=payload.get("environment_hash"),
+            actions_hash=payload.get("actions_hash"),
+            items_hash=payload.get("items_hash"),
             all_levels=all_levels,
         )
 
@@ -270,7 +389,14 @@ class CompiledUniverse:
     @classmethod
     def load_from_cache(cls, path: Path) -> CompiledUniverse:
         """Deserialize a compiled universe from MessagePack file."""
-        payload = msgpack.unpackb(path.read_bytes(), raw=False)
+        payload = msgpack.unpackb(path.read_bytes(), raw=False, strict_map_key=False)
+        schema_version = payload.get("compiled_schema_version")
+        if schema_version != COMPILED_SCHEMA_VERSION:
+            raise ValueError(
+                f"Compiled universe schema mismatch for {path}: "
+                f"found '{schema_version}', expected '{COMPILED_SCHEMA_VERSION}'. "
+                "Recompile the config pack with `python -m townlet.universe compile <config_dir>`."
+            )
         return cls.from_dict(payload)
 
     # Runtime adapters -----------------------------------------------------
@@ -287,10 +413,11 @@ class CompiledUniverse:
             "stratum": self.stratum,
             "environment": self.environment,
             "actions": self.actions,
-            "agent": self.agent,
+            "brain": self.brain,
             "curriculum": level.curriculum,
             "bars": level.bars,
             "affordances": level.affordances,
+            "drive": level.drive,
             "training": level.training,
         }
 
@@ -380,6 +507,9 @@ def _action_space_metadata_from_plain(payload: Mapping[str, Any]) -> ActionSpace
     return ActionSpaceMetadata(
         total_actions=payload["total_actions"],
         actions=tuple(ActionMetadata(**entry) for entry in payload.get("actions", [])),
+        labels=payload.get("labels", {}),
+        label_description=payload.get("label_description"),
+        label_domain=payload.get("label_domain"),
     )
 
 
@@ -389,3 +519,164 @@ def _meter_metadata_from_plain(payload: Mapping[str, Any]) -> MeterMetadata:
 
 def _affordance_metadata_from_plain(payload: Mapping[str, Any]) -> AffordanceMetadata:
     return AffordanceMetadata(affordances=tuple(AffordanceInfo(**entry) for entry in payload.get("affordances", [])))
+
+
+def _serialize_vfs_profiles(profiles: CompiledVFSProfiles) -> dict[str, Any]:
+    """Serialize CompiledVFSProfiles to dict."""
+
+    result: dict[str, Any] = {}
+
+    if profiles.global_profile is not None:
+        result["global_profile"] = {
+            "variables": [
+                {
+                    "name": var.name,
+                    "type": var.type,
+                    "expression": getattr(var, "expression", None),
+                    "ast": None,  # AST not serialized (reconstruct on load)
+                    "initial_value": var.initial_value,
+                    "result_type": var.result_type,
+                    "exposed_to": list(getattr(var, "exposed_to", []) or ["agent"]),
+                    "semantic_type": getattr(var, "semantic_type", "custom"),
+                }
+                for var in profiles.global_profile.variables
+            ],
+            "dependencies": {name: list(deps) for name, deps in profiles.global_profile.dependencies.items()},
+        }
+    else:
+        result["global_profile"] = None
+
+    result["agent_profile"] = profiles.agent_profile
+
+    if profiles.item_profiles:
+        item_profiles_serialized: dict[str, Any] = {}
+        for name, profile in profiles.item_profiles.items():
+            item_profiles_serialized[name] = {
+                "profile_name": profile.profile_name,
+                "variables": [
+                    {
+                        "name": var.name,
+                        "type": var.type,
+                        "expression": getattr(var, "expression", None),
+                        "initial_value": var.initial_value,
+                        "result_type": var.result_type,
+                        "shape": var.shape,
+                        "initial_value_mode": var.initial_value_mode,
+                        "initial_value_params": var.initial_value_params,
+                        "dims": var.dims,
+                        "exposed_to": list(getattr(var, "exposed_to", []) or ["agent"]),
+                        "semantic_type": getattr(var, "semantic_type", "custom"),
+                    }
+                    for var in profile.variables
+                ],
+            }
+        result["item_profiles"] = item_profiles_serialized
+    else:
+        result["item_profiles"] = None
+
+    return result
+
+
+def _deserialize_vfs_profiles(payload: dict[str, Any]) -> CompiledVFSProfiles:
+    """Deserialize CompiledVFSProfiles from dict."""
+    from townlet.vfs.profiles import CompiledGlobalProfile, CompiledItemProfile, CompiledVariable
+    from townlet.world.expression import ExpressionParser
+
+    global_profile = None
+    if payload.get("global_profile") is not None:
+        variables = []
+        for var in payload["global_profile"]["variables"]:
+            variables.append(
+                CompiledVariable(
+                    name=var["name"],
+                    type=var["type"],
+                    expression=var.get("expression"),
+                    ast=ExpressionParser().parse(var["expression"]) if var.get("expression") else None,
+                    initial_value=var["initial_value"],
+                    result_type=var.get("result_type"),
+                    exposed_to=tuple(var.get("exposed_to", ["agent"])),
+                    semantic_type=var.get("semantic_type", "custom"),
+                )
+            )
+        dependencies = payload["global_profile"].get("dependencies", {})
+        dependencies = {name: tuple(deps) for name, deps in dependencies.items()}
+        global_profile = CompiledGlobalProfile(variables=variables, dependencies=dependencies)
+
+    item_profiles = None
+    raw_items = payload.get("item_profiles")
+    if raw_items:
+        item_profiles = {}
+        for name, profile in raw_items.items():
+            variables = [
+                CompiledVariable(
+                    name=var["name"],
+                    type=var["type"],
+                    expression=var.get("expression"),
+                    ast=ExpressionParser().parse(var["expression"]) if var.get("expression") else None,
+                    initial_value=var.get("initial_value"),
+                    result_type=var.get("result_type"),
+                    shape=var.get("shape"),
+                    initial_value_mode=var.get("initial_value_mode"),
+                    initial_value_params=var.get("initial_value_params"),
+                    dims=var.get("dims"),
+                    exposed_to=tuple(var.get("exposed_to", ["agent"])),
+                    semantic_type=var.get("semantic_type", "custom"),
+                )
+                for var in profile.get("variables", [])
+            ]
+            item_profiles[name] = CompiledItemProfile(profile_name=profile["profile_name"], variables=variables)
+
+    return CompiledVFSProfiles(
+        global_profile=global_profile,
+        agent_profile=payload.get("agent_profile"),
+        item_profiles=item_profiles,
+    )
+
+
+def _serialize_effect_catalog(catalog: EffectCatalog) -> dict[str, Any]:
+    """Serialize EffectCatalog to dict.
+
+    Note: Command nodes are not serialized (AST not preserved).
+    Full recompilation from YAML is needed for runtime execution.
+    """
+    return {
+        "effects": {
+            effect_id: {
+                "id": effect.id,
+                "scope": effect.scope,
+                "duration": effect.duration,
+                "intensity": effect.intensity,
+                "reapply_policy": effect.reapply_policy,
+                "observable": effect.observable,
+                # Note: Command nodes not serialized (will be recompiled on load)
+            }
+            for effect_id, effect in catalog.effects.items()
+        }
+    }
+
+
+def _deserialize_effect_catalog(payload: dict[str, Any]) -> EffectCatalog:
+    """Deserialize EffectCatalog from dict.
+
+    Note: Creates stub effects without command nodes (not executable).
+    Full recompilation from YAML is needed for runtime execution.
+    """
+    from townlet.effects.catalog import CompiledEffect
+
+    effects = {
+        effect_id: CompiledEffect(
+            id=effect_data["id"],
+            scope=effect_data["scope"],
+            duration=effect_data["duration"],
+            intensity=effect_data["intensity"],
+            reapply_policy=effect_data["reapply_policy"],
+            observable=effect_data["observable"],
+            on_spawn=[],  # Stub (not executable)
+            on_tick=[],
+            on_despawn=[],
+            on_interrupt=[],
+        )
+        for effect_id, effect_data in payload["effects"].items()
+    }
+
+    return EffectCatalog(effects=effects)

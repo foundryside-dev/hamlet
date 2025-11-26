@@ -1,7 +1,10 @@
 """Integration tests for custom actions (REST, MEDITATE)."""
 
+from pathlib import Path
+
 import pytest
 import torch
+import yaml
 
 from tests.test_townlet.helpers.config_builder import prepare_config_dir
 
@@ -16,6 +19,31 @@ def _enable_rest_and_meditate(data: dict) -> None:
 def custom_actions_pack(tmp_path):
     """Temporary config pack with REST and MEDITATE enabled."""
     pack_dir = prepare_config_dir(tmp_path, modifier=_enable_rest_and_meditate, name="custom_actions_pack")
+
+    # Ensure REST and MEDITATE are defined in actions.yaml so enabling them is meaningful.
+    actions_path = Path(pack_dir) / "actions.yaml"
+    actions_data = yaml.safe_load(actions_path.read_text())
+    custom_actions = actions_data["actions"].setdefault("custom_actions", [])
+    existing = {action["name"] for action in custom_actions}
+
+    def _add_action(name: str, costs: dict | None = None, effects: dict | None = None) -> None:
+        if name in existing:
+            return
+        custom_actions.append(
+            {
+                "name": name,
+                "description": f"Test action {name}",
+                "enabled_by_default": False,
+                "costs": costs or {},
+                "effects": effects or {},
+            }
+        )
+
+    _add_action("REST", costs={"energy": 0.01}, effects={"energy": 0.1})
+    _add_action("MEDITATE", costs={"energy": 0.01}, effects={"health": 0.05})
+
+    actions_path.write_text(yaml.safe_dump(actions_data, sort_keys=False))
+
     return pack_dir
 
 

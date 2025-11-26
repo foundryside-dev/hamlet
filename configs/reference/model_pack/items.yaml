@@ -1,0 +1,24 @@
+items:
+  version: '1.0'
+  item_types:
+  - id: apple
+    vfs_profile: default_item
+    description: Restores energy when used
+    duration: null
+    cooldown: null
+    interactions:
+      on_pickup:
+      - modify: target.vfs.inventory_weight
+        value: target.vfs.inventory_weight + 0.5
+      on_use:
+      - spawn_effect:
+          effect_id: ate_food
+          target: agent
+          intensity: self.vfs.calories
+      on_drop: []
+    name: Apple
+    icon: "\U0001F34E"
+    tags:
+    - apple
+  max_items_per_agent: 2
+  max_items_in_world: 6

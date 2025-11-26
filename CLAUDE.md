@@ -79,7 +79,7 @@ HAMLET is a pedagogical Deep Reinforcement Learning (DRL) environment where agen
 - **Source**: `src/townlet/universe/compiler.py` - seven-stage pipeline (parse → symbol table → resolve → cross-validate → metadata → optimization → emit/cache)
 - **Docs**: Start with `docs/UNIVERSE-COMPILER.md`, then `docs/architecture/COMPILER_ARCHITECTURE.md`
 - **Tests**: `uv run pytest tests/test_townlet/unit/universe/` (use `UV_CACHE_DIR=.uv-cache` in sandboxed environments)
-- **CLI**: `python -m townlet.compiler {compile,inspect,validate}` - wired into CI via `.github/workflows/config-validation.yml`
+- **CLI**: `python -m townlet.universe {compile,inspect,validate}` - wired into CI via `.github/workflows/config-validation.yml`
 
 ## Development Commands
 

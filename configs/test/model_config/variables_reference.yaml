@@ -15,9 +15,12 @@ variables:
   - engine
   description: Normalized agent position (2D) in [0, 1]^2 range
   normalization:
-    method: normalize
-    range:
+    kind: minmax
+    min:
     - 0.0
+    - 0.0
+    max:
+    - 1.0
     - 1.0
 exposed_observations:
 - id: obs_position
@@ -27,6 +30,7 @@ exposed_observations:
   source: position
   scope: agent
   normalization:
+    kind: minmax
     min:
     - 0.0
     - 0.0

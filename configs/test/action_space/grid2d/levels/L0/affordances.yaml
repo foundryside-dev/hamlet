@@ -1,26 +1,43 @@
 affordances:
-  version: "1.0"
+  version: '1.0'
   affordances:
-    - name: Bed
-      interaction_type: instant
-      costs:
-        energy: 0.0
-      effects:
-        energy: 0.5
-      opening_hours:
-        enabled: false
-      deployment:
-        type: fixed
-        positions: [[1, 1]]
-    - name: Job
-      interaction_type: instant
-      costs: {}
-      effects:
-        money: 0.1
-        energy: -0.1
-      opening_hours:
-        enabled: false
-      deployment:
-        type: fixed
-        positions: [[2, 2]]
+  - name: Bed
+    interaction_type: instant
+    costs:
+      energy: 0.0
+    opening_hours:
+      enabled: false
+    deployment:
+      type: fixed
+      positions:
+      - - 1
+        - 1
+    interactions:
+      on_start:
+      - modify: target.bar.energy
+        value: target.bar.energy + 0.5
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
+  - name: Job
+    interaction_type: instant
+    costs: {}
+    opening_hours:
+      enabled: false
+    deployment:
+      type: fixed
+      positions:
+      - - 2
+        - 2
+    interactions:
+      on_start:
+      - modify: target.bar.money
+        value: target.bar.money + 0.1
+      - modify: target.bar.energy
+        value: target.bar.energy + -0.1
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
   modulations: []

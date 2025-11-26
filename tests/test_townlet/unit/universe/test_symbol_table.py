@@ -120,3 +120,16 @@ def test_duplicate_affordance_registration_raises():
     table.register_affordance(affordance)
     with pytest.raises(CompilationError):
         table.register_affordance(affordance)
+
+
+def test_duplicate_item_registration_raises():
+    table = UniverseSymbolTable()
+
+    @dataclass
+    class _Item:
+        id: str
+
+    item = _Item(id="apple")
+    table.register_item(item)
+    with pytest.raises(CompilationError):
+        table.register_item(item)

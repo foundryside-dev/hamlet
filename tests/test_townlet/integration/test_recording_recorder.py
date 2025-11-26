@@ -219,7 +219,7 @@ class TestEpisodeRecorder:
             # Record 3 interaction steps
             for i in range(3):
                 # Take INTERACT action
-                interact_action = env.interact_action_idx
+                interact_action = env.action_ids["INTERACT"]
                 obs, reward, done, info = env.step(torch.tensor([interact_action], device=cpu_device))
 
                 # Record step with temporal state

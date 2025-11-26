@@ -12,13 +12,35 @@ from townlet.environment.action_config import ActionConfig
 GLOBAL_ACTIONS_PATH = Path("configs/global_actions.yaml")
 
 
-def _load_global_custom_actions() -> list[dict]:
-    """Load custom actions from global_actions.yaml (empty list if missing)."""
-    if not GLOBAL_ACTIONS_PATH.exists():
+def _load_global_custom_actions(path: Path | None = None) -> list[dict]:
+    """Load custom actions from a global_actions.yaml (empty list if missing)."""
+    path = path or GLOBAL_ACTIONS_PATH
+    if not path.exists():
         return []
-    with GLOBAL_ACTIONS_PATH.open() as f:
+    with path.open() as f:
         data = yaml.safe_load(f) or {}
     return data.get("custom_actions", [])
+
+
+@pytest.fixture
+def global_actions_file(tmp_path: Path) -> Path:
+    """Temporary global_actions.yaml containing REST and MEDITATE."""
+    path = tmp_path / "global_actions.yaml"
+    path.write_text(
+        """
+version: "1.0"
+custom_actions:
+  - name: "REST"
+    type: "passive"
+    costs: {energy: -0.002}
+    effects: {}
+  - name: "MEDITATE"
+    type: "passive"
+    costs: {}
+    effects: {mood: 0.02}
+"""
+    )
+    return path
 
 
 def make_action(id: int, name: str, type: str, **overrides) -> ActionConfig:
@@ -309,24 +331,22 @@ def test_empty_enabled_list_disables_all():
         assert not action.enabled
 
 
-def test_load_global_actions_yaml():
-    """Should load configs/global_actions.yaml successfully."""
+def test_load_global_actions_yaml(global_actions_file: Path):
+    """Should load global_actions.yaml successfully."""
     from townlet.environment.action_builder import ActionSpaceBuilder
     from townlet.substrate.grid2d import Grid2DSubstrate
-
-    global_actions_path = GLOBAL_ACTIONS_PATH
 
     substrate = Grid2DSubstrate(width=8, height=8, boundary="clamp", distance_metric="manhattan")
 
     builder = ActionSpaceBuilder(
         substrate=substrate,
-        global_actions_path=global_actions_path,
+        global_actions_path=global_actions_file,
         enabled_action_names=None,
     )
 
     space = builder.build()
 
-    custom_actions = _load_global_custom_actions()
+    custom_actions = _load_global_custom_actions(global_actions_file)
     expected_substrate = substrate.action_space_size
     expected_custom = len(custom_actions)
 
@@ -335,27 +355,24 @@ def test_load_global_actions_yaml():
     assert space.custom_action_count == expected_custom
 
 
-def test_global_actions_has_rest_and_meditate():
-    """Global actions should include REST and MEDITATE."""
+def test_global_actions_has_rest_and_meditate(global_actions_file: Path):
+    """Global actions should include REST and MEDITATE (temp file)."""
     from townlet.environment.action_builder import ActionSpaceBuilder
     from townlet.substrate.grid2d import Grid2DSubstrate
-
-    global_actions_path = GLOBAL_ACTIONS_PATH
 
     substrate = Grid2DSubstrate(width=8, height=8, boundary="clamp", distance_metric="manhattan")
 
     builder = ActionSpaceBuilder(
         substrate=substrate,
-        global_actions_path=global_actions_path,
+        global_actions_path=global_actions_file,
         enabled_action_names=None,
     )
 
     space = builder.build()
 
-    custom_names = {entry["name"] for entry in _load_global_custom_actions()}
+    custom_names = {entry["name"] for entry in _load_global_custom_actions(global_actions_file)}
     required = {"REST", "MEDITATE"}
-    if not required.issubset(custom_names):
-        pytest.skip("REST/MEDITATE not defined in global_actions.yaml")
+    assert required.issubset(custom_names)
 
     # Should have REST and MEDITATE
     rest = space.get_action_by_name("REST")
@@ -367,24 +384,22 @@ def test_global_actions_has_rest_and_meditate():
     assert meditate.effects.get("mood", 0) > 0  # Positive effect (restoration)
 
 
-def test_global_actions_yaml_actions_present():
+def test_global_actions_yaml_actions_present(global_actions_file: Path):
     """Custom actions from YAML should appear in built action space."""
     from townlet.environment.action_builder import ActionSpaceBuilder
     from townlet.substrate.grid2d import Grid2DSubstrate
-
-    global_actions_path = GLOBAL_ACTIONS_PATH
 
     substrate = Grid2DSubstrate(width=8, height=8, boundary="clamp", distance_metric="manhattan")
 
     builder = ActionSpaceBuilder(
         substrate=substrate,
-        global_actions_path=global_actions_path,
+        global_actions_path=global_actions_file,
         enabled_action_names=None,
     )
 
     space = builder.build()
 
-    custom_entries = _load_global_custom_actions()
+    custom_entries = _load_global_custom_actions(global_actions_file)
     expected_names = {entry["name"] for entry in custom_entries}
     space_custom_names = {action.name for action in space.actions if action.source == "custom"}
 

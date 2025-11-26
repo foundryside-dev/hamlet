@@ -16,12 +16,12 @@ async def test_build_substrate_metadata_grid2d(tmp_path, test_config_pack_path):
     # Use a writable copy so we can adjust agent loss if schemas change
     import shutil
 
-    from tests.test_townlet.helpers.config_builder import mutate_agent_yaml, mutate_training_yaml
+    from tests.test_townlet.helpers.config_builder import mutate_brain_yaml, mutate_training_yaml
 
     config_copy = tmp_path / "config_pack"
     shutil.copytree(test_config_pack_path, config_copy)
     # Ensure agent loss is schema-compliant
-    mutate_agent_yaml(config_copy, lambda data: data["agent"]["brain"].update({"loss": {"type": "huber", "huber_delta": 1.0}}))
+    mutate_brain_yaml(config_copy, lambda brain: brain.update({"loss": {"type": "huber", "huber_delta": 1.0}}))
 
     def _set_adversarial(training_data: dict) -> None:
         training_section = training_data.get("training", {}) or {}

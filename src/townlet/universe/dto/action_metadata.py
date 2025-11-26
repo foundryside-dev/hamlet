@@ -18,12 +18,15 @@ class ActionMetadata:
     name: str
     type: Literal["movement", "interaction", "passive", "transaction"]
     enabled: bool
-    source: Literal["substrate", "custom", "affordance"]
+    source: Literal["substrate", "custom", "affordance", "item"]
     costs: Mapping[str, float] = field(default_factory=dict)
     description: str = ""
+    movement_delta: tuple[float, ...] | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "costs", MappingProxyType(dict(self.costs)))
+        if self.movement_delta is not None:
+            object.__setattr__(self, "movement_delta", tuple(self.movement_delta))
 
 
 @dataclass(frozen=True)
@@ -32,9 +35,13 @@ class ActionSpaceMetadata:
 
     total_actions: int
     actions: tuple[ActionMetadata, ...] = field(default_factory=tuple)
+    labels: Mapping[int, str] = field(default_factory=dict)
+    label_description: str | None = None
+    label_domain: str | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "actions", tuple(self.actions))
+        object.__setattr__(self, "labels", MappingProxyType(dict(self.labels)))
         if self.total_actions < 0:
             raise ValueError("total_actions must be >= 0")
 

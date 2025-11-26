@@ -1,221 +1,310 @@
-"""VFS observation spec builder for generating observation specs from variables.
+"""VFS observation builder for agent observations."""
 
-NOTE: This is NOT the same as environment.observation_builder.ObservationBuilder!
-- environment.ObservationBuilder: Runtime observation construction (tensors)
-- vfs.VFSObservationSpecBuilder: Compile-time spec generation (schemas for BAC)
+from __future__ import annotations
 
-The VFSObservationSpecBuilder generates observation specifications (schemas)
-from variable definitions and exposure configurations. These specs are used by
-the BAC (Behavioral Action Compiler) for dynamic network input head generation.
-"""
+from dataclasses import dataclass, field
 
-import math
-from typing import Any
+import torch
 
-from townlet.vfs.schema import NormalizationSpec, ObservationField, VariableDef
+from townlet.config.vfs_profiles_config import (
+    AgentVFSProfileConfig,
+    GlobalVFSProfileConfig,
+    ItemVFSProfileConfig,
+)
+from townlet.vfs.registry import ScopedVariableRegistry
+
+__all__ = [
+    "VFSObservationSpec",
+    "build_vfs_observation",
+]
 
 
-class VFSObservationSpecBuilder:
-    """Constructs observation specifications from variable definitions.
+def _variable_observation_dim(
+    var_type: str,
+    shape: list[int] | None,
+    scope: str | None = None,
+    *,
+    dims: int | None = None,
+    max_elements: int | None = None,
+) -> int:
+    """Return flattened observation dimensions for a VFS variable type."""
+    if var_type in {"int", "float", "bool", "agent_ref", "item_ref", "affordance_ref", "effect_ref"}:
+        return 1
+    if var_type == "vec2i" or var_type == "vec2f":
+        return 2
+    if var_type == "vec3i" or var_type == "vec3f":
+        return 3
+    if var_type in {"vecNi", "vecNf"}:
+        if dims is None:
+            raise ValueError(f"Vector variable requires dims to compute observation dim (type={var_type}).")
+        return dims
+    if var_type in {"tensor1d", "tensor2d", "tensor3d", "tensorNd"}:
+        if not shape:
+            raise ValueError(f"Tensor variable requires shape to compute observation dim (type={var_type}).")
+        prod = 1
+        for dim in shape:
+            prod *= dim
+        if max_elements is not None and prod > max_elements:
+            raise ValueError(f"Tensor observation dim too large ({prod} > {max_elements}) for type={var_type}, shape={shape}.")
+        return prod
+    # Fallback: treat unknown as scalar to preserve previous behavior
+    return 1
 
-    Generates ObservationField specs that BAC compiler can use to
-    build network input heads dynamically.
 
-    This class generates SPECIFICATIONS (schemas), not runtime observations.
-    For runtime observation construction, see environment.observation_builder.ObservationBuilder.
+@dataclass
+class VFSObservationSpec:
+    """Observation dimension specification for VFS variables.
+
+    Defines how many dimensions VFS contributes to agent observations.
     """
 
-    def build_observation_spec(
-        self,
-        variables: list[VariableDef],
-        exposures: list[dict[str, Any]],
-    ) -> list[ObservationField]:
-        """Build observation specification from variables and exposure config.
+    global_vfs_dim: int  # Number of global variables
+    agent_vfs_dim: int  # Number of agent variables
+    item_vfs_dim: int  # Number of item VFS dimensions (slots × profiles × vars)
+
+    # Variable ordering metadata for observation construction
+    global_vars: tuple[str, ...] = ()
+    agent_vars: tuple[str, ...] = ()
+    item_profile_vars: dict[str, tuple[str, ...]] = field(default_factory=dict)  # profile_name → exposed var names
+    item_vars_per_slot: int | None = None  # Exposed vars per slot (max across profiles)
+
+    max_items_per_agent: int = 3  # Fixed inventory size
+    max_item_profiles: int = 5  # Fixed profile count for transfer learning
+    max_tensor_elements: int = 1_000_000  # Guardrail for tensor flattening
+
+    @property
+    def total_vfs_dim(self) -> int:
+        """Total VFS contribution to obs_dim."""
+        return self.global_vfs_dim + self.agent_vfs_dim + self.item_vfs_dim
+
+    @classmethod
+    def from_profiles(
+        cls,
+        global_profile: GlobalVFSProfileConfig | None,
+        agent_profile: AgentVFSProfileConfig | None,
+        item_profiles: list[ItemVFSProfileConfig],
+    ) -> VFSObservationSpec:
+        """Create observation spec from VFS profiles.
 
         Args:
-            variables: List of variable definitions
-            exposures: Exposure entries describing which variables to expose.
+            global_profile: Global VFS profile config (or None)
+            agent_profile: Agent VFS profile config (or None)
+            item_profiles: List of item VFS profile configs
 
         Returns:
-            List of ObservationField specs
-
-        Raises:
-            ValueError: If exposed variable not found in definitions
-
-        Examples:
-            >>> variables = [VariableDef(id="energy", scope="agent", type="scalar", ...)]
-            >>> exposures = [{"source_variable": "energy", "normalization": {"kind": "minmax", "min": 0.0, "max": 1.0}}]
-            >>> spec = builder.build_observation_spec(variables, exposures)
-            >>> len(spec)
-            1
-            >>> spec[0].source_variable
-            'energy'
+            Observation spec with dimension counts
         """
-        normalized_exposures = self._copy_exposures(exposures)
-
-        # Build variable lookup map
-        var_map = {v.id: v for v in variables}
-        obs_fields = []
-
-        for exposure_config in normalized_exposures:
-            raw_var_id = exposure_config.get("source_variable")
-            if not isinstance(raw_var_id, str) or not raw_var_id:
-                raise ValueError("Exposure entry missing 'source_variable'")
-            var_id = raw_var_id
-            if var_id not in var_map:
-                raise ValueError(f"Variable {var_id} not found in definitions")
-
-            raw_field_id = exposure_config.get("id")
-            if not isinstance(raw_field_id, str) or not raw_field_id:
-                raise ValueError(f"Exposure entry for '{var_id}' must include explicit string 'id' (no defaults).")
-            field_id = raw_field_id
-
-            exposed_to = exposure_config.get("exposed_to")
-            if not isinstance(exposed_to, list) or not exposed_to:
-                raise ValueError(f"Exposure entry for '{var_id}' must include explicit non-empty 'exposed_to' list (no defaults).")
-
-            shape_config = exposure_config.get("shape")
-            if shape_config is None:
-                raise ValueError(
-                    f"Exposure entry for '{var_id}' must include explicit 'shape'; " "shape inference is disabled under no-defaults policy."
-                )
-            shape = shape_config
-
-            # Build normalization spec if provided
-            norm_spec = self._build_normalization_spec(exposure_config.get("normalization"))
-
-            if "curriculum_active" not in exposure_config:
-                raise ValueError(f"Exposure entry for '{var_id}' must include explicit 'curriculum_active' boolean (no defaults).")
-            curriculum_active = exposure_config.get("curriculum_active")
-            if not isinstance(curriculum_active, bool):
-                raise ValueError(f"Exposure entry for '{var_id}' has invalid 'curriculum_active'; expected bool.")
-
-            if "semantic_type" not in exposure_config:
-                raise ValueError(f"Exposure entry for '{var_id}' must include explicit 'semantic_type' (e.g., 'bars', 'spatial').")
-            semantic_type = exposure_config.get("semantic_type")
-            if not isinstance(semantic_type, str) or not semantic_type:
-                raise ValueError(f"Exposure entry for '{var_id}' has invalid 'semantic_type'; expected non-empty string.")
-            if semantic_type not in ("bars", "spatial", "affordance", "temporal", "custom"):
-                raise ValueError(
-                    f"Exposure entry for '{var_id}' has invalid 'semantic_type' value: '{semantic_type}'. "
-                    f"Must be one of: 'bars', 'spatial', 'affordance', 'temporal', 'custom'."
+        # Global VFS dimensions
+        global_dim = 0
+        global_vars: list[str] = []
+        if global_profile is not None:
+            for var in global_profile.variables:
+                if "agent" not in getattr(var, "exposed_to", ["agent"]):
+                    continue
+                global_vars.append(var.name)
+                global_dim += _variable_observation_dim(
+                    var.type,
+                    getattr(var, "shape", None),
+                    dims=getattr(var, "dims", None),
+                    max_elements=cls.max_tensor_elements,
                 )
 
-            # Create observation field
-            field = ObservationField(
-                id=field_id,
-                source_variable=var_id,
-                exposed_to=exposed_to,
-                shape=shape,
-                normalization=norm_spec,
-                curriculum_active=curriculum_active,
-                semantic_type=semantic_type,  # type: ignore[arg-type]  # Validated above
+        # Agent VFS dimensions
+        agent_dim = 0
+        agent_vars: list[str] = []
+        if agent_profile is not None:
+            for agent_var in agent_profile.variables:
+                if "agent" not in getattr(agent_var, "exposed_to", ["agent"]):
+                    continue
+                agent_vars.append(agent_var.name)
+                agent_dim += _variable_observation_dim(
+                    agent_var.type,
+                    getattr(agent_var, "shape", None),
+                    dims=getattr(agent_var, "dims", None),
+                    max_elements=cls.max_tensor_elements,
+                )
+
+        # Item VFS dimensions: max_items × max_profiles × vars_per_profile
+        item_dim = 0
+        item_profile_vars: dict[str, tuple[str, ...]] = {}
+        max_profile_vars = 0
+        if item_profiles:
+            # Compute the maximum flattened dim across profiles; restrict to supported scalar/bool/ref/vector for now.
+            for profile in item_profiles:
+                exposed_vars = []
+                dim_sum = 0
+                for v in profile.variables:
+                    if "agent" not in getattr(v, "exposed_to", ["agent"]):
+                        continue
+                    exposed_vars.append(v.name)
+                    dim_sum += _variable_observation_dim(
+                        v.type,
+                        getattr(v, "shape", None),
+                        scope="item",
+                        dims=getattr(v, "dims", None),
+                        max_elements=cls.max_tensor_elements,
+                    )
+
+                item_profile_vars[profile.profile_name] = tuple(exposed_vars)
+                max_profile_vars = max(max_profile_vars, dim_sum)
+            item_dim = cls.max_items_per_agent * max_profile_vars
+
+        return cls(
+            global_vfs_dim=global_dim,
+            agent_vfs_dim=agent_dim,
+            item_vfs_dim=item_dim,
+            global_vars=tuple(global_vars),
+            agent_vars=tuple(agent_vars),
+            item_profile_vars=item_profile_vars,
+            item_vars_per_slot=max_profile_vars if max_profile_vars > 0 else None,
+        )
+
+
+def build_vfs_observation(
+    registry: ScopedVariableRegistry,
+    spec: VFSObservationSpec,
+    batch_size: int,
+    agent_item_inventory: torch.Tensor | None = None,
+) -> torch.Tensor:
+    """Build VFS observation vector for agents.
+
+    Args:
+        registry: Variable registry with global/agent/item state
+        spec: Observation specification (dims)
+        batch_size: Number of agents
+        agent_item_inventory: Item indices for each agent slot [batch, max_items_per_agent]
+                              or None for zero stubs. -1 indicates empty slot.
+
+    Returns:
+        Observation tensor with shape [batch, total_vfs_dim]
+    """
+    components = []
+
+    # Global VFS: broadcast singleton values to batch
+    if spec.global_vfs_dim > 0:
+        global_vars = []
+        target_vars = spec.global_vars or tuple(registry.list_global())
+        for var_name in target_vars:
+            value = registry.get_global(var_name)
+            if not torch.is_floating_point(value):
+                value = value.float()
+            global_vars.append(_flatten_to_batch(value, batch_size))
+
+        if global_vars:
+            global_obs = torch.cat(global_vars, dim=1)  # [batch, global_dim]
+            components.append(global_obs)
+
+    # Agent VFS: per-agent values
+    if spec.agent_vfs_dim > 0:
+        agent_vars = []
+        target_vars = spec.agent_vars or tuple(registry.list_agent())
+        for var_name in target_vars:
+            value = registry.get_agent(var_name)
+            if not torch.is_floating_point(value):
+                value = value.float()
+            agent_vars.append(_flatten_to_batch(value, batch_size, expect_batch=True))
+
+        if agent_vars:
+            agent_obs = torch.cat(agent_vars, dim=1)  # [batch, agent_dim]
+            components.append(agent_obs)
+
+    # Item VFS: Include item state with masking
+    if spec.item_vfs_dim > 0:
+        item_vfs_storage = getattr(registry, "item_vfs", None)
+        if item_vfs_storage is None:
+            raise RuntimeError("Item VFS storage is missing; cannot build item observations.")
+        if agent_item_inventory is None:
+            # No item inventory provided, return zeros for item slots
+            item_obs = torch.zeros(
+                (batch_size, spec.item_vfs_dim),
+                dtype=torch.float32,
+                device=registry.device,
             )
-
-            self._validate_normalization_shape(field_id, shape, norm_spec)
-            obs_fields.append(field)
-
-        return obs_fields
-
-    def _infer_shape(self, var_def: VariableDef) -> list[int]:
-        """Infer observation shape from variable type.
-
-        Args:
-            var_def: Variable definition
-
-        Returns:
-            Shape as list (empty list for scalar)
-
-        Raises:
-            ValueError: If variable type is unknown
-
-        Examples:
-            >>> # Scalar variable
-            >>> var = VariableDef(id="energy", type="scalar", ...)
-            >>> builder._infer_shape(var)
-            []
-
-            >>> # Vec2i variable
-            >>> var = VariableDef(id="position", type="vec2i", ...)
-            >>> builder._infer_shape(var)
-            [2]
-
-            >>> # VecNf variable with dims=64
-            >>> var = VariableDef(id="grid_encoding", type="vecNf", dims=64, ...)
-            >>> builder._infer_shape(var)
-            [64]
-        """
-        if var_def.type == "scalar":
-            return []
-        elif var_def.type == "bool":
-            return []
-        elif var_def.type == "vec2i":
-            return [2]
-        elif var_def.type == "vec3i":
-            return [3]
-        elif var_def.type in ["vecNi", "vecNf"]:
-            if var_def.dims is None:
-                raise ValueError(f"Variable {var_def.id} with type {var_def.type} must have dims field")
-            return [var_def.dims]
         else:
-            raise ValueError(f"Unknown variable type: {var_def.type}")
+            if spec.item_vfs_dim % spec.max_items_per_agent != 0:
+                raise ValueError("item_vfs_dim must be divisible by max_items_per_agent for item observations.")
 
-    def _copy_exposures(self, exposures: list[dict[str, Any]]) -> list[dict[str, Any]]:
-        """Create shallow copies of exposure definitions and validate input type."""
-        if not isinstance(exposures, list):
-            raise TypeError("exposures must be provided as a list of dictionaries")
+            if agent_item_inventory.dim() != 2 or agent_item_inventory.size(1) != spec.max_items_per_agent:
+                raise ValueError("agent_item_inventory must have shape [batch, max_items_per_agent] when item_vfs_dim is non-zero.")
 
-        normalized: list[dict[str, Any]] = []
-        for idx, exposure in enumerate(exposures):
-            if not isinstance(exposure, dict):
-                raise TypeError(f"Exposure entry at index {idx} must be a dict, got {type(exposure).__name__}")
-            normalized.append(dict(exposure))
-        return normalized
+            vars_per_slot = spec.item_vars_per_slot or (spec.item_vfs_dim // spec.max_items_per_agent)
 
-    def _build_normalization_spec(self, norm_config: dict[str, Any] | None) -> NormalizationSpec | None:
-        """Build a NormalizationSpec from config dict, if provided."""
-        if not norm_config:
-            return None
-        return NormalizationSpec(**norm_config)
-
-    def _validate_normalization_shape(
-        self,
-        field_id: str,
-        shape: list[int],
-        norm_spec: NormalizationSpec | None,
-    ) -> None:
-        """Ensure normalization parameters align with observation shape."""
-        if norm_spec is None:
-            return
-
-        dims = self._shape_volume(shape)
-
-        def _validate_param(label: str, values: float | list[float] | None) -> None:
-            if values is None:
-                return
-            if isinstance(values, list):
-                if dims == 1 and len(values) == 1:
-                    return
-                if len(values) != dims:
-                    raise ValueError(
-                        f"Normalization '{label}' for observation '{field_id}' must provide {dims} values "
-                        f"to match shape {shape}, got {len(values)}"
-                    )
+            if vars_per_slot == 0:
+                item_obs = torch.zeros(
+                    (batch_size, spec.item_vfs_dim),
+                    dtype=torch.float32,
+                    device=registry.device,
+                )
             else:
-                if dims > 1:
-                    raise ValueError(
-                        f"Normalization '{label}' for observation '{field_id}' must be a list of length {dims} "
-                        f"to match shape {shape}, not a scalar"
-                    )
+                inventory_indices = agent_item_inventory.to(device=registry.device, dtype=torch.long)
+                max_index = item_vfs_storage.size(0)
+                invalid_positive = (inventory_indices >= max_index) & (inventory_indices != -1)
+                if invalid_positive.any().item():
+                    raise IndexError(f"agent_item_inventory references out-of-range item_vfs indices (max valid index: {max_index - 1}).")
 
-        _validate_param("min", norm_spec.min)
-        _validate_param("max", norm_spec.max)
-        _validate_param("mean", norm_spec.mean)
-        _validate_param("std", norm_spec.std)
+                item_obs = torch.zeros(
+                    (batch_size, spec.item_vfs_dim),
+                    dtype=item_vfs_storage.dtype,
+                    device=registry.device,
+                )
 
-    @staticmethod
-    def _shape_volume(shape: list[int]) -> int:
-        """Return flattened size for an observation shape."""
-        if not shape:
-            return 1
-        return math.prod(shape)
+                # Precompute exposed indices per profile
+                profile_indices: dict[str, list[int]] = {}
+                registry_profile_map = getattr(registry, "item_profile_map", None) or {}
+                source_profiles = (
+                    spec.item_profile_vars.items()
+                    if spec.item_profile_vars
+                    else ((name, tuple(var_map.keys())) for name, var_map in registry_profile_map.items())
+                )
+                for profile_name, var_names in source_profiles:
+                    idx_map = registry_profile_map.get(profile_name, {})
+                    indices = [idx_map[name] for name in var_names if name in idx_map]
+                    profile_indices[profile_name] = indices
+
+                for agent_idx in range(batch_size):
+                    for slot_idx in range(spec.max_items_per_agent):
+                        vfs_idx = int(inventory_indices[agent_idx, slot_idx].item())
+                        if vfs_idx == -1:
+                            continue
+                        profile_name = (
+                            registry.item_vfs_index_to_profile.get(vfs_idx) if hasattr(registry, "item_vfs_index_to_profile") else None
+                        )
+                        indices = profile_indices.get(profile_name, []) if profile_name is not None else []
+                        if not indices:
+                            indices = list(range(vars_per_slot))  # Fallback to first vars_per_slot columns
+                        dest_start = slot_idx * vars_per_slot
+                        dest_end = dest_start + len(indices)
+                        item_obs[agent_idx, dest_start:dest_end] = item_vfs_storage[vfs_idx, indices]
+
+        components.append(item_obs)
+
+    # Concatenate all components
+    if components:
+        return torch.cat(components, dim=1)  # [batch, total_vfs_dim]
+    else:
+        return torch.zeros(batch_size, 0, device=registry.device)
+
+
+def _flatten_to_batch(value: torch.Tensor, batch_size: int, expect_batch: bool = False) -> torch.Tensor:
+    """Ensure value is [batch, flat_dim] and float."""
+    if not torch.is_floating_point(value):
+        value = value.float()
+
+    if expect_batch:
+        if value.dim() == 1:
+            value = value.unsqueeze(1)
+        if value.shape[0] != batch_size:
+            raise ValueError(f"Expected batch size {batch_size}, got {value.shape[0]}")
+        flat = value.reshape(batch_size, -1)
+        return flat
+
+    # Global values: broadcast to batch if missing leading dim
+    if value.dim() >= 1 and value.shape[0] == batch_size:
+        # Already batched; don't double-broadcast
+        pass
+    elif value.dim() == 0:
+        value = value.expand(batch_size)
+    elif value.dim() >= 1:
+        value = value.unsqueeze(0).expand(batch_size, *value.shape)
+    flat = value.reshape(batch_size, -1)
+    return flat

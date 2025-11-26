@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class PerceptionConfig(BaseModel):
@@ -61,6 +61,7 @@ class ExtrinsicConfig(BaseModel):
     type: str = Field(..., description="Extrinsic strategy type")
     base: float = Field(..., description="Base reward value")
     bonuses: list[ExtrinsicBonus] | None = Field(None, description="Bonus terms (for constant_base_with_shaped_bonus)")
+    bars: list[str] | None = Field(None, description="Bar names (for multiplicative strategy)")
 
     model_config = ConfigDict(extra="forbid")
 
@@ -299,9 +300,24 @@ class LossConfig(BaseModel):
     """Loss function configuration."""
 
     type: Literal["mse", "huber", "smooth_l1"] = Field(..., description="Loss function type")
-    huber_delta: float = Field(..., gt=0.0, description="Delta parameter for Huber/smooth_l1")
+    huber_delta: float | None = Field(
+        default=None,
+        gt=0.0,
+        description="Delta parameter for Huber loss. Required when type='huber'; must be omitted otherwise.",
+    )
 
     model_config = ConfigDict(extra="forbid")
+
+    @model_validator(mode="after")
+    def validate_huber_delta_required_for_huber(self) -> "LossConfig":
+        """Enforce huber_delta presence only for Huber loss."""
+        if self.type == "huber":
+            if self.huber_delta is None:
+                raise ValueError("LossConfig.huber_delta is required when type='huber'.")
+        else:
+            if self.huber_delta is not None:
+                raise ValueError("LossConfig.huber_delta must be omitted unless type='huber'.")
+        return self
 
 
 class AgentConfigRoot(BaseModel):

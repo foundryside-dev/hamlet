@@ -20,8 +20,6 @@
           <!-- ✅ Projected reward bar (below meters) - always shown when connected -->
           <ProjectedRewardBar
             v-if="isConnected"
-            :current-step="store.currentStep"
-            :baseline-survival="store.baselineSurvival"
             :step-reward="store.stepReward"
           />
         </aside>
@@ -36,6 +34,7 @@
             :epsilon="store.trainingMetrics.epsilon"
             :checkpoint-episode="store.checkpointEpisode"
             :total-episodes="store.checkpointTotalEpisodes"
+            :action-labels="store.actionLabels"
             :q-values="store.qValues"
             :action-masks="store.actionMasks"
             :affordance-stats="store.affordanceStats"

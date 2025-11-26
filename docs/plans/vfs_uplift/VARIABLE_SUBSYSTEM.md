@@ -3,32 +3,34 @@
 #
 # Purpose: Define custom variables that represent environmental phenomena or derived features.
 #
-# STATUS: Expression language not wired yet (static variables only).
-# - Compiler/runtime accept static variables with explicit defaults/normalization.
-# - Any 'expression' fields in variables_reference.yaml are rejected until DSL support lands.
+# STATUS: Expression language is partially wired and stable for the core operator set.
+# - Static variables with explicit defaults/normalization are supported.
+# - Expression DSL is available for arithmetic/comparison/logical ops plus the function set below.
+# - Unknown fields in variables_reference.yaml are rejected (extra="forbid").
+# - Items auto-register GET/USE_SLOT_*/DROP_SLOT_* actions when enabled; these names (and INTERACT)
+#   are reserved and cannot be overridden in actions.yaml.
 #
-# CURRENT IMPLEMENTATION (PHASE 1):
-# - VFS supports statically defined variables (no expressions) with:
+# CURRENT IMPLEMENTATION:
+# - VFS supports statically defined variables with:
 #   * Scoped storage: global, agent, agent_private.
 #   * Typed shapes: scalar, vec2i/vec3i, vecNi/vecNf, bool.
 #   * Access control and lifetime semantics.
-# - Observation exposure is handled via ObservationField + spec builder.
-#   * exposures entries are interpreted by VFSObservationSpecBuilder with the following defaults
-#     (when individual keys are omitted in exposure config):
-#       - exposed_to: ["agent"]           # Who can see this observation (agent-only by default)
-#       - shape: inferred from VariableDef.type/dims (scalar → [], vec2i → [2], vecNf → [dims], etc.)
-#       - curriculum_active: true         # Included in active curriculum by default
-#       - semantic_type: "custom"         # Grouping tag for structured encoders (bars/spatial/affordance/temporal/custom)
-#   * These defaults are applied at SPEC level only; they do not change the underlying VariableDef
-#     and are intended as Phase 1 ergonomics for BAC integration.
-# - Variable expressions in this document are DESIGN TARGETS ONLY (do not rely on them in configs yet).
+# - Observation exposure is handled via ObservationField + spec builder with defaults:
+#     - exposed_to: ["agent"] (who can see this observation)
+#     - shape: inferred from VariableDef.type/dims (scalar → [], vec2i → [2], vecNf → [dims], etc.)
+#     - curriculum_active: true (included in active curriculum by default)
+#     - semantic_type: "custom" (grouping tag for structured encoders)
+#   These defaults live at the spec level; they do not alter the VariableDef.
 #
-# FUTURE DIRECTION (PHASE 2+ / BAC INTEGRATION):
-# - Introduce an expression DSL compiled by the Behavioral Action Compiler (BAC).
-# - Allow variables to be derived from:
-#   * Bars, other VFS variables, affordances, temporal state, and item state.
-#   * Noise sources and temporal operators (moving averages, windows, trends, etc.).
-# - Extend scopes to include item-local state and profile-based grouping (see profiles section below).
+# EXPRESSION DSL – IMPLEMENTED NOW (matches parser/executor):
+# - Operators: arithmetic/comparison/logical, ternary, indexing (type-checked).
+# - Functions (vectorized, device-aware): max, min, abs, clamp, clamp01, sigmoid, tanh,
+#   smoothstep, mean, variance, sum, product, normalize, min_all, max_all, count_where,
+#   argmin, argmax, threshold, normal_dist, uniform, distance_to_affordance,
+#   in_range, direction_to_affordance.
+#
+# EXPRESSION DSL – REMAINING (ordered easiest → harder):
+# 1) Advanced noise (needs efficient generators): perlin_noise, simplex_noise.
 #
 # DESIGN PRINCIPLE: Variables must have grounding
 # 1. Environmental phenomena: Describe the world state (weather, lighting, noise)
@@ -41,13 +43,13 @@
 #   - Temporal: time_sin, time_cos, interaction_progress, lifetime_progress
 #
 # All variables (standard + custom) can be exposed as observations via the VFS
-# observation spec. Future phases may auto-expose some classes of variables,
+# observation spec. Later iterations may auto-expose some classes of variables,
 # but current implementations still rely on explicit observation field wiring
 # via exposure definitions. Expression-based variables are explicitly rejected
 # by load_variables_reference_config until the DSL is implemented; variables
 # must be static with explicit defaults and normalization.
 #
-# Future expression language examples (PHASE 2+, NOT IMPLEMENTED YET):
+# Reference expression language examples (NOT IMPLEMENTED YET):
 #
 # ==============================================================================
 # ENVIRONMENTAL PHENOMENA (describe the world state)
@@ -466,83 +468,17 @@
 #   - max_steps - maximum episode length
 #   - time_of_day - current hour [0, 23]
 #
-# Operator categories:
+# Operator coverage (matches current code):
+# - Math/trig/logical: core arithmetic and comparisons, sin/cos/tan + atan2, boolean logic.
+# - Probability: normal_dist, uniform (device-aware, vectorized).
+# - Non-linear: sigmoid, tanh, clamp, clamp01, smoothstep.
+# - Aggregation/statistics: mean, variance, sum, product, min_all, max_all, count_where, argmin, argmax, normalize, threshold.
+# - Vector helpers: normalize plus indexing/ternary support in the parser.
 #
-# 1. MATHEMATICAL (already covered):
-#    add, subtract, multiply, divide, pow, sqrt, abs, mod
-#    exp, log, floor, ceil, round, clamp(val, min, max)
-#
-# 2. TRIGONOMETRIC (already covered):
-#    sin, cos, tan, asin, acos, atan, atan2
-#
-# 3. LOGICAL (already covered):
-#    and, or, not, xor
-#    gt, lt, eq, gte, lte, neq
-#
-# 4. PROBABILITY/STOCHASTIC (already covered):
-#    normal_dist(mean, std), uniform_random(min, max)
-#    perlin_noise(x, seed), simplex_noise(x, y, seed)
-#
-# 5. NON-LINEAR TRANSFORMS (squashing/activation functions):
-#    sigmoid(x) - squash to [0, 1], useful for "urgency" features
-#    tanh(x) - squash to [-1, 1], useful for "deviation" features
-#    relu(x) - max(0, x), useful for "positive only" features
-#    softplus(x) - smooth relu, differentiable version
-#    Example: urgency = sigmoid(multiply(energy_deficit, 5))
-#
-# 6. TEMPORAL/WINDOWING (memory over time):
-#    lag(variable, steps) - value N steps ago (memory window)
-#    delta(variable) - change since last step (velocity)
-#    moving_average(variable, window) - smooth out noise
-#    ema(variable, alpha) - exponential moving average (recent bias)
-#    rate_of_change(variable, window) - acceleration/trend
-#    Example: energy_trend = delta(bar["energy"])
-#
-# 7. AGGREGATION/STATISTICS (over sets):
-#    min(a, b, ...), max(a, b, ...), mean(a, b, ...)
-#    sum(a, b, ...), count_where(condition)
-#    std(a, b, ...), variance(a, b, ...)
-#    Example: worst_need = min(bar["energy"], bar["health"], bar["satiation"])
-#
-# 8. SPATIAL (distance/direction to points of interest):
-#    distance_to_affordance(name) - Manhattan/Euclidean distance
-#    nearest_affordance(type) - find closest of type
-#    direction_to_affordance(name) - angle or unit vector
-#    in_range(affordance, radius) - boolean proximity check
-#    Example: bathroom_urgency = multiply(divide(1, distance_to_affordance("Toilet")), bar["hygiene_deficit"])
-#
-# 9. INTERPOLATION/SMOOTHING (smooth transitions):
-#    lerp(a, b, t) - linear interpolation between a and b
-#    smoothstep(edge0, edge1, x) - smooth Hermite interpolation
-#    ease_in(t), ease_out(t), ease_in_out(t) - animation curves
-#    Example: priority = smoothstep(0.2, 0.8, bar["energy"])
-#
-# 10. THRESHOLD/HYSTERESIS (avoid flickering):
-#     step(x, threshold) - 0 below, 1 above
-#     threshold(x, low, high) - 0/1 with hysteresis band
-#     rising_edge(variable) - true when crosses from 0→1
-#     falling_edge(variable) - true when crosses from 1→0
-#     Example: starving = threshold(bar["energy"], 0.15, 0.25)
-#
-# 11. RANKING/PRIORITY (order by importance):
-#     argmax(a, b, c) - index of maximum value
-#     argmin(a, b, c) - index of minimum value
-#     rank(values) - relative ranking [0, 1]
-#     normalize(values) - scale to sum=1 (priority distribution)
-#     Example: most_urgent_need = argmin(bar["energy"], bar["health"], bar["hygiene"])
-#
-# 12. CONDITIONAL (branching logic):
-#     if_then_else(condition, true_val, false_val)
-#     switch(selector, [val0, val1, val2, ...])
-#     coalesce(a, b, c) - first non-zero value
-#     Example: action_bonus = if_then_else(variable["raining"], 0.5, 1.0)
-#
-# 13. VECTOR OPERATIONS (for multi-dimensional features):
-#     dot(vec_a, vec_b) - dot product (similarity)
-#     magnitude(vec) - length/norm
-#     normalize(vec) - unit vector (direction only)
-#     distance(vec_a, vec_b) - Euclidean distance
-#     Example: goal_alignment = dot(normalize(position), normalize(target_position))
+# Operator backlog (not wired; prioritize in order):
+# - Temporal/history: lag, delta, moving_average, ema, rate_of_change, falling_edge, rising_edge (requires history buffers, batch-safe APIs).
+# - Spatial queries: distance_to_affordance, in_range, direction_to_affordance (needs batched geometry helpers compatible with vectorized envs).
+# - Advanced noise: perlin_noise, simplex_noise (requires performant generators; low immediate value).
 #
 # ------------------------------------------------------------------------------
 # VFS PROFILES AND GLOBAL / AGENT / ITEM HIERARCHY (FUTURE EXTENSION)
@@ -568,7 +504,7 @@
 # These profiles are a conceptual grouping layer on top of VariableDef and are
 # intended to make it easier to attach behaviour and observations to:
 #   - Global state, per-agent state, and per-item state.
-#   - Future expression-based variables compiled by BAC (Phase 2+).
+#   - Expression-based variables compiled by BAC once the DSL is expanded.
 # Implementations should avoid design choices that would prevent adding an
 # "item" scope or profile layer in the future.
 

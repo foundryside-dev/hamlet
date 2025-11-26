@@ -76,15 +76,16 @@ def test_items_smoke_obs_dim_baseline():
     - 25 dims: 5×5 grid encoding
     - 2 dims: agent position
     - 2 dims: agent velocity
-    - 2 dims: meters (energy, health)
+    - 3 dims: meters (energy, health, money)
     - 2 dims: affordance_at_position (one-hot)
-    - Total: 33 dims
+    - 24 dims: observable effects slots (fixed 8×[id, remaining, active])
+    - Total: 58 dims before VFS
 
     Future VFS contribution (Phase 1 integration):
     - 1 global profile (global_test_flag) → +1 dim
     - 1 agent profile (agent_test_state) → +1 dim
     - 2 item profiles × 3 slots (item_durability, item_uses_remaining) → +6 dims
-    - Expected after Phase 1: 33 + 8 = 41 dims
+    - Expected after Phase 1: 58 + 3 = 61 dims
     """
     config_dir = Path("configs/test/items_smoke")
     if not config_dir.exists():
@@ -93,34 +94,34 @@ def test_items_smoke_obs_dim_baseline():
     compiler = UniverseCompiler()
     universe = compiler.compile(config_dir, use_cache=False)
 
-    # Baseline (before VFS profile integration in Phase 1)
-    expected_baseline_dims = 33
+    # After VFS profile integration (item VFS only, no global/agent profiles)
+    # VFS contribution: 3 dims (3 slots × 1 max_var from food/medical profiles)
+    expected_dims_with_vfs = 61  # 34 baseline + 24 obs_effects + 3 VFS
 
     assert (
-        universe.metadata.observation_dim == expected_baseline_dims
-    ), f"items_smoke baseline obs_dim = {universe.metadata.observation_dim}, expected {expected_baseline_dims}"
+        universe.metadata.observation_dim == expected_dims_with_vfs
+    ), f"items_smoke obs_dim = {universe.metadata.observation_dim}, expected {expected_dims_with_vfs}"
 
 
-@pytest.mark.skip(reason="VFS profiles not yet integrated (Phase 1 pending)")
 def test_items_smoke_obs_dim_after_vfs_integration():
     """
-    Validates items_smoke obs_dim after VFS profile integration (Phase 1+).
+    Validates items_smoke obs_dim after VFS profile integration.
 
-    Expected VFS contribution:
-    - 1 global profile → +1 dim
-    - 1 agent profile → +1 dim
-    - 2 item profiles × 3 slots → +6 dims
-    - Total VFS: +8 dims
+    VFS contribution breakdown:
+    - Global VFS: 0 dims (no global profiles in items_smoke/vfs_profiles.yaml)
+    - Agent VFS: 0 dims (no agent profiles in items_smoke/vfs_profiles.yaml)
+    - Item VFS: 3 dims (max 1 var across food/medical/currency profiles, 3 slots × 1 = 3)
 
-    Expected total: 33 baseline + 8 VFS = 41 dims
+    Expected total: 34 baseline + 3 VFS = 37 dims
 
-    This test will be enabled once Phase 1 DTOs are integrated.
+    NOTE: This test is now redundant with test_items_smoke_obs_dim_baseline
+    but kept for documentation of the VFS integration milestone.
     """
     config_dir = Path("configs/test/items_smoke")
     compiler = UniverseCompiler()
     universe = compiler.compile(config_dir, use_cache=False)
 
-    expected_total = 41  # 33 baseline + 8 VFS
+    expected_total = 61  # 34 baseline + 24 obs_effects + 3 VFS
     assert universe.metadata.observation_dim == expected_total
 
 

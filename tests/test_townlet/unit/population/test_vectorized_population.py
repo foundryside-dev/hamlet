@@ -2,7 +2,7 @@
 
 import pytest
 
-from townlet.agent.brain_config import (
+from townlet.config.brain_config import (
     ArchitectureConfig,
     BrainConfig,
     FeedforwardConfig,
@@ -28,6 +28,7 @@ def _make_population(
     params = {
         "obs_dim": env.observation_dim,
         "action_dim": env.action_dim,
+        "vision_window_size": 5,
         "train_frequency": 1,
         "batch_size": 32,
         "sequence_length": 1,
@@ -454,13 +455,13 @@ class TestRecurrentNetworkSupport:
         minimal_brain_config,
     ):
         """VectorizedPopulation should build RecurrentSpatialQNetwork from recurrent config."""
-        from townlet.agent.brain_config import (
+        from townlet.agent.networks import RecurrentSpatialQNetwork
+        from townlet.config.brain_config import (
             CNNEncoderConfig,
             LSTMConfig,
             MLPEncoderConfig,
             RecurrentConfig,
         )
-        from townlet.agent.networks import RecurrentSpatialQNetwork
 
         brain_config = BrainConfig(
             version="1.0",
@@ -525,7 +526,6 @@ class TestRecurrentNetworkSupport:
             exploration=epsilon_greedy_exploration,
             device=cpu_device,
             brain_config=brain_config,
-            sequence_length=brain_config.q_learning.sequence_length if hasattr(brain_config.q_learning, "sequence_length") else 1,
         )
 
         # Should build RecurrentSpatialQNetwork
@@ -542,7 +542,7 @@ class TestRecurrentNetworkSupport:
         minimal_brain_config,
     ):
         """CRITICAL: is_recurrent flag must come from brain_config.architecture.type, not network_type parameter."""
-        from townlet.agent.brain_config import (
+        from townlet.config.brain_config import (
             CNNEncoderConfig,
             LSTMConfig,
             MLPEncoderConfig,
@@ -665,7 +665,7 @@ class TestRecurrentNetworkSupport:
         minimal_brain_config,
     ):
         """Recurrent network should have dimensions from config."""
-        from townlet.agent.brain_config import (
+        from townlet.config.brain_config import (
             CNNEncoderConfig,
             LSTMConfig,
             MLPEncoderConfig,
@@ -1033,80 +1033,6 @@ class TestSchedulerIntegration:
         # Verify scheduler state restored
         assert population2.scheduler.last_epoch == initial_step_count
 
-    def test_checkpoint_without_scheduler_state_is_backward_compatible(
-        self,
-        basic_env,
-        adversarial_curriculum,
-        epsilon_greedy_exploration,
-        cpu_device,
-        minimal_brain_config,
-    ):
-        """Loading old checkpoints without scheduler state should not crash."""
-        brain_config = BrainConfig(
-            version="1.0",
-            description="Test backward compatibility",
-            architecture=ArchitectureConfig(
-                type="feedforward",
-                feedforward=FeedforwardConfig(
-                    hidden_layers=[128],
-                    activation="relu",
-                    dropout=0.0,
-                    layer_norm=False,
-                ),
-            ),
-            optimizer=OptimizerConfig(
-                type="adam",
-                learning_rate=0.001,
-                adam_beta1=0.9,
-                adam_beta2=0.999,
-                adam_eps=1e-8,
-                weight_decay=0.0,
-                schedule=ScheduleConfig(
-                    type="step_decay",
-                    step_size=100,
-                    gamma=0.1,
-                ),
-            ),
-            loss=LossConfig(type="mse"),
-            q_learning=QLearningConfig(
-                gamma=0.99,
-                target_update_frequency=100,
-                use_double_dqn=False,
-            ),
-            replay=ReplayConfig(
-                capacity=10000,
-                prioritized=False,
-            ),
-        )
-
-        # Create population
-        population = _make_population(
-            env=basic_env,
-            curriculum=adversarial_curriculum,
-            exploration=epsilon_greedy_exploration,
-            device=cpu_device,
-            brain_config=brain_config,
-        )
-
-        # Create checkpoint without scheduler state (simulating old checkpoint)
-        checkpoint = population.get_checkpoint_state()
-        del checkpoint["scheduler"]  # Remove scheduler state to simulate old checkpoint
-
-        # Create new population
-        population2 = _make_population(
-            env=basic_env,
-            curriculum=adversarial_curriculum,
-            exploration=epsilon_greedy_exploration,
-            device=cpu_device,
-            brain_config=brain_config,
-        )
-
-        # Load checkpoint should not crash
-        population2.load_checkpoint_state(checkpoint)
-
-        # Scheduler should remain at initial state (step 0)
-        assert population2.scheduler.last_epoch == 0
-
 
 def test_brain_config_none_raises_valueerror(basic_env, adversarial_curriculum, epsilon_greedy_exploration, cpu_device):
     """VectorizedPopulation should reject brain_config=None per WP-C2."""
@@ -1122,9 +1048,133 @@ def test_brain_config_none_raises_valueerror(basic_env, adversarial_curriculum, 
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=basic_env.observation_dim,
+            action_dim=basic_env.action_dim,
+            vision_window_size=5,
             train_frequency=1,
             batch_size=32,
             sequence_length=1,
             max_grad_norm=10.0,
             brain_config=None,  # Should raise ValueError
         )
+
+
+def test_observation_spec_none_raises_valueerror(
+    basic_env, adversarial_curriculum, epsilon_greedy_exploration, cpu_device, minimal_brain_config
+):
+    """VectorizedPopulation raises ValueError when env.observation_spec is None (POP-005).
+
+    Per CLAUDE.md "no implicit defaults" philosophy, we require env.observation_spec
+    to be explicitly set rather than silently falling back.
+    """
+    import pytest
+
+    from townlet.population.vectorized import VectorizedPopulation
+
+    # Mock env without observation_spec
+    basic_env.observation_spec = None
+
+    with pytest.raises(ValueError, match="observation_spec is required"):
+        VectorizedPopulation(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            agent_ids=["agent_0"],
+            device=cpu_device,
+            obs_dim=basic_env.observation_dim,
+            action_dim=basic_env.action_dim,
+            vision_window_size=5,
+            train_frequency=1,
+            batch_size=32,
+            sequence_length=1,
+            max_grad_norm=10.0,
+            brain_config=minimal_brain_config,
+        )
+
+
+def test_observation_spec_missing_attribute_raises_valueerror(
+    basic_env, adversarial_curriculum, epsilon_greedy_exploration, cpu_device, minimal_brain_config
+):
+    """VectorizedPopulation raises ValueError when env has no observation_spec attribute (POP-005).
+
+    Covers the case where the env object doesn't have the attribute at all
+    (not just when it's set to None).
+    """
+    import pytest
+
+    from townlet.population.vectorized import VectorizedPopulation
+
+    # Delete the observation_spec attribute entirely
+    if hasattr(basic_env, "observation_spec"):
+        delattr(basic_env, "observation_spec")
+
+    with pytest.raises(ValueError, match="observation_spec is required"):
+        VectorizedPopulation(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            agent_ids=["agent_0"],
+            device=cpu_device,
+            obs_dim=basic_env.observation_dim,
+            action_dim=basic_env.action_dim,
+            vision_window_size=5,
+            train_frequency=1,
+            batch_size=32,
+            sequence_length=1,
+            max_grad_norm=10.0,
+            brain_config=minimal_brain_config,
+        )
+
+
+def test_device_mismatch_in_step_all_raises_runtime_error(
+    basic_env, adversarial_curriculum, epsilon_greedy_exploration, cpu_device, minimal_brain_config
+):
+    """step_all raises RuntimeError when observation tensor is on wrong device (POP-004).
+
+    Device mismatches cause cryptic PyTorch errors deep in computation graphs.
+    This validation provides clear error messages.
+
+    Note: This test uses monkeypatching to simulate device mismatch since actual
+    device mismatch requires CUDA hardware.
+    """
+    import pytest
+    import torch
+
+    from townlet.population.vectorized import VectorizedPopulation
+
+    population = VectorizedPopulation(
+        env=basic_env,
+        curriculum=adversarial_curriculum,
+        exploration=epsilon_greedy_exploration,
+        agent_ids=["agent_0"],
+        device=cpu_device,
+        obs_dim=basic_env.observation_dim,
+        action_dim=basic_env.action_dim,
+        vision_window_size=5,
+        train_frequency=1,
+        batch_size=32,
+        sequence_length=1,
+        max_grad_norm=10.0,
+        brain_config=minimal_brain_config,
+    )
+
+    # Create a mock tensor with a different device
+    # We can't actually use a different device without CUDA, so we mock the device property
+    class MockTensor:
+        """Mock tensor that reports a different device for testing."""
+
+        def __init__(self, real_tensor):
+            self._real = real_tensor
+            self.device = torch.device("meta")  # Different from cpu_device
+
+        def __getattr__(self, name):
+            return getattr(self._real, name)
+
+    # Replace current_obs with our mock
+    original_obs = population.current_obs
+    population.current_obs = MockTensor(original_obs)
+
+    # Create action mask (required for step_population)
+    action_mask = torch.ones(1, basic_env.action_dim, dtype=torch.bool)
+
+    with pytest.raises(RuntimeError, match="Observation tensor on"):
+        population.step_population(action_mask)

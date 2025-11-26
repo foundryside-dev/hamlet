@@ -8,11 +8,13 @@ from pathlib import Path
 
 from townlet.config.actions_config import ActionsConfig
 from townlet.config.affordances_v2_config import AffordancesV2Config, load_affordances_v2_config
-from townlet.config.agent_config import AgentConfig
 from townlet.config.bars_v2_config import BarsV2Config, load_bars_v2_config
+from townlet.config.brain_config import BrainConfig, load_brain_config
 from townlet.config.curriculum_config import CurriculumConfig
+from townlet.config.drive_as_code import DriveAsCodeConfig
 from townlet.config.environment_config import EnvironmentConfig
 from townlet.config.experiment_config import ExperimentConfig
+from townlet.config.items_config import ItemsAppearanceConfig, ItemsCatalogConfig
 from townlet.config.stratum_config import StratumConfig
 from townlet.config.training_v2_config import TrainingV2Config, load_training_v2_config
 from townlet.universe.errors import CompilationErrorCollector
@@ -24,6 +26,9 @@ MAX_CASCADES = 500
 MAX_ACTIONS = 300
 MAX_VARIABLES = 200
 MAX_GRID_CELLS = 10_000  # 100×100 maximum (DoS protection)
+MAX_ITEM_TYPES = 200
+MAX_VFS_PROFILES = 200
+MAX_SPAWN_RULES_PER_ITEM = 200
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +41,9 @@ class CurriculumLevel:
     curriculum: CurriculumConfig
     bars: BarsV2Config
     affordances: AffordancesV2Config
+    drive: DriveAsCodeConfig
     training: TrainingV2Config
+    items_appearance: ItemsAppearanceConfig | None = None
 
     @property
     def level_dir(self) -> str:
@@ -53,13 +60,16 @@ class RawConfigsV21:
     stratum: StratumConfig
     environment: EnvironmentConfig
     actions: ActionsConfig
-    agent: AgentConfig
+    brain: BrainConfig
 
     # Curriculum levels (per-level parameters)
     levels: dict[str, CurriculumLevel]
 
     # Provenance
     experiment_dir: Path
+
+    # Optional experiment-level configs
+    items: ItemsCatalogConfig | None = None
 
     def __post_init__(self) -> None:
         """Validate v2.1 invariants across all curriculum levels."""
@@ -90,6 +100,16 @@ class RawConfigsV21:
                     f"  Experiment: {self.experiment_dir}\n"
                     f"  File: {filename}\n"
                     "This may indicate config injection, duplication, or an unsafe configuration size."
+                )
+
+        if self.items is not None:
+            item_count = len(self.items.item_types)
+            if item_count > MAX_ITEM_TYPES:
+                raise ValueError(
+                    "items.yaml item_types exceeds safety limit for v2.1 configs.\n"
+                    f"  Experiment: {self.experiment_dir}\n"
+                    f"  Item types: {item_count} (max {MAX_ITEM_TYPES})\n"
+                    "Reduce catalog size; oversized catalogs are rejected."
                 )
 
         # ------------------------------------------------------------------
@@ -225,6 +245,20 @@ class RawConfigsV21:
             level_meter_names = {meter.name for meter in level.bars.meters}
             level_affordance_names = {aff.name for aff in level.affordances.affordances}
 
+            if level.items_appearance is not None:
+                per_item_rule_counts: dict[str, int] = {}
+                for rule in level.items_appearance.items:
+                    per_item_rule_counts[rule.item_type] = per_item_rule_counts.get(rule.item_type, 0) + 1
+                    if per_item_rule_counts[rule.item_type] > MAX_SPAWN_RULES_PER_ITEM:
+                        raise ValueError(
+                            "items.yaml spawn rules exceed safety limit for a single item type.\n"
+                            f"  Experiment: {self.experiment_dir}\n"
+                            f"  Level: {level_name}\n"
+                            f"  Item type: {rule.item_type}\n"
+                            f"  Rules: {per_item_rule_counts[rule.item_type]} (max {MAX_SPAWN_RULES_PER_ITEM})\n"
+                            "Reduce spawn rules per item to avoid unbounded spawn scheduling."
+                        )
+
             # Vocabulary consistency
             if level_meter_names != env_meter_names:
                 missing = env_meter_names - level_meter_names
@@ -290,18 +324,30 @@ class RawConfigsV21:
                     "environment.yaml modulation_graph."
                 )
 
-            # Affordance costs/effects meter references must be valid
+            # Affordance costs meter references must be valid
             for aff in level.affordances.affordances:
                 invalid_cost_meters = [name for name in aff.costs.keys() if name not in env_meter_names]
-                invalid_effect_meters = [name for name in aff.effects.keys() if name not in env_meter_names]
-                if invalid_cost_meters or invalid_effect_meters:
+
+                # Extract meter names from interactions (Effects commands)
+                # Effects commands use paths like "target.bar.{meter_name}"
+                invalid_interaction_meters = []
+                for stage_commands in aff.interactions.values():
+                    for cmd in stage_commands:
+                        # Extract meter name from modify path (e.g., "target.bar.energy" -> "energy")
+                        modify = getattr(cmd, "modify", None)
+                        if isinstance(modify, str) and modify.startswith("target.bar."):
+                            meter_name = modify.split(".")[-1]
+                            if meter_name not in env_meter_names:
+                                invalid_interaction_meters.append(meter_name)
+
+                if invalid_cost_meters or invalid_interaction_meters:
                     affordance_problems: list[str] = []
                     if invalid_cost_meters:
                         affordance_problems.append(f"costs: {sorted(invalid_cost_meters)}")
-                    if invalid_effect_meters:
-                        affordance_problems.append(f"effects: {sorted(invalid_effect_meters)}")
+                    if invalid_interaction_meters:
+                        affordance_problems.append(f"interactions: {sorted(set(invalid_interaction_meters))}")
                     raise ValueError(
-                        "Affordance references unknown meters in costs/effects.\n"
+                        "Affordance references unknown meters in costs/interactions.\n"
                         f"  Experiment: {self.experiment_dir}\n"
                         f"  Level: {level_name}\n"
                         f"  Affordance: {aff.name}\n"
@@ -378,13 +424,12 @@ class RawConfigsV21:
         errors = CompilationErrorCollector(stage="Stage 1: Load v2.1 Configs")
 
         # Shared experiment-level configs
-        experiment = stratum = environment = actions = agent = None
+        experiment = stratum = environment = actions = brain = items = None
         shared_specs = [
             ("experiment.yaml", ExperimentConfig, "experiment"),
             ("stratum.yaml", StratumConfig, "stratum"),
             ("environment.yaml", EnvironmentConfig, "environment"),
             ("actions.yaml", ActionsConfig, "actions"),
-            ("agent.yaml", AgentConfig, "agent"),
         ]
 
         for filename, loader_cls, label in shared_specs:
@@ -407,8 +452,34 @@ class RawConfigsV21:
                 environment = loaded
             elif label == "actions":
                 actions = loaded
-            elif label == "agent":
-                agent = loaded
+
+        # Load brain.yaml
+        brain_path = experiment_dir / "brain.yaml"
+        try:
+            brain = load_brain_config(experiment_dir)
+        except Exception as exc:
+            errors.add(
+                f"Failed to load brain from brain.yaml: {exc}",
+                code="LOAD_ERROR",
+                location=str(brain_path),
+            )
+
+        # Load items.yaml (optional)
+        items_path = experiment_dir / "items.yaml"
+        if items_path.exists():
+            try:
+                loaded_items = ItemsCatalogConfig.from_yaml(items_path)
+                # Treat zero-capacity catalogs as disabled to remove item actions/obs.
+                if loaded_items.max_items_in_world == 0 or loaded_items.max_items_per_agent == 0:
+                    items = None
+                else:
+                    items = loaded_items
+            except Exception as exc:  # noqa: BLE001
+                errors.add(
+                    f"Failed to load items from items.yaml: {exc}",
+                    code="LOAD_ERROR",
+                    location=str(items_path),
+                )
 
         # If any shared config failed, surface now.
         if errors.errors:
@@ -435,12 +506,33 @@ class RawConfigsV21:
                 bars = load_bars_v2_config(level_dir)
                 affordances = load_affordances_v2_config(level_dir)
                 training = load_training_v2_config(level_dir)
+
+                # Load drive.yaml
+                drive_path = level_dir / "drive.yaml"
+                import yaml
+
+                with open(drive_path) as f:
+                    drive_data = yaml.safe_load(f)
+                drive = DriveAsCodeConfig(**drive_data["drive"])
+
+                # Load level-specific items.yaml if exists
+                items_appearance = None
+                level_items_path = level_dir / "items.yaml"
+                if level_items_path.exists():
+                    import yaml
+
+                    with open(level_items_path) as f:
+                        items_data = yaml.safe_load(f)
+                    items_appearance = ItemsAppearanceConfig(**items_data)
+
                 levels[level_name] = CurriculumLevel(
                     name=level_name,
                     curriculum=curriculum,
                     bars=bars,
                     affordances=affordances,
+                    drive=drive,
                     training=training,
+                    items_appearance=items_appearance,
                 )
             except Exception as exc:  # noqa: BLE001
                 errors.add(
@@ -463,7 +555,8 @@ class RawConfigsV21:
             stratum=stratum,  # type: ignore[arg-type]
             environment=environment,  # type: ignore[arg-type]
             actions=actions,  # type: ignore[arg-type]
-            agent=agent,  # type: ignore[arg-type]
+            brain=brain,  # type: ignore[arg-type]
+            items=items,
             levels=levels,
             experiment_dir=experiment_dir,
         )

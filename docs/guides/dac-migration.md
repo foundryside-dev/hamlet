@@ -444,7 +444,7 @@ intrinsic:
 
 **Command**:
 ```bash
-python -m townlet.compiler compile configs/<config_pack>
+python -m townlet.universe compile configs/<config_pack>
 ```
 
 **Expected Output**:
@@ -792,7 +792,7 @@ vim configs/L1_full_observability/drive_as_code.yaml
 
 **Step 2**: Validate compilation
 ```bash
-python -m townlet.compiler compile configs/L1_full_observability
+python -m townlet.universe compile configs/L1_full_observability
 ```
 
 **Step 3**: Run training
@@ -823,7 +823,7 @@ print('drive_hash:', ckpt['metadata']['drive_hash'])
 ### 1. Always Test Compilation After Changes
 
 ```bash
-python -m townlet.compiler compile configs/<config_pack>
+python -m townlet.universe compile configs/<config_pack>
 ```
 
 Don't wait until training to discover config errors.

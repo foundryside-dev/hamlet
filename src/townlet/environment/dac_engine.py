@@ -123,7 +123,14 @@ class DACEngine:
                         bar_idx = self._get_bar_index(bar_name)
                         source_value = meters[:, bar_idx]
                     elif var_name:
-                        source_value = self.vfs_registry.get(var_name, reader=self.vfs_reader)
+                        try:
+                            source_value = self.vfs_registry.get(var_name, reader=self.vfs_reader)
+                        except KeyError:
+                            available = list(self.vfs_registry.variables.keys())
+                            raise KeyError(
+                                f"VFS variable '{var_name}' referenced in modifier '{mod_name}' "
+                                f"but not found in registry. Available: {available}"
+                            ) from None
                     else:
                         raise ValueError(f"Modifier has no source: {mod_name}")
 
@@ -921,7 +928,37 @@ class DACEngine:
             total_rewards: [num_agents] final rewards
             intrinsic_weights: [num_agents] effective intrinsic weights after modifiers
             components: dict of reward components (extrinsic, intrinsic, shaping)
+
+        Raises:
+            RuntimeError: If input tensors are on different device than DACEngine
         """
+
+        # Validate device consistency (ENV-007)
+        # Compare device types robustly - cuda:0 == cuda (default device)
+        def _same_device(a: torch.device, b: torch.device) -> bool:
+            """Check if two devices are the same, handling cuda vs cuda:0."""
+            if a.type != b.type:
+                return False
+            if a.type == "cuda":
+                # cuda (no index) means device 0, same as cuda:0
+                a_idx = a.index if a.index is not None else 0
+                b_idx = b.index if b.index is not None else 0
+                return a_idx == b_idx
+            return True
+
+        if not _same_device(meters.device, self.device):
+            raise RuntimeError(
+                f"Meters tensor on {meters.device} but DACEngine on {self.device}. " f"Ensure all tensors are on the same device."
+            )
+        if not _same_device(intrinsic_raw.device, self.device):
+            raise RuntimeError(
+                f"Intrinsic tensor on {intrinsic_raw.device} but DACEngine on {self.device}. " f"Ensure all tensors are on the same device."
+            )
+        if not _same_device(dones.device, self.device):
+            raise RuntimeError(
+                f"Dones tensor on {dones.device} but DACEngine on {self.device}. " f"Ensure all tensors are on the same device."
+            )
+
         # 1. Compute extrinsic reward
         extrinsic = self.extrinsic_fn(meters=meters, dones=dones)
 

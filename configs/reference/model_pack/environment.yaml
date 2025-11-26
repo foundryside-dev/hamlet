@@ -1,0 +1,38 @@
+environment:
+  version: "1.0"
+
+  meters:
+    - name: energy
+      description: "Energy for actions"
+      range_type: normalized
+    - name: health
+      description: "Health state"
+      range_type: normalized
+    - name: mood
+      description: "Mood state"
+      range_type: normalized
+
+  cascade_graph:
+    - source: energy
+      target: health
+      description: "Energy loss harms health"
+    - source: mood
+      target: energy
+      description: "Low mood reduces energy"
+
+  modulation_graph: []
+
+  affordances:
+    - name: EAT
+      description: "Consume food"
+      category: sustenance
+    - name: SLEEP
+      description: "Rest to restore energy"
+      category: sustenance
+    - name: WORK
+      description: "Earn money"
+      category: economic
+
+  cues: []
+
+  variables: []

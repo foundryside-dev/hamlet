@@ -1505,7 +1505,7 @@ capabilities:
 ```bash
 # Validate configuration without training
 export PYTHONPATH=/home/john/hamlet/src:$PYTHONPATH
-python -m townlet.compiler validate configs/your_config
+python -m townlet.universe validate configs/your_config
 
 # Expected output for valid config:
 # Validation succeeded in XXX ms (no cache artifacts written)
@@ -1651,7 +1651,7 @@ uv run pytest tests/test_townlet/unit/config/ -v --tb=short
 export PYTHONPATH=/home/john/hamlet/src:$PYTHONPATH
 for config in L0_0_minimal L0_5_dual_resource L1_full_observability L2_partial_observability L3_temporal_mechanics; do
   echo "=== Validating configs/$config ==="
-  python -m townlet.compiler validate "configs/$config" 2>&1 | grep -E "succeeded|Failed"
+  python -m townlet.universe validate "configs/$config" 2>&1 | grep -E "succeeded|Failed"
 done
 ```
 

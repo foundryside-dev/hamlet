@@ -63,6 +63,17 @@ def assert_checkpoint_dimensions(checkpoint: Mapping[str, Any], universe: Compil
     if list(checkpoint_uuids) != expected_uuids:
         raise ValueError("Checkpoint observation field UUIDs mismatch current universe specification.")
 
+    # CRIT-06: Validate drive_hash to ensure reward function consistency
+    checkpoint_drive_hash = checkpoint.get("drive_hash")
+    if checkpoint_drive_hash is None:
+        raise ValueError("Checkpoint missing drive_hash; regenerate the checkpoint with the latest compiler.")
+    if checkpoint_drive_hash != universe.drive_hash:
+        raise ValueError(
+            f"Checkpoint drive_hash mismatch: checkpoint={checkpoint_drive_hash[:16]}..., "
+            f"current={universe.drive_hash[:16]}... "
+            "The reward function configuration has changed since the checkpoint was created."
+        )
+
 
 def _digest_path(checkpoint_path: Path) -> Path:
     return checkpoint_path.with_suffix(checkpoint_path.suffix + _DIGEST_SUFFIX)

@@ -21,7 +21,7 @@ def compiler():
 def integration_config_dir():
     """Use L0_0_minimal as test config (already minimal and valid)."""
     # Use existing minimal config from default curriculum
-    return Path("/home/john/hamlet/configs/default_curriculum")
+    return Path("configs/default_curriculum")
 
 
 class TestWorldCompilerPipeline:

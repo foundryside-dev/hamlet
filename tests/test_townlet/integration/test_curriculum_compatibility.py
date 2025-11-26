@@ -27,7 +27,7 @@ def compiler():
 @pytest.fixture
 def curriculum_dir():
     """Path to default curriculum."""
-    return Path("/home/john/hamlet/configs/default_curriculum")
+    return Path("configs/default_curriculum")
 
 
 class TestCurriculumCompatibility:

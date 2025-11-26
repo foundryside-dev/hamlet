@@ -195,7 +195,7 @@ def test_items_catalog_from_yaml():
 
     import yaml
 
-    catalog_path = Path("/home/john/hamlet/configs/test/items_smoke/items.yaml")
+    catalog_path = Path("configs/test/items_smoke/items.yaml")
     with open(catalog_path) as f:
         data = yaml.safe_load(f)
 
@@ -215,7 +215,7 @@ def test_items_appearance_from_yaml():
 
     import yaml
 
-    appearance_path = Path("/home/john/hamlet/configs/test/items_smoke/levels/L0_smoke/items.yaml")
+    appearance_path = Path("configs/test/items_smoke/levels/L0_smoke/items.yaml")
     with open(appearance_path) as f:
         data = yaml.safe_load(f)
 

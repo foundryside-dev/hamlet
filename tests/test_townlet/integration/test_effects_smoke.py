@@ -11,7 +11,7 @@ from townlet.environment.vectorized_env import VectorizedHamletEnv
 @pytest.fixture
 def effects_smoke_config_path():
     """Path to effects_smoke config pack."""
-    return Path("/home/john/hamlet/configs/test/effects_smoke")
+    return Path("configs/test/effects_smoke")
 
 
 def test_environment_initializes_effect_manager(compile_universe, effects_smoke_config_path, cpu_device):

@@ -37,6 +37,7 @@ class PrioritizedReplayBuffer:
         self.capacity = capacity
         self.alpha = alpha
         self.beta = beta
+        self.beta_initial = beta  # CRIT-04: Store initial beta for annealing
         self.beta_annealing = beta_annealing
         self.device = device
 
@@ -184,8 +185,12 @@ class PrioritizedReplayBuffer:
             current_step: Current training step
         """
         if self.beta_annealing:
+            # CRIT-03: Guard against zero division
+            if total_steps <= 0:
+                return
             progress = min(current_step / total_steps, 1.0)
-            self.beta = 0.4 + (1.0 - 0.4) * progress  # Anneal from 0.4 to 1.0
+            # CRIT-04: Use stored initial beta instead of hardcoded 0.4
+            self.beta = self.beta_initial + (1.0 - self.beta_initial) * progress
 
     def size(self) -> int:
         """Return current buffer size."""
@@ -264,6 +269,7 @@ class PrioritizedReplayBuffer:
                 "capacity": self.capacity,
                 "alpha": self.alpha,
                 "beta": self.beta,
+                "beta_initial": self.beta_initial,
                 "beta_annealing": self.beta_annealing,
                 "observations": None,
                 "actions": None,
@@ -286,6 +292,7 @@ class PrioritizedReplayBuffer:
             "capacity": self.capacity,
             "alpha": self.alpha,
             "beta": self.beta,
+            "beta_initial": self.beta_initial,
             "beta_annealing": self.beta_annealing,
             "observations": self.observations[: self.size_current].cpu().clone(),
             "actions": self.actions[: self.size_current].cpu().clone(),
@@ -307,6 +314,7 @@ class PrioritizedReplayBuffer:
         self.capacity = state["capacity"]
         self.alpha = state["alpha"]
         self.beta = state["beta"]
+        self.beta_initial = state["beta_initial"]
         self.beta_annealing = state["beta_annealing"]
         self.priorities = state["priorities"].copy()
         self.max_priority = state["max_priority"]

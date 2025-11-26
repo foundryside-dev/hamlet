@@ -111,6 +111,70 @@ def test_prioritized_replay_buffer_beta_annealing():
     assert buffer.beta <= 1.0
 
 
+def test_prioritized_replay_buffer_anneal_beta_zero_total_steps():
+    """CRIT-03: anneal_beta should not crash when total_steps=0."""
+    buffer = PrioritizedReplayBuffer(
+        capacity=100,
+        alpha=0.6,
+        beta=0.5,
+        beta_annealing=True,
+        device=torch.device("cpu"),
+    )
+
+    initial_beta = buffer.beta
+
+    # Should not raise ZeroDivisionError
+    buffer.anneal_beta(total_steps=0, current_step=0)
+
+    # Beta should remain unchanged
+    assert buffer.beta == initial_beta
+
+
+def test_prioritized_replay_buffer_anneal_beta_respects_initial_value():
+    """CRIT-04: anneal_beta should use user-provided initial beta, not hardcoded 0.4."""
+    # Use non-default initial beta
+    buffer = PrioritizedReplayBuffer(
+        capacity=100,
+        alpha=0.6,
+        beta=0.6,  # Custom initial beta (not the default 0.4)
+        beta_annealing=True,
+        device=torch.device("cpu"),
+    )
+
+    assert buffer.beta_initial == 0.6
+
+    # At step 0, beta should be initial value
+    buffer.anneal_beta(total_steps=1000, current_step=0)
+    assert buffer.beta == 0.6
+
+    # At halfway, beta should be between initial and 1.0
+    buffer.anneal_beta(total_steps=1000, current_step=500)
+    expected_beta = 0.6 + (1.0 - 0.6) * 0.5  # 0.8
+    assert abs(buffer.beta - expected_beta) < 0.001
+
+    # At end, beta should be 1.0
+    buffer.anneal_beta(total_steps=1000, current_step=1000)
+    assert buffer.beta == 1.0
+
+
+def test_prioritized_replay_buffer_anneal_beta_disabled():
+    """Beta annealing should not change beta when beta_annealing=False."""
+    buffer = PrioritizedReplayBuffer(
+        capacity=100,
+        alpha=0.6,
+        beta=0.5,
+        beta_annealing=False,
+        device=torch.device("cpu"),
+    )
+
+    initial_beta = buffer.beta
+
+    buffer.anneal_beta(total_steps=1000, current_step=500)
+
+    # Beta should remain unchanged when annealing is disabled
+    assert buffer.beta == initial_beta
+
+
 def test_prioritized_replay_buffer_len():
     """PrioritizedReplayBuffer implements __len__."""
     buffer = PrioritizedReplayBuffer(
@@ -157,6 +221,10 @@ def test_prioritized_replay_buffer_serialize():
     # Serialize
     state = buffer.serialize()
 
+    # Verify beta_initial is in serialized state
+    assert "beta_initial" in state
+    assert state["beta_initial"] == 0.5
+
     # Create new buffer and restore
     new_buffer = PrioritizedReplayBuffer(
         capacity=50,
@@ -171,6 +239,7 @@ def test_prioritized_replay_buffer_serialize():
     assert len(new_buffer) == 10
     assert new_buffer.alpha == 0.7
     assert new_buffer.beta == 0.5
+    assert new_buffer.beta_initial == 0.5
     assert new_buffer.capacity == 50
     assert new_buffer.position == buffer.position
     assert new_buffer.max_priority == buffer.max_priority

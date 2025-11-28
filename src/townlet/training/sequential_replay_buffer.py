@@ -2,7 +2,10 @@
 Sequential Replay Buffer for LSTM Training.
 
 CRIT-07: Updated to use single 'rewards' field for DAC-composed totals.
-Episodes now store pre-composed total rewards instead of split extrinsic/intrinsic.
+Episodes store pre-composed total rewards with optional component breakdown.
+
+format_version 3: Includes optional reward components (rewards_extrinsic,
+rewards_intrinsic, rewards_shaping) for TensorBoard analysis.
 
 Unlike standard replay buffers that sample individual transitions,
 this buffer stores complete episodes and samples sequences of consecutive
@@ -24,7 +27,8 @@ class SequentialReplayBuffer:
     """
     Replay buffer that maintains temporal structure for LSTM training.
 
-    CRIT-07: Episodes now store single 'rewards' field with DAC-composed totals.
+    Episodes store single 'rewards' field with DAC-composed totals, plus optional
+    component breakdown (rewards_extrinsic, rewards_intrinsic, rewards_shaping).
 
     Stores complete episodes and samples sequences of consecutive transitions.
     This is essential for training recurrent networks which need temporal context.
@@ -106,6 +110,7 @@ class SequentialReplayBuffer:
         Store a complete episode.
 
         CRIT-07: Now requires 'rewards' key with pre-composed totals.
+        Component keys (rewards_extrinsic, rewards_intrinsic, rewards_shaping) are optional.
 
         Args:
             episode: Dict with keys:
@@ -113,12 +118,16 @@ class SequentialReplayBuffer:
                 - 'actions': [seq_len]
                 - 'rewards': [seq_len] - DAC-composed total rewards
                 - 'dones': [seq_len]
+                - 'rewards_extrinsic': [seq_len] (optional) - extrinsic component
+                - 'rewards_intrinsic': [seq_len] (optional) - intrinsic component
+                - 'rewards_shaping': [seq_len] (optional) - shaping component
 
         Raises:
             ValueError: If episode structure is invalid
         """
         # Validate episode structure
         required_keys = {"observations", "actions", "rewards", "dones"}
+        optional_component_keys = {"rewards_extrinsic", "rewards_intrinsic", "rewards_shaping"}
 
         missing_keys = required_keys - set(episode.keys())
         if missing_keys:
@@ -143,6 +152,17 @@ class SequentialReplayBuffer:
             raise ValueError(f"rewards must be 1D [seq_len], got shape {episode['rewards'].shape}")
         if episode["dones"].ndim != 1:
             raise ValueError(f"dones must be 1D [seq_len], got shape {episode['dones'].shape}")
+
+        # Validate optional component keys if present
+        for component_key in optional_component_keys:
+            if component_key in episode:
+                if episode[component_key].ndim != 1:
+                    raise ValueError(f"{component_key} must be 1D [seq_len], got shape {episode[component_key].shape}")
+                if len(episode[component_key]) != seq_len:
+                    comp_len = len(episode[component_key])
+                    raise ValueError(
+                        f"Episode tensor length mismatch: observations has {seq_len} steps, " f"but {component_key} has {comp_len} steps"
+                    )
 
         # Move episode to correct device
         episode_on_device: Episode = {key: tensor.to(self.device) for key, tensor in episode.items()}
@@ -257,14 +277,14 @@ class SequentialReplayBuffer:
         """
         Serialize episode buffer for checkpointing (P1.1).
 
-        CRIT-07: format_version 2 uses single 'rewards' field.
+        format_version 3 includes optional reward component keys.
 
         Returns:
             Dictionary with all episodes on CPU for saving
         """
         if len(self.episodes) == 0:
             return {
-                "format_version": 2,  # CRIT-07: Version 2 uses single rewards field
+                "format_version": 3,  # Version 3 includes optional component keys
                 "num_transitions": 0,
                 "episodes": [],
                 "capacity": self.capacity,
@@ -273,17 +293,20 @@ class SequentialReplayBuffer:
         # Convert episodes to CPU tensors
         serialized_episodes: list[dict[str, torch.Tensor]] = []
         for episode in self.episodes:
-            serialized_episodes.append(
-                {
-                    "observations": episode["observations"].cpu(),
-                    "actions": episode["actions"].cpu(),
-                    "rewards": episode["rewards"].cpu(),  # CRIT-07: Single rewards field
-                    "dones": episode["dones"].cpu(),
-                }
-            )
+            serialized_episode = {
+                "observations": episode["observations"].cpu(),
+                "actions": episode["actions"].cpu(),
+                "rewards": episode["rewards"].cpu(),
+                "dones": episode["dones"].cpu(),
+            }
+            # Add components if present
+            for key in ["rewards_extrinsic", "rewards_intrinsic", "rewards_shaping"]:
+                if key in episode:
+                    serialized_episode[key] = episode[key].cpu()
+            serialized_episodes.append(serialized_episode)
 
         return {
-            "format_version": 2,  # CRIT-07: Version 2 uses single rewards field
+            "format_version": 3,  # Version 3 includes optional component keys
             "num_transitions": self.num_transitions,
             "episodes": serialized_episodes,
             "capacity": self.capacity,
@@ -293,19 +316,19 @@ class SequentialReplayBuffer:
         """
         Restore episode buffer from serialized state (P1.1).
 
-        CRIT-07: Now requires format_version >= 2. Legacy format not supported.
+        Now requires format_version >= 3. Legacy formats not supported.
 
         Args:
             state: Dictionary from serialize()
 
         Raises:
-            ValueError: If loading legacy format (version < 2)
+            ValueError: If loading legacy format (version < 3)
         """
-        # CRIT-07: Reject legacy format (per CLAUDE.md: zero backwards compatibility)
+        # Reject legacy format (per CLAUDE.md: zero backwards compatibility)
         format_version = state.get("format_version", 1)
-        if format_version < 2:
+        if format_version < 3:
             raise ValueError(
-                "Cannot load legacy sequential buffer checkpoint (format_version < 2). "
+                "Cannot load legacy sequential buffer checkpoint (format_version < 3). "
                 "Regenerate checkpoint with current Townlet version."
             )
 
@@ -322,11 +345,14 @@ class SequentialReplayBuffer:
 
         # Restore episodes to device
         for ep_state in state["episodes"]:
-            self.episodes.append(
-                {
-                    "observations": ep_state["observations"].to(self.device),
-                    "actions": ep_state["actions"].to(self.device),
-                    "rewards": ep_state["rewards"].to(self.device),  # CRIT-07: Single rewards field
-                    "dones": ep_state["dones"].to(self.device),
-                }
-            )
+            episode = {
+                "observations": ep_state["observations"].to(self.device),
+                "actions": ep_state["actions"].to(self.device),
+                "rewards": ep_state["rewards"].to(self.device),
+                "dones": ep_state["dones"].to(self.device),
+            }
+            # Restore components if present
+            for key in ["rewards_extrinsic", "rewards_intrinsic", "rewards_shaping"]:
+                if key in ep_state:
+                    episode[key] = ep_state[key].to(self.device)
+            self.episodes.append(episode)

@@ -384,65 +384,8 @@ class AffordanceEngine:
 
         return can_afford
 
-    def get_action_masks(
-        self,
-        meters: torch.Tensor,
-        time_of_day: int,
-        check_affordability: bool = True,
-        check_hours: bool = True,
-    ) -> torch.Tensor:
-        """
-        Get action masks for all agents considering affordability and operating hours.
-
-        Args:
-            meters: [batch_size, 8] current meter values
-            time_of_day: Current hour [0-23]
-            check_affordability: If True, mask unaffordable actions
-            check_hours: If True, mask closed affordances
-
-        Returns:
-            action_masks: [batch_size, num_actions] bool tensor
-                         Actions include: 4 movement + 15 affordances = 19 total
-        """
-        batch_size = meters.shape[0]
-        num_movement_actions = 4  # UP, DOWN, LEFT, RIGHT
-        num_affordances = 15
-        num_actions = num_movement_actions + num_affordances
-
-        # Start with all actions available
-        action_masks = torch.ones((batch_size, num_actions), dtype=torch.bool, device=self.device)
-
-        # Movement actions always available
-        # (boundary checks happen separately in environment)
-
-        # Check each affordance
-        for affordance_name, affordance_idx in self.affordance_name_to_idx.items():
-            affordance = self.affordance_map.get(affordance_name)
-            if affordance is None:
-                continue
-
-            action_idx = num_movement_actions + affordance_idx
-
-            # Check operating hours
-            if check_hours:
-                is_open = self.is_affordance_open(affordance_name, time_of_day)
-                if not is_open:
-                    action_masks[:, action_idx] = False
-                    continue
-
-            # Check affordability
-            if check_affordability:
-                # Check instant costs
-                if len(affordance.costs) > 0:
-                    can_afford = self._check_affordability(meters, affordance.costs)
-                    action_masks[:, action_idx] = action_masks[:, action_idx] & can_afford
-
-                # Check per-tick costs (for multi-tick affordances)
-                elif len(affordance.costs_per_tick) > 0:
-                    can_afford = self._check_affordability(meters, affordance.costs_per_tick)
-                    action_masks[:, action_idx] = action_masks[:, action_idx] & can_afford
-
-        return action_masks
+    # HIGH-09: Deleted get_action_masks() - dead code with hardcoded dimensions (num_affordances=15).
+    # Action masking is handled by vectorized_env.py using ActionBuilder.get_base_action_mask().
 
     def get_affordance_action_map(self) -> dict[str, int]:
         """

@@ -46,12 +46,32 @@ class AgentRuntimeRegistry:
 
         self._agent_ids = agent_ids
         self.device = device
-        num_agents = len(agent_ids)
+        self.num_agents = len(agent_ids)
 
-        self._survival_time = torch.zeros(num_agents, dtype=torch.long, device=device)
-        self._curriculum_stage = torch.ones(num_agents, dtype=torch.long, device=device)
-        self._epsilon = torch.zeros(num_agents, dtype=torch.float32, device=device)
-        self._intrinsic_weight = torch.zeros(num_agents, dtype=torch.float32, device=device)
+        self._survival_time = torch.zeros(self.num_agents, dtype=torch.long, device=device)
+        self._curriculum_stage = torch.ones(self.num_agents, dtype=torch.long, device=device)
+        self._epsilon = torch.zeros(self.num_agents, dtype=torch.float32, device=device)
+        self._intrinsic_weight = torch.zeros(self.num_agents, dtype=torch.float32, device=device)
+
+    # --------------------------------------------------------------------- #
+    # Validation helpers (POP-010)
+    # --------------------------------------------------------------------- #
+    def _validate_agent_idx(self, agent_idx: int) -> None:
+        """Validate agent index is within bounds.
+
+        Args:
+            agent_idx: Agent index to validate
+
+        Raises:
+            TypeError: If agent_idx is not an int
+            IndexError: If agent_idx is out of bounds
+        """
+        if not isinstance(agent_idx, int):
+            raise TypeError(f"agent_idx must be int, got {type(agent_idx).__name__}. " f"If you have a tensor index, call .item() first.")
+        if agent_idx < 0 or agent_idx >= self.num_agents:
+            raise IndexError(
+                f"agent_idx {agent_idx} out of bounds for {self.num_agents} agents. " f"Valid range: [0, {self.num_agents - 1}]"
+            )
 
     # --------------------------------------------------------------------- #
     # Tensor accessors
@@ -62,6 +82,7 @@ class AgentRuntimeRegistry:
 
     def get_curriculum_stage(self, agent_idx: int) -> int:
         """Return curriculum stage for an agent."""
+        self._validate_agent_idx(agent_idx)
         return int(self._curriculum_stage[agent_idx].item())
 
     def get_survival_time_tensor(self) -> torch.Tensor:
@@ -70,14 +91,17 @@ class AgentRuntimeRegistry:
 
     def get_survival_time(self, agent_idx: int) -> int:
         """Return survival time for an agent."""
+        self._validate_agent_idx(agent_idx)
         return int(self._survival_time[agent_idx].item())
 
     def get_epsilon(self, agent_idx: int) -> float:
         """Return epsilon for an agent."""
+        self._validate_agent_idx(agent_idx)
         return float(self._epsilon[agent_idx].item())
 
     def get_intrinsic_weight(self, agent_idx: int) -> float:
         """Return intrinsic weight for an agent."""
+        self._validate_agent_idx(agent_idx)
         return float(self._intrinsic_weight[agent_idx].item())
 
     # --------------------------------------------------------------------- #
@@ -85,18 +109,22 @@ class AgentRuntimeRegistry:
     # --------------------------------------------------------------------- #
     def record_survival_time(self, agent_idx: int, steps: int | torch.Tensor) -> None:
         """Record survival time for an agent."""
+        self._validate_agent_idx(agent_idx)
         self._survival_time[agent_idx] = self._ensure_long_tensor(steps)
 
     def set_curriculum_stage(self, agent_idx: int, stage: int | torch.Tensor) -> None:
         """Set curriculum stage for an agent."""
+        self._validate_agent_idx(agent_idx)
         self._curriculum_stage[agent_idx] = self._ensure_long_tensor(stage)
 
     def set_epsilon(self, agent_idx: int, epsilon: float | torch.Tensor) -> None:
         """Set exploration epsilon for an agent."""
+        self._validate_agent_idx(agent_idx)
         self._epsilon[agent_idx] = self._ensure_float_tensor(epsilon)
 
     def set_intrinsic_weight(self, agent_idx: int, weight: float | torch.Tensor) -> None:
         """Set intrinsic reward weight for an agent."""
+        self._validate_agent_idx(agent_idx)
         self._intrinsic_weight[agent_idx] = self._ensure_float_tensor(weight)
 
     # --------------------------------------------------------------------- #
@@ -104,6 +132,7 @@ class AgentRuntimeRegistry:
     # --------------------------------------------------------------------- #
     def get_snapshot_for_agent(self, agent_idx: int) -> AgentTelemetrySnapshot:
         """Return JSON-safe snapshot for a single agent."""
+        self._validate_agent_idx(agent_idx)
         return AgentTelemetrySnapshot(
             agent_id=self._agent_ids[agent_idx],
             survival_time=int(self._survival_time[agent_idx].item()),

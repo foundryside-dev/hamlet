@@ -782,17 +782,31 @@ class VectorizedPopulation(PopulationManager):
                         online_recurrent = cast(RecurrentSpatialQNetwork, self.q_network)
                         online_recurrent.reset_hidden_state(batch_size=batch_size, device=self.device)
 
-                        # First pass: Get action selections from online network
-                        next_action_list = []
-                        for t in range(seq_len):
-                            q_values_online, _ = online_recurrent(batch["observations"][:, t, :])
-                            next_actions = q_values_online.argmax(1)
-                            next_action_list.append(next_actions)
+                        # First pass: Get action selections from online network, storing hidden states
+                        # POP-009: Store hidden states for consistent target evaluation
+                        # Variable renamed from next_action_list for clarity (it's argmax per state, not "next")
+                        state_argmax_actions: list[torch.Tensor] = []
+                        online_hidden_states: list[tuple[torch.Tensor, torch.Tensor]] = []
 
-                        # Second pass: Evaluate those actions with target network
+                        current_hidden = online_recurrent.get_hidden_state()
+                        for t in range(seq_len):
+                            # Store hidden state BEFORE forward pass (state at time t)
+                            if current_hidden is not None:
+                                online_hidden_states.append(current_hidden)
+                            q_values_online, current_hidden = online_recurrent(batch["observations"][:, t, :])
+                            argmax_action = q_values_online.argmax(1)
+                            state_argmax_actions.append(argmax_action)
+
+                        # Second pass: Evaluate actions with target network using online's hidden states
+                        # POP-009: Use online network's hidden states for consistent state representation
+                        # This ensures action selection and evaluation use the same state encoding
                         q_values_list = []
                         for t in range(seq_len):
-                            q_values_target, _ = target_recurrent(batch["observations"][:, t, :])
+                            # Pass online's hidden state to target network for consistent evaluation
+                            q_values_target, _ = target_recurrent(
+                                batch["observations"][:, t, :],
+                                hidden=online_hidden_states[t] if t < len(online_hidden_states) else None,
+                            )
                             q_values_list.append(q_values_target)
 
                         # Compute targets using selected actions
@@ -800,8 +814,8 @@ class VectorizedPopulation(PopulationManager):
                         for t in range(seq_len):
                             if t < seq_len - 1:
                                 # Use Q-values from t+1, evaluated at actions selected by online network
-                                next_actions = next_action_list[t + 1]
-                                q_next = q_values_list[t + 1].gather(1, next_actions.unsqueeze(1)).squeeze()
+                                next_state_action = state_argmax_actions[t + 1]
+                                q_next = q_values_list[t + 1].gather(1, next_state_action.unsqueeze(1)).squeeze()
                                 q_target = batch["rewards"][:, t] + self.gamma * q_next * (~batch["dones"][:, t]).float()
                             else:
                                 # Terminal state: no next observation
@@ -987,7 +1001,8 @@ class VectorizedPopulation(PopulationManager):
         # 11. Handle episode resets (for adaptive intrinsic annealing)
         if dones.any():
             reset_indices = torch.where(dones)[0]
-            for idx in reset_indices:
+            for idx_tensor in reset_indices:
+                idx = int(idx_tensor.item())  # POP-010: Convert tensor index to int
                 survival_time = int(self.episode_step_counts[idx].item())
                 if self.is_recurrent:
                     self._store_episode_and_reset(idx)

@@ -1215,8 +1215,8 @@ class TestRewardComponentWiring:
             brain_config=minimal_brain_config,
         )
 
-        # Initialize tensorboard_logger attribute (implementation expects it to exist)
-        population.tensorboard_logger = None
+        # Initialize tb_logger attribute (implementation expects it to exist)
+        population.tb_logger = None
 
         # Initialize curriculum before stepping population
         adversarial_curriculum.initialize_population(1)
@@ -1277,8 +1277,8 @@ class TestRewardComponentWiring:
             brain_config=minimal_brain_config,
         )
 
-        # Initialize tensorboard_logger attribute (implementation expects it to exist)
-        population.tensorboard_logger = None
+        # Initialize tb_logger attribute (implementation expects it to exist)
+        population.tb_logger = None
 
         # Initialize curriculum before stepping population
         adversarial_curriculum.initialize_population(1)
@@ -1349,10 +1349,10 @@ class TestRewardComponentWiring:
         adversarial_curriculum.initialize_population(1)
 
         # Attach TensorBoard logger
-        population.tensorboard_logger = TensorBoardLogger(log_dir=tmp_path / "tb_logs")
+        population.tb_logger = TensorBoardLogger(log_dir=tmp_path / "tb_logs")
 
         # Mock the log_custom_metric method
-        population.tensorboard_logger.log_custom_metric = MagicMock()
+        population.tb_logger.log_custom_metric = MagicMock()
 
         # Mock environment step
         original_step = basic_env.step
@@ -1373,11 +1373,11 @@ class TestRewardComponentWiring:
         population.step_population(basic_env)
 
         # Verify log_custom_metric was called for components
-        assert population.tensorboard_logger.log_custom_metric.call_count >= 3
+        assert population.tb_logger.log_custom_metric.call_count >= 3
         # Should have logged at least: extrinsic, intrinsic, shaping
 
         # Cleanup
-        population.tensorboard_logger.close()
+        population.tb_logger.close()
 
     def test_episode_container_has_component_keys(
         self,

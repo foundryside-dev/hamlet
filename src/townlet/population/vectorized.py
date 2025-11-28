@@ -311,23 +311,23 @@ class VectorizedPopulation(PopulationManager):
                 - "intrinsic_raw": (optional) Intrinsic before modifiers
             intrinsic_weight: Effective intrinsic weight after modifiers
         """
-        if self.tensorboard_logger is None:
+        if self.tb_logger is None:
             return
 
         step = self.total_steps
 
         # Log mean values across all agents
-        self.tensorboard_logger.log_custom_metric("Rewards/Extrinsic_Mean", components["extrinsic"].mean().item(), step)
-        self.tensorboard_logger.log_custom_metric("Rewards/Intrinsic_Mean", components["intrinsic"].mean().item(), step)
-        self.tensorboard_logger.log_custom_metric("Rewards/Shaping_Mean", components["shaping"].mean().item(), step)
+        self.tb_logger.log_custom_metric("Rewards/Extrinsic_Mean", components["extrinsic"].mean().item(), step)
+        self.tb_logger.log_custom_metric("Rewards/Intrinsic_Mean", components["intrinsic"].mean().item(), step)
+        self.tb_logger.log_custom_metric("Rewards/Shaping_Mean", components["shaping"].mean().item(), step)
 
         # Log intrinsic_raw if available (before modifiers)
         if "intrinsic_raw" in components:
-            self.tensorboard_logger.log_custom_metric("Rewards/Intrinsic_Raw_Mean", components["intrinsic_raw"].mean().item(), step)
+            self.tb_logger.log_custom_metric("Rewards/Intrinsic_Raw_Mean", components["intrinsic_raw"].mean().item(), step)
 
         # Log effective intrinsic weight
         if intrinsic_weight is not None:
-            self.tensorboard_logger.log_custom_metric("Rewards/Intrinsic_Weight_Mean", intrinsic_weight.mean().item(), step)
+            self.tb_logger.log_custom_metric("Rewards/Intrinsic_Weight_Mean", intrinsic_weight.mean().item(), step)
 
     # ------------------------------------------------------------------ #
     # Network building helper (POP-001 DRY)
@@ -701,7 +701,7 @@ class VectorizedPopulation(PopulationManager):
         )
 
         # Log components to TensorBoard (step-level aggregation)
-        if self.tensorboard_logger is not None and components:
+        if self.tb_logger is not None and components:
             self._log_reward_components(
                 components=components,
                 intrinsic_weight=intrinsic_weight,

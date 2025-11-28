@@ -97,6 +97,8 @@ def assert_checkpoint_dimensions(checkpoint: Mapping[str, Any], universe: Compil
     checkpoint_drive_hash = checkpoint.get("drive_hash")
     if checkpoint_drive_hash is None:
         raise ValueError("Checkpoint missing drive_hash; regenerate the checkpoint with the latest compiler.")
+    if universe.drive_hash is None:
+        raise ValueError("Universe missing drive_hash; ensure DAC config is compiled.")
     if checkpoint_drive_hash != universe.drive_hash:
         raise ValueError(
             f"Checkpoint drive_hash mismatch: checkpoint={checkpoint_drive_hash[:16]}..., "

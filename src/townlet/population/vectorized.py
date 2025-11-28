@@ -267,12 +267,16 @@ class VectorizedPopulation(PopulationManager):
     def _new_episode_container(self) -> EpisodeContainer:
         """Create a fresh container for accumulating episode data.
 
-        CRIT-07: Now uses single 'rewards' key for DAC-composed totals.
+        CRIT-07: Now uses single 'rewards' key for DAC-composed totals,
+        plus component keys for provenance tracking.
         """
         return {
             "observations": [],
             "actions": [],
             "rewards": [],  # CRIT-07: Single rewards field for DAC-composed totals
+            "rewards_extrinsic": [],  # DAC extrinsic component
+            "rewards_intrinsic": [],  # DAC intrinsic component (after modifiers)
+            "rewards_shaping": [],  # DAC shaping component
             "dones": [],
         }
 
@@ -291,6 +295,39 @@ class VectorizedPopulation(PopulationManager):
             self.tb_logger.writer.add_histogram(f"Network/Weights/{name}", param.data, self.total_steps)
             if param.grad is not None:
                 self.tb_logger.writer.add_histogram(f"Network/Gradients/{name}", param.grad, self.total_steps)
+
+    def _log_reward_components(
+        self,
+        components: dict[str, torch.Tensor],
+        intrinsic_weight: torch.Tensor | None,
+    ) -> None:
+        """Log reward component means to TensorBoard.
+
+        Args:
+            components: DAC reward components dict with keys:
+                - "extrinsic": Extrinsic (environment) rewards
+                - "intrinsic": Intrinsic (exploration) rewards after modifiers
+                - "shaping": Shaping bonus rewards
+                - "intrinsic_raw": (optional) Intrinsic before modifiers
+            intrinsic_weight: Effective intrinsic weight after modifiers
+        """
+        if self.tensorboard_logger is None:
+            return
+
+        step = self.total_steps
+
+        # Log mean values across all agents
+        self.tensorboard_logger.log_custom_metric("Rewards/Extrinsic_Mean", components["extrinsic"].mean().item(), step)
+        self.tensorboard_logger.log_custom_metric("Rewards/Intrinsic_Mean", components["intrinsic"].mean().item(), step)
+        self.tensorboard_logger.log_custom_metric("Rewards/Shaping_Mean", components["shaping"].mean().item(), step)
+
+        # Log intrinsic_raw if available (before modifiers)
+        if "intrinsic_raw" in components:
+            self.tensorboard_logger.log_custom_metric("Rewards/Intrinsic_Raw_Mean", components["intrinsic_raw"].mean().item(), step)
+
+        # Log effective intrinsic weight
+        if intrinsic_weight is not None:
+            self.tensorboard_logger.log_custom_metric("Rewards/Intrinsic_Weight_Mean", intrinsic_weight.mean().item(), step)
 
     # ------------------------------------------------------------------ #
     # Network building helper (POP-001 DRY)
@@ -358,15 +395,21 @@ class VectorizedPopulation(PopulationManager):
 
         sequential_buffer = cast(SequentialReplayBuffer, self.replay_buffer)
 
-        # CRIT-07: Use single 'rewards' field for DAC-composed totals
-        sequential_buffer.store_episode(
-            {
-                "observations": torch.stack(episode["observations"]),
-                "actions": torch.stack(episode["actions"]),
-                "rewards": torch.stack(episode["rewards"]),
-                "dones": torch.stack(episode["dones"]),
-            }
-        )
+        # CRIT-07: Store episode with components for provenance tracking
+        episode_data = {
+            "observations": torch.stack(episode["observations"]),
+            "actions": torch.stack(episode["actions"]),
+            "rewards": torch.stack(episode["rewards"]),
+            "dones": torch.stack(episode["dones"]),
+        }
+
+        # Add components if present
+        if len(episode["rewards_extrinsic"]) > 0:
+            episode_data["rewards_extrinsic"] = torch.stack(episode["rewards_extrinsic"])
+            episode_data["rewards_intrinsic"] = torch.stack(episode["rewards_intrinsic"])
+            episode_data["rewards_shaping"] = torch.stack(episode["rewards_shaping"])
+
+        sequential_buffer.store_episode(episode_data)
 
         self.current_episodes[agent_idx] = self._new_episode_container()
         return True
@@ -646,15 +689,33 @@ class VectorizedPopulation(PopulationManager):
             intrinsic_rewards = self.exploration.compute_intrinsic_rewards(self.current_obs, update_stats=False)
 
         # 7. Store transition in replay buffer
-        # CRIT-07: Use RewardTensor to store DAC-composed total rewards
-        reward_tensor = RewardTensor.from_dac(total=rewards)
+        # Extract DAC components from info dict for provenance tracking
+        components = info.get("reward_components", {})
+        intrinsic_weight = info.get("intrinsic_weight")
+
+        reward_tensor = RewardTensor.from_dac(
+            total=rewards,
+            extrinsic=components.get("extrinsic"),
+            intrinsic=components.get("intrinsic"),
+            shaping=components.get("shaping"),
+        )
+
+        # Log components to TensorBoard (step-level aggregation)
+        if self.tensorboard_logger is not None and components:
+            self._log_reward_components(
+                components=components,
+                intrinsic_weight=intrinsic_weight,
+            )
 
         if self.is_recurrent:
-            # For recurrent networks: accumulate episodes
+            # For recurrent networks: accumulate episodes with components
             for i in range(self.num_agents):
                 self.current_episodes[i]["observations"].append(self.current_obs[i].cpu())
                 self.current_episodes[i]["actions"].append(actions[i].cpu())
-                self.current_episodes[i]["rewards"].append(rewards[i].cpu())  # CRIT-07: DAC-composed total
+                self.current_episodes[i]["rewards"].append(rewards[i].cpu())
+                self.current_episodes[i]["rewards_extrinsic"].append(components["extrinsic"][i].cpu())
+                self.current_episodes[i]["rewards_intrinsic"].append(components["intrinsic"][i].cpu())
+                self.current_episodes[i]["rewards_shaping"].append(components["shaping"][i].cpu())
                 self.current_episodes[i]["dones"].append(dones[i].cpu())
         else:
             # For feedforward networks: store individual transitions

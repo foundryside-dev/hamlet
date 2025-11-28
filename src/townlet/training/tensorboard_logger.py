@@ -78,6 +78,7 @@ class TensorBoardLogger:
         total_reward: float,
         extrinsic_reward: float = 0.0,
         intrinsic_reward: float = 0.0,
+        shaping_reward: float = 0.0,  # MED-09: Optional shaping component
         curriculum_stage: int = 1,
         epsilon: float = 0.0,
         intrinsic_weight: float = 0.0,
@@ -85,17 +86,22 @@ class TensorBoardLogger:
     ):
         """Log per-episode metrics.
 
+        MED-09: Added optional shaping_reward parameter for DAC 3-component breakdown.
+
         Args:
             episode: Episode number (x-axis)
             survival_time: Steps survived
             total_reward: Combined reward
-            extrinsic_reward: Environment reward
-            intrinsic_reward: RND novelty reward
+            extrinsic_reward: Environment reward (DAC extrinsic component)
+            intrinsic_reward: RND novelty reward (DAC intrinsic component)
+            shaping_reward: Behavioral incentive reward (DAC shaping component)
             curriculum_stage: Current difficulty (1-5)
             epsilon: Exploration rate
             intrinsic_weight: Intrinsic motivation weight
-            agent_id: Agent identifier for multi-agent scenarios
+            agent_id: Agent identifier for multi-agent scenarios (defaults to "agent_0" if empty)
         """
+        # LOW-08: Provide default for empty agent_id to prevent malformed metric paths
+        agent_id = agent_id or "agent_0"
         prefix = f"{agent_id}/" if agent_id else ""
 
         # Core metrics
@@ -104,14 +110,19 @@ class TensorBoardLogger:
         self.writer.add_scalar(f"{prefix}Episode/Extrinsic_Reward", extrinsic_reward, episode)
         self.writer.add_scalar(f"{prefix}Episode/Intrinsic_Reward", intrinsic_reward, episode)
 
+        # MED-09: Log shaping reward if provided (DAC 3-component breakdown)
+        if shaping_reward != 0.0:
+            self.writer.add_scalar(f"{prefix}Episode/Shaping_Reward", shaping_reward, episode)
+
         # Learning progress indicators
         self.writer.add_scalar(f"{prefix}Curriculum/Stage", curriculum_stage, episode)
         self.writer.add_scalar(f"{prefix}Exploration/Epsilon", epsilon, episode)
         self.writer.add_scalar(f"{prefix}Exploration/Intrinsic_Weight", intrinsic_weight, episode)
 
         # Derived metrics
+        # LOW-12: Removed redundant condition check (outer if already guards against zero)
         if total_reward != 0:
-            intrinsic_ratio = intrinsic_reward / total_reward if total_reward != 0 else 0
+            intrinsic_ratio = intrinsic_reward / total_reward
             self.writer.add_scalar(f"{prefix}Episode/Intrinsic_Ratio", intrinsic_ratio, episode)
 
         self.episodes_logged += 1
@@ -122,7 +133,13 @@ class TensorBoardLogger:
             self.last_flush_episode = episode
 
     def log_multi_agent_episode(self, episode: int, agents: list[dict[str, Any]]) -> None:
-        """Log per-episode metrics for multiple agents."""
+        """Log per-episode metrics for multiple agents.
+
+        MED-19: Flush counter increments per agent, not per episode. This means flush
+        happens every N agent logs (e.g., 10 agents × 1 episode = flush every episode
+        if flush_every=10). This is intentional - allows finer flush granularity in
+        multi-agent scenarios.
+        """
         for data in agents:
             agent_identifier = str(data.get("agent_id", ""))
             self.log_episode(
@@ -175,8 +192,10 @@ class TensorBoardLogger:
             q_values: Q-value tensor for current state
             loss: Training loss (MSE for DQN)
             rnd_prediction_error: RND novelty detection error
-            agent_id: Agent identifier
+            agent_id: Agent identifier (defaults to "agent_0" if empty)
         """
+        # LOW-08: Provide default for empty agent_id
+        agent_id = agent_id or "agent_0"
         prefix = f"{agent_id}/" if agent_id else ""
 
         if td_error is not None:
@@ -206,12 +225,15 @@ class TensorBoardLogger:
             episode: Current episode
             step: Step within episode
             meters: Dict of meter_name -> value (0.0-1.0)
-            agent_id: Agent identifier
+            agent_id: Agent identifier (defaults to "agent_0" if empty)
         """
+        # LOW-08: Provide default for empty agent_id
+        agent_id = agent_id or "agent_0"
         prefix = f"{agent_id}/" if agent_id else ""
 
-        # Use episode*1000 + step as x-axis for fine-grained tracking
-        global_step = episode * 1000 + step
+        # HIGH-06: Use larger multiplier (10000) to prevent collision when episodes > 1000 steps
+        # L3 config has 1440-step episodes, so 1000 multiplier causes non-monotonic x-axis
+        global_step = episode * 10000 + step
 
         for meter_name, value in meters.items():
             self.writer.add_scalar(f"{prefix}Meters/{meter_name.capitalize()}", value, global_step)
@@ -231,11 +253,13 @@ class TensorBoardLogger:
             q_network: Main Q-network
             target_network: Target network (for DQN)
             optimizer: Optimizer instance
-            agent_id: Agent identifier
+            agent_id: Agent identifier (defaults to "agent_0" if empty)
         """
         if not self.log_histograms and not self.log_gradients:
             return
 
+        # LOW-08: Provide default for empty agent_id
+        agent_id = agent_id or "agent_0"
         prefix = f"{agent_id}/" if agent_id else ""
 
         # Log weight distributions
@@ -269,8 +293,10 @@ class TensorBoardLogger:
         Args:
             episode: Current episode
             affordance_counts: Dict of affordance_name -> visit_count
-            agent_id: Agent identifier
+            agent_id: Agent identifier (defaults to "agent_0" if empty)
         """
+        # LOW-08: Provide default for empty agent_id
+        agent_id = agent_id or "agent_0"
         prefix = f"{agent_id}/" if agent_id else ""
 
         for affordance, count in affordance_counts.items():
@@ -287,12 +313,77 @@ class TensorBoardLogger:
         Args:
             episode: Current episode
             action_counts: Dict of action_name -> use_count
-            agent_id: Agent identifier
+            agent_id: Agent identifier (defaults to "agent_0" if empty)
         """
+        # LOW-08: Provide default for empty agent_id
+        agent_id = agent_id or "agent_0"
         prefix = f"{agent_id}/" if agent_id else ""
 
         for action, count in action_counts.items():
             self.writer.add_scalar(f"{prefix}CustomActions/{action}", count, episode)
+
+    def log_modifier_effects(
+        self,
+        episode: int,
+        modifier_values: dict[str, float],
+        agent_id: str = "agent_0",
+    ):
+        """Log DAC modifier effects (context-sensitive reward adjustments).
+
+        MED-10: Added support for logging modifier values from DAC modifiers.
+
+        Args:
+            episode: Current episode
+            modifier_values: Dict of modifier_name -> multiplier_value
+            agent_id: Agent identifier (defaults to "agent_0" if empty)
+        """
+        # LOW-08: Provide default for empty agent_id
+        agent_id = agent_id or "agent_0"
+        prefix = f"{agent_id}/" if agent_id else ""
+
+        for modifier_name, value in modifier_values.items():
+            self.writer.add_scalar(f"{prefix}Modifiers/{modifier_name}", value, episode)
+
+    def log_reward_components(
+        self,
+        step: int,
+        total: float,
+        extrinsic: float,
+        intrinsic: float,
+        shaping: float,
+        intrinsic_raw: float | None = None,
+        intrinsic_weight: float | None = None,
+        agent_id: str = "agent_0",
+    ) -> None:
+        """Log reward component breakdown for analysis.
+
+        Logs each DAC reward component to enable debugging of reward composition.
+        Useful for diagnosing reward hacking, modifier effectiveness, and
+        intrinsic/extrinsic balance.
+
+        Args:
+            step: Global training step (x-axis)
+            total: Total composed reward
+            extrinsic: Extrinsic (environment) reward component
+            intrinsic: Intrinsic (exploration) reward after modifiers
+            shaping: Shaping bonus component
+            intrinsic_raw: Intrinsic before modifiers (optional)
+            intrinsic_weight: Effective intrinsic weight after modifiers (optional)
+            agent_id: Agent identifier (defaults to "agent_0" if empty)
+        """
+        agent_id = agent_id or "agent_0"
+        prefix = f"{agent_id}/" if agent_id else ""
+
+        self.writer.add_scalar(f"{prefix}Rewards/Total", total, step)
+        self.writer.add_scalar(f"{prefix}Rewards/Extrinsic", extrinsic, step)
+        self.writer.add_scalar(f"{prefix}Rewards/Intrinsic", intrinsic, step)
+        self.writer.add_scalar(f"{prefix}Rewards/Shaping", shaping, step)
+
+        if intrinsic_raw is not None:
+            self.writer.add_scalar(f"{prefix}Rewards/Intrinsic_Raw", intrinsic_raw, step)
+
+        if intrinsic_weight is not None:
+            self.writer.add_scalar(f"{prefix}Rewards/Intrinsic_Weight", intrinsic_weight, step)
 
     def log_custom_metric(
         self,
@@ -307,8 +398,10 @@ class TensorBoardLogger:
             tag: Metric name (e.g., "Debug/StateEntropy")
             value: Metric value
             step: X-axis value (episode or global step)
-            agent_id: Agent identifier
+            agent_id: Agent identifier (defaults to "agent_0" if empty)
         """
+        # LOW-08: Provide default for empty agent_id
+        agent_id = agent_id or "agent_0"
         prefix = f"{agent_id}/" if agent_id else ""
         self.writer.add_scalar(f"{prefix}{tag}", value, step)
 

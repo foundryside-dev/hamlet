@@ -404,7 +404,9 @@ class ReplayBuffer:
 
         self.size = loaded_size
         self.position = state["position"]
-        self.has_wrapped = False  # HIGH-04: Serialized data is contiguous, not wrapped
+        # HIGH-04: Set has_wrapped if buffer is full, since next push will overwrite oldest
+        # Note: Serialized data is contiguous, but position=size means next push wraps to 0
+        self.has_wrapped = loaded_size == self.capacity
 
         # Initialize storage if needed
         obs_dim = state["observations"].shape[1]

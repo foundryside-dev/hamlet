@@ -50,7 +50,6 @@ class TestEpsilonGreedyActionSelection:
             epsilons=torch.ones(batch_size),  # 100% exploration
             intrinsic_rewards=torch.zeros(batch_size),
             survival_times=torch.zeros(batch_size),
-            curriculum_difficulties=torch.zeros(batch_size),
             device=torch.device("cpu"),
         )
 
@@ -82,7 +81,6 @@ class TestEpsilonGreedyActionSelection:
             epsilons=torch.ones(batch_size),  # 100% exploration
             intrinsic_rewards=torch.zeros(batch_size),
             survival_times=torch.zeros(batch_size),
-            curriculum_difficulties=torch.zeros(batch_size),
             device=torch.device("cpu"),
         )
 
@@ -111,7 +109,6 @@ class TestEpsilonGreedyActionSelection:
             epsilons=torch.zeros(batch_size),  # 0% exploration
             intrinsic_rewards=torch.zeros(batch_size),
             survival_times=torch.zeros(batch_size),
-            curriculum_difficulties=torch.zeros(batch_size),
             device=torch.device("cpu"),
         )
 
@@ -709,7 +706,6 @@ class TestAdaptiveIntrinsicActionSelection:
             epsilons=torch.zeros(2),
             intrinsic_rewards=torch.zeros(2),
             survival_times=torch.zeros(2),
-            curriculum_difficulties=torch.zeros(2),
             device=device,
         )
 

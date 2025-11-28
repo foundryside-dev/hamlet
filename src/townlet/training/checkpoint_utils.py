@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
+import pickle
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
@@ -19,7 +20,16 @@ logger = logging.getLogger(__name__)
 
 
 def attach_universe_metadata(checkpoint: dict[str, Any], universe: CompiledUniverse) -> None:
-    """Add config hash and dimension metadata to a checkpoint payload."""
+    """Add config hash and dimension metadata to a checkpoint payload.
+
+    HIGH-05: Now includes brain_hash for network architecture validation.
+
+    Raises:
+        ValueError: If universe is None
+    """
+    # LOW-05: Explicit None check for universe parameter
+    if universe is None:
+        raise ValueError("universe parameter cannot be None - compiled universe required for metadata attachment")
 
     checkpoint["config_hash"] = universe.metadata.config_hash
     checkpoint["observation_dim"] = universe.metadata.observation_dim
@@ -27,10 +37,18 @@ def attach_universe_metadata(checkpoint: dict[str, Any], universe: CompiledUnive
     checkpoint["meter_count"] = universe.metadata.meter_count
     checkpoint["observation_field_uuids"] = [field.uuid for field in universe.observation_spec.fields]
     checkpoint["drive_hash"] = universe.drive_hash
+    checkpoint["brain_hash"] = universe.brain_hash
 
 
 def config_hash_warning(checkpoint: Mapping[str, Any], universe: CompiledUniverse) -> str | None:
-    """Return warning message if checkpoint hash mismatches current universe."""
+    """Return warning message if checkpoint hash mismatches current universe.
+
+    Raises:
+        ValueError: If universe is None
+    """
+    # LOW-05: Explicit None check for universe parameter
+    if universe is None:
+        raise ValueError("universe parameter cannot be None - compiled universe required for hash validation")
 
     checkpoint_hash = checkpoint.get("config_hash")
     if checkpoint_hash is None:
@@ -46,7 +64,14 @@ def config_hash_warning(checkpoint: Mapping[str, Any], universe: CompiledUnivers
 
 
 def assert_checkpoint_dimensions(checkpoint: Mapping[str, Any], universe: CompiledUniverse) -> None:
-    """Raise ValueError when checkpoint observation/action dims mismatch universe."""
+    """Raise ValueError when checkpoint observation/action dims mismatch universe.
+
+    Raises:
+        ValueError: If universe is None or dimensions mismatch
+    """
+    # LOW-05: Explicit None check for universe parameter
+    if universe is None:
+        raise ValueError("universe parameter cannot be None - compiled universe required for dimension validation")
 
     obs_dim = checkpoint.get("observation_dim")
     if obs_dim is not None and obs_dim != universe.metadata.observation_dim:
@@ -60,8 +85,13 @@ def assert_checkpoint_dimensions(checkpoint: Mapping[str, Any], universe: Compil
     checkpoint_uuids = checkpoint.get("observation_field_uuids")
     if checkpoint_uuids is None:
         raise ValueError("Checkpoint missing observation_field_uuids; regenerate the checkpoint with the latest compiler.")
+    # MED-18: UUID comparison is order-sensitive by design - field order matters for observation encoding
+    # If UUIDs match but order differs, the checkpoint is incompatible (dimension mapping would be wrong)
     if list(checkpoint_uuids) != expected_uuids:
-        raise ValueError("Checkpoint observation field UUIDs mismatch current universe specification.")
+        raise ValueError(
+            "Checkpoint observation field UUIDs mismatch current universe specification. "
+            "This comparison is order-sensitive - field ordering must match exactly."
+        )
 
     # CRIT-06: Validate drive_hash to ensure reward function consistency
     checkpoint_drive_hash = checkpoint.get("drive_hash")
@@ -72,6 +102,17 @@ def assert_checkpoint_dimensions(checkpoint: Mapping[str, Any], universe: Compil
             f"Checkpoint drive_hash mismatch: checkpoint={checkpoint_drive_hash[:16]}..., "
             f"current={universe.drive_hash[:16]}... "
             "The reward function configuration has changed since the checkpoint was created."
+        )
+
+    # HIGH-05: Validate brain_hash to ensure network architecture consistency
+    checkpoint_brain_hash = checkpoint.get("brain_hash")
+    if checkpoint_brain_hash is None:
+        raise ValueError("Checkpoint missing brain_hash; regenerate the checkpoint with the latest compiler.")
+    if universe.brain_hash is not None and checkpoint_brain_hash != universe.brain_hash:
+        raise ValueError(
+            f"Checkpoint brain_hash mismatch: checkpoint={checkpoint_brain_hash[:16]}..., "
+            f"current={universe.brain_hash[:16]}... "
+            "The network architecture configuration has changed since the checkpoint was created."
         )
 
 
@@ -97,7 +138,12 @@ def persist_checkpoint_digest(checkpoint_path: Path) -> str:
 
 
 def verify_checkpoint_digest(checkpoint_path: Path, *, required: bool = False) -> bool:
-    """Verify the checkpoint SHA256 digest, optionally requiring the digest file."""
+    """Verify the checkpoint SHA256 digest, optionally requiring the digest file.
+
+    LOW-06: The digest file is expected to contain a SHA256 hex digest with optional
+    trailing newline. The strip() call removes any trailing whitespace (including
+    newlines) to ensure robust comparison with the computed hash.
+    """
 
     digest_path = _digest_path(checkpoint_path)
     if not digest_path.exists():
@@ -108,6 +154,7 @@ def verify_checkpoint_digest(checkpoint_path: Path, *, required: bool = False) -
         logger.warning("Missing checksum for checkpoint %s (expected %s); skipping verification.", checkpoint_path, digest_path)
         return False
 
+    # LOW-06: strip() removes trailing whitespace (including newline added during write)
     expected = digest_path.read_text(encoding="utf-8").strip()
     actual = _compute_sha256(checkpoint_path)
     if actual != expected:
@@ -173,3 +220,10 @@ def safe_torch_load(
                 "Re-export the checkpoint using Townlet >= P2 to enable secure loading."
             ) from exc
         raise
+    # HIGH-07: Catch additional exception types for better error messages
+    except (pickle.UnpicklingError, ModuleNotFoundError, AttributeError) as exc:  # pragma: no cover
+        raise RuntimeError(
+            f"Failed to load checkpoint {checkpoint_path}: {type(exc).__name__}: {exc}. "
+            "The checkpoint may be corrupted or created with an incompatible Python/PyTorch version. "
+            "Try regenerating the checkpoint with the current Townlet version."
+        ) from exc

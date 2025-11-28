@@ -1,9 +1,19 @@
-"""Tests for prioritized experience replay buffer."""
+"""Tests for prioritized experience replay buffer.
 
+CRIT-07: Updated to use RewardTensor DTO.
+"""
+
+import numpy as np
 import pytest
 import torch
 
 from townlet.training.prioritized_replay_buffer import PrioritizedReplayBuffer
+from townlet.training.state import RewardTensor
+
+
+def _make_reward_tensor(rewards: torch.Tensor) -> RewardTensor:
+    """Helper to create RewardTensor from reward values."""
+    return RewardTensor.from_dac(total=rewards)
 
 
 def test_prioritized_replay_buffer_push():
@@ -19,12 +29,11 @@ def test_prioritized_replay_buffer_push():
     # Push batch of 1 transition
     obs = torch.randn(1, 10)  # [batch=1, obs_dim=10]
     action = torch.tensor([2])  # [batch=1]
-    reward_extrinsic = torch.tensor([1.0])  # [batch=1]
-    reward_intrinsic = torch.tensor([0.0])  # [batch=1]
+    rewards = _make_reward_tensor(torch.tensor([1.0]))  # [batch=1]
     next_obs = torch.randn(1, 10)  # [batch=1, obs_dim=10]
     done = torch.tensor([False])  # [batch=1]
 
-    buffer.push(obs, action, reward_extrinsic, reward_intrinsic, next_obs, done)
+    buffer.push(obs, action, rewards, next_obs, done)
 
     assert buffer.size() == 1
 
@@ -42,11 +51,10 @@ def test_prioritized_replay_buffer_sample():
     # Add 50 transitions (batch of 50)
     obs = torch.randn(50, 10)  # [batch=50, obs_dim=10]
     actions = torch.tensor([i % 5 for i in range(50)])  # [batch=50]
-    rewards_extrinsic = torch.tensor([float(i) for i in range(50)])  # [batch=50]
-    rewards_intrinsic = torch.zeros(50)  # [batch=50]
+    rewards = _make_reward_tensor(torch.tensor([float(i) for i in range(50)]))  # [batch=50]
     next_obs = torch.randn(50, 10)  # [batch=50, obs_dim=10]
     dones = torch.tensor([i == 49 for i in range(50)])  # [batch=50]
-    buffer.push(obs, actions, rewards_extrinsic, rewards_intrinsic, next_obs, dones)
+    buffer.push(obs, actions, rewards, next_obs, dones)
 
     # Sample batch
     batch = buffer.sample(batch_size=16)
@@ -73,11 +81,10 @@ def test_prioritized_replay_buffer_update_priorities():
     # Add transitions (batch of 20)
     obs = torch.randn(20, 10)  # [batch=20, obs_dim=10]
     actions = torch.zeros(20, dtype=torch.long)  # [batch=20]
-    rewards_extrinsic = torch.zeros(20)  # [batch=20]
-    rewards_intrinsic = torch.zeros(20)  # [batch=20]
+    rewards = _make_reward_tensor(torch.zeros(20))  # [batch=20]
     next_obs = torch.randn(20, 10)  # [batch=20, obs_dim=10]
     dones = torch.zeros(20, dtype=torch.bool)  # [batch=20]
-    buffer.push(obs, actions, rewards_extrinsic, rewards_intrinsic, next_obs, dones)
+    buffer.push(obs, actions, rewards, next_obs, dones)
 
     # Sample batch
     batch = buffer.sample(batch_size=10)
@@ -190,11 +197,10 @@ def test_prioritized_replay_buffer_len():
     # Add transitions
     obs = torch.randn(10, 5)
     actions = torch.zeros(10, dtype=torch.long)
-    rewards_extrinsic = torch.zeros(10)
-    rewards_intrinsic = torch.zeros(10)
+    rewards = _make_reward_tensor(torch.zeros(10))
     next_obs = torch.randn(10, 5)
     dones = torch.zeros(10, dtype=torch.bool)
-    buffer.push(obs, actions, rewards_extrinsic, rewards_intrinsic, next_obs, dones)
+    buffer.push(obs, actions, rewards, next_obs, dones)
 
     assert len(buffer) == 10
 
@@ -212,11 +218,10 @@ def test_prioritized_replay_buffer_serialize():
     # Add transitions
     obs = torch.randn(10, 5)
     actions = torch.tensor([i % 3 for i in range(10)])
-    rewards_extrinsic = torch.tensor([float(i) for i in range(10)])
-    rewards_intrinsic = torch.ones(10) * 0.1
+    rewards = _make_reward_tensor(torch.tensor([float(i) for i in range(10)]))
     next_obs = torch.randn(10, 5)
     dones = torch.zeros(10, dtype=torch.bool)
-    buffer.push(obs, actions, rewards_extrinsic, rewards_intrinsic, next_obs, dones)
+    buffer.push(obs, actions, rewards, next_obs, dones)
 
     # Serialize
     state = buffer.serialize()
@@ -224,6 +229,7 @@ def test_prioritized_replay_buffer_serialize():
     # Verify beta_initial is in serialized state
     assert "beta_initial" in state
     assert state["beta_initial"] == 0.5
+    assert state["format_version"] == 3  # Version 3: reward components support
 
     # Create new buffer and restore
     new_buffer = PrioritizedReplayBuffer(
@@ -259,11 +265,10 @@ def test_prioritized_replay_buffer_device_placement():
     # Push transitions
     obs = torch.randn(10, 5)
     actions = torch.zeros(10, dtype=torch.long)
-    rewards_extrinsic = torch.ones(10)
-    rewards_intrinsic = torch.zeros(10)
+    rewards = _make_reward_tensor(torch.ones(10))
     next_obs = torch.randn(10, 5)
     dones = torch.zeros(10, dtype=torch.bool)
-    buffer.push(obs, actions, rewards_extrinsic, rewards_intrinsic, next_obs, dones)
+    buffer.push(obs, actions, rewards, next_obs, dones)
 
     # Verify storage tensors are on target device (not lists of CPU tensors)
     assert isinstance(buffer.observations, torch.Tensor), "observations should be tensor, not list"
@@ -308,11 +313,10 @@ def test_prioritized_replay_buffer_wraparound_indexing():
     # Push exactly capacity transitions (fills buffer to position=10, size=10)
     obs = torch.randn(10, 5)
     actions = torch.zeros(10, dtype=torch.long)
-    rewards_extrinsic = torch.ones(10)
-    rewards_intrinsic = torch.zeros(10)
+    rewards = _make_reward_tensor(torch.ones(10))
     next_obs = torch.randn(10, 5)
     dones = torch.zeros(10, dtype=torch.bool)
-    buffer.push(obs, actions, rewards_extrinsic, rewards_intrinsic, next_obs, dones)
+    buffer.push(obs, actions, rewards, next_obs, dones)
 
     assert buffer.size() == 10
     assert buffer.position == 0  # Wrapped to 0
@@ -320,13 +324,12 @@ def test_prioritized_replay_buffer_wraparound_indexing():
     # Push one more batch (triggers wraparound - was IndexError before fix)
     obs2 = torch.randn(5, 5)
     actions2 = torch.zeros(5, dtype=torch.long)
-    rewards_extrinsic2 = torch.ones(5)
-    rewards_intrinsic2 = torch.zeros(5)
+    rewards2 = _make_reward_tensor(torch.ones(5))
     next_obs2 = torch.randn(5, 5)
     dones2 = torch.zeros(5, dtype=torch.bool)
 
     # This should NOT raise IndexError (was bug when position >= capacity)
-    buffer.push(obs2, actions2, rewards_extrinsic2, rewards_intrinsic2, next_obs2, dones2)
+    buffer.push(obs2, actions2, rewards2, next_obs2, dones2)
 
     assert buffer.size() == 10  # Still at capacity
     assert buffer.position == 5  # Wrapped: (0 + 5) % 10
@@ -334,8 +337,6 @@ def test_prioritized_replay_buffer_wraparound_indexing():
 
 def test_prioritized_replay_buffer_sample_size_guard():
     """PrioritizedReplayBuffer raises clear error when batch_size > buffer size (Issue 2 fix verification)."""
-    import pytest
-
     buffer = PrioritizedReplayBuffer(
         capacity=100,
         alpha=0.6,
@@ -347,11 +348,10 @@ def test_prioritized_replay_buffer_sample_size_guard():
     # Add only 5 transitions
     obs = torch.randn(5, 10)
     actions = torch.zeros(5, dtype=torch.long)
-    rewards_extrinsic = torch.ones(5)
-    rewards_intrinsic = torch.zeros(5)
+    rewards = _make_reward_tensor(torch.ones(5))
     next_obs = torch.randn(5, 10)
     dones = torch.zeros(5, dtype=torch.bool)
-    buffer.push(obs, actions, rewards_extrinsic, rewards_intrinsic, next_obs, dones)
+    buffer.push(obs, actions, rewards, next_obs, dones)
 
     # Try to sample more than available (batch_size=10 > size=5)
     with pytest.raises(ValueError, match=r"Buffer size \(5\) < batch_size \(10\)"):
@@ -360,6 +360,39 @@ def test_prioritized_replay_buffer_sample_size_guard():
     # Should work when batch_size <= size
     batch = buffer.sample(batch_size=5)
     assert batch["observations"].shape == (5, 10)
+
+
+def test_prioritized_replay_buffer_legacy_format_rejected():
+    """load_from_serialized should reject legacy format (version < 3)."""
+    buffer = PrioritizedReplayBuffer(
+        capacity=50,
+        alpha=0.6,
+        beta=0.4,
+        beta_annealing=False,
+        device=torch.device("cpu"),
+    )
+
+    # Create legacy state (no format_version or version 1)
+    legacy_state = {
+        "capacity": 50,
+        "alpha": 0.6,
+        "beta": 0.4,
+        "beta_initial": 0.4,
+        "beta_annealing": False,
+        "observations": None,
+        "actions": None,
+        "rewards": None,
+        "next_observations": None,
+        "dones": None,
+        "priorities": np.zeros(50, dtype=np.float32),
+        "max_priority": 1.0,
+        "position": 0,
+        "size_current": 0,
+        # No format_version - implies version 1
+    }
+
+    with pytest.raises(ValueError, match="format_version < 3"):
+        buffer.load_from_serialized(legacy_state)
 
 
 class TestPrioritizedReplayBufferClearAPI:
@@ -378,11 +411,10 @@ class TestPrioritizedReplayBufferClearAPI:
         # Add transitions
         obs = torch.randn(10, 5)
         actions = torch.zeros(10, dtype=torch.long)
-        rewards_extrinsic = torch.ones(10)
-        rewards_intrinsic = torch.zeros(10)
+        rewards = _make_reward_tensor(torch.ones(10))
         next_obs = torch.randn(10, 5)
         dones = torch.zeros(10, dtype=torch.bool)
-        buffer.push(obs, actions, rewards_extrinsic, rewards_intrinsic, next_obs, dones)
+        buffer.push(obs, actions, rewards, next_obs, dones)
 
         assert buffer.size_current == 10
         assert buffer.position == 10
@@ -406,11 +438,10 @@ class TestPrioritizedReplayBufferClearAPI:
         # Initialize storage
         obs = torch.randn(5, 3)
         actions = torch.zeros(5, dtype=torch.long)
-        rewards_extrinsic = torch.ones(5)
-        rewards_intrinsic = torch.zeros(5)
+        rewards = _make_reward_tensor(torch.ones(5))
         next_obs = torch.randn(5, 3)
         dones = torch.zeros(5, dtype=torch.bool)
-        buffer.push(obs, actions, rewards_extrinsic, rewards_intrinsic, next_obs, dones)
+        buffer.push(obs, actions, rewards, next_obs, dones)
 
         assert buffer.observations is not None
         assert buffer.actions is not None
@@ -436,11 +467,10 @@ class TestPrioritizedReplayBufferClearAPI:
         # Add transitions and update priorities
         obs = torch.randn(10, 5)
         actions = torch.zeros(10, dtype=torch.long)
-        rewards_extrinsic = torch.ones(10)
-        rewards_intrinsic = torch.zeros(10)
+        rewards = _make_reward_tensor(torch.ones(10))
         next_obs = torch.randn(10, 5)
         dones = torch.zeros(10, dtype=torch.bool)
-        buffer.push(obs, actions, rewards_extrinsic, rewards_intrinsic, next_obs, dones)
+        buffer.push(obs, actions, rewards, next_obs, dones)
 
         # Sample and update priorities to change max_priority
         batch = buffer.sample(batch_size=5)
@@ -453,8 +483,6 @@ class TestPrioritizedReplayBufferClearAPI:
         # Priorities should be reset
         assert buffer.max_priority == 1.0
         # All priorities should be zero
-        import numpy as np
-
         assert np.allclose(buffer.priorities, np.zeros(50))
 
     def test_clear_idempotence(self):
@@ -474,11 +502,10 @@ class TestPrioritizedReplayBufferClearAPI:
         # Add data and clear
         obs = torch.randn(5, 3)
         actions = torch.zeros(5, dtype=torch.long)
-        rewards_extrinsic = torch.ones(5)
-        rewards_intrinsic = torch.zeros(5)
+        rewards = _make_reward_tensor(torch.ones(5))
         next_obs = torch.randn(5, 3)
         dones = torch.zeros(5, dtype=torch.bool)
-        buffer.push(obs, actions, rewards_extrinsic, rewards_intrinsic, next_obs, dones)
+        buffer.push(obs, actions, rewards, next_obs, dones)
         buffer.clear()
 
         # Clear again
@@ -499,22 +526,20 @@ class TestPrioritizedReplayBufferClearAPI:
         # Fill buffer
         obs = torch.randn(20, 5)
         actions = torch.zeros(20, dtype=torch.long)
-        rewards_extrinsic = torch.ones(20)
-        rewards_intrinsic = torch.zeros(20)
+        rewards = _make_reward_tensor(torch.ones(20))
         next_obs = torch.randn(20, 5)
         dones = torch.zeros(20, dtype=torch.bool)
-        buffer.push(obs, actions, rewards_extrinsic, rewards_intrinsic, next_obs, dones)
+        buffer.push(obs, actions, rewards, next_obs, dones)
 
         buffer.clear()
 
         # Should be able to push again
         obs = torch.randn(5, 3)
         actions = torch.zeros(5, dtype=torch.long)
-        rewards_extrinsic = torch.ones(5)
-        rewards_intrinsic = torch.zeros(5)
+        rewards = _make_reward_tensor(torch.ones(5))
         next_obs = torch.randn(5, 3)
         dones = torch.zeros(5, dtype=torch.bool)
-        buffer.push(obs, actions, rewards_extrinsic, rewards_intrinsic, next_obs, dones)
+        buffer.push(obs, actions, rewards, next_obs, dones)
 
         assert len(buffer) == 5
         assert buffer.observations is not None
@@ -555,11 +580,10 @@ class TestPrioritizedReplayBufferStatsAPI:
         # Add 10 transitions with obs_dim=5
         obs = torch.randn(10, 5)
         actions = torch.zeros(10, dtype=torch.long)
-        rewards_extrinsic = torch.ones(10)
-        rewards_intrinsic = torch.zeros(10)
+        rewards = _make_reward_tensor(torch.ones(10))
         next_obs = torch.randn(10, 5)
         dones = torch.zeros(10, dtype=torch.bool)
-        buffer.push(obs, actions, rewards_extrinsic, rewards_intrinsic, next_obs, dones)
+        buffer.push(obs, actions, rewards, next_obs, dones)
 
         stats = buffer.stats()
 
@@ -582,11 +606,10 @@ class TestPrioritizedReplayBufferStatsAPI:
         # Fill to capacity
         obs = torch.randn(10, 5)
         actions = torch.zeros(10, dtype=torch.long)
-        rewards_extrinsic = torch.ones(10)
-        rewards_intrinsic = torch.zeros(10)
+        rewards = _make_reward_tensor(torch.ones(10))
         next_obs = torch.randn(10, 5)
         dones = torch.zeros(10, dtype=torch.bool)
-        buffer.push(obs, actions, rewards_extrinsic, rewards_intrinsic, next_obs, dones)
+        buffer.push(obs, actions, rewards, next_obs, dones)
 
         stats = buffer.stats()
 
@@ -610,21 +633,24 @@ class TestPrioritizedReplayBufferStatsAPI:
         # Add data (obs_dim=5)
         obs = torch.randn(5, 5)
         actions = torch.zeros(5, dtype=torch.long)
-        rewards_extrinsic = torch.ones(5)
-        rewards_intrinsic = torch.zeros(5)
+        rewards = _make_reward_tensor(torch.ones(5))
         next_obs = torch.randn(5, 5)
         dones = torch.zeros(5, dtype=torch.bool)
-        buffer.push(obs, actions, rewards_extrinsic, rewards_intrinsic, next_obs, dones)
+        buffer.push(obs, actions, rewards, next_obs, dones)
 
         stats = buffer.stats()
 
         # Calculate expected memory (tensors preallocated + NumPy priorities)
-        # observations: 10*5 floats, actions: 10 longs, rewards: 10 floats,
+        # observations: 10*5 floats, actions: 10 longs, rewards: 10 floats (total),
+        # rewards_extrinsic: 10 floats, rewards_intrinsic: 10 floats, rewards_shaping: 10 floats,
         # next_observations: 10*5 floats, dones: 10 bools, priorities: 10 float32
         expected_bytes = (
             10 * 5 * 4  # observations (float32)
             + 10 * 8  # actions (int64)
-            + 10 * 4  # rewards (float32, combined)
+            + 10 * 4  # rewards (float32, total)
+            + 10 * 4  # rewards_extrinsic (float32)
+            + 10 * 4  # rewards_intrinsic (float32)
+            + 10 * 4  # rewards_shaping (float32)
             + 10 * 5 * 4  # next_observations (float32)
             + 10 * 1  # dones (bool)
             + 10 * 4  # priorities (numpy float32)
@@ -645,11 +671,10 @@ class TestPrioritizedReplayBufferStatsAPI:
 
         obs = torch.randn(5, 3)
         actions = torch.zeros(5, dtype=torch.long)
-        rewards_extrinsic = torch.ones(5)
-        rewards_intrinsic = torch.zeros(5)
+        rewards = _make_reward_tensor(torch.ones(5))
         next_obs = torch.randn(5, 3)
         dones = torch.zeros(5, dtype=torch.bool)
-        buffer.push(obs, actions, rewards_extrinsic, rewards_intrinsic, next_obs, dones)
+        buffer.push(obs, actions, rewards, next_obs, dones)
 
         stats = buffer.stats()
 
@@ -668,11 +693,10 @@ class TestPrioritizedReplayBufferStatsAPI:
         # Fill buffer
         obs = torch.randn(20, 3)
         actions = torch.zeros(20, dtype=torch.long)
-        rewards_extrinsic = torch.ones(20)
-        rewards_intrinsic = torch.zeros(20)
+        rewards = _make_reward_tensor(torch.ones(20))
         next_obs = torch.randn(20, 3)
         dones = torch.zeros(20, dtype=torch.bool)
-        buffer.push(obs, actions, rewards_extrinsic, rewards_intrinsic, next_obs, dones)
+        buffer.push(obs, actions, rewards, next_obs, dones)
 
         buffer.clear()
         stats = buffer.stats()

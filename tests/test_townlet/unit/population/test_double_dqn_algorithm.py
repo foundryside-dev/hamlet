@@ -5,6 +5,7 @@ import copy
 import torch
 
 from townlet.population.vectorized import VectorizedPopulation
+from townlet.training.state import RewardTensor
 
 
 def _make_population(env, curriculum, exploration, brain_config, **overrides):
@@ -61,19 +62,18 @@ class TestDoubleDQNFeedforward:
         for _ in range(10):
             actions = torch.randint(0, basic_env.action_dim, (1,))
             next_obs, rewards, dones, _ = basic_env.step(actions)
-            intrinsic_rewards = torch.zeros_like(rewards)
+            reward_tensor = RewardTensor.from_components(extrinsic=rewards, intrinsic=torch.zeros_like(rewards))
             population.replay_buffer.push(
                 observations=obs,
                 actions=actions,
-                rewards_extrinsic=rewards,
-                rewards_intrinsic=intrinsic_rewards,
+                rewards=reward_tensor,
                 next_observations=next_obs,
                 dones=dones,
             )
             obs = next_obs
 
         # Sample batch and compute Q-targets
-        batch = population.replay_buffer.sample(batch_size=4, intrinsic_weight=0.0)
+        batch = population.replay_buffer.sample(batch_size=4)
 
         # Manually compute vanilla DQN Q-targets
         with torch.no_grad():
@@ -116,19 +116,18 @@ class TestDoubleDQNFeedforward:
         for _ in range(10):
             actions = torch.randint(0, basic_env.action_dim, (1,))
             next_obs, rewards, dones, _ = basic_env.step(actions)
-            intrinsic_rewards = torch.zeros_like(rewards)
+            reward_tensor = RewardTensor.from_components(extrinsic=rewards, intrinsic=torch.zeros_like(rewards))
             population.replay_buffer.push(
                 observations=obs,
                 actions=actions,
-                rewards_extrinsic=rewards,
-                rewards_intrinsic=intrinsic_rewards,
+                rewards=reward_tensor,
                 next_observations=next_obs,
                 dones=dones,
             )
             obs = next_obs
 
         # Sample batch
-        batch = population.replay_buffer.sample(batch_size=4, intrinsic_weight=0.0)
+        batch = population.replay_buffer.sample(batch_size=4)
 
         # Manually compute Double DQN Q-targets
         with torch.no_grad():
@@ -185,17 +184,17 @@ class TestDoubleDQNFeedforward:
         for _ in range(10):
             actions = torch.randint(0, basic_env.action_dim, (1,))
             next_obs, rewards, dones, _ = basic_env.step(actions)
-            intrinsic_rewards = torch.zeros_like(rewards)
 
-            pop_vanilla.replay_buffer.push(obs, actions, rewards, intrinsic_rewards, next_obs, dones)
-            pop_double.replay_buffer.push(obs, actions, rewards, intrinsic_rewards, next_obs, dones)
+            reward_tensor = RewardTensor.from_components(extrinsic=rewards, intrinsic=torch.zeros_like(rewards))
+            pop_vanilla.replay_buffer.push(obs, actions, reward_tensor, next_obs, dones)
+            pop_double.replay_buffer.push(obs, actions, reward_tensor, next_obs, dones)
             obs = next_obs
 
         # Sample same batch (use same random seed)
         torch.manual_seed(456)
-        batch_vanilla = pop_vanilla.replay_buffer.sample(batch_size=4, intrinsic_weight=0.0)
+        batch_vanilla = pop_vanilla.replay_buffer.sample(batch_size=4)
         torch.manual_seed(456)
-        batch_double = pop_double.replay_buffer.sample(batch_size=4, intrinsic_weight=0.0)
+        batch_double = pop_double.replay_buffer.sample(batch_size=4)
 
         # Verify both algorithms can compute Q-targets
         # We're just checking that the implementation runs without errors

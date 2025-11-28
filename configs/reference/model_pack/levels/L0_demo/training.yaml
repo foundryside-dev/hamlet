@@ -1,44 +1,46 @@
 training:
-  version: "1.0"
-
+  version: '1.0'
   population:
     size: 8
-
-  enabled_affordances: [EAT, SLEEP, WORK]
+  enabled_affordances:
+  - EAT
+  - SLEEP
+  - WORK
   randomize_affordances: false
-
   enabled_actions:
     custom:
-      - WAIT
-
+    - WAIT
   q_learning:
     use_double_dqn: true
     gamma: 0.99
     learning_rate: 0.0001
     target_update_frequency: 1000
-
   replay_buffer:
     capacity: 50000
     batch_size: 128
     min_size: 500
-
   exploration:
     epsilon_start: 1.0
     epsilon_end: 0.05
     epsilon_decay: 0.995
-
   intrinsic:
     rnd:
       feature_dim: 64
       learning_rate: 0.0001
+      batch_size: 128
+      normalization:
+        initial_count: 100
+        min_variance: 0.01
+        reward_clip_max: 5.0
     annealing:
-      threshold: 50.0
+      threshold: 0.3
       decay_rate: 0.995
       min_weight: 0.01
+      use_coefficient_of_variation: true
+      hysteresis_cooldown: 100
     initial_weight: 0.1
     min_survival_fraction: 0.5
     survival_window: 50
-
   training_loop:
     max_episodes: 10000
     max_steps_per_episode: 500
@@ -51,6 +53,5 @@ training:
     checkpointing:
       interval: 2000
       keep_last: 3
-
   curriculum:
     strategy: static

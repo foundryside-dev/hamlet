@@ -362,6 +362,40 @@ def test_prioritized_replay_buffer_sample_size_guard():
     assert batch["observations"].shape == (5, 10)
 
 
+def test_prioritized_replay_buffer_zero_priorities_fallback():
+    """BUG-09: PrioritizedReplayBuffer falls back to uniform distribution when all priorities are zero."""
+    buffer = PrioritizedReplayBuffer(
+        capacity=100,
+        alpha=0.6,
+        beta=0.4,
+        beta_annealing=False,
+        device=torch.device("cpu"),
+    )
+
+    # Add transitions with normal priorities
+    obs = torch.randn(20, 10)
+    actions = torch.zeros(20, dtype=torch.long)
+    rewards = _make_reward_tensor(torch.ones(20))
+    next_obs = torch.randn(20, 10)
+    dones = torch.zeros(20, dtype=torch.bool)
+    buffer.push(obs, actions, rewards, next_obs, dones)
+
+    # Manually zero out all priorities (simulating edge case)
+    buffer.priorities[: buffer.size_current] = 0.0
+
+    # Should not raise division by zero - falls back to uniform distribution
+    batch = buffer.sample(batch_size=10)
+
+    # Verify batch was successfully sampled
+    assert batch["observations"].shape == (10, 10)
+    assert batch["actions"].shape == (10,)
+    assert batch["rewards"].shape == (10,)
+    assert batch["next_observations"].shape == (10, 10)
+    assert batch["dones"].shape == (10,)
+    assert batch["weights"].shape == (10,)
+    assert len(batch["indices"]) == 10
+
+
 def test_prioritized_replay_buffer_legacy_format_rejected():
     """load_from_serialized should reject legacy format (version < 3)."""
     buffer = PrioritizedReplayBuffer(

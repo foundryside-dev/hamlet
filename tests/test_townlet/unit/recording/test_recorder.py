@@ -289,7 +289,7 @@ class TestRecordingWriterProcessing:
 
         with patch.object(writer, "_write_episode") as mock_write, patch("townlet.recording.recorder.logger") as mock_logger:
             writer._process_episode_end(metadata)
-            mock_write.assert_called_once_with(metadata)
+            mock_write.assert_called_once_with(metadata, "periodic_100")
             mock_logger.info.assert_called_once()
 
     def test_process_episode_end_should_record_false(self, recording_output_dir):
@@ -335,7 +335,9 @@ class TestRecordingWriterProcessing:
         )
 
         metadata = make_test_episode_metadata(episode_id=100)
-        assert writer._should_record_episode(metadata) is True
+        should_record, reason = writer._should_record_episode(metadata)
+        assert should_record is True
+        assert reason == "periodic_50"
 
     def test_should_record_episode_periodic_disabled(self, recording_output_dir):
         from townlet.recording.recorder import RecordingWriter
@@ -349,7 +351,9 @@ class TestRecordingWriterProcessing:
         )
 
         metadata = make_test_episode_metadata()
-        assert writer._should_record_episode(metadata) is False
+        should_record, reason = writer._should_record_episode(metadata)
+        assert should_record is False
+        assert reason == ""
 
     def test_should_record_episode_no_criteria(self, recording_output_dir):
         from townlet.recording.recorder import RecordingWriter
@@ -363,7 +367,9 @@ class TestRecordingWriterProcessing:
         )
 
         metadata = make_test_episode_metadata()
-        assert writer._should_record_episode(metadata) is False
+        should_record, reason = writer._should_record_episode(metadata)
+        assert should_record is False
+        assert reason == ""
 
     def test_write_episode_with_lz4_compression(self, recording_output_dir):
         from townlet.recording.recorder import RecordingWriter
@@ -377,7 +383,7 @@ class TestRecordingWriterProcessing:
         )
 
         writer.episode_buffer.append(make_test_recorded_step())
-        writer._write_episode(make_test_episode_metadata(episode_id=42))
+        writer._write_episode(make_test_episode_metadata(episode_id=42), "periodic_100")
 
         expected_path = recording_output_dir / "episode_000042.msgpack.lz4"
         assert expected_path.exists()
@@ -395,7 +401,7 @@ class TestRecordingWriterProcessing:
         )
 
         writer.episode_buffer.append(make_test_recorded_step())
-        writer._write_episode(make_test_episode_metadata(episode_id=99))
+        writer._write_episode(make_test_episode_metadata(episode_id=99), "periodic_100")
 
         expected_path = recording_output_dir / "episode_000099.msgpack.lz4"
         assert expected_path.exists()
@@ -416,12 +422,12 @@ class TestRecordingWriterProcessing:
         )
 
         writer.episode_buffer.append(make_test_recorded_step())
-        writer._write_episode(make_test_episode_metadata(episode_id=55))
+        writer._write_episode(make_test_episode_metadata(episode_id=55), "top_10.0pct")
 
         mock_database.insert_recording.assert_called_once()
         call_args = mock_database.insert_recording.call_args
         assert call_args[1]["episode_id"] == 55
-        assert call_args[1]["reason"] == "periodic"
+        assert call_args[1]["reason"] == "top_10.0pct"
 
     def test_stop_method(self, recording_output_dir):
         from townlet.recording.recorder import RecordingWriter
@@ -437,3 +443,45 @@ class TestRecordingWriterProcessing:
         assert writer.running is True
         writer.stop()
         assert writer.running is False
+
+    def test_performance_criterion_triggers_recording(self, recording_output_dir):
+        """Test that performance criterion (non-periodic) triggers recording with correct reason."""
+        from townlet.recording.recorder import RecordingWriter
+
+        mock_database = Mock()
+        writer = RecordingWriter(
+            queue=queue.Queue(),
+            config={
+                "criteria": {
+                    "periodic": {"enabled": False},  # Periodic disabled
+                    "performance": {
+                        "enabled": True,
+                        "top_percent": 10.0,
+                        "bottom_percent": 0.0,
+                        "window": 100,
+                    },
+                },
+                "compression": "lz4",
+            },
+            output_dir=recording_output_dir,
+            database=mock_database,
+            curriculum=None,
+        )
+
+        # Build up history with low-reward episodes
+        for i in range(1, 21):
+            low_reward_metadata = make_test_episode_metadata(episode_id=i, total_reward=1.0, survival_steps=5)
+            writer.criteria.should_record(low_reward_metadata)
+
+        # Now submit a high-reward episode (should be in top 10%)
+        writer.episode_buffer.append(make_test_recorded_step())
+        high_reward_metadata = make_test_episode_metadata(episode_id=21, total_reward=100.0, survival_steps=50)
+
+        # Process the high-reward episode
+        writer._process_episode_end(high_reward_metadata)
+
+        # Should have recorded due to performance criterion
+        mock_database.insert_recording.assert_called_once()
+        call_args = mock_database.insert_recording.call_args
+        assert call_args[1]["episode_id"] == 21
+        assert call_args[1]["reason"] == "top_10.0pct"

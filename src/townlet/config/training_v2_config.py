@@ -36,6 +36,7 @@ __all__ = [
     "QLearningConfig",
     "ReplayBufferConfig",
     "ExplorationConfig",
+    "RNDNormalizationConfig",
     "RNDConfig",
     "AnnealingConfig",
     "IntrinsicConfig",
@@ -147,6 +148,39 @@ class ExplorationConfig(BaseModel):
         return self
 
 
+class RNDNormalizationConfig(BaseModel):
+    """RND intrinsic reward normalization configuration.
+
+    EXP-01: These parameters control variance collapse prevention and reward scaling.
+    See docs/bugs/EXP-exploration-module-audit.md for rationale.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    initial_count: int = Field(
+        gt=0,
+        description=(
+            "Initial pseudo-count for running mean/std calculation (Welford's algorithm). "
+            "Higher values = more stable early statistics but slower adaptation. "
+            "100 is a good default that prevents variance collapse."
+        ),
+    )
+    min_variance: float = Field(
+        gt=0.0,
+        description=(
+            "Variance floor for normalization. Prevents reward explosion when "
+            "early prediction errors are small. 0.01 is recommended per EXP-01 fix."
+        ),
+    )
+    reward_clip_max: float = Field(
+        gt=0.0,
+        description=(
+            "Maximum intrinsic reward after normalization (per Burda et al. 2018). "
+            "Clips to [0, reward_clip_max]. 5.0 is the paper's recommended value."
+        ),
+    )
+
+
 class RNDConfig(BaseModel):
     """Random Network Distillation configuration."""
 
@@ -154,16 +188,51 @@ class RNDConfig(BaseModel):
 
     feature_dim: int = Field(gt=0, description="RND feature dimension")
     learning_rate: float = Field(gt=0.0, description="RND learning rate")
+    batch_size: int = Field(
+        gt=0,
+        description=(
+            "Batch size for RND predictor training. Should match replay_buffer.batch_size " "for consistency with Q-network training."
+        ),
+    )
+    normalization: RNDNormalizationConfig = Field(description="Intrinsic reward normalization settings (variance collapse prevention)")
 
 
 class AnnealingConfig(BaseModel):
-    """Intrinsic reward annealing configuration."""
+    """Intrinsic reward annealing configuration.
+
+    Supports two threshold modes:
+    1. Variance-based (legacy): threshold is absolute variance of survival times
+    2. CV-based (recommended): threshold is coefficient of variation (std/mean)
+
+    CV-based is preferred because it's curriculum-agnostic (works across different
+    max_episode_length values without tuning).
+    """
 
     model_config = ConfigDict(extra="forbid")
 
-    threshold: float = Field(gt=0.0, description="Survivors metric threshold")
-    decay_rate: float = Field(gt=0.0, lt=1.0, description="Annealing decay rate")
-    min_weight: float = Field(ge=0.0, le=1.0, description="Minimum intrinsic weight")
+    use_coefficient_of_variation: bool = Field(
+        description=(
+            "If true, use coefficient of variation (std/mean) instead of raw variance. "
+            "CV is curriculum-agnostic (same threshold works for L0-L3). Recommended: true."
+        ),
+    )
+    threshold: float = Field(
+        gt=0.0,
+        description=(
+            "When use_coefficient_of_variation=false: absolute variance threshold. "
+            "When use_coefficient_of_variation=true: CV threshold (e.g., 0.3 = 30% variability)."
+        ),
+    )
+    decay_rate: float = Field(gt=0.0, lt=1.0, description="Annealing decay rate per trigger")
+    min_weight: float = Field(ge=0.0, le=1.0, description="Minimum intrinsic weight (floor)")
+    hysteresis_cooldown: int = Field(
+        ge=0,
+        description=(
+            "Minimum episodes between annealing triggers. Prevents feedback loop where "
+            "weight drop → less exploration → lower variance → faster annealing. "
+            "0 = no cooldown (legacy behavior), 100+ recommended."
+        ),
+    )
 
 
 class IntrinsicConfig(BaseModel):

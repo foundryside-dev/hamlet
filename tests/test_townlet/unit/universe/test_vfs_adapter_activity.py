@@ -168,3 +168,57 @@ class TestBuildObservationActivity:
         assert activity.active_dim_count == 0
         assert activity.active_field_uuids == ()
         assert activity.group_slices == {}
+
+    def test_multidimensional_field_uses_product_not_sum(self):
+        """Multi-dimensional fields should use product of shape dims, not sum.
+
+        Regression test for BUG-27: field_dims was computed as sum(field.shape)
+        instead of product(field.shape), causing incorrect dimension counts.
+
+        For a field with shape [3, 3]:
+        - WRONG: sum([3, 3]) = 6 dims
+        - CORRECT: product([3, 3]) = 9 dims
+        """
+        observation_spec = [
+            ObservationField(
+                id="spatial_grid",
+                source_variable="spatial_grid",
+                exposed_to=["agent"],
+                shape=[3, 3],  # Multi-dimensional: 3x3 = 9 total dims
+                normalization=None,
+                semantic_type="spatial",
+                curriculum_active=True,
+            ),
+            ObservationField(
+                id="scalar_field",
+                source_variable="scalar_field",
+                exposed_to=["agent"],
+                shape=[1],
+                normalization=None,
+                semantic_type="bars",
+                curriculum_active=True,
+            ),
+        ]
+
+        field_uuids = {
+            "spatial_grid": "uuid_grid",
+            "scalar_field": "uuid_scalar",
+        }
+
+        activity = VFSAdapter.build_observation_activity(observation_spec, field_uuids)
+
+        # 9 dims (3x3 grid) + 1 dim (scalar) = 10 total dims
+        assert activity.total_dims == 10
+        assert len(activity.active_mask) == 10
+        assert activity.active_dim_count == 10
+
+        # All 10 dimensions should be True (all active)
+        assert activity.active_mask == (True,) * 10
+
+        # Grid should contribute 9 UUIDs, scalar should contribute 1
+        assert activity.active_field_uuids.count("uuid_grid") == 9
+        assert activity.active_field_uuids.count("uuid_scalar") == 1
+
+        # Verify group slices
+        assert activity.get_group_slice("spatial") == slice(0, 9)  # First 9 dims
+        assert activity.get_group_slice("bars") == slice(9, 10)  # Last 1 dim

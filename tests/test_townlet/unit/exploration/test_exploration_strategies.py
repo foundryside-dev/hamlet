@@ -565,6 +565,24 @@ class TestAdaptiveIntrinsicAnnealingLogic:
         assert not exploration.should_anneal()
         assert abs(exploration.current_intrinsic_weight - 1.0) < 1e-6
 
+    def test_small_survival_window_is_allowed(self):
+        """Small survival windows should not be rejected by validation."""
+        exploration = AdaptiveIntrinsicExploration(
+            obs_dim=10,
+            survival_window=5,
+            variance_threshold=0.5,
+            min_survival_fraction=0.1,
+            max_episode_length=100,
+            device=torch.device("cpu"),
+        )
+
+        # After 5 consistent successes (>10 step threshold), annealing should trigger
+        for _ in range(5):
+            exploration.update_on_episode_end(survival_time=20.0)
+
+        assert exploration.should_anneal()
+        assert exploration.current_intrinsic_weight < 1.0
+
     def test_should_not_anneal_with_high_variance(self):
         """Should not anneal when survival variance is high."""
         exploration = AdaptiveIntrinsicExploration(
@@ -803,7 +821,7 @@ class TestAdaptiveIntrinsicStatePersistence:
             device=torch.device("cpu"),
         )
 
-        # Create state to load
+        # Create state to load (all fields required - no backwards compatibility)
         rnd_state = exploration.rnd.checkpoint_state()
         new_state = {
             "rnd_state": rnd_state,
@@ -814,7 +832,10 @@ class TestAdaptiveIntrinsicStatePersistence:
             "decay_rate": 0.97,
             "min_survival_fraction": 0.5,
             "max_episode_length": 1000,
-            "survival_history": [50.0, 60.0, 70.0],
+            "survival_history": [50, 60, 70],  # int per EXP-07
+            "use_coefficient_of_variation": True,
+            "hysteresis_cooldown": 50,
+            "episodes_since_last_anneal": 25,
         }
 
         exploration.load_state(new_state)
@@ -827,7 +848,11 @@ class TestAdaptiveIntrinsicStatePersistence:
         assert abs(exploration.decay_rate - 0.97) < 1e-6
         assert abs(exploration.min_survival_fraction - 0.5) < 1e-6
         assert exploration.max_episode_length == 1000
-        assert exploration.survival_history == [50.0, 60.0, 70.0]
+        assert exploration.survival_history == [50, 60, 70]
+        # New fields
+        assert exploration.use_coefficient_of_variation is True
+        assert exploration.hysteresis_cooldown == 50
+        assert exploration.episodes_since_last_anneal == 25
 
     def test_checkpoint_restore_roundtrip(self):
         """Checkpoint and restore should preserve exact state."""

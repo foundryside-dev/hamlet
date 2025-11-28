@@ -22,6 +22,31 @@ variables:
     max:
     - 1.0
     - 1.0
+
+- id: time_sin
+  scope: global
+  type: scalar
+  default: 0.0
+  lifetime: tick
+  readable_by:
+  - agent
+  - engine
+  writable_by:
+  - engine
+  description: Sine component of time of day (24h cycle)
+
+- id: time_cos
+  scope: global
+  type: scalar
+  default: 1.0
+  lifetime: tick
+  readable_by:
+  - agent
+  - engine
+  writable_by:
+  - engine
+  description: Cosine component of time of day (24h cycle)
+
 exposed_observations:
 - id: obs_position
   shape:

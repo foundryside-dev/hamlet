@@ -171,7 +171,16 @@ class PrioritizedReplayBuffer:
         # Compute sampling probabilities from priorities
         priorities = self.priorities[: self.size_current]
         probs = priorities**self.alpha
-        probs /= probs.sum()
+
+        # BUG-09: Guard against zero-sum or near-zero priorities (fallback to uniform distribution)
+        # Use epsilon threshold instead of exact zero to handle floating-point precision issues
+        probs_sum = probs.sum()
+        if probs_sum < 1e-8:
+            # All priorities are zero or negligibly small - use uniform distribution
+            probs = np.ones(self.size_current, dtype=np.float32)
+            probs /= self.size_current
+        else:
+            probs /= probs_sum
 
         # Sample indices
         indices = np.random.choice(self.size_current, batch_size, p=probs, replace=False)

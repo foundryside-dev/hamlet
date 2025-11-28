@@ -1,5 +1,5 @@
 training:
-  version: "1.0"
+  version: '1.0'
   population:
     size: 1
   enabled_affordances: []
@@ -23,10 +23,17 @@ training:
     rnd:
       feature_dim: 64
       learning_rate: 0.0001
+      batch_size: 10
+      normalization:
+        initial_count: 100
+        min_variance: 0.01
+        reward_clip_max: 5.0
     annealing:
-      threshold: 100.0
+      threshold: 0.3
       decay_rate: 0.995
       min_weight: 0.01
+      use_coefficient_of_variation: true
+      hysteresis_cooldown: 100
     initial_weight: 1.0
     min_survival_fraction: 0.4
     survival_window: 100

@@ -26,9 +26,41 @@ def test_compiler_marks_vfs_variables_used_in_observations(tmp_path: Path):
     (config_dir / "vfs_profiles.yaml").write_text(yaml.dump(vfs_profiles))
 
     # Create variables_reference with observation markings
+    # Note: position, time_sin, time_cos are required by the validation
     variables_ref = {
         "version": "1.0",
         "variables": [
+            {
+                "id": "position",
+                "scope": "agent",
+                "type": "vec2f",
+                "dims": 2,
+                "default": [0.0, 0.0],
+                "lifetime": "tick",
+                "readable_by": ["agent", "engine"],
+                "writable_by": ["engine"],
+                "observable": False,
+            },
+            {
+                "id": "time_sin",
+                "scope": "global",
+                "type": "scalar",
+                "default": 0.0,
+                "lifetime": "tick",
+                "readable_by": ["agent", "engine"],
+                "writable_by": ["engine"],
+                "observable": False,
+            },
+            {
+                "id": "time_cos",
+                "scope": "global",
+                "type": "scalar",
+                "default": 1.0,
+                "lifetime": "tick",
+                "readable_by": ["agent", "engine"],
+                "writable_by": ["engine"],
+                "observable": False,
+            },
             {
                 "id": "day_count",
                 "scope": "global",
@@ -80,9 +112,41 @@ def test_compiler_marks_empty_when_no_vfs_observations(tmp_path: Path):
     (config_dir / "vfs_profiles.yaml").write_text(yaml.dump(vfs_profiles))
 
     # Create variables_reference with NO observable variables
+    # Note: position, time_sin, time_cos are required by the validation
     variables_ref = {
         "version": "1.0",
         "variables": [
+            {
+                "id": "position",
+                "scope": "agent",
+                "type": "vec2f",
+                "dims": 2,
+                "default": [0.0, 0.0],
+                "lifetime": "tick",
+                "readable_by": ["agent", "engine"],
+                "writable_by": ["engine"],
+                "observable": False,
+            },
+            {
+                "id": "time_sin",
+                "scope": "global",
+                "type": "scalar",
+                "default": 0.0,
+                "lifetime": "tick",
+                "readable_by": ["agent", "engine"],
+                "writable_by": ["engine"],
+                "observable": False,
+            },
+            {
+                "id": "time_cos",
+                "scope": "global",
+                "type": "scalar",
+                "default": 1.0,
+                "lifetime": "tick",
+                "readable_by": ["agent", "engine"],
+                "writable_by": ["engine"],
+                "observable": False,
+            },
             {
                 "id": "some_var",
                 "scope": "global",

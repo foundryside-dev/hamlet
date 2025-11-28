@@ -205,6 +205,93 @@ class TestStageTransitionCriterion:
         should_record, reason = criteria.should_record(metadata)
         assert should_record is False
 
+    def test_transition_episodes_bounded_growth(self):
+        """Transition episodes storage should remain bounded during long training runs."""
+        from townlet.recording.criteria import RecordingCriteria
+
+        class MockCurriculum:
+            def get_stage_info(self, agent_idx=0):
+                return {"current_stage": 2, "episodes_at_stage": 50, "survival_rate": 0.8, "likely_transition_soon": False}
+
+        config = {
+            "criteria": {
+                "stage_transitions": {
+                    "enabled": True,
+                    "record_before": 5,
+                    "record_after": 10,
+                }
+            }
+        }
+
+        criteria = RecordingCriteria(config=config, curriculum=MockCurriculum(), database=None)
+
+        # Verify initial maxlen is set correctly (100 or 2x window, whichever is larger)
+        # Window = 5 + 10 = 15, so maxlen should be max(100, 15*2) = 100
+        assert criteria.transition_episodes.maxlen == 100
+
+        # Simulate many stage transitions over a long training run
+        # Create 1000 transitions by alternating between stage 1 and 2
+        num_transitions = 1000
+        episodes_per_stage = 50
+
+        for i in range(num_transitions):
+            stage = 1 if i % 2 == 0 else 2
+            episode_id = i * episodes_per_stage
+
+            # Process episodes at this stage
+            for ep_offset in range(episodes_per_stage):
+                metadata = _make_metadata(
+                    episode_id=episode_id + ep_offset,
+                    survival_steps=50,
+                    total_reward=100.0,
+                    curriculum_stage=stage,
+                )
+                criteria.should_record(metadata)
+
+        # Verify that transition_episodes is bounded
+        # With maxlen=100, should never exceed 100 entries
+        assert len(criteria.transition_episodes) <= 100
+
+        # Verify that pruning works: old transitions should be removed
+        # Last episode_id was ~50,000, so transitions from early episodes should be gone
+        # The earliest transition we should see is within the window of recent episodes
+        if len(criteria.transition_episodes) > 0:
+            earliest_transition = criteria.transition_episodes[0]
+            last_episode_id = (num_transitions - 1) * episodes_per_stage + episodes_per_stage - 1
+            # Earliest transition should be reasonably recent (within a few thousand episodes)
+            assert earliest_transition > 0  # Should have some transitions
+            # With aggressive pruning, transitions should be recent (within last ~1000 episodes)
+            # But with maxlen=100 and transitions every 50 episodes, we expect ~5000 episode span
+            assert earliest_transition >= last_episode_id - (100 * episodes_per_stage)
+
+        # Verify that recent transitions still work correctly
+        # Create a fresh transition and verify the before/after windows work
+        # Last iteration was i=999 (odd), so stage=2
+        last_stage_from_loop = 1 if (num_transitions - 1) % 2 == 0 else 2
+        next_stage = 2 if last_stage_from_loop == 1 else 1
+        transition_episode = num_transitions * episodes_per_stage
+
+        # Process transition
+        metadata = _make_metadata(
+            episode_id=transition_episode,
+            survival_steps=50,
+            total_reward=100.0,
+            curriculum_stage=next_stage,
+        )
+        criteria.should_record(metadata)
+
+        # Verify after-transition window works
+        for offset in range(10):
+            metadata = _make_metadata(
+                episode_id=transition_episode + offset,
+                survival_steps=50,
+                total_reward=100.0,
+                curriculum_stage=next_stage,
+            )
+            should_record, reason = criteria.should_record(metadata)
+            assert should_record is True
+            assert reason == f"after_transition_{transition_episode}"
+
 
 class TestPerformanceCriterion:
     """Test performance recording criterion (top and bottom percentiles)."""

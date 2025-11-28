@@ -1,7 +1,7 @@
 Title: PER probability calc can degenerate with zero-sum priorities
 
 Severity: low
-Status: open
+Status: fixed
 
 Subsystem: training/replay-buffer (PER)
 Affected Version/Branch: main

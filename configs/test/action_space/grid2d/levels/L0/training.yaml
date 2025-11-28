@@ -1,10 +1,10 @@
 training:
-  version: "1.0"
+  version: '1.0'
   population:
     size: 2
   enabled_affordances:
-    - Bed
-    - Job
+  - Bed
+  - Job
   randomize_affordances: false
   enabled_actions: null
   q_learning:
@@ -24,10 +24,17 @@ training:
     rnd:
       feature_dim: 8
       learning_rate: 0.0005
+      batch_size: 8
+      normalization:
+        initial_count: 100
+        min_variance: 0.01
+        reward_clip_max: 5.0
     annealing:
-      threshold: 10.0
+      threshold: 0.3
       decay_rate: 0.99
       min_weight: 0.01
+      use_coefficient_of_variation: true
+      hysteresis_cooldown: 100
     initial_weight: 0.0
     min_survival_fraction: 0.3
     survival_window: 5

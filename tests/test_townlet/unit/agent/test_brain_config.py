@@ -438,6 +438,7 @@ def test_apply_training_overrides_merges_q_learning_and_replay():
         IntrinsicConfig,
         ReplayBufferConfig,
         RNDConfig,
+        RNDNormalizationConfig,
         RunMetadataConfig,
         TrainingLoopConfig,
         TrainingV2Config,
@@ -510,11 +511,22 @@ def test_apply_training_overrides_merges_q_learning_and_replay():
             epsilon_decay=0.99,
         ),
         intrinsic=IntrinsicConfig(
-            rnd=RNDConfig(feature_dim=128, learning_rate=0.0001),
+            rnd=RNDConfig(
+                feature_dim=128,
+                learning_rate=0.0001,
+                batch_size=256,
+                normalization=RNDNormalizationConfig(
+                    initial_count=100,
+                    min_variance=0.01,
+                    reward_clip_max=5.0,
+                ),
+            ),
             annealing=TrainingAnnealingConfig(
-                threshold=100.0,
+                use_coefficient_of_variation=True,
+                threshold=0.3,
                 decay_rate=0.995,
                 min_weight=0.01,
+                hysteresis_cooldown=100,
             ),
             initial_weight=1.0,
             min_survival_fraction=0.4,

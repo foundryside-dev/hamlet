@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import warnings
 from typing import Any, cast
 
 import numpy as np
@@ -19,17 +20,29 @@ class RunningMeanStd:
 
     Uses Welford's online algorithm for numerical stability.
     Adapted from OpenAI's RND implementation and CleanRL.
+
+    EXP-01: Fixed variance collapse bug. Original initialization with count=epsilon
+    caused variance to collapse when early batches had small values, leading to
+    exploding normalized intrinsic rewards (10-100x inflation).
     """
 
-    def __init__(self, epsilon: float = 1e-4):
+    def __init__(self, initial_count: int = 100, min_variance: float = 0.01):
         """Initialize running statistics.
 
         Args:
-            epsilon: Small constant to avoid division by zero
+            initial_count: Initial pseudo-count for numerical stability.
+                Higher values make early statistics more stable but slower
+                to adapt. Default 100 provides good balance.
+            min_variance: Variance floor to prevent reward explosion.
+                Default 0.01 per EXP-01 fix.
+
+        EXP-01: Changed from epsilon=1e-4 to initial_count=100 to prevent
+        variance collapse in early training when prediction errors are small.
         """
         self.mean = 0.0
         self.var = 1.0
-        self.count = epsilon
+        self.count = float(initial_count)
+        self.min_variance = min_variance
 
     def update(self, x: np.ndarray) -> None:
         """Update running statistics with new batch.
@@ -125,6 +138,10 @@ class RNDExploration(ExplorationStrategy):
         epsilon_decay: float = 0.995,
         device: torch.device = torch.device("cpu"),
         active_mask: tuple[bool, ...] | None = None,
+        # Normalization parameters (configurable per DRL expert review)
+        normalization_initial_count: int = 100,
+        normalization_min_variance: float = 0.01,
+        reward_clip_max: float = 5.0,
     ):
         """Initialize RND with fixed and predictor networks.
 
@@ -138,16 +155,41 @@ class RNDExploration(ExplorationStrategy):
             epsilon_decay: Epsilon decay rate
             device: Device for tensors
             active_mask: Optional mask for active observation dimensions (padding dimensions will be zeroed)
+            normalization_initial_count: Initial pseudo-count for running mean/std (EXP-01 fix)
+            normalization_min_variance: Variance floor for normalization (EXP-01 fix)
+            reward_clip_max: Maximum intrinsic reward after normalization (Burda et al. 2018)
         """
         self.obs_dim = obs_dim
         self.embed_dim = embed_dim
         self.training_batch_size = training_batch_size
         self.device = device
 
+        # Normalization parameters (stored for checkpoint serialization)
+        self.normalization_initial_count = normalization_initial_count
+        self.normalization_min_variance = normalization_min_variance
+        self.reward_clip_max = reward_clip_max
+
         # Epsilon parameters
         self.epsilon = epsilon_start
         self.epsilon_min = epsilon_min
         self.epsilon_decay = epsilon_decay
+
+        # EXP-09: Validate active_mask for transfer learning concerns
+        # Masking too many dimensions may destroy spatial information needed for
+        # curriculum progression (e.g., position coordinates in Grid2D)
+        if active_mask is not None:
+            if len(active_mask) != obs_dim:
+                raise ValueError(f"active_mask length ({len(active_mask)}) must match obs_dim ({obs_dim})")
+            active_count = sum(active_mask)
+            masked_ratio = 1.0 - (active_count / obs_dim)
+            if masked_ratio > 0.5:
+                warnings.warn(
+                    f"RND active_mask has {masked_ratio:.0%} of dimensions masked "
+                    f"({obs_dim - active_count}/{obs_dim}). This may harm transfer learning "
+                    f"by destroying spatial information needed for curriculum progression.",
+                    UserWarning,
+                    stacklevel=2,
+                )
 
         # Fixed network (random, frozen)
         self.fixed_network = RNDNetwork(obs_dim, embed_dim, active_mask=active_mask).to(device)
@@ -165,7 +207,10 @@ class RNDExploration(ExplorationStrategy):
         self.step_counter = 0
 
         # Running statistics for intrinsic reward normalization
-        self.reward_rms = RunningMeanStd()
+        self.reward_rms = RunningMeanStd(
+            initial_count=normalization_initial_count,
+            min_variance=normalization_min_variance,
+        )
 
     def select_actions(
         self,
@@ -216,9 +261,15 @@ class RNDExploration(ExplorationStrategy):
 
             # Normalize by running standard deviation
             # This brings intrinsic rewards to comparable magnitude with extrinsic rewards
-            normalized = mse_per_sample / (np.sqrt(self.reward_rms.var) + 1e-8)
+            # EXP-01: Use variance floor to prevent reward explosion when variance is small
+            effective_var = max(self.reward_rms.var, self.reward_rms.min_variance)
+            normalized = mse_per_sample / (np.sqrt(effective_var) + 1e-8)
 
-        return cast(torch.Tensor, normalized)
+            # Clip rewards per Burda et al. (2018) - prevents extreme outliers
+            # Intrinsic rewards are always >= 0 (MSE), clip to [0, reward_clip_max]
+            clipped = torch.clamp(normalized, min=0.0, max=self.reward_clip_max)
+
+        return cast(torch.Tensor, clipped)
 
     def update(self, batch: dict[str, torch.Tensor]) -> None:
         """Update predictor network from experience batch.
@@ -262,8 +313,10 @@ class RNDExploration(ExplorationStrategy):
         loss = F.mse_loss(predicted, target)
 
         # Gradient step
+        # EXP-02: Add gradient clipping for training stability with novel states
         self.optimizer.zero_grad()
         loss.backward()
+        torch.nn.utils.clip_grad_norm_(self.predictor_network.parameters(), max_norm=10.0)
         self.optimizer.step()
 
         return loss.item()
@@ -308,6 +361,8 @@ class RNDExploration(ExplorationStrategy):
 
         Returns:
             Dict with network weights, optimizer state, epsilon, and normalization stats
+
+        EXP-03: Now includes obs_buffer for checkpoint reproducibility.
         """
         return {
             "fixed_network": self.fixed_network.state_dict(),
@@ -318,10 +373,16 @@ class RNDExploration(ExplorationStrategy):
             "epsilon_decay": self.epsilon_decay,
             "obs_dim": self.obs_dim,
             "embed_dim": self.embed_dim,
+            # Normalization parameters (configurable)
+            "normalization_initial_count": self.normalization_initial_count,
+            "normalization_min_variance": self.normalization_min_variance,
+            "reward_clip_max": self.reward_clip_max,
             # Normalization statistics
             "reward_rms_mean": self.reward_rms.mean,
             "reward_rms_var": self.reward_rms.var,
             "reward_rms_count": self.reward_rms.count,
+            # EXP-03: Save observation buffer for reproducibility
+            "obs_buffer": [obs.cpu() for obs in self.obs_buffer],
         }
 
     def load_state(self, state: dict[str, Any]) -> None:
@@ -329,7 +390,21 @@ class RNDExploration(ExplorationStrategy):
 
         Args:
             state: Dict from checkpoint_state()
+
+        Raises:
+            ValueError: If checkpoint obs_dim doesn't match current configuration
+
+        EXP-03: Added obs_dim validation and obs_buffer restoration.
         """
+        # EXP-04: Validate obs_dim before loading to prevent cryptic errors
+        checkpoint_obs_dim = state.get("obs_dim")
+        if checkpoint_obs_dim is not None and checkpoint_obs_dim != self.obs_dim:
+            raise ValueError(
+                f"Checkpoint obs_dim mismatch: checkpoint has {checkpoint_obs_dim}, "
+                f"current environment has {self.obs_dim}. "
+                "This usually means loading a checkpoint from a different curriculum level."
+            )
+
         self.fixed_network.load_state_dict(state["fixed_network"])
         self.predictor_network.load_state_dict(state["predictor_network"])
         self.optimizer.load_state_dict(state["optimizer"])
@@ -337,7 +412,17 @@ class RNDExploration(ExplorationStrategy):
         self.epsilon_min = state["epsilon_min"]
         self.epsilon_decay = state["epsilon_decay"]
 
+        # Restore normalization parameters (required - no backwards compatibility for pre-release)
+        self.normalization_initial_count = state["normalization_initial_count"]
+        self.normalization_min_variance = state["normalization_min_variance"]
+        self.reward_clip_max = state["reward_clip_max"]
+
         # Restore normalization statistics
         self.reward_rms.mean = state["reward_rms_mean"]
         self.reward_rms.var = state["reward_rms_var"]
         self.reward_rms.count = state["reward_rms_count"]
+        # Also restore min_variance on the RunningMeanStd instance
+        self.reward_rms.min_variance = self.normalization_min_variance
+
+        # EXP-03: Restore observation buffer for reproducibility (required)
+        self.obs_buffer = [obs.to(self.device) for obs in state["obs_buffer"]]

@@ -8,9 +8,14 @@ Design:
 - Modifier evaluation uses torch.where for range lookups
 - VFS integration via runtime registry with reader="engine"
 - Intrinsic weight modulation for crisis suppression
+- Composition controls: normalize (tanh) and clip (clamp)
 
 Formula:
     total_reward = extrinsic + (intrinsic * effective_intrinsic_weight) + shaping
+
+    # Then apply composition controls (BUG-33 fix):
+    if normalize: total_reward = tanh(total_reward)  # Bounds to [-1, 1]
+    if clip: total_reward = clamp(total_reward, min, max)
 
 Where:
     effective_intrinsic_weight = base_weight * modifier1 * modifier2 * ...
@@ -997,7 +1002,19 @@ class DACEngine:
         # 4. Compose total reward
         total_reward = extrinsic + intrinsic + shaping_total
 
-        # 5. Build components dict for logging
+        # 5. Apply composition controls (normalize and clip)
+        # Note: Order matters - normalize first, then clip
+        if self.dac_config.composition.normalize:
+            # Apply tanh normalization to bound rewards to [-1, 1]
+            total_reward = torch.tanh(total_reward)
+
+        if self.dac_config.composition.clip is not None:
+            # Clip rewards to specified range
+            clip_min = self.dac_config.composition.clip["min"]
+            clip_max = self.dac_config.composition.clip["max"]
+            total_reward = torch.clamp(total_reward, min=clip_min, max=clip_max)
+
+        # 6. Build components dict for logging
         # intrinsic_raw: before modifier application (base_weight applied, not modifiers)
         # intrinsic: after modifier application (base_weight × modifiers × raw)
         intrinsic_raw_weighted = intrinsic_raw_copy * base_weight

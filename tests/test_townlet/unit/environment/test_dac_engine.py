@@ -3106,3 +3106,374 @@ class TestDeviceMismatch:
         # The actual device mismatch would happen at runtime if tensors
         # were created on different devices (e.g., CPU vs CUDA)
         # The validation code in calculate_rewards will catch this
+
+
+class TestCompositionControls:
+    """Test composition.normalize and composition.clip functionality (BUG-33)."""
+
+    def test_clip_bounds_rewards_within_range(self, bar_index_map_single):
+        """Clip bounds should clamp total rewards to [min, max]."""
+        device = torch.device("cpu")
+        num_agents = 4
+
+        vfs_registry = VariableRegistry(
+            variables=[
+                VariableDef(
+                    id="energy",
+                    scope="agent",
+                    type="scalar",
+                    default=1.0,
+                    readable_by=["agent", "engine"],
+                    writable_by=["engine"],
+                    lifetime="episode",
+                )
+            ],
+            num_agents=num_agents,
+            device=device,
+        )
+
+        # Create config with extrinsic strategy that produces large rewards
+        # and composition clip bounds
+        from townlet.config.drive_as_code import CompositionConfig
+
+        dac_config = DriveAsCodeConfig(
+            version="1.0",
+            modifiers={},
+            extrinsic=ExtrinsicStrategyConfig(
+                type="multiplicative",
+                base=100.0,  # Large base to exceed clip bounds
+                bars=["energy"],
+            ),
+            intrinsic=IntrinsicStrategyConfig(strategy="none", base_weight=0.0),
+            composition=CompositionConfig(
+                normalize=False,
+                clip={"min": -1.0, "max": 1.0},  # Strict bounds
+                log_components=True,
+            ),
+        )
+
+        engine = DACEngine(dac_config, vfs_registry, device, num_agents, bar_index_map_single)
+
+        # Create test data with full energy (should produce reward = 100.0 * 1.0 = 100.0)
+        step_counts = torch.zeros(num_agents, dtype=torch.long, device=device)
+        dones = torch.zeros(num_agents, dtype=torch.bool, device=device)
+        meters = torch.ones((num_agents, 1), device=device)  # Full energy
+        intrinsic_raw = torch.zeros(num_agents, device=device)
+
+        total_rewards, _, components = engine.calculate_rewards(
+            step_counts=step_counts,
+            dones=dones,
+            meters=meters,
+            intrinsic_raw=intrinsic_raw,
+        )
+
+        # Verify extrinsic component is large (unclipped)
+        assert torch.all(components["extrinsic"] > 10.0), "Extrinsic should be large before clipping"
+
+        # Verify total reward is clipped to [min, max]
+        assert torch.all(total_rewards >= -1.0), "All rewards should be >= clip.min"
+        assert torch.all(total_rewards <= 1.0), "All rewards should be <= clip.max"
+        assert torch.all(total_rewards == 1.0), "With full energy and large base, should be clipped to max=1.0"
+
+    def test_clip_allows_negative_rewards_within_bounds(self, bar_index_map_single):
+        """Clip should handle negative rewards correctly."""
+        device = torch.device("cpu")
+        num_agents = 4
+
+        vfs_registry = VariableRegistry(
+            variables=[
+                VariableDef(
+                    id="energy",
+                    scope="agent",
+                    type="scalar",
+                    default=1.0,
+                    readable_by=["agent", "engine"],
+                    writable_by=["engine"],
+                    lifetime="episode",
+                )
+            ],
+            num_agents=num_agents,
+            device=device,
+        )
+
+        from townlet.config.drive_as_code import CompositionConfig
+
+        dac_config = DriveAsCodeConfig(
+            version="1.0",
+            modifiers={},
+            extrinsic=ExtrinsicStrategyConfig(
+                type="constant_base_with_shaped_bonus",
+                base_reward=-50.0,  # Large negative base to exceed lower bound
+                bar_bonuses=[],
+            ),
+            intrinsic=IntrinsicStrategyConfig(strategy="none", base_weight=0.0),
+            composition=CompositionConfig(
+                normalize=False,
+                clip={"min": -10.0, "max": 10.0},
+                log_components=True,
+            ),
+        )
+
+        engine = DACEngine(dac_config, vfs_registry, device, num_agents, bar_index_map_single)
+
+        step_counts = torch.zeros(num_agents, dtype=torch.long, device=device)
+        dones = torch.zeros(num_agents, dtype=torch.bool, device=device)
+        meters = torch.ones((num_agents, 1), device=device)
+        intrinsic_raw = torch.zeros(num_agents, device=device)
+
+        total_rewards, _, components = engine.calculate_rewards(
+            step_counts=step_counts,
+            dones=dones,
+            meters=meters,
+            intrinsic_raw=intrinsic_raw,
+        )
+
+        # Verify extrinsic component is large negative (unclipped)
+        assert torch.all(components["extrinsic"] < -10.0), "Extrinsic should be large negative before clipping"
+
+        # Verify total reward is clipped to min bound
+        assert torch.all(total_rewards >= -10.0), "All rewards should be >= clip.min"
+        assert torch.all(total_rewards <= 10.0), "All rewards should be <= clip.max"
+        assert torch.all(total_rewards == -10.0), "With large negative base, should be clipped to min=-10.0"
+
+    def test_normalize_applies_tanh_to_total_reward(self, bar_index_map_single):
+        """Normalize should apply tanh to bound rewards to [-1, 1]."""
+        device = torch.device("cpu")
+        num_agents = 4
+
+        vfs_registry = VariableRegistry(
+            variables=[
+                VariableDef(
+                    id="energy",
+                    scope="agent",
+                    type="scalar",
+                    default=1.0,
+                    readable_by=["agent", "engine"],
+                    writable_by=["engine"],
+                    lifetime="episode",
+                )
+            ],
+            num_agents=num_agents,
+            device=device,
+        )
+
+        from townlet.config.drive_as_code import CompositionConfig
+
+        dac_config = DriveAsCodeConfig(
+            version="1.0",
+            modifiers={},
+            extrinsic=ExtrinsicStrategyConfig(
+                type="multiplicative",
+                base=10.0,  # Large base to test normalization
+                bars=["energy"],
+            ),
+            intrinsic=IntrinsicStrategyConfig(strategy="none", base_weight=0.0),
+            composition=CompositionConfig(
+                normalize=True,  # Enable normalization
+                clip=None,
+                log_components=True,
+            ),
+        )
+
+        engine = DACEngine(dac_config, vfs_registry, device, num_agents, bar_index_map_single)
+
+        step_counts = torch.zeros(num_agents, dtype=torch.long, device=device)
+        dones = torch.zeros(num_agents, dtype=torch.bool, device=device)
+        meters = torch.ones((num_agents, 1), device=device)  # Full energy
+        intrinsic_raw = torch.zeros(num_agents, device=device)
+
+        total_rewards, _, components = engine.calculate_rewards(
+            step_counts=step_counts,
+            dones=dones,
+            meters=meters,
+            intrinsic_raw=intrinsic_raw,
+        )
+
+        # Verify extrinsic component is large (unnormalized)
+        assert torch.all(components["extrinsic"] > 5.0), "Extrinsic should be large before normalization"
+
+        # Verify total reward is bounded to [-1, 1] by tanh
+        assert torch.all(total_rewards >= -1.0), "Normalized rewards should be >= -1"
+        assert torch.all(total_rewards <= 1.0), "Normalized rewards should be <= 1"
+
+        # Verify tanh was actually applied (for large positive input, tanh ≈ 1.0)
+        expected = torch.tanh(components["extrinsic"])  # Since intrinsic and shaping are 0
+        assert torch.allclose(total_rewards, expected, atol=1e-6), "Total reward should match tanh(extrinsic)"
+
+    def test_normalize_and_clip_both_apply_in_order(self, bar_index_map_single):
+        """When both normalize and clip are enabled, normalize should apply first, then clip."""
+        device = torch.device("cpu")
+        num_agents = 4
+
+        vfs_registry = VariableRegistry(
+            variables=[
+                VariableDef(
+                    id="energy",
+                    scope="agent",
+                    type="scalar",
+                    default=1.0,
+                    readable_by=["agent", "engine"],
+                    writable_by=["engine"],
+                    lifetime="episode",
+                )
+            ],
+            num_agents=num_agents,
+            device=device,
+        )
+
+        from townlet.config.drive_as_code import CompositionConfig
+
+        dac_config = DriveAsCodeConfig(
+            version="1.0",
+            modifiers={},
+            extrinsic=ExtrinsicStrategyConfig(
+                type="multiplicative",
+                base=100.0,  # Very large base
+                bars=["energy"],
+            ),
+            intrinsic=IntrinsicStrategyConfig(strategy="none", base_weight=0.0),
+            composition=CompositionConfig(
+                normalize=True,  # First: tanh -> bounds to [-1, 1]
+                clip={"min": -0.5, "max": 0.5},  # Then: clip to tighter range
+                log_components=True,
+            ),
+        )
+
+        engine = DACEngine(dac_config, vfs_registry, device, num_agents, bar_index_map_single)
+
+        step_counts = torch.zeros(num_agents, dtype=torch.long, device=device)
+        dones = torch.zeros(num_agents, dtype=torch.bool, device=device)
+        meters = torch.ones((num_agents, 1), device=device)
+        intrinsic_raw = torch.zeros(num_agents, device=device)
+
+        total_rewards, _, components = engine.calculate_rewards(
+            step_counts=step_counts,
+            dones=dones,
+            meters=meters,
+            intrinsic_raw=intrinsic_raw,
+        )
+
+        # Extrinsic is large
+        assert torch.all(components["extrinsic"] > 10.0), "Extrinsic should be large"
+
+        # After tanh, would be ≈ 1.0
+        after_tanh = torch.tanh(components["extrinsic"])
+        assert torch.all(after_tanh > 0.99), "tanh(100.0) should be ≈ 1.0"
+
+        # After clip, should be bounded to 0.5
+        assert torch.all(total_rewards <= 0.5), "Final rewards should be clipped to max=0.5"
+        assert torch.all(total_rewards == 0.5), "With large base, should normalize to ≈1.0 then clip to 0.5"
+
+    def test_clip_none_does_not_clip(self, bar_index_map_single):
+        """When clip=None, rewards should not be clipped."""
+        device = torch.device("cpu")
+        num_agents = 4
+
+        vfs_registry = VariableRegistry(
+            variables=[
+                VariableDef(
+                    id="energy",
+                    scope="agent",
+                    type="scalar",
+                    default=1.0,
+                    readable_by=["agent", "engine"],
+                    writable_by=["engine"],
+                    lifetime="episode",
+                )
+            ],
+            num_agents=num_agents,
+            device=device,
+        )
+
+        from townlet.config.drive_as_code import CompositionConfig
+
+        dac_config = DriveAsCodeConfig(
+            version="1.0",
+            modifiers={},
+            extrinsic=ExtrinsicStrategyConfig(
+                type="multiplicative",
+                base=100.0,
+                bars=["energy"],
+            ),
+            intrinsic=IntrinsicStrategyConfig(strategy="none", base_weight=0.0),
+            composition=CompositionConfig(
+                normalize=False,
+                clip=None,  # No clipping
+                log_components=True,
+            ),
+        )
+
+        engine = DACEngine(dac_config, vfs_registry, device, num_agents, bar_index_map_single)
+
+        step_counts = torch.zeros(num_agents, dtype=torch.long, device=device)
+        dones = torch.zeros(num_agents, dtype=torch.bool, device=device)
+        meters = torch.ones((num_agents, 1), device=device)
+        intrinsic_raw = torch.zeros(num_agents, device=device)
+
+        total_rewards, _, _ = engine.calculate_rewards(
+            step_counts=step_counts,
+            dones=dones,
+            meters=meters,
+            intrinsic_raw=intrinsic_raw,
+        )
+
+        # Without clipping, large rewards should pass through
+        assert torch.all(total_rewards > 10.0), "Rewards should not be clipped when clip=None"
+        assert torch.all(total_rewards == 100.0), "Reward should be 100.0 * 1.0 = 100.0"
+
+    def test_normalize_false_does_not_normalize(self, bar_index_map_single):
+        """When normalize=False, rewards should not be normalized."""
+        device = torch.device("cpu")
+        num_agents = 4
+
+        vfs_registry = VariableRegistry(
+            variables=[
+                VariableDef(
+                    id="energy",
+                    scope="agent",
+                    type="scalar",
+                    default=1.0,
+                    readable_by=["agent", "engine"],
+                    writable_by=["engine"],
+                    lifetime="episode",
+                )
+            ],
+            num_agents=num_agents,
+            device=device,
+        )
+
+        from townlet.config.drive_as_code import CompositionConfig
+
+        dac_config = DriveAsCodeConfig(
+            version="1.0",
+            modifiers={},
+            extrinsic=ExtrinsicStrategyConfig(
+                type="multiplicative",
+                base=10.0,
+                bars=["energy"],
+            ),
+            intrinsic=IntrinsicStrategyConfig(strategy="none", base_weight=0.0),
+            composition=CompositionConfig(
+                normalize=False,  # No normalization
+                clip=None,
+                log_components=True,
+            ),
+        )
+
+        engine = DACEngine(dac_config, vfs_registry, device, num_agents, bar_index_map_single)
+
+        step_counts = torch.zeros(num_agents, dtype=torch.long, device=device)
+        dones = torch.zeros(num_agents, dtype=torch.bool, device=device)
+        meters = torch.ones((num_agents, 1), device=device)
+        intrinsic_raw = torch.zeros(num_agents, device=device)
+
+        total_rewards, _, _ = engine.calculate_rewards(
+            step_counts=step_counts,
+            dones=dones,
+            meters=meters,
+            intrinsic_raw=intrinsic_raw,
+        )
+
+        # Without normalization, large rewards should pass through
+        assert torch.all(total_rewards > 1.0), "Rewards should not be normalized when normalize=False"
+        assert torch.all(total_rewards == 10.0), "Reward should be 10.0 * 1.0 = 10.0"

@@ -50,11 +50,18 @@ training:
     rnd:
       feature_dim: 128
       learning_rate: 0.0001
+      batch_size: 256  # Match replay_buffer.batch_size
+      normalization:
+        initial_count: 100
+        min_variance: 0.01
+        reward_clip_max: 5.0
 
     annealing:
-      threshold: 100.0
+      use_coefficient_of_variation: true
+      threshold: 0.3  # CV threshold (30% variability)
       decay_rate: 0.995
       min_weight: 0.01
+      hysteresis_cooldown: 100
     initial_weight: 1.0
     min_survival_fraction: 0.4
     survival_window: 100

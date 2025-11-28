@@ -140,12 +140,11 @@
 
 ### affordance_engine.py
 
-#### HIGH-09: Hardcoded action space dimensions in dead code ✅ DELETE
+#### HIGH-09: Hardcoded action space dimensions in dead code ✅ DELETED
 - **Location**: `get_action_masks()` method, lines 387-445
 - **Description**: Unused method with hardcoded `num_affordances = 15`. Violates config-driven design.
 - **Impact**: Code quality, potential confusion
-- **Status**: REAL - Dead code should be deleted per CLAUDE.md anti-pattern. Action masking handled by `vectorized_env.py`.
-- **Fix**: Delete `get_action_masks()` method from AffordanceEngine
+- **Status**: ✅ FIXED (commit 467a2d3e, Nov 28 2025) - 59 lines deleted, replaced with comment explaining removal.
 
 #### HIGH-10: Tensor aliasing bug in effects execution (FALSE POSITIVE)
 - **Location**: Effects application loop

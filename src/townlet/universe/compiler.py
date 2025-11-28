@@ -1003,7 +1003,221 @@ class UniverseCompiler:
                     f"drive.intrinsic is required for level {level_name}.", code="LEVEL_DRIVE_INTRINSIC_MISSING", location=str(level_path)
                 )
 
+        # 7) VFS standard variable validation
+        self._validate_vfs_standard_variables(raw, experiment_dir, errors)
+
         errors.check_and_raise()
+
+    def _validate_vfs_standard_variables(self, raw: RawConfigsV21, experiment_dir: Path, errors: CompilationErrorCollector) -> None:
+        """Validate that required standard VFS variables exist with correct scopes/types.
+
+        The environment expects certain standard variables to exist in variables_reference.yaml
+        based on the substrate type. This validation catches configuration errors at compile time
+        rather than runtime.
+
+        Standard variables by substrate type:
+        - All substrates: position (type varies by substrate dimensionality)
+        - Spatial (grid/continuous): velocity components (optional but validated if present)
+        - Temporal-enabled: time_sin, time_cos (global scope)
+        """
+        variables_path = experiment_dir / "variables_reference.yaml"
+        if not variables_path.exists():
+            # variables_reference.yaml doesn't exist - skip VFS validation
+            # The file is not strictly required yet, so we don't fail here
+            return
+
+        # Load VFS variables
+        from townlet.vfs.schema import load_variables_reference_config
+
+        try:
+            variables = load_variables_reference_config(experiment_dir)
+        except Exception as exc:
+            errors.add(
+                f"Failed to load variables_reference.yaml: {exc}",
+                code="VFS_LOAD_FAILED",
+                location=str(variables_path),
+            )
+            return
+
+        # Build lookup: id -> VariableDef
+        variables_by_id = {var.id: var for var in variables}
+
+        # Determine substrate type and dimensionality
+        substrate = raw.stratum.stratum.substrate
+        substrate_type = substrate.type
+        temporal_enabled = raw.stratum.stratum.temporal_support == "enabled"
+
+        # Define required variables based on substrate type
+        required_vars: dict[str, dict[str, Any]] = {}
+
+        # Position variable (required for all substrate types)
+        if substrate_type == "grid":
+            grid_config = substrate.grid
+            if grid_config and grid_config.depth is not None:
+                # 3D grid
+                required_vars["position"] = {
+                    "scope": VariableScope.AGENT.value,
+                    "type": "vec3f",
+                    "dims": 3,
+                    "readable_by": ["agent", "engine"],
+                    "writable_by": ["engine"],
+                }
+            else:
+                # 2D grid
+                required_vars["position"] = {
+                    "scope": VariableScope.AGENT.value,
+                    "type": "vec2f",
+                    "dims": 2,
+                    "readable_by": ["agent", "engine"],
+                    "writable_by": ["engine"],
+                }
+        elif substrate_type == "grid3d":
+            required_vars["position"] = {
+                "scope": VariableScope.AGENT.value,
+                "type": "vec3f",
+                "dims": 3,
+                "readable_by": ["agent", "engine"],
+                "writable_by": ["engine"],
+            }
+        elif substrate_type == "gridnd":
+            gridnd_config = substrate.gridnd
+            if gridnd_config:
+                ndims = len(gridnd_config.dimension_sizes)
+                required_vars["position"] = {
+                    "scope": VariableScope.AGENT.value,
+                    "type": "vecNf",
+                    "dims": ndims,
+                    "readable_by": ["agent", "engine"],
+                    "writable_by": ["engine"],
+                }
+        elif substrate_type in {"continuous", "continuousnd"}:
+            continuous_config = substrate.continuous
+            if continuous_config:
+                ndims = continuous_config.ndims
+                if ndims == 1:
+                    required_vars["position"] = {
+                        "scope": VariableScope.AGENT.value,
+                        "type": "scalar",
+                        "dims": None,
+                        "readable_by": ["agent", "engine"],
+                        "writable_by": ["engine"],
+                    }
+                elif ndims == 2:
+                    required_vars["position"] = {
+                        "scope": VariableScope.AGENT.value,
+                        "type": "vec2f",
+                        "dims": 2,
+                        "readable_by": ["agent", "engine"],
+                        "writable_by": ["engine"],
+                    }
+                elif ndims == 3:
+                    required_vars["position"] = {
+                        "scope": VariableScope.AGENT.value,
+                        "type": "vec3f",
+                        "dims": 3,
+                        "readable_by": ["agent", "engine"],
+                        "writable_by": ["engine"],
+                    }
+                else:
+                    required_vars["position"] = {
+                        "scope": VariableScope.AGENT.value,
+                        "type": "vecNf",
+                        "dims": ndims,
+                        "readable_by": ["agent", "engine"],
+                        "writable_by": ["engine"],
+                    }
+        elif substrate_type == "aspatial":
+            # Aspatial substrates don't require position variable
+            pass
+
+        # Temporal variables (required if temporal support enabled)
+        if temporal_enabled:
+            required_vars["time_sin"] = {
+                "scope": VariableScope.GLOBAL.value,
+                "type": "scalar",
+                "dims": None,
+                "readable_by": ["agent", "engine"],
+                "writable_by": ["engine"],
+            }
+            required_vars["time_cos"] = {
+                "scope": VariableScope.GLOBAL.value,
+                "type": "scalar",
+                "dims": None,
+                "readable_by": ["agent", "engine"],
+                "writable_by": ["engine"],
+            }
+
+        # Validate required variables
+        for var_id, expected in required_vars.items():
+            if var_id not in variables_by_id:
+                errors.add(
+                    f"Required VFS variable '{var_id}' not found in variables_reference.yaml. "
+                    f"Expected scope='{expected['scope']}', type='{expected['type']}'.",
+                    code="VFS_MISSING_REQUIRED_VARIABLE",
+                    location=str(variables_path),
+                )
+                continue
+
+            var_def = variables_by_id[var_id]
+
+            # Validate scope
+            if var_def.scope != expected["scope"]:
+                errors.add(
+                    f"Variable '{var_id}' has incorrect scope. Expected '{expected['scope']}', got '{var_def.scope}'.",
+                    code="VFS_VARIABLE_SCOPE_MISMATCH",
+                    location=str(variables_path),
+                )
+
+            # Validate type (allow vecNf as equivalent to vec2f/vec3f if dims match)
+            expected_type = expected["type"]
+            actual_type = var_def.type
+
+            # vecNf/vecNi with correct dims is equivalent to vec2f/vec3f/etc
+            type_matches = (
+                actual_type == expected_type
+                or (expected_type in {"vec2f", "vec3f"} and actual_type == "vecNf" and expected["dims"] is not None)
+                or (expected_type in {"vec2i", "vec3i"} and actual_type == "vecNi" and expected["dims"] is not None)
+            )
+
+            if not type_matches:
+                errors.add(
+                    f"Variable '{var_id}' has incorrect type. Expected '{expected_type}', got '{actual_type}'.",
+                    code="VFS_VARIABLE_TYPE_MISMATCH",
+                    location=str(variables_path),
+                )
+
+            # Validate dims (for vecNf/vecNi types or when expected_type allows either)
+            if expected["dims"] is not None:
+                if var_def.dims != expected["dims"]:
+                    errors.add(
+                        f"Variable '{var_id}' has incorrect dims. Expected {expected['dims']}, got {var_def.dims}.",
+                        code="VFS_VARIABLE_DIMS_MISMATCH",
+                        location=str(variables_path),
+                    )
+
+            # Validate readable_by (must be superset of expected)
+            expected_readers = set(expected["readable_by"])
+            actual_readers = set(var_def.readable_by)
+            if not expected_readers.issubset(actual_readers):
+                missing = expected_readers - actual_readers
+                errors.add(
+                    f"Variable '{var_id}' missing required readers. Expected {sorted(expected_readers)}, "
+                    f"got {sorted(actual_readers)}. Missing: {sorted(missing)}.",
+                    code="VFS_VARIABLE_READERS_INSUFFICIENT",
+                    location=str(variables_path),
+                )
+
+            # Validate writable_by (must be superset of expected)
+            expected_writers = set(expected["writable_by"])
+            actual_writers = set(var_def.writable_by)
+            if not expected_writers.issubset(actual_writers):
+                missing = expected_writers - actual_writers
+                errors.add(
+                    f"Variable '{var_id}' missing required writers. Expected {sorted(expected_writers)}, "
+                    f"got {sorted(actual_writers)}. Missing: {sorted(missing)}.",
+                    code="VFS_VARIABLE_WRITERS_INSUFFICIENT",
+                    location=str(variables_path),
+                )
 
     def _stage_1_load_v21_configs(self, experiment_dir: Path) -> RawConfigsV21:
         """Stage 1 – load v2.1 hierarchical configs."""

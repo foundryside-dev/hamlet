@@ -151,7 +151,7 @@ class VFSAdapter:
                 group_boundaries[field.semantic_type] = current_idx
 
             # Flatten field into mask (one bool per dimension)
-            field_dims = 1 if not field.shape else int(sum(field.shape))
+            field_dims = _flatten_dims(field.shape)
             field_uuid = field_uuids.get(field.id, field.id)
 
             for _ in range(field_dims):

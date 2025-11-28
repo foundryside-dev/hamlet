@@ -43,7 +43,13 @@ class RecordingCriteria:
 
         # State tracking for stage transitions
         self.last_stage: int | None = None
-        self.transition_episodes: set[int] = set()
+        # Bounded storage for transition episodes - keep only recent transitions
+        # Capacity: 2x the transition window to handle multiple back-and-forth transitions
+        record_before = self.stage_transitions_config.get("record_before", 5)
+        record_after = self.stage_transitions_config.get("record_after", 10)
+        transition_window = record_before + record_after
+        max_transitions = max(100, transition_window * 2)  # At least 100, or 2x window
+        self.transition_episodes: deque[int] = deque(maxlen=max_transitions)
 
         # State tracking for performance criterion
         window_size = self.performance_config.get("window", 100)
@@ -131,6 +137,12 @@ class RecordingCriteria:
         # Get transition configuration
         record_before = self.stage_transitions_config.get("record_before", 5)
         record_after = self.stage_transitions_config.get("record_after", 10)
+
+        # Prune transitions outside the window (episode_id is past their after window)
+        # Keep transitions where: episode_id < trans_ep + record_after
+        # Remove transitions where: episode_id >= trans_ep + record_after
+        while self.transition_episodes and episode_id >= self.transition_episodes[0] + record_after:
+            self.transition_episodes.popleft()
 
         # Check if we're in a transition window (before or after)
         for trans_ep in self.transition_episodes:
@@ -221,4 +233,4 @@ class RecordingCriteria:
 
     def _mark_transition(self, episode_id: int):
         """Mark an episode as a stage transition point."""
-        self.transition_episodes.add(episode_id)
+        self.transition_episodes.append(episode_id)

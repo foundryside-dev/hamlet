@@ -1,0 +1,13 @@
+version: "1.0"
+variables:
+  # position variable intentionally removed to test validation
+  - id: some_other_var
+    scope: agent
+    type: scalar
+    default: 0.0
+    lifetime: tick
+    readable_by: [agent, engine]
+    writable_by: [engine]
+    description: Some other variable
+
+exposed_observations: []

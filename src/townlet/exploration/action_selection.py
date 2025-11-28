@@ -41,6 +41,12 @@ def epsilon_greedy_action_selection(
     batch_size, num_actions = q_values.shape
     device = q_values.device
 
+    # EXP-08: Validate epsilons shape to prevent silent broadcasting bugs
+    if epsilons.ndim != 1:
+        raise ValueError(f"epsilons must be 1D tensor, got shape {epsilons.shape}. " f"Expected [{batch_size}]")
+    if epsilons.shape[0] != batch_size:
+        raise ValueError(f"epsilons batch size {epsilons.shape[0]} doesn't match " f"q_values batch size {batch_size}")
+
     # Apply action masking to Q-values if provided
     if action_masks is not None:
         # Detect rows with no valid actions (all False) - BUG-23

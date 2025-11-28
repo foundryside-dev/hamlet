@@ -14,6 +14,7 @@ import lz4.frame  # type: ignore[import-untyped]
 import msgpack  # type: ignore[import-untyped]
 import torch
 
+from townlet.recording.criteria import RecordingCriteria
 from townlet.recording.data_structures import EpisodeEndMarker, EpisodeMetadata, RecordedStep
 
 logger = logging.getLogger(__name__)
@@ -196,6 +197,13 @@ class RecordingWriter:
         # Create output directory
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
+        # Initialize recording criteria evaluator
+        self.criteria = RecordingCriteria(
+            config=config,
+            curriculum=curriculum,
+            database=database,
+        )
+
     def writer_loop(self):
         """Main writer thread loop.
 
@@ -226,47 +234,41 @@ class RecordingWriter:
             metadata: Episode metadata
         """
         # Check if we should record this episode
-        should_record = self._should_record_episode(metadata)
+        should_record, reason = self._should_record_episode(metadata)
 
         if should_record:
-            self._write_episode(metadata)
+            self._write_episode(metadata, reason)
             logger.info(
                 f"Recorded episode {metadata.episode_id}: "
                 f"{len(self.episode_buffer)} steps, "
                 f"survival={metadata.survival_steps}, "
-                f"reward={metadata.total_reward:.1f}"
+                f"reward={metadata.total_reward:.1f}, "
+                f"reason={reason}"
             )
         else:
             logger.debug(f"Skipped episode {metadata.episode_id} (no criteria matched)")
 
-    def _should_record_episode(self, metadata: EpisodeMetadata) -> bool:
+    def _should_record_episode(self, metadata: EpisodeMetadata) -> tuple[bool, str]:
         """Evaluate recording criteria for episode.
 
-        For now, just check periodic criterion. Full criteria evaluator
-        will be implemented in Phase 2.
+        Delegates to RecordingCriteria evaluator which handles all criterion types.
 
         Args:
             metadata: Episode metadata
 
         Returns:
-            True if episode should be recorded
+            (should_record, reason) tuple:
+                - should_record: True if any criterion matched
+                - reason: String describing which criterion triggered (empty if none)
         """
-        criteria = self.config.get("criteria", {})
+        return self.criteria.should_record(metadata)
 
-        # Periodic criterion (simple implementation)
-        periodic = criteria.get("periodic", {})
-        if periodic.get("enabled", False):
-            interval = periodic.get("interval", 100)
-            if metadata.episode_id % interval == 0:
-                return True
-
-        return False
-
-    def _write_episode(self, metadata: EpisodeMetadata):
+    def _write_episode(self, metadata: EpisodeMetadata, reason: str):
         """Serialize, compress, and write episode to disk.
 
         Args:
             metadata: Episode metadata
+            reason: Recording reason from criteria evaluator
         """
         # Build episode data structure
         episode_data = {
@@ -297,7 +299,7 @@ class RecordingWriter:
                 episode_id=episode_id,
                 file_path=str(file_path.relative_to(self.output_dir.parent)),
                 metadata=metadata,
-                reason="periodic",  # For now, all recordings are periodic
+                reason=reason,
                 file_size=len(serialized),
                 compressed_size=len(compressed),
             )

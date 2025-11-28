@@ -345,23 +345,32 @@ class LiveInferenceServer:
 
         # Create exploration (for inference, configuration controls intrinsic behavior)
         active_mask = self.env.observation_activity.active_mask
+        rnd_cfg = intrinsic_cfg.rnd
+        annealing_cfg = intrinsic_cfg.annealing
         self.exploration = AdaptiveIntrinsicExploration(
             obs_dim=obs_dim,
-            embed_dim=intrinsic_cfg.rnd.feature_dim,
-            rnd_learning_rate=intrinsic_cfg.rnd.learning_rate,
-            rnd_training_batch_size=training_cfg.replay_buffer.batch_size,
+            embed_dim=rnd_cfg.feature_dim,
+            rnd_learning_rate=rnd_cfg.learning_rate,
+            rnd_training_batch_size=rnd_cfg.batch_size,
             initial_intrinsic_weight=intrinsic_cfg.initial_weight,
-            min_intrinsic_weight=intrinsic_cfg.annealing.min_weight,
-            variance_threshold=intrinsic_cfg.annealing.threshold,
+            min_intrinsic_weight=annealing_cfg.min_weight,
+            variance_threshold=annealing_cfg.threshold,
             min_survival_fraction=intrinsic_cfg.min_survival_fraction,
             max_episode_length=loop_cfg.max_steps_per_episode,
             survival_window=intrinsic_cfg.survival_window,
-            decay_rate=intrinsic_cfg.annealing.decay_rate,
+            decay_rate=annealing_cfg.decay_rate,
             epsilon_start=exploration_cfg.epsilon_start,
             epsilon_decay=exploration_cfg.epsilon_decay,
             epsilon_min=exploration_cfg.epsilon_end,
             device=self.device,
             active_mask=active_mask,
+            # New configurable normalization params (DRL expert review)
+            normalization_initial_count=rnd_cfg.normalization.initial_count,
+            normalization_min_variance=rnd_cfg.normalization.min_variance,
+            reward_clip_max=rnd_cfg.normalization.reward_clip_max,
+            # New annealing params (DRL expert review)
+            use_coefficient_of_variation=annealing_cfg.use_coefficient_of_variation,
+            hysteresis_cooldown=annealing_cfg.hysteresis_cooldown,
         )
 
         # Derive brain configuration from agent.yaml (v2.1 AgentConfig)

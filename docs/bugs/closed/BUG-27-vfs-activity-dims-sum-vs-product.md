@@ -1,7 +1,7 @@
 Title: VFSAdapter.build_observation_activity uses sum of shape dims instead of product
 
 Severity: high
-Status: open
+Status: resolved
 
 Subsystem: universe/adapters (VFS → DTO)
 Affected Version/Branch: main

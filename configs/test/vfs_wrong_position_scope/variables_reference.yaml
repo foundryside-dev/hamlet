@@ -1,0 +1,17 @@
+version: "1.0"
+variables:
+  - id: position
+    scope: global  # WRONG: should be 'agent'
+    type: vec2f
+    dims: 2
+    default: [0.0, 0.0]
+    lifetime: tick
+    readable_by: [agent, engine]
+    writable_by: [engine]
+    description: Normalized agent position in [0, 1]^2 range (but with wrong scope)
+    normalization:
+      kind: minmax
+      min: [0.0, 0.0]
+      max: [1.0, 1.0]
+
+exposed_observations: []

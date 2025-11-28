@@ -65,6 +65,39 @@ def test_assert_checkpoint_dimensions_raises_on_mismatch(compiled_universe) -> N
         assert_checkpoint_dimensions(checkpoint, compiled_universe)
 
 
+def test_assert_checkpoint_dimensions_validates_drive_hash(compiled_universe) -> None:
+    """CRIT-06: assert_checkpoint_dimensions should validate drive_hash."""
+    checkpoint: dict[str, object] = {}
+    attach_universe_metadata(checkpoint, compiled_universe)
+
+    # Valid checkpoint should pass
+    assert_checkpoint_dimensions(checkpoint, compiled_universe)
+
+    # Missing drive_hash should raise
+    checkpoint_no_hash = {}
+    attach_universe_metadata(checkpoint_no_hash, compiled_universe)
+    del checkpoint_no_hash["drive_hash"]
+    with pytest.raises(ValueError, match="missing drive_hash"):
+        assert_checkpoint_dimensions(checkpoint_no_hash, compiled_universe)
+
+    # Mismatched drive_hash should raise
+    checkpoint_bad_hash = {}
+    attach_universe_metadata(checkpoint_bad_hash, compiled_universe)
+    checkpoint_bad_hash["drive_hash"] = "deadbeefdeadbeefdeadbeefdeadbeef"
+    with pytest.raises(ValueError, match="drive_hash mismatch"):
+        assert_checkpoint_dimensions(checkpoint_bad_hash, compiled_universe)
+
+
+def test_attach_universe_metadata_includes_drive_hash(compiled_universe) -> None:
+    """attach_universe_metadata should include drive_hash."""
+    checkpoint: dict[str, object] = {}
+    attach_universe_metadata(checkpoint, compiled_universe)
+
+    assert "drive_hash" in checkpoint
+    assert checkpoint["drive_hash"] == compiled_universe.drive_hash
+    assert len(checkpoint["drive_hash"]) == 64  # SHA256 hex string
+
+
 def test_safe_torch_load_rejects_custom_objects(tmp_path: Path) -> None:
     checkpoint_path = tmp_path / "legacy.pt"
     legacy_checkpoint = PopulationCheckpoint(

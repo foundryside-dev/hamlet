@@ -331,8 +331,8 @@ class TestRewardPipeline:
         # Verify replay buffer has transitions
         assert len(population.replay_buffer) >= 10, "Replay buffer should have at least 10 transitions"
 
-        # Sample from replay buffer (need intrinsic_weight for combined reward calculation)
-        batch = population.replay_buffer.sample(batch_size=10, intrinsic_weight=0.5)
+        # Sample from replay buffer
+        batch = population.replay_buffer.sample(batch_size=10)
 
         # Verify batch contains 'rewards' key (combined rewards)
         assert "rewards" in batch, "Replay buffer should store 'rewards' key"

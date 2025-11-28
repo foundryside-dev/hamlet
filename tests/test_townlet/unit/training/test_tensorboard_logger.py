@@ -212,3 +212,112 @@ def test_log_network_stats_early_return_when_disabled(temp_test_dir):
 
     assert writer.add_scalar.call_count == 0
     assert writer.add_histogram.call_count == 0
+
+
+def test_log_reward_components_logs_all_required_metrics(temp_test_dir):
+    """Verify log_reward_components logs all required reward components."""
+    with logger_with_writer(temp_test_dir) as (logger, writer, _):
+        logger.log_reward_components(
+            step=1000,
+            total=1.5,
+            extrinsic=0.8,
+            intrinsic=0.5,
+            shaping=0.2,
+        )
+
+    # Verify all 4 required metrics are logged
+    scalar_tags = {call[0][0] for call in writer.add_scalar.call_args_list}
+    assert "agent_0/Rewards/Total" in scalar_tags
+    assert "agent_0/Rewards/Extrinsic" in scalar_tags
+    assert "agent_0/Rewards/Intrinsic" in scalar_tags
+    assert "agent_0/Rewards/Shaping" in scalar_tags
+
+    # Verify correct values
+    calls_dict = {call[0][0]: call[0][1] for call in writer.add_scalar.call_args_list}
+    assert calls_dict["agent_0/Rewards/Total"] == 1.5
+    assert calls_dict["agent_0/Rewards/Extrinsic"] == 0.8
+    assert calls_dict["agent_0/Rewards/Intrinsic"] == 0.5
+    assert calls_dict["agent_0/Rewards/Shaping"] == 0.2
+
+
+def test_log_reward_components_logs_optional_metrics(temp_test_dir):
+    """Verify log_reward_components logs optional intrinsic_raw and intrinsic_weight."""
+    with logger_with_writer(temp_test_dir) as (logger, writer, _):
+        logger.log_reward_components(
+            step=1000,
+            total=1.5,
+            extrinsic=0.8,
+            intrinsic=0.5,
+            shaping=0.2,
+            intrinsic_raw=0.7,
+            intrinsic_weight=0.9,
+        )
+
+    # Verify optional metrics are logged
+    scalar_tags = {call[0][0] for call in writer.add_scalar.call_args_list}
+    assert "agent_0/Rewards/Intrinsic_Raw" in scalar_tags
+    assert "agent_0/Rewards/Intrinsic_Weight" in scalar_tags
+
+    # Verify correct values
+    calls_dict = {call[0][0]: call[0][1] for call in writer.add_scalar.call_args_list}
+    assert calls_dict["agent_0/Rewards/Intrinsic_Raw"] == 0.7
+    assert calls_dict["agent_0/Rewards/Intrinsic_Weight"] == 0.9
+
+
+def test_log_reward_components_omits_none_optionals(temp_test_dir):
+    """Verify log_reward_components skips logging when optionals are None."""
+    with logger_with_writer(temp_test_dir) as (logger, writer, _):
+        logger.log_reward_components(
+            step=1000,
+            total=1.5,
+            extrinsic=0.8,
+            intrinsic=0.5,
+            shaping=0.2,
+            intrinsic_raw=None,
+            intrinsic_weight=None,
+        )
+
+    # Verify optional metrics are NOT logged
+    scalar_tags = {call[0][0] for call in writer.add_scalar.call_args_list}
+    assert "agent_0/Rewards/Intrinsic_Raw" not in scalar_tags
+    assert "agent_0/Rewards/Intrinsic_Weight" not in scalar_tags
+
+    # Verify only 4 required metrics were logged
+    assert len(writer.add_scalar.call_args_list) == 4
+
+
+def test_log_reward_components_respects_agent_id(temp_test_dir):
+    """Verify log_reward_components uses custom agent_id in metric paths."""
+    with logger_with_writer(temp_test_dir) as (logger, writer, _):
+        logger.log_reward_components(
+            step=1000,
+            total=1.5,
+            extrinsic=0.8,
+            intrinsic=0.5,
+            shaping=0.2,
+            agent_id="agent_42",
+        )
+
+    # Verify all metrics have custom agent_id prefix
+    scalar_tags = {call[0][0] for call in writer.add_scalar.call_args_list}
+    assert "agent_42/Rewards/Total" in scalar_tags
+    assert "agent_42/Rewards/Extrinsic" in scalar_tags
+    assert "agent_42/Rewards/Intrinsic" in scalar_tags
+    assert "agent_42/Rewards/Shaping" in scalar_tags
+
+
+def test_log_reward_components_defaults_empty_agent_id(temp_test_dir):
+    """Verify log_reward_components defaults empty string to agent_0."""
+    with logger_with_writer(temp_test_dir) as (logger, writer, _):
+        logger.log_reward_components(
+            step=1000,
+            total=1.5,
+            extrinsic=0.8,
+            intrinsic=0.5,
+            shaping=0.2,
+            agent_id="",
+        )
+
+    # Verify empty agent_id is replaced with "agent_0"
+    scalar_tags = {call[0][0] for call in writer.add_scalar.call_args_list}
+    assert "agent_0/Rewards/Total" in scalar_tags

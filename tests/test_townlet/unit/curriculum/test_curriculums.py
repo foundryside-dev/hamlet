@@ -54,7 +54,6 @@ class TestStaticCurriculum:
             epsilons=torch.zeros(3),
             intrinsic_rewards=torch.zeros(3),
             survival_times=torch.zeros(3),
-            curriculum_difficulties=torch.zeros(3),
             device=cpu_device,
         )
 
@@ -86,7 +85,6 @@ class TestStaticCurriculum:
             epsilons=torch.zeros(1),
             intrinsic_rewards=torch.zeros(1),
             survival_times=torch.zeros(1),
-            curriculum_difficulties=torch.zeros(1),
             device=cpu_device,
         )
 
@@ -169,7 +167,6 @@ class TestStaticCurriculum:
             epsilons=torch.zeros(1),
             intrinsic_rewards=torch.zeros(1),
             survival_times=torch.zeros(1),
-            curriculum_difficulties=torch.zeros(1),
             device=cpu_device,
         )
 
@@ -449,7 +446,6 @@ class TestAdversarialCurriculumStageAdvancement:
             epsilons=torch.zeros(1),
             intrinsic_rewards=torch.zeros(1),
             survival_times=torch.tensor([450.0]),
-            curriculum_difficulties=torch.zeros(1),
             device=cpu_device,
         )
 
@@ -640,7 +636,6 @@ class TestAdversarialCurriculumBatchDecisions:
             epsilons=torch.zeros(1),
             intrinsic_rewards=torch.zeros(1),
             survival_times=torch.zeros(1),
-            curriculum_difficulties=torch.zeros(1),
             device=cpu_device,
         )
 
@@ -676,7 +671,6 @@ class TestAdversarialCurriculumBatchDecisions:
             epsilons=torch.zeros(1),
             intrinsic_rewards=torch.zeros(1),
             survival_times=torch.zeros(1),
-            curriculum_difficulties=torch.zeros(1),
             device=cpu_device,
         )
 
@@ -704,7 +698,6 @@ class TestAdversarialCurriculumBatchDecisions:
             epsilons=torch.zeros(5),
             intrinsic_rewards=torch.zeros(5),
             survival_times=torch.zeros(5),
-            curriculum_difficulties=torch.zeros(5),
             device=cpu_device,
         )
 
@@ -734,7 +727,6 @@ class TestAdversarialCurriculumBatchDecisions:
             epsilons=torch.zeros(1),
             intrinsic_rewards=torch.zeros(1),
             survival_times=torch.zeros(1),
-            curriculum_difficulties=torch.zeros(1),
             device=cpu_device,
         )
 
@@ -805,7 +797,6 @@ class TestAdversarialCurriculumBatchDecisions:
             epsilons=torch.zeros(5, device=cpu_device),
             intrinsic_rewards=torch.zeros(5, device=cpu_device),
             survival_times=torch.zeros(5, device=cpu_device),
-            curriculum_difficulties=torch.zeros(5, device=cpu_device),
             device=cpu_device,
         )
 

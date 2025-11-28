@@ -2429,6 +2429,95 @@ class TestCalculateRewards:
         assert torch.allclose(total_rewards[1], torch.tensor(0.45, device=device))
         assert torch.allclose(total_rewards[2], torch.tensor(0.16, device=device))
 
+    def test_components_includes_intrinsic_raw(self, bar_index_map_dual):
+        """Components dict includes intrinsic_raw (before modifiers, after base_weight)."""
+        dac_config = DriveAsCodeConfig(
+            version="1.0",
+            modifiers={
+                "energy_crisis": ModifierConfig(
+                    bar="energy",
+                    ranges=[
+                        RangeConfig(name="crisis", min=0.0, max=0.2, multiplier=0.0),
+                        RangeConfig(name="normal", min=0.2, max=1.0, multiplier=1.0),
+                    ],
+                ),
+            },
+            extrinsic=ExtrinsicStrategyConfig(
+                type="multiplicative",
+                base=1.0,
+                bars=["energy", "health"],
+            ),
+            intrinsic=IntrinsicStrategyConfig(strategy="rnd", base_weight=0.5, apply_modifiers=["energy_crisis"]),
+        )
+
+        device = torch.device("cpu")
+        num_agents = 3
+        vfs_registry = VariableRegistry(
+            variables=[
+                VariableDef(
+                    id="energy",
+                    scope="agent",
+                    type="scalar",
+                    default=1.0,
+                    lifetime="episode",
+                    readable_by=["agent", "engine"],
+                    writable_by=["engine"],
+                ),
+                VariableDef(
+                    id="health",
+                    scope="agent",
+                    type="scalar",
+                    default=1.0,
+                    lifetime="episode",
+                    readable_by=["agent", "engine"],
+                    writable_by=["engine"],
+                ),
+            ],
+            num_agents=num_agents,
+            device=device,
+        )
+
+        engine = DACEngine(dac_config, vfs_registry, device, num_agents, bar_index_map_dual)
+
+        # Test scenarios:
+        # Agent 0: energy=1.0 (normal), health=1.0 → modifier=1.0
+        # Agent 1: energy=0.5 (normal), health=0.8 → modifier=1.0
+        # Agent 2: energy=0.1 (crisis), health=0.5 → modifier=0.0
+        meters = torch.tensor([[1.0, 1.0], [0.5, 0.8], [0.1, 0.5]], device=device)
+        dones = torch.tensor([False, False, False], device=device)
+        intrinsic_raw = torch.tensor([2.0, 3.0, 4.0], device=device)
+        step_counts = torch.tensor([5, 5, 5], device=device)
+
+        total_rewards, intrinsic_weights, components = engine.calculate_rewards(
+            step_counts=step_counts,
+            dones=dones,
+            meters=meters,
+            intrinsic_raw=intrinsic_raw,
+        )
+
+        # Verify components dict contains intrinsic_raw
+        assert "intrinsic_raw" in components, "Components dict must include intrinsic_raw"
+
+        # Verify intrinsic_raw = intrinsic_raw_input * base_weight (before modifiers)
+        # Agent 0: 2.0 * 0.5 = 1.0
+        # Agent 1: 3.0 * 0.5 = 1.5
+        # Agent 2: 4.0 * 0.5 = 2.0
+        expected_intrinsic_raw = torch.tensor([1.0, 1.5, 2.0], device=device)
+        assert torch.allclose(
+            components["intrinsic_raw"], expected_intrinsic_raw
+        ), "intrinsic_raw should be intrinsic_raw_input * base_weight (before modifiers)"
+
+        # Verify intrinsic = intrinsic_raw * modifier (after modifiers)
+        # Agent 0: 1.0 * 1.0 = 1.0
+        # Agent 1: 1.5 * 1.0 = 1.5
+        # Agent 2: 2.0 * 0.0 = 0.0 (crisis suppression)
+        expected_intrinsic = torch.tensor([1.0, 1.5, 0.0], device=device)
+        assert torch.allclose(components["intrinsic"], expected_intrinsic), "intrinsic should be intrinsic_raw * modifier"
+
+        # Verify intrinsic_weights (modifier values)
+        expected_weights = torch.tensor([1.0, 1.0, 0.0], device=device)
+        assert torch.allclose(intrinsic_weights, expected_weights), "intrinsic_weights should reflect modifier application"
+
     def test_calculate_rewards_no_intrinsic(self, bar_index_map_single):
         """calculate_rewards works when intrinsic_raw is zeros."""
         dac_config = DriveAsCodeConfig(

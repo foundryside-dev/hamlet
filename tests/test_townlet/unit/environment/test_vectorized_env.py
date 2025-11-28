@@ -314,6 +314,37 @@ class TestVectorizedHamletEnvStep:
         assert isinstance(info["positions"], torch.Tensor)
         assert isinstance(info["successful_interactions"], dict)
 
+    def test_step_info_contains_reward_components(self, cpu_env_factory):
+        """Test that info dict contains reward_components and intrinsic_weight."""
+        env = cpu_env_factory(num_agents=2)
+        env.reset()
+
+        actions = torch.full((2,), 5, device=env.device, dtype=torch.long)
+        _, _, _, info = env.step(actions)
+
+        # Verify reward_components is present and is a dict
+        assert "reward_components" in info
+        assert isinstance(info["reward_components"], dict)
+
+        # Verify expected component keys
+        components = info["reward_components"]
+        assert "extrinsic" in components
+        assert "intrinsic" in components
+        assert "shaping" in components
+
+        # Verify each component is a tensor with correct shape
+        assert isinstance(components["extrinsic"], torch.Tensor)
+        assert isinstance(components["intrinsic"], torch.Tensor)
+        assert isinstance(components["shaping"], torch.Tensor)
+        assert components["extrinsic"].shape == (2,)
+        assert components["intrinsic"].shape == (2,)
+        assert components["shaping"].shape == (2,)
+
+        # Verify intrinsic_weight is present and is a tensor
+        assert "intrinsic_weight" in info
+        assert isinstance(info["intrinsic_weight"], torch.Tensor)
+        assert info["intrinsic_weight"].shape == (2,)
+
 
 class TestExecuteActions:
     """Test VectorizedHamletEnv._execute_actions() method."""

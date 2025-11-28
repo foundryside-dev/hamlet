@@ -242,8 +242,7 @@ class TestEpisodeBuffering:
         for i in range(5):
             episode["observations"].append(torch.randn(env.observation_dim, device=cpu_device))
             episode["actions"].append(torch.tensor(i % env.action_dim, device=cpu_device))
-            episode["rewards_extrinsic"].append(torch.tensor(1.0, device=cpu_device))
-            episode["rewards_intrinsic"].append(torch.tensor(0.1, device=cpu_device))
+            episode["rewards"].append(torch.tensor(1.1, device=cpu_device))  # Combined reward
             episode["dones"].append(torch.tensor(False, device=cpu_device))
 
         # Store episode
@@ -316,8 +315,7 @@ class TestEpisodeBuffering:
         for i in range(3):
             episode["observations"].append(torch.randn(env.observation_dim, device=cpu_device))
             episode["actions"].append(torch.tensor(0, device=cpu_device))
-            episode["rewards_extrinsic"].append(torch.tensor(1.0, device=cpu_device))
-            episode["rewards_intrinsic"].append(torch.tensor(0.0, device=cpu_device))
+            episode["rewards"].append(torch.tensor(1.0, device=cpu_device))  # Combined reward
             episode["dones"].append(torch.tensor(False, device=cpu_device))
 
         # Flush episode
@@ -373,8 +371,7 @@ class TestRecurrentTraining:
             episode_data = {
                 "observations": torch.randn(10, env.observation_dim, device=cpu_device),
                 "actions": torch.randint(0, env.action_dim, (10,), device=cpu_device),
-                "rewards_extrinsic": torch.rand(10, device=cpu_device),
-                "rewards_intrinsic": torch.rand(10, device=cpu_device) * 0.1,
+                "rewards": torch.rand(10, device=cpu_device),  # Combined rewards
                 "dones": torch.zeros(10, dtype=torch.bool, device=cpu_device),
             }
             episode_data["dones"][-1] = True

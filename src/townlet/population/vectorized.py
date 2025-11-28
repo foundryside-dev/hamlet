@@ -29,7 +29,7 @@ from townlet.population.base import PopulationManager
 from townlet.population.runtime_registry import AgentRuntimeRegistry
 from townlet.training.replay_buffer import ReplayBuffer
 from townlet.training.sequential_replay_buffer import SequentialReplayBuffer
-from townlet.training.state import BatchedAgentState, CurriculumDecision, PopulationCheckpoint
+from townlet.training.state import BatchedAgentState, CurriculumDecision, PopulationCheckpoint, RewardTensor
 
 if TYPE_CHECKING:
     from townlet.environment.vectorized_env import VectorizedHamletEnv
@@ -265,12 +265,18 @@ class VectorizedPopulation(PopulationManager):
     # Episode lifecycle helpers
     # ------------------------------------------------------------------ #
     def _new_episode_container(self) -> EpisodeContainer:
-        """Create a fresh container for accumulating episode data."""
+        """Create a fresh container for accumulating episode data.
+
+        CRIT-07: Now uses single 'rewards' key for DAC-composed totals,
+        plus component keys for provenance tracking.
+        """
         return {
             "observations": [],
             "actions": [],
-            "rewards_extrinsic": [],
-            "rewards_intrinsic": [],
+            "rewards": [],  # CRIT-07: Single rewards field for DAC-composed totals
+            "rewards_extrinsic": [],  # DAC extrinsic component
+            "rewards_intrinsic": [],  # DAC intrinsic component (after modifiers)
+            "rewards_shaping": [],  # DAC shaping component
             "dones": [],
         }
 
@@ -289,6 +295,39 @@ class VectorizedPopulation(PopulationManager):
             self.tb_logger.writer.add_histogram(f"Network/Weights/{name}", param.data, self.total_steps)
             if param.grad is not None:
                 self.tb_logger.writer.add_histogram(f"Network/Gradients/{name}", param.grad, self.total_steps)
+
+    def _log_reward_components(
+        self,
+        components: dict[str, torch.Tensor],
+        intrinsic_weight: torch.Tensor | None,
+    ) -> None:
+        """Log reward component means to TensorBoard.
+
+        Args:
+            components: DAC reward components dict with keys:
+                - "extrinsic": Extrinsic (environment) rewards
+                - "intrinsic": Intrinsic (exploration) rewards after modifiers
+                - "shaping": Shaping bonus rewards
+                - "intrinsic_raw": (optional) Intrinsic before modifiers
+            intrinsic_weight: Effective intrinsic weight after modifiers
+        """
+        if self.tb_logger is None:
+            return
+
+        step = self.total_steps
+
+        # Log mean values across all agents
+        self.tb_logger.log_custom_metric("Rewards/Extrinsic_Mean", components["extrinsic"].mean().item(), step)
+        self.tb_logger.log_custom_metric("Rewards/Intrinsic_Mean", components["intrinsic"].mean().item(), step)
+        self.tb_logger.log_custom_metric("Rewards/Shaping_Mean", components["shaping"].mean().item(), step)
+
+        # Log intrinsic_raw if available (before modifiers)
+        if "intrinsic_raw" in components:
+            self.tb_logger.log_custom_metric("Rewards/Intrinsic_Raw_Mean", components["intrinsic_raw"].mean().item(), step)
+
+        # Log effective intrinsic weight
+        if intrinsic_weight is not None:
+            self.tb_logger.log_custom_metric("Rewards/Intrinsic_Weight_Mean", intrinsic_weight.mean().item(), step)
 
     # ------------------------------------------------------------------ #
     # Network building helper (POP-001 DRY)
@@ -356,15 +395,21 @@ class VectorizedPopulation(PopulationManager):
 
         sequential_buffer = cast(SequentialReplayBuffer, self.replay_buffer)
 
-        sequential_buffer.store_episode(
-            {
-                "observations": torch.stack(episode["observations"]),
-                "actions": torch.stack(episode["actions"]),
-                "rewards_extrinsic": torch.stack(episode["rewards_extrinsic"]),
-                "rewards_intrinsic": torch.stack(episode["rewards_intrinsic"]),
-                "dones": torch.stack(episode["dones"]),
-            }
-        )
+        # CRIT-07: Store episode with components for provenance tracking
+        episode_data = {
+            "observations": torch.stack(episode["observations"]),
+            "actions": torch.stack(episode["actions"]),
+            "rewards": torch.stack(episode["rewards"]),
+            "dones": torch.stack(episode["dones"]),
+        }
+
+        # Add components if present
+        if len(episode["rewards_extrinsic"]) > 0:
+            episode_data["rewards_extrinsic"] = torch.stack(episode["rewards_extrinsic"])
+            episode_data["rewards_intrinsic"] = torch.stack(episode["rewards_intrinsic"])
+            episode_data["rewards_shaping"] = torch.stack(episode["rewards_shaping"])
+
+        sequential_buffer.store_episode(episode_data)
 
         self.current_episodes[agent_idx] = self._new_episode_container()
         return True
@@ -599,7 +644,6 @@ class VectorizedPopulation(PopulationManager):
             epsilons=self.current_epsilons,
             intrinsic_rewards=torch.zeros(self.num_agents, device=self.device),
             survival_times=envs.step_counts.clone(),
-            curriculum_difficulties=torch.zeros(self.num_agents, device=self.device),
             device=self.device,
         )
 
@@ -645,25 +689,42 @@ class VectorizedPopulation(PopulationManager):
             intrinsic_rewards = self.exploration.compute_intrinsic_rewards(self.current_obs, update_stats=False)
 
         # 7. Store transition in replay buffer
-        # Note: Since DAC already composed rewards, we store total rewards and zero intrinsic
-        # to avoid double-counting during replay buffer sampling
+        # Extract DAC components from info dict for provenance tracking
+        components = info.get("reward_components", {})
+        intrinsic_weight = info.get("intrinsic_weight")
+
+        reward_tensor = RewardTensor.from_dac(
+            total=rewards,
+            extrinsic=components.get("extrinsic"),
+            intrinsic=components.get("intrinsic"),
+            shaping=components.get("shaping"),
+        )
+
+        # Log components to TensorBoard (step-level aggregation)
+        if self.tb_logger is not None and components:
+            self._log_reward_components(
+                components=components,
+                intrinsic_weight=intrinsic_weight,
+            )
+
         if self.is_recurrent:
-            # For recurrent networks: accumulate episodes
+            # For recurrent networks: accumulate episodes with components
             for i in range(self.num_agents):
                 self.current_episodes[i]["observations"].append(self.current_obs[i].cpu())
                 self.current_episodes[i]["actions"].append(actions[i].cpu())
-                self.current_episodes[i]["rewards_extrinsic"].append(rewards[i].cpu())  # Actually total from DAC
-                self.current_episodes[i]["rewards_intrinsic"].append(torch.zeros_like(rewards[i]).cpu())  # Zero to avoid double-counting
+                self.current_episodes[i]["rewards"].append(rewards[i].cpu())
+                self.current_episodes[i]["rewards_extrinsic"].append(components["extrinsic"][i].cpu())
+                self.current_episodes[i]["rewards_intrinsic"].append(components["intrinsic"][i].cpu())
+                self.current_episodes[i]["rewards_shaping"].append(components["shaping"][i].cpu())
                 self.current_episodes[i]["dones"].append(dones[i].cpu())
         else:
             # For feedforward networks: store individual transitions
-            # Both ReplayBuffer and PrioritizedReplayBuffer share same push() signature
+            # Both ReplayBuffer and PrioritizedReplayBuffer accept RewardTensor
             # SequentialReplayBuffer is only used for recurrent (not in this branch)
             self.replay_buffer.push(  # type: ignore[union-attr]
                 observations=self.current_obs,
                 actions=actions,
-                rewards_extrinsic=rewards,  # Actually total rewards from DAC
-                rewards_intrinsic=torch.zeros_like(rewards),  # Zero to avoid double-counting
+                rewards=reward_tensor,  # CRIT-07: RewardTensor with DAC-composed total
                 next_observations=next_obs,
                 dones=dones,
             )
@@ -686,9 +747,7 @@ class VectorizedPopulation(PopulationManager):
         min_buffer_size = 16 if self.is_recurrent else self.batch_size
         # All buffer types implement __len__, but mypy doesn't infer it for unions
         if self.total_steps % self.train_frequency == 0 and len(self.replay_buffer) >= min_buffer_size:  # type: ignore[arg-type]
-            # Note: intrinsic_weight is 1.0 because DAC already composed rewards.
-            # The replay buffer stores total rewards (not separate extrinsic/intrinsic).
-            intrinsic_weight = 1.0
+            # MED-13: Removed intrinsic_weight parameter - DAC already composes rewards before storage
 
             if self.is_recurrent:
                 # Sequential LSTM training with target network for temporal dependencies
@@ -696,7 +755,6 @@ class VectorizedPopulation(PopulationManager):
                 batch = sequential_buffer.sample_sequences(
                     batch_size=self.batch_size,
                     seq_len=self.sequence_length,
-                    intrinsic_weight=intrinsic_weight,
                 )
 
                 batch_size = batch["observations"].shape[0]
@@ -839,7 +897,7 @@ class VectorizedPopulation(PopulationManager):
                     indices = cast(np.ndarray, batch["indices"])  # For priority updates
                 else:
                     standard_buffer = cast(ReplayBuffer, self.replay_buffer)
-                    batch = standard_buffer.sample(batch_size=self.batch_size, intrinsic_weight=intrinsic_weight)
+                    batch = standard_buffer.sample(batch_size=self.batch_size)  # MED-13: Removed intrinsic_weight
                     weights = torch.ones(self.batch_size, device=self.device)  # Uniform weights
 
                 # Compute Q-predictions from online network
@@ -953,7 +1011,6 @@ class VectorizedPopulation(PopulationManager):
             epsilons=self.current_epsilons,
             intrinsic_rewards=intrinsic_rewards,
             survival_times=info["step_counts"],
-            curriculum_difficulties=torch.zeros(self.num_agents, device=self.device),
             device=self.device,
             info=info,  # Pass environment info (includes successful_interactions, q_values)
         )

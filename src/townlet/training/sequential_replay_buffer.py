@@ -1,6 +1,12 @@
 """
 Sequential Replay Buffer for LSTM Training.
 
+CRIT-07: Updated to use single 'rewards' field for DAC-composed totals.
+Episodes store pre-composed total rewards with optional component breakdown.
+
+format_version 3: Includes optional reward components (rewards_extrinsic,
+rewards_intrinsic, rewards_shaping) for TensorBoard analysis.
+
 Unlike standard replay buffers that sample individual transitions,
 this buffer stores complete episodes and samples sequences of consecutive
 transitions to maintain temporal structure for recurrent networks.
@@ -9,6 +15,7 @@ transitions to maintain temporal structure for recurrent networks.
 from __future__ import annotations
 
 import random
+from collections import deque  # MED-02: Use deque for O(1) popleft
 from typing import Any
 
 import torch
@@ -19,6 +26,9 @@ Episode = dict[str, torch.Tensor]
 class SequentialReplayBuffer:
     """
     Replay buffer that maintains temporal structure for LSTM training.
+
+    Episodes store single 'rewards' field with DAC-composed totals, plus optional
+    component breakdown (rewards_extrinsic, rewards_intrinsic, rewards_shaping).
 
     Stores complete episodes and samples sequences of consecutive transitions.
     This is essential for training recurrent networks which need temporal context.
@@ -37,10 +47,17 @@ class SequentialReplayBuffer:
         Args:
             capacity: Maximum number of transitions to store
             device: Device to store tensors on (CPU or CUDA)
+
+        Raises:
+            ValueError: If capacity <= 0
         """
+        # LOW-02: Validate positive capacity
+        if capacity <= 0:
+            raise ValueError(f"Buffer capacity must be positive, got {capacity}")
+
         self.capacity = capacity
         self.device = device
-        self.episodes: list[Episode] = []
+        self.episodes: deque[Episode] = deque()  # MED-02: deque for O(1) popleft
         self.num_transitions = 0
 
     def __len__(self) -> int:
@@ -50,10 +67,10 @@ class SequentialReplayBuffer:
     def clear(self) -> None:
         """Reset buffer to empty state and deallocate all episode storage.
 
-        Clears the episode list and resets transition count to 0.
+        Clears the episode deque and resets transition count to 0.
         Buffer can be reused after clearing.
         """
-        self.episodes = []
+        self.episodes = deque()  # MED-02: Reset to empty deque
         self.num_transitions = 0
 
     def stats(self) -> dict[str, Any]:
@@ -92,35 +109,60 @@ class SequentialReplayBuffer:
         """
         Store a complete episode.
 
+        CRIT-07: Now requires 'rewards' key with pre-composed totals.
+        Component keys (rewards_extrinsic, rewards_intrinsic, rewards_shaping) are optional.
+
         Args:
             episode: Dict with keys:
                 - 'observations': [seq_len, obs_dim]
                 - 'actions': [seq_len]
-                - 'rewards' OR ('rewards_extrinsic' AND 'rewards_intrinsic'): [seq_len]
+                - 'rewards': [seq_len] - DAC-composed total rewards
                 - 'dones': [seq_len]
+                - 'rewards_extrinsic': [seq_len] (optional) - extrinsic component
+                - 'rewards_intrinsic': [seq_len] (optional) - intrinsic component
+                - 'rewards_shaping': [seq_len] (optional) - shaping component
 
         Raises:
             ValueError: If episode structure is invalid
         """
         # Validate episode structure
-        required_keys = {"observations", "actions", "dones"}
+        required_keys = {"observations", "actions", "rewards", "dones"}
+        optional_component_keys = {"rewards_extrinsic", "rewards_intrinsic", "rewards_shaping"}
 
         missing_keys = required_keys - set(episode.keys())
         if missing_keys:
             raise ValueError(f"Missing required keys: {missing_keys}")
 
-        # Check for reward keys (either 'rewards' or both extrinsic/intrinsic)
-        has_rewards = "rewards" in episode
-        has_split_rewards = "rewards_extrinsic" in episode and "rewards_intrinsic" in episode
-
-        if not has_rewards and not has_split_rewards:
-            raise ValueError("Episode must have 'rewards' or both 'rewards_extrinsic' and 'rewards_intrinsic'")
-
-        # Validate all tensors have same length
+        # LOW-01: Validate episode has positive length
         seq_len = len(episode["observations"])
+        if seq_len == 0:
+            raise ValueError("Cannot store zero-length episode (no transitions)")
+
+        # LOW-15: Validate tensor shapes for consistency
         for key, tensor in episode.items():
             if len(tensor) != seq_len:
                 raise ValueError(f"Episode tensor length mismatch: observations has {seq_len} steps, but {key} has {len(tensor)} steps")
+
+        # LOW-15: Validate tensor dimensionality
+        if episode["observations"].ndim != 2:
+            raise ValueError(f"observations must be 2D [seq_len, obs_dim], got shape {episode['observations'].shape}")
+        if episode["actions"].ndim != 1:
+            raise ValueError(f"actions must be 1D [seq_len], got shape {episode['actions'].shape}")
+        if episode["rewards"].ndim != 1:
+            raise ValueError(f"rewards must be 1D [seq_len], got shape {episode['rewards'].shape}")
+        if episode["dones"].ndim != 1:
+            raise ValueError(f"dones must be 1D [seq_len], got shape {episode['dones'].shape}")
+
+        # Validate optional component keys if present
+        for component_key in optional_component_keys:
+            if component_key in episode:
+                if episode[component_key].ndim != 1:
+                    raise ValueError(f"{component_key} must be 1D [seq_len], got shape {episode[component_key].shape}")
+                if len(episode[component_key]) != seq_len:
+                    comp_len = len(episode[component_key])
+                    raise ValueError(
+                        f"Episode tensor length mismatch: observations has {seq_len} steps, " f"but {component_key} has {comp_len} steps"
+                    )
 
         # Move episode to correct device
         episode_on_device: Episode = {key: tensor.to(self.device) for key, tensor in episode.items()}
@@ -129,19 +171,21 @@ class SequentialReplayBuffer:
         self.episodes.append(episode_on_device)
         self.num_transitions += seq_len
 
-        # Evict oldest episodes if over capacity
+        # MED-02: Evict oldest episodes if over capacity (O(1) popleft with deque)
         while self.num_transitions > self.capacity and len(self.episodes) > 0:
-            oldest_episode = self.episodes.pop(0)
+            oldest_episode = self.episodes.popleft()  # O(1) instead of O(n) pop(0)
             self.num_transitions -= len(oldest_episode["observations"])
 
-    def sample_sequences(self, batch_size: int, seq_len: int, intrinsic_weight: float = 1.0) -> dict[str, torch.Tensor]:
+    def sample_sequences(self, batch_size: int, seq_len: int) -> dict[str, torch.Tensor]:
         """
         Sample a batch of sequential transitions.
+
+        CRIT-07: Rewards are already composed by DAC before storage.
+        MED-13: Removed dead intrinsic_weight parameter (always 1.0 post-DAC).
 
         Args:
             batch_size: Number of sequences to sample
             seq_len: Length of each sequence
-            intrinsic_weight: Weight for intrinsic rewards (if using dual rewards)
 
         Returns:
             Dict with keys:
@@ -179,9 +223,13 @@ class SequentialReplayBuffer:
         # Sample batch_size sequences
         sampled_sequences = []
 
+        # LOW-14: Weight episode selection by length for uniform transition sampling
+        # Without weighting, short episodes are oversampled relative to their contribution
+        episode_lengths = [len(ep["observations"]) for ep in valid_episodes]
+
         for _ in range(batch_size):
-            # Randomly select an episode
-            episode = random.choice(valid_episodes)
+            # Randomly select an episode weighted by length (uniform transition sampling)
+            episode = random.choices(valid_episodes, weights=episode_lengths, k=1)[0]
 
             # Randomly select a starting position (ensuring we can get seq_len transitions)
             ep_len = episode["observations"].shape[0]
@@ -193,17 +241,9 @@ class SequentialReplayBuffer:
             sequence = {
                 "observations": episode["observations"][start_idx:end_idx],
                 "actions": episode["actions"][start_idx:end_idx],
+                "rewards": episode["rewards"][start_idx:end_idx],  # CRIT-07: Use pre-composed rewards
                 "dones": episode["dones"][start_idx:end_idx],
             }
-
-            # Handle rewards (combine if using dual rewards)
-            if "rewards" in episode:
-                sequence["rewards"] = episode["rewards"][start_idx:end_idx]
-            else:
-                # Combine extrinsic and intrinsic rewards
-                extrinsic = episode["rewards_extrinsic"][start_idx:end_idx]
-                intrinsic = episode["rewards_intrinsic"][start_idx:end_idx]
-                sequence["rewards"] = extrinsic + intrinsic * intrinsic_weight
 
             # Create validity mask (P2.2: Post-terminal masking)
             # Mask is True up to and including terminal, False after
@@ -237,11 +277,14 @@ class SequentialReplayBuffer:
         """
         Serialize episode buffer for checkpointing (P1.1).
 
+        format_version 3 includes optional reward component keys.
+
         Returns:
             Dictionary with all episodes on CPU for saving
         """
         if len(self.episodes) == 0:
             return {
+                "format_version": 3,  # Version 3 includes optional component keys
                 "num_transitions": 0,
                 "episodes": [],
                 "capacity": self.capacity,
@@ -250,17 +293,20 @@ class SequentialReplayBuffer:
         # Convert episodes to CPU tensors
         serialized_episodes: list[dict[str, torch.Tensor]] = []
         for episode in self.episodes:
-            serialized_episodes.append(
-                {
-                    "observations": episode["observations"].cpu(),
-                    "actions": episode["actions"].cpu(),
-                    "rewards_extrinsic": episode["rewards_extrinsic"].cpu(),
-                    "rewards_intrinsic": episode["rewards_intrinsic"].cpu(),
-                    "dones": episode["dones"].cpu(),
-                }
-            )
+            serialized_episode = {
+                "observations": episode["observations"].cpu(),
+                "actions": episode["actions"].cpu(),
+                "rewards": episode["rewards"].cpu(),
+                "dones": episode["dones"].cpu(),
+            }
+            # Add components if present
+            for key in ["rewards_extrinsic", "rewards_intrinsic", "rewards_shaping"]:
+                if key in episode:
+                    serialized_episode[key] = episode[key].cpu()
+            serialized_episodes.append(serialized_episode)
 
         return {
+            "format_version": 3,  # Version 3 includes optional component keys
             "num_transitions": self.num_transitions,
             "episodes": serialized_episodes,
             "capacity": self.capacity,
@@ -270,20 +316,43 @@ class SequentialReplayBuffer:
         """
         Restore episode buffer from serialized state (P1.1).
 
+        Now requires format_version >= 3. Legacy formats not supported.
+
         Args:
             state: Dictionary from serialize()
+
+        Raises:
+            ValueError: If loading legacy format (version < 3)
         """
+        # Reject legacy format (per CLAUDE.md: zero backwards compatibility)
+        format_version = state.get("format_version", 1)
+        if format_version < 3:
+            raise ValueError(
+                "Cannot load legacy sequential buffer checkpoint (format_version < 3). "
+                "Regenerate checkpoint with current Townlet version."
+            )
+
         self.num_transitions = state["num_transitions"]
-        self.episodes = []
+
+        # MED-17: Validate capacity similar to replay_buffer.py HIGH-02 fix
+        if self.num_transitions > self.capacity:
+            raise ValueError(
+                f"Cannot load buffer: loaded num_transitions ({self.num_transitions}) exceeds buffer capacity ({self.capacity}). "
+                f"Either increase buffer capacity in config or regenerate checkpoint with smaller buffer."
+            )
+
+        self.episodes = deque()  # MED-02: Use deque consistently
 
         # Restore episodes to device
         for ep_state in state["episodes"]:
-            self.episodes.append(
-                {
-                    "observations": ep_state["observations"].to(self.device),
-                    "actions": ep_state["actions"].to(self.device),
-                    "rewards_extrinsic": ep_state["rewards_extrinsic"].to(self.device),
-                    "rewards_intrinsic": ep_state["rewards_intrinsic"].to(self.device),
-                    "dones": ep_state["dones"].to(self.device),
-                }
-            )
+            episode = {
+                "observations": ep_state["observations"].to(self.device),
+                "actions": ep_state["actions"].to(self.device),
+                "rewards": ep_state["rewards"].to(self.device),
+                "dones": ep_state["dones"].to(self.device),
+            }
+            # Restore components if present
+            for key in ["rewards_extrinsic", "rewards_intrinsic", "rewards_shaping"]:
+                if key in ep_state:
+                    episode[key] = ep_state[key].to(self.device)
+            self.episodes.append(episode)

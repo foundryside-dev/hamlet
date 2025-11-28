@@ -679,7 +679,6 @@ class LiveInferenceServer:
             epsilons=torch.full((1,), self.current_epsilon, device=self.device),
             intrinsic_rewards=torch.zeros(1, device=self.device),
             survival_times=torch.zeros(1, device=self.device),
-            curriculum_difficulties=torch.zeros(1, device=self.device),
             device=self.device,
         )
         curriculum_decisions = self.curriculum.get_batch_decisions(temp_state, ["agent_0"])

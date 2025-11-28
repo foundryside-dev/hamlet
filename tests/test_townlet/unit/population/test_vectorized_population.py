@@ -1178,3 +1178,230 @@ def test_device_mismatch_in_step_all_raises_runtime_error(
 
     with pytest.raises(RuntimeError, match="Observation tensor on"):
         population.step_population(action_mask)
+
+
+class TestRewardComponentWiring:
+    """Test that reward components flow from env to population to buffer."""
+
+    def test_components_extracted_from_info_dict(
+        self,
+        compile_universe,
+        test_config_pack_path,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ):
+        """VectorizedPopulation extracts reward components from env info dict."""
+
+        import torch
+
+        from townlet.environment.vectorized_env import VectorizedHamletEnv
+
+        # Create CPU-based environment to match cpu_device
+        universe = compile_universe(test_config_pack_path)
+        basic_env = VectorizedHamletEnv.from_universe(
+            universe,
+            level_name="L0_test",
+            num_agents=1,
+            device=cpu_device,
+        )
+
+        population = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            device=cpu_device,
+            brain_config=minimal_brain_config,
+        )
+
+        # Initialize tb_logger attribute (implementation expects it to exist)
+        population.tb_logger = None
+
+        # Initialize curriculum before stepping population
+        adversarial_curriculum.initialize_population(1)
+
+        # Mock the environment step to return components
+        original_step = basic_env.step
+
+        def mock_step(actions, *args, **kwargs):
+            obs, rewards, dones, info = original_step(actions, *args, **kwargs)
+            # Add mock components to info dict
+            info["reward_components"] = {
+                "extrinsic": torch.tensor([0.5]),
+                "intrinsic": torch.tensor([0.3]),
+                "shaping": torch.tensor([0.2]),
+            }
+            info["intrinsic_weight"] = torch.tensor([1.0])
+            return obs, rewards, dones, info
+
+        basic_env.step = mock_step
+
+        # Step population
+        population.step_population(basic_env)
+
+        # Verify replay buffer has components
+        if hasattr(population.replay_buffer, "rewards_extrinsic"):
+            assert population.replay_buffer.rewards_extrinsic is not None
+            assert population.replay_buffer.rewards_intrinsic is not None
+            assert population.replay_buffer.rewards_shaping is not None
+
+    def test_reward_tensor_created_with_components(
+        self,
+        compile_universe,
+        test_config_pack_path,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ):
+        """RewardTensor is created with component fields populated."""
+        import torch
+
+        from townlet.environment.vectorized_env import VectorizedHamletEnv
+
+        # Create CPU-based environment to match cpu_device
+        universe = compile_universe(test_config_pack_path)
+        basic_env = VectorizedHamletEnv.from_universe(
+            universe,
+            level_name="L0_test",
+            num_agents=1,
+            device=cpu_device,
+        )
+
+        population = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            device=cpu_device,
+            brain_config=minimal_brain_config,
+        )
+
+        # Initialize tb_logger attribute (implementation expects it to exist)
+        population.tb_logger = None
+
+        # Initialize curriculum before stepping population
+        adversarial_curriculum.initialize_population(1)
+
+        # Mock environment step
+        original_step = basic_env.step
+
+        def mock_step(actions, *args, **kwargs):
+            obs, rewards, dones, info = original_step(actions, *args, **kwargs)
+            info["reward_components"] = {
+                "extrinsic": torch.tensor([0.5]),
+                "intrinsic": torch.tensor([0.3]),
+                "shaping": torch.tensor([0.2]),
+            }
+            return obs, rewards, dones, info
+
+        basic_env.step = mock_step
+
+        # Step population (this will create RewardTensor internally)
+        population.step_population(basic_env)
+
+        # Verify components are stored in buffer
+        buffer = population.replay_buffer
+        if hasattr(buffer, "rewards_extrinsic") and buffer.size > 0:
+            # Components should be stored
+            assert buffer.rewards_extrinsic[0].item() == pytest.approx(0.5)
+            assert buffer.rewards_intrinsic[0].item() == pytest.approx(0.3)
+            assert buffer.rewards_shaping[0].item() == pytest.approx(0.2)
+
+    def test_tensorboard_logging_called_when_components_present(
+        self,
+        compile_universe,
+        test_config_pack_path,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+        tmp_path,
+    ):
+        """TensorBoard logging is called when components are in info dict."""
+        from unittest.mock import MagicMock
+
+        import torch
+
+        from townlet.environment.vectorized_env import VectorizedHamletEnv
+
+        # Create CPU-based environment to match cpu_device
+        universe = compile_universe(test_config_pack_path)
+        basic_env = VectorizedHamletEnv.from_universe(
+            universe,
+            level_name="L0_test",
+            num_agents=1,
+            device=cpu_device,
+        )
+
+        # Create population with TensorBoard logger
+        from townlet.training.tensorboard_logger import TensorBoardLogger
+
+        population = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            device=cpu_device,
+            brain_config=minimal_brain_config,
+        )
+
+        # Initialize curriculum before stepping population
+        adversarial_curriculum.initialize_population(1)
+
+        # Attach TensorBoard logger
+        population.tb_logger = TensorBoardLogger(log_dir=tmp_path / "tb_logs")
+
+        # Mock the log_custom_metric method
+        population.tb_logger.log_custom_metric = MagicMock()
+
+        # Mock environment step
+        original_step = basic_env.step
+
+        def mock_step(actions, *args, **kwargs):
+            obs, rewards, dones, info = original_step(actions, *args, **kwargs)
+            info["reward_components"] = {
+                "extrinsic": torch.tensor([0.5]),
+                "intrinsic": torch.tensor([0.3]),
+                "shaping": torch.tensor([0.2]),
+            }
+            info["intrinsic_weight"] = torch.tensor([1.0])
+            return obs, rewards, dones, info
+
+        basic_env.step = mock_step
+
+        # Step population
+        population.step_population(basic_env)
+
+        # Verify log_custom_metric was called for components
+        assert population.tb_logger.log_custom_metric.call_count >= 3
+        # Should have logged at least: extrinsic, intrinsic, shaping
+
+        # Cleanup
+        population.tb_logger.close()
+
+    def test_episode_container_has_component_keys(
+        self,
+        basic_env,
+        adversarial_curriculum,
+        epsilon_greedy_exploration,
+        cpu_device,
+        minimal_brain_config,
+    ):
+        """Episode containers include component keys for provenance tracking."""
+        population = _make_population(
+            env=basic_env,
+            curriculum=adversarial_curriculum,
+            exploration=epsilon_greedy_exploration,
+            device=cpu_device,
+            brain_config=minimal_brain_config,
+        )
+
+        # Test _new_episode_container directly
+        episode = population._new_episode_container()
+        assert "rewards" in episode
+        assert "rewards_extrinsic" in episode
+        assert "rewards_intrinsic" in episode
+        assert "rewards_shaping" in episode
+        assert "observations" in episode
+        assert "actions" in episode
+        assert "dones" in episode

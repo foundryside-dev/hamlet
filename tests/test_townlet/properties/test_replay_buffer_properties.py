@@ -15,6 +15,7 @@ from hypothesis import assume, given, settings
 from hypothesis import strategies as st
 
 from townlet.training.replay_buffer import ReplayBuffer
+from townlet.training.state import RewardTensor
 
 
 class TestReplayBufferCapacityProperties:
@@ -43,12 +44,11 @@ class TestReplayBufferCapacityProperties:
 
             obs = torch.randn(current_batch, obs_dim)
             actions = torch.randint(0, 6, (current_batch,))
-            rewards_ext = torch.randn(current_batch)
-            rewards_int = torch.randn(current_batch)
+            rewards = RewardTensor.from_components(extrinsic=torch.randn(current_batch), intrinsic=torch.randn(current_batch))
             next_obs = torch.randn(current_batch, obs_dim)
             dones = torch.rand(current_batch) > 0.8
 
-            buffer.push(obs, actions, rewards_ext, rewards_int, next_obs, dones)
+            buffer.push(obs, actions, rewards, next_obs, dones)
             pushes_done += current_batch
 
             # PROPERTY: Buffer size never exceeds capacity
@@ -80,12 +80,11 @@ class TestReplayBufferCapacityProperties:
             # Use observation value to track insertion order
             obs = torch.full((1, obs_dim), float(i))
             actions = torch.tensor([0])
-            rewards_ext = torch.tensor([0.0])
-            rewards_int = torch.tensor([0.0])
+            rewards = RewardTensor.from_components(extrinsic=torch.tensor([0.0]), intrinsic=torch.tensor([0.0]))
             next_obs = torch.zeros(1, obs_dim)
             dones = torch.tensor([False])
 
-            buffer.push(obs, actions, rewards_ext, rewards_int, next_obs, dones)
+            buffer.push(obs, actions, rewards, next_obs, dones)
 
         # PROPERTY: Buffer contains only the last 'capacity' transitions
         assert len(buffer) == capacity
@@ -140,16 +139,15 @@ class TestReplayBufferSamplingProperties:
             batch = min(10, effective_fill - transitions_pushed)
             obs = torch.randn(batch, obs_dim)
             actions = torch.randint(0, 6, (batch,))
-            rewards_ext = torch.randn(batch)
-            rewards_int = torch.randn(batch)
+            rewards = RewardTensor.from_components(extrinsic=torch.randn(batch), intrinsic=torch.randn(batch))
             next_obs = torch.randn(batch, obs_dim)
             dones = torch.rand(batch) > 0.9
 
-            buffer.push(obs, actions, rewards_ext, rewards_int, next_obs, dones)
+            buffer.push(obs, actions, rewards, next_obs, dones)
             transitions_pushed += batch
 
         # Sample batch
-        batch = buffer.sample(batch_size=sample_batch_size, intrinsic_weight=0.5)
+        batch = buffer.sample(batch_size=sample_batch_size)
 
         # PROPERTY: Correct shapes
         assert batch["observations"].shape == (sample_batch_size, obs_dim)
@@ -172,9 +170,9 @@ class TestReplayBufferSamplingProperties:
     )
     @settings(max_examples=30)
     def test_reward_combination_is_correct(self, intrinsic_weight):
-        """Property: Combined rewards = extrinsic + intrinsic * weight.
+        """Property: RewardTensor correctly computes total from components.
 
-        The buffer should correctly combine extrinsic and intrinsic rewards
+        The RewardTensor DTO should correctly combine extrinsic and intrinsic rewards
         using the provided weight, for any valid weight value.
         """
         buffer = ReplayBuffer(capacity=100, device=torch.device("cpu"))
@@ -192,35 +190,24 @@ class TestReplayBufferSamplingProperties:
         next_obs = torch.randn(num_transitions, obs_dim)
         dones = torch.zeros(num_transitions, dtype=torch.bool)
 
-        buffer.push(obs, actions, extrinsic_values, intrinsic_values, next_obs, dones)
+        # CRIT-07: Compute rewards using RewardTensor
+        rewards = RewardTensor.from_components(extrinsic=extrinsic_values, intrinsic=intrinsic_values, intrinsic_weight=intrinsic_weight)
+
+        buffer.push(obs, actions, rewards, next_obs, dones)
 
         # Sample all transitions
-        batch = buffer.sample(batch_size=num_transitions, intrinsic_weight=intrinsic_weight)
+        batch = buffer.sample(batch_size=num_transitions)
 
         # Compute expected rewards for verification
-        # Note: sampling is random, so we can't know which indices were sampled
-        # But we CAN verify that each sampled reward matches the formula
-        sampled_rewards = batch["rewards"]
-
-        # For each sampled reward, verify it matches extrinsic + intrinsic * weight
         # Since we know extrinsic ∈ [0, 49] and intrinsic = 2.0
         # Combined should be in [0 + 2*w, 49 + 2*w]
         expected_min = 0.0 + 2.0 * intrinsic_weight
         expected_max = 49.0 + 2.0 * intrinsic_weight
 
         # PROPERTY: All rewards are in expected range
+        sampled_rewards = batch["rewards"]
         assert torch.all(sampled_rewards >= expected_min - 1e-5), f"Reward {sampled_rewards.min()} < {expected_min}"
         assert torch.all(sampled_rewards <= expected_max + 1e-5), f"Reward {sampled_rewards.max()} > {expected_max}"
-
-        # PROPERTY: Rewards are computed with correct formula (spot check)
-        # Verify a few samples manually
-        assert buffer.rewards_extrinsic is not None
-        assert buffer.rewards_intrinsic is not None
-
-        for idx in torch.randperm(num_transitions)[:5]:  # Check 5 random samples
-            _expected = buffer.rewards_extrinsic[idx] + buffer.rewards_intrinsic[idx] * intrinsic_weight
-            # Find this sample in the batch (may not be there due to random sampling)
-            # Skip verification if not in batch (would need to search through batch)
 
     @given(
         push_sample_sequence=st.lists(
@@ -245,12 +232,11 @@ class TestReplayBufferSamplingProperties:
                 # Push transitions
                 obs = torch.randn(count, obs_dim)
                 actions = torch.randint(0, 6, (count,))
-                rewards_ext = torch.randn(count)
-                rewards_int = torch.randn(count)
+                rewards = RewardTensor.from_components(extrinsic=torch.randn(count), intrinsic=torch.randn(count))
                 next_obs = torch.randn(count, obs_dim)
                 dones = torch.rand(count) > 0.9
 
-                buffer.push(obs, actions, rewards_ext, rewards_int, next_obs, dones)
+                buffer.push(obs, actions, rewards, next_obs, dones)
 
                 # PROPERTY: Buffer size is valid after push
                 assert len(buffer) <= buffer.capacity
@@ -258,7 +244,7 @@ class TestReplayBufferSamplingProperties:
             elif operation == "sample":
                 # Only sample if buffer has enough data
                 if len(buffer) >= count:
-                    batch = buffer.sample(batch_size=count, intrinsic_weight=0.5)
+                    batch = buffer.sample(batch_size=count)
 
                     # PROPERTY: Sampled batch has correct size
                     assert batch["observations"].shape[0] == count
@@ -292,12 +278,11 @@ class TestReplayBufferSerializationProperties:
         num_to_push = min(num_transitions, capacity)
         obs = torch.randn(num_to_push, obs_dim)
         actions = torch.randint(0, 6, (num_to_push,))
-        rewards_ext = torch.randn(num_to_push)
-        rewards_int = torch.randn(num_to_push)
+        rewards = RewardTensor.from_components(extrinsic=torch.randn(num_to_push), intrinsic=torch.randn(num_to_push))
         next_obs = torch.randn(num_to_push, obs_dim)
         dones = torch.rand(num_to_push) > 0.8
 
-        buffer.push(obs, actions, rewards_ext, rewards_int, next_obs, dones)
+        buffer.push(obs, actions, rewards, next_obs, dones)
 
         # Serialize
         state = buffer.serialize()
@@ -308,12 +293,12 @@ class TestReplayBufferSerializationProperties:
 
         # PROPERTY: Buffer size is preserved
         assert len(new_buffer) == len(buffer)
-        assert new_buffer.position == buffer.position
+        # After deserialization, position is restored from serialized state (which was reset to size)
+        assert new_buffer.position == state["position"]
 
         # PROPERTY: Data is identical
         if buffer.observations is not None:
             assert new_buffer.observations is not None
             assert torch.allclose(new_buffer.observations[: new_buffer.size], buffer.observations[: buffer.size])
             assert torch.equal(new_buffer.actions[: new_buffer.size], buffer.actions[: buffer.size])
-            assert torch.allclose(new_buffer.rewards_extrinsic[: new_buffer.size], buffer.rewards_extrinsic[: buffer.size])
-            assert torch.allclose(new_buffer.rewards_intrinsic[: new_buffer.size], buffer.rewards_intrinsic[: buffer.size])
+            assert torch.allclose(new_buffer.rewards[: new_buffer.size], buffer.rewards[: buffer.size])

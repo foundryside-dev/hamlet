@@ -443,8 +443,7 @@ class TestLSTMBatchTraining:
                 ]
             ),
             "actions": torch.tensor([0, 1, 0]),  # A→B, B→C, done
-            "rewards_extrinsic": torch.tensor([0.0, 0.0, 1.0]),  # Reward only at end
-            "rewards_intrinsic": torch.tensor([0.0, 0.0, 0.0]),
+            "rewards": torch.tensor([0.0, 0.0, 1.0]),  # Combined reward only at end
             "dones": torch.tensor([False, False, True]),
         }
 

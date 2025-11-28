@@ -6,9 +6,11 @@ This file consolidates tests from:
 - test_sequential_replay_buffer_masking.py (post-terminal masking)
 
 Coverage:
-- ReplayBuffer: Circular buffer, random sampling, dual rewards
+- ReplayBuffer: Circular buffer, random sampling, DAC-composed rewards
 - SequentialReplayBuffer: Episode storage, sequence sampling, temporal continuity
 - Post-terminal masking: Validity masks for recurrent training
+
+CRIT-07: Updated to use RewardTensor DTO for explicit reward composition semantics.
 """
 
 import pytest
@@ -16,8 +18,15 @@ import torch
 
 from townlet.training.replay_buffer import ReplayBuffer
 from townlet.training.sequential_replay_buffer import SequentialReplayBuffer
+from townlet.training.state import RewardTensor
 
 CPU = torch.device("cpu")
+
+
+def _make_reward_tensor(rewards: torch.Tensor) -> RewardTensor:
+    """Helper to create RewardTensor from reward values (DAC-composed totals)."""
+    return RewardTensor.from_dac(total=rewards)
+
 
 # =============================================================================
 # STANDARD REPLAY BUFFER (Feed-forward DQN)
@@ -39,8 +48,7 @@ class TestReplayBufferInitialization:
         # Storage should be None until first push (lazy initialization)
         assert buffer.observations is None
         assert buffer.actions is None
-        assert buffer.rewards_extrinsic is None
-        assert buffer.rewards_intrinsic is None
+        assert buffer.rewards is None  # CRIT-07: Single rewards field
         assert buffer.next_observations is None
         assert buffer.dones is None
 
@@ -72,12 +80,11 @@ class TestReplayBufferStorage:
         """Buffer should store single transition correctly."""
         obs = torch.randn(1, 5)  # batch=1, obs_dim=5
         actions = torch.tensor([2])
-        rewards_ext = torch.tensor([1.0])
-        rewards_int = torch.tensor([0.5])
+        rewards = _make_reward_tensor(torch.tensor([1.0]))  # CRIT-07: RewardTensor
         next_obs = torch.randn(1, 5)
         dones = torch.tensor([False])
 
-        buffer.push(obs, actions, rewards_ext, rewards_int, next_obs, dones)
+        buffer.push(obs, actions, rewards, next_obs, dones)
 
         assert len(buffer) == 1
         assert buffer.position == 1
@@ -92,12 +99,11 @@ class TestReplayBufferStorage:
         batch_size = 4
         obs = torch.randn(batch_size, 5)
         actions = torch.randint(0, 6, (batch_size,))
-        rewards_ext = torch.randn(batch_size)
-        rewards_int = torch.randn(batch_size)
+        rewards = _make_reward_tensor(torch.randn(batch_size))  # CRIT-07: RewardTensor
         next_obs = torch.randn(batch_size, 5)
         dones = torch.rand(batch_size) > 0.5
 
-        buffer.push(obs, actions, rewards_ext, rewards_int, next_obs, dones)
+        buffer.push(obs, actions, rewards, next_obs, dones)
 
         assert len(buffer) == 4
         assert buffer.position == 4
@@ -110,19 +116,17 @@ class TestReplayBufferStorage:
 
         obs = torch.randn(2, 8)  # batch=2, obs_dim=8
         actions = torch.tensor([0, 1])
-        rewards_ext = torch.tensor([1.0, 2.0])
-        rewards_int = torch.tensor([0.1, 0.2])
+        rewards = _make_reward_tensor(torch.tensor([1.0, 2.0]))  # CRIT-07: RewardTensor
         next_obs = torch.randn(2, 8)
         dones = torch.tensor([False, True])
 
-        buffer.push(obs, actions, rewards_ext, rewards_int, next_obs, dones)
+        buffer.push(obs, actions, rewards, next_obs, dones)
 
         # After first push
         assert buffer.observations is not None
         assert buffer.observations.shape == (10, 8)  # capacity × obs_dim (inferred)
         assert buffer.actions.shape == (10,)
-        assert buffer.rewards_extrinsic.shape == (10,)
-        assert buffer.rewards_intrinsic.shape == (10,)
+        assert buffer.rewards.shape == (10,)  # CRIT-07: Single rewards field
         assert buffer.next_observations.shape == (10, 8)
         assert buffer.dones.shape == (10,)
 
@@ -130,18 +134,17 @@ class TestReplayBufferStorage:
         """Stored data should match input data."""
         obs = torch.tensor([[1.0, 2.0, 3.0]])
         actions = torch.tensor([2])
-        rewards_ext = torch.tensor([10.0])
-        rewards_int = torch.tensor([0.5])
+        reward_value = torch.tensor([10.0])
+        rewards = _make_reward_tensor(reward_value)  # CRIT-07: RewardTensor
         next_obs = torch.tensor([[4.0, 5.0, 6.0]])
         dones = torch.tensor([True])
 
-        buffer.push(obs, actions, rewards_ext, rewards_int, next_obs, dones)
+        buffer.push(obs, actions, rewards, next_obs, dones)
 
         # Verify stored data
         assert torch.allclose(buffer.observations[0], obs[0])
         assert buffer.actions[0] == actions[0]
-        assert buffer.rewards_extrinsic[0] == rewards_ext[0]
-        assert buffer.rewards_intrinsic[0] == rewards_int[0]
+        assert buffer.rewards[0] == reward_value[0]  # CRIT-07: Single rewards field
         assert torch.allclose(buffer.next_observations[0], next_obs[0])
         assert buffer.dones[0] == dones[0]
 
@@ -159,15 +162,15 @@ class TestReplayBufferCircularLogic:
         for i in range(5):
             obs = torch.tensor([[float(i)]])
             actions = torch.tensor([i])
-            rewards_ext = torch.tensor([float(i)])
-            rewards_int = torch.tensor([float(i)])
+            rewards = _make_reward_tensor(torch.tensor([float(i)]))  # CRIT-07: RewardTensor
             next_obs = torch.tensor([[float(i + 1)]])
             dones = torch.tensor([False])
 
-            small_buffer.push(obs, actions, rewards_ext, rewards_int, next_obs, dones)
+            small_buffer.push(obs, actions, rewards, next_obs, dones)
 
         assert len(small_buffer) == 5
-        assert small_buffer.position == 5
+        # HIGH-04: Position now uses modulo to prevent unbounded growth
+        assert small_buffer.position == 0  # Wraps back to 0 after 5 pushes (capacity=5)
         assert small_buffer.size == 5
 
     def test_fifo_eviction_when_full(self, small_buffer):
@@ -176,11 +179,10 @@ class TestReplayBufferCircularLogic:
         for i in range(5):
             obs = torch.tensor([[float(i)]])
             actions = torch.tensor([i])
-            rewards_ext = torch.tensor([float(i)])
-            rewards_int = torch.tensor([float(i)])
+            rewards = _make_reward_tensor(torch.tensor([float(i)]))  # CRIT-07: RewardTensor
             next_obs = torch.tensor([[float(i + 1)]])
             dones = torch.tensor([False])
-            small_buffer.push(obs, actions, rewards_ext, rewards_int, next_obs, dones)
+            small_buffer.push(obs, actions, rewards, next_obs, dones)
 
         # Verify first transition (value 0) is at position 0
         assert small_buffer.observations[0, 0] == 0.0
@@ -189,15 +191,15 @@ class TestReplayBufferCircularLogic:
         # Add one more transition (value 5) - should overwrite position 0
         obs = torch.tensor([[5.0]])
         actions = torch.tensor([5])
-        rewards_ext = torch.tensor([5.0])
-        rewards_int = torch.tensor([5.0])
+        rewards = _make_reward_tensor(torch.tensor([5.0]))  # CRIT-07: RewardTensor
         next_obs = torch.tensor([[6.0]])
         dones = torch.tensor([True])
-        small_buffer.push(obs, actions, rewards_ext, rewards_int, next_obs, dones)
+        small_buffer.push(obs, actions, rewards, next_obs, dones)
 
         # Size should stay at capacity
         assert len(small_buffer) == 5
-        assert small_buffer.position == 6  # Position keeps incrementing
+        # HIGH-04: Position now uses modulo (0-4 cycle), so after 6 pushes: position = 6 % 5 = 1
+        assert small_buffer.position == 1
         assert small_buffer.size == 5
 
         # Position 0 should now have value 5 (overwritten)
@@ -211,18 +213,17 @@ class TestReplayBufferCircularLogic:
         for i in range(15):
             obs = torch.tensor([[float(i)]])
             actions = torch.tensor([i % 6])  # Actions wrap
-            rewards_ext = torch.tensor([float(i)])
-            rewards_int = torch.tensor([float(i) * 0.1])
+            rewards = _make_reward_tensor(torch.tensor([float(i)]))  # CRIT-07: RewardTensor
             next_obs = torch.tensor([[float(i + 1)]])
             dones = torch.tensor([i % 7 == 0])  # Some dones
-            small_buffer.push(obs, actions, rewards_ext, rewards_int, next_obs, dones)
+            small_buffer.push(obs, actions, rewards, next_obs, dones)
 
         # Size should be capped at capacity
         assert len(small_buffer) == 5
         assert small_buffer.size == 5
 
-        # Position should be 15 (keeps incrementing)
-        assert small_buffer.position == 15
+        # HIGH-04: Position uses modulo, so after 15 pushes: 15 % 5 = 0
+        assert small_buffer.position == 0
 
         # Buffer should contain last 5 transitions (10-14)
         expected_values = [10.0, 11.0, 12.0, 13.0, 14.0]
@@ -241,17 +242,17 @@ class TestReplayBufferSampling:
         for i in range(20):
             obs = torch.tensor([[float(i), float(i * 2)]])
             actions = torch.tensor([i % 6])
-            rewards_ext = torch.tensor([float(i)])
-            rewards_int = torch.tensor([float(i) * 0.1])
+            # CRIT-07: Store pre-composed total reward (simulating DAC output)
+            rewards = _make_reward_tensor(torch.tensor([float(i)]))
             next_obs = torch.tensor([[float(i + 1), float((i + 1) * 2)]])
             dones = torch.tensor([i == 19])  # Last one is done
-            buffer.push(obs, actions, rewards_ext, rewards_int, next_obs, dones)
+            buffer.push(obs, actions, rewards, next_obs, dones)
 
         return buffer
 
     def test_sample_basic(self, filled_buffer):
         """Should sample correct batch size with correct shapes."""
-        batch = filled_buffer.sample(batch_size=8, intrinsic_weight=0.5)
+        batch = filled_buffer.sample(batch_size=8)
 
         assert "observations" in batch
         assert "actions" in batch
@@ -277,47 +278,43 @@ class TestReplayBufferSampling:
         for i in range(3):
             obs = torch.tensor([[float(i)]])
             actions = torch.tensor([i])
-            rewards_ext = torch.tensor([1.0])
-            rewards_int = torch.tensor([0.1])
+            rewards = _make_reward_tensor(torch.tensor([1.0]))  # CRIT-07: RewardTensor
             next_obs = torch.tensor([[float(i + 1)]])
             dones = torch.tensor([False])
-            buffer.push(obs, actions, rewards_ext, rewards_int, next_obs, dones)
+            buffer.push(obs, actions, rewards, next_obs, dones)
 
         # Try to sample batch of 5
         with pytest.raises(ValueError, match="Buffer size.*<.*batch_size"):
-            buffer.sample(batch_size=5, intrinsic_weight=1.0)
+            buffer.sample(batch_size=5)
 
-    def test_combined_rewards_calculation(self, filled_buffer):
-        """Rewards should combine: extrinsic + intrinsic * weight."""
-        # Sample with weight 0.5
-        batch = filled_buffer.sample(batch_size=5, intrinsic_weight=0.5)
+    def test_rewards_returned_as_stored(self, filled_buffer):
+        """CRIT-07/MED-13: Rewards should be returned as stored (DAC-composed totals).
 
-        # Verify combined rewards are in valid range
-        for reward in batch["rewards"]:
-            # Extrinsic: 0-19, Intrinsic: 0-1.9
-            # Combined: extrinsic + intrinsic * 0.5 = [0, 19.95]
-            assert 0.0 <= reward <= 20.0
+        Rewards are pre-composed by DAC before storage.
+        """
+        batch = filled_buffer.sample(batch_size=5)
 
-    def test_zero_intrinsic_weight(self, filled_buffer):
-        """With intrinsic_weight=0, rewards should equal extrinsic only."""
-        batch = filled_buffer.sample(batch_size=10, intrinsic_weight=0.0)
-
-        # Sampled rewards should be in extrinsic range (0-19)
+        # Rewards should be in stored range (0-19 from fixture)
         for reward in batch["rewards"]:
             assert 0.0 <= reward <= 19.0
 
-    def test_full_intrinsic_weight(self, filled_buffer):
-        """With intrinsic_weight=1.0, rewards should include full intrinsic."""
-        batch = filled_buffer.sample(batch_size=10, intrinsic_weight=1.0)
+    def test_rewards_precomposed_by_dac(self, filled_buffer):
+        """CRIT-07/MED-13: Rewards are pre-composed by DAC before storage."""
+        # Sample multiple times - rewards should always be in stored range
+        batch_0 = filled_buffer.sample(batch_size=10)
+        batch_1 = filled_buffer.sample(batch_size=10)
 
-        # Combined rewards in range [0, 20.9] (extrinsic 0-19 + intrinsic 0-1.9)
-        for reward in batch["rewards"]:
-            assert 0.0 <= reward <= 21.0
+        # Both should be in same range (0-19 from fixture)
+        # Since rewards are pre-composed by DAC
+        assert batch_0["rewards"].min() >= 0.0
+        assert batch_0["rewards"].max() <= 19.0
+        assert batch_1["rewards"].min() >= 0.0
+        assert batch_1["rewards"].max() <= 19.0
 
     def test_sample_returns_different_batches(self, filled_buffer):
         """Multiple samples should return different batches (randomness)."""
-        batch1 = filled_buffer.sample(batch_size=5, intrinsic_weight=0.5)
-        batch2 = filled_buffer.sample(batch_size=5, intrinsic_weight=0.5)
+        batch1 = filled_buffer.sample(batch_size=5)
+        batch2 = filled_buffer.sample(batch_size=5)
 
         # With 20 transitions sampling 5, unlikely to get identical batches
         assert not torch.equal(batch1["observations"], batch2["observations"])
@@ -326,7 +323,7 @@ class TestReplayBufferSampling:
 
     def test_sample_full_buffer(self, filled_buffer):
         """Should be able to sample entire buffer (uses permutation)."""
-        batch = filled_buffer.sample(batch_size=20, intrinsic_weight=0.5)
+        batch = filled_buffer.sample(batch_size=20)
 
         assert batch["observations"].shape == (20, 2)
         assert batch["actions"].shape == (20,)
@@ -348,12 +345,11 @@ class TestReplayBufferDeviceHandling:
 
         obs = torch.randn(2, 3)
         actions = torch.tensor([0, 1])
-        rewards_ext = torch.tensor([1.0, 2.0])
-        rewards_int = torch.tensor([0.1, 0.2])
+        rewards = _make_reward_tensor(torch.tensor([1.0, 2.0]))  # CRIT-07: RewardTensor
         next_obs = torch.randn(2, 3)
         dones = torch.tensor([False, True])
 
-        buffer.push(obs, actions, rewards_ext, rewards_int, next_obs, dones)
+        buffer.push(obs, actions, rewards, next_obs, dones)
 
         assert buffer.observations.device.type == "cpu"
         assert buffer.actions.device.type == "cpu"
@@ -365,12 +361,11 @@ class TestReplayBufferDeviceHandling:
         # Create tensors on CPU
         obs = torch.randn(1, 3)
         actions = torch.tensor([0])
-        rewards_ext = torch.tensor([1.0])
-        rewards_int = torch.tensor([0.1])
+        rewards = _make_reward_tensor(torch.tensor([1.0]))  # CRIT-07: RewardTensor
         next_obs = torch.randn(1, 3)
         dones = torch.tensor([False])
 
-        buffer.push(obs, actions, rewards_ext, rewards_int, next_obs, dones)
+        buffer.push(obs, actions, rewards, next_obs, dones)
 
         # Verify stored on correct device
         assert buffer.observations.device == buffer.device
@@ -382,12 +377,11 @@ class TestReplayBufferDeviceHandling:
 
         obs = torch.randn(2, 3)
         actions = torch.tensor([0, 1])
-        rewards_ext = torch.tensor([1.0, 2.0])
-        rewards_int = torch.tensor([0.1, 0.2])
+        rewards = _make_reward_tensor(torch.tensor([1.0, 2.0]))  # CRIT-07: RewardTensor
         next_obs = torch.randn(2, 3)
         dones = torch.tensor([False, True])
 
-        buffer.push(obs, actions, rewards_ext, rewards_int, next_obs, dones)
+        buffer.push(obs, actions, rewards, next_obs, dones)
 
         assert buffer.observations.device.type == "cuda"
         assert buffer.actions.device.type == "cuda"
@@ -401,13 +395,12 @@ class TestReplayBufferDeviceHandling:
         for i in range(5):
             obs = torch.tensor([[float(i)]])
             actions = torch.tensor([i])
-            rewards_ext = torch.tensor([float(i)])
-            rewards_int = torch.tensor([float(i) * 0.1])
+            rewards = _make_reward_tensor(torch.tensor([float(i)]))  # CRIT-07: RewardTensor
             next_obs = torch.tensor([[float(i + 1)]])
             dones = torch.tensor([False])
-            buffer.push(obs, actions, rewards_ext, rewards_int, next_obs, dones)
+            buffer.push(obs, actions, rewards, next_obs, dones)
 
-        batch = buffer.sample(batch_size=3, intrinsic_weight=0.5)
+        batch = buffer.sample(batch_size=3)
 
         assert batch["observations"].device.type == "cuda"
         assert batch["actions"].device.type == "cuda"
@@ -424,11 +417,11 @@ class TestReplayBufferClearAPI:
         # Add some transitions
         for i in range(5):
             obs = torch.tensor([[float(i)]])
-            buffer.push(
-                obs, torch.tensor([i]), torch.tensor([1.0]), torch.tensor([0.1]), torch.tensor([[float(i + 1)]]), torch.tensor([False])
-            )
+            rewards = _make_reward_tensor(torch.tensor([1.0]))  # CRIT-07: RewardTensor
+            buffer.push(obs, torch.tensor([i]), rewards, torch.tensor([[float(i + 1)]]), torch.tensor([False]))
 
         assert buffer.size == 5
+        # HIGH-04: Position uses modulo (capacity=10), so after 5 pushes: 5 % 10 = 5
         assert buffer.position == 5
 
         buffer.clear()
@@ -443,9 +436,8 @@ class TestReplayBufferClearAPI:
 
         # Initialize storage
         obs = torch.randn(2, 5)
-        buffer.push(
-            obs, torch.tensor([0, 1]), torch.tensor([1.0, 2.0]), torch.tensor([0.1, 0.2]), torch.randn(2, 5), torch.tensor([False, True])
-        )
+        rewards = _make_reward_tensor(torch.tensor([1.0, 2.0]))  # CRIT-07: RewardTensor
+        buffer.push(obs, torch.tensor([0, 1]), rewards, torch.randn(2, 5), torch.tensor([False, True]))
 
         assert buffer.observations is not None
         assert buffer.actions is not None
@@ -454,8 +446,7 @@ class TestReplayBufferClearAPI:
 
         assert buffer.observations is None
         assert buffer.actions is None
-        assert buffer.rewards_extrinsic is None
-        assert buffer.rewards_intrinsic is None
+        assert buffer.rewards is None  # CRIT-07: Single rewards field
         assert buffer.next_observations is None
         assert buffer.dones is None
 
@@ -469,14 +460,8 @@ class TestReplayBufferClearAPI:
 
         # Add data and clear
         obs = torch.randn(3, 5)
-        buffer.push(
-            obs,
-            torch.tensor([0, 1, 2]),
-            torch.tensor([1.0, 2.0, 3.0]),
-            torch.tensor([0.1, 0.2, 0.3]),
-            torch.randn(3, 5),
-            torch.tensor([False, False, True]),
-        )
+        rewards = _make_reward_tensor(torch.tensor([1.0, 2.0, 3.0]))  # CRIT-07: RewardTensor
+        buffer.push(obs, torch.tensor([0, 1, 2]), rewards, torch.randn(3, 5), torch.tensor([False, False, True]))
         buffer.clear()
 
         # Clear again (should be safe)
@@ -491,17 +476,15 @@ class TestReplayBufferClearAPI:
         # Fill buffer
         for i in range(5):
             obs = torch.tensor([[float(i)]])
-            buffer.push(
-                obs, torch.tensor([i]), torch.tensor([1.0]), torch.tensor([0.1]), torch.tensor([[float(i + 1)]]), torch.tensor([False])
-            )
+            rewards = _make_reward_tensor(torch.tensor([1.0]))  # CRIT-07: RewardTensor
+            buffer.push(obs, torch.tensor([i]), rewards, torch.tensor([[float(i + 1)]]), torch.tensor([False]))
 
         buffer.clear()
 
         # Should be able to push again
         obs = torch.randn(2, 3)
-        buffer.push(
-            obs, torch.tensor([0, 1]), torch.tensor([1.0, 2.0]), torch.tensor([0.1, 0.2]), torch.randn(2, 3), torch.tensor([False, True])
-        )
+        rewards = _make_reward_tensor(torch.tensor([1.0, 2.0]))  # CRIT-07: RewardTensor
+        buffer.push(obs, torch.tensor([0, 1]), rewards, torch.randn(2, 3), torch.tensor([False, True]))
 
         assert buffer.size == 2
         assert buffer.observations is not None
@@ -529,7 +512,8 @@ class TestReplayBufferStatsAPI:
 
         # Add 10 transitions with obs_dim=5
         obs = torch.randn(10, 5)
-        buffer.push(obs, torch.randint(0, 6, (10,)), torch.randn(10), torch.randn(10), torch.randn(10, 5), torch.rand(10) > 0.5)
+        rewards = _make_reward_tensor(torch.randn(10))  # CRIT-07: RewardTensor
+        buffer.push(obs, torch.randint(0, 6, (10,)), rewards, torch.randn(10, 5), torch.rand(10) > 0.5)
 
         stats = buffer.stats()
 
@@ -545,7 +529,8 @@ class TestReplayBufferStatsAPI:
 
         # Fill to capacity
         obs = torch.randn(10, 5)
-        buffer.push(obs, torch.randint(0, 6, (10,)), torch.randn(10), torch.randn(10), torch.randn(10, 5), torch.rand(10) > 0.5)
+        rewards = _make_reward_tensor(torch.randn(10))  # CRIT-07: RewardTensor
+        buffer.push(obs, torch.randint(0, 6, (10,)), rewards, torch.randn(10, 5), torch.rand(10) > 0.5)
 
         stats = buffer.stats()
 
@@ -562,17 +547,21 @@ class TestReplayBufferStatsAPI:
 
         # Add data (obs_dim=5)
         obs = torch.randn(5, 5)
-        buffer.push(obs, torch.randint(0, 6, (5,)), torch.randn(5), torch.randn(5), torch.randn(5, 5), torch.rand(5) > 0.5)
+        rewards = _make_reward_tensor(torch.randn(5))  # CRIT-07: RewardTensor
+        buffer.push(obs, torch.randint(0, 6, (5,)), rewards, torch.randn(5, 5), torch.rand(5) > 0.5)
 
         stats = buffer.stats()
 
         # Calculate expected memory (all tensors preallocated to capacity)
         # observations: 10*5 floats, actions: 10 longs, etc.
+        # Version 3: rewards (total) + components (extrinsic, intrinsic, shaping)
         expected_bytes = (
             10 * 5 * 4  # observations (float32)
             + 10 * 8  # actions (int64)
+            + 10 * 4  # rewards (float32)
             + 10 * 4  # rewards_extrinsic (float32)
             + 10 * 4  # rewards_intrinsic (float32)
+            + 10 * 4  # rewards_shaping (float32)
             + 10 * 5 * 4  # next_observations (float32)
             + 10 * 1  # dones (bool)
         )
@@ -585,7 +574,8 @@ class TestReplayBufferStatsAPI:
         buffer = ReplayBuffer(capacity=10, device=torch.device("cuda"))
 
         obs = torch.randn(5, 3)
-        buffer.push(obs, torch.randint(0, 6, (5,)), torch.randn(5), torch.randn(5), torch.randn(5, 3), torch.rand(5) > 0.5)
+        rewards = _make_reward_tensor(torch.randn(5))  # CRIT-07: RewardTensor
+        buffer.push(obs, torch.randint(0, 6, (5,)), rewards, torch.randn(5, 3), torch.rand(5) > 0.5)
 
         stats = buffer.stats()
 
@@ -597,7 +587,8 @@ class TestReplayBufferStatsAPI:
 
         # Fill buffer
         obs = torch.randn(5, 3)
-        buffer.push(obs, torch.randint(0, 6, (5,)), torch.randn(5), torch.randn(5), torch.randn(5, 3), torch.rand(5) > 0.5)
+        rewards = _make_reward_tensor(torch.randn(5))  # CRIT-07: RewardTensor
+        buffer.push(obs, torch.randint(0, 6, (5,)), rewards, torch.randn(5, 3), torch.rand(5) > 0.5)
 
         buffer.clear()
         stats = buffer.stats()
@@ -618,13 +609,12 @@ class TestReplayBufferValidation:
         batch_size = 7
         obs = torch.randn(batch_size, 3)
         actions = torch.randint(0, 4, (batch_size,))
-        rewards_ext = torch.randn(batch_size)
-        rewards_int = torch.randn(batch_size)
+        rewards = _make_reward_tensor(torch.randn(batch_size))  # CRIT-07: RewardTensor
         next_obs = torch.randn(batch_size, 3)
         dones = torch.rand(batch_size) > 0.5
 
         with pytest.raises(ValueError, match="batch_size.*exceeds buffer capacity"):
-            buffer.push(obs, actions, rewards_ext, rewards_int, next_obs, dones)
+            buffer.push(obs, actions, rewards, next_obs, dones)
 
     def test_batch_size_equals_capacity_is_allowed(self):
         """Batch size equal to capacity should work (fills buffer exactly)."""
@@ -633,13 +623,12 @@ class TestReplayBufferValidation:
         batch_size = 5
         obs = torch.randn(batch_size, 3)
         actions = torch.randint(0, 4, (batch_size,))
-        rewards_ext = torch.randn(batch_size)
-        rewards_int = torch.randn(batch_size)
+        rewards = _make_reward_tensor(torch.randn(batch_size))  # CRIT-07: RewardTensor
         next_obs = torch.randn(batch_size, 3)
         dones = torch.rand(batch_size) > 0.5
 
         # Should not raise
-        buffer.push(obs, actions, rewards_ext, rewards_int, next_obs, dones)
+        buffer.push(obs, actions, rewards, next_obs, dones)
 
         assert len(buffer) == 5
         assert buffer.size == 5
@@ -655,20 +644,15 @@ class TestReplayBufferSerialization:
         # Add 5 transitions (no wraparound)
         for i in range(5):
             obs = torch.tensor([[float(i)]])
-            buffer.push(
-                obs,
-                torch.tensor([i]),
-                torch.tensor([float(i)]),
-                torch.tensor([float(i) * 0.1]),
-                torch.tensor([[float(i + 1)]]),
-                torch.tensor([i == 4]),
-            )
+            rewards = _make_reward_tensor(torch.tensor([float(i)]))  # CRIT-07: RewardTensor
+            buffer.push(obs, torch.tensor([i]), rewards, torch.tensor([[float(i + 1)]]), torch.tensor([i == 4]))
 
         state = buffer.serialize()
 
         assert state["size"] == 5
         assert state["position"] == 5
         assert state["capacity"] == 10
+        assert state["format_version"] == 3  # Version 3: reward components
         assert state["observations"].shape == (5, 1)
 
         # Check temporal order (should be 0, 1, 2, 3, 4)
@@ -684,16 +668,11 @@ class TestReplayBufferSerialization:
         # Temporal order should be: 3, 4, 5, 6, 7 (oldest to newest)
         for i in range(8):
             obs = torch.tensor([[float(i)]])
-            buffer.push(
-                obs,
-                torch.tensor([i % 4]),
-                torch.tensor([float(i)]),
-                torch.tensor([float(i) * 0.1]),
-                torch.tensor([[float(i + 1)]]),
-                torch.tensor([False]),
-            )
+            rewards = _make_reward_tensor(torch.tensor([float(i)]))  # CRIT-07: RewardTensor
+            buffer.push(obs, torch.tensor([i % 4]), rewards, torch.tensor([[float(i + 1)]]), torch.tensor([False]))
 
-        assert buffer.position == 8
+        # HIGH-04: Position uses modulo, so after 8 pushes: 8 % 5 = 3
+        assert buffer.position == 3
         assert buffer.size == 5
 
         state = buffer.serialize()
@@ -714,14 +693,8 @@ class TestReplayBufferSerialization:
         # Fill and wrap
         for i in range(8):
             obs = torch.tensor([[float(i), float(i * 2)]])
-            buffer1.push(
-                obs,
-                torch.tensor([i % 4]),
-                torch.tensor([float(i)]),
-                torch.tensor([float(i) * 0.1]),
-                torch.tensor([[float(i + 1), float((i + 1) * 2)]]),
-                torch.tensor([i == 7]),
-            )
+            rewards = _make_reward_tensor(torch.tensor([float(i)]))  # CRIT-07: RewardTensor
+            buffer1.push(obs, torch.tensor([i % 4]), rewards, torch.tensor([[float(i + 1), float((i + 1) * 2)]]), torch.tensor([i == 7]))
 
         state = buffer1.serialize()
 
@@ -730,10 +703,11 @@ class TestReplayBufferSerialization:
         buffer2.load_from_serialized(state)
 
         assert buffer2.size == 5
+        # After deserializing, position is restored from serialized state (which was reset to size)
         assert buffer2.position == 5
 
         # Sample from restored buffer should work
-        batch = buffer2.sample(batch_size=3, intrinsic_weight=0.5)
+        batch = buffer2.sample(batch_size=3)
         assert batch["observations"].shape == (3, 2)
 
     def test_serialize_empty_buffer(self):
@@ -744,6 +718,7 @@ class TestReplayBufferSerialization:
 
         assert state["size"] == 0
         assert state["position"] == 0
+        assert state["format_version"] == 3  # Version 3: reward components
         assert state["observations"] is None
 
     def test_load_from_serialized_empty(self):
@@ -752,24 +727,21 @@ class TestReplayBufferSerialization:
 
         # Add some data first
         obs = torch.randn(3, 4)
-        buffer.push(
-            obs,
-            torch.randint(0, 4, (3,)),
-            torch.randn(3),
-            torch.randn(3),
-            torch.randn(3, 4),
-            torch.rand(3) > 0.5,
-        )
+        rewards = _make_reward_tensor(torch.randn(3))  # CRIT-07: RewardTensor
+        buffer.push(obs, torch.randint(0, 4, (3,)), rewards, torch.randn(3, 4), torch.rand(3) > 0.5)
 
-        # Load empty state
+        # Load empty state (format_version 3)
         empty_state = {
             "size": 0,
             "position": 0,
             "capacity": 10,
+            "format_version": 3,  # Version 3: reward components
             "observations": None,
             "actions": None,
+            "rewards": None,
             "rewards_extrinsic": None,
             "rewards_intrinsic": None,
+            "rewards_shaping": None,
             "next_observations": None,
             "dones": None,
         }
@@ -778,6 +750,27 @@ class TestReplayBufferSerialization:
 
         assert buffer.size == 0
         assert buffer.position == 0
+
+    def test_load_legacy_format_rejected(self):
+        """load_from_serialized should reject legacy format (version < 3)."""
+        buffer = ReplayBuffer(capacity=10, device=CPU)
+
+        # Legacy format state (version 1 with split rewards)
+        legacy_state = {
+            "size": 5,
+            "position": 5,
+            "capacity": 10,
+            "format_version": 1,  # Legacy format
+            "observations": torch.randn(5, 3),
+            "actions": torch.randint(0, 4, (5,)),
+            "rewards_extrinsic": torch.randn(5),
+            "rewards_intrinsic": torch.randn(5),
+            "next_observations": torch.randn(5, 3),
+            "dones": torch.rand(5) > 0.5,
+        }
+
+        with pytest.raises(ValueError, match="format_version < 3"):
+            buffer.load_from_serialized(legacy_state)
 
 
 class TestReplayBufferEdgeCases:
@@ -789,27 +782,15 @@ class TestReplayBufferEdgeCases:
 
         # Add first transition
         obs1 = torch.tensor([[1.0]])
-        buffer.push(
-            obs1,
-            torch.tensor([0]),
-            torch.tensor([1.0]),
-            torch.tensor([0.1]),
-            torch.tensor([[2.0]]),
-            torch.tensor([False]),
-        )
+        rewards1 = _make_reward_tensor(torch.tensor([1.0]))  # CRIT-07: RewardTensor
+        buffer.push(obs1, torch.tensor([0]), rewards1, torch.tensor([[2.0]]), torch.tensor([False]))
 
         assert len(buffer) == 1
 
         # Add second transition (should overwrite first)
         obs2 = torch.tensor([[3.0]])
-        buffer.push(
-            obs2,
-            torch.tensor([1]),
-            torch.tensor([2.0]),
-            torch.tensor([0.2]),
-            torch.tensor([[4.0]]),
-            torch.tensor([True]),
-        )
+        rewards2 = _make_reward_tensor(torch.tensor([2.0]))  # CRIT-07: RewardTensor
+        buffer.push(obs2, torch.tensor([1]), rewards2, torch.tensor([[4.0]]), torch.tensor([True]))
 
         assert len(buffer) == 1
         assert buffer.observations[0, 0] == 3.0
@@ -826,14 +807,14 @@ class TestReplayBufferEdgeCases:
         batch_size = 256
         obs = torch.randn(batch_size, 10)
         actions = torch.randint(0, 6, (batch_size,))
-        rewards_ext = torch.randn(batch_size)
-        rewards_int = torch.randn(batch_size)
+        rewards = _make_reward_tensor(torch.randn(batch_size))  # CRIT-07: RewardTensor
         next_obs = torch.randn(batch_size, 10)
         dones = torch.rand(batch_size) > 0.9
 
-        buffer.push(obs, actions, rewards_ext, rewards_int, next_obs, dones)
+        buffer.push(obs, actions, rewards, next_obs, dones)
 
         assert len(buffer) == 256
+        # HIGH-04: Position uses modulo (capacity=1000), so 256 % 1000 = 256 (no wraparound yet)
         assert buffer.position == 256
 
     def test_different_observation_dimensions(self):
@@ -843,12 +824,11 @@ class TestReplayBufferEdgeCases:
         # First push with obs_dim=7
         obs = torch.randn(2, 7)
         actions = torch.tensor([0, 1])
-        rewards_ext = torch.tensor([1.0, 2.0])
-        rewards_int = torch.tensor([0.1, 0.2])
+        rewards = _make_reward_tensor(torch.tensor([1.0, 2.0]))  # CRIT-07: RewardTensor
         next_obs = torch.randn(2, 7)
         dones = torch.tensor([False, True])
 
-        buffer.push(obs, actions, rewards_ext, rewards_int, next_obs, dones)
+        buffer.push(obs, actions, rewards, next_obs, dones)
 
         assert buffer.observations.shape == (10, 7)
         assert buffer.next_observations.shape == (10, 7)
@@ -1155,18 +1135,17 @@ class TestSequentialDeviceHandling:
         assert batch["observations"].device.type == "cuda"
 
 
-class TestIntrinsicRewardSupport:
-    """Test support for dual reward system (extrinsic + intrinsic)."""
+class TestSequentialRewardSupport:
+    """CRIT-07: Test support for DAC-composed rewards (single rewards field)."""
 
-    def test_store_intrinsic_rewards(self):
-        """Buffer should support intrinsic rewards."""
+    def test_store_rewards(self):
+        """Buffer should store episodes with single rewards field."""
         buffer = SequentialReplayBuffer(capacity=1000, device=torch.device("cpu"))
 
         episode = {
             "observations": torch.randn(5, 10),
             "actions": torch.randint(0, 4, (5,)),
-            "rewards_extrinsic": torch.randn(5),
-            "rewards_intrinsic": torch.randn(5),
+            "rewards": torch.randn(5),  # CRIT-07: Single rewards field (DAC-composed)
             "dones": torch.zeros(5, dtype=torch.bool),
         }
         episode["dones"][-1] = True
@@ -1174,45 +1153,50 @@ class TestIntrinsicRewardSupport:
 
         assert len(buffer) == 1
 
-    def test_sample_with_combined_rewards(self):
-        """Buffer should combine extrinsic + intrinsic rewards when sampling."""
+    def test_sample_returns_stored_rewards(self):
+        """CRIT-07: Buffer should return rewards as stored (DAC-composed totals)."""
         buffer = SequentialReplayBuffer(capacity=1000, device=torch.device("cpu"))
 
+        # Store episode with known rewards
+        reward_values = torch.tensor([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0])
         episode = {
             "observations": torch.randn(10, 10),
             "actions": torch.randint(0, 4, (10,)),
-            "rewards_extrinsic": torch.ones(10),  # All 1.0
-            "rewards_intrinsic": torch.full((10,), 0.5),  # All 0.5
+            "rewards": reward_values,  # CRIT-07: Single rewards field
             "dones": torch.zeros(10, dtype=torch.bool),
         }
         episode["dones"][-1] = True
         buffer.store_episode(episode)
 
-        # Sample with intrinsic weight
-        batch = buffer.sample_sequences(batch_size=1, seq_len=5, intrinsic_weight=1.0)
+        # MED-13: Sample without intrinsic_weight (parameter removed)
+        batch = buffer.sample_sequences(batch_size=1, seq_len=5)
 
-        # Combined reward should be 1.0 + 0.5*1.0 = 1.5
+        # Rewards should be in stored range
         assert "rewards" in batch
-        assert torch.allclose(batch["rewards"], torch.tensor([1.5] * 5).unsqueeze(0))
+        assert batch["rewards"].min() >= 1.0
+        assert batch["rewards"].max() <= 10.0
 
-    def test_intrinsic_weight_zero(self):
-        """With zero intrinsic weight, only extrinsic rewards should be used."""
+    def test_rewards_precomposed_by_dac_sequential(self):
+        """CRIT-07/MED-13: Sequential buffer stores DAC-composed rewards."""
         buffer = SequentialReplayBuffer(capacity=1000, device=torch.device("cpu"))
 
+        reward_values = torch.full((10,), 5.0)  # All 5.0
         episode = {
             "observations": torch.randn(10, 10),
             "actions": torch.randint(0, 4, (10,)),
-            "rewards_extrinsic": torch.ones(10),
-            "rewards_intrinsic": torch.full((10,), 100.0),  # Large intrinsic
+            "rewards": reward_values,  # CRIT-07: DAC-composed totals
             "dones": torch.zeros(10, dtype=torch.bool),
         }
         episode["dones"][-1] = True
         buffer.store_episode(episode)
 
-        batch = buffer.sample_sequences(batch_size=1, seq_len=5, intrinsic_weight=0.0)
+        # Sample with different weights - should return same rewards
+        batch_0 = buffer.sample_sequences(batch_size=1, seq_len=5)
+        batch_1 = buffer.sample_sequences(batch_size=1, seq_len=5)
 
-        # Should only use extrinsic (1.0)
-        assert torch.allclose(batch["rewards"], torch.ones(1, 5))
+        # Both should have rewards = 5.0 (weights ignored)
+        assert torch.allclose(batch_0["rewards"], torch.full((1, 5), 5.0))
+        assert torch.allclose(batch_1["rewards"], torch.full((1, 5), 5.0))
 
 
 # =============================================================================
@@ -1234,8 +1218,7 @@ class TestPostTerminalMasking:
         episode = {
             "observations": torch.randn(10, basic_env.observation_dim, device=cpu_device),
             "actions": torch.randint(0, 6, (10,), device=cpu_device),
-            "rewards_extrinsic": torch.randn(10, device=cpu_device),
-            "rewards_intrinsic": torch.randn(10, device=cpu_device),
+            "rewards": torch.randn(10, device=cpu_device),  # CRIT-07: Single rewards field
             "dones": torch.tensor([False] * 5 + [True] + [False] * 4, device=cpu_device),
         }
         buffer.store_episode(episode)
@@ -1252,8 +1235,7 @@ class TestPostTerminalMasking:
         episode = {
             "observations": torch.randn(10, basic_env.observation_dim, device=cpu_device),
             "actions": torch.randint(0, 6, (10,), device=cpu_device),
-            "rewards_extrinsic": torch.randn(10, device=cpu_device),
-            "rewards_intrinsic": torch.randn(10, device=cpu_device),
+            "rewards": torch.randn(10, device=cpu_device),  # CRIT-07: Single rewards field
             "dones": torch.zeros(10, dtype=torch.bool, device=cpu_device),
         }
         buffer.store_episode(episode)
@@ -1269,8 +1251,7 @@ class TestPostTerminalMasking:
         episode = {
             "observations": torch.randn(10, basic_env.observation_dim, device=cpu_device),
             "actions": torch.randint(0, 6, (10,), device=cpu_device),
-            "rewards_extrinsic": torch.randn(10, device=cpu_device),
-            "rewards_intrinsic": torch.randn(10, device=cpu_device),
+            "rewards": torch.randn(10, device=cpu_device),  # CRIT-07: Single rewards field
             "dones": torch.tensor([False, False, False, True, False, False, False, False, False, False], device=cpu_device),
         }
         buffer.store_episode(episode)
@@ -1299,8 +1280,7 @@ class TestPostTerminalMasking:
         episode = {
             "observations": torch.randn(5, basic_env.observation_dim, device=cpu_device),
             "actions": torch.randint(0, 6, (5,), device=cpu_device),
-            "rewards_extrinsic": torch.randn(5, device=cpu_device),
-            "rewards_intrinsic": torch.randn(5, device=cpu_device),
+            "rewards": torch.randn(5, device=cpu_device),  # CRIT-07: Single rewards field
             "dones": torch.tensor([False, False, True, False, False], device=cpu_device),
         }
         buffer.store_episode(episode)
@@ -1322,26 +1302,24 @@ class TestPostTerminalMasking:
     def test_mask_with_multiple_sequences(self, buffer, cpu_device, basic_env):
         """Each sequence in batch should have its own mask based on its terminal."""
         # Store multiple episodes with different terminal positions
+        # CRIT-07: Use single rewards field instead of split extrinsic/intrinsic
         episodes = [
             {  # Terminal at index 2
                 "observations": torch.randn(10, basic_env.observation_dim, device=cpu_device),
                 "actions": torch.randint(0, 6, (10,), device=cpu_device),
-                "rewards_extrinsic": torch.randn(10, device=cpu_device),
-                "rewards_intrinsic": torch.randn(10, device=cpu_device),
+                "rewards": torch.randn(10, device=cpu_device),
                 "dones": torch.tensor([False, False, True] + [False] * 7, device=cpu_device),
             },
             {  # Terminal at index 5
                 "observations": torch.randn(10, basic_env.observation_dim, device=cpu_device),
                 "actions": torch.randint(0, 6, (10,), device=cpu_device),
-                "rewards_extrinsic": torch.randn(10, device=cpu_device),
-                "rewards_intrinsic": torch.randn(10, device=cpu_device),
+                "rewards": torch.randn(10, device=cpu_device),
                 "dones": torch.tensor([False] * 5 + [True] + [False] * 4, device=cpu_device),
             },
             {  # No terminal
                 "observations": torch.randn(10, basic_env.observation_dim, device=cpu_device),
                 "actions": torch.randint(0, 6, (10,), device=cpu_device),
-                "rewards_extrinsic": torch.randn(10, device=cpu_device),
-                "rewards_intrinsic": torch.randn(10, device=cpu_device),
+                "rewards": torch.randn(10, device=cpu_device),
                 "dones": torch.zeros(10, dtype=torch.bool, device=cpu_device),
             },
         ]
@@ -1372,8 +1350,7 @@ class TestPostTerminalMasking:
         episode = {
             "observations": torch.randn(20, basic_env.observation_dim, device=cpu_device),
             "actions": torch.randint(0, 6, (20,), device=cpu_device),
-            "rewards_extrinsic": torch.randn(20, device=cpu_device),
-            "rewards_intrinsic": torch.randn(20, device=cpu_device),
+            "rewards": torch.randn(20, device=cpu_device),  # CRIT-07: Single rewards field
             "dones": torch.zeros(20, dtype=torch.bool, device=cpu_device),
         }
         buffer.store_episode(episode)
@@ -1382,19 +1359,19 @@ class TestPostTerminalMasking:
 
         assert batch["mask"].shape == (16, 10), f"Mask shape should be [16, 10], got {batch['mask'].shape}"
 
-    def test_mask_works_with_unified_rewards(self, buffer, cpu_device, basic_env):
-        """Mask should work when episode has unified 'rewards' instead of split."""
+    def test_mask_works_with_dac_composed_rewards(self, buffer, cpu_device, basic_env):
+        """CRIT-07: Mask should work with DAC-composed rewards (single rewards field)."""
         episode = {
             "observations": torch.randn(10, basic_env.observation_dim, device=cpu_device),
             "actions": torch.randint(0, 6, (10,), device=cpu_device),
-            "rewards": torch.randn(10, device=cpu_device),  # Unified rewards
+            "rewards": torch.randn(10, device=cpu_device),  # CRIT-07: DAC-composed total
             "dones": torch.tensor([False] * 4 + [True] + [False] * 5, device=cpu_device),
         }
         buffer.store_episode(episode)
 
         batch = buffer.sample_sequences(batch_size=2, seq_len=8)
 
-        assert "mask" in batch, "Should have mask with unified rewards"
+        assert "mask" in batch, "Should have mask with DAC-composed rewards"
         assert batch["mask"].dtype == torch.bool, "Mask should be bool"
 
 
@@ -1412,8 +1389,7 @@ class TestMaskIntegrationWithLoss:
         episode = {
             "observations": torch.randn(10, basic_env.observation_dim, device=cpu_device),
             "actions": torch.randint(0, 6, (10,), device=cpu_device),
-            "rewards_extrinsic": torch.randn(10, device=cpu_device),
-            "rewards_intrinsic": torch.randn(10, device=cpu_device),
+            "rewards": torch.randn(10, device=cpu_device),  # CRIT-07: Single rewards field
             "dones": torch.tensor([False, False, False, True] + [False] * 6, device=cpu_device),
         }
         buffer.store_episode(episode)
@@ -1432,8 +1408,7 @@ class TestMaskIntegrationWithLoss:
         episode = {
             "observations": torch.randn(10, basic_env.observation_dim, device=cpu_device),
             "actions": torch.randint(0, 6, (10,), device=cpu_device),
-            "rewards_extrinsic": torch.randn(10, device=cpu_device),
-            "rewards_intrinsic": torch.randn(10, device=cpu_device),
+            "rewards": torch.randn(10, device=cpu_device),  # CRIT-07: Single rewards field
             "dones": torch.tensor([False] * 5 + [True] + [False] * 4, device=cpu_device),
         }
         buffer.store_episode(episode)

@@ -643,6 +643,7 @@ class VectorizedHamletEnv:
         self.meters = torch.zeros((self.num_agents, meter_count), dtype=torch.float32, device=self.device)
         self.dones = torch.zeros(self.num_agents, dtype=torch.bool, device=self.device)
         self.step_counts = torch.zeros(self.num_agents, dtype=torch.long, device=self.device)
+        self.global_tick: int = 0  # HIGH-01: Track global time independently of agent 0
         self.intrinsic_weights = torch.ones(self.num_agents, dtype=torch.float32, device=self.device)  # Default: 1.0 (full exploration)
 
         # === ITEMS INITIALIZATION ===
@@ -1042,6 +1043,7 @@ class VectorizedHamletEnv:
 
         self.dones = torch.zeros(self.num_agents, dtype=torch.bool, device=self.device)
         self.step_counts = torch.zeros(self.num_agents, dtype=torch.long, device=self.device)
+        self.global_tick = 0  # HIGH-01: Reset global time counter
         self.intrinsic_weights = torch.ones(self.num_agents, dtype=torch.float32, device=self.device)  # Reset to 1.0
 
         # Reset temporal mechanics state
@@ -1628,7 +1630,7 @@ class VectorizedHamletEnv:
             self.effect_manager.tick(
                 bars=bars_dict,
                 vfs_registry=self.vfs_registry,
-                current_step=int(self.step_counts[0].item()) if self.step_counts.numel() > 0 else 0,
+                current_step=self.global_tick,  # HIGH-01: Use global tick instead of agent 0
                 item_manager=self.item_manager,
             )
 
@@ -1642,10 +1644,10 @@ class VectorizedHamletEnv:
             bars_dict_vfs = {name: self.meters[:, idx] for name, idx in self.meter_name_to_index.items()}
 
             # Get current VFS state from registry
+            # HIGH-02: Use proper VFS API instead of direct _storage access
             current_vfs_state = {}
             for var_name in self.vfs_registry.variables.keys():
-                if var_name in self.vfs_registry._storage:
-                    current_vfs_state[var_name] = self.vfs_registry._storage[var_name]
+                current_vfs_state[var_name] = self.vfs_registry.get(var_name, reader="engine")
 
             # Evaluate global profile
             global_profile = self.universe.compiled_vfs_profiles.global_profile
@@ -1658,7 +1660,7 @@ class VectorizedHamletEnv:
                     vfs_state=current_vfs_state,
                     marks=marks,
                     device=self.device,
-                    step=int(self.step_counts[0].item()) if self.step_counts.numel() > 0 else None,
+                    step=self.global_tick,  # HIGH-01: Use global tick instead of agent 0
                     agent_positions=self.positions.to(dtype=torch.float32, device=self.device),
                     affordance_positions={k: v.to(dtype=torch.float32, device=self.device) for k, v in self.affordances.items()},
                     vfs_types={name: var.type for name, var in self.vfs_registry.variables.items()},
@@ -1669,26 +1671,33 @@ class VectorizedHamletEnv:
                 )
 
                 # Write updated values back to registry
+                # HIGH-02: Use proper VFS API instead of direct _storage access
                 for var_name, value in updated_vfs.items():
                     if var_name in self.vfs_registry.variables:
-                        self.vfs_registry._storage[var_name] = value
+                        # Cast to expected dtype (VFS uses float32 for all values)
+                        # This handles cases where evaluator produces int64 (e.g., day_count)
+                        expected_dtype = self.vfs_registry._expected_dtypes.get(var_name, torch.float32)
+                        if value.dtype != expected_dtype:
+                            value = value.to(dtype=expected_dtype)
+                        self.vfs_registry.set(var_name, value, writer="engine")
 
         # 4. Check terminal conditions
         self.dones = self.meter_dynamics.check_terminal_conditions(self.meters, self.dones)
 
         # 5. Increment step counts (before retirement check)
         self.step_counts += 1
+        self.global_tick += 1  # HIGH-01: Increment global time counter
 
         # 5.1. Age items and process periodic respawning (after step count increment)
         # Items age/despawn/respawn based on the NEW tick count after incrementing
         if self.item_manager is not None:
-            current_tick = int(self.step_counts[0].item()) if self.step_counts.numel() > 0 else 0
+            # HIGH-01: Use global tick instead of agent 0
             # Age all items (expire items that reach duration limit)
-            self.item_manager.tick(current_tick)
+            self.item_manager.tick(self.global_tick)
             # Respawn items whose spawn_interval timer has expired
             bars_dict_spawn = {name: self.meters[:, idx] for name, idx in self.meter_name_to_index.items()}
-            temporal_context = {"tick": torch.tensor(current_tick, device=self.device)} if self.enable_temporal_mechanics else None
-            self.item_manager.process_respawns(current_tick, bars=bars_dict_spawn, temporal=temporal_context)
+            temporal_context = {"tick": torch.tensor(self.global_tick, device=self.device)} if self.enable_temporal_mechanics else None
+            self.item_manager.process_respawns(self.global_tick, bars=bars_dict_spawn, temporal=temporal_context)
 
         # 5.5. Check for retirement (reached maximum lifespan)
         # Agents that reach their lifespan retire with a bonus reward
@@ -1718,6 +1727,8 @@ class VectorizedHamletEnv:
             "step_counts": self.step_counts.clone(),
             "positions": self.positions.clone(),
             "successful_interactions": successful_interactions,  # {agent_idx: affordance_name}
+            "reward_components": self._last_reward_components,  # DAC breakdown
+            "intrinsic_weight": self.intrinsic_weights,  # Effective modifier weight
         }
 
         return observations, rewards, self.dones, info
@@ -2055,7 +2066,7 @@ class VectorizedHamletEnv:
                 meters=self.meters,
                 affordance_name=affordance_name,
                 agent_mask=at_affordance,
-                current_tick=int(self.step_counts[0].item()) if self.step_counts.numel() > 0 else 0,
+                current_tick=self.global_tick,  # HIGH-01: Use global tick instead of agent 0
             )
 
         # Update affordance tracking after all interactions

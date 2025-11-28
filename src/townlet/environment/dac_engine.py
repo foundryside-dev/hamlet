@@ -340,7 +340,9 @@ class DACEngine:
                     bar_value = meters[:, bar_idx]
                     exponent = bonus_config.center
                     weight = bonus_config.scale
-                    term = weight * torch.pow(bar_value, exponent)
+                    # CRIT-01: Clamp to non-negative to prevent NaN from negative^fractional
+                    bar_value_safe = torch.clamp(bar_value, min=0.0)
+                    term = weight * torch.pow(bar_value_safe, exponent)
                     reward = reward + term
 
                 # Apply modifiers
@@ -996,9 +998,14 @@ class DACEngine:
         total_reward = extrinsic + intrinsic + shaping_total
 
         # 5. Build components dict for logging
+        # intrinsic_raw: before modifier application (base_weight applied, not modifiers)
+        # intrinsic: after modifier application (base_weight × modifiers × raw)
+        intrinsic_raw_weighted = intrinsic_raw_copy * base_weight
+
         components = {
             "extrinsic": extrinsic,
             "intrinsic": intrinsic,
+            "intrinsic_raw": intrinsic_raw_weighted,  # Before modifiers, after base_weight
             "shaping": shaping_total,
         }
 

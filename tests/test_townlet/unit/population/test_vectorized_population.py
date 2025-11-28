@@ -1185,7 +1185,8 @@ class TestRewardComponentWiring:
 
     def test_components_extracted_from_info_dict(
         self,
-        basic_env,
+        compile_universe,
+        test_config_pack_path,
         adversarial_curriculum,
         epsilon_greedy_exploration,
         cpu_device,
@@ -1195,6 +1196,17 @@ class TestRewardComponentWiring:
 
         import torch
 
+        from townlet.environment.vectorized_env import VectorizedHamletEnv
+
+        # Create CPU-based environment to match cpu_device
+        universe = compile_universe(test_config_pack_path)
+        basic_env = VectorizedHamletEnv.from_universe(
+            universe,
+            level_name="L0_test",
+            num_agents=1,
+            device=cpu_device,
+        )
+
         population = _make_population(
             env=basic_env,
             curriculum=adversarial_curriculum,
@@ -1202,6 +1214,12 @@ class TestRewardComponentWiring:
             device=cpu_device,
             brain_config=minimal_brain_config,
         )
+
+        # Initialize tensorboard_logger attribute (implementation expects it to exist)
+        population.tensorboard_logger = None
+
+        # Initialize curriculum before stepping population
+        adversarial_curriculum.initialize_population(1)
 
         # Mock the environment step to return components
         original_step = basic_env.step
@@ -1230,7 +1248,8 @@ class TestRewardComponentWiring:
 
     def test_reward_tensor_created_with_components(
         self,
-        basic_env,
+        compile_universe,
+        test_config_pack_path,
         adversarial_curriculum,
         epsilon_greedy_exploration,
         cpu_device,
@@ -1239,6 +1258,17 @@ class TestRewardComponentWiring:
         """RewardTensor is created with component fields populated."""
         import torch
 
+        from townlet.environment.vectorized_env import VectorizedHamletEnv
+
+        # Create CPU-based environment to match cpu_device
+        universe = compile_universe(test_config_pack_path)
+        basic_env = VectorizedHamletEnv.from_universe(
+            universe,
+            level_name="L0_test",
+            num_agents=1,
+            device=cpu_device,
+        )
+
         population = _make_population(
             env=basic_env,
             curriculum=adversarial_curriculum,
@@ -1246,6 +1276,12 @@ class TestRewardComponentWiring:
             device=cpu_device,
             brain_config=minimal_brain_config,
         )
+
+        # Initialize tensorboard_logger attribute (implementation expects it to exist)
+        population.tensorboard_logger = None
+
+        # Initialize curriculum before stepping population
+        adversarial_curriculum.initialize_population(1)
 
         # Mock environment step
         original_step = basic_env.step
@@ -1262,8 +1298,7 @@ class TestRewardComponentWiring:
         basic_env.step = mock_step
 
         # Step population (this will create RewardTensor internally)
-        action_mask = torch.ones(1, basic_env.action_dim, dtype=torch.bool)
-        population.step_population(action_mask)
+        population.step_population(basic_env)
 
         # Verify components are stored in buffer
         buffer = population.replay_buffer
@@ -1275,7 +1310,8 @@ class TestRewardComponentWiring:
 
     def test_tensorboard_logging_called_when_components_present(
         self,
-        basic_env,
+        compile_universe,
+        test_config_pack_path,
         adversarial_curriculum,
         epsilon_greedy_exploration,
         cpu_device,
@@ -1287,6 +1323,17 @@ class TestRewardComponentWiring:
 
         import torch
 
+        from townlet.environment.vectorized_env import VectorizedHamletEnv
+
+        # Create CPU-based environment to match cpu_device
+        universe = compile_universe(test_config_pack_path)
+        basic_env = VectorizedHamletEnv.from_universe(
+            universe,
+            level_name="L0_test",
+            num_agents=1,
+            device=cpu_device,
+        )
+
         # Create population with TensorBoard logger
         from townlet.training.tensorboard_logger import TensorBoardLogger
 
@@ -1297,6 +1344,9 @@ class TestRewardComponentWiring:
             device=cpu_device,
             brain_config=minimal_brain_config,
         )
+
+        # Initialize curriculum before stepping population
+        adversarial_curriculum.initialize_population(1)
 
         # Attach TensorBoard logger
         population.tensorboard_logger = TensorBoardLogger(log_dir=tmp_path / "tb_logs")

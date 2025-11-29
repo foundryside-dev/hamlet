@@ -1,7 +1,7 @@
 Title: ReplayBuffer.load_from_serialized ignores saved capacity
 
 Severity: high
-Status: open
+Status: fixed
 
 Subsystem: training/replay-buffer (standard)
 Affected Version/Branch: main
@@ -45,3 +45,27 @@ Tests:
 Owner: training
 Links:
 - N/A
+
+## Fix Implementation
+
+**Date Fixed**: 2025-11-29
+**Commit**: RC-Prep branch
+
+**Changes Made**:
+
+1. **Added capacity validation** in `ReplayBuffer.load_from_serialized()` (line 390-398):
+   - Checks if `state["capacity"]` matches `self.capacity`
+   - Raises clear `ValueError` with actionable remediation message if mismatch detected
+   - Error message explains both options: recreate buffer with matching capacity OR regenerate checkpoint
+
+2. **Added comprehensive tests** in `tests/test_townlet/unit/training/test_replay_buffers.py`:
+   - `test_load_capacity_mismatch_raises_error`: Verifies that mismatched capacity raises ValueError
+   - `test_load_matching_capacity_succeeds`: Verifies that matching capacity loads successfully
+
+**Error Message**:
+```
+Cannot load replay buffer: saved capacity (100) does not match current buffer capacity (50).
+Either recreate the buffer with capacity=100 or regenerate the checkpoint with the current capacity setting.
+```
+
+**Philosophy**: Following CLAUDE.md principle of "fail loudly" for pre-release project - no backwards compatibility, no silent fallbacks. Configuration drift must be detected immediately.

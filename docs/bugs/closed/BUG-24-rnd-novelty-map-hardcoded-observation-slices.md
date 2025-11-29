@@ -1,7 +1,7 @@
 Title: RND.get_novelty_map hardcodes observation slices (64:70) and grid flattening
 
 Severity: medium
-Status: open
+Status: FIXED
 
 Subsystem: exploration/RND
 Affected Version/Branch: main
@@ -25,16 +25,15 @@ Actual Behavior:
 Root Cause:
 - Legacy assumptions baked into debug visualization helper.
 
-Proposed Fix (Breaking OK):
-- Accept `ObservationSpec` or `ObservationActivity` and construct the observation using group slices to place the agent and meters appropriately.
+Resolution:
+- Method deleted entirely (see CLAUDE.md pre-release policy: delete unused code rather than maintain it)
+- Grep search confirmed method was never called in codebase (only defined, never invoked)
+- Added comment in rnd.py explaining deletion rationale
+- Method had hardcoded assumptions (70-dim obs, meters at 64:70, one-hot grid encoding) incompatible with VFS-based observation layouts
 
-Migration Impact:
-- Callers must provide spec/activity; signature change.
-
-Alternatives Considered:
-- Remove `get_novelty_map` from core RND class and move to a debug utility that can import the env/spec.
-
-Tests:
-- Add smoke test for novelty map generation using a compiled universe.
+Fix Commit:
+- Deleted get_novelty_map() from src/townlet/exploration/rnd.py
+- Added explanatory comment at deletion site
+- Updated this bug doc to FIXED status
 
 Owner: exploration

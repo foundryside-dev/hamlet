@@ -345,6 +345,83 @@ class TestVectorizedHamletEnvStep:
         assert isinstance(info["intrinsic_weight"], torch.Tensor)
         assert info["intrinsic_weight"].shape == (2,)
 
+    def test_temporal_consistency_in_step(self, custom_env_builder):
+        """BUG-14: Verify temporal features are consistent between reward computation and returned observations.
+
+        The bug was that step() incremented time_of_day AFTER _calculate_shaped_rewards() was called,
+        causing intrinsic rewards to be computed with observations from time T while the returned
+        observations reflected time T+1. This test verifies both observation calls see the same time_of_day.
+        """
+        import math
+
+        # Create temporal-enabled environment
+        env = custom_env_builder(
+            source_pack=Path("configs/default_curriculum"),
+            overrides=None,
+        )
+        env = env.universe.create_environment(num_agents=1, level_name="L3_temporal_mechanics", device=env.device)
+        env.reset()
+
+        # Ensure temporal mechanics are enabled
+        assert env.enable_temporal_mechanics is True
+        assert env.day_length > 0
+
+        # Find the temporal field in observation spec
+        try:
+            temporal_field = env.observation_spec.get_field_by_name("obs_temporal")
+        except KeyError:
+            pytest.skip("obs_temporal field not present in L3_temporal_mechanics observations")
+
+        # Take a step
+        wait_action_idx = env.action_ids["WAIT"]
+        actions = torch.tensor([wait_action_idx], device=env.device)
+        observations, rewards, dones, info = env.step(actions)
+
+        # Extract temporal features from returned observations
+        # obs_temporal should be [time_sin, time_cos, day_progress, is_night]
+        start_idx = temporal_field.start_index
+        end_idx = temporal_field.end_index
+        temporal_obs = observations[0, start_idx:end_idx]
+
+        # Compute expected temporal values based on current time_of_day
+        # After step(), time_of_day should be 1
+        expected_time_of_day = 1
+        assert env.time_of_day == expected_time_of_day
+
+        day_length = float(env.day_length)
+        time_angle = (expected_time_of_day / day_length) * 2 * math.pi
+        expected_time_sin = math.sin(time_angle)
+        expected_time_cos = math.cos(time_angle)
+
+        # Verify temporal features match the current time_of_day
+        # (not the previous time_of_day which would be 0)
+        actual_time_sin = temporal_obs[0].item()
+        actual_time_cos = temporal_obs[1].item()
+
+        assert abs(actual_time_sin - expected_time_sin) < 1e-6, f"time_sin mismatch: expected {expected_time_sin}, got {actual_time_sin}"
+        assert abs(actual_time_cos - expected_time_cos) < 1e-6, f"time_cos mismatch: expected {expected_time_cos}, got {actual_time_cos}"
+
+        # Take another step and verify consistency again
+        observations2, rewards2, dones2, info2 = env.step(actions)
+        temporal_obs2 = observations2[0, start_idx:end_idx]
+
+        expected_time_of_day_2 = 2
+        assert env.time_of_day == expected_time_of_day_2
+
+        time_angle_2 = (expected_time_of_day_2 / day_length) * 2 * math.pi
+        expected_time_sin_2 = math.sin(time_angle_2)
+        expected_time_cos_2 = math.cos(time_angle_2)
+
+        actual_time_sin_2 = temporal_obs2[0].item()
+        actual_time_cos_2 = temporal_obs2[1].item()
+
+        assert (
+            abs(actual_time_sin_2 - expected_time_sin_2) < 1e-6
+        ), f"time_sin mismatch on step 2: expected {expected_time_sin_2}, got {actual_time_sin_2}"
+        assert (
+            abs(actual_time_cos_2 - expected_time_cos_2) < 1e-6
+        ), f"time_cos mismatch on step 2: expected {expected_time_cos_2}, got {actual_time_cos_2}"
+
 
 class TestExecuteActions:
     """Test VectorizedHamletEnv._execute_actions() method."""
@@ -858,6 +935,47 @@ class TestRandomizeAffordancePositions:
         env.randomize_affordance_positions()
         for name, pos in initial_positions.items():
             assert torch.allclose(pos, env.affordances.get(name))
+
+
+class TestVFSVariableAccess:
+    """Test VectorizedHamletEnv uses public VFS API for variable presence checks."""
+
+    def test_vfs_variable_presence_check_uses_public_api(self, cpu_env_factory):
+        """BUG-17: Should use .variables property, not ._definitions private attribute."""
+        env = cpu_env_factory(num_agents=2)
+        env.reset()
+
+        # Verify registry has the public .variables property
+        assert hasattr(env.vfs_registry, "variables")
+        assert isinstance(env.vfs_registry.variables, dict)
+
+        # Test variable presence check via public API
+        # Get a known variable from the environment's VFS
+        known_vars = list(env.vfs_registry.variables.keys())
+        assert len(known_vars) > 0, "Expected at least one VFS variable"
+
+        # Verify presence check works with public API
+        test_var = known_vars[0]
+        assert test_var in env.vfs_registry.variables
+
+        # Verify absence check works with public API
+        assert "nonexistent_variable_xyz123" not in env.vfs_registry.variables
+
+    def test_velocity_variables_check_uses_public_api(self, cpu_env_factory):
+        """Should check velocity variable existence via .variables property."""
+        env = cpu_env_factory(num_agents=2)
+        env.reset()
+
+        # Check if velocity_x exists (depends on config)
+        has_velocity_x = "velocity_x" in env.vfs_registry.variables
+
+        # If velocity variables exist, verify they're accessible
+        if has_velocity_x:
+            assert "velocity_x" in env.vfs_registry.variables
+            # Should be able to read it via public API
+            velocity_x = env.vfs_registry.get("velocity_x", reader="engine")
+            assert isinstance(velocity_x, torch.Tensor)
+            assert velocity_x.shape[0] == env.num_agents
 
 
 # =============================================================================

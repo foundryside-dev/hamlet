@@ -321,36 +321,11 @@ class RNDExploration(ExplorationStrategy):
 
         return loss.item()
 
-    def get_novelty_map(self, grid_size: int = 8) -> torch.Tensor:
-        """Get novelty values for all grid positions (for visualization).
-
-        Args:
-            grid_size: Size of environment grid
-
-        Returns:
-            [grid_size, grid_size] tensor of novelty values
-        """
-        # Generate observations for all grid positions
-        # (Simplified: just grid encoding, meters set to 0.5)
-        novelty_map = torch.zeros(grid_size, grid_size, device=self.device)
-
-        for row in range(grid_size):
-            for col in range(grid_size):
-                # Create observation with agent at (row, col)
-                obs = torch.zeros(1, self.obs_dim, device=self.device)
-
-                # Grid encoding (one-hot for position)
-                flat_idx = row * grid_size + col
-                obs[0, flat_idx] = 1.0
-
-                # Meters (placeholder: all 0.5)
-                obs[0, 64:70] = 0.5
-
-                # Compute novelty
-                novelty = self.compute_intrinsic_rewards(obs)
-                novelty_map[row, col] = novelty.item()
-
-        return novelty_map
+    # get_novelty_map() was removed (BUG-24 fix)
+    # Reason: Unused debug visualization code with hardcoded observation assumptions.
+    # It assumed 70-dim obs with meters at indices 64:70 and one-hot grid encoding,
+    # which breaks with VFS-based observation layouts and different curriculum levels.
+    # Per CLAUDE.md pre-release policy: delete unused code rather than maintaining it.
 
     def decay_epsilon(self) -> None:
         """Decay epsilon (call once per episode)."""

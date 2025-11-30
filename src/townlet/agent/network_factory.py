@@ -88,6 +88,7 @@ class NetworkFactory:
             position_dim: Position dimensionality (2 for Grid2D, 3 for Grid3D, 0 for Aspatial)
             num_meters: Number of meter values
             num_affordance_types: Number of affordance types
+            observation_spec: Observation specification (used to detect temporal features)
 
         Returns:
             RecurrentSpatialQNetwork
@@ -103,6 +104,10 @@ class NetworkFactory:
             acceptable for Phase 2 (TASK-005). Future phases may make the network
             architecture fully configurable.
 
+            Temporal features are automatically detected by checking if observation_spec
+            contains a field named "obs_temporal". If observation_spec is None,
+            temporal features default to False.
+
         Example:
             >>> config = RecurrentConfig(...)
             >>> network = NetworkFactory.build_recurrent(
@@ -117,6 +122,15 @@ class NetworkFactory:
         # Extract LSTM hidden size from config
         lstm_hidden_size = config.lstm.hidden_size
 
+        # Detect temporal features from observation spec
+        enable_temporal_features = False
+        if observation_spec is not None:
+            try:
+                observation_spec.get_field_by_name("obs_temporal")
+                enable_temporal_features = True
+            except KeyError:
+                enable_temporal_features = False
+
         # Create RecurrentSpatialQNetwork with config-driven LSTM dimension
         # Note: The existing RecurrentSpatialQNetwork class has hardcoded encoder
         # architectures (CNN, MLPs). For Phase 2, we only make LSTM hidden_size
@@ -128,7 +142,7 @@ class NetworkFactory:
             position_dim=position_dim,
             num_meters=num_meters,
             num_affordance_types=num_affordance_types,
-            enable_temporal_features=False,  # Will be determined by environment
+            enable_temporal_features=enable_temporal_features,
             hidden_dim=lstm_hidden_size,  # From config instead of hardcoded!
             observation_spec=observation_spec,
         )

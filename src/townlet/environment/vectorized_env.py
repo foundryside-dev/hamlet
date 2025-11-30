@@ -1266,7 +1266,7 @@ class VectorizedHamletEnv:
                     value = torch.zeros((self.num_agents, dims), device=self.device)
             else:
                 # Environment variables mapping: expect variables named by obs field
-                if name not in self.vfs_registry._definitions:
+                if name not in self.vfs_registry.variables:
                     raise ValueError(f"Observation field '{name}' not found in VFS variables (no defaults allowed).")
                 val = self.vfs_registry.get(name, reader="engine")
                 value = val if val.dim() > 1 else val.unsqueeze(1)
@@ -1707,7 +1707,15 @@ class VectorizedHamletEnv:
         # Agents that reach their lifespan retire with a bonus reward
         retired = self.step_counts >= self.agent_lifespan
 
-        # 6. Calculate rewards (interoception-aware)
+        # 6. Increment time of day BEFORE reward calculation to ensure temporal consistency.
+        # BUG-14 FIX: Both _calculate_shaped_rewards() (via intrinsic computation) and the
+        # final _get_observations() call must see the same time_of_day value.
+        if self.enable_temporal_mechanics:
+            self.time_of_day = (self.time_of_day + 1) % int(self.day_length)
+        else:
+            self.time_of_day = 0
+
+        # 7. Calculate rewards (interoception-aware)
         rewards = self._calculate_shaped_rewards()
         rewards = torch.where(retired, rewards + 1.0, rewards)  # +1 retirement bonus
         self.dones = torch.logical_or(self.dones, retired)
@@ -1718,12 +1726,6 @@ class VectorizedHamletEnv:
             if newly_done.any():
                 for idx in torch.nonzero(newly_done, as_tuple=False).flatten():
                     self.effect_manager.cancel_scheduled_for_entity(scope="agent", entity_id=int(idx))
-
-        # 6. Increment time of day only when temporal mechanics are active.
-        if self.enable_temporal_mechanics:
-            self.time_of_day = (self.time_of_day + 1) % int(self.day_length)
-        else:
-            self.time_of_day = 0
 
         observations = self._get_observations()
 
@@ -1778,17 +1780,17 @@ class VectorizedHamletEnv:
 
         # Write velocity components to VFS (if velocity variables exist)
         # Scalar variables require shape (num_agents,) not (num_agents, 1)
-        if "velocity_x" in self.vfs_registry._definitions:
+        if "velocity_x" in self.vfs_registry.variables:
             self.vfs_registry.set("velocity_x", velocity[:, 0], writer="engine")
 
-        if "velocity_y" in self.vfs_registry._definitions and velocity.shape[1] >= 2:
+        if "velocity_y" in self.vfs_registry.variables and velocity.shape[1] >= 2:
             self.vfs_registry.set("velocity_y", velocity[:, 1], writer="engine")
 
-        if "velocity_z" in self.vfs_registry._definitions and velocity.shape[1] >= 3:
+        if "velocity_z" in self.vfs_registry.variables and velocity.shape[1] >= 3:
             self.vfs_registry.set("velocity_z", velocity[:, 2], writer="engine")
 
         # Calculate and write velocity magnitude (speed)
-        if "velocity_magnitude" in self.vfs_registry._definitions:
+        if "velocity_magnitude" in self.vfs_registry.variables:
             magnitude = torch.norm(velocity, dim=1)  # [num_agents]
             self.vfs_registry.set("velocity_magnitude", magnitude, writer="engine")
 

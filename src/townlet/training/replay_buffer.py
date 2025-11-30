@@ -387,6 +387,16 @@ class ReplayBuffer:
                 "Cannot load legacy replay buffer checkpoint (format_version < 3). " "Regenerate checkpoint with current Townlet version."
             )
 
+        # BUG-02: Validate capacity match (fail loudly per CLAUDE.md)
+        saved_capacity = state.get("capacity")
+        if saved_capacity is not None and saved_capacity != self.capacity:
+            raise ValueError(
+                f"Cannot load replay buffer: saved capacity ({saved_capacity}) does not match "
+                f"current buffer capacity ({self.capacity}). "
+                f"Either recreate the buffer with capacity={saved_capacity} or regenerate the checkpoint "
+                f"with the current capacity setting."
+            )
+
         if state["observations"] is None:
             # Empty buffer
             self.size = 0

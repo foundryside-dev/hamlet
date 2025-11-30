@@ -545,3 +545,93 @@ class TestReplayManager:
             assert replay.get_total_steps() == 0
             # Close database to prevent resource warnings
             db.close()
+
+    def test_load_uncompressed_episode_fails_with_clear_error(self, caplog):
+        """ReplayManager should fail loudly when attempting to load uncompressed episodes."""
+        from townlet.demo.database import DemoDatabase
+        from townlet.recording.data_structures import EpisodeMetadata, RecordedStep
+        from townlet.recording.replay import ReplayManager
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmpdir_path = Path(tmpdir)
+            db_path = tmpdir_path / "test.db"
+            recordings_dir = tmpdir_path / "recordings"
+            recordings_dir.mkdir()
+
+            db = DemoDatabase(db_path)
+
+            # Create episode data
+            metadata = EpisodeMetadata(
+                episode_id=700,
+                survival_steps=5,
+                total_reward=5.0,
+                extrinsic_reward=4.5,
+                intrinsic_reward=0.5,
+                curriculum_stage=1,
+                epsilon=0.1,
+                intrinsic_weight=0.5,
+                timestamp=time.time(),
+                affordance_layout={"Toilet": (1, 2)},
+                affordance_visits={"Toilet": 2},
+                custom_action_uses={},
+            )
+
+            steps = [
+                RecordedStep(
+                    step=i,
+                    position=(i, i + 1),
+                    meters=(0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2),
+                    action=i % 6,
+                    reward=1.0,
+                    intrinsic_reward=0.1,
+                    done=(i == 4),
+                    q_values=(0.2, 0.3, 0.4, 0.5, 0.6),
+                )
+                for i in range(5)
+            ]
+
+            # Serialize WITHOUT compression (mimics recorder.py with compression="none")
+            episode_data = {
+                "version": 1,
+                "metadata": asdict(metadata),
+                "steps": [asdict(step) for step in steps],
+                "affordances": metadata.affordance_layout,
+            }
+            serialized = msgpack.packb(episode_data, use_bin_type=True)
+            # Write raw msgpack without LZ4 compression
+            uncompressed = serialized
+
+            file_path = recordings_dir / "episode_000700.msgpack.lz4"
+            file_path.write_bytes(uncompressed)
+
+            # Insert into database
+            db.insert_recording(
+                episode_id=700,
+                file_path=str(file_path.relative_to(tmpdir_path)),
+                metadata=metadata,
+                reason="test_uncompressed",
+                file_size=len(serialized),
+                compressed_size=len(uncompressed),
+            )
+
+            # Load with ReplayManager - should fail with clear error message
+            replay = ReplayManager(db, tmpdir_path)
+
+            # Capture log output to verify error message
+            import logging
+
+            with caplog.at_level(logging.ERROR, logger="townlet.recording.replay"):
+                success = replay.load_episode(700)
+
+            # Verify failure
+            assert success is False
+            assert replay.is_loaded() is False
+
+            # Verify error message provides clear guidance
+            error_logs = caplog.text
+            assert "Failed to decompress episode 700" in error_logs
+            assert "HAMLET requires LZ4 compression" in error_logs
+            assert "Set compression: 'lz4' in training.yaml" in error_logs
+
+            # Close database to prevent resource warnings
+            db.close()

@@ -772,6 +772,51 @@ class TestReplayBufferSerialization:
         with pytest.raises(ValueError, match="format_version < 3"):
             buffer.load_from_serialized(legacy_state)
 
+    def test_load_capacity_mismatch_raises_error(self):
+        """BUG-02: load_from_serialized should reject mismatched capacity."""
+        buffer = ReplayBuffer(capacity=50, device=CPU)
+
+        # Create state with different capacity
+        mismatched_state = {
+            "size": 10,
+            "position": 10,
+            "capacity": 100,  # Different from buffer capacity (50)
+            "format_version": 3,
+            "observations": torch.randn(10, 3),
+            "actions": torch.randint(0, 4, (10,)),
+            "rewards": torch.randn(10),
+            "rewards_extrinsic": torch.randn(10),
+            "rewards_intrinsic": torch.randn(10),
+            "rewards_shaping": torch.randn(10),
+            "next_observations": torch.randn(10, 3),
+            "dones": torch.rand(10) > 0.5,
+        }
+
+        with pytest.raises(ValueError, match="saved capacity.*does not match.*current buffer capacity"):
+            buffer.load_from_serialized(mismatched_state)
+
+    def test_load_matching_capacity_succeeds(self):
+        """BUG-02: load_from_serialized should succeed when capacities match."""
+        buffer1 = ReplayBuffer(capacity=100, device=CPU)
+
+        # Add some transitions
+        for i in range(10):
+            obs = torch.tensor([[float(i), float(i * 2)]])
+            rewards = _make_reward_tensor(torch.tensor([float(i)]))
+            buffer1.push(obs, torch.tensor([i % 4]), rewards, torch.tensor([[float(i + 1), float((i + 1) * 2)]]), torch.tensor([False]))
+
+        # Serialize
+        state = buffer1.serialize()
+
+        # Load into new buffer with same capacity
+        buffer2 = ReplayBuffer(capacity=100, device=CPU)
+        buffer2.load_from_serialized(state)
+
+        # Verify successful load
+        assert buffer2.size == 10
+        assert buffer2.capacity == 100
+        assert state["capacity"] == 100
+
 
 class TestReplayBufferEdgeCases:
     """Test edge cases and boundary conditions."""

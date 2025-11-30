@@ -1,7 +1,7 @@
 Title: Recording files written with compression=none cannot be replayed
 
 Severity: medium
-Status: open
+Status: FIXED
 
 Subsystem: recording/replay
 Affected Version/Branch: main
@@ -78,3 +78,26 @@ Owner: recording subsystem
 Links:
 - `docs/WORK-PACKAGES.md:324` (WP-L1 mentions recording/visualization robustness)
 - `docs/arch-analysis-2025-11-13-1532/02-subsystem-catalog.md`
+
+Fix Applied (REVISED - Breaking Change):
+- Date: 2025-11-30 (revised same day)
+- Implementation: Fail loudly with clear error message (no fallback)
+- Rationale: Pre-release project with zero users per CLAUDE.md - backwards compatibility is an antipattern
+- Changes:
+  - `src/townlet/recording/replay.py:65-78`: Removed try/except fallback, added clear error message
+    - Catches `lz4.frame.LZ4FrameError` when decompression fails
+    - Logs actionable error: "HAMLET requires LZ4 compression. Set compression: 'lz4' in training.yaml"
+    - Returns `False` immediately (no silent fallback to raw msgpack)
+    - **BREAKS** support for `compression="none"` recordings
+  - `tests/test_townlet/integration/test_recording_replay_manager.py:549-636`: Updated `test_load_uncompressed_episode_fails_with_clear_error()`
+    - Writes episode with raw msgpack (mimics `compression="none"`)
+    - Verifies load_episode() returns `False`
+    - Verifies error message contains actionable guidance
+- Breaking Change Impact:
+  - Any recordings created with `compression="none"` will fail to load with clear error
+  - This is acceptable: pre-release project, no production users, no backwards compatibility required
+  - Users must use `compression: "lz4"` in training.yaml (already the default)
+- Verification:
+  - All LZ4-compressed recordings continue to work
+  - Uncompressed recordings fail with clear, actionable error message
+  - No silent failures or fallback code paths

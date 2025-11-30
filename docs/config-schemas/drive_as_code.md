@@ -202,6 +202,13 @@ Intrinsic curiosity/exploration configuration. Defines how to compute novelty-se
 - `base_weight` must be in [0.0, 1.0]
 - `apply_modifiers` must reference defined modifiers
 
+**Modifier Application Ordering**:
+- Modifiers are applied **multiplicatively in the order they appear** in the `apply_modifiers` list
+- Order matters when reasoning about modifier interactions: `[energy_crisis, temporal_decay]` is conceptually different from `[temporal_decay, energy_crisis]`
+- Formula: `effective_weight = base_weight × modifiers[0] × modifiers[1] × ...`
+- Best practice: List critical suppressions first (e.g., crisis modifiers before exploratory boosts) for clarity
+- Note: Since multiplication is commutative, numerical result is order-independent, but semantic clarity benefits from logical ordering
+
 ---
 
 #### `shaping` (list[ShapingBonusConfig], REQUIRED)
@@ -270,6 +277,12 @@ Range-based multipliers for contextual reward adjustment.
 
 **Range Coverage**: Ranges must cover [0.0, 1.0] without gaps or overlaps.
 
+**VFS Variable Validation**:
+- VFS variables referenced in `variable` field are validated at **RUNTIME**, not config load time
+- If variable doesn't exist in VFS registry, `DACEngine` raises clear `KeyError` with available variables
+- Variables must have `readable_by: ["engine"]` for DAC access (enforced by VFS access control)
+- **Known Limitation**: Compile-time validation via UniverseCompiler integration planned (see BUG-35)
+
 ### RangeConfig
 
 Single range in a modifier.
@@ -299,6 +312,12 @@ modifiers:
         max: 1.0
         multiplier: 1.0      # Full intrinsic weight
 ```
+
+**Application Ordering**:
+- When multiple modifiers are applied, they multiply in **list order**
+- Example: `apply_modifiers: [energy_crisis, temporal_decay]`
+  - `effective_weight = base_weight × energy_crisis_multiplier × temporal_decay_multiplier`
+- Order conveys semantic intent even though multiplication is commutative
 
 **Pedagogical Note**: Crisis suppression prevents "Low Energy Delirium" bug where agents exploit low extrinsic rewards to maximize intrinsic exploration.
 
@@ -516,15 +535,52 @@ extrinsic:
 
 ### 9. hybrid
 
-**Formula**: `reward = Σ(weight_i × strategy_i)`
+**Formula**: `reward = base + Σ(weighted_bar_bonuses)`
 
-**Use Case**: Weighted combination of multiple strategies
+**Use Case**: Combines linear and shaped bar-based terms in a single strategy (simplified hybrid approach)
 
-**Status**: NOT YET IMPLEMENTED
+**Status**: ACTIVE (simplified version; full multi-strategy composition is future work)
 
-**Future Fields**:
-- `strategies` (list[ExtrinsicStrategyConfig]): Sub-strategies to combine
-- `weights` (list[float]): Weights for each sub-strategy
+**How It Works**: The `hybrid` strategy uses `bar_bonuses` to flexibly combine different weighting approaches:
+- **Linear mode** (when `center = 0.0`): `term = scale × bar_value` (acts like `weighted_sum`)
+- **Shaped mode** (when `center ≠ 0.0`): `term = scale × (bar_value - center)` (acts like `constant_base_with_shaped_bonus`)
+
+This allows you to mix linear weights and shaped bonuses within a single extrinsic strategy, providing flexibility without needing multiple sub-strategies.
+
+**Fields**:
+- `type: "hybrid"` (required)
+- `base` (float, default 0.0): Base reward constant
+- `bar_bonuses` (list[BarBonusConfig]): Bar-based terms with flexible interpretation:
+  - `bar` (str): Bar identifier
+  - `scale` (float): Weight/multiplier for this term
+  - `center` (float): Pivot point (0.0 = linear, ≠0.0 = shaped offset)
+- `apply_modifiers` (list[str]): Modifier names to apply
+
+**Example**:
+```yaml
+extrinsic:
+  type: hybrid
+  base: 1.0
+  bar_bonuses:
+    # Linear term: directly weighted energy
+    - bar: energy
+      center: 0.0      # center=0 → linear mode
+      scale: 1.5       # reward += 1.5 × energy
+
+    # Shaped term: health bonus above/below midpoint
+    - bar: health
+      center: 0.5      # center≠0 → shaped mode
+      scale: 0.5       # reward += 0.5 × (health - 0.5)
+
+  apply_modifiers: []
+```
+
+**When to Use**:
+- You need both linear weights and shaped offsets in the same strategy
+- Experimenting with mixed reward formulations without creating custom strategy types
+- Prototyping before settling on a more specialized strategy
+
+**Note**: This is a simplified implementation using bar_bonuses. True multi-strategy composition (combining `multiplicative`, `constant_base_with_shaped_bonus`, etc. as sub-strategies with weights) is planned for a future version
 
 ---
 
@@ -1208,28 +1264,36 @@ drive_as_code:
 **Location**: `townlet.universe.compiler.UniverseCompiler`
 
 **Checks**:
-1. **Modifier references**: All bars/variables exist
-2. **Extrinsic references**: All bars/variables exist
+1. **Modifier references**: Bar names validated (VFS variables NOT validated at compile-time)
+2. **Extrinsic references**: Bar names validated (VFS variables NOT validated at compile-time)
 3. **Shaping references**: All affordances exist
 4. **Modifier coverage**: Ranges cover [0.0, 1.0] without gaps
 5. **Modifier self-references**: modifiers dict contains all referenced names
 
 **Error Codes**:
 - `DAC-REF-001`: Modifier references undefined bar
-- `DAC-REF-002`: Modifier references undefined VFS variable
 - `DAC-REF-003`: Extrinsic references undefined bar
 - `DAC-REF-004`: Extrinsic bar bonus references undefined bar
-- `DAC-REF-005`: Extrinsic variable bonus references undefined VFS variable
 - `DAC-REF-006`: Shaping bonus references undefined affordance
+
+**Known Limitation**: VFS variable validation (error codes DAC-REF-002, DAC-REF-005) currently happens at runtime during `DACEngine` initialization, not at config load time. This is tracked in BUG-35. Invalid VFS references will fail when starting training, not during `python -m townlet.universe validate`.
 
 ### Runtime Validation
 
 **Location**: `townlet.environment.dac_engine.DACEngine`
 
 **Checks**:
-1. **VFS access control**: Engine can read variables with `readable_by: ["engine"]`
-2. **Bar index mapping**: Bar names map to valid meter indices
-3. **Tensor shapes**: All operations broadcast correctly across agents
+1. **VFS variable existence**: DACEngine raises clear `KeyError` with available variables if referenced variable not found
+2. **VFS access control**: Engine can read variables with `readable_by: ["engine"]` (enforced by VFS registry)
+3. **Bar index mapping**: Bar names map to valid meter indices
+4. **Tensor shapes**: All operations broadcast correctly across agents
+
+**VFS Variable Error Handling**:
+- Modifier references unknown VFS variable → `KeyError` with message: `"VFS variable 'X' referenced in modifier 'Y' but not found in registry. Available: [...]"`
+- Extrinsic/shaping references unknown VFS variable → `KeyError` from VFS registry
+- Variable exists but not readable by engine → `AccessControlError` from VFS registry
+
+**Rationale for Runtime Validation**: DAC config is validated independently from VFS definitions during config load. Full compile-time validation requires passing VFS variable definitions to the DAC validator, which requires UniverseCompiler integration. This is planned but not yet implemented (BUG-35).
 
 ---
 

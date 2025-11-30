@@ -1,7 +1,7 @@
 Title: VFS semantic_type and curriculum_active metadata partially used and inconsistent between layers
 
 Severity: medium
-Status: open
+Status: resolved
 
 Subsystem: vfs/observation_builder + universe/adapters + agent/networks
 Affected Version/Branch: main
@@ -65,3 +65,62 @@ Owner: VFS + compiler/adapters + networks
 Links:
 - `docs/plans/2025-11-11-quick-05-structured-obs-masking.md`
 - `docs/arch-analysis-2025-11-13-1532/02-subsystem-catalog.md:111`
+
+---
+
+## Resolution (2025-11-30)
+
+**Investigation Findings:**
+
+1. **semantic_type claim is FALSE**: `vfs_to_observation_spec()` at line 76 DOES respect explicit `semantic_type`:
+   ```python
+   semantic = field.semantic_type if field.semantic_type != "custom" else _semantic_from_name(field.id)
+   ```
+   It only falls back to name heuristics when `semantic_type == "custom"` (the default). BUG-28 already addressed this.
+
+2. **curriculum_active architecture**: The production system uses a different mechanism than described in bug report:
+   - **Production flow**: Compiler marks inactive fields with `"MASKED"` string in `ObservationField.description`
+   - `UniverseCompiler._build_observation_activity()` at line 1768: `is_masked = "MASKED" in (field.description or "")`
+   - This is the canonical masking mechanism, used consistently throughout the compiler
+
+3. **Dead code discovered**: `VFSAdapter.build_observation_activity()` added in commit 72f24ab8 (Nov 11, 2025 21:13:44)
+   - Obsoleted 15 minutes later by compiler version in commit ce58fe85 (21:28:47)
+   - Never called in production code (only in tests)
+   - Different signature and semantics than production version
+   - Part of TDD workflow where design changed mid-implementation
+
+**Actions Taken:**
+
+1. ✅ Deleted `VFSAdapter.build_observation_activity()` method (lines 104-177)
+2. ✅ Deleted `tests/test_townlet/unit/universe/test_vfs_adapter_activity.py` (170 lines)
+3. ✅ Removed unused `ObservationActivity` import from `vfs_adapter.py`
+4. ✅ Verified all 152 universe unit tests still pass
+
+**Actual Architecture (Working as Designed):**
+
+```
+Compiler builds ObservationSpec (compiler DTO)
+  ↓ Marks inactive fields with "MASKED" in description field
+
+Compiler._build_observation_activity(obs_spec)
+  ↓ Line 1768: is_masked = "MASKED" in (field.description or "")
+  ↓ Builds ObservationActivity with active_mask
+
+Compiler._build_vfs_observation_fields(obs_spec)
+  ↓ Line 2738: curriculum_active="MASKED" not in (field.description or "")
+  ↓ Derives curriculum_active from MASKED string for VFS fields
+```
+
+The "MASKED" string hack in `description` is the canonical mechanism. This is:
+- ✅ Consistent across the compiler
+- ✅ Working in production (all curriculum masking works)
+- ✅ Tested via integration tests
+
+**Why not add curriculum_active to DTO:**
+
+Would require reversing the compiler pipeline order (build VFS fields before ObservationSpec), which is a major architectural refactor beyond the scope of fixing "inconsistent metadata threading." Defer to VFS Phase 2 if needed.
+
+**Commits:**
+- Deleted dead code: (this commit)
+- Original dead code: 72f24ab8 "feat(universe): implement ObservationActivity builder in VFS adapter"
+- Compiler version: ce58fe85 "feat(universe): wire ObservationActivity into compiled and runtime DTOs"

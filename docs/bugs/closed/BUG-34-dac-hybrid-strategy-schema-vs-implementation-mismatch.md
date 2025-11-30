@@ -1,7 +1,7 @@
 Title: DAC hybrid extrinsic strategy semantics diverge between schema and implementation
 
 Severity: medium
-Status: open
+Status: FIXED (2025-11-30)
 
 Subsystem: environment/dac_engine + config/drive_as_code
 Affected Version/Branch: main
@@ -71,3 +71,30 @@ Owner: DAC engine
 Links:
 - `docs/config-schemas/drive_as_code.md:517`
 - `docs/arch-analysis-2025-11-13-1532/02-subsystem-catalog.md` (DAC section)
+
+---
+
+## Resolution (2025-11-30)
+
+**Approach Taken**: Option B - Aligned documentation to match actual implementation (minimal changes, no code breakage).
+
+**Changes Made**:
+1. Updated `docs/config-schemas/drive_as_code.md` section 9 (hybrid strategy):
+   - Changed status from "NOT YET IMPLEMENTED" to "ACTIVE (simplified version)"
+   - Updated formula from `Σ(weight_i × strategy_i)` to `reward = base + Σ(weighted_bar_bonuses)`
+   - Documented actual behavior: uses `bar_bonuses` with dual interpretation based on `center` parameter
+   - Added clear explanation of linear mode (center=0.0) vs shaped mode (center≠0.0)
+   - Provided working YAML example matching the implementation
+   - Noted that full multi-strategy composition is future work
+
+**Rationale**:
+- Implementation is working correctly and tested (`test_hybrid_strategy` passes)
+- The simplified hybrid provides useful functionality for mixing linear and shaped bar terms
+- Documentation now accurately reflects what operators can actually use
+- No code changes or config migrations required
+- Preserves future option to implement full multi-strategy composition under a different name or as an extension
+
+**Verification**:
+- Implementation in `src/townlet/environment/dac_engine.py:462-500` uses bar_bonuses as documented
+- Test in `tests/test_townlet/unit/environment/test_dac_engine.py:1016-1046` validates the documented behavior
+- Documentation now matches the code exactly

@@ -1,7 +1,7 @@
 Title: DAC modifier application order is implicit and variable sources are not validated against VFS
 
 Severity: medium
-Status: open
+Status: partially_fixed
 
 Subsystem: environment/dac_engine + config/drive_as_code + VFS
 Affected Version/Branch: main
@@ -76,3 +76,66 @@ Owner: DAC engine + config
 Links:
 - `docs/arch-analysis-2025-11-13-1532/02-subsystem-catalog.md:860` (No Modifier Chaining Validation)
 - `docs/config-schemas/drive_as_code.md`
+
+---
+
+## Resolution (Partial)
+
+**Date**: 2025-11-30
+**Status**: PARTIALLY FIXED - documentation updated, compile-time validation deferred
+
+### What Was Fixed
+
+**1. Modifier Ordering Documentation** (FIXED):
+- Added explicit ordering semantics to Field Reference section (line 205-210)
+- Documented that modifiers apply multiplicatively in list order
+- Clarified that order matters for semantic clarity even though multiplication is commutative
+- Added best practice: list critical suppressions first for clarity
+- Updated in three locations:
+  - `intrinsic` field documentation (lines 205-210)
+  - `ModifierConfig` example section (lines 316-320)
+  - Multi-Modifier Chaining example (line 1206 already existed)
+
+**2. VFS Variable Validation Documentation** (FIXED):
+- Clearly documented that VFS variables are validated at RUNTIME, not compile-time
+- Added "VFS Variable Validation" section to ModifierConfig docs (lines 280-284)
+- Updated Validation section to clarify limitation (lines 1262-1296):
+  - Removed error codes DAC-REF-002, DAC-REF-005 from compile-time validation
+  - Added detailed runtime validation behavior
+  - Documented error messages that users will see
+  - Explained rationale for runtime validation
+- Referenced BUG-35 as known limitation
+
+### What Remains (Deferred)
+
+**Compile-Time VFS Validation**:
+- Full validation requires UniverseCompiler integration
+- Needs to pass VFS variable definitions to DAC validator
+- Would enable fail-fast behavior at `python -m townlet.universe validate`
+- Currently deferred because:
+  - Requires significant plumbing between VFS and DAC validation
+  - Runtime validation provides clear error messages (acceptable UX)
+  - No user complaints about current behavior
+  - Pre-release status means breaking changes are acceptable when implemented
+
+**Implementation Plan** (when prioritized):
+1. Modify `UniverseCompiler` to pass VFS variable definitions to DAC validator
+2. Add compile-time checks in DAC DTO validation:
+   - Verify `ModifierConfig.variable` exists in VFS definitions
+   - Verify `readable_by` includes "engine"
+   - Same for extrinsic and shaping VFS variable references
+3. Update error codes DAC-REF-002, DAC-REF-005 to fire at compile-time
+4. Update tests to expect compile-time failures instead of runtime
+
+### Files Modified
+- `/home/john/hamlet/docs/config-schemas/drive_as_code.md`:
+  - Lines 205-210: Added modifier ordering semantics to intrinsic field
+  - Lines 280-284: Added VFS variable validation note to ModifierConfig
+  - Lines 316-320: Added application ordering example
+  - Lines 1262-1296: Rewrote Validation section with clear runtime vs compile-time split
+
+### Verification
+- Documentation now explicitly states modifier ordering semantics (3 locations)
+- Documentation clearly explains VFS validation happens at runtime with helpful error messages
+- Users will understand the current behavior and known limitations
+- No code changes required (current behavior is acceptable)

@@ -65,7 +65,18 @@ class ReplayManager:
         try:
             # Read and decompress
             compressed_data = file_path.read_bytes()
-            decompressed = lz4.frame.decompress(compressed_data)
+
+            # All HAMLET recordings MUST use LZ4 compression
+            try:
+                decompressed = lz4.frame.decompress(compressed_data)
+            except RuntimeError as e:
+                logger.error(
+                    f"Failed to decompress episode {episode_id}: {e}. "
+                    f"File appears to be uncompressed. HAMLET requires LZ4 compression. "
+                    f"Set compression: 'lz4' in training.yaml recording config."
+                )
+                return False
+
             episode_data = msgpack.unpackb(decompressed, raw=False)
 
             # Store episode data

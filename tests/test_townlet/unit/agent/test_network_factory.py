@@ -455,3 +455,173 @@ def test_build_dueling_with_dropout():
     obs = torch.randn(2, 54)
     q_values = network(obs)
     assert q_values.shape == (2, 10)
+
+
+def test_build_recurrent_temporal_features_detection():
+    """NetworkFactory detects temporal features from observation_spec."""
+    config = RecurrentConfig(
+        vision_encoder=CNNEncoderConfig(
+            channels=[16, 32],
+            kernel_sizes=[3, 3],
+            strides=[1, 1],
+            padding=[1, 1],
+            activation="relu",
+        ),
+        position_encoder=MLPEncoderConfig(
+            hidden_sizes=[32],
+            activation="relu",
+        ),
+        meter_encoder=MLPEncoderConfig(
+            hidden_sizes=[32],
+            activation="relu",
+        ),
+        affordance_encoder=MLPEncoderConfig(
+            hidden_sizes=[32],
+            activation="relu",
+        ),
+        lstm=LSTMConfig(
+            hidden_size=256,
+            num_layers=1,
+            dropout=0.0,
+        ),
+        q_head=MLPEncoderConfig(
+            hidden_sizes=[128],
+            activation="relu",
+        ),
+    )
+
+    # Create observation spec WITH temporal features
+    fields_with_temporal: list[ObservationField] = []
+    start = 0
+
+    # Local window
+    grid_dims = 25
+    fields_with_temporal.append(
+        ObservationField(
+            uuid=None,
+            name="obs_local_window",
+            type="spatial_grid",
+            dims=grid_dims,
+            start_index=start,
+            end_index=start + grid_dims,
+            scope="agent",
+            description="Local vision window",
+            semantic_type="spatial",
+        )
+    )
+    start += grid_dims
+
+    # Position
+    fields_with_temporal.append(
+        ObservationField(
+            uuid=None,
+            name="obs_position",
+            type="vector",
+            dims=2,
+            start_index=start,
+            end_index=start + 2,
+            scope="agent",
+            description="Agent position",
+            semantic_type="spatial",
+        )
+    )
+    start += 2
+
+    # Meters
+    fields_with_temporal.append(
+        ObservationField(
+            uuid=None,
+            name="obs_meters",
+            type="vector",
+            dims=8,
+            start_index=start,
+            end_index=start + 8,
+            scope="agent",
+            description="Meter values",
+            semantic_type="meters",
+        )
+    )
+    start += 8
+
+    # Affordances
+    fields_with_temporal.append(
+        ObservationField(
+            uuid=None,
+            name="obs_affordances",
+            type="vector",
+            dims=15,
+            start_index=start,
+            end_index=start + 15,
+            scope="agent",
+            description="Affordance activations",
+            semantic_type="affordance",
+        )
+    )
+    start += 15
+
+    # Temporal features (the key field to detect)
+    fields_with_temporal.append(
+        ObservationField(
+            uuid=None,
+            name="obs_temporal",
+            type="vector",
+            dims=4,
+            start_index=start,
+            end_index=start + 4,
+            scope="global",
+            description="Temporal features (time_sin, time_cos, day, progress)",
+            semantic_type="temporal",
+        )
+    )
+    start += 4
+
+    obs_spec_with_temporal = ObservationSpec.from_fields(fields_with_temporal)
+
+    # Build network WITH temporal features
+    network_with_temporal = NetworkFactory.build_recurrent(
+        config=config,
+        action_dim=8,
+        window_size=5,
+        position_dim=2,
+        num_meters=8,
+        num_affordance_types=14,
+        observation_spec=obs_spec_with_temporal,
+    )
+
+    # Verify temporal features are enabled
+    assert network_with_temporal.enable_temporal_features is True
+
+    # Build network WITHOUT temporal features (using existing helper)
+    obs_spec_without_temporal = _make_observation_spec(
+        window_size=5,
+        position_dim=2,
+        num_meters=8,
+        num_affordance_types=14,
+    )
+
+    network_without_temporal = NetworkFactory.build_recurrent(
+        config=config,
+        action_dim=8,
+        window_size=5,
+        position_dim=2,
+        num_meters=8,
+        num_affordance_types=14,
+        observation_spec=obs_spec_without_temporal,
+    )
+
+    # Verify temporal features are disabled
+    assert network_without_temporal.enable_temporal_features is False
+
+    # Build network with None observation_spec
+    network_none_spec = NetworkFactory.build_recurrent(
+        config=config,
+        action_dim=8,
+        window_size=5,
+        position_dim=2,
+        num_meters=8,
+        num_affordance_types=14,
+        observation_spec=None,
+    )
+
+    # Verify temporal features default to False
+    assert network_none_spec.enable_temporal_features is False

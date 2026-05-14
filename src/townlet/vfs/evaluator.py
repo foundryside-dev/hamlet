@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 import os
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 import torch
@@ -17,7 +17,7 @@ from townlet.world.expression.history import TemporalHistory
 __all__ = ["VFSEvaluator", "EvaluationMode"]
 
 
-class EvaluationMode(str, Enum):
+class EvaluationMode(StrEnum):
     """VFS evaluation mode."""
 
     MARK_AND_SWEEP = "mark_and_sweep"  # Only evaluate observed variables

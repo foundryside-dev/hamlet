@@ -49,8 +49,7 @@ class TestStratumConfigLoading:
     def test_stratum_config_rejects_extra_fields(self, tmp_path: Path):
         """Extra top-level fields should be rejected (extra=forbid)."""
         stratum_yaml = tmp_path / "stratum.yaml"
-        stratum_yaml.write_text(
-            """
+        stratum_yaml.write_text("""
 stratum:
   version: "1.0"
   substrate:
@@ -66,8 +65,7 @@ stratum:
   vision_support: global
   temporal_support: disabled
   unexpected_field: true
-"""
-        )
+""")
 
         with pytest.raises(ValidationError):
             StratumConfig.from_yaml(stratum_yaml)

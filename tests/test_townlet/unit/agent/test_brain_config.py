@@ -222,8 +222,7 @@ def test_brain_config_requires_feedforward_when_type_feedforward():
 def test_load_brain_config_valid(tmp_path):
     """load_brain_config loads valid brain.yaml."""
     brain_yaml = tmp_path / "brain.yaml"
-    brain_yaml.write_text(
-        """
+    brain_yaml.write_text("""
 version: "1.0"
 description: "Test feedforward network"
 
@@ -256,8 +255,7 @@ q_learning:
 replay:
   capacity: 10000
   prioritized: false
-"""
-    )
+""")
 
     config = load_brain_config(tmp_path)
     assert config.version == "1.0"
@@ -275,8 +273,7 @@ def test_load_brain_config_missing_file(tmp_path):
 def test_load_brain_config_invalid_yaml(tmp_path):
     """load_brain_config raises ValueError for invalid YAML."""
     brain_yaml = tmp_path / "brain.yaml"
-    brain_yaml.write_text(
-        """
+    brain_yaml.write_text("""
 version: "1.0"
 architecture:
   type: feedforward
@@ -296,8 +293,7 @@ q_learning:
   gamma: 0.99
   target_update_frequency: 100
   use_double_dqn: false
-"""
-    )
+""")
 
     with pytest.raises(ValueError) as exc_info:
         load_brain_config(tmp_path)

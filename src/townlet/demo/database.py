@@ -46,8 +46,7 @@ class DemoDatabase:
 
     def _create_schema(self):
         """Create database schema if it doesn't exist."""
-        self.conn.executescript(
-            """
+        self.conn.executescript("""
             CREATE TABLE IF NOT EXISTS episodes (
                 episode_id INTEGER PRIMARY KEY,
                 timestamp REAL NOT NULL,
@@ -103,8 +102,7 @@ class DemoDatabase:
             CREATE INDEX IF NOT EXISTS idx_recordings_stage ON episode_recordings(curriculum_stage);
             CREATE INDEX IF NOT EXISTS idx_recordings_reason ON episode_recordings(recording_reason);
             CREATE INDEX IF NOT EXISTS idx_recordings_reward ON episode_recordings(total_reward);
-        """
-        )
+        """)
         self.conn.commit()
 
     def insert_episode(

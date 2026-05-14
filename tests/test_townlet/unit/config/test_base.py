@@ -12,8 +12,7 @@ class TestLoadYamlSection:
     def test_load_valid_section(self, tmp_path):
         """Load valid YAML section successfully."""
         config_file = tmp_path / "test.yaml"
-        config_file.write_text(
-            """
+        config_file.write_text("""
 training:
   epsilon_start: 1.0
   epsilon_decay: 0.995
@@ -21,8 +20,7 @@ training:
 
 environment:
   grid_size: 8
-"""
-        )
+""")
 
         data = load_yaml_section(tmp_path, "test.yaml", "training")
         assert data["epsilon_start"] == 1.0
@@ -32,16 +30,14 @@ environment:
     def test_load_different_section(self, tmp_path):
         """Load different section from same file."""
         config_file = tmp_path / "test.yaml"
-        config_file.write_text(
-            """
+        config_file.write_text("""
 training:
   epsilon_start: 1.0
 
 environment:
   grid_size: 8
   partial_observability: false
-"""
-        )
+""")
 
         data = load_yaml_section(tmp_path, "test.yaml", "environment")
         assert data["grid_size"] == 8
@@ -60,15 +56,13 @@ environment:
     def test_missing_section_error(self, tmp_path):
         """Raise clear error when section doesn't exist."""
         config_file = tmp_path / "test.yaml"
-        config_file.write_text(
-            """
+        config_file.write_text("""
 environment:
   grid_size: 8
 
 population:
   num_agents: 1
-"""
-        )
+""")
 
         with pytest.raises(KeyError) as exc_info:
             load_yaml_section(tmp_path, "test.yaml", "training")
@@ -91,8 +85,7 @@ population:
     def test_nested_section_data(self, tmp_path):
         """Load section with nested data structures."""
         config_file = tmp_path / "test.yaml"
-        config_file.write_text(
-            """
+        config_file.write_text("""
 training:
   device: cuda
   hyperparameters:
@@ -101,8 +94,7 @@ training:
   enabled_affordances:
     - Bed
     - Hospital
-"""
-        )
+""")
 
         data = load_yaml_section(tmp_path, "test.yaml", "training")
         assert data["device"] == "cuda"

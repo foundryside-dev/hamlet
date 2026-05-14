@@ -66,8 +66,7 @@ class TestEnvironmentConfigLoading:
     def test_environment_config_rejects_extra_meter_fields(self, tmp_path: Path):
         """Extra fields in meter definitions should be rejected (extra=forbid)."""
         env_yaml = tmp_path / "environment.yaml"
-        env_yaml.write_text(
-            """
+        env_yaml.write_text("""
 environment:
   version: "1.0"
   meters:
@@ -80,8 +79,7 @@ environment:
   affordances: []
   variables: []
   cues: []
-"""
-        )
+""")
 
         with pytest.raises(ValidationError):
             EnvironmentConfig.from_yaml(env_yaml)
@@ -89,8 +87,7 @@ environment:
     def test_variable_normalization_range_requires_two_values(self, tmp_path: Path):
         """Normalization.range must contain exactly two values [min, max]."""
         env_yaml = tmp_path / "environment.yaml"
-        env_yaml.write_text(
-            """
+        env_yaml.write_text("""
 environment:
   version: "1.0"
   meters:
@@ -110,8 +107,7 @@ environment:
         method: clip
         range: [0.0]
   cues: []
-"""
-        )
+""")
 
         with pytest.raises(ValidationError):
             EnvironmentConfig.from_yaml(env_yaml)

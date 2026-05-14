@@ -313,16 +313,14 @@ def aspatial_env(
 
     # Patch stratum to aspatial
     stratum_path = aspatial_config_path / "stratum.yaml"
-    stratum_path.write_text(
-        """stratum:
+    stratum_path.write_text("""stratum:
   version: "1.0"
   substrate:
     type: aspatial
     aspatial: {}
   vision_support: global
   temporal_support: disabled
-"""
-    )
+""")
 
     # Patch bars for expected base/move/interaction costs used in movement mask tests.
     import yaml
@@ -404,8 +402,7 @@ def continuous3d_env(
 
     # Patch stratum to 3D continuous
     stratum_path = config_dir / "stratum.yaml"
-    stratum_path.write_text(
-        """stratum:
+    stratum_path.write_text("""stratum:
   version: "1.0"
   substrate:
     type: continuous
@@ -425,8 +422,7 @@ def continuous3d_env(
         num_magnitudes: 3
   vision_support: global
   temporal_support: disabled
-"""
-    )
+""")
 
     # Patch bars for expected base/move/interaction depletions
     bars_path = config_dir / "levels" / "L0" / "bars.yaml"

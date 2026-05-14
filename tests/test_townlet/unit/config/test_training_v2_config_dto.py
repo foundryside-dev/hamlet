@@ -50,15 +50,13 @@ class TestTrainingV2ConfigLoading:
         config_dir.mkdir()
 
         training_yaml = config_dir / "training.yaml"
-        training_yaml.write_text(
-            """
+        training_yaml.write_text("""
 run_metadata:
   output_subdir: test-level
 training:
   version: "1.0"
   # population, replay_buffer, exploration, etc. deliberately omitted
-"""
-        )
+""")
 
         with pytest.raises(ValueError) as exc_info:
             load_training_v2_config(config_dir)

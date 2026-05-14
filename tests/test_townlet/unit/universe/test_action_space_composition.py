@@ -61,8 +61,7 @@ class TestActionMeterValidation:
         actions_path = temp_config_with_global_actions["actions_path"]
 
         # Create actions.yaml with typo'd meter name in costs
-        actions_path.write_text(
-            """
+        actions_path.write_text("""
 actions:
   version: "1.0"
   substrate_actions:
@@ -77,8 +76,7 @@ actions:
         energy: 0.2
   labels:
     preset: gaming
-"""
-        )
+""")
 
         # Attempt compilation
         compiler = UniverseCompiler()
@@ -103,8 +101,7 @@ actions:
         actions_path = temp_config_with_global_actions["actions_path"]
 
         # Create actions.yaml with unknown meter in effects
-        actions_path.write_text(
-            """
+        actions_path.write_text("""
 actions:
   version: "1.0"
   substrate_actions:
@@ -119,8 +116,7 @@ actions:
         moood: 0.3  # TYPO: should be 'mood'
   labels:
     preset: gaming
-"""
-        )
+""")
 
         compiler = UniverseCompiler()
 
@@ -142,8 +138,7 @@ actions:
         actions_path = temp_config_with_global_actions["actions_path"]
 
         # Multiple unknown meters in same action
-        actions_path.write_text(
-            """
+        actions_path.write_text("""
 actions:
   version: "1.0"
   substrate_actions:
@@ -159,8 +154,7 @@ actions:
         fitness_level: 0.3  # Unknown meter (correct name is 'fitness')
   labels:
     preset: gaming
-"""
-        )
+""")
 
         compiler = UniverseCompiler()
 
@@ -185,8 +179,7 @@ actions:
         actions_path = temp_config_with_global_actions["actions_path"]
 
         # Valid meter references (energy, health, money exist in test pack bars.yaml)
-        actions_path.write_text(
-            """
+        actions_path.write_text("""
 actions:
   version: "1.0"
   substrate_actions:
@@ -209,8 +202,7 @@ actions:
         health: 0.01
   labels:
     preset: gaming
-"""
-        )
+""")
 
         compiler = UniverseCompiler()
 
@@ -224,8 +216,7 @@ actions:
         config_dir = temp_config_with_global_actions["config_dir"]
         actions_path = temp_config_with_global_actions["actions_path"]
 
-        actions_path.write_text(
-            """
+        actions_path.write_text("""
 actions:
   version: "1.0"
   substrate_actions:
@@ -238,8 +229,7 @@ actions:
       effects: {}
   labels:
     preset: gaming
-"""
-        )
+""")
 
         compiler = UniverseCompiler()
         result = compiler.compile(config_dir, use_cache=False)

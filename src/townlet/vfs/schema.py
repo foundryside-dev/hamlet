@@ -8,7 +8,7 @@ Phase 1: Basic types and validation
 Phase 2: Derivation graphs, complex types, expression parsing
 """
 
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 from typing import Any, Literal
 
@@ -25,7 +25,7 @@ __all__ = [
 ]
 
 
-class VariableScope(str, Enum):
+class VariableScope(StrEnum):
     """Variable scope determines storage layout and access patterns."""
 
     GLOBAL = "global"  # Shared across all agents (world state)

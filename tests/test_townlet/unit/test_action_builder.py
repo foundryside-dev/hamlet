@@ -26,8 +26,7 @@ def _load_global_custom_actions(path: Path | None = None) -> list[dict]:
 def global_actions_file(tmp_path: Path) -> Path:
     """Temporary global_actions.yaml containing REST and MEDITATE."""
     path = tmp_path / "global_actions.yaml"
-    path.write_text(
-        """
+    path.write_text("""
 version: "1.0"
 custom_actions:
   - name: "REST"
@@ -38,8 +37,7 @@ custom_actions:
     type: "passive"
     costs: {}
     effects: {mood: 0.02}
-"""
-    )
+""")
     return path
 
 
@@ -206,8 +204,7 @@ def test_action_space_builder_with_custom_actions(tmp_path):
 
     # Create temporary global_actions.yaml
     global_actions_yaml = tmp_path / "global_actions.yaml"
-    global_actions_yaml.write_text(
-        """
+    global_actions_yaml.write_text("""
 version: "1.0"
 description: "Global custom actions"
 
@@ -220,8 +217,7 @@ custom_actions:
     type: "passive"
     costs: {mood: 0.02}
     effects: {}
-"""
-    )
+""")
 
     substrate = Grid2DSubstrate(width=8, height=8, boundary="clamp", distance_metric="manhattan")
 
@@ -256,8 +252,7 @@ def test_action_space_builder_with_enabled_actions(tmp_path):
     from townlet.substrate.grid2d import Grid2DSubstrate
 
     global_actions_yaml = tmp_path / "global_actions.yaml"
-    global_actions_yaml.write_text(
-        """
+    global_actions_yaml.write_text("""
 version: "1.0"
 custom_actions:
   - name: "REST"
@@ -268,8 +263,7 @@ custom_actions:
     type: "passive"
     costs: {}
     effects: {}
-"""
-    )
+""")
 
     substrate = Grid2DSubstrate(width=8, height=8, boundary="clamp", distance_metric="manhattan")
 

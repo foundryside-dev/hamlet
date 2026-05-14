@@ -16,7 +16,7 @@ __all__ = [
 ]
 
 
-class ReapplyPolicy(str, enum.Enum):
+class ReapplyPolicy(enum.StrEnum):
     """Policy for handling multiple spawns of the same effect.
 
     - stack: Create independent instances (multiple timers)
@@ -40,7 +40,7 @@ class ReapplyPolicy(str, enum.Enum):
         return None
 
 
-class EffectScope(str, enum.Enum):
+class EffectScope(enum.StrEnum):
     """Scope where effect can attach.
 
     - global: Single instance shared across all agents

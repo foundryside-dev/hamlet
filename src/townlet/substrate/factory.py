@@ -76,7 +76,7 @@ class SubstrateFactory:
             assert config.continuous is not None  # Validated by pydantic
 
             if config.continuous.dimensions == 1:
-                (min_x, max_x) = config.continuous.bounds[0]
+                min_x, max_x = config.continuous.bounds[0]
                 return Continuous1DSubstrate(
                     min_x=min_x,
                     max_x=max_x,

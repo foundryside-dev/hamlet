@@ -128,3 +128,6 @@ test_migration_checkpoints/*
 tmp/
 tmp_4m_debug/
 tmp_sim_4m/
+
+# Filigree issue tracker
+.filigree/

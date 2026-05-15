@@ -718,6 +718,9 @@ def _vfs_observation_spec_from_plain(payload: Mapping[str, Any] | None) -> VFSOb
             name: tuple(values) for name, values in _required_field(payload, "vfs_observation_spec.item_profile_vars").items()
         },
         item_vars_per_slot=_required_field(payload, "vfs_observation_spec.item_vars_per_slot"),
+        global_active_mask=tuple(_required_field(payload, "vfs_observation_spec.global_active_mask")),
+        agent_active_mask=tuple(_required_field(payload, "vfs_observation_spec.agent_active_mask")),
+        item_active_mask=tuple(_required_field(payload, "vfs_observation_spec.item_active_mask")),
         max_items_per_agent=_required_field(payload, "vfs_observation_spec.max_items_per_agent"),
         max_item_profiles=_required_field(payload, "vfs_observation_spec.max_item_profiles"),
         max_tensor_elements=_required_field(payload, "vfs_observation_spec.max_tensor_elements"),

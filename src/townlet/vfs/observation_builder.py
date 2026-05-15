@@ -160,6 +160,9 @@ class VFSObservationSpec:
     agent_vars: tuple[str, ...] = ()
     item_profile_vars: dict[str, tuple[str, ...]] = field(default_factory=dict)  # profile_name → exposed var names
     item_vars_per_slot: int | None = None  # Exposed vars per slot (max across profiles)
+    global_active_mask: tuple[bool, ...] = ()
+    agent_active_mask: tuple[bool, ...] = ()
+    item_active_mask: tuple[bool, ...] = ()
 
     max_items_per_agent: int = 3  # Fixed inventory size
     max_item_profiles: int = 5  # Fixed profile count for transfer learning
@@ -207,29 +210,35 @@ class VFSObservationSpec:
 
         global_dim = 0
         global_vars: list[str] = []
+        global_active_mask: list[bool] = []
         for var in global_variables:
             if not _agent_can_observe(var):
                 continue
-            global_vars.append(var.name)
-            global_dim += _variable_observation_dim(
+            dim = _variable_observation_dim(
                 var.type,
                 getattr(var, "shape", None),
                 dims=getattr(var, "dims", None),
                 max_elements=cls.max_tensor_elements,
             )
+            global_vars.append(var.name)
+            global_dim += dim
+            global_active_mask.extend([bool(getattr(var, "curriculum_active", True))] * dim)
 
         agent_dim = 0
         agent_vars: list[str] = []
+        agent_active_mask: list[bool] = []
         for agent_var in agent_variables:
             if not _agent_can_observe(agent_var):
                 continue
-            agent_vars.append(agent_var.name)
-            agent_dim += _variable_observation_dim(
+            dim = _variable_observation_dim(
                 agent_var.type,
                 getattr(agent_var, "shape", None),
                 dims=getattr(agent_var, "dims", None),
                 max_elements=cls.max_tensor_elements,
             )
+            agent_vars.append(agent_var.name)
+            agent_dim += dim
+            agent_active_mask.extend([bool(getattr(agent_var, "curriculum_active", True))] * dim)
 
         item_dim = 0
         item_profile_vars: dict[str, tuple[str, ...]] = {}
@@ -262,6 +271,9 @@ class VFSObservationSpec:
             agent_vars=tuple(agent_vars),
             item_profile_vars=item_profile_vars,
             item_vars_per_slot=max_profile_dim if max_profile_dim > 0 else None,
+            global_active_mask=tuple(global_active_mask),
+            agent_active_mask=tuple(agent_active_mask),
+            item_active_mask=tuple(True for _ in range(item_dim)),
             max_items_per_agent=item_slots,
         )
 
@@ -285,6 +297,18 @@ class VFSObservationSpec:
             item_profile_variables=((name, getattr(profile, "variables", [])) for name, profile in item_profiles.items()),
             max_items_per_agent=max_items_per_agent,
         )
+
+
+def _apply_active_mask(component: torch.Tensor, active_mask: tuple[bool, ...], section_name: str) -> torch.Tensor:
+    if not active_mask:
+        return component
+    if component.dim() != 2:
+        raise ValueError(f"{section_name} VFS observation component must be rank-2.")
+    if len(active_mask) != component.shape[1]:
+        expected_dim = component.shape[1]
+        raise ValueError(f"{section_name}_active_mask length {len(active_mask)} does not match {section_name}_vfs_dim {expected_dim}.")
+    mask = torch.tensor(active_mask, dtype=component.dtype, device=component.device).unsqueeze(0)
+    return component * mask
 
 
 def build_vfs_observation(
@@ -319,6 +343,7 @@ def build_vfs_observation(
 
         if global_vars:
             global_obs = torch.cat(global_vars, dim=1)  # [batch, global_dim]
+            global_obs = _apply_active_mask(global_obs, spec.global_active_mask, "global")
             components.append(global_obs)
 
     # Agent VFS: per-agent values
@@ -333,6 +358,7 @@ def build_vfs_observation(
 
         if agent_vars:
             agent_obs = torch.cat(agent_vars, dim=1)  # [batch, agent_dim]
+            agent_obs = _apply_active_mask(agent_obs, spec.agent_active_mask, "agent")
             components.append(agent_obs)
 
     # Item VFS: Include item state with masking
@@ -438,6 +464,7 @@ def build_vfs_observation(
                     dest_cols = slots.unsqueeze(1) * vars_per_slot + torch.arange(len(selected_indices), device=registry.device)
                     item_obs[rows.unsqueeze(1), dest_cols] = values
 
+        item_obs = _apply_active_mask(item_obs, spec.item_active_mask, "item")
         components.append(item_obs)
 
     # Concatenate all components

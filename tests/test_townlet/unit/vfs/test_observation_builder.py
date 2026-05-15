@@ -245,6 +245,48 @@ def test_build_vfs_observation_agent_only():
     assert torch.equal(obs[:, 3:], torch.ones(batch_size, 4))  # flattened tensor_feat
 
 
+def test_build_vfs_observation_masks_curriculum_inactive_dimensions():
+    """Inactive curriculum dimensions should stay in the ABI but emit zeros."""
+    registry = ScopedVariableRegistry(device=torch.device("cpu"))
+    registry.set_global("visible_global", torch.tensor(5.0))
+    registry.set_global("inactive_global", torch.tensor(7.0))
+    registry.set_agent("visible_agent", torch.tensor([1.0, 2.0]))
+    registry.set_agent("inactive_agent", torch.tensor([3.0, 4.0]))
+
+    spec = VFSObservationSpec(
+        global_vfs_dim=2,
+        agent_vfs_dim=2,
+        item_vfs_dim=0,
+        global_vars=("visible_global", "inactive_global"),
+        agent_vars=("visible_agent", "inactive_agent"),
+        global_active_mask=(True, False),
+        agent_active_mask=(True, False),
+    )
+
+    obs = build_vfs_observation(registry, spec, batch_size=2)
+
+    assert obs.shape == (2, 4)
+    assert torch.equal(obs, torch.tensor([[5.0, 0.0, 1.0, 0.0], [5.0, 0.0, 2.0, 0.0]]))
+
+
+def test_build_vfs_observation_rejects_misaligned_active_mask():
+    """A curriculum mask that no longer matches the ABI should fail loudly."""
+    registry = ScopedVariableRegistry(device=torch.device("cpu"))
+    registry.set_global("visible_global", torch.tensor(5.0))
+    registry.set_global("inactive_global", torch.tensor(7.0))
+
+    spec = VFSObservationSpec(
+        global_vfs_dim=2,
+        agent_vfs_dim=0,
+        item_vfs_dim=0,
+        global_vars=("visible_global", "inactive_global"),
+        global_active_mask=(True,),
+    )
+
+    with pytest.raises(ValueError, match="global_active_mask length 1 does not match global_vfs_dim 2"):
+        build_vfs_observation(registry, spec, batch_size=2)
+
+
 def test_build_vfs_observation_complete():
     """Build observation vector with global + agent + items."""
     registry = ScopedVariableRegistry(device=torch.device("cpu"))

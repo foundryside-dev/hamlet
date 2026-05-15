@@ -103,6 +103,64 @@ def test_vfs_observation_includes_item_vfs_with_masking():
     assert obs[2, :].sum().item() == 0.0  # All masked
 
 
+def test_vfs_observation_masks_curriculum_inactive_item_dimensions():
+    """Inactive item dimensions should remain stable but emit zeros."""
+    food_profile = CompiledItemProfile(
+        profile_name="food_stats",
+        variables=[
+            CompiledVariable(
+                name="calories",
+                type="int",
+                ast=None,
+                initial_value=100,
+                result_type="int",
+                exposed_to=("agent",),
+                semantic_type="custom",
+            ),
+            CompiledVariable(
+                name="freshness",
+                type="float",
+                ast=None,
+                initial_value=1.0,
+                result_type="float",
+                exposed_to=("agent",),
+                semantic_type="custom",
+            ),
+        ],
+    )
+    registry = VariableRegistry(
+        variables=[],
+        num_agents=2,
+        device=torch.device("cpu"),
+        max_items=2,
+        item_profiles={"food_stats": food_profile},
+    )
+    registry.item_vfs[0, 0] = 100.0
+    registry.item_vfs[0, 1] = 0.9
+    registry.item_vfs[1, 0] = 150.0
+    registry.item_vfs[1, 1] = 0.7
+    registry.register_item_instance(0, "food_stats")
+    registry.register_item_instance(1, "food_stats")
+
+    spec = VFSObservationSpec(
+        global_vfs_dim=0,
+        agent_vfs_dim=0,
+        item_vfs_dim=4,
+        item_active_mask=(True, False, True, False),
+        max_items_per_agent=2,
+        max_item_profiles=1,
+    )
+
+    obs = build_vfs_observation(
+        registry,
+        spec,
+        batch_size=2,
+        agent_item_inventory=torch.tensor([[0, 1], [-1, -1]], dtype=torch.long),
+    )
+
+    assert torch.equal(obs, torch.tensor([[100.0, 0.0, 150.0, 0.0], [0.0, 0.0, 0.0, 0.0]]))
+
+
 def test_vfs_observation_handles_no_item_inventory():
     """Observation builder should use zero stub when agent_item_inventory is None."""
     # Setup: Registry with item profiles

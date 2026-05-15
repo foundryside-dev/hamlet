@@ -530,7 +530,16 @@ Key points:
 - Shape management is handled by scope semantics.
 - Registry initialisation should be deterministic and hashable.
 
-### 7.2 Recommended registry invariants
+### 7.2 Repo-side registry surfaces
+
+The current repo has two registry surfaces:
+
+- `VariableRegistry` is the compiled runtime registry used by `VectorizedHamletEnv`. It owns declared VFS variables, permission checks, lifetime resets, item-profile tensor storage, and engine writeback.
+- `ScopedVariableRegistry` is a simpler global/agent/item utility registry that implements the same protocol shape for observation-builder tests, item-observation tests, and component benchmarks. It is not the environment hot path, but it is still an intentional adapter/test surface rather than dead code.
+
+Runtime VFS evaluation uses `VariableRegistry.set_engine_value()` for evaluator writeback. This method is deliberately narrower than direct storage mutation: it still requires the variable to exist and requires `engine` write permission, but it bypasses declaration-shape checks so derived global VFS variables may store batched per-agent results when their expressions read batched bar state.
+
+### 7.3 Recommended registry invariants
 
 The registry should guarantee:
 
@@ -541,10 +550,10 @@ The registry should guarantee:
 - pair variables have shape `[num_agents, num_agents, ...]` or an equivalent sparse representation,
 - all values respect declared dtype,
 - optional clamps are applied after transition phases,
-- access control is enforced consistently,
+- access control is enforced consistently, including `set_engine_value()` engine permission checks,
 - variable definitions are immutable during a run unless dynamic-variable mode is explicitly enabled.
 
-### 7.3 Shape validation
+### 7.4 Shape validation
 
 Phase 1 currently notes that callers are responsible for shape validation. Phase 2+ should move shape checks into the compiler and registry boundary.
 
@@ -661,6 +670,8 @@ same variable definitions, different exposure policies
 same policy architecture, different visibility rules
 ```
 
+The current repo also supports dimension-preserving curriculum masking through `ObservationField.curriculum_active`. When `curriculum_active=false`, the field remains in the observation ABI and contributes padding dimensions, but `ObservationActivity.active_mask` marks those dimensions inactive and omits them from `active_field_uuids`. Use this for per-level activation/masking without changing `obs_dim`; adding or removing fields still creates a new observation schema.
+
 ### 8.4 Observation ABI and schema hashes
 
 Every observation spec should have an `observation_schema_hash` computed over:
@@ -670,6 +681,7 @@ Every observation spec should have an `observation_schema_hash` computed over:
 - shapes,
 - normalisation rules,
 - exposure conditions,
+- `curriculum_active` masks,
 - dtype information,
 - and version metadata.
 

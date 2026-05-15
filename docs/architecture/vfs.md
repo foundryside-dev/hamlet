@@ -3,7 +3,7 @@
 **Document Type**: Design Specification + Integration Specification  
 **Status**: Phase 1 Complete; Phase 1.5 Shadow Migration; Phase 2+ Roadmap  
 **Version**: 1.1 Draft  
-**Last Updated**: 14 May 2026  
+**Last Updated**: 15 May 2026
 **Original VFS Guide Date**: 7 November 2025  
 **Audience**: Engineers integrating VFS into Townlet environments; SDA/Brain-as-Code engineers; curriculum designers; researchers building social, temporal, and multi-agent environments
 
@@ -16,11 +16,13 @@ The Variable & Feature System (VFS) is the formal state, feature, observation, a
 In its current Phase 1 form, VFS provides:
 
 1. **Schema definitions** for variables and observation fields.
-2. **A runtime variable registry** that stores state tensors and enforces read/write access control.
-3. **An observation-spec builder** that generates agent-facing observation layouts from declarative exposures.
-4. **ActionConfig dependency tracking** through declared `reads` and `writes` fields.
-5. **Dimension regression tests** to protect checkpoint compatibility.
-6. **Integration tests** proving that the schema → registry → observation pipeline works end to end.
+2. **A required experiment-level `vfs_profiles.yaml` catalog** for compiled global, agent, and item profiles.
+3. **An optional experiment-level `variables_reference.yaml` metadata overlay** for static observation marks only; item-scoped variables and expressions belong in `vfs_profiles.yaml`.
+4. **A runtime variable registry** that stores state tensors and enforces read/write access control.
+5. **An observation-spec builder** that generates agent-facing observation layouts from declarative exposures.
+6. **ActionConfig dependency tracking** through declared `reads` and `writes` fields.
+7. **Dimension regression tests** to protect checkpoint compatibility.
+8. **Integration tests** proving that the schema → registry → observation pipeline works end to end.
 
 The Phase 2 goal should be broadened from a narrow **Behavioural Action Compiler** into a more general **VFS Transition Compiler**. Actions are only one part of the world transition. To fully realise Universe as Code, the compiler should eventually execute action effects, passive decay, cascades, temporal rules, interaction progress, occupancy, reward components, terminal checks, and telemetry side effects through one typed, declarative, hashable transition graph.
 
@@ -183,6 +185,12 @@ The long-term aim is that level changes are expressed primarily by changing vari
 ### 3.1 Implemented components
 
 Phase 1 implementation is complete.
+
+The current repo convention is split deliberately:
+
+- `configs/<experiment>/vfs_profiles.yaml` is required at the experiment root and is the authoritative source for compiled VFS profiles. It carries global, agent, and item profile definitions and feeds `CompiledUniverse.compiled_vfs_profiles`.
+- `configs/<experiment>/variables_reference.yaml` is optional at the experiment root. When present, the loader treats it as static VFS observation metadata; it cannot define item-scoped variables and cannot carry expression DSL fields.
+- Level directories must not contain `vfs_profiles.yaml`; profile definitions are shared across curriculum levels, while level-specific activity and masking come from the compiled level metadata.
 
 | Component | Status | Tests | Coverage |
 |---|---:|---:|---:|
@@ -488,18 +496,21 @@ For multi-agent worlds, also avoid granting generic `other_agents` access to pri
 ### 7.1 Initialising the registry
 
 ```python
-from townlet.vfs import VariableRegistry, VariableDef
-import yaml
+from pathlib import Path
 
-# Load variable definitions from YAML
-with open("configs/L1_full_observability/variables_reference.yaml") as f:
-    config = yaml.safe_load(f)
+from townlet.universe.compiler import UniverseCompiler
+from townlet.vfs import VariableRegistry
 
-variables = [VariableDef(**var_data) for var_data in config["variables"]]
+# Compile the experiment-root VFS profile catalog.
+compiled = UniverseCompiler().compile(
+    Path("configs/default_curriculum"),
+    primary_level="L1_full_observability",
+    use_cache=False,
+)
 
-# Initialize registry
+# Initialize registry from compiled VFS variables, not by reopening YAML at runtime.
 registry = VariableRegistry(
-    variables=variables,
+    variables=compiled.vfs_variables,
     num_agents=population_size,
     device=device,  # torch.device("cuda" if cuda_available else "cpu")
 )
@@ -657,7 +668,7 @@ Every observation spec should have an `observation_schema_hash` computed over:
 - dtype information,
 - and version metadata.
 
-The checkpoint should store this hash. Resume should refuse to attach a checkpoint to an incompatible observation ABI unless an explicit migration path is supplied.
+The checkpoint should store this hash. Resume must refuse to attach a checkpoint to an incompatible observation ABI; changed VFS schemas create a new run fork.
 
 ---
 
@@ -1002,7 +1013,7 @@ Original estimated effort: 14–21 days. With the broadened transition-compiler 
 | 2.1 | Compile passive decay and simple cascades |
 | 2.2 | Compile temporal rules and multi-tick progress |
 | 2.3 | Compile terminal conditions and reward components |
-| 2.5 | Optimise, JIT, benchmark, and deprecate old imperative update paths |
+| 2.5 | Optimise, JIT, benchmark, and delete old imperative update paths |
 | 3.0 | Add relational scopes for multi-agent social state |
 | 3.5 | Add social residue effects and role-based visibility |
 | 4.0 | Dynamic variables / variable-token observations |
@@ -1593,8 +1604,10 @@ Problems:
 ```python
 def _initialize_vfs(self):
     """Initialize VFS registry and observation spec once at startup."""
-    # Load variable definitions from config
-    variables = load_variables_from_config(self.config_path)
+    # Use the compiled universe artifact. The compiler has already loaded
+    # vfs_profiles.yaml and the optional variables_reference.yaml metadata.
+    variables = self.compiled_universe.vfs_variables
+    obs_fields = self.compiled_universe.vfs_observation_fields
 
     # Initialize registry
     self.registry = VariableRegistry(
@@ -1603,12 +1616,12 @@ def _initialize_vfs(self):
         device=self.device,
     )
 
-    # Build observation spec
-    builder = VFSObservationSpecBuilder()
-    self.obs_spec = builder.build_observation_spec(variables, self.exposures)
+    # Use the compiled observation layout and VFS contribution dimensions.
+    self.obs_fields = obs_fields
+    self.vfs_obs_spec = self.compiled_universe.vfs_observation_spec
 
     # Validate dimension
-    obs_dim = sum(field.shape[0] if field.shape else 1 for field in self.obs_spec)
+    obs_dim = self.compiled_universe.observation_spec.total_dims
     assert obs_dim == self.expected_obs_dim, \
         f"VFS dimension mismatch! Expected {self.expected_obs_dim}, got {obs_dim}"
 
@@ -1617,7 +1630,7 @@ def _get_observations(self):
     """Generate observations from VFS registry."""
     obs_tensors = []
 
-    for field in self.obs_spec:
+    for field in self.obs_fields:
         value = self.registry.get(field.source_variable, reader="agent")
 
         if field.normalization:
@@ -1670,7 +1683,7 @@ Benefits:
 2. Cache static observation fields.
 3. JIT compile hot transition paths.
 4. Benchmark against hardcoded baseline.
-5. Remove or deprecate old imperative paths after equivalence is proven.
+5. Delete old imperative paths after equivalence is proven.
 
 #### Phase 3+: Social/relational expansion
 
@@ -1729,11 +1742,22 @@ Recommended run bundle:
 
 ```text
 configs/<run_name>/
-  config.yaml
-  universe_as_code.yaml
-  variables_reference.yaml
-  exposures.yaml
   actions.yaml
+  brain.yaml
+  environment.yaml
+  experiment.yaml
+  items.yaml
+  stratum.yaml
+  vfs_profiles.yaml
+  effects.yaml
+  variables_reference.yaml  # optional static observation metadata overlay
+  levels/<level_name>/
+    curriculum.yaml
+    bars.yaml
+    affordances.yaml
+    drive.yaml
+    training.yaml
+    items.yaml              # optional level appearance state
   transition_rules.yaml
   cognitive_topology.yaml
   agent_architecture.yaml
@@ -1745,11 +1769,16 @@ Snapshot:
 ```text
 runs/<run_name>__<timestamp>/
   config_snapshot/
-    config.yaml
-    universe_as_code.yaml
-    variables_reference.yaml
-    exposures.yaml
     actions.yaml
+    brain.yaml
+    environment.yaml
+    experiment.yaml
+    items.yaml
+    stratum.yaml
+    vfs_profiles.yaml
+    effects.yaml
+    variables_reference.yaml  # optional if present in the source pack
+    levels/
     transition_rules.yaml
     cognitive_topology.yaml
     agent_architecture.yaml
@@ -1934,9 +1963,9 @@ uv run pytest tests/test_townlet/unit/vfs/test_observation_dimension_regression.
 
 If tests fail:
 
-- revert the variable/exposure change,
-- create a new config version,
-- or document a breaking change and migration path.
+- fix the variable/exposure change,
+- create a new config version and treat existing runs as forks,
+- or document the intentional breaking change and update all in-repo references.
 
 ### 20.2 Stable IDs
 
@@ -2157,8 +2186,11 @@ This would make VFS teachable and debuggable.
 
 ### Documentation
 
-- `docs/config-schemas/variables.md`
-- `docs/plans/2025-11-06-variables-and-features-system.md`
+- `docs/architecture/vfs.md`
+- `docs/config-schemas/vfs-profiles.md`
+- `docs/config-schemas/variables.md` — optional static observation metadata overlay
+- `docs/plans/archive/vfs_uplift/2025-11-18-items-and-vfs-profiles.md`
+- `docs/plans/archive/vfs_uplift/master_requirements.md`
 - `docs/tasks/TASK-002-variables-and-features-system.md`
 - `CLAUDE.md` VFS section
 - `Townlet v2.5: Universe as Code`
@@ -2167,24 +2199,37 @@ This would make VFS teachable and debuggable.
 
 ### Code
 
+- `src/townlet/config/vfs_profiles_config.py`
+- `src/townlet/universe/raw_configs_v21.py`
+- `src/townlet/universe/compilers/vfs.py`
+- `src/townlet/universe/compiled.py`
 - `src/townlet/vfs/schema.py`
 - `src/townlet/vfs/registry.py`
 - `src/townlet/vfs/observation_builder.py`
+- `src/townlet/vfs/action_writes.py`
+- `src/townlet/vfs/schema_hashes.py`
+- `src/townlet/vfs/transition_graph.py`
 - `src/townlet/environment/action_config.py`
 
 ### Tests
 
 - `tests/test_townlet/unit/vfs/`
-- `tests/test_townlet/integration/test_vfs_integration.py`
+- `tests/test_townlet/unit/config/test_vfs_profiles_dto.py`
+- `tests/test_townlet/unit/universe/test_vfs_profile_compilation.py`
+- `tests/test_townlet/unit/universe/test_vfs_observation_marking.py`
 - `tests/test_townlet/unit/vfs/test_observation_dimension_regression.py`
+- `tests/test_townlet/integration/test_vfs_runtime_evaluation.py`
+- `tests/test_townlet/integration/test_item_vfs_observations.py`
 
 ### Reference configs
 
-- `configs/L0_0_minimal/variables_reference.yaml` — 38 dims
-- `configs/L0_5_dual_resource/variables_reference.yaml` — 78 dims
-- `configs/L1_full_observability/variables_reference.yaml` — 93 dims
-- `configs/L2_partial_observability/variables_reference.yaml` — 54 dims
-- `configs/L3_temporal_mechanics/variables_reference.yaml` — 93 dims
+- `configs/default_curriculum/vfs_profiles.yaml`
+- `configs/reference/model_pack/vfs_profiles.yaml`
+- `configs/simple/vfs_profiles.yaml`
+- `configs/aspatial_test/vfs_profiles.yaml`
+- `configs/test/model_config/vfs_profiles.yaml`
+- `configs/test/model_config/variables_reference.yaml` — optional observation metadata example
+- `configs/test/vfs_bar_access/variables_reference.yaml` — optional observation metadata example
 
 ---
 
@@ -2217,7 +2262,7 @@ This would make VFS teachable and debuggable.
 ### 24.4 Phase 2.5 success
 
 - Passive depletion, cascades, temporal rules, multi-tick progress, terminal checks, and rewards can be run through VTC.
-- Old imperative update paths are deprecated or retained only as regression-test fixtures.
+- Old imperative update paths are deleted; equivalence evidence remains as tests, not runtime compatibility branches.
 - Performance is within acceptable tolerance of the hardcoded baseline.
 
 ### 24.5 Phase 3 success
@@ -2251,4 +2296,3 @@ VFS declares its typed state, visibility, and observation/action ABI.
 The VFS Transition Compiler executes the society’s relationships.
 Brain as Code defines the minds that learn inside it.
 ```
-

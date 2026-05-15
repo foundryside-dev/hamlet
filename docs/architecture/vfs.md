@@ -1508,6 +1508,10 @@ dynamic_needs:
 ```
 
 Fixed slots are easier for checkpoint compatibility. Token/set representations are more flexible and better for arbitrary software-defined needs.
+The repo exposes option 1 as `canonical_fixed_slot_dynamic_need_variables(max_slots)`.
+It returns one agent-scoped `vecNf` variable per causal field, with `dims=max_slots`
+so storage and observations stay shape-stable while individual slots can represent
+abstract software-defined needs.
 
 ### 15.4 Experiment enabled by VFS
 

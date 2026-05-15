@@ -51,35 +51,126 @@ class CompiledActionWriteProgram:
             raise ValueError(f"actions shape {tuple(actions.shape)} must match active_mask shape {tuple(active_mask.shape)}")
 
         updated = {name: value.to(device=device).clone() for name, value in vfs_state.items()}
+        actions_on_device = actions.to(device=device)
+        active_mask_on_device = active_mask.to(device=device)
 
-        for write in self.writes:
-            if write.variable_id not in updated:
-                raise KeyError(f"Action write targets unknown VFS variable '{write.variable_id}'")
+        for phase_writes in self._iter_phase_groups():
+            phase_snapshot = dict(updated)
+            phase_values = dict(updated)
+            priority_state: dict[str, torch.Tensor] = {}
 
-            context = ExecutionContext(
-                bars={},
-                vfs=dict(updated),
-                affordances={},
-                temporal={},
-                device=device,
-            )
-            evaluator = Evaluator(context)
-            current_value = updated[write.variable_id]
-            write_mask = self._build_write_mask(write, actions.to(device=device), active_mask.to(device=device), evaluator)
-            expression_value = self._evaluate_tensor(evaluator, write.expression_ast, "expression", write)
-            composed_value = self._compose_value(write, current_value, expression_value)
-            if write.clamp is not None:
-                low, high = write.clamp
-                composed_value = torch.clamp(composed_value, min=low, max=high)
+            for write in phase_writes:
+                if write.variable_id not in phase_values:
+                    raise KeyError(f"Action write targets unknown VFS variable '{write.variable_id}'")
 
-            broadcast_mask = self._broadcast_agent_mask(write_mask, current_value, write)
-            updated[write.variable_id] = torch.where(
-                broadcast_mask,
-                composed_value.to(device=device, dtype=current_value.dtype),
-                current_value,
-            )
+                context = ExecutionContext(
+                    bars={},
+                    vfs=dict(phase_snapshot),
+                    affordances={},
+                    temporal={},
+                    device=device,
+                )
+                evaluator = Evaluator(context)
+                phase_value = phase_values[write.variable_id]
+                write_mask = self._build_write_mask(write, actions_on_device, active_mask_on_device, evaluator)
+                expression_value = self._evaluate_tensor(evaluator, write.expression_ast, "expression", write)
+                phase_values[write.variable_id] = self._apply_composed_write(
+                    write=write,
+                    phase_value=phase_value,
+                    expression_value=expression_value,
+                    write_mask=write_mask,
+                    priority_state=priority_state,
+                )
+
+            updated = phase_values
 
         return updated
+
+    def _iter_phase_groups(self) -> list[tuple[CompiledActionWrite, ...]]:
+        phase_groups: list[tuple[CompiledActionWrite, ...]] = []
+        current_phase: str | None = None
+        current_group: list[CompiledActionWrite] = []
+
+        for write in self.writes:
+            if current_phase is None:
+                current_phase = write.phase
+            if write.phase != current_phase:
+                phase_groups.append(tuple(current_group))
+                current_group = []
+                current_phase = write.phase
+            current_group.append(write)
+
+        if current_group:
+            phase_groups.append(tuple(current_group))
+        return phase_groups
+
+    def _apply_composed_write(
+        self,
+        *,
+        write: CompiledActionWrite,
+        phase_value: torch.Tensor,
+        expression_value: torch.Tensor,
+        write_mask: torch.Tensor,
+        priority_state: dict[str, torch.Tensor],
+    ) -> torch.Tensor:
+        candidate = self._compose_candidate(write, phase_value, expression_value)
+        candidate = self._apply_optional_clamp(write, candidate)
+
+        if write.composition == "priority_write":
+            return self._apply_priority_write(write, phase_value, candidate, write_mask, priority_state)
+
+        broadcast_mask = self._broadcast_agent_mask(write_mask, phase_value, write)
+        return torch.where(
+            broadcast_mask,
+            candidate.to(device=phase_value.device, dtype=phase_value.dtype),
+            phase_value,
+        )
+
+    def _compose_candidate(self, write: CompiledActionWrite, phase_value: torch.Tensor, expression_value: torch.Tensor) -> torch.Tensor:
+        expression = expression_value.to(device=phase_value.device, dtype=phase_value.dtype)
+        if write.composition in {"overwrite", "last_write_wins", "priority_write", "clamp"}:
+            return expression
+        if write.composition == "additive_delta":
+            return phase_value + expression
+        if write.composition == "multiplicative_modifier":
+            return phase_value * expression
+        if write.composition == "min":
+            return torch.minimum(phase_value, expression)
+        if write.composition == "max":
+            return torch.maximum(phase_value, expression)
+        raise NotImplementedError(
+            f"Action write composition '{write.composition}' is not implemented yet; "
+            "claim/capacity/event compositions are tracked outside this action-write composition step."
+        )
+
+    @staticmethod
+    def _apply_optional_clamp(write: CompiledActionWrite, value: torch.Tensor) -> torch.Tensor:
+        if write.clamp is None:
+            return value
+        low, high = write.clamp
+        return torch.clamp(value, min=low, max=high)
+
+    def _apply_priority_write(
+        self,
+        write: CompiledActionWrite,
+        phase_value: torch.Tensor,
+        candidate: torch.Tensor,
+        write_mask: torch.Tensor,
+        priority_state: dict[str, torch.Tensor],
+    ) -> torch.Tensor:
+        current_priority = priority_state.get(write.variable_id)
+        if current_priority is None:
+            current_priority = torch.full(write_mask.shape, -1, device=write_mask.device, dtype=torch.long)
+
+        write_priority = torch.full(write_mask.shape, write.priority, device=write_mask.device, dtype=torch.long)
+        winning_mask = write_mask & (write_priority >= current_priority)
+        priority_state[write.variable_id] = torch.where(winning_mask, write_priority, current_priority)
+        broadcast_mask = self._broadcast_agent_mask(winning_mask, phase_value, write)
+        return torch.where(
+            broadcast_mask,
+            candidate.to(device=phase_value.device, dtype=phase_value.dtype),
+            phase_value,
+        )
 
     def _build_write_mask(
         self,
@@ -103,15 +194,6 @@ class CompiledActionWriteProgram:
         if not isinstance(value, torch.Tensor):
             raise TypeError(f"Action write {write.telemetry_label} {kind} resolved to non-tensor value")
         return value
-
-    @staticmethod
-    def _compose_value(write: CompiledActionWrite, current_value: torch.Tensor, expression_value: torch.Tensor) -> torch.Tensor:
-        if write.composition == "overwrite":
-            return expression_value
-        raise NotImplementedError(
-            f"Action write composition '{write.composition}' is not implemented yet; "
-            "the current compiler step supports masked overwrite writes only."
-        )
 
     @staticmethod
     def _coerce_condition_mask(condition: torch.Tensor, actions: torch.Tensor, write: CompiledActionWrite) -> torch.Tensor:

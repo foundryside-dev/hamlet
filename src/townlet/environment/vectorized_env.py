@@ -12,28 +12,28 @@ import random
 from collections.abc import Callable
 from numbers import Number
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import torch
 
 from townlet.environment.action_builder import ComposedActionSpace
+from townlet.environment.action_config import ActionConfig
 from townlet.environment.action_labels import ActionLabels
 from townlet.environment.affordance_engine import AffordanceEngine
 from townlet.environment.dac_engine import DACEngine
 from townlet.environment.meter_dynamics import MeterDynamics
 from townlet.items import InventoryState, ItemActionHandler, ItemManager
-from townlet.substrate import SpatialSubstrate
 from townlet.substrate.continuous import ContinuousSubstrate
-from townlet.universe.dto import ActionSpaceMetadata, MeterMetadata
+from townlet.universe.dto import MeterMetadata, RuntimeActionSpace
 from townlet.vfs.evaluator import EvaluationMode, VFSEvaluator
 from townlet.vfs.observation_builder import VFSObservationSpec, build_vfs_observation
 from townlet.vfs.registry import ScopedVariableRegistry, VariableRegistry
 
 if TYPE_CHECKING:
-    from townlet.environment.action_config import ActionConfig, ActionSpaceConfig
     from townlet.exploration.base import ExplorationStrategy
     from townlet.population.runtime_registry import AgentRuntimeRegistry
     from townlet.universe.compiled import CompiledUniverse
+    from townlet.vfs.schema import VariableDef
 
 
 # Import consolidated NullItemManager (ENV-009)
@@ -143,6 +143,7 @@ class VectorizedHamletEnv:
         self.num_agents = num_agents
         self.device = torch_device
         self.optimization_data = level.optimization_data
+        self.metadata = self.universe.metadata_for_level(level_name)
 
         # Training/runtime controls: derive from level.training
         training_cfg = level.training
@@ -174,7 +175,7 @@ class VectorizedHamletEnv:
             # Temporal inactive: allow day_length to be null; use metadata ticks_per_day (may be 0) when absent.
             inactive_day_length = level.curriculum.curriculum.day_length
             if inactive_day_length is None:
-                self.day_length = getattr(universe.metadata, "ticks_per_day", 0) or 0
+                self.day_length = getattr(self.metadata, "ticks_per_day", 0) or 0
             else:
                 self.day_length = inactive_day_length
         self.agent_lifespan = training_cfg.training_loop.max_steps_per_episode
@@ -199,7 +200,6 @@ class VectorizedHamletEnv:
         )
 
         # Metadata and observation activity
-        self.metadata = self.universe.metadata
         # Experiment-level label for batching/logging, derived from experiment.yaml.
         # experiment_name is mandatory in v2.1; treat missing or empty values as a configuration error.
         experiment_root = self.universe.experiment.experiment
@@ -311,62 +311,8 @@ class VectorizedHamletEnv:
         # Observation dimension is derived from the level-specific spec.
         self.observation_dim = self.observation_spec.total_dims
 
-        # VFS INTEGRATION: Initialize variable registry from compiled VFS variables
-        from townlet.vfs.schema import VariableDef
-
+        # VFS INTEGRATION: Initialize variable registry from compiler-emitted VFS variables
         self.vfs_variables: list[VariableDef] = list(universe.vfs_variables)
-
-        # Add global variables from vfs_profiles (if present)
-        if universe.compiled_vfs_profiles is not None and universe.compiled_vfs_profiles.global_profile is not None:
-            for var in universe.compiled_vfs_profiles.global_profile.variables:
-                # Convert CompiledVariable to VariableDef for registry
-                # Global variables have empty readable_by/writable_by (managed by evaluator)
-                # VFS profiles use "int"/"float"/"bool" but VariableDef uses "scalar"/"bool"
-                # Expression-based variables have initial_value=None, use 0.0 as placeholder (evaluator will overwrite)
-                if var.type in ("agent_ref", "item_ref"):
-                    default_value = var.initial_value  # None -> sentinel (-1) in registry
-                else:
-                    default_value = var.initial_value if var.initial_value is not None else (0.0 if var.type in ("int", "float") else False)
-                var_type = _normalize_vfs_type(var.type, var.name)
-                var_def = VariableDef(
-                    id=var.name,
-                    scope="global",
-                    type=cast(Literal["scalar", "bool", "tensor1d", "tensor2d", "tensor3d", "tensorNd"], var_type),
-                    default=default_value,
-                    lifetime="persistent",  # Global variables persist across steps
-                    readable_by=["agent", "engine"],  # Global vars readable by all
-                    writable_by=["engine"],  # Only engine can write
-                    description="Global VFS variable from vfs_profiles.yaml",
-                    shape=getattr(var, "shape", None),
-                    dims=getattr(var, "dims", None),
-                    initial_value_mode=getattr(var, "initial_value_mode", None),
-                    initial_value_params=getattr(var, "initial_value_params", None),
-                )
-                self.vfs_variables.append(var_def)
-
-        # Add agent variables from vfs_profiles (if present)
-        if universe.compiled_vfs_profiles is not None and universe.compiled_vfs_profiles.agent_profile is not None:
-            for var in universe.compiled_vfs_profiles.agent_profile.variables:
-                if var.type in ("agent_ref", "item_ref"):
-                    default_value = var.initial_value  # None -> sentinel (-1) in registry
-                else:
-                    default_value = var.initial_value if var.initial_value is not None else (0.0 if var.type in ("int", "float") else False)
-                var_type = _normalize_vfs_type(var.type, var.name)
-                var_def = VariableDef(
-                    id=var.name,
-                    scope="agent",
-                    type=cast(Literal["scalar", "bool", "tensor1d", "tensor2d", "tensor3d", "tensorNd"], var_type),
-                    default=default_value,
-                    lifetime="episode",
-                    readable_by=["agent", "engine"],
-                    writable_by=["engine"],  # Engine updates via evaluator
-                    description="Agent VFS variable from vfs_profiles.yaml",
-                    shape=getattr(var, "shape", None),
-                    dims=getattr(var, "dims", None),
-                    initial_value_mode=getattr(var, "initial_value_mode", None),
-                    initial_value_params=getattr(var, "initial_value_params", None),
-                )
-                self.vfs_variables.append(var_def)
 
         max_items_in_world = universe.items_catalog.max_items_in_world if universe.items_catalog else 0
 
@@ -447,20 +393,9 @@ class VectorizedHamletEnv:
         )
         self.effect_observation_slots = getattr(universe, "effect_observation_slots", self.EFFECT_OBS_SLOTS)
 
-        # Rebuild effects schema for affordance compilation
-        # TODO(Task 5): Move affordance compilation to compile-time, then remove this
-        effects_schema: dict[str, str] = {}
-        effects_schema["intensity"] = "float"
-        effects_schema["elapsed_ticks"] = "float"
-        effects_schema["duration_remaining"] = "float"
-        for bar_name in self.meter_name_to_index.keys():
-            effects_schema[f"bar.{bar_name}"] = "float"
-            effects_schema[f"target.bar.{bar_name}"] = "float"
-        for vfs_var in self.vfs_variables:
-            vfs_type: str = vfs_var.type if vfs_var.type in {"bool", "agent_ref", "item_ref"} else "float"
-            effects_schema[f"vfs.{vfs_var.id}"] = vfs_type
-            effects_schema[f"target.vfs.{vfs_var.id}"] = vfs_type
-        self.effects_schema = effects_schema
+        if universe.effects_schema is None:
+            raise ValueError("Compiled universe is missing effects_schema. Recompile the config pack before creating an environment.")
+        self.effects_schema = dict(universe.effects_schema)
 
         # Bars configuration (per-level)
         self.bars_config = level.bars
@@ -549,13 +484,10 @@ class VectorizedHamletEnv:
 
         # NOTE: modulation_rules is built later, just before AffordanceEngine init (ENV-010: removed dead code)
 
-        # Build composed action space from compiler metadata and substrate defaults
-        self.action_space = self._build_action_space_from_metadata(
-            level_action_metadata,
-            self.substrate,
-        )
+        # Build composed action space from compiler-emitted runtime artifact
+        self.action_space = self._build_action_space_from_runtime_artifact(level.runtime_action_space)
         self.action_dim = self.action_space.action_dim
-        self.action_ids: dict[str, int] = {action.name: action.id for action in self.action_space.actions}
+        self.action_ids = level.runtime_action_space.action_ids
         self._movement_deltas = self._build_movement_deltas()
 
         # State tensors (initialized in reset)
@@ -587,36 +519,11 @@ class VectorizedHamletEnv:
                     "items_catalog provided but compiled_vfs_profiles.item_profiles is missing. "
                     "Define item VFS profiles in vfs_profiles.yaml for all item types."
                 )
-            # Build schema for item interaction compilation from compiled universe data
-            schema: dict[str, str] = {}
-
-            # Add bar paths from compiled meter metadata
-            for bar_name in self.meter_name_to_index.keys():
-                schema[f"target.bar.{bar_name}"] = "float"
-
-            # Add VFS paths from compiled VFS variables
-            for vfs_var in self.vfs_variables:
-                # Preserve declared type so reference traversal is allowed.
-                vfs_type_target: str = (
-                    vfs_var.type if vfs_var.type in {"agent_ref", "item_ref", "affordance_ref", "effect_ref", "bool"} else "float"
-                )
-                schema[f"target.vfs.{vfs_var.id}"] = vfs_type_target
-
-            # Add self.vfs.* paths from compiled item VFS profiles
-            # Items can modify their own VFS state via self.vfs.*
-            if universe.compiled_vfs_profiles and universe.compiled_vfs_profiles.item_profiles:
-                for profile_name, compiled_profile in universe.compiled_vfs_profiles.item_profiles.items():
-                    for var in compiled_profile.variables:
-                        vfs_type_item: str = (
-                            var.type if var.type in {"agent_ref", "item_ref", "affordance_ref", "effect_ref", "bool"} else "float"
-                        )
-                        schema[f"self.vfs.{var.name}"] = vfs_type_item
-
             self.item_manager = ItemManager(
                 catalog=universe.items_catalog,
                 max_items=universe.items_catalog.max_items_in_world,
                 device=self.device,
-                schema=schema,  # NEW: Enable Effects compilation
+                schema=self.effects_schema,
                 vfs_registry=self.vfs_registry,  # NEW: Pass VFS registry for item state storage
                 effect_manager=self.effect_manager,  # NEW: allow scheduler cancellation on item despawn
             )
@@ -807,85 +714,35 @@ class VectorizedHamletEnv:
         hour_idx = active_hour % self.hours_per_day
         return bool(self.action_mask_table[hour_idx, idx].item())
 
-    def _compose_action_space(
-        self,
-        global_actions: ActionSpaceConfig,
-        enabled_action_names: list[str] | None,
-    ) -> ComposedActionSpace:
-        """Legacy builder path removed in v2.1 runtime.
-
-        All callers must use _build_action_space_from_metadata fed by
-        ActionSpaceMetadata from the UniverseCompiler.
-        """
-        raise RuntimeError("Action space must be provided via compiler metadata in v2.1 runtime")
-
-    def _build_action_space_from_metadata(
-        self,
-        action_metadata: ActionSpaceMetadata,
-        substrate: SpatialSubstrate,
-    ) -> ComposedActionSpace:
-        """Build ComposedActionSpace using compiler action metadata + substrate default actions."""
-        from townlet.environment.action_config import ActionConfig
-
-        actions: list[ActionConfig] = []
-        substrate_actions = substrate.get_default_actions()
-        substrate_names = [a.name for a in substrate_actions]
-
-        enabled_lookup = {a.name: a.enabled for a in action_metadata.actions}
-        id_lookup = {a.name: a.id for a in action_metadata.actions}
-        type_lookup = {a.name: a.type for a in action_metadata.actions}
-        source_lookup = {a.name: a.source for a in action_metadata.actions}
-        movement_delta_lookup = {a.name: a.movement_delta for a in action_metadata.actions}
-
-        for action in substrate_actions:
-            if action.name not in id_lookup:
-                raise ValueError(f"Action '{action.name}' missing from compiler metadata; no defaults allowed.")
-            enabled = enabled_lookup.get(action.name, True)
-            action.id = id_lookup[action.name]
-            action.enabled = enabled
-            action.type = type_lookup.get(action.name, action.type)
-            action.source = source_lookup.get(action.name, "substrate")
-            delta_override = movement_delta_lookup.get(action.name)
-            if delta_override is not None:
-                action.delta = list(delta_override)
-            actions.append(action)
-
-        for meta_action in action_metadata.actions:
-            if meta_action.name in substrate_names:
-                continue
-            if meta_action.type == "movement":
-                raise ValueError(
-                    f"Custom movement action '{meta_action.name}' is not supported without explicit delta/teleport; "
-                    "define it in the substrate defaults instead."
-                )
-            action = ActionConfig(
-                id=meta_action.id,
-                name=meta_action.name,
-                type=meta_action.type,
-                costs={},
-                effects={},
-                delta=list(meta_action.movement_delta) if meta_action.movement_delta is not None else None,
-                teleport_to=None,
-                enabled=meta_action.enabled,
-                description=meta_action.description or None,
-                icon=None,
-                source=meta_action.source,
-                source_affordance=None,
-                reads=[],
-                writes=[],
+    def _build_action_space_from_runtime_artifact(self, runtime_action_space: RuntimeActionSpace) -> ComposedActionSpace:
+        """Build ComposedActionSpace from compiler-emitted runtime actions."""
+        actions = [
+            ActionConfig(
+                id=action.id,
+                name=action.name,
+                type=action.type,
+                costs=dict(action.costs),
+                effects=dict(action.effects),
+                delta=list(action.delta) if action.delta is not None else None,
+                teleport_to=list(action.teleport_to) if action.teleport_to is not None else None,
+                enabled=action.enabled,
+                description=action.description,
+                icon=action.icon,
+                source=action.source,
+                source_affordance=action.source_affordance,
+                reads=list(action.reads),
+                writes=cast(Any, [dict(write) for write in action.writes]),
             )
-            actions.append(action)
-
-        actions = sorted(actions, key=lambda a: a.id)
-        substrate_action_count = len(substrate_actions)
-        custom_action_count = len(actions) - substrate_action_count
-
+            for action in runtime_action_space.actions
+        ]
         return ComposedActionSpace(
             actions=actions,
-            substrate_action_count=substrate_action_count,
-            custom_action_count=custom_action_count,
-            affordance_action_count=0,
-            enabled_action_names=None,
+            substrate_action_count=runtime_action_space.substrate_action_count,
+            custom_action_count=runtime_action_space.custom_action_count,
+            affordance_action_count=runtime_action_space.affordance_action_count,
+            enabled_action_names=(
+                set(runtime_action_space.enabled_action_names) if runtime_action_space.enabled_action_names is not None else None
+            ),
         )
 
     def _build_movement_deltas(self) -> torch.Tensor:
@@ -1086,9 +943,7 @@ class VectorizedHamletEnv:
                 value = value.unsqueeze(1)
             expected_shape = (self.num_agents, dims)
             if value.dim() != 2 or tuple(value.shape) != expected_shape:
-                raise ValueError(
-                    f"Observation field '{field_name}' produced shape {tuple(value.shape)}, expected {expected_shape}."
-                )
+                raise ValueError(f"Observation field '{field_name}' produced shape {tuple(value.shape)}, expected {expected_shape}.")
             return value
 
         for field in obs_fields:
@@ -1235,9 +1090,7 @@ class VectorizedHamletEnv:
         affordance_encoding[none_mask, num_types] = 1.0
 
         if dims != total_dims:
-            raise ValueError(
-                f"Observation field 'obs_affordances' expected {dims} dims, but affordance encoding produced {total_dims}."
-            )
+            raise ValueError(f"Observation field 'obs_affordances' expected {dims} dims, but affordance encoding produced {total_dims}.")
         return affordance_encoding
 
     def _build_effects_observation(self, dims: int) -> torch.Tensor:

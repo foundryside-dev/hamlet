@@ -107,17 +107,7 @@ class DemoRunner:
         compiler = UniverseCompiler()
         self.compiled = compiler.compile(self.config_dir, primary_level=level_name)
 
-        # Determine effective level_name (supports callers that omitted it)
-        if level_name is None:
-            available_levels = getattr(self.compiled, "available_levels", [])
-            if not available_levels:
-                raise ValueError("Compiled universe has no curriculum levels; DemoRunner requires at least one level to be available.")
-            self.level_name: str = available_levels[0]
-            logger.info("No level_name specified; defaulting to %s", self.level_name)
-        else:
-            self.level_name = level_name
-
-        # Type narrowing: self.level_name is now guaranteed to be str
+        self.level_name = level_name
         level_config = self.compiled.get_level(self.level_name)
         self.experiment_config = self.compiled.experiment
         self.stratum_config = self.compiled.stratum

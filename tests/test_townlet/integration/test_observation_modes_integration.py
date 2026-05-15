@@ -10,9 +10,9 @@ def test_max_compact_drops_masked_fields(tmp_path: Path):
 
     baseline = compiler.compile(config_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
     baseline_fields = baseline.observation_spec.fields
-    masked = [f for f in baseline_fields if "MASKED" in (f.description or "")]
+    masked = [f for f in baseline_fields if not f.curriculum_active]
     assert masked, "Fixture should produce at least one masked observation field to test compaction."
-    unmasked = [f for f in baseline_fields if "MASKED" not in (f.description or "")]
+    unmasked = [f for f in baseline_fields if f.curriculum_active]
     expected_dims = sum(f.dims for f in unmasked)
 
     mutate_stratum_yaml(

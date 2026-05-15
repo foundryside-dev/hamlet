@@ -3,9 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, cast
-
-import yaml
+from typing import Any, Literal, cast
 
 from townlet.config.bars_v2_config import BarsV2Config
 from townlet.config.environment_config import VariableConfig
@@ -18,19 +16,21 @@ from townlet.vfs.schema import VariableDef, VariableScope
 from townlet.world.expression import ExpressionParser
 from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
 
+_RUNTIME_VFS_TYPES = frozenset({"scalar", "bool", "tensor1d", "tensor2d", "tensor3d", "tensorNd", "agent_ref", "item_ref"})
+
 
 class VFSCompiler:
     """Compile VFS profiles, schemas, and spawn predicates."""
 
-    def compile_profiles(self, experiment_dir: Path, bar_schema: dict[str, str]) -> CompiledVFSProfiles | None:
-        """Load and compile VFS profiles from experiment directory."""
-        profiles_path = experiment_dir / "vfs_profiles.yaml"
-
-        if not profiles_path.exists():
+    def compile_profiles(
+        self,
+        profiles_config: VFSProfilesConfig | None,
+        experiment_dir: Path,
+        bar_schema: dict[str, str],
+    ) -> CompiledVFSProfiles | None:
+        """Compile Stage 1 VFS profile DTOs."""
+        if profiles_config is None:
             return None
-
-        profiles_data = yaml.safe_load(profiles_path.read_text())
-        profiles_config = VFSProfilesConfig(**profiles_data)
 
         profile_count = (
             int(profiles_config.global_profile is not None)
@@ -68,6 +68,27 @@ class VFSCompiler:
             agent_profile=compiled_agent,
             item_profiles=compiled_item_profiles,
         )
+
+    def build_runtime_variables(
+        self,
+        base_variables: tuple[VariableDef, ...],
+        compiled_vfs_profiles: CompiledVFSProfiles | None,
+    ) -> tuple[VariableDef, ...]:
+        """Emit registry-ready VFS variables from observation/environment variables and profiles."""
+        variables: list[VariableDef] = list(base_variables)
+
+        if compiled_vfs_profiles is None:
+            return tuple(variables)
+
+        if compiled_vfs_profiles.global_profile is not None:
+            for compiled_var in compiled_vfs_profiles.global_profile.variables:
+                variables.append(self._compiled_profile_var_to_variable_def(compiled_var, scope="global", lifetime="persistent"))
+
+        if compiled_vfs_profiles.agent_profile is not None:
+            for compiled_var in compiled_vfs_profiles.agent_profile.variables:
+                variables.append(self._compiled_profile_var_to_variable_def(compiled_var, scope="agent", lifetime="episode"))
+
+        return tuple(variables)
 
     def build_expression_schema(self, bars: BarsV2Config, compiled_vfs_profiles: CompiledVFSProfiles | None) -> dict[str, str]:
         """Build type schema for VFS expression runtime validation."""
@@ -209,3 +230,46 @@ class VFSCompiler:
         if hasattr(ast, "__dict__"):
             return self._ast_uses_temporal(vars(ast))
         return False
+
+    def _compiled_profile_var_to_variable_def(
+        self,
+        compiled_var: Any,
+        *,
+        scope: Literal["global", "agent"],
+        lifetime: Literal["persistent", "episode"],
+    ) -> VariableDef:
+        raw_type = str(compiled_var.type)
+        if raw_type in ("agent_ref", "item_ref"):
+            default_value = compiled_var.initial_value
+        else:
+            default_value = (
+                compiled_var.initial_value if compiled_var.initial_value is not None else (0.0 if raw_type in ("int", "float") else False)
+            )
+
+        normalized_type = self._normalize_runtime_vfs_type(raw_type, str(compiled_var.name))
+        variable_type = cast(
+            Literal["scalar", "bool", "tensor1d", "tensor2d", "tensor3d", "tensorNd", "agent_ref", "item_ref"],
+            normalized_type,
+        )
+        return VariableDef(
+            id=str(compiled_var.name),
+            scope=scope,
+            type=variable_type,
+            default=default_value,
+            lifetime=lifetime,
+            readable_by=["agent", "engine"],
+            writable_by=["engine"],
+            description=f"{scope.title()} VFS variable from vfs_profiles.yaml",
+            shape=getattr(compiled_var, "shape", None),
+            dims=getattr(compiled_var, "dims", None),
+            initial_value_mode=getattr(compiled_var, "initial_value_mode", None),
+            initial_value_params=getattr(compiled_var, "initial_value_params", None),
+        )
+
+    @staticmethod
+    def _normalize_runtime_vfs_type(raw_type: str, var_id: str) -> str:
+        if raw_type in ("int", "float"):
+            return "scalar"
+        if raw_type in _RUNTIME_VFS_TYPES:
+            return raw_type
+        raise ValueError(f"Unsupported VFS variable type '{raw_type}' for variable '{var_id}'. Valid types: {sorted(_RUNTIME_VFS_TYPES)}")

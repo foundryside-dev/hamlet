@@ -2,10 +2,7 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import torch
-import yaml
 
 from townlet.config.actions_config import ActionsConfig
 from townlet.config.affordances_v2_config import AffordancesV2Config
@@ -15,7 +12,7 @@ from townlet.config.training_v2_config import TrainingV2Config
 from townlet.environment.action_config import ActionConfig
 from townlet.environment.action_labels import PRESET_LABELS, CanonicalAction
 from townlet.substrate.factory import SubstrateFactory
-from townlet.universe.dto import ActionMetadata, ActionSpaceMetadata
+from townlet.universe.dto import ActionMetadata, ActionSpaceMetadata, RuntimeAction, RuntimeActionSpace
 
 
 class ActionCompiler:
@@ -28,13 +25,20 @@ class ActionCompiler:
         training: TrainingV2Config,
         affordances: AffordancesV2Config,
         items: ItemsCatalogConfig | None,
-        config_pack_path: Path,
+        action_label_overrides: dict[int, str] | None,
     ) -> ActionSpaceMetadata:
         """Build action space metadata using substrate actions + custom actions."""
         entries: list[ActionMetadata] = []
         next_id = 0
 
-        def _add(name: str, action_type: str, source: str, enabled: bool, movement_delta: tuple[float, ...] | None = None) -> None:
+        def _add(
+            name: str,
+            action_type: str,
+            source: str,
+            enabled: bool,
+            movement_delta: tuple[float, ...] | None = None,
+            description: str = "",
+        ) -> None:
             nonlocal next_id
             entries.append(
                 ActionMetadata(
@@ -44,7 +48,7 @@ class ActionCompiler:
                     enabled=enabled,
                     source=source,  # type: ignore[arg-type]
                     costs={},
-                    description="",
+                    description=description,
                     movement_delta=movement_delta,
                 )
             )
@@ -75,7 +79,14 @@ class ActionCompiler:
                 movement_delta: tuple[float, ...] | None = None
                 if action.type == "movement" and action.delta is not None:
                     movement_delta = tuple(float(d) for d in action.delta)
-                _add(action.name, action.type, "substrate", enabled, movement_delta=movement_delta)
+                _add(
+                    action.name,
+                    action.type,
+                    "substrate",
+                    enabled,
+                    movement_delta=movement_delta,
+                    description=action.description or "",
+                )
 
         reserved_names: set[str] = {"INTERACT"}
         if items is not None:
@@ -100,7 +111,7 @@ class ActionCompiler:
                 enabled = custom.name in allowed_names
             else:
                 enabled = custom.enabled_by_default or custom.name in enabled_custom
-            _add(custom.name, action_type, "custom", enabled)
+            _add(custom.name, action_type, "custom", enabled, description=custom.description or "")
 
         if items is not None and items.max_items_per_agent > 0 and items.max_items_in_world > 0:
             get_enabled = True
@@ -132,14 +143,6 @@ class ActionCompiler:
         label_config = actions.actions.labels
         label_preset = label_config.preset
 
-        labels_path = config_pack_path / "action_labels.yaml"
-        custom_label_overrides: dict[int, str] | None = None
-        if labels_path.exists():
-            data = yaml.safe_load(labels_path.read_text()) or {}
-            raw_custom = data.get("custom")
-            if isinstance(raw_custom, dict):
-                custom_label_overrides = {int(k): str(v) for k, v in raw_custom.items()}
-
         preset_label_map: dict[str, str] = {}
         if label_preset and label_preset in PRESET_LABELS:
             preset_labels_obj = PRESET_LABELS[label_preset]
@@ -167,8 +170,8 @@ class ActionCompiler:
         label_domain = PRESET_LABELS[label_preset].domain if label_preset and label_preset in PRESET_LABELS else "custom"
 
         for entry in entries:
-            if custom_label_overrides and entry.id in custom_label_overrides:
-                complete_labels[entry.id] = custom_label_overrides[entry.id]
+            if action_label_overrides and entry.id in action_label_overrides:
+                complete_labels[entry.id] = action_label_overrides[entry.id]
             elif entry.name in preset_label_map:
                 complete_labels[entry.id] = preset_label_map[entry.name]
             else:
@@ -180,4 +183,34 @@ class ActionCompiler:
             labels=complete_labels,
             label_description=label_description,
             label_domain=label_domain,
+        )
+
+    def build_runtime_action_space(self, action_metadata: ActionSpaceMetadata) -> RuntimeActionSpace:
+        """Build the runtime action-space artifact from compiled metadata."""
+        runtime_actions = tuple(
+            RuntimeAction(
+                id=action.id,
+                name=action.name,
+                type=action.type,
+                enabled=action.enabled,
+                source=action.source,
+                costs=dict(action.costs),
+                effects={},
+                delta=action.movement_delta,
+                teleport_to=None,
+                description=action.description or None,
+                icon=None,
+                source_affordance=None,
+                reads=(),
+                writes=(),
+            )
+            for action in sorted(action_metadata.actions, key=lambda entry: entry.id)
+        )
+        substrate_action_count = sum(1 for action in runtime_actions if action.source == "substrate")
+        return RuntimeActionSpace(
+            actions=runtime_actions,
+            substrate_action_count=substrate_action_count,
+            custom_action_count=len(runtime_actions) - substrate_action_count,
+            affordance_action_count=0,
+            enabled_action_names=None,
         )

@@ -1,6 +1,6 @@
 """Universe metadata DTOs shared between compiler and training systems."""
 
-from townlet.universe.dto.action_metadata import ActionMetadata, ActionSpaceMetadata
+from townlet.universe.dto.action_metadata import ActionMetadata, ActionSpaceMetadata, RuntimeAction, RuntimeActionSpace
 from townlet.universe.dto.affordance_metadata import (
     AffordanceInfo,
     AffordanceMetadata,
@@ -17,6 +17,8 @@ from townlet.universe.dto.universe_metadata import UniverseMetadata
 __all__ = [
     "ActionMetadata",
     "ActionSpaceMetadata",
+    "RuntimeAction",
+    "RuntimeActionSpace",
     "AffordanceInfo",
     "AffordanceMetadata",
     "MeterInfo",

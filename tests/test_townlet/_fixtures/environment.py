@@ -322,6 +322,8 @@ def aspatial_env(
     aspatial: {}
   vision_support: global
   temporal_support: disabled
+  observation_mode:
+    mode: full_auto
 """)
 
     # Patch bars for expected base/move/interaction costs used in movement mask tests.
@@ -424,6 +426,8 @@ def continuous3d_env(
         num_magnitudes: 3
   vision_support: global
   temporal_support: disabled
+  observation_mode:
+    mode: full_auto
 """)
 
     # Patch bars for expected base/move/interaction depletions

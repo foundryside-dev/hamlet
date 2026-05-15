@@ -24,7 +24,7 @@ def _copy_experiment(tmp_path: Path) -> Path:
 
 
 def test_stage_markers_emit_in_order(tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
-    """Compiler should emit the seven stage markers in order."""
+    """Compiler should emit the stage markers in order."""
     config_dir = _copy_experiment(tmp_path)
     compiler = UniverseCompiler()
 
@@ -37,12 +37,13 @@ def test_stage_markers_emit_in_order(tmp_path: Path, caplog: pytest.LogCaptureFi
 
     assert markers == [
         "Stage 1: Parse v2.1 configs",
-        "Stage 2: Build symbol table",
-        "Stage 3: Resolve references",
-        "Stage 4: Cross-validate semantics",
-        "Stage 5: Enrich shared schemas and effects",
-        "Stage 6: Compile levels and optimization data",
-        "Stage 7: Emit compiled universe",
+        "Stage 2: Enforce safety limits",
+        "Stage 3: Cross-validate semantics",
+        "Stage 4: Build symbol table",
+        "Stage 5: Resolve references",
+        "Stage 6: Enrich shared schemas and effects",
+        "Stage 7: Compile levels and optimization data",
+        "Stage 8: Emit compiled universe",
     ]
 
 

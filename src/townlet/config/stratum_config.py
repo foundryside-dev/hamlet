@@ -23,7 +23,7 @@ class ObservationModeConfig(BaseModel):
     """Observation mode selection for runtime observation layout."""
 
     mode: Literal["full_auto", "max_compact", "full_manual"] = Field(
-        default="full_auto",
+        ...,
         description="Observation layout strategy: full_auto (include all), max_compact (drop masked), or full_manual (explicit list).",
     )
     include_fields: list[str] | None = Field(
@@ -207,7 +207,7 @@ class StratumConfigRoot(BaseModel):
     vision_support: Literal["global", "partial", "both", "none"] = Field(..., description="Vision modes supported by this stratum")
     temporal_support: Literal["enabled", "disabled"] = Field(..., description="Whether temporal mechanics are supported")
     observation_mode: ObservationModeConfig = Field(
-        default_factory=ObservationModeConfig,
+        ...,
         description="Observation layout mode: full_auto | max_compact | full_manual (requires include_fields).",
     )
 

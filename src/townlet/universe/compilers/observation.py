@@ -79,11 +79,11 @@ class ObservationCompiler:
             dims = grid_cells
             is_active = canon_active_vision == "global"
             if substrate.type == "gridnd":
-                desc = f"{dims}-cell gridnd encoding" if is_active else "MASKED (local vision active)"
+                desc = f"{dims}-cell gridnd encoding"
             elif grid_width and grid_height:
-                desc = f"{grid_width}x{grid_height} grid encoding" if is_active else "MASKED (local vision active)"
+                desc = f"{grid_width}x{grid_height} grid encoding"
             else:
-                desc = "Global grid encoding" if is_active else "MASKED (local vision active)"
+                desc = "Global grid encoding"
             fields.append(
                 ObservationField(
                     uuid=None,
@@ -95,6 +95,7 @@ class ObservationCompiler:
                     scope="agent",
                     description=desc,
                     semantic_type="spatial",
+                    curriculum_active=is_active,
                 )
             )
             offset += dims
@@ -111,7 +112,7 @@ class ObservationCompiler:
                 window_size = min((2 * radius) + 1, grid_width)
                 dims = window_size * window_size
                 is_active = canon_active_vision == "partial"
-                desc = f"{window_size}x{window_size} local window" if is_active else "MASKED (global vision active)"
+                desc = f"{window_size}x{window_size} local window"
                 fields.append(
                     ObservationField(
                         uuid=None,
@@ -123,6 +124,7 @@ class ObservationCompiler:
                         scope="agent",
                         description=desc,
                         semantic_type="spatial",
+                        curriculum_active=is_active,
                     )
                 )
                 offset += dims
@@ -282,7 +284,7 @@ class ObservationCompiler:
 
         if temporal_support == "enabled":
             temporal_dims = 4
-            desc = "Temporal features (sin, cos, day_progress, is_night)" if active_temporal else "MASKED (temporal inactive)"
+            desc = "Temporal features (sin, cos, day_progress, is_night)"
             fields.append(
                 ObservationField(
                     uuid=None,
@@ -294,11 +296,12 @@ class ObservationCompiler:
                     scope="agent",
                     description=desc,
                     semantic_type="temporal",
+                    curriculum_active=active_temporal,
                 )
             )
             offset += temporal_dims
 
-        mode_cfg: ObservationModeConfig = getattr(stratum.stratum, "observation_mode", ObservationModeConfig())
+        mode_cfg: ObservationModeConfig = stratum.stratum.observation_mode
         filtered_fields = self._apply_observation_mode(fields, mode_cfg)
 
         reindexed: list[ObservationField] = []
@@ -316,6 +319,7 @@ class ObservationCompiler:
                     description=field.description,
                     semantic_type=field.semantic_type,
                     categorical_labels=field.categorical_labels,
+                    curriculum_active=field.curriculum_active,
                 )
             )
             offset += field.dims
@@ -334,7 +338,7 @@ class ObservationCompiler:
         current_idx = 0
 
         for field in obs_spec.fields:
-            is_masked = "MASKED" in (field.description or "")
+            is_masked = not field.curriculum_active
             dims = field.dims
             group_name = field.semantic_type or "custom"
             if group_name not in group_boundaries:
@@ -378,7 +382,7 @@ class ObservationCompiler:
                     shape=[field.dims],
                     normalization=norm,
                     semantic_type=semantic,  # type: ignore[arg-type]
-                    curriculum_active="MASKED" not in (field.description or ""),
+                    curriculum_active=field.curriculum_active,
                 )
             )
         return tuple(fields)
@@ -478,7 +482,7 @@ class ObservationCompiler:
             return fields
 
         if mode_cfg.mode == "max_compact":
-            return [f for f in fields if "MASKED" not in (f.description or "")]
+            return [f for f in fields if f.curriculum_active]
 
         if mode_cfg.mode == "full_manual":
             includes = mode_cfg.include_fields or []

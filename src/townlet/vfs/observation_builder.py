@@ -348,9 +348,7 @@ def build_vfs_observation(
                             raise RuntimeError(f"Item VFS observation cannot resolve profile for VFS row index {vfs_idx}.")
                         selected_indices = profile_indices.get(profile_name)
                         if selected_indices is None:
-                            raise RuntimeError(
-                                f"Item VFS observation has no exposed variable indices for profile {profile_name!r}."
-                            )
+                            raise RuntimeError(f"Item VFS observation has no exposed variable indices for profile {profile_name!r}.")
                         if not selected_indices:
                             continue
                         dest_start = slot_idx * vars_per_slot

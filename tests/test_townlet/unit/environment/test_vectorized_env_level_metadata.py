@@ -14,6 +14,7 @@ import torch
 import yaml
 
 from townlet.universe.compiled import CompiledUniverse
+from townlet.universe.compiler import UniverseCompiler
 
 
 def _build_two_level_pack(tmp_path: Path, config_pack_factory) -> Path:
@@ -137,3 +138,24 @@ def test_affordance_mask_alignment_uses_level_order(tmp_path, config_pack_factor
     assert not env._is_affordance_open(names[0], hour=1)
     assert not env._is_affordance_open(names[1], hour=0)
     assert env._is_affordance_open(names[1], hour=1)
+
+
+def test_environment_metadata_matches_selected_non_primary_level(tmp_path, cpu_device):
+    pack_dir = tmp_path / "default_curriculum"
+    shutil.copytree(Path("configs/default_curriculum"), pack_dir)
+    stratum_path = pack_dir / "stratum.yaml"
+    stratum_data = yaml.safe_load(stratum_path.read_text())
+    stratum_data["stratum"]["observation_mode"] = {"mode": "max_compact"}
+    stratum_path.write_text(yaml.safe_dump(stratum_data, sort_keys=False))
+
+    compiled = UniverseCompiler().compile(
+        pack_dir,
+        primary_level="L1_full_observability",
+        use_cache=False,
+    )
+
+    env = compiled.create_environment(num_agents=1, level_name="L2_partial_observability", device=cpu_device)
+
+    assert compiled.metadata.observation_dim != env.observation_spec.total_dims
+    assert env.metadata.observation_dim == env.observation_spec.total_dims
+    assert env.metadata.action_count == env.level.action_metadata.total_actions

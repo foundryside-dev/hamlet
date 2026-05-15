@@ -109,7 +109,13 @@ def validate_yaml_syntax(config_dir: Path) -> None:
         "environment.yaml",
         "actions.yaml",
         "brain.yaml",
+        "vfs_profiles.yaml",
         "items.yaml",
+    ]
+    optional_shared_files = [
+        "effects.yaml",
+        "action_labels.yaml",
+        "variables_reference.yaml",
     ]
 
     for file_name in shared_files:
@@ -118,6 +124,16 @@ def validate_yaml_syntax(config_dir: Path) -> None:
             if file_name == "items.yaml":
                 continue
             errors.add(f"{file_name}: File not found", code="MISSING_FILE", location=str(file_path))
+            continue
+        try:
+            with file_path.open() as handle:
+                yaml.safe_load(handle)
+        except yaml.YAMLError as exc:
+            errors.add(str(exc), code="YAML_SYNTAX_ERROR", location=str(file_path))
+
+    for file_name in optional_shared_files:
+        file_path = config_dir / file_name
+        if not file_path.exists():
             continue
         try:
             with file_path.open() as handle:

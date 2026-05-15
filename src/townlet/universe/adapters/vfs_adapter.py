@@ -90,6 +90,7 @@ def vfs_to_observation_spec(
                 scope=scope,
                 description=field.source_variable,
                 semantic_type=semantic,
+                curriculum_active=field.curriculum_active,
             )
         )
         cursor += dims

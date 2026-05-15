@@ -89,7 +89,7 @@ class LiveInferenceServer:
 
         Args:
             checkpoint_dir: Directory containing training checkpoints
-            level_name: Which curriculum level to run (defaults to first available level)
+            level_name: Which curriculum level to run. Required.
             port: WebSocket port
             step_delay: Delay between steps in seconds (0.2 = 5 steps/sec)
             total_episodes: Expected total episodes for training run (for progress gauge)
@@ -99,7 +99,9 @@ class LiveInferenceServer:
             recordings_dir: Optional recordings directory for replay mode
         """
         self.checkpoint_dir = Path(checkpoint_dir)
-        self.level_name = level_name  # Will be determined after compilation if None
+        if level_name is None:
+            raise ValueError("level_name is required for live inference; implicit default level selection is not supported.")
+        self.level_name = level_name
         self.port = port
         self.step_delay = step_delay
         self.total_episodes = total_episodes
@@ -288,16 +290,7 @@ class LiveInferenceServer:
     def _initialize_components(self):
         """Initialize environment and agent components."""
         logger.info("Compiling universe for live inference from %s", self.config_dir)
-        # Compile universe (primary_level can be None for initial compilation)
         self.compiled_universe = self.compiler.compile(self.config_dir, primary_level=self.level_name)
-
-        # Determine effective level_name (supports callers that omitted it)
-        if self.level_name is None:
-            available_levels = getattr(self.compiled_universe, "available_levels", [])
-            if not available_levels:
-                raise ValueError("Compiled universe has no curriculum levels; LiveInferenceServer requires at least one level.")
-            self.level_name = available_levels[0]
-            logger.info("No level_name specified; defaulting to %s", self.level_name)
 
         level_meta = self.compiled_universe.get_level(self.level_name)
 
@@ -1186,6 +1179,7 @@ def run_server(
     step_delay: float = 0.2,
     total_episodes: int = 5000,
     config_dir: str | None = None,
+    level_name: str | None = None,
     training_config_path: str | None = None,
     db_path: str | None = None,
     recordings_dir: str | None = None,
@@ -1198,6 +1192,7 @@ def run_server(
         step_delay: Delay between steps in seconds
         total_episodes: Expected total training episodes
         config_dir: Config directory (compiled universe source)
+        level_name: Explicit curriculum level to run
         training_config_path: Optional training config YAML
         db_path: Optional database path for replay mode
         recordings_dir: Optional recordings directory for replay mode
@@ -1208,10 +1203,12 @@ def run_server(
 
     if config_dir is None:
         raise ValueError("config_dir is required for live inference. Provide the path to the config pack directory.")
+    if level_name is None:
+        raise ValueError("level_name is required for live inference. Provide the curriculum level to run.")
 
     server = LiveInferenceServer(
         checkpoint_dir,
-        level_name=None,  # Will default to first available level
+        level_name=level_name,
         port=port,
         step_delay=step_delay,
         total_episodes=total_episodes,
@@ -1242,6 +1239,7 @@ if __name__ == "__main__":
     step_delay = float(sys.argv[3]) if len(sys.argv) > 3 else 0.2
     total_episodes = int(sys.argv[4]) if len(sys.argv) > 4 else 5000
     config_arg = sys.argv[5] if len(sys.argv) > 5 else None
+    level_name = sys.argv[6] if len(sys.argv) > 6 else None
     config_dir = None
     training_config = None
     if config_arg:
@@ -1254,4 +1252,4 @@ if __name__ == "__main__":
             config_dir = str(candidate.parent)
             training_config = str(candidate)
 
-    run_server(checkpoint_dir, port, step_delay, total_episodes, config_dir, training_config)
+    run_server(checkpoint_dir, port, step_delay, total_episodes, config_dir, level_name, training_config)

@@ -15,6 +15,7 @@ def test_effects_schema_includes_item_vfs_paths():
 
     # Verify: Effect catalog schema includes item VFS paths
     assert compiled.compiled_effect_catalog is not None
+    assert compiled.effects_schema is not None
 
     # Check schema includes self.vfs.* paths (for item effects)
     # Example: self.vfs.calories, self.vfs.freshness
@@ -24,6 +25,9 @@ def test_effects_schema_includes_item_vfs_paths():
     if compiled.compiled_vfs_profiles and compiled.compiled_vfs_profiles.item_profiles:
         for profile_name, profile in compiled.compiled_vfs_profiles.item_profiles.items():
             for var in profile.variables:
+                assert (
+                    f"self.vfs.{var.name}" in compiled.effects_schema
+                ), f"Missing self.vfs.{var.name} in compiled effects schema for profile {profile_name}"
                 # Item VFS paths should be in expression schema for effects
                 # self.vfs.{var_name} and target.vfs.{var_name}
                 assert (
@@ -43,6 +47,12 @@ def test_effects_schema_includes_bar_paths():
     compiled = compiler.compile(config_dir, primary_level="L0_effects", use_cache=False)
 
     # Verify: Schema includes bar paths
+    assert compiled.effects_schema is not None
+    assert "intensity" in compiled.effects_schema
+    assert "elapsed_ticks" in compiled.effects_schema
+    assert "duration_remaining" in compiled.effects_schema
+    assert "bar.energy" in compiled.effects_schema
+    assert "target.bar.energy" in compiled.effects_schema
     assert compiled.vfs_expression_schema is not None
     assert "bar.energy" in compiled.vfs_expression_schema
     # Note: Effects can reference target.bar.energy in commands

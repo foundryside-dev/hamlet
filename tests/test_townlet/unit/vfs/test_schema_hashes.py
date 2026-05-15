@@ -22,7 +22,7 @@ from townlet.vfs.schema_hashes import (
     compute_vfs_hash,
 )
 from townlet.vfs.transition_graph import TransitionPhaseGraph
-from townlet.vfs.vtc import compile_vtc_action_writes_with_phase_graph
+from townlet.vfs.vtc import compile_vtc_action_writes_with_phase_graph, compile_vtc_threshold_cascades_with_phase_graph
 
 
 def test_canonical_variable_schema_uses_sorted_contract_fields() -> None:
@@ -406,6 +406,10 @@ def test_compiler_surfaces_vfs_hash(tmp_path: Path) -> None:
     assert compiled.transition_graph_hash == compute_transition_graph_hash(
         TransitionPhaseGraph.default(),
         compile_vtc_action_writes_with_phase_graph(compiled.runtime_action_space.actions, TransitionPhaseGraph.default()),
+        compile_vtc_threshold_cascades_with_phase_graph(
+            compiled.get_level(PRIMARY_LEVEL_NAME).bars.cascades,
+            TransitionPhaseGraph.default(),
+        ),
     )
     assert compiled.vfs_hash == expected
     assert compiled.all_levels is not None

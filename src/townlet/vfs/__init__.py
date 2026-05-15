@@ -29,14 +29,20 @@ from townlet.vfs.schema_hashes import (
 from townlet.vfs.transition_graph import DEFAULT_TRANSITION_PHASES, TransitionPhaseGraph
 from townlet.vfs.vtc import (
     CompiledVTCActionWrite,
+    CompiledVTCThresholdCascade,
     VTCActionWriteProgram,
     VTCActionWriteSource,
+    VTCThresholdCascadeProgram,
+    VTCThresholdCascadeSource,
     compile_vtc_action_writes,
     compile_vtc_action_writes_with_phase_graph,
+    compile_vtc_threshold_cascades,
+    compile_vtc_threshold_cascades_with_phase_graph,
 )
 
 __all__ = [
     "CompiledVTCActionWrite",
+    "CompiledVTCThresholdCascade",
     "DEFAULT_TRANSITION_PHASES",
     "NormalizationSpec",
     "ObservationField",
@@ -45,6 +51,8 @@ __all__ = [
     "TransitionPhaseGraph",
     "VTCActionWriteProgram",
     "VTCActionWriteSource",
+    "VTCThresholdCascadeProgram",
+    "VTCThresholdCascadeSource",
     "VFSRegistryProtocol",
     "VFSObservationSpec",
     "WriteSpec",
@@ -60,4 +68,6 @@ __all__ = [
     "compute_vfs_hash",
     "compile_vtc_action_writes",
     "compile_vtc_action_writes_with_phase_graph",
+    "compile_vtc_threshold_cascades",
+    "compile_vtc_threshold_cascades_with_phase_graph",
 ]

@@ -44,7 +44,7 @@ def _make_handler(*, exclusive: bool) -> tuple[ItemManager, InventoryState, Item
         meter_name_to_index={},
         effect_manager=None,
         affordance_overrides=None,
-        meter_dynamics=None,
+        threshold_cascade_program=None,
     )
     return manager, inventory, handler
 

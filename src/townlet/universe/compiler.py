@@ -33,7 +33,7 @@ from townlet.vfs.schema_hashes import (
     compute_vfs_hash,
 )
 from townlet.vfs.transition_graph import TransitionPhaseGraph
-from townlet.vfs.vtc import compile_vtc_action_writes_with_phase_graph
+from townlet.vfs.vtc import compile_vtc_action_writes_with_phase_graph, compile_vtc_threshold_cascades_with_phase_graph
 from townlet.world.expression.type_checker import TypeCheckError
 
 from .compiled import CompiledVFSProfiles
@@ -381,7 +381,12 @@ class UniverseCompiler:
             variable_schema_hash = compute_variable_schema_hash(vfs_variables)
             transition_phase_graph = TransitionPhaseGraph.default()
             transition_action_writes = compile_vtc_action_writes_with_phase_graph(runtime_action_space.actions, transition_phase_graph)
-            transition_graph_hash = compute_transition_graph_hash(transition_phase_graph, transition_action_writes)
+            transition_threshold_cascades = compile_vtc_threshold_cascades_with_phase_graph(level.bars.cascades, transition_phase_graph)
+            transition_graph_hash = compute_transition_graph_hash(
+                transition_phase_graph,
+                transition_action_writes,
+                transition_threshold_cascades,
+            )
             vfs_hash = compute_vfs_hash(variable_schema_hash, observation_schema_hash, action_schema_hash, transition_graph_hash)
 
             # Compute hashes for level-specific configs

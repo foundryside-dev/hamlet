@@ -86,7 +86,7 @@ class TestCascadeEffects:
         initial_energy = env.meters[0, energy_idx].item()
 
         # Apply cascade
-        env.meters = env.meter_dynamics.apply_secondary_to_primary_effects(env.meters)
+        env._apply_vtc_threshold_cascades()
 
         # Both should decrease
         assert env.meters[0, health_idx] < initial_health  # health decreased
@@ -115,7 +115,7 @@ class TestCascadeEffects:
         initial_energy = env.meters[0, energy_idx].item()
 
         # Apply cascade
-        env.meters = env.meter_dynamics.apply_secondary_to_primary_effects(env.meters)
+        env._apply_vtc_threshold_cascades()
 
         # Energy should decrease
         assert env.meters[0, energy_idx] < initial_energy
@@ -140,11 +140,41 @@ class TestCascadeEffects:
         initial_health = env.meters[0, health_idx].item()
         initial_energy = env.meters[0, energy_idx].item()
 
-        env.meters = env.meter_dynamics.apply_secondary_to_primary_effects(env.meters)
+        env._apply_vtc_threshold_cascades()
 
         # No change
         assert env.meters[0, health_idx] == initial_health
         assert env.meters[0, energy_idx] == initial_energy
+
+    def test_step_applies_threshold_cascades_without_imperative_helpers(self, cpu_env_factory):
+        """The step path should execute passive threshold cascades through VTC rules."""
+        env = cpu_env_factory()
+        env.reset()
+
+        def forbidden_cascade_call(meters):
+            raise AssertionError("imperative cascade helper was called")
+
+        env.meter_dynamics.apply_secondary_to_primary_effects = forbidden_cascade_call
+        env.meter_dynamics.apply_tertiary_to_secondary_effects = forbidden_cascade_call
+        env.meter_dynamics.apply_tertiary_to_primary_effects = forbidden_cascade_call
+
+        energy_idx = env.meter_name_to_index["energy"]
+        satiation_idx = env.meter_name_to_index["satiation"]
+        env.meters = torch.ones(1, 8)
+        env.meters[0, satiation_idx] = 0.2
+
+        actions = torch.tensor([env.action_ids["WAIT"]], device=env.device)
+        env.step(actions)
+
+        passive_energy = 1.0 - env.meter_dynamics.get_base_depletion("energy")
+        passive_satiation = 0.2 - env.meter_dynamics.get_base_depletion("satiation")
+        expected_cascade_penalty = 0.006 * ((0.3 - passive_satiation) / 0.3)
+
+        assert torch.isclose(
+            env.meters[0, energy_idx],
+            torch.tensor(passive_energy - expected_cascade_penalty, device=env.device),
+            atol=1e-5,
+        )
 
     # Note: v2.1 default curriculum expresses cascades directly in bars.yaml
     # as a small set of meter-to-meter edges (satiation→health/energy,
@@ -303,7 +333,7 @@ class TestCascadeIntegration:
 
         # Run full cascade as in step()
         env.meters = env.meter_dynamics.deplete_meters(env.meters)
-        env.meters = env.meter_dynamics.apply_secondary_to_primary_effects(env.meters)
+        env._apply_vtc_threshold_cascades()
         env.dones = env.meter_dynamics.check_terminal_conditions(env.meters, env.dones)
 
         # Health and energy should be reduced (cascade effects accumulate)

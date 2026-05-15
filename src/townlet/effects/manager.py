@@ -67,7 +67,7 @@ class EffectManager:
         scheduler: Any | None = None,
         time_enabled: bool = True,
         affordance_overrides: dict[str, bool] | None = None,
-        meter_dynamics: Any | None = None,
+        threshold_cascade_program: Any | None = None,
     ) -> None:
         """Initialize effect manager with compiled catalog.
 
@@ -83,7 +83,7 @@ class EffectManager:
 
         self.scheduler = scheduler or Scheduler(time_enabled=time_enabled)
         self.affordance_overrides = affordance_overrides
-        self.meter_dynamics = meter_dynamics
+        self.threshold_cascade_program = threshold_cascade_program
         self.current_step = 0  # Track environment step
         self.next_instance_id = 0
 
@@ -159,7 +159,7 @@ class EffectManager:
                         current_tick=current_step,
                         scheduler=self.scheduler,
                         affordance_overrides=self.affordance_overrides,
-                        meter_dynamics=self.meter_dynamics,
+                        threshold_cascade_program=self.threshold_cascade_program,
                     )
 
                     for command in effect_def.on_interrupt:
@@ -188,7 +188,7 @@ class EffectManager:
                         current_tick=current_step,  # NEW
                         scheduler=self.scheduler,
                         affordance_overrides=self.affordance_overrides,
-                        meter_dynamics=self.meter_dynamics,
+                        threshold_cascade_program=self.threshold_cascade_program,
                     )
 
                     for command in effect_def.on_interrupt:
@@ -236,7 +236,7 @@ class EffectManager:
                 current_tick=current_step,  # NEW
                 scheduler=self.scheduler,
                 affordance_overrides=self.affordance_overrides,
-                meter_dynamics=self.meter_dynamics,
+                threshold_cascade_program=self.threshold_cascade_program,
             )
 
             for command in effect_def.on_spawn:
@@ -465,7 +465,7 @@ class EffectManager:
                 current_tick=self.current_step,
                 scheduler=self.scheduler,
                 affordance_overrides=self.affordance_overrides,
-                meter_dynamics=self.meter_dynamics,
+                threshold_cascade_program=self.threshold_cascade_program,
             )
 
             for cmd in item.commands:
@@ -505,7 +505,7 @@ class EffectManager:
                     current_tick=self.current_step,  # NEW
                     scheduler=self.scheduler,
                     affordance_overrides=self.affordance_overrides,
-                    meter_dynamics=self.meter_dynamics,
+                    threshold_cascade_program=self.threshold_cascade_program,
                 )
 
                 for command in compiled.on_tick:
@@ -548,7 +548,7 @@ class EffectManager:
                     current_tick=self.current_step,  # NEW
                     scheduler=self.scheduler,
                     affordance_overrides=self.affordance_overrides,
-                    meter_dynamics=self.meter_dynamics,
+                    threshold_cascade_program=self.threshold_cascade_program,
                 )
 
                 for command in compiled.on_despawn:
@@ -588,7 +588,7 @@ class EffectManager:
             current_tick=current_tick,
             scheduler=self.scheduler,
             affordance_overrides=self.affordance_overrides,
-            meter_dynamics=self.meter_dynamics,
+            threshold_cascade_program=self.threshold_cascade_program,
         )
 
     def get_all_active_effects(self) -> list[ActiveEffect]:
@@ -685,6 +685,8 @@ class EffectManager:
                 interrupt_reason="manually_cancelled",
                 current_tick=current_step,
                 scheduler=self.scheduler,
+                affordance_overrides=self.affordance_overrides,
+                threshold_cascade_program=self.threshold_cascade_program,
             )
 
             for command in compiled.on_interrupt:

@@ -45,7 +45,7 @@ class ExecutionContext:
     rng: torch.Generator | None = None
     seed: int | None = None  # Optional deterministic seed for sampling
     affordance_overrides: dict[str, bool] | None = None  # Runtime affordance availability overrides
-    meter_dynamics: Any | None = None  # Optional MeterDynamics for trigger_cascade
+    threshold_cascade_program: Any | None = None  # Optional VTC threshold cascade program for trigger_cascade
 
     def __post_init__(self) -> None:
         if self.effect_manager is None:

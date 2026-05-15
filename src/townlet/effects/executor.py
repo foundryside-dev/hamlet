@@ -643,8 +643,8 @@ class CommandExecutor:
 
     def _execute_trigger_cascade(self, command: CommandNode, context: ExecutionContext) -> None:
         """Invoke a named cascade on current meters."""
-        if context.meter_dynamics is None:
-            raise RuntimeError("trigger_cascade command requires meter_dynamics on ExecutionContext")
+        if context.threshold_cascade_program is None:
+            raise RuntimeError("trigger_cascade command requires threshold_cascade_program on ExecutionContext")
         if command.cascade_id is None:
             raise ValueError("trigger_cascade requires cascade_id")
         if command.cascade_strength is None:
@@ -653,13 +653,20 @@ class CommandExecutor:
         if strength <= 0:
             raise ValueError("trigger_cascade cascade_strength must be positive")
 
-        cascade_fn = getattr(context.meter_dynamics, "apply_named_cascade", None)
-        if cascade_fn is None:
-            raise RuntimeError("MeterDynamics does not expose apply_named_cascade")
+        if not context.bars:
+            raise RuntimeError("trigger_cascade requires bars on ExecutionContext")
+        sample_bar = next(iter(context.bars.values()))
+        if sample_bar.dim() == 0:
+            raise ValueError("trigger_cascade requires batched bar tensors")
+        active_mask = torch.ones(sample_bar.shape[0], dtype=torch.bool, device=sample_bar.device)
 
-        # Expect bars tensors in context.bars (batch-first)
-        updated = cascade_fn(command.cascade_id, context.bars, strength=strength)
-        # Sync bars back into context
+        updated = context.threshold_cascade_program.apply_named(
+            command.cascade_id,
+            context.bars,
+            active_mask=active_mask,
+            device=sample_bar.device,
+            strength=strength,
+        )
         for name, tensor in updated.items():
             context.bars[name] = tensor
 

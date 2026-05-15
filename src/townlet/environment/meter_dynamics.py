@@ -8,13 +8,6 @@ from typing import Any, TypedDict, cast
 import torch
 
 
-class _CascadeEntry(TypedDict):
-    source_idx: int
-    target_idx: int
-    threshold: float
-    strength: float
-
-
 class _ModulationEntry(TypedDict):
     source_idx: int
     target_idx: int
@@ -30,13 +23,12 @@ class _TerminalCondition(TypedDict):
 
 
 class MeterDynamics:
-    """Apply depletion, modulations, cascades, and terminal checks from tensors."""
+    """Apply depletion, modulations, and terminal checks from tensors."""
 
     def __init__(
         self,
         *,
         base_depletions: torch.Tensor,
-        cascade_data: Mapping[str, Sequence[Mapping[str, Any]]],
         modulation_data: Sequence[Mapping[str, Any]],
         terminal_conditions: Sequence[Mapping[str, Any]],
         meter_name_to_index: Mapping[str, int],
@@ -47,23 +39,6 @@ class MeterDynamics:
         self.device = device
         self.base_depletions = base_depletions.to(device=device, dtype=torch.float32).clone()
         self.meter_name_to_index = dict(meter_name_to_index)
-
-        self._cascade_tables: dict[str, list[_CascadeEntry]] = {}
-        for category, entries in cascade_data.items():
-            normalized_entries: list[_CascadeEntry] = []
-            for entry in entries:
-                normalized_entries.append(
-                    cast(
-                        _CascadeEntry,
-                        {
-                            "source_idx": int(entry["source_idx"]),
-                            "target_idx": int(entry["target_idx"]),
-                            "threshold": float(entry["threshold"]),
-                            "strength": float(entry["strength"]),
-                        },
-                    )
-                )
-            self._cascade_tables[category] = normalized_entries
 
         self._modulations: list[_ModulationEntry] = []
         for entry in modulation_data:
@@ -109,55 +84,6 @@ class MeterDynamics:
 
         return meters
 
-    def apply_secondary_to_primary_effects(self, meters: torch.Tensor) -> torch.Tensor:
-        """Apply primary_to_pivotal cascades (secondary → primary)."""
-
-        return self._apply_cascades(meters, ["primary_to_pivotal"])
-
-    def apply_tertiary_to_secondary_effects(self, meters: torch.Tensor) -> torch.Tensor:
-        """Apply secondary_to_primary cascades (tertiary → secondary)."""
-
-        return self._apply_cascades(meters, ["secondary_to_primary"])
-
-    def apply_tertiary_to_primary_effects(self, meters: torch.Tensor) -> torch.Tensor:
-        """Apply secondary_to_pivotal_weak cascades (tertiary → primary)."""
-
-        return self._apply_cascades(meters, ["secondary_to_pivotal_weak"])
-
-    def apply_named_cascade(self, cascade_name: str, bars: dict[str, torch.Tensor], *, strength: float = 1.0) -> dict[str, torch.Tensor]:
-        """Apply a specific cascade to bar tensors and return updated mapping."""
-        if cascade_name not in self._cascade_tables:
-            raise ValueError(f"Unknown cascade_id '{cascade_name}' for trigger_cascade")
-        if strength <= 0:
-            raise ValueError("cascade_strength must be positive")
-
-        updated = {name: tensor.clone() for name, tensor in bars.items()}
-        cascades = self._cascade_tables[cascade_name]
-        for cascade in cascades:
-            source_name = self._meter_name_by_idx(cascade["source_idx"])
-            target_name = self._meter_name_by_idx(cascade["target_idx"])
-            source_values = updated[source_name]
-            target_values = updated[target_name]
-            low_mask = source_values < cascade["threshold"]
-            if not low_mask.any():
-                continue
-            deficit = (cascade["threshold"] - source_values[low_mask]) / cascade["threshold"]
-            penalty = (cascade["strength"] * strength) * deficit
-            target_values = target_values.clone()
-            target_values[low_mask] = torch.clamp(
-                target_values[low_mask] - penalty,
-                0.0,
-                1.0,
-            )
-            updated[target_name] = target_values
-        return updated
-
-    def _meter_name_by_idx(self, idx: int) -> str:
-        for name, index in self.meter_name_to_index.items():
-            if index == idx:
-                return name
-        raise KeyError(f"Meter index {idx} not found in meter_name_to_index")
-
     def check_terminal_conditions(self, meters: torch.Tensor, dones: torch.Tensor) -> torch.Tensor:
         """Evaluate terminal conditions using compiler-provided thresholds.
 
@@ -196,26 +122,3 @@ class MeterDynamics:
         if idx is None:
             raise KeyError(f"Meter '{meter_name}' not found in lookup.")
         return float(self.base_depletions[idx].item())
-
-    def _apply_cascades(self, meters: torch.Tensor, categories: Sequence[str]) -> torch.Tensor:
-        for category in categories:
-            cascades = self._cascade_tables.get(category)
-            if not cascades:
-                continue
-
-            for cascade in cascades:
-                source_values = meters[:, cascade["source_idx"]]
-                low_mask = source_values < cascade["threshold"]
-                if not low_mask.any():
-                    continue
-
-                deficit = (cascade["threshold"] - source_values[low_mask]) / cascade["threshold"]
-                penalty = cascade["strength"] * deficit
-                target_idx = cascade["target_idx"]
-                meters[low_mask, target_idx] = torch.clamp(
-                    meters[low_mask, target_idx] - penalty,
-                    0.0,
-                    1.0,
-                )
-
-        return meters

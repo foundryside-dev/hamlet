@@ -53,17 +53,28 @@ def compute_action_schema_hash(actions: Iterable[Any]) -> str:
     return _hash_payload(canonical_action_schema(actions))
 
 
-def canonical_transition_graph_schema(phase_graph: TransitionPhaseGraph, action_write_program: Any) -> dict[str, Any]:
+def canonical_transition_graph_schema(
+    phase_graph: TransitionPhaseGraph,
+    action_write_program: Any,
+    threshold_cascade_program: Any | None = None,
+) -> dict[str, Any]:
     """Return the transition-graph payload used for world-physics provenance."""
+    rules = [_canonical_transition_rule(write) for write in action_write_program.writes]
+    if threshold_cascade_program is not None:
+        rules.extend(_canonical_transition_rule(rule) for rule in threshold_cascade_program.rules)
     return {
         "phase_graph": phase_graph.to_canonical_payload(),
-        "rules": [_canonical_transition_rule(write) for write in action_write_program.writes],
+        "rules": rules,
     }
 
 
-def compute_transition_graph_hash(phase_graph: TransitionPhaseGraph, action_write_program: Any) -> str:
+def compute_transition_graph_hash(
+    phase_graph: TransitionPhaseGraph,
+    action_write_program: Any,
+    threshold_cascade_program: Any | None = None,
+) -> str:
     """Return the SHA-256 digest of the compiled transition graph and rules."""
-    return _hash_payload(canonical_transition_graph_schema(phase_graph, action_write_program))
+    return _hash_payload(canonical_transition_graph_schema(phase_graph, action_write_program, threshold_cascade_program))
 
 
 def compute_vfs_hash(
@@ -121,6 +132,20 @@ def _canonical_action_entry(action: Any) -> dict[str, Any]:
 
 
 def _canonical_transition_rule(write: Any) -> dict[str, Any]:
+    if hasattr(write, "rule_id"):
+        return {
+            "rule_id": write.rule_id,
+            "kind": write.kind,
+            "source_variable_id": write.source_variable_id,
+            "variable_id": write.variable_id,
+            "expression": write.expression,
+            "condition": write.condition,
+            "composition": write.composition,
+            "phase": write.phase,
+            "priority": write.priority,
+            "clamp": list(write.clamp) if write.clamp is not None else None,
+            "telemetry_label": write.telemetry_label,
+        }
     return {
         "action_id": write.action_id,
         "action_name": write.action_name,

@@ -31,7 +31,7 @@ from townlet.universe.dto import RuntimeActionSpace
 from townlet.vfs.evaluator import EvaluationMode, VFSEvaluator
 from townlet.vfs.observation_builder import VFSObservationSpec
 from townlet.vfs.registry import VariableRegistry
-from townlet.vfs.vtc import VTCActionWriteProgram, compile_vtc_action_writes
+from townlet.vfs.vtc import VTCActionWriteProgram, VTCThresholdCascadeProgram, compile_vtc_action_writes, compile_vtc_threshold_cascades
 
 if TYPE_CHECKING:
     from townlet.exploration.base import ExplorationStrategy
@@ -333,7 +333,7 @@ class VectorizedHamletEnv:
                 device=str(self.device),
                 time_enabled=self.temporal_support_enabled,
                 affordance_overrides=self.affordance_overrides,
-                meter_dynamics=None,  # Patched after meter_dynamics constructed
+                threshold_cascade_program=None,  # Patched after VTC threshold cascades are compiled
             )
             if effect_catalog is not None
             else None
@@ -368,7 +368,6 @@ class VectorizedHamletEnv:
         # Initialize meter dynamics directly from optimization tensors
         self.meter_dynamics = MeterDynamics(
             base_depletions=self.optimization_data.base_depletions,
-            cascade_data=self.optimization_data.cascade_data,
             # v2.1: modulation_data encodes bar→affordance modulation (environment.yaml modulation_graph)
             # and is consumed by AffordanceEngine. MeterDynamics currently only supports
             # meter→meter modulations, so we pass an empty sequence here.
@@ -377,8 +376,6 @@ class VectorizedHamletEnv:
             meter_name_to_index=meter_name_to_index,
             device=self.device,
         )
-        if self.effect_manager is not None:
-            self.effect_manager.meter_dynamics = self.meter_dynamics
 
         # Cache action mask table (24 × affordance_count) for temporal mechanics
         self.action_mask_table = self.optimization_data.action_mask_table.to(self.device).clone()
@@ -437,6 +434,9 @@ class VectorizedHamletEnv:
         self.action_ids = level.runtime_action_space.action_ids
         self._movement_deltas = self._build_movement_deltas()
         self.vtc_action_write_program = compile_vtc_action_writes(self.action_space.actions)
+        self.vtc_threshold_cascade_program = compile_vtc_threshold_cascades(self.bars_config.cascades)
+        if self.effect_manager is not None:
+            self.effect_manager.threshold_cascade_program = self.vtc_threshold_cascade_program
 
         # State tensors (initialized in reset)
         self.positions = torch.zeros(
@@ -491,7 +491,7 @@ class VectorizedHamletEnv:
                 meter_name_to_index=self.meter_name_to_index,
                 effect_manager=self.effect_manager,  # NEW: pass EffectManager for ExecutionContext
                 affordance_overrides=self.affordance_overrides,
-                meter_dynamics=self.meter_dynamics,
+                threshold_cascade_program=self.vtc_threshold_cascade_program,
             )
         else:
             self.item_manager = None
@@ -531,7 +531,7 @@ class VectorizedHamletEnv:
             effect_manager=self.effect_manager,
             item_manager=self.item_manager or NullItemManager(),
             affordance_overrides=self.affordance_overrides,
-            meter_dynamics=self.meter_dynamics,
+            threshold_cascade_program=self.vtc_threshold_cascade_program,
         )
 
         # Exploration module (optional, set by population or external code)
@@ -1155,10 +1155,8 @@ class VectorizedHamletEnv:
         # 2. Deplete meters (base passive decay with curriculum difficulty)
         self.meters = self.meter_dynamics.deplete_meters(self.meters, depletion_multiplier)
 
-        # 3. Cascading effects (coupled differential equations!)
-        self.meters = self.meter_dynamics.apply_secondary_to_primary_effects(self.meters)
-        self.meters = self.meter_dynamics.apply_tertiary_to_secondary_effects(self.meters)
-        self.meters = self.meter_dynamics.apply_tertiary_to_primary_effects(self.meters)
+        # 3. Passive threshold cascades via VTC relationship rules.
+        self._apply_vtc_threshold_cascades()
 
         # 3.5. Execute active effects (after cascades, before terminal checks)
         # Effects can modify bars based on current state after all natural dynamics applied
@@ -1288,6 +1286,20 @@ class VectorizedHamletEnv:
                 self._set_vtc_bar_value(variable_id, value)
             elif variable_id in self.vfs_registry.variables:
                 self.vfs_registry.set(variable_id, value, writer="engine")
+
+    def _apply_vtc_threshold_cascades(self) -> None:
+        """Apply compiled VFS threshold-cascade rules to meter bars."""
+        program: VTCThresholdCascadeProgram = self.vtc_threshold_cascade_program
+        if len(program.rules) == 0:
+            return
+
+        updated_bars = program.apply(
+            bars_state=self._current_bar_state(),
+            active_mask=torch.ones_like(self.dones, dtype=torch.bool, device=self.device),
+            device=self.device,
+        )
+        for bar_name, value in updated_bars.items():
+            self._set_vtc_bar_value(bar_name, value)
 
     def _current_vfs_state(self) -> dict[str, torch.Tensor]:
         """Return the engine-readable VFS registry snapshot."""

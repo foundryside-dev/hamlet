@@ -95,17 +95,36 @@ class NormalizationSpec(BaseModel):
 class WriteSpec(BaseModel):
     """Action write specification (variable update).
 
-    Defines how an action modifies a variable's value.
+    Defines how an action modifies a variable's value and how the transition
+    compiler should schedule, compose, clamp, and audit the write.
 
     Expressions are parsed into ASTs during profile/effect compilation before
     runtime execution.
 
     Examples:
         # Simple constant
-        WriteSpec(variable_id="energy", expression="-0.005")
+        WriteSpec(
+            variable_id="energy",
+            expression="-0.005",
+            condition=None,
+            composition="additive_delta",
+            phase="action_costs",
+            priority=10,
+            clamp=(0.0, 1.0),
+            telemetry_label="movement_energy_cost",
+        )
 
         # Complex expression
-        WriteSpec(variable_id="money", expression="money + 10.0")
+        WriteSpec(
+            variable_id="money",
+            expression="money + 10.0",
+            condition=None,
+            composition="overwrite",
+            phase="action_effects",
+            priority=0,
+            clamp=None,
+            telemetry_label="wage_credit",
+        )
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -119,6 +138,60 @@ class WriteSpec(BaseModel):
         min_length=1,
         description="Expression to parse, type-check, and evaluate through the expression runtime",
     )
+
+    condition: str | None = Field(
+        description="Optional mask or predicate expression that gates this write. Pass None for unconditional writes.",
+    )
+
+    composition: Literal[
+        "overwrite",
+        "additive_delta",
+        "multiplicative_modifier",
+        "min",
+        "max",
+        "clamp",
+        "priority_write",
+        "last_write_wins",
+        "claim_if_free",
+        "capacity_claim",
+        "append_event",
+    ] = Field(
+        description="How to compose this write with other writes targeting the same variable in the same phase",
+    )
+
+    phase: str = Field(
+        min_length=1,
+        description="Transition phase where this write is scheduled",
+    )
+
+    priority: int = Field(
+        ge=0,
+        description="Non-negative ordering key within the transition phase",
+    )
+
+    clamp: tuple[float, float] | None = Field(
+        description="Optional inclusive post-write bounds. Pass None when no clamp applies.",
+    )
+
+    telemetry_label: str = Field(
+        min_length=1,
+        description="Human-readable audit label emitted with write telemetry",
+    )
+
+    @model_validator(mode="after")
+    def validate_write_metadata(self) -> "WriteSpec":
+        """Validate explicit VFS v1.1 transition metadata."""
+        if self.condition is not None and not self.condition.strip():
+            raise ValueError("condition must be None or a non-empty expression")
+        if not self.phase.strip():
+            raise ValueError("phase must be a non-empty transition phase")
+        if not self.telemetry_label.strip():
+            raise ValueError("telemetry_label must be non-empty")
+        if self.clamp is not None:
+            low, high = self.clamp
+            if low > high:
+                raise ValueError("clamp lower bound must be <= upper bound")
+        return self
 
 
 class ObservationField(BaseModel):

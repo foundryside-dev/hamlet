@@ -334,29 +334,68 @@ class TestObservationField:
 class TestWriteSpec:
     """Test WriteSpec schema validation."""
 
-    def test_write_spec_valid(self):
-        """Write specification with variable_id and expression."""
+    def test_write_spec_full_v11_contract_valid(self):
+        """Write specification carries v1.1 conflict, phase, clamp, and telemetry metadata."""
         from townlet.vfs.schema import WriteSpec
 
         write = WriteSpec(
             variable_id="energy",
-            expression="-0.005",
+            expression="energy - 0.005",
+            condition="agent_mask & action_is_move",
+            composition="additive_delta",
+            phase="action_costs",
+            priority=10,
+            clamp=[0.0, 1.0],
+            telemetry_label="movement_energy_cost",
         )
 
         assert write.variable_id == "energy"
-        assert write.expression == "-0.005"
+        assert write.expression == "energy - 0.005"
+        assert write.condition == "agent_mask & action_is_move"
+        assert write.composition == "additive_delta"
+        assert write.phase == "action_costs"
+        assert write.priority == 10
+        assert write.clamp == (0.0, 1.0)
+        assert write.telemetry_label == "movement_energy_cost"
 
-    def test_write_spec_complex_expression(self):
-        """Write spec with complex expression (Phase 2 feature, Phase 1 stores as string)."""
+    def test_write_spec_accepts_explicit_no_condition_or_clamp(self):
+        """Optional condition and clamp are explicit fields, not hidden defaults."""
         from townlet.vfs.schema import WriteSpec
 
         write = WriteSpec(
             variable_id="money",
             expression="money + 10.0",
+            condition=None,
+            composition="overwrite",
+            phase="action_effects",
+            priority=0,
+            clamp=None,
+            telemetry_label="wage_credit",
         )
 
         assert write.expression == "money + 10.0"
-        # Phase 1: No parsing, just store as string
+        assert write.condition is None
+        assert write.clamp is None
+
+    def test_write_spec_requires_explicit_v11_metadata(self):
+        """Old variable_id/expression-only writes fail loudly instead of remaining valid."""
+        from townlet.vfs.schema import WriteSpec
+
+        with pytest.raises(ValidationError) as exc_info:
+            WriteSpec(
+                variable_id="energy",
+                expression="-0.005",
+            )
+
+        missing_fields = {error["loc"][0] for error in exc_info.value.errors() if error["type"] == "missing"}
+        assert missing_fields == {
+            "condition",
+            "composition",
+            "phase",
+            "priority",
+            "clamp",
+            "telemetry_label",
+        }
 
     def test_write_spec_empty_variable_id_rejected(self):
         """Empty variable_id should be rejected."""
@@ -366,6 +405,12 @@ class TestWriteSpec:
             WriteSpec(
                 variable_id="",  # Empty!
                 expression="-0.005",
+                condition=None,
+                composition="additive_delta",
+                phase="action_costs",
+                priority=10,
+                clamp=[0.0, 1.0],
+                telemetry_label="movement_energy_cost",
             )
 
     def test_write_spec_empty_expression_rejected(self):
@@ -376,4 +421,58 @@ class TestWriteSpec:
             WriteSpec(
                 variable_id="energy",
                 expression="",  # Empty!
+                condition=None,
+                composition="additive_delta",
+                phase="action_costs",
+                priority=10,
+                clamp=[0.0, 1.0],
+                telemetry_label="movement_energy_cost",
+            )
+
+    def test_write_spec_rejects_unknown_composition_mode(self):
+        """Composition mode is a closed vocabulary from the VFS transition spec."""
+        from townlet.vfs.schema import WriteSpec
+
+        with pytest.raises(ValidationError):
+            WriteSpec(
+                variable_id="energy",
+                expression="-0.005",
+                condition=None,
+                composition="merge_somehow",
+                phase="action_costs",
+                priority=10,
+                clamp=[0.0, 1.0],
+                telemetry_label="movement_energy_cost",
+            )
+
+    def test_write_spec_rejects_negative_priority(self):
+        """Priority is an explicit non-negative ordering key within a phase."""
+        from townlet.vfs.schema import WriteSpec
+
+        with pytest.raises(ValidationError):
+            WriteSpec(
+                variable_id="energy",
+                expression="-0.005",
+                condition=None,
+                composition="additive_delta",
+                phase="action_costs",
+                priority=-1,
+                clamp=[0.0, 1.0],
+                telemetry_label="movement_energy_cost",
+            )
+
+    def test_write_spec_rejects_inverted_clamp_bounds(self):
+        """Clamp bounds must be ordered low-to-high when present."""
+        from townlet.vfs.schema import WriteSpec
+
+        with pytest.raises(ValidationError):
+            WriteSpec(
+                variable_id="energy",
+                expression="-0.005",
+                condition=None,
+                composition="additive_delta",
+                phase="action_costs",
+                priority=10,
+                clamp=[1.0, 0.0],
+                telemetry_label="movement_energy_cost",
             )

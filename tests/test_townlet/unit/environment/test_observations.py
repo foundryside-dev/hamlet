@@ -488,6 +488,51 @@ class TestEffectObservation:
         assert torch.allclose(effects_vfs, effects_obs)
         assert torch.allclose(effects_vfs, expected_effects)
 
+    def test_shadow_comparator_rejects_divergent_effect_observation(
+        self,
+        cpu_device: torch.device,
+        env_factory,
+        monkeypatch,
+    ):
+        """Shadow comparison fails fast when a migrated VFS observation diverges from its direct source."""
+        env = env_factory(
+            config_dir=Path("configs/test/effects_smoke"),
+            level_name="L0_effects",
+            num_agents=1,
+            device_override=cpu_device,
+        )
+
+        env.reset()
+        assert env.effect_manager is not None
+        env.effect_manager.agent_effects[0] = [
+            ActiveEffect(
+                effect_id="energy_regen",
+                instance_id=1,
+                target_entity_id=0,
+                scope=EffectScope.AGENT,
+                intensity=1.0,
+                duration_total=10,
+                duration_remaining=4,
+                elapsed_ticks=0,
+                spawn_step=0,
+                observable=True,
+                effect_index=5,
+            )
+        ]
+
+        original_sync = env._observation_encoder._sync_effect_observation_to_vfs
+
+        def corrupt_effect_observation_sync() -> None:
+            original_sync()
+            effects_field = env.observation_spec.get_field_by_name("obs_effects")
+            divergent_effects = torch.zeros((1, effects_field.dims), device=cpu_device)
+            env.vfs_registry.set("obs_effects", divergent_effects, writer="engine")
+
+        monkeypatch.setattr(env._observation_encoder, "_sync_effect_observation_to_vfs", corrupt_effect_observation_sync)
+
+        with pytest.raises(ValueError, match="Shadow observation mismatch.*obs_effects"):
+            env._get_observations()
+
 
 class TestObservationUpdates:
     """Test that observations change correctly across environment steps.

@@ -30,14 +30,7 @@ class ObservationEncoder:
         self._sync_affordance_observation_to_vfs()
         self._sync_effect_observation_to_vfs()
         self._sync_temporal_observation_to_vfs()
-
-        def _ensure_observation_field_shape(field_name: str, value: torch.Tensor, dims: int) -> torch.Tensor:
-            if value.dim() == 1:
-                value = value.unsqueeze(1)
-            expected_shape = (env.num_agents, dims)
-            if value.dim() != 2 or tuple(value.shape) != expected_shape:
-                raise ValueError(f"Observation field '{field_name}' produced shape {tuple(value.shape)}, expected {expected_shape}.")
-            return value
+        self._assert_shadow_observation_equivalence()
 
         for field in obs_fields:
             name = field.name
@@ -101,7 +94,7 @@ class ObservationEncoder:
                 else:
                     value = val.unsqueeze(1)
 
-            outputs.append(_ensure_observation_field_shape(name, value, dims))
+            outputs.append(self._ensure_agent_observation_shape(name, value, dims))
 
         observations = torch.cat(outputs, dim=1)
 
@@ -135,6 +128,73 @@ class ObservationEncoder:
             spec=spec,
             batch_size=env.num_agents,
         )
+
+    def _ensure_agent_observation_shape(self, field_name: str, value: torch.Tensor, dims: int) -> torch.Tensor:
+        """Normalize and validate one agent-scoped observation field."""
+        env = self._env
+        if value.dim() == 1:
+            value = value.unsqueeze(1)
+        expected_shape = (env.num_agents, dims)
+        if value.dim() != 2 or tuple(value.shape) != expected_shape:
+            raise ValueError(f"Observation field '{field_name}' produced shape {tuple(value.shape)}, expected {expected_shape}.")
+        return value
+
+    def _assert_shadow_observation_equivalence(self) -> None:
+        """Compare migrated VFS-backed fields with their direct encoders."""
+        migrated_fields = {
+            "obs_position",
+            "obs_meters",
+            "obs_affordance_at_position",
+            "obs_affordances",
+            "obs_effects",
+            "obs_temporal",
+        }
+        for field in self._env.observation_spec.fields:
+            if field.name not in migrated_fields:
+                continue
+
+            hardcoded_value = self._build_shadow_direct_observation_field(field.name, field.dims)
+            hardcoded_value = self._ensure_agent_observation_shape(field.name, hardcoded_value, field.dims)
+            vfs_value = self._build_vfs_agent_observation_field(field.name, field.dims)
+            vfs_value = self._ensure_agent_observation_shape(field.name, vfs_value, field.dims)
+
+            if torch.is_floating_point(hardcoded_value):
+                equivalent = torch.allclose(hardcoded_value, vfs_value, rtol=1e-5, atol=1e-6)
+            elif torch.is_floating_point(vfs_value):
+                equivalent = torch.allclose(
+                    hardcoded_value.to(dtype=torch.float32), vfs_value.to(dtype=torch.float32), rtol=1e-5, atol=1e-6
+                )
+            else:
+                equivalent = torch.equal(hardcoded_value, vfs_value)
+
+            if equivalent:
+                continue
+
+            diff = hardcoded_value.to(dtype=torch.float32) - vfs_value.to(dtype=torch.float32)
+            max_abs_diff = torch.max(torch.abs(diff)).item()
+            raise ValueError(
+                "Shadow observation mismatch for field "
+                f"'{field.name}': hardcoded_shape={tuple(hardcoded_value.shape)}, "
+                f"vfs_shape={tuple(vfs_value.shape)}, max_abs_diff={max_abs_diff:.6g}"
+            )
+
+    def _build_shadow_direct_observation_field(self, field_name: str, dims: int) -> torch.Tensor:
+        """Build the direct observation value used for shadow migration checks."""
+        env = self._env
+        if field_name == "obs_position":
+            position = self._encode_position_observation()
+            if position is None:
+                raise ValueError("Observation field 'obs_position' is present but the substrate does not expose position features.")
+            return position
+        if field_name == "obs_meters":
+            return env.meters.to(device=env.device, dtype=torch.float32)
+        if field_name in {"obs_affordance_at_position", "obs_affordances"}:
+            return self._build_affordance_encoding(dims)
+        if field_name == "obs_effects":
+            return env._build_effects_observation(dims).to(device=env.device, dtype=torch.float32)
+        if field_name == "obs_temporal":
+            return self._build_temporal_observation(dims)
+        raise ValueError(f"Observation field '{field_name}' is not registered for shadow comparison.")
 
     def _sync_position_observation_to_vfs(self) -> None:
         """Publish the current substrate position observation into VFS state."""

@@ -6,19 +6,23 @@ from pathlib import Path
 import yaml
 
 from tests.test_townlet.helpers.config_builder import PRIMARY_LEVEL_NAME, prepare_config_dir
+from townlet.environment.action_config import ActionConfig
 from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.dto import RuntimeAction
+from townlet.vfs.action_writes import compile_action_writes_with_phase_graph
 from townlet.vfs.schema import NormalizationSpec, ObservationField, VariableDef
 from townlet.vfs.schema_hashes import (
-    EMPTY_TRANSITION_GRAPH_HASH,
     canonical_action_schema,
     canonical_observation_schema,
+    canonical_transition_graph_schema,
     canonical_variable_schema,
     compute_action_schema_hash,
     compute_observation_schema_hash,
+    compute_transition_graph_hash,
     compute_variable_schema_hash,
     compute_vfs_hash,
 )
+from townlet.vfs.transition_graph import TransitionPhaseGraph
 
 
 def test_canonical_variable_schema_uses_sorted_contract_fields() -> None:
@@ -294,17 +298,87 @@ def test_compiler_surfaces_action_schema_hash(tmp_path: Path) -> None:
     assert compiled.to_dict()["action_schema_hash"] == compiled.action_schema_hash
 
 
-def test_vfs_hash_combines_component_hashes_and_empty_transition_graph() -> None:
-    """The VFS identity should bind all component hashes, including the empty transition graph."""
+def test_transition_graph_hash_binds_phases_and_compiled_rule_fields() -> None:
+    """Transition hashes should bind scheduler order and compiled action-write semantics."""
+    phase_graph = TransitionPhaseGraph(("phase_a", "phase_b"))
+
+    def make_action(*, expression: str, composition: str) -> ActionConfig:
+        return ActionConfig(
+            id=3,
+            name="REST",
+            type="passive",
+            costs={},
+            effects={},
+            delta=None,
+            teleport_to=None,
+            enabled=True,
+            description=None,
+            icon=None,
+            source="custom",
+            source_affordance=None,
+            reads=["energy"],
+            writes=[
+                {
+                    "variable_id": "energy",
+                    "expression": expression,
+                    "condition": "energy < 0.8",
+                    "composition": composition,
+                    "phase": "phase_b",
+                    "priority": 5,
+                    "clamp": [0.0, 1.0],
+                    "telemetry_label": "rest_energy_gain",
+                }
+            ],
+        )
+
+    action = make_action(expression="energy + 0.25", composition="additive_delta")
+    program = compile_action_writes_with_phase_graph([action], phase_graph)
+
+    assert canonical_transition_graph_schema(phase_graph, program) == {
+        "phase_graph": {
+            "phases": ["phase_a", "phase_b"],
+            "edges": [{"before": "phase_a", "after": "phase_b"}],
+        },
+        "rules": [
+            {
+                "action_id": 3,
+                "action_name": "REST",
+                "variable_id": "energy",
+                "expression": "energy + 0.25",
+                "condition": "energy < 0.8",
+                "composition": "additive_delta",
+                "phase": "phase_b",
+                "priority": 5,
+                "clamp": [0.0, 1.0],
+                "telemetry_label": "rest_energy_gain",
+            }
+        ],
+    }
+
+    baseline = compute_transition_graph_hash(phase_graph, program)
+    reordered_graph = TransitionPhaseGraph(("phase_b", "phase_a"))
+    changed_expression = make_action(expression="energy + 0.5", composition="additive_delta")
+    changed_composition = make_action(expression="energy + 0.25", composition="overwrite")
+
+    assert baseline != ""
+    assert baseline != compute_transition_graph_hash(reordered_graph, compile_action_writes_with_phase_graph([action], reordered_graph))
+    assert baseline != compute_transition_graph_hash(phase_graph, compile_action_writes_with_phase_graph([changed_expression], phase_graph))
+    assert baseline != compute_transition_graph_hash(
+        phase_graph, compile_action_writes_with_phase_graph([changed_composition], phase_graph)
+    )
+
+
+def test_vfs_hash_combines_component_hashes_and_transition_graph() -> None:
+    """The VFS identity should bind all component hashes, including the transition graph."""
     variable_hash = "a" * 64
     observation_hash = "b" * 64
     action_hash = "c" * 64
-    transition_hash = EMPTY_TRANSITION_GRAPH_HASH
+    transition_hash = "d" * 64
 
     expected = hashlib.sha256((variable_hash + observation_hash + action_hash + transition_hash).encode("utf-8")).hexdigest()
 
     assert compute_vfs_hash(variable_hash, observation_hash, action_hash, transition_hash) == expected
-    assert compute_vfs_hash("d" * 64, observation_hash, action_hash, transition_hash) != expected
+    assert compute_vfs_hash("e" * 64, observation_hash, action_hash, transition_hash) != expected
     assert compute_vfs_hash(variable_hash, "e" * 64, action_hash, transition_hash) != expected
     assert compute_vfs_hash(variable_hash, observation_hash, "f" * 64, transition_hash) != expected
     assert compute_vfs_hash(variable_hash, observation_hash, action_hash, "g" * 64) != expected
@@ -319,10 +393,14 @@ def test_compiler_surfaces_vfs_hash(tmp_path: Path) -> None:
         compiled.variable_schema_hash,
         compiled.observation_schema_hash,
         compiled.action_schema_hash,
-        EMPTY_TRANSITION_GRAPH_HASH,
+        compiled.transition_graph_hash,
     )
 
-    assert compiled.transition_graph_hash == EMPTY_TRANSITION_GRAPH_HASH
+    assert compiled.transition_graph_hash != ""
+    assert compiled.transition_graph_hash == compute_transition_graph_hash(
+        TransitionPhaseGraph.default(),
+        compile_action_writes_with_phase_graph(compiled.runtime_action_space.actions, TransitionPhaseGraph.default()),
+    )
     assert compiled.vfs_hash == expected
     assert compiled.all_levels is not None
     assert compiled.all_levels[PRIMARY_LEVEL_NAME].transition_graph_hash == compiled.transition_graph_hash

@@ -4,15 +4,28 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Protocol
 
 import torch
 
-from townlet.environment.action_config import ActionConfig
+from townlet.vfs.schema import WriteSpec
 from townlet.vfs.transition_graph import TransitionPhaseGraph
 from townlet.world.expression import ASTNode, ExpressionParser
 from townlet.world.expression.context import ExecutionContext
 from townlet.world.expression.evaluator import Evaluator
+
+
+class ActionWriteSource(Protocol):
+    """Minimal action shape needed by the VFS action-write compiler."""
+
+    @property
+    def id(self) -> int: ...
+
+    @property
+    def name(self) -> str: ...
+
+    @property
+    def writes(self) -> Sequence[WriteSpec | Mapping[str, Any]]: ...
 
 
 @dataclass(frozen=True)
@@ -222,13 +235,13 @@ class CompiledActionWriteProgram:
         return broadcast_mask
 
 
-def compile_action_writes(actions: Sequence[ActionConfig]) -> CompiledActionWriteProgram:
+def compile_action_writes(actions: Sequence[ActionWriteSource]) -> CompiledActionWriteProgram:
     """Compile ActionConfig writes into parsed records sorted by phase, priority, and action id."""
     return compile_action_writes_with_phase_graph(actions, TransitionPhaseGraph.default())
 
 
 def compile_action_writes_with_phase_graph(
-    actions: Sequence[ActionConfig],
+    actions: Sequence[ActionWriteSource],
     phase_graph: TransitionPhaseGraph,
 ) -> CompiledActionWriteProgram:
     """Compile ActionConfig writes using an explicit transition phase graph."""
@@ -236,7 +249,8 @@ def compile_action_writes_with_phase_graph(
     compiled_writes: list[CompiledActionWrite] = []
 
     for action in actions:
-        for write in action.writes:
+        for raw_write in action.writes:
+            write = _coerce_write_spec(raw_write, action.name)
             compiled_writes.append(
                 CompiledActionWrite(
                     action_id=action.id,
@@ -262,3 +276,11 @@ def compile_action_writes_with_phase_graph(
             )
         )
     )
+
+
+def _coerce_write_spec(write: WriteSpec | Mapping[str, Any], action_name: str) -> WriteSpec:
+    if isinstance(write, WriteSpec):
+        return write
+    if isinstance(write, Mapping):
+        return WriteSpec.model_validate(dict(write))
+    raise TypeError(f"Action '{action_name}' write entry must be a WriteSpec or mapping")

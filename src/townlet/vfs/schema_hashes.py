@@ -8,19 +8,19 @@ from collections.abc import Iterable, Mapping
 from typing import Any
 
 from townlet.vfs.schema import NormalizationSpec, ObservationField, VariableDef, VariableScope
+from townlet.vfs.transition_graph import TransitionPhaseGraph
 
 __all__ = [
-    "EMPTY_TRANSITION_GRAPH_HASH",
     "canonical_action_schema",
     "canonical_observation_schema",
+    "canonical_transition_graph_schema",
     "canonical_variable_schema",
     "compute_action_schema_hash",
     "compute_observation_schema_hash",
+    "compute_transition_graph_hash",
     "compute_variable_schema_hash",
     "compute_vfs_hash",
 ]
-
-EMPTY_TRANSITION_GRAPH_HASH = ""
 
 
 def canonical_variable_schema(variables: Iterable[VariableDef]) -> list[dict[str, Any]]:
@@ -51,6 +51,19 @@ def canonical_action_schema(actions: Iterable[Any]) -> list[dict[str, Any]]:
 def compute_action_schema_hash(actions: Iterable[Any]) -> str:
     """Return the SHA-256 digest of the canonical action-space payload."""
     return _hash_payload(canonical_action_schema(actions))
+
+
+def canonical_transition_graph_schema(phase_graph: TransitionPhaseGraph, action_write_program: Any) -> dict[str, Any]:
+    """Return the transition-graph payload used for world-physics provenance."""
+    return {
+        "phase_graph": phase_graph.to_canonical_payload(),
+        "rules": [_canonical_transition_rule(write) for write in action_write_program.writes],
+    }
+
+
+def compute_transition_graph_hash(phase_graph: TransitionPhaseGraph, action_write_program: Any) -> str:
+    """Return the SHA-256 digest of the compiled transition graph and rules."""
+    return _hash_payload(canonical_transition_graph_schema(phase_graph, action_write_program))
 
 
 def compute_vfs_hash(
@@ -104,6 +117,21 @@ def _canonical_action_entry(action: Any) -> dict[str, Any]:
         "source_affordance": action.source_affordance,
         "reads": sorted(action.reads),
         "writes": [_plain_payload(write) for write in action.writes],
+    }
+
+
+def _canonical_transition_rule(write: Any) -> dict[str, Any]:
+    return {
+        "action_id": write.action_id,
+        "action_name": write.action_name,
+        "variable_id": write.variable_id,
+        "expression": write.expression,
+        "condition": write.condition,
+        "composition": write.composition,
+        "phase": write.phase,
+        "priority": write.priority,
+        "clamp": list(write.clamp) if write.clamp is not None else None,
+        "telemetry_label": write.telemetry_label,
     }
 
 

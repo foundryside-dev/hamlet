@@ -25,76 +25,11 @@ class ObservationEncoder:
         env = self._env
         obs_fields = env.observation_spec.fields
         outputs: list[torch.Tensor] = []
-        self._sync_position_observation_to_vfs()
-        self._sync_meter_observation_to_vfs()
-        self._sync_affordance_observation_to_vfs()
-        self._sync_effect_observation_to_vfs()
-        self._sync_temporal_observation_to_vfs()
-        self._assert_shadow_observation_equivalence()
+        self._sync_observation_primitives_to_vfs()
 
         for field in obs_fields:
-            name = field.name
-            dims = field.dims
-
-            if name == "obs_grid_encoding":
-                if env.partial_observability:
-                    value = torch.zeros((env.num_agents, dims), device=env.device)
-                else:
-                    if hasattr(env.substrate, "_encode_full_grid"):
-                        grid_encoding = env.substrate._encode_full_grid(env.positions, env.affordances)
-                    else:
-                        grid_encoding = env.substrate.encode_observation(env.positions, env.affordances)
-                    value = grid_encoding
-            elif name == "obs_local_window":
-                if not env.partial_observability:
-                    value = torch.zeros((env.num_agents, dims), device=env.device)
-                else:
-                    local_window = env.substrate.encode_partial_observation(
-                        env.positions,
-                        env.affordances,
-                        vision_range=env.vision_radius,
-                    )
-                    value = local_window
-            elif name == "obs_position":
-                value = self._build_vfs_agent_observation_field(name, dims)
-            elif name == "obs_velocity":
-                vel = env._encode_velocity_observation()
-                if vel is None:
-                    value = torch.zeros((env.num_agents, dims), device=env.device)
-                else:
-                    value = vel
-            elif name == "obs_meters":
-                value = self._build_vfs_agent_observation_field(name, dims)
-            elif name in {"obs_affordance_at_position", "obs_affordances"}:
-                value = self._build_vfs_agent_observation_field(name, dims)
-            elif name == "obs_effects":
-                value = self._build_vfs_agent_observation_field(name, dims)
-            elif name == "obs_temporal":
-                value = self._build_vfs_agent_observation_field(name, dims)
-            elif name == "obs_vfs":
-                if env.vfs_observation_spec is not None:
-                    agent_item_inventory = None
-                    if env.item_inventory is not None:
-                        agent_item_inventory = env.item_inventory.slots
-
-                    value = build_vfs_observation(
-                        registry=env.vfs_registry,
-                        spec=env.vfs_observation_spec,
-                        batch_size=env.num_agents,
-                        agent_item_inventory=agent_item_inventory,
-                    )
-                else:
-                    value = torch.zeros((env.num_agents, dims), device=env.device)
-            else:
-                if name not in env.vfs_registry._definitions:
-                    raise ValueError(f"Observation field '{name}' not found in VFS variables (no defaults allowed).")
-                val = env.vfs_registry.get(name, reader="engine")
-                if val.dim() > 1:
-                    value = val
-                else:
-                    value = val.unsqueeze(1)
-
-            outputs.append(self._ensure_agent_observation_shape(name, value, dims))
+            value = self._build_observation_field_from_vfs(field.name, field.dims)
+            outputs.append(self._ensure_agent_observation_shape(field.name, value, field.dims))
 
         observations = torch.cat(outputs, dim=1)
 
@@ -110,17 +45,45 @@ class ObservationEncoder:
 
         return observations
 
+    def _build_observation_field_from_vfs(self, field_name: str, dims: int) -> torch.Tensor:
+        """Build one compiled observation field from VFS state."""
+        env = self._env
+        if field_name != "obs_vfs":
+            return self._build_vfs_agent_observation_field(field_name, dims)
+
+        if env.vfs_observation_spec is None:
+            raise ValueError("Observation field 'obs_vfs' is present but no compiled VFS observation spec exists.")
+
+        agent_item_inventory = None
+        if env.item_inventory is not None:
+            agent_item_inventory = env.item_inventory.slots
+
+        return build_vfs_observation(
+            registry=env.vfs_registry,
+            spec=env.vfs_observation_spec,
+            batch_size=env.num_agents,
+            agent_item_inventory=agent_item_inventory,
+        )
+
     def _build_vfs_agent_observation_field(self, field_name: str, dims: int) -> torch.Tensor:
         """Build a single agent-scoped observation field from VFS registry state."""
         env = self._env
-        if field_name not in env.vfs_registry.variables:
+        vfs_field = self._compiled_vfs_observation_field(field_name)
+        source_variable = vfs_field.source_variable
+        if source_variable not in env.vfs_registry.variables:
             raise ValueError(f"Observation field '{field_name}' is not backed by a VFS variable.")
+
+        shape_dims = 1
+        for shape_dim in vfs_field.shape:
+            shape_dims *= shape_dim
+        if shape_dims != dims:
+            raise ValueError(f"Observation field '{field_name}' VFS shape {vfs_field.shape} does not match {dims} dims.")
 
         spec = VFSObservationSpec(
             global_vfs_dim=0,
             agent_vfs_dim=dims,
             item_vfs_dim=0,
-            agent_vars=(field_name,),
+            agent_vars=(source_variable,),
             agent_active_mask=tuple(True for _ in range(dims)),
         )
         return build_vfs_observation(
@@ -128,6 +91,13 @@ class ObservationEncoder:
             spec=spec,
             batch_size=env.num_agents,
         )
+
+    def _compiled_vfs_observation_field(self, field_name: str):
+        """Return the compiler-emitted VFS observation field for an observation id."""
+        for field in self._env.universe.vfs_observation_fields:
+            if field.id == field_name:
+                return field
+        raise ValueError(f"Observation field '{field_name}' is missing from compiled VFS observation fields.")
 
     def _ensure_agent_observation_shape(self, field_name: str, value: torch.Tensor, dims: int) -> torch.Tensor:
         """Normalize and validate one agent-scoped observation field."""
@@ -139,62 +109,69 @@ class ObservationEncoder:
             raise ValueError(f"Observation field '{field_name}' produced shape {tuple(value.shape)}, expected {expected_shape}.")
         return value
 
-    def _assert_shadow_observation_equivalence(self) -> None:
-        """Compare migrated VFS-backed fields with their direct encoders."""
-        migrated_fields = {
-            "obs_position",
-            "obs_meters",
-            "obs_affordance_at_position",
-            "obs_affordances",
-            "obs_effects",
-            "obs_temporal",
-        }
-        for field in self._env.observation_spec.fields:
-            if field.name not in migrated_fields:
-                continue
+    def _sync_observation_primitives_to_vfs(self) -> None:
+        """Publish system observation primitives into VFS state before assembly."""
+        self._sync_grid_observation_to_vfs()
+        self._sync_local_window_observation_to_vfs()
+        self._sync_position_observation_to_vfs()
+        self._sync_velocity_observation_to_vfs()
+        self._sync_meter_observation_to_vfs()
+        self._sync_affordance_observation_to_vfs()
+        self._sync_effect_observation_to_vfs()
+        self._sync_temporal_observation_to_vfs()
 
-            hardcoded_value = self._build_shadow_direct_observation_field(field.name, field.dims)
-            hardcoded_value = self._ensure_agent_observation_shape(field.name, hardcoded_value, field.dims)
-            vfs_value = self._build_vfs_agent_observation_field(field.name, field.dims)
-            vfs_value = self._ensure_agent_observation_shape(field.name, vfs_value, field.dims)
+    def _sync_grid_observation_to_vfs(self) -> None:
+        """Publish current global grid observation into VFS state."""
+        env = self._env
+        grid_field = next((field for field in env.observation_spec.fields if field.name == "obs_grid_encoding"), None)
+        if grid_field is None:
+            return
+        if "obs_grid_encoding" not in env.vfs_registry.variables:
+            raise ValueError("Observation field 'obs_grid_encoding' is present but no matching VFS variable exists.")
 
-            if torch.is_floating_point(hardcoded_value):
-                equivalent = torch.allclose(hardcoded_value, vfs_value, rtol=1e-5, atol=1e-6)
-            elif torch.is_floating_point(vfs_value):
-                equivalent = torch.allclose(
-                    hardcoded_value.to(dtype=torch.float32), vfs_value.to(dtype=torch.float32), rtol=1e-5, atol=1e-6
-                )
-            else:
-                equivalent = torch.equal(hardcoded_value, vfs_value)
+        if env.partial_observability:
+            grid_encoding = torch.zeros((env.num_agents, grid_field.dims), device=env.device)
+        elif hasattr(env.substrate, "_encode_full_grid"):
+            grid_encoding = env.substrate._encode_full_grid(env.positions, env.affordances)
+        else:
+            grid_encoding = env.substrate.encode_observation(env.positions, env.affordances)
 
-            if equivalent:
-                continue
+        env.vfs_registry.set("obs_grid_encoding", grid_encoding.to(device=env.device, dtype=torch.float32), writer="engine")
 
-            diff = hardcoded_value.to(dtype=torch.float32) - vfs_value.to(dtype=torch.float32)
-            max_abs_diff = torch.max(torch.abs(diff)).item()
-            raise ValueError(
-                "Shadow observation mismatch for field "
-                f"'{field.name}': hardcoded_shape={tuple(hardcoded_value.shape)}, "
-                f"vfs_shape={tuple(vfs_value.shape)}, max_abs_diff={max_abs_diff:.6g}"
+    def _sync_local_window_observation_to_vfs(self) -> None:
+        """Publish current local-window observation into VFS state."""
+        env = self._env
+        local_field = next((field for field in env.observation_spec.fields if field.name == "obs_local_window"), None)
+        if local_field is None:
+            return
+        if "obs_local_window" not in env.vfs_registry.variables:
+            raise ValueError("Observation field 'obs_local_window' is present but no matching VFS variable exists.")
+
+        if not env.partial_observability:
+            local_window = torch.zeros((env.num_agents, local_field.dims), device=env.device)
+        else:
+            local_window = env.substrate.encode_partial_observation(
+                env.positions,
+                env.affordances,
+                vision_range=env.vision_radius,
             )
 
-    def _build_shadow_direct_observation_field(self, field_name: str, dims: int) -> torch.Tensor:
-        """Build the direct observation value used for shadow migration checks."""
+        env.vfs_registry.set("obs_local_window", local_window.to(device=env.device, dtype=torch.float32), writer="engine")
+
+    def _sync_velocity_observation_to_vfs(self) -> None:
+        """Publish current velocity observation into VFS state."""
         env = self._env
-        if field_name == "obs_position":
-            position = self._encode_position_observation()
-            if position is None:
-                raise ValueError("Observation field 'obs_position' is present but the substrate does not expose position features.")
-            return position
-        if field_name == "obs_meters":
-            return env.meters.to(device=env.device, dtype=torch.float32)
-        if field_name in {"obs_affordance_at_position", "obs_affordances"}:
-            return self._build_affordance_encoding(dims)
-        if field_name == "obs_effects":
-            return env._build_effects_observation(dims).to(device=env.device, dtype=torch.float32)
-        if field_name == "obs_temporal":
-            return self._build_temporal_observation(dims)
-        raise ValueError(f"Observation field '{field_name}' is not registered for shadow comparison.")
+        velocity_field = next((field for field in env.observation_spec.fields if field.name == "obs_velocity"), None)
+        if velocity_field is None:
+            return
+        if "obs_velocity" not in env.vfs_registry.variables:
+            raise ValueError("Observation field 'obs_velocity' is present but no matching VFS variable exists.")
+
+        velocity = env._encode_velocity_observation()
+        if velocity is None:
+            velocity = torch.zeros((env.num_agents, velocity_field.dims), device=env.device)
+
+        env.vfs_registry.set("obs_velocity", velocity.to(device=env.device, dtype=torch.float32), writer="engine")
 
     def _sync_position_observation_to_vfs(self) -> None:
         """Publish the current substrate position observation into VFS state."""

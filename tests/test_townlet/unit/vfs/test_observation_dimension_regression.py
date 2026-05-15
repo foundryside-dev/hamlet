@@ -30,7 +30,7 @@ import torch
 from townlet.universe.compiler import UniverseCompiler
 
 ITEMS_SMOKE_LEVEL = "L0_smoke"
-DEFAULT_CURRICULUM_SHADOW_LEVELS = (
+DEFAULT_CURRICULUM_VFS_LEVELS = (
     "L0_0_minimal",
     "L0_5_dual_resource",
     "L1_full_observability",
@@ -135,9 +135,9 @@ def test_items_smoke_obs_dim_after_vfs_integration():
     assert universe.metadata.observation_dim == expected_total
 
 
-@pytest.mark.parametrize("level_name", DEFAULT_CURRICULUM_SHADOW_LEVELS)
-def test_default_curriculum_shadow_observation_equivalence(level_name: str):
-    """Default curriculum levels must pass shadow comparison during the dimension sweep."""
+@pytest.mark.parametrize("level_name", DEFAULT_CURRICULUM_VFS_LEVELS)
+def test_default_curriculum_vfs_observation_generation(level_name: str):
+    """Default curriculum levels must generate VFS-backed observations during the dimension sweep."""
     config_dir = Path("configs/default_curriculum")
     compiler = UniverseCompiler()
     universe = compiler.compile(config_dir, primary_level=level_name, use_cache=False)

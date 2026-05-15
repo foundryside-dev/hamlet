@@ -69,6 +69,55 @@ class TestFullObservability:
         obs = basic_env.reset()
         assert obs.shape[1] == basic_env.observation_dim
 
+    def test_obs_vfs_field_requires_compiled_vfs_observation_spec(self, cpu_device: torch.device, env_factory):
+        """obs_vfs fields fail loudly when the compiled VFS observation spec is missing."""
+        env = env_factory(
+            config_dir=Path("configs/test/items_smoke"),
+            level_name="L0_smoke",
+            num_agents=1,
+            device_override=cpu_device,
+        )
+
+        env.reset()
+        assert any(field.name == "obs_vfs" for field in env.observation_spec.fields)
+
+        env.vfs_observation_spec = None
+
+        with pytest.raises(ValueError, match="obs_vfs.*compiled VFS observation spec"):
+            env._get_observations()
+
+    @pytest.mark.parametrize(
+        "env_fixture_name,expected_reads",
+        [
+            ("basic_env", {"obs_grid_encoding", "obs_velocity"}),
+            ("pomdp_env", {"obs_local_window", "obs_velocity"}),
+        ],
+    )
+    def test_spatial_observation_fields_are_sourced_from_vfs_registry(
+        self,
+        request,
+        env_fixture_name: str,
+        expected_reads: set[str],
+        monkeypatch,
+    ):
+        """Spatial primitives are assembled from VFS registry state, not direct concatenation branches."""
+        env = request.getfixturevalue(env_fixture_name)
+        env.reset()
+
+        observed_reads: set[str] = set()
+        original_get_agent = env.vfs_registry.get_agent
+
+        def tracking_get_agent(variable_id: str) -> torch.Tensor:
+            if variable_id in expected_reads:
+                observed_reads.add(variable_id)
+            return original_get_agent(variable_id)
+
+        monkeypatch.setattr(env.vfs_registry, "get_agent", tracking_get_agent)
+
+        env._get_observations()
+
+        assert observed_reads == expected_reads
+
     # REMOVED: test_grid_shows_agent_position - tested obsolete one-hot grid encoding
     # REMOVED: test_grid_shows_affordances_at_positions - tested obsolete one-hot grid encoding
     # REMOVED: test_agent_on_affordance_marked_with_value_2 - tested obsolete one-hot grid encoding
@@ -487,51 +536,6 @@ class TestEffectObservation:
         expected_effects[0, 2] = 1.0
         assert torch.allclose(effects_vfs, effects_obs)
         assert torch.allclose(effects_vfs, expected_effects)
-
-    def test_shadow_comparator_rejects_divergent_effect_observation(
-        self,
-        cpu_device: torch.device,
-        env_factory,
-        monkeypatch,
-    ):
-        """Shadow comparison fails fast when a migrated VFS observation diverges from its direct source."""
-        env = env_factory(
-            config_dir=Path("configs/test/effects_smoke"),
-            level_name="L0_effects",
-            num_agents=1,
-            device_override=cpu_device,
-        )
-
-        env.reset()
-        assert env.effect_manager is not None
-        env.effect_manager.agent_effects[0] = [
-            ActiveEffect(
-                effect_id="energy_regen",
-                instance_id=1,
-                target_entity_id=0,
-                scope=EffectScope.AGENT,
-                intensity=1.0,
-                duration_total=10,
-                duration_remaining=4,
-                elapsed_ticks=0,
-                spawn_step=0,
-                observable=True,
-                effect_index=5,
-            )
-        ]
-
-        original_sync = env._observation_encoder._sync_effect_observation_to_vfs
-
-        def corrupt_effect_observation_sync() -> None:
-            original_sync()
-            effects_field = env.observation_spec.get_field_by_name("obs_effects")
-            divergent_effects = torch.zeros((1, effects_field.dims), device=cpu_device)
-            env.vfs_registry.set("obs_effects", divergent_effects, writer="engine")
-
-        monkeypatch.setattr(env._observation_encoder, "_sync_effect_observation_to_vfs", corrupt_effect_observation_sync)
-
-        with pytest.raises(ValueError, match="Shadow observation mismatch.*obs_effects"):
-            env._get_observations()
 
 
 class TestObservationUpdates:

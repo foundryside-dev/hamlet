@@ -39,6 +39,7 @@ from townlet.vfs.vtc import (
     compile_vtc_interaction_progress_with_phase_graph,
     compile_vtc_modulations_with_phase_graph,
     compile_vtc_passive_depletions_with_phase_graph,
+    compile_vtc_reward_components_with_phase_graph,
     compile_vtc_terminal_conditions_with_phase_graph,
     compile_vtc_threshold_cascades_with_phase_graph,
 )
@@ -393,6 +394,7 @@ class UniverseCompiler:
             transition_passive_depletions = compile_vtc_passive_depletions_with_phase_graph(level.bars.meters, transition_phase_graph)
             transition_modulations = compile_vtc_modulations_with_phase_graph(level.affordances.modulations, transition_phase_graph)
             transition_threshold_cascades = compile_vtc_threshold_cascades_with_phase_graph(level.bars.cascades, transition_phase_graph)
+            transition_reward_components = compile_vtc_reward_components_with_phase_graph(level.drive, transition_phase_graph)
             transition_graph_hash = compute_transition_graph_hash(
                 transition_phase_graph,
                 transition_action_writes,
@@ -402,6 +404,7 @@ class UniverseCompiler:
                 threshold_cascade_program=transition_threshold_cascades,
                 modulation_program=transition_modulations,
                 passive_depletion_program=transition_passive_depletions,
+                reward_component_program=transition_reward_components,
             )
             vfs_hash = compute_vfs_hash(variable_schema_hash, observation_schema_hash, action_schema_hash, transition_graph_hash)
 

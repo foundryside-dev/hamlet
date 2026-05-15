@@ -63,6 +63,7 @@ def canonical_transition_graph_schema(
     threshold_cascade_program: Any | None = None,
     modulation_program: Any | None = None,
     passive_depletion_program: Any | None = None,
+    reward_component_program: Any | None = None,
 ) -> dict[str, Any]:
     """Return the transition-graph payload used for world-physics provenance."""
     rules = [_canonical_transition_rule(write) for write in action_write_program.writes]
@@ -79,6 +80,8 @@ def canonical_transition_graph_schema(
         rules.extend(_canonical_transition_rule(rule) for rule in modulation_program.rules)
     if threshold_cascade_program is not None:
         rules.extend(_canonical_transition_rule(rule) for rule in threshold_cascade_program.rules)
+    if reward_component_program is not None:
+        rules.extend(_canonical_transition_rule(rule) for rule in reward_component_program.rules)
     return {
         "phase_graph": phase_graph.to_canonical_payload(),
         "rules": rules,
@@ -95,6 +98,7 @@ def compute_transition_graph_hash(
     threshold_cascade_program: Any | None = None,
     modulation_program: Any | None = None,
     passive_depletion_program: Any | None = None,
+    reward_component_program: Any | None = None,
 ) -> str:
     """Return the SHA-256 digest of the compiled transition graph and rules."""
     return _hash_payload(
@@ -107,6 +111,7 @@ def compute_transition_graph_hash(
             threshold_cascade_program=threshold_cascade_program,
             modulation_program=modulation_program,
             passive_depletion_program=passive_depletion_program,
+            reward_component_program=reward_component_program,
         )
     )
 
@@ -188,6 +193,18 @@ def _canonical_transition_rule(write: Any) -> dict[str, Any]:
             entry["operator"] = write.operator
         if hasattr(write, "threshold"):
             entry["threshold"] = write.threshold
+        if hasattr(write, "reads"):
+            entry["reads"] = list(write.reads)
+        if hasattr(write, "component"):
+            entry["component"] = write.component
+        if hasattr(write, "source_kind"):
+            entry["source_kind"] = write.source_kind
+        if hasattr(write, "strategy"):
+            entry["strategy"] = write.strategy
+        if hasattr(write, "shaping_type"):
+            entry["shaping_type"] = write.shaping_type
+        if hasattr(write, "parameters"):
+            entry["parameters"] = _plain_payload(write.parameters)
         return entry
     return {
         "action_id": write.action_id,

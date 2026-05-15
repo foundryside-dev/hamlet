@@ -36,6 +36,7 @@ from townlet.vfs.vtc import (
     VTCInteractionProgressProgram,
     VTCModulationProgram,
     VTCPassiveDepletionProgram,
+    VTCRewardProgram,
     VTCTerminalConditionProgram,
     VTCThresholdCascadeProgram,
     compile_vtc_action_writes,
@@ -43,6 +44,7 @@ from townlet.vfs.vtc import (
     compile_vtc_interaction_progress,
     compile_vtc_modulations,
     compile_vtc_passive_depletions,
+    compile_vtc_reward_components,
     compile_vtc_terminal_conditions,
     compile_vtc_threshold_cascades,
 )
@@ -412,6 +414,7 @@ class VectorizedHamletEnv:
         self.vtc_passive_depletion_program: VTCPassiveDepletionProgram = compile_vtc_passive_depletions(self.bars_config.meters)
         self.vtc_modulation_program: VTCModulationProgram = compile_vtc_modulations(level.affordances.modulations)
         self.vtc_threshold_cascade_program = compile_vtc_threshold_cascades(self.bars_config.cascades)
+        self.vtc_reward_program: VTCRewardProgram = compile_vtc_reward_components(level.drive)
 
         # State tensors (initialized in reset)
         self.positions = torch.zeros(

@@ -106,6 +106,22 @@ class VTCTerminalConditionSource(Protocol):
     def bounds(self) -> Any: ...
 
 
+class VTCRewardConfigSource(Protocol):
+    """Minimal drive shape needed by the VTC reward-component compiler."""
+
+    @property
+    def modifiers(self) -> Mapping[str, Any]: ...
+
+    @property
+    def extrinsic(self) -> Any: ...
+
+    @property
+    def intrinsic(self) -> Any: ...
+
+    @property
+    def shaping(self) -> Sequence[Any]: ...
+
+
 @dataclass(frozen=True)
 class CompiledVTCActionWrite:
     """A parsed VTC action write with the metadata needed for masked execution."""
@@ -264,6 +280,31 @@ class CompiledVTCTerminalCondition:
     telemetry_label: str
     operator: str
     threshold: float
+
+
+@dataclass(frozen=True)
+class CompiledVTCRewardComponent:
+    """A declarative VTC reward-phase component rule backed by DAC execution."""
+
+    rule_id: str
+    kind: str
+    source_variable_id: str
+    variable_id: str
+    expression: str
+    expression_ast: ASTNode | None
+    condition: str | None
+    condition_ast: ASTNode | None
+    composition: str
+    phase: str
+    priority: int
+    clamp: tuple[float, float] | None
+    telemetry_label: str
+    reads: tuple[str, ...]
+    component: str
+    source_kind: str
+    strategy: str | None
+    shaping_type: str | None
+    parameters: dict[str, Any]
 
 
 @dataclass(frozen=True)
@@ -1184,6 +1225,212 @@ class VTCTerminalConditionProgram:
         return value
 
 
+@dataclass(frozen=True)
+class VTCRewardProgram:
+    """Executable VTC reward-phase contract that delegates math to a DAC backend."""
+
+    rules: tuple[CompiledVTCRewardComponent, ...]
+    expected_components: tuple[str, ...] = ("extrinsic", "intrinsic", "intrinsic_raw", "shaping")
+
+    def apply(
+        self,
+        *,
+        reward_backend: Any,
+        step_counts: torch.Tensor,
+        dones: torch.Tensor,
+        meters: torch.Tensor,
+        intrinsic_raw: torch.Tensor,
+        reward_context: Mapping[str, Any],
+    ) -> tuple[torch.Tensor, torch.Tensor, dict[str, torch.Tensor]]:
+        """Run the reward phase through the DAC backend and validate declared component outputs."""
+        total_rewards, intrinsic_weights, components = reward_backend.calculate_rewards(
+            step_counts=step_counts,
+            dones=dones,
+            meters=meters,
+            intrinsic_raw=intrinsic_raw,
+            **dict(reward_context),
+        )
+        self._validate_tensor("total_rewards", total_rewards, dones)
+        self._validate_tensor("intrinsic_weights", intrinsic_weights, dones)
+        self._validate_components(components, dones)
+        return total_rewards, intrinsic_weights, components
+
+    @staticmethod
+    def _validate_tensor(name: str, value: Any, dones: torch.Tensor) -> None:
+        if not isinstance(value, torch.Tensor):
+            raise TypeError(f"VTC reward program expected {name} to be a tensor")
+        if value.shape != dones.shape:
+            raise ValueError(f"VTC reward program expected {name} shape {tuple(dones.shape)}, got {tuple(value.shape)}")
+
+    def _validate_components(self, components: Any, dones: torch.Tensor) -> None:
+        if not isinstance(components, dict):
+            raise TypeError("VTC reward program expected components to be a dict")
+
+        missing = sorted(component for component in self.expected_components if component not in components)
+        if missing:
+            raise KeyError(f"VTC reward program missing declared reward components: {missing}")
+
+        for name, value in components.items():
+            if not isinstance(value, torch.Tensor):
+                raise TypeError(f"VTC reward component '{name}' resolved to non-tensor value")
+            if value.shape != dones.shape:
+                raise ValueError(
+                    f"VTC reward component '{name}' shape {tuple(value.shape)} does not match dones shape {tuple(dones.shape)}"
+                )
+
+
+def compile_vtc_reward_components(drive_config: VTCRewardConfigSource | Mapping[str, Any]) -> VTCRewardProgram:
+    """Compile a drive reward configuration into VTC compute-reward component rules."""
+    return compile_vtc_reward_components_with_phase_graph(drive_config, TransitionPhaseGraph.default())
+
+
+def compile_vtc_reward_components_with_phase_graph(
+    drive_config: VTCRewardConfigSource | Mapping[str, Any],
+    phase_graph: TransitionPhaseGraph,
+) -> VTCRewardProgram:
+    """Compile reward components using an explicit VTC transition phase graph."""
+    drive = _coerce_reward_drive(drive_config)
+    compiled_rules: list[CompiledVTCRewardComponent] = []
+
+    for modifier_name in sorted(drive["modifiers"]):
+        modifier = drive["modifiers"][modifier_name]
+        source_kind, source_variable_id, reads = _reward_modifier_source(modifier)
+        compiled_rules.append(
+            CompiledVTCRewardComponent(
+                rule_id=f"reward:modifier:{modifier_name}",
+                kind="reward_modifier",
+                source_variable_id=source_variable_id,
+                variable_id=f"reward.modifier.{modifier_name}",
+                expression=f"dac.modifier.{modifier_name}",
+                expression_ast=None,
+                condition=None,
+                condition_ast=None,
+                composition="overwrite",
+                phase="compute_rewards",
+                priority=len(compiled_rules),
+                clamp=None,
+                telemetry_label=f"reward_modifier:{modifier_name}",
+                reads=reads,
+                component="modifier",
+                source_kind=source_kind,
+                strategy=None,
+                shaping_type=None,
+                parameters=_reward_payload(modifier),
+            )
+        )
+
+    extrinsic = drive["extrinsic"]
+    extrinsic_strategy = str(getattr(extrinsic, "type", _mapping_get(extrinsic, "type", "unknown")))
+    compiled_rules.append(
+        CompiledVTCRewardComponent(
+            rule_id=f"reward:extrinsic:{extrinsic_strategy}",
+            kind="reward_component",
+            source_variable_id="reward.extrinsic",
+            variable_id="reward.extrinsic",
+            expression=f"dac.extrinsic.{extrinsic_strategy}",
+            expression_ast=None,
+            condition=None,
+            condition_ast=None,
+            composition="overwrite",
+            phase="compute_rewards",
+            priority=len(compiled_rules),
+            clamp=None,
+            telemetry_label="reward_component:extrinsic",
+            reads=_extrinsic_reward_reads(extrinsic),
+            component="extrinsic",
+            source_kind="dac_extrinsic",
+            strategy=extrinsic_strategy,
+            shaping_type=None,
+            parameters=_reward_payload(extrinsic),
+        )
+    )
+
+    intrinsic = drive["intrinsic"]
+    intrinsic_strategy = str(getattr(intrinsic, "strategy", _mapping_get(intrinsic, "strategy", "unknown")))
+    compiled_rules.append(
+        CompiledVTCRewardComponent(
+            rule_id=f"reward:intrinsic:{intrinsic_strategy}",
+            kind="reward_component",
+            source_variable_id="intrinsic_raw",
+            variable_id="reward.intrinsic",
+            expression="intrinsic_raw * dac.intrinsic.weight",
+            expression_ast=None,
+            condition=None,
+            condition_ast=None,
+            composition="overwrite",
+            phase="compute_rewards",
+            priority=len(compiled_rules),
+            clamp=None,
+            telemetry_label="reward_component:intrinsic",
+            reads=_intrinsic_reward_reads(intrinsic),
+            component="intrinsic",
+            source_kind="dac_intrinsic",
+            strategy=intrinsic_strategy,
+            shaping_type=None,
+            parameters=_reward_payload(intrinsic),
+        )
+    )
+
+    for index, shaping in enumerate(drive["shaping"]):
+        shaping_type = str(getattr(shaping, "type", _mapping_get(shaping, "type", "unknown")))
+        compiled_rules.append(
+            CompiledVTCRewardComponent(
+                rule_id=f"reward:shaping:{index}:{shaping_type}",
+                kind="reward_component",
+                source_variable_id=f"reward.shaping.{index}",
+                variable_id="reward.shaping",
+                expression=f"dac.shaping.{shaping_type}",
+                expression_ast=None,
+                condition=None,
+                condition_ast=None,
+                composition="additive_delta",
+                phase="compute_rewards",
+                priority=len(compiled_rules),
+                clamp=None,
+                telemetry_label=f"reward_component:shaping:{index}",
+                reads=_shaping_reward_reads(shaping),
+                component="shaping",
+                source_kind="dac_shaping",
+                strategy=None,
+                shaping_type=shaping_type,
+                parameters=_reward_payload(shaping),
+            )
+        )
+
+    compiled_rules.append(
+        CompiledVTCRewardComponent(
+            rule_id="reward:total",
+            kind="reward_total",
+            source_variable_id="reward.components",
+            variable_id="reward.total",
+            expression="reward.extrinsic + reward.intrinsic + reward.shaping",
+            expression_ast=None,
+            condition=None,
+            condition_ast=None,
+            composition="sum",
+            phase="compute_rewards",
+            priority=len(compiled_rules),
+            clamp=None,
+            telemetry_label="reward_total",
+            reads=("reward.extrinsic", "reward.intrinsic", "reward.shaping"),
+            component="total",
+            source_kind="reward_composition",
+            strategy=None,
+            shaping_type=None,
+            parameters={"components": ["extrinsic", "intrinsic", "shaping"]},
+        )
+    )
+
+    return VTCRewardProgram(
+        rules=tuple(
+            sorted(
+                compiled_rules,
+                key=lambda item: (phase_graph.sort_key(item.phase), item.priority, item.rule_id),
+            )
+        )
+    )
+
+
 def compile_vtc_action_writes(actions: Sequence[VTCActionWriteSource]) -> VTCActionWriteProgram:
     """Compile ActionConfig writes into VTC records sorted by phase, priority, and action id."""
     return compile_vtc_action_writes_with_phase_graph(actions, TransitionPhaseGraph.default())
@@ -1758,6 +2005,179 @@ def _opening_hours_expression(windows: Sequence[tuple[float, float]]) -> str:
         f"time_in_window(temporal.time_of_day, {_format_rule_float(start)}, {_format_rule_float(end)})" for start, end in windows
     ]
     return " || ".join(expressions)
+
+
+def _coerce_reward_drive(drive_config: VTCRewardConfigSource | Mapping[str, Any]) -> dict[str, Any]:
+    if isinstance(drive_config, Mapping):
+        modifiers = drive_config.get("modifiers", {})
+        extrinsic = drive_config["extrinsic"]
+        intrinsic = drive_config["intrinsic"]
+        shaping = drive_config.get("shaping", [])
+    else:
+        modifiers = drive_config.modifiers
+        extrinsic = drive_config.extrinsic
+        intrinsic = drive_config.intrinsic
+        shaping = drive_config.shaping
+
+    return {
+        "modifiers": dict(modifiers),
+        "extrinsic": extrinsic,
+        "intrinsic": intrinsic,
+        "shaping": list(shaping),
+    }
+
+
+def _reward_modifier_source(modifier: Any) -> tuple[str, str, tuple[str, ...]]:
+    bar = _config_field(modifier, "bar", None)
+    if bar is not None:
+        bar_id = str(bar)
+        return "bar", f"bar.{bar_id}", (f"bar.{bar_id}",)
+
+    variable = _config_field(modifier, "variable", None)
+    if variable is not None:
+        variable_id = str(variable)
+        return "vfs_variable", f"vfs.{variable_id}", (f"vfs.{variable_id}",)
+
+    source = _config_field(modifier, "source", None)
+    if source is not None:
+        source_id = str(source)
+        return "bar", f"bar.{source_id}", (f"bar.{source_id}",)
+
+    raise ValueError("VTC reward modifier must declare bar, variable, or source")
+
+
+def _extrinsic_reward_reads(strategy: Any) -> tuple[str, ...]:
+    reads: list[str] = []
+    reads.extend(_bar_read(bar) for bar in _iter_config_strings(_config_field(strategy, "bars", [])))
+
+    for bonus in _iter_config_items(_config_field(strategy, "bar_bonuses", [])):
+        reads.append(_bar_read(str(_config_field(bonus, "bar"))))
+
+    for bonus in _iter_config_items(_config_field(strategy, "bonuses", [])):
+        reads.append(_bar_read(str(_config_field(bonus, "bar"))))
+
+    variable = _config_field(strategy, "variable", None)
+    if variable is not None:
+        reads.append(_vfs_read(str(variable)))
+
+    for bonus in _iter_config_items(_config_field(strategy, "variable_bonuses", [])):
+        reads.append(_vfs_read(str(_config_field(bonus, "variable"))))
+
+    reads.extend(_modifier_read(name) for name in _iter_config_strings(_config_field(strategy, "apply_modifiers", [])))
+    return _dedupe(reads)
+
+
+def _intrinsic_reward_reads(strategy: Any) -> tuple[str, ...]:
+    reads = ["intrinsic_raw"]
+    reads.extend(_modifier_read(name) for name in _iter_config_strings(_config_field(strategy, "apply_modifiers", [])))
+    return _dedupe(reads)
+
+
+def _shaping_reward_reads(shaping: Any) -> tuple[str, ...]:
+    shaping_type = str(_config_field(shaping, "type", "unknown"))
+    reads: list[str] = []
+
+    if shaping_type == "approach_reward":
+        target = _config_field(shaping, "target_affordance", None) or _config_field(shaping, "target", None)
+        reads.append("position.agent")
+        if target is not None:
+            reads.append(f"affordance.{target}.position")
+    elif shaping_type == "completion_bonus":
+        reads.append("last_action_affordance")
+        affordance = _config_field(shaping, "affordance", None)
+        if affordance is not None:
+            reads.append(f"affordance.{affordance}.completed")
+    elif shaping_type == "efficiency_bonus":
+        reads.append(_bar_read(str(_config_field(shaping, "bar"))))
+    elif shaping_type == "state_achievement":
+        for condition in _iter_config_items(_config_field(shaping, "conditions", [])):
+            reads.append(_bar_read(str(_config_field(condition, "bar"))))
+    elif shaping_type == "vfs_variable":
+        reads.append(_vfs_read(str(_config_field(shaping, "variable"))))
+    elif shaping_type == "streak_bonus":
+        affordance = str(_config_field(shaping, "affordance"))
+        reads.append(f"affordance.{affordance}.streak")
+    elif shaping_type == "diversity_bonus":
+        reads.append("affordance.unique_used")
+    elif shaping_type == "timing_bonus":
+        reads.extend(("temporal.current_hour", "last_action_affordance"))
+        for time_range in _iter_config_items(_config_field(shaping, "time_ranges", [])):
+            reads.append(f"affordance.{_config_field(time_range, 'affordance')}.used")
+    elif shaping_type == "economic_efficiency":
+        reads.append(_bar_read(str(_config_field(shaping, "money_bar"))))
+    elif shaping_type == "balance_bonus":
+        reads.extend(_bar_read(bar) for bar in _iter_config_strings(_config_field(shaping, "bars", [])))
+    elif shaping_type == "crisis_avoidance":
+        reads.append(_bar_read(str(_config_field(shaping, "bar"))))
+
+    return _dedupe(reads)
+
+
+def _config_field(config: Any, field: str, default: Any = None) -> Any:
+    if isinstance(config, Mapping):
+        return config.get(field, default)
+    return getattr(config, field, default)
+
+
+def _mapping_get(config: Any, field: str, default: Any = None) -> Any:
+    if isinstance(config, Mapping):
+        return config.get(field, default)
+    return default
+
+
+def _iter_config_items(value: Any) -> list[Any]:
+    if value is None:
+        return []
+    return list(value)
+
+
+def _iter_config_strings(value: Any) -> list[str]:
+    return [str(item) for item in _iter_config_items(value)]
+
+
+def _bar_read(bar_id: str) -> str:
+    return f"bar.{bar_id}"
+
+
+def _vfs_read(variable_id: str) -> str:
+    return f"vfs.{variable_id}"
+
+
+def _modifier_read(modifier_name: str) -> str:
+    return f"reward.modifier.{modifier_name}"
+
+
+def _dedupe(values: Sequence[str]) -> tuple[str, ...]:
+    seen: set[str] = set()
+    deduped: list[str] = []
+    for value in values:
+        if value not in seen:
+            deduped.append(value)
+            seen.add(value)
+    return tuple(deduped)
+
+
+def _reward_payload(value: Any) -> dict[str, Any]:
+    if hasattr(value, "model_dump"):
+        payload = value.model_dump(mode="json")
+    elif isinstance(value, Mapping):
+        payload = dict(value)
+    else:
+        payload = dict(vars(value))
+    plain_payload = _plain_reward_payload(payload)
+    if not isinstance(plain_payload, dict):
+        raise TypeError("VTC reward component parameters must resolve to a mapping payload")
+    return plain_payload
+
+
+def _plain_reward_payload(value: Any) -> Any:
+    if hasattr(value, "model_dump"):
+        return _plain_reward_payload(value.model_dump(mode="json"))
+    if isinstance(value, Mapping):
+        return {str(key): _plain_reward_payload(item) for key, item in value.items()}
+    if isinstance(value, list | tuple):
+        return [_plain_reward_payload(item) for item in value]
+    return value
 
 
 def _rule_slug(name: str) -> str:

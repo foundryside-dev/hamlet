@@ -38,12 +38,13 @@ class RewardCalculator:
         if env.enable_temporal_mechanics:
             kwargs["current_hour"] = env.time_of_day
 
-        total_rewards, intrinsic_weights, components = env.dac_engine.calculate_rewards(
+        total_rewards, intrinsic_weights, components = env.vtc_reward_program.apply(
+            reward_backend=env.dac_engine,
             step_counts=env.step_counts,
             dones=env.dones,
             meters=env.meters,
             intrinsic_raw=intrinsic_raw,
-            **kwargs,
+            reward_context=kwargs,
         )
 
         env.intrinsic_weights = intrinsic_weights

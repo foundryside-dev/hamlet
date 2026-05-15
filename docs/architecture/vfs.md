@@ -371,6 +371,10 @@ view; dense-shaped writes to sparse pair variables fail loudly instead of being 
 `group`, `affordance`, and `zone` scope storage is dense. These scopes require explicit positive `num_groups`,
 `num_affordances`, and `num_zones` registry extents before allocation.
 
+`message` scope is a dense L6 seed for recent communication buffers. It prefixes payload values with
+`[num_agents, num_message_slots]`, requires an explicit positive `num_message_slots` registry extent, and is used by
+`message_token` variables such as `recent_message_tokens`.
+
 ### 5.2 Recommended future scopes
 
 For serious multi-agent and small-society modelling, VFS should still add richer institutional and communication scopes:
@@ -380,10 +384,11 @@ For serious multi-agent and small-society modelling, VFS should still add richer
 | `household` | `[household]` | Shared domestic resources | `shared_food`, `rent_due`, `household_mood` |
 | `faction` | `[faction]` | Political or social blocs | `legitimacy`, `territory_claim` |
 | `institution` | `[institution]` | Rules and enforcement | `sanction_probability`, `rule_legitimacy` |
-| `message` | `[agent, message_slot]` | Communication | `recent_message_tokens`, `sender_id`, `message_age` |
 
-The implemented L5 scopes are the storage foundation for multi-agent competition. Sparse pair storage is available for
-neighbourhood-limited relationships; relational visibility and L6 communication variables remain separate follow-on work.
+The implemented L5/L6 seed scopes are the storage foundation for multi-agent competition and emergent communication.
+Sparse pair storage is available for neighbourhood-limited relationships, and message scope can store recent
+message-token payloads. Relational visibility, sender metadata, message age, and end-to-end communication semantics
+remain separate follow-on work.
 
 ### 5.3 Social observability and privacy
 
@@ -2177,7 +2182,7 @@ Store state when it must persist or be authoritative. Derive features when they 
 
 ### 21.1 Phase 1 limitations
 
-1. **Remaining VTC coverage gaps.** Profile reads, action writes, passive dynamics, cascades, temporal gates, interaction progress, rewards, terminal checks, occupancy/contention, and social residue rules now run through VFS/VTC components. Remaining gaps are action-write type/shape validation depth, telemetry side-effect compilation, relational observation exposure, environment-level social-rule wiring, L6 message scope, and dynamic variables.
+1. **Remaining VTC coverage gaps.** Profile reads, action writes, passive dynamics, cascades, temporal gates, interaction progress, rewards, terminal checks, occupancy/contention, and social residue rules now run through VFS/VTC components. Remaining gaps are action-write type/shape validation depth, telemetry side-effect compilation, relational observation exposure, environment-level social-rule wiring, message observation/runtime communication wiring, and dynamic variables.
 2. **Manual observation generation.** Observation construction still requires explicit registry reads and concatenation.
 3. **Partial write validation.** `WriteSpec` expressions are parsed and executed for action writes, but full write-path type/shape validation is still incomplete.
 4. **Limited normalisation.** Current normalisation is mostly minmax/zscore.
@@ -2247,11 +2252,15 @@ Represent communication through VFS variables:
 ```yaml
 - id: "recent_message_tokens"
   type: "message_token"
-  scope: "agent"
+  scope: "message"
   dims: 20
   readable_by: ["agent", "social_model"]
   writable_by: ["vtc"]
 ```
+
+The repo exposes the seed definition as `canonical_l6_message_variables(message_token_dims=...)`.
+Runtime storage requires the caller to provide `num_message_slots`; `dims` is the token vocabulary size or embedding
+dimension for each message-slot payload.
 
 ### 22.6 Intrinsic reward shaping
 

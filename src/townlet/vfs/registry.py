@@ -10,6 +10,7 @@ and scope semantics. It handles these scope patterns:
 - group: Group/faction/team values (shape [num_groups, ...])
 - affordance: Per-affordance-instance values (shape [num_affordances, ...])
 - zone: Per-zone values (shape [num_zones, ...])
+- message: Recent message buffer values (shape [num_agents, num_message_slots, ...])
 """
 
 from __future__ import annotations
@@ -88,6 +89,7 @@ class VariableRegistry:
         num_groups: int = 0,
         num_affordances: int = 0,
         num_zones: int = 0,
+        num_message_slots: int = 0,
         pair_storage_mode: Literal["dense", "sparse"] = "dense",
         pair_edges: torch.Tensor | Sequence[Sequence[int]] | None = None,
     ):
@@ -102,6 +104,7 @@ class VariableRegistry:
             num_groups: Number of group-scope rows
             num_affordances: Number of affordance-scope rows
             num_zones: Number of zone-scope rows
+            num_message_slots: Number of recent-message buffer slots per agent
             pair_storage_mode: Pair-scope allocation strategy, either dense all-pairs or sparse edge rows
             pair_edges: Directed pair edges as [num_pair_edges, 2], required for sparse pair variables
         """
@@ -110,6 +113,7 @@ class VariableRegistry:
         self.num_groups = num_groups
         self.num_affordances = num_affordances
         self.num_zones = num_zones
+        self.num_message_slots = num_message_slots
         self.pair_storage_mode = pair_storage_mode
         self.device = device
         self.item_profiles: dict[str, Any] = item_profiles or {}  # Store compiled profiles
@@ -295,7 +299,7 @@ class VariableRegistry:
                 tensor = torch.full(shape, default_value, device=self.device, dtype=torch.long)
             elif var_def.type in ("tensor1d", "tensor2d", "tensor3d", "tensorNd"):
                 tensor = self._initialize_tensor(var_def)
-            elif var_def.type in ("vecNi", "vecNf", "vec2i", "vec3i", "vec2f", "vec3f"):
+            elif var_def.type in ("vecNi", "vecNf", "vec2i", "vec3i", "vec2f", "vec3f", "message_token"):
                 base_default = self._build_vector_default(var_def)
                 if len(shape) == 1:
                     tensor = base_default.clone()
@@ -338,9 +342,9 @@ class VariableRegistry:
             dims = 2
         elif var_def.type in {"vec3i", "vec3f"}:
             dims = 3
-        elif var_def.type in ("vecNi", "vecNf"):
+        elif var_def.type in ("vecNi", "vecNf", "message_token"):
             if var_def.dims is None:
-                raise ValueError(f"vecNi/vecNf variable '{var_def.id}' must have dims field defined")
+                raise ValueError(f"{var_def.type} variable '{var_def.id}' must have dims field defined")
             dims = var_def.dims
         else:
             raise ValueError(f"Unsupported variable type: {var_def.type}")
@@ -364,6 +368,8 @@ class VariableRegistry:
             return (self._positive_extent(var_def, "num_affordances"),)
         if scope == VariableScope.ZONE:
             return (self._positive_extent(var_def, "num_zones"),)
+        if scope == VariableScope.MESSAGE:
+            return (self.num_agents, self._positive_extent(var_def, "num_message_slots"))
         if scope == VariableScope.ITEM:
             raise ValueError(
                 "Item-scoped variables in variables_reference.yaml are not supported. Use vfs_profiles.yaml item_profiles instead."
@@ -501,7 +507,7 @@ class VariableRegistry:
             return 2
         if var_def.type in {"vec3i", "vec3f"}:
             return 3
-        if var_def.type in ("vecNi", "vecNf"):
+        if var_def.type in ("vecNi", "vecNf", "message_token"):
             if var_def.dims is None:
                 raise ValueError(f"Variable '{var_def.id}' missing 'dims' for type '{var_def.type}'")
             return var_def.dims

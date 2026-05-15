@@ -36,6 +36,7 @@ class VariableScope(StrEnum):
     GROUP = "group"  # Group/faction/team state ([num_groups, ...])
     AFFORDANCE = "affordance"  # Per-affordance-instance state ([num_affordances, ...])
     ZONE = "zone"  # Per-zone state ([num_zones, ...])
+    MESSAGE = "message"  # Recent communication buffer state ([num_agents, num_message_slots, ...])
 
 
 class NormalizationSpec(BaseModel):
@@ -417,10 +418,10 @@ class VariableDef(BaseModel):
         description="Semantic grouping for structured encoders (bars, spatial, affordance, temporal, custom)",
     )
 
-    scope: VariableScope | Literal["global", "agent", "agent_private", "item", "pair", "group", "affordance", "zone"] = Field(
+    scope: VariableScope | Literal["global", "agent", "agent_private", "item", "pair", "group", "affordance", "zone", "message"] = Field(
         description=(
             "Scope: global (shared), agent (per-agent public), agent_private (per-agent private), item (per-item), "
-            "pair (directed agent-agent), group, affordance, or zone"
+            "pair (directed agent-agent), group, affordance, zone, or message"
         ),
     )
 
@@ -441,7 +442,8 @@ class VariableDef(BaseModel):
         "tensor2d",
         "tensor3d",
         "tensorNd",
-    ] = Field(description="Variable type (scalar, vector, bool, reference, or tensor)")
+        "message_token",
+    ] = Field(description="Variable type (scalar, vector, bool, reference, tensor, or message token)")
 
     dims: int | None = Field(
         default=None,
@@ -500,7 +502,7 @@ class VariableDef(BaseModel):
     @model_validator(mode="after")
     def validate_vector_types(self) -> "VariableDef":
         """Validate that vecNi/vecNf have dims field, scalar/bool do not."""
-        if self.type in ("vecNi", "vecNf"):
+        if self.type in ("vecNi", "vecNf", "message_token"):
             if self.dims is None:
                 raise ValueError(f"Variable '{self.id}' with type '{self.type}' requires 'dims' field")
         elif self.type in ("scalar", "bool"):
@@ -524,6 +526,9 @@ class VariableDef(BaseModel):
                 raise ValueError(f"Variable '{self.id}' with type 'tensor3d' must have 3D shape, got rank {rank}")
             if self.type == "tensorNd" and rank < 1:
                 raise ValueError(f"Variable '{self.id}' with type 'tensorNd' must have shape of rank ≥1")
+
+        if self.type == "message_token" and self.shape is not None:
+            raise ValueError(f"Variable '{self.id}' with type 'message_token' should not set 'shape'; use 'dims' instead")
 
         return self
 

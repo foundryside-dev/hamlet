@@ -3,26 +3,15 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Protocol
 
+import yaml
+
+from townlet.config.effects_config import EffectsConfig
 from townlet.effects.catalog import EffectCatalog
-
-
-class _EffectsDelegate(Protocol):
-    def _compile_effects_catalog(
-        self,
-        experiment_dir: Path,
-        schema: dict[str, str],
-        *,
-        time_enabled: bool,
-    ) -> EffectCatalog | None: ...
 
 
 class EffectsCompiler:
     """Compile effects catalogs against the active schema."""
-
-    def __init__(self, delegate: _EffectsDelegate) -> None:
-        self._delegate = delegate
 
     def compile_catalog(
         self,
@@ -31,4 +20,13 @@ class EffectsCompiler:
         *,
         time_enabled: bool,
     ) -> EffectCatalog | None:
-        return self._delegate._compile_effects_catalog(experiment_dir, schema, time_enabled=time_enabled)
+        """Load and compile effects catalog from experiment directory."""
+        effects_path = experiment_dir / "effects.yaml"
+
+        if not effects_path.exists():
+            return None
+
+        effects_data = yaml.safe_load(effects_path.read_text())
+        effects_config = EffectsConfig(**effects_data)
+
+        return EffectCatalog.from_config(effects_config, schema=schema, time_enabled=time_enabled)

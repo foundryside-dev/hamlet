@@ -269,11 +269,9 @@ class TestVectorizedHamletEnvStep:
         # Use temporal-enabled level to ensure mechanics are active
         env = custom_env_builder(
             source_pack=Path("configs/default_curriculum"),
+            level_name="L3_temporal_mechanics",
             overrides=None,
         )
-        # Swap to temporal level explicitly
-        env.level_name = "L3_temporal_mechanics"
-        env = env.universe.create_environment(num_agents=1, level_name="L3_temporal_mechanics", device=env.device)
         env.reset()
 
         wait_action_idx = env.action_ids["WAIT"]
@@ -434,12 +432,7 @@ class TestGetObservations:
         env = custom_env_builder(
             num_agents=2,
             source_pack=Path("configs/default_curriculum"),
-        )
-        # Switch to partial-observability level
-        env = env.universe.create_environment(
-            num_agents=2,
             level_name="L2_partial_observability",
-            device=env.device,
         )
         env.reset()
         obs = env._get_observations()

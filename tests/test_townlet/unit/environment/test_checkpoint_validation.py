@@ -144,6 +144,7 @@ class TestActionLabelLoading:
 
         env = make_vectorized_env_from_pack(
             config_dir,
+            level_name="L0_test",
             num_agents=1,
             device=cpu_device,
         )
@@ -163,6 +164,7 @@ class TestActionLabelLoading:
         # test_config_pack_path doesn't have action_labels.yaml, so should use default
         env = make_vectorized_env_from_pack(
             test_config_pack_path,
+            level_name="L0_test",
             num_agents=1,
             device=cpu_device,
         )
@@ -198,6 +200,7 @@ class TestAffordancePositionSerialization:
         # Config packs are atomic artifacts (no individual file overrides)
         env = make_vectorized_env_from_pack(
             aspatial_config_path,
+            level_name="L0",
             num_agents=1,
             device=cpu_device,
         )

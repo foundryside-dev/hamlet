@@ -90,7 +90,7 @@ def _build_two_level_pack(tmp_path: Path, config_pack_factory) -> Path:
 
 def _compile_two_level_pack(tmp_path: Path, config_pack_factory, compile_universe) -> CompiledUniverse:
     pack_dir = _build_two_level_pack(tmp_path, config_pack_factory)
-    return compile_universe(pack_dir)
+    return compile_universe(pack_dir, primary_level="L0_test")
 
 
 def test_level_action_metadata_respected(tmp_path, config_pack_factory, compile_universe, cpu_device):

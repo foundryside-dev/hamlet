@@ -14,8 +14,8 @@ from townlet.universe.compiler import UniverseCompiler
 def _compile_universe() -> callable:
     compiler = UniverseCompiler()
 
-    def _compile(config_dir: Path | str):
-        return compiler.compile(Path(config_dir), use_cache=False)
+    def _compile(config_dir: Path | str, *, primary_level: str):
+        return compiler.compile(Path(config_dir), primary_level=primary_level, use_cache=False)
 
     return _compile
 
@@ -24,7 +24,7 @@ def _compile_universe() -> callable:
 def baseline_env(_compile_universe):
     """Minimal env without VFS/items/effects (default curriculum)."""
     config_dir = Path("configs/default_curriculum")
-    universe = _compile_universe(config_dir)
+    universe = _compile_universe(config_dir, primary_level="L0_0_minimal")
     env = universe.create_environment(level_name="L0_0_minimal", num_agents=4, device=torch.device("cpu"))
     env.reset()
     return env
@@ -34,7 +34,7 @@ def baseline_env(_compile_universe):
 def vfs_env(_compile_universe):
     """Env with VFS/items/effects enabled (effects smoke config)."""
     config_dir = Path("configs/test/effects_smoke")
-    universe = _compile_universe(config_dir)
+    universe = _compile_universe(config_dir, primary_level="L0_effects")
     env = universe.create_environment(level_name="L0_effects", num_agents=4, device=torch.device("cpu"))
     env.reset()
     return env

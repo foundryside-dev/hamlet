@@ -106,6 +106,36 @@ def test_compile_rebuilds_cache_when_hash_changes(tmp_path: Path, monkeypatch: p
     assert counter["calls"] == 1
 
 
+def test_config_hash_includes_relative_yaml_paths(tmp_path: Path) -> None:
+    config_dir = _copy_experiment(tmp_path)
+    compiler = UniverseCompiler()
+    original_hash = compiler._compute_config_hash(config_dir)
+
+    (config_dir / "levels" / "L0_test").rename(config_dir / "levels" / "L1_test")
+
+    assert compiler._compute_config_hash(config_dir) != original_hash
+
+
+def test_compile_rebuilds_cache_when_compiler_provenance_changes(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    config_dir = _copy_experiment(tmp_path)
+    builder = UniverseCompiler()
+    builder.compile(config_dir, primary_level="L0_test", use_cache=True)
+
+    original_loader = compiler_module.load_v21_configs
+    counter = {"calls": 0}
+
+    def _wrapped_loader(cfg_dir: Path):
+        counter["calls"] += 1
+        return original_loader(cfg_dir)
+
+    monkeypatch.setattr(compiler_module, "COMPILER_VERSION", "99.0-test")
+    monkeypatch.setattr(compiler_module, "load_v21_configs", _wrapped_loader)
+
+    UniverseCompiler().compile(config_dir, primary_level="L0_test", use_cache=True)
+
+    assert counter["calls"] == 1
+
+
 def test_compile_recovers_from_corrupted_cache(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     config_dir = _copy_experiment(tmp_path)
     compiler = UniverseCompiler()

@@ -14,7 +14,7 @@ def test_item_vfs_profile_driven_end_to_end():
     config_dir = Path("configs/test/items_smoke")
 
     compiler = UniverseCompiler()
-    compiled = compiler.compile(config_dir, use_cache=False)
+    compiled = compiler.compile(config_dir, primary_level="L0_smoke", use_cache=False)
 
     # Verify: Item profiles compiled
     assert compiled.compiled_vfs_profiles is not None, "VFS profiles not compiled"
@@ -90,7 +90,7 @@ def test_item_spawn_with_initial_state():
     config_dir = Path("configs/test/items_smoke")
 
     compiler = UniverseCompiler()
-    compiled = compiler.compile(config_dir, use_cache=False)
+    compiled = compiler.compile(config_dir, primary_level="L0_smoke", use_cache=False)
 
     # Create environment
     env = VectorizedHamletEnv(
@@ -139,7 +139,7 @@ def test_item_vfs_in_observations():
     config_dir = Path("configs/test/items_smoke")
 
     compiler = UniverseCompiler()
-    compiled = compiler.compile(config_dir, use_cache=False)
+    compiled = compiler.compile(config_dir, primary_level="L0_smoke", use_cache=False)
 
     # Create environment
     env = VectorizedHamletEnv(
@@ -185,7 +185,7 @@ def test_item_profile_switch_updates_vfs_layout():
     config_dir = Path("configs/test/items_smoke")
 
     compiler = UniverseCompiler()
-    compiled = compiler.compile(config_dir, use_cache=False)
+    compiled = compiler.compile(config_dir, primary_level="L0_smoke", use_cache=False)
 
     env = VectorizedHamletEnv(
         universe=compiled,

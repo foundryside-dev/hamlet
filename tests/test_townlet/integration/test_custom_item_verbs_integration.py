@@ -37,7 +37,7 @@ def test_custom_item_verbs_flow_from_config_to_runtime(tmp_path):
     items_path.write_text(yaml.safe_dump(data, sort_keys=False))
 
     compiler = UniverseCompiler()
-    universe = compiler.compile(config_pack, use_cache=False)
+    universe = compiler.compile(config_pack, primary_level="L0_smoke", use_cache=False)
 
     local_action = build_item_command_action_name("apple", "EAT_LOCAL", "local")
     inventory_action = build_item_command_action_name("apple", "EAT_HELD", "inventory")

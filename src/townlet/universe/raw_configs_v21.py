@@ -18,17 +18,16 @@ from townlet.config.items_config import ItemsAppearanceConfig, ItemsCatalogConfi
 from townlet.config.stratum_config import StratumConfig
 from townlet.config.training_v2_config import TrainingV2Config, load_training_v2_config
 from townlet.universe.errors import CompilationErrorCollector
-
-# Security limits (mirrors compiler.py, kept local to avoid circular imports)
-MAX_METERS = 100
-MAX_AFFORDANCES = 100
-MAX_CASCADES = 500
-MAX_ACTIONS = 300
-MAX_VARIABLES = 200
-MAX_GRID_CELLS = 10_000  # 100×100 maximum (DoS protection)
-MAX_ITEM_TYPES = 200
-MAX_VFS_PROFILES = 200
-MAX_SPAWN_RULES_PER_ITEM = 200
+from townlet.universe.validation.limits import (
+    MAX_ACTIONS,
+    MAX_AFFORDANCES,
+    MAX_CASCADES,
+    MAX_GRID_CELLS,
+    MAX_ITEM_TYPES,
+    MAX_METERS,
+    MAX_SPAWN_RULES_PER_ITEM,
+    MAX_VARIABLES,
+)
 
 logger = logging.getLogger(__name__)
 

@@ -4,7 +4,7 @@ from pathlib import Path
 
 import yaml
 
-from tests.test_townlet.helpers.config_builder import prepare_config_dir
+from tests.test_townlet.helpers.config_builder import PRIMARY_LEVEL_NAME, prepare_config_dir
 from townlet.universe.compiler import UniverseCompiler
 
 
@@ -41,7 +41,7 @@ def test_compiler_compiles_effects_catalog_per_level(tmp_path: Path):
 
     # Exercise
     compiler = UniverseCompiler()
-    compiled = compiler.compile(experiment_dir, use_cache=False)
+    compiled = compiler.compile(experiment_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
 
     # Verify: CompiledUniverse has compiled effect catalog
     assert compiled.compiled_effect_catalog is not None
@@ -68,7 +68,7 @@ def test_compiler_allows_missing_effects_yaml(tmp_path: Path):
 
     # Exercise
     compiler = UniverseCompiler()
-    compiled = compiler.compile(experiment_dir, use_cache=False)
+    compiled = compiler.compile(experiment_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
 
     # Verify: compiled_effect_catalog should be None when file missing
     assert compiled.compiled_effect_catalog is None

@@ -21,7 +21,7 @@ def test_cli_compile_creates_cache(tmp_path, capsys) -> None:
     config_dir = _copy_experiment(tmp_path)
     cache_path = config_dir / ".compiled" / "universe.msgpack"
 
-    exit_code = compiler_cli.main(["compile", str(config_dir)])
+    exit_code = compiler_cli.main(["compile", str(config_dir), "--primary-level", "L0_test"])
 
     assert exit_code == 0
     assert cache_path.exists()
@@ -34,7 +34,7 @@ def test_cli_compile_creates_cache(tmp_path, capsys) -> None:
 def test_cli_inspect_displays_metadata(tmp_path, capsys) -> None:
     config_dir = _copy_experiment(tmp_path)
     cache_path = config_dir / ".compiled" / "universe.msgpack"
-    compiler_cli.main(["compile", str(config_dir)])
+    compiler_cli.main(["compile", str(config_dir), "--primary-level", "L0_test"])
     capsys.readouterr()  # Clear compile output
 
     exit_code = compiler_cli.main(["inspect", str(cache_path)])
@@ -48,7 +48,7 @@ def test_cli_inspect_displays_metadata(tmp_path, capsys) -> None:
 def test_cli_inspect_json_output(tmp_path, capsys) -> None:
     config_dir = _copy_experiment(tmp_path)
     cache_path = config_dir / ".compiled" / "universe.msgpack"
-    compiler_cli.main(["compile", str(config_dir)])
+    compiler_cli.main(["compile", str(config_dir), "--primary-level", "L0_test"])
     capsys.readouterr()
 
     exit_code = compiler_cli.main(["inspect", str(cache_path), "--format", "json"])
@@ -61,7 +61,7 @@ def test_cli_inspect_json_output(tmp_path, capsys) -> None:
 def test_cli_validate_skips_cache(tmp_path, capsys) -> None:
     config_dir = _copy_experiment(tmp_path)
 
-    exit_code = compiler_cli.main(["validate", str(config_dir)])
+    exit_code = compiler_cli.main(["validate", str(config_dir), "--primary-level", "L0_test"])
 
     assert exit_code == 0
     # Validate currently emits cache for introspection; tolerate presence but should not grow

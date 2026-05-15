@@ -16,7 +16,7 @@ from townlet.universe.compiler import UniverseCompiler
 def items_test_env():
     """Environment with Items integration from items_smoke config."""
     compiler = UniverseCompiler()
-    universe = compiler.compile(Path("configs/test/items_smoke"), use_cache=False)
+    universe = compiler.compile(Path("configs/test/items_smoke"), primary_level="L0_smoke", use_cache=False)
 
     env = VectorizedHamletEnv(
         universe=universe,

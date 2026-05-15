@@ -2,15 +2,12 @@
 
 from __future__ import annotations
 
-import difflib
 import hashlib
 import logging
-import math
 import os
 import sys
 from collections import defaultdict
 from collections.abc import Iterable
-from datetime import UTC, datetime
 from numbers import Number
 from pathlib import Path
 from typing import Any
@@ -19,37 +16,26 @@ import torch
 import yaml
 
 from townlet.config.actions_config import ActionsConfig
-from townlet.config.affordances_v2_config import AffordanceParamConfig, AffordancesV2Config
-from townlet.config.bars_v2_config import BarsV2Config, MeterConfig
+from townlet.config.affordances_v2_config import AffordanceParamConfig
+from townlet.config.bars_v2_config import MeterConfig
 from townlet.config.brain_config import load_brain_config
 from townlet.config.curriculum_config import CurriculumConfig
 from townlet.config.drive_as_code import DriveAsCodeConfig, load_drive_as_code_config
-from townlet.config.effects_config import EffectsConfig
 from townlet.config.environment_config import CascadeConfig
-from townlet.config.environment_config import EnvironmentConfig as EnvConfigV21
 from townlet.config.experiment_config import ExperimentConfig
-from townlet.config.items_config import ItemsCatalogConfig, build_item_command_action_name
-from townlet.config.stratum_config import ObservationModeConfig, StratumConfig, SubstrateConfig
-from townlet.config.training_v2_config import TrainingV2Config
-from townlet.config.vfs_profiles_config import VFSProfilesConfig
+from townlet.config.items_config import ItemsCatalogConfig
+from townlet.config.stratum_config import StratumConfig, SubstrateConfig
 from townlet.effects.catalog import EffectCatalog
-from townlet.effects.schema import CommandType
 from townlet.environment.action_config import ActionConfig, ActionSpaceConfig
-from townlet.environment.action_labels import PRESET_LABELS, CanonicalAction
 from townlet.environment.affordance_config import AffordanceConfig  # Runtime representation
 from townlet.environment.substrate_action_validator import SubstrateActionValidator
 from townlet.environment.temporal_utils import is_affordance_open
 from townlet.substrate.factory import SubstrateFactory
 from townlet.universe.compiled import CompiledUniverse
 from townlet.universe.dto import (
-    ActionMetadata,
     ActionSpaceMetadata,
-    AffordanceInfo,
     AffordanceMetadata,
-    MeterInfo,
     MeterMetadata,
-    ObservationActivity,
-    ObservationField,
     ObservationSpec,
     UniverseMetadata,
 )
@@ -57,11 +43,6 @@ from townlet.universe.optimization import OptimizationData
 from townlet.universe.raw_configs_v21 import RawConfigsV21
 from townlet.universe.symbol_table import UniverseSymbolTable
 from townlet.vfs.observation_builder import VFSObservationSpec
-from townlet.vfs.profiles import CompiledItemProfile, VFSProfileCompiler
-from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope
-from townlet.vfs.schema import ObservationField as VFSObservationField
-from townlet.world.expression import ExpressionParser
-from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
 
 from .compiled import CompiledVFSProfiles
 from .compilers.actions import ActionCompiler
@@ -76,6 +57,18 @@ from .loaders.preflight import validate_config_dir, validate_scoping, validate_y
 from .loaders.v21 import load_v21_configs
 from .pipeline import CompiledLevelBundle, SharedCompilerArtifacts
 from .validation.feasibility import grid_capacity_for_substrate
+from .validation.limits import (
+    EFFECT_OBSERVATION_SLOTS,
+    MAX_ACTIONS,
+    MAX_AFFORDANCES,
+    MAX_CACHE_FILE_SIZE,
+    MAX_CASCADES,
+    MAX_GRID_CELLS,
+    MAX_ITEM_TYPES,
+    MAX_METERS,
+    MAX_VARIABLES,
+    MAX_VFS_PROFILES,
+)
 from .validation.references import build_symbol_table, resolve_references
 from .validation.semantics import select_primary_level
 
@@ -83,19 +76,6 @@ logger = logging.getLogger(__name__)
 
 SCHEMA_VERSION = "1.0"
 COMPILER_VERSION = "0.1.0"
-
-MAX_METERS = 100
-MAX_AFFORDANCES = 100
-MAX_CASCADES = 500
-MAX_ACTIONS = 300  # Increased for discretized continuous actions (32×7 = 195+)
-MAX_VARIABLES = 200
-MAX_GRID_CELLS = 10000  # 100×100 maximum (DoS protection)
-MAX_CACHE_FILE_SIZE = 10 * 1024 * 1024  # 10MB (cache bomb protection)
-EFFECT_OBSERVATION_SLOTS = 8  # Fixed slots per agent for observable effects
-MAX_ITEM_TYPES = 200
-MAX_VFS_PROFILES = 200
-MAX_SPAWN_RULES_PER_ITEM = 200
-
 
 class UniverseCompiler:
     """Entry point for compiling config packs into CompiledUniverse artifacts."""
@@ -108,12 +88,18 @@ class UniverseCompiler:
         self._meter_metadata: MeterMetadata | None = None
         self._affordance_metadata: AffordanceMetadata | None = None
         self._optimization_data: OptimizationData | None = None
-        self._observation_compiler = ObservationCompiler(self)
-        self._action_compiler = ActionCompiler(self)
-        self._effects_compiler = EffectsCompiler(self)
-        self._metadata_compiler = MetadataCompiler(self)
-        self._optimization_compiler = OptimizationCompiler(self)
-        self._vfs_compiler = VFSCompiler(self)
+        self._observation_compiler = ObservationCompiler()
+        self._action_compiler = ActionCompiler()
+        self._effects_compiler = EffectsCompiler()
+        self._metadata_compiler = MetadataCompiler(
+            schema_version=SCHEMA_VERSION,
+            compiler_version=COMPILER_VERSION,
+            compute_config_mtime=self._compute_config_mtime,
+            build_cache_fingerprint=self._build_cache_fingerprint,
+            get_git_sha=self._get_git_sha,
+        )
+        self._optimization_compiler = OptimizationCompiler()
+        self._vfs_compiler = VFSCompiler()
 
     def _log_stage(self, number: int, description: str) -> None:
         """Emit a concise stage marker for pipeline tracing."""
@@ -136,12 +122,9 @@ class UniverseCompiler:
             FileNotFoundError: If required files or directories missing
             ValueError: If no curriculum levels found
         """
-        from townlet.config.actions_config import ActionsConfig
         from townlet.config.affordances_v2_config import load_affordances_v2_config
         from townlet.config.bars_v2_config import load_bars_v2_config
-        from townlet.config.curriculum_config import CurriculumConfig
         from townlet.config.environment_config import EnvironmentConfig
-        from townlet.config.stratum_config import StratumConfig
         from townlet.config.training_v2_config import load_training_v2_config
 
         # Load shared configs (experiment-level)
@@ -189,172 +172,9 @@ class UniverseCompiler:
 
         return (experiment, stratum, environment, actions, brain, items, levels_dict)
 
-    def _compile_vfs_profiles(self, experiment_dir: Path, bar_schema: dict[str, str]) -> CompiledVFSProfiles | None:
-        """Load and compile VFS profiles from experiment directory.
 
-        Args:
-            experiment_dir: Experiment root directory
-            bar_schema: Type schema for bars (for expression type checking)
 
-        Returns:
-            Compiled profiles or None if vfs_profiles.yaml not present
-        """
-        profiles_path = experiment_dir / "vfs_profiles.yaml"
 
-        if not profiles_path.exists():
-            logger.debug("vfs_profiles.yaml not found, skipping VFS profile compilation")
-            return None
-
-        # Load YAML
-        profiles_data = yaml.safe_load(profiles_path.read_text())
-
-        # Validate with Pydantic
-        profiles_config = VFSProfilesConfig(**profiles_data)
-
-        profile_count = (
-            int(profiles_config.global_profile is not None)
-            + int(profiles_config.agent_profile is not None)
-            + len(profiles_config.item_profiles or [])
-        )
-        if profile_count > MAX_VFS_PROFILES:
-            raise ValueError(
-                "vfs_profiles.yaml exceeds safety limit for profile count.\n"
-                f"  Experiment: {experiment_dir}\n"
-                f"  Profiles: {profile_count} (max {MAX_VFS_PROFILES})\n"
-                "Reduce VFS profile count to keep config size within guardrails."
-            )
-
-        # Compile profiles
-        compiler = VFSProfileCompiler()
-        compiler.validate_version(profiles_config.version)
-
-        compiled_global = None
-        if profiles_config.global_profile is not None:
-            compiled_global = compiler.compile_global_profile(profiles_config.global_profile, bar_schema=bar_schema)
-
-        compiled_agent = None
-        if profiles_config.agent_profile is not None:
-            # Agent profile is structurally compatible with global profile for compilation
-            from typing import cast
-
-            from townlet.config.vfs_profiles_config import GlobalVFSProfileConfig as GlobalProfileType
-
-            compiled_agent = compiler.compile_global_profile(cast(GlobalProfileType, profiles_config.agent_profile), bar_schema=bar_schema)
-
-        # Compile item profiles
-        compiled_item_profiles: dict[str, CompiledItemProfile] = {}
-        if profiles_config.item_profiles:
-            for item_profile_config in profiles_config.item_profiles:
-                compiled_profile = compiler.compile_item_profile(
-                    item_profile_config,
-                    bar_schema=bar_schema,
-                )
-                compiled_item_profiles[compiled_profile.profile_name] = compiled_profile
-
-        return CompiledVFSProfiles(
-            global_profile=compiled_global,
-            agent_profile=compiled_agent,
-            item_profiles=compiled_item_profiles,
-        )
-
-    def _compile_effects_catalog(
-        self, experiment_dir: Path, effects_schema: dict[str, str], *, time_enabled: bool = True
-    ) -> EffectCatalog | None:
-        """Load and compile effects catalog from experiment directory.
-
-        Args:
-            experiment_dir: Experiment config directory containing effects.yaml
-            effects_schema: Type schema for effect command validation
-
-        Returns:
-            Compiled effects catalog, or None if effects.yaml not found
-
-        Raises:
-            None - effects.yaml is optional
-        """
-        effects_path = experiment_dir / "effects.yaml"
-
-        if not effects_path.exists():
-            return None
-
-        # Load YAML
-        effects_data = yaml.safe_load(effects_path.read_text())
-
-        # Validate with Pydantic
-        effects_config = EffectsConfig(**effects_data)
-
-        # Compile catalog with schema validation
-        catalog = EffectCatalog.from_config(effects_config, schema=effects_schema, time_enabled=time_enabled)
-
-        return catalog
-
-    def _build_vfs_expression_schema(self, bars: BarsV2Config, compiled_vfs_profiles: CompiledVFSProfiles | None) -> dict[str, str]:
-        """Build type schema for VFS expression runtime validation.
-
-        Args:
-            bars: Bars configuration (for bar paths)
-            compiled_vfs_profiles: Compiled VFS profiles (for vfs paths)
-
-        Returns:
-            Type schema mapping path -> type
-        """
-        schema = {}
-
-        # Add bar paths
-        for meter in bars.meters:
-            schema[f"bar.{meter.name}"] = "float"
-
-        # Add VFS paths from global profile
-        if compiled_vfs_profiles and compiled_vfs_profiles.global_profile:
-            for var in compiled_vfs_profiles.global_profile.variables:
-                schema[f"vfs.{var.name}"] = var.type
-
-        # Add item VFS paths from all item profiles
-        if compiled_vfs_profiles and compiled_vfs_profiles.item_profiles:
-            for profile_name, profile in compiled_vfs_profiles.item_profiles.items():
-                for var in profile.variables:
-                    # Items use self.vfs.* and target.vfs.* paths in effects
-                    # Profile name is implicit (instance determines profile at runtime)
-                    schema[f"self.vfs.{var.name}"] = var.type
-                    schema[f"target.vfs.{var.name}"] = var.type
-
-        # TODO: Add agent profile paths (Task 2)
-
-        return schema
-
-    def _extract_vfs_observation_marks(self, variables: tuple[VariableDef, ...]) -> dict[str, set[str]]:
-        """Extract which VFS variables are marked for observation.
-
-        Args:
-            variables: VFS variables from variables_reference.yaml
-
-        Returns:
-            Dict mapping scope to set of observed variable names
-            Example: {"global": {"day_count"}, "agent": {"motivation"}}
-        """
-        marks: dict[str, set[str]] = {
-            "global": set(),
-            "agent": set(),
-            "item": set(),
-        }
-
-        for var in variables:
-            # Variables with observable=True are included in observations
-            if var.observable:
-                if isinstance(var.scope, VariableScope):
-                    scope_key = var.scope.value
-                else:
-                    scope_key = str(var.scope)
-
-                # Map VariableScope to mark keys
-                if scope_key == "global":
-                    marks["global"].add(var.id)
-                elif scope_key in ("agent", "agent_private"):
-                    marks["agent"].add(var.id)
-                # TODO: Handle item-scoped variables (Task 3)
-
-        # Remove empty scopes
-        return {k: v for k, v in marks.items() if v}
 
     def _validate_vocabulary_consistency(self, environment, levels_dict: dict) -> None:
         """
@@ -430,6 +250,8 @@ class UniverseCompiler:
 
     def compile(self, experiment_dir: Path, primary_level: str | None = None, use_cache: bool = True) -> CompiledUniverse:
         """Compile v2.1 hierarchical configs into a multi-level CompiledUniverse."""
+        if primary_level is None:
+            raise ValueError("UniverseCompiler.compile requires an explicit primary_level; implicit level selection is not allowed.")
         experiment_dir = Path(experiment_dir).resolve()
         self.config_pack_path = experiment_dir
 
@@ -454,23 +276,27 @@ class UniverseCompiler:
                     )
                 else:
                     # Compute fingerprint once for comparison
-                    config_hash = self._compute_config_hash(experiment_dir)
+                    config_hash, provenance_id = self._build_cache_fingerprint(experiment_dir)
                     config_mtime = self._compute_config_mtime(experiment_dir)
 
                     cached = CompiledUniverse.load_from_cache(cache_path)
                     cached_meta = cached.metadata
 
                     # Treat missing fingerprint fields as stale cache
-                    if cached_meta.config_hash and cached_meta.config_mtime:
-                        if cached_meta.config_hash == config_hash and cached_meta.config_mtime >= config_mtime:
+                    if cached_meta.config_hash and cached_meta.config_mtime and cached_meta.provenance_id:
+                        if (
+                            cached_meta.config_hash == config_hash
+                            and cached_meta.provenance_id == provenance_id
+                            and cached_meta.config_mtime >= config_mtime
+                        ):
                             logger.info("Loading compiled universe from cache: %s", cache_path)
                             return cached
                         logger.info(
-                            "Cache stale for %s (hash/mtime mismatch); recompiling.",
+                            "Cache stale for %s (hash/provenance/mtime mismatch); recompiling.",
                             experiment_dir,
                         )
                     else:
-                        logger.info("Cached universe at %s missing fingerprint fields; recompiling.", cache_path)
+                        logger.info("Cached universe at %s missing fingerprint/provenance fields; recompiling.", cache_path)
             except Exception as exc:  # pragma: no cover - defensive
                 logger.warning("Failed to load cached universe from %s: %s", cache_path, exc)
 
@@ -496,10 +322,7 @@ class UniverseCompiler:
         temporal_supported = raw.stratum.stratum.temporal_support == "enabled"
 
         # Select primary level
-        requested_primary_level = primary_level
         primary_level = select_primary_level(raw.levels, primary_level)
-        if requested_primary_level is None:
-            logger.info("No primary_level specified; defaulting to %s", primary_level)
 
         # Stage 5: shared artifact enrichment
         self._log_stage(5, "Enrich shared schemas and effects")
@@ -1134,1298 +957,26 @@ class UniverseCompiler:
         return hashlib.sha256(json_str.encode("utf-8")).hexdigest()
 
     # ------------------------------------------------------------------
-    def _validate_item_profile_bindings(
-        self,
-        items_catalog: ItemsCatalogConfig | None,
-        compiled_vfs_profiles: CompiledVFSProfiles | None,
-    ) -> None:
-        """Ensure every item vfs_profile exists in compiled VFS item profiles."""
-        if items_catalog is None:
-            return
-        if compiled_vfs_profiles is None or not compiled_vfs_profiles.item_profiles:
-            if any(item.vfs_profile for item in items_catalog.item_types):
-                raise ValueError(
-                    "Items catalog specifies vfs_profile entries, but no item_profiles were compiled from vfs_profiles.yaml. "
-                    "Add item_profiles or remove vfs_profile references."
-                )
-            return
 
-        available_profiles = set(compiled_vfs_profiles.item_profiles.keys())
 
-        for item_def in items_catalog.item_types:
-            if item_def.vfs_profile and item_def.vfs_profile not in available_profiles:
-                close = difflib.get_close_matches(item_def.vfs_profile, available_profiles, n=1)
-                suggestion = f" Did you mean '{close[0]}'?" if close else ""
-                raise ValueError(
-                    f"Item '{item_def.id}' references undefined vfs_profile '{item_def.vfs_profile}'. "
-                    f"Available profiles: {sorted(available_profiles)}.{suggestion}"
-                )
 
-    def _build_spawn_condition_schema(
-        self,
-        *,
-        bar_schema: dict[str, str],
-        env_vars: list[Any],
-        compiled_vfs_profiles: CompiledVFSProfiles | None,
-        temporal_supported: bool,
-    ) -> dict[str, str]:
-        """Construct type schema for spawn condition expressions."""
-
-        schema: dict[str, str] = {}
-
-        for bar_name in bar_schema:
-            schema[f"bar.{bar_name}"] = "float"
-
-        for var in env_vars:
-            vfs_type = "bool" if getattr(var, "type", None) == "bool" else "float"
-            schema[f"vfs.{var.name}"] = vfs_type
-
-        if compiled_vfs_profiles and compiled_vfs_profiles.global_profile:
-            for var in compiled_vfs_profiles.global_profile.variables:
-                vfs_type = "bool" if getattr(var, "type", None) == "bool" else "float"
-                schema.setdefault(f"vfs.{var.name}", vfs_type)
-
-        if temporal_supported:
-            schema["temporal.tick"] = "int"
-
-        return schema
-
-    def _ast_uses_temporal(self, node: Any) -> bool:
-        """Detect whether an AST references temporal.* paths."""
-
-        from townlet.world.expression.ast_nodes import PathAccess
-
-        if isinstance(node, PathAccess) and node.segments and node.segments[0] == "temporal":
-            return True
-
-        for attr in ("left", "right", "operand", "condition", "true_branch", "false_branch", "base", "index"):
-            child = getattr(node, attr, None)
-            if child is not None and self._ast_uses_temporal(child):
-                return True
-
-        if hasattr(node, "arguments") and node.arguments:
-            for arg in node.arguments:
-                if self._ast_uses_temporal(arg):
-                    return True
-
-        return False
-
-    def _compile_item_spawn_conditions(
-        self,
-        items_appearance: Any | None,
-        *,
-        bar_schema: dict[str, str],
-        env_vars: list[Any],
-        compiled_vfs_profiles: CompiledVFSProfiles | None,
-        temporal_supported: bool,
-    ) -> None:
-        """Parse and type-check spawn conditions, storing AST on each rule."""
-
-        if items_appearance is None:
-            return
-
-        condition_schema = self._build_spawn_condition_schema(
-            bar_schema=bar_schema,
-            env_vars=env_vars,
-            compiled_vfs_profiles=compiled_vfs_profiles,
-            temporal_supported=temporal_supported,
-        )
-
-        parser = ExpressionParser()
-        type_checker = TypeChecker(schema=condition_schema)
-
-        for rule in items_appearance.items:
-            rule.when_ast = None
-            if rule.when is None:
-                continue
-
-            ast = parser.parse(rule.when)
-
-            if not temporal_supported and self._ast_uses_temporal(ast):
-                raise TypeCheckError("Spawn condition references temporal.* but temporal mechanics are disabled for this level")
-
-            result_type = type_checker.check(ast)
-            if result_type != "bool":
-                raise TypeCheckError(f"Spawn condition must return bool, got {result_type}")
-
-            rule.when_ast = ast
 
     # ------------------------------------------------------------------
     # v2.1 helpers
     # ------------------------------------------------------------------
 
-    def _build_observation_activity(self, obs_spec: ObservationSpec) -> ObservationActivity:
-        """Build ObservationActivity grouping dims by semantic_type and honoring masking.
-
-        - active_mask: one bool per obs dim, False where description contains 'MASKED'
-        - group_slices: contiguous slices per semantic_type (e.g., 'spatial', 'bars')
-        - active_field_uuids: UUIDs for fields that are not masked
-        """
-
-        if not obs_spec.fields:
-            return ObservationActivity(active_mask=(), group_slices={}, active_field_uuids=())
-
-        active_mask_list: list[bool] = []
-        active_uuids_list: list[str] = []
-
-        group_boundaries: dict[str, int] = {}
-        group_end_indices: dict[str, int] = {}
-        current_idx = 0
-
-        for field in obs_spec.fields:
-            is_masked = "MASKED" in (field.description or "")
-            dims = field.dims
-
-            group_name = field.semantic_type or "custom"
-            if group_name not in group_boundaries:
-                group_boundaries[group_name] = current_idx
-
-            # Expand mask and UUIDs
-            for _ in range(dims):
-                active_mask_list.append(not is_masked)
-                if not is_masked:
-                    active_uuids_list.append(field.uuid or "")
-
-            current_idx += dims
-            group_end_indices[group_name] = current_idx
-
-        group_slices = {name: slice(group_boundaries[name], group_end_indices[name]) for name in group_boundaries.keys()}
-
-        return ObservationActivity(
-            active_mask=tuple(active_mask_list),
-            group_slices=group_slices,
-            active_field_uuids=tuple(active_uuids_list),
-        )
 
     @staticmethod
-    def _apply_observation_mode(
-        fields: list[ObservationField],
-        mode_cfg: ObservationModeConfig,
-    ) -> list[ObservationField]:
-        """Filter observation fields based on observation_mode selection."""
 
-        if mode_cfg.mode == "full_auto":
-            return fields
 
-        if mode_cfg.mode == "max_compact":
-            return [f for f in fields if "MASKED" not in (f.description or "")]
 
-        if mode_cfg.mode == "full_manual":
-            includes = mode_cfg.include_fields or []
-            field_lookup = {field.name: field for field in fields}
-            missing = [name for name in includes if name not in field_lookup]
-            if missing:
-                raise ValueError(
-                    f"full_manual observation_mode requested unknown fields: {sorted(missing)}. Check names against ObservationSpec fields."
-                )
-            if not includes:
-                raise ValueError("full_manual observation_mode produced an empty field set; include_fields must match existing fields.")
-            return [field_lookup[name] for name in includes]
 
-        raise ValueError(f"Unsupported observation_mode '{mode_cfg.mode}'.")
 
-    def _build_observation_spec(
-        self,
-        stratum: StratumConfig,
-        environment: EnvConfigV21,
-        curriculum: CurriculumConfig,
-        compiled_vfs_profiles: CompiledVFSProfiles | None = None,
-        items_catalog: ItemsCatalogConfig | None = None,
-        compiled_effect_catalog: EffectCatalog | None = None,
-    ) -> ObservationSpec:
-        """Build observation spec using Support/Active pattern for v2.1."""
 
-        fields: list[ObservationField] = []
-        offset = 0
-
-        substrate = stratum.stratum.substrate
-        vision_support = stratum.stratum.vision_support  # canonical: global/partial/both/none
-        temporal_support = stratum.stratum.temporal_support
-        active_vision = curriculum.curriculum.active_vision
-        vision_range = curriculum.curriculum.vision_range
-        active_temporal = curriculum.curriculum.active_temporal
-
-        # Normalize curriculum active vision: local → partial (POMDP)
-        canon_active_vision = "partial" if active_vision in {"local", "partial"} else "global"
-
-        # Compatibility validation: curriculum cannot request modes not supported by stratum
-        if canon_active_vision == "global" and vision_support not in {"global", "both"}:
-            raise ValueError(
-                "Invalid vision configuration: curriculum.active_vision='global' but "
-                f"stratum.vision_support='{vision_support}'. "
-                "active_vision='global' requires vision_support to be 'global' or 'both'."
-            )
-        if canon_active_vision == "partial" and vision_support not in {"partial", "both"}:
-            raise ValueError(
-                "Invalid vision configuration: curriculum.active_vision indicates partial/local vision but "
-                f"stratum.vision_support='{vision_support}'. "
-                "Partial observability requires vision_support to be 'partial' or 'both'."
-            )
-
-        # Grid dimensions (for grid-based substrates)
-        grid_width = grid_height = 0
-        grid_cells = 0
-        if substrate.type in {"grid", "grid3d"} and substrate.grid is not None:
-            grid_width = substrate.grid.width
-            grid_height = substrate.grid.height
-            depth = getattr(substrate.grid, "depth", None)
-            if depth is not None:
-                grid_cells = grid_width * grid_height * depth
-            else:
-                grid_cells = grid_width * grid_height
-        elif substrate.type == "gridnd" and substrate.gridnd is not None:
-            grid_cells = 1
-            for size in substrate.gridnd.dimension_sizes:
-                grid_cells *= size
-
-        # Vision: global
-        if vision_support in {"both", "global"}:
-            # Global vision only defined for grid substrates; gridnd uses flattened cells.
-            if grid_cells:
-                dims = grid_cells
-                is_active = canon_active_vision == "global"
-                if substrate.type == "gridnd":
-                    desc = f"{dims}‑cell gridnd encoding" if is_active else "MASKED (local vision active)"
-                elif grid_width and grid_height:
-                    desc = f"{grid_width}x{grid_height} grid encoding" if is_active else "MASKED (local vision active)"
-                else:
-                    desc = "Global grid encoding" if is_active else "MASKED (local vision active)"
-                fields.append(
-                    ObservationField(
-                        uuid=None,
-                        name="obs_grid_encoding",
-                        type="spatial_grid",
-                        dims=dims,
-                        start_index=offset,
-                        end_index=offset + dims,
-                        scope="agent",
-                        description=desc,
-                        semantic_type="spatial",
-                    )
-                )
-                offset += dims
-
-        # Vision: local / partial
-        if vision_support in {"both", "partial"}:
-            # Partial observability is only supported for low-dimensional grids.
-            if substrate.type == "gridnd" and canon_active_vision == "partial":
-                raise ValueError(
-                    "Partial observability (local vision) is not supported for gridnd substrates. "
-                    "Use active_vision='global' or vision_support='global'/'both' with grid substrates."
-                )
-
-            if substrate.type in {"grid", "grid3d"} and grid_width and grid_height:
-                # Derive window size from normalized vision_range [0, 1] using the
-                # v2.1 reference formula:
-                #   radius = ceil(vision_range * (grid_size / 2))
-                #   window_size = 2 * radius + 1
-                # This keeps obs_dim stable across curricula while allowing intuitive
-                # scaling with grid size.
-                radius = max(1, int(math.ceil(vision_range * (grid_width / 2.0))))
-                window_size = min((2 * radius) + 1, grid_width)
-
-                # For grid substrates we always treat the local window as a 2D footprint.
-                dims = window_size * window_size
-                is_active = canon_active_vision == "partial"
-                desc = f"{window_size}x{window_size} local window" if is_active else "MASKED (global vision active)"
-                fields.append(
-                    ObservationField(
-                        uuid=None,
-                        name="obs_local_window",
-                        type="spatial_grid",
-                        dims=dims,
-                        start_index=offset,
-                        end_index=offset + dims,
-                        scope="agent",
-                        description=desc,
-                        semantic_type="spatial",
-                    )
-                )
-                offset += dims
-
-        # Position / velocity (all spatial substrates)
-        #
-        # Position dimensions depend on substrate type and observation encoding:
-        # - Grid2D/Grid3D: 2D or 3D (fixed)
-        # - GridND: N dimensions (N=4 to 100)
-        # - Continuous/ContinuousND: N or 2N depending on observation_encoding
-        #   - relative: N dims (normalized [0,1])
-        #   - scaled: 2N dims (normalized + range sizes)
-        #   - absolute: N dims (raw coordinates)
-        # - Aspatial: 0 dims (no position)
-        #
-        # For continuous substrates, we build a temporary instance to query
-        # get_observation_dim() for accurate dimensions based on encoding mode.
-
-        position_dim = 0
-        velocity_dim = 0  # May differ from position_dim for scaled encoding
-
-        if substrate.type == "aspatial":
-            # Aspatial substrates have no position
-            position_dim = 0
-            velocity_dim = 0
-
-        elif substrate.type in {"grid", "grid3d"}:
-            # Discrete grid substrates: position_dim = spatial dimensions
-            if substrate.grid is not None:
-                if substrate.grid.topology == "cubic":
-                    position_dim = 3
-                else:
-                    position_dim = 2
-            velocity_dim = position_dim  # Velocity matches position dims
-
-        elif substrate.type == "gridnd":
-            # High-dimensional discrete grids
-            if substrate.gridnd is not None:
-                position_dim = len(substrate.gridnd.dimension_sizes)
-            velocity_dim = position_dim
-
-        elif substrate.type in {"continuous", "continuousnd"}:
-            # Continuous substrates: observation dims depend on encoding mode
-            # Build temporary instance to query actual observation dimensions
-            try:
-                substrate_instance = SubstrateFactory.build(substrate, torch.device("cpu"))
-                position_dim = substrate_instance.get_observation_dim()
-
-                # Velocity always uses substrate's native dimensionality (not encoding)
-                # e.g., 2D continuous with scaled encoding: position=4, velocity=2
-                velocity_dim = substrate_instance.position_dim
-
-            except Exception as exc:
-                raise ValueError(
-                    "Failed to build substrate instance for observation dimension calculation. "
-                    "Fix the substrate config; compiler observation dimensions must come from the runtime substrate implementation."
-                ) from exc
-
-        # Add position observation field
-        if position_dim:
-            fields.append(
-                ObservationField(
-                    uuid=None,
-                    name="obs_position",
-                    type="vector",
-                    dims=position_dim,
-                    start_index=offset,
-                    end_index=offset + position_dim,
-                    scope="agent",
-                    description=f"Agent position ({position_dim}D)",
-                    semantic_type="spatial",
-                )
-            )
-            offset += position_dim
-
-        # Add velocity observation field (use velocity_dim, not position_dim)
-        if velocity_dim:
-            fields.append(
-                ObservationField(
-                    uuid=None,
-                    name="obs_velocity",
-                    type="vector",
-                    dims=velocity_dim,
-                    start_index=offset,
-                    end_index=offset + velocity_dim,
-                    scope="agent",
-                    description=f"Agent velocity ({velocity_dim}D)",
-                    semantic_type="spatial",
-                )
-            )
-            offset += velocity_dim
-
-        # Meters
-        meter_count = len(environment.environment.meters)
-        fields.append(
-            ObservationField(
-                uuid=None,
-                name="obs_meters",
-                type="vector",
-                dims=meter_count,
-                start_index=offset,
-                end_index=offset + meter_count,
-                scope="agent",
-                description=f"{meter_count} meter values (normalized)",
-                semantic_type="bars",
-            )
-        )
-        offset += meter_count
-
-        # Affordances: one-hot over full vocabulary + explicit "none" slot.
-        affordance_count = len(environment.environment.affordances)
-        affordance_dim = affordance_count + 1
-        fields.append(
-            ObservationField(
-                uuid=None,
-                name="obs_affordance_at_position",
-                type="vector",
-                dims=affordance_dim,
-                start_index=offset,
-                end_index=offset + affordance_dim,
-                scope="agent",
-                description=f"{affordance_dim}‑way one-hot affordance_at_position (including 'none')",
-                semantic_type="affordance",
-            )
-        )
-        offset += affordance_dim
-
-        # Observable effects (fixed slots; filtered by observable flag)
-        if compiled_effect_catalog is not None and compiled_effect_catalog.effects:
-            effect_slots = EFFECT_OBSERVATION_SLOTS
-            effect_dims = effect_slots * 3  # [effect_id, remaining_norm, active_flag]
-            fields.append(
-                ObservationField(
-                    uuid=None,
-                    name="obs_effects",
-                    type="vector",
-                    dims=effect_dims,
-                    start_index=offset,
-                    end_index=offset + effect_dims,
-                    scope="agent",
-                    description=f"Observable effects (up to {effect_slots} slots)",
-                    semantic_type="effects",
-                )
-            )
-            offset += effect_dims
-
-        # VFS variables (environment-declared)
-        for var in environment.environment.variables:
-            dims = getattr(var, "dims", 1)
-            fields.append(
-                ObservationField(
-                    uuid=None,
-                    name=var.name,
-                    type="vector" if dims > 1 else "scalar",
-                    dims=dims,
-                    start_index=offset,
-                    end_index=offset + dims,
-                    scope=var.scope,
-                    description=var.description,
-                    semantic_type="custom",
-                )
-            )
-            offset += dims
-
-        # VFS observations (global + agent + item VFS)
-        # Compute total VFS dimensions from VFS profiles (flatten tensors/vectors).
-        vfs_dim = 0
-        item_vfs_dim = 0
-
-        def _var_flat_dim(var: Any) -> int:
-            """Flattened observation width for a compiled VFS variable."""
-            vtype = getattr(var, "type", None)
-            if vtype in {"int", "float", "bool", "agent_ref", "item_ref", "affordance_ref", "effect_ref"}:
-                return 1
-            if vtype in {"vec2i", "vec2f"}:
-                return 2
-            if vtype in {"vec3i", "vec3f"}:
-                return 3
-            if vtype in {"vecNi", "vecNf"}:
-                dims_val = getattr(var, "dims", None)
-                if dims_val is None:
-                    raise ValueError(f"Vector VFS variable '{getattr(var, 'name', '')}' is missing dims for obs_dim calculation.")
-                return int(dims_val)
-            if vtype in {"tensor1d", "tensor2d", "tensor3d", "tensorNd"}:
-                shape = getattr(var, "shape", None)
-                if not shape:
-                    raise ValueError(f"Tensor VFS variable '{getattr(var, 'name', '')}' is missing shape for obs_dim calculation.")
-                prod = 1
-                for dim in shape:
-                    prod *= dim
-                return prod
-            # Default: treat as scalar
-            return 1
-
-        if compiled_vfs_profiles is not None:
-            if compiled_vfs_profiles.global_profile is not None:
-                for compiled_var in compiled_vfs_profiles.global_profile.variables:
-                    vfs_dim += _var_flat_dim(compiled_var)
-
-            if compiled_vfs_profiles.agent_profile is not None:
-                for compiled_var in getattr(compiled_vfs_profiles.agent_profile, "variables", []):
-                    vfs_dim += _var_flat_dim(compiled_var)
-
-            # Item VFS: max_items_per_agent × max(flat_dim across profiles)
-            if compiled_vfs_profiles.item_profiles:
-                item_profiles_dict = compiled_vfs_profiles.item_profiles
-                if item_profiles_dict:
-                    max_profile_dim = 0
-                    for profile in item_profiles_dict.values():
-                        profile_vars = getattr(profile, "variables", [])
-                        profile_dim = 0
-                        for item_profile_var in profile_vars:
-                            profile_dim += _var_flat_dim(item_profile_var)
-                        max_profile_dim = max(max_profile_dim, profile_dim)
-
-                    max_items_per_agent: int | None = 3
-                    if items_catalog is not None:
-                        max_items_per_agent = items_catalog.max_items_per_agent
-                    else:
-                        max_items_per_agent = None
-
-                    if max_items_per_agent is None:
-                        raise ValueError(
-                            "VFS observation includes item variables but no items catalog is configured. "
-                            "Provide items.yaml with item profiles enabled or remove item VFS profiles."
-                        )
-
-                    item_vfs_dim = max_items_per_agent * max_profile_dim
-                    vfs_dim += item_vfs_dim
-
-        # Fail fast if item VFS dims are requested without an active item system
-        if item_vfs_dim > 0 and items_catalog is None:
-            raise ValueError(
-                "Observation spec includes item VFS dimensions, but items are disabled (no items catalog). "
-                "Enable items or remove item VFS profiles."
-            )
-
-        if vfs_dim > 0:
-            fields.append(
-                ObservationField(
-                    uuid=None,
-                    name="obs_vfs",
-                    type="vector",
-                    dims=vfs_dim,
-                    start_index=offset,
-                    end_index=offset + vfs_dim,
-                    scope="agent",
-                    description=f"VFS observations (global + agent + item, {vfs_dim} dims)",
-                    semantic_type="custom",
-                )
-            )
-            offset += vfs_dim
-
-        # Temporal fields
-        if temporal_support == "enabled":
-            # Rich temporal encoding: four dimensions
-            #   [0] time_of_day_sin
-            #   [1] time_of_day_cos
-            #   [2] day_progress (0.0–1.0 over 24h)
-            #   [3] is_night (0.0/1.0 indicator)
-            # Masking is handled via curriculum (active_temporal).
-            temporal_dims = 4
-            desc = "Temporal features (sin, cos, day_progress, is_night)" if active_temporal else "MASKED (temporal inactive)"
-            fields.append(
-                ObservationField(
-                    uuid=None,
-                    name="obs_temporal",
-                    type="vector",
-                    dims=temporal_dims,
-                    start_index=offset,
-                    end_index=offset + temporal_dims,
-                    scope="agent",
-                    description=desc,
-                    semantic_type="temporal",
-                )
-            )
-            offset += temporal_dims
-
-        mode_cfg: ObservationModeConfig = getattr(stratum.stratum, "observation_mode", ObservationModeConfig())
-        filtered_fields = self._apply_observation_mode(fields, mode_cfg)
-
-        # Re-index fields after filtering to keep contiguous start/end spans
-        reindexed: list[ObservationField] = []
-        offset = 0
-        for field in filtered_fields:
-            reindexed.append(
-                ObservationField(
-                    uuid=field.uuid,
-                    name=field.name,
-                    type=field.type,
-                    dims=field.dims,
-                    start_index=offset,
-                    end_index=offset + field.dims,
-                    scope=field.scope,
-                    description=field.description,
-                    semantic_type=field.semantic_type,
-                    categorical_labels=field.categorical_labels,
-                )
-            )
-            offset += field.dims
-
-        return ObservationSpec.from_fields(fields=reindexed)
-
-    def _build_action_space_metadata(
-        self,
-        stratum: StratumConfig,
-        actions: ActionsConfig,
-        training: TrainingV2Config,
-        affordances: AffordancesV2Config,
-        items: ItemsCatalogConfig | None,
-        config_pack_path: Path,
-    ) -> ActionSpaceMetadata:
-        """Build action space metadata using substrate actions + custom actions."""
-        entries: list[ActionMetadata] = []
-        next_id = 0
-
-        def _add(name: str, action_type: str, source: str, enabled: bool, movement_delta: tuple[float, ...] | None = None) -> None:
-            nonlocal next_id
-            entries.append(
-                ActionMetadata(
-                    id=next_id,
-                    name=name,
-                    type=action_type,  # type: ignore[arg-type]
-                    enabled=enabled,
-                    source=source,  # type: ignore[arg-type]
-                    costs={},
-                    description="",
-                    movement_delta=movement_delta,
-                )
-            )
-            next_id += 1
-
-        substrate_actions_cfg = actions.actions.substrate_actions
-        allow_interact = len(affordances.affordances) > 0
-        substrate_actions: list[ActionConfig] = []
-        substrate_names: set[str] = set()
-
-        allowed_names_raw = training.enabled_actions.custom if training.enabled_actions else None
-        custom_action_names = {custom.name for custom in actions.actions.custom_actions}
-        apply_global_filter = False
-        if allowed_names_raw is not None:
-            apply_global_filter = any(name not in custom_action_names for name in allowed_names_raw)
-        allowed_names = set(allowed_names_raw) if allowed_names_raw is not None else None
-
-        if substrate_actions_cfg.inherit:
-            # Build substrate instance using validated stratum config to derive canonical actions.
-            substrate = SubstrateFactory.build(stratum.stratum.substrate, torch.device("cpu"))
-            substrate_actions = substrate.get_default_actions()
-            substrate_names = {a.name for a in substrate_actions}
-            for action in substrate_actions:
-                enabled = True
-                if apply_global_filter and allowed_names is not None:
-                    enabled = action.name in allowed_names
-                if action.name == "INTERACT" and not allow_interact:
-                    enabled = False
-                movement_delta: tuple[float, ...] | None = None
-                if action.type == "movement" and action.delta is not None:
-                    movement_delta = tuple(float(d) for d in action.delta)
-                _add(action.name, action.type, "substrate", enabled, movement_delta=movement_delta)
-
-        reserved_names: set[str] = {"INTERACT"}
-        if items is not None:
-            reserved_names.add("GET")
-            for slot_idx in range(items.max_items_per_agent):
-                reserved_names.add(f"USE_SLOT_{slot_idx}")
-                reserved_names.add(f"DROP_SLOT_{slot_idx}")
-            for item in items.item_types:
-                for item_cmd in item.interactions.local_commands:
-                    reserved_names.add(build_item_command_action_name(item.id, item_cmd.name, "local"))
-                for item_cmd in item.interactions.inventory_commands:
-                    reserved_names.add(build_item_command_action_name(item.id, item_cmd.name, "inventory"))
-
-        enabled_custom = set(allowed_names) if allowed_names is not None else set()
-        for custom in actions.actions.custom_actions:
-            if custom.name in reserved_names:
-                raise ValueError(f"Action name '{custom.name}' is reserved for system actions and cannot be overridden")
-            if custom.name in substrate_names:
-                continue
-            action_type = "passive" if custom.name == "WAIT" else "interaction"
-            if apply_global_filter and allowed_names is not None:
-                enabled = custom.name in allowed_names
-            else:
-                enabled = custom.enabled_by_default or custom.name in enabled_custom
-            _add(custom.name, action_type, "custom", enabled)
-
-        if items is not None and items.max_items_per_agent > 0 and items.max_items_in_world > 0:
-            get_enabled = True
-            if apply_global_filter and allowed_names is not None:
-                get_enabled = "GET" in allowed_names
-            _add("GET", "interaction", "item", get_enabled)
-            for slot_idx in range(items.max_items_per_agent):
-                use_enabled = True
-                drop_enabled = True
-                if apply_global_filter and allowed_names is not None:
-                    use_enabled = f"USE_SLOT_{slot_idx}" in allowed_names
-                    drop_enabled = f"DROP_SLOT_{slot_idx}" in allowed_names
-                _add(f"USE_SLOT_{slot_idx}", "interaction", "item", use_enabled)
-                _add(f"DROP_SLOT_{slot_idx}", "interaction", "item", drop_enabled)
-            for item in items.item_types:
-                for item_cmd in item.interactions.local_commands:
-                    name = build_item_command_action_name(item.id, item_cmd.name, "local")
-                    enabled = True
-                    if apply_global_filter and allowed_names is not None:
-                        enabled = name in allowed_names
-                    _add(
-                        name,
-                        "interaction",
-                        "item",
-                        enabled,
-                    )
-                for item_cmd in item.interactions.inventory_commands:
-                    name = build_item_command_action_name(item.id, item_cmd.name, "inventory")
-                    enabled = True
-                    if apply_global_filter and allowed_names is not None:
-                        enabled = name in allowed_names
-                    _add(
-                        name,
-                        "interaction",
-                        "item",
-                        enabled,
-                    )
-
-        # Build action labels (compiler is the single source of truth)
-        # Get preset labels for name-based mapping (e.g., UP/DOWN/LEFT/RIGHT for gaming preset)
-        label_config = actions.actions.labels
-        label_preset = label_config.preset
-
-        # Load custom label overrides if present
-        labels_path = config_pack_path / "action_labels.yaml"
-        custom_label_overrides: dict[int, str] | None = None
-        if labels_path.exists():
-            import yaml
-
-            data = yaml.safe_load(labels_path.read_text()) or {}
-            raw_custom = data.get("custom")
-            if isinstance(raw_custom, dict):
-                custom_label_overrides = {int(k): str(v) for k, v in raw_custom.items()}
-
-        # Build preset label mapping by name (e.g., "UP" -> "UP" for gaming, "UP" -> "NORTH" for cardinal)
-        preset_label_map: dict[str, str] = {}
-        if label_preset and label_preset in PRESET_LABELS:
-            preset_labels_obj = PRESET_LABELS[label_preset]
-            # Map canonical action names to preset labels
-            for canonical_idx, label in preset_labels_obj.labels.items():
-                # Get canonical action name from CanonicalAction enum
-                canonical_name = CanonicalAction(canonical_idx).name
-                # Convert canonical name to substrate action name (e.g., MOVE_Y_POSITIVE -> UP)
-                if canonical_name == "MOVE_X_NEGATIVE":
-                    preset_label_map["LEFT"] = label
-                elif canonical_name == "MOVE_X_POSITIVE":
-                    preset_label_map["RIGHT"] = label
-                elif canonical_name == "MOVE_Y_NEGATIVE":
-                    preset_label_map["DOWN"] = label
-                elif canonical_name == "MOVE_Y_POSITIVE":
-                    preset_label_map["UP"] = label
-                elif canonical_name == "MOVE_Z_POSITIVE":
-                    preset_label_map["FORWARD"] = label
-                elif canonical_name == "MOVE_Z_NEGATIVE":
-                    preset_label_map["BACKWARD"] = label
-                elif canonical_name == "INTERACT":
-                    preset_label_map["INTERACT"] = label
-                elif canonical_name == "WAIT":
-                    preset_label_map["WAIT"] = label
-
-        # Build complete label dictionary for ALL actions (substrate + custom + item)
-        complete_labels: dict[int, str] = {}
-        label_description = PRESET_LABELS[label_preset].description if label_preset and label_preset in PRESET_LABELS else "Custom labels"
-        label_domain = PRESET_LABELS[label_preset].domain if label_preset and label_preset in PRESET_LABELS else "custom"
-
-        for entry in entries:
-            # Priority: custom label override > preset mapping > action name
-            if custom_label_overrides and entry.id in custom_label_overrides:
-                complete_labels[entry.id] = custom_label_overrides[entry.id]
-            elif entry.name in preset_label_map:
-                complete_labels[entry.id] = preset_label_map[entry.name]
-            else:
-                # No preset mapping (diagonal moves, custom actions, item actions) - use name
-                complete_labels[entry.id] = entry.name
-
-        return ActionSpaceMetadata(
-            total_actions=len(entries),
-            actions=tuple(entries),
-            labels=complete_labels,
-            label_description=label_description,
-            label_domain=label_domain,
-        )
-
-    def _build_meter_metadata(
-        self,
-        environment: EnvConfigV21,
-        bars: BarsV2Config,
-    ) -> MeterMetadata:
-        """Meters: use environment vocabulary, initial from bars."""
-        meter_lookup = {meter.name: meter for meter in bars.meters}
-        meter_infos: list[MeterInfo] = []
-        for idx, meter in enumerate(environment.environment.meters):
-            bar_cfg = meter_lookup.get(meter.name)
-            initial = bar_cfg.initial if bar_cfg else 0.0
-            meter_infos.append(
-                MeterInfo(
-                    name=meter.name,
-                    index=idx,
-                    critical=False,
-                    initial_value=initial,
-                    observable=True,
-                    description=meter.description,
-                )
-            )
-        return MeterMetadata(meters=tuple(meter_infos))
-
-    def _build_affordance_metadata(self, affordances: AffordancesV2Config) -> AffordanceMetadata:
-        """Affordance metadata derived from per-level affordances.yaml."""
-        infos: list[AffordanceInfo] = []
-        for aff in affordances.affordances:
-            # Extract effects from interactions (on_start stage for metadata)
-            # This is for visualization/UI purposes - the actual Effects execution uses compiled commands
-            effects_dict = {}
-            if aff.interactions and "on_start" in aff.interactions:
-                for cmd in aff.interactions["on_start"]:
-                    modify = getattr(cmd, "modify", None)
-                    if isinstance(modify, str) and modify.startswith("target.bar."):
-                        meter_name = modify.split(".")[-1]
-                        # Simple extraction - just parse basic addition (e.g., "target.bar.energy + 0.5")
-                        # This is best-effort for metadata; actual execution uses compiled Effects
-                        value_field = getattr(cmd, "value", None)
-                        if isinstance(value_field, str) and "+" in value_field:
-                            try:
-                                value_part = value_field.split("+")[-1].strip()
-                                effects_dict[meter_name] = float(value_part)
-                            except (ValueError, IndexError):
-                                pass  # Skip if not a simple addition
-
-            infos.append(
-                AffordanceInfo(
-                    id=aff.name,
-                    name=aff.name,
-                    enabled=True,
-                    effects=effects_dict,
-                    cost=float(aff.costs.get("money", 0.0)) if hasattr(aff, "costs") else 0.0,
-                    category=None,
-                    description="",
-                    position=None,
-                )
-            )
-        return AffordanceMetadata(affordances=tuple(infos))
-
-    def _build_optimization_data(
-        self,
-        bars: BarsV2Config,
-        affordances: AffordancesV2Config,
-        meter_metadata: MeterMetadata,
-        affordance_metadata: AffordanceMetadata,
-        action_metadata: ActionSpaceMetadata,
-        *,
-        day_length: int,
-    ) -> OptimizationData:
-        """Precompute tensors from v2.1 DTOs (depletions, cascades, modulations, temporal masks)."""
-        meter_lookup = {m.name: m.index for m in meter_metadata.meters}
-        base_depletions = torch.zeros(len(meter_metadata.meters), dtype=torch.float32)
-        for bar in bars.meters:
-            idx = meter_lookup.get(bar.name)
-            if idx is not None:
-                base_depletions[idx] = float(bar.depletion.passive)
-
-        cascade_entries: list[dict[str, Any]] = []
-        cascade_by_id: dict[str, list[dict[str, Any]]] = {}
-        for cascade in bars.cascades:
-            source_idx = meter_lookup.get(cascade.source)
-            target_idx = meter_lookup.get(cascade.target)
-            if source_idx is None or target_idx is None:
-                missing_source = cascade.source not in meter_lookup
-                missing_target = cascade.target not in meter_lookup
-                parts = ["Invalid cascade entry in bars.yaml."]
-                if missing_source:
-                    parts.append(f"  Unknown source meter: {cascade.source!r}")
-                if missing_target:
-                    parts.append(f"  Unknown target meter: {cascade.target!r}")
-                parts.append("  Valid meters: " + ", ".join(sorted(meter_lookup.keys())))
-                raise ValueError("\n".join(parts))
-            entry = {
-                "source_idx": source_idx,
-                "target_idx": target_idx,
-                "threshold": float(cascade.threshold),
-                "strength": float(cascade.strength),
-            }
-            cascade_entries.append(entry)
-            pair_id = f"{cascade.source}->{cascade.target}"
-            cascade_by_id[pair_id] = cascade_by_id.get(pair_id, []) + [entry]
-
-        modulation_entries: list[dict[str, Any]] = []
-        for modulation in affordances.modulations:
-            bar_idx = meter_lookup.get(modulation.bar)
-            if bar_idx is None:
-                raise ValueError(
-                    "Invalid modulation entry in affordances.yaml.\n"
-                    f"  Unknown bar: {modulation.bar!r}\n"
-                    "  Valid meters: " + ", ".join(sorted(meter_lookup.keys()))
-                )
-            for aff_name in modulation.affordances:
-                target_idx = next((i for i, a in enumerate(affordance_metadata.affordances) if a.name == aff_name), None)
-                if target_idx is None:
-                    valid_affordances = [a.name for a in affordance_metadata.affordances]
-                    raise ValueError(
-                        "Invalid modulation entry in affordances.yaml.\n"
-                        f"  Unknown affordance in modulation.affordances: {aff_name!r}\n"
-                        "  Valid affordances: " + ", ".join(sorted(valid_affordances))
-                    )
-                modulation_entries.append(
-                    {
-                        "bar_idx": bar_idx,
-                        "affordance_idx": target_idx,
-                        "threshold": float(modulation.threshold),
-                        "min_multiplier": float(modulation.min_multiplier),
-                    }
-                )
-
-        # Build action mask table [day_length, num_affordances] from per-affordance opening hours.
-        # Rows correspond to discrete hours in the curriculum's day; columns align with
-        # affordance indices in AffordanceMetadata. This is consumed by the runtime
-        # via metadata.affordance_id_to_index and _is_affordance_open().
-        num_hours = max(day_length, 1)
-        num_affordances = len(affordance_metadata.affordances)
-        action_mask_table = torch.ones((num_hours, num_affordances), dtype=torch.bool)
-
-        # Build lookup from affordance name to its metadata index.
-        affordance_index: dict[str, int] = {info.name: idx for idx, info in enumerate(affordance_metadata.affordances)}
-
-        # For each affordance, compute its availability across the configured day_length.
-        for aff_cfg in affordances.affordances:
-            aff_idx = affordance_index.get(aff_cfg.name)
-            if aff_idx is None:
-                # Should not happen due to earlier vocabulary validation, but guard defensively.
-                continue
-
-            # Default: 24/7 availability when opening_hours.enabled is False.
-            hours_enabled = torch.ones(num_hours, dtype=torch.bool)
-            opening = aff_cfg.opening_hours
-            if opening.enabled and opening.schedule:
-                hours_enabled[:] = False
-                for window in opening.schedule:
-                    # Windows are expressed in 0-23 (start) and 1-28 (end, may exceed 24 for overnight).
-                    start = int(window.start)
-                    end = int(window.end)
-                    for hour in range(start, end):
-                        hours_enabled[hour % num_hours] = True
-
-            # Apply affordance-specific availability to the corresponding column.
-            action_mask_table[:, aff_idx] &= hours_enabled
-
-        return OptimizationData(
-            base_depletions=base_depletions,
-            # v2.1: BarsV2Config does not classify cascades by tier; all
-            # meter-to-meter cascades are exposed under a single category
-            # consumed by MeterDynamics.apply_secondary_to_primary_effects.
-            cascade_data={"primary_to_pivotal": cascade_entries, **cascade_by_id},
-            modulation_data=modulation_entries,
-            action_mask_table=action_mask_table,
-            affordance_position_map={aff.name: None for aff in affordance_metadata.affordances},
-        )
-
-    def _validate_trigger_cascade_ids(
-        self,
-        compiled_effect_catalog: EffectCatalog,
-        optimization_data: OptimizationData,
-        *,
-        level_name: str,
-    ) -> None:
-        """Ensure trigger_cascade commands reference cascades compiled for this level."""
-        valid_ids = set(optimization_data.cascade_data.keys())
-        if not valid_ids:
-            for effect in compiled_effect_catalog.effects.values():
-                for cmd in self._walk_commands(effect):
-                    if cmd.type == CommandType.TRIGGER_CASCADE:
-                        raise ValueError(
-                            "trigger_cascade referenced but no cascades are defined in bars.yaml.\n"
-                            f"  Level: {level_name}\n"
-                            f"  Effect: {effect.id}\n"
-                            "  Define cascades in bars.cascades before using trigger_cascade."
-                        )
-            return
-
-        for effect in compiled_effect_catalog.effects.values():
-            for cmd in self._walk_commands(effect):
-                if cmd.type == CommandType.TRIGGER_CASCADE:
-                    cascade_id = cmd.cascade_id
-                    if not cascade_id or cascade_id not in valid_ids:
-                        raise ValueError(
-                            "trigger_cascade references unknown cascade_id.\n"
-                            f"  Level: {level_name}\n"
-                            f"  Effect: {effect.id}\n"
-                            f"  cascade_id: {cascade_id!r}\n"
-                            f"  Valid cascade ids: {sorted(valid_ids)}"
-                        )
 
     @staticmethod
-    def _walk_commands(effect: Any):
-        """Yield all CommandNodes from a compiled effect (recursively)."""
 
-        def walk(cmd):
-            yield cmd
-            if cmd.type == CommandType.IF:
-                for child in cmd.then_commands or []:
-                    yield from walk(child)
-                for child in cmd.else_commands or []:
-                    yield from walk(child)
-            elif cmd.type == CommandType.FOR_EACH:
-                for child in cmd.body or cmd.do_commands or []:
-                    yield from walk(child)
-            elif cmd.type == CommandType.SWITCH:
-                for _, body in cmd.cases or []:
-                    for child in body:
-                        yield from walk(child)
-                for child in cmd.default_commands or []:
-                    yield from walk(child)
-            elif cmd.type == CommandType.REDUCE:
-                # reduce has no nested commands; accumulator logic uses expressions only
-                pass
-            elif cmd.type == CommandType.PARALLEL:
-                for child in cmd.parallel_commands or []:
-                    yield from walk(child)
-            elif cmd.type == CommandType.DELAY:
-                for child in cmd.delay_commands or []:
-                    yield from walk(child)
 
-        pipelines = list(effect.on_spawn) + list(effect.on_tick) + list(effect.on_despawn) + list(getattr(effect, "on_interrupt", []) or [])
-        for command in pipelines:
-            yield from walk(command)
-
-    def _build_vfs_observation_fields(self, obs_spec: ObservationSpec, environment: EnvConfigV21) -> tuple[VFSObservationField, ...]:
-        """Mirror ObservationSpec fields into VFS observation fields for runtime consumption."""
-
-        def _convert_normalization(var_name: str, norm_cfg: Any) -> NormalizationSpec:
-            """Map environment.yaml normalization into VFS NormalizationSpec."""
-            if norm_cfg is None:
-                raise ValueError(
-                    "Missing normalization for variable declared in environment.yaml.\n"
-                    f"  Variable: {var_name}\n"
-                    "  Rule: All variables must declare normalization (clip/normalize/standardize); method 'none' is not allowed."
-                )
-
-            method = getattr(norm_cfg, "method", None)
-            range_values = getattr(norm_cfg, "range", None)
-            mean = getattr(norm_cfg, "mean", None)
-            std = getattr(norm_cfg, "std", None)
-
-            if method is None:
-                raise ValueError(
-                    "Normalization entry missing 'method' in environment.yaml.\n"
-                    f"  Variable: {var_name}\n"
-                    "  Provide method: clip | normalize | standardize."
-                )
-
-            if method == "none":
-                raise ValueError(
-                    "Normalization method 'none' is not permitted (no defaults). "
-                    "Specify clip/normalize/standardize with explicit parameters.\n"
-                    f"  Variable: {var_name}"
-                )
-
-            if method in {"clip", "normalize"}:
-                if not range_values or len(range_values) != 2:
-                    raise ValueError(
-                        f"Normalization range must provide exactly two values [min, max].\n  Variable: {var_name}\n  Got: {range_values}"
-                    )
-                return NormalizationSpec(kind="minmax", min=range_values[0], max=range_values[1])
-            if method == "standardize":
-                if mean is None or std is None:
-                    raise ValueError(
-                        "Normalization method 'standardize' requires 'mean' and 'std' parameters in environment.yaml.\n"
-                        f"  Variable: {var_name}\n"
-                        "  Action: add mean/std fields to normalization or use clip/normalize with explicit ranges."
-                    )
-                return NormalizationSpec(kind="zscore", mean=mean, std=std)
-
-            raise ValueError(f"Unsupported normalization method '{method}' for variable '{var_name}'. Use clip | normalize | standardize.")
-
-        env_norm_by_name: dict[str, NormalizationSpec] = {}
-        for var in environment.environment.variables:
-            env_norm_by_name[var.name] = _convert_normalization(var.name, getattr(var, "normalization", None))
-
-        fields: list[VFSObservationField] = []
-        allowed_semantic = {"bars", "spatial", "affordance", "temporal", "custom"}
-        for field in obs_spec.fields:
-            norm = env_norm_by_name.get(field.name)
-            semantic = field.semantic_type if field.semantic_type in allowed_semantic else "custom"
-            fields.append(
-                VFSObservationField(
-                    id=field.name,
-                    source_variable=field.name,
-                    exposed_to=["agent"],
-                    shape=[field.dims],
-                    normalization=norm,
-                    semantic_type=semantic,  # type: ignore[arg-type]  # semantic_type is Literal type
-                    curriculum_active="MASKED" not in (field.description or ""),
-                )
-            )
-        return tuple(fields)
-
-    def _build_vfs_variables(self, obs_spec: ObservationSpec, environment: EnvConfigV21) -> tuple[VariableDef, ...]:
-        """Build VFS variables from observation fields + environment variables.
-
-        Creates VariableDefs for:
-        1. System observation primitives (obs_position, obs_meters, etc.) from obs_spec
-        2. User-defined variables from environment.environment.variables
-
-        This ensures every VFSObservationField.source_variable has a backing VariableDef.
-        """
-        vars_out: list[VariableDef] = []
-
-        def _convert_normalization(var_name: str, norm_cfg: Any) -> NormalizationSpec:
-            """Map environment.yaml normalization into VFS NormalizationSpec."""
-            if norm_cfg is None:
-                raise ValueError(
-                    "Missing normalization for variable declared in environment.yaml.\n"
-                    f"  Variable: {var_name}\n"
-                    "  Rule: All variables must declare normalization (clip/normalize/standardize); method 'none' is not allowed."
-                )
-
-            method = getattr(norm_cfg, "method", None)
-            range_values = getattr(norm_cfg, "range", None)
-            mean = getattr(norm_cfg, "mean", None)
-            std = getattr(norm_cfg, "std", None)
-
-            if method is None:
-                raise ValueError(
-                    "Normalization entry missing 'method' in environment.yaml.\n"
-                    f"  Variable: {var_name}\n"
-                    "  Provide method: clip | normalize | standardize."
-                )
-
-            if method == "none":
-                raise ValueError(
-                    "Normalization method 'none' is not permitted (no defaults). "
-                    "Specify clip/normalize/standardize with explicit parameters.\n"
-                    f"  Variable: {var_name}"
-                )
-
-            if method in {"clip", "normalize"}:
-                if not range_values or len(range_values) != 2:
-                    raise ValueError(
-                        f"Normalization range must provide exactly two values [min, max].\n  Variable: {var_name}\n  Got: {range_values}"
-                    )
-                return NormalizationSpec(kind="minmax", min=range_values[0], max=range_values[1])
-            if method == "standardize":
-                if mean is None or std is None:
-                    raise ValueError(
-                        "Normalization method 'standardize' requires 'mean' and 'std' parameters in environment.yaml.\n"
-                        f"  Variable: {var_name}\n"
-                        "  Action: add mean/std fields to normalization or use clip/normalize with explicit ranges."
-                    )
-                return NormalizationSpec(kind="zscore", mean=mean, std=std)
-
-            raise ValueError(f"Unsupported normalization method '{method}' for variable '{var_name}'. Use clip | normalize | standardize.")
-
-        # Build lookup of user-defined variable names
-        user_var_names = {var.name for var in environment.environment.variables}
-
-        # System observation primitives (obs_position, obs_meters, obs_grid_encoding, etc.)
-        # These are compiler-generated fields from obs_spec that need backing VariableDefs
-        for field in obs_spec.fields:
-            # Skip user-defined variables - they're handled below with full metadata from environment.yaml
-            if field.name in user_var_names:
-                continue
-
-            # Create VariableDef for system primitives
-            is_vector = field.dims > 1
-            default = [0.0] * field.dims if is_vector else 0.0
-
-            vars_out.append(
-                VariableDef(
-                    id=field.name,
-                    scope="agent",  # All observation primitives are agent-scoped
-                    type="vecNf" if is_vector else "scalar",
-                    dims=field.dims if is_vector else None,
-                    lifetime="tick",  # Refreshed every step
-                    readable_by=["agent", "engine"],
-                    writable_by=["engine"],  # Only engine writes observation primitives
-                    default=default,
-                    description=field.description or f"System observation primitive: {field.name}",
-                    normalization=None,  # System primitives are pre-normalized by environment
-                )
-            )
-
-        # User-defined variables (explicit declaration from environment.yaml)
-        for var in environment.environment.variables:
-            raw_dims = getattr(var, "dims", None)
-            # Tensor support: expect shape metadata on var.shape when present
-            shape = getattr(var, "shape", None)
-            var_type = getattr(var, "type", None)
-
-            is_tensor = var_type in {"tensor1d", "tensor2d", "tensor3d", "tensorNd"}
-            is_vector = bool(raw_dims and raw_dims > 1 and not is_tensor)
-
-            dims = raw_dims if is_vector else None
-            user_var_default: list[float] | float | None = 0.0
-            if is_tensor:
-                # For tensors, allow shape-backed default broadcasting; use zeros placeholder here.
-                user_var_default = None
-            elif is_vector and raw_dims is not None:
-                user_var_default = [0.0] * raw_dims
-
-            normalization = _convert_normalization(var.name, getattr(var, "normalization", None))
-
-            # Determine final type for VariableDef
-            # Use cast to narrow str to the Literal type expected by VariableDef
-            from typing import Literal as LiteralType
-            from typing import cast
-
-            if var_type is None:
-                final_type = cast(
-                    LiteralType[
-                        "scalar",
-                        "vec2i",
-                        "vec3i",
-                        "vec2f",
-                        "vec3f",
-                        "vecNi",
-                        "vecNf",
-                        "bool",
-                        "agent_ref",
-                        "item_ref",
-                        "tensor1d",
-                        "tensor2d",
-                        "tensor3d",
-                        "tensorNd",
-                    ],
-                    "vecNf" if is_vector else "scalar",
-                )
-            elif is_tensor:
-                final_type = cast(
-                    LiteralType[
-                        "scalar",
-                        "vec2i",
-                        "vec3i",
-                        "vec2f",
-                        "vec3f",
-                        "vecNi",
-                        "vecNf",
-                        "bool",
-                        "agent_ref",
-                        "item_ref",
-                        "tensor1d",
-                        "tensor2d",
-                        "tensor3d",
-                        "tensorNd",
-                    ],
-                    var_type,
-                )
-            else:
-                final_type = cast(
-                    LiteralType[
-                        "scalar",
-                        "vec2i",
-                        "vec3i",
-                        "vec2f",
-                        "vec3f",
-                        "vecNi",
-                        "vecNf",
-                        "bool",
-                        "agent_ref",
-                        "item_ref",
-                        "tensor1d",
-                        "tensor2d",
-                        "tensor3d",
-                        "tensorNd",
-                    ],
-                    "vecNf" if is_vector else "scalar",
-                )
-
-            vars_out.append(
-                VariableDef(
-                    id=var.name,
-                    scope=var.scope,
-                    type=final_type,
-                    dims=dims,
-                    lifetime="tick",
-                    readable_by=["agent", "engine"],
-                    writable_by=["engine"],
-                    default=user_var_default,
-                    description=var.description,
-                    normalization=normalization,
-                    shape=shape,
-                    initial_value_mode=getattr(var, "initial_value_mode", None),
-                    initial_value_params=getattr(var, "initial_value_params", None),
-                )
-            )
-        return tuple(vars_out)
 
     def _validate_drive_references_v21(
         self,
@@ -2598,108 +1149,6 @@ class UniverseCompiler:
                 raw.experiment_dir,
             )
 
-    def _build_universe_metadata(
-        self,
-        raw: RawConfigsV21,
-        primary_meta: CompiledUniverse.LevelMetadata,
-        *,
-        experiment_dir: Path,
-        config_hash: str | None = None,
-        config_mtime: float | None = None,
-    ) -> UniverseMetadata:
-        """Construct UniverseMetadata summary."""
-        meter_names = tuple(m.name for m in primary_meta.meter_metadata.meters)
-        meter_name_to_index = {m.name: m.index for m in primary_meta.meter_metadata.meters}
-        affordance_ids = tuple(a.id for a in primary_meta.affordance_metadata.affordances)
-        affordance_id_to_index = {a.id: idx for idx, a in enumerate(primary_meta.affordance_metadata.affordances)}
-
-        grid_size = None
-        grid_cells = None
-        position_dim = 0
-        substrate_cfg = raw.stratum.stratum.substrate
-        substrate_type = substrate_cfg.type
-        if substrate_type in {"grid", "grid3d"} and substrate_cfg.grid is not None:
-            width = substrate_cfg.grid.width
-            height = substrate_cfg.grid.height
-            grid_size = width
-            depth = getattr(substrate_cfg.grid, "depth", None)
-            if depth is not None:
-                grid_cells = width * height * depth
-                position_dim = 3
-            else:
-                grid_cells = width * height
-                position_dim = 2
-        elif substrate_type == "gridnd" and substrate_cfg.gridnd is not None:
-            # GridND: product of all dimension sizes, position dim = number of axes
-            grid_cells = 1
-            for size in substrate_cfg.gridnd.dimension_sizes:
-                grid_cells *= size
-            position_dim = len(substrate_cfg.gridnd.dimension_sizes)
-
-            # Temporal metadata: require explicit ticks_per_day when temporal support is enabled.
-            ticks_per_day: int | None = None
-        curriculum_day_length = primary_meta.curriculum.curriculum.day_length
-        temporal_supported = raw.stratum.stratum.temporal_support == "enabled"
-        temporal_active = primary_meta.curriculum.curriculum.active_temporal
-        if temporal_supported and temporal_active:
-            if curriculum_day_length is None or curriculum_day_length <= 0:
-                raise ValueError(
-                    "Missing curriculum.day_length for temporal-enabled stratum.\n"
-                    f"  Experiment: {experiment_dir}\n"
-                    f"  Level: {primary_meta.level_name}\n"
-                    "Provide an explicit positive day_length; no defaults are applied."
-                )
-            ticks_per_day = curriculum_day_length
-        else:
-            # Temporal support disabled; mark as zero ticks per day (no temporal mechanics).
-            ticks_per_day = 0
-
-        # Compute fingerprint if not provided by caller.
-        if config_hash is None:
-            config_hash = self._compute_config_hash(experiment_dir)
-        if config_mtime is None:
-            config_mtime = self._compute_config_mtime(experiment_dir)
-
-        # v2.1: experiment.version is mandatory.
-        try:
-            config_version = raw.experiment.experiment.version
-        except AttributeError as exc:
-            raise ValueError(
-                "experiment.version is required in experiment.yaml (no defaults allowed). Provide an explicit semantic version string."
-            ) from exc
-        if not config_version:
-            raise ValueError("experiment.version is required in experiment.yaml and cannot be empty.")
-
-        return UniverseMetadata(
-            universe_name=raw.experiment.experiment.metadata.name,
-            schema_version=SCHEMA_VERSION,
-            substrate_type=substrate_type,
-            position_dim=position_dim,
-            meter_count=len(meter_names),
-            meter_names=meter_names,
-            meter_name_to_index=meter_name_to_index,
-            affordance_count=len(affordance_ids),
-            affordance_ids=affordance_ids,
-            affordance_id_to_index=affordance_id_to_index,
-            action_count=primary_meta.action_metadata.total_actions,
-            observation_dim=primary_meta.observation_spec.total_dims,
-            grid_size=grid_size,
-            grid_cells=grid_cells,
-            max_sustainable_income=0.0,
-            total_affordance_costs=0.0,
-            economic_balance=0.0,
-            ticks_per_day=ticks_per_day,
-            config_version=config_version,
-            compiler_version=COMPILER_VERSION,
-            compiled_at=datetime.now(UTC).isoformat(),
-            config_hash=config_hash,
-            config_mtime=config_mtime,
-            provenance_id=str(experiment_dir),
-            compiler_git_sha="",
-            python_version=sys.version.split()[0],
-            torch_version=torch.__version__,
-            pydantic_version="",
-        )
 
     def _validate_dac_references(
         self,
@@ -3781,7 +2230,7 @@ class UniverseCompiler:
             if not file_path.exists():
                 continue
             normalized = self._normalize_yaml(file_path)
-            digest.update(file_path.name.encode("utf-8"))
+            digest.update(str(file_path.relative_to(config_dir)).encode("utf-8"))
             digest.update(normalized.encode("utf-8"))
         return digest.hexdigest()
 
@@ -3819,10 +2268,8 @@ class UniverseCompiler:
     ) -> str:
         """Compute full provenance ID including all dependencies.
 
-        Note: This is for debugging/reproducibility only. Cache invalidation uses
-        config_mtime + config_hash, NOT provenance_id, so dependency version changes
-        don't trigger unnecessary recompilation. This is intentional - the compiler
-        logic is version-stable, and dependency updates don't affect compiled output.
+        Cache validity includes this ID so compiler and dependency changes cannot
+        reuse an artifact compiled under different executable provenance.
         """
         payload = "|".join(
             [

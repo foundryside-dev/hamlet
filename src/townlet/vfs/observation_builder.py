@@ -47,8 +47,7 @@ def _variable_observation_dim(
         if max_elements is not None and prod > max_elements:
             raise ValueError(f"Tensor observation dim too large ({prod} > {max_elements}) for type={var_type}, shape={shape}.")
         return prod
-    # Fallback: treat unknown as scalar to preserve previous behavior
-    return 1
+    raise ValueError(f"Unsupported VFS variable type for observation dimension calculation: {var_type!r}.")
 
 
 @dataclass
@@ -333,23 +332,30 @@ def build_vfs_observation(
                 )
                 for profile_name, var_names in source_profiles:
                     idx_map = registry_profile_map.get(profile_name, {})
-                    indices = [idx_map[name] for name in var_names if name in idx_map]
-                    profile_indices[profile_name] = indices
+                    exposed_indices = [idx_map[name] for name in var_names if name in idx_map]
+                    profile_indices[profile_name] = exposed_indices
 
                 for agent_idx in range(batch_size):
                     for slot_idx in range(spec.max_items_per_agent):
                         vfs_idx = int(inventory_indices[agent_idx, slot_idx].item())
                         if vfs_idx == -1:
                             continue
-                        profile_name = (
-                            registry.item_vfs_index_to_profile.get(vfs_idx) if hasattr(registry, "item_vfs_index_to_profile") else None
-                        )
-                        indices = profile_indices.get(profile_name, []) if profile_name is not None else []
-                        if not indices:
-                            indices = list(range(vars_per_slot))  # Fallback to first vars_per_slot columns
+                        profile_lookup = getattr(registry, "item_vfs_index_to_profile", None)
+                        if profile_lookup is None:
+                            raise RuntimeError("Item VFS observation requires registry.item_vfs_index_to_profile metadata.")
+                        profile_name = profile_lookup.get(vfs_idx)
+                        if profile_name is None:
+                            raise RuntimeError(f"Item VFS observation cannot resolve profile for VFS row index {vfs_idx}.")
+                        selected_indices = profile_indices.get(profile_name)
+                        if selected_indices is None:
+                            raise RuntimeError(
+                                f"Item VFS observation has no exposed variable indices for profile {profile_name!r}."
+                            )
+                        if not selected_indices:
+                            continue
                         dest_start = slot_idx * vars_per_slot
-                        dest_end = dest_start + len(indices)
-                        item_obs[agent_idx, dest_start:dest_end] = item_vfs_storage[vfs_idx, indices]
+                        dest_end = dest_start + len(selected_indices)
+                        item_obs[agent_idx, dest_start:dest_end] = item_vfs_storage[vfs_idx, selected_indices]
 
         components.append(item_obs)
 

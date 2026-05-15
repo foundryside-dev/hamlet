@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from tests.test_townlet.helpers.config_builder import prepare_config_dir
+from tests.test_townlet.helpers.config_builder import PRIMARY_LEVEL_NAME, prepare_config_dir
 from townlet.universe.compiler import UniverseCompiler
 
 
@@ -60,7 +60,7 @@ def test_compiler_compiles_item_profiles(tmp_path: Path):
 
     # Exercise
     compiler = UniverseCompiler()
-    compiled = compiler.compile(experiment_dir, use_cache=False)
+    compiled = compiler.compile(experiment_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
 
     # Verify: Item profiles are compiled
     assert compiled.compiled_vfs_profiles is not None
@@ -125,7 +125,7 @@ def test_compiler_rejects_unknown_item_vfs_profile(tmp_path: Path):
 
     compiler = UniverseCompiler()
     with pytest.raises(ValueError):
-        compiler.compile(experiment_dir, use_cache=False)
+        compiler.compile(experiment_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
 
 
 def test_compiler_handles_missing_item_profiles(tmp_path: Path):
@@ -143,7 +143,7 @@ def test_compiler_handles_missing_item_profiles(tmp_path: Path):
 
     # Exercise
     compiler = UniverseCompiler()
-    compiled = compiler.compile(experiment_dir, use_cache=False)
+    compiled = compiler.compile(experiment_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
 
     # Verify: No error, item_profiles is empty dict
     assert compiled.compiled_vfs_profiles is not None

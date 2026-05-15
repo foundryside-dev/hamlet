@@ -7,7 +7,7 @@ import torch
 
 from townlet.effects.catalog import CompiledEffect, EffectCatalog
 from townlet.effects.schema import CommandNode, CommandType
-from townlet.universe.compiler import UniverseCompiler
+from townlet.universe.compilers.optimization import OptimizationCompiler
 from townlet.universe.optimization import OptimizationData
 
 
@@ -41,21 +41,21 @@ def _make_optimization(cascades: dict[str, list[dict]]) -> OptimizationData:
 def test_trigger_cascade_validates_known_id():
     catalog = _make_catalog("primary_to_pivotal")
     opt = _make_optimization({"primary_to_pivotal": []})
-    compiler = UniverseCompiler()
-    compiler._validate_trigger_cascade_ids(catalog, opt, level_name="L1")
+    compiler = OptimizationCompiler()
+    compiler.validate_trigger_cascade_ids(catalog, opt, level_name="L1")
 
 
 def test_trigger_cascade_rejects_unknown_id():
     catalog = _make_catalog("missing")
     opt = _make_optimization({"primary_to_pivotal": []})
-    compiler = UniverseCompiler()
+    compiler = OptimizationCompiler()
     with pytest.raises(ValueError, match="unknown cascade_id"):
-        compiler._validate_trigger_cascade_ids(catalog, opt, level_name="L1")
+        compiler.validate_trigger_cascade_ids(catalog, opt, level_name="L1")
 
 
 def test_trigger_cascade_rejects_when_no_cascades_defined():
     catalog = _make_catalog("anything")
     opt = _make_optimization({})
-    compiler = UniverseCompiler()
+    compiler = OptimizationCompiler()
     with pytest.raises(ValueError, match="no cascades are defined"):
-        compiler._validate_trigger_cascade_ids(catalog, opt, level_name="L1")
+        compiler.validate_trigger_cascade_ids(catalog, opt, level_name="L1")

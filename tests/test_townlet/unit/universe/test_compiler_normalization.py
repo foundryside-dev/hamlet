@@ -7,6 +7,7 @@ from pathlib import Path
 
 import yaml
 
+from tests.test_townlet.helpers.config_builder import PRIMARY_LEVEL_NAME
 from townlet.universe.compiler import UniverseCompiler
 
 
@@ -35,7 +36,7 @@ def test_standardize_normalization_maps_to_zscore(tmp_path: Path) -> None:
     env_path.write_text(yaml.safe_dump(env_data))
 
     compiler = UniverseCompiler()
-    compiled = compiler.compile(config_dir, use_cache=False)
+    compiled = compiler.compile(config_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
 
     target_var = next(v for v in compiled.vfs_variables if v.id == "time_since_last_eat")
     target_field = next(f for f in compiled.vfs_observation_fields if f.id == "time_since_last_eat")

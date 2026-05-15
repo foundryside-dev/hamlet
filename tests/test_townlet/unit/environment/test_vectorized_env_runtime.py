@@ -28,7 +28,7 @@ def test_vectorized_env_avoids_runtime_yaml_reads(monkeypatch, config_name: str)
         level_name = config_path.name
         experiment_dir = config_path.parents[1]
 
-    compiled = compiler.compile(experiment_dir)
+    compiled = compiler.compile(experiment_dir, primary_level=level_name)
 
     blocked = {"bars.yaml", "variables_reference.yaml", "action_labels.yaml"}
     original_open = Path.open

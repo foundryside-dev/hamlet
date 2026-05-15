@@ -57,6 +57,9 @@ def test_vfs_observation_includes_item_vfs_with_masking():
     registry.item_vfs[1, 1] = 0.7  # Agent 0, slot 1, freshness
     registry.item_vfs[2, 0] = 200.0  # Agent 1, slot 0, calories
     registry.item_vfs[2, 1] = 0.5  # Agent 1, slot 0, freshness
+    registry.register_item_instance(0, "food_stats")
+    registry.register_item_instance(1, "food_stats")
+    registry.register_item_instance(2, "food_stats")
 
     # Create inventory mapping: [batch, max_items_per_agent]
     # -1 means empty slot
@@ -164,6 +167,8 @@ def test_vfs_observation_handles_mixed_global_agent_item():
     registry.item_vfs = torch.zeros((4, 1), dtype=torch.float32, device=torch.device("cpu"))
     registry.item_vfs[0, 0] = 150.0  # Agent 0, slot 0
     registry.item_vfs[1, 0] = 200.0  # Agent 0, slot 1
+    registry.item_profile_map = {"food_stats": {"nutrition": 0}}
+    registry.item_vfs_index_to_profile = {0: "food_stats", 1: "food_stats"}
 
     # Create inventory
     agent_item_inventory = torch.tensor(
@@ -181,6 +186,7 @@ def test_vfs_observation_handles_mixed_global_agent_item():
         item_vfs_dim=2,  # 2 slots × 1 var
         max_items_per_agent=2,
         max_item_profiles=1,
+        item_profile_vars={"food_stats": ("nutrition",)},
     )
 
     # Exercise

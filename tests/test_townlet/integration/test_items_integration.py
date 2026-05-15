@@ -58,7 +58,7 @@ def test_items_catalog_validates_with_schema():
 def test_item_actions_are_auto_registered():
     """Item actions are auto-added to the action space when items are enabled."""
     compiler = UniverseCompiler()
-    universe = compiler.compile(Path("configs/test/items_smoke"), use_cache=False)
+    universe = compiler.compile(Path("configs/test/items_smoke"), primary_level="L0_smoke", use_cache=False)
 
     env = VectorizedHamletEnv(
         universe=universe,
@@ -78,7 +78,7 @@ def test_item_actions_are_auto_registered():
 def test_env_with_items_initializes():
     """Environment with ItemManager and InventoryState initializes correctly."""
     compiler = UniverseCompiler()
-    universe = compiler.compile(Path("configs/test/items_smoke"), use_cache=False)
+    universe = compiler.compile(Path("configs/test/items_smoke"), primary_level="L0_smoke", use_cache=False)
 
     env = VectorizedHamletEnv(
         universe=universe,
@@ -100,7 +100,7 @@ def test_env_with_items_initializes():
 def test_get_action_picks_up_item():
     """GET action picks up item and executes on_pickup Effects."""
     compiler = UniverseCompiler()
-    universe = compiler.compile(Path("configs/test/items_smoke"), use_cache=False)
+    universe = compiler.compile(Path("configs/test/items_smoke"), primary_level="L0_smoke", use_cache=False)
 
     env = VectorizedHamletEnv(
         universe=universe,
@@ -150,7 +150,7 @@ def test_get_action_picks_up_item():
 def test_use_slot_action_executes_effects():
     """USE_SLOT_N executes on_use Effects (apple increases energy)."""
     compiler = UniverseCompiler()
-    universe = compiler.compile(Path("configs/test/items_smoke"), use_cache=False)
+    universe = compiler.compile(Path("configs/test/items_smoke"), primary_level="L0_smoke", use_cache=False)
 
     env = VectorizedHamletEnv(
         universe=universe,
@@ -187,7 +187,7 @@ def test_use_slot_action_executes_effects():
 def test_drop_slot_action_spawns_item_in_world():
     """DROP_SLOT_N spawns item back into world at agent position."""
     compiler = UniverseCompiler()
-    universe = compiler.compile(Path("configs/test/items_smoke"), use_cache=False)
+    universe = compiler.compile(Path("configs/test/items_smoke"), primary_level="L0_smoke", use_cache=False)
 
     env = VectorizedHamletEnv(
         universe=universe,
@@ -233,7 +233,7 @@ def test_drop_slot_action_spawns_item_in_world():
 def test_automatic_item_spawning_at_reset():
     """Items spawn automatically at reset based on ItemsAppearanceConfig."""
     compiler = UniverseCompiler()
-    universe = compiler.compile(Path("configs/test/items_smoke"), use_cache=False)
+    universe = compiler.compile(Path("configs/test/items_smoke"), primary_level="L0_smoke", use_cache=False)
 
     env = VectorizedHamletEnv(
         universe=universe,
@@ -270,7 +270,7 @@ def test_automatic_item_spawning_at_reset():
 def test_periodic_item_respawning():
     """Items respawn at configured intervals after despawning."""
     compiler = UniverseCompiler()
-    universe = compiler.compile(Path("configs/test/items_smoke"), use_cache=False)
+    universe = compiler.compile(Path("configs/test/items_smoke"), primary_level="L0_smoke", use_cache=False)
 
     env = VectorizedHamletEnv(
         universe=universe,

@@ -1081,6 +1081,16 @@ class VectorizedHamletEnv:
         obs_fields = self.observation_spec.fields
         outputs: list[torch.Tensor] = []
 
+        def _ensure_observation_field_shape(field_name: str, value: torch.Tensor, dims: int) -> torch.Tensor:
+            if value.dim() == 1:
+                value = value.unsqueeze(1)
+            expected_shape = (self.num_agents, dims)
+            if value.dim() != 2 or tuple(value.shape) != expected_shape:
+                raise ValueError(
+                    f"Observation field '{field_name}' produced shape {tuple(value.shape)}, expected {expected_shape}."
+                )
+            return value
+
         for field in obs_fields:
             name = field.name
             dims = field.dims
@@ -1094,15 +1104,6 @@ class VectorizedHamletEnv:
                     else:
                         grid_encoding = self.substrate.encode_observation(self.positions, self.affordances)
                     value = grid_encoding
-                    # Pad or truncate to match spec dims for high-dimensional grids
-                    if value.dim() == 1:
-                        value = value.unsqueeze(1)
-                    if value.shape[1] != dims:
-                        padded = torch.zeros((self.num_agents, dims), device=self.device)
-                        if value.shape[1] > 0:
-                            fill = min(value.shape[1], dims)
-                            padded[:, :fill] = value[:, :fill]
-                        value = padded
             elif name == "obs_local_window":
                 if not self.partial_observability:
                     value = torch.zeros((self.num_agents, dims), device=self.device)
@@ -1118,30 +1119,13 @@ class VectorizedHamletEnv:
                 if pos is None:
                     value = torch.zeros((self.num_agents, dims), device=self.device)
                 else:
-                    # Align encoded dims with spec dims defensively.
-                    if pos.dim() == 1:
-                        pos = pos.unsqueeze(1)
-                    if pos.shape[1] == dims:
-                        value = pos
-                    elif pos.shape[1] > dims:
-                        value = pos[:, :dims]
-                    else:
-                        value = torch.zeros((self.num_agents, dims), device=self.device)
-                        value[:, : pos.shape[1]] = pos
+                    value = pos
             elif name == "obs_velocity":
                 vel = self._encode_velocity_observation()
                 if vel is None:
                     value = torch.zeros((self.num_agents, dims), device=self.device)
                 else:
-                    if vel.dim() == 1:
-                        vel = vel.unsqueeze(1)
-                    if vel.shape[1] == dims:
-                        value = vel
-                    elif vel.shape[1] > dims:
-                        value = vel[:, :dims]
-                    else:
-                        value = torch.zeros((self.num_agents, dims), device=self.device)
-                        value[:, : vel.shape[1]] = vel
+                    value = vel
             elif name == "obs_meters":
                 value = self.meters
             elif name in {"obs_affordance_at_position", "obs_affordances"}:
@@ -1201,9 +1185,7 @@ class VectorizedHamletEnv:
                 val = self.vfs_registry.get(name, reader="engine")
                 value = val if val.dim() > 1 else val.unsqueeze(1)
 
-            if value.dim() == 1:
-                value = value.unsqueeze(1)
-            outputs.append(value)
+            outputs.append(_ensure_observation_field_shape(name, value, dims))
 
         observations = torch.cat(outputs, dim=1)
 
@@ -1252,15 +1234,11 @@ class VectorizedHamletEnv:
         none_mask = row_sums == 0
         affordance_encoding[none_mask, num_types] = 1.0
 
-        # Align with spec dims defensively (older artifacts may differ).
-        if dims == total_dims:
-            return affordance_encoding
-        if dims < total_dims:
-            return affordance_encoding[:, :dims]
-
-        padded = torch.zeros(self.num_agents, dims, device=self.device)
-        padded[:, :total_dims] = affordance_encoding
-        return padded
+        if dims != total_dims:
+            raise ValueError(
+                f"Observation field 'obs_affordances' expected {dims} dims, but affordance encoding produced {total_dims}."
+            )
+        return affordance_encoding
 
     def _build_effects_observation(self, dims: int) -> torch.Tensor:
         """Encode observable effects into a fixed-size tensor."""
@@ -1270,7 +1248,13 @@ class VectorizedHamletEnv:
         if self.effect_manager is None or self.effect_observation_slots <= 0:
             return torch.zeros(self.num_agents, dims, device=self.device)
 
-        slots = max(1, min(self.effect_observation_slots, dims // 3))
+        expected_dims = self.effect_observation_slots * 3
+        if dims != expected_dims:
+            raise ValueError(
+                f"Observation field 'obs_effects' expected {dims} dims, but effect observation metadata requires {expected_dims}."
+            )
+
+        slots = self.effect_observation_slots
         effect_obs = torch.zeros(self.num_agents, slots, 3, device=self.device)
 
         for agent_idx in range(self.num_agents):
@@ -1281,15 +1265,7 @@ class VectorizedHamletEnv:
                 effect_obs[agent_idx, slot_idx, 1] = float(remaining) / float(total)
                 effect_obs[agent_idx, slot_idx, 2] = 1.0
 
-        flat = effect_obs.reshape(self.num_agents, slots * 3)
-        if flat.shape[1] == dims:
-            return flat
-        if flat.shape[1] > dims:
-            return flat[:, :dims]
-
-        padded = torch.zeros(self.num_agents, dims, device=self.device)
-        padded[:, : flat.shape[1]] = flat
-        return padded
+        return effect_obs.reshape(self.num_agents, slots * 3)
 
     def _encode_position_observation(self) -> torch.Tensor | None:
         """Encode agent position using substrate-native semantics.

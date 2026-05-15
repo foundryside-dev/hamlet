@@ -83,7 +83,7 @@ def test_item_vfs_observations_include_held_items():
     config_dir = Path("configs/test/items_smoke")
 
     compiler = UniverseCompiler()
-    compiled = compiler.compile(config_dir, use_cache=False)
+    compiled = compiler.compile(config_dir, primary_level="L0_smoke", use_cache=False)
 
     env = VectorizedHamletEnv(
         universe=compiled,
@@ -190,7 +190,7 @@ def test_item_vfs_masking_with_different_profiles():
     config_dir = Path("configs/test/items_smoke")
 
     compiler = UniverseCompiler()
-    compiled = compiler.compile(config_dir, use_cache=False)
+    compiled = compiler.compile(config_dir, primary_level="L0_smoke", use_cache=False)
 
     env = VectorizedHamletEnv(
         universe=compiled,
@@ -296,7 +296,7 @@ def test_item_vfs_updates_in_observations():
     config_dir = Path("configs/test/items_smoke")
 
     compiler = UniverseCompiler()
-    compiled = compiler.compile(config_dir, use_cache=False)
+    compiled = compiler.compile(config_dir, primary_level="L0_smoke", use_cache=False)
 
     env = VectorizedHamletEnv(
         universe=compiled,
@@ -378,7 +378,7 @@ def test_spawn_and_pickup_helper_is_robust_to_colocated_items():
     config_dir = Path("configs/test/items_smoke")
 
     compiler = UniverseCompiler()
-    compiled = compiler.compile(config_dir, use_cache=False)
+    compiled = compiler.compile(config_dir, primary_level="L0_smoke", use_cache=False)
 
     env = VectorizedHamletEnv(
         universe=compiled,

@@ -28,6 +28,8 @@ import pytest
 
 from townlet.universe.compiler import UniverseCompiler
 
+ITEMS_SMOKE_LEVEL = "L0_smoke"
+
 # === Baseline Regression Tests (No VFS Profiles) ===
 
 
@@ -58,7 +60,7 @@ def test_existing_configs_maintain_baseline_obs_dim(config_pack: str, expected_o
         pytest.skip(f"Config pack not found: {config_pack}")
 
     compiler = UniverseCompiler()
-    universe = compiler.compile(config_dir, use_cache=False)
+    universe = compiler.compile(config_dir.parents[1], primary_level=config_dir.name, use_cache=False)
 
     assert (
         universe.metadata.observation_dim == expected_obs_dim
@@ -92,7 +94,7 @@ def test_items_smoke_obs_dim_baseline():
         pytest.skip("items_smoke config pack not found (Activity 3 incomplete)")
 
     compiler = UniverseCompiler()
-    universe = compiler.compile(config_dir, use_cache=False)
+    universe = compiler.compile(config_dir, primary_level=ITEMS_SMOKE_LEVEL, use_cache=False)
 
     # After VFS profile integration (item VFS only, no global/agent profiles)
     # VFS contribution: 3 dims (3 slots × 1 max_var from food/medical profiles)
@@ -119,7 +121,7 @@ def test_items_smoke_obs_dim_after_vfs_integration():
     """
     config_dir = Path("configs/test/items_smoke")
     compiler = UniverseCompiler()
-    universe = compiler.compile(config_dir, use_cache=False)
+    universe = compiler.compile(config_dir, primary_level=ITEMS_SMOKE_LEVEL, use_cache=False)
 
     expected_total = 61  # 34 baseline + 24 obs_effects + 3 VFS
     assert universe.metadata.observation_dim == expected_total
@@ -232,8 +234,8 @@ def test_all_grid2d_global_vision_levels_same_obs_dim():
         if not config_dir.exists():
             continue
 
-        compiler = UniverseCompiler(config_dir)
-        universe = compiler.compile()
+        compiler = UniverseCompiler()
+        universe = compiler.compile(config_dir.parents[1], primary_level=config_dir.name)
         obs_dims.append((pack, universe.metadata.observation_dim))
 
     if len(obs_dims) < 2:
@@ -265,7 +267,7 @@ def test_vfs_profile_contribution_calculation():
         pytest.skip("items_smoke config pack not found")
 
     compiler = UniverseCompiler()
-    universe = compiler.compile(config_dir, use_cache=False)
+    universe = compiler.compile(config_dir, primary_level=ITEMS_SMOKE_LEVEL, use_cache=False)
 
     # Extract VFS contribution from compiled universe
     # NOTE: This requires UniverseCompiler to expose vfs_dims or similar metadata

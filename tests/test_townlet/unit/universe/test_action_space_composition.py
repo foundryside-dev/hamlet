@@ -12,6 +12,8 @@ import pytest
 
 from townlet.universe.compiler import UniverseCompiler
 
+PRIMARY_LEVEL = "L0"
+
 
 @pytest.fixture
 def temp_config_with_global_actions():
@@ -83,7 +85,7 @@ actions:
 
         # Compilation should raise CompilationError with UAC-ACT-002
         with pytest.raises(Exception) as exc_info:
-            compiler.compile(config_dir, use_cache=False)
+            compiler.compile(config_dir, primary_level=PRIMARY_LEVEL, use_cache=False)
 
         error_msg = str(exc_info.value)
 
@@ -121,7 +123,7 @@ actions:
         compiler = UniverseCompiler()
 
         with pytest.raises(Exception) as exc_info:
-            compiler.compile(config_dir, use_cache=False)
+            compiler.compile(config_dir, primary_level=PRIMARY_LEVEL, use_cache=False)
 
         error_msg = str(exc_info.value)
 
@@ -159,7 +161,7 @@ actions:
         compiler = UniverseCompiler()
 
         with pytest.raises(Exception) as exc_info:
-            compiler.compile(config_dir, use_cache=False)
+            compiler.compile(config_dir, primary_level=PRIMARY_LEVEL, use_cache=False)
 
         error_msg = str(exc_info.value)
 
@@ -207,7 +209,7 @@ actions:
         compiler = UniverseCompiler()
 
         # Should compile successfully
-        result = compiler.compile(config_dir, use_cache=False)
+        result = compiler.compile(config_dir, primary_level=PRIMARY_LEVEL, use_cache=False)
 
         assert result is not None, "Compilation should succeed with valid meters"
 
@@ -232,7 +234,7 @@ actions:
 """)
 
         compiler = UniverseCompiler()
-        result = compiler.compile(config_dir, use_cache=False)
+        result = compiler.compile(config_dir, primary_level=PRIMARY_LEVEL, use_cache=False)
 
         assert result is not None, "Empty costs/effects should compile successfully"
 

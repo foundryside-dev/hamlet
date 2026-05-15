@@ -9,7 +9,7 @@ import yaml
 
 from tests.test_townlet.helpers.config_builder import PRIMARY_LEVEL_NAME, prepare_config_dir
 from townlet.universe.compiler import UniverseCompiler
-from townlet.universe.raw_configs_v21 import MAX_ITEM_TYPES, MAX_SPAWN_RULES_PER_ITEM, MAX_VFS_PROFILES
+from townlet.universe.validation.limits import MAX_ITEM_TYPES, MAX_SPAWN_RULES_PER_ITEM, MAX_VFS_PROFILES
 
 
 def _make_item_types(count: int, *, profile: str = "default") -> list[dict]:
@@ -72,7 +72,7 @@ def test_item_catalog_rejects_more_than_max_item_types(tmp_path: Path) -> None:
 
     compiler = UniverseCompiler()
     with pytest.raises(ValueError, match="item_types exceeds safety limit"):
-        compiler.compile(config_dir, use_cache=False)
+        compiler.compile(config_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
 
 
 def test_spawn_rules_per_item_are_capped(tmp_path: Path) -> None:
@@ -88,7 +88,7 @@ def test_spawn_rules_per_item_are_capped(tmp_path: Path) -> None:
 
     compiler = UniverseCompiler()
     with pytest.raises(ValueError, match="spawn rules exceed safety limit"):
-        compiler.compile(config_dir, use_cache=False)
+        compiler.compile(config_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
 
 
 def test_vfs_profiles_count_is_capped(tmp_path: Path) -> None:
@@ -99,4 +99,4 @@ def test_vfs_profiles_count_is_capped(tmp_path: Path) -> None:
 
     compiler = UniverseCompiler()
     with pytest.raises(ValueError, match="vfs_profiles.yaml exceeds safety limit"):
-        compiler.compile(config_dir, use_cache=False)
+        compiler.compile(config_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)

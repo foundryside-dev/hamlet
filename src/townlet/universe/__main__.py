@@ -24,6 +24,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
     compile_parser = subparsers.add_parser("compile", help="Compile a config pack and optionally cache the artifact.")
     compile_parser.add_argument("config_dir", help="Path to config directory (contains training.yaml, bars.yaml, etc.)")
+    compile_parser.add_argument("--primary-level", required=True, help="Curriculum level to compile as the primary level.")
     compile_parser.add_argument(
         "--no-cache",
         action="store_true",
@@ -44,6 +45,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
     validate_parser = subparsers.add_parser("validate", help="Run compilation without touching the cache (lint-style check).")
     validate_parser.add_argument("config_dir", help="Path to config directory to validate")
+    validate_parser.add_argument("--primary-level", required=True, help="Curriculum level to validate as the primary level.")
 
     return parser
 
@@ -77,7 +79,7 @@ def _cmd_compile(args: argparse.Namespace) -> int:
 
     compiler = UniverseCompiler()
     start = time.perf_counter()
-    compiled = compiler.compile(config_dir, use_cache=not args.no_cache)
+    compiled = compiler.compile(config_dir, primary_level=args.primary_level, use_cache=not args.no_cache)
     elapsed_ms = (time.perf_counter() - start) * 1000.0
 
     _print_summary(compiled.metadata)
@@ -136,7 +138,7 @@ def _cmd_validate(args: argparse.Namespace) -> int:
 
     compiler = UniverseCompiler()
     start = time.perf_counter()
-    compiler.compile(config_dir, use_cache=False)
+    compiler.compile(config_dir, primary_level=args.primary_level, use_cache=False)
     elapsed_ms = (time.perf_counter() - start) * 1000.0
     print(f"Validation succeeded in {elapsed_ms:.1f} ms (no cache artifacts written)")
     return 0

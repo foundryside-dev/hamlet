@@ -22,7 +22,7 @@ from townlet.universe.compiler import UniverseCompiler
 @pytest.fixture(scope="module")
 def compiled_universe():
     compiler = UniverseCompiler()
-    return compiler.compile(Path("configs/test/model_config"))
+    return compiler.compile(Path("configs/test/model_config"), primary_level="L0_test")
 
 
 def test_attach_universe_metadata(compiled_universe) -> None:

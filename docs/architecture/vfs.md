@@ -552,6 +552,21 @@ The current repo has two registry surfaces:
 
 Runtime VFS evaluation uses `VariableRegistry.set_engine_value()` for evaluator writeback. This method is deliberately narrower than direct storage mutation: it still requires the variable to exist and requires `engine` write permission, but it bypasses declaration-shape checks so derived global VFS variables may store batched per-agent results when their expressions read batched bar state.
 
+Runtime add/remove of top-level registry variables is gated behind
+`VariableRegistry(dynamic_variable_mode=True)`. Callers must use
+`add_variable(...)` / `remove_variable(...)` with an explicit
+`network_shape_effect`:
+
+- `shape_stable_internal` for variables that do not change the agent
+  observation schema.
+- `observation_schema_changed` for observable variables or variables whose
+  addition/removal must fork the observation/network ABI.
+
+The registry rejects dynamic mutations by default, rejects observable variables
+unless the caller acknowledges `observation_schema_changed`, and records a
+`DynamicVariableMutation` audit entry containing the post-mutation
+`variable_schema_hash`.
+
 ### 7.3 Recommended registry invariants
 
 The registry should guarantee:
@@ -1519,6 +1534,13 @@ field offsets for `id_embedding`, `intensity`, `growth_rate`, `urgency`,
 `tag_embedding`, and `satisfaction_embedding`. `SetEncoderQNetwork` can reshape
 the flattened observation field back into token rows and mean-pool non-empty rows,
 so token order does not become part of the learned meaning.
+
+The runtime registry now also exposes a deliberately gated dynamic-variable
+mode for experiments that truly add/remove variable definitions during a run.
+This mode is off by default. Enabling it does not hide the network-shape
+consequence: each mutation must declare whether it is
+`shape_stable_internal` or `observation_schema_changed`, and observable
+variables require the latter.
 
 ### 15.4 Experiment enabled by VFS
 

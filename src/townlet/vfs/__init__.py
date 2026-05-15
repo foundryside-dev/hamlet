@@ -24,7 +24,7 @@ from townlet.vfs.generalisation import (
     operator_grammar_signature,
 )
 from townlet.vfs.observation_builder import VFSObservationSpec, apply_normalization
-from townlet.vfs.registry import VariableRegistry, VFSRegistryProtocol
+from townlet.vfs.registry import DynamicVariableMutation, VariableRegistry, VFSRegistryProtocol
 from townlet.vfs.relational import canonical_l5_relational_variables
 from townlet.vfs.schema import (
     NormalizationSpec,
@@ -108,6 +108,7 @@ __all__ = [
     "CompiledVTCTerminalCondition",
     "CompiledVTCThresholdCascade",
     "DEFAULT_TRANSITION_PHASES",
+    "DynamicVariableMutation",
     "DynamicNeedTokenLayout",
     "NormalizationSpec",
     "ObservationField",

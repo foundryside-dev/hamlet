@@ -17,11 +17,13 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from collections.abc import Set as AbstractSet
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Literal, Protocol, runtime_checkable
 
 import torch
 
 from townlet.vfs.schema import VariableDef, VariableScope
+from townlet.vfs.schema_hashes import compute_variable_schema_hash
 
 if TYPE_CHECKING:
     pass  # CompiledItemProfile not needed for type checking
@@ -31,7 +33,23 @@ __all__ = [
     "ScopedVariableRegistry",
     "VFSRegistryProtocol",
     "AccessDeniedError",
+    "DynamicVariableMutation",
 ]
+
+NetworkShapeEffect = Literal["shape_stable_internal", "observation_schema_changed"]
+_NETWORK_SHAPE_EFFECTS = {"shape_stable_internal", "observation_schema_changed"}
+
+
+@dataclass(frozen=True)
+class DynamicVariableMutation:
+    """Audit record for an explicitly gated runtime variable mutation."""
+
+    operation: Literal["add", "remove"]
+    variable_id: str
+    network_shape_effect: NetworkShapeEffect
+    shape: tuple[int, ...]
+    dtype: str
+    variable_schema_hash: str
 
 
 class AccessDeniedError(Exception):
@@ -90,6 +108,7 @@ class VariableRegistry:
         num_affordances: int = 0,
         num_zones: int = 0,
         num_message_slots: int = 0,
+        dynamic_variable_mode: bool = False,
         pair_storage_mode: Literal["dense", "sparse"] = "dense",
         pair_edges: torch.Tensor | Sequence[Sequence[int]] | None = None,
     ):
@@ -105,6 +124,7 @@ class VariableRegistry:
             num_affordances: Number of affordance-scope rows
             num_zones: Number of zone-scope rows
             num_message_slots: Number of recent-message buffer slots per agent
+            dynamic_variable_mode: Allow explicit add/remove of variable definitions during a run
             pair_storage_mode: Pair-scope allocation strategy, either dense all-pairs or sparse edge rows
             pair_edges: Directed pair edges as [num_pair_edges, 2], required for sparse pair variables
         """
@@ -114,9 +134,12 @@ class VariableRegistry:
         self.num_affordances = num_affordances
         self.num_zones = num_zones
         self.num_message_slots = num_message_slots
+        self.dynamic_variable_mode = dynamic_variable_mode
         self.pair_storage_mode = pair_storage_mode
         self.device = device
         self.item_profiles: dict[str, Any] = item_profiles or {}  # Store compiled profiles
+        self._dynamic_variable_mutations: list[DynamicVariableMutation] = []
+        self.variable_schema_generation = 0
         # Guardrail for tensor allocations
         self._max_tensor_elements = 1_000_000
 
@@ -167,6 +190,16 @@ class VariableRegistry:
                 print(f"{var_id}: {var_def.scope}")
         """
         return self._definitions
+
+    @property
+    def dynamic_variable_mutations(self) -> tuple[DynamicVariableMutation, ...]:
+        """Return runtime variable mutation audit records."""
+        return tuple(self._dynamic_variable_mutations)
+
+    @property
+    def variable_schema_hash(self) -> str:
+        """Return the current variable schema hash for this registry."""
+        return compute_variable_schema_hash(self._definitions.values())
 
     def _initialize_pair_storage_index(self, pair_edges: torch.Tensor | Sequence[Sequence[int]] | None) -> None:
         """Validate and store sparse pair topology metadata."""
@@ -285,35 +318,100 @@ class VariableRegistry:
             return float(var_def.default)
         return 0
 
+    def add_variable(self, var_def: VariableDef, *, network_shape_effect: NetworkShapeEffect) -> None:
+        """Add a variable definition and storage tensor during a dynamic-variable run."""
+        self._require_dynamic_variable_mode()
+        self._validate_network_shape_effect(var_def, network_shape_effect)
+        if var_def.id in self._definitions:
+            raise ValueError(f"Variable '{var_def.id}' already exists in registry")
+
+        tensor = self._build_storage_tensor(var_def)
+        self._definitions[var_def.id] = var_def
+        self._storage[var_def.id] = tensor
+        self._expected_shapes[var_def.id] = tensor.shape
+        self._expected_dtypes[var_def.id] = tensor.dtype
+        self._initial_storage[var_def.id] = tensor.clone()
+        self._record_dynamic_variable_mutation("add", var_def, network_shape_effect, tensor)
+
+    def remove_variable(self, variable_id: str, *, network_shape_effect: NetworkShapeEffect) -> None:
+        """Remove a variable definition and its storage during a dynamic-variable run."""
+        self._require_dynamic_variable_mode()
+        if variable_id not in self._definitions:
+            raise KeyError(f"Variable '{variable_id}' not found in registry")
+
+        var_def = self._definitions[variable_id]
+        self._validate_network_shape_effect(var_def, network_shape_effect)
+        tensor = self._storage[variable_id]
+        del self._definitions[variable_id]
+        del self._storage[variable_id]
+        del self._expected_shapes[variable_id]
+        del self._expected_dtypes[variable_id]
+        del self._initial_storage[variable_id]
+        self._record_dynamic_variable_mutation("remove", var_def, network_shape_effect, tensor)
+
+    def _require_dynamic_variable_mode(self) -> None:
+        if not self.dynamic_variable_mode:
+            raise ValueError("Runtime variable mutations require VariableRegistry(dynamic_variable_mode=True)")
+
+    def _validate_network_shape_effect(self, var_def: VariableDef, network_shape_effect: NetworkShapeEffect) -> None:
+        if network_shape_effect not in _NETWORK_SHAPE_EFFECTS:
+            raise ValueError(f"network_shape_effect must be one of {sorted(_NETWORK_SHAPE_EFFECTS)}")
+        if self._can_change_observation_schema(var_def) and network_shape_effect != "observation_schema_changed":
+            raise ValueError(
+                f"Variable '{var_def.id}' is agent-observable; dynamic add/remove must use "
+                "network_shape_effect='observation_schema_changed'"
+            )
+
+    def _can_change_observation_schema(self, var_def: VariableDef) -> bool:
+        return bool(var_def.observable or "agent" in var_def.exposed_to)
+
+    def _record_dynamic_variable_mutation(
+        self,
+        operation: Literal["add", "remove"],
+        var_def: VariableDef,
+        network_shape_effect: NetworkShapeEffect,
+        tensor: torch.Tensor,
+    ) -> None:
+        self.variable_schema_generation += 1
+        self._dynamic_variable_mutations.append(
+            DynamicVariableMutation(
+                operation=operation,
+                variable_id=var_def.id,
+                network_shape_effect=network_shape_effect,
+                shape=tuple(tensor.shape),
+                dtype=str(tensor.dtype),
+                variable_schema_hash=self.variable_schema_hash,
+            )
+        )
+
     def _initialize_storage(self) -> None:
         """Initialize storage tensors with default values for all variables."""
         for var_id, var_def in self._definitions.items():
-            # Determine tensor shape based on scope and type
-            shape = self._compute_shape(var_def)
-
-            # Initialize tensor with default value
-            if var_def.type == "scalar":
-                tensor = torch.full(shape, var_def.default, device=self.device, dtype=torch.float32)
-            elif var_def.type in ("agent_ref", "item_ref", "affordance_ref", "effect_ref"):
-                default_value = -1 if var_def.default is None else var_def.default
-                tensor = torch.full(shape, default_value, device=self.device, dtype=torch.long)
-            elif var_def.type in ("tensor1d", "tensor2d", "tensor3d", "tensorNd"):
-                tensor = self._initialize_tensor(var_def)
-            elif var_def.type in ("vecNi", "vecNf", "vec2i", "vec3i", "vec2f", "vec3f", "message_token"):
-                base_default = self._build_vector_default(var_def)
-                if len(shape) == 1:
-                    tensor = base_default.clone()
-                else:
-                    prefix_shape = shape[:-1]
-                    tensor = base_default.reshape((1,) * len(prefix_shape) + (base_default.shape[0],)).expand(shape).clone()
-            elif var_def.type == "bool":
-                tensor = torch.full(shape, var_def.default, device=self.device, dtype=torch.bool)
-            else:
-                raise ValueError(f"Unsupported variable type: {var_def.type}")
-
+            tensor = self._build_storage_tensor(var_def)
             self._storage[var_id] = tensor
             self._expected_shapes[var_id] = tensor.shape
             self._expected_dtypes[var_id] = tensor.dtype
+
+    def _build_storage_tensor(self, var_def: VariableDef) -> torch.Tensor:
+        """Build the initialized storage tensor for one variable definition."""
+        shape = self._compute_shape(var_def)
+
+        if var_def.type == "scalar":
+            return torch.full(shape, var_def.default, device=self.device, dtype=torch.float32)
+        if var_def.type in ("agent_ref", "item_ref", "affordance_ref", "effect_ref"):
+            default_value = -1 if var_def.default is None else var_def.default
+            return torch.full(shape, default_value, device=self.device, dtype=torch.long)
+        if var_def.type in ("tensor1d", "tensor2d", "tensor3d", "tensorNd"):
+            return self._initialize_tensor(var_def)
+        if var_def.type in ("vecNi", "vecNf", "vec2i", "vec3i", "vec2f", "vec3f", "message_token"):
+            base_default = self._build_vector_default(var_def)
+            if len(shape) == 1:
+                return base_default.clone()
+            prefix_shape = shape[:-1]
+            return base_default.reshape((1,) * len(prefix_shape) + (base_default.shape[0],)).expand(shape).clone()
+        if var_def.type == "bool":
+            return torch.full(shape, var_def.default, device=self.device, dtype=torch.bool)
+        raise ValueError(f"Unsupported variable type: {var_def.type}")
 
     def _compute_shape(self, var_def: VariableDef) -> tuple[int, ...]:
         """Compute tensor shape for a variable definition.

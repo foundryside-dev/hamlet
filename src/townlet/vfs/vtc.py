@@ -1,4 +1,4 @@
-"""Compile ActionConfig writes into masked tensor updates."""
+"""VFS Transition Compiler support for ActionConfig writes."""
 
 from __future__ import annotations
 
@@ -15,8 +15,8 @@ from townlet.world.expression.context import ExecutionContext
 from townlet.world.expression.evaluator import Evaluator
 
 
-class ActionWriteSource(Protocol):
-    """Minimal action shape needed by the VFS action-write compiler."""
+class VTCActionWriteSource(Protocol):
+    """Minimal action shape needed by the VTC action-write compiler."""
 
     @property
     def id(self) -> int: ...
@@ -29,8 +29,8 @@ class ActionWriteSource(Protocol):
 
 
 @dataclass(frozen=True)
-class CompiledActionWrite:
-    """A parsed action write with the metadata needed for masked execution."""
+class CompiledVTCActionWrite:
+    """A parsed VTC action write with the metadata needed for masked execution."""
 
     action_id: int
     action_name: str
@@ -47,10 +47,10 @@ class CompiledActionWrite:
 
 
 @dataclass(frozen=True)
-class CompiledActionWriteProgram:
-    """Executable collection of compiled action writes."""
+class VTCActionWriteProgram:
+    """Executable collection of compiled VTC action writes."""
 
-    writes: tuple[CompiledActionWrite, ...]
+    writes: tuple[CompiledVTCActionWrite, ...]
 
     def apply(
         self,
@@ -61,14 +61,14 @@ class CompiledActionWriteProgram:
         active_mask: torch.Tensor,
         device: torch.device,
     ) -> dict[str, torch.Tensor]:
-        """Apply compiled writes to a VFS state snapshot using action and active-agent masks."""
+        """Apply compiled VTC writes to a VFS state snapshot using action and active-agent masks."""
         if actions.shape != active_mask.shape:
             raise ValueError(f"actions shape {tuple(actions.shape)} must match active_mask shape {tuple(active_mask.shape)}")
 
         updated = {name: value.to(device=device).clone() for name, value in vfs_state.items()}
         for bar_name, value in bars_state.items():
             if bar_name in updated:
-                raise ValueError(f"Action write state has ambiguous bar/VFS variable '{bar_name}'")
+                raise ValueError(f"VTC action write state has ambiguous bar/VFS variable '{bar_name}'")
             updated[bar_name] = value.to(device=device).clone()
         bar_names = set(bars_state)
         actions_on_device = actions.to(device=device)
@@ -81,7 +81,7 @@ class CompiledActionWriteProgram:
 
             for write in phase_writes:
                 if write.variable_id not in phase_values:
-                    raise KeyError(f"Action write targets unknown VFS variable '{write.variable_id}'")
+                    raise KeyError(f"VTC action write targets unknown VFS variable '{write.variable_id}'")
 
                 context = ExecutionContext(
                     bars={name: phase_snapshot[name] for name in bar_names},
@@ -106,10 +106,10 @@ class CompiledActionWriteProgram:
 
         return updated
 
-    def _iter_phase_groups(self) -> list[tuple[CompiledActionWrite, ...]]:
-        phase_groups: list[tuple[CompiledActionWrite, ...]] = []
+    def _iter_phase_groups(self) -> list[tuple[CompiledVTCActionWrite, ...]]:
+        phase_groups: list[tuple[CompiledVTCActionWrite, ...]] = []
         current_phase: str | None = None
-        current_group: list[CompiledActionWrite] = []
+        current_group: list[CompiledVTCActionWrite] = []
 
         for write in self.writes:
             if current_phase is None:
@@ -127,7 +127,7 @@ class CompiledActionWriteProgram:
     def _apply_composed_write(
         self,
         *,
-        write: CompiledActionWrite,
+        write: CompiledVTCActionWrite,
         phase_value: torch.Tensor,
         expression_value: torch.Tensor,
         write_mask: torch.Tensor,
@@ -146,7 +146,7 @@ class CompiledActionWriteProgram:
             phase_value,
         )
 
-    def _compose_candidate(self, write: CompiledActionWrite, phase_value: torch.Tensor, expression_value: torch.Tensor) -> torch.Tensor:
+    def _compose_candidate(self, write: CompiledVTCActionWrite, phase_value: torch.Tensor, expression_value: torch.Tensor) -> torch.Tensor:
         expression = expression_value.to(device=phase_value.device, dtype=phase_value.dtype)
         if write.composition in {"overwrite", "last_write_wins", "priority_write", "clamp"}:
             return expression
@@ -159,12 +159,12 @@ class CompiledActionWriteProgram:
         if write.composition == "max":
             return torch.maximum(phase_value, expression)
         raise NotImplementedError(
-            f"Action write composition '{write.composition}' is not implemented yet; "
-            "claim/capacity/event compositions are tracked outside this action-write composition step."
+            f"VTC action write composition '{write.composition}' is not implemented yet; "
+            "claim/capacity/event compositions are tracked outside this VTC action-write composition step."
         )
 
     @staticmethod
-    def _apply_optional_clamp(write: CompiledActionWrite, value: torch.Tensor) -> torch.Tensor:
+    def _apply_optional_clamp(write: CompiledVTCActionWrite, value: torch.Tensor) -> torch.Tensor:
         if write.clamp is None:
             return value
         low, high = write.clamp
@@ -172,7 +172,7 @@ class CompiledActionWriteProgram:
 
     def _apply_priority_write(
         self,
-        write: CompiledActionWrite,
+        write: CompiledVTCActionWrite,
         phase_value: torch.Tensor,
         candidate: torch.Tensor,
         write_mask: torch.Tensor,
@@ -194,7 +194,7 @@ class CompiledActionWriteProgram:
 
     def _build_write_mask(
         self,
-        write: CompiledActionWrite,
+        write: CompiledVTCActionWrite,
         actions: torch.Tensor,
         active_mask: torch.Tensor,
         evaluator: Evaluator,
@@ -209,30 +209,30 @@ class CompiledActionWriteProgram:
         return write_mask & condition_mask
 
     @staticmethod
-    def _evaluate_tensor(evaluator: Evaluator, ast: ASTNode, kind: str, write: CompiledActionWrite) -> torch.Tensor:
+    def _evaluate_tensor(evaluator: Evaluator, ast: ASTNode, kind: str, write: CompiledVTCActionWrite) -> torch.Tensor:
         value: Any = evaluator.evaluate(ast)
         if not isinstance(value, torch.Tensor):
-            raise TypeError(f"Action write {write.telemetry_label} {kind} resolved to non-tensor value")
+            raise TypeError(f"VTC action write {write.telemetry_label} {kind} resolved to non-tensor value")
         return value
 
     @staticmethod
-    def _coerce_condition_mask(condition: torch.Tensor, actions: torch.Tensor, write: CompiledActionWrite) -> torch.Tensor:
+    def _coerce_condition_mask(condition: torch.Tensor, actions: torch.Tensor, write: CompiledVTCActionWrite) -> torch.Tensor:
         if condition.dim() == 0:
             return torch.full(actions.shape, bool(condition.item()), dtype=torch.bool, device=actions.device)
         if condition.shape != actions.shape:
             raise ValueError(
-                f"Condition for action write '{write.telemetry_label}' produced shape {tuple(condition.shape)}, "
+                f"Condition for VTC action write '{write.telemetry_label}' produced shape {tuple(condition.shape)}, "
                 f"expected {tuple(actions.shape)}"
             )
         return condition.to(device=actions.device, dtype=torch.bool)
 
     @staticmethod
-    def _broadcast_agent_mask(mask: torch.Tensor, target: torch.Tensor, write: CompiledActionWrite) -> torch.Tensor:
+    def _broadcast_agent_mask(mask: torch.Tensor, target: torch.Tensor, write: CompiledVTCActionWrite) -> torch.Tensor:
         if target.dim() == 0:
-            raise ValueError(f"Action write '{write.telemetry_label}' cannot apply a per-agent action mask to scalar variable")
+            raise ValueError(f"VTC action write '{write.telemetry_label}' cannot apply a per-agent action mask to scalar variable")
         if target.shape[0] != mask.shape[0]:
             raise ValueError(
-                f"Action write '{write.telemetry_label}' target leading dimension {target.shape[0]} "
+                f"VTC action write '{write.telemetry_label}' target leading dimension {target.shape[0]} "
                 f"does not match action batch {mask.shape[0]}"
             )
         broadcast_mask = mask
@@ -241,24 +241,24 @@ class CompiledActionWriteProgram:
         return broadcast_mask
 
 
-def compile_action_writes(actions: Sequence[ActionWriteSource]) -> CompiledActionWriteProgram:
-    """Compile ActionConfig writes into parsed records sorted by phase, priority, and action id."""
-    return compile_action_writes_with_phase_graph(actions, TransitionPhaseGraph.default())
+def compile_vtc_action_writes(actions: Sequence[VTCActionWriteSource]) -> VTCActionWriteProgram:
+    """Compile ActionConfig writes into VTC records sorted by phase, priority, and action id."""
+    return compile_vtc_action_writes_with_phase_graph(actions, TransitionPhaseGraph.default())
 
 
-def compile_action_writes_with_phase_graph(
-    actions: Sequence[ActionWriteSource],
+def compile_vtc_action_writes_with_phase_graph(
+    actions: Sequence[VTCActionWriteSource],
     phase_graph: TransitionPhaseGraph,
-) -> CompiledActionWriteProgram:
-    """Compile ActionConfig writes using an explicit transition phase graph."""
+) -> VTCActionWriteProgram:
+    """Compile ActionConfig writes using an explicit VTC transition phase graph."""
     parser = ExpressionParser()
-    compiled_writes: list[CompiledActionWrite] = []
+    compiled_writes: list[CompiledVTCActionWrite] = []
 
     for action in actions:
         for raw_write in action.writes:
             write = _coerce_write_spec(raw_write, action.name)
             compiled_writes.append(
-                CompiledActionWrite(
+                CompiledVTCActionWrite(
                     action_id=action.id,
                     action_name=action.name,
                     variable_id=write.variable_id,
@@ -274,7 +274,7 @@ def compile_action_writes_with_phase_graph(
                 )
             )
 
-    return CompiledActionWriteProgram(
+    return VTCActionWriteProgram(
         writes=tuple(
             sorted(
                 compiled_writes,

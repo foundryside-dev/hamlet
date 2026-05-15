@@ -364,7 +364,7 @@ class TestVectorizedHamletEnvStep:
 
         assert not torch.allclose(env.meters, initial_meters)
 
-    def test_step_executes_compiled_vfs_action_writes(self, compile_universe, test_config_pack_path, cpu_device):
+    def test_step_executes_vtc_action_writes(self, compile_universe, test_config_pack_path, cpu_device):
         universe = compile_universe(test_config_pack_path)
         write = WriteSpec(
             variable_id="deficit_energy",

@@ -9,7 +9,6 @@ from tests.test_townlet.helpers.config_builder import PRIMARY_LEVEL_NAME, prepar
 from townlet.environment.action_config import ActionConfig
 from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.dto import RuntimeAction
-from townlet.vfs.action_writes import compile_action_writes_with_phase_graph
 from townlet.vfs.schema import NormalizationSpec, ObservationField, VariableDef
 from townlet.vfs.schema_hashes import (
     canonical_action_schema,
@@ -23,6 +22,7 @@ from townlet.vfs.schema_hashes import (
     compute_vfs_hash,
 )
 from townlet.vfs.transition_graph import TransitionPhaseGraph
+from townlet.vfs.vtc import compile_vtc_action_writes_with_phase_graph
 
 
 def test_canonical_variable_schema_uses_sorted_contract_fields() -> None:
@@ -332,7 +332,7 @@ def test_transition_graph_hash_binds_phases_and_compiled_rule_fields() -> None:
         )
 
     action = make_action(expression="energy + 0.25", composition="additive_delta")
-    program = compile_action_writes_with_phase_graph([action], phase_graph)
+    program = compile_vtc_action_writes_with_phase_graph([action], phase_graph)
 
     assert canonical_transition_graph_schema(phase_graph, program) == {
         "phase_graph": {
@@ -361,10 +361,16 @@ def test_transition_graph_hash_binds_phases_and_compiled_rule_fields() -> None:
     changed_composition = make_action(expression="energy + 0.25", composition="overwrite")
 
     assert baseline != ""
-    assert baseline != compute_transition_graph_hash(reordered_graph, compile_action_writes_with_phase_graph([action], reordered_graph))
-    assert baseline != compute_transition_graph_hash(phase_graph, compile_action_writes_with_phase_graph([changed_expression], phase_graph))
     assert baseline != compute_transition_graph_hash(
-        phase_graph, compile_action_writes_with_phase_graph([changed_composition], phase_graph)
+        reordered_graph,
+        compile_vtc_action_writes_with_phase_graph([action], reordered_graph),
+    )
+    assert baseline != compute_transition_graph_hash(
+        phase_graph,
+        compile_vtc_action_writes_with_phase_graph([changed_expression], phase_graph),
+    )
+    assert baseline != compute_transition_graph_hash(
+        phase_graph, compile_vtc_action_writes_with_phase_graph([changed_composition], phase_graph)
     )
 
 
@@ -399,7 +405,7 @@ def test_compiler_surfaces_vfs_hash(tmp_path: Path) -> None:
     assert compiled.transition_graph_hash != ""
     assert compiled.transition_graph_hash == compute_transition_graph_hash(
         TransitionPhaseGraph.default(),
-        compile_action_writes_with_phase_graph(compiled.runtime_action_space.actions, TransitionPhaseGraph.default()),
+        compile_vtc_action_writes_with_phase_graph(compiled.runtime_action_space.actions, TransitionPhaseGraph.default()),
     )
     assert compiled.vfs_hash == expected
     assert compiled.all_levels is not None

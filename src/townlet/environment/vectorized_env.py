@@ -28,10 +28,10 @@ from townlet.environment.reward_calculator import RewardCalculator
 from townlet.items import InventoryState, ItemActionHandler, ItemManager
 from townlet.substrate.continuous import ContinuousSubstrate
 from townlet.universe.dto import RuntimeActionSpace
-from townlet.vfs.action_writes import CompiledActionWriteProgram, compile_action_writes
 from townlet.vfs.evaluator import EvaluationMode, VFSEvaluator
 from townlet.vfs.observation_builder import VFSObservationSpec
 from townlet.vfs.registry import VariableRegistry
+from townlet.vfs.vtc import VTCActionWriteProgram, compile_vtc_action_writes
 
 if TYPE_CHECKING:
     from townlet.exploration.base import ExplorationStrategy
@@ -436,7 +436,7 @@ class VectorizedHamletEnv:
         self.action_dim = self.action_space.action_dim
         self.action_ids = level.runtime_action_space.action_ids
         self._movement_deltas = self._build_movement_deltas()
-        self.vtc_action_write_program = compile_action_writes(self.action_space.actions)
+        self.vtc_action_write_program = compile_vtc_action_writes(self.action_space.actions)
 
         # State tensors (initialized in reset)
         self.positions = torch.zeros(
@@ -1272,7 +1272,7 @@ class VectorizedHamletEnv:
 
     def _apply_vtc_action_writes(self, actions: torch.Tensor, active_mask: torch.Tensor) -> None:
         """Apply compiled VFS transition writes for selected actions."""
-        program: CompiledActionWriteProgram = self.vtc_action_write_program
+        program: VTCActionWriteProgram = self.vtc_action_write_program
         if len(program.writes) == 0:
             return
 

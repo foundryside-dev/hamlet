@@ -1,12 +1,12 @@
-"""Tests for compiling ActionConfig writes into masked tensor updates."""
+"""Tests for compiling VTC ActionConfig writes into masked tensor updates."""
 
 import pytest
 import torch
 
 from townlet.environment.action_config import ActionConfig
-from townlet.vfs.action_writes import compile_action_writes, compile_action_writes_with_phase_graph
 from townlet.vfs.schema import WriteSpec
 from townlet.vfs.transition_graph import TransitionPhaseGraph
+from townlet.vfs.vtc import compile_vtc_action_writes, compile_vtc_action_writes_with_phase_graph
 
 
 def _write(
@@ -71,7 +71,7 @@ def _action(*, action_id: int, name: str, writes: list[WriteSpec]) -> ActionConf
     )
 
 
-def test_action_write_compiler_applies_write_only_to_selected_active_agents() -> None:
+def test_vtc_action_writes_applies_write_only_to_selected_active_agents() -> None:
     action = _action(
         action_id=2,
         name="REST",
@@ -86,7 +86,7 @@ def test_action_write_compiler_applies_write_only_to_selected_active_agents() ->
         ],
     )
 
-    program = compile_action_writes([action])
+    program = compile_vtc_action_writes([action])
     updated = program.apply(
         actions=torch.tensor([2, 0, 2]),
         vfs_state={"energy": torch.tensor([0.1, 0.2, 0.3])},
@@ -98,7 +98,7 @@ def test_action_write_compiler_applies_write_only_to_selected_active_agents() ->
     assert torch.allclose(updated["energy"], torch.tensor([0.35, 0.2, 0.3]))
 
 
-def test_action_write_compiler_combines_action_mask_with_condition() -> None:
+def test_vtc_action_writes_combines_action_mask_with_condition() -> None:
     action = _action(
         action_id=3,
         name="RECOVER",
@@ -113,7 +113,7 @@ def test_action_write_compiler_combines_action_mask_with_condition() -> None:
         ],
     )
 
-    program = compile_action_writes([action])
+    program = compile_vtc_action_writes([action])
     updated = program.apply(
         actions=torch.tensor([3, 3, 3]),
         vfs_state={"energy": torch.tensor([0.2, 0.8, 0.4])},
@@ -125,7 +125,7 @@ def test_action_write_compiler_combines_action_mask_with_condition() -> None:
     assert torch.allclose(updated["energy"], torch.tensor([0.6, 0.8, 0.8]))
 
 
-def test_action_write_compiler_can_target_meter_bars() -> None:
+def test_vtc_action_writes_can_target_meter_bars() -> None:
     action = _action(
         action_id=11,
         name="REST",
@@ -140,7 +140,7 @@ def test_action_write_compiler_can_target_meter_bars() -> None:
         ],
     )
 
-    program = compile_action_writes([action])
+    program = compile_vtc_action_writes([action])
     updated = program.apply(
         actions=torch.tensor([11, 0]),
         vfs_state={},
@@ -152,7 +152,7 @@ def test_action_write_compiler_can_target_meter_bars() -> None:
     assert torch.allclose(updated["energy"], torch.tensor([0.45, 0.3]))
 
 
-def test_action_write_compiler_composes_additive_and_multiplicative_writes() -> None:
+def test_vtc_action_writes_composes_additive_and_multiplicative_writes() -> None:
     action = _action(
         action_id=4,
         name="STACK",
@@ -200,7 +200,7 @@ def test_action_write_compiler_composes_additive_and_multiplicative_writes() -> 
         ],
     )
 
-    program = compile_action_writes([action])
+    program = compile_vtc_action_writes([action])
     updated = program.apply(
         actions=torch.tensor([4, 0]),
         vfs_state={"energy": torch.tensor([0.7, 0.7]), "fatigue": torch.tensor([2.0, 2.0])},
@@ -213,7 +213,7 @@ def test_action_write_compiler_composes_additive_and_multiplicative_writes() -> 
     assert torch.allclose(updated["fatigue"], torch.tensor([0.8, 2.0]))
 
 
-def test_action_write_compiler_composes_min_max_and_clamp_writes() -> None:
+def test_vtc_action_writes_composes_min_max_and_clamp_writes() -> None:
     action = _action(
         action_id=5,
         name="BOUNDS",
@@ -242,7 +242,7 @@ def test_action_write_compiler_composes_min_max_and_clamp_writes() -> None:
         ],
     )
 
-    program = compile_action_writes([action])
+    program = compile_vtc_action_writes([action])
     updated = program.apply(
         actions=torch.tensor([5, 0]),
         vfs_state={
@@ -260,7 +260,7 @@ def test_action_write_compiler_composes_min_max_and_clamp_writes() -> None:
     assert torch.allclose(updated["energy"], torch.tensor([1.0, 0.8]))
 
 
-def test_action_write_compiler_resolves_priority_and_last_write_wins() -> None:
+def test_vtc_action_writes_resolves_priority_and_last_write_wins() -> None:
     action = _action(
         action_id=6,
         name="CONFLICT",
@@ -308,7 +308,7 @@ def test_action_write_compiler_resolves_priority_and_last_write_wins() -> None:
         ],
     )
 
-    program = compile_action_writes([action])
+    program = compile_vtc_action_writes([action])
     updated = program.apply(
         actions=torch.tensor([6, 0]),
         vfs_state={"target": torch.tensor([0.0, 0.0]), "status": torch.tensor([0.0, 0.0])},
@@ -321,7 +321,7 @@ def test_action_write_compiler_resolves_priority_and_last_write_wins() -> None:
     assert torch.allclose(updated["status"], torch.tensor([0.7, 0.0]))
 
 
-def test_action_write_compiler_reads_phase_snapshot_before_committing_writes() -> None:
+def test_vtc_action_writes_reads_phase_snapshot_before_committing_writes() -> None:
     action = _action(
         action_id=7,
         name="ATOMIC",
@@ -349,7 +349,7 @@ def test_action_write_compiler_reads_phase_snapshot_before_committing_writes() -
         ],
     )
 
-    program = compile_action_writes([action])
+    program = compile_vtc_action_writes([action])
     updated = program.apply(
         actions=torch.tensor([7]),
         vfs_state={"energy": torch.tensor([1.0]), "satiation": torch.tensor([0.0])},
@@ -362,7 +362,7 @@ def test_action_write_compiler_reads_phase_snapshot_before_committing_writes() -
     assert torch.allclose(updated["satiation"], torch.tensor([10.0]))
 
 
-def test_action_write_compiler_uses_spec_phase_order_not_lexical_order() -> None:
+def test_vtc_action_writes_uses_spec_phase_order_not_lexical_order() -> None:
     action = _action(
         action_id=8,
         name="ORDER",
@@ -390,7 +390,7 @@ def test_action_write_compiler_uses_spec_phase_order_not_lexical_order() -> None
         ],
     )
 
-    program = compile_action_writes([action])
+    program = compile_vtc_action_writes([action])
     updated = program.apply(
         actions=torch.tensor([8]),
         vfs_state={"energy": torch.tensor([1.0])},
@@ -402,7 +402,7 @@ def test_action_write_compiler_uses_spec_phase_order_not_lexical_order() -> None
     assert torch.allclose(updated["energy"], torch.tensor([20.0]))
 
 
-def test_action_write_compiler_accepts_configured_transition_phase_order() -> None:
+def test_vtc_action_writes_accepts_configured_transition_phase_order() -> None:
     action = _action(
         action_id=9,
         name="CUSTOM_ORDER",
@@ -431,7 +431,7 @@ def test_action_write_compiler_accepts_configured_transition_phase_order() -> No
     )
     phase_graph = TransitionPhaseGraph(("phase_b", "phase_a"))
 
-    program = compile_action_writes_with_phase_graph([action], phase_graph)
+    program = compile_vtc_action_writes_with_phase_graph([action], phase_graph)
     updated = program.apply(
         actions=torch.tensor([9]),
         vfs_state={"energy": torch.tensor([1.0])},
@@ -443,7 +443,7 @@ def test_action_write_compiler_accepts_configured_transition_phase_order() -> No
     assert torch.allclose(updated["energy"], torch.tensor([11.0]))
 
 
-def test_action_write_compiler_rejects_unconfigured_transition_phase() -> None:
+def test_vtc_action_writes_rejects_unconfigured_transition_phase() -> None:
     action = _action(
         action_id=10,
         name="UNKNOWN_PHASE",
@@ -462,4 +462,4 @@ def test_action_write_compiler_rejects_unconfigured_transition_phase() -> None:
     )
 
     with pytest.raises(ValueError, match="Unknown transition phase"):
-        compile_action_writes([action])
+        compile_vtc_action_writes([action])

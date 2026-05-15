@@ -284,7 +284,7 @@ class ObservationField(BaseModel):
     """Observation field specification.
 
     Maps a variable to an observation field that will be exposed to agents
-    or other systems (like the BAC compiler).
+    or other systems (like the VTC or brain compiler).
 
     Examples:
         # Scalar observation

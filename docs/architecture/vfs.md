@@ -24,7 +24,7 @@ In its current Phase 1 form, VFS provides:
 7. **Dimension regression tests** to protect checkpoint compatibility.
 8. **Integration tests** proving that the schema → registry → observation pipeline works end to end.
 
-The Phase 2 goal should be broadened from a narrow **Behavioural Action Compiler** into a more general **VFS Transition Compiler**. Actions are only one part of the world transition. To fully realise Universe as Code, the compiler should eventually execute action effects, passive decay, cascades, temporal rules, interaction progress, occupancy, reward components, terminal checks, and telemetry side effects through one typed, declarative, hashable transition graph.
+The Phase 2 goal is a general **VFS Transition Compiler (VTC)**. Actions are only one part of the world transition. To fully realise Universe as Code, the compiler should eventually execute action effects, passive decay, cascades, temporal rules, interaction progress, occupancy, reward components, terminal checks, and telemetry side effects through one typed, declarative, hashable transition graph.
 
 The strategic role of VFS is:
 
@@ -215,7 +215,7 @@ Phase 1 proves that VFS can:
 - preserve checkpoint compatibility through regression tests,
 - and attach declared read/write dependencies to action definitions.
 
-The repo no longer has "no transition compiler." The implemented VFS read path already parses profile expressions into ASTs, type-checks them, topologically sorts profile dependencies, and evaluates derived variables through `VFSEvaluator` in mark-and-sweep or eager mode. The action-write path also has an initial VTC slice: `ActionConfig.writes` compile into parsed, phase-ordered `CompiledActionWriteProgram` rules that execute masked tensor writes during `env.step`.
+The repo no longer has "no transition compiler." The implemented VFS read path already parses profile expressions into ASTs, type-checks them, topologically sorts profile dependencies, and evaluates derived variables through `VFSEvaluator` in mark-and-sweep or eager mode. The action-write path also has an initial VTC slice: `ActionConfig.writes` compile into parsed, phase-ordered `VTCActionWriteProgram` rules that execute masked tensor writes during `env.step`.
 
 The remaining VTC gap is full transition unification: write-expression type/shape validation, passive dynamics, cascades, temporal rules, rewards, terminal checks, telemetry, and non-action world physics still need to move into one validated transition graph.
 
@@ -827,17 +827,17 @@ Recommended fields:
 
 ---
 
-## 11. From Behavioural Action Compiler to VFS Transition Compiler
+## 11. VFS Transition Compiler naming and scope
 
 ### 11.1 Naming note
 
-The original Phase 2 roadmap uses **Behavioral Action Compiler (BAC)**. Townlet already uses **Brain as Code (BAC)**. This naming collision will likely become confusing in documentation, telemetry, hashes, and code reviews.
+The repo standard is **VFS Transition Compiler (VTC)** for transition-rule compilation. **BAC** remains reserved for **Brain as Code**, so transition compiler documentation, telemetry, hashes, and code reviews should use VTC terminology.
 
 Recommendation:
 
 ```text
 Use: VFS Transition Compiler (VTC)
-Keep as alias: Behavioural Action Compiler / Action Effect Compiler for legacy discussion
+Do not introduce aliases for this component.
 ```
 
 This document uses **VTC** for the compiler family that executes VFS transition rules.
@@ -846,13 +846,13 @@ Current implementation is partial but real:
 
 - `VFSProfileCompiler` compiles profile expressions on the read/derived-variable path: AST parsing, dependency graph construction, topological sorting, cycle detection, and expression type checking.
 - `VFSEvaluator` evaluates compiled profile variables in dependency order, with mark-and-sweep evaluation for observed variables plus dependencies and eager mode when all variables are needed.
-- `CompiledActionWriteProgram` executes the first write-path slice for `ActionConfig.writes`: parsed expressions, phase ordering, composition modes, clamps, conditions, and active-agent masks.
+- `VTCActionWriteProgram` executes the first write-path slice for `ActionConfig.writes`: parsed expressions, phase ordering, composition modes, clamps, conditions, and active-agent masks.
 
 The unsolved work is not "build any compiler"; it is "finish the VTC as the single write-path and world-transition compiler."
 
 ### 11.2 Why the compiler should cover transitions, not only actions
 
-The current action-write compiler handles declared action writes. That is useful but incomplete.
+The current VTC action-write compiler handles declared action writes. That is useful but incomplete.
 
 Townlet world physics also includes:
 
@@ -2104,7 +2104,7 @@ Store state when it must persist or be authoritative. Derive features when they 
 
 ### 21.1 Phase 1 limitations
 
-1. **Partial VTC coverage.** Profile read expressions compile and evaluate through `VFSProfileCompiler`/`VFSEvaluator`, and simple action writes execute through `CompiledActionWriteProgram`; passive dynamics, cascades, temporal rules, rewards, terminal checks, and telemetry are not yet unified under VTC.
+1. **Partial VTC coverage.** Profile read expressions compile and evaluate through `VFSProfileCompiler`/`VFSEvaluator`, and simple action writes execute through `VTCActionWriteProgram`; passive dynamics, cascades, temporal rules, rewards, terminal checks, and telemetry are not yet unified under VTC.
 2. **Manual observation generation.** Observation construction still requires explicit registry reads and concatenation.
 3. **Partial write validation.** `WriteSpec` expressions are parsed and executed for action writes, but full write-path type/shape validation is still incomplete.
 4. **Limited normalisation.** Current normalisation is mostly minmax/zscore.
@@ -2233,7 +2233,7 @@ This would make VFS teachable and debuggable.
 - `src/townlet/vfs/schema.py`
 - `src/townlet/vfs/registry.py`
 - `src/townlet/vfs/observation_builder.py`
-- `src/townlet/vfs/action_writes.py`
+- `src/townlet/vfs/vtc.py`
 - `src/townlet/vfs/schema_hashes.py`
 - `src/townlet/vfs/transition_graph.py`
 - `src/townlet/environment/action_config.py`

@@ -25,10 +25,18 @@ Phase 1 safety threshold: 200 dims (all levels must stay below)
 from pathlib import Path
 
 import pytest
+import torch
 
 from townlet.universe.compiler import UniverseCompiler
 
 ITEMS_SMOKE_LEVEL = "L0_smoke"
+DEFAULT_CURRICULUM_SHADOW_LEVELS = (
+    "L0_0_minimal",
+    "L0_5_dual_resource",
+    "L1_full_observability",
+    "L2_partial_observability",
+    "L3_temporal_mechanics",
+)
 
 # === Baseline Regression Tests (No VFS Profiles) ===
 
@@ -125,6 +133,26 @@ def test_items_smoke_obs_dim_after_vfs_integration():
 
     expected_total = 61  # 34 baseline + 24 obs_effects + 3 VFS
     assert universe.metadata.observation_dim == expected_total
+
+
+@pytest.mark.parametrize("level_name", DEFAULT_CURRICULUM_SHADOW_LEVELS)
+def test_default_curriculum_shadow_observation_equivalence(level_name: str):
+    """Default curriculum levels must pass shadow comparison during the dimension sweep."""
+    config_dir = Path("configs/default_curriculum")
+    compiler = UniverseCompiler()
+    universe = compiler.compile(config_dir, primary_level=level_name, use_cache=False)
+    env = universe.create_environment(
+        level_name=level_name,
+        num_agents=3,
+        device=torch.device("cpu"),
+    )
+
+    obs = env.reset()
+    assert obs.shape == (env.num_agents, universe.metadata.observation_dim)
+
+    actions = torch.zeros(env.num_agents, dtype=torch.long, device=env.device)
+    next_obs, _rewards, _dones, _info = env.step(actions)
+    assert next_obs.shape == (env.num_agents, universe.metadata.observation_dim)
 
 
 # === Phase 1 Limit Enforcement Tests ===

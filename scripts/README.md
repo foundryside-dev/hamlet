@@ -63,16 +63,21 @@ Single-command interface for running HAMLET training with live inference server.
 
 ```bash
 # Start training + inference (then run frontend separately)
-python scripts/run_demo.py --config configs/L1_full_observability --episodes 10000
+python scripts/run_demo.py --config configs/default_curriculum --level L1_full_observability \
+    --episodes 10000 --inference-port 8766
 
 # In another terminal: cd frontend && npm run dev
 
 # Resume from checkpoint
-python scripts/run_demo.py --config configs/L1_full_observability \
-    --checkpoint-dir runs/L1_full_observability/2025-11-02_123456/checkpoints
+python scripts/run_demo.py --config configs/default_curriculum --level L1_full_observability \
+    --checkpoint-dir runs/L1_full_observability/2025-11-02_123456/checkpoints --inference-port 8766
+
+# Start a fresh branch when that checkpoint's VFS ABI no longer matches
+python scripts/run_demo.py --config configs/default_curriculum --level L1_full_observability \
+    --checkpoint-dir runs/L1_full_observability/2025-11-02_123456/checkpoints --inference-port 8766 --force-new-vfs
 
 # Custom inference port
-python scripts/run_demo.py --config configs/L1_full_observability \
+python scripts/run_demo.py --config configs/default_curriculum --level L1_full_observability \
     --episodes 5000 --inference-port 8800
 ```
 

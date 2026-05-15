@@ -38,6 +38,7 @@ def attach_universe_metadata(checkpoint: dict[str, Any], universe: CompiledUnive
     checkpoint["observation_field_uuids"] = [field.uuid for field in universe.observation_spec.fields]
     checkpoint["drive_hash"] = universe.drive_hash
     checkpoint["brain_hash"] = universe.brain_hash
+    checkpoint["vfs_hash"] = universe.vfs_hash
 
 
 def config_hash_warning(checkpoint: Mapping[str, Any], universe: CompiledUniverse) -> str | None:
@@ -116,6 +117,33 @@ def assert_checkpoint_dimensions(checkpoint: Mapping[str, Any], universe: Compil
             f"current={universe.brain_hash[:16]}... "
             "The network architecture configuration has changed since the checkpoint was created."
         )
+
+
+def assert_checkpoint_vfs_hash(checkpoint: Mapping[str, Any], universe: CompiledUniverse, *, force_new_vfs: bool) -> bool:
+    """Validate checkpoint VFS identity before resume.
+
+    Returns True when the checkpoint may be resumed. Returns False only for an explicit
+    force-new-VFS branch request, meaning callers must start fresh and skip state load.
+    """
+    if universe is None:
+        raise ValueError("universe parameter cannot be None - compiled universe required for VFS hash validation")
+
+    checkpoint_vfs_hash = checkpoint.get("vfs_hash")
+    if checkpoint_vfs_hash is None:
+        raise ValueError("Checkpoint missing vfs_hash; regenerate the checkpoint with the latest compiler.")
+
+    if checkpoint_vfs_hash == universe.vfs_hash:
+        return True
+
+    message = (
+        f"Checkpoint vfs_hash mismatch: checkpoint={str(checkpoint_vfs_hash)[:16]}..., "
+        f"current={universe.vfs_hash[:16]}... "
+        "Resume against a different VFS schema is a fork, not a continuation."
+    )
+    if force_new_vfs:
+        logger.warning("%s Starting a new VFS branch without loading checkpoint state.", message)
+        return False
+    raise ValueError(f"{message} Re-run with --force-new-vfs to start a new VFS branch.")
 
 
 def _digest_path(checkpoint_path: Path) -> Path:

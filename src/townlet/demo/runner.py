@@ -20,6 +20,7 @@ from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
 from townlet.population.vectorized import VectorizedPopulation
 from townlet.training.checkpoint_utils import (
     assert_checkpoint_dimensions,
+    assert_checkpoint_vfs_hash,
     attach_universe_metadata,
     config_hash_warning,
     persist_checkpoint_digest,
@@ -50,6 +51,7 @@ class DemoRunner:
         training_config_path: Path | str | None = None,
         *,
         level_name: str | None = None,
+        force_new_vfs: bool = False,
     ):
         """Initialize demo runner.
 
@@ -61,6 +63,7 @@ class DemoRunner:
             checkpoint_dir: Directory for checkpoint files
             max_episodes: Maximum number of episodes to run (if None, reads from level training.yaml)
             training_config_path: Deprecated; overrides are no longer supported.
+            force_new_vfs: Start a fresh run branch instead of resuming an incompatible VFS checkpoint.
         """
         self.config_dir = Path(config_dir)
         # Resolve training config path:
@@ -76,6 +79,7 @@ class DemoRunner:
             raise FileNotFoundError(f"Training config not found: {self.training_config_path}")
         self.db_path = Path(db_path)
         self.checkpoint_dir = Path(checkpoint_dir)
+        self.force_new_vfs = force_new_vfs
         self.compiled: CompiledUniverse | None = None
 
         # Create directories
@@ -340,6 +344,8 @@ class DemoRunner:
         if universe is None:
             universe = self.compiled
         if universe is not None:
+            if not assert_checkpoint_vfs_hash(checkpoint, universe, force_new_vfs=self.force_new_vfs):
+                return None
             warning = config_hash_warning(checkpoint, universe)
             if warning:
                 logger.warning(warning)

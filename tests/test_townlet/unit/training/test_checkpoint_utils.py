@@ -9,6 +9,7 @@ import torch
 
 from townlet.training.checkpoint_utils import (
     assert_checkpoint_dimensions,
+    assert_checkpoint_vfs_hash,
     attach_universe_metadata,
     config_hash_warning,
     persist_checkpoint_digest,
@@ -34,6 +35,7 @@ def test_attach_universe_metadata(compiled_universe) -> None:
     assert checkpoint["action_dim"] == compiled_universe.metadata.action_count
     assert checkpoint["meter_count"] == compiled_universe.metadata.meter_count
     assert checkpoint["observation_field_uuids"] == [field.uuid for field in compiled_universe.observation_spec.fields]
+    assert checkpoint["vfs_hash"] == compiled_universe.vfs_hash
 
 
 def test_config_hash_warning_detects_mismatch(compiled_universe) -> None:
@@ -96,6 +98,26 @@ def test_attach_universe_metadata_includes_drive_hash(compiled_universe) -> None
     assert "drive_hash" in checkpoint
     assert checkpoint["drive_hash"] == compiled_universe.drive_hash
     assert len(checkpoint["drive_hash"]) == 64  # SHA256 hex string
+
+
+def test_assert_checkpoint_vfs_hash_rejects_missing_and_mismatch(compiled_universe) -> None:
+    """Checkpoint resume should be blocked by VFS ABI mismatch before state load."""
+    checkpoint: dict[str, object] = {}
+    attach_universe_metadata(checkpoint, compiled_universe)
+
+    assert assert_checkpoint_vfs_hash(checkpoint, compiled_universe, force_new_vfs=False) is True
+
+    missing = dict(checkpoint)
+    del missing["vfs_hash"]
+    with pytest.raises(ValueError, match="missing vfs_hash"):
+        assert_checkpoint_vfs_hash(missing, compiled_universe, force_new_vfs=False)
+
+    mismatched = dict(checkpoint)
+    mismatched["vfs_hash"] = "deadbeef" * 8
+    with pytest.raises(ValueError, match="--force-new-vfs"):
+        assert_checkpoint_vfs_hash(mismatched, compiled_universe, force_new_vfs=False)
+
+    assert assert_checkpoint_vfs_hash(mismatched, compiled_universe, force_new_vfs=True) is False
 
 
 def test_safe_torch_load_rejects_custom_objects(tmp_path: Path) -> None:

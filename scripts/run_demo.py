@@ -36,12 +36,16 @@ def parse_args() -> argparse.Namespace:
         epilog="""
 Examples:
   # Start training + inference (then run frontend separately) for a given level
-  python run_demo.py --config configs/default_curriculum --level L1_full_observability --episodes 10000
+  python run_demo.py --config configs/default_curriculum --level L1_full_observability --episodes 10000 --inference-port 8766
   # In another terminal: cd frontend && npm run dev
 
   # Resume from checkpoint
   python run_demo.py --config configs/default_curriculum --level L1_full_observability \\
-      --checkpoint-dir runs/L1_full_observability/2025-11-02_123456/checkpoints
+      --checkpoint-dir runs/L1_full_observability/2025-11-02_123456/checkpoints --inference-port 8766
+
+  # Start a fresh branch when that checkpoint's VFS ABI no longer matches
+  python run_demo.py --config configs/default_curriculum --level L1_full_observability \\
+      --checkpoint-dir runs/L1_full_observability/2025-11-02_123456/checkpoints --inference-port 8766 --force-new-vfs
 
   # Custom inference port
   python run_demo.py --config configs/default_curriculum --level L1_full_observability \\
@@ -64,14 +68,13 @@ Note:
     parser.add_argument(
         "--level",
         type=str,
-        default="L1_full_observability",
-        help="Curriculum level name to run (default: L1_full_observability)",
+        required=True,
+        help="Curriculum level name to run",
     )
 
     parser.add_argument(
         "--episodes",
         type=int,
-        default=None,
         help="Total number of training episodes to run (default: read from config YAML)",
     )
 
@@ -79,18 +82,23 @@ Note:
     parser.add_argument(
         "--checkpoint-dir",
         type=str,
-        default=None,
         help="Directory for checkpoints. If not provided, auto-generated in runs/ structure",
     )
 
     parser.add_argument(
         "--inference-port",
         type=int,
-        default=8766,
-        help="Port for inference WebSocket server (default: 8766)",
+        required=True,
+        help="Port for inference WebSocket server",
     )
 
     parser.add_argument("--debug", action="store_true", help="Enable debug-level logging for troubleshooting")
+
+    parser.add_argument(
+        "--force-new-vfs",
+        action="store_true",
+        help="Start a fresh run branch instead of resuming when checkpoint vfs_hash differs from the current VFS ABI",
+    )
 
     return parser.parse_args()
 
@@ -116,9 +124,6 @@ def main():
     # Heuristic: if user passed a level directory (…/levels/<level_name>), normalize to experiment root.
     if raw_path.parent.name == "levels" and (raw_path.parent.parent / "experiment.yaml").exists():
         experiment_root = raw_path.parent.parent
-        if args.level == "L1_full_observability":
-            # If user didn't override --level, default to the level directory name.
-            level_name = raw_path.name
         logger.info(
             "Interpreting --config=%s as level directory; using experiment root %s and level '%s'",
             raw_path,
@@ -181,6 +186,7 @@ def main():
             inference_port=args.inference_port,
             training_config_path=str(config_file),
             level_name=level_name,
+            force_new_vfs=args.force_new_vfs,
         )
     except Exception as e:
         logger.error(f"Failed to create UnifiedServer: {e}")

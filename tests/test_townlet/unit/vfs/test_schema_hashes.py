@@ -510,6 +510,42 @@ def test_transition_graph_hash_binds_interaction_progress_rules() -> None:
     )
 
 
+def test_transition_graph_hash_binds_terminal_condition_rules() -> None:
+    """Transition hashes should bind lethal meter terminal-condition semantics."""
+    phase_graph = TransitionPhaseGraph.default()
+    action_program = compile_vtc_action_writes_with_phase_graph([], phase_graph)
+    meter = {"name": "energy", "bounds": {"min": 0.0, "max": 1.0, "lethal_min": True, "lethal_max": False}}
+    changed_meter = {"name": "energy", "bounds": {"min": 0.25, "max": 1.0, "lethal_min": True, "lethal_max": False}}
+
+    terminal_program = vtc.compile_vtc_terminal_conditions_with_phase_graph([meter], phase_graph)
+
+    assert canonical_transition_graph_schema(phase_graph, action_program, terminal_condition_program=terminal_program)["rules"] == [
+        {
+            "rule_id": "terminal:energy:min",
+            "kind": "terminal_condition",
+            "source_variable_id": "energy",
+            "variable_id": "done",
+            "expression": "bar.energy <= 0.0",
+            "condition": None,
+            "composition": "event",
+            "phase": "evaluate_terminal_conditions",
+            "priority": 0,
+            "clamp": None,
+            "telemetry_label": "terminal_condition:energy:min",
+            "operator": "<=",
+            "threshold": 0.0,
+        }
+    ]
+
+    baseline = compute_transition_graph_hash(phase_graph, action_program, terminal_condition_program=terminal_program)
+
+    assert baseline != compute_transition_graph_hash(
+        phase_graph,
+        action_program,
+        terminal_condition_program=vtc.compile_vtc_terminal_conditions_with_phase_graph([changed_meter], phase_graph),
+    )
+
+
 def test_vfs_hash_combines_component_hashes_and_transition_graph() -> None:
     """The VFS identity should bind all component hashes, including the transition graph."""
     variable_hash = "a" * 64
@@ -531,6 +567,7 @@ def test_compiler_surfaces_vfs_hash(tmp_path: Path) -> None:
     experiment_dir = prepare_config_dir(tmp_path, name="experiment")
 
     compiled = UniverseCompiler().compile(experiment_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
+    phase_graph = TransitionPhaseGraph.default()
     expected = compute_vfs_hash(
         compiled.variable_schema_hash,
         compiled.observation_schema_hash,
@@ -540,27 +577,31 @@ def test_compiler_surfaces_vfs_hash(tmp_path: Path) -> None:
 
     assert compiled.transition_graph_hash != ""
     assert compiled.transition_graph_hash == compute_transition_graph_hash(
-        TransitionPhaseGraph.default(),
-        compile_vtc_action_writes_with_phase_graph(compiled.runtime_action_space.actions, TransitionPhaseGraph.default()),
+        phase_graph,
+        compile_vtc_action_writes_with_phase_graph(compiled.runtime_action_space.actions, phase_graph),
         affordance_gate_program=vtc.compile_vtc_affordance_gates_with_phase_graph(
             compiled.get_level(PRIMARY_LEVEL_NAME).affordances.affordances,
-            TransitionPhaseGraph.default(),
+            phase_graph,
         ),
         interaction_progress_program=vtc.compile_vtc_interaction_progress_with_phase_graph(
             compiled.get_level(PRIMARY_LEVEL_NAME).affordances.affordances,
-            TransitionPhaseGraph.default(),
+            phase_graph,
+        ),
+        terminal_condition_program=vtc.compile_vtc_terminal_conditions_with_phase_graph(
+            compiled.get_level(PRIMARY_LEVEL_NAME).bars.meters,
+            phase_graph,
         ),
         threshold_cascade_program=compile_vtc_threshold_cascades_with_phase_graph(
             compiled.get_level(PRIMARY_LEVEL_NAME).bars.cascades,
-            TransitionPhaseGraph.default(),
+            phase_graph,
         ),
         modulation_program=vtc.compile_vtc_modulations_with_phase_graph(
             compiled.get_level(PRIMARY_LEVEL_NAME).affordances.modulations,
-            TransitionPhaseGraph.default(),
+            phase_graph,
         ),
         passive_depletion_program=vtc.compile_vtc_passive_depletions_with_phase_graph(
             compiled.get_level(PRIMARY_LEVEL_NAME).bars.meters,
-            TransitionPhaseGraph.default(),
+            phase_graph,
         ),
     )
     assert compiled.vfs_hash == expected

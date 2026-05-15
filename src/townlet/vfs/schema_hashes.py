@@ -59,6 +59,7 @@ def canonical_transition_graph_schema(
     *,
     affordance_gate_program: Any | None = None,
     interaction_progress_program: Any | None = None,
+    terminal_condition_program: Any | None = None,
     threshold_cascade_program: Any | None = None,
     modulation_program: Any | None = None,
     passive_depletion_program: Any | None = None,
@@ -70,6 +71,8 @@ def canonical_transition_graph_schema(
     if interaction_progress_program is not None:
         rules.extend(_canonical_transition_rule(rule) for rule in interaction_progress_program.progress_rules)
         rules.extend(_canonical_transition_rule(rule) for rule in interaction_progress_program.completion_bonus_rules)
+    if terminal_condition_program is not None:
+        rules.extend(_canonical_transition_rule(rule) for rule in terminal_condition_program.rules)
     if passive_depletion_program is not None:
         rules.extend(_canonical_transition_rule(rule) for rule in passive_depletion_program.rules)
     if modulation_program is not None:
@@ -88,6 +91,7 @@ def compute_transition_graph_hash(
     *,
     affordance_gate_program: Any | None = None,
     interaction_progress_program: Any | None = None,
+    terminal_condition_program: Any | None = None,
     threshold_cascade_program: Any | None = None,
     modulation_program: Any | None = None,
     passive_depletion_program: Any | None = None,
@@ -99,6 +103,7 @@ def compute_transition_graph_hash(
             action_write_program,
             affordance_gate_program=affordance_gate_program,
             interaction_progress_program=interaction_progress_program,
+            terminal_condition_program=terminal_condition_program,
             threshold_cascade_program=threshold_cascade_program,
             modulation_program=modulation_program,
             passive_depletion_program=passive_depletion_program,
@@ -179,6 +184,10 @@ def _canonical_transition_rule(write: Any) -> dict[str, Any]:
             entry["target_affordance_id"] = write.target_affordance_id
         if hasattr(write, "duration_ticks"):
             entry["duration_ticks"] = write.duration_ticks
+        if hasattr(write, "operator"):
+            entry["operator"] = write.operator
+        if hasattr(write, "threshold"):
+            entry["threshold"] = write.threshold
         return entry
     return {
         "action_id": write.action_id,

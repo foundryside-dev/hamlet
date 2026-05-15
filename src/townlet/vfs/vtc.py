@@ -96,6 +96,16 @@ class VTCInteractionProgressSource(Protocol):
     def duration_ticks(self) -> int | None: ...
 
 
+class VTCTerminalConditionSource(Protocol):
+    """Minimal meter shape needed by the VTC terminal-condition compiler."""
+
+    @property
+    def name(self) -> str: ...
+
+    @property
+    def bounds(self) -> Any: ...
+
+
 @dataclass(frozen=True)
 class CompiledVTCActionWrite:
     """A parsed VTC action write with the metadata needed for masked execution."""
@@ -233,6 +243,27 @@ class CompiledVTCInteractionCompletionBonus:
     clamp: tuple[float, float] | None
     telemetry_label: str
     duration_ticks: int
+
+
+@dataclass(frozen=True)
+class CompiledVTCTerminalCondition:
+    """A parsed VTC terminal-condition rule for one lethal meter bound."""
+
+    rule_id: str
+    kind: str
+    source_variable_id: str
+    variable_id: str
+    expression: str
+    expression_ast: ASTNode
+    condition: str | None
+    condition_ast: ASTNode | None
+    composition: str
+    phase: str
+    priority: int
+    clamp: tuple[float, float] | None
+    telemetry_label: str
+    operator: str
+    threshold: float
 
 
 @dataclass(frozen=True)
@@ -1076,6 +1107,83 @@ class VTCInteractionProgressProgram:
         raise KeyError(f"VTC interaction progress has no rule for affordance '{affordance_name}'")
 
 
+@dataclass(frozen=True)
+class VTCTerminalConditionProgram:
+    """Executable collection of compiled VTC terminal-condition rules."""
+
+    rules: tuple[CompiledVTCTerminalCondition, ...]
+
+    def apply(
+        self,
+        *,
+        bars_state: Mapping[str, torch.Tensor],
+        dones: torch.Tensor,
+        active_mask: torch.Tensor,
+        device: torch.device,
+    ) -> torch.Tensor:
+        """Evaluate terminal conditions and OR triggered terminals into existing done flags."""
+        self._validate_apply_inputs(bars_state=bars_state, dones=dones, active_mask=active_mask)
+
+        updated_dones = dones.to(device=device, dtype=torch.bool).clone()
+        active = active_mask.to(device=device, dtype=torch.bool)
+        bars_on_device = {name: value.to(device=device) for name, value in bars_state.items()}
+        if len(self.rules) == 0:
+            return updated_dones
+
+        missing_bars = sorted({rule.source_variable_id for rule in self.rules if rule.source_variable_id not in bars_on_device})
+        if missing_bars:
+            raise KeyError(f"VTC terminal conditions reference unknown bars: {missing_bars}")
+
+        context = ExecutionContext(
+            bars=bars_on_device,
+            vfs=dict(bars_on_device),
+            affordances={},
+            temporal={},
+            device=device,
+        )
+        evaluator = Evaluator(context)
+        terminal_mask = torch.zeros_like(updated_dones, dtype=torch.bool, device=device)
+
+        for rule in self.rules:
+            triggered = self._evaluate_bool_tensor(evaluator, rule.expression_ast, rule)
+            if triggered.shape != updated_dones.shape:
+                raise ValueError(
+                    f"VTC terminal condition {rule.telemetry_label} produced shape {tuple(triggered.shape)}; "
+                    f"expected {tuple(updated_dones.shape)}"
+                )
+            terminal_mask |= triggered & active
+
+        return updated_dones | terminal_mask
+
+    @staticmethod
+    def _validate_apply_inputs(
+        *,
+        bars_state: Mapping[str, torch.Tensor],
+        dones: torch.Tensor,
+        active_mask: torch.Tensor,
+    ) -> None:
+        if dones.dim() != 1:
+            raise ValueError(f"dones must be rank-1, got shape {tuple(dones.shape)}")
+        if active_mask.shape != dones.shape:
+            raise ValueError(f"active_mask shape {tuple(active_mask.shape)} must match dones shape {tuple(dones.shape)}")
+        for bar_name, value in bars_state.items():
+            if value.shape != dones.shape:
+                raise ValueError(f"bar '{bar_name}' shape {tuple(value.shape)} must match dones shape {tuple(dones.shape)}")
+
+    @staticmethod
+    def _evaluate_bool_tensor(
+        evaluator: Evaluator,
+        ast: ASTNode,
+        rule: CompiledVTCTerminalCondition,
+    ) -> torch.Tensor:
+        value: Any = evaluator.evaluate(ast)
+        if not isinstance(value, torch.Tensor):
+            raise TypeError(f"VTC terminal condition {rule.telemetry_label} resolved to non-tensor value")
+        if value.dtype != torch.bool:
+            raise TypeError(f"VTC terminal condition {rule.telemetry_label} resolved to {value.dtype}, expected bool")
+        return value
+
+
 def compile_vtc_action_writes(actions: Sequence[VTCActionWriteSource]) -> VTCActionWriteProgram:
     """Compile ActionConfig writes into VTC records sorted by phase, priority, and action id."""
     return compile_vtc_action_writes_with_phase_graph(actions, TransitionPhaseGraph.default())
@@ -1454,6 +1562,110 @@ def _coerce_interaction_progress_affordance(
         "name": name,
         "interaction_type": interaction_type,
         "duration_ticks": duration,
+    }
+
+
+def compile_vtc_terminal_conditions(
+    meters: Sequence[VTCTerminalConditionSource | Mapping[str, Any]],
+) -> VTCTerminalConditionProgram:
+    """Compile lethal meter bounds into VTC terminal-condition rules."""
+    return compile_vtc_terminal_conditions_with_phase_graph(meters, TransitionPhaseGraph.default())
+
+
+def compile_vtc_terminal_conditions_with_phase_graph(
+    meters: Sequence[VTCTerminalConditionSource | Mapping[str, Any]],
+    phase_graph: TransitionPhaseGraph,
+) -> VTCTerminalConditionProgram:
+    """Compile lethal meter bounds using an explicit VTC transition phase graph."""
+    parser = ExpressionParser()
+    compiled_rules: list[CompiledVTCTerminalCondition] = []
+
+    for raw_meter in meters:
+        meter = _coerce_terminal_condition_meter(raw_meter)
+        if meter["lethal_min"]:
+            threshold = meter["min"]
+            operator = "<="
+            name = meter["name"]
+            expression = f"bar.{name} {operator} {_format_rule_float(threshold)}"
+            compiled_rules.append(
+                CompiledVTCTerminalCondition(
+                    rule_id=f"terminal:{name}:min",
+                    kind="terminal_condition",
+                    source_variable_id=name,
+                    variable_id="done",
+                    expression=expression,
+                    expression_ast=parser.parse(expression),
+                    condition=None,
+                    condition_ast=None,
+                    composition="event",
+                    phase="evaluate_terminal_conditions",
+                    priority=len(compiled_rules),
+                    clamp=None,
+                    telemetry_label=f"terminal_condition:{name}:min",
+                    operator=operator,
+                    threshold=threshold,
+                )
+            )
+        if meter["lethal_max"]:
+            threshold = meter["max"]
+            operator = ">="
+            name = meter["name"]
+            expression = f"bar.{name} {operator} {_format_rule_float(threshold)}"
+            compiled_rules.append(
+                CompiledVTCTerminalCondition(
+                    rule_id=f"terminal:{name}:max",
+                    kind="terminal_condition",
+                    source_variable_id=name,
+                    variable_id="done",
+                    expression=expression,
+                    expression_ast=parser.parse(expression),
+                    condition=None,
+                    condition_ast=None,
+                    composition="event",
+                    phase="evaluate_terminal_conditions",
+                    priority=len(compiled_rules),
+                    clamp=None,
+                    telemetry_label=f"terminal_condition:{name}:max",
+                    operator=operator,
+                    threshold=threshold,
+                )
+            )
+
+    return VTCTerminalConditionProgram(
+        rules=tuple(
+            sorted(
+                compiled_rules,
+                key=lambda item: (phase_graph.sort_key(item.phase), item.priority, item.rule_id),
+            )
+        )
+    )
+
+
+def _coerce_terminal_condition_meter(meter: VTCTerminalConditionSource | Mapping[str, Any]) -> dict[str, Any]:
+    if isinstance(meter, Mapping):
+        name = str(meter["name"])
+        bounds = meter["bounds"]
+    else:
+        name = meter.name
+        bounds = meter.bounds
+
+    if isinstance(bounds, Mapping):
+        min_value = float(bounds["min"])
+        max_value = float(bounds["max"])
+        lethal_min = bool(bounds["lethal_min"])
+        lethal_max = bool(bounds["lethal_max"])
+    else:
+        min_value = float(bounds.min)
+        max_value = float(bounds.max)
+        lethal_min = bool(bounds.lethal_min)
+        lethal_max = bool(bounds.lethal_max)
+
+    return {
+        "name": name,
+        "min": min_value,
+        "max": max_value,
+        "lethal_min": lethal_min,
+        "lethal_max": lethal_max,
     }
 
 

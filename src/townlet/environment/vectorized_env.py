@@ -36,12 +36,14 @@ from townlet.vfs.vtc import (
     VTCInteractionProgressProgram,
     VTCModulationProgram,
     VTCPassiveDepletionProgram,
+    VTCTerminalConditionProgram,
     VTCThresholdCascadeProgram,
     compile_vtc_action_writes,
     compile_vtc_affordance_gates,
     compile_vtc_interaction_progress,
     compile_vtc_modulations,
     compile_vtc_passive_depletions,
+    compile_vtc_terminal_conditions,
     compile_vtc_threshold_cascades,
 )
 
@@ -364,19 +366,6 @@ class VectorizedHamletEnv:
             if idx is not None:
                 self.initial_meter_values[idx] = bar.initial
 
-        # Build terminal conditions from lethal bounds
-        terminal_specs: list[dict[str, Any]] = []
-        for bar in self.bars_config.meters:
-            idx = meter_name_to_index.get(bar.name)
-            if idx is None:
-                continue
-            if bar.bounds.lethal_min:
-                terminal_specs.append({"meter_idx": idx, "operator": "<=", "value": bar.bounds.min})
-            if bar.bounds.lethal_max:
-                terminal_specs.append({"meter_idx": idx, "operator": ">=", "value": bar.bounds.max})
-
-        self._terminal_conditions = terminal_specs
-
         # Initialize affordance engine with AffordanceParamConfig directly
         # No RuntimeAffordanceConfig conversion needed - AffordanceEngine uses interactions field
 
@@ -419,6 +408,7 @@ class VectorizedHamletEnv:
         self.vtc_interaction_progress_program: VTCInteractionProgressProgram = compile_vtc_interaction_progress(
             level.affordances.affordances
         )
+        self.vtc_terminal_condition_program: VTCTerminalConditionProgram = compile_vtc_terminal_conditions(self.bars_config.meters)
         self.vtc_passive_depletion_program: VTCPassiveDepletionProgram = compile_vtc_passive_depletions(self.bars_config.meters)
         self.vtc_modulation_program: VTCModulationProgram = compile_vtc_modulations(level.affordances.modulations)
         self.vtc_threshold_cascade_program = compile_vtc_threshold_cascades(self.bars_config.cascades)
@@ -1171,8 +1161,8 @@ class VectorizedHamletEnv:
                     if var_name in self.vfs_registry.variables:
                         self.vfs_registry.set_engine_value(var_name, value)
 
-        # 4. Check terminal conditions
-        self.dones = self._check_terminal_conditions(self.meters, self.dones)
+        # 4. Evaluate VTC terminal conditions
+        self._apply_vtc_terminal_conditions()
 
         # 5. Increment step counts (before retirement check)
         self.step_counts += 1
@@ -1275,31 +1265,18 @@ class VectorizedHamletEnv:
         for bar_name, value in updated_bars.items():
             self._set_vtc_bar_value(bar_name, value)
 
-    def _check_terminal_conditions(self, meters: torch.Tensor, dones: torch.Tensor) -> torch.Tensor:
-        """Evaluate configured lethal meter bounds and preserve existing done states."""
-        terminal_mask = torch.zeros_like(dones, dtype=torch.bool)
+    def _apply_vtc_terminal_conditions(self) -> None:
+        """Evaluate compiled VFS terminal-condition rules over meter bars."""
+        program: VTCTerminalConditionProgram = self.vtc_terminal_condition_program
+        if len(program.rules) == 0:
+            return
 
-        for condition in self._terminal_conditions:
-            meter_values = meters[:, int(condition["meter_idx"])]
-            threshold = float(condition["value"])
-            operator = condition["operator"]
-
-            if operator == "<=":
-                current = meter_values <= threshold
-            elif operator == ">=":
-                current = meter_values >= threshold
-            elif operator == "<":
-                current = meter_values < threshold
-            elif operator == ">":
-                current = meter_values > threshold
-            elif operator == "==":
-                current = torch.isclose(meter_values, torch.tensor(threshold, device=meter_values.device))
-            else:  # pragma: no cover - compiler should only emit supported operators
-                raise ValueError(f"Unknown terminal condition operator: {operator}")
-
-            terminal_mask |= current
-
-        return terminal_mask | dones
+        self.dones = program.apply(
+            bars_state=self._current_bar_state(),
+            dones=self.dones,
+            active_mask=torch.logical_not(self.dones),
+            device=self.device,
+        )
 
     def _current_vfs_state(self) -> dict[str, torch.Tensor]:
         """Return the engine-readable VFS registry snapshot."""

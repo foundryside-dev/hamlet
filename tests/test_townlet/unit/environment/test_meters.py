@@ -203,7 +203,7 @@ class TestTerminalConditions:
         env.meters[0, health_idx] = 0.0  # health at 0
         env.dones = torch.tensor([False])
 
-        env.dones = env._check_terminal_conditions(env.meters, env.dones)
+        env._apply_vtc_terminal_conditions()
 
         assert env.dones[0]
 
@@ -218,7 +218,7 @@ class TestTerminalConditions:
         env.meters[0, energy_idx] = 0.0  # energy at 0
         env.dones = torch.tensor([False])
 
-        env.dones = env._check_terminal_conditions(env.meters, env.dones)
+        env._apply_vtc_terminal_conditions()
 
         assert env.dones[0]
 
@@ -235,7 +235,7 @@ class TestTerminalConditions:
         env.meters[0, health_idx] = 0.5  # health at 50%
         env.dones = torch.tensor([False])
 
-        env.dones = env._check_terminal_conditions(env.meters, env.dones)
+        env._apply_vtc_terminal_conditions()
 
         assert not env.dones[0]
 
@@ -287,7 +287,7 @@ class TestMultiAgentMeters:
         # Agent 2: both primaries > 0 → alive
         env.dones = torch.tensor([False, False, False])
 
-        env.dones = env._check_terminal_conditions(env.meters, env.dones)
+        env._apply_vtc_terminal_conditions()
 
         assert env.dones[0]  # dead (health=0)
         assert env.dones[1]  # dead (energy=0)
@@ -339,7 +339,7 @@ class TestCascadeIntegration:
         # Run full cascade as in step()
         env._apply_vtc_passive_depletion(1.0)
         env._apply_vtc_threshold_cascades()
-        env.dones = env._check_terminal_conditions(env.meters, env.dones)
+        env._apply_vtc_terminal_conditions()
 
         # Health and energy should be reduced (cascade effects accumulate)
         assert env.meters[0, health_idx] < initial_health  # health decreased

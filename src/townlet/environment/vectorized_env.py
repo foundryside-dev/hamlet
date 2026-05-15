@@ -22,7 +22,6 @@ from townlet.environment.action_executor import ActionExecutor
 from townlet.environment.action_labels import ActionLabels
 from townlet.environment.affordance_engine import AffordanceEngine
 from townlet.environment.dac_engine import DACEngine
-from townlet.environment.meter_dynamics import MeterDynamics
 from townlet.environment.observation_encoder import ObservationEncoder
 from townlet.environment.reward_calculator import RewardCalculator
 from townlet.items import InventoryState, ItemActionHandler, ItemManager
@@ -341,7 +340,6 @@ class VectorizedHamletEnv:
                 device=str(self.device),
                 time_enabled=self.temporal_support_enabled,
                 affordance_overrides=self.affordance_overrides,
-                threshold_cascade_program=None,  # Patched after VTC threshold cascades are compiled
             )
             if effect_catalog is not None
             else None
@@ -373,12 +371,7 @@ class VectorizedHamletEnv:
             if bar.bounds.lethal_max:
                 terminal_specs.append({"meter_idx": idx, "operator": ">=", "value": bar.bounds.max})
 
-        # Initialize meter dynamics directly from optimization tensors
-        self.meter_dynamics = MeterDynamics(
-            terminal_conditions=terminal_specs,
-            meter_name_to_index=meter_name_to_index,
-            device=self.device,
-        )
+        self._terminal_conditions = terminal_specs
 
         # Cache action mask table (24 × affordance_count) for temporal mechanics
         self.action_mask_table = self.optimization_data.action_mask_table.to(self.device).clone()
@@ -438,8 +431,6 @@ class VectorizedHamletEnv:
         self.vtc_passive_depletion_program: VTCPassiveDepletionProgram = compile_vtc_passive_depletions(self.bars_config.meters)
         self.vtc_modulation_program: VTCModulationProgram = compile_vtc_modulations(level.affordances.modulations)
         self.vtc_threshold_cascade_program = compile_vtc_threshold_cascades(self.bars_config.cascades)
-        if self.effect_manager is not None:
-            self.effect_manager.threshold_cascade_program = self.vtc_threshold_cascade_program
 
         # State tensors (initialized in reset)
         self.positions = torch.zeros(
@@ -494,7 +485,6 @@ class VectorizedHamletEnv:
                 meter_name_to_index=self.meter_name_to_index,
                 effect_manager=self.effect_manager,  # NEW: pass EffectManager for ExecutionContext
                 affordance_overrides=self.affordance_overrides,
-                threshold_cascade_program=self.vtc_threshold_cascade_program,
             )
         else:
             self.item_manager = None
@@ -516,7 +506,6 @@ class VectorizedHamletEnv:
             effect_manager=self.effect_manager,
             item_manager=self.item_manager or NullItemManager(),
             affordance_overrides=self.affordance_overrides,
-            threshold_cascade_program=self.vtc_threshold_cascade_program,
         )
 
         # Exploration module (optional, set by population or external code)
@@ -1105,9 +1094,8 @@ class VectorizedHamletEnv:
 
         # P3.1: Mask all actions for dead agents according to terminal conditions.
         # This must be LAST to override all other masking. Terminal conditions are
-        # defined in bars.yaml (lethal_min/lethal_max) and enforced by MeterDynamics;
-        # we use the env's dones flag as single source of truth instead of hardcoded
-        # meter names.
+        # defined in bars.yaml (lethal_min/lethal_max); the env's dones flag is the
+        # single source of truth instead of hardcoded meter names.
         if hasattr(self, "dones"):
             action_masks[self.dones] = False
 
@@ -1198,7 +1186,7 @@ class VectorizedHamletEnv:
                         self.vfs_registry.set_engine_value(var_name, value)
 
         # 4. Check terminal conditions
-        self.dones = self.meter_dynamics.check_terminal_conditions(self.meters, self.dones)
+        self.dones = self._check_terminal_conditions(self.meters, self.dones)
 
         # 5. Increment step counts (before retirement check)
         self.step_counts += 1
@@ -1300,6 +1288,32 @@ class VectorizedHamletEnv:
         )
         for bar_name, value in updated_bars.items():
             self._set_vtc_bar_value(bar_name, value)
+
+    def _check_terminal_conditions(self, meters: torch.Tensor, dones: torch.Tensor) -> torch.Tensor:
+        """Evaluate configured lethal meter bounds and preserve existing done states."""
+        terminal_mask = torch.zeros_like(dones, dtype=torch.bool)
+
+        for condition in self._terminal_conditions:
+            meter_values = meters[:, int(condition["meter_idx"])]
+            threshold = float(condition["value"])
+            operator = condition["operator"]
+
+            if operator == "<=":
+                current = meter_values <= threshold
+            elif operator == ">=":
+                current = meter_values >= threshold
+            elif operator == "<":
+                current = meter_values < threshold
+            elif operator == ">":
+                current = meter_values > threshold
+            elif operator == "==":
+                current = torch.isclose(meter_values, torch.tensor(threshold, device=meter_values.device))
+            else:  # pragma: no cover - compiler should only emit supported operators
+                raise ValueError(f"Unknown terminal condition operator: {operator}")
+
+            terminal_mask |= current
+
+        return terminal_mask | dones
 
     def _current_vfs_state(self) -> dict[str, torch.Tensor]:
         """Return the engine-readable VFS registry snapshot."""

@@ -36,7 +36,6 @@ class ItemActionHandler:
         meter_name_to_index: dict[str, int],
         effect_manager: Any | None = None,
         affordance_overrides: dict[str, bool] | None = None,
-        threshold_cascade_program: Any | None = None,
     ) -> None:
         """Initialize action handler.
 
@@ -54,7 +53,6 @@ class ItemActionHandler:
         self.meter_name_to_index = meter_name_to_index
         self.effect_manager = effect_manager or NullEffectManager()
         self.affordance_overrides = affordance_overrides
-        self.threshold_cascade_program = threshold_cascade_program
         # Cache custom verb specs for masking/dispatch
         self.custom_action_specs = {
             name: (item_type, scope, command_name) for name, item_type, scope, command_name in manager.get_custom_action_specs()
@@ -118,7 +116,6 @@ class ItemActionHandler:
             scheduler=getattr(self.effect_manager, "scheduler", None),
             current_tick=current_tick or 0,
             affordance_overrides=self.affordance_overrides,
-            threshold_cascade_program=self.threshold_cascade_program,
         )
 
         # Execute all commands
@@ -260,7 +257,6 @@ class ItemActionHandler:
             scheduler=getattr(self.effect_manager, "scheduler", None),
             current_tick=current_tick,
             affordance_overrides=self.affordance_overrides,
-            threshold_cascade_program=self.threshold_cascade_program,
         )
 
         for command in commands:

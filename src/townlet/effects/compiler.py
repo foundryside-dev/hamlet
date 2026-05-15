@@ -395,16 +395,6 @@ class CommandCompiler:
                 self.type_checker.check(position_ast)
                 node.position_ast = position_ast
 
-        elif node.type == CommandType.TRIGGER_CASCADE:
-            from townlet.world.expression.type_checker import TypeCheckError
-
-            if not node.cascade_id:
-                raise TypeCheckError("TRIGGER_CASCADE command requires 'cascade_id'")
-            if node.cascade_strength is None:
-                raise TypeCheckError("TRIGGER_CASCADE command requires 'cascade_strength'")
-            if node.cascade_strength <= 0:
-                raise TypeCheckError("TRIGGER_CASCADE 'cascade_strength' must be positive")
-
         return node
 
     def compile_commands(self, nodes: list[CommandNode]) -> list[CommandNode]:

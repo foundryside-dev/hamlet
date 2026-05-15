@@ -209,18 +209,6 @@ def test_parser_delay_command():
     assert node.delay_commands[0].type == CommandType.MODIFY
 
 
-def test_parser_trigger_cascade_command():
-    """Parser converts trigger_cascade CommandConfig to CommandNode."""
-    config = CommandConfig(trigger_cascade="hunger_cascade", cascade_strength=1.5)
-
-    parser = CommandParser()
-    node = parser.parse_command(config)
-
-    assert node.type == CommandType.TRIGGER_CASCADE
-    assert node.cascade_id == "hunger_cascade"
-    assert node.cascade_strength == 1.5
-
-
 def test_parser_invalid_command_raises():
     """CommandConfig validation rejects empty command."""
     import pytest

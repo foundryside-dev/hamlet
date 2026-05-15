@@ -143,13 +143,6 @@ class CommandParser:
                 delay_commands=[self.parse_command(cmd) for cmd in config.delay_do],
             )
 
-        elif config.trigger_cascade is not None:
-            return CommandNode(
-                type=CommandType.TRIGGER_CASCADE,
-                cascade_id=config.trigger_cascade,
-                cascade_strength=config.cascade_strength,
-            )
-
         else:
             raise ValueError("Invalid command config: no command type set")
 

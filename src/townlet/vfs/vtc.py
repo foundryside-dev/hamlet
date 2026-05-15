@@ -400,26 +400,6 @@ class VTCThresholdCascadeProgram:
 
         return updated
 
-    def apply_named(
-        self,
-        cascade_id: str,
-        bars_state: Mapping[str, torch.Tensor],
-        *,
-        active_mask: torch.Tensor,
-        device: torch.device,
-        strength: float,
-    ) -> dict[str, torch.Tensor]:
-        """Apply one named cascade rule through the same threshold-delta executor."""
-        matching_rules = tuple(rule for rule in self.rules if rule.rule_id == cascade_id)
-        if not matching_rules:
-            raise ValueError(f"Unknown cascade_id '{cascade_id}' for trigger_cascade")
-        return VTCThresholdCascadeProgram(matching_rules).apply(
-            bars_state=bars_state,
-            active_mask=active_mask,
-            device=device,
-            strength_multiplier=strength,
-        )
-
     @staticmethod
     def _iter_phase_groups(rules: Sequence[CompiledVTCThresholdCascade]) -> list[tuple[CompiledVTCThresholdCascade, ...]]:
         phase_groups: list[tuple[CompiledVTCThresholdCascade, ...]] = []

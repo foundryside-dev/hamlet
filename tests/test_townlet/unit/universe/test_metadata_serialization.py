@@ -112,10 +112,7 @@ def test_compiled_universe_msgpack_round_trip(tmp_path: Path) -> None:
     assert reconstructed.action_space_metadata == compiled.action_space_metadata
     assert reconstructed.meter_metadata == compiled.meter_metadata
     assert reconstructed.affordance_metadata == compiled.affordance_metadata
-    assert torch.allclose(
-        reconstructed.optimization_data.base_depletions,
-        compiled.optimization_data.base_depletions,
-    )
+    assert "base_depletions" not in compiled.to_dict()["optimization_data_raw"]
     assert torch.equal(
         reconstructed.optimization_data.action_mask_table,
         compiled.optimization_data.action_mask_table,

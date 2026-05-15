@@ -9,8 +9,6 @@ import torch
 
 from townlet.config.affordances_v2_config import AffordancesV2Config
 from townlet.config.bars_v2_config import BarsV2Config
-from townlet.effects.catalog import EffectCatalog
-from townlet.effects.schema import CommandType
 from townlet.universe.dto import ActionSpaceMetadata, AffordanceMetadata, MeterMetadata
 from townlet.universe.optimization import OptimizationData
 
@@ -45,11 +43,6 @@ class OptimizationCompiler:
         """Precompute tensors from v2.1 DTOs."""
         _ = action_metadata
         meter_lookup = {m.name: m.index for m in meter_metadata.meters}
-        base_depletions = torch.zeros(len(meter_metadata.meters), dtype=torch.float32)
-        for bar in bars.meters:
-            idx = meter_lookup.get(bar.name)
-            if idx is not None:
-                base_depletions[idx] = float(bar.depletion.passive)
 
         cascade_entries: list[dict[str, Any]] = []
         cascade_by_id: dict[str, list[dict[str, Any]]] = {}
@@ -126,76 +119,8 @@ class OptimizationCompiler:
             action_mask_table[:, aff_idx] &= hours_enabled
 
         return OptimizationData(
-            base_depletions=base_depletions,
             cascade_data={"primary_to_pivotal": cascade_entries, **cascade_by_id},
             modulation_data=modulation_entries,
             action_mask_table=action_mask_table,
             affordance_position_map={aff.name: None for aff in affordance_metadata.affordances},
         )
-
-    def validate_trigger_cascade_ids(
-        self,
-        compiled_effect_catalog: EffectCatalog,
-        optimization_data: OptimizationData,
-        *,
-        level_name: str,
-    ) -> None:
-        """Ensure trigger_cascade commands reference cascades compiled for this level."""
-        valid_ids = set(optimization_data.cascade_data.keys())
-        if not valid_ids:
-            for effect in compiled_effect_catalog.effects.values():
-                for cmd in self._walk_commands(effect):
-                    if cmd.type == CommandType.TRIGGER_CASCADE:
-                        raise ValueError(
-                            "trigger_cascade referenced but no cascades are defined in bars.yaml.\n"
-                            f"  Level: {level_name}\n"
-                            f"  Effect: {effect.id}\n"
-                            "  Define cascades in bars.cascades before using trigger_cascade."
-                        )
-            return
-
-        for effect in compiled_effect_catalog.effects.values():
-            for cmd in self._walk_commands(effect):
-                if cmd.type == CommandType.TRIGGER_CASCADE:
-                    cascade_id = cmd.cascade_id
-                    if not cascade_id or cascade_id not in valid_ids:
-                        raise ValueError(
-                            "trigger_cascade references unknown cascade_id.\n"
-                            f"  Level: {level_name}\n"
-                            f"  Effect: {effect.id}\n"
-                            f"  cascade_id: {cascade_id!r}\n"
-                            f"  Valid cascade ids: {sorted(valid_ids)}"
-                        )
-
-    @staticmethod
-    def _walk_commands(effect: Any):
-        """Yield all CommandNodes from a compiled effect recursively."""
-
-        def walk(cmd):
-            yield cmd
-            if cmd.type == CommandType.IF:
-                for child in cmd.then_commands or []:
-                    yield from walk(child)
-                for child in cmd.else_commands or []:
-                    yield from walk(child)
-            elif cmd.type == CommandType.FOR_EACH:
-                for child in cmd.body or cmd.do_commands or []:
-                    yield from walk(child)
-            elif cmd.type == CommandType.SWITCH:
-                for _, body in cmd.cases or []:
-                    for child in body:
-                        yield from walk(child)
-                for child in cmd.default_commands or []:
-                    yield from walk(child)
-            elif cmd.type == CommandType.REDUCE:
-                pass
-            elif cmd.type == CommandType.PARALLEL:
-                for child in cmd.parallel_commands or []:
-                    yield from walk(child)
-            elif cmd.type == CommandType.DELAY:
-                for child in cmd.delay_commands or []:
-                    yield from walk(child)
-
-        pipelines = list(effect.on_spawn) + list(effect.on_tick) + list(effect.on_despawn) + list(getattr(effect, "on_interrupt", []) or [])
-        for command in pipelines:
-            yield from walk(command)

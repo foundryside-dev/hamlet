@@ -367,7 +367,6 @@ pytest tests/test_townlet/ -m integration
 |--------|-----------|----------|
 | agent/networks.py | 69 | 97% |
 | environment/observation_builder.py | 77 | 100% |
-| environment/meter_dynamics.py | 24 | 100% |
 | environment/vectorized_env.py | 250 | 95% |
 | exploration/epsilon_greedy.py | 25 | 100% |
 | exploration/adaptive_intrinsic.py | 55 | 100% |

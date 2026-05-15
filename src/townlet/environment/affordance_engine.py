@@ -2,7 +2,7 @@
 AffordanceEngine: Config-driven affordance interaction system.
 
 This module processes affordance interactions using YAML configuration instead
-of hardcoded logic. Follows the same pattern as MeterDynamics (ACTION #1).
+of hardcoded logic.
 
 Architecture:
 - Load affordance configs at initialization
@@ -65,7 +65,6 @@ class AffordanceEngine:
         effect_manager: Any | None = None,  # NEW: EffectManager required for Effects commands
         item_manager: Any | None = None,  # NEW: ItemManager required for spawn_item
         affordance_overrides: dict[str, bool] | None = None,  # NEW: dynamic availability toggles
-        threshold_cascade_program: Any | None = None,  # VTC threshold cascades for trigger_cascade command support
     ):
         """
         Initialize AffordanceEngine.
@@ -92,7 +91,6 @@ class AffordanceEngine:
         self.effect_manager = effect_manager or NullEffectManager()
         self.item_manager = item_manager or NullItemManager()
         self.affordance_overrides = affordance_overrides
-        self.threshold_cascade_program = threshold_cascade_program
 
         # Build lookup maps
         self._build_lookup_maps()
@@ -595,7 +593,6 @@ class AffordanceEngine:
                 scheduler=getattr(self.effect_manager, "scheduler", None),
                 current_tick=current_tick or 0,
                 affordance_overrides=self.affordance_overrides,
-                threshold_cascade_program=self.threshold_cascade_program,
             )
 
             for command in commands:

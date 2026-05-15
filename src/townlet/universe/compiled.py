@@ -312,7 +312,6 @@ class CompiledUniverse:
             "meter_metadata": _dataclass_to_plain(self.meter_metadata),
             "affordance_metadata": _dataclass_to_plain(self.affordance_metadata),
             "optimization_data_raw": {
-                "base_depletions": self.optimization_data.base_depletions.cpu().tolist(),
                 "cascade_data": self.optimization_data.cascade_data,
                 "modulation_data": self.optimization_data.modulation_data,
                 "action_mask_table": (
@@ -357,7 +356,7 @@ class CompiledUniverse:
                     name: {
                         "level_name": meta.level_name,
                         "bars": meta.bars.model_dump(),
-                        "affordances": meta.affordances.model_dump(),
+                        "affordances": meta.affordances.model_dump(by_alias=True),
                         "drive": meta.drive.model_dump(),
                         "drive_hash": meta.drive_hash,
                         "curriculum_hash": meta.curriculum_hash,
@@ -376,7 +375,6 @@ class CompiledUniverse:
                         "meter_metadata": _dataclass_to_plain(meta.meter_metadata),
                         "affordance_metadata": _dataclass_to_plain(meta.affordance_metadata),
                         "optimization_data_raw": {
-                            "base_depletions": meta.optimization_data.base_depletions.cpu().tolist(),
                             "cascade_data": meta.optimization_data.cascade_data,
                             "modulation_data": meta.optimization_data.modulation_data,
                             "action_mask_table": (
@@ -458,10 +456,6 @@ class CompiledUniverse:
                         meta["affordance_metadata"], f"all_levels.{name}.affordance_metadata"
                     ),
                     optimization_data=OptimizationData(
-                        base_depletions=torch.tensor(
-                            _required_field(level_opt_payload, f"all_levels.{name}.optimization_data_raw.base_depletions"),
-                            dtype=torch.float32,
-                        ),
                         cascade_data=_required_field(level_opt_payload, f"all_levels.{name}.optimization_data_raw.cascade_data"),
                         modulation_data=_required_field(level_opt_payload, f"all_levels.{name}.optimization_data_raw.modulation_data"),
                         action_mask_table=level_mask_tensor,
@@ -491,7 +485,6 @@ class CompiledUniverse:
             meter_metadata=_meter_metadata_from_plain(payload["meter_metadata"]),
             affordance_metadata=_affordance_metadata_from_plain(payload["affordance_metadata"]),
             optimization_data=OptimizationData(
-                base_depletions=torch.tensor(_required_field(opt_payload, "optimization_data_raw.base_depletions"), dtype=torch.float32),
                 cascade_data=_required_field(opt_payload, "optimization_data_raw.cascade_data"),
                 modulation_data=_required_field(opt_payload, "optimization_data_raw.modulation_data"),
                 action_mask_table=action_mask_tensor,
@@ -931,8 +924,6 @@ def _serialize_command_node(command: CommandNode) -> dict[str, Any]:
         "parallel_commands": _serialize_command_pipeline(command.parallel_commands or []),
         "delay_ticks_expr": command.delay_ticks_expr,
         "delay_commands": _serialize_command_pipeline(command.delay_commands or []),
-        "cascade_id": command.cascade_id,
-        "cascade_strength": command.cascade_strength,
     }
 
 
@@ -983,8 +974,6 @@ def _deserialize_command_node(payload: dict[str, Any]) -> CommandNode:
         parallel_commands=[_deserialize_command_node(command) for command in payload["parallel_commands"]],
         delay_ticks_expr=payload.get("delay_ticks_expr"),
         delay_commands=[_deserialize_command_node(command) for command in payload["delay_commands"]],
-        cascade_id=payload.get("cascade_id"),
-        cascade_strength=payload.get("cascade_strength"),
     )
 
 

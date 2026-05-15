@@ -142,8 +142,6 @@ class CommandExecutor:
             self._execute_parallel(command, context)
         elif command.type == CommandType.DELAY:
             self._execute_delay(command, context)
-        elif command.type == CommandType.TRIGGER_CASCADE:
-            self._execute_trigger_cascade(command, context)
         else:
             raise NotImplementedError(f"Command type {command.type} not implemented")
 
@@ -640,35 +638,6 @@ class CommandExecutor:
             context_overrides=context_overrides,
             base_tick=None if context.current_tick is None else context.current_tick,
         )
-
-    def _execute_trigger_cascade(self, command: CommandNode, context: ExecutionContext) -> None:
-        """Invoke a named cascade on current meters."""
-        if context.threshold_cascade_program is None:
-            raise RuntimeError("trigger_cascade command requires threshold_cascade_program on ExecutionContext")
-        if command.cascade_id is None:
-            raise ValueError("trigger_cascade requires cascade_id")
-        if command.cascade_strength is None:
-            raise ValueError("trigger_cascade requires cascade_strength")
-        strength = command.cascade_strength
-        if strength <= 0:
-            raise ValueError("trigger_cascade cascade_strength must be positive")
-
-        if not context.bars:
-            raise RuntimeError("trigger_cascade requires bars on ExecutionContext")
-        sample_bar = next(iter(context.bars.values()))
-        if sample_bar.dim() == 0:
-            raise ValueError("trigger_cascade requires batched bar tensors")
-        active_mask = torch.ones(sample_bar.shape[0], dtype=torch.bool, device=sample_bar.device)
-
-        updated = context.threshold_cascade_program.apply_named(
-            command.cascade_id,
-            context.bars,
-            active_mask=active_mask,
-            device=sample_bar.device,
-            strength=strength,
-        )
-        for name, tensor in updated.items():
-            context.bars[name] = tensor
 
     def _make_eval_context(self, context: ExecutionContext, effect: Any | None = None) -> ExprExecutionContext:
         """Convert ExecutionContext to ExprExecutionContext.

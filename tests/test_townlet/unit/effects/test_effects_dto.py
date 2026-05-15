@@ -71,14 +71,25 @@ def test_command_config_spawn_effect_requires_target_and_intensity():
 
 def test_command_config_sample_rejects_distribution_alias():
     """sample is the only accepted stochastic command key."""
-    with pytest.raises(ValidationError, match="Exactly one command"):
+    with pytest.raises(ValidationError, match="Extra inputs"):
         CommandConfig(distribution="uniform", params={"min": 0.0, "max": 1.0}, store_in="target.vfs.roll")
 
 
-def test_command_config_trigger_cascade_requires_strength():
-    """trigger_cascade must declare its strength explicitly."""
-    with pytest.raises(ValidationError, match="cascade_strength"):
-        CommandConfig(trigger_cascade="hunger_cascade")
+def test_command_config_rejects_trigger_cascade_command():
+    """Passive cascades are VTC rules, not effects commands."""
+    with pytest.raises(ValidationError, match="Extra inputs"):
+        CommandConfig(trigger_cascade="hunger_cascade", cascade_strength=1.0)
+
+
+def test_command_config_rejects_removed_trigger_cascade_even_with_valid_command():
+    """Deleted command keys must fail loudly instead of being ignored."""
+    with pytest.raises(ValidationError, match="Extra inputs"):
+        CommandConfig(
+            modify="target.bar.energy",
+            value="target.bar.energy + 0.05",
+            trigger_cascade="hunger_cascade",
+            cascade_strength=1.0,
+        )
 
 
 def test_command_config_requires_one_command_type():

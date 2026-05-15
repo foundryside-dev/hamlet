@@ -1,7 +1,7 @@
-"""Integration tests for Items → Effects → Cascades flow.
+"""Integration tests for Items, Effects, and VTC passive dynamics.
 
 Tests complex interactions:
-  Item Pickup → Effect Spawned → Cascade Triggered → Meters Updated
+  Item Pickup → Effect Spawned → Meters Updated → VTC Cascades Applied
 """
 
 from pathlib import Path
@@ -49,9 +49,7 @@ class TestItemsEffectsCascade:
 
     def test_effect_modifies_bars_triggers_cascade(self, items_test_env):
         """Effect modifying bar triggers cascade to other bars."""
-        # Test that cascades are configured in the environment
-        # The items_smoke config should have bars.yaml with cascade definitions
-        assert hasattr(items_test_env, "meter_dynamics")
+        assert hasattr(items_test_env, "vtc_threshold_cascade_program")
 
         # Verify that bars exist
         initial_bars = items_test_env.reset()
@@ -66,7 +64,7 @@ class TestItemsEffectsCascade:
         # Full integration test: Environment initializes with all systems
         # - ItemManager (items)
         # - EffectManager (effects)
-        # - MeterDynamics (cascades)
+        # - VTC threshold cascade program (passive dynamics)
 
         env = items_test_env
 

@@ -23,7 +23,6 @@ class CommandType(enum.Enum):
     SPAWN_EFFECT = "spawn_effect"
     SPAWN_ITEM = "spawn_item"
     SAMPLE = "sample"
-    TRIGGER_CASCADE = "trigger_cascade"
     IF = "if"
     FOR_EACH = "for_each"
     SWITCH = "switch"
@@ -105,10 +104,6 @@ class CommandNode:
     delay_ticks_expr: str | None = None
     delay_ticks_ast: Any | None = None
     delay_commands: list[CommandNode] | None = None
-
-    # trigger_cascade command fields
-    cascade_id: str | None = None
-    cascade_strength: float | None = None
 
     def __post_init__(self) -> None:
         """Initialize empty lists for nested commands."""

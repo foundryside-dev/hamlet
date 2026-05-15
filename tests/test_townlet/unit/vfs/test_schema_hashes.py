@@ -455,6 +455,61 @@ def test_transition_graph_hash_binds_passive_depletion_rules() -> None:
     )
 
 
+def test_transition_graph_hash_binds_interaction_progress_rules() -> None:
+    """Transition hashes should bind VTC multi-tick progress and completion semantics."""
+    phase_graph = TransitionPhaseGraph.default()
+    action_program = compile_vtc_action_writes_with_phase_graph([], phase_graph)
+    affordance = {"name": "SLEEP", "interaction_type": "multi_tick", "duration_ticks": 5}
+    changed_affordance = {"name": "SLEEP", "interaction_type": "multi_tick", "duration_ticks": 6}
+
+    interaction_program = vtc.compile_vtc_interaction_progress_with_phase_graph([affordance], phase_graph)
+
+    assert canonical_transition_graph_schema(
+        phase_graph,
+        action_program,
+        interaction_progress_program=interaction_program,
+    )["rules"] == [
+        {
+            "rule_id": "sleep_advance_interaction_progress",
+            "kind": "interaction_progress",
+            "source_variable_id": "interaction_progress",
+            "target_affordance_id": "SLEEP",
+            "variable_id": "interaction_progress",
+            "expression": "where(same_affordance and affordance_is_open and chosen_interact, interaction_progress + 1, 0)",
+            "condition": None,
+            "composition": "overwrite",
+            "phase": "advance_interaction_progress",
+            "priority": 0,
+            "clamp": None,
+            "telemetry_label": "interaction_progress:SLEEP",
+            "duration_ticks": 5,
+        },
+        {
+            "rule_id": "sleep_completion_bonus",
+            "kind": "interaction_completion_bonus",
+            "source_variable_id": "interaction_progress",
+            "target_affordance_id": "SLEEP",
+            "variable_id": "affordance.SLEEP.completed",
+            "expression": "interaction_progress >= 5",
+            "condition": None,
+            "composition": "event",
+            "phase": "apply_completion_bonuses",
+            "priority": 0,
+            "clamp": None,
+            "telemetry_label": "interaction_completion_bonus:SLEEP",
+            "duration_ticks": 5,
+        },
+    ]
+
+    baseline = compute_transition_graph_hash(phase_graph, action_program, interaction_progress_program=interaction_program)
+
+    assert baseline != compute_transition_graph_hash(
+        phase_graph,
+        action_program,
+        interaction_progress_program=vtc.compile_vtc_interaction_progress_with_phase_graph([changed_affordance], phase_graph),
+    )
+
+
 def test_vfs_hash_combines_component_hashes_and_transition_graph() -> None:
     """The VFS identity should bind all component hashes, including the transition graph."""
     variable_hash = "a" * 64
@@ -488,6 +543,10 @@ def test_compiler_surfaces_vfs_hash(tmp_path: Path) -> None:
         TransitionPhaseGraph.default(),
         compile_vtc_action_writes_with_phase_graph(compiled.runtime_action_space.actions, TransitionPhaseGraph.default()),
         affordance_gate_program=vtc.compile_vtc_affordance_gates_with_phase_graph(
+            compiled.get_level(PRIMARY_LEVEL_NAME).affordances.affordances,
+            TransitionPhaseGraph.default(),
+        ),
+        interaction_progress_program=vtc.compile_vtc_interaction_progress_with_phase_graph(
             compiled.get_level(PRIMARY_LEVEL_NAME).affordances.affordances,
             TransitionPhaseGraph.default(),
         ),

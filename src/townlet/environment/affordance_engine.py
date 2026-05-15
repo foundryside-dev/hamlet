@@ -177,7 +177,7 @@ class AffordanceEngine:
         if affordance.interaction_type not in ["instant", "dual"]:
             raise ValueError(
                 f"Affordance '{affordance_name}' is {affordance.interaction_type}, "
-                f"not instant or dual. Use apply_multi_tick_interaction instead."
+                f"not instant or dual. Use apply_vtc_multi_tick_effects instead."
             )
 
         # Clone meters to avoid modifying input
@@ -231,26 +231,29 @@ class AffordanceEngine:
             ),
         )
 
-    def apply_multi_tick_interaction(
+    def apply_vtc_multi_tick_effects(
         self,
+        *,
         meters: torch.Tensor,
         affordance_name: str,
         current_tick: int,
         agent_mask: torch.Tensor,
+        completion_mask: torch.Tensor,
         check_affordability: bool = False,
     ) -> torch.Tensor:
         """
-        Apply multi-tick affordance interaction for a single tick.
+        Apply VTC-selected multi-tick affordance effects for a single tick.
 
         Args:
             meters: [num_agents, 8] current meter values
             affordance_name: Name of affordance (e.g., "Bed", "Job")
-            current_tick: Current tick number [0, duration_ticks-1]
+            current_tick: Current tick number selected by VTC [0, duration_ticks-1]
             agent_mask: [num_agents] bool mask of agents to apply to
+            completion_mask: [num_agents] bool mask of agents completed by the VTC rule
             check_affordability: If True, check if agents can afford costs
 
         Returns:
-            updated_meters: [num_agents, 8] after per-tick effects applied
+            updated_meters: [num_agents, 8] after VTC-selected effects are applied
         """
         affordance = self.affordance_map.get(affordance_name)
         if affordance is None:
@@ -262,13 +265,19 @@ class AffordanceEngine:
                 f"not multi_tick or dual. Use apply_instant_interaction instead."
             )
 
+        if completion_mask.shape != agent_mask.shape:
+            raise ValueError(f"completion_mask shape {tuple(completion_mask.shape)} must match agent_mask shape {tuple(agent_mask.shape)}")
+
         # Clone meters
         updated_meters = meters.clone()
+        agent_mask = agent_mask.to(device=meters.device, dtype=torch.bool)
+        completion_mask = completion_mask.to(device=meters.device, dtype=torch.bool)
 
         # Check affordability if requested
         if check_affordability and len(affordance.costs_per_tick) > 0:
             can_afford = self._check_affordability(meters, affordance.costs_per_tick)
             agent_mask = agent_mask & can_afford
+            completion_mask = completion_mask & can_afford
 
         # Apply per-tick costs (modern dict format)
         multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
@@ -287,16 +296,11 @@ class AffordanceEngine:
             current_tick=current_tick,
         )
 
-        duration_ticks = affordance.duration_ticks or 1
-
-        # Check if this is the final tick - if so, apply completion bonus
-        is_final_tick = current_tick == (duration_ticks - 1)
-        if is_final_tick:
-            # Execute compiled Effects commands (on_completion stage)
+        if completion_mask.any():
             updated_meters = self._execute_affordance_effects(
                 affordance_name,
                 "on_completion",
-                agent_mask,
+                completion_mask,
                 updated_meters,
                 multipliers=multipliers,
                 current_tick=current_tick,

@@ -33,11 +33,13 @@ from townlet.vfs.registry import VariableRegistry
 from townlet.vfs.vtc import (
     VTCActionWriteProgram,
     VTCAffordanceGateProgram,
+    VTCInteractionProgressProgram,
     VTCModulationProgram,
     VTCPassiveDepletionProgram,
     VTCThresholdCascadeProgram,
     compile_vtc_action_writes,
     compile_vtc_affordance_gates,
+    compile_vtc_interaction_progress,
     compile_vtc_modulations,
     compile_vtc_passive_depletions,
     compile_vtc_threshold_cascades,
@@ -414,6 +416,9 @@ class VectorizedHamletEnv:
         self._movement_deltas = self._build_movement_deltas()
         self.vtc_action_write_program = compile_vtc_action_writes(self.action_space.actions)
         self.vtc_affordance_gate_program: VTCAffordanceGateProgram = compile_vtc_affordance_gates(level.affordances.affordances)
+        self.vtc_interaction_progress_program: VTCInteractionProgressProgram = compile_vtc_interaction_progress(
+            level.affordances.affordances
+        )
         self.vtc_passive_depletion_program: VTCPassiveDepletionProgram = compile_vtc_passive_depletions(self.bars_config.meters)
         self.vtc_modulation_program: VTCModulationProgram = compile_vtc_modulations(level.affordances.modulations)
         self.vtc_threshold_cascade_program = compile_vtc_threshold_cascades(self.bars_config.cascades)

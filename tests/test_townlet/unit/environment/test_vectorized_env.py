@@ -826,6 +826,89 @@ class TestHandleInteractions:
         assert hasattr(env, "last_interaction_affordance")
         assert hasattr(env, "last_interaction_position")
 
+    def test_handle_interactions_advances_multi_tick_progress_via_vtc(self):
+        """Multi-tick progress should be advanced by the compiled VTC program."""
+        from townlet.environment.action_executor import ActionExecutor
+        from townlet.vfs import vtc
+
+        calls = []
+
+        class Substrate:
+            @staticmethod
+            def is_on_position(positions, affordance_pos):
+                return torch.eq(positions, affordance_pos).all(dim=1)
+
+        class AffordanceEngineStub:
+            affordances = ()
+
+            @staticmethod
+            def get_affordance_cost(_affordance_name, *, cost_mode):
+                assert cost_mode == "per_tick"
+                return 0.0
+
+            @staticmethod
+            def apply_vtc_multi_tick_effects(
+                *,
+                meters,
+                affordance_name,
+                current_tick,
+                agent_mask,
+                completion_mask,
+                check_affordability,
+            ):
+                assert affordance_name == "REST"
+                assert check_affordability is False
+                calls.append((current_tick, agent_mask.clone(), completion_mask.clone()))
+                updated = meters.clone()
+                updated[agent_mask, 0] += 0.1
+                updated[completion_mask, 1] += 0.2
+                return updated
+
+        class EnvStub:
+            enable_temporal_mechanics = True
+            num_agents = 1
+            device = torch.device("cpu")
+            affordance_engine = AffordanceEngineStub()
+            affordances = {"REST": torch.tensor([1, 1])}
+            substrate = Substrate()
+            money_idx = None
+            global_tick = 0
+            dones = torch.tensor([False])
+
+            def __init__(self):
+                self.positions = torch.tensor([[1, 1]])
+                self.meters = torch.tensor([[0.0, 0.0]])
+                self.interaction_progress = torch.tensor([0])
+                self.last_interaction_affordance = [None]
+                self.last_interaction_position = torch.zeros((1, 2), dtype=torch.long)
+                self.tracked_interactions = {}
+                self.vtc_interaction_progress_program = vtc.compile_vtc_interaction_progress(
+                    [{"name": "REST", "interaction_type": "multi_tick", "duration_ticks": 2}]
+                )
+
+            @staticmethod
+            def _is_affordance_open(_affordance_name):
+                return True
+
+            def _update_affordance_tracking(self, successful_interactions):
+                self.tracked_interactions = dict(successful_interactions)
+
+        env = EnvStub()
+        executor = ActionExecutor(env)
+
+        assert executor._handle_interactions(torch.tensor([True])) == {0: "REST"}
+        assert torch.equal(env.interaction_progress, torch.tensor([1]))
+        assert env.last_interaction_affordance == ["REST"]
+
+        assert executor._handle_interactions(torch.tensor([True])) == {0: "REST"}
+        assert env.interaction_progress[0] == 0
+        assert env.last_interaction_affordance[0] is None
+        assert torch.allclose(env.meters, torch.tensor([[0.2, 0.2]]))
+        assert calls[0][0] == 0
+        assert calls[0][2].item() is False
+        assert calls[1][0] == 1
+        assert calls[1][2].item() is True
+
     def test_handle_interactions_returns_empty_when_no_interact(self, cpu_env_factory):
         """Should return empty dict when no agents interact."""
         env = cpu_env_factory(num_agents=2)

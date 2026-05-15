@@ -83,6 +83,19 @@ class VTCAffordanceGateSource(Protocol):
     def opening_hours(self) -> Any: ...
 
 
+class VTCInteractionProgressSource(Protocol):
+    """Minimal affordance shape needed by the VTC interaction-progress compiler."""
+
+    @property
+    def name(self) -> str: ...
+
+    @property
+    def interaction_type(self) -> str | None: ...
+
+    @property
+    def duration_ticks(self) -> int | None: ...
+
+
 @dataclass(frozen=True)
 class CompiledVTCActionWrite:
     """A parsed VTC action write with the metadata needed for masked execution."""
@@ -178,6 +191,60 @@ class CompiledVTCAffordanceGate:
     priority: int
     clamp: tuple[float, float] | None
     telemetry_label: str
+
+
+@dataclass(frozen=True)
+class CompiledVTCInteractionProgress:
+    """A parsed VTC progress-advance rule for one multi-tick affordance."""
+
+    rule_id: str
+    kind: str
+    source_variable_id: str
+    target_affordance_id: str
+    variable_id: str
+    expression: str
+    expression_ast: ASTNode
+    condition: str | None
+    condition_ast: ASTNode | None
+    composition: str
+    phase: str
+    priority: int
+    clamp: tuple[float, float] | None
+    telemetry_label: str
+    duration_ticks: int
+
+
+@dataclass(frozen=True)
+class CompiledVTCInteractionCompletionBonus:
+    """A parsed VTC completion event rule for one multi-tick affordance."""
+
+    rule_id: str
+    kind: str
+    source_variable_id: str
+    target_affordance_id: str
+    variable_id: str
+    expression: str
+    expression_ast: ASTNode
+    condition: str | None
+    condition_ast: ASTNode | None
+    composition: str
+    phase: str
+    priority: int
+    clamp: tuple[float, float] | None
+    telemetry_label: str
+    duration_ticks: int
+
+
+@dataclass(frozen=True)
+class VTCInteractionProgressResult:
+    """Result of one VTC interaction-progress transition step."""
+
+    interaction_progress: torch.Tensor
+    ticks_done: torch.Tensor
+    completion_mask: torch.Tensor
+    completion_affordances: list[str | None]
+    last_affordances: list[str | None]
+    last_positions: torch.Tensor
 
 
 @dataclass(frozen=True)
@@ -868,6 +935,147 @@ class VTCAffordanceGateProgram:
         return value
 
 
+@dataclass(frozen=True)
+class VTCInteractionProgressProgram:
+    """Executable collection of compiled VTC multi-tick progress and completion rules."""
+
+    progress_rules: tuple[CompiledVTCInteractionProgress, ...]
+    completion_bonus_rules: tuple[CompiledVTCInteractionCompletionBonus, ...]
+
+    def apply(
+        self,
+        *,
+        interaction_affordances: Mapping[int, str],
+        positions: torch.Tensor,
+        interaction_progress: torch.Tensor,
+        last_affordances: Sequence[str | None],
+        last_positions: torch.Tensor,
+        active_mask: torch.Tensor,
+        device: torch.device,
+    ) -> VTCInteractionProgressResult:
+        """Advance multi-tick interaction progress using compiled VTC duration rules."""
+        self._validate_apply_inputs(
+            positions=positions,
+            interaction_progress=interaction_progress,
+            last_affordances=last_affordances,
+            last_positions=last_positions,
+            active_mask=active_mask,
+        )
+
+        positions_on_device = positions.to(device=device)
+        last_positions_on_device = last_positions.to(device=device)
+        previous_progress = interaction_progress.to(device=device, dtype=torch.long)
+        active = active_mask.to(device=device, dtype=torch.bool)
+
+        next_progress = torch.zeros_like(previous_progress)
+        ticks_done = torch.zeros_like(previous_progress)
+        completion_mask = torch.zeros(previous_progress.shape, device=device, dtype=torch.bool)
+        completion_affordances: list[str | None] = [None] * previous_progress.shape[0]
+        next_last_affordances: list[str | None] = [None] * previous_progress.shape[0]
+        next_last_positions = last_positions_on_device.clone()
+
+        normalized_interactions = self._normalize_interaction_affordances(interaction_affordances, previous_progress.shape[0])
+        for agent_idx in range(previous_progress.shape[0]):
+            if not bool(active[agent_idx].item()):
+                next_progress[agent_idx] = previous_progress[agent_idx]
+                next_last_affordances[agent_idx] = last_affordances[agent_idx]
+                next_last_positions[agent_idx] = last_positions_on_device[agent_idx]
+                continue
+
+            affordance_name = normalized_interactions.get(agent_idx)
+            if affordance_name is None:
+                next_last_positions[agent_idx] = positions_on_device[agent_idx]
+                continue
+
+            rule = self._rule_for_affordance(affordance_name)
+            same_affordance = last_affordances[agent_idx] == affordance_name
+            same_position = torch.equal(last_positions_on_device[agent_idx], positions_on_device[agent_idx])
+            candidate_ticks = (
+                previous_progress[agent_idx] + 1
+                if same_affordance and same_position
+                else torch.tensor(
+                    1,
+                    device=device,
+                    dtype=torch.long,
+                )
+            )
+            ticks_done[agent_idx] = candidate_ticks
+
+            if int(candidate_ticks.item()) >= rule.duration_ticks:
+                completion_mask[agent_idx] = True
+                completion_affordances[agent_idx] = affordance_name
+                next_last_affordances[agent_idx] = None
+            else:
+                next_progress[agent_idx] = candidate_ticks
+                next_last_affordances[agent_idx] = affordance_name
+
+            next_last_positions[agent_idx] = positions_on_device[agent_idx]
+
+        return VTCInteractionProgressResult(
+            interaction_progress=next_progress,
+            ticks_done=ticks_done,
+            completion_mask=completion_mask,
+            completion_affordances=completion_affordances,
+            last_affordances=next_last_affordances,
+            last_positions=next_last_positions,
+        )
+
+    def duration_for(self, affordance_name: str) -> int:
+        """Return the configured VTC duration for a multi-tick affordance."""
+        return self._rule_for_affordance(affordance_name).duration_ticks
+
+    def has_multi_tick_affordances(self) -> bool:
+        """Return whether this program contains any multi-tick affordance rules."""
+        return bool(self.progress_rules)
+
+    def contains_affordance(self, affordance_name: str) -> bool:
+        """Return whether an affordance has VTC multi-tick progress semantics."""
+        return any(rule.target_affordance_id == affordance_name for rule in self.progress_rules)
+
+    @staticmethod
+    def _validate_apply_inputs(
+        *,
+        positions: torch.Tensor,
+        interaction_progress: torch.Tensor,
+        last_affordances: Sequence[str | None],
+        last_positions: torch.Tensor,
+        active_mask: torch.Tensor,
+    ) -> None:
+        if interaction_progress.dim() != 1:
+            raise ValueError(f"interaction_progress must be rank-1, got shape {tuple(interaction_progress.shape)}")
+        if active_mask.shape != interaction_progress.shape:
+            raise ValueError(
+                f"active_mask shape {tuple(active_mask.shape)} must match interaction_progress shape "
+                f"{tuple(interaction_progress.shape)}"
+            )
+        if positions.shape[0] != interaction_progress.shape[0]:
+            raise ValueError(
+                f"positions leading dimension {positions.shape[0]} must match interaction batch {interaction_progress.shape[0]}"
+            )
+        if last_positions.shape != positions.shape:
+            raise ValueError(f"last_positions shape {tuple(last_positions.shape)} must match positions shape {tuple(positions.shape)}")
+        if len(last_affordances) != interaction_progress.shape[0]:
+            raise ValueError(
+                f"last_affordances length {len(last_affordances)} must match interaction batch {interaction_progress.shape[0]}"
+            )
+
+    @staticmethod
+    def _normalize_interaction_affordances(interaction_affordances: Mapping[int, str], batch_size: int) -> dict[int, str]:
+        normalized: dict[int, str] = {}
+        for raw_idx, affordance_name in interaction_affordances.items():
+            agent_idx = int(raw_idx)
+            if agent_idx < 0 or agent_idx >= batch_size:
+                raise ValueError(f"Interaction agent index {agent_idx} is outside batch size {batch_size}")
+            normalized[agent_idx] = affordance_name
+        return normalized
+
+    def _rule_for_affordance(self, affordance_name: str) -> CompiledVTCInteractionProgress:
+        for rule in self.progress_rules:
+            if rule.target_affordance_id == affordance_name:
+                return rule
+        raise KeyError(f"VTC interaction progress has no rule for affordance '{affordance_name}'")
+
+
 def compile_vtc_action_writes(actions: Sequence[VTCActionWriteSource]) -> VTCActionWriteProgram:
     """Compile ActionConfig writes into VTC records sorted by phase, priority, and action id."""
     return compile_vtc_action_writes_with_phase_graph(actions, TransitionPhaseGraph.default())
@@ -1133,6 +1341,119 @@ def _coerce_modulation(modulation: VTCModulationSource | Mapping[str, Any]) -> d
         "affordances": affordances,
         "threshold": threshold,
         "min_multiplier": min_multiplier,
+    }
+
+
+def compile_vtc_interaction_progress(
+    affordances: Sequence[VTCInteractionProgressSource | Mapping[str, Any]],
+) -> VTCInteractionProgressProgram:
+    """Compile multi-tick affordance durations into VTC progress and completion rules."""
+    return compile_vtc_interaction_progress_with_phase_graph(affordances, TransitionPhaseGraph.default())
+
+
+def compile_vtc_interaction_progress_with_phase_graph(
+    affordances: Sequence[VTCInteractionProgressSource | Mapping[str, Any]],
+    phase_graph: TransitionPhaseGraph,
+) -> VTCInteractionProgressProgram:
+    """Compile multi-tick affordance durations using an explicit VTC transition phase graph."""
+    parser = ExpressionParser()
+    progress_rules: list[CompiledVTCInteractionProgress] = []
+    completion_bonus_rules: list[CompiledVTCInteractionCompletionBonus] = []
+    progress_expression = "where(same_affordance and affordance_is_open and chosen_interact, interaction_progress + 1, 0)"
+
+    for raw_affordance in affordances:
+        affordance = _coerce_interaction_progress_affordance(raw_affordance)
+        if affordance["interaction_type"] not in {"multi_tick", "dual"}:
+            continue
+
+        name = affordance["name"]
+        duration_ticks = affordance["duration_ticks"]
+        priority = len(progress_rules)
+        slug = _rule_slug(name)
+        progress_rules.append(
+            CompiledVTCInteractionProgress(
+                rule_id=f"{slug}_advance_interaction_progress",
+                kind="interaction_progress",
+                source_variable_id="interaction_progress",
+                target_affordance_id=name,
+                variable_id="interaction_progress",
+                expression=progress_expression,
+                expression_ast=parser.parse(progress_expression),
+                condition=None,
+                condition_ast=None,
+                composition="overwrite",
+                phase="advance_interaction_progress",
+                priority=priority,
+                clamp=None,
+                telemetry_label=f"interaction_progress:{name}",
+                duration_ticks=duration_ticks,
+            )
+        )
+
+        completion_expression = f"interaction_progress >= {duration_ticks}"
+        completion_bonus_rules.append(
+            CompiledVTCInteractionCompletionBonus(
+                rule_id=f"{slug}_completion_bonus",
+                kind="interaction_completion_bonus",
+                source_variable_id="interaction_progress",
+                target_affordance_id=name,
+                variable_id=f"affordance.{name}.completed",
+                expression=completion_expression,
+                expression_ast=parser.parse(completion_expression),
+                condition=None,
+                condition_ast=None,
+                composition="event",
+                phase="apply_completion_bonuses",
+                priority=priority,
+                clamp=None,
+                telemetry_label=f"interaction_completion_bonus:{name}",
+                duration_ticks=duration_ticks,
+            )
+        )
+
+    return VTCInteractionProgressProgram(
+        progress_rules=tuple(
+            sorted(
+                progress_rules,
+                key=lambda item: (phase_graph.sort_key(item.phase), item.priority, item.rule_id),
+            )
+        ),
+        completion_bonus_rules=tuple(
+            sorted(
+                completion_bonus_rules,
+                key=lambda item: (phase_graph.sort_key(item.phase), item.priority, item.rule_id),
+            )
+        ),
+    )
+
+
+def _coerce_interaction_progress_affordance(
+    affordance: VTCInteractionProgressSource | Mapping[str, Any],
+) -> dict[str, Any]:
+    if isinstance(affordance, Mapping):
+        name = str(affordance["name"])
+        interaction_type = str(affordance.get("interaction_type") or "instant")
+        duration_ticks = affordance.get("duration_ticks")
+    else:
+        name = affordance.name
+        interaction_type = str(affordance.interaction_type or "instant")
+        duration_ticks = affordance.duration_ticks
+
+    if interaction_type not in {"instant", "multi_tick", "dual"}:
+        raise ValueError(f"Unsupported VTC interaction_type '{interaction_type}' for affordance '{name}'")
+    if interaction_type in {"multi_tick", "dual"}:
+        if duration_ticks is None:
+            raise ValueError(f"Affordance '{name}' interaction_type='{interaction_type}' requires duration_ticks")
+        duration = int(duration_ticks)
+        if duration <= 0:
+            raise ValueError(f"Affordance '{name}' duration_ticks must be positive, got {duration}")
+    else:
+        duration = None
+
+    return {
+        "name": name,
+        "interaction_type": interaction_type,
+        "duration_ticks": duration,
     }
 
 

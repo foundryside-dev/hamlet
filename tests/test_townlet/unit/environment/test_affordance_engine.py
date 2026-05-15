@@ -482,7 +482,7 @@ class TestDictCostAffordances:
 
         assert torch.equal(result, torch.tensor([False], device=cpu_device))
 
-    def test_apply_multi_tick_with_dict_costs_per_tick(self, cpu_device):
+    def test_apply_vtc_multi_tick_effects_with_dict_costs_per_tick(self, cpu_device):
         affordance = DictCostAffordance(
             name="Train",
             interaction_type="multi_tick",
@@ -496,7 +496,14 @@ class TestDictCostAffordances:
         meters = torch.tensor([[1.0, 1.0]], device=cpu_device)
         mask = torch.tensor([True], device=cpu_device)
 
-        updated = engine.apply_multi_tick_interaction(meters, "Train", current_tick=0, agent_mask=mask, check_affordability=True)
+        updated = engine.apply_vtc_multi_tick_effects(
+            meters=meters,
+            affordance_name="Train",
+            current_tick=0,
+            agent_mask=mask,
+            completion_mask=torch.tensor([False], device=cpu_device),
+            check_affordability=True,
+        )
 
         assert torch.isclose(updated[0, 1], torch.tensor(0.9, device=cpu_device))
 
@@ -579,6 +586,62 @@ def test_affordance_engine_executes_effects_commands():
     assert len(compiled.on_completion) == 0
     assert len(compiled.on_early_exit) == 0
     assert len(compiled.on_failure) == 0
+
+
+def test_vtc_multi_tick_effects_apply_completion_commands_only_for_completion_mask():
+    """VTC completion masks should be the only trigger for on_completion commands."""
+    from townlet.config.affordances_v2_config import AffordanceParamConfig, DeploymentConfig, OpeningHoursConfig
+
+    affordance = AffordanceParamConfig(
+        name="REST",
+        interaction_type="multi_tick",
+        duration_ticks=2,
+        costs={},
+        costs_per_tick={},
+        interactions={
+            "on_start": [],
+            "per_tick": [{"modify": "target.bar.energy", "value": "target.bar.energy + 0.1"}],
+            "on_completion": [{"modify": "target.bar.health", "value": "target.bar.health + 0.2"}],
+            "on_early_exit": [],
+            "on_failure": [],
+        },
+        opening_hours=OpeningHoursConfig(enabled=False),
+        deployment=DeploymentConfig(type="random"),
+    )
+
+    engine = AffordanceEngine(
+        affordance_config=(affordance,),
+        num_agents=1,
+        device=torch.device("cpu"),
+        meter_name_to_idx={"energy": 0, "health": 1},
+        effects_schema={"target.bar.energy": "float", "target.bar.health": "float"},
+        command_executor=CommandExecutor(),
+    )
+
+    meters = torch.tensor([[0.0, 0.0]], dtype=torch.float32)
+    mask = torch.tensor([True])
+    not_complete = torch.tensor([False])
+    complete = torch.tensor([True])
+
+    first_tick = engine.apply_vtc_multi_tick_effects(
+        meters=meters,
+        affordance_name="REST",
+        current_tick=0,
+        agent_mask=mask,
+        completion_mask=not_complete,
+    )
+    assert first_tick[0, 0].item() == pytest.approx(0.1)
+    assert first_tick[0, 1].item() == pytest.approx(0.0)
+
+    final_tick = engine.apply_vtc_multi_tick_effects(
+        meters=first_tick,
+        affordance_name="REST",
+        current_tick=1,
+        agent_mask=mask,
+        completion_mask=complete,
+    )
+    assert final_tick[0, 0].item() == pytest.approx(0.2)
+    assert final_tick[0, 1].item() == pytest.approx(0.2)
 
 
 def test_affordance_effects_apply_modulation_multiplier():

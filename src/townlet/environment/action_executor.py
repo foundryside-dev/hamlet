@@ -8,6 +8,7 @@ import torch
 
 if TYPE_CHECKING:
     from townlet.environment.vectorized_env import VectorizedHamletEnv
+    from townlet.vfs import VTCInteractionProgressResult
 
 
 class ActionExecutor:
@@ -43,12 +44,6 @@ class ActionExecutor:
         if "velocity_magnitude" in env.vfs_registry._definitions:
             magnitude = torch.norm(velocity, dim=1)
             env.vfs_registry.set("velocity_magnitude", magnitude, writer="engine")
-
-        if env.enable_temporal_mechanics:
-            for agent_idx in range(env.num_agents):
-                if not torch.equal(old_positions[agent_idx], env.positions[agent_idx]):
-                    env.interaction_progress[agent_idx] = 0
-                    env.last_interaction_affordance[agent_idx] = None
 
         movement_actions = env._movement_deltas.ne(0).any(dim=1)
         movement_mask = torch.zeros(env.num_agents, dtype=torch.bool, device=env.device)
@@ -141,6 +136,7 @@ class ActionExecutor:
         interact_action_idx = env.action_ids.get("INTERACT")
 
         successful_interactions = {}
+        progress_advanced = False
         if interact_action_idx is not None:
             interact_mask = (actions == interact_action_idx) & substrate_mask
             if interact_mask.any():
@@ -154,6 +150,10 @@ class ActionExecutor:
                 env.meters = torch.clamp(env.meters, 0.0, 1.0)
 
                 successful_interactions = env._handle_interactions(interact_mask)
+                progress_advanced = env.enable_temporal_mechanics and env.vtc_interaction_progress_program.has_multi_tick_affordances()
+
+        if env.enable_temporal_mechanics and env.vtc_interaction_progress_program.has_multi_tick_affordances() and not progress_advanced:
+            self._advance_vtc_interaction_progress({})
 
         return successful_interactions
 
@@ -163,10 +163,12 @@ class ActionExecutor:
         if not env.enable_temporal_mechanics:
             return env._handle_instant_interactions(interact_mask)
 
-        if not any(getattr(aff, "interaction_type", "instant") in {"multi_tick", "dual"} for aff in env.affordance_engine.affordances):
+        if not env.vtc_interaction_progress_program.has_multi_tick_affordances():
             return env._handle_instant_interactions(interact_mask)
 
         successful_interactions: dict[int, str] = {}
+        multi_tick_interactions: dict[int, str] = {}
+        interaction_agents_by_affordance: dict[str, list[int]] = {}
 
         for affordance_name, affordance_pos in env.affordances.items():
             if not env._is_affordance_open(affordance_name):
@@ -177,7 +179,9 @@ class ActionExecutor:
             if not at_affordance.any():
                 continue
 
-            cost_per_tick = env.affordance_engine.get_affordance_cost(affordance_name, cost_mode="per_tick")
+            is_multi_tick = env.vtc_interaction_progress_program.contains_affordance(affordance_name)
+            cost_mode = "per_tick" if is_multi_tick else "instant"
+            cost_per_tick = env.affordance_engine.get_affordance_cost(affordance_name, cost_mode=cost_mode)
             if env.money_idx is not None:
                 can_afford = env.meters[:, env.money_idx] >= cost_per_tick
                 at_affordance = at_affordance & can_afford
@@ -185,45 +189,66 @@ class ActionExecutor:
             if not at_affordance.any():
                 continue
 
-            duration_ticks = env.affordance_engine.get_duration_ticks(affordance_name)
+            if not is_multi_tick:
+                agent_indices = torch.where(at_affordance)[0]
+                for agent_idx in agent_indices:
+                    successful_interactions[int(agent_idx.item())] = affordance_name
+                env.meters = env.affordance_engine.apply_interaction(
+                    meters=env.meters,
+                    affordance_name=affordance_name,
+                    agent_mask=at_affordance,
+                    current_tick=env.global_tick,
+                )
+                continue
 
             agent_indices = torch.where(at_affordance)[0]
 
             for agent_idx in agent_indices:
-                agent_idx_int = agent_idx.item()
-                current_pos = env.positions[agent_idx]
+                agent_idx_int = int(agent_idx.item())
+                successful_interactions[agent_idx_int] = affordance_name
+                multi_tick_interactions[agent_idx_int] = affordance_name
+                interaction_agents_by_affordance.setdefault(affordance_name, []).append(agent_idx_int)
 
-                if env.last_interaction_affordance[agent_idx_int] == affordance_name and torch.equal(
-                    current_pos, env.last_interaction_position[agent_idx_int]
-                ):
-                    env.interaction_progress[agent_idx] += 1
-                else:
-                    env.interaction_progress[agent_idx] = 1
-                    env.last_interaction_affordance[agent_idx_int] = affordance_name
-                    env.last_interaction_position[agent_idx_int] = current_pos.clone()
+        progress_result = self._advance_vtc_interaction_progress(multi_tick_interactions)
 
-                ticks_done = int(env.interaction_progress[agent_idx].item())
+        for affordance_name, grouped_agent_indices in interaction_agents_by_affordance.items():
+            agent_mask = torch.zeros(env.num_agents, dtype=torch.bool, device=env.device)
+            agent_mask[torch.tensor(grouped_agent_indices, device=env.device, dtype=torch.long)] = True
 
-                single_agent_mask = torch.zeros(env.num_agents, dtype=torch.bool, device=env.device)
-                single_agent_mask[agent_idx] = True
-
-                env.meters = env.affordance_engine.apply_multi_tick_interaction(
+            for ticks_done in torch.unique(progress_result.ticks_done[agent_mask]):
+                if int(ticks_done.item()) <= 0:
+                    continue
+                tick_mask = agent_mask & (progress_result.ticks_done == ticks_done)
+                completion_mask = tick_mask & progress_result.completion_mask
+                env.meters = env.affordance_engine.apply_vtc_multi_tick_effects(
                     meters=env.meters,
                     affordance_name=affordance_name,
-                    current_tick=ticks_done - 1,
-                    agent_mask=single_agent_mask,
+                    current_tick=int(ticks_done.item()) - 1,
+                    agent_mask=tick_mask,
+                    completion_mask=completion_mask,
                     check_affordability=False,
                 )
-
-                if ticks_done == duration_ticks:
-                    env.interaction_progress[agent_idx] = 0
-                    env.last_interaction_affordance[agent_idx_int] = None
-
-                successful_interactions[agent_idx_int] = affordance_name
 
         env._update_affordance_tracking(successful_interactions)
 
         return successful_interactions
+
+    def _advance_vtc_interaction_progress(self, successful_interactions: dict[int, str]) -> VTCInteractionProgressResult:
+        """Advance VTC-owned multi-tick progress and sync the environment state."""
+        env = self._env
+        result = env.vtc_interaction_progress_program.apply(
+            interaction_affordances=successful_interactions,
+            positions=env.positions,
+            interaction_progress=env.interaction_progress,
+            last_affordances=env.last_interaction_affordance,
+            last_positions=env.last_interaction_position,
+            active_mask=torch.logical_not(env.dones),
+            device=env.device,
+        )
+        env.interaction_progress = result.interaction_progress
+        env.last_interaction_affordance = result.last_affordances
+        env.last_interaction_position = result.last_positions
+        return result
 
     def _handle_instant_interactions(self, interact_mask: torch.Tensor) -> dict:
         """Handle INTERACT action at affordances in instant mode."""

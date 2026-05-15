@@ -36,6 +36,7 @@ from townlet.vfs.transition_graph import TransitionPhaseGraph
 from townlet.vfs.vtc import (
     compile_vtc_action_writes_with_phase_graph,
     compile_vtc_affordance_gates_with_phase_graph,
+    compile_vtc_interaction_progress_with_phase_graph,
     compile_vtc_modulations_with_phase_graph,
     compile_vtc_passive_depletions_with_phase_graph,
     compile_vtc_threshold_cascades_with_phase_graph,
@@ -383,6 +384,10 @@ class UniverseCompiler:
                 level.affordances.affordances,
                 transition_phase_graph,
             )
+            transition_interaction_progress = compile_vtc_interaction_progress_with_phase_graph(
+                level.affordances.affordances,
+                transition_phase_graph,
+            )
             transition_passive_depletions = compile_vtc_passive_depletions_with_phase_graph(level.bars.meters, transition_phase_graph)
             transition_modulations = compile_vtc_modulations_with_phase_graph(level.affordances.modulations, transition_phase_graph)
             transition_threshold_cascades = compile_vtc_threshold_cascades_with_phase_graph(level.bars.cascades, transition_phase_graph)
@@ -390,6 +395,7 @@ class UniverseCompiler:
                 transition_phase_graph,
                 transition_action_writes,
                 affordance_gate_program=transition_affordance_gates,
+                interaction_progress_program=transition_interaction_progress,
                 threshold_cascade_program=transition_threshold_cascades,
                 modulation_program=transition_modulations,
                 passive_depletion_program=transition_passive_depletions,

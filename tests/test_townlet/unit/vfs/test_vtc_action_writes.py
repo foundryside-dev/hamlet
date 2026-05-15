@@ -260,6 +260,109 @@ def test_vtc_action_writes_composes_min_max_and_clamp_writes() -> None:
     assert torch.allclose(updated["energy"], torch.tensor([1.0, 0.8]))
 
 
+def test_vtc_action_writes_claim_if_free_keeps_existing_claim_and_first_writer() -> None:
+    action = _action(
+        action_id=13,
+        name="CLAIM_BED",
+        writes=[
+            _write_with_metadata(
+                variable_id="bed_owner",
+                expression="100.0",
+                condition=None,
+                composition="claim_if_free",
+                phase="apply_action_effects",
+                priority=0,
+                clamp=None,
+                telemetry_label="first_bed_claim",
+            ),
+            _write_with_metadata(
+                variable_id="bed_owner",
+                expression="200.0",
+                condition=None,
+                composition="claim_if_free",
+                phase="apply_action_effects",
+                priority=1,
+                clamp=None,
+                telemetry_label="second_bed_claim",
+            ),
+        ],
+    )
+
+    program = compile_vtc_action_writes([action])
+    updated = program.apply(
+        actions=torch.tensor([13, 0, 13]),
+        vfs_state={"bed_owner": torch.tensor([-1.0, -1.0, 7.0])},
+        bars_state={},
+        active_mask=torch.tensor([True, True, True]),
+        device=torch.device("cpu"),
+    )
+
+    assert torch.allclose(updated["bed_owner"], torch.tensor([100.0, -1.0, 7.0]))
+
+
+def test_vtc_action_writes_capacity_claim_caps_claim_count_in_batch_order() -> None:
+    action = _action(
+        action_id=14,
+        name="JOIN_QUEUE",
+        writes=[
+            _write_with_metadata(
+                variable_id="has_queue_slot",
+                expression="1.0",
+                condition=None,
+                composition="capacity_claim",
+                phase="apply_action_effects",
+                priority=0,
+                clamp=(0.0, 2.0),
+                telemetry_label="queue_slot_claim",
+            )
+        ],
+    )
+
+    program = compile_vtc_action_writes([action])
+    updated = program.apply(
+        actions=torch.tensor([14, 14, 14, 14]),
+        vfs_state={"has_queue_slot": torch.tensor([1.0, 0.0, 0.0, 0.0])},
+        bars_state={},
+        active_mask=torch.tensor([True, True, True, True]),
+        device=torch.device("cpu"),
+    )
+
+    assert torch.allclose(updated["has_queue_slot"], torch.tensor([1.0, 1.0, 0.0, 0.0]))
+
+
+def test_vtc_action_writes_append_event_uses_first_empty_slot() -> None:
+    action = _action(
+        action_id=15,
+        name="BROADCAST",
+        writes=[
+            _write_with_metadata(
+                variable_id="recent_message_tokens",
+                expression="9.0",
+                condition=None,
+                composition="append_event",
+                phase="apply_action_effects",
+                priority=0,
+                clamp=None,
+                telemetry_label="append_message_token",
+            )
+        ],
+    )
+
+    program = compile_vtc_action_writes([action])
+    updated = program.apply(
+        actions=torch.tensor([15, 15, 15]),
+        vfs_state={"recent_message_tokens": torch.tensor([[0.0, 0.0, 0.0], [5.0, 0.0, 0.0], [4.0, 5.0, 6.0]])},
+        bars_state={},
+        active_mask=torch.tensor([True, True, True]),
+        device=torch.device("cpu"),
+    )
+
+    assert torch.allclose(
+        updated["recent_message_tokens"],
+        torch.tensor([[9.0, 0.0, 0.0], [5.0, 9.0, 0.0], [4.0, 5.0, 6.0]]),
+    )
+
+
 def test_vtc_action_writes_resolves_priority_and_last_write_wins() -> None:
     action = _action(
         action_id=6,

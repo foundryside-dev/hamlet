@@ -1230,6 +1230,22 @@ Conflict semantics must be explicit.
 | `capacity_claim` | Up to N agents acquire slots | Hospital beds, queue slots |
 | `append_event` | Add event to event buffer | Telemetry, messages, rumours |
 
+The action-write VTC slice implements these advanced modes inside the normal
+per-phase snapshot/accumulator boundary:
+
+- `claim_if_free` writes only rows that are still free in the phase accumulator.
+  Boolean rows are free when false; numeric/reference rows are free when every
+  row element is negative, matching `-1` reference sentinels. Later same-phase
+  claim writes therefore cannot overwrite an earlier successful claim.
+- `capacity_claim` uses binary/numeric claim rows and requires `clamp` with an
+  integer high value declaring the total capacity for that write. Rows already
+  greater than zero count against capacity, and remaining eligible claimants are
+  accepted deterministically in action-batch order without over-allocation.
+- `append_event` targets bounded event buffers shaped `[agents, event_slots, ...]`.
+  The expression must produce either a scalar payload or `[agents, ...]`; the
+  VTC appends into the first zero/false slot for each selected active agent and
+  leaves full buffers unchanged.
+
 ### 13.3 Example
 
 ```yaml

@@ -459,6 +459,13 @@ class VTCActionWriteProgram:
         write_mask: torch.Tensor,
         priority_state: dict[str, torch.Tensor],
     ) -> torch.Tensor:
+        if write.composition == "claim_if_free":
+            return self._apply_claim_if_free(write, phase_value, expression_value, write_mask)
+        if write.composition == "capacity_claim":
+            return self._apply_capacity_claim(write, phase_value, expression_value, write_mask)
+        if write.composition == "append_event":
+            return self._apply_append_event(write, phase_value, expression_value, write_mask)
+
         candidate = self._compose_candidate(write, phase_value, expression_value)
         candidate = self._apply_optional_clamp(write, candidate)
 
@@ -487,10 +494,130 @@ class VTCActionWriteProgram:
             return torch.minimum(phase_value, expression)
         if write.composition == "max":
             return torch.maximum(phase_value, expression)
-        raise NotImplementedError(
-            f"VTC action write composition '{write.composition}' is not implemented yet; "
-            "claim/capacity/event compositions are tracked outside this VTC action-write composition step."
+        raise NotImplementedError(f"VTC action write composition '{write.composition}' is not implemented yet")
+
+    def _apply_claim_if_free(
+        self,
+        write: CompiledVTCActionWrite,
+        phase_value: torch.Tensor,
+        expression_value: torch.Tensor,
+        write_mask: torch.Tensor,
+    ) -> torch.Tensor:
+        candidate = self._apply_optional_clamp(write, expression_value.to(device=phase_value.device, dtype=phase_value.dtype))
+        free_mask = self._row_free_for_claim(phase_value)
+        broadcast_mask = self._broadcast_agent_mask(write_mask & free_mask, phase_value, write)
+        return cast(
+            torch.Tensor,
+            vtc_kernels.apply_masked_candidate(
+                phase_value,
+                candidate,
+                broadcast_mask,
+            ),
         )
+
+    def _apply_capacity_claim(
+        self,
+        write: CompiledVTCActionWrite,
+        phase_value: torch.Tensor,
+        expression_value: torch.Tensor,
+        write_mask: torch.Tensor,
+    ) -> torch.Tensor:
+        if write.clamp is None:
+            raise ValueError(f"VTC capacity_claim write '{write.telemetry_label}' requires clamp high to declare capacity")
+
+        capacity = self._capacity_from_clamp(write)
+        claimed_mask = self._row_claimed_for_capacity(phase_value)
+        remaining_capacity = capacity - int(claimed_mask.sum().item())
+        if remaining_capacity <= 0:
+            return phase_value
+
+        eligible_mask = write_mask & self._row_free_for_capacity(phase_value)
+        eligible_indices = torch.nonzero(eligible_mask, as_tuple=False).flatten()
+        if eligible_indices.numel() == 0:
+            return phase_value
+
+        selected_indices = eligible_indices[:remaining_capacity]
+        selected_mask = torch.zeros_like(write_mask, dtype=torch.bool, device=write_mask.device)
+        selected_mask[selected_indices] = True
+        broadcast_mask = self._broadcast_agent_mask(selected_mask, phase_value, write)
+        candidate = expression_value.to(device=phase_value.device, dtype=phase_value.dtype)
+        return cast(
+            torch.Tensor,
+            vtc_kernels.apply_masked_candidate(
+                phase_value,
+                candidate,
+                broadcast_mask,
+            ),
+        )
+
+    @staticmethod
+    def _capacity_from_clamp(write: CompiledVTCActionWrite) -> int:
+        assert write.clamp is not None
+        capacity_value = write.clamp[1]
+        capacity = int(capacity_value)
+        if capacity < 0 or float(capacity) != float(capacity_value):
+            raise ValueError(f"VTC capacity_claim write '{write.telemetry_label}' requires non-negative integer clamp high")
+        return capacity
+
+    def _apply_append_event(
+        self,
+        write: CompiledVTCActionWrite,
+        phase_value: torch.Tensor,
+        expression_value: torch.Tensor,
+        write_mask: torch.Tensor,
+    ) -> torch.Tensor:
+        if phase_value.dim() < 2:
+            raise ValueError(f"VTC append_event write '{write.telemetry_label}' requires target shape [agents, event_slots, ...]")
+
+        candidate = phase_value.clone()
+        payload = self._apply_optional_clamp(write, expression_value.to(device=phase_value.device, dtype=phase_value.dtype))
+        free_slots = self._event_slot_free_mask(phase_value)
+
+        for agent_index_tensor in torch.nonzero(write_mask.bool(), as_tuple=False).flatten():
+            agent_index = int(agent_index_tensor.item())
+            free_slot_indices = torch.nonzero(free_slots[agent_index], as_tuple=False).flatten()
+            if free_slot_indices.numel() == 0:
+                continue
+            candidate[agent_index, int(free_slot_indices[0].item())] = payload[agent_index]
+
+        return candidate
+
+    @staticmethod
+    def _row_free_for_claim(value: torch.Tensor) -> torch.Tensor:
+        if value.dtype == torch.bool:
+            return ~VTCActionWriteProgram._row_any(value)
+        return VTCActionWriteProgram._row_all(value < 0)
+
+    @staticmethod
+    def _row_free_for_capacity(value: torch.Tensor) -> torch.Tensor:
+        if value.dtype == torch.bool:
+            return ~VTCActionWriteProgram._row_any(value)
+        return VTCActionWriteProgram._row_all(value <= 0)
+
+    @staticmethod
+    def _row_claimed_for_capacity(value: torch.Tensor) -> torch.Tensor:
+        if value.dtype == torch.bool:
+            return VTCActionWriteProgram._row_any(value)
+        return VTCActionWriteProgram._row_any(value > 0)
+
+    @staticmethod
+    def _row_all(mask: torch.Tensor) -> torch.Tensor:
+        if mask.dim() <= 1:
+            return mask.bool()
+        return mask.bool().flatten(start_dim=1).all(dim=1)
+
+    @staticmethod
+    def _row_any(mask: torch.Tensor) -> torch.Tensor:
+        if mask.dim() <= 1:
+            return mask.bool()
+        return mask.bool().flatten(start_dim=1).any(dim=1)
+
+    @staticmethod
+    def _event_slot_free_mask(value: torch.Tensor) -> torch.Tensor:
+        if value.dim() == 2:
+            return ~value.bool() if value.dtype == torch.bool else value == 0
+        occupied = value if value.dtype == torch.bool else value != 0
+        return ~occupied.bool().flatten(start_dim=2).any(dim=2)
 
     @staticmethod
     def _apply_optional_clamp(write: CompiledVTCActionWrite, value: torch.Tensor) -> torch.Tensor:
@@ -564,12 +691,33 @@ class VTCActionWriteProgram:
         target: torch.Tensor,
         write: CompiledVTCActionWrite,
     ) -> torch.Tensor:
+        if write.composition == "append_event":
+            return VTCActionWriteProgram._coerce_event_payload_tensor(value, target, write)
         if value.dim() == 0:
             return value.to(device=target.device, dtype=target.dtype).expand_as(target)
         if value.shape != target.shape:
             raise ValueError(
                 f"Expression for VTC action write '{write.telemetry_label}' produced shape {tuple(value.shape)}, "
                 f"expected {tuple(target.shape)}"
+            )
+        return value.to(device=target.device, dtype=target.dtype)
+
+    @staticmethod
+    def _coerce_event_payload_tensor(
+        value: torch.Tensor,
+        target: torch.Tensor,
+        write: CompiledVTCActionWrite,
+    ) -> torch.Tensor:
+        if target.dim() < 2:
+            raise ValueError(f"VTC append_event write '{write.telemetry_label}' requires target shape [agents, event_slots, ...]")
+
+        payload_shape = torch.Size((target.shape[0], *tuple(target.shape[2:])))
+        if value.dim() == 0:
+            return value.to(device=target.device, dtype=target.dtype).expand(payload_shape)
+        if value.shape != payload_shape:
+            raise ValueError(
+                f"Expression for VTC append_event write '{write.telemetry_label}' produced shape {tuple(value.shape)}, "
+                f"expected event payload shape {tuple(payload_shape)}"
             )
         return value.to(device=target.device, dtype=target.dtype)
 

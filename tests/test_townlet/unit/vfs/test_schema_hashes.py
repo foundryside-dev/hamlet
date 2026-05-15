@@ -662,6 +662,71 @@ def test_transition_graph_hash_binds_reward_component_rules() -> None:
     )
 
 
+def test_transition_graph_hash_binds_social_residue_rules() -> None:
+    """Transition hashes should bind compiled social-residue semantics."""
+    assert hasattr(vtc, "compile_vtc_social_residue_rules_with_phase_graph"), "VTC social-residue compiler is required"
+
+    phase_graph = TransitionPhaseGraph.default()
+    action_program = compile_vtc_action_writes_with_phase_graph([], phase_graph)
+
+    def social_program(*, delta: float) -> vtc.VTCSocialResidueProgram:
+        return vtc.compile_vtc_social_residue_rules_with_phase_graph(
+            [
+                {
+                    "id": "seen_stealing_damages_trust",
+                    "phase": "apply_social_residue_effects",
+                    "kind": "visibility_effect",
+                    "reads": ["chosen_action", "observer_mask", "trust"],
+                    "condition": "observer_mask and chosen_action == 7",
+                    "writes": [
+                        {
+                            "variable_id": "trust",
+                            "effect": "trust_delta",
+                            "scope": "pair",
+                            "target": "observer -> actor",
+                            "expression": str(delta),
+                            "composition": "additive_delta",
+                            "clamp": [0.0, 1.0],
+                        }
+                    ],
+                }
+            ],
+            phase_graph,
+        )
+
+    program = social_program(delta=-0.15)
+
+    assert canonical_transition_graph_schema(
+        phase_graph,
+        action_program,
+        social_residue_program=program,
+    )["rules"] == [
+        {
+            "rule_id": "seen_stealing_damages_trust",
+            "kind": "visibility_effect",
+            "effect": "trust_delta",
+            "variable_id": "trust",
+            "expression": "-0.15",
+            "condition": "observer_mask and chosen_action == 7",
+            "composition": "additive_delta",
+            "phase": "apply_social_residue_effects",
+            "priority": 0,
+            "clamp": [0.0, 1.0],
+            "telemetry_label": "visibility_effect:seen_stealing_damages_trust:trust_delta",
+            "reads": ["chosen_action", "observer_mask", "trust"],
+            "scope": "pair",
+            "target": "observer -> actor",
+        }
+    ]
+
+    baseline = compute_transition_graph_hash(phase_graph, action_program, social_residue_program=program)
+    assert baseline != compute_transition_graph_hash(
+        phase_graph,
+        action_program,
+        social_residue_program=social_program(delta=-0.25),
+    )
+
+
 def test_vfs_hash_combines_component_hashes_and_transition_graph() -> None:
     """The VFS identity should bind all component hashes, including the transition graph."""
     variable_hash = "a" * 64

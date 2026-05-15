@@ -1365,15 +1365,16 @@ Social residue example:
 ```yaml
 rules:
   - id: "seen_stealing_damages_trust"
-    phase: "social_residue_effects"
+    phase: "apply_social_residue_effects"
     kind: "visibility_effect"
     reads: ["chosen_action", "observer_mask", "trust"]
-    condition: "chosen_action == STEAL & observed_by(observer_mask)"
+    condition: "observer_mask and chosen_action == STEAL"
     writes:
       - variable_id: "trust"
+        effect: "trust_delta"
         scope: "pair"
         target: "observer -> actor"
-        expression: "trust - 0.15"
+        expression: "-0.15"
         composition: "additive_delta"
         clamp: [0.0, 1.0]
 ```
@@ -1383,13 +1384,14 @@ Institutional rule example:
 ```yaml
 rules:
   - id: "ambulance_abuse_social_penalty"
-    phase: "social_residue_effects"
+    phase: "apply_social_residue_effects"
     kind: "institutional_rule"
     reads: ["chosen_action", "health", "mood", "public_reputation"]
-    condition: "chosen_action == CALL_AMBULANCE & health >= 0.7 & mood >= 0.8"
+    condition: "chosen_action == CALL_AMBULANCE and health >= 0.7 and mood >= 0.8"
     writes:
       - variable_id: "public_reputation"
-        expression: "public_reputation - 0.10"
+        effect: "reputation_delta"
+        expression: "-0.10"
         composition: "additive_delta"
         clamp: [0.0, 1.0]
 ```
@@ -1591,6 +1593,15 @@ variables:
 
 ### 16.3 Social residue effect types
 
+The VTC social-residue compiler accepts `visibility_effect`, `social_residue`,
+and `institutional_rule` relationship rules in the canonical
+`apply_social_residue_effects` phase. Rule-level conditions and write-level
+conditions are combined before commit. Pair-scope masks are directed
+`[observer, actor]` or `[recipient, actor]` tensors; agent-scope writes use
+agent vectors such as `chosen_action` or derived visibility vectors such as
+`was_observed`. As with other VTC writes, `additive_delta` expressions are
+deltas, not post-update values.
+
 | Effect | Description |
 |---|---|
 | `trust_delta` | Increase/decrease directed trust |
@@ -1610,20 +1621,24 @@ variables:
 ```yaml
 rules:
   - id: "help_creates_obligation_and_reputation"
-    phase: "social_residue_effects"
+    phase: "apply_social_residue_effects"
     kind: "social_residue"
-    reads: ["chosen_action", "recipient_id", "observer_mask", "public_reputation", "obligation"]
+    reads: ["chosen_action", "recipient_actor_mask", "was_observed", "public_reputation", "obligation"]
     condition: "chosen_action == HELP"
     writes:
       - variable_id: "obligation"
+        effect: "obligation_create"
         scope: "pair"
         target: "recipient -> actor"
-        expression: "obligation + 0.20"
+        condition: "recipient_actor_mask"
+        expression: "0.20"
         composition: "additive_delta"
         clamp: [0.0, 1.0]
       - variable_id: "public_reputation"
+        effect: "reputation_delta"
         target: "actor"
-        expression: "public_reputation + 0.05 * any(observer_mask)"
+        condition: "was_observed"
+        expression: "0.05"
         composition: "additive_delta"
         clamp: [0.0, 1.0]
 ```

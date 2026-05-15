@@ -63,6 +63,7 @@ def canonical_transition_graph_schema(
     threshold_cascade_program: Any | None = None,
     modulation_program: Any | None = None,
     passive_depletion_program: Any | None = None,
+    social_residue_program: Any | None = None,
     reward_component_program: Any | None = None,
 ) -> dict[str, Any]:
     """Return the transition-graph payload used for world-physics provenance."""
@@ -80,6 +81,8 @@ def canonical_transition_graph_schema(
         rules.extend(_canonical_transition_rule(rule) for rule in modulation_program.rules)
     if threshold_cascade_program is not None:
         rules.extend(_canonical_transition_rule(rule) for rule in threshold_cascade_program.rules)
+    if social_residue_program is not None:
+        rules.extend(_canonical_transition_rule(rule) for rule in social_residue_program.rules)
     if reward_component_program is not None:
         rules.extend(_canonical_transition_rule(rule) for rule in reward_component_program.rules)
     return {
@@ -98,6 +101,7 @@ def compute_transition_graph_hash(
     threshold_cascade_program: Any | None = None,
     modulation_program: Any | None = None,
     passive_depletion_program: Any | None = None,
+    social_residue_program: Any | None = None,
     reward_component_program: Any | None = None,
 ) -> str:
     """Return the SHA-256 digest of the compiled transition graph and rules."""
@@ -111,6 +115,7 @@ def compute_transition_graph_hash(
             threshold_cascade_program=threshold_cascade_program,
             modulation_program=modulation_program,
             passive_depletion_program=passive_depletion_program,
+            social_residue_program=social_residue_program,
             reward_component_program=reward_component_program,
         )
     )
@@ -175,7 +180,6 @@ def _canonical_transition_rule(write: Any) -> dict[str, Any]:
         entry = {
             "rule_id": write.rule_id,
             "kind": write.kind,
-            "source_variable_id": write.source_variable_id,
             "variable_id": write.variable_id,
             "expression": write.expression,
             "condition": write.condition,
@@ -185,8 +189,16 @@ def _canonical_transition_rule(write: Any) -> dict[str, Any]:
             "clamp": list(write.clamp) if write.clamp is not None else None,
             "telemetry_label": write.telemetry_label,
         }
+        if hasattr(write, "source_variable_id"):
+            entry["source_variable_id"] = write.source_variable_id
         if hasattr(write, "target_affordance_id"):
             entry["target_affordance_id"] = write.target_affordance_id
+        if hasattr(write, "effect"):
+            entry["effect"] = write.effect
+        if hasattr(write, "scope"):
+            entry["scope"] = write.scope
+        if hasattr(write, "target"):
+            entry["target"] = write.target
         if hasattr(write, "duration_ticks"):
             entry["duration_ticks"] = write.duration_ticks
         if hasattr(write, "operator"):

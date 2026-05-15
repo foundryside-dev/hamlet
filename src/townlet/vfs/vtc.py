@@ -126,6 +126,28 @@ class VTCRewardConfigSource(Protocol):
     def shaping(self) -> Sequence[Any]: ...
 
 
+class VTCSocialResidueSource(Protocol):
+    """Minimal social rule shape needed by the VTC social-residue compiler."""
+
+    @property
+    def id(self) -> str: ...
+
+    @property
+    def phase(self) -> str: ...
+
+    @property
+    def kind(self) -> str: ...
+
+    @property
+    def reads(self) -> Sequence[str]: ...
+
+    @property
+    def condition(self) -> str | None: ...
+
+    @property
+    def writes(self) -> Sequence[Mapping[str, Any] | WriteSpec]: ...
+
+
 @dataclass(frozen=True)
 class CompiledVTCActionWrite:
     """A parsed VTC action write with the metadata needed for masked execution."""
@@ -318,10 +340,41 @@ class CompiledVTCRewardComponent:
 
 
 @dataclass(frozen=True)
+class CompiledVTCSocialResidueRule:
+    """A parsed VTC rule for visibility, social-residue, and institutional effects."""
+
+    rule_id: str
+    kind: str
+    effect: str | None
+    variable_id: str
+    expression: str
+    expression_ast: ASTNode
+    condition: str | None
+    condition_ast: ASTNode | None
+    composition: str
+    phase: str
+    priority: int
+    clamp: tuple[float, float] | None
+    telemetry_label: str
+    reads: tuple[str, ...]
+    scope: str | None
+    target: str | None
+
+
+@dataclass(frozen=True)
 class _VTCActionWriteEffect:
     """Computed action-write candidate for one atomic VTC phase commit."""
 
     write: CompiledVTCActionWrite
+    expression_value: torch.Tensor
+    write_mask: torch.Tensor
+
+
+@dataclass(frozen=True)
+class _VTCSocialResidueEffect:
+    """Computed social-rule candidate for one atomic VTC phase commit."""
+
+    rule: CompiledVTCSocialResidueRule
     expression_value: torch.Tensor
     write_mask: torch.Tensor
 
@@ -1367,6 +1420,337 @@ class VTCTerminalConditionProgram:
 
 
 @dataclass(frozen=True)
+class VTCSocialResidueProgram:
+    """Executable collection of compiled VTC social-residue rules."""
+
+    rules: tuple[CompiledVTCSocialResidueRule, ...]
+
+    def apply(
+        self,
+        *,
+        vfs_state: Mapping[str, torch.Tensor],
+        active_mask: torch.Tensor,
+        device: torch.device,
+        bars_state: Mapping[str, torch.Tensor] | None = None,
+    ) -> dict[str, torch.Tensor]:
+        """Apply compiled social-state writes using phase snapshots and masked commits."""
+        if active_mask.dim() != 1:
+            raise ValueError(f"active_mask must be rank-1, got shape {tuple(active_mask.shape)}")
+
+        bars = {} if bars_state is None else dict(bars_state)
+        updated = {name: value.to(device=device).clone() for name, value in vfs_state.items()}
+        bars_on_device = {name: value.to(device=device) for name, value in bars.items()}
+        ambiguous = sorted(set(updated).intersection(bars_on_device))
+        if ambiguous:
+            raise ValueError(f"VTC social residue state has ambiguous bar/VFS variable(s): {ambiguous}")
+
+        active = active_mask.to(device=device, dtype=torch.bool)
+        for phase_rules in self._iter_phase_groups(self.rules):
+            phase_snapshot = dict(updated)
+            phase_effects = self._compute_phase_effects(
+                phase_rules=phase_rules,
+                phase_snapshot=phase_snapshot,
+                bars_state=bars_on_device,
+                active_mask=active,
+                device=device,
+            )
+            updated = self._commit_phase_effects(phase_snapshot, phase_effects)
+
+        return updated
+
+    @staticmethod
+    def _iter_phase_groups(rules: Sequence[CompiledVTCSocialResidueRule]) -> list[tuple[CompiledVTCSocialResidueRule, ...]]:
+        phase_groups: list[tuple[CompiledVTCSocialResidueRule, ...]] = []
+        current_phase: str | None = None
+        current_group: list[CompiledVTCSocialResidueRule] = []
+
+        for rule in rules:
+            if current_phase is None:
+                current_phase = rule.phase
+            if rule.phase != current_phase:
+                phase_groups.append(tuple(current_group))
+                current_group = []
+                current_phase = rule.phase
+            current_group.append(rule)
+
+        if current_group:
+            phase_groups.append(tuple(current_group))
+        return phase_groups
+
+    def _compute_phase_effects(
+        self,
+        *,
+        phase_rules: Sequence[CompiledVTCSocialResidueRule],
+        phase_snapshot: Mapping[str, torch.Tensor],
+        bars_state: Mapping[str, torch.Tensor],
+        active_mask: torch.Tensor,
+        device: torch.device,
+    ) -> tuple[_VTCSocialResidueEffect, ...]:
+        phase_effects: list[_VTCSocialResidueEffect] = []
+        context_vfs = dict(phase_snapshot)
+        context_vfs.setdefault("agent_id", torch.arange(active_mask.shape[0], device=device))
+        context = ExecutionContext(
+            bars=dict(bars_state),
+            vfs=context_vfs,
+            affordances={},
+            temporal={},
+            device=device,
+            num_agents=active_mask.shape[0],
+        )
+        evaluator = Evaluator(context)
+
+        for rule in phase_rules:
+            if rule.variable_id not in phase_snapshot:
+                raise KeyError(f"VTC social residue targets unknown VFS variable '{rule.variable_id}'")
+
+            target_snapshot = phase_snapshot[rule.variable_id]
+            condition_mask = self._build_write_mask(rule, target_snapshot, active_mask, evaluator)
+            expression_value = self._evaluate_tensor(evaluator, rule.expression_ast, "expression", rule)
+            phase_effects.append(
+                _VTCSocialResidueEffect(
+                    rule=rule,
+                    expression_value=self._coerce_expression_tensor(expression_value, target_snapshot, rule, active_mask),
+                    write_mask=condition_mask,
+                )
+            )
+
+        return tuple(phase_effects)
+
+    def _commit_phase_effects(
+        self,
+        phase_snapshot: Mapping[str, torch.Tensor],
+        phase_effects: Sequence[_VTCSocialResidueEffect],
+    ) -> dict[str, torch.Tensor]:
+        phase_values = dict(phase_snapshot)
+        priority_state: dict[str, torch.Tensor] = {}
+
+        for effect in phase_effects:
+            phase_value = phase_values[effect.rule.variable_id]
+            phase_values[effect.rule.variable_id] = self._apply_composed_write(
+                rule=effect.rule,
+                phase_value=phase_value,
+                expression_value=effect.expression_value,
+                write_mask=effect.write_mask,
+                priority_state=priority_state,
+            )
+
+        return phase_values
+
+    def _apply_composed_write(
+        self,
+        *,
+        rule: CompiledVTCSocialResidueRule,
+        phase_value: torch.Tensor,
+        expression_value: torch.Tensor,
+        write_mask: torch.Tensor,
+        priority_state: dict[str, torch.Tensor],
+    ) -> torch.Tensor:
+        candidate = self._compose_candidate(rule, phase_value, expression_value)
+        candidate = self._apply_optional_clamp(rule, candidate)
+
+        if rule.composition == "priority_write":
+            return self._apply_priority_write(rule, phase_value, candidate, write_mask, priority_state)
+        if rule.composition in {"claim_if_free", "capacity_claim", "append_event"}:
+            raise NotImplementedError(f"VTC social residue composition '{rule.composition}' is not supported")
+
+        return cast(
+            torch.Tensor,
+            vtc_kernels.apply_masked_candidate(
+                phase_value,
+                candidate.to(device=phase_value.device, dtype=phase_value.dtype),
+                write_mask.to(device=phase_value.device, dtype=torch.bool),
+            ),
+        )
+
+    @staticmethod
+    def _compose_candidate(
+        rule: CompiledVTCSocialResidueRule,
+        phase_value: torch.Tensor,
+        expression_value: torch.Tensor,
+    ) -> torch.Tensor:
+        expression = expression_value.to(device=phase_value.device, dtype=phase_value.dtype)
+        if rule.composition in {"overwrite", "last_write_wins", "priority_write", "clamp"}:
+            return expression
+        if rule.composition == "additive_delta":
+            return phase_value + expression
+        if rule.composition == "multiplicative_modifier":
+            return phase_value * expression
+        if rule.composition == "min":
+            return torch.minimum(phase_value, expression)
+        if rule.composition == "max":
+            return torch.maximum(phase_value, expression)
+        raise NotImplementedError(f"VTC social residue composition '{rule.composition}' is not implemented yet")
+
+    @staticmethod
+    def _apply_optional_clamp(rule: CompiledVTCSocialResidueRule, value: torch.Tensor) -> torch.Tensor:
+        if rule.clamp is None:
+            return value
+        low, high = rule.clamp
+        return torch.clamp(value, min=low, max=high)
+
+    def _apply_priority_write(
+        self,
+        rule: CompiledVTCSocialResidueRule,
+        phase_value: torch.Tensor,
+        candidate: torch.Tensor,
+        write_mask: torch.Tensor,
+        priority_state: dict[str, torch.Tensor],
+    ) -> torch.Tensor:
+        current_priority = priority_state.get(rule.variable_id)
+        if current_priority is None:
+            current_priority = torch.full(write_mask.shape, -1, device=write_mask.device, dtype=torch.long)
+
+        write_priority = torch.full(write_mask.shape, rule.priority, device=write_mask.device, dtype=torch.long)
+        winning_mask = write_mask & (write_priority >= current_priority)
+        priority_state[rule.variable_id] = torch.where(winning_mask, write_priority, current_priority)
+        return cast(
+            torch.Tensor,
+            vtc_kernels.apply_masked_candidate(
+                phase_value,
+                candidate.to(device=phase_value.device, dtype=phase_value.dtype),
+                winning_mask.to(device=phase_value.device, dtype=torch.bool),
+            ),
+        )
+
+    def _build_write_mask(
+        self,
+        rule: CompiledVTCSocialResidueRule,
+        target: torch.Tensor,
+        active_mask: torch.Tensor,
+        evaluator: Evaluator,
+    ) -> torch.Tensor:
+        active_target_mask = self._active_mask_for_target(rule, target, active_mask)
+        if rule.condition_ast is None:
+            return active_target_mask
+
+        condition = self._evaluate_tensor(evaluator, rule.condition_ast, "condition", rule).bool()
+        condition_mask = self._coerce_mask_to_target(condition, target, rule, active_mask)
+        return condition_mask & active_target_mask
+
+    @staticmethod
+    def _evaluate_tensor(
+        evaluator: Evaluator,
+        ast: ASTNode,
+        kind: str,
+        rule: CompiledVTCSocialResidueRule,
+    ) -> torch.Tensor:
+        value: Any = evaluator.evaluate(ast)
+        if not isinstance(value, torch.Tensor):
+            raise TypeError(f"VTC social residue {rule.telemetry_label} {kind} resolved to non-tensor value")
+        return value
+
+    @staticmethod
+    def _coerce_expression_tensor(
+        value: torch.Tensor,
+        target: torch.Tensor,
+        rule: CompiledVTCSocialResidueRule,
+        active_mask: torch.Tensor,
+    ) -> torch.Tensor:
+        return VTCSocialResidueProgram._coerce_tensor_to_target(
+            value,
+            target,
+            rule,
+            active_mask,
+            label="Expression",
+            dtype=target.dtype,
+        )
+
+    @staticmethod
+    def _coerce_mask_to_target(
+        value: torch.Tensor,
+        target: torch.Tensor,
+        rule: CompiledVTCSocialResidueRule,
+        active_mask: torch.Tensor,
+    ) -> torch.Tensor:
+        return VTCSocialResidueProgram._coerce_tensor_to_target(
+            value,
+            target,
+            rule,
+            active_mask,
+            label="Condition",
+            dtype=torch.bool,
+        )
+
+    @staticmethod
+    def _coerce_tensor_to_target(
+        value: torch.Tensor,
+        target: torch.Tensor,
+        rule: CompiledVTCSocialResidueRule,
+        active_mask: torch.Tensor,
+        *,
+        label: str,
+        dtype: torch.dtype,
+    ) -> torch.Tensor:
+        value_on_device = value.to(device=target.device, dtype=dtype)
+        if value_on_device.dim() == 0:
+            return value_on_device.expand_as(target)
+        if value_on_device.shape == target.shape:
+            return value_on_device
+
+        num_agents = active_mask.shape[0]
+        if (
+            value_on_device.shape == active_mask.shape
+            and target.dim() >= 2
+            and target.shape[0] == num_agents
+            and target.shape[1] == num_agents
+            and rule.scope != "agent"
+        ):
+            view_shape = (1, num_agents, *([1] * (target.dim() - 2)))
+            return value_on_device.reshape(view_shape).expand_as(target)
+
+        if value_on_device.shape == active_mask.shape and target.dim() >= 1 and target.shape[0] == num_agents:
+            view_shape = (num_agents, *([1] * (target.dim() - 1)))
+            return value_on_device.reshape(view_shape).expand_as(target)
+
+        try:
+            return torch.broadcast_to(value_on_device, target.shape)
+        except RuntimeError as exc:
+            raise ValueError(
+                f"{label} for VTC social residue '{rule.telemetry_label}' produced shape {tuple(value.shape)}, "
+                f"expected broadcastable to {tuple(target.shape)}"
+            ) from exc
+
+    @staticmethod
+    def _active_mask_for_target(
+        rule: CompiledVTCSocialResidueRule,
+        target: torch.Tensor,
+        active_mask: torch.Tensor,
+    ) -> torch.Tensor:
+        active = active_mask.to(device=target.device, dtype=torch.bool)
+        if target.dim() == 0:
+            return torch.ones_like(target, dtype=torch.bool, device=target.device)
+
+        num_agents = active.shape[0]
+        is_pair_scope = rule.scope == "pair" or (
+            rule.scope is None and target.dim() >= 2 and target.shape[0] == num_agents and target.shape[1] == num_agents
+        )
+        if is_pair_scope:
+            if target.dim() < 2 or target.shape[0] != num_agents or target.shape[1] != num_agents:
+                raise ValueError(
+                    f"VTC social residue '{rule.telemetry_label}' scope=pair requires target shape "
+                    f"[agents, agents, ...], got {tuple(target.shape)}"
+                )
+            pair_mask = active.reshape(num_agents, 1) & active.reshape(1, num_agents)
+            while pair_mask.dim() < target.dim():
+                pair_mask = pair_mask.unsqueeze(-1)
+            return pair_mask.expand_as(target)
+
+        is_agent_scope = rule.scope == "agent" or (rule.scope is None and target.shape[0] == num_agents)
+        if is_agent_scope:
+            if target.shape[0] != num_agents:
+                raise ValueError(
+                    f"VTC social residue '{rule.telemetry_label}' scope=agent requires leading agent dimension "
+                    f"{num_agents}, got {tuple(target.shape)}"
+                )
+            agent_mask = active
+            while agent_mask.dim() < target.dim():
+                agent_mask = agent_mask.unsqueeze(-1)
+            return agent_mask.expand_as(target)
+
+        return torch.ones_like(target, dtype=torch.bool, device=target.device)
+
+
+@dataclass(frozen=True)
 class VTCRewardProgram:
     """Executable VTC reward-phase contract that delegates math to a DAC backend."""
 
@@ -1418,6 +1802,210 @@ class VTCRewardProgram:
                 raise ValueError(
                     f"VTC reward component '{name}' shape {tuple(value.shape)} does not match dones shape {tuple(dones.shape)}"
                 )
+
+
+_SOCIAL_RESIDUE_RULE_KINDS = frozenset({"visibility_effect", "social_residue", "institutional_rule"})
+
+
+def compile_vtc_social_residue_rules(
+    rules: Sequence[VTCSocialResidueSource | Mapping[str, Any]],
+) -> VTCSocialResidueProgram:
+    """Compile relationship/social-state rules into VTC social-residue writes."""
+    return compile_vtc_social_residue_rules_with_phase_graph(rules, TransitionPhaseGraph.default())
+
+
+def compile_vtc_social_residue_rules_with_phase_graph(
+    rules: Sequence[VTCSocialResidueSource | Mapping[str, Any]],
+    phase_graph: TransitionPhaseGraph,
+) -> VTCSocialResidueProgram:
+    """Compile relationship/social-state rules using an explicit transition phase graph."""
+    parser = ExpressionParser()
+    compiled_rules: list[CompiledVTCSocialResidueRule] = []
+
+    for rule_index, raw_rule in enumerate(rules):
+        rule = _coerce_social_residue_rule(raw_rule, rule_index)
+        for write_index, raw_write in enumerate(rule["writes"]):
+            write = _coerce_social_residue_write(raw_write, rule, write_index)
+            condition = _combined_condition(rule["condition"], write["condition"])
+            compiled_rules.append(
+                CompiledVTCSocialResidueRule(
+                    rule_id=rule["rule_id"],
+                    kind=rule["kind"],
+                    effect=write["effect"],
+                    variable_id=write["variable_id"],
+                    expression=write["expression"],
+                    expression_ast=parser.parse(write["expression"]),
+                    condition=condition,
+                    condition_ast=parser.parse(condition) if condition is not None else None,
+                    composition=write["composition"],
+                    phase=write["phase"],
+                    priority=write["priority"],
+                    clamp=write["clamp"],
+                    telemetry_label=write["telemetry_label"],
+                    reads=rule["reads"],
+                    scope=write["scope"],
+                    target=write["target"],
+                )
+            )
+
+    return VTCSocialResidueProgram(
+        rules=tuple(
+            sorted(
+                compiled_rules,
+                key=lambda item: (phase_graph.sort_key(item.phase), item.priority, item.rule_id, item.telemetry_label),
+            )
+        )
+    )
+
+
+def _coerce_social_residue_rule(rule: VTCSocialResidueSource | Mapping[str, Any], rule_index: int) -> dict[str, Any]:
+    rule_id = str(_config_field(rule, "id", _config_field(rule, "rule_id", ""))).strip()
+    if not rule_id:
+        raise ValueError("VTC social residue rule requires non-empty id")
+
+    kind = str(_config_field(rule, "kind", "")).strip()
+    if kind not in _SOCIAL_RESIDUE_RULE_KINDS:
+        allowed = ", ".join(sorted(_SOCIAL_RESIDUE_RULE_KINDS))
+        raise ValueError(f"Unsupported VTC social residue kind '{kind}' for rule '{rule_id}'; expected one of: {allowed}")
+
+    phase = _config_field(rule, "phase", None)
+    if phase is None or not str(phase).strip():
+        raise ValueError(f"VTC social residue rule '{rule_id}' requires explicit phase")
+
+    raw_reads = _config_field(rule, "reads", None)
+    if raw_reads is None:
+        raise ValueError(f"VTC social residue rule '{rule_id}' requires explicit reads")
+    reads = _dedupe([str(read) for read in _iter_config_items(raw_reads)])
+
+    raw_condition = _config_field(rule, "condition", None)
+    condition = None if raw_condition is None else str(raw_condition).strip()
+    if condition == "":
+        raise ValueError(f"VTC social residue rule '{rule_id}' condition must be non-empty when provided")
+
+    raw_writes = _config_field(rule, "writes", None)
+    writes = _iter_config_items(raw_writes)
+    if not writes:
+        raise ValueError(f"VTC social residue rule '{rule_id}' requires at least one write")
+
+    raw_priority = _config_field(rule, "priority", None)
+    priority = rule_index if raw_priority is None else int(raw_priority)
+    if priority < 0:
+        raise ValueError(f"VTC social residue rule '{rule_id}' priority must be non-negative")
+
+    return {
+        "rule_id": rule_id,
+        "kind": kind,
+        "phase": str(phase),
+        "reads": reads,
+        "condition": condition,
+        "writes": writes,
+        "priority": priority,
+    }
+
+
+def _coerce_social_residue_write(raw_write: Mapping[str, Any] | WriteSpec, rule: Mapping[str, Any], write_index: int) -> dict[str, Any]:
+    rule_id = str(rule["rule_id"])
+    kind = str(rule["kind"])
+    condition: str | None
+    composition: str
+    effect: str | None
+    scope: str | None
+    target: str | None
+
+    if isinstance(raw_write, WriteSpec):
+        variable_id = raw_write.variable_id
+        expression = raw_write.expression
+        condition = raw_write.condition
+        composition = raw_write.composition
+        phase = raw_write.phase
+        priority = raw_write.priority
+        clamp = raw_write.clamp
+        telemetry_label = raw_write.telemetry_label
+        effect = None
+        scope = None
+        target = None
+    elif isinstance(raw_write, Mapping):
+        variable_id = str(raw_write.get("variable_id", "")).strip()
+        expression = str(raw_write.get("expression", "")).strip()
+        condition_raw = raw_write.get("condition")
+        condition = None if condition_raw is None else str(condition_raw).strip()
+        composition = str(raw_write.get("composition", "")).strip()
+        phase = str(raw_write.get("phase", rule["phase"])).strip()
+        raw_priority = raw_write.get("priority")
+        priority = int(rule["priority"]) + write_index if raw_priority is None else int(raw_priority)
+        clamp = _coerce_optional_clamp(raw_write.get("clamp"))
+        telemetry_label = str(raw_write.get("telemetry_label") or _social_residue_telemetry_label(rule_id, kind, raw_write)).strip()
+        effect_raw = raw_write.get("effect")
+        effect = None if effect_raw is None else str(effect_raw).strip()
+        scope_raw = raw_write.get("scope")
+        scope = None if scope_raw is None else str(scope_raw).strip()
+        target_raw = raw_write.get("target")
+        target = None if target_raw is None else str(target_raw).strip()
+    else:
+        raise TypeError(f"VTC social residue rule '{rule_id}' write entry must be a WriteSpec or mapping")
+
+    if not variable_id:
+        raise ValueError(f"VTC social residue rule '{rule_id}' write requires variable_id")
+    if not expression:
+        raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' requires expression")
+    if condition == "":
+        raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' condition must be non-empty when provided")
+    if not composition:
+        raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' requires composition")
+    if not phase:
+        raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' requires phase")
+    if priority < 0:
+        raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' priority must be non-negative")
+    if not telemetry_label:
+        raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' requires telemetry_label")
+    if effect == "":
+        raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' effect must be non-empty when provided")
+    if scope == "":
+        raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' scope must be non-empty when provided")
+    if target == "":
+        raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' target must be non-empty when provided")
+
+    return {
+        "variable_id": variable_id,
+        "expression": expression,
+        "condition": condition,
+        "composition": composition,
+        "phase": phase,
+        "priority": priority,
+        "clamp": clamp,
+        "telemetry_label": telemetry_label,
+        "effect": effect,
+        "scope": scope,
+        "target": target,
+    }
+
+
+def _coerce_optional_clamp(raw_clamp: Any) -> tuple[float, float] | None:
+    if raw_clamp is None:
+        return None
+    clamp_values = list(raw_clamp)
+    if len(clamp_values) != 2:
+        raise ValueError("VTC social residue clamp must contain exactly two values")
+    low = float(clamp_values[0])
+    high = float(clamp_values[1])
+    if low > high:
+        raise ValueError("VTC social residue clamp lower bound must be <= upper bound")
+    return (low, high)
+
+
+def _social_residue_telemetry_label(rule_id: str, kind: str, write: Mapping[str, Any]) -> str:
+    effect = write.get("effect")
+    variable_id = write.get("variable_id", "unknown")
+    suffix = effect if effect is not None else variable_id
+    return f"{kind}:{rule_id}:{suffix}"
+
+
+def _combined_condition(rule_condition: str | None, write_condition: str | None) -> str | None:
+    if rule_condition is None:
+        return write_condition
+    if write_condition is None:
+        return rule_condition
+    return f"({rule_condition}) and ({write_condition})"
 
 
 def compile_vtc_reward_components(drive_config: VTCRewardConfigSource | Mapping[str, Any]) -> VTCRewardProgram:

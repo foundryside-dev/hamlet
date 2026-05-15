@@ -164,6 +164,7 @@ def test_compile_recovers_from_corrupted_cache(tmp_path: Path, monkeypatch: pyte
         "observation_activity",
         "vfs_observation_fields",
         "vfs_variables",
+        "variable_schema_hash",
         "action_space_metadata",
         "runtime_action_space",
         "optimization_data_raw",
@@ -284,7 +285,10 @@ def test_direct_cache_load_rejects_missing_level_provenance_fields(tmp_path: Pat
         CompiledUniverse.load_from_cache(stale_path)
 
 
-@pytest.mark.parametrize("missing_field", ["observation_activity", "vfs_observation_fields", "vfs_variables", "optimization_data_raw"])
+@pytest.mark.parametrize(
+    "missing_field",
+    ["observation_activity", "vfs_observation_fields", "vfs_variables", "variable_schema_hash", "optimization_data_raw"],
+)
 def test_direct_cache_load_rejects_missing_required_level_fields(tmp_path: Path, missing_field: str) -> None:
     config_dir = _copy_experiment(tmp_path)
     compiler = UniverseCompiler()
@@ -299,7 +303,10 @@ def test_direct_cache_load_rejects_missing_required_level_fields(tmp_path: Path,
         CompiledUniverse.load_from_cache(stale_path)
 
 
-@pytest.mark.parametrize("missing_field", ["observation_activity", "vfs_observation_fields", "vfs_variables", "optimization_data_raw"])
+@pytest.mark.parametrize(
+    "missing_field",
+    ["observation_activity", "vfs_observation_fields", "vfs_variables", "variable_schema_hash", "optimization_data_raw"],
+)
 def test_compile_cache_fast_path_recovers_from_missing_required_fields(tmp_path: Path, missing_field: str) -> None:
     config_dir = _copy_experiment(tmp_path)
     compiler = UniverseCompiler()

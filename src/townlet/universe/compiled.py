@@ -44,7 +44,7 @@ from townlet.vfs.profiles import CompiledGlobalProfile
 from townlet.vfs.schema import ObservationField as VfsObservationField
 from townlet.vfs.schema import VariableDef
 
-COMPILED_SCHEMA_VERSION = "1.8"
+COMPILED_SCHEMA_VERSION = "1.9"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",
@@ -53,6 +53,7 @@ REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "observation_activity",
     "vfs_observation_fields",
     "vfs_variables",
+    "variable_schema_hash",
     "action_space_metadata",
     "runtime_action_space",
     "meter_metadata",
@@ -110,6 +111,7 @@ class CompiledUniverse:
     observation_activity: ObservationActivity
     vfs_observation_fields: tuple[VfsObservationField, ...]
     vfs_variables: tuple[VariableDef, ...]
+    variable_schema_hash: str
     action_space_metadata: ActionSpaceMetadata
     runtime_action_space: RuntimeActionSpace
     meter_metadata: MeterMetadata
@@ -177,6 +179,7 @@ class CompiledUniverse:
         optimization_data: OptimizationData
         vfs_observation_fields: tuple[VfsObservationField, ...]
         vfs_variables: tuple[VariableDef, ...]
+        variable_schema_hash: str
         drive_hash: str | None = None
         curriculum_hash: str | None = None
         bars_hash: str | None = None
@@ -243,6 +246,7 @@ class CompiledUniverse:
             observation_activity=deepcopy(self.observation_activity),
             vfs_observation_fields=tuple(deepcopy(self.vfs_observation_fields)),
             vfs_variables=tuple(deepcopy(self.vfs_variables)),
+            variable_schema_hash=self.variable_schema_hash,
             action_space_metadata=deepcopy(self.action_space_metadata),
             runtime_action_space=deepcopy(self.runtime_action_space),
             meter_metadata=deepcopy(self.meter_metadata),
@@ -282,6 +286,7 @@ class CompiledUniverse:
             "observation_activity": _dataclass_to_plain(self.observation_activity),
             "vfs_observation_fields": [field.model_dump() for field in self.vfs_observation_fields],
             "vfs_variables": [var.model_dump() for var in getattr(self, "vfs_variables", ())],
+            "variable_schema_hash": self.variable_schema_hash,
             "action_space_metadata": _dataclass_to_plain(self.action_space_metadata),
             "runtime_action_space": _dataclass_to_plain(self.runtime_action_space),
             "meter_metadata": _dataclass_to_plain(self.meter_metadata),
@@ -360,6 +365,7 @@ class CompiledUniverse:
                         },
                         "vfs_observation_fields": [field.model_dump() for field in meta.vfs_observation_fields],
                         "vfs_variables": [var.model_dump() for var in meta.vfs_variables],
+                        "variable_schema_hash": meta.variable_schema_hash,
                     }
                     for name, meta in self.all_levels.items()
                 }
@@ -438,6 +444,7 @@ class CompiledUniverse:
                         VfsObservationField(**field) for field in _required_field(meta, f"all_levels.{name}.vfs_observation_fields")
                     ),
                     vfs_variables=tuple(VariableDef(**var) for var in _required_field(meta, f"all_levels.{name}.vfs_variables")),
+                    variable_schema_hash=_required_field(meta, f"all_levels.{name}.variable_schema_hash"),
                 )
 
         return CompiledUniverse(
@@ -446,6 +453,7 @@ class CompiledUniverse:
             observation_activity=_observation_activity_from_plain(_required_mapping(payload, "observation_activity")),
             vfs_observation_fields=tuple(VfsObservationField(**field) for field in _required_field(payload, "vfs_observation_fields")),
             vfs_variables=tuple(VariableDef(**var) for var in _required_field(payload, "vfs_variables")),
+            variable_schema_hash=_required_field(payload, "variable_schema_hash"),
             action_space_metadata=_action_space_metadata_from_plain(payload["action_space_metadata"]),
             runtime_action_space=_runtime_action_space_from_plain(_required_mapping(payload, "runtime_action_space")),
             meter_metadata=_meter_metadata_from_plain(payload["meter_metadata"]),

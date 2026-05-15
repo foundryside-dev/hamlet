@@ -148,6 +148,7 @@ def test_compiled_universe_round_trip_serialization(minimal_compiled_universe_wi
 
     assert restored.effects_schema == original.effects_schema
     assert restored.runtime_action_space == original.runtime_action_space
+    assert restored.variable_schema_hash == original.variable_schema_hash
     assert restored.vfs_expression_schema is not None
     assert restored.vfs_expression_schema == original.vfs_expression_schema
 
@@ -171,6 +172,7 @@ def test_compiled_universe_clone_preserves_new_fields(minimal_compiled_universe_
     assert cloned.compiled_vfs_profiles.global_profile is not None
     assert cloned.effects_schema == original.effects_schema
     assert cloned.runtime_action_space == original.runtime_action_space
+    assert cloned.variable_schema_hash == original.variable_schema_hash
     assert cloned.vfs_expression_schema is not None
     assert cloned.vfs_expression_schema == original.vfs_expression_schema
 

@@ -25,6 +25,7 @@ from townlet.universe.optimization import OptimizationData
 from townlet.universe.raw_configs_v21 import RawConfigsV21
 from townlet.vfs.observation_builder import VFSObservationSpec
 from townlet.vfs.profiles import CircularDependencyError
+from townlet.vfs.schema_hashes import compute_variable_schema_hash
 from townlet.world.expression.type_checker import TypeCheckError
 
 from .compiled import CompiledVFSProfiles
@@ -367,6 +368,7 @@ class UniverseCompiler:
             vfs_fields = self._observation_compiler.build_vfs_observation_fields(obs_spec, raw.environment)
             base_vfs_variables = self._observation_compiler.build_vfs_variables(obs_spec, raw.environment)
             vfs_variables = self._vfs_compiler.build_runtime_variables(base_vfs_variables, compiled_vfs_profiles)
+            variable_schema_hash = compute_variable_schema_hash(vfs_variables)
 
             # Compute hashes for level-specific configs
             drive_hash = self._compute_pydantic_hash(level.drive)
@@ -396,6 +398,7 @@ class UniverseCompiler:
                 training_hash=training_hash,
                 vfs_observation_fields=vfs_fields,
                 vfs_variables=vfs_variables,
+                variable_schema_hash=variable_schema_hash,
                 items_appearance=level.items_appearance,
             )
 
@@ -455,6 +458,7 @@ class UniverseCompiler:
             observation_activity=primary_meta.observation_activity,
             vfs_observation_fields=primary_meta.vfs_observation_fields,
             vfs_variables=primary_meta.vfs_variables,
+            variable_schema_hash=primary_meta.variable_schema_hash,
             action_space_metadata=primary_meta.action_metadata,
             runtime_action_space=primary_meta.runtime_action_space,
             meter_metadata=primary_meta.meter_metadata,

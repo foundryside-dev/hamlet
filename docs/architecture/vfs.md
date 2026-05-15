@@ -1512,6 +1512,13 @@ The repo exposes option 1 as `canonical_fixed_slot_dynamic_need_variables(max_sl
 It returns one agent-scoped `vecNf` variable per causal field, with `dims=max_slots`
 so storage and observations stay shape-stable while individual slots can represent
 abstract software-defined needs.
+The repo exposes option 2 as `canonical_set_encoder_dynamic_need_variables(...)`,
+which creates an agent-scoped `dynamic_need_tokens` `tensor2d` variable shaped as
+`[max_slots, token_width]`. `dynamic_need_token_layout(...)` defines the token
+field offsets for `id_embedding`, `intensity`, `growth_rate`, `urgency`,
+`tag_embedding`, and `satisfaction_embedding`. `SetEncoderQNetwork` can reshape
+the flattened observation field back into token rows and mean-pool non-empty rows,
+so token order does not become part of the learned meaning.
 
 ### 15.4 Experiment enabled by VFS
 

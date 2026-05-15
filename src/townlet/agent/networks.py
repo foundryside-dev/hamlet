@@ -440,6 +440,121 @@ class DuelingQNetwork(nn.Module):
         return activations[activation]
 
 
+class SetEncoderQNetwork(nn.Module):
+    """Q-network that pools a fixed-capacity token set with permutation-invariant mean aggregation."""
+
+    def __init__(
+        self,
+        obs_dim: int,
+        action_dim: int,
+        token_slice: slice,
+        token_shape: tuple[int, int],
+        token_embed_dim: int,
+        base_hidden_dim: int,
+        q_head_hidden_dim: int,
+    ):
+        """Initialize a set-aware Q-network.
+
+        Args:
+            obs_dim: Total flattened observation dimension.
+            action_dim: Number of actions.
+            token_slice: Slice of the flattened observation that contains token rows.
+            token_shape: ``(max_tokens, token_dim)`` for reshaping the token slice.
+            token_embed_dim: Embedding size for pooled token features.
+            base_hidden_dim: Embedding size for non-token observation features.
+            q_head_hidden_dim: Hidden size for the Q-value head.
+        """
+        super().__init__()
+        self.obs_dim = obs_dim
+        self.action_dim = action_dim
+        self.token_slice = self._validate_token_slice(obs_dim, token_slice)
+        self.max_tokens, self.token_dim = self._validate_token_shape(token_shape)
+        self.token_embed_dim = token_embed_dim
+        self.base_hidden_dim = base_hidden_dim
+
+        expected_token_dims = self.max_tokens * self.token_dim
+        if self.token_slice.stop - self.token_slice.start != expected_token_dims:
+            raise ValueError(
+                "token_slice length must equal max_tokens * token_dim "
+                f"({expected_token_dims}), got {self.token_slice.stop - self.token_slice.start}"
+            )
+        if token_embed_dim <= 0:
+            raise ValueError("token_embed_dim must be positive")
+        if base_hidden_dim <= 0:
+            raise ValueError("base_hidden_dim must be positive")
+        if q_head_hidden_dim <= 0:
+            raise ValueError("q_head_hidden_dim must be positive")
+
+        self.base_dim = obs_dim - expected_token_dims
+        if self.base_dim < 0:
+            raise ValueError("token dimensions cannot exceed obs_dim")
+
+        self.token_encoder = nn.Sequential(
+            nn.Linear(self.token_dim, token_embed_dim),
+            nn.LayerNorm(token_embed_dim),
+            nn.ReLU(),
+        )
+        self.base_encoder: nn.Sequential | None
+        if self.base_dim > 0:
+            self.base_encoder = nn.Sequential(
+                nn.Linear(self.base_dim, base_hidden_dim),
+                nn.LayerNorm(base_hidden_dim),
+                nn.ReLU(),
+            )
+            q_head_input_dim = token_embed_dim + base_hidden_dim
+        else:
+            self.base_encoder = None
+            q_head_input_dim = token_embed_dim
+
+        self.q_head = nn.Sequential(
+            nn.Linear(q_head_input_dim, q_head_hidden_dim),
+            nn.LayerNorm(q_head_hidden_dim),
+            nn.ReLU(),
+            nn.Linear(q_head_hidden_dim, action_dim),
+        )
+
+    def forward(self, obs: torch.Tensor) -> torch.Tensor:
+        """Encode non-token observations and a token set into Q-values."""
+        if obs.dim() != 2 or obs.shape[1] != self.obs_dim:
+            raise ValueError(f"Expected observations with shape [batch, {self.obs_dim}], got {tuple(obs.shape)}")
+
+        token_flat = obs[:, self.token_slice]
+        tokens = token_flat.reshape(obs.shape[0], self.max_tokens, self.token_dim)
+        non_empty_mask = tokens.abs().sum(dim=-1, keepdim=True) > 0
+
+        token_embeddings = self.token_encoder(tokens)
+        token_embeddings = token_embeddings * non_empty_mask.to(dtype=token_embeddings.dtype)
+        token_counts = non_empty_mask.sum(dim=1).clamp(min=1).to(dtype=token_embeddings.dtype)
+        pooled_tokens = token_embeddings.sum(dim=1) / token_counts
+
+        parts = []
+        if self.base_encoder is not None:
+            base_obs = torch.cat((obs[:, : self.token_slice.start], obs[:, self.token_slice.stop :]), dim=1)
+            parts.append(self.base_encoder(base_obs))
+        parts.append(pooled_tokens)
+
+        return cast(torch.Tensor, self.q_head(torch.cat(parts, dim=1)))
+
+    @staticmethod
+    def _validate_token_slice(obs_dim: int, token_slice: slice) -> slice:
+        if token_slice.step not in (None, 1):
+            raise ValueError("token_slice step must be None or 1")
+        if token_slice.start is None or token_slice.stop is None:
+            raise ValueError("token_slice must have explicit start and stop")
+        if token_slice.start < 0 or token_slice.stop > obs_dim or token_slice.stop <= token_slice.start:
+            raise ValueError(f"token_slice must be within observation bounds 0..{obs_dim}")
+        return slice(token_slice.start, token_slice.stop)
+
+    @staticmethod
+    def _validate_token_shape(token_shape: tuple[int, int]) -> tuple[int, int]:
+        max_tokens, token_dim = token_shape
+        if max_tokens <= 0:
+            raise ValueError("token_shape max_tokens must be positive")
+        if token_dim <= 0:
+            raise ValueError("token_shape token_dim must be positive")
+        return max_tokens, token_dim
+
+
 class StructuredQNetwork(nn.Module):
     """
     Structured Q-Network with group encoders for semantic observation groups.

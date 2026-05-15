@@ -25,7 +25,7 @@ description: "Human-readable description"
 
 ## Architecture Types
 
-The `architecture` section defines the neural network architecture. Three types are supported: feedforward (full observability), recurrent (POMDP with LSTM), and dueling (value/advantage decomposition).
+The `architecture` section defines the neural network architecture. Four types are supported: feedforward (full observability), recurrent (POMDP with LSTM), dueling (value/advantage decomposition), and set_encoder (variable-token observations).
 
 ### Feedforward (Full Observability)
 
@@ -159,6 +159,34 @@ architecture:
 **Example Use Cases:**
 - Experimental: Testing value/advantage decomposition
 - Ablation studies: Comparing against standard feedforward
+
+### Set Encoder (Variable-Token Observations)
+
+Set encoder Q-network for fixed-capacity token observations such as `dynamic_need_tokens`. The configured token field is flattened in `ObservationSpec`; the network reshapes it to `[max_tokens, token_dim]`, encodes each row, ignores all-zero rows, and mean-pools the non-empty token embeddings before the Q-head.
+
+```yaml
+architecture:
+  type: set_encoder
+  set_encoder:
+    token_field_name: dynamic_need_tokens
+    max_tokens: 32
+    token_dim: 16
+    token_embed_dim: 64
+    base_hidden_dim: 128
+    q_head_hidden_dim: 256
+```
+
+**Parameters:**
+- `token_field_name` (string, required): Observation field containing flattened token rows.
+- `max_tokens` (int, required): Maximum token rows in the field.
+- `token_dim` (int, required): Width of each token row.
+- `token_embed_dim` (int, required): Embedding size for the pooled token set.
+- `base_hidden_dim` (int, required): Embedding size for non-token observation features.
+- `q_head_hidden_dim` (int, required): Hidden size for Q-value prediction.
+
+**Example Use Cases:**
+- Dynamic needs represented by `dynamic_need_tokens`.
+- Generalisation experiments where token names and affordance labels vary but causal fields remain stable.
 
 ## Optimizer Configuration
 

@@ -153,6 +153,9 @@ class VectorizedPopulation(PopulationManager):
         # Set is_dueling flag from brain_config
         self.is_dueling = brain_config.architecture.type == "dueling"
 
+        # Set is_set_encoder flag from brain_config
+        self.is_set_encoder = brain_config.architecture.type == "set_encoder"
+
         # Target network (stabilises training for both feed-forward and recurrent agents)
         # Build using DRY helper (POP-001)
         self.target_network: nn.Module = self._build_network(brain_config, obs_dim, action_dim, env, vision_window_size).to(device)
@@ -381,8 +384,16 @@ class VectorizedPopulation(PopulationManager):
                 obs_dim=obs_dim,
                 action_dim=action_dim,
             )
+        elif arch.type == "set_encoder":
+            assert arch.set_encoder is not None, "set_encoder config must be present"
+            return NetworkFactory.build_set_encoder(
+                config=arch.set_encoder,
+                obs_dim=obs_dim,
+                action_dim=action_dim,
+                observation_spec=self.observation_spec,
+            )
         else:
-            raise ValueError(f"Unsupported architecture type: {arch.type}. Supported: feedforward, recurrent, dueling")
+            raise ValueError(f"Unsupported architecture type: {arch.type}. Supported: feedforward, recurrent, dueling, set_encoder")
 
     def _store_episode_and_reset(self, agent_idx: int) -> bool:
         """Store accumulated episode for agent and reset buffers."""

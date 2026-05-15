@@ -162,8 +162,15 @@ def test_use_slot_action_executes_effects():
     env.reset()
 
     # Spawn apple and pick it up
-    env.item_manager.spawn_item("apple", position=(0, 0), current_tick=0)
-    env.positions[0] = torch.tensor([0, 0], dtype=torch.long)
+    target_pos = (0, 0)
+    for instance_id, existing_item in list(env.item_manager.active_items.items()):
+        if existing_item.position == target_pos:
+            env.item_manager.despawn_item(instance_id, current_tick=0)
+    env.item_manager.cooldown_until.clear()
+
+    apple = env.item_manager.spawn_item("apple", position=target_pos, current_tick=0)
+    assert apple is not None
+    env.positions[0] = torch.tensor(target_pos, dtype=torch.long)
     get_action = env.action_space.get_action_by_name("GET")
     env.step(torch.tensor([get_action.id]))
 

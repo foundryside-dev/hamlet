@@ -9,7 +9,12 @@ Phase 2: Derivation graphs, complex types, expression evaluation
 
 from townlet.vfs import vtc_kernels
 from townlet.vfs.communication import canonical_l6_message_variables
-from townlet.vfs.dynamic_needs import canonical_fixed_slot_dynamic_need_variables
+from townlet.vfs.dynamic_needs import (
+    DynamicNeedTokenLayout,
+    canonical_fixed_slot_dynamic_need_variables,
+    canonical_set_encoder_dynamic_need_variables,
+    dynamic_need_token_layout,
+)
 from townlet.vfs.observation_builder import VFSObservationSpec, apply_normalization
 from townlet.vfs.registry import VariableRegistry, VFSRegistryProtocol
 from townlet.vfs.relational import canonical_l5_relational_variables
@@ -95,6 +100,7 @@ __all__ = [
     "CompiledVTCTerminalCondition",
     "CompiledVTCThresholdCascade",
     "DEFAULT_TRANSITION_PHASES",
+    "DynamicNeedTokenLayout",
     "NormalizationSpec",
     "ObservationField",
     "VariableDef",
@@ -124,6 +130,7 @@ __all__ = [
     "WriteSpec",
     "apply_normalization",
     "canonical_fixed_slot_dynamic_need_variables",
+    "canonical_set_encoder_dynamic_need_variables",
     "canonical_l6_message_variables",
     "canonical_l5_relational_variables",
     "canonical_action_schema",
@@ -135,6 +142,7 @@ __all__ = [
     "compute_transition_graph_hash",
     "compute_variable_schema_hash",
     "compute_vfs_hash",
+    "dynamic_need_token_layout",
     "compile_vtc_action_writes",
     "compile_vtc_action_writes_with_phase_graph",
     "compile_vtc_affordance_occupancy",

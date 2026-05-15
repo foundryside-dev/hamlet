@@ -35,6 +35,7 @@ def test_attach_universe_metadata(compiled_universe) -> None:
     assert checkpoint["action_dim"] == compiled_universe.metadata.action_count
     assert checkpoint["meter_count"] == compiled_universe.metadata.meter_count
     assert checkpoint["observation_field_uuids"] == [field.uuid for field in compiled_universe.observation_spec.fields]
+    assert checkpoint["observation_schema_hash"] == compiled_universe.observation_schema_hash
     assert checkpoint["vfs_hash"] == compiled_universe.vfs_hash
 
 

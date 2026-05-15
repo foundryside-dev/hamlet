@@ -213,17 +213,18 @@ class TestRunnerOrchestration:
         assert episode_count == 5, f"Should have 5 episode records, got {episode_count}"
 
         # Check required fields exist (database schema uses survival_time not survival_steps)
-        cursor.execute("SELECT survival_time, total_reward, curriculum_stage, epsilon FROM episodes LIMIT 1")
+        cursor.execute("SELECT survival_time, total_reward, curriculum_stage, epsilon, observation_schema_hash FROM episodes LIMIT 1")
         record = cursor.fetchone()
         assert record is not None, "Episode record should exist"
 
-        survival_time, total_reward, curriculum_stage, epsilon = record
+        survival_time, total_reward, curriculum_stage, epsilon, observation_schema_hash = record
 
         # Verify all fields are populated (not NULL)
         assert survival_time is not None, "survival_time should be populated"
         assert total_reward is not None, "total_reward should be populated"
         assert curriculum_stage is not None, "curriculum_stage should be populated"
         assert epsilon is not None, "epsilon should be populated"
+        assert observation_schema_hash == runner.compiled.observation_schema_hash
 
         # Verify types are reasonable
         assert isinstance(survival_time, int), "survival_time should be integer"
@@ -486,6 +487,7 @@ class TestDatabaseDefensiveChecks:
                 intrinsic_weight=0.5,
                 curriculum_stage=1,
                 epsilon=0.5,
+                observation_schema_hash="abc123",
             )
 
         with pytest.raises(RuntimeError, match="Database connection is closed"):

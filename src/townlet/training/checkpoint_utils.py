@@ -36,6 +36,7 @@ def attach_universe_metadata(checkpoint: dict[str, Any], universe: CompiledUnive
     checkpoint["action_dim"] = universe.metadata.action_count
     checkpoint["meter_count"] = universe.metadata.meter_count
     checkpoint["observation_field_uuids"] = [field.uuid for field in universe.observation_spec.fields]
+    checkpoint["observation_schema_hash"] = universe.observation_schema_hash
     checkpoint["drive_hash"] = universe.drive_hash
     checkpoint["brain_hash"] = universe.brain_hash
     checkpoint["vfs_hash"] = universe.vfs_hash

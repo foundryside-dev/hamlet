@@ -56,7 +56,8 @@ class DemoDatabase:
                 intrinsic_reward REAL NOT NULL,
                 intrinsic_weight REAL NOT NULL,
                 curriculum_stage INTEGER NOT NULL,
-                epsilon REAL NOT NULL
+                epsilon REAL NOT NULL,
+                observation_schema_hash TEXT NOT NULL
             );
             CREATE INDEX IF NOT EXISTS idx_episodes_timestamp ON episodes(timestamp);
 
@@ -116,6 +117,7 @@ class DemoDatabase:
         intrinsic_weight: float,
         curriculum_stage: int,
         epsilon: float,
+        observation_schema_hash: str,
     ):
         """Insert episode metrics into database.
 
@@ -129,6 +131,7 @@ class DemoDatabase:
             intrinsic_weight: Current intrinsic weight
             curriculum_stage: Current curriculum stage (1-5)
             epsilon: Current exploration epsilon
+            observation_schema_hash: Compiled observation ABI hash for this run
 
         Raises:
             RuntimeError: If database connection is closed
@@ -137,8 +140,9 @@ class DemoDatabase:
         self.conn.execute(
             """INSERT OR REPLACE INTO episodes
                (episode_id, timestamp, survival_time, total_reward, extrinsic_reward,
-                intrinsic_reward, intrinsic_weight, curriculum_stage, epsilon)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                intrinsic_reward, intrinsic_weight, curriculum_stage, epsilon,
+                observation_schema_hash)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (
                 episode_id,
                 timestamp,
@@ -149,6 +153,7 @@ class DemoDatabase:
                 intrinsic_weight,
                 curriculum_stage,
                 epsilon,
+                observation_schema_hash,
             ),
         )
         self.conn.commit()

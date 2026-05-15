@@ -548,6 +548,7 @@ class DemoRunner:
             "initial_intrinsic_weight": 1.0,
             "variance_threshold": self.training_config.intrinsic.annealing.threshold,
             "max_steps_per_episode": loop_cfg.max_steps_per_episode,
+            "observation_schema_hash": self.compiled.observation_schema_hash,
         }
         # Note: final metrics will be logged at end of training
         self.tb_logger.log_hyperparameters(hparams=self.hparams, metrics={})
@@ -743,6 +744,7 @@ class DemoRunner:
                     intrinsic_weight=intrinsic_weight_value,
                     curriculum_stage=int(stages_cpu[0].item()),
                     epsilon=epsilon_value,
+                    observation_schema_hash=self.compiled.observation_schema_hash,
                 )
 
                 # NEW: Insert affordance transitions for agent 0

@@ -16,6 +16,8 @@ def test_compiler_compiles_item_profiles(tmp_path: Path):
 
     vfs_profiles = {
         "version": "1.0",
+        "evaluation_mode": "mark_and_sweep",
+        "debug_logging": False,
         "item_profiles": [
             {
                 "profile_name": "food_stats",
@@ -81,6 +83,8 @@ def test_compiler_rejects_unknown_item_vfs_profile(tmp_path: Path):
 
     vfs_profiles = {
         "version": "1.0",
+        "evaluation_mode": "mark_and_sweep",
+        "debug_logging": False,
         "item_profiles": [
             {
                 "profile_name": "food_stats",
@@ -136,6 +140,8 @@ def test_compiler_handles_missing_item_profiles(tmp_path: Path):
     # Create vfs_profiles.yaml without item_profiles
     vfs_profiles = {
         "version": "1.0",
+        "evaluation_mode": "mark_and_sweep",
+        "debug_logging": False,
         "global_profile": {"variables": [{"name": "day_count", "type": "int", "initial_value": 0}]},
     }
 

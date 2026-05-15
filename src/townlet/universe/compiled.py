@@ -44,7 +44,7 @@ from townlet.vfs.profiles import CompiledGlobalProfile
 from townlet.vfs.schema import ObservationField as VfsObservationField
 from townlet.vfs.schema import VariableDef
 
-COMPILED_SCHEMA_VERSION = "1.7"
+COMPILED_SCHEMA_VERSION = "1.8"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",
@@ -88,6 +88,8 @@ REQUIRED_COMPILED_UNIVERSE_FIELDS = (
 class CompiledVFSProfiles:
     """Compiled VFS profiles (global, agent, item)."""
 
+    evaluation_mode: str
+    debug_logging: bool
     global_profile: CompiledGlobalProfile | None = None
     agent_profile: Any | None = None  # TODO: Add CompiledAgentProfile type
     item_profiles: dict[str, Any] | None = None  # TODO: Add CompiledItemProfile type
@@ -685,7 +687,10 @@ def _vfs_observation_spec_from_plain(payload: Mapping[str, Any] | None) -> VFSOb
 def _serialize_vfs_profiles(profiles: CompiledVFSProfiles) -> dict[str, Any]:
     """Serialize CompiledVFSProfiles to dict."""
 
-    result: dict[str, Any] = {}
+    result: dict[str, Any] = {
+        "evaluation_mode": profiles.evaluation_mode,
+        "debug_logging": profiles.debug_logging,
+    }
 
     if profiles.global_profile is not None:
         result["global_profile"] = {
@@ -697,7 +702,7 @@ def _serialize_vfs_profiles(profiles: CompiledVFSProfiles) -> dict[str, Any]:
                     "ast": None,  # AST not serialized (reconstruct on load)
                     "initial_value": var.initial_value,
                     "result_type": var.result_type,
-                    "exposed_to": list(getattr(var, "exposed_to", []) or ["agent"]),
+                    "exposed_to": list(var.exposed_to),
                     "semantic_type": getattr(var, "semantic_type", "custom"),
                 }
                 for var in profiles.global_profile.variables
@@ -725,7 +730,7 @@ def _serialize_vfs_profiles(profiles: CompiledVFSProfiles) -> dict[str, Any]:
                         "initial_value_mode": var.initial_value_mode,
                         "initial_value_params": var.initial_value_params,
                         "dims": var.dims,
-                        "exposed_to": list(getattr(var, "exposed_to", []) or ["agent"]),
+                        "exposed_to": list(var.exposed_to),
                         "semantic_type": getattr(var, "semantic_type", "custom"),
                     }
                     for var in profile.variables
@@ -788,6 +793,8 @@ def _deserialize_vfs_profiles(payload: dict[str, Any]) -> CompiledVFSProfiles:
             item_profiles[name] = CompiledItemProfile(profile_name=profile["profile_name"], variables=variables)
 
     return CompiledVFSProfiles(
+        evaluation_mode=payload["evaluation_mode"],
+        debug_logging=payload["debug_logging"],
         global_profile=global_profile,
         agent_profile=payload.get("agent_profile"),
         item_profiles=item_profiles,

@@ -16,6 +16,8 @@ def test_compiler_marks_vfs_variables_used_in_observations(tmp_path: Path):
     # Add VFS profiles with global variables
     vfs_profiles = {
         "version": "1.0",
+        "evaluation_mode": "mark_and_sweep",
+        "debug_logging": False,
         "global_profile": {
             "variables": [
                 {"name": "day_count", "type": "int", "initial_value": 0},
@@ -71,6 +73,8 @@ def test_compiler_marks_empty_when_no_vfs_observations(tmp_path: Path):
     # Add VFS profiles
     vfs_profiles = {
         "version": "1.0",
+        "evaluation_mode": "mark_and_sweep",
+        "debug_logging": False,
         "global_profile": {
             "variables": [
                 {"name": "some_var", "type": "int", "initial_value": 0},

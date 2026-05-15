@@ -149,6 +149,64 @@ def test_vfs_evaluator_mark_and_sweep_recomputes_dependencies():
     assert result["b"].item() == pytest.approx(8.0)  # (bar.energy + 1) * 2
 
 
+def test_vfs_evaluator_mark_and_sweep_requires_explicit_marks():
+    """Mark-and-sweep mode must not silently degrade to eager evaluation."""
+    profile = CompiledGlobalProfile(
+        variables=[
+            CompiledVariable(
+                name="observed",
+                type="int",
+                ast=None,
+                initial_value=1,
+                result_type="int",
+                exposed_to=("agent",),
+                semantic_type="custom",
+            )
+        ],
+        dependencies={"observed": tuple()},
+    )
+
+    evaluator = VFSEvaluator(mode=EvaluationMode.MARK_AND_SWEEP)
+
+    with pytest.raises(ValueError, match="requires explicit marks"):
+        evaluator.evaluate_global_profile(
+            profile=profile,
+            bars={},
+            vfs_state={},
+            marks=None,
+            device=torch.device("cpu"),
+        )
+
+
+def test_vfs_evaluator_mark_and_sweep_rejects_unknown_marks():
+    """Misspelled marks should fail loudly instead of evaluating nothing."""
+    profile = CompiledGlobalProfile(
+        variables=[
+            CompiledVariable(
+                name="observed",
+                type="int",
+                ast=None,
+                initial_value=1,
+                result_type="int",
+                exposed_to=("agent",),
+                semantic_type="custom",
+            )
+        ],
+        dependencies={"observed": tuple()},
+    )
+
+    evaluator = VFSEvaluator(mode=EvaluationMode.MARK_AND_SWEEP)
+
+    with pytest.raises(KeyError, match="typo"):
+        evaluator.evaluate_global_profile(
+            profile=profile,
+            bars={},
+            vfs_state={},
+            marks={"typo"},
+            device=torch.device("cpu"),
+        )
+
+
 def test_vfs_evaluator_eager_mode_evaluates_all_vars():
     """Eager mode should evaluate all variables regardless of marks."""
     # Setup: Same as mark-and-sweep test

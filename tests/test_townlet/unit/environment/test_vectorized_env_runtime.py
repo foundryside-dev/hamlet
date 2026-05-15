@@ -53,6 +53,8 @@ def test_vectorized_env_uses_compiled_vfs_variables_without_profile_synthesis(tm
     experiment_dir = prepare_config_dir(tmp_path, name="experiment")
     profiles = {
         "version": "1.0",
+        "evaluation_mode": "mark_and_sweep",
+        "debug_logging": False,
         "global_profile": {"variables": [{"name": "day_count", "type": "int", "initial_value": 0}]},
         "agent_profile": {"variables": [{"name": "motivation", "type": "float", "initial_value": 0.5}]},
     }
@@ -75,6 +77,8 @@ def test_vectorized_env_uses_compiled_effects_schema(tmp_path: Path) -> None:
     experiment_dir = prepare_config_dir(tmp_path, name="experiment")
     profiles = {
         "version": "1.0",
+        "evaluation_mode": "mark_and_sweep",
+        "debug_logging": False,
         "global_profile": {"variables": [{"name": "day_count", "type": "int", "initial_value": 0}]},
         "agent_profile": {"variables": [{"name": "motivation", "type": "float", "initial_value": 0.5}]},
     }

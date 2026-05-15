@@ -257,6 +257,30 @@ def test_build_vfs_observation_flattens_tensors():
     assert torch.equal(obs[:, 4:], torch.ones(batch_size, 4))
 
 
+def test_build_vfs_observation_raises_for_missing_item_profile_map():
+    """A registered item profile must have a registry index map; typos are fatal."""
+    registry = ScopedVariableRegistry(device=torch.device("cpu"))
+    registry.item_vfs = torch.tensor([[3.0]], dtype=torch.float32)
+    registry.item_profile_map = {}
+    registry.item_vfs_index_to_profile = {0: "missing_profile"}
+
+    spec = VFSObservationSpec(
+        global_vfs_dim=0,
+        agent_vfs_dim=0,
+        item_vfs_dim=1,
+        item_profile_vars={"missing_profile": ("durability",)},
+        max_items_per_agent=1,
+    )
+
+    with pytest.raises(RuntimeError, match="missing_profile"):
+        build_vfs_observation(
+            registry,
+            spec,
+            batch_size=1,
+            agent_item_inventory=torch.tensor([[0]], dtype=torch.long),
+        )
+
+
 def test_vfs_observation_spec_tensor_dims_with_guardrail():
     """Spec computation respects tensor shape and guardrails."""
     global_profile = GlobalVFSProfileConfig(

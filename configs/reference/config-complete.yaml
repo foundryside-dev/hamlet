@@ -1057,6 +1057,8 @@ training:
 
 vfs_profiles:
   version: "1.0"
+  evaluation_mode: mark_and_sweep
+  debug_logging: false
 
   # GLOBAL SCOPE (World state)
   global:

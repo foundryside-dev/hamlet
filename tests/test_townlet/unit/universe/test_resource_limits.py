@@ -62,6 +62,8 @@ def _write_vfs_profiles(config_dir: Path, *, profile_count: int) -> None:
     ]
     vfs_payload = {
         "version": "1.0",
+        "evaluation_mode": "mark_and_sweep",
+        "debug_logging": False,
         "item_profiles": profiles,
     }
     (config_dir / "vfs_profiles.yaml").write_text(yaml.safe_dump(vfs_payload))

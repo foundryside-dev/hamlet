@@ -17,6 +17,8 @@ def test_compiler_generates_vfs_expression_schema(tmp_path: Path):
     vfs_profiles_yaml = experiment_dir / "vfs_profiles.yaml"
     vfs_profiles = {
         "version": "1.0",
+        "evaluation_mode": "mark_and_sweep",
+        "debug_logging": False,
         "global_profile": {
             "variables": [
                 {

@@ -16,7 +16,9 @@ from townlet.vfs.schema import VariableDef, VariableScope
 from townlet.world.expression import ExpressionParser
 from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
 
-_RUNTIME_VFS_TYPES = frozenset({"scalar", "bool", "tensor1d", "tensor2d", "tensor3d", "tensorNd", "agent_ref", "item_ref"})
+_RUNTIME_VFS_TYPES = frozenset(
+    {"scalar", "bool", "tensor1d", "tensor2d", "tensor3d", "tensorNd", "agent_ref", "item_ref", "affordance_ref", "effect_ref"}
+)
 
 
 class VFSCompiler:
@@ -64,6 +66,8 @@ class VFSCompiler:
                 compiled_item_profiles[compiled_profile.profile_name] = compiled_profile
 
         return CompiledVFSProfiles(
+            evaluation_mode=profiles_config.evaluation_mode,
+            debug_logging=profiles_config.debug_logging,
             global_profile=compiled_global,
             agent_profile=compiled_agent,
             item_profiles=compiled_item_profiles,
@@ -239,7 +243,7 @@ class VFSCompiler:
         lifetime: Literal["persistent", "episode"],
     ) -> VariableDef:
         raw_type = str(compiled_var.type)
-        if raw_type in ("agent_ref", "item_ref"):
+        if raw_type in ("agent_ref", "item_ref", "affordance_ref", "effect_ref"):
             default_value = compiled_var.initial_value
         else:
             default_value = (
@@ -248,7 +252,18 @@ class VFSCompiler:
 
         normalized_type = self._normalize_runtime_vfs_type(raw_type, str(compiled_var.name))
         variable_type = cast(
-            Literal["scalar", "bool", "tensor1d", "tensor2d", "tensor3d", "tensorNd", "agent_ref", "item_ref"],
+            Literal[
+                "scalar",
+                "bool",
+                "tensor1d",
+                "tensor2d",
+                "tensor3d",
+                "tensorNd",
+                "agent_ref",
+                "item_ref",
+                "affordance_ref",
+                "effect_ref",
+            ],
             normalized_type,
         )
         return VariableDef(

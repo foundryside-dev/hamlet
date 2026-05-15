@@ -77,16 +77,13 @@ class _TargetAwareExecutionContext(ExprExecutionContext):
             if parts[1] == "vfs" and len(parts) >= 3 and self.self_is_item:
                 import torch
 
-                from townlet.vfs.schema import VariableScope
-
                 var_name = ".".join(parts[2:])
                 if self.vfs_registry is None or self.self_index is None:
                     raise ValueError("VFS registry or self_index not set for item-scoped VFS lookup")
-                value = self.vfs_registry.read(
-                    var_name,
-                    context_index=self.self_index,
-                    scope=VariableScope.ITEM,
-                )
+                profile_name = self.vfs_registry.get_item_profile_for_index(self.self_index)
+                if profile_name is None:
+                    raise KeyError(f"No item profile registered for vfs_index {self.self_index}")
+                value = self.vfs_registry.read_item(profile_name, var_name, self.self_index)
                 # Convert to tensor if needed
                 if not isinstance(value, torch.Tensor):
                     value = torch.tensor(value, dtype=torch.float32, device=self.device)

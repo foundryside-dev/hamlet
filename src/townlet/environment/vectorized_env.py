@@ -286,13 +286,12 @@ class VectorizedHamletEnv:
         # Initialize VFS evaluator (if profiles present)
         self.vfs_evaluator: VFSEvaluator | None = None
         if universe.compiled_vfs_profiles is not None:
-            # Default to mark-and-sweep for efficiency
-            # Can override with EAGER mode via env var for debugging
-            import os
-
-            mode = EvaluationMode.EAGER if os.getenv("VFS_EVAL_MODE") == "eager" else EvaluationMode.MARK_AND_SWEEP
-
-            self.vfs_evaluator = VFSEvaluator(mode=mode, history_spec=getattr(universe, "vfs_history_spec", None))
+            mode = EvaluationMode(universe.compiled_vfs_profiles.evaluation_mode)
+            self.vfs_evaluator = VFSEvaluator(
+                mode=mode,
+                history_spec=universe.vfs_history_spec,
+                debug_logging=universe.compiled_vfs_profiles.debug_logging,
+            )
             self.vfs_observation_marks = universe.vfs_observation_marks
         else:
             self.vfs_observation_marks = None
@@ -780,6 +779,7 @@ class VectorizedHamletEnv:
         self.step_counts = torch.zeros(self.num_agents, dtype=torch.long, device=self.device)
         self.global_tick = 0  # HIGH-01: Reset global time counter
         self.intrinsic_weights = torch.ones(self.num_agents, dtype=torch.float32, device=self.device)  # Reset to 1.0
+        self.vfs_registry.reset_episode_scoped()
 
         # Reset temporal mechanics state
         if self.enable_temporal_mechanics:
@@ -1120,6 +1120,7 @@ class VectorizedHamletEnv:
             info: dict with metadata
         """
         prev_dones = self.dones.clone()
+        self.vfs_registry.reset_tick_scoped()
         # 1. Execute actions and track successful interactions
         successful_interactions = self._action_executor._execute_actions(actions)
 
@@ -1163,7 +1164,7 @@ class VectorizedHamletEnv:
             # Evaluate global profile
             global_profile = self.universe.compiled_vfs_profiles.global_profile
             if global_profile is not None:
-                marks = self.vfs_observation_marks.get("global", set()) if self.vfs_observation_marks else None
+                marks = self.vfs_observation_marks.get("global", set()) if self.vfs_observation_marks else set()
 
                 updated_vfs = self.vfs_evaluator.evaluate_global_profile(
                     profile=global_profile,
@@ -1176,25 +1177,14 @@ class VectorizedHamletEnv:
                     affordance_positions={k: v.to(dtype=torch.float32, device=self.device) for k, v in self.affordances.items()},
                     vfs_types={name: var.type for name, var in self.vfs_registry.variables.items()},
                     num_agents=self.num_agents,
-                    item_vfs=getattr(self.vfs_registry, "item_vfs", None),
-                    item_profile_map=getattr(self.vfs_registry, "item_profile_map", None),
-                    item_index_to_profile=getattr(self.vfs_registry, "item_vfs_index_to_profile", None),
+                    item_vfs=self.vfs_registry.item_vfs,
+                    item_profile_map=self.vfs_registry.item_profile_map,
+                    item_index_to_profile=self.vfs_registry.item_vfs_index_to_profile,
                 )
 
-                # Write updated values back to registry
-                # Note: Direct _storage access required because VFS expressions with bar
-                # references produce batched results (shape [num_agents]) even when the
-                # variable is declared as scalar. The evaluator output is correct; the
-                # shape mismatch is expected for bar-referencing expressions.
                 for var_name, value in updated_vfs.items():
                     if var_name in self.vfs_registry.variables:
-                        # Cast to expected dtype (VFS uses float32 for all values)
-                        # This handles cases where evaluator produces int64 (e.g., day_count)
-                        expected_dtype = self.vfs_registry._expected_dtypes.get(var_name, torch.float32)
-                        if value.dtype != expected_dtype:
-                            value = value.to(dtype=expected_dtype)
-                        # Direct storage access - bypasses shape validation for engine writes
-                        self.vfs_registry._storage[var_name] = value.to(self.vfs_registry.device).clone()
+                        self.vfs_registry.set_engine_value(var_name, value)
 
         # 4. Check terminal conditions
         self.dones = self.meter_dynamics.check_terminal_conditions(self.meters, self.dones)

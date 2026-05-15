@@ -8,7 +8,7 @@ Phase 2: Derivation graphs, complex types, expression evaluation
 """
 
 from townlet.vfs.observation_builder import VFSObservationSpec
-from townlet.vfs.registry import VariableRegistry
+from townlet.vfs.registry import VariableRegistry, VFSRegistryProtocol
 from townlet.vfs.schema import (
     NormalizationSpec,
     ObservationField,
@@ -21,6 +21,7 @@ __all__ = [
     "ObservationField",
     "VariableDef",
     "VariableRegistry",
+    "VFSRegistryProtocol",
     "VFSObservationSpec",
     "WriteSpec",
 ]

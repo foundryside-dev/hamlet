@@ -328,6 +328,8 @@ class VFSProfilesConfig(BaseModel):
     """
 
     version: Literal["1.0"]
+    evaluation_mode: Literal["mark_and_sweep", "eager"]
+    debug_logging: bool
     global_profile: GlobalVFSProfileConfig | None = None
     agent_profile: AgentVFSProfileConfig | None = None
     item_profiles: list[ItemVFSProfileConfig] = []

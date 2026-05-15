@@ -11,7 +11,7 @@ from townlet.config.vfs_profiles_config import (
     GlobalVFSProfileConfig,
     ItemVFSProfileConfig,
 )
-from townlet.vfs.registry import ScopedVariableRegistry
+from townlet.vfs.registry import VFSRegistryProtocol
 
 __all__ = [
     "VFSObservationSpec",
@@ -48,6 +48,10 @@ def _variable_observation_dim(
             raise ValueError(f"Tensor observation dim too large ({prod} > {max_elements}) for type={var_type}, shape={shape}.")
         return prod
     raise ValueError(f"Unsupported VFS variable type for observation dimension calculation: {var_type!r}.")
+
+
+def _agent_can_observe(var) -> bool:
+    return "agent" in var.exposed_to
 
 
 @dataclass
@@ -93,60 +97,72 @@ class VFSObservationSpec:
         Returns:
             Observation spec with dimension counts
         """
-        # Global VFS dimensions
+        return cls._from_variable_iterables(
+            global_variables=global_profile.variables if global_profile is not None else (),
+            agent_variables=agent_profile.variables if agent_profile is not None else (),
+            item_profile_variables=((profile.profile_name, profile.variables) for profile in item_profiles),
+        )
+
+    @classmethod
+    def _from_variable_iterables(
+        cls,
+        *,
+        global_variables,
+        agent_variables,
+        item_profile_variables,
+        max_items_per_agent: int | None = None,
+    ) -> VFSObservationSpec:
+        """Create an observation spec from normalized variable iterables."""
+        item_slots = cls.max_items_per_agent if max_items_per_agent is None else max_items_per_agent
+
         global_dim = 0
         global_vars: list[str] = []
-        if global_profile is not None:
-            for var in global_profile.variables:
-                if "agent" not in getattr(var, "exposed_to", ["agent"]):
+        for var in global_variables:
+            if not _agent_can_observe(var):
+                continue
+            global_vars.append(var.name)
+            global_dim += _variable_observation_dim(
+                var.type,
+                getattr(var, "shape", None),
+                dims=getattr(var, "dims", None),
+                max_elements=cls.max_tensor_elements,
+            )
+
+        agent_dim = 0
+        agent_vars: list[str] = []
+        for agent_var in agent_variables:
+            if not _agent_can_observe(agent_var):
+                continue
+            agent_vars.append(agent_var.name)
+            agent_dim += _variable_observation_dim(
+                agent_var.type,
+                getattr(agent_var, "shape", None),
+                dims=getattr(agent_var, "dims", None),
+                max_elements=cls.max_tensor_elements,
+            )
+
+        item_dim = 0
+        item_profile_vars: dict[str, tuple[str, ...]] = {}
+        max_profile_dim = 0
+        for profile_name, variables in item_profile_variables:
+            exposed_vars = []
+            profile_dim = 0
+            for var in variables:
+                if not _agent_can_observe(var):
                     continue
-                global_vars.append(var.name)
-                global_dim += _variable_observation_dim(
+                exposed_vars.append(var.name)
+                profile_dim += _variable_observation_dim(
                     var.type,
                     getattr(var, "shape", None),
+                    scope="item",
                     dims=getattr(var, "dims", None),
                     max_elements=cls.max_tensor_elements,
                 )
 
-        # Agent VFS dimensions
-        agent_dim = 0
-        agent_vars: list[str] = []
-        if agent_profile is not None:
-            for agent_var in agent_profile.variables:
-                if "agent" not in getattr(agent_var, "exposed_to", ["agent"]):
-                    continue
-                agent_vars.append(agent_var.name)
-                agent_dim += _variable_observation_dim(
-                    agent_var.type,
-                    getattr(agent_var, "shape", None),
-                    dims=getattr(agent_var, "dims", None),
-                    max_elements=cls.max_tensor_elements,
-                )
-
-        # Item VFS dimensions: max_items × max_profiles × vars_per_profile
-        item_dim = 0
-        item_profile_vars: dict[str, tuple[str, ...]] = {}
-        max_profile_vars = 0
-        if item_profiles:
-            # Compute the maximum flattened dim across profiles; restrict to supported scalar/bool/ref/vector for now.
-            for profile in item_profiles:
-                exposed_vars = []
-                dim_sum = 0
-                for v in profile.variables:
-                    if "agent" not in getattr(v, "exposed_to", ["agent"]):
-                        continue
-                    exposed_vars.append(v.name)
-                    dim_sum += _variable_observation_dim(
-                        v.type,
-                        getattr(v, "shape", None),
-                        scope="item",
-                        dims=getattr(v, "dims", None),
-                        max_elements=cls.max_tensor_elements,
-                    )
-
-                item_profile_vars[profile.profile_name] = tuple(exposed_vars)
-                max_profile_vars = max(max_profile_vars, dim_sum)
-            item_dim = cls.max_items_per_agent * max_profile_vars
+            item_profile_vars[profile_name] = tuple(exposed_vars)
+            max_profile_dim = max(max_profile_dim, profile_dim)
+        if max_profile_dim > 0:
+            item_dim = item_slots * max_profile_dim
 
         return cls(
             global_vfs_dim=global_dim,
@@ -155,7 +171,8 @@ class VFSObservationSpec:
             global_vars=tuple(global_vars),
             agent_vars=tuple(agent_vars),
             item_profile_vars=item_profile_vars,
-            item_vars_per_slot=max_profile_vars if max_profile_vars > 0 else None,
+            item_vars_per_slot=max_profile_dim if max_profile_dim > 0 else None,
+            max_items_per_agent=item_slots,
         )
 
     @classmethod
@@ -169,73 +186,19 @@ class VFSObservationSpec:
         if compiled_profiles is None:
             return None
 
-        global_dim = 0
-        global_vars: list[str] = []
         global_profile = getattr(compiled_profiles, "global_profile", None)
-        if global_profile is not None:
-            for var in getattr(global_profile, "variables", []):
-                if "agent" not in getattr(var, "exposed_to", ("agent",)):
-                    continue
-                global_vars.append(var.name)
-                global_dim += _variable_observation_dim(
-                    var.type,
-                    getattr(var, "shape", None),
-                    dims=getattr(var, "dims", None),
-                    max_elements=cls.max_tensor_elements,
-                )
-
-        agent_dim = 0
-        agent_vars: list[str] = []
         agent_profile = getattr(compiled_profiles, "agent_profile", None)
-        if agent_profile is not None:
-            for var in getattr(agent_profile, "variables", []):
-                if "agent" not in getattr(var, "exposed_to", ("agent",)):
-                    continue
-                agent_vars.append(var.name)
-                agent_dim += _variable_observation_dim(
-                    var.type,
-                    getattr(var, "shape", None),
-                    dims=getattr(var, "dims", None),
-                    max_elements=cls.max_tensor_elements,
-                )
-
-        item_dim = 0
-        item_profile_vars: dict[str, tuple[str, ...]] = {}
-        max_profile_dim = 0
         item_profiles = getattr(compiled_profiles, "item_profiles", {}) or {}
-        for profile_name, profile in item_profiles.items():
-            exposed_vars = []
-            profile_dim = 0
-            for var in getattr(profile, "variables", []):
-                if "agent" not in getattr(var, "exposed_to", ("agent",)):
-                    continue
-                exposed_vars.append(var.name)
-                profile_dim += _variable_observation_dim(
-                    var.type,
-                    getattr(var, "shape", None),
-                    scope="item",
-                    dims=getattr(var, "dims", None),
-                    max_elements=cls.max_tensor_elements,
-                )
-            item_profile_vars[profile_name] = tuple(exposed_vars)
-            max_profile_dim = max(max_profile_dim, profile_dim)
-        if max_profile_dim > 0:
-            item_dim = max_items_per_agent * max_profile_dim
-
-        return cls(
-            global_vfs_dim=global_dim,
-            agent_vfs_dim=agent_dim,
-            item_vfs_dim=item_dim,
-            global_vars=tuple(global_vars),
-            agent_vars=tuple(agent_vars),
-            item_profile_vars=item_profile_vars,
-            item_vars_per_slot=max_profile_dim if max_profile_dim > 0 else None,
+        return cls._from_variable_iterables(
+            global_variables=getattr(global_profile, "variables", []) if global_profile is not None else (),
+            agent_variables=getattr(agent_profile, "variables", []) if agent_profile is not None else (),
+            item_profile_variables=((name, getattr(profile, "variables", [])) for name, profile in item_profiles.items()),
             max_items_per_agent=max_items_per_agent,
         )
 
 
 def build_vfs_observation(
-    registry: ScopedVariableRegistry,
+    registry: VFSRegistryProtocol,
     spec: VFSObservationSpec,
     batch_size: int,
     agent_item_inventory: torch.Tensor | None = None,
@@ -284,7 +247,7 @@ def build_vfs_observation(
 
     # Item VFS: Include item state with masking
     if spec.item_vfs_dim > 0:
-        item_vfs_storage = getattr(registry, "item_vfs", None)
+        item_vfs_storage = registry.item_vfs
         if item_vfs_storage is None:
             raise RuntimeError("Item VFS storage is missing; cannot build item observations.")
         if agent_item_inventory is None:
@@ -300,6 +263,8 @@ def build_vfs_observation(
 
             if agent_item_inventory.dim() != 2 or agent_item_inventory.size(1) != spec.max_items_per_agent:
                 raise ValueError("agent_item_inventory must have shape [batch, max_items_per_agent] when item_vfs_dim is non-zero.")
+            if agent_item_inventory.size(0) != batch_size:
+                raise ValueError("agent_item_inventory batch dimension must match batch_size.")
 
             vars_per_slot = spec.item_vars_per_slot or (spec.item_vfs_dim // spec.max_items_per_agent)
 
@@ -322,38 +287,66 @@ def build_vfs_observation(
                     device=registry.device,
                 )
 
-                # Precompute exposed indices per profile
+                # Precompute exposed indices per profile. Missing profiles or variables
+                # are configuration errors, not "no exposed values" cases.
                 profile_indices: dict[str, list[int]] = {}
-                registry_profile_map = getattr(registry, "item_profile_map", None) or {}
+                registry_profile_map = registry.item_profile_map
                 source_profiles = (
                     spec.item_profile_vars.items()
                     if spec.item_profile_vars
                     else ((name, tuple(var_map.keys())) for name, var_map in registry_profile_map.items())
                 )
                 for profile_name, var_names in source_profiles:
-                    idx_map = registry_profile_map.get(profile_name, {})
-                    exposed_indices = [idx_map[name] for name in var_names if name in idx_map]
+                    if profile_name not in registry_profile_map:
+                        raise RuntimeError(
+                            f"Item VFS observation references profile {profile_name!r}, "
+                            f"but registry only has profiles {sorted(registry_profile_map)}."
+                        )
+                    idx_map = registry_profile_map[profile_name]
+                    missing_vars = [name for name in var_names if name not in idx_map]
+                    if missing_vars:
+                        raise RuntimeError(
+                            f"Item VFS observation references variables {missing_vars} for profile {profile_name!r}, "
+                            f"but registry only has variables {sorted(idx_map)}."
+                        )
+                    exposed_indices = [idx_map[name] for name in var_names]
                     profile_indices[profile_name] = exposed_indices
 
-                for agent_idx in range(batch_size):
-                    for slot_idx in range(spec.max_items_per_agent):
-                        vfs_idx = int(inventory_indices[agent_idx, slot_idx].item())
-                        if vfs_idx == -1:
-                            continue
-                        profile_lookup = getattr(registry, "item_vfs_index_to_profile", None)
-                        if profile_lookup is None:
-                            raise RuntimeError("Item VFS observation requires registry.item_vfs_index_to_profile metadata.")
-                        profile_name = profile_lookup.get(vfs_idx)
-                        if profile_name is None:
-                            raise RuntimeError(f"Item VFS observation cannot resolve profile for VFS row index {vfs_idx}.")
-                        selected_indices = profile_indices.get(profile_name)
-                        if selected_indices is None:
-                            raise RuntimeError(f"Item VFS observation has no exposed variable indices for profile {profile_name!r}.")
-                        if not selected_indices:
-                            continue
-                        dest_start = slot_idx * vars_per_slot
-                        dest_end = dest_start + len(selected_indices)
-                        item_obs[agent_idx, dest_start:dest_end] = item_vfs_storage[vfs_idx, selected_indices]
+                profile_lookup = registry.item_vfs_index_to_profile
+                profile_id_by_name = {name: idx for idx, name in enumerate(profile_indices)}
+                row_profile_ids = torch.full((max_index,), -1, dtype=torch.long, device=registry.device)
+                for vfs_idx, profile_name in profile_lookup.items():
+                    if vfs_idx < 0 or vfs_idx >= max_index:
+                        raise IndexError(f"Item profile metadata references out-of-range item_vfs index {vfs_idx}.")
+                    if profile_name in profile_id_by_name:
+                        row_profile_ids[vfs_idx] = profile_id_by_name[profile_name]
+
+                valid_mask = inventory_indices != -1
+                safe_indices = inventory_indices.clamp(min=0)
+                selected_profile_ids = row_profile_ids[safe_indices]
+                unresolved_mask = valid_mask & (selected_profile_ids == -1)
+                if unresolved_mask.any().item():
+                    first_agent, first_slot = unresolved_mask.nonzero(as_tuple=False)[0].tolist()
+                    unresolved_index = int(inventory_indices[first_agent, first_slot].item())
+                    unresolved_profile = profile_lookup.get(unresolved_index)
+                    raise RuntimeError(
+                        f"Item VFS observation cannot resolve exposed variables for VFS row index {unresolved_index} "
+                        f"(profile={unresolved_profile!r})."
+                    )
+
+                for profile_name, selected_indices in profile_indices.items():
+                    if not selected_indices:
+                        continue
+                    profile_id = profile_id_by_name[profile_name]
+                    profile_mask = valid_mask & (selected_profile_ids == profile_id)
+                    if not profile_mask.any().item():
+                        continue
+                    rows, slots = profile_mask.nonzero(as_tuple=True)
+                    vfs_rows = safe_indices[rows, slots]
+                    source_cols = torch.tensor(selected_indices, dtype=torch.long, device=registry.device)
+                    values = item_vfs_storage[vfs_rows.unsqueeze(1), source_cols.unsqueeze(0)]
+                    dest_cols = slots.unsqueeze(1) * vars_per_slot + torch.arange(len(selected_indices), device=registry.device)
+                    item_obs[rows.unsqueeze(1), dest_cols] = values
 
         components.append(item_obs)
 

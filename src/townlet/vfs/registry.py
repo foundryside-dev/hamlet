@@ -10,7 +10,8 @@ and scope semantics. It handles three scope patterns:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from collections.abc import Set as AbstractSet
+from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 
 import torch
 
@@ -22,6 +23,7 @@ if TYPE_CHECKING:
 __all__ = [
     "VariableRegistry",
     "ScopedVariableRegistry",
+    "VFSRegistryProtocol",
     "AccessDeniedError",
 ]
 
@@ -30,6 +32,24 @@ class AccessDeniedError(Exception):
     """Raised when access control check fails."""
 
     pass
+
+
+@runtime_checkable
+class VFSRegistryProtocol(Protocol):
+    """Observation-facing registry contract shared by runtime registry variants."""
+
+    device: torch.device
+    item_vfs: torch.Tensor | None
+    item_profile_map: dict[str, dict[str, int]]
+    item_vfs_index_to_profile: dict[int, str]
+
+    def list_global(self) -> list[str]: ...
+
+    def get_global(self, name: str) -> torch.Tensor: ...
+
+    def list_agent(self) -> list[str]: ...
+
+    def get_agent(self, name: str) -> torch.Tensor: ...
 
 
 class VariableRegistry:
@@ -89,6 +109,7 @@ class VariableRegistry:
         self._expected_shapes: dict[str, torch.Size] = {}
         self._expected_dtypes: dict[str, torch.dtype] = {}
         self._initialize_storage()
+        self._initial_storage: dict[str, torch.Tensor] = {name: value.clone() for name, value in self._storage.items()}
 
         # Initialize item-scoped storage
         self.item_vfs: torch.Tensor | None = None
@@ -140,7 +161,7 @@ class VariableRegistry:
                         device=self.device,
                         dtype=torch.float32,
                     )
-            elif var_def.type in ("agent_ref", "item_ref"):
+            elif var_def.type in ("agent_ref", "item_ref", "affordance_ref", "effect_ref"):
                 default_value = -1 if var_def.default is None else var_def.default
                 dtype = torch.long
                 if var_def.scope == "global":
@@ -196,7 +217,7 @@ class VariableRegistry:
             agent scalar: (num_agents,)
             agent vector (dims=2): (num_agents, 2)
         """
-        if var_def.type in ("scalar", "bool", "agent_ref", "item_ref"):
+        if var_def.type in ("scalar", "bool", "agent_ref", "item_ref", "affordance_ref", "effect_ref"):
             if var_def.scope == "global":
                 return ()  # Shape []
             else:
@@ -307,6 +328,37 @@ class VariableRegistry:
 
         # Update storage (defensive copy to avoid aliasing)
         self._storage[variable_id] = value.to(self.device).clone()
+
+    def set_engine_value(self, variable_id: str, value: torch.Tensor) -> None:
+        """Write evaluator output as the engine while bypassing declaration-shape checks.
+
+        VFS expressions can legitimately produce per-agent batches for variables declared
+        as global scalars when the expression references batched bar state. This method
+        keeps that writeback explicit and permission-checked instead of mutating storage
+        directly from the environment hot path.
+        """
+        if variable_id not in self._definitions:
+            raise KeyError(f"Variable '{variable_id}' not found in registry")
+
+        var_def = self._definitions[variable_id]
+        if "engine" not in var_def.writable_by:
+            raise PermissionError(f"'engine' is not allowed to write variable '{variable_id}'. Writable by: {var_def.writable_by}")
+
+        expected_dtype = self._expected_dtypes[variable_id]
+        self._storage[variable_id] = value.to(device=self.device, dtype=expected_dtype).clone()
+
+    def reset_tick_scoped(self) -> None:
+        """Restore tick-lifetime variables to their configured defaults."""
+        self._reset_lifetimes({"tick"})
+
+    def reset_episode_scoped(self) -> None:
+        """Restore episode-start variables while preserving persistent state."""
+        self._reset_lifetimes({"tick", "episode"})
+
+    def _reset_lifetimes(self, lifetimes: AbstractSet[str]) -> None:
+        for var_id, var_def in self._definitions.items():
+            if str(var_def.lifetime) in lifetimes:
+                self._storage[var_id] = self._initial_storage[var_id].clone()
 
     def _get_vector_dims(self, var_def: VariableDef) -> int:
         """Return expected dimensionality for vector variables."""
@@ -447,76 +499,6 @@ class VariableRegistry:
                 type_map[var.name] = getattr(var, "type", "scalar")
             self.item_profile_map[profile_name] = var_map
             self.item_profile_type_map[profile_name] = type_map
-
-    def read(
-        self,
-        variable_id: str,
-        context_index: int,
-        scope: VariableScope,
-    ) -> float | torch.Tensor:
-        """Read variable value from registry.
-
-        Args:
-            variable_id: Variable ID
-            context_index: Index (agent index for agent scope, item vfs_index for item scope)
-            scope: Variable scope
-
-        Returns:
-            Variable value
-        """
-        # Handle ITEM scope first (may not be in _definitions if from VFS profiles)
-        if scope == VariableScope.ITEM:
-            if self.item_vfs is None:
-                raise RuntimeError("Item VFS storage not allocated")
-            # Get profile for this vfs_index
-            if context_index not in self.item_vfs_index_to_profile:
-                raise KeyError(f"No item registered at vfs_index {context_index}")
-            profile_name = self.item_vfs_index_to_profile[context_index]
-            return self.read_item(profile_name, variable_id, context_index)
-
-        # For other scopes, check _definitions
-        var = self._definitions.get(variable_id)
-        if var is None:
-            raise KeyError(f"Variable {variable_id} not found")
-
-        # For other scopes, use existing get() method with reader="engine"
-        # This is a simplified implementation for testing
-        raise NotImplementedError(f"read() not yet implemented for scope {scope}")
-
-    def write(
-        self,
-        variable_id: str,
-        value: float | torch.Tensor,
-        context_index: int,
-        scope: VariableScope,
-    ) -> None:
-        """Write variable value to registry.
-
-        Args:
-            variable_id: Variable ID
-            value: New value
-            context_index: Index (agent index for agent scope, item vfs_index for item scope)
-            scope: Variable scope
-        """
-        # Handle ITEM scope first (may not be in _definitions if from VFS profiles)
-        if scope == VariableScope.ITEM:
-            if self.item_vfs is None:
-                raise RuntimeError("Item VFS storage not allocated")
-            # Get profile for this vfs_index
-            if context_index not in self.item_vfs_index_to_profile:
-                raise KeyError(f"No item registered at vfs_index {context_index}")
-            profile_name = self.item_vfs_index_to_profile[context_index]
-            self.write_item(profile_name, variable_id, value, context_index)
-            return
-
-        # For other scopes, check _definitions
-        var = self._definitions.get(variable_id)
-        if var is None:
-            raise KeyError(f"Variable {variable_id} not found")
-
-        # For other scopes, use existing set() method with writer="engine"
-        # This is a simplified implementation for testing
-        raise NotImplementedError(f"write() not yet implemented for scope {scope}")
 
     def list_global(self) -> list[str]:
         """List all global variable names."""
@@ -677,6 +659,9 @@ class ScopedVariableRegistry:
 
         # Item scope: profile -> {var -> tensor} (populated later)
         self._item_storage: dict[str, dict[str, torch.Tensor]] = {}
+        self.item_vfs: torch.Tensor | None = None
+        self.item_profile_map: dict[str, dict[str, int]] = {}
+        self.item_vfs_index_to_profile: dict[int, str] = {}
 
     # Global scope methods
 

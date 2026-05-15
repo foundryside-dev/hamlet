@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING, cast
 import torch
 
 from townlet.vfs.observation_builder import build_vfs_observation
-from townlet.vfs.registry import ScopedVariableRegistry
 
 if TYPE_CHECKING:
     from townlet.environment.vectorized_env import VectorizedHamletEnv
@@ -108,7 +107,7 @@ class ObservationEncoder:
                         agent_item_inventory = env.item_inventory.slots
 
                     value = build_vfs_observation(
-                        registry=cast(ScopedVariableRegistry, env.vfs_registry),
+                        registry=env.vfs_registry,
                         spec=env.vfs_observation_spec,
                         batch_size=env.num_agents,
                         agent_item_inventory=agent_item_inventory,

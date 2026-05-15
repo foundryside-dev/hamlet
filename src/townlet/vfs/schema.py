@@ -4,8 +4,8 @@ Variable & Feature System (VFS) schemas for defining variables, observations,
 and action effects. These schemas enable declarative configuration of the
 environment's state space.
 
-Phase 1: Basic types and validation
-Phase 2: Derivation graphs, complex types, expression parsing
+Supports typed variables, derivation graphs, complex types, and expression parsing
+for the runtime VFS profile pipeline.
 """
 
 from enum import StrEnum
@@ -97,14 +97,14 @@ class WriteSpec(BaseModel):
 
     Defines how an action modifies a variable's value.
 
-    Phase 1: Expression is stored as string (no parsing)
-    Phase 2: Expression will be parsed into AST for validation and execution
+    Expressions are parsed into ASTs during profile/effect compilation before
+    runtime execution.
 
     Examples:
         # Simple constant
         WriteSpec(variable_id="energy", expression="-0.005")
 
-        # Complex expression (Phase 2)
+        # Complex expression
         WriteSpec(variable_id="money", expression="money + 10.0")
     """
 
@@ -117,7 +117,7 @@ class WriteSpec(BaseModel):
 
     expression: str = Field(
         min_length=1,
-        description="Expression to evaluate (Phase 1: string, Phase 2: parsed AST)",
+        description="Expression to parse, type-check, and evaluate through the expression runtime",
     )
 
 
@@ -269,6 +269,8 @@ class VariableDef(BaseModel):
         "bool",
         "agent_ref",
         "item_ref",
+        "affordance_ref",
+        "effect_ref",
         "tensor1d",
         "tensor2d",
         "tensor3d",
@@ -332,8 +334,6 @@ class VariableDef(BaseModel):
     @model_validator(mode="after")
     def validate_vector_types(self) -> "VariableDef":
         """Validate that vecNi/vecNf have dims field, scalar/bool do not."""
-        if not self.exposed_to:
-            self.exposed_to = ["agent"]
         if self.type in ("vecNi", "vecNf"):
             if self.dims is None:
                 raise ValueError(f"Variable '{self.id}' with type '{self.type}' requires 'dims' field")
@@ -381,14 +381,17 @@ def load_variables_reference_config(config_dir: Path) -> list[VariableDef]:
     if variables_block is None:
         raise ValueError(f"{yaml_path} must include a top-level 'variables' list.")
 
-    # Explicitly reject expression DSL until implemented
+    # variables_reference.yaml remains a static registry input; expression DSL
+    # belongs to vfs_profiles.yaml and effect specs.
     for raw_var in variables_block:
         if "expression" in raw_var:
             raise ValueError(
-                "Variable expressions are not supported yet; variables_reference.yaml must define static variables only.\n"
+                "variables_reference.yaml must define static variables only; expressions belong in vfs_profiles.yaml or effects specs.\n"
                 f"  Variable: {raw_var.get('name') or raw_var.get('id')}\n"
-                "  Action: remove expression and provide static defaults; DSL support is future work."
+                "  Action: remove expression and provide static defaults, or move the derived variable into vfs_profiles.yaml."
             )
+        if raw_var.get("scope") == "item":
+            raise ValueError("variables_reference.yaml cannot define item-scoped variables; use vfs_profiles.yaml item_profiles.")
 
     try:
         return [VariableDef(**raw_var) for raw_var in variables_block]

@@ -9,25 +9,28 @@ from __future__ import annotations
 
 import math
 import random
-from collections.abc import Callable
 from numbers import Number
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
 import torch
 
+from townlet.environment import env_factory
 from townlet.environment.action_builder import ComposedActionSpace
 from townlet.environment.action_config import ActionConfig
+from townlet.environment.action_executor import ActionExecutor
 from townlet.environment.action_labels import ActionLabels
 from townlet.environment.affordance_engine import AffordanceEngine
 from townlet.environment.dac_engine import DACEngine
 from townlet.environment.meter_dynamics import MeterDynamics
+from townlet.environment.observation_encoder import ObservationEncoder
+from townlet.environment.reward_calculator import RewardCalculator
 from townlet.items import InventoryState, ItemActionHandler, ItemManager
 from townlet.substrate.continuous import ContinuousSubstrate
-from townlet.universe.dto import MeterMetadata, RuntimeActionSpace
+from townlet.universe.dto import RuntimeActionSpace
 from townlet.vfs.evaluator import EvaluationMode, VFSEvaluator
-from townlet.vfs.observation_builder import VFSObservationSpec, build_vfs_observation
-from townlet.vfs.registry import ScopedVariableRegistry, VariableRegistry
+from townlet.vfs.observation_builder import VFSObservationSpec
+from townlet.vfs.registry import VariableRegistry
 
 if TYPE_CHECKING:
     from townlet.exploration.base import ExplorationStrategy
@@ -38,65 +41,6 @@ if TYPE_CHECKING:
 
 # Import consolidated NullItemManager (ENV-009)
 from townlet.environment.null_managers import NullItemManager
-
-# Valid VFS variable types for VariableDef
-_VALID_VFS_TYPES = frozenset({"scalar", "bool", "tensor1d", "tensor2d", "tensor3d", "tensorNd", "agent_ref", "item_ref"})
-
-
-def _normalize_vfs_type(raw_type: str, var_id: str) -> str:
-    """Normalize VFS variable type to canonical form.
-
-    Args:
-        raw_type: Type string from config (e.g., "int", "float", "scalar", "bool")
-        var_id: Variable ID for error messages
-
-    Returns:
-        Normalized type string compatible with VariableDef
-
-    Raises:
-        ValueError: If type is not recognized
-    """
-    # Map common aliases to canonical types
-    if raw_type in ("int", "float"):
-        return "scalar"
-    if raw_type in _VALID_VFS_TYPES:
-        return raw_type
-
-    raise ValueError(f"Unsupported VFS variable type '{raw_type}' for variable '{var_id}'. " f"Valid types: {sorted(_VALID_VFS_TYPES)}")
-
-
-def _build_bar_index_map(meter_metadata: MeterMetadata) -> dict[str, int]:
-    """Build mapping from bar IDs to meter tensor indices.
-
-    Args:
-        meter_metadata: Universe meter metadata
-
-    Returns:
-        Dictionary mapping bar_id -> tensor_index
-    """
-    return {meter.name: meter.index for meter in meter_metadata.meters}
-
-
-def _resolve_deployable_affordances(
-    all_affordance_names: list[str],
-    enabled_affordances: list[str] | None,
-    name_to_id: dict[str, str],
-) -> list[str]:
-    """Return affordances that should be deployed, respecting IDs and names in config."""
-
-    if enabled_affordances is None:
-        raise ValueError("enabled_affordances must be an explicit list (empty to deploy none); null is not allowed.")
-
-    enabled_lookup = {str(entry) for entry in enabled_affordances}
-    deployable: list[str] = []
-    for name in all_affordance_names:
-        if name in enabled_lookup:
-            deployable.append(name)
-            continue
-        aff_id = name_to_id.get(name)
-        if aff_id is not None and aff_id in enabled_lookup:
-            deployable.append(name)
-    return deployable
 
 
 class VectorizedHamletEnv:
@@ -142,6 +86,9 @@ class VectorizedHamletEnv:
         self.config_pack_path = Path(universe.experiment_dir or ".")
         self.num_agents = num_agents
         self.device = torch_device
+        self._action_executor = ActionExecutor(self)
+        self._observation_encoder = ObservationEncoder(self)
+        self._reward_calculator = RewardCalculator(self)
         self.optimization_data = level.optimization_data
         self.metadata = self.universe.metadata_for_level(level_name)
 
@@ -356,7 +303,7 @@ class VectorizedHamletEnv:
         self.money_idx = meter_name_to_index.get("money")
 
         # Build bar index map from universe metadata
-        bar_index_map = _build_bar_index_map(self.universe.meter_metadata)
+        bar_index_map = env_factory._build_bar_index_map(self.universe.meter_metadata)
 
         # Instantiate DACEngine using agent drive config (v2.1)
         self.dac_engine = DACEngine(
@@ -471,7 +418,7 @@ class VectorizedHamletEnv:
         }
 
         all_affordance_names = [aff.name for aff in affordances_list]
-        affordance_names_to_deploy = _resolve_deployable_affordances(
+        affordance_names_to_deploy = env_factory._resolve_deployable_affordances(
             all_affordance_names,
             training_cfg.enabled_affordances,
             self.affordance_name_to_id,
@@ -507,6 +454,7 @@ class VectorizedHamletEnv:
         self.step_counts = torch.zeros(self.num_agents, dtype=torch.long, device=self.device)
         self.global_tick: int = 0  # HIGH-01: Track global time independently of agent 0
         self.intrinsic_weights = torch.ones(self.num_agents, dtype=torch.float32, device=self.device)  # Default: 1.0 (full exploration)
+        self._last_reward_components: dict[str, torch.Tensor] = {}
 
         # === ITEMS INITIALIZATION ===
         # Must happen AFTER self.meters is initialized because ItemActionHandler needs it
@@ -890,7 +838,7 @@ class VectorizedHamletEnv:
                     temporal=temporal_context,
                 )
 
-        return self._get_observations()
+        return self._observation_encoder._get_observations()
 
     @classmethod
     def from_universe(
@@ -913,185 +861,21 @@ class VectorizedHamletEnv:
         Returns:
             VectorizedHamletEnv instance
         """
-
-        if level_name is None:
-            raise ValueError(
-                "VectorizedHamletEnv.from_universe requires an explicit level_name; "
-                "implicit default level selection is not allowed in v2.1 runtime."
-            )
-
-        torch_device = torch.device(device) if isinstance(device, str) else device
-
-        return cls(
+        return env_factory.from_universe(
+            cls,
             universe=universe,
             level_name=level_name,
             num_agents=num_agents,
-            device=torch_device,
+            device=device,
         )
 
     def _get_observations(self) -> torch.Tensor:
-        """
-        Construct observation vector using compiled observation spec.
-        """
-        import math
-
-        obs_fields = self.observation_spec.fields
-        outputs: list[torch.Tensor] = []
-
-        def _ensure_observation_field_shape(field_name: str, value: torch.Tensor, dims: int) -> torch.Tensor:
-            if value.dim() == 1:
-                value = value.unsqueeze(1)
-            expected_shape = (self.num_agents, dims)
-            if value.dim() != 2 or tuple(value.shape) != expected_shape:
-                raise ValueError(f"Observation field '{field_name}' produced shape {tuple(value.shape)}, expected {expected_shape}.")
-            return value
-
-        for field in obs_fields:
-            name = field.name
-            dims = field.dims
-
-            if name == "obs_grid_encoding":
-                if self.partial_observability:
-                    value = torch.zeros((self.num_agents, dims), device=self.device)
-                else:
-                    if hasattr(self.substrate, "_encode_full_grid"):
-                        grid_encoding = self.substrate._encode_full_grid(self.positions, self.affordances)
-                    else:
-                        grid_encoding = self.substrate.encode_observation(self.positions, self.affordances)
-                    value = grid_encoding
-            elif name == "obs_local_window":
-                if not self.partial_observability:
-                    value = torch.zeros((self.num_agents, dims), device=self.device)
-                else:
-                    local_window = self.substrate.encode_partial_observation(
-                        self.positions,
-                        self.affordances,
-                        vision_range=self.vision_radius,
-                    )
-                    value = local_window
-            elif name == "obs_position":
-                pos = self._encode_position_observation()
-                if pos is None:
-                    value = torch.zeros((self.num_agents, dims), device=self.device)
-                else:
-                    value = pos
-            elif name == "obs_velocity":
-                vel = self._encode_velocity_observation()
-                if vel is None:
-                    value = torch.zeros((self.num_agents, dims), device=self.device)
-                else:
-                    value = vel
-            elif name == "obs_meters":
-                value = self.meters
-            elif name in {"obs_affordance_at_position", "obs_affordances"}:
-                value = self._build_affordance_encoding(dims)
-            elif name == "obs_effects":
-                value = self._build_effects_observation(dims)
-            elif name == "obs_temporal":
-                # Temporal observation behavior:
-                # - If temporal_support is disabled at experiment level, obs_temporal should not exist.
-                # - If support enabled but curriculum marks temporal inactive, emit all zeros (masked).
-                # - If support enabled and temporal is active, emit full rich encoding.
-                if not self.temporal_support_enabled or not self.enable_temporal_mechanics:
-                    value = torch.zeros((self.num_agents, dims), device=self.device)
-                else:
-                    time_of_day = self.time_of_day
-                    day_length = float(self.day_length)
-                    time_angle = (time_of_day / day_length) * 2 * math.pi
-                    time_sin = torch.tensor(math.sin(time_angle), device=self.device)
-                    time_cos = torch.tensor(math.cos(time_angle), device=self.device)
-                    day_progress = float(time_of_day) / day_length
-                    # Simple day/night split relative to configured day_length:
-                    # first quarter and last quarter of the day are treated as night.
-                    night_threshold = day_length * 0.25
-                    is_night = 1.0 if time_of_day < night_threshold or time_of_day >= (day_length - night_threshold) else 0.0
-
-                    # Populate rich temporal encoding, padding/truncating to dims as needed.
-                    value = torch.zeros((self.num_agents, dims), device=self.device)
-                    if dims > 0:
-                        value[:, 0] = time_sin
-                    if dims > 1:
-                        value[:, 1] = time_cos
-                    if dims > 2:
-                        value[:, 2] = day_progress
-                    if dims > 3:
-                        value[:, 3] = is_night
-            elif name == "obs_vfs":
-                # VFS observations (global + agent + item VFS)
-                if self.vfs_observation_spec is not None:
-                    # Get item inventory if available
-                    agent_item_inventory = None
-                    if self.item_inventory is not None:
-                        agent_item_inventory = self.item_inventory.slots
-
-                    value = build_vfs_observation(
-                        registry=cast(ScopedVariableRegistry, self.vfs_registry),
-                        spec=self.vfs_observation_spec,
-                        batch_size=self.num_agents,
-                        agent_item_inventory=agent_item_inventory,
-                    )
-                else:
-                    # No VFS profiles, emit zeros
-                    value = torch.zeros((self.num_agents, dims), device=self.device)
-            else:
-                # Environment variables mapping: expect variables named by obs field
-                if name not in self.vfs_registry._definitions:
-                    raise ValueError(f"Observation field '{name}' not found in VFS variables (no defaults allowed).")
-                val = self.vfs_registry.get(name, reader="engine")
-                value = val if val.dim() > 1 else val.unsqueeze(1)
-
-            outputs.append(_ensure_observation_field_shape(name, value, dims))
-
-        observations = torch.cat(outputs, dim=1)
-
-        # Apply curriculum activity mask as a final safety net to ensure masked
-        # dimensions are zeroed, even if individual field encoders evolve.
-        activity = getattr(self, "observation_activity", None)
-        if activity is not None and activity.active_mask:
-            if len(activity.active_mask) != observations.shape[1]:
-                raise ValueError(
-                    "ObservationActivity mask length does not match observation_dim.\n"
-                    f"  mask_len={len(activity.active_mask)}, obs_dim={observations.shape[1]}"
-                )
-            mask = torch.tensor(activity.active_mask, device=self.device, dtype=observations.dtype)
-            observations = observations * mask.unsqueeze(0)
-
-        return observations
+        """Construct observation vector using compiled observation spec."""
+        return self._observation_encoder._get_observations()
 
     def _build_affordance_encoding(self, dims: int) -> torch.Tensor:
-        """Build one-hot encoding of current affordance under each agent.
-
-        This encodes against the FULL affordance vocabulary (from affordances.yaml),
-        not just deployed affordances. This ensures observation dimensions stay
-        constant across curriculum levels.
-
-        Returns:
-            encoding: [num_agents, num_affordance_types + 1]
-                One-hot over affordance types plus explicit \"none\" category.
-        """
-        # Total affordance classes (excluding the explicit "none" slot)
-        num_types = self.num_affordance_types
-        total_dims = num_types + 1
-
-        # Initialize all zeros; last column is reserved for "none".
-        affordance_encoding = torch.zeros(self.num_agents, total_dims, device=self.device)
-
-        # Iterate over full affordance vocabulary (not just deployed positions).
-        for affordance_idx, affordance_name in enumerate(self.affordance_names):
-            if affordance_name in self.affordances:
-                affordance_pos = self.affordances[affordance_name]
-                on_affordance = self.substrate.is_on_position(self.positions, affordance_pos)
-                if on_affordance.any():
-                    affordance_encoding[on_affordance, affordance_idx] = 1.0
-
-        # Agents not on any affordance get "none" category = 1.0 in last slot.
-        row_sums = affordance_encoding.sum(dim=1)
-        none_mask = row_sums == 0
-        affordance_encoding[none_mask, num_types] = 1.0
-
-        if dims != total_dims:
-            raise ValueError(f"Observation field 'obs_affordances' expected {dims} dims, but affordance encoding produced {total_dims}.")
-        return affordance_encoding
+        """Build one-hot encoding of current affordance under each agent."""
+        return self._observation_encoder._build_affordance_encoding(dims)
 
     def _build_effects_observation(self, dims: int) -> torch.Tensor:
         """Encode observable effects into a fixed-size tensor."""
@@ -1121,40 +905,8 @@ class VectorizedHamletEnv:
         return effect_obs.reshape(self.num_agents, slots * 3)
 
     def _encode_position_observation(self) -> torch.Tensor | None:
-        """Encode agent position using substrate-native semantics.
-
-        Returns:
-            [num_agents, position_dim] tensor or None for aspatial substrates.
-        """
-        # Aspatial substrates have no positional encoding.
-        if getattr(self.substrate, "position_dim", 0) == 0:
-            return None
-
-        # Prefer substrate-provided encoders; fall back to normalizer/observation encoder.
-        encode_fn = Callable[[torch.Tensor, dict[str, torch.Tensor]], torch.Tensor]
-
-        encoder = getattr(self.substrate, "_encode_position_features", None)
-        if callable(encoder):
-            typed_encoder = cast(encode_fn, encoder)
-            return typed_encoder(self.positions, self.affordances)
-
-        public_encoder = getattr(self.substrate, "encode_position_features", None)
-        if callable(public_encoder):
-            typed_public = cast(encode_fn, public_encoder)
-            return typed_public(self.positions, self.affordances)
-
-        encode_observation = getattr(self.substrate, "encode_observation", None)
-        if callable(encode_observation):
-            typed_encode_obs = cast(encode_fn, encode_observation)
-            return typed_encode_obs(self.positions, self.affordances)
-
-        # Normalized positions so obs_position dims match substrate.position_dim
-        normalizer = getattr(self.substrate, "normalize_positions", None)
-        if callable(normalizer):
-            typed_normalizer = cast(Callable[[torch.Tensor], torch.Tensor], normalizer)
-            return typed_normalizer(self.positions)
-
-        return None
+        """Encode agent position using substrate-native semantics."""
+        return self._observation_encoder._encode_position_observation()
 
     def _encode_velocity_observation(self) -> torch.Tensor | None:
         """Encode agent velocity as delta position per step.
@@ -1369,7 +1121,7 @@ class VectorizedHamletEnv:
         """
         prev_dones = self.dones.clone()
         # 1. Execute actions and track successful interactions
-        successful_interactions = self._execute_actions(actions)
+        successful_interactions = self._action_executor._execute_actions(actions)
 
         # 2. Deplete meters (base passive decay with curriculum difficulty)
         self.meters = self.meter_dynamics.deplete_meters(self.meters, depletion_multiplier)
@@ -1467,7 +1219,7 @@ class VectorizedHamletEnv:
         retired = self.step_counts >= self.agent_lifespan
 
         # 6. Calculate rewards (interoception-aware)
-        rewards = self._calculate_shaped_rewards()
+        rewards = self._reward_calculator._calculate_shaped_rewards()
         rewards = torch.where(retired, rewards + 1.0, rewards)  # +1 retirement bonus
         self.dones = torch.logical_or(self.dones, retired)
 
@@ -1484,7 +1236,7 @@ class VectorizedHamletEnv:
         else:
             self.time_of_day = 0
 
-        observations = self._get_observations()
+        observations = self._observation_encoder._get_observations()
 
         info = {
             "step_counts": self.step_counts.clone(),
@@ -1497,397 +1249,20 @@ class VectorizedHamletEnv:
         return observations, rewards, self.dones, info
 
     def _execute_actions(self, actions: torch.Tensor) -> dict:
-        """
-        Execute movement, interaction, and wait actions.
-
-        Args:
-            actions: [num_agents] tensor of action IDs from the composed action space
-
-        Returns:
-            Dictionary mapping agent indices to affordance names for successful interactions
-        """
-        # === CUSTOM ACTION DISPATCH (early) ===
-        # Custom actions start after substrate actions
-        custom_action_start_id = self.action_space.substrate_action_count
-        custom_mask = actions >= custom_action_start_id
-
-        if custom_mask.any():
-            custom_agent_indices = torch.where(custom_mask)[0]
-            for agent_idx in custom_agent_indices:
-                action_id = int(actions[agent_idx].item())
-                action = self.action_space.get_action_by_id(action_id)
-
-                # Apply custom action costs/effects/teleportation
-                self._apply_custom_action(agent_idx, action)
-
-        # Store old positions for temporal mechanics progress tracking AND velocity calculation
-        old_positions = self.positions.clone()
-
-        # Apply movement using pre-built delta tensor from ActionConfig
-        # Only for substrate actions (custom actions already handled above)
-        substrate_mask = actions < custom_action_start_id
-        if substrate_mask.any():
-            movement_deltas = self._movement_deltas[actions[substrate_mask]]  # [num_substrate_agents, position_dim]
-            self.positions[substrate_mask] = self.substrate.apply_movement(self.positions[substrate_mask], movement_deltas)
-
-        # Calculate velocity (movement delta since last step)
-        # Cast to float32 (grid substrates use int positions, continuous use float)
-        velocity = (self.positions - old_positions).float()  # [num_agents, position_dim]
-        self._velocity = velocity
-
-        # Write velocity components to VFS (if velocity variables exist)
-        # Scalar variables require shape (num_agents,) not (num_agents, 1)
-        if "velocity_x" in self.vfs_registry._definitions:
-            self.vfs_registry.set("velocity_x", velocity[:, 0], writer="engine")
-
-        if "velocity_y" in self.vfs_registry._definitions and velocity.shape[1] >= 2:
-            self.vfs_registry.set("velocity_y", velocity[:, 1], writer="engine")
-
-        if "velocity_z" in self.vfs_registry._definitions and velocity.shape[1] >= 3:
-            self.vfs_registry.set("velocity_z", velocity[:, 2], writer="engine")
-
-        # Calculate and write velocity magnitude (speed)
-        if "velocity_magnitude" in self.vfs_registry._definitions:
-            magnitude = torch.norm(velocity, dim=1)  # [num_agents]
-            self.vfs_registry.set("velocity_magnitude", magnitude, writer="engine")
-
-        # Reset progress for agents that moved away (temporal mechanics)
-        if self.enable_temporal_mechanics:
-            for agent_idx in range(self.num_agents):
-                if not torch.equal(old_positions[agent_idx], self.positions[agent_idx]):
-                    self.interaction_progress[agent_idx] = 0
-                    self.last_interaction_affordance[agent_idx] = None
-
-        # Apply action costs (configurable)
-        # Determine movement actions directly from the movement deltas to support
-        # substrates where non-movement actions appear before all movement actions
-        # (e.g., 3D where INTERACT/WAIT sit at indices < last movement deltas).
-        # Only apply to substrate actions (not custom actions)
-        movement_actions = self._movement_deltas.ne(0).any(dim=1)
-        # Create a full mask (initialize to False for all agents)
-        movement_mask = torch.zeros(self.num_agents, dtype=torch.bool, device=self.device)
-        # Only check movement for substrate actions
-        if substrate_mask.any():
-            movement_mask[substrate_mask] = movement_actions[actions[substrate_mask]]
-        if movement_mask.any():
-            # Create dynamic cost tensor from bars.yaml (per-level BarsV2Config).
-            movement_costs = torch.zeros(self.meter_count, device=self.device)
-            for bar in self.bars_config.meters:
-                idx = self.meter_name_to_index.get(bar.name)
-                if idx is not None:
-                    movement_costs[idx] = float(bar.depletion.move)
-
-            self.meters[movement_mask] -= movement_costs.unsqueeze(0)
-            self.meters = torch.clamp(self.meters, 0.0, 1.0)
-
-        # WAIT action - NO additional cost
-        # WAIT only pays base_depletion (handled by MeterDynamics), no action-specific cost
-        # This is architecturally correct: WAIT = existence without action
-
-        # === ITEM ACTION DISPATCH ===
-        if self.item_handler is not None:
-            # Capture current tick per agent for item action scheduling
-            # step_counts stores ticks per agent; use scalar int for handlers
-            current_ticks = self.step_counts.clone()
-            # GET action - narrow try-except to only catch action lookup failure
-            try:
-                get_action = self.action_space.get_action_by_name("GET")
-            except ValueError:
-                get_action = None  # GET action not in action space
-
-            if get_action is not None:
-                get_action_id = get_action.id
-                get_mask = actions == get_action_id
-                if get_mask.any():
-                    for agent_idx in torch.where(get_mask)[0]:
-                        self.item_handler.handle_get_action(
-                            agent_idx=int(agent_idx.item()),
-                            agent_position=self.positions[agent_idx],
-                            current_tick=int(current_ticks[agent_idx].item()),
-                            meters=self.meters,
-                        )
-
-            if self.item_inventory is not None:
-                # USE_SLOT_N actions - narrow try-except to only catch action lookup failure
-                for slot_idx in range(self.item_inventory.max_items_per_agent):
-                    use_action_name = f"USE_SLOT_{slot_idx}"
-                    try:
-                        use_action = self.action_space.get_action_by_name(use_action_name)
-                    except ValueError:
-                        use_action = None  # Action not in action space
-
-                    if use_action is not None:
-                        use_action_id = use_action.id
-                        use_mask = actions == use_action_id
-                        if use_mask.any():
-                            for agent_idx in torch.where(use_mask)[0]:
-                                self.item_handler.handle_use_slot_action(
-                                    agent_idx=int(agent_idx.item()),
-                                    slot_idx=slot_idx,
-                                    current_tick=int(current_ticks[agent_idx].item()),
-                                    meters=self.meters,
-                                )
-
-                # DROP_SLOT_N actions - narrow try-except to only catch action lookup failure
-                for slot_idx in range(self.item_inventory.max_items_per_agent):
-                    drop_action_name = f"DROP_SLOT_{slot_idx}"
-                    try:
-                        drop_action = self.action_space.get_action_by_name(drop_action_name)
-                    except ValueError:
-                        drop_action = None  # Action not in action space
-
-                    if drop_action is not None:
-                        drop_action_id = drop_action.id
-                        drop_mask = actions == drop_action_id
-                        if drop_mask.any():
-                            for agent_idx in torch.where(drop_mask)[0]:
-                                self.item_handler.handle_drop_slot_action(
-                                    agent_idx=int(agent_idx.item()),
-                                    slot_idx=slot_idx,
-                                    agent_position=self.positions[agent_idx],
-                                    current_tick=int(current_ticks[agent_idx].item()),
-                                )
-
-            # Custom item verbs (local and inventory scoped)
-            for action_name in self.item_handler.custom_action_specs.keys():
-                try:
-                    action_id = self.action_space.get_action_by_name(action_name).id
-                except ValueError:
-                    continue
-                action_mask = actions == action_id
-                if action_mask.any():
-                    for agent_idx in torch.where(action_mask)[0]:
-                        self.item_handler.handle_custom_action(
-                            action_name=action_name,
-                            agent_idx=int(agent_idx.item()),
-                            agent_position=self.positions[agent_idx],
-                            current_tick=int(current_ticks[agent_idx].item()),
-                            meters=self.meters,
-                        )
-
-        # Handle INTERACT actions (if present in the action space)
-        interact_action_idx = self.action_ids.get("INTERACT")
-
-        successful_interactions = {}
-        if interact_action_idx is not None:
-            interact_mask = (actions == interact_action_idx) & substrate_mask
-            if interact_mask.any():
-                # Apply interaction costs from bars.yaml (per-level BarsV2Config).
-                interaction_costs = torch.zeros(self.meter_count, device=self.device)
-                for bar in self.bars_config.meters:
-                    idx = self.meter_name_to_index.get(bar.name)
-                    if idx is not None:
-                        interaction_costs[idx] = float(bar.depletion.interact)
-
-                self.meters[interact_mask] -= interaction_costs.unsqueeze(0)
-                self.meters = torch.clamp(self.meters, 0.0, 1.0)
-
-                successful_interactions = self._handle_interactions(interact_mask)
-
-        return successful_interactions
+        """Execute movement, interaction, and wait actions."""
+        return self._action_executor._execute_actions(actions)
 
     def _handle_interactions(self, interact_mask: torch.Tensor) -> dict:
-        """
-        Handle INTERACT actions with multi-tick accumulation.
-
-        Args:
-            interact_mask: [num_agents] bool mask
-
-        Returns:
-            Dictionary mapping agent indices to affordance names
-        """
-        if not self.enable_temporal_mechanics:
-            # No temporal mechanics: always use instant interactions.
-            return self._handle_instant_interactions(interact_mask)
-
-        # If temporal mechanics are enabled but there are no multi-tick affordances
-        # (interaction_type in {"multi_tick", "dual"}), treat interactions as instant
-        # with time-of-day gating only.
-        if not any(getattr(aff, "interaction_type", "instant") in {"multi_tick", "dual"} for aff in self.affordance_engine.affordances):
-            return self._handle_instant_interactions(interact_mask)
-
-        # Multi-tick interaction logic using AffordanceEngine
-        successful_interactions: dict[int, str] = {}
-
-        for affordance_name, affordance_pos in self.affordances.items():
-            if not self._is_affordance_open(affordance_name):
-                continue
-
-            # Check if still on same affordance (using substrate)
-            at_affordance = self.substrate.is_on_position(self.positions, affordance_pos) & interact_mask
-
-            if not at_affordance.any():
-                continue
-
-            # Check affordability using AffordanceEngine
-            cost_per_tick = self.affordance_engine.get_affordance_cost(affordance_name, cost_mode="per_tick")
-            # TASK-001: Use dynamic money index (if money meter exists)
-            if self.money_idx is not None:
-                can_afford = self.meters[:, self.money_idx] >= cost_per_tick
-                at_affordance = at_affordance & can_afford
-            # else: no money meter, affordability always passes
-
-            if not at_affordance.any():
-                continue
-
-            # Get duration ticks from AffordanceEngine
-            duration_ticks = self.affordance_engine.get_duration_ticks(affordance_name)
-
-            # Track successful interactions
-            agent_indices = torch.where(at_affordance)[0]
-
-            for agent_idx in agent_indices:
-                agent_idx_int = agent_idx.item()
-                current_pos = self.positions[agent_idx]
-
-                # Check if continuing same affordance at same position
-                if self.last_interaction_affordance[agent_idx_int] == affordance_name and torch.equal(
-                    current_pos, self.last_interaction_position[agent_idx_int]
-                ):
-                    # Continue progress
-                    self.interaction_progress[agent_idx] += 1
-                else:
-                    # New affordance - reset progress
-                    self.interaction_progress[agent_idx] = 1
-                    self.last_interaction_affordance[agent_idx_int] = affordance_name
-                    self.last_interaction_position[agent_idx_int] = current_pos.clone()
-
-                ticks_done = int(self.interaction_progress[agent_idx].item())
-
-                # Create single-agent mask for this agent
-                single_agent_mask = torch.zeros(self.num_agents, dtype=torch.bool, device=self.device)
-                single_agent_mask[agent_idx] = True
-
-                # Apply multi-tick interaction using AffordanceEngine
-                # This applies per-tick effects and costs
-                self.meters = self.affordance_engine.apply_multi_tick_interaction(
-                    meters=self.meters,
-                    affordance_name=affordance_name,
-                    current_tick=ticks_done - 1,  # 0-indexed
-                    agent_mask=single_agent_mask,
-                    check_affordability=False,  # Already checked above
-                )
-
-                # Reset progress if completed
-                if ticks_done == duration_ticks:
-                    self.interaction_progress[agent_idx] = 0
-                    self.last_interaction_affordance[agent_idx_int] = None
-
-                successful_interactions[agent_idx_int] = affordance_name
-
-        # Update affordance tracking after all interactions
-        self._update_affordance_tracking(successful_interactions)
-
-        return successful_interactions
+        """Handle INTERACT actions with multi-tick accumulation."""
+        return self._action_executor._handle_interactions(interact_mask)
 
     def _handle_instant_interactions(self, interact_mask: torch.Tensor) -> dict:
-        """
-        Handle INTERACT action at affordances (instant mode - no temporal mechanics).
-
-        Uses AffordanceEngine for all logic - no hardcoded costs!
-
-        Args:
-            interact_mask: [num_agents] bool mask
-
-        Returns:
-            Dictionary mapping agent indices to affordance names for successful interactions
-        """
-        # Track successful interactions for this step
-        successful_interactions = {}  # {agent_idx: affordance_name}
-
-        # Check each affordance
-        for affordance_name, affordance_pos in self.affordances.items():
-            if self.enable_temporal_mechanics and not self._is_affordance_open(affordance_name):
-                continue
-
-            # Check which agents are on this affordance (using substrate)
-            at_affordance = self.substrate.is_on_position(self.positions, affordance_pos) & interact_mask
-
-            if not at_affordance.any():
-                continue
-
-            # Check affordability using AffordanceEngine
-            cost_normalized = self.affordance_engine.get_affordance_cost(affordance_name, cost_mode="instant")
-            if cost_normalized > 0:
-                # TASK-001: Use dynamic money index (if money meter exists)
-                if self.money_idx is not None:
-                    can_afford = self.meters[:, self.money_idx] >= cost_normalized
-                    at_affordance = at_affordance & can_afford
-                # else: no money meter, affordability always passes
-
-                if not at_affordance.any():
-                    # No one at this affordance can afford it, skip
-                    continue
-
-            # Track successful interactions
-            agent_indices = torch.where(at_affordance)[0]
-            for agent_idx in agent_indices:
-                successful_interactions[agent_idx.item()] = affordance_name
-
-            # Apply affordance effects using AffordanceEngine
-            self.meters = self.affordance_engine.apply_interaction(
-                meters=self.meters,
-                affordance_name=affordance_name,
-                agent_mask=at_affordance,
-                current_tick=self.global_tick,  # HIGH-01: Use global tick instead of agent 0
-            )
-
-        # Update affordance tracking after all interactions
-        self._update_affordance_tracking(successful_interactions)
-
-        return successful_interactions
+        """Handle INTERACT action at affordances in instant mode."""
+        return self._action_executor._handle_instant_interactions(interact_mask)
 
     def _calculate_shaped_rewards(self) -> torch.Tensor:
-        """Calculate total rewards using DACEngine.
-
-        Computes: extrinsic + (intrinsic × modifiers) + shaping bonuses
-
-        Returns:
-            rewards: [num_agents] final rewards
-        """
-        # Gather intrinsic raw values from exploration module (if available)
-        if self.exploration_module is not None:
-            # Get current observations for intrinsic reward computation
-            observations = self._get_observations()
-            # BUG-22 FIX: Update stats during training rollouts so normalization tracks distribution
-            intrinsic_raw = self.exploration_module.compute_intrinsic_rewards(observations, update_stats=True)
-        else:
-            # Fallback to zeros if no exploration module is set
-            intrinsic_raw = torch.zeros(self.num_agents, device=self.device)
-
-        # Gather additional context for shaping bonuses
-        # Use float positions so DACEngine distance computations operate in a
-        # consistent continuous space (grid indices or continuous coords).
-        agent_positions = self.positions.to(device=self.device, dtype=torch.float32)
-
-        kwargs = {
-            "agent_positions": agent_positions,
-            "affordance_positions": self._get_affordance_positions(),
-            "last_action_affordance": self._get_last_action_affordances(),
-            "affordance_streak": self._get_affordance_streaks(),
-            "unique_affordances_used": self._get_unique_affordances_used(),
-        }
-
-        # Add temporal context if temporal mechanics enabled
-        if self.enable_temporal_mechanics:
-            kwargs["current_hour"] = self.time_of_day
-
-        # Calculate rewards using DACEngine
-        total_rewards, intrinsic_weights, components = self.dac_engine.calculate_rewards(
-            step_counts=self.step_counts,
-            dones=self.dones,
-            meters=self.meters,
-            intrinsic_raw=intrinsic_raw,
-            **kwargs,
-        )
-
-        # Store intrinsic weights for population-level annealing
-        self.intrinsic_weights = intrinsic_weights
-
-        # Store components for logging (optional)
-        self._last_reward_components = components
-
-        return total_rewards
+        """Calculate total rewards using DACEngine."""
+        return self._reward_calculator._calculate_shaped_rewards()
 
     def _get_affordance_positions(self) -> dict[str, torch.Tensor]:
         """Get current affordance positions as dict.

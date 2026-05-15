@@ -2,7 +2,7 @@
 
 import pytest
 
-from townlet.environment.vectorized_env import _VALID_VFS_TYPES, _normalize_vfs_type
+from townlet.environment.env_factory import _VALID_VFS_TYPES, _normalize_vfs_type
 
 
 class TestNormalizeVfsType:

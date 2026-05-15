@@ -26,6 +26,9 @@ class VTCActionWriteSource(Protocol):
     def name(self) -> str: ...
 
     @property
+    def source_affordance(self) -> str | None: ...
+
+    @property
     def writes(self) -> Sequence[WriteSpec | Mapping[str, Any]]: ...
 
 
@@ -129,6 +132,8 @@ class CompiledVTCActionWrite:
 
     action_id: int
     action_name: str
+    source_affordance: str | None
+    affordance_index: int | None
     variable_id: str
     expression: str
     expression_ast: ASTNode
@@ -404,12 +409,15 @@ class VTCActionWriteProgram:
         device: torch.device,
     ) -> tuple[_VTCActionWriteEffect, ...]:
         phase_effects: list[_VTCActionWriteEffect] = []
+        context_vfs = dict(phase_snapshot)
+        context_vfs.setdefault("agent_id", torch.arange(actions.shape[0], device=device))
         context = ExecutionContext(
             bars={name: phase_snapshot[name] for name in bar_names},
-            vfs=dict(phase_snapshot),
+            vfs=context_vfs,
             affordances={},
             temporal={},
             device=device,
+            num_agents=actions.shape[0],
         )
         evaluator = Evaluator(context)
 
@@ -423,7 +431,7 @@ class VTCActionWriteProgram:
             phase_effects.append(
                 _VTCActionWriteEffect(
                     write=write,
-                    expression_value=self._coerce_expression_tensor(expression_value, target_snapshot, write),
+                    expression_value=self._coerce_expression_tensor(expression_value, target_snapshot, actions, write),
                     write_mask=write_mask,
                 )
             )
@@ -503,6 +511,9 @@ class VTCActionWriteProgram:
         expression_value: torch.Tensor,
         write_mask: torch.Tensor,
     ) -> torch.Tensor:
+        if self._targets_affordance_occupancy(write):
+            return self._apply_affordance_claim_if_free(write, phase_value, expression_value, write_mask)
+
         candidate = self._apply_optional_clamp(write, expression_value.to(device=phase_value.device, dtype=phase_value.dtype))
         free_mask = self._row_free_for_claim(phase_value)
         broadcast_mask = self._broadcast_agent_mask(write_mask & free_mask, phase_value, write)
@@ -522,6 +533,9 @@ class VTCActionWriteProgram:
         expression_value: torch.Tensor,
         write_mask: torch.Tensor,
     ) -> torch.Tensor:
+        if self._targets_affordance_occupancy(write):
+            return self._apply_affordance_capacity_claim(write, phase_value, expression_value, write_mask)
+
         if write.clamp is None:
             raise ValueError(f"VTC capacity_claim write '{write.telemetry_label}' requires clamp high to declare capacity")
 
@@ -558,6 +572,91 @@ class VTCActionWriteProgram:
         if capacity < 0 or float(capacity) != float(capacity_value):
             raise ValueError(f"VTC capacity_claim write '{write.telemetry_label}' requires non-negative integer clamp high")
         return capacity
+
+    def _apply_affordance_claim_if_free(
+        self,
+        write: CompiledVTCActionWrite,
+        phase_value: torch.Tensor,
+        expression_value: torch.Tensor,
+        write_mask: torch.Tensor,
+    ) -> torch.Tensor:
+        affordance_index = self._require_affordance_index(write, phase_value)
+        if not bool(self._row_free_for_claim(phase_value[affordance_index].unsqueeze(0))[0].item()):
+            return phase_value
+
+        claimant_indices = torch.nonzero(write_mask.bool(), as_tuple=False).flatten()
+        if claimant_indices.numel() == 0:
+            return phase_value
+
+        winner_index = int(claimant_indices[0].item())
+        candidate = phase_value.clone()
+        candidate[affordance_index] = expression_value[winner_index].to(device=phase_value.device, dtype=phase_value.dtype)
+        return candidate
+
+    def _apply_affordance_capacity_claim(
+        self,
+        write: CompiledVTCActionWrite,
+        phase_value: torch.Tensor,
+        expression_value: torch.Tensor,
+        write_mask: torch.Tensor,
+    ) -> torch.Tensor:
+        if write.clamp is None:
+            raise ValueError(f"VTC capacity_claim write '{write.telemetry_label}' requires clamp high to declare capacity")
+        if phase_value.dim() < 2:
+            raise ValueError(
+                f"VTC affordance capacity_claim write '{write.telemetry_label}' requires target shape [affordances, slots, ...]"
+            )
+
+        affordance_index = self._require_affordance_index(write, phase_value)
+        capacity = self._capacity_from_clamp(write)
+        if capacity > phase_value.shape[1]:
+            raise ValueError(
+                f"VTC affordance capacity_claim write '{write.telemetry_label}' declares capacity {capacity} "
+                f"but target only has {phase_value.shape[1]} slots"
+            )
+        if capacity == 0:
+            return phase_value
+
+        slot_values = phase_value[affordance_index, :capacity]
+        free_slot_indices = torch.nonzero(self._slot_free_for_claim(slot_values), as_tuple=False).flatten()
+        if free_slot_indices.numel() == 0:
+            return phase_value
+
+        claimant_indices = torch.nonzero(write_mask.bool(), as_tuple=False).flatten()
+        if claimant_indices.numel() == 0:
+            return phase_value
+
+        assignments = min(int(free_slot_indices.numel()), int(claimant_indices.numel()))
+        candidate = phase_value.clone()
+        for offset in range(assignments):
+            slot_index = int(free_slot_indices[offset].item())
+            claimant_index = int(claimant_indices[offset].item())
+            candidate[affordance_index, slot_index] = expression_value[claimant_index].to(
+                device=phase_value.device,
+                dtype=phase_value.dtype,
+            )
+        return candidate
+
+    @staticmethod
+    def _targets_affordance_occupancy(write: CompiledVTCActionWrite) -> bool:
+        return (
+            write.affordance_index is not None
+            and write.phase == "resolve_affordance_access_and_occupancy"
+            and write.composition in {"claim_if_free", "capacity_claim"}
+        )
+
+    @staticmethod
+    def _require_affordance_index(write: CompiledVTCActionWrite, target: torch.Tensor) -> int:
+        if write.affordance_index is None:
+            raise ValueError(f"VTC affordance occupancy write '{write.telemetry_label}' has no source affordance index")
+        if target.dim() == 0:
+            raise ValueError(f"VTC affordance occupancy write '{write.telemetry_label}' cannot target scalar storage")
+        if write.affordance_index < 0 or write.affordance_index >= target.shape[0]:
+            raise ValueError(
+                f"VTC affordance occupancy write '{write.telemetry_label}' source affordance index {write.affordance_index} "
+                f"is outside target extent {target.shape[0]}"
+            )
+        return write.affordance_index
 
     def _apply_append_event(
         self,
@@ -618,6 +717,12 @@ class VTCActionWriteProgram:
             return ~value.bool() if value.dtype == torch.bool else value == 0
         occupied = value if value.dtype == torch.bool else value != 0
         return ~occupied.bool().flatten(start_dim=2).any(dim=2)
+
+    @staticmethod
+    def _slot_free_for_claim(value: torch.Tensor) -> torch.Tensor:
+        if value.dtype == torch.bool:
+            return ~VTCActionWriteProgram._row_any(value)
+        return VTCActionWriteProgram._row_all(value < 0)
 
     @staticmethod
     def _apply_optional_clamp(write: CompiledVTCActionWrite, value: torch.Tensor) -> torch.Tensor:
@@ -689,8 +794,11 @@ class VTCActionWriteProgram:
     def _coerce_expression_tensor(
         value: torch.Tensor,
         target: torch.Tensor,
+        actions: torch.Tensor,
         write: CompiledVTCActionWrite,
     ) -> torch.Tensor:
+        if VTCActionWriteProgram._targets_affordance_occupancy(write):
+            return VTCActionWriteProgram._coerce_affordance_payload_tensor(value, target, actions, write)
         if write.composition == "append_event":
             return VTCActionWriteProgram._coerce_event_payload_tensor(value, target, write)
         if value.dim() == 0:
@@ -701,6 +809,38 @@ class VTCActionWriteProgram:
                 f"expected {tuple(target.shape)}"
             )
         return value.to(device=target.device, dtype=target.dtype)
+
+    @staticmethod
+    def _coerce_affordance_payload_tensor(
+        value: torch.Tensor,
+        target: torch.Tensor,
+        actions: torch.Tensor,
+        write: CompiledVTCActionWrite,
+    ) -> torch.Tensor:
+        if target.dim() == 0:
+            raise ValueError(f"VTC affordance occupancy write '{write.telemetry_label}' cannot target scalar storage")
+        if write.composition == "capacity_claim":
+            if target.dim() < 2:
+                raise ValueError(
+                    f"VTC affordance capacity_claim write '{write.telemetry_label}' requires target shape [affordances, slots, ...]"
+                )
+            payload_shape = torch.Size((actions.shape[0], *tuple(target.shape[2:])))
+        else:
+            payload_shape = torch.Size((actions.shape[0], *tuple(target.shape[1:])))
+
+        if value.dim() == 0:
+            return value.to(device=target.device, dtype=target.dtype).expand(payload_shape)
+        if value.shape == payload_shape:
+            return value.to(device=target.device, dtype=target.dtype)
+
+        per_affordance_payload_shape = torch.Size(payload_shape[1:])
+        if value.shape == per_affordance_payload_shape:
+            return value.to(device=target.device, dtype=target.dtype).expand(payload_shape)
+
+        raise ValueError(
+            f"Expression for VTC affordance occupancy write '{write.telemetry_label}' produced shape {tuple(value.shape)}, "
+            f"expected claimant payload shape {tuple(payload_shape)}"
+        )
 
     @staticmethod
     def _coerce_event_payload_tensor(
@@ -1442,16 +1582,47 @@ def compile_vtc_action_writes_with_phase_graph(
     phase_graph: TransitionPhaseGraph,
 ) -> VTCActionWriteProgram:
     """Compile ActionConfig writes using an explicit VTC transition phase graph."""
+    return _compile_vtc_action_writes_with_phase_graph(actions, phase_graph, affordance_index_by_name=None)
+
+
+def compile_vtc_affordance_occupancy(
+    actions: Sequence[VTCActionWriteSource],
+    affordance_ids: Sequence[str],
+) -> VTCActionWriteProgram:
+    """Compile affordance occupancy action writes with source-affordance row targeting."""
+    return compile_vtc_affordance_occupancy_with_phase_graph(actions, affordance_ids, TransitionPhaseGraph.default())
+
+
+def compile_vtc_affordance_occupancy_with_phase_graph(
+    actions: Sequence[VTCActionWriteSource],
+    affordance_ids: Sequence[str],
+    phase_graph: TransitionPhaseGraph,
+) -> VTCActionWriteProgram:
+    """Compile affordance occupancy writes using an explicit VTC transition phase graph."""
+    affordance_index_by_name = _affordance_index_by_name(affordance_ids)
+    return _compile_vtc_action_writes_with_phase_graph(actions, phase_graph, affordance_index_by_name=affordance_index_by_name)
+
+
+def _compile_vtc_action_writes_with_phase_graph(
+    actions: Sequence[VTCActionWriteSource],
+    phase_graph: TransitionPhaseGraph,
+    *,
+    affordance_index_by_name: Mapping[str, int] | None,
+) -> VTCActionWriteProgram:
     parser = ExpressionParser()
     compiled_writes: list[CompiledVTCActionWrite] = []
 
     for action in actions:
+        source_affordance = _action_source_affordance(action)
+        affordance_index = _action_affordance_index(source_affordance, affordance_index_by_name, action.name)
         for raw_write in action.writes:
             write = _coerce_write_spec(raw_write, action.name)
             compiled_writes.append(
                 CompiledVTCActionWrite(
                     action_id=action.id,
                     action_name=action.name,
+                    source_affordance=source_affordance,
+                    affordance_index=affordance_index,
                     variable_id=write.variable_id,
                     expression=write.expression,
                     expression_ast=parser.parse(write.expression),
@@ -1473,6 +1644,38 @@ def compile_vtc_action_writes_with_phase_graph(
             )
         )
     )
+
+
+def _affordance_index_by_name(affordance_ids: Sequence[str]) -> dict[str, int]:
+    index_by_name: dict[str, int] = {}
+    for index, raw_name in enumerate(affordance_ids):
+        name = str(raw_name)
+        if not name:
+            raise ValueError("VTC affordance occupancy compiler received an empty affordance id")
+        if name in index_by_name:
+            raise ValueError(f"Duplicate affordance id '{name}' in VTC affordance occupancy compiler")
+        index_by_name[name] = index
+    return index_by_name
+
+
+def _action_source_affordance(action: VTCActionWriteSource) -> str | None:
+    source_affordance = getattr(action, "source_affordance", None)
+    if source_affordance is None:
+        return None
+    return str(source_affordance)
+
+
+def _action_affordance_index(
+    source_affordance: str | None,
+    affordance_index_by_name: Mapping[str, int] | None,
+    action_name: str,
+) -> int | None:
+    if affordance_index_by_name is None or source_affordance is None:
+        return None
+    try:
+        return affordance_index_by_name[source_affordance]
+    except KeyError as exc:
+        raise ValueError(f"Action '{action_name}' references unknown source_affordance '{source_affordance}'") from exc
 
 
 def _coerce_write_spec(write: WriteSpec | Mapping[str, Any], action_name: str) -> WriteSpec:

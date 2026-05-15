@@ -1246,6 +1246,18 @@ per-phase snapshot/accumulator boundary:
   VTC appends into the first zero/false slot for each selected active agent and
   leaves full buffers unchanged.
 
+Affordance occupancy uses the same action-write machinery with source-affordance
+row targeting. `compile_vtc_affordance_occupancy(...)` resolves each
+`source_affordance` to an affordance-scope row before runtime, exposes `agent_id`
+as an action-batch payload expression, and applies writes scheduled in
+`resolve_affordance_access_and_occupancy` as deterministic contention:
+
+- `claim_if_free` writes the first active claimant's payload into the targeted
+  affordance row only when the row is still free.
+- `capacity_claim` targets `[affordances, slots, ...]` storage, requires an
+  integer `clamp` high value declaring capacity, and fills the first free slots
+  with active claimants in action-batch order without over-allocation.
+
 ### 13.3 Example
 
 ```yaml

@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from typing import Any, Protocol
+from typing import Any, Protocol, cast
 
 import torch
 
+from townlet.vfs import vtc_kernels
 from townlet.vfs.schema import WriteSpec
 from townlet.vfs.transition_graph import TransitionPhaseGraph
 from townlet.world.expression import ASTNode, ExpressionParser
@@ -157,6 +158,8 @@ class CompiledVTCThresholdCascade:
     priority: int
     clamp: tuple[float, float] | None
     telemetry_label: str
+    cascade_threshold: float
+    cascade_strength: float
 
 
 @dataclass(frozen=True)
@@ -197,6 +200,8 @@ class CompiledVTCModulation:
     priority: int
     clamp: tuple[float, float] | None
     telemetry_label: str
+    modulation_threshold: float
+    min_multiplier: float
 
 
 @dataclass(frozen=True)
@@ -461,10 +466,13 @@ class VTCActionWriteProgram:
             return self._apply_priority_write(write, phase_value, candidate, write_mask, priority_state)
 
         broadcast_mask = self._broadcast_agent_mask(write_mask, phase_value, write)
-        return torch.where(
-            broadcast_mask,
-            candidate.to(device=phase_value.device, dtype=phase_value.dtype),
-            phase_value,
+        return cast(
+            torch.Tensor,
+            vtc_kernels.apply_masked_candidate(
+                phase_value,
+                candidate.to(device=phase_value.device, dtype=phase_value.dtype),
+                broadcast_mask,
+            ),
         )
 
     def _compose_candidate(self, write: CompiledVTCActionWrite, phase_value: torch.Tensor, expression_value: torch.Tensor) -> torch.Tensor:
@@ -507,10 +515,13 @@ class VTCActionWriteProgram:
         winning_mask = write_mask & (write_priority >= current_priority)
         priority_state[write.variable_id] = torch.where(winning_mask, write_priority, current_priority)
         broadcast_mask = self._broadcast_agent_mask(winning_mask, phase_value, write)
-        return torch.where(
-            broadcast_mask,
-            candidate.to(device=phase_value.device, dtype=phase_value.dtype),
-            phase_value,
+        return cast(
+            torch.Tensor,
+            vtc_kernels.apply_masked_candidate(
+                phase_value,
+                candidate.to(device=phase_value.device, dtype=phase_value.dtype),
+                broadcast_mask,
+            ),
         )
 
     def _build_write_mask(
@@ -607,25 +618,23 @@ class VTCThresholdCascadeProgram:
             for rule in phase_rules:
                 if rule.variable_id not in phase_values:
                     raise KeyError(f"VTC threshold cascade targets unknown bar '{rule.variable_id}'")
+                if rule.source_variable_id not in phase_snapshot:
+                    raise KeyError(f"VTC threshold cascade reads unknown bar '{rule.source_variable_id}'")
+                if rule.composition != "additive_delta":
+                    raise NotImplementedError(f"VTC threshold cascade composition '{rule.composition}' is not scriptable")
+                clamp_low, clamp_high = _required_clamp(rule.clamp, rule.telemetry_label)
 
-                context = ExecutionContext(
-                    bars=phase_snapshot,
-                    vfs=dict(phase_snapshot),
-                    affordances={},
-                    temporal={},
-                    device=device,
-                )
-                evaluator = Evaluator(context)
                 target_value = phase_values[rule.variable_id]
-                write_mask = self._build_rule_mask(rule, active_mask_on_device, evaluator)
-                expression_value = self._evaluate_tensor(evaluator, rule.expression_ast, "expression", rule)
-                if strength_multiplier != 1.0:
-                    expression_value = expression_value * strength_multiplier
-                phase_values[rule.variable_id] = self._apply_composed_rule(
-                    rule=rule,
-                    phase_value=target_value,
-                    expression_value=expression_value,
-                    write_mask=write_mask,
+                source_value = phase_snapshot[rule.source_variable_id].to(device=device, dtype=target_value.dtype)
+                phase_values[rule.variable_id] = vtc_kernels.apply_threshold_cascade(
+                    source_value,
+                    target_value,
+                    active_mask_on_device,
+                    rule.cascade_threshold,
+                    rule.cascade_strength,
+                    strength_multiplier,
+                    clamp_low,
+                    clamp_high,
                 )
 
             updated = phase_values
@@ -759,32 +768,27 @@ class VTCPassiveDepletionProgram:
 
         updated = {name: value.to(device=device).clone() for name, value in bars_state.items()}
         active_mask_on_device = active_mask.to(device=device, dtype=torch.bool)
-        depletion_multiplier_tensor = torch.tensor(float(depletion_multiplier), device=device, dtype=torch.float32)
 
         for phase_rules in self._iter_phase_groups(self.rules):
-            phase_snapshot = dict(updated)
             phase_values = dict(updated)
 
             for rule in phase_rules:
                 if rule.variable_id not in phase_values:
                     raise KeyError(f"VTC passive depletion targets unknown bar '{rule.variable_id}'")
+                if rule.condition_ast is not None:
+                    raise NotImplementedError(f"VTC passive depletion condition '{rule.telemetry_label}' is not scriptable")
+                if rule.composition != "overwrite":
+                    raise NotImplementedError(f"VTC passive depletion composition '{rule.composition}' is not scriptable")
+                clamp_low, clamp_high = _required_clamp(rule.clamp, rule.telemetry_label)
 
-                context = ExecutionContext(
-                    bars=phase_snapshot,
-                    vfs=dict(phase_snapshot),
-                    affordances={},
-                    temporal={"depletion_multiplier": depletion_multiplier_tensor},
-                    device=device,
-                )
-                evaluator = Evaluator(context)
                 phase_value = phase_values[rule.variable_id]
-                write_mask = self._build_rule_mask(rule, active_mask_on_device, evaluator)
-                expression_value = self._evaluate_tensor(evaluator, rule.expression_ast, "expression", rule)
-                phase_values[rule.variable_id] = self._apply_composed_rule(
-                    rule=rule,
-                    phase_value=phase_value,
-                    expression_value=expression_value,
-                    write_mask=write_mask,
+                phase_values[rule.variable_id] = vtc_kernels.apply_passive_depletion(
+                    phase_value,
+                    active_mask_on_device,
+                    rule.passive_rate,
+                    float(depletion_multiplier),
+                    clamp_low,
+                    clamp_high,
                 )
 
             updated = phase_values
@@ -903,22 +907,21 @@ class VTCModulationProgram:
             for rule in phase_rules:
                 if rule.source_variable_id not in phase_snapshot:
                     raise KeyError(f"VTC modulation reads unknown bar '{rule.source_variable_id}'")
+                if rule.condition_ast is not None:
+                    raise NotImplementedError(f"VTC modulation condition '{rule.telemetry_label}' is not scriptable")
+                if rule.composition != "multiplicative_modifier":
+                    raise NotImplementedError(f"VTC modulation composition '{rule.composition}' is not scriptable")
+                clamp_low, clamp_high = _required_clamp(rule.clamp, rule.telemetry_label)
 
-                context = ExecutionContext(
-                    bars=phase_snapshot,
-                    vfs=dict(phase_snapshot),
-                    affordances={},
-                    temporal={},
-                    device=device,
-                )
-                evaluator = Evaluator(context)
-                write_mask = self._build_rule_mask(rule, active_mask_on_device, evaluator)
-                expression_value = self._evaluate_tensor(evaluator, rule.expression_ast, "expression", rule)
-                phase_value = self._apply_composed_rule(
-                    rule=rule,
-                    phase_value=phase_value,
-                    expression_value=expression_value,
-                    write_mask=write_mask,
+                source_value = phase_snapshot[rule.source_variable_id].to(device=device, dtype=phase_value.dtype)
+                phase_value = vtc_kernels.apply_modulation_multiplier(
+                    phase_value,
+                    source_value,
+                    active_mask_on_device,
+                    rule.modulation_threshold,
+                    rule.min_multiplier,
+                    clamp_low,
+                    clamp_high,
                 )
 
             multiplier = phase_value
@@ -1238,26 +1241,26 @@ class VTCTerminalConditionProgram:
         if missing_bars:
             raise KeyError(f"VTC terminal conditions reference unknown bars: {missing_bars}")
 
-        context = ExecutionContext(
-            bars=bars_on_device,
-            vfs=dict(bars_on_device),
-            affordances={},
-            temporal={},
-            device=device,
-        )
-        evaluator = Evaluator(context)
-        terminal_mask = torch.zeros_like(updated_dones, dtype=torch.bool, device=device)
-
         for rule in self.rules:
-            triggered = self._evaluate_bool_tensor(evaluator, rule.expression_ast, rule)
-            if triggered.shape != updated_dones.shape:
+            if rule.condition_ast is not None:
+                raise NotImplementedError(f"VTC terminal condition '{rule.telemetry_label}' condition is not scriptable")
+            if rule.composition != "event":
+                raise NotImplementedError(f"VTC terminal condition composition '{rule.composition}' is not scriptable")
+            source_value = bars_on_device[rule.source_variable_id]
+            if source_value.shape != updated_dones.shape:
                 raise ValueError(
-                    f"VTC terminal condition {rule.telemetry_label} produced shape {tuple(triggered.shape)}; "
+                    f"VTC terminal condition {rule.telemetry_label} reads shape {tuple(source_value.shape)}; "
                     f"expected {tuple(updated_dones.shape)}"
                 )
-            terminal_mask |= triggered & active
+            updated_dones = vtc_kernels.apply_terminal_condition(
+                source_value,
+                updated_dones,
+                active,
+                rule.threshold,
+                rule.operator == "<=",
+            )
 
-        return updated_dones | terminal_mask
+        return updated_dones
 
     @staticmethod
     def _validate_apply_inputs(
@@ -1584,6 +1587,8 @@ def compile_vtc_threshold_cascades_with_phase_graph(
                 priority=priority,
                 clamp=(0.0, 1.0),
                 telemetry_label=f"threshold_delta:{rule_id}",
+                cascade_threshold=cascade["threshold"],
+                cascade_strength=cascade["strength"],
             )
         )
 
@@ -1724,6 +1729,8 @@ def compile_vtc_modulations_with_phase_graph(
                     priority=len(compiled_rules),
                     clamp=(0.0, 1.0),
                     telemetry_label=f"modulation:{rule_id}",
+                    modulation_threshold=modulation["threshold"],
+                    min_multiplier=modulation["min_multiplier"],
                 )
             )
 
@@ -2245,6 +2252,12 @@ def _plain_reward_payload(value: Any) -> Any:
 
 def _rule_slug(name: str) -> str:
     return "".join(char.lower() if char.isalnum() else "_" for char in name).strip("_") or "affordance"
+
+
+def _required_clamp(clamp: tuple[float, float] | None, telemetry_label: str) -> tuple[float, float]:
+    if clamp is None:
+        raise ValueError(f"Generated VTC rule '{telemetry_label}' requires explicit clamp bounds for scripted execution")
+    return clamp
 
 
 def _format_rule_float(value: float) -> str:

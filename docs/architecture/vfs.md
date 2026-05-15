@@ -847,6 +847,7 @@ Current implementation is partial but real:
 - `VFSProfileCompiler` compiles profile expressions on the read/derived-variable path: AST parsing, dependency graph construction, topological sorting, cycle detection, and expression type checking.
 - `VFSEvaluator` evaluates compiled profile variables in dependency order, with mark-and-sweep evaluation for observed variables plus dependencies and eager mode when all variables are needed.
 - `VTCActionWriteProgram` executes the first write-path slice for `ActionConfig.writes`: parsed expressions, phase ordering, composition modes, clamps, conditions, active-agent masks, and atomic per-phase commit batches.
+- `vtc_kernels.py` contains TorchScript kernels for generated hot transition paths: masked action-write commits, passive depletion, threshold cascades, linear affordance modulation, and terminal-condition checks. Arbitrary action-write expressions still evaluate through the typed expression AST before entering scripted tensor composition.
 
 The unsolved work is not "build any compiler"; it is "finish the VTC as the single write-path and world-transition compiler."
 
@@ -1714,7 +1715,7 @@ Benefits:
 
 1. Profile registry get/set overhead.
 2. Cache static observation fields.
-3. JIT compile hot transition paths.
+3. JIT compile hot transition paths. Current scripted kernels cover generated passive depletions, threshold cascades, linear modulations, terminal checks, and masked action-write commits.
 4. Benchmark against hardcoded baseline.
 5. Delete old imperative paths after equivalence is proven.
 
@@ -1981,6 +1982,14 @@ def benchmark_transition_step(env, iterations=1000):
     elapsed = time.time() - start
     print(f"VTC env.step: {elapsed / iterations * 1e3:.2f} ms/call")
 ```
+
+Implemented guardrail:
+
+```bash
+uv run pytest tests/test_townlet/performance/test_vtc_jit_kernels.py -q
+```
+
+This compares the scripted threshold-cascade kernel against the equivalent hardcoded tensor equation and fails if scripted execution exceeds the configured tolerance (`SCRIPTED_KERNEL_TOLERANCE = 1.50`).
 
 ---
 

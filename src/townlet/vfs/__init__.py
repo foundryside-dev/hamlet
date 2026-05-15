@@ -7,6 +7,7 @@ Phase 1: Schema definitions, registry, observation specs
 Phase 2: Derivation graphs, complex types, expression evaluation
 """
 
+from townlet.vfs import vtc_kernels
 from townlet.vfs.observation_builder import VFSObservationSpec, apply_normalization
 from townlet.vfs.registry import VariableRegistry, VFSRegistryProtocol
 from townlet.vfs.schema import (
@@ -134,4 +135,5 @@ __all__ = [
     "compile_vtc_terminal_conditions_with_phase_graph",
     "compile_vtc_threshold_cascades",
     "compile_vtc_threshold_cascades_with_phase_graph",
+    "vtc_kernels",
 ]

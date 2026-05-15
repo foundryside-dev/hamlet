@@ -1540,6 +1540,20 @@ Test worlds:
 
 If the agent generalises, it is learning relationship structure rather than labels.
 
+Repo support for this experiment lives in `townlet.vfs.generalisation`:
+
+- `VFSGeneralisationPack` groups the variable, affordance, and rule surfaces for
+  one train or test pack.
+- `build_vfs_generalisation_signature(...)` turns those surfaces into a
+  deterministic signature that erases variable names and affordance labels while
+  retaining causal fields, expression operators, constants, phases, and
+  composition modes.
+- `assert_held_out_generalisation_split(train, test)` fails if train and test
+  reuse variable names or affordance labels, or if their surface-erased causal
+  profiles / operator grammars drift apart.
+- `operator_grammar_signature(expression)` exposes the expression-level check
+  for smaller assertions and diagnostics.
+
 ---
 
 ## 16. Social-state modelling

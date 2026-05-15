@@ -15,6 +15,14 @@ from townlet.vfs.dynamic_needs import (
     canonical_set_encoder_dynamic_need_variables,
     dynamic_need_token_layout,
 )
+from townlet.vfs.generalisation import (
+    VFSGeneralisationPack,
+    VFSGeneralisationReport,
+    VFSGeneralisationSignature,
+    assert_held_out_generalisation_split,
+    build_vfs_generalisation_signature,
+    operator_grammar_signature,
+)
 from townlet.vfs.observation_builder import VFSObservationSpec, apply_normalization
 from townlet.vfs.registry import VariableRegistry, VFSRegistryProtocol
 from townlet.vfs.relational import canonical_l5_relational_variables
@@ -126,9 +134,14 @@ __all__ = [
     "VTCThresholdCascadeProgram",
     "VTCThresholdCascadeSource",
     "VFSRegistryProtocol",
+    "VFSGeneralisationPack",
+    "VFSGeneralisationReport",
+    "VFSGeneralisationSignature",
     "VFSObservationSpec",
     "WriteSpec",
     "apply_normalization",
+    "assert_held_out_generalisation_split",
+    "build_vfs_generalisation_signature",
     "canonical_fixed_slot_dynamic_need_variables",
     "canonical_set_encoder_dynamic_need_variables",
     "canonical_l6_message_variables",
@@ -143,6 +156,7 @@ __all__ = [
     "compute_variable_schema_hash",
     "compute_vfs_hash",
     "dynamic_need_token_layout",
+    "operator_grammar_signature",
     "compile_vtc_action_writes",
     "compile_vtc_action_writes_with_phase_graph",
     "compile_vtc_affordance_occupancy",

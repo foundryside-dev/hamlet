@@ -22,6 +22,7 @@ from townlet.effects.executor import CommandExecutor
 from townlet.environment.affordance_engine import (
     AffordanceEngine,
 )
+from townlet.vfs import vtc
 
 
 @dataclass
@@ -598,7 +599,7 @@ def test_affordance_engine_executes_effects_commands():
         num_agents=2,
         device=torch.device("cpu"),
         meter_name_to_idx=meter_name_to_idx,
-        modulation_rules=None,
+        modulation_program=None,
         vfs_registry=mock_registry,
         effects_schema=effects_schema,
         command_executor=mock_executor,
@@ -641,16 +642,26 @@ def test_affordance_effects_apply_modulation_multiplier():
         "target.bar.energy": "float",
     }
 
-    modulation_rules = [
-        {"affordance": "TEST_AFFORDANCE", "bar_idx": 0, "threshold": 1.0, "min_multiplier": 0.5},
-    ]
+    from townlet.config.affordances_v2_config import ModulationParamConfig
+
+    modulation_program = vtc.compile_vtc_modulations(
+        [
+            ModulationParamConfig(
+                bar="energy",
+                affordances=["TEST_AFFORDANCE"],
+                type="linear_multiplier",
+                threshold=1.0,
+                min_multiplier=0.5,
+            )
+        ]
+    )
 
     engine = AffordanceEngine(
         affordance_config=(affordance,),
         num_agents=1,
         device=torch.device("cpu"),
         meter_name_to_idx={"energy": 0},
-        modulation_rules=modulation_rules,
+        modulation_program=modulation_program,
         vfs_registry=None,
         effects_schema=effects_schema,
         command_executor=CommandExecutor(),
@@ -660,6 +671,60 @@ def test_affordance_effects_apply_modulation_multiplier():
     updated = engine.apply_instant_interaction(meters, "TEST_AFFORDANCE", torch.tensor([True]))
 
     # Interaction delta is 0.4 but should be scaled by multiplier (0.5 at energy=0.0)
+    assert updated[0, 0].item() == pytest.approx(0.2)
+
+
+def test_affordance_effects_apply_vtc_modulation_multiplier():
+    """AffordanceEngine should get modulation multipliers from the compiled VTC program."""
+    from townlet.config.affordances_v2_config import (
+        AffordanceParamConfig,
+        DeploymentConfig,
+        ModulationParamConfig,
+        OpeningHoursConfig,
+    )
+
+    assert hasattr(vtc, "compile_vtc_modulations"), "VTC modulation compiler is required"
+
+    affordance = AffordanceParamConfig(
+        name="TEST_AFFORDANCE",
+        interaction_type="instant",
+        costs={},
+        interactions={
+            "on_start": [{"modify": "target.bar.energy", "value": "target.bar.energy + 0.4"}],
+            "per_tick": [],
+            "on_completion": [],
+            "on_early_exit": [],
+            "on_failure": [],
+        },
+        opening_hours=OpeningHoursConfig(enabled=False),
+        deployment=DeploymentConfig(type="random"),
+    )
+    modulation_program = vtc.compile_vtc_modulations(
+        [
+            ModulationParamConfig(
+                bar="energy",
+                affordances=["TEST_AFFORDANCE"],
+                type="linear_multiplier",
+                threshold=1.0,
+                min_multiplier=0.5,
+            )
+        ]
+    )
+
+    engine = AffordanceEngine(
+        affordance_config=(affordance,),
+        num_agents=1,
+        device=torch.device("cpu"),
+        meter_name_to_idx={"energy": 0},
+        modulation_program=modulation_program,
+        vfs_registry=None,
+        effects_schema={"target.bar.energy": "float"},
+        command_executor=CommandExecutor(),
+    )
+
+    meters = torch.tensor([[0.0]], dtype=torch.float32)
+    updated = engine.apply_instant_interaction(meters, "TEST_AFFORDANCE", torch.tensor([True]))
+
     assert updated[0, 0].item() == pytest.approx(0.2)
 
 
@@ -702,7 +767,7 @@ def test_get_meter_idx_validation_raises_on_unknown_meter():
         num_agents=1,
         device=torch.device("cpu"),
         meter_name_to_idx={"energy": 0, "health": 1},
-        modulation_rules=[],
+        modulation_program=None,
         vfs_registry=None,
         effects_schema={},
         command_executor=CommandExecutor(),

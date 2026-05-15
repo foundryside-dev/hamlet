@@ -20,7 +20,7 @@ Status: Ready for integration with vectorized_env.py
 """
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 import torch
 
@@ -58,7 +58,7 @@ class AffordanceEngine:
         num_agents: int,
         device: torch.device,
         meter_name_to_idx: dict[str, int],
-        modulation_rules: list[dict[str, Any]] | None = None,
+        modulation_program: Any | None = None,
         vfs_registry: Any | None = None,  # NEW: VFS registry for Effects
         effects_schema: Any | None = None,  # NEW: Effects schema for compilation
         command_executor: CommandExecutor | None = None,  # NEW: Effects executor
@@ -75,7 +75,7 @@ class AffordanceEngine:
             num_agents: Number of agents in parallel
             device: torch.device for GPU/CPU
             meter_name_to_idx: Mapping of meter names to indices (from bars_config)
-            modulation_rules: Modulation rules for affordance effectiveness
+            modulation_program: Compiled VTC modulation program for affordance effectiveness
             vfs_registry: VFS registry for Effects system (optional)
             effects_schema: Effects schema for command compilation (optional)
             command_executor: Effects command executor (optional)
@@ -86,7 +86,7 @@ class AffordanceEngine:
         self.affordances = affordance_config
 
         self.meter_name_to_idx = meter_name_to_idx
-        self.modulation_rules = modulation_rules or []
+        self.modulation_program = modulation_program
         self.vfs_registry = vfs_registry  # NEW
         self.command_executor = command_executor  # NEW
         self.effect_manager = effect_manager or NullEffectManager()
@@ -262,30 +262,24 @@ class AffordanceEngine:
 
     def _compute_affordance_multiplier(self, affordance_name: str, meters: torch.Tensor, agent_mask: torch.Tensor) -> torch.Tensor:
         """Compute modulation multiplier for a given affordance based on bar values."""
-        multiplier = torch.ones(meters.shape[0], device=meters.device, dtype=meters.dtype)
-        for rule in self.modulation_rules:
-            if rule.get("affordance") != affordance_name:
-                continue
-            bar_idx = rule.get("bar_idx")
-            threshold = rule.get("threshold")
-            min_multiplier = rule.get("min_multiplier")
-            if bar_idx is None or threshold is None or min_multiplier is None:
-                continue
-            val = meters[:, bar_idx]
-            factor = torch.ones_like(val)
-            below = val < threshold
-            if below.any():
-                factor = torch.where(
-                    below,
-                    min_multiplier + (1.0 - min_multiplier) * (val / threshold),
-                    torch.ones_like(val),
-                )
-            multiplier = multiplier * factor
-        # Zero out masked agents to avoid applying to inactive ones
-        masked = ~agent_mask
-        if masked.any():
-            multiplier[masked] = 0.0
-        return multiplier
+        if self.modulation_program is None:
+            active = agent_mask.to(device=meters.device, dtype=torch.bool)
+            return torch.where(
+                active,
+                torch.ones(meters.shape[0], device=meters.device, dtype=meters.dtype),
+                torch.zeros(meters.shape[0], device=meters.device, dtype=meters.dtype),
+            )
+
+        bars_state = {name: meters[:, idx] for name, idx in self.meter_name_to_idx.items() if 0 <= idx < meters.shape[1]}
+        return cast(
+            torch.Tensor,
+            self.modulation_program.compute_affordance_multiplier(
+                affordance_name,
+                bars_state,
+                active_mask=agent_mask,
+                device=meters.device,
+            ),
+        )
 
     def apply_multi_tick_interaction(
         self,

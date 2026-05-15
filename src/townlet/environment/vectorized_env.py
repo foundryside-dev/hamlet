@@ -31,7 +31,14 @@ from townlet.universe.dto import RuntimeActionSpace
 from townlet.vfs.evaluator import EvaluationMode, VFSEvaluator
 from townlet.vfs.observation_builder import VFSObservationSpec
 from townlet.vfs.registry import VariableRegistry
-from townlet.vfs.vtc import VTCActionWriteProgram, VTCThresholdCascadeProgram, compile_vtc_action_writes, compile_vtc_threshold_cascades
+from townlet.vfs.vtc import (
+    VTCActionWriteProgram,
+    VTCModulationProgram,
+    VTCThresholdCascadeProgram,
+    compile_vtc_action_writes,
+    compile_vtc_modulations,
+    compile_vtc_threshold_cascades,
+)
 
 if TYPE_CHECKING:
     from townlet.exploration.base import ExplorationStrategy
@@ -426,14 +433,13 @@ class VectorizedHamletEnv:
         self.affordance_names = all_affordance_names
         self.num_affordance_types = len(all_affordance_names)
 
-        # NOTE: modulation_rules is built later, just before AffordanceEngine init (ENV-010: removed dead code)
-
         # Build composed action space from compiler-emitted runtime artifact
         self.action_space = self._build_action_space_from_runtime_artifact(level.runtime_action_space)
         self.action_dim = self.action_space.action_dim
         self.action_ids = level.runtime_action_space.action_ids
         self._movement_deltas = self._build_movement_deltas()
         self.vtc_action_write_program = compile_vtc_action_writes(self.action_space.actions)
+        self.vtc_modulation_program: VTCModulationProgram = compile_vtc_modulations(level.affordances.modulations)
         self.vtc_threshold_cascade_program = compile_vtc_threshold_cascades(self.bars_config.cascades)
         if self.effect_manager is not None:
             self.effect_manager.threshold_cascade_program = self.vtc_threshold_cascade_program
@@ -500,31 +506,13 @@ class VectorizedHamletEnv:
 
         # === AFFORDANCE ENGINE INITIALIZATION ===
         # Requires Effects + Items managers to satisfy fail-forward ExecutionContext
-        modulation_rules = []
-        for entry in self.optimization_data.modulation_data:
-            aff_idx = entry.get("affordance_idx")
-            bar_idx = entry.get("bar_idx")
-            if aff_idx is None or bar_idx is None:
-                continue
-            if aff_idx < 0 or aff_idx >= len(all_affordance_names):
-                continue
-            aff_name = all_affordance_names[aff_idx]
-            modulation_rules.append(
-                {
-                    "affordance": aff_name,
-                    "bar_idx": bar_idx,
-                    "threshold": entry.get("threshold", 0.0),
-                    "min_multiplier": entry.get("min_multiplier", 1.0),
-                }
-            )
-
         # Pass AffordanceParamConfig objects directly (have interactions field for compilation)
         self.affordance_engine = AffordanceEngine(
             tuple(level.affordances.affordances),  # AffordanceParamConfig with interactions
             num_agents,
             self.device,
             self.meter_name_to_index,
-            modulation_rules=modulation_rules,
+            modulation_program=self.vtc_modulation_program,
             vfs_registry=self.vfs_registry,
             effects_schema=self.effects_schema,
             command_executor=self.command_executor,

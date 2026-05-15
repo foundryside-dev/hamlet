@@ -57,9 +57,12 @@ def canonical_transition_graph_schema(
     phase_graph: TransitionPhaseGraph,
     action_write_program: Any,
     threshold_cascade_program: Any | None = None,
+    modulation_program: Any | None = None,
 ) -> dict[str, Any]:
     """Return the transition-graph payload used for world-physics provenance."""
     rules = [_canonical_transition_rule(write) for write in action_write_program.writes]
+    if modulation_program is not None:
+        rules.extend(_canonical_transition_rule(rule) for rule in modulation_program.rules)
     if threshold_cascade_program is not None:
         rules.extend(_canonical_transition_rule(rule) for rule in threshold_cascade_program.rules)
     return {
@@ -72,9 +75,17 @@ def compute_transition_graph_hash(
     phase_graph: TransitionPhaseGraph,
     action_write_program: Any,
     threshold_cascade_program: Any | None = None,
+    modulation_program: Any | None = None,
 ) -> str:
     """Return the SHA-256 digest of the compiled transition graph and rules."""
-    return _hash_payload(canonical_transition_graph_schema(phase_graph, action_write_program, threshold_cascade_program))
+    return _hash_payload(
+        canonical_transition_graph_schema(
+            phase_graph,
+            action_write_program,
+            threshold_cascade_program,
+            modulation_program,
+        )
+    )
 
 
 def compute_vfs_hash(
@@ -133,7 +144,7 @@ def _canonical_action_entry(action: Any) -> dict[str, Any]:
 
 def _canonical_transition_rule(write: Any) -> dict[str, Any]:
     if hasattr(write, "rule_id"):
-        return {
+        entry = {
             "rule_id": write.rule_id,
             "kind": write.kind,
             "source_variable_id": write.source_variable_id,
@@ -146,6 +157,9 @@ def _canonical_transition_rule(write: Any) -> dict[str, Any]:
             "clamp": list(write.clamp) if write.clamp is not None else None,
             "telemetry_label": write.telemetry_label,
         }
+        if hasattr(write, "target_affordance_id"):
+            entry["target_affordance_id"] = write.target_affordance_id
+        return entry
     return {
         "action_id": write.action_id,
         "action_name": write.action_name,

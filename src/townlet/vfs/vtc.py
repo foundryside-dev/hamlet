@@ -1,4 +1,4 @@
-"""VFS Transition Compiler support for ActionConfig writes."""
+"""VFS Transition Compiler support for declarative transition rules."""
 
 from __future__ import annotations
 
@@ -44,6 +44,25 @@ class VTCThresholdCascadeSource(Protocol):
     def strength(self) -> float: ...
 
 
+class VTCModulationSource(Protocol):
+    """Minimal modulation shape needed by the VTC modulation compiler."""
+
+    @property
+    def bar(self) -> str: ...
+
+    @property
+    def affordances(self) -> Sequence[str]: ...
+
+    @property
+    def type(self) -> str: ...
+
+    @property
+    def threshold(self) -> float: ...
+
+    @property
+    def min_multiplier(self) -> float: ...
+
+
 @dataclass(frozen=True)
 class CompiledVTCActionWrite:
     """A parsed VTC action write with the metadata needed for masked execution."""
@@ -74,6 +93,26 @@ class CompiledVTCThresholdCascade:
     expression_ast: ASTNode
     condition: str
     condition_ast: ASTNode
+    composition: str
+    phase: str
+    priority: int
+    clamp: tuple[float, float] | None
+    telemetry_label: str
+
+
+@dataclass(frozen=True)
+class CompiledVTCModulation:
+    """A parsed VTC affordance modulation rule."""
+
+    rule_id: str
+    kind: str
+    source_variable_id: str
+    target_affordance_id: str
+    variable_id: str
+    expression: str
+    expression_ast: ASTNode
+    condition: str | None
+    condition_ast: ASTNode | None
     composition: str
     phase: str
     priority: int
@@ -449,6 +488,147 @@ class VTCThresholdCascadeProgram:
         return broadcast_mask
 
 
+@dataclass(frozen=True)
+class VTCModulationProgram:
+    """Executable collection of compiled VTC affordance modulation rules."""
+
+    rules: tuple[CompiledVTCModulation, ...]
+
+    def compute_affordance_multiplier(
+        self,
+        affordance_name: str,
+        bars_state: Mapping[str, torch.Tensor],
+        *,
+        active_mask: torch.Tensor,
+        device: torch.device,
+    ) -> torch.Tensor:
+        """Compute the composed multiplier for an affordance from compiled modulation rules."""
+        if active_mask.dim() != 1:
+            raise ValueError(f"active_mask must be rank-1, got shape {tuple(active_mask.shape)}")
+
+        bars_on_device = {name: value.to(device=device) for name, value in bars_state.items()}
+        dtype = self._infer_dtype(bars_on_device)
+        active_mask_on_device = active_mask.to(device=device, dtype=torch.bool)
+        multiplier = torch.ones(active_mask_on_device.shape, device=device, dtype=dtype)
+        matching_rules = tuple(rule for rule in self.rules if rule.target_affordance_id == affordance_name)
+
+        for phase_rules in self._iter_phase_groups(matching_rules):
+            phase_value = multiplier
+            phase_snapshot = dict(bars_on_device)
+
+            for rule in phase_rules:
+                if rule.source_variable_id not in phase_snapshot:
+                    raise KeyError(f"VTC modulation reads unknown bar '{rule.source_variable_id}'")
+
+                context = ExecutionContext(
+                    bars=phase_snapshot,
+                    vfs=dict(phase_snapshot),
+                    affordances={},
+                    temporal={},
+                    device=device,
+                )
+                evaluator = Evaluator(context)
+                write_mask = self._build_rule_mask(rule, active_mask_on_device, evaluator)
+                expression_value = self._evaluate_tensor(evaluator, rule.expression_ast, "expression", rule)
+                phase_value = self._apply_composed_rule(
+                    rule=rule,
+                    phase_value=phase_value,
+                    expression_value=expression_value,
+                    write_mask=write_mask,
+                )
+
+            multiplier = phase_value
+
+        return torch.where(active_mask_on_device, multiplier, torch.zeros_like(multiplier))
+
+    @staticmethod
+    def _infer_dtype(bars_state: Mapping[str, torch.Tensor]) -> torch.dtype:
+        if not bars_state:
+            return torch.float32
+        first_bar = next(iter(bars_state.values()))
+        return first_bar.dtype if first_bar.is_floating_point() else torch.float32
+
+    @staticmethod
+    def _iter_phase_groups(rules: Sequence[CompiledVTCModulation]) -> list[tuple[CompiledVTCModulation, ...]]:
+        phase_groups: list[tuple[CompiledVTCModulation, ...]] = []
+        current_phase: str | None = None
+        current_group: list[CompiledVTCModulation] = []
+
+        for rule in rules:
+            if current_phase is None:
+                current_phase = rule.phase
+            if rule.phase != current_phase:
+                phase_groups.append(tuple(current_group))
+                current_group = []
+                current_phase = rule.phase
+            current_group.append(rule)
+
+        if current_group:
+            phase_groups.append(tuple(current_group))
+        return phase_groups
+
+    def _build_rule_mask(
+        self,
+        rule: CompiledVTCModulation,
+        active_mask: torch.Tensor,
+        evaluator: Evaluator,
+    ) -> torch.Tensor:
+        if rule.condition_ast is None:
+            return active_mask
+
+        condition = self._evaluate_tensor(evaluator, rule.condition_ast, "condition", rule).bool()
+        condition_mask = self._coerce_rule_tensor(condition, active_mask, rule, "condition").bool()
+        return active_mask & condition_mask
+
+    def _apply_composed_rule(
+        self,
+        *,
+        rule: CompiledVTCModulation,
+        phase_value: torch.Tensor,
+        expression_value: torch.Tensor,
+        write_mask: torch.Tensor,
+    ) -> torch.Tensor:
+        expression = self._coerce_rule_tensor(expression_value, phase_value, rule, "expression")
+        if rule.composition == "multiplicative_modifier":
+            candidate = phase_value * expression
+        else:
+            raise NotImplementedError(f"VTC modulation composition '{rule.composition}' is not implemented")
+
+        if rule.clamp is not None:
+            low, high = rule.clamp
+            candidate = torch.clamp(candidate, min=low, max=high)
+
+        return torch.where(write_mask, candidate.to(device=phase_value.device, dtype=phase_value.dtype), phase_value)
+
+    @staticmethod
+    def _evaluate_tensor(
+        evaluator: Evaluator,
+        ast: ASTNode,
+        kind: str,
+        rule: CompiledVTCModulation,
+    ) -> torch.Tensor:
+        value: Any = evaluator.evaluate(ast)
+        if not isinstance(value, torch.Tensor):
+            raise TypeError(f"VTC modulation {rule.telemetry_label} {kind} resolved to non-tensor value")
+        return value
+
+    @staticmethod
+    def _coerce_rule_tensor(
+        value: torch.Tensor,
+        target: torch.Tensor,
+        rule: CompiledVTCModulation,
+        kind: str,
+    ) -> torch.Tensor:
+        if value.dim() == 0:
+            return value.to(device=target.device, dtype=target.dtype).expand_as(target)
+        if value.shape != target.shape:
+            raise ValueError(
+                f"{kind.capitalize()} for VTC modulation '{rule.telemetry_label}' produced shape {tuple(value.shape)}, "
+                f"expected {tuple(target.shape)}"
+            )
+        return value.to(device=target.device, dtype=target.dtype)
+
+
 def compile_vtc_action_writes(actions: Sequence[VTCActionWriteSource]) -> VTCActionWriteProgram:
     """Compile ActionConfig writes into VTC records sorted by phase, priority, and action id."""
     return compile_vtc_action_writes_with_phase_graph(actions, TransitionPhaseGraph.default())
@@ -572,6 +752,87 @@ def _coerce_threshold_cascade(cascade: VTCThresholdCascadeSource | Mapping[str, 
         "target": target,
         "threshold": threshold,
         "strength": strength,
+    }
+
+
+def compile_vtc_modulations(modulations: Sequence[VTCModulationSource | Mapping[str, Any]]) -> VTCModulationProgram:
+    """Compile affordance modulation parameters into VTC multiplier rules."""
+    return compile_vtc_modulations_with_phase_graph(modulations, TransitionPhaseGraph.default())
+
+
+def compile_vtc_modulations_with_phase_graph(
+    modulations: Sequence[VTCModulationSource | Mapping[str, Any]],
+    phase_graph: TransitionPhaseGraph,
+) -> VTCModulationProgram:
+    """Compile affordance modulation parameters using an explicit VTC transition phase graph."""
+    parser = ExpressionParser()
+    compiled_rules: list[CompiledVTCModulation] = []
+
+    for raw_modulation in modulations:
+        modulation = _coerce_modulation(raw_modulation)
+        for affordance in modulation["affordances"]:
+            threshold_literal = _format_rule_float(modulation["threshold"])
+            min_multiplier_literal = _format_rule_float(modulation["min_multiplier"])
+            if modulation["threshold"] == 0.0:
+                expression = "1.0"
+            else:
+                expression = (
+                    f"where(bar.{modulation['bar']} < {threshold_literal}, "
+                    f"{min_multiplier_literal} + (1.0 - {min_multiplier_literal}) * "
+                    f"(bar.{modulation['bar']} / {threshold_literal}), 1.0)"
+                )
+            rule_id = f"{modulation['bar']}->{affordance}"
+            compiled_rules.append(
+                CompiledVTCModulation(
+                    rule_id=rule_id,
+                    kind="modulation",
+                    source_variable_id=modulation["bar"],
+                    target_affordance_id=affordance,
+                    variable_id=f"affordance.{affordance}.multiplier",
+                    expression=expression,
+                    expression_ast=parser.parse(expression),
+                    condition=None,
+                    condition_ast=None,
+                    composition="multiplicative_modifier",
+                    phase="apply_modulations",
+                    priority=len(compiled_rules),
+                    clamp=(0.0, 1.0),
+                    telemetry_label=f"modulation:{rule_id}",
+                )
+            )
+
+    return VTCModulationProgram(
+        rules=tuple(
+            sorted(
+                compiled_rules,
+                key=lambda item: (phase_graph.sort_key(item.phase), item.priority, item.rule_id),
+            )
+        )
+    )
+
+
+def _coerce_modulation(modulation: VTCModulationSource | Mapping[str, Any]) -> dict[str, Any]:
+    if isinstance(modulation, Mapping):
+        bar = str(modulation["bar"])
+        affordances = [str(affordance) for affordance in modulation["affordances"]]
+        modulation_type = str(modulation["type"])
+        threshold = float(modulation["threshold"])
+        min_multiplier = float(modulation["min_multiplier"])
+    else:
+        bar = modulation.bar
+        affordances = [str(affordance) for affordance in modulation.affordances]
+        modulation_type = str(modulation.type)
+        threshold = float(modulation.threshold)
+        min_multiplier = float(modulation.min_multiplier)
+
+    if modulation_type != "linear_multiplier":
+        raise ValueError(f"Unsupported VTC modulation type '{modulation_type}' for bar '{bar}'")
+
+    return {
+        "bar": bar,
+        "affordances": affordances,
+        "threshold": threshold,
+        "min_multiplier": min_multiplier,
     }
 
 

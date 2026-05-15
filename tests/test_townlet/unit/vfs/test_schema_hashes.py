@@ -6,9 +6,11 @@ from pathlib import Path
 import yaml
 
 from tests.test_townlet.helpers.config_builder import PRIMARY_LEVEL_NAME, prepare_config_dir
+from townlet.config.affordances_v2_config import ModulationParamConfig
 from townlet.environment.action_config import ActionConfig
 from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.dto import RuntimeAction
+from townlet.vfs import vtc
 from townlet.vfs.schema import NormalizationSpec, ObservationField, VariableDef
 from townlet.vfs.schema_hashes import (
     canonical_action_schema,
@@ -374,6 +376,49 @@ def test_transition_graph_hash_binds_phases_and_compiled_rule_fields() -> None:
     )
 
 
+def test_transition_graph_hash_binds_modulation_rules() -> None:
+    """Transition hashes should bind compiled affordance modulation semantics."""
+    assert hasattr(vtc, "compile_vtc_modulations_with_phase_graph"), "VTC modulation compiler is required"
+
+    phase_graph = TransitionPhaseGraph.default()
+    action_program = compile_vtc_action_writes_with_phase_graph([], phase_graph)
+    modulation = ModulationParamConfig(
+        bar="energy",
+        affordances=["WORK"],
+        type="linear_multiplier",
+        threshold=0.3,
+        min_multiplier=0.5,
+    )
+    changed_modulation = modulation.model_copy(update={"min_multiplier": 0.25})
+
+    modulation_program = vtc.compile_vtc_modulations_with_phase_graph([modulation], phase_graph)
+
+    assert canonical_transition_graph_schema(phase_graph, action_program, modulation_program=modulation_program)["rules"] == [
+        {
+            "rule_id": "energy->WORK",
+            "kind": "modulation",
+            "source_variable_id": "energy",
+            "target_affordance_id": "WORK",
+            "variable_id": "affordance.WORK.multiplier",
+            "expression": "where(bar.energy < 0.3, 0.5 + (1.0 - 0.5) * (bar.energy / 0.3), 1.0)",
+            "condition": None,
+            "composition": "multiplicative_modifier",
+            "phase": "apply_modulations",
+            "priority": 0,
+            "clamp": [0.0, 1.0],
+            "telemetry_label": "modulation:energy->WORK",
+        }
+    ]
+
+    baseline = compute_transition_graph_hash(phase_graph, action_program, modulation_program=modulation_program)
+
+    assert baseline != compute_transition_graph_hash(
+        phase_graph,
+        action_program,
+        modulation_program=vtc.compile_vtc_modulations_with_phase_graph([changed_modulation], phase_graph),
+    )
+
+
 def test_vfs_hash_combines_component_hashes_and_transition_graph() -> None:
     """The VFS identity should bind all component hashes, including the transition graph."""
     variable_hash = "a" * 64
@@ -408,6 +453,10 @@ def test_compiler_surfaces_vfs_hash(tmp_path: Path) -> None:
         compile_vtc_action_writes_with_phase_graph(compiled.runtime_action_space.actions, TransitionPhaseGraph.default()),
         compile_vtc_threshold_cascades_with_phase_graph(
             compiled.get_level(PRIMARY_LEVEL_NAME).bars.cascades,
+            TransitionPhaseGraph.default(),
+        ),
+        vtc.compile_vtc_modulations_with_phase_graph(
+            compiled.get_level(PRIMARY_LEVEL_NAME).affordances.modulations,
             TransitionPhaseGraph.default(),
         ),
     )

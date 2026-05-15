@@ -192,16 +192,16 @@ The current repo convention is split deliberately:
 - `configs/<experiment>/variables_reference.yaml` is optional at the experiment root. When present, the loader treats it as static VFS observation metadata; it cannot define item-scoped variables and cannot carry expression DSL fields.
 - Level directories must not contain `vfs_profiles.yaml`; profile definitions are shared across curriculum levels, while level-specific activity and masking come from the compiled level metadata.
 
-| Component | Status | Tests | Coverage |
-|---|---:|---:|---:|
-| Schema Definitions (`VariableDef`, `ObservationField`) | Complete | 23 | 93% |
-| Variable Registry runtime storage + access control | Complete | 25 | 83% |
-| Observation Spec Builder compile-time spec generation | Complete | 22 | 92% |
-| `ActionConfig` extension with `reads` / `writes` fields | Complete | 14 | 78% |
-| Dimension Regression Tests for checkpoint compatibility | Complete | 6 | — |
-| Integration Tests end-to-end pipeline | Complete | 12 | — |
+| Component | Status | Primary verification source |
+|---|---:|---|
+| Schema Definitions (`VariableDef`, `ObservationField`) | Complete | `tests/test_townlet/unit/vfs/test_schema.py`, `tests/test_townlet/unit/vfs/test_observation_field_schema.py` |
+| Variable Registry runtime storage + access control | Complete | `tests/test_townlet/unit/vfs/test_registry.py`, `tests/test_townlet/unit/vfs/test_scoped_registry.py`, `tests/test_townlet/unit/vfs/test_variable_registry_tensor.py` |
+| Observation Spec Builder compile-time spec generation | Complete | `tests/test_townlet/unit/vfs/test_observation_builder.py`, `tests/test_townlet/unit/universe/test_vfs_observation_marking.py` |
+| `ActionConfig` extension with `reads` / `writes` fields | Complete | `tests/test_townlet/unit/vfs/test_vtc_action_writes.py`, `tests/test_townlet/unit/vfs/test_schema_hashes.py` |
+| Dimension regression coverage for checkpoint compatibility | Complete | `tests/test_townlet/unit/vfs/test_observation_dimension_regression.py` |
+| Integration coverage for end-to-end VFS flows | Complete | `tests/test_townlet/integration/vfs/`, `tests/test_townlet/integration/test_vfs_runtime_evaluation.py` |
 
-**Total**: 88 tests passing, approximately 90% average coverage.
+Use the current pytest and coverage artifacts as the source of truth for verification metrics. This spec intentionally does not freeze point-in-time metric snapshots.
 
 ### 3.2 What Phase 1 proves
 
@@ -2268,7 +2268,7 @@ This would make VFS teachable and debuggable.
 - Variable registry implemented.
 - Observation spec builder implemented.
 - ActionConfig dependency tracking implemented.
-- 88 tests passing.
+- VFS regression tests cover schema definitions, runtime storage, observation generation, action write compilation, checkpoint dimensions, and integration flows.
 - All five current curriculum configs dimension-validated.
 
 ### 24.2 Phase 1.5 success

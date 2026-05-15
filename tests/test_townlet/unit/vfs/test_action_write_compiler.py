@@ -90,6 +90,7 @@ def test_action_write_compiler_applies_write_only_to_selected_active_agents() ->
     updated = program.apply(
         actions=torch.tensor([2, 0, 2]),
         vfs_state={"energy": torch.tensor([0.1, 0.2, 0.3])},
+        bars_state={},
         active_mask=torch.tensor([True, True, False]),
         device=torch.device("cpu"),
     )
@@ -116,11 +117,39 @@ def test_action_write_compiler_combines_action_mask_with_condition() -> None:
     updated = program.apply(
         actions=torch.tensor([3, 3, 3]),
         vfs_state={"energy": torch.tensor([0.2, 0.8, 0.4])},
+        bars_state={},
         active_mask=torch.tensor([True, True, True]),
         device=torch.device("cpu"),
     )
 
     assert torch.allclose(updated["energy"], torch.tensor([0.6, 0.8, 0.8]))
+
+
+def test_action_write_compiler_can_target_meter_bars() -> None:
+    action = _action(
+        action_id=11,
+        name="REST",
+        writes=[
+            _write(
+                variable_id="energy",
+                expression="bar.energy + 0.25",
+                condition=None,
+                composition="overwrite",
+                clamp=(0.0, 1.0),
+            )
+        ],
+    )
+
+    program = compile_action_writes([action])
+    updated = program.apply(
+        actions=torch.tensor([11, 0]),
+        vfs_state={},
+        bars_state={"energy": torch.tensor([0.2, 0.3])},
+        active_mask=torch.tensor([True, True]),
+        device=torch.device("cpu"),
+    )
+
+    assert torch.allclose(updated["energy"], torch.tensor([0.45, 0.3]))
 
 
 def test_action_write_compiler_composes_additive_and_multiplicative_writes() -> None:
@@ -175,6 +204,7 @@ def test_action_write_compiler_composes_additive_and_multiplicative_writes() -> 
     updated = program.apply(
         actions=torch.tensor([4, 0]),
         vfs_state={"energy": torch.tensor([0.7, 0.7]), "fatigue": torch.tensor([2.0, 2.0])},
+        bars_state={},
         active_mask=torch.tensor([True, True]),
         device=torch.device("cpu"),
     )
@@ -220,6 +250,7 @@ def test_action_write_compiler_composes_min_max_and_clamp_writes() -> None:
             "cap_value": torch.tensor([0.9, 0.9]),
             "energy": torch.tensor([0.8, 0.8]),
         },
+        bars_state={},
         active_mask=torch.tensor([True, True]),
         device=torch.device("cpu"),
     )
@@ -281,6 +312,7 @@ def test_action_write_compiler_resolves_priority_and_last_write_wins() -> None:
     updated = program.apply(
         actions=torch.tensor([6, 0]),
         vfs_state={"target": torch.tensor([0.0, 0.0]), "status": torch.tensor([0.0, 0.0])},
+        bars_state={},
         active_mask=torch.tensor([True, True]),
         device=torch.device("cpu"),
     )
@@ -321,6 +353,7 @@ def test_action_write_compiler_reads_phase_snapshot_before_committing_writes() -
     updated = program.apply(
         actions=torch.tensor([7]),
         vfs_state={"energy": torch.tensor([1.0]), "satiation": torch.tensor([0.0])},
+        bars_state={},
         active_mask=torch.tensor([True]),
         device=torch.device("cpu"),
     )
@@ -361,6 +394,7 @@ def test_action_write_compiler_uses_spec_phase_order_not_lexical_order() -> None
     updated = program.apply(
         actions=torch.tensor([8]),
         vfs_state={"energy": torch.tensor([1.0])},
+        bars_state={},
         active_mask=torch.tensor([True]),
         device=torch.device("cpu"),
     )
@@ -401,6 +435,7 @@ def test_action_write_compiler_accepts_configured_transition_phase_order() -> No
     updated = program.apply(
         actions=torch.tensor([9]),
         vfs_state={"energy": torch.tensor([1.0])},
+        bars_state={},
         active_mask=torch.tensor([True]),
         device=torch.device("cpu"),
     )

@@ -57,6 +57,7 @@ class CompiledActionWriteProgram:
         *,
         actions: torch.Tensor,
         vfs_state: Mapping[str, torch.Tensor],
+        bars_state: Mapping[str, torch.Tensor],
         active_mask: torch.Tensor,
         device: torch.device,
     ) -> dict[str, torch.Tensor]:
@@ -65,6 +66,11 @@ class CompiledActionWriteProgram:
             raise ValueError(f"actions shape {tuple(actions.shape)} must match active_mask shape {tuple(active_mask.shape)}")
 
         updated = {name: value.to(device=device).clone() for name, value in vfs_state.items()}
+        for bar_name, value in bars_state.items():
+            if bar_name in updated:
+                raise ValueError(f"Action write state has ambiguous bar/VFS variable '{bar_name}'")
+            updated[bar_name] = value.to(device=device).clone()
+        bar_names = set(bars_state)
         actions_on_device = actions.to(device=device)
         active_mask_on_device = active_mask.to(device=device)
 
@@ -78,7 +84,7 @@ class CompiledActionWriteProgram:
                     raise KeyError(f"Action write targets unknown VFS variable '{write.variable_id}'")
 
                 context = ExecutionContext(
-                    bars={},
+                    bars={name: phase_snapshot[name] for name in bar_names},
                     vfs=dict(phase_snapshot),
                     affordances={},
                     temporal={},

@@ -42,6 +42,14 @@ from townlet.universe.errors import CompilationError
 from townlet.vfs.profiles import CompiledGlobalProfile, CompiledVariable
 from townlet.vfs.schema import WriteSpec
 
+DEFAULT_CURRICULUM_LEVELS = (
+    "L0_0_minimal",
+    "L0_5_dual_resource",
+    "L1_full_observability",
+    "L2_partial_observability",
+    "L3_temporal_mechanics",
+)
+
 # =============================================================================
 # AFFORDANCE FILTERING HELPERS
 # =============================================================================
@@ -82,12 +90,33 @@ def test_environment_runtime_modules_own_extracted_clusters():
 
 def _with_runtime_action_write(universe, level_name: str, action_name: str, write: WriteSpec):
     """Return a compiled universe whose named runtime action carries one VFS write."""
+    return _with_runtime_action_surface(universe, level_name, action_name, writes=(write,), disable_vfs_profiles=True)
+
+
+def _with_runtime_action_surface(
+    universe,
+    level_name: str,
+    action_name: str,
+    *,
+    costs: dict[str, float] | None = None,
+    effects: dict[str, float] | None = None,
+    writes: tuple[WriteSpec, ...] = (),
+    disable_vfs_profiles: bool = False,
+):
+    """Return a compiled universe with patched runtime action effects/writes for equivalence tests."""
     level = universe.get_level(level_name)
     patched_actions = []
     found = False
     for action in level.runtime_action_space.actions:
         if action.name == action_name:
-            patched_actions.append(replace(action, writes=(write.model_dump(mode="json"),)))
+            patched_actions.append(
+                replace(
+                    action,
+                    costs=costs if costs is not None else action.costs,
+                    effects=effects if effects is not None else action.effects,
+                    writes=tuple(write.model_dump(mode="json") for write in writes),
+                )
+            )
             found = True
         else:
             patched_actions.append(action)
@@ -102,9 +131,9 @@ def _with_runtime_action_write(universe, level_name: str, action_name: str, writ
         universe,
         runtime_action_space=runtime_action_space,
         all_levels=all_levels,
-        compiled_vfs_profiles=None,
-        vfs_observation_spec=None,
-        vfs_observation_marks=None,
+        compiled_vfs_profiles=None if disable_vfs_profiles else universe.compiled_vfs_profiles,
+        vfs_observation_spec=None if disable_vfs_profiles else universe.vfs_observation_spec,
+        vfs_observation_marks=None if disable_vfs_profiles else universe.vfs_observation_marks,
     )
 
 
@@ -362,6 +391,69 @@ class TestVectorizedHamletEnvStep:
         after = env.vfs_registry.get("deficit_energy", reader="engine")
 
         assert torch.allclose(after, torch.tensor([before[0] + 0.25, before[1]], device=env.device))
+
+    def test_vtc_action_effects_match_imperative_custom_effects_all_curriculum_levels(self, compile_universe, cpu_device):
+        write = WriteSpec(
+            variable_id="energy",
+            expression="0.13",
+            condition=None,
+            composition="additive_delta",
+            phase="apply_action_effects",
+            priority=0,
+            clamp=(0.0, 1.0),
+            telemetry_label="rest_energy_gain",
+        )
+
+        for level_name in DEFAULT_CURRICULUM_LEVELS:
+            universe = compile_universe(Path("configs/default_curriculum"), primary_level=level_name)
+            legacy_universe = _with_runtime_action_surface(
+                universe,
+                level_name,
+                "REST",
+                effects={"energy": 0.13},
+                writes=(),
+            )
+            vtc_universe = _with_runtime_action_surface(
+                universe,
+                level_name,
+                "REST",
+                effects={},
+                writes=(write,),
+            )
+            legacy_env = vectorized_env_module.VectorizedHamletEnv.from_universe(
+                legacy_universe,
+                level_name=level_name,
+                num_agents=3,
+                device=cpu_device,
+            )
+            vtc_env = vectorized_env_module.VectorizedHamletEnv.from_universe(
+                vtc_universe,
+                level_name=level_name,
+                num_agents=3,
+                device=cpu_device,
+            )
+
+            torch.manual_seed(17)
+            legacy_env.reset()
+            torch.manual_seed(17)
+            vtc_env.reset()
+            vtc_env.positions = legacy_env.positions.clone()
+            vtc_env.meters = legacy_env.meters.clone()
+            vtc_env.dones = legacy_env.dones.clone()
+            vtc_env.step_counts = legacy_env.step_counts.clone()
+            vtc_env.global_tick = legacy_env.global_tick
+            vtc_env.time_of_day = legacy_env.time_of_day
+
+            actions = torch.full((legacy_env.num_agents,), legacy_env.action_ids["REST"], dtype=torch.long, device=legacy_env.device)
+            assert torch.equal(legacy_env.get_action_masks(), vtc_env.get_action_masks())
+
+            _, legacy_rewards, legacy_dones, _ = legacy_env.step(actions)
+            _, vtc_rewards, vtc_dones, _ = vtc_env.step(actions)
+
+            assert torch.allclose(legacy_env.meters, vtc_env.meters, atol=1e-6), level_name
+            assert torch.allclose(legacy_rewards, vtc_rewards, atol=1e-6), level_name
+            assert torch.equal(legacy_dones, vtc_dones), level_name
+            assert torch.equal(legacy_env.get_action_masks(), vtc_env.get_action_masks()), level_name
 
     def test_step_increments_time_of_day(self, custom_env_builder):
         # Use temporal-enabled level to ensure mechanics are active

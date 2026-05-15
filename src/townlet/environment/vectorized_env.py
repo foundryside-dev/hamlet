@@ -1279,15 +1279,31 @@ class VectorizedHamletEnv:
         updated_vfs = program.apply(
             actions=actions,
             vfs_state=self._current_vfs_state(),
+            bars_state=self._current_bar_state(),
             active_mask=active_mask,
             device=self.device,
         )
         for variable_id, value in updated_vfs.items():
-            self.vfs_registry.set(variable_id, value, writer="engine")
+            if variable_id in self.meter_name_to_index:
+                self._set_vtc_bar_value(variable_id, value)
+            elif variable_id in self.vfs_registry.variables:
+                self.vfs_registry.set(variable_id, value, writer="engine")
 
     def _current_vfs_state(self) -> dict[str, torch.Tensor]:
         """Return the engine-readable VFS registry snapshot."""
         return {var_name: self.vfs_registry.get(var_name, reader="engine") for var_name in self.vfs_registry.variables.keys()}
+
+    def _current_bar_state(self) -> dict[str, torch.Tensor]:
+        """Return meter bars in the VTC expression namespace."""
+        return {bar_name: self.meters[:, idx] for bar_name, idx in self.meter_name_to_index.items()}
+
+    def _set_vtc_bar_value(self, bar_name: str, value: torch.Tensor) -> None:
+        """Write a VTC-updated bar tensor back to the environment meters."""
+        meter_idx = self.meter_name_to_index[bar_name]
+        expected = self.meters[:, meter_idx]
+        if value.shape != expected.shape:
+            raise ValueError(f"VTC action write for bar '{bar_name}' produced shape {tuple(value.shape)}, expected {tuple(expected.shape)}")
+        self.meters[:, meter_idx] = value.to(device=self.device, dtype=expected.dtype)
 
     def _handle_interactions(self, interact_mask: torch.Tensor) -> dict:
         """Handle INTERACT actions with multi-tick accumulation."""

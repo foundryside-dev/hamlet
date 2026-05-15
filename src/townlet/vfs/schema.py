@@ -37,9 +37,17 @@ class VariableScope(StrEnum):
 class NormalizationSpec(BaseModel):
     """Observation normalization specification.
 
-    Supports two normalization kinds:
+    Supports normalization kinds from the VFS v1.1 observation ABI:
+    - none: Pass-through
     - minmax: Linear scaling to [min, max] range
     - zscore: Z-score normalization (value - mean) / std
+    - cyclical_sin_cos: Encode cyclical scalar values as sin/cos pairs
+    - binary: Threshold values into 0/1
+    - one_hot: Expand categorical integer ids into one-hot vectors
+    - log_scaled: Scale non-negative values logarithmically
+    - clipped_log_scaled: Clamp then log-scale values
+    - rank_scaled: Scale batch ranks to [0, 1]
+    - masked_value: Replace sentinel values with a configured fill value
 
     Examples:
         # Scalar minmax
@@ -54,16 +62,27 @@ class NormalizationSpec(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    kind: Literal["minmax", "zscore"] = Field(description="Normalization method: minmax or zscore")
+    kind: Literal[
+        "none",
+        "minmax",
+        "zscore",
+        "cyclical_sin_cos",
+        "one_hot",
+        "binary",
+        "log_scaled",
+        "clipped_log_scaled",
+        "rank_scaled",
+        "masked_value",
+    ] = Field(description="Normalization method from the VFS v1.1 vocabulary")
 
     # MinMax parameters (can be scalar or list)
     min: float | list[float] | None = Field(
         default=None,
-        description="Minimum value(s) for minmax normalization",
+        description="Minimum value(s) for minmax/log-scaled normalization",
     )
     max: float | list[float] | None = Field(
         default=None,
-        description="Maximum value(s) for minmax normalization",
+        description="Maximum value(s) for minmax/log-scaled normalization",
     )
 
     # Z-score parameters (can be scalar or list)
@@ -76,6 +95,31 @@ class NormalizationSpec(BaseModel):
         description="Standard deviation(s) for zscore normalization",
     )
 
+    period: float | None = Field(
+        default=None,
+        description="Positive period for cyclical_sin_cos normalization",
+    )
+
+    categories: int | None = Field(
+        default=None,
+        description="Category count for one_hot normalization",
+    )
+
+    threshold: float | None = Field(
+        default=None,
+        description="Threshold for binary normalization",
+    )
+
+    mask_value: float | None = Field(
+        default=None,
+        description="Sentinel value replaced by masked_value normalization",
+    )
+
+    fill_value: float | None = Field(
+        default=None,
+        description="Replacement value for masked_value normalization",
+    )
+
     @model_validator(mode="after")
     def validate_normalization_params(self) -> "NormalizationSpec":
         """Validate that required parameters are present for each kind."""
@@ -84,12 +128,54 @@ class NormalizationSpec(BaseModel):
                 raise ValueError("minmax normalization requires 'min' parameter")
             if self.max is None:
                 raise ValueError("minmax normalization requires 'max' parameter")
+            if not self._bounds_are_ordered():
+                raise ValueError("minmax normalization requires 'min' < 'max'")
         elif self.kind == "zscore":
             if self.mean is None:
                 raise ValueError("zscore normalization requires 'mean' parameter")
             if self.std is None:
                 raise ValueError("zscore normalization requires 'std' parameter")
+            if self._contains_zero(self.std):
+                raise ValueError("zscore normalization requires non-zero 'std'")
+        elif self.kind == "cyclical_sin_cos":
+            if self.period is None or self.period <= 0:
+                raise ValueError("cyclical_sin_cos normalization requires positive 'period'")
+        elif self.kind == "one_hot":
+            if self.categories is None or self.categories < 2:
+                raise ValueError("one_hot normalization requires at least 2 categories")
+        elif self.kind == "binary":
+            if self.threshold is None:
+                raise ValueError("binary normalization requires 'threshold'")
+        elif self.kind in {"log_scaled", "clipped_log_scaled"}:
+            if self.min is None or self.max is None:
+                raise ValueError(f"{self.kind} normalization requires 'min' and 'max' parameters")
+            if not self._bounds_are_ordered():
+                raise ValueError(f"{self.kind} normalization requires 'min' < 'max'")
+        elif self.kind == "masked_value":
+            if self.mask_value is None:
+                raise ValueError("masked_value normalization requires 'mask_value'")
+            if self.fill_value is None:
+                raise ValueError("masked_value normalization requires 'fill_value'")
         return self
+
+    def _bounds_are_ordered(self) -> bool:
+        """Return whether min/max parameters are broadcast-compatible and ordered."""
+        if self.min is None or self.max is None:
+            return False
+        min_values = self.min if isinstance(self.min, list) else [self.min]
+        max_values = self.max if isinstance(self.max, list) else [self.max]
+        if len(min_values) == 1 and len(max_values) > 1:
+            min_values = min_values * len(max_values)
+        if len(max_values) == 1 and len(min_values) > 1:
+            max_values = max_values * len(min_values)
+        if len(min_values) != len(max_values):
+            return False
+        return all(min_value < max_value for min_value, max_value in zip(min_values, max_values, strict=True))
+
+    @staticmethod
+    def _contains_zero(value: float | list[float]) -> bool:
+        values = value if isinstance(value, list) else [value]
+        return any(item == 0 for item in values)
 
 
 class WriteSpec(BaseModel):

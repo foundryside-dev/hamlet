@@ -7,7 +7,7 @@ Phase 1: Schema definitions, registry, observation specs
 Phase 2: Derivation graphs, complex types, expression evaluation
 """
 
-from townlet.vfs.observation_builder import VFSObservationSpec
+from townlet.vfs.observation_builder import VFSObservationSpec, apply_normalization
 from townlet.vfs.registry import VariableRegistry, VFSRegistryProtocol
 from townlet.vfs.schema import (
     NormalizationSpec,
@@ -24,4 +24,5 @@ __all__ = [
     "VFSRegistryProtocol",
     "VFSObservationSpec",
     "WriteSpec",
+    "apply_normalization",
 ]

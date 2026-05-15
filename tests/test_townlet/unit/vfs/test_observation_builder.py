@@ -9,8 +9,9 @@ from townlet.config.vfs_profiles_config import (
     GlobalVFSProfileConfig,
     GlobalVFSVariableConfig,
 )
-from townlet.vfs.observation_builder import VFSObservationSpec, build_vfs_observation
+from townlet.vfs.observation_builder import VFSObservationSpec, apply_normalization, build_vfs_observation
 from townlet.vfs.registry import ScopedVariableRegistry
+from townlet.vfs.schema import NormalizationSpec
 
 
 def test_vfs_obs_spec_global_variables():
@@ -110,6 +111,53 @@ def test_vfs_obs_spec_vecn_dimensions():
     )
 
     assert spec.agent_vfs_dim == 4
+
+
+def test_apply_cyclical_sin_cos_normalization():
+    """Cyclical normalization expands scalar time into sin/cos features."""
+    values = torch.tensor([0.0, 6.0, 12.0])
+    normalized = apply_normalization(values, NormalizationSpec(kind="cyclical_sin_cos", period=24.0))
+
+    expected = torch.tensor(
+        [
+            [0.0, 1.0],
+            [1.0, 0.0],
+            [0.0, -1.0],
+        ]
+    )
+    assert torch.allclose(normalized, expected, atol=1e-6)
+
+
+def test_apply_discrete_and_mask_normalizations():
+    """Binary, one-hot, and masked-value normalizations produce stable tensors."""
+    binary = apply_normalization(torch.tensor([0.2, 0.7]), NormalizationSpec(kind="binary", threshold=0.5))
+    one_hot = apply_normalization(torch.tensor([0, 2, 1]), NormalizationSpec(kind="one_hot", categories=3))
+    masked = apply_normalization(torch.tensor([-1.0, 2.5]), NormalizationSpec(kind="masked_value", mask_value=-1.0, fill_value=0.0))
+
+    assert torch.equal(binary, torch.tensor([0.0, 1.0]))
+    assert torch.equal(
+        one_hot,
+        torch.tensor(
+            [
+                [1.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0],
+                [0.0, 1.0, 0.0],
+            ]
+        ),
+    )
+    assert torch.equal(masked, torch.tensor([0.0, 2.5]))
+
+
+def test_apply_log_and_rank_normalizations():
+    """Log and rank normalization scale numeric tensors without hidden Python loops."""
+    values = torch.tensor([0.0, 9.0, 99.0])
+    log_scaled = apply_normalization(values, NormalizationSpec(kind="log_scaled", min=0.0, max=99.0))
+    clipped_log = apply_normalization(torch.tensor([-10.0, 999.0]), NormalizationSpec(kind="clipped_log_scaled", min=0.0, max=99.0))
+    ranked = apply_normalization(torch.tensor([20.0, 10.0, 30.0]), NormalizationSpec(kind="rank_scaled"))
+
+    assert torch.allclose(log_scaled, torch.log1p(values) / torch.log1p(torch.tensor(99.0)))
+    assert torch.allclose(clipped_log, torch.tensor([0.0, 1.0]))
+    assert torch.equal(ranked, torch.tensor([0.5, 0.0, 1.0]))
 
 
 def test_vfs_obs_spec_complete():

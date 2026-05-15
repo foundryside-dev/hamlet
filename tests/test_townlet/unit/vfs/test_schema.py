@@ -242,6 +242,32 @@ class TestNormalizationSpec:
         assert norm.mean == [0.5, 0.5]
         assert norm.std == [0.2, 0.2]
 
+    def test_full_v11_normalization_vocabulary_valid(self):
+        """NormalizationSpec accepts the full VFS v1.1 vocabulary with required parameters."""
+        from townlet.vfs.schema import NormalizationSpec
+
+        specs = [
+            NormalizationSpec(kind="none"),
+            NormalizationSpec(kind="cyclical_sin_cos", period=24.0),
+            NormalizationSpec(kind="binary", threshold=0.5),
+            NormalizationSpec(kind="one_hot", categories=4),
+            NormalizationSpec(kind="log_scaled", min=0.0, max=100.0),
+            NormalizationSpec(kind="clipped_log_scaled", min=0.0, max=100.0),
+            NormalizationSpec(kind="rank_scaled"),
+            NormalizationSpec(kind="masked_value", mask_value=-1.0, fill_value=0.0),
+        ]
+
+        assert [spec.kind for spec in specs] == [
+            "none",
+            "cyclical_sin_cos",
+            "binary",
+            "one_hot",
+            "log_scaled",
+            "clipped_log_scaled",
+            "rank_scaled",
+            "masked_value",
+        ]
+
     def test_minmax_without_min_rejected(self):
         """MinMax normalization requires min field."""
         from townlet.vfs.schema import NormalizationSpec
@@ -263,6 +289,41 @@ class TestNormalizationSpec:
                 std=0.2,
                 # Missing mean!
             )
+
+    def test_cyclical_sin_cos_requires_positive_period(self):
+        """Cyclical normalization requires an explicit positive period."""
+        from townlet.vfs.schema import NormalizationSpec
+
+        with pytest.raises(ValidationError, match="positive 'period'"):
+            NormalizationSpec(kind="cyclical_sin_cos", period=0.0)
+
+    def test_one_hot_requires_at_least_two_categories(self):
+        """One-hot normalization requires a useful category count."""
+        from townlet.vfs.schema import NormalizationSpec
+
+        with pytest.raises(ValidationError, match="at least 2 categories"):
+            NormalizationSpec(kind="one_hot", categories=1)
+
+    def test_binary_requires_threshold(self):
+        """Binary normalization requires an explicit threshold."""
+        from townlet.vfs.schema import NormalizationSpec
+
+        with pytest.raises(ValidationError, match="requires 'threshold'"):
+            NormalizationSpec(kind="binary")
+
+    def test_log_scaled_requires_ordered_bounds(self):
+        """Log-scaled normalization requires min < max."""
+        from townlet.vfs.schema import NormalizationSpec
+
+        with pytest.raises(ValidationError, match="requires 'min' < 'max'"):
+            NormalizationSpec(kind="log_scaled", min=10.0, max=10.0)
+
+    def test_masked_value_requires_mask_and_fill(self):
+        """Masked-value normalization requires both mask and fill values."""
+        from townlet.vfs.schema import NormalizationSpec
+
+        with pytest.raises(ValidationError, match="requires 'mask_value'"):
+            NormalizationSpec(kind="masked_value", fill_value=0.0)
 
 
 class TestObservationField:

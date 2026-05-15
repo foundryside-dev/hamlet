@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 
 import torch
@@ -12,9 +13,11 @@ from townlet.config.vfs_profiles_config import (
     ItemVFSProfileConfig,
 )
 from townlet.vfs.registry import VFSRegistryProtocol
+from townlet.vfs.schema import NormalizationSpec
 
 __all__ = [
     "VFSObservationSpec",
+    "apply_normalization",
     "build_vfs_observation",
 ]
 
@@ -52,6 +55,93 @@ def _variable_observation_dim(
 
 def _agent_can_observe(var) -> bool:
     return "agent" in var.exposed_to
+
+
+def _normalization_parameter(
+    value: float | list[float] | None,
+    target: torch.Tensor,
+    name: str,
+) -> torch.Tensor:
+    if value is None:
+        raise ValueError(f"Normalization parameter {name!r} is required")
+    return torch.as_tensor(value, dtype=target.dtype, device=target.device)
+
+
+def _rank_scale(value: torch.Tensor) -> torch.Tensor:
+    if value.ndim == 0 or value.shape[0] <= 1:
+        return torch.zeros_like(value)
+
+    order = torch.argsort(value, dim=0, stable=True)
+    ranks = torch.empty_like(value)
+    rank_values = torch.arange(value.shape[0], dtype=value.dtype, device=value.device)
+    while rank_values.ndim < value.ndim:
+        rank_values = rank_values.unsqueeze(-1)
+    ranks.scatter_(0, order, rank_values.expand_as(value))
+    return ranks / float(value.shape[0] - 1)
+
+
+def apply_normalization(value: torch.Tensor, normalization: NormalizationSpec) -> torch.Tensor:
+    """Apply a VFS normalization spec to a tensor."""
+    value_float = value if torch.is_floating_point(value) else value.float()
+
+    if normalization.kind == "none":
+        return value_float
+
+    if normalization.kind == "minmax":
+        min_value = _normalization_parameter(normalization.min, value_float, "min")
+        max_value = _normalization_parameter(normalization.max, value_float, "max")
+        return (value_float - min_value) / (max_value - min_value)
+
+    if normalization.kind == "zscore":
+        mean = _normalization_parameter(normalization.mean, value_float, "mean")
+        std = _normalization_parameter(normalization.std, value_float, "std")
+        return (value_float - mean) / std
+
+    if normalization.kind == "cyclical_sin_cos":
+        if normalization.period is None:
+            raise ValueError("cyclical_sin_cos normalization requires period")
+        angle = value_float * (2.0 * math.pi / normalization.period)
+        if angle.ndim == 1:
+            angle = angle.unsqueeze(-1)
+        return torch.cat((torch.sin(angle), torch.cos(angle)), dim=-1)
+
+    if normalization.kind == "binary":
+        if normalization.threshold is None:
+            raise ValueError("binary normalization requires threshold")
+        return (value_float > normalization.threshold).to(dtype=value_float.dtype)
+
+    if normalization.kind == "one_hot":
+        if normalization.categories is None:
+            raise ValueError("one_hot normalization requires categories")
+        indices = value.long()
+        if indices.ndim > 0 and indices.shape[-1] == 1:
+            indices = indices.squeeze(-1)
+        if bool(((indices < 0) | (indices >= normalization.categories)).any().item()):
+            raise ValueError("one_hot normalization received category index outside configured range")
+        return torch.nn.functional.one_hot(indices, num_classes=normalization.categories).to(dtype=torch.float32)
+
+    if normalization.kind in {"log_scaled", "clipped_log_scaled"}:
+        min_value = _normalization_parameter(normalization.min, value_float, "min")
+        max_value = _normalization_parameter(normalization.max, value_float, "max")
+        shifted = (
+            torch.clamp(value_float, min=min_value, max=max_value) - min_value
+            if normalization.kind == "clipped_log_scaled"
+            else value_float - min_value
+        )
+        if bool((shifted < 0).any().item()):
+            raise ValueError("log_scaled normalization received value below configured min")
+        return torch.log1p(shifted) / torch.log1p(max_value - min_value)
+
+    if normalization.kind == "rank_scaled":
+        return _rank_scale(value_float)
+
+    if normalization.kind == "masked_value":
+        if normalization.mask_value is None or normalization.fill_value is None:
+            raise ValueError("masked_value normalization requires mask_value and fill_value")
+        mask = value_float == normalization.mask_value
+        return torch.where(mask, torch.full_like(value_float, normalization.fill_value), value_float)
+
+    raise ValueError(f"Unsupported normalization kind: {normalization.kind!r}")
 
 
 @dataclass

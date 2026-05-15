@@ -345,15 +345,18 @@ In VFS terms, actions and affordances should declare:
 
 ### 5.1 Current scopes
 
-The current guide defines three useful scope classes:
+The current repo defines four canonical scope classes:
 
 | Scope | Use case | Example |
 |---|---|---|
 | `global` | Shared state | `time_sin`, `day_of_week`, `weather_state` |
 | `agent` | Per-agent observable state | `energy`, `position`, `health` |
 | `agent_private` | Per-agent hidden state | `internal_motivation`, `hidden_reward` |
+| `item` | Per-item-instance state compiled from item profiles | `durability`, `charges`, `spoilage` |
 
-These are sufficient for Phase 1–3 style single-agent survival and temporal mechanics.
+`item` scope is profile-based, not loaded from `variables_reference.yaml`. The registry allocates a profile-agnostic `item_vfs[max_items, max_profile_vars]` tensor, records `item_profile_map[profile_name][var_name] -> tensor_index`, and masks unused profile slots. Item profile definitions therefore live in `vfs_profiles.yaml:item_profiles`, while item instances address rows in the shared item VFS tensor.
+
+These scopes are sufficient for Phase 1–3 style single-agent survival, temporal mechanics, and item-bearing environments.
 
 ### 5.2 Recommended future scopes
 

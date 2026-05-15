@@ -27,6 +27,7 @@ class ObservationEncoder:
         outputs: list[torch.Tensor] = []
         self._sync_position_observation_to_vfs()
         self._sync_meter_observation_to_vfs()
+        self._sync_affordance_observation_to_vfs()
 
         def _ensure_observation_field_shape(field_name: str, value: torch.Tensor, dims: int) -> torch.Tensor:
             if value.dim() == 1:
@@ -70,7 +71,7 @@ class ObservationEncoder:
             elif name == "obs_meters":
                 value = self._build_vfs_agent_observation_field(name, dims)
             elif name in {"obs_affordance_at_position", "obs_affordances"}:
-                value = env._build_affordance_encoding(dims)
+                value = self._build_vfs_agent_observation_field(name, dims)
             elif name == "obs_effects":
                 value = env._build_effects_observation(dims)
             elif name == "obs_temporal":
@@ -183,6 +184,18 @@ class ObservationEncoder:
         if tuple(env.meters.shape) != expected_shape:
             raise ValueError(f"Observation field 'obs_meters' source shape {tuple(env.meters.shape)}, expected {expected_shape}.")
         env.vfs_registry.set("obs_meters", env.meters.to(device=env.device, dtype=torch.float32), writer="engine")
+
+    def _sync_affordance_observation_to_vfs(self) -> None:
+        """Publish current affordance-at-position observation into VFS state."""
+        env = self._env
+        for field in env.observation_spec.fields:
+            if field.name not in {"obs_affordance_at_position", "obs_affordances"}:
+                continue
+            if field.name not in env.vfs_registry.variables:
+                raise ValueError(f"Observation field '{field.name}' is present but no matching VFS variable exists.")
+
+            affordance = self._build_affordance_encoding(field.dims)
+            env.vfs_registry.set(field.name, affordance.to(device=env.device, dtype=torch.float32), writer="engine")
 
     def _build_affordance_encoding(self, dims: int) -> torch.Tensor:
         """Build one-hot encoding of current affordance under each agent."""

@@ -120,6 +120,27 @@ class TestFullObservability:
         assert affordance.sum() == 1.0
         assert ((affordance == 0.0) | (affordance == 1.0)).all()
 
+    def test_affordance_observation_is_sourced_from_vfs_registry(self, test_config_pack_path, cpu_device, env_factory):
+        """obs_affordance_at_position is generated from the VFS registry value."""
+        env = env_factory(
+            config_dir=test_config_pack_path,
+            num_agents=1,
+            device_override=cpu_device,
+        )
+
+        env.reset()
+        affordance_name, affordance_position = next(iter(env.affordances.items()))
+        env.positions[0] = affordance_position.clone()
+
+        affordance_field = env.observation_spec.get_field_by_name("obs_affordance_at_position")
+        obs = env._get_observations()
+        affordance_obs = obs[:, affordance_field.start_index : affordance_field.end_index]
+        affordance_vfs = env.vfs_registry.get("obs_affordance_at_position", reader="engine")
+
+        assert affordance_name in env.affordance_names
+        assert torch.allclose(affordance_vfs, affordance_obs)
+        assert affordance_vfs.sum() == 1.0
+
 
 class TestPartialObservability:
     """Test observation construction in POMDP mode (5×5 vision).

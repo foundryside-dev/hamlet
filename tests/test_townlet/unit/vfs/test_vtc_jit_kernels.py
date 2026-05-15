@@ -77,6 +77,36 @@ def test_vtc_generated_hot_paths_do_not_call_expression_interpreter(monkeypatch)
     assert torch.equal(dones, torch.tensor([True, True, False], device=device))
 
 
+def test_generated_vtc_programs_do_not_keep_interpreter_fallback_helpers() -> None:
+    """Generated transition programs should not retain unused interpreter fallback paths."""
+    forbidden_helpers = {
+        vtc.VTCThresholdCascadeProgram: {
+            "_apply_composed_rule",
+            "_broadcast_agent_mask",
+            "_build_rule_mask",
+            "_coerce_condition_mask",
+            "_evaluate_tensor",
+        },
+        vtc.VTCPassiveDepletionProgram: {
+            "_apply_composed_rule",
+            "_build_rule_mask",
+            "_coerce_rule_tensor",
+            "_evaluate_tensor",
+        },
+        vtc.VTCModulationProgram: {
+            "_apply_composed_rule",
+            "_build_rule_mask",
+            "_coerce_rule_tensor",
+            "_evaluate_tensor",
+        },
+        vtc.VTCTerminalConditionProgram: {"_evaluate_bool_tensor"},
+    }
+
+    for program_cls, helper_names in forbidden_helpers.items():
+        leaked_helpers = sorted(helper_name for helper_name in helper_names if helper_name in program_cls.__dict__)
+        assert leaked_helpers == [], f"{program_cls.__name__} still exposes interpreter fallback helpers: {leaked_helpers}"
+
+
 def test_scripted_vtc_kernels_match_hardcoded_tensor_baselines() -> None:
     """Scripted kernels should preserve the direct hardcoded tensor equations."""
     device = torch.device("cpu")

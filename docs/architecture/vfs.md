@@ -847,9 +847,11 @@ Current implementation is partial but real:
 - `VFSProfileCompiler` compiles profile expressions on the read/derived-variable path: AST parsing, dependency graph construction, topological sorting, cycle detection, and expression type checking.
 - `VFSEvaluator` evaluates compiled profile variables in dependency order, with mark-and-sweep evaluation for observed variables plus dependencies and eager mode when all variables are needed.
 - `VTCActionWriteProgram` executes the first write-path slice for `ActionConfig.writes`: parsed expressions, phase ordering, composition modes, clamps, conditions, active-agent masks, and atomic per-phase commit batches.
+- Generated VTC programs own passive depletion, threshold cascades, affordance modulation, operating-hour gates, interaction progress, terminal checks, and the reward-component contract.
 - `vtc_kernels.py` contains TorchScript kernels for generated hot transition paths: masked action-write commits, passive depletion, threshold cascades, linear affordance modulation, and terminal-condition checks. Arbitrary action-write expressions still evaluate through the typed expression AST before entering scripted tensor composition.
+- Generated transition programs have no interpreter fallback helpers. Unsupported generated-rule forms fail loudly instead of silently routing through an old imperative executor.
 
-The unsolved work is not "build any compiler"; it is "finish the VTC as the single write-path and world-transition compiler."
+The remaining VTC work is now scope expansion and hardening: full action write validation, occupancy and contention, relational/social scopes, dynamic variables, and telemetry side-effect compilation.
 
 ### 11.2 Why the compiler should cover transitions, not only actions
 
@@ -1717,7 +1719,7 @@ Benefits:
 2. Cache static observation fields.
 3. JIT compile hot transition paths. Current scripted kernels cover generated passive depletions, threshold cascades, linear modulations, terminal checks, and masked action-write commits.
 4. Benchmark against hardcoded baseline.
-5. Delete old imperative paths after equivalence is proven.
+5. Delete old imperative paths after equivalence is proven. Generated transition interpreter fallbacks are removed; equivalence evidence remains as tests.
 
 #### Phase 3+: Social/relational expansion
 
@@ -2119,13 +2121,13 @@ Store state when it must persist or be authoritative. Derive features when they 
 
 ### 21.1 Phase 1 limitations
 
-1. **Partial VTC coverage.** Profile read expressions compile and evaluate through `VFSProfileCompiler`/`VFSEvaluator`, and simple action writes execute through `VTCActionWriteProgram`; passive dynamics, cascades, temporal rules, rewards, terminal checks, and telemetry are not yet unified under VTC.
+1. **Remaining VTC coverage gaps.** Profile reads, action writes, passive dynamics, cascades, temporal gates, interaction progress, rewards, and terminal checks now run through VFS/VTC components. Remaining gaps are action-write type/shape validation depth, telemetry side-effect compilation, occupancy/contention, relational/social scopes, and dynamic variables.
 2. **Manual observation generation.** Observation construction still requires explicit registry reads and concatenation.
 3. **Partial write validation.** `WriteSpec` expressions are parsed and executed for action writes, but full write-path type/shape validation is still incomplete.
 4. **Limited normalisation.** Current normalisation is mostly minmax/zscore.
 5. **Limited scopes.** Current scopes are suitable for early levels but not full social simulation.
 6. **No dynamic variables.** Variables are fixed at initialisation.
-7. **No first-class relationship rules.** Cascades and temporal operations are not yet unified as VFS rules.
+7. **No first-class relationship rules.** Relational/social rule scopes are still future work; scalar bar cascades and temporal operations are VTC-owned.
 
 ### 21.2 Design risks
 

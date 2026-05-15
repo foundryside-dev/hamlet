@@ -660,84 +660,6 @@ class VTCThresholdCascadeProgram:
             phase_groups.append(tuple(current_group))
         return phase_groups
 
-    def _build_rule_mask(
-        self,
-        rule: CompiledVTCThresholdCascade,
-        active_mask: torch.Tensor,
-        evaluator: Evaluator,
-    ) -> torch.Tensor:
-        condition = self._evaluate_tensor(evaluator, rule.condition_ast, "condition", rule).bool()
-        condition_mask = self._coerce_condition_mask(condition, active_mask, rule)
-        return active_mask & condition_mask
-
-    def _apply_composed_rule(
-        self,
-        *,
-        rule: CompiledVTCThresholdCascade,
-        phase_value: torch.Tensor,
-        expression_value: torch.Tensor,
-        write_mask: torch.Tensor,
-    ) -> torch.Tensor:
-        expression = expression_value.to(device=phase_value.device, dtype=phase_value.dtype)
-        if rule.composition == "additive_delta":
-            candidate = phase_value + expression
-        elif rule.composition in {"overwrite", "last_write_wins", "clamp"}:
-            candidate = expression
-        else:
-            raise NotImplementedError(f"VTC threshold cascade composition '{rule.composition}' is not implemented")
-
-        if rule.clamp is not None:
-            low, high = rule.clamp
-            candidate = torch.clamp(candidate, min=low, max=high)
-
-        broadcast_mask = self._broadcast_agent_mask(write_mask, phase_value, rule)
-        return torch.where(
-            broadcast_mask,
-            candidate.to(device=phase_value.device, dtype=phase_value.dtype),
-            phase_value,
-        )
-
-    @staticmethod
-    def _evaluate_tensor(
-        evaluator: Evaluator,
-        ast: ASTNode,
-        kind: str,
-        rule: CompiledVTCThresholdCascade,
-    ) -> torch.Tensor:
-        value: Any = evaluator.evaluate(ast)
-        if not isinstance(value, torch.Tensor):
-            raise TypeError(f"VTC threshold cascade {rule.telemetry_label} {kind} resolved to non-tensor value")
-        return value
-
-    @staticmethod
-    def _coerce_condition_mask(
-        condition: torch.Tensor,
-        active_mask: torch.Tensor,
-        rule: CompiledVTCThresholdCascade,
-    ) -> torch.Tensor:
-        if condition.dim() == 0:
-            return torch.full(active_mask.shape, bool(condition.item()), dtype=torch.bool, device=active_mask.device)
-        if condition.shape != active_mask.shape:
-            raise ValueError(
-                f"Condition for VTC threshold cascade '{rule.telemetry_label}' produced shape {tuple(condition.shape)}, "
-                f"expected {tuple(active_mask.shape)}"
-            )
-        return condition.to(device=active_mask.device, dtype=torch.bool)
-
-    @staticmethod
-    def _broadcast_agent_mask(mask: torch.Tensor, target: torch.Tensor, rule: CompiledVTCThresholdCascade) -> torch.Tensor:
-        if target.dim() == 0:
-            raise ValueError(f"VTC threshold cascade '{rule.telemetry_label}' cannot apply a per-agent mask to scalar bar")
-        if target.shape[0] != mask.shape[0]:
-            raise ValueError(
-                f"VTC threshold cascade '{rule.telemetry_label}' target leading dimension {target.shape[0]} "
-                f"does not match active mask batch {mask.shape[0]}"
-            )
-        broadcast_mask = mask
-        while broadcast_mask.dim() < target.dim():
-            broadcast_mask = broadcast_mask.unsqueeze(-1)
-        return broadcast_mask
-
 
 @dataclass(frozen=True)
 class VTCPassiveDepletionProgram:
@@ -813,67 +735,6 @@ class VTCPassiveDepletionProgram:
         if current_group:
             phase_groups.append(tuple(current_group))
         return phase_groups
-
-    def _build_rule_mask(
-        self,
-        rule: CompiledVTCPassiveDepletion,
-        active_mask: torch.Tensor,
-        evaluator: Evaluator,
-    ) -> torch.Tensor:
-        if rule.condition_ast is None:
-            return active_mask
-
-        condition = self._evaluate_tensor(evaluator, rule.condition_ast, "condition", rule).bool()
-        condition_mask = self._coerce_rule_tensor(condition, active_mask, rule, "condition").bool()
-        return active_mask & condition_mask
-
-    def _apply_composed_rule(
-        self,
-        *,
-        rule: CompiledVTCPassiveDepletion,
-        phase_value: torch.Tensor,
-        expression_value: torch.Tensor,
-        write_mask: torch.Tensor,
-    ) -> torch.Tensor:
-        expression = self._coerce_rule_tensor(expression_value, phase_value, rule, "expression")
-        if rule.composition == "overwrite":
-            candidate = expression
-        else:
-            raise NotImplementedError(f"VTC passive depletion composition '{rule.composition}' is not implemented")
-
-        if rule.clamp is not None:
-            low, high = rule.clamp
-            candidate = torch.clamp(candidate, min=low, max=high)
-
-        return torch.where(write_mask, candidate.to(device=phase_value.device, dtype=phase_value.dtype), phase_value)
-
-    @staticmethod
-    def _evaluate_tensor(
-        evaluator: Evaluator,
-        ast: ASTNode,
-        kind: str,
-        rule: CompiledVTCPassiveDepletion,
-    ) -> torch.Tensor:
-        value: Any = evaluator.evaluate(ast)
-        if not isinstance(value, torch.Tensor):
-            raise TypeError(f"VTC passive depletion {rule.telemetry_label} {kind} resolved to non-tensor value")
-        return value
-
-    @staticmethod
-    def _coerce_rule_tensor(
-        value: torch.Tensor,
-        target: torch.Tensor,
-        rule: CompiledVTCPassiveDepletion,
-        kind: str,
-    ) -> torch.Tensor:
-        if value.dim() == 0:
-            return value.to(device=target.device, dtype=target.dtype).expand_as(target)
-        if value.shape != target.shape:
-            raise ValueError(
-                f"{kind.capitalize()} for VTC passive depletion '{rule.telemetry_label}' produced shape {tuple(value.shape)}, "
-                f"expected {tuple(target.shape)}"
-            )
-        return value.to(device=target.device, dtype=target.dtype)
 
 
 @dataclass(frozen=True)
@@ -953,67 +814,6 @@ class VTCModulationProgram:
         if current_group:
             phase_groups.append(tuple(current_group))
         return phase_groups
-
-    def _build_rule_mask(
-        self,
-        rule: CompiledVTCModulation,
-        active_mask: torch.Tensor,
-        evaluator: Evaluator,
-    ) -> torch.Tensor:
-        if rule.condition_ast is None:
-            return active_mask
-
-        condition = self._evaluate_tensor(evaluator, rule.condition_ast, "condition", rule).bool()
-        condition_mask = self._coerce_rule_tensor(condition, active_mask, rule, "condition").bool()
-        return active_mask & condition_mask
-
-    def _apply_composed_rule(
-        self,
-        *,
-        rule: CompiledVTCModulation,
-        phase_value: torch.Tensor,
-        expression_value: torch.Tensor,
-        write_mask: torch.Tensor,
-    ) -> torch.Tensor:
-        expression = self._coerce_rule_tensor(expression_value, phase_value, rule, "expression")
-        if rule.composition == "multiplicative_modifier":
-            candidate = phase_value * expression
-        else:
-            raise NotImplementedError(f"VTC modulation composition '{rule.composition}' is not implemented")
-
-        if rule.clamp is not None:
-            low, high = rule.clamp
-            candidate = torch.clamp(candidate, min=low, max=high)
-
-        return torch.where(write_mask, candidate.to(device=phase_value.device, dtype=phase_value.dtype), phase_value)
-
-    @staticmethod
-    def _evaluate_tensor(
-        evaluator: Evaluator,
-        ast: ASTNode,
-        kind: str,
-        rule: CompiledVTCModulation,
-    ) -> torch.Tensor:
-        value: Any = evaluator.evaluate(ast)
-        if not isinstance(value, torch.Tensor):
-            raise TypeError(f"VTC modulation {rule.telemetry_label} {kind} resolved to non-tensor value")
-        return value
-
-    @staticmethod
-    def _coerce_rule_tensor(
-        value: torch.Tensor,
-        target: torch.Tensor,
-        rule: CompiledVTCModulation,
-        kind: str,
-    ) -> torch.Tensor:
-        if value.dim() == 0:
-            return value.to(device=target.device, dtype=target.dtype).expand_as(target)
-        if value.shape != target.shape:
-            raise ValueError(
-                f"{kind.capitalize()} for VTC modulation '{rule.telemetry_label}' produced shape {tuple(value.shape)}, "
-                f"expected {tuple(target.shape)}"
-            )
-        return value.to(device=target.device, dtype=target.dtype)
 
 
 @dataclass(frozen=True)
@@ -1276,19 +1076,6 @@ class VTCTerminalConditionProgram:
         for bar_name, value in bars_state.items():
             if value.shape != dones.shape:
                 raise ValueError(f"bar '{bar_name}' shape {tuple(value.shape)} must match dones shape {tuple(dones.shape)}")
-
-    @staticmethod
-    def _evaluate_bool_tensor(
-        evaluator: Evaluator,
-        ast: ASTNode,
-        rule: CompiledVTCTerminalCondition,
-    ) -> torch.Tensor:
-        value: Any = evaluator.evaluate(ast)
-        if not isinstance(value, torch.Tensor):
-            raise TypeError(f"VTC terminal condition {rule.telemetry_label} resolved to non-tensor value")
-        if value.dtype != torch.bool:
-            raise TypeError(f"VTC terminal condition {rule.telemetry_label} resolved to {value.dtype}, expected bool")
-        return value
 
 
 @dataclass(frozen=True)

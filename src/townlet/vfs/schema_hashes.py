@@ -10,13 +10,17 @@ from typing import Any
 from townlet.vfs.schema import NormalizationSpec, ObservationField, VariableDef, VariableScope
 
 __all__ = [
+    "EMPTY_TRANSITION_GRAPH_HASH",
     "canonical_action_schema",
     "canonical_observation_schema",
     "canonical_variable_schema",
     "compute_action_schema_hash",
     "compute_observation_schema_hash",
     "compute_variable_schema_hash",
+    "compute_vfs_hash",
 ]
+
+EMPTY_TRANSITION_GRAPH_HASH = ""
 
 
 def canonical_variable_schema(variables: Iterable[VariableDef]) -> list[dict[str, Any]]:
@@ -47,6 +51,17 @@ def canonical_action_schema(actions: Iterable[Any]) -> list[dict[str, Any]]:
 def compute_action_schema_hash(actions: Iterable[Any]) -> str:
     """Return the SHA-256 digest of the canonical action-space payload."""
     return _hash_payload(canonical_action_schema(actions))
+
+
+def compute_vfs_hash(
+    variable_schema_hash: str,
+    observation_schema_hash: str,
+    action_schema_hash: str,
+    transition_graph_hash: str,
+) -> str:
+    """Return the combined VFS identity hash over state, observation, action, and transition schemas."""
+    combined = variable_schema_hash + observation_schema_hash + action_schema_hash + transition_graph_hash
+    return hashlib.sha256(combined.encode("utf-8")).hexdigest()
 
 
 def _canonical_variable_entry(variable: VariableDef) -> dict[str, Any]:

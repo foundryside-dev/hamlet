@@ -1,5 +1,6 @@
 """Tests for VFS schema provenance hashes."""
 
+import hashlib
 from pathlib import Path
 
 import yaml
@@ -9,12 +10,14 @@ from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.dto import RuntimeAction
 from townlet.vfs.schema import NormalizationSpec, ObservationField, VariableDef
 from townlet.vfs.schema_hashes import (
+    EMPTY_TRANSITION_GRAPH_HASH,
     canonical_action_schema,
     canonical_observation_schema,
     canonical_variable_schema,
     compute_action_schema_hash,
     compute_observation_schema_hash,
     compute_variable_schema_hash,
+    compute_vfs_hash,
 )
 
 
@@ -289,3 +292,40 @@ def test_compiler_surfaces_action_schema_hash(tmp_path: Path) -> None:
     assert compiled.all_levels is not None
     assert compiled.all_levels[PRIMARY_LEVEL_NAME].action_schema_hash == compiled.action_schema_hash
     assert compiled.to_dict()["action_schema_hash"] == compiled.action_schema_hash
+
+
+def test_vfs_hash_combines_component_hashes_and_empty_transition_graph() -> None:
+    """The VFS identity should bind all component hashes, including the empty transition graph."""
+    variable_hash = "a" * 64
+    observation_hash = "b" * 64
+    action_hash = "c" * 64
+    transition_hash = EMPTY_TRANSITION_GRAPH_HASH
+
+    expected = hashlib.sha256((variable_hash + observation_hash + action_hash + transition_hash).encode("utf-8")).hexdigest()
+
+    assert compute_vfs_hash(variable_hash, observation_hash, action_hash, transition_hash) == expected
+    assert compute_vfs_hash("d" * 64, observation_hash, action_hash, transition_hash) != expected
+    assert compute_vfs_hash(variable_hash, "e" * 64, action_hash, transition_hash) != expected
+    assert compute_vfs_hash(variable_hash, observation_hash, "f" * 64, transition_hash) != expected
+    assert compute_vfs_hash(variable_hash, observation_hash, action_hash, "g" * 64) != expected
+
+
+def test_compiler_surfaces_vfs_hash(tmp_path: Path) -> None:
+    """UniverseCompiler should emit the combined VFS hash on compiled artifacts."""
+    experiment_dir = prepare_config_dir(tmp_path, name="experiment")
+
+    compiled = UniverseCompiler().compile(experiment_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
+    expected = compute_vfs_hash(
+        compiled.variable_schema_hash,
+        compiled.observation_schema_hash,
+        compiled.action_schema_hash,
+        EMPTY_TRANSITION_GRAPH_HASH,
+    )
+
+    assert compiled.transition_graph_hash == EMPTY_TRANSITION_GRAPH_HASH
+    assert compiled.vfs_hash == expected
+    assert compiled.all_levels is not None
+    assert compiled.all_levels[PRIMARY_LEVEL_NAME].transition_graph_hash == compiled.transition_graph_hash
+    assert compiled.all_levels[PRIMARY_LEVEL_NAME].vfs_hash == compiled.vfs_hash
+    assert compiled.to_dict()["transition_graph_hash"] == compiled.transition_graph_hash
+    assert compiled.to_dict()["vfs_hash"] == compiled.vfs_hash

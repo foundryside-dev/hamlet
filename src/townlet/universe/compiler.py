@@ -25,7 +25,13 @@ from townlet.universe.optimization import OptimizationData
 from townlet.universe.raw_configs_v21 import RawConfigsV21
 from townlet.vfs.observation_builder import VFSObservationSpec
 from townlet.vfs.profiles import CircularDependencyError
-from townlet.vfs.schema_hashes import compute_action_schema_hash, compute_observation_schema_hash, compute_variable_schema_hash
+from townlet.vfs.schema_hashes import (
+    EMPTY_TRANSITION_GRAPH_HASH,
+    compute_action_schema_hash,
+    compute_observation_schema_hash,
+    compute_variable_schema_hash,
+    compute_vfs_hash,
+)
 from townlet.world.expression.type_checker import TypeCheckError
 
 from .compiled import CompiledVFSProfiles
@@ -371,6 +377,8 @@ class UniverseCompiler:
             vfs_variables = self._vfs_compiler.build_runtime_variables(base_vfs_variables, compiled_vfs_profiles)
             observation_schema_hash = compute_observation_schema_hash(vfs_fields)
             variable_schema_hash = compute_variable_schema_hash(vfs_variables)
+            transition_graph_hash = EMPTY_TRANSITION_GRAPH_HASH
+            vfs_hash = compute_vfs_hash(variable_schema_hash, observation_schema_hash, action_schema_hash, transition_graph_hash)
 
             # Compute hashes for level-specific configs
             drive_hash = self._compute_pydantic_hash(level.drive)
@@ -391,6 +399,8 @@ class UniverseCompiler:
                 action_metadata=action_metadata,
                 runtime_action_space=runtime_action_space,
                 action_schema_hash=action_schema_hash,
+                transition_graph_hash=transition_graph_hash,
+                vfs_hash=vfs_hash,
                 meter_metadata=meter_metadata,
                 affordance_metadata=affordance_metadata,
                 optimization_data=optimization_data,
@@ -467,6 +477,8 @@ class UniverseCompiler:
             action_space_metadata=primary_meta.action_metadata,
             runtime_action_space=primary_meta.runtime_action_space,
             action_schema_hash=primary_meta.action_schema_hash,
+            transition_graph_hash=primary_meta.transition_graph_hash,
+            vfs_hash=primary_meta.vfs_hash,
             meter_metadata=primary_meta.meter_metadata,
             affordance_metadata=primary_meta.affordance_metadata,
             optimization_data=primary_meta.optimization_data,

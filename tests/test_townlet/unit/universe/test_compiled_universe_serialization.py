@@ -151,6 +151,8 @@ def test_compiled_universe_round_trip_serialization(minimal_compiled_universe_wi
     assert restored.variable_schema_hash == original.variable_schema_hash
     assert restored.observation_schema_hash == original.observation_schema_hash
     assert restored.action_schema_hash == original.action_schema_hash
+    assert restored.transition_graph_hash == original.transition_graph_hash
+    assert restored.vfs_hash == original.vfs_hash
     assert restored.vfs_expression_schema is not None
     assert restored.vfs_expression_schema == original.vfs_expression_schema
 
@@ -177,6 +179,8 @@ def test_compiled_universe_clone_preserves_new_fields(minimal_compiled_universe_
     assert cloned.variable_schema_hash == original.variable_schema_hash
     assert cloned.observation_schema_hash == original.observation_schema_hash
     assert cloned.action_schema_hash == original.action_schema_hash
+    assert cloned.transition_graph_hash == original.transition_graph_hash
+    assert cloned.vfs_hash == original.vfs_hash
     assert cloned.vfs_expression_schema is not None
     assert cloned.vfs_expression_schema == original.vfs_expression_schema
 

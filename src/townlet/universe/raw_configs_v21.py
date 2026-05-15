@@ -82,8 +82,8 @@ class RawConfigsV21:
         # ------------------------------------------------------------------
         # Global security limits (per-environment counts)
         # ------------------------------------------------------------------
-        env_cascades = getattr(self.environment.environment, "cascade_graph", [])
-        env_variables = getattr(self.environment.environment, "variables", []) or []
+        env_cascades = self.environment.environment.cascade_graph
+        env_variables = self.environment.environment.variables
 
         checks = [
             (len(env_meter_names), MAX_METERS, "environment.yaml", "meters"),
@@ -178,7 +178,7 @@ class RawConfigsV21:
         # ------------------------------------------------------------------
         # Modulation invariants (environment.yaml modulation_graph vs affordances.yaml)
         # ------------------------------------------------------------------
-        env_mods = getattr(self.environment.environment, "modulation_graph", [])
+        env_mods = self.environment.environment.modulation_graph
 
         # Validate that modulation_graph references existing bars and affordances
         for mod in env_mods:
@@ -366,27 +366,24 @@ class RawConfigsV21:
                 )
 
             # Validate curriculum-level enabled_affordances against environment vocabulary
-            enabled_affordances = getattr(level.training, "enabled_affordances", None)
-            normalized_enabled = env_affordance_names
-            if enabled_affordances is not None:
-                normalized_enabled = {str(name) for name in enabled_affordances}
-                invalid = normalized_enabled - env_affordance_names
-                if invalid:
-                    raise ValueError(
-                        "Invalid enabled_affordances in training.yaml.\n"
-                        f"  Experiment: {self.experiment_dir}\n"
-                        f"  Level: {level_name}\n"
-                        f"  Invalid entries: {sorted(invalid)}\n"
-                        f"  Valid affordances (from environment.yaml): {sorted(env_affordance_names)}\n"
-                        "\nAll entries in training.enabled_affordances must match affordance names "
-                        "declared in environment.yaml."
-                    )
+            normalized_enabled = {str(name) for name in level.training.enabled_affordances}
+            invalid = normalized_enabled - env_affordance_names
+            if invalid:
+                raise ValueError(
+                    "Invalid enabled_affordances in training.yaml.\n"
+                    f"  Experiment: {self.experiment_dir}\n"
+                    f"  Level: {level_name}\n"
+                    f"  Invalid entries: {sorted(invalid)}\n"
+                    f"  Valid affordances (from environment.yaml): {sorted(env_affordance_names)}\n"
+                    "\nAll entries in training.enabled_affordances must match affordance names "
+                    "declared in environment.yaml."
+                )
 
             # Capacity check for grid substrates: hard error if deployed affordances + agents exceed grid capacity.
             # NOTE: This check must be INSIDE the loop to validate ALL levels, not just the last one.
             if grid_capacity is not None:
                 deployed_count = len(normalized_enabled)
-                population_size = getattr(level.training.population, "size", 0)
+                population_size = level.training.population.size
                 required_slots = deployed_count + population_size
                 if required_slots > grid_capacity:
                     raise ValueError(

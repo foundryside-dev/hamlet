@@ -25,13 +25,16 @@ from townlet.vfs.schema_hashes import (
     compute_variable_schema_hash,
     compute_vfs_hash,
 )
+from townlet.vfs.transition_graph import DEFAULT_TRANSITION_PHASES, TransitionPhaseGraph
 
 __all__ = [
+    "DEFAULT_TRANSITION_PHASES",
     "EMPTY_TRANSITION_GRAPH_HASH",
     "NormalizationSpec",
     "ObservationField",
     "VariableDef",
     "VariableRegistry",
+    "TransitionPhaseGraph",
     "VFSRegistryProtocol",
     "VFSObservationSpec",
     "WriteSpec",

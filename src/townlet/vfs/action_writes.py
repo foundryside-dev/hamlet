@@ -9,6 +9,7 @@ from typing import Any
 import torch
 
 from townlet.environment.action_config import ActionConfig
+from townlet.vfs.transition_graph import TransitionPhaseGraph
 from townlet.world.expression import ASTNode, ExpressionParser
 from townlet.world.expression.context import ExecutionContext
 from townlet.world.expression.evaluator import Evaluator
@@ -223,6 +224,14 @@ class CompiledActionWriteProgram:
 
 def compile_action_writes(actions: Sequence[ActionConfig]) -> CompiledActionWriteProgram:
     """Compile ActionConfig writes into parsed records sorted by phase, priority, and action id."""
+    return compile_action_writes_with_phase_graph(actions, TransitionPhaseGraph.default())
+
+
+def compile_action_writes_with_phase_graph(
+    actions: Sequence[ActionConfig],
+    phase_graph: TransitionPhaseGraph,
+) -> CompiledActionWriteProgram:
+    """Compile ActionConfig writes using an explicit transition phase graph."""
     parser = ExpressionParser()
     compiled_writes: list[CompiledActionWrite] = []
 
@@ -246,5 +255,10 @@ def compile_action_writes(actions: Sequence[ActionConfig]) -> CompiledActionWrit
             )
 
     return CompiledActionWriteProgram(
-        writes=tuple(sorted(compiled_writes, key=lambda item: (item.phase, item.priority, item.action_id, item.telemetry_label)))
+        writes=tuple(
+            sorted(
+                compiled_writes,
+                key=lambda item: (phase_graph.sort_key(item.phase), item.priority, item.action_id, item.telemetry_label),
+            )
+        )
     )

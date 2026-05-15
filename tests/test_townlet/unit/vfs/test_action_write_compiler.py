@@ -1,10 +1,12 @@
 """Tests for compiling ActionConfig writes into masked tensor updates."""
 
+import pytest
 import torch
 
 from townlet.environment.action_config import ActionConfig
-from townlet.vfs.action_writes import compile_action_writes
+from townlet.vfs.action_writes import compile_action_writes, compile_action_writes_with_phase_graph
 from townlet.vfs.schema import WriteSpec
+from townlet.vfs.transition_graph import TransitionPhaseGraph
 
 
 def _write(
@@ -20,7 +22,7 @@ def _write(
         expression=expression,
         condition=condition,
         composition=composition,
-        phase="action_effects",
+        phase="apply_action_effects",
         priority=0,
         clamp=clamp,
         telemetry_label=f"{variable_id}_test_write",
@@ -131,7 +133,7 @@ def test_action_write_compiler_composes_additive_and_multiplicative_writes() -> 
                 expression="0.2",
                 condition=None,
                 composition="additive_delta",
-                phase="action_effects",
+                phase="apply_action_effects",
                 priority=0,
                 clamp=(0.0, 1.0),
                 telemetry_label="energy_add_one",
@@ -141,7 +143,7 @@ def test_action_write_compiler_composes_additive_and_multiplicative_writes() -> 
                 expression="0.15",
                 condition=None,
                 composition="additive_delta",
-                phase="action_effects",
+                phase="apply_action_effects",
                 priority=1,
                 clamp=(0.0, 1.0),
                 telemetry_label="energy_add_two",
@@ -151,7 +153,7 @@ def test_action_write_compiler_composes_additive_and_multiplicative_writes() -> 
                 expression="0.5",
                 condition=None,
                 composition="multiplicative_modifier",
-                phase="action_effects",
+                phase="apply_action_effects",
                 priority=0,
                 clamp=None,
                 telemetry_label="fatigue_half",
@@ -161,7 +163,7 @@ def test_action_write_compiler_composes_additive_and_multiplicative_writes() -> 
                 expression="0.8",
                 condition=None,
                 composition="multiplicative_modifier",
-                phase="action_effects",
+                phase="apply_action_effects",
                 priority=1,
                 clamp=None,
                 telemetry_label="fatigue_decay",
@@ -237,7 +239,7 @@ def test_action_write_compiler_resolves_priority_and_last_write_wins() -> None:
                 expression="0.1",
                 condition=None,
                 composition="priority_write",
-                phase="action_effects",
+                phase="apply_action_effects",
                 priority=10,
                 clamp=None,
                 telemetry_label="low_priority",
@@ -247,7 +249,7 @@ def test_action_write_compiler_resolves_priority_and_last_write_wins() -> None:
                 expression="0.9",
                 condition=None,
                 composition="priority_write",
-                phase="action_effects",
+                phase="apply_action_effects",
                 priority=20,
                 clamp=None,
                 telemetry_label="high_priority",
@@ -257,7 +259,7 @@ def test_action_write_compiler_resolves_priority_and_last_write_wins() -> None:
                 expression="0.2",
                 condition=None,
                 composition="last_write_wins",
-                phase="action_effects",
+                phase="apply_action_effects",
                 priority=0,
                 clamp=None,
                 telemetry_label="status_first",
@@ -267,7 +269,7 @@ def test_action_write_compiler_resolves_priority_and_last_write_wins() -> None:
                 expression="0.7",
                 condition=None,
                 composition="last_write_wins",
-                phase="action_effects",
+                phase="apply_action_effects",
                 priority=10,
                 clamp=None,
                 telemetry_label="status_last",
@@ -297,7 +299,7 @@ def test_action_write_compiler_reads_phase_snapshot_before_committing_writes() -
                 expression="energy + 1.0",
                 condition=None,
                 composition="overwrite",
-                phase="action_effects",
+                phase="apply_action_effects",
                 priority=0,
                 clamp=None,
                 telemetry_label="energy_increment",
@@ -307,7 +309,7 @@ def test_action_write_compiler_reads_phase_snapshot_before_committing_writes() -
                 expression="energy * 10.0",
                 condition=None,
                 composition="overwrite",
-                phase="action_effects",
+                phase="apply_action_effects",
                 priority=1,
                 clamp=None,
                 telemetry_label="snapshot_reader",
@@ -325,3 +327,104 @@ def test_action_write_compiler_reads_phase_snapshot_before_committing_writes() -
 
     assert torch.allclose(updated["energy"], torch.tensor([2.0]))
     assert torch.allclose(updated["satiation"], torch.tensor([10.0]))
+
+
+def test_action_write_compiler_uses_spec_phase_order_not_lexical_order() -> None:
+    action = _action(
+        action_id=8,
+        name="ORDER",
+        writes=[
+            _write_with_metadata(
+                variable_id="energy",
+                expression="energy + 1.0",
+                condition=None,
+                composition="overwrite",
+                phase="ingest_actions",
+                priority=0,
+                clamp=None,
+                telemetry_label="ingest_increment",
+            ),
+            _write_with_metadata(
+                variable_id="energy",
+                expression="energy * 10.0",
+                condition=None,
+                composition="overwrite",
+                phase="advance_global_time",
+                priority=0,
+                clamp=None,
+                telemetry_label="advance_scale",
+            ),
+        ],
+    )
+
+    program = compile_action_writes([action])
+    updated = program.apply(
+        actions=torch.tensor([8]),
+        vfs_state={"energy": torch.tensor([1.0])},
+        active_mask=torch.tensor([True]),
+        device=torch.device("cpu"),
+    )
+
+    assert torch.allclose(updated["energy"], torch.tensor([20.0]))
+
+
+def test_action_write_compiler_accepts_configured_transition_phase_order() -> None:
+    action = _action(
+        action_id=9,
+        name="CUSTOM_ORDER",
+        writes=[
+            _write_with_metadata(
+                variable_id="energy",
+                expression="energy + 1.0",
+                condition=None,
+                composition="overwrite",
+                phase="phase_a",
+                priority=0,
+                clamp=None,
+                telemetry_label="phase_a_increment",
+            ),
+            _write_with_metadata(
+                variable_id="energy",
+                expression="energy * 10.0",
+                condition=None,
+                composition="overwrite",
+                phase="phase_b",
+                priority=0,
+                clamp=None,
+                telemetry_label="phase_b_scale",
+            ),
+        ],
+    )
+    phase_graph = TransitionPhaseGraph(("phase_b", "phase_a"))
+
+    program = compile_action_writes_with_phase_graph([action], phase_graph)
+    updated = program.apply(
+        actions=torch.tensor([9]),
+        vfs_state={"energy": torch.tensor([1.0])},
+        active_mask=torch.tensor([True]),
+        device=torch.device("cpu"),
+    )
+
+    assert torch.allclose(updated["energy"], torch.tensor([11.0]))
+
+
+def test_action_write_compiler_rejects_unconfigured_transition_phase() -> None:
+    action = _action(
+        action_id=10,
+        name="UNKNOWN_PHASE",
+        writes=[
+            _write_with_metadata(
+                variable_id="energy",
+                expression="energy + 1.0",
+                condition=None,
+                composition="overwrite",
+                phase="unconfigured_phase",
+                priority=0,
+                clamp=None,
+                telemetry_label="unknown_phase_increment",
+            )
+        ],
+    )
+
+    with pytest.raises(ValueError, match="Unknown transition phase"):
+        compile_action_writes([action])

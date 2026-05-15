@@ -314,11 +314,6 @@ class CompiledUniverse:
             "optimization_data_raw": {
                 "cascade_data": self.optimization_data.cascade_data,
                 "modulation_data": self.optimization_data.modulation_data,
-                "action_mask_table": (
-                    self.optimization_data.action_mask_table.cpu().tolist()
-                    if self.optimization_data.action_mask_table is not None
-                    else None
-                ),
                 "affordance_position_map": _serialize_affordance_positions(self.optimization_data.affordance_position_map),
             },
             "experiment": self.experiment.model_dump(),
@@ -377,11 +372,6 @@ class CompiledUniverse:
                         "optimization_data_raw": {
                             "cascade_data": meta.optimization_data.cascade_data,
                             "modulation_data": meta.optimization_data.modulation_data,
-                            "action_mask_table": (
-                                meta.optimization_data.action_mask_table.cpu().tolist()
-                                if meta.optimization_data.action_mask_table is not None
-                                else None
-                            ),
                             "affordance_position_map": _serialize_affordance_positions(meta.optimization_data.affordance_position_map),
                         },
                         "vfs_observation_fields": [field.model_dump() for field in meta.vfs_observation_fields],
@@ -401,12 +391,6 @@ class CompiledUniverse:
             _required_field(payload, field_name)
 
         opt_payload = _required_mapping(payload, "optimization_data_raw")
-        action_mask = _required_field(opt_payload, "optimization_data_raw.action_mask_table")
-        if action_mask is None:
-            action_mask_tensor = torch.zeros((24, 0), dtype=torch.bool)
-        else:
-            action_mask_tensor = torch.tensor(action_mask, dtype=torch.bool)
-
         affordance_position_map = _deserialize_affordance_positions(
             _required_field(opt_payload, "optimization_data_raw.affordance_position_map")
         )
@@ -417,13 +401,6 @@ class CompiledUniverse:
             all_levels = {}
             for name, meta in raw_levels.items():
                 level_opt_payload = _required_mapping(meta, f"all_levels.{name}.optimization_data_raw")
-                level_action_mask = _required_field(
-                    level_opt_payload,
-                    f"all_levels.{name}.optimization_data_raw.action_mask_table",
-                )
-                level_mask_tensor = (
-                    torch.tensor(level_action_mask, dtype=torch.bool) if level_action_mask is not None else torch.zeros((24, 0))
-                )
                 level_affordance_position_map = _deserialize_affordance_positions(
                     _required_field(level_opt_payload, f"all_levels.{name}.optimization_data_raw.affordance_position_map")
                 )
@@ -458,7 +435,6 @@ class CompiledUniverse:
                     optimization_data=OptimizationData(
                         cascade_data=_required_field(level_opt_payload, f"all_levels.{name}.optimization_data_raw.cascade_data"),
                         modulation_data=_required_field(level_opt_payload, f"all_levels.{name}.optimization_data_raw.modulation_data"),
-                        action_mask_table=level_mask_tensor,
                         affordance_position_map=level_affordance_position_map,
                     ),
                     vfs_observation_fields=tuple(
@@ -487,7 +463,6 @@ class CompiledUniverse:
             optimization_data=OptimizationData(
                 cascade_data=_required_field(opt_payload, "optimization_data_raw.cascade_data"),
                 modulation_data=_required_field(opt_payload, "optimization_data_raw.modulation_data"),
-                action_mask_table=action_mask_tensor,
                 affordance_position_map=affordance_position_map,
             ),
             experiment=ExperimentConfig.model_validate(payload["experiment"]),

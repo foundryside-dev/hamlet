@@ -10,7 +10,6 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
-import torch
 import yaml
 
 from townlet.universe.compiled import CompiledUniverse
@@ -112,8 +111,8 @@ def test_level_action_metadata_respected(tmp_path, config_pack_factory, compile_
     assert base_mask_l1[0, meditate_id], "L1_alt should enable MEDITATE via level action metadata"
 
 
-def test_affordance_mask_alignment_uses_level_order(tmp_path, config_pack_factory, compile_universe, cpu_device):
-    """Temporal masks must align with the level's affordance ordering, not the primary level."""
+def test_affordance_gate_program_uses_selected_level_order(tmp_path, config_pack_factory, compile_universe, cpu_device):
+    """Temporal gates must compile from the selected level, not the primary level."""
 
     compiled = _compile_two_level_pack(tmp_path, config_pack_factory, compile_universe)
     level0 = compiled.get_level("L0_test")
@@ -124,20 +123,10 @@ def test_affordance_mask_alignment_uses_level_order(tmp_path, config_pack_factor
     assert level0_affordances != level1_affordances  # Sanity: order actually differs
 
     env = compiled.create_environment(num_agents=1, level_name="L1_alt", device=cpu_device)
-    names = env.affordance_names
+    gate_targets = [rule.target_affordance_id for rule in env.vtc_affordance_gate_program.rules]
 
-    # Synthetic mask table keyed to the level's affordance ordering.
-    mask = torch.zeros((2, len(names)), dtype=torch.bool, device=env.device)
-    mask[0, 0] = True  # names[0] open only at hour 0
-    mask[1, 1] = True  # names[1] open only at hour 1
-
-    env.action_mask_table = mask
-    env.hours_per_day = mask.shape[0]
-
-    assert env._is_affordance_open(names[0], hour=0)
-    assert not env._is_affordance_open(names[0], hour=1)
-    assert not env._is_affordance_open(names[1], hour=0)
-    assert env._is_affordance_open(names[1], hour=1)
+    assert not hasattr(env, "action_mask_table")
+    assert gate_targets == level1_affordances
 
 
 def test_environment_metadata_matches_selected_non_primary_level(tmp_path, cpu_device):

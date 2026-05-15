@@ -30,7 +30,6 @@ from townlet.effects.executor import CommandExecutor, ExecutionContext
 from townlet.effects.parser import CommandParser
 from townlet.effects.schema import CommandNode
 from townlet.environment.null_managers import NullItemManager
-from townlet.environment.temporal_utils import is_affordance_open as canonical_is_affordance_open
 
 
 @dataclass
@@ -151,53 +150,6 @@ class AffordanceEngine:
     def get_affordance(self, affordance_id: str):
         """Get affordance config by ID."""
         return self.affordance_map_by_id.get(affordance_id)
-
-    def is_affordance_open(self, affordance_name: str, time_of_day: int) -> bool:
-        """Check if affordance is open at given time.
-
-        Args:
-            affordance_name: Name of affordance (e.g., "Job", "Bar")
-            time_of_day: Current hour [0-23]
-
-        Returns:
-            True if open, False if closed
-
-        Note:
-            Delegates to canonical temporal_utils.is_affordance_open() to avoid
-            logic drift (see JANK-09). Do not re-implement this logic.
-        """
-        affordance = self.affordance_map.get(affordance_name)
-        if affordance is None:
-            return False
-
-        # Require opening_hours from config (structured format with schedule support)
-        opening_hours = getattr(affordance, "opening_hours", None)
-        if opening_hours is None:
-            raise ValueError(
-                f"Affordance '{affordance_name}' missing opening_hours; " "runtime affordances must provide explicit availability windows."
-            )
-
-        if not getattr(opening_hours, "enabled", False):
-            return True  # 24/7 availability
-
-        schedule = getattr(opening_hours, "schedule", []) or []
-        if not schedule:
-            raise ValueError(
-                f"Affordance '{affordance_name}' has opening_hours.enabled=true but an empty schedule; " "provide at least one time window."
-            )
-
-        for window in schedule:
-            start = getattr(window, "start", None)
-            end = getattr(window, "end", None)
-            if start is None or end is None:
-                raise ValueError(
-                    f"Affordance '{affordance_name}' has malformed opening_hours window: {window!r}. "
-                    "Expected 'start' and 'end' integers."
-                )
-            if canonical_is_affordance_open(time_of_day, (start, end)):
-                return True
-
-        return False
 
     def apply_instant_interaction(
         self,

@@ -73,6 +73,16 @@ class VTCModulationSource(Protocol):
     def min_multiplier(self) -> float: ...
 
 
+class VTCAffordanceGateSource(Protocol):
+    """Minimal affordance shape needed by the VTC operating-hour gate compiler."""
+
+    @property
+    def name(self) -> str: ...
+
+    @property
+    def opening_hours(self) -> Any: ...
+
+
 @dataclass(frozen=True)
 class CompiledVTCActionWrite:
     """A parsed VTC action write with the metadata needed for masked execution."""
@@ -133,6 +143,26 @@ class CompiledVTCPassiveDepletion:
 @dataclass(frozen=True)
 class CompiledVTCModulation:
     """A parsed VTC affordance modulation rule."""
+
+    rule_id: str
+    kind: str
+    source_variable_id: str
+    target_affordance_id: str
+    variable_id: str
+    expression: str
+    expression_ast: ASTNode
+    condition: str | None
+    condition_ast: ASTNode | None
+    composition: str
+    phase: str
+    priority: int
+    clamp: tuple[float, float] | None
+    telemetry_label: str
+
+
+@dataclass(frozen=True)
+class CompiledVTCAffordanceGate:
+    """A parsed VTC operating-hour gate for one affordance."""
 
     rule_id: str
     kind: str
@@ -781,6 +811,63 @@ class VTCModulationProgram:
         return value.to(device=target.device, dtype=target.dtype)
 
 
+@dataclass(frozen=True)
+class VTCAffordanceGateProgram:
+    """Executable collection of compiled VTC operating-hour gates."""
+
+    rules: tuple[CompiledVTCAffordanceGate, ...]
+
+    def is_affordance_open(self, affordance_name: str, *, time_of_day: int | float | torch.Tensor, device: torch.device) -> bool:
+        """Return whether one affordance is open for the current temporal state."""
+        values = self.compute(time_of_day=time_of_day, device=device)
+        try:
+            value = values[affordance_name]
+        except KeyError as exc:
+            raise KeyError(f"VTC affordance gates have no rule for affordance '{affordance_name}'") from exc
+        if value.numel() != 1:
+            raise ValueError(f"VTC affordance gate for '{affordance_name}' produced non-scalar shape {tuple(value.shape)}")
+        return bool(value.item())
+
+    def compute(self, *, time_of_day: int | float | torch.Tensor, device: torch.device) -> dict[str, torch.Tensor]:
+        """Evaluate all operating-hour gates from the VTC temporal snapshot."""
+        time_tensor = self._time_tensor(time_of_day, device=device)
+        context = ExecutionContext(
+            bars={},
+            vfs={},
+            affordances={},
+            temporal={"time_of_day": time_tensor},
+            device=device,
+        )
+        evaluator = Evaluator(context)
+        values: dict[str, torch.Tensor] = {}
+        for rule in self.rules:
+            value = self._evaluate_tensor(evaluator, rule.expression_ast, "expression", rule).to(device=device, dtype=torch.bool)
+            if value.numel() != 1:
+                raise ValueError(f"VTC affordance gate '{rule.telemetry_label}' produced non-scalar shape {tuple(value.shape)}")
+            values[rule.target_affordance_id] = value.reshape(())
+        return values
+
+    @staticmethod
+    def _time_tensor(time_of_day: int | float | torch.Tensor, *, device: torch.device) -> torch.Tensor:
+        if isinstance(time_of_day, torch.Tensor):
+            if time_of_day.numel() != 1:
+                raise ValueError(f"time_of_day must be scalar, got shape {tuple(time_of_day.shape)}")
+            return time_of_day.to(device=device, dtype=torch.float32).reshape(())
+        return torch.tensor(float(time_of_day), device=device, dtype=torch.float32)
+
+    @staticmethod
+    def _evaluate_tensor(
+        evaluator: Evaluator,
+        ast: ASTNode,
+        kind: str,
+        rule: CompiledVTCAffordanceGate,
+    ) -> torch.Tensor:
+        value: Any = evaluator.evaluate(ast)
+        if not isinstance(value, torch.Tensor):
+            raise TypeError(f"VTC affordance gate {rule.telemetry_label} {kind} resolved to non-tensor value")
+        return value
+
+
 def compile_vtc_action_writes(actions: Sequence[VTCActionWriteSource]) -> VTCActionWriteProgram:
     """Compile ActionConfig writes into VTC records sorted by phase, priority, and action id."""
     return compile_vtc_action_writes_with_phase_graph(actions, TransitionPhaseGraph.default())
@@ -1047,6 +1134,101 @@ def _coerce_modulation(modulation: VTCModulationSource | Mapping[str, Any]) -> d
         "threshold": threshold,
         "min_multiplier": min_multiplier,
     }
+
+
+def compile_vtc_affordance_gates(affordances: Sequence[VTCAffordanceGateSource | Mapping[str, Any]]) -> VTCAffordanceGateProgram:
+    """Compile affordance opening hours into VTC action-legality gate rules."""
+    return compile_vtc_affordance_gates_with_phase_graph(affordances, TransitionPhaseGraph.default())
+
+
+def compile_vtc_affordance_gates_with_phase_graph(
+    affordances: Sequence[VTCAffordanceGateSource | Mapping[str, Any]],
+    phase_graph: TransitionPhaseGraph,
+) -> VTCAffordanceGateProgram:
+    """Compile affordance opening hours using an explicit VTC transition phase graph."""
+    parser = ExpressionParser()
+    compiled_rules: list[CompiledVTCAffordanceGate] = []
+
+    for priority, raw_affordance in enumerate(affordances):
+        affordance = _coerce_affordance_gate(raw_affordance)
+        expression = _opening_hours_expression(affordance["windows"])
+        name = affordance["name"]
+        compiled_rules.append(
+            CompiledVTCAffordanceGate(
+                rule_id=f"{_rule_slug(name)}_open_window",
+                kind="affordance_gate",
+                source_variable_id="time_of_day",
+                target_affordance_id=name,
+                variable_id=f"affordance.{name}.available",
+                expression=expression,
+                expression_ast=parser.parse(expression),
+                condition=None,
+                condition_ast=None,
+                composition="overwrite",
+                phase="compute_action_legality_masks",
+                priority=priority,
+                clamp=None,
+                telemetry_label=f"affordance_gate:{name}",
+            )
+        )
+
+    return VTCAffordanceGateProgram(
+        rules=tuple(
+            sorted(
+                compiled_rules,
+                key=lambda item: (phase_graph.sort_key(item.phase), item.priority, item.rule_id),
+            )
+        )
+    )
+
+
+def _coerce_affordance_gate(affordance: VTCAffordanceGateSource | Mapping[str, Any]) -> dict[str, Any]:
+    if isinstance(affordance, Mapping):
+        name = str(affordance["name"])
+        opening_hours = affordance["opening_hours"]
+    else:
+        name = affordance.name
+        opening_hours = affordance.opening_hours
+
+    enabled = _opening_hours_enabled(opening_hours)
+    if not enabled:
+        return {"name": name, "windows": [(0.0, 24.0)]}
+
+    windows = _opening_hours_windows(opening_hours)
+    if not windows:
+        raise ValueError(f"Affordance '{name}' opening_hours.enabled=true requires at least one VTC gate window")
+    return {"name": name, "windows": windows}
+
+
+def _opening_hours_enabled(opening_hours: Any) -> bool:
+    if isinstance(opening_hours, Mapping):
+        return bool(opening_hours["enabled"])
+    return bool(opening_hours.enabled)
+
+
+def _opening_hours_windows(opening_hours: Any) -> list[tuple[float, float]]:
+    schedule = opening_hours["schedule"] if isinstance(opening_hours, Mapping) else opening_hours.schedule
+    windows: list[tuple[float, float]] = []
+    for window in schedule:
+        if isinstance(window, Mapping):
+            start = window["start"]
+            end = window["end"]
+        else:
+            start = window.start
+            end = window.end
+        windows.append((float(start), float(end)))
+    return windows
+
+
+def _opening_hours_expression(windows: Sequence[tuple[float, float]]) -> str:
+    expressions = [
+        f"time_in_window(temporal.time_of_day, {_format_rule_float(start)}, {_format_rule_float(end)})" for start, end in windows
+    ]
+    return " || ".join(expressions)
+
+
+def _rule_slug(name: str) -> str:
+    return "".join(char.lower() if char.isalnum() else "_" for char in name).strip("_") or "affordance"
 
 
 def _format_rule_float(value: float) -> str:

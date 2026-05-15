@@ -10,7 +10,6 @@ from pathlib import Path
 
 import msgpack  # type: ignore[import]
 import pytest
-import torch
 
 from townlet.universe.compiled import CompiledUniverse
 from townlet.universe.compiler import UniverseCompiler
@@ -113,10 +112,8 @@ def test_compiled_universe_msgpack_round_trip(tmp_path: Path) -> None:
     assert reconstructed.meter_metadata == compiled.meter_metadata
     assert reconstructed.affordance_metadata == compiled.affordance_metadata
     assert "base_depletions" not in compiled.to_dict()["optimization_data_raw"]
-    assert torch.equal(
-        reconstructed.optimization_data.action_mask_table,
-        compiled.optimization_data.action_mask_table,
-    )
+    assert "action_mask_table" not in compiled.to_dict()["optimization_data_raw"]
+    assert not hasattr(reconstructed.optimization_data, "action_mask_table")
     with pytest.raises(FrozenInstanceError):
         reconstructed.metadata = None  # type: ignore[attr-defined]
 

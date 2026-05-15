@@ -18,5 +18,4 @@ class OptimizationData:
 
     cascade_data: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
     modulation_data: list[dict[str, Any]] = field(default_factory=list)
-    action_mask_table: torch.Tensor = field(default_factory=lambda: torch.zeros((24, 0), dtype=torch.bool))
     affordance_position_map: dict[str, torch.Tensor | None] = field(default_factory=dict)

@@ -35,6 +35,7 @@ from townlet.vfs.schema_hashes import (
 from townlet.vfs.transition_graph import TransitionPhaseGraph
 from townlet.vfs.vtc import (
     compile_vtc_action_writes_with_phase_graph,
+    compile_vtc_affordance_gates_with_phase_graph,
     compile_vtc_modulations_with_phase_graph,
     compile_vtc_passive_depletions_with_phase_graph,
     compile_vtc_threshold_cascades_with_phase_graph,
@@ -370,12 +371,6 @@ class UniverseCompiler:
                 meter_metadata,
                 affordance_metadata,
                 action_metadata,
-                day_length=self._optimization_compiler.resolve_day_length(
-                    level.curriculum,
-                    temporal_supported=temporal_supported,
-                    experiment_dir=experiment_dir,
-                    level_name=level_name,
-                ),
             )
             vfs_fields = self._observation_compiler.build_vfs_observation_fields(obs_spec, raw.environment)
             base_vfs_variables = self._observation_compiler.build_vfs_variables(obs_spec, raw.environment)
@@ -384,15 +379,20 @@ class UniverseCompiler:
             variable_schema_hash = compute_variable_schema_hash(vfs_variables)
             transition_phase_graph = TransitionPhaseGraph.default()
             transition_action_writes = compile_vtc_action_writes_with_phase_graph(runtime_action_space.actions, transition_phase_graph)
+            transition_affordance_gates = compile_vtc_affordance_gates_with_phase_graph(
+                level.affordances.affordances,
+                transition_phase_graph,
+            )
             transition_passive_depletions = compile_vtc_passive_depletions_with_phase_graph(level.bars.meters, transition_phase_graph)
             transition_modulations = compile_vtc_modulations_with_phase_graph(level.affordances.modulations, transition_phase_graph)
             transition_threshold_cascades = compile_vtc_threshold_cascades_with_phase_graph(level.bars.cascades, transition_phase_graph)
             transition_graph_hash = compute_transition_graph_hash(
                 transition_phase_graph,
                 transition_action_writes,
-                transition_threshold_cascades,
-                transition_modulations,
-                transition_passive_depletions,
+                affordance_gate_program=transition_affordance_gates,
+                threshold_cascade_program=transition_threshold_cascades,
+                modulation_program=transition_modulations,
+                passive_depletion_program=transition_passive_depletions,
             )
             vfs_hash = compute_vfs_hash(variable_schema_hash, observation_schema_hash, action_schema_hash, transition_graph_hash)
 

@@ -21,6 +21,10 @@ def _set_global_vision(config_dir):
     mutate_curriculum_yaml(config_dir, lambda c: c["curriculum"].update({"active_vision": "global", "vision_range": 0.0}))
 
 
+def _enable_temporal(config_dir):
+    mutate_curriculum_yaml(config_dir, lambda c: c["curriculum"].update({"active_temporal": True, "day_length": 24}))
+
+
 def _mutate_affordances(config_dir, mutator):
     import yaml
 
@@ -65,6 +69,7 @@ class TestOpeningHours:
         config_dir = config_pack_factory(name="hours")
 
         _set_global_vision(config_dir)
+        _enable_temporal(config_dir)
 
         # Enable wraparound hours on ENTERTAINMENT and ensure WORK stays 9-17
         def set_hours(aff):
@@ -78,17 +83,15 @@ class TestOpeningHours:
         _mutate_affordances(config_dir, set_hours)
 
         env = cpu_env_factory(config_dir=config_dir, level_name="L0_test", num_agents=1)
-        engine = env.affordance_engine
+        assert not env._is_affordance_open("WORK", 6)
+        assert env._is_affordance_open("WORK", 9)
+        assert env._is_affordance_open("WORK", 12)
+        assert not env._is_affordance_open("WORK", 18)
 
-        assert not engine.is_affordance_open("WORK", 6)
-        assert engine.is_affordance_open("WORK", 9)
-        assert engine.is_affordance_open("WORK", 12)
-        assert not engine.is_affordance_open("WORK", 18)
-
-        assert not engine.is_affordance_open("ENTERTAINMENT", 16)
-        assert engine.is_affordance_open("ENTERTAINMENT", 23)
-        assert engine.is_affordance_open("ENTERTAINMENT", 2)
-        assert not engine.is_affordance_open("ENTERTAINMENT", 5)
+        assert not env._is_affordance_open("ENTERTAINMENT", 16)
+        assert env._is_affordance_open("ENTERTAINMENT", 23)
+        assert env._is_affordance_open("ENTERTAINMENT", 2)
+        assert not env._is_affordance_open("ENTERTAINMENT", 5)
 
 
 class TestDualVsInstant:

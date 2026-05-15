@@ -728,12 +728,20 @@ def _validate_elapsed_ticks_args(args: list[str]) -> None:
 
 def _eval_time_in_window(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
     time_value = args[0]
-    start = args[1].to(device=time_value.device, dtype=time_value.dtype)
-    end = args[2].to(device=time_value.device, dtype=time_value.dtype)
-    non_wrapping = start <= end
-    inside_non_wrapping = (time_value >= start) & (time_value < end)
-    inside_wrapping = (time_value >= start) | (time_value < end)
-    return torch.where(non_wrapping, inside_non_wrapping, inside_wrapping)
+    period = torch.tensor(24.0, device=time_value.device, dtype=time_value.dtype)
+    hour = torch.remainder(time_value, period)
+    start_raw = args[1].to(device=time_value.device, dtype=time_value.dtype)
+    end_raw = args[2].to(device=time_value.device, dtype=time_value.dtype)
+    start = torch.remainder(start_raw, period)
+    end = torch.remainder(end_raw, period)
+
+    always_open = torch.remainder(end_raw - start_raw, period) == 0
+    non_wrapping = start < end
+    inside_non_wrapping = (hour >= start) & (hour < end)
+    inside_wrapping = (hour >= start) | (hour < end)
+    return torch.where(
+        always_open, torch.ones_like(inside_non_wrapping, dtype=torch.bool), torch.where(non_wrapping, inside_non_wrapping, inside_wrapping)
+    )
 
 
 def _phase_radians(value: torch.Tensor, period: torch.Tensor, name: str) -> torch.Tensor:

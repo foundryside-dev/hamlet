@@ -300,44 +300,6 @@ class TestAffordanceQueries:
         assert all(isinstance(idx, int) for idx in action_map.values())
 
 
-class TestOperatingHours:
-    """Test operating hours and availability checks."""
-
-    def test_is_affordance_open_invalid_name_returns_false(self, cpu_device, affordance_engine_components):
-        """Check if invalid affordance name returns False."""
-        bars_config, affordance_config = affordance_engine_components
-        engine = AffordanceEngine(affordance_config, num_agents=1, device=cpu_device, meter_name_to_idx=bars_config.meter_name_to_index)
-
-        # Invalid affordance name
-        assert not engine.is_affordance_open("InvalidAffordance", time_of_day=12)
-
-    def test_is_affordance_open_wraparound_hours(self, cpu_device, affordance_engine_components):
-        """Check midnight wraparound hours (Bar: 18-28 = 6pm-4am)."""
-        bars_config, affordance_config = affordance_engine_components
-        engine = AffordanceEngine(affordance_config, num_agents=1, device=cpu_device, meter_name_to_idx=bars_config.meter_name_to_index)
-
-        # Bar: [18, 28] (6pm to 4am, wraps midnight)
-        assert engine.is_affordance_open("Bar", time_of_day=18)  # 6pm - OPEN
-        assert engine.is_affordance_open("Bar", time_of_day=23)  # 11pm - OPEN
-        assert engine.is_affordance_open("Bar", time_of_day=0)  # Midnight - OPEN
-        assert engine.is_affordance_open("Bar", time_of_day=3)  # 3am - OPEN
-        assert not engine.is_affordance_open("Bar", time_of_day=4)  # 4am - CLOSED
-        assert not engine.is_affordance_open("Bar", time_of_day=12)  # Noon - CLOSED
-
-    def test_is_affordance_open_normal_hours(self, cpu_device, affordance_engine_components):
-        """Check normal operating hours (Job: 8-18 = 8am-6pm)."""
-        bars_config, affordance_config = affordance_engine_components
-        engine = AffordanceEngine(affordance_config, num_agents=1, device=cpu_device, meter_name_to_idx=bars_config.meter_name_to_index)
-
-        # Job: [8, 18] (8am to 6pm, no wraparound)
-        assert not engine.is_affordance_open("Job", time_of_day=6)  # 6am - CLOSED
-        assert engine.is_affordance_open("Job", time_of_day=8)  # 8am - OPEN
-        assert engine.is_affordance_open("Job", time_of_day=12)  # Noon - OPEN
-        assert engine.is_affordance_open("Job", time_of_day=17)  # 5pm - OPEN
-        assert not engine.is_affordance_open("Job", time_of_day=18)  # 6pm - CLOSED
-        assert not engine.is_affordance_open("Job", time_of_day=20)  # 8pm - CLOSED
-
-
 class TestAffordabilityChecking:
     """Test affordability validation logic."""
 

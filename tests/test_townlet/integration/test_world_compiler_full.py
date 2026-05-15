@@ -54,7 +54,7 @@ class TestWorldCompilerPipeline:
         assert hasattr(universe.metadata, "action_count")
 
         # Check optimization data
-        assert hasattr(universe.optimization_data, "action_mask_table")
+        assert not hasattr(universe.optimization_data, "action_mask_table")
         assert hasattr(universe.optimization_data, "modulation_data")
 
         # Check level structure

@@ -32,10 +32,12 @@ from townlet.vfs.observation_builder import VFSObservationSpec
 from townlet.vfs.registry import VariableRegistry
 from townlet.vfs.vtc import (
     VTCActionWriteProgram,
+    VTCAffordanceGateProgram,
     VTCModulationProgram,
     VTCPassiveDepletionProgram,
     VTCThresholdCascadeProgram,
     compile_vtc_action_writes,
+    compile_vtc_affordance_gates,
     compile_vtc_modulations,
     compile_vtc_passive_depletions,
     compile_vtc_threshold_cascades,
@@ -373,17 +375,6 @@ class VectorizedHamletEnv:
 
         self._terminal_conditions = terminal_specs
 
-        # Cache action mask table (24 × affordance_count) for temporal mechanics
-        self.action_mask_table = self.optimization_data.action_mask_table.to(self.device).clone()
-        # Guard against division by zero if action mask table is empty (shape[0] == 0)
-        self.hours_per_day = max(1, self.action_mask_table.shape[0]) if self.action_mask_table.ndim > 0 else 24
-        # Explicit validation instead of assert (assertions can be disabled with -O)
-        if self.hours_per_day <= 0:
-            raise ValueError(
-                f"hours_per_day must be positive to avoid division by zero (got {self.hours_per_day}). "
-                f"Check action_mask_table configuration."
-            )
-
         # Initialize affordance engine with AffordanceParamConfig directly
         # No RuntimeAffordanceConfig conversion needed - AffordanceEngine uses interactions field
 
@@ -397,13 +388,7 @@ class VectorizedHamletEnv:
             return None
 
         # Affordance vocabulary and positions from compiled metadata
-        level_affordance_lookup = {info.name: idx for idx, info in enumerate(level.affordance_metadata.affordances)}
         self.affordance_name_to_id = {aff.name: aff.name for aff in affordances_list}
-        self.affordance_name_to_mask_idx = {
-            name: level_affordance_lookup.get(aff_id)
-            for name, aff_id in self.affordance_name_to_id.items()
-            if level_affordance_lookup.get(aff_id) is not None
-        }
         self.affordance_positions_from_config = {aff.name: _extract_position(aff) for aff in affordances_list}
         optimization_position_map = getattr(self.optimization_data, "affordance_position_map", {})
         self.affordance_positions_from_optimization = {
@@ -428,6 +413,7 @@ class VectorizedHamletEnv:
         self.action_ids = level.runtime_action_space.action_ids
         self._movement_deltas = self._build_movement_deltas()
         self.vtc_action_write_program = compile_vtc_action_writes(self.action_space.actions)
+        self.vtc_affordance_gate_program: VTCAffordanceGateProgram = compile_vtc_affordance_gates(level.affordances.affordances)
         self.vtc_passive_depletion_program: VTCPassiveDepletionProgram = compile_vtc_passive_depletions(self.bars_config.meters)
         self.vtc_modulation_program: VTCModulationProgram = compile_vtc_modulations(level.affordances.modulations)
         self.vtc_threshold_cascade_program = compile_vtc_threshold_cascades(self.bars_config.cascades)
@@ -622,20 +608,15 @@ class VectorizedHamletEnv:
         if not self.enable_temporal_mechanics:
             return True
 
-        if self.action_mask_table.shape[1] == 0:
-            raise ValueError(
-                "Temporal mechanics enabled but action_mask_table is empty; compiler must provide temporal availability metadata."
-            )
-
-        idx = self.affordance_name_to_mask_idx.get(affordance_name)
-        if idx is None or idx >= self.action_mask_table.shape[1]:
-            raise ValueError(
-                f"Missing temporal mask metadata for affordance '{affordance_name}'; all affordances must have explicit mask entries."
-            )
-
         active_hour = self.time_of_day if hour is None else hour
-        hour_idx = active_hour % self.hours_per_day
-        return bool(self.action_mask_table[hour_idx, idx].item())
+        try:
+            return self.vtc_affordance_gate_program.is_affordance_open(
+                affordance_name,
+                time_of_day=active_hour,
+                device=self.device,
+            )
+        except KeyError as exc:
+            raise ValueError(f"Missing VTC operating-hour gate for affordance '{affordance_name}'") from exc
 
     def _build_vfs_affordance_context(self) -> dict[str, dict[str, torch.Tensor]]:
         """Build affordance state exposed to VFS expressions."""

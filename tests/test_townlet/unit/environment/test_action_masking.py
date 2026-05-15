@@ -304,6 +304,8 @@ class TestTimeBasedMasking:
         """Job should be masked outside business hours (8am-6pm)."""
         masking_env.reset()
 
+        assert not hasattr(masking_env, "action_mask_table")
+
         job_pos = masking_env.affordances["Job"]
         masking_env.positions[0] = job_pos.clone()
 

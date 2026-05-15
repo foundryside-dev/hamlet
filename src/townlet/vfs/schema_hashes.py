@@ -56,12 +56,16 @@ def compute_action_schema_hash(actions: Iterable[Any]) -> str:
 def canonical_transition_graph_schema(
     phase_graph: TransitionPhaseGraph,
     action_write_program: Any,
+    *,
+    affordance_gate_program: Any | None = None,
     threshold_cascade_program: Any | None = None,
     modulation_program: Any | None = None,
     passive_depletion_program: Any | None = None,
 ) -> dict[str, Any]:
     """Return the transition-graph payload used for world-physics provenance."""
     rules = [_canonical_transition_rule(write) for write in action_write_program.writes]
+    if affordance_gate_program is not None:
+        rules.extend(_canonical_transition_rule(rule) for rule in affordance_gate_program.rules)
     if passive_depletion_program is not None:
         rules.extend(_canonical_transition_rule(rule) for rule in passive_depletion_program.rules)
     if modulation_program is not None:
@@ -77,6 +81,8 @@ def canonical_transition_graph_schema(
 def compute_transition_graph_hash(
     phase_graph: TransitionPhaseGraph,
     action_write_program: Any,
+    *,
+    affordance_gate_program: Any | None = None,
     threshold_cascade_program: Any | None = None,
     modulation_program: Any | None = None,
     passive_depletion_program: Any | None = None,
@@ -86,9 +92,10 @@ def compute_transition_graph_hash(
         canonical_transition_graph_schema(
             phase_graph,
             action_write_program,
-            threshold_cascade_program,
-            modulation_program,
-            passive_depletion_program,
+            affordance_gate_program=affordance_gate_program,
+            threshold_cascade_program=threshold_cascade_program,
+            modulation_program=modulation_program,
+            passive_depletion_program=passive_depletion_program,
         )
     )
 

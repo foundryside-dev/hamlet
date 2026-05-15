@@ -487,15 +487,19 @@ def test_compiler_surfaces_vfs_hash(tmp_path: Path) -> None:
     assert compiled.transition_graph_hash == compute_transition_graph_hash(
         TransitionPhaseGraph.default(),
         compile_vtc_action_writes_with_phase_graph(compiled.runtime_action_space.actions, TransitionPhaseGraph.default()),
-        compile_vtc_threshold_cascades_with_phase_graph(
+        affordance_gate_program=vtc.compile_vtc_affordance_gates_with_phase_graph(
+            compiled.get_level(PRIMARY_LEVEL_NAME).affordances.affordances,
+            TransitionPhaseGraph.default(),
+        ),
+        threshold_cascade_program=compile_vtc_threshold_cascades_with_phase_graph(
             compiled.get_level(PRIMARY_LEVEL_NAME).bars.cascades,
             TransitionPhaseGraph.default(),
         ),
-        vtc.compile_vtc_modulations_with_phase_graph(
+        modulation_program=vtc.compile_vtc_modulations_with_phase_graph(
             compiled.get_level(PRIMARY_LEVEL_NAME).affordances.modulations,
             TransitionPhaseGraph.default(),
         ),
-        vtc.compile_vtc_passive_depletions_with_phase_graph(
+        passive_depletion_program=vtc.compile_vtc_passive_depletions_with_phase_graph(
             compiled.get_level(PRIMARY_LEVEL_NAME).bars.meters,
             TransitionPhaseGraph.default(),
         ),

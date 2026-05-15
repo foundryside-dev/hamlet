@@ -85,6 +85,26 @@ class TestFullObservability:
         assert (meters >= 0.0).all()
         assert (meters <= 1.0).all()
 
+    def test_meter_observation_is_sourced_from_vfs_registry(self, test_config_pack_path, cpu_device, env_factory):
+        """obs_meters is generated from the VFS registry value, not direct env.meters concatenation."""
+        env = env_factory(
+            config_dir=test_config_pack_path,
+            num_agents=1,
+            device_override=cpu_device,
+        )
+
+        env.reset()
+        meter_values = torch.linspace(0.1, 0.8, steps=env.meter_count, device=cpu_device).unsqueeze(0)
+        env.meters = meter_values.clone()
+
+        meters_field = env.observation_spec.get_field_by_name("obs_meters")
+        obs = env._get_observations()
+        meter_obs = obs[:, meters_field.start_index : meters_field.end_index]
+        meter_vfs = env.vfs_registry.get("obs_meters", reader="engine")
+
+        assert torch.allclose(meter_vfs, meter_obs)
+        assert torch.allclose(meter_vfs, meter_values)
+
     def test_affordance_encoding_is_one_hot(self, basic_env):
         """Affordance encoding should be one-hot (15 dims: 14 types + 1 "none")."""
         obs = basic_env.reset()

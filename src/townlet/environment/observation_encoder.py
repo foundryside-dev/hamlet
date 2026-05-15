@@ -26,6 +26,7 @@ class ObservationEncoder:
         obs_fields = env.observation_spec.fields
         outputs: list[torch.Tensor] = []
         self._sync_position_observation_to_vfs()
+        self._sync_meter_observation_to_vfs()
 
         def _ensure_observation_field_shape(field_name: str, value: torch.Tensor, dims: int) -> torch.Tensor:
             if value.dim() == 1:
@@ -67,7 +68,7 @@ class ObservationEncoder:
                 else:
                     value = vel
             elif name == "obs_meters":
-                value = env.meters
+                value = self._build_vfs_agent_observation_field(name, dims)
             elif name in {"obs_affordance_at_position", "obs_affordances"}:
                 value = env._build_affordance_encoding(dims)
             elif name == "obs_effects":
@@ -168,6 +169,20 @@ class ObservationEncoder:
         if position is None:
             raise ValueError("Observation field 'obs_position' is present but the substrate does not expose position features.")
         env.vfs_registry.set("obs_position", position.to(device=env.device, dtype=torch.float32), writer="engine")
+
+    def _sync_meter_observation_to_vfs(self) -> None:
+        """Publish the current bar/meter observation into VFS state."""
+        env = self._env
+        meter_field = next((field for field in env.observation_spec.fields if field.name == "obs_meters"), None)
+        if meter_field is None:
+            return
+        if "obs_meters" not in env.vfs_registry.variables:
+            raise ValueError("Observation field 'obs_meters' is present but no matching VFS variable exists.")
+
+        expected_shape = (env.num_agents, meter_field.dims)
+        if tuple(env.meters.shape) != expected_shape:
+            raise ValueError(f"Observation field 'obs_meters' source shape {tuple(env.meters.shape)}, expected {expected_shape}.")
+        env.vfs_registry.set("obs_meters", env.meters.to(device=env.device, dtype=torch.float32), writer="engine")
 
     def _build_affordance_encoding(self, dims: int) -> torch.Tensor:
         """Build one-hot encoding of current affordance under each agent."""

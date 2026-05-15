@@ -348,3 +348,37 @@ def test_vfs_evaluator_handles_nested_reference_paths():
     assert result["a"].item() == pytest.approx(1.5)
     assert result["b"].item() == pytest.approx(2.5)
     assert result["c"].item() == pytest.approx(5.0)
+
+
+def test_vfs_evaluator_threads_affordance_and_temporal_context():
+    """Expressions should see real affordance state and temporal values."""
+    parser = ExpressionParser()
+
+    variables = [
+        CompiledVariable(
+            name="can_use_bank_late",
+            type="bool",
+            ast=parser.parse("affordance.bank.available and temporal.tick > 5"),
+            initial_value=None,
+            result_type="bool",
+            exposed_to=("agent",),
+            semantic_type="custom",
+        ),
+    ]
+
+    profile = CompiledGlobalProfile(
+        variables=variables,
+        dependencies={"can_use_bank_late": tuple()},
+    )
+
+    evaluator = VFSEvaluator(mode=EvaluationMode.EAGER)
+    result = evaluator.evaluate_global_profile(
+        profile=profile,
+        bars={},
+        vfs_state={},
+        affordances={"bank": {"available": torch.tensor(True)}},
+        temporal={"tick": torch.tensor(6)},
+        device=torch.device("cpu"),
+    )
+
+    assert torch.equal(result["can_use_bank_late"], torch.tensor(True))

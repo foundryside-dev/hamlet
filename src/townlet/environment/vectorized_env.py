@@ -661,6 +661,31 @@ class VectorizedHamletEnv:
         hour_idx = active_hour % self.hours_per_day
         return bool(self.action_mask_table[hour_idx, idx].item())
 
+    def _build_vfs_affordance_context(self) -> dict[str, dict[str, torch.Tensor]]:
+        """Build affordance state exposed to VFS expressions."""
+        return {
+            affordance_name: {"available": torch.tensor(self._is_affordance_open(affordance_name), device=self.device)}
+            for affordance_name in self.affordances
+        }
+
+    def _build_vfs_temporal_context(self) -> dict[str, torch.Tensor]:
+        """Build temporal state exposed to VFS expressions."""
+        if not self.enable_temporal_mechanics:
+            return {}
+
+        day_length = float(self.day_length)
+        time_of_day = float(self.time_of_day)
+        day_progress = time_of_day / day_length
+        night_threshold = day_length * 0.25
+        is_night = time_of_day < night_threshold or time_of_day >= (day_length - night_threshold)
+
+        return {
+            "tick": torch.tensor(self.global_tick, device=self.device),
+            "time_of_day": torch.tensor(time_of_day, device=self.device),
+            "day_progress": torch.tensor(day_progress, device=self.device),
+            "is_night": torch.tensor(is_night, device=self.device),
+        }
+
     def _build_action_space_from_runtime_artifact(self, runtime_action_space: RuntimeActionSpace) -> ComposedActionSpace:
         """Build ComposedActionSpace from compiler-emitted runtime actions."""
         actions = [
@@ -1173,6 +1198,8 @@ class VectorizedHamletEnv:
                     marks=marks,
                     device=self.device,
                     step=self.global_tick,  # HIGH-01: Use global tick instead of agent 0
+                    affordances=self._build_vfs_affordance_context(),
+                    temporal=self._build_vfs_temporal_context(),
                     agent_positions=self.positions.to(dtype=torch.float32, device=self.device),
                     affordance_positions={k: v.to(dtype=torch.float32, device=self.device) for k, v in self.affordances.items()},
                     vfs_types={name: var.type for name, var in self.vfs_registry.variables.items()},

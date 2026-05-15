@@ -96,6 +96,8 @@ class VFSEvaluator:
         marks: set[str] | None = None,
         device: torch.device = torch.device("cpu"),
         step: int | None = None,
+        affordances: dict[str, Any] | None = None,
+        temporal: dict[str, torch.Tensor] | None = None,
         agent_positions: torch.Tensor | None = None,
         affordance_positions: dict[str, torch.Tensor] | None = None,
         vfs_types: dict[str, str] | None = None,
@@ -154,10 +156,10 @@ class VFSEvaluator:
         context = ExecutionContext(
             bars=bars,
             vfs=vfs_state.copy(),  # Copy so we can update during evaluation
-            affordances={},  # TODO: Add affordance state support (Task 3)
+            affordances=affordances or {},
             affordance_positions=affordance_positions,
             agent_positions=agent_positions,
-            temporal={},  # TODO: Add temporal support (Task 3)
+            temporal=temporal or {},
             device=device,
             vfs_types=vfs_types,
             num_agents=num_agents,

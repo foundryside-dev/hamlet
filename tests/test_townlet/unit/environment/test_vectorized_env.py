@@ -19,6 +19,7 @@ Testing Strategy:
 from __future__ import annotations
 
 import shutil
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -34,9 +35,11 @@ from townlet.environment.env_factory import (
     _build_bar_index_map,
     _resolve_deployable_affordances,
 )
+from townlet.universe.compiled import CompiledVFSProfiles
 from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.dto import MeterInfo, MeterMetadata
 from townlet.universe.errors import CompilationError
+from townlet.vfs.profiles import CompiledGlobalProfile, CompiledVariable
 
 # =============================================================================
 # AFFORDANCE FILTERING HELPERS
@@ -380,6 +383,59 @@ class TestVectorizedHamletEnvStep:
         assert "intrinsic_weight" in info
         assert isinstance(info["intrinsic_weight"], torch.Tensor)
         assert info["intrinsic_weight"].shape == (2,)
+
+    def test_step_threads_vfs_affordance_and_temporal_context(self, custom_env_builder, monkeypatch):
+        """Runtime VFS evaluation should receive current affordance and temporal state."""
+        env = custom_env_builder(overrides={"environment": {"enable_temporal_mechanics": True}})
+        env.reset()
+        env.time_of_day = 10
+        env.global_tick = 7
+
+        profile = CompiledGlobalProfile(
+            variables=[
+                CompiledVariable(
+                    name="context_probe",
+                    type="bool",
+                    exposed_to=("agent",),
+                    semantic_type="custom",
+                    initial_value=True,
+                    result_type="bool",
+                )
+            ],
+            dependencies={"context_probe": tuple()},
+        )
+        env.universe = replace(
+            env.universe,
+            compiled_vfs_profiles=CompiledVFSProfiles(
+                evaluation_mode="mark_and_sweep",
+                debug_logging=False,
+                global_profile=profile,
+                item_profiles={},
+            ),
+        )
+        env.vfs_observation_marks = {"global": {"context_probe"}}
+
+        captured_context: dict[str, object] = {}
+
+        def capture_evaluation(**kwargs):
+            captured_context.update(kwargs)
+            return {}
+
+        assert env.vfs_evaluator is not None
+        monkeypatch.setattr(env.vfs_evaluator, "evaluate_global_profile", capture_evaluation)
+
+        env.step(torch.zeros(env.num_agents, dtype=torch.long))
+
+        assert set(captured_context["affordances"]) == set(env.affordances)
+        first_affordance = env.affordance_names[0]
+        affordance_state = captured_context["affordances"][first_affordance]
+        assert torch.equal(affordance_state["available"], torch.tensor(env._is_affordance_open(first_affordance), device=env.device))
+
+        temporal = captured_context["temporal"]
+        assert torch.equal(temporal["tick"], torch.tensor(7, device=env.device))
+        assert torch.equal(temporal["time_of_day"], torch.tensor(10.0, device=env.device))
+        assert torch.equal(temporal["day_progress"], torch.tensor(10.0 / float(env.day_length), device=env.device))
+        assert torch.equal(temporal["is_night"], torch.tensor(False, device=env.device))
 
 
 class TestExecuteActions:

@@ -215,7 +215,9 @@ Phase 1 proves that VFS can:
 - preserve checkpoint compatibility through regression tests,
 - and attach declared read/write dependencies to action definitions.
 
-Phase 1 does **not** yet execute symbolic write expressions. That is the purpose of the Phase 2 compiler.
+The repo no longer has "no transition compiler." The implemented VFS read path already parses profile expressions into ASTs, type-checks them, topologically sorts profile dependencies, and evaluates derived variables through `VFSEvaluator` in mark-and-sweep or eager mode. The action-write path also has an initial VTC slice: `ActionConfig.writes` compile into parsed, phase-ordered `CompiledActionWriteProgram` rules that execute masked tensor writes during `env.step`.
+
+The remaining VTC gap is full transition unification: write-expression type/shape validation, passive dynamics, cascades, temporal rules, rewards, terminal checks, telemetry, and non-action world physics still need to move into one validated transition graph.
 
 ---
 
@@ -735,9 +737,9 @@ Normalisation must be part of the observation schema hash.
 
 ## 10. ActionConfig dependency tracking
 
-### 10.1 Phase 1 use
+### 10.1 Current use
 
-Phase 1 action definitions declare dependencies but do not execute symbolic write expressions.
+Action definitions declare dependencies and may carry compiled VTC write rules. The current write path parses `WriteSpec.expression` and optional `condition` into ASTs, orders writes by the transition phase graph, and applies masked tensor updates for selected active agents during `env.step`.
 
 ```python
 from townlet.environment.action_config import ActionConfig
@@ -762,7 +764,7 @@ action = ActionConfig(
     writes=[
         WriteSpec(
             variable_id="position",
-            expression="position + delta",  # Symbolic expression; executed by compiler in Phase 2+
+            expression="position + delta",  # Parsed and executed by the action-write VTC slice
         ),
     ],
 )
@@ -778,9 +780,9 @@ for write_spec in action.writes:
 
 Key points:
 
-- Phase 1 tracks dependencies only.
-- Phase 2+ compiles expressions into tensor operations.
-- Dependencies enable static analysis of action effects.
+- Action dependencies remain useful for static analysis and schema hashing.
+- The implemented action-write path covers selected-action writes with phase ordering, composition, clamps, and masks.
+- The remaining VTC work is broader than action writes: unified type/shape validation and non-action transition rules still need compiler coverage.
 
 ### 10.2 Recommended WriteSpec fields
 
@@ -826,11 +828,19 @@ Use: VFS Transition Compiler (VTC)
 Keep as alias: Behavioural Action Compiler / Action Effect Compiler for legacy discussion
 ```
 
-This document uses **VTC** for the compiler that executes VFS transition rules.
+This document uses **VTC** for the compiler family that executes VFS transition rules.
+
+Current implementation is partial but real:
+
+- `VFSProfileCompiler` compiles profile expressions on the read/derived-variable path: AST parsing, dependency graph construction, topological sorting, cycle detection, and expression type checking.
+- `VFSEvaluator` evaluates compiled profile variables in dependency order, with mark-and-sweep evaluation for observed variables plus dependencies and eager mode when all variables are needed.
+- `CompiledActionWriteProgram` executes the first write-path slice for `ActionConfig.writes`: parsed expressions, phase ordering, composition modes, clamps, conditions, and active-agent masks.
+
+The unsolved work is not "build any compiler"; it is "finish the VTC as the single write-path and world-transition compiler."
 
 ### 11.2 Why the compiler should cover transitions, not only actions
 
-A narrow action compiler handles only declared action reads/writes. That is useful but incomplete.
+The current action-write compiler handles declared action writes. That is useful but incomplete.
 
 Townlet world physics also includes:
 
@@ -848,7 +858,7 @@ Townlet world physics also includes:
 - social residue effects,
 - and telemetry side effects.
 
-If only actions are compiled, the system risks becoming split:
+If only action writes are compiled, the system risks becoming split:
 
 ```text
 compiled actions
@@ -869,6 +879,8 @@ current VFS state
 ```
 
 ### 11.3 VTC architecture
+
+Implemented pieces already cover the front half of this architecture for profile reads and the first action-write slice. The target architecture below is the full transition compiler, where all world updates share the same validated graph.
 
 ```text
 World / Action / Rule Definitions (YAML)
@@ -915,23 +927,23 @@ A full tick should eventually compile into an ordered phase graph:
 
 The exact sequence can be tuned, but it must be explicit, configured, validated, and hashable. Execution order materially changes the world.
 
-### 11.5 Phase 2 capabilities
+### 11.5 Remaining Phase 2 capabilities
 
-The planned Phase 2 compiler should implement:
+The remaining Phase 2 compiler work should complete:
 
 1. **Expression compilation**
-   - Parse symbolic expressions such as `position + delta`, `energy - cost`, `health * healing_factor`.
-   - Generate efficient PyTorch operations.
-   - Batch operations across all agents.
+   - Profile read expressions already parse, type-check, and evaluate through the VFS profile compiler/evaluator.
+   - Action write expressions already parse and execute for selected actions.
+   - Finish write-expression type/shape validation and generated/batched operations for all transition rule sources.
 
 2. **Dependency resolution**
-   - Build a graph of variables and rules.
-   - Topologically sort dependencies within each phase.
-   - Detect circular dependencies at compile time.
-   - Optimise execution order for minimal memory overhead.
+   - Profile variables already build a dependency graph, topologically sort, and reject cycles.
+   - Extend dependency analysis across action writes, passive rules, cascades, temporal rules, reward components, and terminal checks.
+   - Optimise full phase execution order for minimal memory overhead.
 
 3. **Type checking**
-   - Validate expression types at compile time.
+   - Preserve existing profile-expression type checking.
+   - Add full type checking for write expressions and cross-rule targets.
    - Ensure shape compatibility such as scalar + scalar, vector + vector, mask + tensor.
    - Reject invalid operations before runtime.
 
@@ -2080,9 +2092,9 @@ Store state when it must persist or be authoritative. Derive features when they 
 
 ### 21.1 Phase 1 limitations
 
-1. **No transition compiler yet.** Expressions in `writes` are symbolic and not executed.
+1. **Partial VTC coverage.** Profile read expressions compile and evaluate through `VFSProfileCompiler`/`VFSEvaluator`, and simple action writes execute through `CompiledActionWriteProgram`; passive dynamics, cascades, temporal rules, rewards, terminal checks, and telemetry are not yet unified under VTC.
 2. **Manual observation generation.** Observation construction still requires explicit registry reads and concatenation.
-3. **No expression validation.** `WriteSpec` expressions are not validated until compiler work lands.
+3. **Partial write validation.** `WriteSpec` expressions are parsed and executed for action writes, but full write-path type/shape validation is still incomplete.
 4. **Limited normalisation.** Current normalisation is mostly minmax/zscore.
 5. **Limited scopes.** Current scopes are suitable for early levels but not full social simulation.
 6. **No dynamic variables.** Variables are fixed at initialisation.
@@ -2285,11 +2297,11 @@ This would make VFS teachable and debuggable.
 
 ## 25. Conclusion
 
-VFS Phase 1 is a strong foundation for declarative RL environment configuration. It already delivers typed variable schemas, registry-backed state, access control, observation-spec generation, action dependency tracking, dimension regression, and integration tests.
+VFS Phase 1 is a strong foundation for declarative RL environment configuration. It already delivers typed variable schemas, registry-backed state, access control, observation-spec generation, action dependency tracking, compiled profile read evaluation, initial action-write execution, dimension regression, and integration tests.
 
 The key architectural refinement is to treat VFS not merely as an observation system but as the **state and transition ABI** for Townlet.
 
-The next major step should be a VFS Transition Compiler that compiles declared relationships between variables into safe, efficient tensor operations. Actions are the first target, but the complete system should eventually compile passive dynamics, cascades, temporal gates, interaction progress, occupancy, social residue, terminal conditions, and reward logic.
+The next major step should complete the VFS Transition Compiler so all declared relationships between variables compile into safe, efficient tensor operations. Action writes are the first implemented write-path slice, but the complete system should eventually compile passive dynamics, cascades, temporal gates, interaction progress, occupancy, social residue, terminal conditions, and reward logic.
 
 The strongest long-term interpretation is:
 

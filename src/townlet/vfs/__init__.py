@@ -16,8 +16,10 @@ from townlet.vfs.schema import (
     WriteSpec,
 )
 from townlet.vfs.schema_hashes import (
+    canonical_action_schema,
     canonical_observation_schema,
     canonical_variable_schema,
+    compute_action_schema_hash,
     compute_observation_schema_hash,
     compute_variable_schema_hash,
 )
@@ -31,8 +33,10 @@ __all__ = [
     "VFSObservationSpec",
     "WriteSpec",
     "apply_normalization",
+    "canonical_action_schema",
     "canonical_observation_schema",
     "canonical_variable_schema",
+    "compute_action_schema_hash",
     "compute_observation_schema_hash",
     "compute_variable_schema_hash",
 ]

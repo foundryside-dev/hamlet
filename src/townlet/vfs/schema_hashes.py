@@ -4,14 +4,16 @@ from __future__ import annotations
 
 import hashlib
 import json
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from typing import Any
 
 from townlet.vfs.schema import NormalizationSpec, ObservationField, VariableDef, VariableScope
 
 __all__ = [
+    "canonical_action_schema",
     "canonical_observation_schema",
     "canonical_variable_schema",
+    "compute_action_schema_hash",
     "compute_observation_schema_hash",
     "compute_variable_schema_hash",
 ]
@@ -37,6 +39,16 @@ def compute_observation_schema_hash(fields: Iterable[ObservationField]) -> str:
     return _hash_payload(canonical_observation_schema(fields))
 
 
+def canonical_action_schema(actions: Iterable[Any]) -> list[dict[str, Any]]:
+    """Return the action-space payload used for policy/action ABI provenance."""
+    return [_canonical_action_entry(action) for action in sorted(actions, key=lambda item: item.id)]
+
+
+def compute_action_schema_hash(actions: Iterable[Any]) -> str:
+    """Return the SHA-256 digest of the canonical action-space payload."""
+    return _hash_payload(canonical_action_schema(actions))
+
+
 def _canonical_variable_entry(variable: VariableDef) -> dict[str, Any]:
     return {
         "id": variable.id,
@@ -60,6 +72,23 @@ def _canonical_observation_entry(field: ObservationField) -> dict[str, Any]:
         "curriculum_active": field.curriculum_active,
         "dtype": "float32",
         "semantic_type": field.semantic_type,
+    }
+
+
+def _canonical_action_entry(action: Any) -> dict[str, Any]:
+    return {
+        "id": action.id,
+        "name": action.name,
+        "type": action.type,
+        "source": action.source,
+        "enabled": action.enabled,
+        "costs": _plain_payload(action.costs),
+        "effects": _plain_payload(action.effects),
+        "delta": list(action.delta) if action.delta is not None else None,
+        "teleport_to": list(action.teleport_to) if action.teleport_to is not None else None,
+        "source_affordance": action.source_affordance,
+        "reads": sorted(action.reads),
+        "writes": [_plain_payload(write) for write in action.writes],
     }
 
 
@@ -91,3 +120,11 @@ def _hash_payload(payload: Any) -> str:
         sort_keys=True,
     )
     return hashlib.sha256(canonical_json.encode("utf-8")).hexdigest()
+
+
+def _plain_payload(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        return {key: _plain_payload(item) for key, item in value.items()}
+    if isinstance(value, list | tuple):
+        return [_plain_payload(item) for item in value]
+    return value

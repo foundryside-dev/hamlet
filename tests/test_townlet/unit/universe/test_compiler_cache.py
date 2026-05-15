@@ -168,6 +168,7 @@ def test_compile_recovers_from_corrupted_cache(tmp_path: Path, monkeypatch: pyte
         "observation_schema_hash",
         "action_space_metadata",
         "runtime_action_space",
+        "action_schema_hash",
         "optimization_data_raw",
         "vfs_observation_spec",
     ],
@@ -294,6 +295,7 @@ def test_direct_cache_load_rejects_missing_level_provenance_fields(tmp_path: Pat
         "vfs_variables",
         "variable_schema_hash",
         "observation_schema_hash",
+        "action_schema_hash",
         "optimization_data_raw",
     ],
 )
@@ -319,6 +321,7 @@ def test_direct_cache_load_rejects_missing_required_level_fields(tmp_path: Path,
         "vfs_variables",
         "variable_schema_hash",
         "observation_schema_hash",
+        "action_schema_hash",
         "optimization_data_raw",
     ],
 )

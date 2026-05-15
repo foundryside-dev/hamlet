@@ -44,7 +44,7 @@ from townlet.vfs.profiles import CompiledGlobalProfile
 from townlet.vfs.schema import ObservationField as VfsObservationField
 from townlet.vfs.schema import VariableDef
 
-COMPILED_SCHEMA_VERSION = "1.10"
+COMPILED_SCHEMA_VERSION = "1.11"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",
@@ -57,6 +57,7 @@ REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "variable_schema_hash",
     "action_space_metadata",
     "runtime_action_space",
+    "action_schema_hash",
     "meter_metadata",
     "affordance_metadata",
     "optimization_data_raw",
@@ -116,6 +117,7 @@ class CompiledUniverse:
     variable_schema_hash: str
     action_space_metadata: ActionSpaceMetadata
     runtime_action_space: RuntimeActionSpace
+    action_schema_hash: str
     meter_metadata: MeterMetadata
     affordance_metadata: AffordanceMetadata
     optimization_data: OptimizationData
@@ -176,6 +178,7 @@ class CompiledUniverse:
         observation_activity: ObservationActivity
         action_metadata: ActionSpaceMetadata
         runtime_action_space: RuntimeActionSpace
+        action_schema_hash: str
         meter_metadata: MeterMetadata
         affordance_metadata: AffordanceMetadata
         optimization_data: OptimizationData
@@ -253,6 +256,7 @@ class CompiledUniverse:
             variable_schema_hash=self.variable_schema_hash,
             action_space_metadata=deepcopy(self.action_space_metadata),
             runtime_action_space=deepcopy(self.runtime_action_space),
+            action_schema_hash=self.action_schema_hash,
             meter_metadata=deepcopy(self.meter_metadata),
             affordance_metadata=deepcopy(self.affordance_metadata),
             optimization_data=deepcopy(self.optimization_data),
@@ -294,6 +298,7 @@ class CompiledUniverse:
             "variable_schema_hash": self.variable_schema_hash,
             "action_space_metadata": _dataclass_to_plain(self.action_space_metadata),
             "runtime_action_space": _dataclass_to_plain(self.runtime_action_space),
+            "action_schema_hash": self.action_schema_hash,
             "meter_metadata": _dataclass_to_plain(self.meter_metadata),
             "affordance_metadata": _dataclass_to_plain(self.affordance_metadata),
             "optimization_data_raw": {
@@ -355,6 +360,7 @@ class CompiledUniverse:
                         "observation_activity": _dataclass_to_plain(meta.observation_activity),
                         "action_metadata": _dataclass_to_plain(meta.action_metadata),
                         "runtime_action_space": _dataclass_to_plain(meta.runtime_action_space),
+                        "action_schema_hash": meta.action_schema_hash,
                         "meter_metadata": _dataclass_to_plain(meta.meter_metadata),
                         "affordance_metadata": _dataclass_to_plain(meta.affordance_metadata),
                         "optimization_data_raw": {
@@ -432,6 +438,7 @@ class CompiledUniverse:
                         _required_mapping(meta, f"all_levels.{name}.runtime_action_space"),
                         f"all_levels.{name}.runtime_action_space",
                     ),
+                    action_schema_hash=_required_field(meta, f"all_levels.{name}.action_schema_hash"),
                     meter_metadata=_meter_metadata_from_plain(meta["meter_metadata"], f"all_levels.{name}.meter_metadata"),
                     affordance_metadata=_affordance_metadata_from_plain(
                         meta["affordance_metadata"], f"all_levels.{name}.affordance_metadata"
@@ -464,6 +471,7 @@ class CompiledUniverse:
             variable_schema_hash=_required_field(payload, "variable_schema_hash"),
             action_space_metadata=_action_space_metadata_from_plain(payload["action_space_metadata"]),
             runtime_action_space=_runtime_action_space_from_plain(_required_mapping(payload, "runtime_action_space")),
+            action_schema_hash=_required_field(payload, "action_schema_hash"),
             meter_metadata=_meter_metadata_from_plain(payload["meter_metadata"]),
             affordance_metadata=_affordance_metadata_from_plain(payload["affordance_metadata"]),
             optimization_data=OptimizationData(

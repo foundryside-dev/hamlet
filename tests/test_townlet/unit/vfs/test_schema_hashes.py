@@ -6,10 +6,13 @@ import yaml
 
 from tests.test_townlet.helpers.config_builder import PRIMARY_LEVEL_NAME, prepare_config_dir
 from townlet.universe.compiler import UniverseCompiler
+from townlet.universe.dto import RuntimeAction
 from townlet.vfs.schema import NormalizationSpec, ObservationField, VariableDef
 from townlet.vfs.schema_hashes import (
+    canonical_action_schema,
     canonical_observation_schema,
     canonical_variable_schema,
+    compute_action_schema_hash,
     compute_observation_schema_hash,
     compute_variable_schema_hash,
 )
@@ -187,3 +190,102 @@ def test_compiler_surfaces_observation_schema_hash(tmp_path: Path) -> None:
     assert compiled.all_levels is not None
     assert compiled.all_levels[PRIMARY_LEVEL_NAME].observation_schema_hash == compiled.observation_schema_hash
     assert compiled.to_dict()["observation_schema_hash"] == compiled.observation_schema_hash
+
+
+def test_canonical_action_schema_uses_action_abi_fields() -> None:
+    """Action hashes should use IDs, names, masks, movement shape, reads, and writes."""
+    action = RuntimeAction(
+        id=2,
+        name="REST",
+        type="passive",
+        enabled=True,
+        source="custom",
+        costs={"energy": 0.1},
+        effects={"mood": 0.2},
+        delta=None,
+        teleport_to=None,
+        description="Descriptions are not part of the action ABI hash",
+        icon=None,
+        source_affordance=None,
+        reads=("mood", "energy"),
+        writes=(
+            {
+                "variable_id": "energy",
+                "expression": "energy + 0.2",
+                "condition": None,
+                "composition": "additive_delta",
+                "phase": "action_effects",
+                "priority": 0,
+                "clamp": [0.0, 1.0],
+                "telemetry_label": "rest_energy_gain",
+            },
+        ),
+    )
+
+    assert canonical_action_schema((action,)) == [
+        {
+            "id": 2,
+            "name": "REST",
+            "type": "passive",
+            "source": "custom",
+            "enabled": True,
+            "costs": {"energy": 0.1},
+            "effects": {"mood": 0.2},
+            "delta": None,
+            "teleport_to": None,
+            "source_affordance": None,
+            "reads": ["energy", "mood"],
+            "writes": [
+                {
+                    "variable_id": "energy",
+                    "expression": "energy + 0.2",
+                    "condition": None,
+                    "composition": "additive_delta",
+                    "phase": "action_effects",
+                    "priority": 0,
+                    "clamp": [0.0, 1.0],
+                    "telemetry_label": "rest_energy_gain",
+                }
+            ],
+        }
+    ]
+
+
+def test_action_schema_hash_sorts_by_action_id() -> None:
+    """Action IDs define the policy ABI order, independent of tuple ordering."""
+    wait = RuntimeAction(id=0, name="WAIT", type="passive", enabled=True, source="custom")
+    rest = RuntimeAction(id=1, name="REST", type="passive", enabled=True, source="custom")
+
+    assert compute_action_schema_hash((wait, rest)) == compute_action_schema_hash((rest, wait))
+
+
+def test_action_schema_hash_changes_when_mask_or_reads_or_writes_change() -> None:
+    """Enabled masks and declared dependencies are policy/action-space ABI fields."""
+    base = RuntimeAction(id=0, name="REST", type="passive", enabled=True, source="custom", reads=("energy",))
+    disabled = RuntimeAction(id=0, name="REST", type="passive", enabled=False, source="custom", reads=("energy",))
+    changed_reads = RuntimeAction(id=0, name="REST", type="passive", enabled=True, source="custom", reads=("mood",))
+    changed_writes = RuntimeAction(
+        id=0,
+        name="REST",
+        type="passive",
+        enabled=True,
+        source="custom",
+        reads=("energy",),
+        writes=({"variable_id": "energy", "expression": "energy + 0.2"},),
+    )
+
+    assert compute_action_schema_hash((base,)) != compute_action_schema_hash((disabled,))
+    assert compute_action_schema_hash((base,)) != compute_action_schema_hash((changed_reads,))
+    assert compute_action_schema_hash((base,)) != compute_action_schema_hash((changed_writes,))
+
+
+def test_compiler_surfaces_action_schema_hash(tmp_path: Path) -> None:
+    """UniverseCompiler should emit the action schema hash on the compiled artifact."""
+    experiment_dir = prepare_config_dir(tmp_path, name="experiment")
+
+    compiled = UniverseCompiler().compile(experiment_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
+
+    assert compiled.action_schema_hash == compute_action_schema_hash(compiled.runtime_action_space.actions)
+    assert compiled.all_levels is not None
+    assert compiled.all_levels[PRIMARY_LEVEL_NAME].action_schema_hash == compiled.action_schema_hash
+    assert compiled.to_dict()["action_schema_hash"] == compiled.action_schema_hash

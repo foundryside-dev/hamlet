@@ -44,7 +44,7 @@ from townlet.vfs.profiles import CompiledGlobalProfile
 from townlet.vfs.schema import ObservationField as VfsObservationField
 from townlet.vfs.schema import VariableDef
 
-COMPILED_SCHEMA_VERSION = "1.9"
+COMPILED_SCHEMA_VERSION = "1.10"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",
@@ -52,6 +52,7 @@ REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "observation_spec",
     "observation_activity",
     "vfs_observation_fields",
+    "observation_schema_hash",
     "vfs_variables",
     "variable_schema_hash",
     "action_space_metadata",
@@ -110,6 +111,7 @@ class CompiledUniverse:
     observation_spec: ObservationSpec
     observation_activity: ObservationActivity
     vfs_observation_fields: tuple[VfsObservationField, ...]
+    observation_schema_hash: str
     vfs_variables: tuple[VariableDef, ...]
     variable_schema_hash: str
     action_space_metadata: ActionSpaceMetadata
@@ -178,6 +180,7 @@ class CompiledUniverse:
         affordance_metadata: AffordanceMetadata
         optimization_data: OptimizationData
         vfs_observation_fields: tuple[VfsObservationField, ...]
+        observation_schema_hash: str
         vfs_variables: tuple[VariableDef, ...]
         variable_schema_hash: str
         drive_hash: str | None = None
@@ -245,6 +248,7 @@ class CompiledUniverse:
             observation_spec=deepcopy(self.observation_spec),
             observation_activity=deepcopy(self.observation_activity),
             vfs_observation_fields=tuple(deepcopy(self.vfs_observation_fields)),
+            observation_schema_hash=self.observation_schema_hash,
             vfs_variables=tuple(deepcopy(self.vfs_variables)),
             variable_schema_hash=self.variable_schema_hash,
             action_space_metadata=deepcopy(self.action_space_metadata),
@@ -285,6 +289,7 @@ class CompiledUniverse:
             "observation_spec": _dataclass_to_plain(self.observation_spec),
             "observation_activity": _dataclass_to_plain(self.observation_activity),
             "vfs_observation_fields": [field.model_dump() for field in self.vfs_observation_fields],
+            "observation_schema_hash": self.observation_schema_hash,
             "vfs_variables": [var.model_dump() for var in getattr(self, "vfs_variables", ())],
             "variable_schema_hash": self.variable_schema_hash,
             "action_space_metadata": _dataclass_to_plain(self.action_space_metadata),
@@ -364,6 +369,7 @@ class CompiledUniverse:
                             "affordance_position_map": _serialize_affordance_positions(meta.optimization_data.affordance_position_map),
                         },
                         "vfs_observation_fields": [field.model_dump() for field in meta.vfs_observation_fields],
+                        "observation_schema_hash": meta.observation_schema_hash,
                         "vfs_variables": [var.model_dump() for var in meta.vfs_variables],
                         "variable_schema_hash": meta.variable_schema_hash,
                     }
@@ -443,6 +449,7 @@ class CompiledUniverse:
                     vfs_observation_fields=tuple(
                         VfsObservationField(**field) for field in _required_field(meta, f"all_levels.{name}.vfs_observation_fields")
                     ),
+                    observation_schema_hash=_required_field(meta, f"all_levels.{name}.observation_schema_hash"),
                     vfs_variables=tuple(VariableDef(**var) for var in _required_field(meta, f"all_levels.{name}.vfs_variables")),
                     variable_schema_hash=_required_field(meta, f"all_levels.{name}.variable_schema_hash"),
                 )
@@ -452,6 +459,7 @@ class CompiledUniverse:
             observation_spec=_observation_spec_from_plain(payload["observation_spec"]),
             observation_activity=_observation_activity_from_plain(_required_mapping(payload, "observation_activity")),
             vfs_observation_fields=tuple(VfsObservationField(**field) for field in _required_field(payload, "vfs_observation_fields")),
+            observation_schema_hash=_required_field(payload, "observation_schema_hash"),
             vfs_variables=tuple(VariableDef(**var) for var in _required_field(payload, "vfs_variables")),
             variable_schema_hash=_required_field(payload, "variable_schema_hash"),
             action_space_metadata=_action_space_metadata_from_plain(payload["action_space_metadata"]),

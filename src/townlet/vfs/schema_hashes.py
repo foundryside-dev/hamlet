@@ -7,10 +7,12 @@ import json
 from collections.abc import Iterable
 from typing import Any
 
-from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope
+from townlet.vfs.schema import NormalizationSpec, ObservationField, VariableDef, VariableScope
 
 __all__ = [
+    "canonical_observation_schema",
     "canonical_variable_schema",
+    "compute_observation_schema_hash",
     "compute_variable_schema_hash",
 ]
 
@@ -22,13 +24,17 @@ def canonical_variable_schema(variables: Iterable[VariableDef]) -> list[dict[str
 
 def compute_variable_schema_hash(variables: Iterable[VariableDef]) -> str:
     """Return the SHA-256 digest of the canonical variable-schema payload."""
-    payload = json.dumps(
-        canonical_variable_schema(variables),
-        ensure_ascii=True,
-        separators=(",", ":"),
-        sort_keys=True,
-    )
-    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+    return _hash_payload(canonical_variable_schema(variables))
+
+
+def canonical_observation_schema(fields: Iterable[ObservationField]) -> list[dict[str, Any]]:
+    """Return the ordered observation-schema payload used for provenance."""
+    return [_canonical_observation_entry(field) for field in fields]
+
+
+def compute_observation_schema_hash(fields: Iterable[ObservationField]) -> str:
+    """Return the SHA-256 digest of the canonical observation-schema payload."""
+    return _hash_payload(canonical_observation_schema(fields))
 
 
 def _canonical_variable_entry(variable: VariableDef) -> dict[str, Any]:
@@ -44,6 +50,19 @@ def _canonical_variable_entry(variable: VariableDef) -> dict[str, Any]:
     }
 
 
+def _canonical_observation_entry(field: ObservationField) -> dict[str, Any]:
+    return {
+        "id": field.id,
+        "source_variable": field.source_variable,
+        "shape": list(field.shape),
+        "normalization": _normalization_payload(field.normalization),
+        "exposed_to": sorted(field.exposed_to),
+        "curriculum_active": field.curriculum_active,
+        "dtype": "float32",
+        "semantic_type": field.semantic_type,
+    }
+
+
 def _scope_value(scope: VariableScope | str) -> str:
     if isinstance(scope, VariableScope):
         return scope.value
@@ -56,3 +75,19 @@ def _normalization_range(normalization: NormalizationSpec | None) -> list[Any] |
     if normalization.min is None or normalization.max is None:
         return None
     return [normalization.min, normalization.max]
+
+
+def _normalization_payload(normalization: NormalizationSpec | None) -> dict[str, Any] | None:
+    if normalization is None:
+        return None
+    return normalization.model_dump(mode="json", exclude_none=True)
+
+
+def _hash_payload(payload: Any) -> str:
+    canonical_json = json.dumps(
+        payload,
+        ensure_ascii=True,
+        separators=(",", ":"),
+        sort_keys=True,
+    )
+    return hashlib.sha256(canonical_json.encode("utf-8")).hexdigest()

@@ -25,7 +25,7 @@ from townlet.universe.optimization import OptimizationData
 from townlet.universe.raw_configs_v21 import RawConfigsV21
 from townlet.vfs.observation_builder import VFSObservationSpec
 from townlet.vfs.profiles import CircularDependencyError
-from townlet.vfs.schema_hashes import compute_variable_schema_hash
+from townlet.vfs.schema_hashes import compute_observation_schema_hash, compute_variable_schema_hash
 from townlet.world.expression.type_checker import TypeCheckError
 
 from .compiled import CompiledVFSProfiles
@@ -368,6 +368,7 @@ class UniverseCompiler:
             vfs_fields = self._observation_compiler.build_vfs_observation_fields(obs_spec, raw.environment)
             base_vfs_variables = self._observation_compiler.build_vfs_variables(obs_spec, raw.environment)
             vfs_variables = self._vfs_compiler.build_runtime_variables(base_vfs_variables, compiled_vfs_profiles)
+            observation_schema_hash = compute_observation_schema_hash(vfs_fields)
             variable_schema_hash = compute_variable_schema_hash(vfs_variables)
 
             # Compute hashes for level-specific configs
@@ -397,6 +398,7 @@ class UniverseCompiler:
                 affordances_hash=affordances_hash,
                 training_hash=training_hash,
                 vfs_observation_fields=vfs_fields,
+                observation_schema_hash=observation_schema_hash,
                 vfs_variables=vfs_variables,
                 variable_schema_hash=variable_schema_hash,
                 items_appearance=level.items_appearance,
@@ -457,6 +459,7 @@ class UniverseCompiler:
             observation_spec=primary_meta.observation_spec,
             observation_activity=primary_meta.observation_activity,
             vfs_observation_fields=primary_meta.vfs_observation_fields,
+            observation_schema_hash=primary_meta.observation_schema_hash,
             vfs_variables=primary_meta.vfs_variables,
             variable_schema_hash=primary_meta.variable_schema_hash,
             action_space_metadata=primary_meta.action_metadata,

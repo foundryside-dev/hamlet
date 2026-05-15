@@ -83,6 +83,7 @@ def _cmd_compile(args: argparse.Namespace) -> int:
     elapsed_ms = (time.perf_counter() - start) * 1000.0
 
     _print_summary(compiled.metadata)
+    print(f"  Observation Schema Hash : {compiled.observation_schema_hash[:16]}")
     print(f"  Variable Schema Hash : {compiled.variable_schema_hash[:16]}")
     print(f"Compilation succeeded in {elapsed_ms:.1f} ms")
 
@@ -124,11 +125,13 @@ def _cmd_inspect(args: argparse.Namespace) -> int:
         payload = {
             "artifact": str(artifact_path),
             "metadata": _metadata_to_dict(compiled.metadata),
+            "observation_schema_hash": compiled.observation_schema_hash,
             "variable_schema_hash": compiled.variable_schema_hash,
         }
         print(json.dumps(payload, indent=2, sort_keys=True))
     else:
         _print_summary(compiled.metadata)
+        print(f"  Observation Schema Hash : {compiled.observation_schema_hash[:16]}")
         print(f"  Variable Schema Hash : {compiled.variable_schema_hash[:16]}")
         print(f"Artifact path: {artifact_path}")
     return 0

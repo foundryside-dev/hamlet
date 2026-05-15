@@ -109,6 +109,16 @@ class ObservationEncoder:
             raise ValueError(f"Observation field '{field_name}' produced shape {tuple(value.shape)}, expected {expected_shape}.")
         return value
 
+    def _set_observation_variable(self, field_name: str, value: torch.Tensor, dims: int) -> None:
+        """Validate an observation primitive and publish it to the VFS registry."""
+        env = self._env
+        value = value.to(device=env.device, dtype=torch.float32)
+        shaped = self._ensure_agent_observation_shape(field_name, value, dims)
+        registry_value = shaped
+        if dims == 1:
+            registry_value = shaped[:, 0]
+        env.vfs_registry.set(field_name, registry_value, writer="engine")
+
     def _sync_observation_primitives_to_vfs(self) -> None:
         """Publish system observation primitives into VFS state before assembly."""
         self._sync_grid_observation_to_vfs()
@@ -136,7 +146,7 @@ class ObservationEncoder:
         else:
             grid_encoding = env.substrate.encode_observation(env.positions, env.affordances)
 
-        env.vfs_registry.set("obs_grid_encoding", grid_encoding.to(device=env.device, dtype=torch.float32), writer="engine")
+        self._set_observation_variable("obs_grid_encoding", grid_encoding, grid_field.dims)
 
     def _sync_local_window_observation_to_vfs(self) -> None:
         """Publish current local-window observation into VFS state."""
@@ -156,7 +166,7 @@ class ObservationEncoder:
                 vision_range=env.vision_radius,
             )
 
-        env.vfs_registry.set("obs_local_window", local_window.to(device=env.device, dtype=torch.float32), writer="engine")
+        self._set_observation_variable("obs_local_window", local_window, local_field.dims)
 
     def _sync_velocity_observation_to_vfs(self) -> None:
         """Publish current velocity observation into VFS state."""
@@ -171,7 +181,7 @@ class ObservationEncoder:
         if velocity is None:
             velocity = torch.zeros((env.num_agents, velocity_field.dims), device=env.device)
 
-        env.vfs_registry.set("obs_velocity", velocity.to(device=env.device, dtype=torch.float32), writer="engine")
+        self._set_observation_variable("obs_velocity", velocity, velocity_field.dims)
 
     def _sync_position_observation_to_vfs(self) -> None:
         """Publish the current substrate position observation into VFS state."""
@@ -182,10 +192,11 @@ class ObservationEncoder:
         if "obs_position" not in env.vfs_registry.variables:
             raise ValueError("Observation field 'obs_position' is present but no matching VFS variable exists.")
 
-        position = self._encode_position_observation()
+        position = env._encode_position_observation()
         if position is None:
             raise ValueError("Observation field 'obs_position' is present but the substrate does not expose position features.")
-        env.vfs_registry.set("obs_position", position.to(device=env.device, dtype=torch.float32), writer="engine")
+        position_field = env.observation_spec.get_field_by_name("obs_position")
+        self._set_observation_variable("obs_position", position, position_field.dims)
 
     def _sync_meter_observation_to_vfs(self) -> None:
         """Publish the current bar/meter observation into VFS state."""
@@ -226,7 +237,7 @@ class ObservationEncoder:
             raise ValueError("Observation field 'obs_effects' is present but no matching VFS variable exists.")
 
         effects = env._build_effects_observation(effects_field.dims)
-        env.vfs_registry.set("obs_effects", effects.to(device=env.device, dtype=torch.float32), writer="engine")
+        self._set_observation_variable("obs_effects", effects, effects_field.dims)
 
     def _sync_temporal_observation_to_vfs(self) -> None:
         """Publish current temporal observation into VFS state."""
@@ -238,7 +249,7 @@ class ObservationEncoder:
             raise ValueError("Observation field 'obs_temporal' is present but no matching VFS variable exists.")
 
         temporal = self._build_temporal_observation(temporal_field.dims)
-        env.vfs_registry.set("obs_temporal", temporal.to(device=env.device, dtype=torch.float32), writer="engine")
+        self._set_observation_variable("obs_temporal", temporal, temporal_field.dims)
 
     def _build_temporal_observation(self, dims: int) -> torch.Tensor:
         """Build the runtime temporal observation vector."""

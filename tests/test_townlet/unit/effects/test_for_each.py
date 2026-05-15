@@ -303,6 +303,12 @@ def test_for_each_inventory_items_skips_empty_and_uses_ints():
         def get(self, name, reader=None):
             return self.values[name]
 
+        def get_item_profile_for_index(self, vfs_index):
+            return "default"
+
+        def get_item_variable_type(self, profile_name, name):
+            return "float"
+
     vfs = DummyVFS()
 
     context = ExecutionContext(

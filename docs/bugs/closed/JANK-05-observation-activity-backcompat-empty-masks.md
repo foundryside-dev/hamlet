@@ -1,7 +1,7 @@
 Title: Missing observation_activity in cached universes silently yields empty activity/masks
 
 Severity: low
-Status: open
+Status: closed
 
 Ticket Type: JANK
 Subsystem: universe/compiled + runtime (observation activity)
@@ -50,6 +50,11 @@ Proposed Directions:
 Tests:
 - Unit: simulate an older cache without `observation_activity` and assert that a warning or error is raised (depending on chosen policy).
 - Regression: ensure current compiler always writes `observation_activity` and that round-trips preserve grouping info.
+
+Closeout:
+- Fixed by making `CompiledUniverse.load_from_cache()` reject missing current-schema fields, including `observation_activity`, with a loud recompile error.
+- `UniverseCompiler.compile(use_cache=True)` remains the only recovery point and recompiles source configs when a stale cache is rejected.
+- Regression coverage lives in `tests/test_townlet/unit/universe/test_compiler_cache.py` and `tests/test_townlet/unit/universe/test_metadata_serialization.py`.
 
 Owner: compiler/runtime
 Links:

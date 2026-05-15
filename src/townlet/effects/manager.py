@@ -126,7 +126,7 @@ class EffectManager:
         """
         # Get compiled effect definition (validates effect_id exists)
         effect_def = self.catalog.effects[effect_id]
-        effect_index = self.catalog.get_effect_index(effect_id) if hasattr(self.catalog, "get_effect_index") else -1
+        effect_index = self.catalog.get_effect_index(effect_id)
         observable = getattr(effect_def, "observable", False)
 
         # Check for existing effect on same target
@@ -352,7 +352,6 @@ class EffectManager:
         bars: dict[str, torch.Tensor],
         vfs_registry: Any | None,
         current_step: int,
-        env_state: Any | None = None,  # Keep for backward compatibility
         item_manager: Any | None = None,  # NEW: ItemManager for spawn_item commands
         agent_positions: Any | None = None,
     ) -> None:
@@ -366,7 +365,6 @@ class EffectManager:
             bars: Current meter values
             vfs_registry: VFS registry
             current_step: Current environment step
-            env_state: Environment state for command execution (deprecated, use bars/vfs_registry)
             item_manager: ItemManager for spawn_item commands (optional)
         """
 

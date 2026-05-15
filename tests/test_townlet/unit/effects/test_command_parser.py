@@ -112,17 +112,6 @@ def test_parser_sample_command():
     assert node.sample_store_path == "temp.roll"
 
 
-def test_parser_distribution_alias():
-    """Parser accepts 'distribution' as alias for 'sample'."""
-    config = CommandConfig(distribution="normal", params={"mean": 0.5, "std": 0.1}, store_in="temp.val")
-
-    parser = CommandParser()
-    node = parser.parse_command(config)
-
-    assert node.type == CommandType.SAMPLE
-    assert node.sample_distribution == "normal"
-
-
 def test_parser_for_each_command():
     """Parser converts for_each CommandConfig to CommandNode."""
     config = CommandConfig.model_validate(
@@ -138,9 +127,9 @@ def test_parser_for_each_command():
 
     assert node.type == CommandType.FOR_EACH
     assert node.collection_expr == "nearby_items"
-    assert node.iterator_var == "item"
-    assert len(node.do_commands) == 1
-    assert node.do_commands[0].type == CommandType.MODIFY
+    assert node.iterator == "item"
+    assert len(node.body) == 1
+    assert node.body[0].type == CommandType.MODIFY
 
 
 def test_parser_switch_command():
@@ -243,7 +232,7 @@ def test_parser_invalid_command_raises():
 
 def test_parser_spawn_effect_numeric_target():
     """Parser handles numeric string targets for spawn_effect."""
-    config = CommandConfig(spawn_effect="buff", target="5")
+    config = CommandConfig(spawn_effect="buff", target="5", intensity=1.0)
 
     parser = CommandParser()
     node = parser.parse_command(config)
@@ -255,7 +244,7 @@ def test_parser_spawn_effect_numeric_target():
 
 def test_parser_spawn_effect_expression_target():
     """Parser handles expression targets for spawn_effect."""
-    config = CommandConfig(spawn_effect="buff", target="agents[0]")
+    config = CommandConfig(spawn_effect="buff", target="agents[0]", intensity=1.0)
 
     parser = CommandParser()
     node = parser.parse_command(config)

@@ -230,6 +230,7 @@ def test_spawn_effect_defaults_to_catalog_duration_when_not_overridden():
         type=CommandType.SPAWN_EFFECT,
         effect_id="slow",
         target="self",
+        intensity=1.0,
         # duration intentionally omitted to rely on catalog value
     )
 
@@ -249,9 +250,9 @@ def test_spawn_effect_defaults_to_catalog_duration_when_not_overridden():
     assert manager.agent_effects[0][0].duration_remaining == 50
 
 
-def test_spawn_effect_pipeline_defaults_to_self_target():
-    """Parser+compiler should produce an executable node targeting self by default."""
-    config = CommandConfig(spawn_effect="poison")
+def test_spawn_effect_pipeline_requires_explicit_target_and_intensity():
+    """Parser+compiler should execute only explicitly targeted spawn commands."""
+    config = CommandConfig(spawn_effect="poison", target="self", intensity=1.0)
     parser = CommandParser()
     compiler = CommandCompiler(schema={})
 
@@ -295,7 +296,7 @@ def test_spawn_effect_pipeline_defaults_to_self_target():
 
 def test_spawn_effect_evaluates_target_expression_when_not_literal():
     """Non-literal targets should be evaluated via target_ast at runtime."""
-    config = CommandConfig(spawn_effect="stun", target="1 + 1")
+    config = CommandConfig(spawn_effect="stun", target="1 + 1", intensity=1.0)
     parser = CommandParser()
     compiler = CommandCompiler(schema={})
     node = compiler.compile_command(parser.parse_command(config))

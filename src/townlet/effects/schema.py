@@ -49,10 +49,10 @@ class CommandNode:
     # spawn_effect command fields
     effect_id: str | None = None  # Effect ID to spawn
     target: str | int | None = None  # Simple target ("self", "target", or explicit index)
-    target_expr: str | None = "self"  # Expression string (for complex expressions)
+    target_expr: str | None = None  # Expression string (for complex expressions)
     target_ast: Any | None = None  # ✅ Pre-compiled AST
     duration: int | None = None  # Duration override (if not using effect default)
-    intensity: float | None = 1.0  # Intensity multiplier
+    intensity: float | None = None  # Intensity multiplier
 
     # spawn_item command fields
     item_type: str | None = None  # Item type ID (canonical)
@@ -78,10 +78,8 @@ class CommandNode:
     collection: str | None = None  # Simple collection type ("nearby_agents", "all_agents")
     collection_expr: str | None = None  # Expression string (for complex expressions)
     collection_ast: Any | None = None  # ✅ Pre-compiled AST
-    iterator: str | None = None  # Iterator variable name (NEW - simpler name)
-    iterator_var: str | None = None  # Variable name for iteration (legacy)
-    body: list[CommandNode] | None = None  # Body commands (NEW - clearer name)
-    do_commands: list[CommandNode] | None = None  # Legacy name
+    iterator: str | None = None  # Iterator variable name
+    body: list[CommandNode] | None = None  # Body commands
     radius: float | None = None  # Radius for spatial collections (NEW)
 
     # switch command fields
@@ -118,8 +116,6 @@ class CommandNode:
             self.then_commands = []
         if self.else_commands is None:
             self.else_commands = []
-        if self.do_commands is None:
-            self.do_commands = []
         if self.body is None:
             self.body = []
         if self.cases is None:

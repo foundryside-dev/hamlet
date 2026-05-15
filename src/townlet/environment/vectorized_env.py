@@ -386,79 +386,9 @@ class VectorizedHamletEnv:
         # Build VFSObservationSpec for observation generation
         self.vfs_observation_spec: VFSObservationSpec | None = None
         if universe.compiled_vfs_profiles is not None:
-            # Extract VFS profiles to build spec
-            from townlet.config.vfs_profiles_config import (
-                AgentVFSProfileConfig,
-                GlobalVFSProfileConfig,
-                ItemVFSProfileConfig,
-            )
-
-            def _compiled_var_to_cfg_payload(var: Any) -> dict[str, Any]:
-                """Convert compiled variable to config payload with expression or initial_value."""
-                payload: dict[str, Any] = {
-                    "name": var.name,
-                    "type": var.type,
-                    "exposed_to": tuple(getattr(var, "exposed_to", []) or ["agent"]),
-                    "semantic_type": getattr(var, "semantic_type", "custom"),
-                }
-                expression = getattr(var, "expression", None)
-                if var.initial_value is not None:
-                    payload["initial_value"] = var.initial_value
-                elif expression is not None:
-                    payload["expression"] = expression
-                else:
-                    # Preserve existing behavior but stay valid for pydantic (will raise if both missing)
-                    payload["initial_value"] = None
-                if getattr(var, "shape", None) is not None:
-                    payload["shape"] = var.shape
-                if getattr(var, "dims", None) is not None:
-                    payload["dims"] = var.dims
-                if getattr(var, "initial_value_mode", None) is not None:
-                    payload["initial_value_mode"] = var.initial_value_mode
-                if getattr(var, "initial_value_params", None) is not None:
-                    payload["initial_value_params"] = var.initial_value_params
-                return payload
-
-            # Build config objects from compiled profiles
-            global_profile_cfg = None
-            if universe.compiled_vfs_profiles.global_profile is not None:
-                # Convert compiled profile back to config format
-                global_profile_cfg = GlobalVFSProfileConfig(
-                    variables=cast(
-                        list[Any],
-                        [_compiled_var_to_cfg_payload(var) for var in universe.compiled_vfs_profiles.global_profile.variables],
-                    ),
-                )
-
-            agent_profile_cfg = None
-            if universe.compiled_vfs_profiles.agent_profile is not None:
-                agent_vars = getattr(universe.compiled_vfs_profiles.agent_profile, "variables", [])
-                agent_profile_cfg = AgentVFSProfileConfig(
-                    variables=cast(
-                        list[Any],
-                        [_compiled_var_to_cfg_payload(var) for var in agent_vars],
-                    )
-                )
-
-            item_profiles_list = []
-            if universe.compiled_vfs_profiles.item_profiles:
-                for profile_name, profile in universe.compiled_vfs_profiles.item_profiles.items():
-                    profile_vars = getattr(profile, "variables", [])
-                    item_profiles_list.append(
-                        ItemVFSProfileConfig(
-                            profile_name=profile_name,
-                            variables=cast(
-                                list[Any],
-                                [_compiled_var_to_cfg_payload(var) for var in profile_vars],
-                            ),
-                        )
-                    )
-
-            self.vfs_observation_spec = VFSObservationSpec.from_profiles(
-                global_profile=global_profile_cfg,
-                agent_profile=agent_profile_cfg,
-                item_profiles=item_profiles_list,
-            )
+            if universe.vfs_observation_spec is None:
+                raise ValueError("Compiled universe is missing vfs_observation_spec; recompile the config pack.")
+            self.vfs_observation_spec = universe.vfs_observation_spec
 
         # Initialize VFS evaluator (if profiles present)
         self.vfs_evaluator: VFSEvaluator | None = None

@@ -56,6 +56,7 @@ from townlet.universe.dto import (
 from townlet.universe.optimization import OptimizationData
 from townlet.universe.raw_configs_v21 import RawConfigsV21
 from townlet.universe.symbol_table import UniverseSymbolTable
+from townlet.vfs.observation_builder import VFSObservationSpec
 from townlet.vfs.profiles import CompiledItemProfile, VFSProfileCompiler
 from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope
 from townlet.vfs.schema import ObservationField as VFSObservationField
@@ -63,8 +64,20 @@ from townlet.world.expression import ExpressionParser
 from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
 
 from .compiled import CompiledVFSProfiles
+from .compilers.actions import ActionCompiler
+from .compilers.effects import EffectsCompiler
+from .compilers.metadata import MetadataCompiler
+from .compilers.observation import ObservationCompiler
+from .compilers.optimization import OptimizationCompiler
+from .compilers.vfs import VFSCompiler
 from .cues_compiler import CuesCompiler
 from .errors import CompilationError, CompilationErrorCollector, CompilationMessage
+from .loaders.preflight import validate_config_dir, validate_scoping, validate_yaml_syntax
+from .loaders.v21 import load_v21_configs
+from .pipeline import CompiledLevelBundle, SharedCompilerArtifacts
+from .validation.feasibility import grid_capacity_for_substrate
+from .validation.references import build_symbol_table, resolve_references
+from .validation.semantics import select_primary_level
 
 logger = logging.getLogger(__name__)
 
@@ -95,6 +108,12 @@ class UniverseCompiler:
         self._meter_metadata: MeterMetadata | None = None
         self._affordance_metadata: AffordanceMetadata | None = None
         self._optimization_data: OptimizationData | None = None
+        self._observation_compiler = ObservationCompiler(self)
+        self._action_compiler = ActionCompiler(self)
+        self._effects_compiler = EffectsCompiler(self)
+        self._metadata_compiler = MetadataCompiler(self)
+        self._optimization_compiler = OptimizationCompiler(self)
+        self._vfs_compiler = VFSCompiler(self)
 
     def _log_stage(self, number: int, description: str) -> None:
         """Emit a concise stage marker for pipeline tracing."""
@@ -414,10 +433,10 @@ class UniverseCompiler:
         experiment_dir = Path(experiment_dir).resolve()
         self.config_pack_path = experiment_dir
 
-        self._validate_config_dir(experiment_dir)
+        validate_config_dir(experiment_dir)
 
         # Stage 0: scoping preflight (no YAML parsing yet)
-        self._validate_scoping(experiment_dir)
+        validate_scoping(experiment_dir)
 
         # Optional cache fast-path
         cache_path = self._cache_artifact_path(experiment_dir)
@@ -456,19 +475,20 @@ class UniverseCompiler:
                 logger.warning("Failed to load cached universe from %s: %s", cache_path, exc)
 
         # Stage 0: YAML syntax validation (lightweight)
-        self._phase_0_validate_yaml_syntax(experiment_dir)
+        validate_yaml_syntax(experiment_dir)
 
         # Stage 1: load v2.1 configs
         self._log_stage(1, "Parse v2.1 configs")
-        raw = self._stage_1_load_v21_configs(experiment_dir)
+        loaded = load_v21_configs(experiment_dir)
+        raw = loaded.raw
 
         # Stage 2: symbol table
         self._log_stage(2, "Build symbol table")
-        symbol_table = self._stage_2_build_symbol_table(raw)
+        symbol_table = build_symbol_table(raw)
 
         # Stage 3: resolve references
         self._log_stage(3, "Resolve references")
-        self._stage_3_resolve_references(raw, symbol_table, experiment_dir)
+        resolve_references(raw, symbol_table, experiment_dir, validate_dac_references=self._validate_dac_references)
 
         # Stage 4: cross-validate semantics
         self._log_stage(4, "Cross-validate semantics")
@@ -476,21 +496,14 @@ class UniverseCompiler:
         temporal_supported = raw.stratum.stratum.temporal_support == "enabled"
 
         # Select primary level
-        if primary_level is None:
-            primary_level = sorted(raw.levels.keys())[0]
+        requested_primary_level = primary_level
+        primary_level = select_primary_level(raw.levels, primary_level)
+        if requested_primary_level is None:
             logger.info("No primary_level specified; defaulting to %s", primary_level)
-        if primary_level not in raw.levels:
-            raise ValueError(f"Primary level '{primary_level}' not found. Available: {list(raw.levels.keys())}")
 
         # Stage 5: shared artifact enrichment
         self._log_stage(5, "Enrich shared schemas and effects")
-        (
-            _bar_schema,
-            compiled_vfs_profiles,
-            _effects_schema,
-            compiled_effect_catalog,
-            vfs_history_spec,
-        ) = self._stage_5_prepare_shared_artifacts(
+        shared_artifacts = self._stage_5_prepare_shared_artifacts(
             raw,
             experiment_dir,
             primary_level=primary_level,
@@ -508,12 +521,12 @@ class UniverseCompiler:
         actions_hash = self._compute_pydantic_hash(raw.actions)
         items_hash = self._compute_pydantic_hash(raw.items) if raw.items else None
 
-        all_levels, primary_meta, universe_metadata, vfs_expression_schema, vfs_observation_marks = self._stage_6_compile_levels(
+        level_bundle = self._stage_6_compile_levels(
             raw,
             experiment_dir,
             primary_level=primary_level,
-            compiled_vfs_profiles=compiled_vfs_profiles,
-            compiled_effect_catalog=compiled_effect_catalog,
+            compiled_vfs_profiles=shared_artifacts.compiled_vfs_profiles,
+            compiled_effect_catalog=shared_artifacts.compiled_effect_catalog,
             config_hash=config_hash,
             config_mtime=config_mtime,
             temporal_supported=temporal_supported,
@@ -521,21 +534,26 @@ class UniverseCompiler:
 
         # Stage 7: emit artifact + cache
         self._log_stage(7, "Emit compiled universe")
-        effect_observation_slots = EFFECT_OBSERVATION_SLOTS if compiled_effect_catalog and compiled_effect_catalog.effects else 0
+        effect_observation_slots = (
+            EFFECT_OBSERVATION_SLOTS
+            if shared_artifacts.compiled_effect_catalog and shared_artifacts.compiled_effect_catalog.effects
+            else 0
+        )
         compiled = self._stage_7_emit_artifact(
             raw,
             experiment_dir,
             cache_path,
             use_cache,
-            universe_metadata,
-            primary_meta,
-            all_levels,
-            compiled_vfs_profiles,
-            compiled_effect_catalog,
-            vfs_expression_schema,
-            vfs_observation_marks,
+            level_bundle.universe_metadata,
+            level_bundle.primary_meta,
+            level_bundle.all_levels,
+            shared_artifacts.compiled_vfs_profiles,
+            shared_artifacts.compiled_effect_catalog,
+            level_bundle.vfs_expression_schema,
+            level_bundle.vfs_observation_marks,
             effect_observation_slots,
-            vfs_history_spec,
+            shared_artifacts.vfs_history_spec,
+            shared_artifacts.vfs_observation_spec,
             brain_hash=brain_hash,
             experiment_hash=experiment_hash,
             stratum_hash=stratum_hash,
@@ -544,160 +562,6 @@ class UniverseCompiler:
             items_hash=items_hash,
         )
         return compiled
-
-    def _validate_scoping(self, experiment_dir: Path) -> None:
-        """Enforce experiment-vs-level scoping for shared catalogs (effects/VFS/items)."""
-        from townlet.universe.errors import CompilationErrorCollector
-
-        errors = CompilationErrorCollector(stage="Stage 0: Scoping Validation")
-
-        # Detect if user is trying to validate a level directory directly
-        # Level directories have curriculum.yaml but NOT experiment.yaml
-        has_curriculum = (experiment_dir / "curriculum.yaml").exists()
-        has_experiment = (experiment_dir / "experiment.yaml").exists()
-        has_environment = (experiment_dir / "environment.yaml").exists()
-
-        if has_curriculum and not has_experiment and not has_environment:
-            # This looks like a level directory, not an experiment root
-            parent_experiment = experiment_dir.parent.parent  # levels/<level> -> experiment
-            errors.add(
-                f"Cannot validate level directory directly. " f"Please validate from the experiment root: {parent_experiment}",
-                code="SCOPING_LEVEL_DIRECTORY",
-                location=str(experiment_dir),
-            )
-            errors.check_and_raise()
-
-        # Shared catalogs required at experiment root (effects remain optional)
-        required_experiment_files: list[str] = ["vfs_profiles.yaml", "items.yaml"]
-        forbidden_level_files = ["vfs_profiles.yaml", "effects.yaml"]
-
-        for filename in required_experiment_files:
-            root_path = experiment_dir / filename
-            if not root_path.exists():
-                errors.add(
-                    f"Missing required experiment-level file: {filename}",
-                    code="SCOPING_MISSING_EXPERIMENT_FILE",
-                    location=str(root_path),
-                )
-
-        levels_root = experiment_dir / "levels"
-        if levels_root.exists():
-            for level_dir in sorted(levels_root.iterdir()):
-                if not level_dir.is_dir():
-                    continue
-                for forbidden in forbidden_level_files:
-                    forbidden_path = level_dir / forbidden
-                    if forbidden_path.exists():
-                        errors.add(
-                            f"Found {forbidden} at level scope ({forbidden_path}). This file must live at the experiment root only.",
-                            code="SCOPING_FORBIDDEN_LEVEL_FILE",
-                            location=str(forbidden_path),
-                        )
-                # Allow level items.yaml only when using the ItemsAppearance (v1.0) schema
-                level_items = level_dir / "items.yaml"
-                if level_items.exists():
-                    level_version: str | None = None
-                    try:
-                        with level_items.open() as handle:
-                            data = yaml.safe_load(handle) or {}
-                        if isinstance(data, dict):
-                            level_version = data.get("version")
-                    except yaml.YAMLError:
-                        level_version = None
-
-                    if level_version != "1.0":
-                        errors.add(
-                            f"Found items.yaml at level scope ({level_items}). "
-                            "Level item spawns must use the v1.0 ItemsAppearance schema; "
-                            "shared item catalogs belong at the experiment root.",
-                            code="SCOPING_FORBIDDEN_LEVEL_FILE",
-                            location=str(level_items),
-                        )
-
-        errors.check_and_raise()
-
-    def _validate_config_dir(self, config_dir: Path) -> None:
-        """Validate config_dir for security and sanity.
-
-        Ensures:
-        - Path is a directory
-        - Path doesn't contain suspicious traversal patterns
-        - Path exists
-
-        Raises:
-            CompilationError: If validation fails
-        """
-        if not config_dir.exists():
-            raise CompilationError(
-                stage="Config Directory Validation",
-                errors=[f"Config directory does not exist: {config_dir}"],
-            )
-
-        if not config_dir.is_dir():
-            raise CompilationError(
-                stage="Config Directory Validation",
-                errors=[f"Config path is not a directory: {config_dir}"],
-            )
-
-        # Warn about suspicious patterns (though resolve() already normalized them)
-        path_str = str(config_dir)
-        if ".." in path_str:
-            logger.warning(
-                "Config directory path contains '..' after resolution: %s. This may indicate a path traversal attempt.",
-                config_dir,
-            )
-
-    def _phase_0_validate_yaml_syntax(self, config_dir: Path) -> None:
-        """Phase 0 – validate all YAML files can be parsed before compilation begins."""
-        errors = CompilationErrorCollector(stage="Phase 0: YAML Syntax Validation")
-
-        shared_files = [
-            "experiment.yaml",
-            "stratum.yaml",
-            "environment.yaml",
-            "actions.yaml",
-            "brain.yaml",
-            "items.yaml",  # Optional, but check syntax if present
-        ]
-
-        for file_name in shared_files:
-            file_path = config_dir / file_name
-            if not file_path.exists():
-                if file_name == "items.yaml":  # items.yaml is optional
-                    continue
-                errors.add(f"{file_name}: File not found", code="MISSING_FILE", location=str(file_path))
-                continue
-            try:
-                with file_path.open() as handle:
-                    yaml.safe_load(handle)
-            except yaml.YAMLError as exc:
-                errors.add(str(exc), code="YAML_SYNTAX_ERROR", location=str(file_path))
-
-        levels_dir = config_dir / "levels"
-        if not levels_dir.exists():
-            errors.add("levels/ directory missing", code="MISSING_LEVELS_DIR", location=str(levels_dir))
-        else:
-            for level_dir in sorted(p for p in levels_dir.iterdir() if p.is_dir()):
-                for file_name in ("curriculum.yaml", "bars.yaml", "affordances.yaml", "training.yaml", "drive.yaml"):
-                    file_path = level_dir / file_name
-                    if not file_path.exists():
-                        errors.add(
-                            f"{file_name}: File not found",
-                            code="MISSING_FILE",
-                            location=str(file_path),
-                        )
-                        continue
-                    try:
-                        with file_path.open() as handle:
-                            yaml.safe_load(handle)
-                    except yaml.YAMLError as exc:
-                        errors.add(str(exc), code="YAML_SYNTAX_ERROR", location=str(file_path))
-
-        if errors.errors:
-            errors.add_hint("Check YAML indentation (use spaces, not tabs)")
-            errors.add_hint("Ensure lists use proper '- item' syntax")
-            errors.add_hint("Validate YAML syntax at yamllint.com or with 'yamllint <file>'")
-            errors.check_and_raise()
 
     def _validate_v21_semantics(self, raw: RawConfigsV21, experiment_dir: Path) -> None:
         """Validate v2.1 semantic constraints (no defaults, no BC)."""
@@ -825,18 +689,7 @@ class UniverseCompiler:
                         )
 
         # Grid capacity (hard error)
-        grid_capacity: int | None = None
-        grid_config = getattr(substrate, "grid", None)
-        if getattr(substrate, "type", None) == "grid" and grid_config is not None:
-            width = grid_config.width
-            height = grid_config.height
-            depth = getattr(grid_config, "depth", None)
-            grid_capacity = width * height if depth is None else width * height * depth
-        gridnd_config = getattr(substrate, "gridnd", None)
-        if getattr(substrate, "type", None) == "gridnd" and gridnd_config is not None:
-            grid_capacity = 1
-            for size in gridnd_config.dimension_sizes:
-                grid_capacity *= size
+        grid_capacity = grid_capacity_for_substrate(substrate)
 
         for level_name, level in raw.levels.items():
             level_dir = experiment_dir / "levels" / level_name
@@ -1005,151 +858,6 @@ class UniverseCompiler:
 
         errors.check_and_raise()
 
-    def _stage_1_load_v21_configs(self, experiment_dir: Path) -> RawConfigsV21:
-        """Stage 1 – load v2.1 hierarchical configs."""
-        return RawConfigsV21.from_experiment_dir(experiment_dir)
-
-    def _stage_2_build_symbol_table(self, raw: RawConfigsV21) -> UniverseSymbolTable:
-        """Stage 2 – collect all named entities into a symbol table."""
-        errors = CompilationErrorCollector(stage="Stage 2: Symbol Table")
-        table = UniverseSymbolTable()
-
-        def _register(register_fn, payload) -> None:
-            try:
-                register_fn(payload)
-            except CompilationError as exc:
-                errors.extend(exc.issues)
-
-        env = raw.environment.environment
-        for meter in getattr(env, "meters", []) or []:
-            _register(table.register_meter, meter)
-
-        for cascade in getattr(env, "cascade_graph", []) or []:
-            _register(table.register_cascade, cascade)
-
-        for affordance in getattr(env, "affordances", []) or []:
-            _register(table.register_affordance, affordance)
-
-        for variable in getattr(env, "variables", []) or []:
-            _register(table.register_variable, variable)
-
-        for action in getattr(raw.actions.actions, "custom_actions", []) or []:
-            _register(table.register_action, action)
-
-        if raw.items is not None:
-            for item in getattr(raw.items, "item_types", []) or []:
-                _register(table.register_item, item)
-
-        errors.check_and_raise(stage_label="Stage 2: Symbol Table")
-        return table
-
-    def _stage_3_resolve_references(
-        self,
-        raw: RawConfigsV21,
-        symbol_table: UniverseSymbolTable,
-        experiment_dir: Path,
-    ) -> None:
-        """Stage 3 – resolve and validate symbolic references."""
-        errors = CompilationErrorCollector(stage="Stage 3: Reference Resolution")
-
-        meter_names = set(symbol_table.meters.keys())
-        affordance_names = set(symbol_table.affordances_by_name.keys())
-        variable_ids = set(symbol_table.variables.keys())
-        item_ids = set(symbol_table.items.keys())
-
-        for level_name, level in raw.levels.items():
-            level_dir = experiment_dir / "levels" / level_name
-
-            # Cascades reference valid meters
-            for cascade in getattr(level.bars, "cascades", []) or []:
-                if cascade.source not in meter_names:
-                    errors.add(
-                        CompilationMessage(
-                            code="UAC-RES-CASCADE",
-                            message=f"Cascade references unknown source meter '{cascade.source}'.",
-                            location=str(level_dir / "bars.yaml"),
-                        )
-                    )
-                if cascade.target not in meter_names:
-                    errors.add(
-                        CompilationMessage(
-                            code="UAC-RES-CASCADE",
-                            message=f"Cascade references unknown target meter '{cascade.target}'.",
-                            location=str(level_dir / "bars.yaml"),
-                        )
-                    )
-
-            # Enabled affordances reference known affordance names
-            enabled_affordances = getattr(level.training, "enabled_affordances", None)
-            if enabled_affordances is not None:
-                requested = {str(name) for name in enabled_affordances}
-                unknown = requested - affordance_names
-                if unknown:
-                    errors.add(
-                        CompilationMessage(
-                            code="UAC-RES-AFF",
-                            message=f"training.enabled_affordances contains unknown entries: {sorted(unknown)}",
-                            location=str(level_dir / "training.yaml"),
-                        )
-                    )
-
-            # Affordance costs and interaction references
-            for affordance in getattr(level.affordances, "affordances", []) or []:
-                invalid_costs = [meter for meter in affordance.costs.keys() if meter not in meter_names]
-                if invalid_costs:
-                    errors.add(
-                        CompilationMessage(
-                            code="UAC-RES-AFF",
-                            message=f"Affordance '{affordance.name}' references unknown meters in costs: {sorted(invalid_costs)}",
-                            location=str(level_dir / "affordances.yaml"),
-                        )
-                    )
-
-                for stage_commands in (affordance.interactions or {}).values():
-                    for cmd in stage_commands:
-                        modify_target = getattr(cmd, "modify", None)
-                        if isinstance(modify_target, str) and modify_target.startswith("target.bar."):
-                            meter_name = modify_target.split(".")[-1]
-                            if meter_name not in meter_names:
-                                errors.add(
-                                    CompilationMessage(
-                                        code="UAC-RES-AFF",
-                                        message=f"Affordance '{affordance.name}' interaction references unknown meter '{meter_name}'.",
-                                        location=str(level_dir / "affordances.yaml"),
-                                    )
-                                )
-                        if isinstance(modify_target, str):
-                            vfs_prefixes = ("vfs.", "target.vfs.", "self.vfs.")
-                            if modify_target.startswith(vfs_prefixes):
-                                var_name = modify_target.split(".")[-1]
-                                if var_name not in variable_ids:
-                                    errors.add(
-                                        CompilationMessage(
-                                            code="UAC-RES-VFS",
-                                            message=(f"Affordance '{affordance.name}' interaction uses unknown VFS variable '{var_name}'."),
-                                            location=str(level_dir / "affordances.yaml"),
-                                        )
-                                    )
-
-            # Item appearance rules reference known items
-            if level.items_appearance is not None:
-                for rule in level.items_appearance.items:
-                    if rule.item_type not in item_ids:
-                        errors.add(
-                            CompilationMessage(
-                                code="UAC-RES-ITEM",
-                                message=f"Item appearance references unknown item_type '{rule.item_type}'.",
-                                location=str(level_dir / "items.yaml"),
-                            )
-                        )
-
-        # Validate drive references per level
-        for level_name, level in raw.levels.items():
-            if getattr(level, "drive", None):
-                self._validate_dac_references(level.drive, symbol_table, errors)
-
-        errors.check_and_raise(stage_label="Stage 3: Reference Resolution")
-
     def _stage_5_prepare_shared_artifacts(
         self,
         raw: RawConfigsV21,
@@ -1157,13 +865,13 @@ class UniverseCompiler:
         *,
         primary_level: str,
         temporal_supported: bool,
-    ) -> tuple[dict[str, str], CompiledVFSProfiles | None, dict[str, str], EffectCatalog | None, dict[str, int]]:
+    ) -> SharedCompilerArtifacts:
         """Stage 5 – build shared schemas (bars/VFS) and compile effects catalog."""
         primary_level_config = raw.levels[primary_level]
         bar_schema: dict[str, str] = {meter.name: "float" for meter in primary_level_config.bars.meters}
 
-        compiled_vfs_profiles = self._compile_vfs_profiles(experiment_dir, bar_schema)
-        self._validate_item_profile_bindings(raw.items, compiled_vfs_profiles)
+        compiled_vfs_profiles = self._vfs_compiler.compile_profiles(experiment_dir, bar_schema)
+        self._vfs_compiler.validate_item_profile_bindings(raw.items, compiled_vfs_profiles)
 
         from townlet.vfs.history import collect_history_requirements
 
@@ -1199,13 +907,25 @@ class UniverseCompiler:
                         vfs_type = "bool" if var_type == "bool" else "float"
                         effects_schema[f"self.vfs.{var.name}"] = vfs_type
 
-        compiled_effect_catalog = self._compile_effects_catalog(
+        compiled_effect_catalog = self._effects_compiler.compile_catalog(
             experiment_dir,
             effects_schema,
             time_enabled=temporal_supported,
         )
+        max_items_per_agent = raw.items.max_items_per_agent if raw.items is not None else VFSObservationSpec.max_items_per_agent
+        vfs_observation_spec = VFSObservationSpec.from_compiled_profiles(
+            compiled_vfs_profiles,
+            max_items_per_agent=max_items_per_agent,
+        )
 
-        return bar_schema, compiled_vfs_profiles, effects_schema, compiled_effect_catalog, vfs_history_spec
+        return SharedCompilerArtifacts(
+            bar_schema=bar_schema,
+            compiled_vfs_profiles=compiled_vfs_profiles,
+            effects_schema=effects_schema,
+            compiled_effect_catalog=compiled_effect_catalog,
+            vfs_history_spec=vfs_history_spec,
+            vfs_observation_spec=vfs_observation_spec,
+        )
 
     def _stage_6_compile_levels(
         self,
@@ -1218,18 +938,12 @@ class UniverseCompiler:
         config_hash: str | None,
         config_mtime: float | None,
         temporal_supported: bool,
-    ) -> tuple[
-        dict[str, CompiledUniverse.LevelMetadata],
-        CompiledUniverse.LevelMetadata,
-        UniverseMetadata,
-        dict[str, str],
-        dict[str, set[str]] | None,
-    ]:
+    ) -> CompiledLevelBundle:
         """Stage 6 – compile level metadata, optimization data, and derived schemas."""
         all_levels: dict[str, CompiledUniverse.LevelMetadata] = {}
         for level_name, level in raw.levels.items():
             logger.info("Compiling level: %s", level_name)
-            obs_spec = self._build_observation_spec(
+            obs_spec = self._observation_compiler.build_spec(
                 raw.stratum,
                 raw.environment,
                 level.curriculum,
@@ -1237,9 +951,9 @@ class UniverseCompiler:
                 raw.items,
                 compiled_effect_catalog,
             )
-            obs_activity = self._build_observation_activity(obs_spec)
+            obs_activity = self._observation_compiler.build_activity(obs_spec)
             bar_schema = {meter.name: "float" for meter in level.bars.meters}
-            action_metadata = self._build_action_space_metadata(
+            action_metadata = self._action_compiler.build_action_space_metadata(
                 raw.stratum,
                 raw.actions,
                 level.training,
@@ -1247,11 +961,11 @@ class UniverseCompiler:
                 raw.items,
                 self.config_pack_path,
             )
-            meter_metadata = self._build_meter_metadata(raw.environment, level.bars)
-            affordance_metadata = self._build_affordance_metadata(level.affordances)
+            meter_metadata = self._metadata_compiler.build_meter_metadata(raw.environment, level.bars)
+            affordance_metadata = self._metadata_compiler.build_affordance_metadata(level.affordances)
 
             # Compile item spawn predicates (type-check and store AST on rules)
-            self._compile_item_spawn_conditions(
+            self._vfs_compiler.compile_item_spawn_conditions(
                 level.items_appearance,
                 bar_schema=bar_schema,
                 env_vars=getattr(raw.environment.environment, "variables", []) or [],
@@ -1270,7 +984,7 @@ class UniverseCompiler:
             else:
                 day_length = 0
 
-            optimization_data = self._build_optimization_data(
+            optimization_data = self._optimization_compiler.build_optimization_data(
                 level.bars,
                 level.affordances,
                 meter_metadata,
@@ -1279,9 +993,9 @@ class UniverseCompiler:
                 day_length=day_length,
             )
             if compiled_effect_catalog is not None:
-                self._validate_trigger_cascade_ids(compiled_effect_catalog, optimization_data, level_name=level_name)
-            vfs_fields = self._build_vfs_observation_fields(obs_spec, raw.environment)
-            vfs_variables = self._build_vfs_variables(obs_spec, raw.environment)
+                self._optimization_compiler.validate_trigger_cascade_ids(compiled_effect_catalog, optimization_data, level_name=level_name)
+            vfs_fields = self._observation_compiler.build_vfs_observation_fields(obs_spec, raw.environment)
+            vfs_variables = self._observation_compiler.build_vfs_variables(obs_spec, raw.environment)
 
             # Compute hashes for level-specific configs
             drive_hash = self._compute_pydantic_hash(level.drive)
@@ -1316,7 +1030,7 @@ class UniverseCompiler:
         primary_meta = all_levels[primary_level]
         primary_level_config = raw.levels[primary_level]
 
-        universe_metadata = self._build_universe_metadata(
+        universe_metadata = self._metadata_compiler.build_universe_metadata(
             raw,
             primary_meta,
             experiment_dir=experiment_dir,
@@ -1324,7 +1038,7 @@ class UniverseCompiler:
             config_mtime=config_mtime,
         )
 
-        vfs_expression_schema = self._build_vfs_expression_schema(primary_level_config.bars, compiled_vfs_profiles)
+        vfs_expression_schema = self._vfs_compiler.build_expression_schema(primary_level_config.bars, compiled_vfs_profiles)
 
         variables_reference_path = experiment_dir / "variables_reference.yaml"
         vfs_observation_marks: dict[str, set[str]] | None = None
@@ -1332,9 +1046,15 @@ class UniverseCompiler:
             from townlet.vfs.schema import load_variables_reference_config
 
             variables_from_yaml = tuple(load_variables_reference_config(experiment_dir))
-            vfs_observation_marks = self._extract_vfs_observation_marks(variables_from_yaml)
+            vfs_observation_marks = self._vfs_compiler.extract_observation_marks(variables_from_yaml)
 
-        return all_levels, primary_meta, universe_metadata, vfs_expression_schema, vfs_observation_marks
+        return CompiledLevelBundle(
+            all_levels=all_levels,
+            primary_meta=primary_meta,
+            universe_metadata=universe_metadata,
+            vfs_expression_schema=vfs_expression_schema,
+            vfs_observation_marks=vfs_observation_marks,
+        )
 
     def _stage_7_emit_artifact(
         self,
@@ -1351,6 +1071,7 @@ class UniverseCompiler:
         vfs_observation_marks: dict[str, set[str]] | None,
         effect_observation_slots: int,
         vfs_history_spec: dict[str, int],
+        vfs_observation_spec: VFSObservationSpec | None,
         brain_hash: str | None,
         experiment_hash: str,
         stratum_hash: str,
@@ -1381,6 +1102,7 @@ class UniverseCompiler:
             vfs_expression_schema=vfs_expression_schema,
             vfs_history_spec=vfs_history_spec or None,
             vfs_observation_marks=vfs_observation_marks,
+            vfs_observation_spec=vfs_observation_spec,
             experiment_dir=experiment_dir,
             drive_hash=primary_meta.drive_hash,
             brain_hash=brain_hash,
@@ -1770,21 +1492,10 @@ class UniverseCompiler:
                 velocity_dim = substrate_instance.position_dim
 
             except Exception as exc:
-                # Fallback: use position_dim from config (may be inaccurate for scaled)
-                import warnings
-
-                if substrate.type == "continuous" and substrate.continuous is not None:
-                    position_dim = substrate.continuous.dimensions
-                    velocity_dim = substrate.continuous.dimensions
-                elif substrate.type == "continuousnd" and substrate.continuous is not None:
-                    position_dim = len(substrate.continuous.bounds)
-                    velocity_dim = len(substrate.continuous.bounds)
-
-                warnings.warn(
-                    f"Failed to build substrate instance for observation dim calculation: {exc}. "
-                    f"Using fallback dims (may be inaccurate for scaled encoding).",
-                    UserWarning,
-                )
+                raise ValueError(
+                    "Failed to build substrate instance for observation dimension calculation. "
+                    "Fix the substrate config; compiler observation dimensions must come from the runtime substrate implementation."
+                ) from exc
 
         # Add position observation field
         if position_dim:
@@ -2949,7 +2660,7 @@ class UniverseCompiler:
         if config_mtime is None:
             config_mtime = self._compute_config_mtime(experiment_dir)
 
-        # v2.1: experiment.version is mandatory (no legacy fallback)
+        # v2.1: experiment.version is mandatory.
         try:
             config_version = raw.experiment.experiment.version
         except AttributeError as exc:
@@ -3206,16 +2917,6 @@ class UniverseCompiler:
         hash_digest = hashlib.sha256(json_str.encode()).hexdigest()
 
         return hash_digest
-
-    def _stage_4_cross_validate(
-        self,
-        raw_configs: Any,
-        symbol_table: UniverseSymbolTable,
-        errors: CompilationErrorCollector,
-    ) -> None:
-        """Stage 4 – enforce cross-config semantic constraints (subset of spec for TASK-004A)."""
-
-        raise RuntimeError("Legacy flat config pipeline removed; use v2.1 hierarchical configs.")
 
     def _validate_spatial_feasibility(self, raw_configs: Any, errors: CompilationErrorCollector, formatter) -> None:
         """Validate that substrate has enough space for all affordances + agents.
@@ -3996,227 +3697,6 @@ class UniverseCompiler:
 
         return cycles
 
-    def _stage_5_compute_metadata(
-        self,
-        config_dir: Path,
-        raw_configs: Any,
-        symbol_table: UniverseSymbolTable,
-        *,
-        precomputed_config_hash: str | None = None,
-    ) -> tuple[UniverseMetadata, ObservationSpec, tuple[VFSObservationField, ...]]:
-        """Stage 5 – compute derived metadata and observation specification."""
-
-        raise RuntimeError("Legacy flat config pipeline removed; use v2.1 hierarchical configs.")
-
-    def _stage_5_build_rich_metadata(
-        self,
-        raw_configs: Any,
-    ) -> tuple[ActionSpaceMetadata, MeterMetadata, AffordanceMetadata]:
-        """Stage 5 – build training-facing metadata structures."""
-
-        raise RuntimeError("Legacy flat config pipeline removed; use v2.1 hierarchical configs.")
-
-    def _stage_6_optimize(
-        self,
-        raw_configs: Any,
-        metadata: UniverseMetadata,
-        *,
-        device: torch.device | None = None,
-    ) -> OptimizationData:
-        """Stage 6 – pre-compute optimization tensors and lookup tables."""
-
-        torch_device = device or torch.device("cpu")
-        meter_lookup = metadata.meter_name_to_index
-
-        base_depletions = torch.zeros(metadata.meter_count, dtype=torch.float32, device=torch_device)
-        for bar in raw_configs.bars:
-            index = meter_lookup.get(bar.name, bar.index)
-            base_depletions[index] = float(getattr(bar, "base_depletion", 0.0))
-
-        cascade_data: dict[str, list[dict[str, float]]] = defaultdict(list)
-        cascade_by_id: dict[str, list[dict[str, float]]] = defaultdict(list)
-        for cascade in raw_configs.cascades:
-            source_idx = meter_lookup.get(cascade.source)
-            target_idx = meter_lookup.get(cascade.target)
-            if source_idx is None or target_idx is None:
-                continue
-            category_key = cascade.category or "uncategorized"
-            entry = {
-                "source_idx": source_idx,
-                "target_idx": target_idx,
-                "threshold": cascade.threshold,
-                "strength": cascade.strength,
-            }
-            cascade_data[category_key].append(entry)
-            pair_id = f"{cascade.source}->{cascade.target}"
-            cascade_by_id[pair_id].append(entry)
-
-        for category, entries in cascade_data.items():
-            entries.sort(key=lambda entry: entry["target_idx"])
-
-        modulation_data: list[dict[str, float]] = []
-
-        affordance_count = metadata.affordance_count
-        action_mask_table = torch.zeros((24, affordance_count), dtype=torch.bool, device=torch_device)
-
-        if affordance_count > 0:
-            for hour in range(24):
-                for affordance_idx, affordance in enumerate(raw_configs.affordances):
-                    # operating_hours is now required by schema - no None check needed
-                    # Convert list[int] to tuple[int, int] for is_affordance_open
-                    # Pydantic ensures exactly 2 elements (Field(min_length=2, max_length=2))
-                    open_hour, close_hour = affordance.operating_hours
-                    action_mask_table[hour, affordance_idx] = is_affordance_open(hour, (open_hour, close_hour))
-
-        affordance_position_map = {
-            aff.id: self._tensorize_affordance_position(getattr(aff, "position", None), torch_device) for aff in raw_configs.affordances
-        }
-
-        cascade_payload = dict(cascade_data)
-        cascade_payload.update(cascade_by_id)
-
-        return OptimizationData(
-            base_depletions=base_depletions,
-            cascade_data=cascade_payload,
-            modulation_data=modulation_data,
-            action_mask_table=action_mask_table,
-            affordance_position_map=affordance_position_map,
-        )
-
-    def _derive_grid_dimensions(self, substrate: SubstrateConfig) -> tuple[int | None, int | None]:
-        """Calculate grid dimensions for metadata.
-
-        Returns:
-            (grid_size, grid_cells): For square grids, grid_size=width.
-                                     For non-square or non-grid substrates, returns (None, None).
-        """
-        if substrate.type == "grid" and substrate.grid is not None:
-            width = substrate.grid.width
-            height = substrate.grid.height
-
-            # Handle 3D grids
-            depth = getattr(substrate.grid, "depth", None)
-            if depth is not None:
-                # For 3D, grid_size is ambiguous (use width as representative)
-                grid_cells = width * height * depth
-                return width, grid_cells
-
-            # 2D grid
-            grid_cells = width * height
-
-            # Only return grid_size if square (for backward compatibility)
-            if width == height:
-                return width, grid_cells
-            else:
-                # Non-square grids: grid_size concept doesn't apply
-                return None, grid_cells
-
-        # Continuous, aspatial, gridnd: no grid_size concept
-        return None, None
-
-    def _label_substrate_type(self, substrate: SubstrateConfig) -> str:
-        if substrate.type != "grid":
-            return substrate.type
-        if substrate.grid is None:
-            return "grid"
-        return f"grid_{substrate.grid.topology}"
-
-    def _infer_position_dim(self, substrate: SubstrateConfig) -> int:
-        if substrate.type == "aspatial":
-            return 0
-        if substrate.type == "grid":
-            if substrate.grid and substrate.grid.topology == "cubic":
-                return 3
-            return 2
-        if substrate.type == "gridnd" and substrate.gridnd is not None:
-            return len(substrate.gridnd.dimension_sizes)
-        if substrate.type == "continuous" and substrate.continuous is not None:
-            return substrate.continuous.dimensions
-        if substrate.type == "continuousnd" and substrate.continuous is not None:
-            return len(substrate.continuous.bounds)
-        return 0
-
-    def _auto_generate_standard_exposures(self, symbol_table: UniverseSymbolTable) -> list[dict[str, Any]]:
-        """Auto-generate standard observation exposures for all system variables.
-
-        Creates exposures for:
-        - Spatial variables (grid_encoding/local_window, position)
-        - All meters
-        - Affordance encoding
-        - Temporal variables
-
-        Returns:
-            List of exposure dictionaries matching the expected schema
-        """
-        exposures: list[dict[str, Any]] = []
-
-        # Get all variables from symbol table
-        for var_id, var in symbol_table.variables.items():
-            # Determine observation shape
-            if var.type == "scalar":
-                shape: list[int] = []
-            elif var.type == "vecNf" and var.dims:
-                shape = [var.dims]
-            else:
-                continue  # Skip unsupported types
-
-            # Create exposure with obs_ prefix
-            exposures.append(
-                {
-                    "id": f"obs_{var_id}",
-                    "source_variable": var_id,
-                    "exposed_to": ["agent"],
-                    "shape": shape,
-                }
-            )
-
-        return exposures
-
-    def _load_observation_exposures(self, raw_configs: Any, symbol_table: UniverseSymbolTable) -> list[dict[str, Any]]:
-        """Legacy observation exposure generator."""
-        raise RuntimeError("Legacy flat config pipeline removed; use v2.1 hierarchical configs.")
-
-        # Auto-generate exposures for ALL variables (standard system + custom computed)
-        exposures = self._auto_generate_standard_exposures(symbol_table)
-
-        # Mark spatial observation fields with curriculum_active based on partial_observability
-        # This creates a superset observation contract where obs_dim stays constant across levels
-        # Also set semantic_type for proper group_slices organization
-        partial_obs = raw_configs.environment.partial_observability
-
-        # Get meter names for semantic_type inference
-        meter_names = {bar.name for bar in raw_configs.bars}
-
-        for exposure in exposures:
-            source_var = exposure.get("source_variable")
-
-            if source_var == "grid_encoding":
-                # grid_encoding active in full obs, inactive in partial obs
-                exposure["curriculum_active"] = not partial_obs
-                exposure["semantic_type"] = "spatial"  # BUG-43: Mark as spatial for group_slices
-            elif source_var == "local_window":
-                # local_window active in partial obs, inactive in full obs
-                exposure["curriculum_active"] = partial_obs
-                exposure["semantic_type"] = "spatial"  # BUG-43: Mark as spatial for group_slices
-            else:
-                # All other fields are always active
-                exposure["curriculum_active"] = True
-
-                # Infer semantic_type from source_variable name (same logic as _semantic_from_name)
-                # Add None check to avoid AttributeError
-                if source_var is not None:
-                    if "position" in source_var.lower():
-                        exposure["semantic_type"] = "spatial"
-                    elif source_var in meter_names:
-                        exposure["semantic_type"] = "bars"
-                    elif "affordance" in source_var.lower():
-                        exposure["semantic_type"] = "affordance"
-                    elif "time" in source_var.lower() or "temporal" in source_var.lower() or "lifetime" in source_var.lower():
-                        exposure["semantic_type"] = "temporal"
-                    # else: default to "custom" (handled by ObservationField schema default)
-
-        return exposures
-
     def _normalize_yaml(self, file_path: Path) -> str:
         try:
             with file_path.open() as handle:
@@ -4294,8 +3774,7 @@ class UniverseCompiler:
         if levels_dir.exists():
             yaml_files.extend(sorted(levels_dir.rglob("*.yaml")))
 
-        # Note: global_actions.yaml was removed in v2.1 migration.
-        # Actions are now per-experiment via actions.yaml or embedded in training.yaml.
+        # v2.1 actions are per-experiment via actions.yaml or embedded in training.yaml.
 
         digest = hashlib.sha256()
         for file_path in yaml_files:

@@ -15,7 +15,7 @@ _logger = logging.getLogger(__name__)
 class NullItemManager:
     """Null object pattern for item management when items are disabled.
 
-    This class is used as a fallback when the item system is not configured.
+    This class is used when the item system is explicitly not configured.
     It provides no-op implementations for lifecycle methods (tick, process_respawns)
     and raises explicit errors for operations that require items to be configured
     (spawn_item).

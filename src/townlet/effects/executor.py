@@ -227,13 +227,15 @@ class CommandExecutor:
 
         effect_def = context.effect_manager.catalog.get(command.effect_id)
         resolved_duration = command.duration if command.duration is not None else effect_def.duration
+        if command.intensity is None:
+            raise ValueError("spawn_effect command requires intensity")
 
         context.effect_manager.spawn_effect(
             effect_id=command.effect_id,
             target_entity_id=target_idx,
             scope=EffectScope.AGENT,
             duration=resolved_duration,
-            intensity=command.intensity or 1.0,
+            intensity=command.intensity,
             current_step=context.effect_manager.current_step,
             bars=context.bars,
             vfs_registry=context.vfs_registry,
@@ -648,7 +650,9 @@ class CommandExecutor:
             raise RuntimeError("trigger_cascade command requires meter_dynamics on ExecutionContext")
         if command.cascade_id is None:
             raise ValueError("trigger_cascade requires cascade_id")
-        strength = command.cascade_strength if command.cascade_strength is not None else 1.0
+        if command.cascade_strength is None:
+            raise ValueError("trigger_cascade requires cascade_strength")
+        strength = command.cascade_strength
         if strength <= 0:
             raise ValueError("trigger_cascade cascade_strength must be positive")
 
@@ -678,7 +682,7 @@ class CommandExecutor:
         # Build dictionaries for ExprExecutionContext
         bars_dict = {}
         vfs_dict = {}
-        # Resolve device from bars (preferred) or fallback to executor/device attribute
+        # Resolve device from bars when available; otherwise use the executor device.
         device = None
         if context.bars:
             try:
@@ -702,7 +706,7 @@ class CommandExecutor:
         for bar_name, tensor in context.bars.items():
             bars_dict[bar_name] = tensor
 
-        # Add VFS variables (VariableRegistry API compatibility)
+        # Add VFS variables from the current registry contract.
         if context.vfs_registry:
             # VariableRegistry has .variables property with variable definitions
             for var_id, var_def in context.vfs_registry.variables.items():

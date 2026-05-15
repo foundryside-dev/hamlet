@@ -63,7 +63,7 @@ class Scheduler:
     def advance(self, tick: int) -> list[ScheduledItem]:
         """Advance scheduler to tick and drain due items."""
         if tick < self.current_tick:
-            raise ValueError("Cannot move scheduler backwards")
+            raise ValueError("Cannot decrease scheduler tick")
         self.current_tick = tick
         return self.drain_due()
 

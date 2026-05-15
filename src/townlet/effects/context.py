@@ -288,7 +288,6 @@ class ExecutionContext:
 
             var_name = path[len("vfs.") :]
 
-            # VariableRegistry API compatibility
             if var_name in self.vfs_registry.variables:
                 self.vfs_registry.set(var_name, value, writer="engine")
                 return
@@ -374,10 +373,8 @@ class ExecutionContext:
         if scope == "item":
             if index is None:
                 raise ValueError("Item scope VFS access requires an index")
-            profile_name = (
-                self.vfs_registry.get_item_profile_for_index(index) if hasattr(self.vfs_registry, "get_item_profile_for_index") else None
-            )
-            if hasattr(self.vfs_registry, "get_item_profile_for_index") and profile_name is None:
+            profile_name = self.vfs_registry.get_item_profile_for_index(index)
+            if profile_name is None:
                 raise KeyError(f"No item profile registered for vfs_index {index}")
             val = self.vfs_registry.read(var_name, context_index=index, scope=VariableScope.ITEM)
             if isinstance(val, torch.Tensor):
@@ -393,13 +390,10 @@ class ExecutionContext:
         if scope == "item":
             if index is None:
                 return None
-            profile_name = (
-                self.vfs_registry.get_item_profile_for_index(index) if hasattr(self.vfs_registry, "get_item_profile_for_index") else None
-            )
+            profile_name = self.vfs_registry.get_item_profile_for_index(index)
             if profile_name:
                 return self.vfs_registry.get_item_variable_type(profile_name, var_name)
-        getter = getattr(self.vfs_registry, "get_variable_type", None)
-        return getter(var_name) if callable(getter) else None
+        return self.vfs_registry.get_variable_type(var_name)
 
     def _write_agent_vfs_value(self, var_name: str, index: int, value: torch.Tensor) -> None:
         """Write an agent-scoped VFS variable for a specific agent."""

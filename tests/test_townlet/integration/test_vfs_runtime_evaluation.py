@@ -36,6 +36,22 @@ def test_vfs_expressions_evaluated_at_runtime():
     assert "day_count" in env.vfs_registry._storage or "day_count" in env.vfs_registry.variables
 
 
+def test_runtime_uses_compiled_vfs_observation_spec():
+    """Environment should consume the compiler-emitted VFS observation spec directly."""
+    config_dir = Path(__file__).parent.parent.parent.parent / "configs" / "test" / "effects_smoke"
+
+    compiled = UniverseCompiler().compile(config_dir, primary_level="L0_effects", use_cache=False)
+
+    assert compiled.vfs_observation_spec is not None
+    env = compiled.create_environment(
+        num_agents=4,
+        level_name="L0_effects",
+        device=torch.device("cpu"),
+    )
+
+    assert env.vfs_observation_spec is compiled.vfs_observation_spec
+
+
 def test_mark_and_sweep_only_evaluates_observed_vars():
     """Mark-and-sweep should only evaluate variables in observations."""
     # Setup: Use effects_smoke config which has VFS profiles

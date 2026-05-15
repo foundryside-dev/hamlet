@@ -159,6 +159,81 @@ class VFSObservationSpec:
             item_vars_per_slot=max_profile_vars if max_profile_vars > 0 else None,
         )
 
+    @classmethod
+    def from_compiled_profiles(
+        cls,
+        compiled_profiles,
+        *,
+        max_items_per_agent: int,
+    ) -> VFSObservationSpec | None:
+        """Create an observation spec directly from compiled VFS profiles."""
+        if compiled_profiles is None:
+            return None
+
+        global_dim = 0
+        global_vars: list[str] = []
+        global_profile = getattr(compiled_profiles, "global_profile", None)
+        if global_profile is not None:
+            for var in getattr(global_profile, "variables", []):
+                if "agent" not in getattr(var, "exposed_to", ("agent",)):
+                    continue
+                global_vars.append(var.name)
+                global_dim += _variable_observation_dim(
+                    var.type,
+                    getattr(var, "shape", None),
+                    dims=getattr(var, "dims", None),
+                    max_elements=cls.max_tensor_elements,
+                )
+
+        agent_dim = 0
+        agent_vars: list[str] = []
+        agent_profile = getattr(compiled_profiles, "agent_profile", None)
+        if agent_profile is not None:
+            for var in getattr(agent_profile, "variables", []):
+                if "agent" not in getattr(var, "exposed_to", ("agent",)):
+                    continue
+                agent_vars.append(var.name)
+                agent_dim += _variable_observation_dim(
+                    var.type,
+                    getattr(var, "shape", None),
+                    dims=getattr(var, "dims", None),
+                    max_elements=cls.max_tensor_elements,
+                )
+
+        item_dim = 0
+        item_profile_vars: dict[str, tuple[str, ...]] = {}
+        max_profile_dim = 0
+        item_profiles = getattr(compiled_profiles, "item_profiles", {}) or {}
+        for profile_name, profile in item_profiles.items():
+            exposed_vars = []
+            profile_dim = 0
+            for var in getattr(profile, "variables", []):
+                if "agent" not in getattr(var, "exposed_to", ("agent",)):
+                    continue
+                exposed_vars.append(var.name)
+                profile_dim += _variable_observation_dim(
+                    var.type,
+                    getattr(var, "shape", None),
+                    scope="item",
+                    dims=getattr(var, "dims", None),
+                    max_elements=cls.max_tensor_elements,
+                )
+            item_profile_vars[profile_name] = tuple(exposed_vars)
+            max_profile_dim = max(max_profile_dim, profile_dim)
+        if max_profile_dim > 0:
+            item_dim = max_items_per_agent * max_profile_dim
+
+        return cls(
+            global_vfs_dim=global_dim,
+            agent_vfs_dim=agent_dim,
+            item_vfs_dim=item_dim,
+            global_vars=tuple(global_vars),
+            agent_vars=tuple(agent_vars),
+            item_profile_vars=item_profile_vars,
+            item_vars_per_slot=max_profile_dim if max_profile_dim > 0 else None,
+            max_items_per_agent=max_items_per_agent,
+        )
+
 
 def build_vfs_observation(
     registry: ScopedVariableRegistry,

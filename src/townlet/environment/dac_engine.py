@@ -135,10 +135,10 @@ class DACEngine:
                         raise ValueError(f"Modifier has no source: {mod_name}")
 
                     # Evaluate ranges using torch.where for GPU efficiency
-                    # Start with last range as default (fallback)
+                    # Start with the final configured range as the base case.
                     multiplier = torch.full_like(source_value, ranges[-1].multiplier, dtype=torch.float32)
 
-                    # Work backwards through ranges using nested torch.where
+                    # Walk ranges in reverse using nested torch.where.
                     for r in reversed(ranges[:-1]):
                         condition = (source_value >= r.min) & (source_value < r.max)
                         multiplier = torch.where(condition, r.multiplier, multiplier)

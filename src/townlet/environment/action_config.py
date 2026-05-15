@@ -79,11 +79,11 @@ class ActionConfig(BaseModel):
     # VFS Integration (Phase 1 - TASK-002C)
     reads: list[str] = Field(
         default_factory=list,
-        description="Variables this action reads (for dependency tracking). Defaults to empty list for backward compatibility.",
+        description="Variables this action reads for dependency tracking.",
     )
     writes: list[WriteSpec] = Field(
         default_factory=list,
-        description="Variables this action writes (with expressions). Defaults to empty list for backward compatibility.",
+        description="Variables this action writes with expressions.",
     )
 
     @model_validator(mode="after")

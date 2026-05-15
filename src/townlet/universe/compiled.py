@@ -36,6 +36,7 @@ from townlet.universe.dto import (
     UniverseMetadata,
 )
 from townlet.universe.optimization import OptimizationData
+from townlet.vfs.observation_builder import VFSObservationSpec
 from townlet.vfs.profiles import CompiledGlobalProfile
 from townlet.vfs.schema import ObservationField as VfsObservationField
 from townlet.vfs.schema import VariableDef
@@ -96,6 +97,9 @@ class CompiledUniverse:
     # Marks for which VFS variables are observed (for mark-and-sweep evaluation)
     vfs_observation_marks: dict[str, set[str]] | None = None
     # Format: {"global": {"day_count", "is_night"}, "agent": {"motivation"}, "item": {...}}
+
+    # Runtime-ready VFS observation dimensions and variable order.
+    vfs_observation_spec: VFSObservationSpec | None = None
 
     # Provenance
     experiment_dir: Path | None = None
@@ -180,6 +184,7 @@ class CompiledUniverse:
             vfs_expression_schema=deepcopy(self.vfs_expression_schema) if self.vfs_expression_schema is not None else None,
             vfs_history_spec=deepcopy(self.vfs_history_spec) if self.vfs_history_spec is not None else None,
             vfs_observation_marks=deepcopy(self.vfs_observation_marks) if self.vfs_observation_marks is not None else None,
+            vfs_observation_spec=deepcopy(self.vfs_observation_spec) if self.vfs_observation_spec is not None else None,
             experiment_dir=self.experiment_dir,
             drive_hash=self.drive_hash,
             brain_hash=self.brain_hash,
@@ -232,6 +237,9 @@ class CompiledUniverse:
             "vfs_observation_marks": (
                 {k: list(v) for k, v in self.vfs_observation_marks.items()} if self.vfs_observation_marks is not None else None
             ),  # Convert sets to lists for JSON serialization
+            "vfs_observation_spec": (
+                _dataclass_to_plain(self.vfs_observation_spec) if self.vfs_observation_spec is not None else None
+            ),
             "experiment_dir": None if self.experiment_dir is None else str(self.experiment_dir),
             "drive_hash": self.drive_hash,
             "brain_hash": self.brain_hash,
@@ -283,26 +291,33 @@ class CompiledUniverse:
     @classmethod
     def from_dict(cls, payload: Mapping[str, Any]) -> CompiledUniverse:
         """Create CompiledUniverse from a dictionary produced by to_dict/save_to_cache."""
-        opt_payload = payload.get("optimization_data_raw", {})
-        action_mask = opt_payload.get("action_mask_table")
+        opt_payload = _required_mapping(payload, "optimization_data_raw")
+        action_mask = _required_field(opt_payload, "optimization_data_raw.action_mask_table")
         if action_mask is None:
             action_mask_tensor = torch.zeros((24, 0), dtype=torch.bool)
         else:
             action_mask_tensor = torch.tensor(action_mask, dtype=torch.bool)
 
-        affordance_position_map = _deserialize_affordance_positions(opt_payload.get("affordance_position_map", {}))
+        affordance_position_map = _deserialize_affordance_positions(
+            _required_field(opt_payload, "optimization_data_raw.affordance_position_map")
+        )
 
         all_levels = None
         raw_levels = payload.get("all_levels")
         if raw_levels is not None:
             all_levels = {}
             for name, meta in raw_levels.items():
-                level_opt_payload = meta.get("optimization_data_raw", {})
-                level_action_mask = level_opt_payload.get("action_mask_table")
+                level_opt_payload = _required_mapping(meta, f"all_levels.{name}.optimization_data_raw")
+                level_action_mask = _required_field(
+                    level_opt_payload,
+                    f"all_levels.{name}.optimization_data_raw.action_mask_table",
+                )
                 level_mask_tensor = (
                     torch.tensor(level_action_mask, dtype=torch.bool) if level_action_mask is not None else torch.zeros((24, 0))
                 )
-                level_affordance_position_map = _deserialize_affordance_positions(level_opt_payload.get("affordance_position_map", {}))
+                level_affordance_position_map = _deserialize_affordance_positions(
+                    _required_field(level_opt_payload, f"all_levels.{name}.optimization_data_raw.affordance_position_map")
+                )
                 all_levels[name] = CompiledUniverse.LevelMetadata(
                     level_name=meta["level_name"],
                     bars=BarsV2Config.model_validate(meta["bars"]),
@@ -316,34 +331,42 @@ class CompiledUniverse:
                     curriculum=CurriculumConfig.model_validate(meta["curriculum"]),
                     training=TrainingV2Config.model_validate(meta["training"]),
                     observation_spec=_observation_spec_from_plain(meta["observation_spec"]),
-                    observation_activity=_observation_activity_from_plain(meta.get("observation_activity", {})),
+                    observation_activity=_observation_activity_from_plain(
+                        _required_mapping(meta, f"all_levels.{name}.observation_activity")
+                    ),
                     action_metadata=_action_space_metadata_from_plain(meta["action_metadata"]),
                     meter_metadata=_meter_metadata_from_plain(meta["meter_metadata"]),
                     affordance_metadata=_affordance_metadata_from_plain(meta["affordance_metadata"]),
                     optimization_data=OptimizationData(
-                        base_depletions=torch.tensor(level_opt_payload.get("base_depletions", []), dtype=torch.float32),
-                        cascade_data=level_opt_payload.get("cascade_data", {}),
-                        modulation_data=level_opt_payload.get("modulation_data", []),
+                        base_depletions=torch.tensor(
+                            _required_field(level_opt_payload, f"all_levels.{name}.optimization_data_raw.base_depletions"),
+                            dtype=torch.float32,
+                        ),
+                        cascade_data=_required_field(level_opt_payload, f"all_levels.{name}.optimization_data_raw.cascade_data"),
+                        modulation_data=_required_field(level_opt_payload, f"all_levels.{name}.optimization_data_raw.modulation_data"),
                         action_mask_table=level_mask_tensor,
                         affordance_position_map=level_affordance_position_map,
                     ),
-                    vfs_observation_fields=tuple(VfsObservationField(**field) for field in meta.get("vfs_observation_fields", [])),
-                    vfs_variables=tuple(VariableDef(**var) for var in meta.get("vfs_variables", [])),
+                    vfs_observation_fields=tuple(
+                        VfsObservationField(**field)
+                        for field in _required_field(meta, f"all_levels.{name}.vfs_observation_fields")
+                    ),
+                    vfs_variables=tuple(VariableDef(**var) for var in _required_field(meta, f"all_levels.{name}.vfs_variables")),
                 )
 
         return CompiledUniverse(
             metadata=UniverseMetadata(**payload["metadata"]),
             observation_spec=_observation_spec_from_plain(payload["observation_spec"]),
-            observation_activity=_observation_activity_from_plain(payload.get("observation_activity", {})),
-            vfs_observation_fields=tuple(VfsObservationField(**field) for field in payload.get("vfs_observation_fields", [])),
-            vfs_variables=tuple(VariableDef(**var) for var in payload.get("vfs_variables", [])),
+            observation_activity=_observation_activity_from_plain(_required_mapping(payload, "observation_activity")),
+            vfs_observation_fields=tuple(VfsObservationField(**field) for field in _required_field(payload, "vfs_observation_fields")),
+            vfs_variables=tuple(VariableDef(**var) for var in _required_field(payload, "vfs_variables")),
             action_space_metadata=_action_space_metadata_from_plain(payload["action_space_metadata"]),
             meter_metadata=_meter_metadata_from_plain(payload["meter_metadata"]),
             affordance_metadata=_affordance_metadata_from_plain(payload["affordance_metadata"]),
             optimization_data=OptimizationData(
-                base_depletions=torch.tensor(opt_payload.get("base_depletions", []), dtype=torch.float32),
-                cascade_data=opt_payload.get("cascade_data"),
-                modulation_data=opt_payload.get("modulation_data"),
+                base_depletions=torch.tensor(_required_field(opt_payload, "optimization_data_raw.base_depletions"), dtype=torch.float32),
+                cascade_data=_required_field(opt_payload, "optimization_data_raw.cascade_data"),
+                modulation_data=_required_field(opt_payload, "optimization_data_raw.modulation_data"),
                 action_mask_table=action_mask_tensor,
                 affordance_position_map=affordance_position_map,
             ),
@@ -369,6 +392,7 @@ class CompiledUniverse:
                 if payload.get("vfs_observation_marks") is not None
                 else None
             ),  # Convert lists back to sets
+            vfs_observation_spec=_vfs_observation_spec_from_plain(_required_field(payload, "vfs_observation_spec")),
             experiment_dir=None if payload.get("experiment_dir") is None else Path(payload["experiment_dir"]),
             drive_hash=payload.get("drive_hash"),
             brain_hash=payload.get("brain_hash"),
@@ -390,7 +414,7 @@ class CompiledUniverse:
     def load_from_cache(cls, path: Path) -> CompiledUniverse:
         """Deserialize a compiled universe from MessagePack file."""
         payload = msgpack.unpackb(path.read_bytes(), raw=False, strict_map_key=False)
-        schema_version = payload.get("compiled_schema_version")
+        schema_version = _required_field(payload, "compiled_schema_version")
         if schema_version != COMPILED_SCHEMA_VERSION:
             raise ValueError(
                 f"Compiled universe schema mismatch for {path}: "
@@ -465,6 +489,24 @@ def _dataclass_to_plain(obj: Any) -> Any:
     return obj
 
 
+def _missing_required_field(field_name: str) -> ValueError:
+    return ValueError(f"Compiled universe cache is missing required field '{field_name}'; recompile the config pack.")
+
+
+def _required_field(payload: Mapping[str, Any], field_name: str) -> Any:
+    key = field_name.rsplit(".", 1)[-1]
+    if key not in payload:
+        raise _missing_required_field(field_name)
+    return payload[key]
+
+
+def _required_mapping(payload: Mapping[str, Any], field_name: str) -> Mapping[str, Any]:
+    value = _required_field(payload, field_name)
+    if not isinstance(value, Mapping):
+        raise ValueError(f"Compiled universe cache field '{field_name}' must be a mapping; recompile the config pack.")
+    return value
+
+
 def _serialize_affordance_positions(position_map: dict[str, torch.Tensor | None]) -> dict[str, Any]:
     serialized: dict[str, Any] = {}
     for key, value in position_map.items():
@@ -494,12 +536,10 @@ def _observation_spec_from_plain(payload: Mapping[str, Any]) -> ObservationSpec:
 
 
 def _observation_activity_from_plain(payload: Mapping[str, Any]) -> ObservationActivity:
-    if not payload:
-        return ObservationActivity(active_mask=(), group_slices={}, active_field_uuids=())
     return ObservationActivity(
-        active_mask=tuple(payload.get("active_mask", ())),
-        group_slices={k: slice(v[0], v[1]) for k, v in payload.get("group_slices", {}).items()},
-        active_field_uuids=tuple(payload.get("active_field_uuids", ())),
+        active_mask=tuple(_required_field(payload, "observation_activity.active_mask")),
+        group_slices={k: slice(v[0], v[1]) for k, v in _required_field(payload, "observation_activity.group_slices").items()},
+        active_field_uuids=tuple(_required_field(payload, "observation_activity.active_field_uuids")),
     )
 
 
@@ -519,6 +559,23 @@ def _meter_metadata_from_plain(payload: Mapping[str, Any]) -> MeterMetadata:
 
 def _affordance_metadata_from_plain(payload: Mapping[str, Any]) -> AffordanceMetadata:
     return AffordanceMetadata(affordances=tuple(AffordanceInfo(**entry) for entry in payload.get("affordances", [])))
+
+
+def _vfs_observation_spec_from_plain(payload: Mapping[str, Any] | None) -> VFSObservationSpec | None:
+    if payload is None:
+        return None
+    return VFSObservationSpec(
+        global_vfs_dim=payload["global_vfs_dim"],
+        agent_vfs_dim=payload["agent_vfs_dim"],
+        item_vfs_dim=payload["item_vfs_dim"],
+        global_vars=tuple(payload.get("global_vars", ())),
+        agent_vars=tuple(payload.get("agent_vars", ())),
+        item_profile_vars={name: tuple(values) for name, values in payload.get("item_profile_vars", {}).items()},
+        item_vars_per_slot=payload.get("item_vars_per_slot"),
+        max_items_per_agent=payload["max_items_per_agent"],
+        max_item_profiles=payload.get("max_item_profiles", VFSObservationSpec.max_item_profiles),
+        max_tensor_elements=payload.get("max_tensor_elements", VFSObservationSpec.max_tensor_elements),
+    )
 
 
 def _serialize_vfs_profiles(profiles: CompiledVFSProfiles) -> dict[str, Any]:

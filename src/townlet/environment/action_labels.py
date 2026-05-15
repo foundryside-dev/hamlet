@@ -52,7 +52,7 @@ class CanonicalAction(IntEnum):
 
     # 3D actions (Z-axis) - added when substrate.position_dim == 3
     MOVE_Z_POSITIVE = 6  # Move forward/ascend (+Z direction)
-    MOVE_Z_NEGATIVE = 7  # Move backward/descend (-Z direction)
+    MOVE_Z_NEGATIVE = 7  # Move along the negative Z direction
 
 
 @dataclass(frozen=True)
@@ -245,7 +245,7 @@ def get_labels(
         # For N≥4 dimensions, ignore preset labels (use dimension index notation instead)
         # Presets only define labels for 0-3D substrates
         if substrate_position_dim >= 4:
-            all_labels = {}  # Empty dict triggers fallback to D{i}_NEG/D{i}_POS
+            all_labels = {}  # Empty dict triggers generated D{i}_NEG/D{i}_POS labels.
         else:
             all_labels = base_labels.labels.copy()
     else:

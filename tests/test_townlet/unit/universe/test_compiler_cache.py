@@ -5,9 +5,12 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
+import msgpack  # type: ignore[import]
 import pytest
 import yaml
 
+import townlet.universe.compiler as compiler_module
+from townlet.universe.compiled import CompiledUniverse
 from townlet.universe.compiler import UniverseCompiler
 
 
@@ -62,18 +65,18 @@ def test_compile_uses_cache_when_hash_matches(tmp_path: Path, monkeypatch: pytes
     config_dir = _copy_experiment(tmp_path)
 
     builder = UniverseCompiler()
-    builder.compile(config_dir, use_cache=True)
+    builder.compile(config_dir, primary_level="L0_test", use_cache=True)
 
     flag = {"stage1_called": False}
 
-    def _fail_stage1(self, _config_dir: Path):
+    def _fail_loader(_config_dir: Path):
         flag["stage1_called"] = True
         raise AssertionError("Stage 1 should not run when loading from cache")
 
-    monkeypatch.setattr(UniverseCompiler, "_stage_1_load_v21_configs", _fail_stage1)
+    monkeypatch.setattr(compiler_module, "load_v21_configs", _fail_loader)
 
     cached_compiler = UniverseCompiler()
-    compiled = cached_compiler.compile(config_dir, use_cache=True)
+    compiled = cached_compiler.compile(config_dir, primary_level="L0_test", use_cache=True)
 
     assert not flag["stage1_called"]
     assert compiled.metadata.universe_name == "Model Config (Test)"
@@ -82,23 +85,23 @@ def test_compile_uses_cache_when_hash_matches(tmp_path: Path, monkeypatch: pytes
 def test_compile_rebuilds_cache_when_hash_changes(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     config_dir = _copy_experiment(tmp_path)
     builder = UniverseCompiler()
-    builder.compile(config_dir, use_cache=True)
+    builder.compile(config_dir, primary_level="L0_test", use_cache=True)
 
     training_path = config_dir / "levels" / "L0_test" / "training.yaml"
     training_text = training_path.read_text()
     training_path.write_text(training_text.replace("max_episodes: 500", "max_episodes: 501"))
 
-    original_stage1 = UniverseCompiler._stage_1_load_v21_configs
+    original_loader = compiler_module.load_v21_configs
     counter = {"calls": 0}
 
-    def _wrapped_stage1(self, cfg_dir: Path):
+    def _wrapped_loader(cfg_dir: Path):
         counter["calls"] += 1
-        return original_stage1(self, cfg_dir)
+        return original_loader(cfg_dir)
 
-    monkeypatch.setattr(UniverseCompiler, "_stage_1_load_v21_configs", _wrapped_stage1)
+    monkeypatch.setattr(compiler_module, "load_v21_configs", _wrapped_loader)
 
     refreshed_compiler = UniverseCompiler()
-    refreshed_compiler.compile(config_dir, use_cache=True)
+    refreshed_compiler.compile(config_dir, primary_level="L0_test", use_cache=True)
 
     assert counter["calls"] == 1
 
@@ -106,23 +109,72 @@ def test_compile_rebuilds_cache_when_hash_changes(tmp_path: Path, monkeypatch: p
 def test_compile_recovers_from_corrupted_cache(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     config_dir = _copy_experiment(tmp_path)
     compiler = UniverseCompiler()
-    compiler.compile(config_dir, use_cache=True)
+    compiler.compile(config_dir, primary_level="L0_test", use_cache=True)
 
     cache_path = compiler._cache_artifact_path(config_dir)
     cache_path.write_bytes(b"corrupted")
 
-    original_stage1 = UniverseCompiler._stage_1_load_v21_configs
+    original_loader = compiler_module.load_v21_configs
     counter = {"calls": 0}
 
-    def _wrapped_stage1(self, cfg_dir: Path):
+    def _wrapped_loader(cfg_dir: Path):
         counter["calls"] += 1
-        return original_stage1(self, cfg_dir)
+        return original_loader(cfg_dir)
 
-    monkeypatch.setattr(UniverseCompiler, "_stage_1_load_v21_configs", _wrapped_stage1)
+    monkeypatch.setattr(compiler_module, "load_v21_configs", _wrapped_loader)
 
-    UniverseCompiler().compile(config_dir, use_cache=True)
+    UniverseCompiler().compile(config_dir, primary_level="L0_test", use_cache=True)
 
     assert counter["calls"] == 1
+
+
+@pytest.mark.parametrize(
+    "missing_field",
+    ["observation_activity", "vfs_observation_fields", "vfs_variables", "optimization_data_raw", "vfs_observation_spec"],
+)
+def test_direct_cache_load_rejects_missing_required_top_level_fields(tmp_path: Path, missing_field: str) -> None:
+    config_dir = _copy_experiment(tmp_path)
+    compiler = UniverseCompiler()
+    compiled = compiler.compile(config_dir, primary_level="L0_test", use_cache=True)
+
+    payload = compiled.to_dict()
+    payload.pop(missing_field)
+    stale_path = tmp_path / f"missing-{missing_field}.msgpack"
+    stale_path.write_bytes(msgpack.packb(payload, use_bin_type=True))
+
+    with pytest.raises(ValueError, match=f"missing required field '{missing_field}'"):
+        CompiledUniverse.load_from_cache(stale_path)
+
+
+@pytest.mark.parametrize("missing_field", ["observation_activity", "vfs_observation_fields", "vfs_variables", "optimization_data_raw"])
+def test_direct_cache_load_rejects_missing_required_level_fields(tmp_path: Path, missing_field: str) -> None:
+    config_dir = _copy_experiment(tmp_path)
+    compiler = UniverseCompiler()
+    compiled = compiler.compile(config_dir, primary_level="L0_test", use_cache=True)
+
+    payload = compiled.to_dict()
+    payload["all_levels"]["L0_test"].pop(missing_field)
+    stale_path = tmp_path / f"missing-level-{missing_field}.msgpack"
+    stale_path.write_bytes(msgpack.packb(payload, use_bin_type=True))
+
+    with pytest.raises(ValueError, match=f"missing required field 'all_levels.L0_test.{missing_field}'"):
+        CompiledUniverse.load_from_cache(stale_path)
+
+
+@pytest.mark.parametrize("missing_field", ["observation_activity", "vfs_observation_fields", "vfs_variables", "optimization_data_raw"])
+def test_compile_cache_fast_path_recovers_from_missing_required_fields(tmp_path: Path, missing_field: str) -> None:
+    config_dir = _copy_experiment(tmp_path)
+    compiler = UniverseCompiler()
+    compiled = compiler.compile(config_dir, primary_level="L0_test", use_cache=True)
+
+    payload = compiled.to_dict()
+    payload.pop(missing_field)
+    compiler._cache_artifact_path(config_dir).write_bytes(msgpack.packb(payload, use_bin_type=True))
+
+    recompiled = UniverseCompiler().compile(config_dir, primary_level="L0_test", use_cache=True)
+
+    assert recompiled.metadata.universe_name == "Model Config (Test)"
+    assert recompiled.observation_activity.active_dim_count > 0
 
 
 def test_cache_handles_zero_affordances(tmp_path: Path) -> None:
@@ -135,5 +187,5 @@ def test_cache_handles_zero_affordances(tmp_path: Path) -> None:
     training_path.write_text(yaml.safe_dump(training))
 
     compiler = UniverseCompiler()
-    compiler.compile(config_dir, use_cache=True)
-    compiler.compile(config_dir, use_cache=True)  # ensure cache load works
+    compiler.compile(config_dir, primary_level="L0_test", use_cache=True)
+    compiler.compile(config_dir, primary_level="L0_test", use_cache=True)  # ensure cache load works

@@ -1161,6 +1161,7 @@ effects:
     - id: ate_food
       scope: agent
       duration: 10
+      intensity: 1.0
       reapply_policy: stack  # Options: stack, renew, merge, replace
       observable: true       # Agent sees "ate_food: true" in VFS obs
 

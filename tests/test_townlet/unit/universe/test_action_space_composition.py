@@ -1,8 +1,4 @@
-"""
-Test suite for action space composition, specifically meter reference validation.
-
-Tests for JANK-02: Action costs/effects with unknown meters should produce compile errors.
-"""
+"""Tests for action space composition and legacy action-effect rejection."""
 
 import shutil
 import tempfile
@@ -43,26 +39,14 @@ def temp_config_with_global_actions():
             # No cleanup/deletion - CI environment is transitory
 
 
-class TestActionMeterValidation:
-    """
-    Test that actions with unknown meter references produce UAC-ACT-002 errors.
+class TestLegacyActionEffectRejection:
+    """Legacy custom action meter effects must fail at the config boundary."""
 
-    Phase 3-4: TDD implementation and verification for JANK-02 fix.
-    """
-
-    def test_action_with_unknown_meter_in_costs_fails_compilation(self, temp_config_with_global_actions):
-        """
-        JANK-02: Action with unknown meter in costs should produce UAC-ACT-002 error.
-
-        Verifies strict validation:
-        - Compilation fails with UAC-ACT-002 error code
-        - Error message includes action name and meter name
-        - Error location references global_actions.yaml
-        """
+    def test_action_with_legacy_costs_fails_compilation(self, temp_config_with_global_actions):
+        """Action costs now belong in VTC writes, not actions.yaml custom action fields."""
         config_dir = temp_config_with_global_actions["config_dir"]
         actions_path = temp_config_with_global_actions["actions_path"]
 
-        # Create actions.yaml with typo'd meter name in costs
         actions_path.write_text("""
 actions:
   version: "1.0"
@@ -73,36 +57,25 @@ actions:
       description: "Rest to recover energy"
       enabled_by_default: true
       costs:
-        hygeine: -0.1  # TYPO: should be 'hygiene' (which exists in bars.yaml)
-      effects:
-        energy: 0.2
+        energy: -0.1
   labels:
     preset: gaming
 """)
 
-        # Attempt compilation
         compiler = UniverseCompiler()
 
-        # Compilation should raise CompilationError with UAC-ACT-002
         with pytest.raises(Exception) as exc_info:
             compiler.compile(config_dir, primary_level=PRIMARY_LEVEL, use_cache=False)
 
         error_msg = str(exc_info.value)
+        assert "costs" in error_msg
+        assert "extra" in error_msg.lower() or "not permitted" in error_msg.lower()
 
-        # Verify UAC-ACT-002 error was raised
-        assert "UAC-ACT-002" in error_msg, f"Expected UAC-ACT-002 error code, got: {error_msg}"
-        assert "REST" in error_msg, f"Error should mention action name 'REST', got: {error_msg}"
-        assert "hygeine" in error_msg, f"Error should mention unknown meter 'hygeine', got: {error_msg}"
-        assert "costs" in error_msg, f"Error should specify 'costs' field, got: {error_msg}"
-
-    def test_action_with_unknown_meter_in_effects_fails_compilation(self, temp_config_with_global_actions):
-        """
-        JANK-02: Action with unknown meter in effects should produce UAC-ACT-002 error.
-        """
+    def test_action_with_legacy_effects_fails_compilation(self, temp_config_with_global_actions):
+        """Action effects now belong in VTC writes, not actions.yaml custom action fields."""
         config_dir = temp_config_with_global_actions["config_dir"]
         actions_path = temp_config_with_global_actions["actions_path"]
 
-        # Create actions.yaml with unknown meter in effects
         actions_path.write_text("""
 actions:
   version: "1.0"
@@ -112,10 +85,8 @@ actions:
     - name: MEDITATE
       description: "Meditate to improve mood"
       enabled_by_default: true
-      costs:
-        energy: 0.01
       effects:
-        moood: 0.3  # TYPO: should be 'mood'
+        mood: 0.3
   labels:
     preset: gaming
 """)
@@ -126,95 +97,11 @@ actions:
             compiler.compile(config_dir, primary_level=PRIMARY_LEVEL, use_cache=False)
 
         error_msg = str(exc_info.value)
+        assert "effects" in error_msg
+        assert "extra" in error_msg.lower() or "not permitted" in error_msg.lower()
 
-        assert "UAC-ACT-002" in error_msg, "Expected UAC-ACT-002 error code"
-        assert "MEDITATE" in error_msg, "Error should mention action name 'MEDITATE'"
-        assert "moood" in error_msg, "Error should mention unknown meter 'moood'"
-        assert "effects" in error_msg, "Error should specify 'effects' field"
-
-    def test_action_with_multiple_unknown_meters_reports_all_errors(self, temp_config_with_global_actions):
-        """
-        JANK-02: Action with multiple unknown meters should produce error for each.
-        """
-        config_dir = temp_config_with_global_actions["config_dir"]
-        actions_path = temp_config_with_global_actions["actions_path"]
-
-        # Multiple unknown meters in same action
-        actions_path.write_text("""
-actions:
-  version: "1.0"
-  substrate_actions:
-    inherit: true
-  custom_actions:
-    - name: WORKOUT
-      description: "Exercise"
-      enabled_by_default: true
-      costs:
-        stamina: 0.2    # Unknown meter
-        hydration: 0.1  # Unknown meter
-      effects:
-        fitness_level: 0.3  # Unknown meter (correct name is 'fitness')
-  labels:
-    preset: gaming
-""")
-
-        compiler = UniverseCompiler()
-
-        with pytest.raises(Exception) as exc_info:
-            compiler.compile(config_dir, primary_level=PRIMARY_LEVEL, use_cache=False)
-
-        error_msg = str(exc_info.value)
-
-        # Should mention all unknown meters
-        assert "stamina" in error_msg, "Should mention 'stamina'"
-        assert "hydration" in error_msg, "Should mention 'hydration'"
-        assert "fitness_level" in error_msg, "Should mention 'fitness_level'"
-        assert "WORKOUT" in error_msg, "Should mention action name"
-
-    def test_action_with_valid_meters_compiles_successfully(self, temp_config_with_global_actions):
-        """
-        JANK-02: Action with only valid meter references should compile without errors.
-
-        Ensures strict validation doesn't break valid configs.
-        """
-        config_dir = temp_config_with_global_actions["config_dir"]
-        actions_path = temp_config_with_global_actions["actions_path"]
-
-        # Valid meter references (energy, health, money exist in test pack bars.yaml)
-        actions_path.write_text("""
-actions:
-  version: "1.0"
-  substrate_actions:
-    inherit: true
-  custom_actions:
-    - name: REST
-      description: "Rest to recover energy"
-      enabled_by_default: true
-      costs:
-        health: 0.05  # Valid meter from bars.yaml
-      effects:
-        energy: 0.2   # Valid meter from bars.yaml
-
-    - name: MEDITATE
-      description: "Meditate"
-      enabled_by_default: true
-      costs:
-        energy: 0.01
-      effects:
-        health: 0.01
-  labels:
-    preset: gaming
-""")
-
-        compiler = UniverseCompiler()
-
-        # Should compile successfully
-        result = compiler.compile(config_dir, primary_level=PRIMARY_LEVEL, use_cache=False)
-
-        assert result is not None, "Compilation should succeed with valid meters"
-
-    def test_empty_costs_and_effects_compiles_successfully(self, temp_config_with_global_actions):
-        """Actions with no costs/effects should compile fine."""
+    def test_actions_without_legacy_costs_or_effects_compile_successfully(self, temp_config_with_global_actions):
+        """Custom actions without legacy meter-effect fields still compile."""
         config_dir = temp_config_with_global_actions["config_dir"]
         actions_path = temp_config_with_global_actions["actions_path"]
 
@@ -227,8 +114,6 @@ actions:
     - name: REST
       description: "Do nothing"
       enabled_by_default: true
-      costs: {}
-      effects: {}
   labels:
     preset: gaming
 """)
@@ -236,7 +121,7 @@ actions:
         compiler = UniverseCompiler()
         result = compiler.compile(config_dir, primary_level=PRIMARY_LEVEL, use_cache=False)
 
-        assert result is not None, "Empty costs/effects should compile successfully"
+        assert result is not None
 
 
 if __name__ == "__main__":

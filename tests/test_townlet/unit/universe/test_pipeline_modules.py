@@ -135,16 +135,19 @@ def test_select_primary_level_requires_explicit_level() -> None:
         select_primary_level(levels, None)
 
 
-def test_validate_v21_semantics_rejects_action_cost_with_unknown_meter(tmp_path: Path) -> None:
+def test_load_v21_configs_rejects_legacy_action_costs(tmp_path: Path) -> None:
     config_dir = _copy_experiment(tmp_path)
     actions_path = config_dir / "actions.yaml"
     actions_doc = yaml.safe_load(actions_path.read_text())
-    actions_doc["actions"]["custom_actions"][0]["costs"] = {"bogus_meter": 1.0}
+    actions_doc["actions"]["custom_actions"][0]["costs"] = {"energy": 1.0}
     actions_path.write_text(yaml.safe_dump(actions_doc, sort_keys=False))
-    raw = load_v21_configs(config_dir).raw
 
-    with pytest.raises(CompilationError, match="UAC-ACT-002"):
-        validate_v21_semantics(raw, config_dir)
+    with pytest.raises(CompilationError) as exc_info:
+        load_v21_configs(config_dir)
+
+    error_msg = str(exc_info.value)
+    assert "costs" in error_msg
+    assert "extra" in error_msg.lower() or "not permitted" in error_msg.lower()
 
 
 def test_validate_v21_semantics_rejects_cascade_with_unknown_meter(tmp_path: Path) -> None:

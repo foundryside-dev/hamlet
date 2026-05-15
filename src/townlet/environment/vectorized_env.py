@@ -1474,68 +1474,6 @@ class VectorizedHamletEnv:
             if name in self.affordances:
                 self.affordances[name] = torch.tensor(pos, device=self.device, dtype=self.substrate.position_dtype)
 
-    def _get_meter_index(self, meter_name: str, context: str = "") -> int:
-        """Get meter index by name with validation.
-
-        Args:
-            meter_name: Meter name (e.g., "energy", "mood")
-            context: Context string for error messages (e.g., "custom action 'REST'")
-
-        Returns:
-            Meter index
-
-        Raises:
-            ValueError: If meter_name_to_index not initialized
-            KeyError: If meter name doesn't exist
-        """
-        mapping: dict[str, int] | None = getattr(self, "meter_name_to_index", None)
-        if mapping is None:
-            raise ValueError("meter_name_to_index not initialized")
-        if meter_name not in mapping:
-            ctx_msg = f" in {context}" if context else ""
-            raise KeyError(f"Unknown meter '{meter_name}'{ctx_msg}. " f"Available meters: {sorted(mapping.keys())}")
-        return mapping[meter_name]
-
-    def _apply_custom_action(self, agent_idx: int, action: ActionConfig):
-        """Apply custom action effects, movement delta, and teleportation.
-
-        Args:
-            agent_idx: Agent index
-            action: Custom action config
-
-        Raises:
-            KeyError: If a cost/effect references an unknown meter
-        """
-        action_context = f"custom action '{action.name}' costs"
-        # Apply costs (negative costs = restoration)
-        for meter_name, cost in action.costs.items():
-            meter_idx = self._get_meter_index(meter_name, context=action_context)
-            self.meters[agent_idx, meter_idx] -= cost  # Subtract cost (negative = add)
-
-        # Apply effects
-        action_context = f"custom action '{action.name}' effects"
-        for meter_name, effect in action.effects.items():
-            meter_idx = self._get_meter_index(meter_name, context=action_context)
-            self.meters[agent_idx, meter_idx] += effect  # Add effect
-
-        # Apply movement delta (for movement-type custom actions like SPRINT)
-        if action.delta is not None:
-            delta_tensor = torch.tensor(action.delta, device=self.device, dtype=self.substrate.position_dtype)
-            new_position = self.substrate.apply_movement(self.positions[agent_idx : agent_idx + 1], delta_tensor.unsqueeze(0))
-            self.positions[agent_idx] = new_position.squeeze(0)
-
-        # Handle teleportation (overrides movement delta if both present)
-        if action.teleport_to is not None:
-            target_pos = torch.tensor(
-                action.teleport_to,
-                device=self.device,
-                dtype=self.substrate.position_dtype,
-            )
-            self.positions[agent_idx] = target_pos
-
-        # Clamp meters to [0, 1]
-        self.meters = torch.clamp(self.meters, 0.0, 1.0)
-
     def randomize_affordance_positions(self) -> torch.Tensor | None:
         """Randomize affordance positions and return agent spawn positions.
 

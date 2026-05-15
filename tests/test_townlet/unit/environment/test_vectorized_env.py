@@ -6,7 +6,7 @@ with mocked dependencies to achieve 70%+ coverage.
 Test Coverage Plan (Sprint 15):
 - Phase 15A: Initialization & Setup (__init__, reset, _build_movement_deltas)
 - Phase 15B: Core Loop (step, _execute_actions, _get_observations, get_action_masks)
-- Phase 15C: Interactions & Rewards (_handle_interactions, _calculate_shaped_rewards, _apply_custom_action)
+- Phase 15C: Interactions & Rewards (_handle_interactions, _calculate_shaped_rewards)
 - Phase 15D: Checkpointing (get/set_affordance_positions, randomize_affordance_positions)
 
 Testing Strategy:
@@ -392,7 +392,7 @@ class TestVectorizedHamletEnvStep:
 
         assert torch.allclose(after, torch.tensor([before[0] + 0.25, before[1]], device=env.device))
 
-    def test_vtc_action_effects_match_imperative_custom_effects_all_curriculum_levels(self, compile_universe, cpu_device):
+    def test_vtc_action_effects_apply_all_curriculum_levels(self, compile_universe, cpu_device):
         write = WriteSpec(
             variable_id="energy",
             expression="0.13",
@@ -406,22 +406,14 @@ class TestVectorizedHamletEnvStep:
 
         for level_name in DEFAULT_CURRICULUM_LEVELS:
             universe = compile_universe(Path("configs/default_curriculum"), primary_level=level_name)
-            legacy_universe = _with_runtime_action_surface(
-                universe,
-                level_name,
-                "REST",
-                effects={"energy": 0.13},
-                writes=(),
-            )
             vtc_universe = _with_runtime_action_surface(
                 universe,
                 level_name,
                 "REST",
-                effects={},
                 writes=(write,),
             )
-            legacy_env = vectorized_env_module.VectorizedHamletEnv.from_universe(
-                legacy_universe,
+            control_env = vectorized_env_module.VectorizedHamletEnv.from_universe(
+                universe,
                 level_name=level_name,
                 num_agents=3,
                 device=cpu_device,
@@ -434,26 +426,32 @@ class TestVectorizedHamletEnvStep:
             )
 
             torch.manual_seed(17)
-            legacy_env.reset()
+            control_env.reset()
             torch.manual_seed(17)
             vtc_env.reset()
-            vtc_env.positions = legacy_env.positions.clone()
-            vtc_env.meters = legacy_env.meters.clone()
-            vtc_env.dones = legacy_env.dones.clone()
-            vtc_env.step_counts = legacy_env.step_counts.clone()
-            vtc_env.global_tick = legacy_env.global_tick
-            vtc_env.time_of_day = legacy_env.time_of_day
+            vtc_env.positions = control_env.positions.clone()
+            vtc_env.meters = control_env.meters.clone()
+            vtc_env.dones = control_env.dones.clone()
+            vtc_env.step_counts = control_env.step_counts.clone()
+            vtc_env.global_tick = control_env.global_tick
+            vtc_env.time_of_day = control_env.time_of_day
 
-            actions = torch.full((legacy_env.num_agents,), legacy_env.action_ids["REST"], dtype=torch.long, device=legacy_env.device)
-            assert torch.equal(legacy_env.get_action_masks(), vtc_env.get_action_masks())
+            energy_idx = control_env.meter_name_to_index["energy"]
+            control_env.meters[:, energy_idx] = 0.5
+            vtc_env.meters[:, energy_idx] = 0.5
 
-            _, legacy_rewards, legacy_dones, _ = legacy_env.step(actions)
+            actions = torch.full((control_env.num_agents,), control_env.action_ids["REST"], dtype=torch.long, device=control_env.device)
+            assert torch.equal(control_env.get_action_masks(), vtc_env.get_action_masks())
+
+            _, control_rewards, control_dones, _ = control_env.step(actions)
             _, vtc_rewards, vtc_dones, _ = vtc_env.step(actions)
 
-            assert torch.allclose(legacy_env.meters, vtc_env.meters, atol=1e-6), level_name
-            assert torch.allclose(legacy_rewards, vtc_rewards, atol=1e-6), level_name
-            assert torch.equal(legacy_dones, vtc_dones), level_name
-            assert torch.equal(legacy_env.get_action_masks(), vtc_env.get_action_masks()), level_name
+            energy_delta = vtc_env.meters[:, energy_idx] - control_env.meters[:, energy_idx]
+            assert torch.allclose(energy_delta, torch.full_like(energy_delta, 0.13), atol=1e-6), level_name
+            assert torch.all(torch.isfinite(control_rewards)).item(), level_name
+            assert torch.all(torch.isfinite(vtc_rewards)).item(), level_name
+            assert torch.equal(control_dones, vtc_dones), level_name
+            assert torch.equal(control_env.get_action_masks(), vtc_env.get_action_masks()), level_name
 
     def test_step_increments_time_of_day(self, custom_env_builder):
         # Use temporal-enabled level to ensure mechanics are active
@@ -880,45 +878,33 @@ class TestCalculateShapedRewards:
         assert torch.all(torch.isfinite(rewards)).item()
 
 
-class TestApplyCustomAction:
-    """Test VectorizedHamletEnv._apply_custom_action()."""
+class TestCustomActionExecution:
+    """Test custom actions after VTC owns action meter effects."""
 
-    def test_apply_custom_action_rest_action(self, cpu_env_factory):
-        """Should handle REST custom action."""
-        env = cpu_env_factory()
+    def test_execute_actions_does_not_apply_legacy_runtime_costs_or_effects(self, compile_universe, cpu_device):
+        universe = compile_universe(Path("configs/default_curriculum"), primary_level="L0_0_minimal")
+        universe = _with_runtime_action_surface(
+            universe,
+            "L0_0_minimal",
+            "REST",
+            costs={"mood": 0.1},
+            effects={"energy": 0.2},
+            writes=(),
+        )
+        env = vectorized_env_module.VectorizedHamletEnv.from_universe(
+            universe,
+            level_name="L0_0_minimal",
+            num_agents=2,
+            device=cpu_device,
+        )
         env.reset()
+        env.meters.fill_(0.5)
 
-        # Find REST action
-        rest_action = env.action_ids.get("REST")
-        if rest_action is not None:
-            action_config = env.action_space.get_action_by_id(rest_action)
+        before = env.meters.clone()
+        actions = torch.full((env.num_agents,), env.action_ids["REST"], dtype=torch.long, device=env.device)
+        env._execute_actions(actions)
 
-            # Apply REST action (should execute without error)
-            # Note: Meters may or may not change depending on action config costs
-            # (test configs may have very low/zero costs for balancing)
-            env._apply_custom_action(0, action_config)
-
-            # Verify method executed without error and meters are still valid
-            assert env.meters.shape == (1, env.meter_count)
-
-    def test_apply_custom_action_meditate_action(self, cpu_env_factory):
-        """Should handle MEDITATE custom action."""
-        env = cpu_env_factory()
-        env.reset()
-
-        # Find MEDITATE action
-        meditate_action = env.action_ids.get("MEDITATE")
-        if meditate_action is not None:
-            action_config = env.action_space.get_action_by_id(meditate_action)
-
-            # Apply MEDITATE action (should execute without error)
-            # Note: Meters may or may not change depending on action config costs
-            # (test configs may have very low/zero costs for balancing)
-            env._apply_custom_action(0, action_config)
-
-            # Verify method executed without error and meters are still valid
-            assert isinstance(env.meters, torch.Tensor)
-            assert env.meters.shape == (1, 8)
+        assert torch.allclose(env.meters, before)
 
     def test_action_id_lookup_returns_int_or_none(self, cpu_env_factory):
         """action_ids lookup returns int for valid actions, None otherwise."""

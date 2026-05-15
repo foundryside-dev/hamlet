@@ -30,7 +30,11 @@ def _detect_cycles(graph: Mapping[str, Iterable[str]]) -> list[list[str]]:
         visited.add(node)
         stack.add(node)
         path.append(node)
-        for neighbor in graph.get(node, []):
+        if node in graph:
+            neighbors = graph[node]
+        else:
+            neighbors = ()
+        for neighbor in neighbors:
             if neighbor not in visited:
                 dfs(neighbor, path.copy())
             elif neighbor in stack:
@@ -92,7 +96,10 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
     vision_support = raw.stratum.stratum.vision_support
     for level_name, level in raw.levels.items():
         active = level.curriculum.curriculum.active_vision
-        active_canon = "partial" if active in {"local", "partial"} else "global"
+        if active in {"local", "partial"}:
+            active_canon = "partial"
+        else:
+            active_canon = "global"
         if active_canon == "global" and vision_support not in {"global", "both"}:
             errors.add(
                 "Invalid vision configuration: curriculum.active_vision='global' requires stratum.vision_support in ['global','both'].",
@@ -162,7 +169,9 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
 
     cascade_graph: dict[str, list[str]] = {}
     for edge_source, edge_target in env_edges:
-        cascade_graph.setdefault(edge_source, []).append(edge_target)
+        if edge_source not in cascade_graph:
+            cascade_graph[edge_source] = []
+        cascade_graph[edge_source].append(edge_target)
     for cycle in _detect_cycles(cascade_graph):
         formatted = " -> ".join(cycle + [cycle[0]])
         errors.add(
@@ -170,23 +179,6 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
             code="CASCADE_CYCLE",
             location=str(experiment_dir / "environment.yaml"),
         )
-
-    for action in raw.actions.actions.custom_actions:
-        for field_name in ("costs", "effects"):
-            payload = getattr(action, field_name, None) or {}
-            if not payload:
-                continue
-            invalid_meters = [meter for meter in payload.keys() if meter not in env_meter_names]
-            if invalid_meters:
-                for meter in invalid_meters:
-                    errors.add(
-                        (
-                            f"Action '{action.name}' references unknown meter '{meter}' in {field_name}. "
-                            "Ensure all meters are defined in environment.yaml/bars.yaml."
-                        ),
-                        code="UAC-ACT-002",
-                        location=f"{experiment_dir / 'actions.yaml'}:{action.name}",
-                    )
 
     grid_capacity = grid_capacity_for_substrate(substrate)
 
@@ -287,7 +279,10 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
                 )
 
         enabled_affordances = getattr(level.training, "enabled_affordances", None)
-        normalized_enabled = env_affordance_names if enabled_affordances is None else {str(name) for name in enabled_affordances}
+        if enabled_affordances is None:
+            normalized_enabled = env_affordance_names
+        else:
+            normalized_enabled = {str(name) for name in enabled_affordances}
         invalid_enabled = normalized_enabled - env_affordance_names
         if invalid_enabled:
             errors.add(
@@ -308,9 +303,10 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
                 )
 
     meters = env_meter_names
-    variables_set = (
-        set(var.name for var in raw.environment.environment.variables) if hasattr(raw.environment.environment, "variables") else set()
-    )
+    if hasattr(raw.environment.environment, "variables"):
+        variables_set = set(var.name for var in raw.environment.environment.variables)
+    else:
+        variables_set = set()
 
     for level_name, level in raw.levels.items():
         level_path = experiment_dir / "levels" / level_name / "drive.yaml"
@@ -320,7 +316,9 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
             errors.add(f"drive.yaml is required for level {level_name}.", code="LEVEL_DRIVE_MISSING", location=str(level_path))
             continue
 
-        modifiers = getattr(drive, "modifiers", {}) or {}
+        modifiers = getattr(drive, "modifiers", None)
+        if modifiers is None:
+            modifiers = {}
         for _mod_name, mod_cfg in modifiers.items():
             source = getattr(mod_cfg, "source", None)
             if source and source not in meters and source not in variables_set:

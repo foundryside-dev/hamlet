@@ -20,14 +20,6 @@ class ActionExecutor:
         """Execute movement, interaction, and wait actions."""
         env = self._env
         custom_action_start_id = env.action_space.substrate_action_count
-        custom_mask = actions >= custom_action_start_id
-
-        if custom_mask.any():
-            custom_agent_indices = torch.where(custom_mask)[0]
-            for agent_idx in custom_agent_indices:
-                action_id = int(actions[agent_idx].item())
-                action = env.action_space.get_action_by_id(action_id)
-                env._apply_custom_action(agent_idx, action)
 
         old_positions = env.positions.clone()
 

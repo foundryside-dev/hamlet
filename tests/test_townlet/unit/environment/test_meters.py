@@ -27,7 +27,7 @@ class TestBaseDepletion:
     """Test per-step meter depletion mechanics."""
 
     def test_base_depletion_rates(self, cpu_env_factory):
-        """Base depletion rates applied correctly via MeterDynamics (v2.1 config)."""
+        """Base depletion rates applied correctly via VTC passive-depletion rules."""
         env = cpu_env_factory()
         env.reset()
 
@@ -35,7 +35,7 @@ class TestBaseDepletion:
         env.meters = torch.ones(1, 8)
 
         # Run one depletion cycle
-        env.meters = env.meter_dynamics.deplete_meters(env.meters)
+        env._apply_vtc_passive_depletion(1.0)
 
         # Expected after depletion (configs/default_curriculum v2.1, L0_0_minimal):
         # energy:   1.0 - 0.010 = 0.990
@@ -58,11 +58,28 @@ class TestBaseDepletion:
         env.meters = torch.full((1, 8), 0.001)
 
         # Run depletion (should clamp at 0.0)
-        env.meters = env.meter_dynamics.deplete_meters(env.meters)
+        env._apply_vtc_passive_depletion(1.0)
 
         # All should be 0.0 or near-zero (except money which doesn't deplete)
         assert torch.all(env.meters[:, [0, 1, 2, 4, 5, 6, 7]] >= 0.0)
         assert torch.all(env.meters[:, [0, 1, 2, 4, 5, 6, 7]] <= 0.001)
+
+    def test_step_uses_vtc_passive_depletion_not_meter_dynamics(self, cpu_env_factory):
+        """The environment step should not call the legacy MeterDynamics depletion executor."""
+        env = cpu_env_factory()
+        env.reset()
+        assert hasattr(env, "vtc_passive_depletion_program")
+        assert not hasattr(type(env.meter_dynamics), "deplete_meters")
+
+        def fail_legacy_depletion(*_args, **_kwargs):
+            raise AssertionError("legacy MeterDynamics.deplete_meters must not execute passive decay")
+
+        env.meter_dynamics.deplete_meters = fail_legacy_depletion
+        env.meters = torch.ones(1, 8)
+
+        env.step(torch.tensor([0]))
+
+        assert env.meters[0, env.meter_name_to_index["energy"]].item() < 1.0
 
 
 class TestCascadeEffects:
@@ -166,8 +183,8 @@ class TestCascadeEffects:
         actions = torch.tensor([env.action_ids["WAIT"]], device=env.device)
         env.step(actions)
 
-        passive_energy = 1.0 - env.meter_dynamics.get_base_depletion("energy")
-        passive_satiation = 0.2 - env.meter_dynamics.get_base_depletion("satiation")
+        passive_energy = 1.0 - env.vtc_passive_depletion_program.passive_rate_for("energy")
+        passive_satiation = 0.2 - env.vtc_passive_depletion_program.passive_rate_for("satiation")
         expected_cascade_penalty = 0.006 * ((0.3 - passive_satiation) / 0.3)
 
         assert torch.isclose(
@@ -248,7 +265,7 @@ class TestMeterClamping:
 
         # Run multiple depletion cycles
         for _ in range(5):
-            env.meters = env.meter_dynamics.deplete_meters(env.meters)
+            env._apply_vtc_passive_depletion(1.0)
 
         # All should be >= 0.0
         assert torch.all(env.meters >= 0.0)
@@ -332,7 +349,7 @@ class TestCascadeIntegration:
         initial_energy = env.meters[0, energy_idx].item()
 
         # Run full cascade as in step()
-        env.meters = env.meter_dynamics.deplete_meters(env.meters)
+        env._apply_vtc_passive_depletion(1.0)
         env._apply_vtc_threshold_cascades()
         env.dones = env.meter_dynamics.check_terminal_conditions(env.meters, env.dones)
 

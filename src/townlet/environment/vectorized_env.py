@@ -34,9 +34,11 @@ from townlet.vfs.registry import VariableRegistry
 from townlet.vfs.vtc import (
     VTCActionWriteProgram,
     VTCModulationProgram,
+    VTCPassiveDepletionProgram,
     VTCThresholdCascadeProgram,
     compile_vtc_action_writes,
     compile_vtc_modulations,
+    compile_vtc_passive_depletions,
     compile_vtc_threshold_cascades,
 )
 
@@ -184,7 +186,6 @@ class VectorizedHamletEnv:
         # Observation/model metadata
         self.meter_count = self.metadata.meter_count
         meter_count = self.meter_count
-        self.base_depletions = self.optimization_data.base_depletions.to(self.device)
 
         # Derive vision radius/window for partial observability (POMDP) when applicable.
         # Uses the same semantics as the v2.1 compiler:
@@ -374,11 +375,6 @@ class VectorizedHamletEnv:
 
         # Initialize meter dynamics directly from optimization tensors
         self.meter_dynamics = MeterDynamics(
-            base_depletions=self.optimization_data.base_depletions,
-            # v2.1: modulation_data encodes bar→affordance modulation (environment.yaml modulation_graph)
-            # and is consumed by AffordanceEngine. MeterDynamics currently only supports
-            # meter→meter modulations, so we pass an empty sequence here.
-            modulation_data=[],
             terminal_conditions=terminal_specs,
             meter_name_to_index=meter_name_to_index,
             device=self.device,
@@ -439,6 +435,7 @@ class VectorizedHamletEnv:
         self.action_ids = level.runtime_action_space.action_ids
         self._movement_deltas = self._build_movement_deltas()
         self.vtc_action_write_program = compile_vtc_action_writes(self.action_space.actions)
+        self.vtc_passive_depletion_program: VTCPassiveDepletionProgram = compile_vtc_passive_depletions(self.bars_config.meters)
         self.vtc_modulation_program: VTCModulationProgram = compile_vtc_modulations(level.affordances.modulations)
         self.vtc_threshold_cascade_program = compile_vtc_threshold_cascades(self.bars_config.cascades)
         if self.effect_manager is not None:
@@ -1141,7 +1138,7 @@ class VectorizedHamletEnv:
         self._apply_vtc_action_writes(actions, torch.logical_not(prev_dones))
 
         # 2. Deplete meters (base passive decay with curriculum difficulty)
-        self.meters = self.meter_dynamics.deplete_meters(self.meters, depletion_multiplier)
+        self._apply_vtc_passive_depletion(depletion_multiplier)
 
         # 3. Passive threshold cascades via VTC relationship rules.
         self._apply_vtc_threshold_cascades()
@@ -1274,6 +1271,21 @@ class VectorizedHamletEnv:
                 self._set_vtc_bar_value(variable_id, value)
             elif variable_id in self.vfs_registry.variables:
                 self.vfs_registry.set(variable_id, value, writer="engine")
+
+    def _apply_vtc_passive_depletion(self, depletion_multiplier: float) -> None:
+        """Apply compiled VFS passive-depletion rules to meter bars."""
+        program: VTCPassiveDepletionProgram = self.vtc_passive_depletion_program
+        if len(program.rules) == 0:
+            return
+
+        updated_bars = program.apply(
+            bars_state=self._current_bar_state(),
+            active_mask=torch.ones_like(self.dones, dtype=torch.bool, device=self.device),
+            device=self.device,
+            depletion_multiplier=depletion_multiplier,
+        )
+        for bar_name, value in updated_bars.items():
+            self._set_vtc_bar_value(bar_name, value)
 
     def _apply_vtc_threshold_cascades(self) -> None:
         """Apply compiled VFS threshold-cascade rules to meter bars."""

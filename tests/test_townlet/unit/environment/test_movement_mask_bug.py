@@ -24,6 +24,12 @@ def _meter_idx(env, name: str) -> int | None:
     return env.meter_name_to_index.get(name)
 
 
+def _passive_rate(env, name: str) -> float:
+    """Lookup passive decay from the compiled VTC passive-depletion program."""
+
+    return env.vtc_passive_depletion_program.passive_rate_for(name)
+
+
 def test_aspatial_interact_should_not_pay_movement_cost(aspatial_env):
     """Aspatial INTERACT should pay base_depletion + interaction cost (not movement costs).
 
@@ -56,7 +62,7 @@ def test_aspatial_interact_should_not_pay_movement_cost(aspatial_env):
     energy_cost = initial_energy - final_energy
 
     # Should pay base_depletion + base_interaction_cost (from bars.yaml)
-    base_depletion = env.meter_dynamics.get_base_depletion("energy")
+    base_depletion = _passive_rate(env, "energy")
     interaction_cost = next(bar.depletion.interact for bar in env.bars_config.meters if bar.name == "energy")
     expected_cost = base_depletion + interaction_cost
     actual_cost = energy_cost
@@ -91,7 +97,7 @@ def test_aspatial_wait_should_not_pay_movement_cost(aspatial_env):
     energy_cost = initial_energy - final_energy
 
     # Should pay only base_depletion (WAIT has no additional cost - JANK-03)
-    base_depletion = env.meter_dynamics.get_base_depletion("energy")
+    base_depletion = _passive_rate(env, "energy")
     expected_cost = base_depletion  # 0.005
     actual_cost = energy_cost
 
@@ -161,7 +167,7 @@ def test_1d_wait_should_not_pay_movement_cost(continuous1d_env):
     energy_cost = initial_energy - final_energy
 
     # Should pay only base_depletion (WAIT has no additional cost - JANK-03)
-    base_depletion = env.meter_dynamics.get_base_depletion("energy")
+    base_depletion = _passive_rate(env, "energy")
     expected_cost = base_depletion
     actual_cost = energy_cost
 
@@ -196,7 +202,7 @@ def test_aspatial_hygiene_satiation_only_pay_base_depletion(aspatial_env):
     if hygiene_idx is not None:
         final_hygiene = env.meters[0, hygiene_idx].item()
         hygiene_cost = initial_hygiene - final_hygiene
-        expected_hygiene_cost = env.meter_dynamics.get_base_depletion("hygiene")
+        expected_hygiene_cost = _passive_rate(env, "hygiene")
         assert (
             abs(hygiene_cost - expected_hygiene_cost) < 1e-6
         ), f"Hygiene should cost {expected_hygiene_cost:.3%} (base only), but cost {hygiene_cost:.3%}"
@@ -204,7 +210,7 @@ def test_aspatial_hygiene_satiation_only_pay_base_depletion(aspatial_env):
     if satiation_idx is not None:
         final_satiation = env.meters[0, satiation_idx].item()
         satiation_cost = initial_satiation - final_satiation
-        expected_satiation_cost = env.meter_dynamics.get_base_depletion("satiation")
+        expected_satiation_cost = _passive_rate(env, "satiation")
         assert (
             abs(satiation_cost - expected_satiation_cost) < 1e-6
         ), f"Satiation should cost {expected_satiation_cost:.3%} (base only), but cost {satiation_cost:.3%}"
@@ -262,7 +268,7 @@ def test_3d_interact_should_not_pay_movement_cost(continuous3d_env):
     final_energy = env.meters[0, energy_idx].item()
     energy_cost = initial_energy - final_energy
 
-    base_depletion = env.meter_dynamics.get_base_depletion("energy")
+    base_depletion = _passive_rate(env, "energy")
     interaction_cost = next(bar.depletion.interact for bar in env.bars_config.meters if bar.name == "energy")
     expected_cost = base_depletion + interaction_cost
     assert abs(energy_cost - expected_cost) < 1e-6, f"3D INTERACT should cost {expected_cost:.3%}, but cost {energy_cost:.3%}"
@@ -283,7 +289,7 @@ def test_3d_wait_should_not_pay_movement_cost(continuous3d_env):
     final_energy = env.meters[0, energy_idx].item()
     energy_cost = initial_energy - final_energy
 
-    expected_cost = env.meter_dynamics.get_base_depletion("energy")  # base_depletion only
+    expected_cost = _passive_rate(env, "energy")  # base_depletion only
     assert abs(energy_cost - expected_cost) < 1e-6, f"3D WAIT should cost {expected_cost:.3%}, but cost {energy_cost:.3%}"
 
 
@@ -306,7 +312,7 @@ def test_3d_vertical_movement_should_pay_movement_cost(continuous3d_env):
     final_energy = env.meters[0, energy_idx].item()
     energy_cost = initial_energy - final_energy
 
-    base_depletion = env.meter_dynamics.get_base_depletion("energy")
+    base_depletion = _passive_rate(env, "energy")
     move_cost = next(bar.depletion.move for bar in env.bars_config.meters if bar.name == "energy")
     expected_cost = base_depletion + move_cost  # 0.005 base + 0.005 movement (uniform cost)
     assert abs(energy_cost - expected_cost) < 1e-6, f"3D UP_Z should cost {expected_cost:.3%}, but cost {energy_cost:.3%}"

@@ -58,9 +58,12 @@ def canonical_transition_graph_schema(
     action_write_program: Any,
     threshold_cascade_program: Any | None = None,
     modulation_program: Any | None = None,
+    passive_depletion_program: Any | None = None,
 ) -> dict[str, Any]:
     """Return the transition-graph payload used for world-physics provenance."""
     rules = [_canonical_transition_rule(write) for write in action_write_program.writes]
+    if passive_depletion_program is not None:
+        rules.extend(_canonical_transition_rule(rule) for rule in passive_depletion_program.rules)
     if modulation_program is not None:
         rules.extend(_canonical_transition_rule(rule) for rule in modulation_program.rules)
     if threshold_cascade_program is not None:
@@ -76,6 +79,7 @@ def compute_transition_graph_hash(
     action_write_program: Any,
     threshold_cascade_program: Any | None = None,
     modulation_program: Any | None = None,
+    passive_depletion_program: Any | None = None,
 ) -> str:
     """Return the SHA-256 digest of the compiled transition graph and rules."""
     return _hash_payload(
@@ -84,6 +88,7 @@ def compute_transition_graph_hash(
             action_write_program,
             threshold_cascade_program,
             modulation_program,
+            passive_depletion_program,
         )
     )
 

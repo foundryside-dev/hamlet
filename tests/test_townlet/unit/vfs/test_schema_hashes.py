@@ -419,6 +419,42 @@ def test_transition_graph_hash_binds_modulation_rules() -> None:
     )
 
 
+def test_transition_graph_hash_binds_passive_depletion_rules() -> None:
+    """Transition hashes should bind compiled passive-depletion semantics."""
+    assert hasattr(vtc, "compile_vtc_passive_depletions_with_phase_graph"), "VTC passive depletion compiler is required"
+
+    phase_graph = TransitionPhaseGraph.default()
+    action_program = compile_vtc_action_writes_with_phase_graph([], phase_graph)
+    meter = {"name": "energy", "depletion": {"passive": 0.1}}
+    changed_meter = {"name": "energy", "depletion": {"passive": 0.2}}
+
+    passive_program = vtc.compile_vtc_passive_depletions_with_phase_graph([meter], phase_graph)
+
+    assert canonical_transition_graph_schema(phase_graph, action_program, passive_depletion_program=passive_program)["rules"] == [
+        {
+            "rule_id": "passive:energy",
+            "kind": "passive_depletion",
+            "source_variable_id": "energy",
+            "variable_id": "energy",
+            "expression": "bar.energy - (0.1 * temporal.depletion_multiplier)",
+            "condition": None,
+            "composition": "overwrite",
+            "phase": "apply_passive_depletion",
+            "priority": 0,
+            "clamp": [0.0, 1.0],
+            "telemetry_label": "passive_depletion:energy",
+        }
+    ]
+
+    baseline = compute_transition_graph_hash(phase_graph, action_program, passive_depletion_program=passive_program)
+
+    assert baseline != compute_transition_graph_hash(
+        phase_graph,
+        action_program,
+        passive_depletion_program=vtc.compile_vtc_passive_depletions_with_phase_graph([changed_meter], phase_graph),
+    )
+
+
 def test_vfs_hash_combines_component_hashes_and_transition_graph() -> None:
     """The VFS identity should bind all component hashes, including the transition graph."""
     variable_hash = "a" * 64
@@ -457,6 +493,10 @@ def test_compiler_surfaces_vfs_hash(tmp_path: Path) -> None:
         ),
         vtc.compile_vtc_modulations_with_phase_graph(
             compiled.get_level(PRIMARY_LEVEL_NAME).affordances.modulations,
+            TransitionPhaseGraph.default(),
+        ),
+        vtc.compile_vtc_passive_depletions_with_phase_graph(
+            compiled.get_level(PRIMARY_LEVEL_NAME).bars.meters,
             TransitionPhaseGraph.default(),
         ),
     )

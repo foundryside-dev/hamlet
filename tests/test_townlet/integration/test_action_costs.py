@@ -15,6 +15,12 @@ Architecture: Three fundamental action types
 import torch
 
 
+def _passive_rate(env, name: str) -> float:
+    """Lookup passive decay from the compiled VTC passive-depletion program."""
+
+    return env.vtc_passive_depletion_program.passive_rate_for(name)
+
+
 class TestMovementCosts:
     """Test that movement actions apply base_move_depletion from bars.yaml."""
 
@@ -25,7 +31,7 @@ class TestMovementCosts:
 
         # Get initial energy level
         initial_energy = env.meters[0, 0].item()
-        base_depletion = env.meter_dynamics.get_base_depletion("energy")
+        base_depletion = _passive_rate(env, "energy")
         move_cost = next(bar.depletion.move for bar in env.bars_config.meters if bar.name == "energy")
 
         # Execute UP action (movement) - UP is typically index 0
@@ -60,7 +66,7 @@ class TestMovementCosts:
         meter_deltas = initial_meters - env.meters
 
         # Expected: Only energy (index 0) should have base_move_depletion applied
-        base_depletion = env.meter_dynamics.get_base_depletion("energy")
+        base_depletion = _passive_rate(env, "energy")
         move_cost = next(bar.depletion.move for bar in env.bars_config.meters if bar.name == "energy")
         expected_delta = base_depletion + move_cost
         energy_delta = meter_deltas[0, 0].item()
@@ -79,7 +85,7 @@ class TestInteractionCosts:
 
         # Get initial energy level
         initial_energy = env.meters[0, 0].item()
-        base_depletion = env.meter_dynamics.get_base_depletion("energy")
+        base_depletion = _passive_rate(env, "energy")
         interaction_cost = next(bar.depletion.interact for bar in env.bars_config.meters if bar.name == "energy")
 
         # Execute INTERACT action - typically index 4 in Grid2D
@@ -115,7 +121,7 @@ class TestWaitActionIsolation:
         # One step includes: only base_depletion (no action costs)
         obs, rewards, dones, info = env.step(actions)
 
-        base_depletion = env.meter_dynamics.get_base_depletion("energy")
+        base_depletion = _passive_rate(env, "energy")
         move_cost = next(bar.depletion.move for bar in env.bars_config.meters if bar.name == "energy")
         wait_is_movement = bool(env._movement_deltas[wait_action].ne(0).any().item())
         wait_cost = move_cost if wait_is_movement else 0.0

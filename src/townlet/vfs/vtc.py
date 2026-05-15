@@ -44,6 +44,16 @@ class VTCThresholdCascadeSource(Protocol):
     def strength(self) -> float: ...
 
 
+class VTCPassiveDepletionSource(Protocol):
+    """Minimal meter shape needed by the VTC passive-depletion compiler."""
+
+    @property
+    def name(self) -> str: ...
+
+    @property
+    def depletion(self) -> Any: ...
+
+
 class VTCModulationSource(Protocol):
     """Minimal modulation shape needed by the VTC modulation compiler."""
 
@@ -98,6 +108,26 @@ class CompiledVTCThresholdCascade:
     priority: int
     clamp: tuple[float, float] | None
     telemetry_label: str
+
+
+@dataclass(frozen=True)
+class CompiledVTCPassiveDepletion:
+    """A parsed VTC passive-depletion rule."""
+
+    rule_id: str
+    kind: str
+    source_variable_id: str
+    variable_id: str
+    expression: str
+    expression_ast: ASTNode
+    condition: str | None
+    condition_ast: ASTNode | None
+    composition: str
+    phase: str
+    priority: int
+    clamp: tuple[float, float] | None
+    telemetry_label: str
+    passive_rate: float
 
 
 @dataclass(frozen=True)
@@ -489,6 +519,148 @@ class VTCThresholdCascadeProgram:
 
 
 @dataclass(frozen=True)
+class VTCPassiveDepletionProgram:
+    """Executable collection of compiled VTC passive-depletion rules."""
+
+    rules: tuple[CompiledVTCPassiveDepletion, ...]
+
+    def passive_rate_for(self, variable_id: str) -> float:
+        """Return the configured passive depletion rate for a meter bar."""
+        for rule in self.rules:
+            if rule.variable_id == variable_id:
+                return rule.passive_rate
+        raise KeyError(f"Meter '{variable_id}' has no VTC passive-depletion rule.")
+
+    def apply(
+        self,
+        *,
+        bars_state: Mapping[str, torch.Tensor],
+        active_mask: torch.Tensor,
+        device: torch.device,
+        depletion_multiplier: float = 1.0,
+    ) -> dict[str, torch.Tensor]:
+        """Apply passive depletion to meter bars using a VTC phase snapshot."""
+        if depletion_multiplier < 0:
+            raise ValueError("passive depletion multiplier must be non-negative")
+        if active_mask.dim() != 1:
+            raise ValueError(f"active_mask must be rank-1, got shape {tuple(active_mask.shape)}")
+
+        updated = {name: value.to(device=device).clone() for name, value in bars_state.items()}
+        active_mask_on_device = active_mask.to(device=device, dtype=torch.bool)
+        depletion_multiplier_tensor = torch.tensor(float(depletion_multiplier), device=device, dtype=torch.float32)
+
+        for phase_rules in self._iter_phase_groups(self.rules):
+            phase_snapshot = dict(updated)
+            phase_values = dict(updated)
+
+            for rule in phase_rules:
+                if rule.variable_id not in phase_values:
+                    raise KeyError(f"VTC passive depletion targets unknown bar '{rule.variable_id}'")
+
+                context = ExecutionContext(
+                    bars=phase_snapshot,
+                    vfs=dict(phase_snapshot),
+                    affordances={},
+                    temporal={"depletion_multiplier": depletion_multiplier_tensor},
+                    device=device,
+                )
+                evaluator = Evaluator(context)
+                phase_value = phase_values[rule.variable_id]
+                write_mask = self._build_rule_mask(rule, active_mask_on_device, evaluator)
+                expression_value = self._evaluate_tensor(evaluator, rule.expression_ast, "expression", rule)
+                phase_values[rule.variable_id] = self._apply_composed_rule(
+                    rule=rule,
+                    phase_value=phase_value,
+                    expression_value=expression_value,
+                    write_mask=write_mask,
+                )
+
+            updated = phase_values
+
+        return updated
+
+    @staticmethod
+    def _iter_phase_groups(rules: Sequence[CompiledVTCPassiveDepletion]) -> list[tuple[CompiledVTCPassiveDepletion, ...]]:
+        phase_groups: list[tuple[CompiledVTCPassiveDepletion, ...]] = []
+        current_phase: str | None = None
+        current_group: list[CompiledVTCPassiveDepletion] = []
+
+        for rule in rules:
+            if current_phase is None:
+                current_phase = rule.phase
+            if rule.phase != current_phase:
+                phase_groups.append(tuple(current_group))
+                current_group = []
+                current_phase = rule.phase
+            current_group.append(rule)
+
+        if current_group:
+            phase_groups.append(tuple(current_group))
+        return phase_groups
+
+    def _build_rule_mask(
+        self,
+        rule: CompiledVTCPassiveDepletion,
+        active_mask: torch.Tensor,
+        evaluator: Evaluator,
+    ) -> torch.Tensor:
+        if rule.condition_ast is None:
+            return active_mask
+
+        condition = self._evaluate_tensor(evaluator, rule.condition_ast, "condition", rule).bool()
+        condition_mask = self._coerce_rule_tensor(condition, active_mask, rule, "condition").bool()
+        return active_mask & condition_mask
+
+    def _apply_composed_rule(
+        self,
+        *,
+        rule: CompiledVTCPassiveDepletion,
+        phase_value: torch.Tensor,
+        expression_value: torch.Tensor,
+        write_mask: torch.Tensor,
+    ) -> torch.Tensor:
+        expression = self._coerce_rule_tensor(expression_value, phase_value, rule, "expression")
+        if rule.composition == "overwrite":
+            candidate = expression
+        else:
+            raise NotImplementedError(f"VTC passive depletion composition '{rule.composition}' is not implemented")
+
+        if rule.clamp is not None:
+            low, high = rule.clamp
+            candidate = torch.clamp(candidate, min=low, max=high)
+
+        return torch.where(write_mask, candidate.to(device=phase_value.device, dtype=phase_value.dtype), phase_value)
+
+    @staticmethod
+    def _evaluate_tensor(
+        evaluator: Evaluator,
+        ast: ASTNode,
+        kind: str,
+        rule: CompiledVTCPassiveDepletion,
+    ) -> torch.Tensor:
+        value: Any = evaluator.evaluate(ast)
+        if not isinstance(value, torch.Tensor):
+            raise TypeError(f"VTC passive depletion {rule.telemetry_label} {kind} resolved to non-tensor value")
+        return value
+
+    @staticmethod
+    def _coerce_rule_tensor(
+        value: torch.Tensor,
+        target: torch.Tensor,
+        rule: CompiledVTCPassiveDepletion,
+        kind: str,
+    ) -> torch.Tensor:
+        if value.dim() == 0:
+            return value.to(device=target.device, dtype=target.dtype).expand_as(target)
+        if value.shape != target.shape:
+            raise ValueError(
+                f"{kind.capitalize()} for VTC passive depletion '{rule.telemetry_label}' produced shape {tuple(value.shape)}, "
+                f"expected {tuple(target.shape)}"
+            )
+        return value.to(device=target.device, dtype=target.dtype)
+
+
+@dataclass(frozen=True)
 class VTCModulationProgram:
     """Executable collection of compiled VTC affordance modulation rules."""
 
@@ -752,6 +924,67 @@ def _coerce_threshold_cascade(cascade: VTCThresholdCascadeSource | Mapping[str, 
         "target": target,
         "threshold": threshold,
         "strength": strength,
+    }
+
+
+def compile_vtc_passive_depletions(meters: Sequence[VTCPassiveDepletionSource | Mapping[str, Any]]) -> VTCPassiveDepletionProgram:
+    """Compile meter passive depletion rates into VTC overwrite rules."""
+    return compile_vtc_passive_depletions_with_phase_graph(meters, TransitionPhaseGraph.default())
+
+
+def compile_vtc_passive_depletions_with_phase_graph(
+    meters: Sequence[VTCPassiveDepletionSource | Mapping[str, Any]],
+    phase_graph: TransitionPhaseGraph,
+) -> VTCPassiveDepletionProgram:
+    """Compile meter passive depletion rates using an explicit VTC transition phase graph."""
+    parser = ExpressionParser()
+    compiled_rules: list[CompiledVTCPassiveDepletion] = []
+
+    for priority, raw_meter in enumerate(meters):
+        meter = _coerce_passive_depletion(raw_meter)
+        depletion_literal = _format_rule_float(meter["passive"])
+        expression = f"bar.{meter['name']} - ({depletion_literal} * temporal.depletion_multiplier)"
+        compiled_rules.append(
+            CompiledVTCPassiveDepletion(
+                rule_id=f"passive:{meter['name']}",
+                kind="passive_depletion",
+                source_variable_id=meter["name"],
+                variable_id=meter["name"],
+                expression=expression,
+                expression_ast=parser.parse(expression),
+                condition=None,
+                condition_ast=None,
+                composition="overwrite",
+                phase="apply_passive_depletion",
+                priority=priority,
+                clamp=(0.0, 1.0),
+                telemetry_label=f"passive_depletion:{meter['name']}",
+                passive_rate=meter["passive"],
+            )
+        )
+
+    return VTCPassiveDepletionProgram(
+        rules=tuple(
+            sorted(
+                compiled_rules,
+                key=lambda item: (phase_graph.sort_key(item.phase), item.priority, item.rule_id),
+            )
+        )
+    )
+
+
+def _coerce_passive_depletion(meter: VTCPassiveDepletionSource | Mapping[str, Any]) -> dict[str, Any]:
+    if isinstance(meter, Mapping):
+        name = str(meter["name"])
+        depletion = meter["depletion"]
+        passive = float(depletion["passive"] if isinstance(depletion, Mapping) else getattr(depletion, "passive"))
+    else:
+        name = meter.name
+        passive = float(meter.depletion.passive)
+
+    return {
+        "name": name,
+        "passive": passive,
     }
 
 

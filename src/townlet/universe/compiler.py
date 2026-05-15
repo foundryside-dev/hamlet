@@ -36,6 +36,7 @@ from townlet.vfs.transition_graph import TransitionPhaseGraph
 from townlet.vfs.vtc import (
     compile_vtc_action_writes_with_phase_graph,
     compile_vtc_modulations_with_phase_graph,
+    compile_vtc_passive_depletions_with_phase_graph,
     compile_vtc_threshold_cascades_with_phase_graph,
 )
 from townlet.world.expression.type_checker import TypeCheckError
@@ -385,6 +386,7 @@ class UniverseCompiler:
             variable_schema_hash = compute_variable_schema_hash(vfs_variables)
             transition_phase_graph = TransitionPhaseGraph.default()
             transition_action_writes = compile_vtc_action_writes_with_phase_graph(runtime_action_space.actions, transition_phase_graph)
+            transition_passive_depletions = compile_vtc_passive_depletions_with_phase_graph(level.bars.meters, transition_phase_graph)
             transition_modulations = compile_vtc_modulations_with_phase_graph(level.affordances.modulations, transition_phase_graph)
             transition_threshold_cascades = compile_vtc_threshold_cascades_with_phase_graph(level.bars.cascades, transition_phase_graph)
             transition_graph_hash = compute_transition_graph_hash(
@@ -392,6 +394,7 @@ class UniverseCompiler:
                 transition_action_writes,
                 transition_threshold_cascades,
                 transition_modulations,
+                transition_passive_depletions,
             )
             vfs_hash = compute_vfs_hash(variable_schema_hash, observation_schema_hash, action_schema_hash, transition_graph_hash)
 

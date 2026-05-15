@@ -28,6 +28,7 @@ class ObservationEncoder:
         self._sync_position_observation_to_vfs()
         self._sync_meter_observation_to_vfs()
         self._sync_affordance_observation_to_vfs()
+        self._sync_temporal_observation_to_vfs()
 
         def _ensure_observation_field_shape(field_name: str, value: torch.Tensor, dims: int) -> torch.Tensor:
             if value.dim() == 1:
@@ -75,30 +76,7 @@ class ObservationEncoder:
             elif name == "obs_effects":
                 value = env._build_effects_observation(dims)
             elif name == "obs_temporal":
-                if not env.temporal_support_enabled or not env.enable_temporal_mechanics:
-                    value = torch.zeros((env.num_agents, dims), device=env.device)
-                else:
-                    time_of_day = env.time_of_day
-                    day_length = float(env.day_length)
-                    time_angle = (time_of_day / day_length) * 2 * math.pi
-                    time_sin = torch.tensor(math.sin(time_angle), device=env.device)
-                    time_cos = torch.tensor(math.cos(time_angle), device=env.device)
-                    day_progress = float(time_of_day) / day_length
-                    night_threshold = day_length * 0.25
-                    if time_of_day < night_threshold or time_of_day >= (day_length - night_threshold):
-                        is_night = 1.0
-                    else:
-                        is_night = 0.0
-
-                    value = torch.zeros((env.num_agents, dims), device=env.device)
-                    if dims > 0:
-                        value[:, 0] = time_sin
-                    if dims > 1:
-                        value[:, 1] = time_cos
-                    if dims > 2:
-                        value[:, 2] = day_progress
-                    if dims > 3:
-                        value[:, 3] = is_night
+                value = self._build_vfs_agent_observation_field(name, dims)
             elif name == "obs_vfs":
                 if env.vfs_observation_spec is not None:
                     agent_item_inventory = None
@@ -196,6 +174,48 @@ class ObservationEncoder:
 
             affordance = self._build_affordance_encoding(field.dims)
             env.vfs_registry.set(field.name, affordance.to(device=env.device, dtype=torch.float32), writer="engine")
+
+    def _sync_temporal_observation_to_vfs(self) -> None:
+        """Publish current temporal observation into VFS state."""
+        env = self._env
+        temporal_field = next((field for field in env.observation_spec.fields if field.name == "obs_temporal"), None)
+        if temporal_field is None:
+            return
+        if "obs_temporal" not in env.vfs_registry.variables:
+            raise ValueError("Observation field 'obs_temporal' is present but no matching VFS variable exists.")
+
+        temporal = self._build_temporal_observation(temporal_field.dims)
+        env.vfs_registry.set("obs_temporal", temporal.to(device=env.device, dtype=torch.float32), writer="engine")
+
+    def _build_temporal_observation(self, dims: int) -> torch.Tensor:
+        """Build the runtime temporal observation vector."""
+        env = self._env
+        if dims != 4:
+            raise ValueError(f"Observation field 'obs_temporal' expected 4 dims, got {dims}.")
+
+        value = torch.zeros((env.num_agents, dims), device=env.device)
+        if not env.temporal_support_enabled or not env.enable_temporal_mechanics:
+            return value
+
+        time_of_day = env.time_of_day
+        day_length = float(env.day_length)
+        time_angle = (time_of_day / day_length) * 2 * math.pi
+        day_progress = float(time_of_day) / day_length
+        night_threshold = day_length * 0.25
+        is_before_night_threshold = time_of_day < night_threshold
+        is_after_night_threshold = time_of_day >= (day_length - night_threshold)
+        if is_before_night_threshold:
+            is_night = True
+        elif is_after_night_threshold:
+            is_night = True
+        else:
+            is_night = False
+
+        value[:, 0] = math.sin(time_angle)
+        value[:, 1] = math.cos(time_angle)
+        value[:, 2] = day_progress
+        value[:, 3] = float(is_night)
+        return value
 
     def _build_affordance_encoding(self, dims: int) -> torch.Tensor:
         """Build one-hot encoding of current affordance under each agent."""

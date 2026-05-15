@@ -391,6 +391,41 @@ class TestTemporalFeatures:
         if obs.shape[1] >= 4:
             assert torch.allclose(obs[:, -4:], torch.zeros_like(obs[:, -4:]))
 
+    def test_temporal_observation_is_sourced_from_vfs_registry(
+        self,
+        tmp_path: Path,
+        test_config_pack_path: Path,
+        cpu_device: torch.device,
+        env_factory,
+    ):
+        """obs_temporal is generated from the VFS registry value."""
+        config_dir = tmp_path / "temporal_vfs_source"
+        shutil.copytree(test_config_pack_path, config_dir)
+
+        curriculum_path = config_dir / "levels" / "L0_test" / "curriculum.yaml"
+        curriculum_config = yaml.safe_load(curriculum_path.read_text())
+        curriculum_config["curriculum"]["active_temporal"] = True
+        curriculum_config["curriculum"]["day_length"] = 100
+        curriculum_path.write_text(yaml.safe_dump(curriculum_config, sort_keys=False))
+
+        env = env_factory(
+            config_dir=config_dir,
+            num_agents=1,
+            device_override=cpu_device,
+        )
+
+        env.reset()
+        env.time_of_day = 25
+
+        temporal_field = env.observation_spec.get_field_by_name("obs_temporal")
+        obs = env._get_observations()
+        temporal_obs = obs[:, temporal_field.start_index : temporal_field.end_index]
+        temporal_vfs = env.vfs_registry.get("obs_temporal", reader="engine")
+
+        expected_temporal = torch.tensor([[1.0, 0.0, 0.25, 0.0]], device=cpu_device)
+        assert torch.allclose(temporal_vfs, temporal_obs, atol=1e-6)
+        assert torch.allclose(temporal_vfs, expected_temporal, atol=1e-6)
+
 
 class TestObservationUpdates:
     """Test that observations change correctly across environment steps.

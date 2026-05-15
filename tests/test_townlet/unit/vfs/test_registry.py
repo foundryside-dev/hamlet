@@ -976,6 +976,121 @@ class TestRegistryRelationalScopes:
             VariableRegistry(variables=[variable], num_agents=3, device=torch.device("cpu"))
 
 
+class TestRegistrySparsePairScopes:
+    """Test sparse pair-scope storage for neighbourhood-limited relationships."""
+
+    def _trust_variable(self):
+        from townlet.vfs.schema import VariableDef
+
+        return VariableDef(
+            id="trust",
+            scope="pair",
+            type="scalar",
+            lifetime="episode",
+            readable_by=["engine"],
+            writable_by=["engine"],
+            default=0.0,
+        )
+
+    def test_sparse_pair_scope_allocates_edge_rows_not_dense_matrix(self):
+        """Sparse pair variables should allocate active relationship rows instead of N x N storage."""
+        from townlet.vfs.registry import VariableRegistry
+
+        registry = VariableRegistry(
+            variables=[self._trust_variable()],
+            num_agents=1000,
+            pair_storage_mode="sparse",
+            pair_edges=[(0, 1), (1, 2)],
+            device=torch.device("cpu"),
+        )
+
+        assert registry.get("trust", reader="engine").shape == torch.Size([2])
+        assert torch.equal(registry.get_pair_edges(), torch.tensor([[0, 1], [1, 2]]))
+        mask = registry.get_pair_mask()
+        assert mask.shape == torch.Size([1000, 1000])
+        assert mask[0, 1]
+        assert mask[1, 2]
+        assert mask.sum().item() == 2
+
+    def test_sparse_pair_scope_requires_explicit_pair_edges(self):
+        """Sparse mode should fail loudly instead of silently falling back to dense storage."""
+        from townlet.vfs.registry import VariableRegistry
+
+        with pytest.raises(ValueError, match="pair_edges"):
+            VariableRegistry(
+                variables=[self._trust_variable()],
+                num_agents=3,
+                pair_storage_mode="sparse",
+                device=torch.device("cpu"),
+            )
+
+    def test_sparse_pair_scope_rejects_invalid_pair_edges(self):
+        """Neighbourhood edges must be directed in-range agent index pairs."""
+        from townlet.vfs.registry import VariableRegistry
+
+        with pytest.raises(ValueError, match="out of range"):
+            VariableRegistry(
+                variables=[self._trust_variable()],
+                num_agents=3,
+                pair_storage_mode="sparse",
+                pair_edges=[(0, 3)],
+                device=torch.device("cpu"),
+            )
+
+        with pytest.raises(ValueError, match="duplicate"):
+            VariableRegistry(
+                variables=[self._trust_variable()],
+                num_agents=3,
+                pair_storage_mode="sparse",
+                pair_edges=[(0, 1), (0, 1)],
+                device=torch.device("cpu"),
+            )
+
+    def test_sparse_pair_scope_rejects_dense_pair_writes(self):
+        """Sparse pair storage should only accept one row per active relationship."""
+        from townlet.vfs.registry import VariableRegistry
+
+        registry = VariableRegistry(
+            variables=[self._trust_variable()],
+            num_agents=3,
+            pair_storage_mode="sparse",
+            pair_edges=[(0, 1), (1, 2)],
+            device=torch.device("cpu"),
+        )
+
+        with pytest.raises(ValueError, match=r"expected \(2,\)"):
+            registry.set("trust", torch.zeros((3, 3)), writer="engine")
+
+        with pytest.raises(ValueError, match=r"expected \(2,\)"):
+            registry.set_engine_value("trust", torch.zeros((3, 3)))
+
+    def test_sparse_pair_scope_can_materialize_dense_debug_view(self):
+        """Sparse relationship values can be expanded into a dense read-only view for diagnostics."""
+        from townlet.vfs.registry import VariableRegistry
+
+        registry = VariableRegistry(
+            variables=[self._trust_variable()],
+            num_agents=3,
+            pair_storage_mode="sparse",
+            pair_edges=[(0, 1), (1, 2)],
+            device=torch.device("cpu"),
+        )
+        registry.set("trust", torch.tensor([0.25, 0.75]), writer="engine")
+
+        dense = registry.materialize_pair_dense("trust", reader="engine", fill_value=-1.0)
+
+        assert torch.equal(
+            dense,
+            torch.tensor(
+                [
+                    [-1.0, 0.25, -1.0],
+                    [-1.0, -1.0, 0.75],
+                    [-1.0, -1.0, -1.0],
+                ]
+            ),
+        )
+
+
 class TestRegistryVariablesProperty:
     """Test the public variables property for introspection."""
 

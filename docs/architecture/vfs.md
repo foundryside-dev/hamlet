@@ -362,7 +362,14 @@ The current repo defines eight canonical scope classes:
 
 `item` scope is profile-based, not loaded from `variables_reference.yaml`. The registry allocates a profile-agnostic `item_vfs[max_items, max_profile_vars]` tensor, records `item_profile_map[profile_name][var_name] -> tensor_index`, and masks unused profile slots. Item profile definitions therefore live in `vfs_profiles.yaml:item_profiles`, while item instances address rows in the shared item VFS tensor.
 
-`pair`, `group`, `affordance`, and `zone` scope storage is dense in the first implementation. `pair` prefixes values with `[num_agents, num_agents]`; `group`, `affordance`, and `zone` require explicit positive `num_groups`, `num_affordances`, and `num_zones` registry extents before allocation.
+`pair` scope has two explicit allocation modes. `pair_storage_mode="dense"` prefixes values with `[num_agents, num_agents]`
+for small all-pairs simulations. `pair_storage_mode="sparse"` requires a directed `pair_edges[num_pair_edges, 2]`
+neighbourhood graph, validates that every edge is unique and in range, and stores pair values as `[num_pair_edges, ...]`.
+Sparse pair registries expose the active edge list, a dense boolean neighbourhood mask, and a dense diagnostic materialisation
+view; dense-shaped writes to sparse pair variables fail loudly instead of being treated as a compatibility path.
+
+`group`, `affordance`, and `zone` scope storage is dense. These scopes require explicit positive `num_groups`,
+`num_affordances`, and `num_zones` registry extents before allocation.
 
 ### 5.2 Recommended future scopes
 
@@ -375,7 +382,8 @@ For serious multi-agent and small-society modelling, VFS should still add richer
 | `institution` | `[institution]` | Rules and enforcement | `sanction_probability`, `rule_legitimacy` |
 | `message` | `[agent, message_slot]` | Communication | `recent_message_tokens`, `sender_id`, `message_age` |
 
-The implemented L5 scopes are the storage foundation for multi-agent competition. Sparse pair storage, relational visibility, and L6 communication variables remain separate follow-on work.
+The implemented L5 scopes are the storage foundation for multi-agent competition. Sparse pair storage is available for
+neighbourhood-limited relationships; relational visibility and L6 communication variables remain separate follow-on work.
 
 ### 5.3 Social observability and privacy
 
@@ -1723,7 +1731,7 @@ Benefits:
 
 #### Phase 3+: Social/relational expansion
 
-1. Add pair/group/affordance/zone scopes. Dense runtime storage now exists; sparse pair storage and VTC relational rule coverage follow separately.
+1. Add pair/group/affordance/zone scopes. Dense and sparse runtime storage now exists; VTC relational rule coverage follows separately.
 2. Add social residue rules.
 3. Add communication variables.
 4. Add dynamic needs or variable-token observations.
@@ -2125,7 +2133,7 @@ Store state when it must persist or be authoritative. Derive features when they 
 2. **Manual observation generation.** Observation construction still requires explicit registry reads and concatenation.
 3. **Partial write validation.** `WriteSpec` expressions are parsed and executed for action writes, but full write-path type/shape validation is still incomplete.
 4. **Limited normalisation.** Current normalisation is mostly minmax/zscore.
-5. **Limited social-scope semantics.** Dense `pair`, `group`, `affordance`, and `zone` storage exists, but sparse scaling, relational observation exposure, and VTC contention/social rule semantics are still incomplete.
+5. **Limited social-scope semantics.** Dense and sparse `pair` storage exists alongside `group`, `affordance`, and `zone` storage, but relational observation exposure and VTC contention/social rule semantics are still incomplete.
 6. **No dynamic variables.** Variables are fixed at initialisation.
 7. **No first-class relationship rules.** Relational/social storage exists, but social rule kinds and pair/group update semantics are still future work; scalar bar cascades and temporal operations are VTC-owned.
 
@@ -2136,7 +2144,7 @@ Store state when it must persist or be authoritative. Derive features when they 
 | Compiler becomes too permissive | Small closed DSL, no arbitrary Python |
 | Observation ABI churn breaks checkpoints | Schema hashes and dimension regression tests |
 | VFS overhead slows training | JIT, caching, batched reads, compiled transition graph |
-| Social variables explode in size | Sparse pair scopes, neighbourhood masks, limited active relationships |
+| Social variables explode in size | Implemented sparse pair scopes, neighbourhood masks, limited active relationships |
 | Dynamic variables break network shapes | Fixed slots first; set encoders later |
 | Meaning becomes hidden in config complexity | Telemetry labels, rule IDs, documentation, visual rule inspector |
 | BAC naming collision | Use VTC for compiler; reserve BAC for Brain as Code |

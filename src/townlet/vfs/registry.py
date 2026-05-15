@@ -6,7 +6,7 @@ and scope semantics. It handles these scope patterns:
 - global: Single value shared by all agents (shape [] or [dims])
 - agent: Per-agent values, observable by all (shape [num_agents] or [num_agents, dims])
 - agent_private: Per-agent values, observable only by owner (shape [num_agents] or [num_agents, dims])
-- pair: Directed agent-agent values (shape [num_agents, num_agents, ...])
+- pair: Directed agent-agent values (dense shape [num_agents, num_agents, ...] or sparse shape [num_pair_edges, ...])
 - group: Group/faction/team values (shape [num_groups, ...])
 - affordance: Per-affordance-instance values (shape [num_affordances, ...])
 - zone: Per-zone values (shape [num_zones, ...])
@@ -14,8 +14,9 @@ and scope semantics. It handles these scope patterns:
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from collections.abc import Set as AbstractSet
-from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Any, Literal, Protocol, runtime_checkable
 
 import torch
 
@@ -87,6 +88,8 @@ class VariableRegistry:
         num_groups: int = 0,
         num_affordances: int = 0,
         num_zones: int = 0,
+        pair_storage_mode: Literal["dense", "sparse"] = "dense",
+        pair_edges: torch.Tensor | Sequence[Sequence[int]] | None = None,
     ):
         """Initialize variable registry.
 
@@ -99,12 +102,15 @@ class VariableRegistry:
             num_groups: Number of group-scope rows
             num_affordances: Number of affordance-scope rows
             num_zones: Number of zone-scope rows
+            pair_storage_mode: Pair-scope allocation strategy, either dense all-pairs or sparse edge rows
+            pair_edges: Directed pair edges as [num_pair_edges, 2], required for sparse pair variables
         """
         self.num_agents = num_agents
         self.max_items = max_items
         self.num_groups = num_groups
         self.num_affordances = num_affordances
         self.num_zones = num_zones
+        self.pair_storage_mode = pair_storage_mode
         self.device = device
         self.item_profiles: dict[str, Any] = item_profiles or {}  # Store compiled profiles
         # Guardrail for tensor allocations
@@ -116,6 +122,10 @@ class VariableRegistry:
             if var.id in self._definitions:
                 raise ValueError(f"Duplicate variable id '{var.id}' in registry initialization")
             self._definitions[var.id] = var
+
+        self._pair_edges: torch.Tensor | None = None
+        self._pair_edge_to_index: dict[tuple[int, int], int] = {}
+        self._initialize_pair_storage_index(pair_edges)
 
         # Initialize storage tensors
         self._storage: dict[str, torch.Tensor] = {}
@@ -153,6 +163,123 @@ class VariableRegistry:
                 print(f"{var_id}: {var_def.scope}")
         """
         return self._definitions
+
+    def _initialize_pair_storage_index(self, pair_edges: torch.Tensor | Sequence[Sequence[int]] | None) -> None:
+        """Validate and store sparse pair topology metadata."""
+        if self.pair_storage_mode not in {"dense", "sparse"}:
+            raise ValueError("pair_storage_mode must be either 'dense' or 'sparse'")
+
+        has_pair_variables = any(VariableScope(var.scope) == VariableScope.PAIR for var in self._definitions.values())
+
+        if self.pair_storage_mode == "dense":
+            if pair_edges is not None:
+                raise ValueError("pair_edges may only be provided when pair_storage_mode='sparse'")
+            return
+
+        if pair_edges is None:
+            if has_pair_variables:
+                raise ValueError("pair_edges must be provided when pair_storage_mode='sparse' and pair variables are declared")
+            self._pair_edges = torch.empty((0, 2), dtype=torch.long, device=self.device)
+            return
+
+        self._pair_edges = self._coerce_pair_edges(pair_edges)
+        self._pair_edge_to_index = {
+            (int(source_agent), int(target_agent)): edge_index
+            for edge_index, (source_agent, target_agent) in enumerate(self._pair_edges.detach().cpu().tolist())
+        }
+
+    def _coerce_pair_edges(self, pair_edges: torch.Tensor | Sequence[Sequence[int]]) -> torch.Tensor:
+        """Return validated directed pair edges as a long tensor on the registry device."""
+        if isinstance(pair_edges, torch.Tensor):
+            raw_edges = pair_edges.to(device=self.device)
+        elif len(pair_edges) == 0:
+            raw_edges = torch.empty((0, 2), dtype=torch.long, device=self.device)
+        else:
+            raw_edges = torch.as_tensor(pair_edges, device=self.device)
+
+        if raw_edges.dtype.is_floating_point or raw_edges.dtype.is_complex or raw_edges.dtype == torch.bool:
+            raise ValueError("pair_edges must contain integer agent indices")
+        if raw_edges.ndim != 2 or raw_edges.shape[1] != 2:
+            raise ValueError(f"pair_edges must have shape [num_pair_edges, 2], got {tuple(raw_edges.shape)}")
+
+        edges = raw_edges.to(dtype=torch.long).contiguous()
+        if edges.numel() > 0 and ((edges < 0).any() or (edges >= self.num_agents).any()):
+            raise ValueError(f"pair_edges contain agent indices out of range for num_agents={self.num_agents}")
+
+        seen_edges: set[tuple[int, int]] = set()
+        for source_agent, target_agent in edges.detach().cpu().tolist():
+            edge = (int(source_agent), int(target_agent))
+            if edge in seen_edges:
+                raise ValueError(f"pair_edges contain duplicate directed edge {edge}")
+            seen_edges.add(edge)
+
+        return edges
+
+    def _require_sparse_pair_edges(self) -> torch.Tensor:
+        """Return sparse pair edges or fail loudly when pair storage is dense."""
+        if self.pair_storage_mode != "sparse" or self._pair_edges is None:
+            raise ValueError("Sparse pair edge metadata requires pair_storage_mode='sparse'")
+        return self._pair_edges
+
+    def _is_sparse_pair_variable(self, var_def: VariableDef) -> bool:
+        """Return whether a variable is pair-scoped under sparse storage."""
+        return self.pair_storage_mode == "sparse" and VariableScope(var_def.scope) == VariableScope.PAIR
+
+    def get_pair_edges(self) -> torch.Tensor:
+        """Return directed sparse pair edges as [num_pair_edges, 2]."""
+        return self._require_sparse_pair_edges().clone()
+
+    def get_pair_mask(self) -> torch.Tensor:
+        """Return a dense boolean neighbourhood mask for sparse pair edges."""
+        pair_edges = self._require_sparse_pair_edges()
+        mask = torch.zeros((self.num_agents, self.num_agents), dtype=torch.bool, device=self.device)
+        if pair_edges.numel() > 0:
+            mask[pair_edges[:, 0], pair_edges[:, 1]] = True
+        return mask
+
+    def get_pair_edge_index(self, source_agent: int, target_agent: int) -> int:
+        """Return the sparse row index for a directed active pair relationship."""
+        self._require_sparse_pair_edges()
+        edge = (int(source_agent), int(target_agent))
+        if edge not in self._pair_edge_to_index:
+            raise KeyError(f"Pair edge {edge} is not active in sparse pair storage")
+        return self._pair_edge_to_index[edge]
+
+    def materialize_pair_dense(self, variable_id: str, reader: str, fill_value: float | int | bool | None = None) -> torch.Tensor:
+        """Materialize a sparse pair variable into a dense diagnostic view."""
+        if variable_id not in self._definitions:
+            raise KeyError(f"Variable '{variable_id}' not found in registry")
+
+        var_def = self._definitions[variable_id]
+        if VariableScope(var_def.scope) != VariableScope.PAIR:
+            raise ValueError(f"Variable '{variable_id}' is not pair-scoped (scope: {var_def.scope})")
+
+        pair_edges = self._require_sparse_pair_edges()
+        sparse_values = self.get(variable_id, reader=reader)
+        dense_shape = (self.num_agents, self.num_agents, *tuple(sparse_values.shape[1:]))
+        dense = torch.full(
+            dense_shape,
+            self._pair_dense_fill_value(var_def) if fill_value is None else fill_value,
+            dtype=sparse_values.dtype,
+            device=self.device,
+        )
+        if pair_edges.numel() > 0:
+            dense[pair_edges[:, 0], pair_edges[:, 1]] = sparse_values
+        return dense
+
+    def _pair_dense_fill_value(self, var_def: VariableDef) -> float | int | bool:
+        """Return a scalar fill value for sparse-pair dense diagnostic views."""
+        if var_def.type in ("agent_ref", "item_ref", "affordance_ref", "effect_ref"):
+            return -1 if var_def.default is None else int(var_def.default)
+        if var_def.type == "bool":
+            return bool(var_def.default)
+        if isinstance(var_def.default, bool):
+            return bool(var_def.default)
+        if isinstance(var_def.default, int):
+            return int(var_def.default)
+        if isinstance(var_def.default, float):
+            return float(var_def.default)
+        return 0
 
     def _initialize_storage(self) -> None:
         """Initialize storage tensors with default values for all variables."""
@@ -228,6 +355,8 @@ class VariableRegistry:
         if scope in (VariableScope.AGENT, VariableScope.AGENT_PRIVATE):
             return (self.num_agents,)
         if scope == VariableScope.PAIR:
+            if self.pair_storage_mode == "sparse":
+                return (self._require_sparse_pair_edges().shape[0],)
             return (self.num_agents, self.num_agents)
         if scope == VariableScope.GROUP:
             return (self._positive_extent(var_def, "num_groups"),)
@@ -347,6 +476,10 @@ class VariableRegistry:
             raise PermissionError(f"'engine' is not allowed to write variable '{variable_id}'. Writable by: {var_def.writable_by}")
 
         expected_dtype = self._expected_dtypes[variable_id]
+        if self._is_sparse_pair_variable(var_def):
+            expected_shape = self._expected_shapes[variable_id]
+            if value.shape != expected_shape:
+                raise ValueError(f"Value for '{variable_id}' has shape {tuple(value.shape)}, expected {tuple(expected_shape)}")
         self._storage[variable_id] = value.to(device=self.device, dtype=expected_dtype).clone()
 
     def reset_tick_scoped(self) -> None:

@@ -10,6 +10,7 @@ Phase 2: Derivation graphs, complex types, expression evaluation
 from townlet.vfs import vtc_kernels
 from townlet.vfs.observation_builder import VFSObservationSpec, apply_normalization
 from townlet.vfs.registry import VariableRegistry, VFSRegistryProtocol
+from townlet.vfs.relational import canonical_l5_relational_variables
 from townlet.vfs.schema import (
     NormalizationSpec,
     ObservationField,
@@ -120,6 +121,7 @@ __all__ = [
     "VFSObservationSpec",
     "WriteSpec",
     "apply_normalization",
+    "canonical_l5_relational_variables",
     "canonical_action_schema",
     "canonical_observation_schema",
     "canonical_transition_graph_schema",

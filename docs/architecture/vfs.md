@@ -1591,6 +1591,11 @@ variables:
     writable_by: ["vtc"]
 ```
 
+The repo exposes this canonical set as `canonical_l5_relational_variables()`,
+returning `VariableDef` records for storage allocation and schema hashing. Pair
+and group extents remain explicit: callers allocate storage with the relevant
+`num_agents` and `num_groups` instead of relying on hidden default groups.
+
 ### 16.3 Social residue effect types
 
 The VTC social-residue compiler accepts `visibility_effect`, `social_residue`,
@@ -2172,13 +2177,13 @@ Store state when it must persist or be authoritative. Derive features when they 
 
 ### 21.1 Phase 1 limitations
 
-1. **Remaining VTC coverage gaps.** Profile reads, action writes, passive dynamics, cascades, temporal gates, interaction progress, rewards, and terminal checks now run through VFS/VTC components. Remaining gaps are action-write type/shape validation depth, telemetry side-effect compilation, occupancy/contention, relational/social scopes, and dynamic variables.
+1. **Remaining VTC coverage gaps.** Profile reads, action writes, passive dynamics, cascades, temporal gates, interaction progress, rewards, terminal checks, occupancy/contention, and social residue rules now run through VFS/VTC components. Remaining gaps are action-write type/shape validation depth, telemetry side-effect compilation, relational observation exposure, environment-level social-rule wiring, L6 message scope, and dynamic variables.
 2. **Manual observation generation.** Observation construction still requires explicit registry reads and concatenation.
 3. **Partial write validation.** `WriteSpec` expressions are parsed and executed for action writes, but full write-path type/shape validation is still incomplete.
 4. **Limited normalisation.** Current normalisation is mostly minmax/zscore.
-5. **Limited social-scope semantics.** Dense and sparse `pair` storage exists alongside `group`, `affordance`, and `zone` storage, but relational observation exposure and VTC contention/social rule semantics are still incomplete.
+5. **Limited social-scope integration.** Dense and sparse `pair` storage exists alongside `group`, `affordance`, and `zone` storage, canonical relational `VariableDef` surfaces exist, and social-residue rules compile as VTC programs. Relational observation exposure and scenario-level environment wiring remain incomplete.
 6. **No dynamic variables.** Variables are fixed at initialisation.
-7. **No first-class relationship rules.** Relational/social storage exists, but social rule kinds and pair/group update semantics are still future work; scalar bar cascades and temporal operations are VTC-owned.
+7. **Relationship rules are not end-to-end yet.** Social rule kinds compile and execute as VTC programs, but configs and environment setup still need scenario-level wiring for pair/group updates.
 
 ### 21.2 Design risks
 

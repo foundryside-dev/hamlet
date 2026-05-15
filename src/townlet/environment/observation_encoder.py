@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, cast
 
 import torch
 
-from townlet.vfs.observation_builder import build_vfs_observation
+from townlet.vfs.observation_builder import VFSObservationSpec, build_vfs_observation
 
 if TYPE_CHECKING:
     from townlet.environment.vectorized_env import VectorizedHamletEnv
@@ -25,6 +25,7 @@ class ObservationEncoder:
         env = self._env
         obs_fields = env.observation_spec.fields
         outputs: list[torch.Tensor] = []
+        self._sync_position_observation_to_vfs()
 
         def _ensure_observation_field_shape(field_name: str, value: torch.Tensor, dims: int) -> torch.Tensor:
             if value.dim() == 1:
@@ -58,11 +59,7 @@ class ObservationEncoder:
                     )
                     value = local_window
             elif name == "obs_position":
-                pos = env._encode_position_observation()
-                if pos is None:
-                    value = torch.zeros((env.num_agents, dims), device=env.device)
-                else:
-                    value = pos
+                value = self._build_vfs_agent_observation_field(name, dims)
             elif name == "obs_velocity":
                 vel = env._encode_velocity_observation()
                 if vel is None:
@@ -138,6 +135,39 @@ class ObservationEncoder:
             observations = observations * mask.unsqueeze(0)
 
         return observations
+
+    def _build_vfs_agent_observation_field(self, field_name: str, dims: int) -> torch.Tensor:
+        """Build a single agent-scoped observation field from VFS registry state."""
+        env = self._env
+        if field_name not in env.vfs_registry.variables:
+            raise ValueError(f"Observation field '{field_name}' is not backed by a VFS variable.")
+
+        spec = VFSObservationSpec(
+            global_vfs_dim=0,
+            agent_vfs_dim=dims,
+            item_vfs_dim=0,
+            agent_vars=(field_name,),
+            agent_active_mask=tuple(True for _ in range(dims)),
+        )
+        return build_vfs_observation(
+            registry=env.vfs_registry,
+            spec=spec,
+            batch_size=env.num_agents,
+        )
+
+    def _sync_position_observation_to_vfs(self) -> None:
+        """Publish the current substrate position observation into VFS state."""
+        env = self._env
+        has_position_field = any(field.name == "obs_position" for field in env.observation_spec.fields)
+        if not has_position_field:
+            return
+        if "obs_position" not in env.vfs_registry.variables:
+            raise ValueError("Observation field 'obs_position' is present but no matching VFS variable exists.")
+
+        position = self._encode_position_observation()
+        if position is None:
+            raise ValueError("Observation field 'obs_position' is present but the substrate does not expose position features.")
+        env.vfs_registry.set("obs_position", position.to(device=env.device, dtype=torch.float32), writer="engine")
 
     def _build_affordance_encoding(self, dims: int) -> torch.Tensor:
         """Build one-hot encoding of current affordance under each agent."""

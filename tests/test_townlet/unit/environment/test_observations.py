@@ -145,6 +145,25 @@ class TestPartialObservability:
         assert (position >= 0.0).all(), f"Position values should be >= 0.0: {position}"
         assert (position <= 1.0).all(), f"Position values should be <= 1.0: {position}"
 
+    def test_position_observation_is_sourced_from_vfs_registry(self, test_config_pack_path, cpu_device, env_factory):
+        """obs_position is generated from the VFS registry value, not a direct env.positions concat."""
+        env = env_factory(
+            config_dir=test_config_pack_path,
+            num_agents=1,
+            device_override=cpu_device,
+        )
+
+        env.reset()
+        env.positions[0] = torch.tensor([4, 4], device=cpu_device, dtype=torch.long)
+
+        position_field = env.observation_spec.get_field_by_name("obs_position")
+        obs = env._get_observations()
+        position_obs = obs[:, position_field.start_index : position_field.end_index]
+        position_vfs = env.vfs_registry.get("obs_position", reader="engine")
+
+        assert torch.allclose(position_vfs, position_obs)
+        assert not torch.allclose(position_vfs, torch.zeros_like(position_vfs))
+
     def test_vision_window_size_is_5x5(self, pomdp_env):
         """POMDP with vision_range=2 should produce 5×5 window (2*2+1)."""
         obs = pomdp_env.reset()

@@ -28,6 +28,7 @@ class ObservationEncoder:
         self._sync_position_observation_to_vfs()
         self._sync_meter_observation_to_vfs()
         self._sync_affordance_observation_to_vfs()
+        self._sync_effect_observation_to_vfs()
         self._sync_temporal_observation_to_vfs()
 
         def _ensure_observation_field_shape(field_name: str, value: torch.Tensor, dims: int) -> torch.Tensor:
@@ -74,7 +75,7 @@ class ObservationEncoder:
             elif name in {"obs_affordance_at_position", "obs_affordances"}:
                 value = self._build_vfs_agent_observation_field(name, dims)
             elif name == "obs_effects":
-                value = env._build_effects_observation(dims)
+                value = self._build_vfs_agent_observation_field(name, dims)
             elif name == "obs_temporal":
                 value = self._build_vfs_agent_observation_field(name, dims)
             elif name == "obs_vfs":
@@ -161,7 +162,10 @@ class ObservationEncoder:
         expected_shape = (env.num_agents, meter_field.dims)
         if tuple(env.meters.shape) != expected_shape:
             raise ValueError(f"Observation field 'obs_meters' source shape {tuple(env.meters.shape)}, expected {expected_shape}.")
-        env.vfs_registry.set("obs_meters", env.meters.to(device=env.device, dtype=torch.float32), writer="engine")
+        meter_values = env.meters.to(device=env.device, dtype=torch.float32)
+        if meter_field.dims == 1:
+            meter_values = meter_values[:, 0]
+        env.vfs_registry.set("obs_meters", meter_values, writer="engine")
 
     def _sync_affordance_observation_to_vfs(self) -> None:
         """Publish current affordance-at-position observation into VFS state."""
@@ -174,6 +178,18 @@ class ObservationEncoder:
 
             affordance = self._build_affordance_encoding(field.dims)
             env.vfs_registry.set(field.name, affordance.to(device=env.device, dtype=torch.float32), writer="engine")
+
+    def _sync_effect_observation_to_vfs(self) -> None:
+        """Publish current effect observation into VFS state."""
+        env = self._env
+        effects_field = next((field for field in env.observation_spec.fields if field.name == "obs_effects"), None)
+        if effects_field is None:
+            return
+        if "obs_effects" not in env.vfs_registry.variables:
+            raise ValueError("Observation field 'obs_effects' is present but no matching VFS variable exists.")
+
+        effects = env._build_effects_observation(effects_field.dims)
+        env.vfs_registry.set("obs_effects", effects.to(device=env.device, dtype=torch.float32), writer="engine")
 
     def _sync_temporal_observation_to_vfs(self) -> None:
         """Publish current temporal observation into VFS state."""

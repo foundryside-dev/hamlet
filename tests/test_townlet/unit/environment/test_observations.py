@@ -23,6 +23,8 @@ import yaml
 
 from tests.test_townlet.conftest import SUBSTRATE_FIXTURES
 from tests.test_townlet.helpers.config_builder import mutate_curriculum_yaml, mutate_stratum_yaml
+from townlet.config.effects_config import EffectScope
+from townlet.effects.manager import ActiveEffect
 
 # Removed: calculate_expected_observation_dim (now using env.observation_dim directly)
 from townlet.universe.errors import CompilationError
@@ -104,6 +106,23 @@ class TestFullObservability:
 
         assert torch.allclose(meter_vfs, meter_obs)
         assert torch.allclose(meter_vfs, meter_values)
+
+    def test_single_meter_observation_is_sourced_from_vfs_registry(self, cpu_device: torch.device, env_factory):
+        """Single-meter obs_meters uses scalar VFS storage and still returns a 2D observation slice."""
+        env = env_factory(
+            config_dir=Path("configs/test/vfs_dependency_chain"),
+            level_name="L0_deps",
+            num_agents=2,
+            device_override=cpu_device,
+        )
+
+        obs = env.reset()
+        meters_field = env.observation_spec.get_field_by_name("obs_meters")
+        meter_obs = obs[:, meters_field.start_index : meters_field.end_index]
+        meter_vfs = env.vfs_registry.get("obs_meters", reader="engine")
+
+        assert tuple(meter_vfs.shape) == (2,)
+        assert torch.allclose(meter_vfs.unsqueeze(1), meter_obs)
 
     def test_affordance_encoding_is_one_hot(self, basic_env):
         """Affordance encoding should be one-hot (15 dims: 14 types + 1 "none")."""
@@ -425,6 +444,49 @@ class TestTemporalFeatures:
         expected_temporal = torch.tensor([[1.0, 0.0, 0.25, 0.0]], device=cpu_device)
         assert torch.allclose(temporal_vfs, temporal_obs, atol=1e-6)
         assert torch.allclose(temporal_vfs, expected_temporal, atol=1e-6)
+
+
+class TestEffectObservation:
+    """Test effect observation construction."""
+
+    def test_effect_observation_is_sourced_from_vfs_registry(self, cpu_device: torch.device, env_factory):
+        """obs_effects is generated from the VFS registry value."""
+        env = env_factory(
+            config_dir=Path("configs/test/effects_smoke"),
+            level_name="L0_effects",
+            num_agents=1,
+            device_override=cpu_device,
+        )
+
+        env.reset()
+        assert env.effect_manager is not None
+        env.effect_manager.agent_effects[0] = [
+            ActiveEffect(
+                effect_id="energy_regen",
+                instance_id=1,
+                target_entity_id=0,
+                scope=EffectScope.AGENT,
+                intensity=1.0,
+                duration_total=10,
+                duration_remaining=4,
+                elapsed_ticks=0,
+                spawn_step=0,
+                observable=True,
+                effect_index=5,
+            )
+        ]
+
+        effects_field = env.observation_spec.get_field_by_name("obs_effects")
+        obs = env._get_observations()
+        effects_obs = obs[:, effects_field.start_index : effects_field.end_index]
+        effects_vfs = env.vfs_registry.get("obs_effects", reader="engine")
+
+        expected_effects = torch.zeros((1, effects_field.dims), device=cpu_device)
+        expected_effects[0, 0] = 5.0
+        expected_effects[0, 1] = 0.4
+        expected_effects[0, 2] = 1.0
+        assert torch.allclose(effects_vfs, effects_obs)
+        assert torch.allclose(effects_vfs, expected_effects)
 
 
 class TestObservationUpdates:

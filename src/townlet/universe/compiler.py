@@ -377,7 +377,11 @@ class UniverseCompiler:
             )
             vfs_fields = self._observation_compiler.build_vfs_observation_fields(obs_spec, raw.environment)
             base_vfs_variables = self._observation_compiler.build_vfs_variables(obs_spec, raw.environment)
-            vfs_variables = self._vfs_compiler.build_runtime_variables(base_vfs_variables, compiled_vfs_profiles)
+            vfs_variables = self._vfs_compiler.build_runtime_variables(
+                base_vfs_variables,
+                compiled_vfs_profiles,
+                raw.variables_reference,
+            )
             observation_schema_hash = compute_observation_schema_hash(vfs_fields)
             variable_schema_hash = compute_variable_schema_hash(vfs_variables)
             transition_phase_graph = TransitionPhaseGraph.default()

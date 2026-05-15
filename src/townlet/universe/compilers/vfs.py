@@ -77,6 +77,7 @@ class VFSCompiler:
         self,
         base_variables: tuple[VariableDef, ...],
         compiled_vfs_profiles: CompiledVFSProfiles | None,
+        static_variables: tuple[VariableDef, ...] | None = None,
     ) -> tuple[VariableDef, ...]:
         """Emit registry-ready VFS variables from observation/environment variables and profiles."""
         variables: list[VariableDef] = list(base_variables)
@@ -91,6 +92,13 @@ class VFSCompiler:
         if compiled_vfs_profiles.agent_profile is not None:
             for compiled_var in compiled_vfs_profiles.agent_profile.variables:
                 variables.append(self._compiled_profile_var_to_variable_def(compiled_var, scope="agent", lifetime="episode"))
+
+        existing_ids = {variable.id for variable in variables}
+        for variable in static_variables or ():
+            if variable.id in existing_ids:
+                continue
+            variables.append(variable)
+            existing_ids.add(variable.id)
 
         return tuple(variables)
 

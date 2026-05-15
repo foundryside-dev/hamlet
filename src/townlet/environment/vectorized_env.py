@@ -289,6 +289,7 @@ class VectorizedHamletEnv:
             num_agents=num_agents,
             device=self.device,
             max_items=max_items_in_world,
+            num_affordances=self.metadata.affordance_count,
             item_profiles=item_profiles,
         )
 

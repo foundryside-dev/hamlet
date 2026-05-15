@@ -199,7 +199,7 @@ class RawConfigsV21:
                     location=str(action_labels_path),
                 )
 
-        # Load variables_reference.yaml (optional experiment-level VFS observation metadata)
+        # Load variables_reference.yaml (optional experiment-level static VFS variable/observation metadata)
         variables_reference_path = experiment_dir / "variables_reference.yaml"
         if variables_reference_path.exists():
             try:

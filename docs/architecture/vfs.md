@@ -17,7 +17,7 @@ In its current Phase 1 form, VFS provides:
 
 1. **Schema definitions** for variables and observation fields.
 2. **A required experiment-level `vfs_profiles.yaml` catalog** for compiled global, agent, and item profiles.
-3. **An optional experiment-level `variables_reference.yaml` metadata overlay** for static observation marks only; item-scoped variables and expressions belong in `vfs_profiles.yaml`.
+3. **An optional experiment-level `variables_reference.yaml` static registry overlay** for non-item variables and observation marks; item-scoped variables and expressions belong in `vfs_profiles.yaml`.
 4. **A runtime variable registry** that stores state tensors and enforces read/write access control.
 5. **An observation-spec builder** that generates agent-facing observation layouts from declarative exposures.
 6. **ActionConfig dependency tracking** through declared `reads` and `writes` fields.
@@ -189,7 +189,7 @@ Phase 1 implementation is complete.
 The current repo convention is split deliberately:
 
 - `configs/<experiment>/vfs_profiles.yaml` is required at the experiment root and is the authoritative source for compiled VFS profiles. It carries global, agent, and item profile definitions and feeds `CompiledUniverse.compiled_vfs_profiles`.
-- `configs/<experiment>/variables_reference.yaml` is optional at the experiment root. When present, the loader treats it as static VFS observation metadata; it cannot define item-scoped variables and cannot carry expression DSL fields.
+- `configs/<experiment>/variables_reference.yaml` is optional at the experiment root. When present, variables that are not already emitted by observation primitives or VFS profiles become static runtime VFS variables. Duplicate IDs act as observation metadata overlays for the existing variable. The file cannot define item-scoped variables and cannot carry expression DSL fields.
 - Level directories must not contain `vfs_profiles.yaml`; profile definitions are shared across curriculum levels, while level-specific activity and masking come from the compiled level metadata.
 
 | Component | Status | Primary verification source |
@@ -1702,7 +1702,7 @@ Problems:
 def _initialize_vfs(self):
     """Initialize VFS registry and observation spec once at startup."""
     # Use the compiled universe artifact. The compiler has already loaded
-    # vfs_profiles.yaml and the optional variables_reference.yaml metadata.
+    # vfs_profiles.yaml and the optional variables_reference.yaml static overlay.
     variables = self.compiled_universe.vfs_variables
     obs_fields = self.compiled_universe.vfs_observation_fields
 
@@ -1847,7 +1847,7 @@ configs/<run_name>/
   stratum.yaml
   vfs_profiles.yaml
   effects.yaml
-  variables_reference.yaml  # optional static observation metadata overlay
+  variables_reference.yaml  # optional static variable and observation metadata overlay
   levels/<level_name>/
     curriculum.yaml
     bars.yaml
@@ -1874,7 +1874,7 @@ runs/<run_name>__<timestamp>/
     stratum.yaml
     vfs_profiles.yaml
     effects.yaml
-    variables_reference.yaml  # optional if present in the source pack
+    variables_reference.yaml  # optional static variable/metadata overlay if present in the source pack
     levels/
     transition_rules.yaml
     cognitive_topology.yaml
@@ -2297,7 +2297,7 @@ This would make VFS teachable and debuggable.
 
 - `docs/architecture/vfs.md`
 - `docs/config-schemas/vfs-profiles.md`
-- `docs/config-schemas/variables.md` — optional static observation metadata overlay
+- `docs/config-schemas/variables.md` — optional static variable and observation metadata overlay
 - `docs/plans/archive/vfs_uplift/2025-11-18-items-and-vfs-profiles.md`
 - `docs/plans/archive/vfs_uplift/master_requirements.md`
 - `docs/tasks/TASK-002-variables-and-features-system.md`
@@ -2337,6 +2337,7 @@ This would make VFS teachable and debuggable.
 - `configs/simple/vfs_profiles.yaml`
 - `configs/aspatial_test/vfs_profiles.yaml`
 - `configs/test/model_config/vfs_profiles.yaml`
+- `configs/L5_multi_agent/variables_reference.yaml` — static pair and affordance runtime variable example
 - `configs/test/model_config/variables_reference.yaml` — optional observation metadata example
 - `configs/test/vfs_bar_access/variables_reference.yaml` — optional observation metadata example
 

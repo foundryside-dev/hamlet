@@ -40,6 +40,7 @@ from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.dto import MeterInfo, MeterMetadata
 from townlet.universe.errors import CompilationError
 from townlet.vfs.profiles import CompiledGlobalProfile, CompiledVariable
+from townlet.vfs.schema import WriteSpec
 
 # =============================================================================
 # AFFORDANCE FILTERING HELPERS
@@ -77,6 +78,34 @@ def test_environment_runtime_modules_own_extracted_clusters():
     ]
     for marker in delegated_implementation_markers:
         assert marker not in env_source
+
+
+def _with_runtime_action_write(universe, level_name: str, action_name: str, write: WriteSpec):
+    """Return a compiled universe whose named runtime action carries one VFS write."""
+    level = universe.get_level(level_name)
+    patched_actions = []
+    found = False
+    for action in level.runtime_action_space.actions:
+        if action.name == action_name:
+            patched_actions.append(replace(action, writes=(write.model_dump(mode="json"),)))
+            found = True
+        else:
+            patched_actions.append(action)
+    if not found:
+        raise AssertionError(f"Test action '{action_name}' was not present in runtime action space")
+
+    runtime_action_space = replace(level.runtime_action_space, actions=tuple(patched_actions))
+    patched_level = replace(level, runtime_action_space=runtime_action_space)
+    all_levels = dict(universe.all_levels or {})
+    all_levels[level_name] = patched_level
+    return replace(
+        universe,
+        runtime_action_space=runtime_action_space,
+        all_levels=all_levels,
+        compiled_vfs_profiles=None,
+        vfs_observation_spec=None,
+        vfs_observation_marks=None,
+    )
 
 
 def test_build_bar_index_map():
@@ -305,6 +334,34 @@ class TestVectorizedHamletEnvStep:
         env.step(actions)
 
         assert not torch.allclose(env.meters, initial_meters)
+
+    def test_step_executes_compiled_vfs_action_writes(self, compile_universe, test_config_pack_path, cpu_device):
+        universe = compile_universe(test_config_pack_path)
+        write = WriteSpec(
+            variable_id="deficit_energy",
+            expression="0.25",
+            condition=None,
+            composition="additive_delta",
+            phase="apply_action_effects",
+            priority=0,
+            clamp=(0.0, 1.0),
+            telemetry_label="wait_deficit_energy",
+        )
+        universe = _with_runtime_action_write(universe, "L0_test", "WAIT", write)
+        env = vectorized_env_module.VectorizedHamletEnv.from_universe(
+            universe,
+            level_name="L0_test",
+            num_agents=2,
+            device=cpu_device,
+        )
+        env.reset()
+
+        before = env.vfs_registry.get("deficit_energy", reader="engine").clone()
+        actions = torch.tensor([env.action_ids["WAIT"], env.action_ids["REST"]], device=env.device)
+        env.step(actions)
+        after = env.vfs_registry.get("deficit_energy", reader="engine")
+
+        assert torch.allclose(after, torch.tensor([before[0] + 0.25, before[1]], device=env.device))
 
     def test_step_increments_time_of_day(self, custom_env_builder):
         # Use temporal-enabled level to ensure mechanics are active

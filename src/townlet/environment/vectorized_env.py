@@ -28,6 +28,7 @@ from townlet.environment.reward_calculator import RewardCalculator
 from townlet.items import InventoryState, ItemActionHandler, ItemManager
 from townlet.substrate.continuous import ContinuousSubstrate
 from townlet.universe.dto import RuntimeActionSpace
+from townlet.vfs.action_writes import CompiledActionWriteProgram, compile_action_writes
 from townlet.vfs.evaluator import EvaluationMode, VFSEvaluator
 from townlet.vfs.observation_builder import VFSObservationSpec
 from townlet.vfs.registry import VariableRegistry
@@ -435,6 +436,7 @@ class VectorizedHamletEnv:
         self.action_dim = self.action_space.action_dim
         self.action_ids = level.runtime_action_space.action_ids
         self._movement_deltas = self._build_movement_deltas()
+        self.vtc_action_write_program = compile_action_writes(self.action_space.actions)
 
         # State tensors (initialized in reset)
         self.positions = torch.zeros(
@@ -1148,6 +1150,7 @@ class VectorizedHamletEnv:
         self.vfs_registry.reset_tick_scoped()
         # 1. Execute actions and track successful interactions
         successful_interactions = self._action_executor._execute_actions(actions)
+        self._apply_vtc_action_writes(actions, torch.logical_not(prev_dones))
 
         # 2. Deplete meters (base passive decay with curriculum difficulty)
         self.meters = self.meter_dynamics.deplete_meters(self.meters, depletion_multiplier)
@@ -1182,9 +1185,7 @@ class VectorizedHamletEnv:
 
             # Get current VFS state from registry
             # HIGH-02: Use proper VFS API instead of direct _storage access
-            current_vfs_state = {}
-            for var_name in self.vfs_registry.variables.keys():
-                current_vfs_state[var_name] = self.vfs_registry.get(var_name, reader="engine")
+            current_vfs_state = self._current_vfs_state()
 
             # Evaluate global profile
             global_profile = self.universe.compiled_vfs_profiles.global_profile
@@ -1268,6 +1269,25 @@ class VectorizedHamletEnv:
     def _execute_actions(self, actions: torch.Tensor) -> dict:
         """Execute movement, interaction, and wait actions."""
         return self._action_executor._execute_actions(actions)
+
+    def _apply_vtc_action_writes(self, actions: torch.Tensor, active_mask: torch.Tensor) -> None:
+        """Apply compiled VFS transition writes for selected actions."""
+        program: CompiledActionWriteProgram = self.vtc_action_write_program
+        if len(program.writes) == 0:
+            return
+
+        updated_vfs = program.apply(
+            actions=actions,
+            vfs_state=self._current_vfs_state(),
+            active_mask=active_mask,
+            device=self.device,
+        )
+        for variable_id, value in updated_vfs.items():
+            self.vfs_registry.set(variable_id, value, writer="engine")
+
+    def _current_vfs_state(self) -> dict[str, torch.Tensor]:
+        """Return the engine-readable VFS registry snapshot."""
+        return {var_name: self.vfs_registry.get(var_name, reader="engine") for var_name in self.vfs_registry.variables.keys()}
 
     def _handle_interactions(self, interact_mask: torch.Tensor) -> dict:
         """Handle INTERACT actions with multi-tick accumulation."""

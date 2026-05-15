@@ -1,11 +1,15 @@
 """Variable registry for VFS runtime storage.
 
 The VariableRegistry manages runtime storage of VFS variables with access control
-and scope semantics. It handles three scope patterns:
+and scope semantics. It handles these scope patterns:
 
 - global: Single value shared by all agents (shape [] or [dims])
 - agent: Per-agent values, observable by all (shape [num_agents] or [num_agents, dims])
 - agent_private: Per-agent values, observable only by owner (shape [num_agents] or [num_agents, dims])
+- pair: Directed agent-agent values (shape [num_agents, num_agents, ...])
+- group: Group/faction/team values (shape [num_groups, ...])
+- affordance: Per-affordance-instance values (shape [num_affordances, ...])
+- zone: Per-zone values (shape [num_zones, ...])
 """
 
 from __future__ import annotations
@@ -80,6 +84,9 @@ class VariableRegistry:
         device: torch.device,
         max_items: int = 0,
         item_profiles: dict[str, Any] | None = None,
+        num_groups: int = 0,
+        num_affordances: int = 0,
+        num_zones: int = 0,
     ):
         """Initialize variable registry.
 
@@ -89,9 +96,15 @@ class VariableRegistry:
             device: PyTorch device (cpu or cuda)
             max_items: Maximum items (for item-scoped variables)
             item_profiles: Compiled item profiles (profile_name → CompiledItemProfile)
+            num_groups: Number of group-scope rows
+            num_affordances: Number of affordance-scope rows
+            num_zones: Number of zone-scope rows
         """
         self.num_agents = num_agents
         self.max_items = max_items
+        self.num_groups = num_groups
+        self.num_affordances = num_affordances
+        self.num_zones = num_zones
         self.device = device
         self.item_profiles: dict[str, Any] = item_profiles or {}  # Store compiled profiles
         # Guardrail for tensor allocations
@@ -145,56 +158,25 @@ class VariableRegistry:
         """Initialize storage tensors with default values for all variables."""
         for var_id, var_def in self._definitions.items():
             # Determine tensor shape based on scope and type
-            self._compute_shape(var_def)
+            shape = self._compute_shape(var_def)
 
             # Initialize tensor with default value
             if var_def.type == "scalar":
-                # Scalar: default is a single float
-                if var_def.scope == "global":
-                    # Global scalar: shape []
-                    tensor = torch.tensor(var_def.default, device=self.device, dtype=torch.float32)
-                else:
-                    # Agent/agent_private scalar: shape [num_agents]
-                    tensor = torch.full(
-                        (self.num_agents,),
-                        var_def.default,
-                        device=self.device,
-                        dtype=torch.float32,
-                    )
+                tensor = torch.full(shape, var_def.default, device=self.device, dtype=torch.float32)
             elif var_def.type in ("agent_ref", "item_ref", "affordance_ref", "effect_ref"):
                 default_value = -1 if var_def.default is None else var_def.default
-                dtype = torch.long
-                if var_def.scope == "global":
-                    tensor = torch.tensor(default_value, device=self.device, dtype=dtype)
-                else:
-                    tensor = torch.full(
-                        (self.num_agents,),
-                        default_value,
-                        device=self.device,
-                        dtype=dtype,
-                    )
+                tensor = torch.full(shape, default_value, device=self.device, dtype=torch.long)
             elif var_def.type in ("tensor1d", "tensor2d", "tensor3d", "tensorNd"):
                 tensor = self._initialize_tensor(var_def)
             elif var_def.type in ("vecNi", "vecNf", "vec2i", "vec3i", "vec2f", "vec3f"):
                 base_default = self._build_vector_default(var_def)
-
-                if var_def.scope == "global":
+                if len(shape) == 1:
                     tensor = base_default.clone()
                 else:
-                    tensor = base_default.unsqueeze(0).expand(self.num_agents, -1).clone()
+                    prefix_shape = shape[:-1]
+                    tensor = base_default.reshape((1,) * len(prefix_shape) + (base_default.shape[0],)).expand(shape).clone()
             elif var_def.type == "bool":
-                # Bool: default is a boolean
-                if var_def.scope == "global":
-                    # Global bool: shape []
-                    tensor = torch.tensor(var_def.default, device=self.device, dtype=torch.bool)
-                else:
-                    # Agent/agent_private bool: shape [num_agents]
-                    tensor = torch.full(
-                        (self.num_agents,),
-                        var_def.default,
-                        device=self.device,
-                        dtype=torch.bool,
-                    )
+                tensor = torch.full(shape, var_def.default, device=self.device, dtype=torch.bool)
             else:
                 raise ValueError(f"Unsupported variable type: {var_def.type}")
 
@@ -217,17 +199,13 @@ class VariableRegistry:
             agent scalar: (num_agents,)
             agent vector (dims=2): (num_agents, 2)
         """
+        prefix_shape = self._scope_prefix_shape(var_def)
         if var_def.type in ("scalar", "bool", "agent_ref", "item_ref", "affordance_ref", "effect_ref"):
-            if var_def.scope == "global":
-                return ()  # Shape []
-            else:
-                return (self.num_agents,)  # Shape [num_agents]
+            return prefix_shape
         if var_def.type in ("tensor1d", "tensor2d", "tensor3d", "tensorNd"):
             if not var_def.shape:
                 raise ValueError(f"Tensor variable '{var_def.id}' requires a shape")
-            if var_def.scope == "global":
-                return tuple(var_def.shape)
-            return (self.num_agents, *tuple(var_def.shape))
+            return (*prefix_shape, *tuple(var_def.shape))
 
         elif var_def.type in {"vec2i", "vec2f"}:
             dims = 2
@@ -240,11 +218,35 @@ class VariableRegistry:
         else:
             raise ValueError(f"Unsupported variable type: {var_def.type}")
 
-        # Vector variable
-        if var_def.scope == "global":
-            return (dims,)  # Shape [dims]
-        else:
-            return (self.num_agents, dims)  # Shape [num_agents, dims]
+        return (*prefix_shape, dims)
+
+    def _scope_prefix_shape(self, var_def: VariableDef) -> tuple[int, ...]:
+        """Return the leading tensor dimensions implied by a variable scope."""
+        scope = VariableScope(var_def.scope)
+        if scope == VariableScope.GLOBAL:
+            return ()
+        if scope in (VariableScope.AGENT, VariableScope.AGENT_PRIVATE):
+            return (self.num_agents,)
+        if scope == VariableScope.PAIR:
+            return (self.num_agents, self.num_agents)
+        if scope == VariableScope.GROUP:
+            return (self._positive_extent(var_def, "num_groups"),)
+        if scope == VariableScope.AFFORDANCE:
+            return (self._positive_extent(var_def, "num_affordances"),)
+        if scope == VariableScope.ZONE:
+            return (self._positive_extent(var_def, "num_zones"),)
+        if scope == VariableScope.ITEM:
+            raise ValueError(
+                "Item-scoped variables in variables_reference.yaml are not supported. Use vfs_profiles.yaml item_profiles instead."
+            )
+        raise ValueError(f"Unsupported variable scope: {var_def.scope}")
+
+    def _positive_extent(self, var_def: VariableDef, attr_name: str) -> int:
+        """Return a positive configured extent for a non-agent scope."""
+        value = int(getattr(self, attr_name))
+        if value <= 0:
+            raise ValueError(f"Variable '{var_def.id}' uses {var_def.scope} scope but {attr_name} must be positive")
+        return value
 
     def get(self, variable_id: str, reader: str) -> torch.Tensor:
         """Get variable value with access control.
@@ -393,55 +395,58 @@ class VariableRegistry:
         if not var_def.shape:
             raise ValueError(f"Tensor variable '{var_def.id}' is missing required shape")
 
-        shape = list(var_def.shape)
+        payload_shape = tuple(var_def.shape)
+        full_shape = self._compute_shape(var_def)
+        prefix_shape = full_shape[: len(full_shape) - len(payload_shape)]
         total_elements = 1
-        for dim in shape:
+        for dim in full_shape:
             total_elements *= dim
         if total_elements > self._max_tensor_elements:
-            raise ValueError(f"Tensor variable '{var_def.id}' shape {shape} exceeds max supported elements ({self._max_tensor_elements}).")
+            raise ValueError(
+                f"Tensor variable '{var_def.id}' shape {list(full_shape)} exceeds max supported elements ({self._max_tensor_elements})."
+            )
         mode = var_def.initial_value_mode or "zeros"
         params = var_def.initial_value_params or {}
-
-        # Build full shape including batch dim for agent/agent_private scopes
-        if var_def.scope in (VariableScope.AGENT, VariableScope.AGENT_PRIVATE):
-            full_shape = [self.num_agents, *shape]
-        elif var_def.scope == VariableScope.GLOBAL:
-            full_shape = shape
-        else:
-            # ITEM tensors are not supported in VariableRegistry; handled via item_vfs_profiles.
-            raise ValueError(f"Tensor variables are not supported for scope '{var_def.scope}' in VariableRegistry.")
 
         if mode == "zeros":
             base = torch.zeros(full_shape, device=self.device, dtype=torch.float32)
         elif mode == "ones":
             base = torch.ones(full_shape, device=self.device, dtype=torch.float32)
         elif mode == "eye":
-            if len(shape) != 2 or shape[0] != shape[1]:
-                raise ValueError(f"initial_value_mode 'eye' requires square 2D shape; got {shape}")
-            eye = torch.eye(shape[0], device=self.device, dtype=torch.float32)
-            base = eye.unsqueeze(0).expand(full_shape[0], -1, -1).clone() if var_def.scope != VariableScope.GLOBAL else eye
+            if len(payload_shape) != 2 or payload_shape[0] != payload_shape[1]:
+                raise ValueError(f"initial_value_mode 'eye' requires square 2D shape; got {list(payload_shape)}")
+            base = torch.eye(payload_shape[0], device=self.device, dtype=torch.float32)
+            if prefix_shape:
+                base = base.reshape((1,) * len(prefix_shape) + payload_shape).expand(full_shape).clone()
         elif mode == "random_normal":
             mean = float(params.get("mean", 0.0))
             std = float(params.get("std", 1.0))
-            base = torch.normal(mean, std, size=tuple(full_shape), device=self.device)
+            base = torch.normal(mean, std, size=full_shape, device=self.device)
         elif mode == "random_uniform":
             low = float(params.get("low", 0.0))
             high = float(params.get("high", 1.0))
-            base = torch.rand(tuple(full_shape), device=self.device) * (high - low) + low
+            base = torch.rand(full_shape, device=self.device) * (high - low) + low
         else:
             raise ValueError(f"Unknown initial_value_mode '{mode}' for tensor variable '{var_def.id}'")
 
         if var_def.default is not None:
             # Allow explicit default override if provided; broadcast if necessary.
             explicit = torch.tensor(var_def.default, device=self.device, dtype=torch.float32)
-            if var_def.scope in (VariableScope.AGENT, VariableScope.AGENT_PRIVATE):
-                if explicit.dim() == len(shape):
-                    explicit = explicit.unsqueeze(0)
-                elif explicit.dim() == len(shape) + 1 and explicit.shape[0] not in {1, full_shape[0]}:
-                    raise ValueError(
-                        f"Default for tensor variable '{var_def.id}' must have leading dim 1 or {full_shape[0]}, "
-                        f"got {tuple(explicit.shape)}"
-                    )
+            if prefix_shape:
+                if explicit.dim() == len(payload_shape):
+                    explicit = explicit.reshape((1,) * len(prefix_shape) + tuple(explicit.shape))
+                elif explicit.dim() == len(payload_shape) + len(prefix_shape):
+                    leading_shape = explicit.shape[: len(prefix_shape)]
+                    invalid_dims = [
+                        (actual, expected)
+                        for actual, expected in zip(leading_shape, prefix_shape, strict=True)
+                        if actual not in {1, expected}
+                    ]
+                    if invalid_dims:
+                        raise ValueError(
+                            f"Default for tensor variable '{var_def.id}' must have leading scope dims "
+                            f"broadcastable to {tuple(prefix_shape)}, got {tuple(leading_shape)}"
+                        )
 
             if explicit.shape == torch.Size(full_shape):
                 pass

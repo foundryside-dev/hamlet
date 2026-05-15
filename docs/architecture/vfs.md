@@ -347,7 +347,7 @@ In VFS terms, actions and affordances should declare:
 
 ### 5.1 Current scopes
 
-The current repo defines four canonical scope classes:
+The current repo defines eight canonical scope classes:
 
 | Scope | Use case | Example |
 |---|---|---|
@@ -355,27 +355,27 @@ The current repo defines four canonical scope classes:
 | `agent` | Per-agent observable state | `energy`, `position`, `health` |
 | `agent_private` | Per-agent hidden state | `internal_motivation`, `hidden_reward` |
 | `item` | Per-item-instance state compiled from item profiles | `durability`, `charges`, `spoilage` |
+| `pair` | Directed agent-agent relationship state | `trust`, `fear`, `obligation`, `resentment` |
+| `group` | Group, faction, family, or team state | `group_norm_strength`, `membership`, `loyalty` |
+| `affordance` | Per-affordance-instance capacity and occupancy state | `occupied_by`, `cooldown`, `is_open` |
+| `zone` | Multi-zone environment state | `zone_danger`, `travel_cost`, `zone_crowding` |
 
 `item` scope is profile-based, not loaded from `variables_reference.yaml`. The registry allocates a profile-agnostic `item_vfs[max_items, max_profile_vars]` tensor, records `item_profile_map[profile_name][var_name] -> tensor_index`, and masks unused profile slots. Item profile definitions therefore live in `vfs_profiles.yaml:item_profiles`, while item instances address rows in the shared item VFS tensor.
 
-These scopes are sufficient for Phase 1–3 style single-agent survival, temporal mechanics, and item-bearing environments.
+`pair`, `group`, `affordance`, and `zone` scope storage is dense in the first implementation. `pair` prefixes values with `[num_agents, num_agents]`; `group`, `affordance`, and `zone` require explicit positive `num_groups`, `num_affordances`, and `num_zones` registry extents before allocation.
 
 ### 5.2 Recommended future scopes
 
-For serious multi-agent and small-society modelling, VFS should add relational and institutional scopes:
+For serious multi-agent and small-society modelling, VFS should still add richer institutional and communication scopes:
 
 | Scope | Shape intuition | Use case | Example |
 |---|---|---|---|
-| `pair` | `[agent_i, agent_j]` | Directed relationships | `trust`, `fear`, `obligation`, `resentment` |
-| `group` | `[group]` or `[agent, group]` | Factions, families, teams | `group_norm_strength`, `membership`, `loyalty` |
 | `household` | `[household]` | Shared domestic resources | `shared_food`, `rent_due`, `household_mood` |
 | `faction` | `[faction]` | Political or social blocs | `legitimacy`, `territory_claim` |
-| `affordance` | `[affordance_instance]` | Capacity and occupancy | `occupied_by`, `cooldown`, `is_open` |
-| `zone` | `[zone]` | Multi-zone environments | `zone_danger`, `travel_cost`, `zone_crowding` |
 | `institution` | `[institution]` | Rules and enforcement | `sanction_probability`, `rule_legitimacy` |
 | `message` | `[agent, message_slot]` | Communication | `recent_message_tokens`, `sender_id`, `message_age` |
 
-These scopes are essential for L5 multi-agent competition and L6 emergent communication.
+The implemented L5 scopes are the storage foundation for multi-agent competition. Sparse pair storage, relational visibility, and L6 communication variables remain separate follow-on work.
 
 ### 5.3 Social observability and privacy
 
@@ -1723,7 +1723,7 @@ Benefits:
 
 #### Phase 3+: Social/relational expansion
 
-1. Add pair/group/affordance/zone scopes.
+1. Add pair/group/affordance/zone scopes. Dense runtime storage now exists; sparse pair storage and VTC relational rule coverage follow separately.
 2. Add social residue rules.
 3. Add communication variables.
 4. Add dynamic needs or variable-token observations.
@@ -2125,9 +2125,9 @@ Store state when it must persist or be authoritative. Derive features when they 
 2. **Manual observation generation.** Observation construction still requires explicit registry reads and concatenation.
 3. **Partial write validation.** `WriteSpec` expressions are parsed and executed for action writes, but full write-path type/shape validation is still incomplete.
 4. **Limited normalisation.** Current normalisation is mostly minmax/zscore.
-5. **Limited scopes.** Current scopes are suitable for early levels but not full social simulation.
+5. **Limited social-scope semantics.** Dense `pair`, `group`, `affordance`, and `zone` storage exists, but sparse scaling, relational observation exposure, and VTC contention/social rule semantics are still incomplete.
 6. **No dynamic variables.** Variables are fixed at initialisation.
-7. **No first-class relationship rules.** Relational/social rule scopes are still future work; scalar bar cascades and temporal operations are VTC-owned.
+7. **No first-class relationship rules.** Relational/social storage exists, but social rule kinds and pair/group update semantics are still future work; scalar bar cascades and temporal operations are VTC-owned.
 
 ### 21.2 Design risks
 

@@ -32,6 +32,10 @@ class VariableScope(StrEnum):
     AGENT = "agent"  # Per-agent state ([batch, ...])
     AGENT_PRIVATE = "agent_private"  # Hidden from agent observations
     ITEM = "item"  # Per-item state ([max_items, ...])
+    PAIR = "pair"  # Directed agent-agent state ([num_agents, num_agents, ...])
+    GROUP = "group"  # Group/faction/team state ([num_groups, ...])
+    AFFORDANCE = "affordance"  # Per-affordance-instance state ([num_affordances, ...])
+    ZONE = "zone"  # Per-zone state ([num_zones, ...])
 
 
 class NormalizationSpec(BaseModel):
@@ -413,8 +417,11 @@ class VariableDef(BaseModel):
         description="Semantic grouping for structured encoders (bars, spatial, affordance, temporal, custom)",
     )
 
-    scope: VariableScope | Literal["global", "agent", "agent_private", "item"] = Field(
-        description="Scope: global (shared), agent (per-agent public), agent_private (per-agent private), item (per-item)",
+    scope: VariableScope | Literal["global", "agent", "agent_private", "item", "pair", "group", "affordance", "zone"] = Field(
+        description=(
+            "Scope: global (shared), agent (per-agent public), agent_private (per-agent private), item (per-item), "
+            "pair (directed agent-agent), group, affordance, or zone"
+        ),
     )
 
     type: Literal[

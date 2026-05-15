@@ -846,7 +846,7 @@ Current implementation is partial but real:
 
 - `VFSProfileCompiler` compiles profile expressions on the read/derived-variable path: AST parsing, dependency graph construction, topological sorting, cycle detection, and expression type checking.
 - `VFSEvaluator` evaluates compiled profile variables in dependency order, with mark-and-sweep evaluation for observed variables plus dependencies and eager mode when all variables are needed.
-- `VTCActionWriteProgram` executes the first write-path slice for `ActionConfig.writes`: parsed expressions, phase ordering, composition modes, clamps, conditions, and active-agent masks.
+- `VTCActionWriteProgram` executes the first write-path slice for `ActionConfig.writes`: parsed expressions, phase ordering, composition modes, clamps, conditions, active-agent masks, and atomic per-phase commit batches.
 
 The unsolved work is not "build any compiler"; it is "finish the VTC as the single write-path and world-transition compiler."
 
@@ -1257,6 +1257,12 @@ commit writes atomically
 ```
 
 This prevents one rule from accidentally seeing another rule’s partial update unless the phase ordering explicitly allows it.
+
+The action-write VTC path implements this as a mechanical boundary: one phase
+snapshot feeds all write-mask and expression evaluation, candidate tensors are
+validated against their target shape, composition resolves against a phase
+accumulator, and the completed accumulator becomes visible only to the next
+phase.
 
 ---
 

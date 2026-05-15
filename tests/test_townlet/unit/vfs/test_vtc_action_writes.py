@@ -362,6 +362,45 @@ def test_vtc_action_writes_reads_phase_snapshot_before_committing_writes() -> No
     assert torch.allclose(updated["satiation"], torch.tensor([10.0]))
 
 
+def test_vtc_action_writes_rejects_shape_changing_phase_commit() -> None:
+    action = _action(
+        action_id=12,
+        name="BAD_SHAPE",
+        writes=[
+            _write_with_metadata(
+                variable_id="energy",
+                expression="energy + 1.0",
+                condition=None,
+                composition="overwrite",
+                phase="apply_action_effects",
+                priority=0,
+                clamp=None,
+                telemetry_label="valid_energy_increment",
+            ),
+            _write_with_metadata(
+                variable_id="status",
+                expression="one_hot(status, 3)",
+                condition=None,
+                composition="overwrite",
+                phase="apply_action_effects",
+                priority=1,
+                clamp=None,
+                telemetry_label="invalid_status_one_hot",
+            ),
+        ],
+    )
+
+    program = compile_vtc_action_writes([action])
+    with pytest.raises(ValueError, match="invalid_status_one_hot.*shape"):
+        program.apply(
+            actions=torch.tensor([12, 12]),
+            vfs_state={"energy": torch.tensor([1.0, 1.0]), "status": torch.tensor([0.0, 1.0])},
+            bars_state={},
+            active_mask=torch.tensor([True, True]),
+            device=torch.device("cpu"),
+        )
+
+
 def test_vtc_action_writes_uses_spec_phase_order_not_lexical_order() -> None:
     action = _action(
         action_id=8,

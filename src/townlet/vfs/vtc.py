@@ -308,6 +308,15 @@ class CompiledVTCRewardComponent:
 
 
 @dataclass(frozen=True)
+class _VTCActionWriteEffect:
+    """Computed action-write candidate for one atomic VTC phase commit."""
+
+    write: CompiledVTCActionWrite
+    expression_value: torch.Tensor
+    write_mask: torch.Tensor
+
+
+@dataclass(frozen=True)
 class VTCInteractionProgressResult:
     """Result of one VTC interaction-progress transition step."""
 
@@ -349,33 +358,15 @@ class VTCActionWriteProgram:
 
         for phase_writes in self._iter_phase_groups():
             phase_snapshot = dict(updated)
-            phase_values = dict(updated)
-            priority_state: dict[str, torch.Tensor] = {}
-
-            for write in phase_writes:
-                if write.variable_id not in phase_values:
-                    raise KeyError(f"VTC action write targets unknown VFS variable '{write.variable_id}'")
-
-                context = ExecutionContext(
-                    bars={name: phase_snapshot[name] for name in bar_names},
-                    vfs=dict(phase_snapshot),
-                    affordances={},
-                    temporal={},
-                    device=device,
-                )
-                evaluator = Evaluator(context)
-                phase_value = phase_values[write.variable_id]
-                write_mask = self._build_write_mask(write, actions_on_device, active_mask_on_device, evaluator)
-                expression_value = self._evaluate_tensor(evaluator, write.expression_ast, "expression", write)
-                phase_values[write.variable_id] = self._apply_composed_write(
-                    write=write,
-                    phase_value=phase_value,
-                    expression_value=expression_value,
-                    write_mask=write_mask,
-                    priority_state=priority_state,
-                )
-
-            updated = phase_values
+            phase_effects = self._compute_phase_effects(
+                phase_writes=phase_writes,
+                phase_snapshot=phase_snapshot,
+                bar_names=bar_names,
+                actions=actions_on_device,
+                active_mask=active_mask_on_device,
+                device=device,
+            )
+            updated = self._commit_phase_effects(phase_snapshot, phase_effects)
 
         return updated
 
@@ -396,6 +387,63 @@ class VTCActionWriteProgram:
         if current_group:
             phase_groups.append(tuple(current_group))
         return phase_groups
+
+    def _compute_phase_effects(
+        self,
+        *,
+        phase_writes: Sequence[CompiledVTCActionWrite],
+        phase_snapshot: Mapping[str, torch.Tensor],
+        bar_names: set[str],
+        actions: torch.Tensor,
+        active_mask: torch.Tensor,
+        device: torch.device,
+    ) -> tuple[_VTCActionWriteEffect, ...]:
+        phase_effects: list[_VTCActionWriteEffect] = []
+        context = ExecutionContext(
+            bars={name: phase_snapshot[name] for name in bar_names},
+            vfs=dict(phase_snapshot),
+            affordances={},
+            temporal={},
+            device=device,
+        )
+        evaluator = Evaluator(context)
+
+        for write in phase_writes:
+            if write.variable_id not in phase_snapshot:
+                raise KeyError(f"VTC action write targets unknown VFS variable '{write.variable_id}'")
+
+            target_snapshot = phase_snapshot[write.variable_id]
+            write_mask = self._build_write_mask(write, actions, active_mask, evaluator)
+            expression_value = self._evaluate_tensor(evaluator, write.expression_ast, "expression", write)
+            phase_effects.append(
+                _VTCActionWriteEffect(
+                    write=write,
+                    expression_value=self._coerce_expression_tensor(expression_value, target_snapshot, write),
+                    write_mask=write_mask,
+                )
+            )
+
+        return tuple(phase_effects)
+
+    def _commit_phase_effects(
+        self,
+        phase_snapshot: Mapping[str, torch.Tensor],
+        phase_effects: Sequence[_VTCActionWriteEffect],
+    ) -> dict[str, torch.Tensor]:
+        phase_values = dict(phase_snapshot)
+        priority_state: dict[str, torch.Tensor] = {}
+
+        for effect in phase_effects:
+            phase_value = phase_values[effect.write.variable_id]
+            phase_values[effect.write.variable_id] = self._apply_composed_write(
+                write=effect.write,
+                phase_value=phase_value,
+                expression_value=effect.expression_value,
+                write_mask=effect.write_mask,
+                priority_state=priority_state,
+            )
+
+        return phase_values
 
     def _apply_composed_write(
         self,
@@ -498,6 +546,21 @@ class VTCActionWriteProgram:
                 f"expected {tuple(actions.shape)}"
             )
         return condition.to(device=actions.device, dtype=torch.bool)
+
+    @staticmethod
+    def _coerce_expression_tensor(
+        value: torch.Tensor,
+        target: torch.Tensor,
+        write: CompiledVTCActionWrite,
+    ) -> torch.Tensor:
+        if value.dim() == 0:
+            return value.to(device=target.device, dtype=target.dtype).expand_as(target)
+        if value.shape != target.shape:
+            raise ValueError(
+                f"Expression for VTC action write '{write.telemetry_label}' produced shape {tuple(value.shape)}, "
+                f"expected {tuple(target.shape)}"
+            )
+        return value.to(device=target.device, dtype=target.dtype)
 
     @staticmethod
     def _broadcast_agent_mask(mask: torch.Tensor, target: torch.Tensor, write: CompiledVTCActionWrite) -> torch.Tensor:

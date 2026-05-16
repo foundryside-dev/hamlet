@@ -121,7 +121,10 @@ def test_assert_checkpoint_vfs_hash_rejects_missing_and_mismatch(compiled_univer
     assert assert_checkpoint_vfs_hash(mismatched, compiled_universe, force_new_vfs=True) is False
 
 
-def test_safe_torch_load_rejects_custom_objects(tmp_path: Path) -> None:
+def test_safe_torch_load_rejects_custom_objects_by_default(tmp_path: Path) -> None:
+    """The default safe path must refuse to unpickle a checkpoint that carries
+    custom Python objects. Demo / inference paths only get past this gate by
+    passing allow_unsafe_pickle=True explicitly."""
     checkpoint_path = tmp_path / "legacy.pt"
     legacy_checkpoint = PopulationCheckpoint(
         generation=0,
@@ -134,12 +137,36 @@ def test_safe_torch_load_rejects_custom_objects(tmp_path: Path) -> None:
     )
     torch.save(legacy_checkpoint, checkpoint_path)
 
-    with pytest.raises(Exception) as excinfo:
+    with pytest.raises(RuntimeError) as excinfo:
         safe_torch_load(checkpoint_path)
-    assert "weights only load failed" in str(excinfo.value).lower()
+    assert "weights-only load failed" in str(excinfo.value).lower()
+    assert "allow_unsafe_pickle=True" in str(excinfo.value)
+
+
+def test_safe_torch_load_unsafe_opt_in_loads_custom_objects(tmp_path: Path, caplog) -> None:
+    """When the caller explicitly opts in, the unsafe pickle path loads and
+    emits a loud WARN."""
+    checkpoint_path = tmp_path / "legacy.pt"
+    legacy_checkpoint = PopulationCheckpoint(
+        generation=1,
+        num_agents=1,
+        agent_ids=["agent_0"],
+        curriculum_states={},
+        exploration_states={},
+        pareto_frontier=[],
+        metrics_summary={},
+    )
+    torch.save(legacy_checkpoint, checkpoint_path)
+
+    with caplog.at_level("WARNING", logger="townlet.training.checkpoint_utils"):
+        loaded = safe_torch_load(checkpoint_path, allow_unsafe_pickle=True)
+    assert isinstance(loaded, PopulationCheckpoint)
+    assert loaded.generation == 1
+    assert any("allow_unsafe_pickle=True" in record.message for record in caplog.records)
 
 
 def test_safe_torch_load_roundtrip(tmp_path: Path) -> None:
+    """The safe default path round-trips a plain weights payload."""
     checkpoint_path = tmp_path / "safe.pt"
     payload = {"weights": torch.ones(2), "metadata": {"episode": 5}}
     torch.save(payload, checkpoint_path)
@@ -149,20 +176,39 @@ def test_safe_torch_load_roundtrip(tmp_path: Path) -> None:
     assert loaded["metadata"]["episode"] == 5
 
 
+def test_verify_checkpoint_digest_required_by_default(tmp_path: Path) -> None:
+    """Default behavior must reject a checkpoint that has no sidecar digest."""
+    checkpoint_path = tmp_path / "no_digest.pt"
+    checkpoint_path.write_bytes(b"demo-checkpoint")
+    with pytest.raises(FileNotFoundError):
+        verify_checkpoint_digest(checkpoint_path)
+
+
+def test_verify_checkpoint_digest_explicit_optional(tmp_path: Path) -> None:
+    """required=False is the explicit local-dev escape and must return False
+    when the digest is missing rather than raising."""
+    checkpoint_path = tmp_path / "no_digest.pt"
+    checkpoint_path.write_bytes(b"demo-checkpoint")
+    assert verify_checkpoint_digest(checkpoint_path, required=False) is False
+
+
 def test_checkpoint_digest_roundtrip(tmp_path: Path) -> None:
+    """A persisted digest is accepted on default verification."""
     checkpoint_path = tmp_path / "checkpoint_ep00010.pt"
     checkpoint_path.write_bytes(b"demo-checkpoint")
 
     digest = persist_checkpoint_digest(checkpoint_path)
     assert len(digest) == 64  # hex sha256
-    assert verify_checkpoint_digest(checkpoint_path, required=True)
+    assert verify_checkpoint_digest(checkpoint_path)
 
 
 def test_checkpoint_digest_detects_tampering(tmp_path: Path) -> None:
+    """A digest mismatch raises whether or not the digest is 'required' (the
+    digest file exists; what's wrong is its contents)."""
     checkpoint_path = tmp_path / "checkpoint_ep00011.pt"
     checkpoint_path.write_bytes(b"demo-checkpoint")
     persist_checkpoint_digest(checkpoint_path)
 
     checkpoint_path.write_bytes(b"demo-checkpoint-corrupted")
     with pytest.raises(ValueError):
-        verify_checkpoint_digest(checkpoint_path, required=True)
+        verify_checkpoint_digest(checkpoint_path)

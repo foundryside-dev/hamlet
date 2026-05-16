@@ -182,7 +182,10 @@ class DemoRunner:
 
         try:
             verify_checkpoint_digest(first_checkpoint_path, required=True)
-            checkpoint = safe_torch_load(first_checkpoint_path, weights_only=False)
+            # Demo checkpoints embed trusted custom Python objects (population
+            # state, curriculum state, replay buffers). The digest above pins
+            # the file we are about to unpickle to one we produced ourselves.
+            checkpoint = safe_torch_load(first_checkpoint_path, allow_unsafe_pickle=True)
 
             # Validate checkpoint has required metadata
             if "substrate_metadata" not in checkpoint:
@@ -339,7 +342,8 @@ class DemoRunner:
         logger.info(f"Loading checkpoint: {latest_checkpoint}")
 
         verify_checkpoint_digest(latest_checkpoint, required=True)
-        checkpoint = safe_torch_load(latest_checkpoint, weights_only=False)
+        # See _detect_old_checkpoints above for the trust-boundary rationale.
+        checkpoint = safe_torch_load(latest_checkpoint, allow_unsafe_pickle=True)
 
         if universe is None:
             universe = self.compiled

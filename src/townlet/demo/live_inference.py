@@ -441,7 +441,10 @@ class LiveInferenceServer:
         logger.info(f"Loading checkpoint: {latest_checkpoint.name} (episode {episode_num})")
 
         verify_checkpoint_digest(latest_checkpoint, required=True)
-        checkpoint = safe_torch_load(latest_checkpoint, weights_only=False)
+        # Live inference loads training-side demo checkpoints whose digest we
+        # have just verified; those checkpoints embed trusted Python state
+        # (population, exploration, curriculum) that requires pickle loading.
+        checkpoint = safe_torch_load(latest_checkpoint, allow_unsafe_pickle=True)
 
         # Load Q-network weights
         if "population_state" in checkpoint:

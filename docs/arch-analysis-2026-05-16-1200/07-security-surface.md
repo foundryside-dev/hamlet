@@ -302,39 +302,45 @@ The places where attacker-controlled bytes can become Python code.
 
 ### 4.1 Checkpoint loading (`safe_torch_load` with `weights_only=False`)
 
-`safe_torch_load` defaults to `weights_only=True`
-(`checkpoint_utils.py:203`) — safe. **But every demo callsite passes
+> **Status update (hamlet-d5cb2dd4e7, 2026-05-16):** the `weights_only`
+> parameter no longer exists on `safe_torch_load`. Callers must now pass
+> `allow_unsafe_pickle=True` to enter the pickle path, and every entry
+> on that path logs a WARN. `verify_checkpoint_digest` defaults to
+> `required=True`. The same-directory-digest residual described below
+> still applies — that is the "signed checkpoints" deferred work, not
+> the explicit opt-in.
+
+`safe_torch_load` defaults to safe weights-only loading. **The
+historical finding here was that every demo callsite passed
 `weights_only=False`:**
 
-| Callsite | File:Line |
-|---|---|
-| Inference hot-load | `live_inference.py:444` |
-| Runner initial | `runner.py:185` |
-| Runner latest | `runner.py:342` |
+| Callsite | File:Line | Current state |
+|---|---|---|
+| Inference hot-load | `live_inference.py:444` | now `allow_unsafe_pickle=True` (explicit) |
+| Runner initial | `runner.py:185` | now `allow_unsafe_pickle=True` (explicit) |
+| Runner latest | `runner.py:342` | now `allow_unsafe_pickle=True` (explicit) |
 
-`weights_only=False` → `torch.load(..., weights_only=False)` →
+The pickle path → `torch.load(..., weights_only=False)` →
 **arbitrary pickle deserialization** — any gadget chain in the
 checkpoint executes at load.
 
-The function's own docstring acknowledges this
-(`checkpoint_utils.py:215-216`):
-
-> "For external/untrusted checkpoints, always use `weights_only=True`."
-
-Demo callsites pass `weights_only=False` because the checkpoint stores
+Demo callsites need the pickle path because the checkpoint stores
 non-tensor state (curriculum, replay buffer, exploration —
 `runner.save_checkpoint` at `runner.py:265`).
 
 Combined with the now-required but same-directory digest check (§3.2):
-**any attacker-supplied checkpoint plus matching digest dropped into the
-watched directory is still RCE at load** under the systemd user. Missing
-or corrupt digest sidecars are blocked before pickle load. This remains
-the most consequential residual finding in the project until the
-non-tensor state moves out of pickle or checkpoints are signed.
+**any attacker who can write both a checkpoint and its matching digest
+into the watched directory can still RCE at load** under the systemd
+user. Missing or corrupt digest sidecars are blocked before pickle
+load, and the unsafe pickle entry is now an explicit, audited code
+path. The remaining residual is signature-vs-integrity: until
+checkpoints are signed with a key kept outside the run directory, the
+same-directory-digest assumption is the weak link.
 
 **Severity:** High in the "tampered artifact" model (realistic for a
 pedagogical project where students swap checkpoints). Critical if
-combined with public exposure.
+combined with public exposure. Reduced from "ambient unsafe load" to
+"explicit unsafe load at three known callsites" by hamlet-d5cb2dd4e7.
 
 Note: `cloudpickle` is declared in `pyproject.toml:58` but **not
 imported anywhere in `src/townlet/`** (only `import pickle` for the
@@ -575,7 +581,7 @@ explicitly leaks beyond localhost.
 
 | ID | Finding | Severity | Likelihood | Impact | Surface | Recommendation |
 |---|---|---|---|---|---|---|
-| SEC-01 | Checkpoint loading still uses `weights_only=False` (pickle RCE); digest verification is now required but same-directory | **High residual** | Medium (supply-chain / shared cluster) | High (RCE as service user) | `checkpoint_utils.py:220`, `live_inference.py:444`, `runner.py:185,342` | Short-term digest requirement is done. Migrate the non-tensor state out of pickle into msgpack/JSON so `weights_only=True` works. Long-term: sign checkpoints with a key kept outside the run dir. |
+| SEC-01 | Checkpoint loading required an explicit `allow_unsafe_pickle=True` opt-in (hamlet-d5cb2dd4e7); digest required by default. Residual: same-directory digest does not give authenticity. | **Medium residual** | Medium (supply-chain / shared cluster) | High (RCE as service user) | `checkpoint_utils.py`, `live_inference.py:444`, `runner.py:185,342` | Explicit opt-in done. Next: migrate the non-tensor state out of pickle into msgpack/JSON so `allow_unsafe_pickle` can be removed entirely. Long-term: sign checkpoints with a key kept outside the run dir. |
 | SEC-02 | uvicorn binds `0.0.0.0` with no auth, no rate limit | **High if exposed / Low on localhost** | High (operator mistake on shared host) | High when exposed | `live_inference.py:1231`, `unified_server.py:416` | Default `host="127.0.0.1"`. Add a CLI flag `--bind 0.0.0.0` for explicit opt-in. |
 | SEC-03 | systemd unit lacks hardening directives; runs as operator user | Medium | High (default install) | Medium (full operator-user blast radius) | `deploy/townlet-demo.service` | Add `NoNewPrivileges`, `ProtectSystem=strict`, `ProtectHome=read-only` or `tmpfs`, `PrivateTmp`, `RestrictAddressFamilies`, `MemoryMax`, `TasksMax`. |
 | SEC-04 | systemd unit invokes `townlet.demo.runner` (no WS) but operators likely want unified server; switching to unified silently exposes `0.0.0.0:8766` | Medium | High (anyone wanting the demo) | Medium | `deploy/townlet-demo.service:9` | Decide what the unit is for; if it's the unified server, change `ExecStart` and add a bind-host argument; if it's training-only, remove `network.target` from `After=` and document. |

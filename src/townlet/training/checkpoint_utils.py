@@ -168,8 +168,12 @@ def persist_checkpoint_digest(checkpoint_path: Path) -> str:
     return digest
 
 
-def verify_checkpoint_digest(checkpoint_path: Path, *, required: bool = False) -> bool:
-    """Verify the checkpoint SHA256 digest, optionally requiring the digest file.
+def verify_checkpoint_digest(checkpoint_path: Path, *, required: bool = True) -> bool:
+    """Verify the checkpoint SHA256 digest.
+
+    A digest sidecar (``<checkpoint>.sha256``) is required by default. The
+    ``required=False`` path remains only for explicit local-dev tooling and
+    logs a loud warning when the digest is absent.
 
     LOW-06: The digest file is expected to contain a SHA256 hex digest with optional
     trailing newline. The strip() call removes any trailing whitespace (including
@@ -180,7 +184,10 @@ def verify_checkpoint_digest(checkpoint_path: Path, *, required: bool = False) -
     if not digest_path.exists():
         if required:
             raise FileNotFoundError(
-                f"Missing checksum file for {checkpoint_path}. Expected {digest_path}. Recreate the checkpoint on Townlet >=P2."
+                f"Missing checksum file for {checkpoint_path}. Expected {digest_path}. "
+                "Untrusted checkpoints must ship with a SHA256 digest. "
+                "Regenerate the checkpoint with the current Townlet version, or pass required=False "
+                "if this is an explicit local-dev path."
             )
         logger.warning("Missing checksum for checkpoint %s (expected %s); skipping verification.", checkpoint_path, digest_path)
         return False
@@ -200,23 +207,40 @@ def safe_torch_load(
     checkpoint_path: Path | str,
     *,
     map_location: torch.device | str | None = None,
-    weights_only: bool = True,
+    allow_unsafe_pickle: bool = False,
 ) -> Any:
-    """Load a checkpoint with optional PyTorch weights-only safety guard.
+    """Load a checkpoint under the PyTorch weights-only safety guard.
+
+    By default this loads with ``weights_only=True``: pickled Python objects
+    inside the checkpoint cannot execute arbitrary code, and only the
+    allowlisted tensor / numpy types are deserialised. This is the only path
+    that is safe for checkpoints whose origin is not fully trusted.
 
     Args:
-        checkpoint_path: Path to checkpoint file
-        map_location: Device to map tensors to
-        weights_only: If True, only load tensors/parameters (safer but may fail with numpy types).
-                     If False, allow arbitrary Python objects (use only for trusted checkpoints).
+        checkpoint_path: Path to checkpoint file.
+        map_location: Device to map tensors to.
+        allow_unsafe_pickle: Explicit opt-in for ``weights_only=False``.
+            **Use only for trusted, locally-produced checkpoints** that
+            embed custom Python objects (curriculum state, replay buffers,
+            etc.). When True, ``torch.load`` will deserialise arbitrary
+            pickle payloads, which is equivalent to executing whatever code
+            is in the file. A loud WARN is logged for audit visibility.
+
+    Raises:
+        RuntimeError: If a checkpoint contains custom Python objects but
+            ``allow_unsafe_pickle`` is False (the safe default).
 
     Note:
-        PyTorch 2.6+ requires explicit allowlisting of numpy types when weights_only=True.
-        For locally-generated test checkpoints, weights_only=False is acceptable.
-        For external/untrusted checkpoints, always use weights_only=True.
+        PyTorch 2.6+ requires explicit allowlisting of numpy types when
+        ``weights_only=True``. Those types are registered here.
     """
-    if not weights_only:
-        # Trusted checkpoint (e.g., test-generated) - allow arbitrary objects
+    if allow_unsafe_pickle:
+        logger.warning(
+            "Loading %s with allow_unsafe_pickle=True (weights_only=False). "
+            "This deserialises arbitrary Python objects from the checkpoint and is "
+            "ONLY safe for trusted, locally-produced files.",
+            checkpoint_path,
+        )
         return torch.load(checkpoint_path, map_location=map_location, weights_only=False)
 
     try:
@@ -243,18 +267,20 @@ def safe_torch_load(
         torch.serialization.add_safe_globals(safe_globals)
 
         return torch.load(checkpoint_path, map_location=map_location, weights_only=True)
-    except RuntimeError as exc:  # pragma: no cover - depends on torch internals
+    except (pickle.UnpicklingError, ModuleNotFoundError, AttributeError) as exc:
+        raise RuntimeError(
+            f"Weights-only load failed for {checkpoint_path}: {type(exc).__name__}: {exc}. "
+            "The checkpoint contains custom Python objects that cannot be safely deserialised. "
+            "If this checkpoint is trusted and locally produced, pass allow_unsafe_pickle=True "
+            "explicitly. Otherwise, regenerate it as a weights-only checkpoint."
+        ) from exc
+    except RuntimeError as exc:
         message = str(exc)
-        if "weights_only=True" in message:
+        if "weights_only" in message or "Weights only" in message:
             raise RuntimeError(
-                f"Checkpoint {checkpoint_path} contains custom Python objects and cannot be loaded with weights_only=True. "
-                "Re-export the checkpoint using Townlet >= P2 to enable secure loading."
+                f"Weights-only load failed for {checkpoint_path}: {message}. "
+                "The checkpoint contains custom Python objects. "
+                "If this checkpoint is trusted and locally produced, pass allow_unsafe_pickle=True "
+                "explicitly. Otherwise, regenerate it as a weights-only checkpoint."
             ) from exc
         raise
-    # HIGH-07: Catch additional exception types for better error messages
-    except (pickle.UnpicklingError, ModuleNotFoundError, AttributeError) as exc:  # pragma: no cover
-        raise RuntimeError(
-            f"Failed to load checkpoint {checkpoint_path}: {type(exc).__name__}: {exc}. "
-            "The checkpoint may be corrupted or created with an incompatible Python/PyTorch version. "
-            "Try regenerating the checkpoint with the current Townlet version."
-        ) from exc

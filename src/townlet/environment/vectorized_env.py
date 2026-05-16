@@ -196,62 +196,11 @@ class VectorizedHamletEnv:
         # Observation dimension is derived from the level-specific spec.
         self.observation_dim = self.observation_spec.total_dims
 
-        # VFS INTEGRATION: Initialize variable registry from compiler-emitted VFS variables
-        self.vfs_variables: list[VariableDef] = list(universe.vfs_variables)
-
-        max_items_in_world = universe.items_catalog.max_items_in_world if universe.items_catalog else 0
-
-        # Extract item profiles from compiled universe
-        item_profiles = None
-        if universe.compiled_vfs_profiles is not None:
-            item_profiles = universe.compiled_vfs_profiles.item_profiles
-
-        self.vfs_registry = VariableRegistry(
-            variables=self.vfs_variables,
-            num_agents=num_agents,
-            device=self.device,
-            max_items=max_items_in_world,
-            num_affordances=self.metadata.affordance_count,
-            item_profiles=item_profiles,
-        )
-
-        # Build VFSObservationSpec for observation generation
-        self.vfs_observation_spec: VFSObservationSpec | None = None
-        if universe.compiled_vfs_profiles is not None:
-            if universe.vfs_observation_spec is None:
-                raise ValueError("Compiled universe is missing vfs_observation_spec; recompile the config pack.")
-            self.vfs_observation_spec = universe.vfs_observation_spec
-
-        # Initialize VFS evaluator (if profiles present)
-        self.vfs_evaluator: VFSEvaluator | None = None
-        if universe.compiled_vfs_profiles is not None:
-            mode = EvaluationMode(universe.compiled_vfs_profiles.evaluation_mode)
-            self.vfs_evaluator = VFSEvaluator(
-                mode=mode,
-                history_spec=universe.vfs_history_spec,
-                debug_logging=universe.compiled_vfs_profiles.debug_logging,
-            )
-            self.vfs_observation_marks = universe.vfs_observation_marks
-        else:
-            self.vfs_observation_marks = None
-
-        # Initialize reward strategy (TASK-001: variable meters)
-        meter_name_to_index = dict(self.metadata.meter_name_to_index)
-        self.meter_name_to_index = meter_name_to_index
-        self.money_idx = meter_name_to_index.get("money")
-
-        # Build bar index map from universe metadata
-        bar_index_map = env_factory._build_bar_index_map(self.universe.meter_metadata)
-
-        # Instantiate DACEngine using agent drive config (v2.1)
-        self.dac_engine = DACEngine(
-            dac_config=self.level.drive,
-            vfs_registry=self.vfs_registry,
-            device=self.device,
-            num_agents=self.num_agents,
-            bar_index_map=bar_index_map,
-        )
-        self.runtime_registry: AgentRuntimeRegistry | None = None  # Injected by population/inference controllers
+        # Phases below are private helpers that mutate self in a fixed order
+        # (hamlet-2559b98232). __init__ reads as orchestration; each phase is
+        # individually grokable.
+        self._initialize_vfs_subsystem()
+        self._initialize_dac_engine()
 
         # EFFECTS INTEGRATION: Use compiled effect catalog from UniverseCompiler
         from townlet.effects.executor import CommandExecutor
@@ -287,7 +236,7 @@ class VectorizedHamletEnv:
         # Precompute meter initialization tensor from bars config
         self.initial_meter_values = torch.zeros(meter_count, dtype=torch.float32, device=self.device)
         for bar in self.bars_config.meters:
-            idx = meter_name_to_index.get(bar.name)
+            idx = self.meter_name_to_index.get(bar.name)
             if idx is not None:
                 self.initial_meter_values[idx] = bar.initial
 
@@ -370,62 +319,10 @@ class VectorizedHamletEnv:
         self.intrinsic_weights = torch.ones(self.num_agents, dtype=torch.float32, device=self.device)  # Default: 1.0 (full exploration)
         self._last_reward_components: dict[str, torch.Tensor] = {}
 
-        # === ITEMS INITIALIZATION ===
-        # Must happen AFTER self.meters is initialized because ItemActionHandler needs it
-        self.item_manager: ItemManager | None = None
-        self.item_inventory: InventoryState | None = None
-        self.item_handler: ItemActionHandler | None = None
-        if universe.items_catalog is not None:
-            if universe.compiled_vfs_profiles is None or not universe.compiled_vfs_profiles.item_profiles:
-                raise ValueError(
-                    "items_catalog provided but compiled_vfs_profiles.item_profiles is missing. "
-                    "Define item VFS profiles in vfs_profiles.yaml for all item types."
-                )
-            self.item_manager = ItemManager(
-                catalog=universe.items_catalog,
-                max_items=universe.items_catalog.max_items_in_world,
-                device=self.device,
-                schema=self.effects_schema,
-                vfs_registry=self.vfs_registry,  # NEW: Pass VFS registry for item state storage
-                effect_manager=self.effect_manager,  # NEW: allow scheduler cancellation on item despawn
-            )
-
-            self.item_inventory = InventoryState(
-                batch_size=num_agents,
-                max_items_per_agent=universe.items_catalog.max_items_per_agent,
-                device=str(self.device),
-            )
-
-            self.item_handler = ItemActionHandler(
-                manager=self.item_manager,
-                inventory=self.item_inventory,
-                command_executor=self.command_executor,
-                vfs_registry=self.vfs_registry,
-                meter_name_to_index=self.meter_name_to_index,
-                effect_manager=self.effect_manager,  # NEW: pass EffectManager for ExecutionContext
-                affordance_overrides=self.affordance_overrides,
-            )
-        else:
-            self.item_manager = None
-            self.item_inventory = None
-            self.item_handler = None
-
-        # === AFFORDANCE ENGINE INITIALIZATION ===
-        # Requires Effects + Items managers to satisfy fail-forward ExecutionContext
-        # Pass AffordanceParamConfig objects directly (have interactions field for compilation)
-        self.affordance_engine = AffordanceEngine(
-            tuple(level.affordances.affordances),  # AffordanceParamConfig with interactions
-            num_agents,
-            self.device,
-            self.meter_name_to_index,
-            modulation_program=self.vtc_modulation_program,
-            vfs_registry=self.vfs_registry,
-            effects_schema=self.effects_schema,
-            command_executor=self.command_executor,
-            effect_manager=self.effect_manager,
-            item_manager=self.item_manager or NullItemManager(),
-            affordance_overrides=self.affordance_overrides,
-        )
+        # Items + affordance engine wiring (depends on meters, vfs_registry,
+        # effect_manager, command_executor — all set above).
+        self._initialize_item_subsystem(num_agents)
+        self._initialize_affordance_engine(num_agents)
 
         # Exploration module (optional, set by population or external code)
         self.exploration_module: ExplorationStrategy | None = None
@@ -681,6 +578,137 @@ class VectorizedHamletEnv:
                 f"POMDP uses normalized positions for recurrent network position encoder. "
                 f"Set observation_encoding='relative' in substrate.yaml or disable partial_observability."
             )
+
+    def _initialize_vfs_subsystem(self) -> None:
+        """Build the VFS variable registry, observation spec, and evaluator.
+
+        Phase method of __init__ (hamlet-2559b98232). Writes:
+        ``vfs_variables``, ``vfs_registry``, ``vfs_observation_spec``,
+        ``vfs_evaluator``, ``vfs_observation_marks``, ``meter_name_to_index``,
+        ``money_idx``. Depends on ``self.metadata``, ``self.num_agents``,
+        ``self.device``, ``self.universe``.
+        """
+        universe = self.universe
+        self.vfs_variables: list[VariableDef] = list(universe.vfs_variables)
+
+        max_items_in_world = universe.items_catalog.max_items_in_world if universe.items_catalog else 0
+        item_profiles = None
+        if universe.compiled_vfs_profiles is not None:
+            item_profiles = universe.compiled_vfs_profiles.item_profiles
+
+        self.vfs_registry = VariableRegistry(
+            variables=self.vfs_variables,
+            num_agents=self.num_agents,
+            device=self.device,
+            max_items=max_items_in_world,
+            num_affordances=self.metadata.affordance_count,
+            item_profiles=item_profiles,
+        )
+
+        self.vfs_observation_spec: VFSObservationSpec | None = None
+        if universe.compiled_vfs_profiles is not None:
+            if universe.vfs_observation_spec is None:
+                raise ValueError("Compiled universe is missing vfs_observation_spec; recompile the config pack.")
+            self.vfs_observation_spec = universe.vfs_observation_spec
+
+        self.vfs_evaluator: VFSEvaluator | None = None
+        if universe.compiled_vfs_profiles is not None:
+            mode = EvaluationMode(universe.compiled_vfs_profiles.evaluation_mode)
+            self.vfs_evaluator = VFSEvaluator(
+                mode=mode,
+                history_spec=universe.vfs_history_spec,
+                debug_logging=universe.compiled_vfs_profiles.debug_logging,
+            )
+            self.vfs_observation_marks = universe.vfs_observation_marks
+        else:
+            self.vfs_observation_marks = None
+
+        meter_name_to_index = dict(self.metadata.meter_name_to_index)
+        self.meter_name_to_index = meter_name_to_index
+        self.money_idx = meter_name_to_index.get("money")
+
+    def _initialize_dac_engine(self) -> None:
+        """Construct the DAC reward backend and prepare the runtime-registry slot.
+
+        Phase method of __init__ (hamlet-2559b98232). Writes ``dac_engine``
+        and ``runtime_registry``. Depends on ``vfs_registry`` from the VFS
+        phase.
+        """
+        bar_index_map = env_factory._build_bar_index_map(self.universe.meter_metadata)
+        self.dac_engine = DACEngine(
+            dac_config=self.level.drive,
+            vfs_registry=self.vfs_registry,
+            device=self.device,
+            num_agents=self.num_agents,
+            bar_index_map=bar_index_map,
+        )
+        self.runtime_registry: AgentRuntimeRegistry | None = None
+
+    def _initialize_item_subsystem(self, num_agents: int) -> None:
+        """Build the item manager, inventory, and action handler — or leave
+        every slot None when the universe has no items catalog.
+
+        Phase method of __init__ (hamlet-2559b98232). Must run after meters
+        are allocated (the action handler captures the meter index map) and
+        after the effect manager + command executor exist.
+        """
+        universe = self.universe
+        self.item_manager: ItemManager | None = None
+        self.item_inventory: InventoryState | None = None
+        self.item_handler: ItemActionHandler | None = None
+
+        if universe.items_catalog is None:
+            return
+
+        if universe.compiled_vfs_profiles is None or not universe.compiled_vfs_profiles.item_profiles:
+            raise ValueError(
+                "items_catalog provided but compiled_vfs_profiles.item_profiles is missing. "
+                "Define item VFS profiles in vfs_profiles.yaml for all item types."
+            )
+
+        self.item_manager = ItemManager(
+            catalog=universe.items_catalog,
+            max_items=universe.items_catalog.max_items_in_world,
+            device=self.device,
+            schema=self.effects_schema,
+            vfs_registry=self.vfs_registry,
+            effect_manager=self.effect_manager,
+        )
+        self.item_inventory = InventoryState(
+            batch_size=num_agents,
+            max_items_per_agent=universe.items_catalog.max_items_per_agent,
+            device=str(self.device),
+        )
+        self.item_handler = ItemActionHandler(
+            manager=self.item_manager,
+            inventory=self.item_inventory,
+            command_executor=self.command_executor,
+            vfs_registry=self.vfs_registry,
+            meter_name_to_index=self.meter_name_to_index,
+            effect_manager=self.effect_manager,
+            affordance_overrides=self.affordance_overrides,
+        )
+
+    def _initialize_affordance_engine(self, num_agents: int) -> None:
+        """Build the affordance engine.
+
+        Phase method of __init__ (hamlet-2559b98232). Must run after the
+        item subsystem; depends on the VTC modulation program, VFS registry,
+        effects schema, command executor, and effect manager.
+        """
+        self.affordance_engine = AffordanceEngine(
+            tuple(self.level.affordances.affordances),
+            num_agents,
+            self.device,
+            self.meter_name_to_index,
+            modulation_program=self.vtc_modulation_program,
+            vfs_registry=self.vfs_registry,
+            effects_schema=self.effects_schema,
+            command_executor=self.command_executor,
+            effect_manager=self.effect_manager,
+            item_manager=self.item_manager or NullItemManager(),
+            affordance_overrides=self.affordance_overrides,
+        )
 
     def _build_movement_deltas(self) -> torch.Tensor:
         """Build movement delta tensor from action space (metadata-driven).

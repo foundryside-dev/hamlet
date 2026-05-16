@@ -12,7 +12,6 @@ Philosophy:
 
 from townlet.config.actions_config import ActionsConfig
 from townlet.config.affordances_v2_config import AffordancesV2Config, load_affordances_v2_config
-from townlet.config.agent_config import AgentConfig
 from townlet.config.bars_v2_config import BarsV2Config, load_bars_v2_config
 from townlet.config.curriculum import load_curriculum_config
 from townlet.config.curriculum_config import CurriculumConfig
@@ -30,7 +29,6 @@ __all__ = [
     "StratumConfig",
     "EnvironmentConfig",
     "ActionsConfig",
-    "AgentConfig",
     "BarsV2Config",
     "load_bars_v2_config",
     "AffordancesV2Config",

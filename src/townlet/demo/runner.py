@@ -57,7 +57,7 @@ class DemoRunner:
 
         Args:
             config_dir: Experiment root directory containing v2.1 configs
-                (experiment.yaml, stratum.yaml, environment.yaml, actions.yaml, agent.yaml, levels/*)
+                (experiment.yaml, stratum.yaml, environment.yaml, actions.yaml, brain.yaml, levels/*)
             level_name: Which curriculum level to run (e.g., "L0_0_minimal"). Required.
             db_path: Path to SQLite database
             checkpoint_dir: Directory for checkpoint files
@@ -146,7 +146,8 @@ class DemoRunner:
         self.exploration = None
         self.recorder = None  # Episode recorder (initialized if recording enabled)
 
-        # TASK-005 Phase 1: Brain As Code configuration derived from agent.yaml + training.yaml
+        # Brain As Code configuration is loaded from brain.yaml; per-level
+        # overrides come from the level's training.yaml.
         # self.brain_config is already set from self.compiled.brain
         self.brain_hash: str | None = None
 
@@ -476,12 +477,12 @@ class DemoRunner:
         # Create agent IDs
         agent_ids = [f"agent_{i}" for i in range(num_agents)]
 
-        # Derive brain configuration from agent.yaml (v2.1 AgentConfig)
+        # Use the BrainConfig loaded from brain.yaml during compilation.
         from townlet.config.brain_config import apply_training_overrides
 
         base_brain_config = self.brain_config
         brain_hash = compute_brain_hash(base_brain_config)
-        logger.info(f"Brain config derived from agent.yaml: {base_brain_config.description}")
+        logger.info(f"Brain config from brain.yaml: {base_brain_config.description}")
         logger.info(f"Brain hash: {brain_hash[:16]}... (SHA256)")
 
         # Store base brain_config and brain_hash for checkpoint provenance

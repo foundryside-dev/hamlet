@@ -1,7 +1,12 @@
-"""DAC Engine - Runtime reward computation from declarative specs.
+"""DACEngine — legacy-named drive/reward backend.
 
-The DACEngine compiles declarative DAC specs into optimized GPU-native
-computation graphs for reward calculation.
+The DACEngine compiles a level's ``drive.yaml`` (a
+:class:`~townlet.config.drive_as_code.DriveAsCodeConfig`) into GPU-native
+computation functions for per-step reward calculation. It is invoked by
+``VTCRewardProgram`` as the ``reward_backend`` parameter, not directly by the
+environment, so "DAC" here is a historical name for what is now simply the
+project's drive/reward backend. The runtime entry point is
+:meth:`DACEngine.calculate_rewards`.
 
 Design:
 - All operations vectorized across agents (batch dimension)
@@ -20,15 +25,18 @@ from collections.abc import Callable
 
 import torch
 
-from townlet.config.agent_config import DriveConfig
 from townlet.config.drive_as_code import DriveAsCodeConfig
 from townlet.vfs.registry import VariableRegistry
 
 
 class DACEngine:
-    """Drive As Code reward computation engine.
+    """Drive/reward backend compiled from a ``drive.yaml`` specification.
 
-    Compiles declarative DAC specs into optimized GPU-native computation graphs.
+    Historically referred to as the "Drive As Code engine"; in the current
+    runtime it is the only reward backend, invoked through
+    ``VTCRewardProgram(reward_backend=DACEngine)``. The name is preserved
+    to keep checkpoint provenance (``drive_hash``) and call-site greppability
+    stable; a rename is deferred (see milestone hamlet-22ffae178f).
 
     Example:
         >>> engine = DACEngine(
@@ -47,7 +55,7 @@ class DACEngine:
 
     def __init__(
         self,
-        dac_config: DriveConfig | DriveAsCodeConfig,
+        dac_config: DriveAsCodeConfig,
         vfs_registry: VariableRegistry,
         device: torch.device,
         num_agents: int,
@@ -56,7 +64,7 @@ class DACEngine:
         """Initialize DAC engine.
 
         Args:
-            dac_config: DAC configuration (supports both DriveConfig and DriveAsCodeConfig)
+            dac_config: Parsed ``drive.yaml`` for the level being compiled.
             vfs_registry: VFS runtime registry for variable access
             device: PyTorch device (cpu or cuda)
             num_agents: Number of agents in population
@@ -94,30 +102,14 @@ class DACEngine:
         compiled: dict[str, Callable] = {}
 
         for mod_name, mod_config in self.dac_config.modifiers.items():
-            # Closure captures per-modifier config (can be either drive_as_code.ModifierConfig
-            # or agent_config.RangeMultiplierModifier with a `source` field).
             def create_modifier_fn(config) -> Callable:
                 # Pre-compute range boundaries and multipliers as tensors
                 ranges = sorted(config.ranges, key=lambda r: r.min)
 
                 def evaluate_modifier(meters: torch.Tensor) -> torch.Tensor:
                     """Evaluate modifier for all agents."""
-                    # Determine source (bar or VFS variable) from config shape.
-                    bar_name: str | None = None
-                    var_name: str | None = None
-
-                    # drive_as_code.ModifierConfig: bar/variable fields
-                    if hasattr(config, "bar") or hasattr(config, "variable"):
-                        bar_name = getattr(config, "bar", None)
-                        var_name = getattr(config, "variable", None)
-                    else:
-                        # agent_config.RangeMultiplierModifier: single 'source' string
-                        source = getattr(config, "source", None)
-                        if source:
-                            if source in self.bar_index_map:
-                                bar_name = source
-                            else:
-                                var_name = source
+                    bar_name = getattr(config, "bar", None)
+                    var_name = getattr(config, "variable", None)
 
                     if bar_name:
                         bar_idx = self._get_bar_index(bar_name)
@@ -132,7 +124,10 @@ class DACEngine:
                                 f"but not found in registry. Available: {available}"
                             ) from None
                     else:
-                        raise ValueError(f"Modifier has no source: {mod_name}")
+                        raise ValueError(
+                            f"Modifier {mod_name!r} has neither `bar` nor `variable` source. "
+                            "drive.yaml modifiers must declare one or the other."
+                        )
 
                     # Evaluate ranges using torch.where for GPU efficiency
                     # Start with the final configured range as the base case.
@@ -189,72 +184,28 @@ class DACEngine:
             return compute_multiplicative
 
         elif strategy.type == "constant_base_with_shaped_bonus":
-            # Two supported shapes:
-            # 1) drive_as_code.ExtrinsicStrategyConfig with base_reward/bar_bonuses/variable_bonuses
-            # 2) agent_config.ExtrinsicConfig with base/bonuses (bar, weight, transform)
+            base_reward = getattr(strategy, "base_reward", None) or 1.0
+            bar_bonuses = getattr(strategy, "bar_bonuses", [])
+            variable_bonuses = getattr(strategy, "variable_bonuses", [])
 
-            if hasattr(strategy, "base_reward"):
-                # DAC v2.0 path (drive_as_code.yaml)
-                base_reward = getattr(strategy, "base_reward", None) or 1.0
-                bar_bonuses = getattr(strategy, "bar_bonuses", [])
-                variable_bonuses = getattr(strategy, "variable_bonuses", [])
+            def compute_constant_base(meters: torch.Tensor, dones: torch.Tensor) -> torch.Tensor:
+                """Constant base + shaped bonuses."""
+                reward = torch.full((self.num_agents,), base_reward, device=self.device, dtype=torch.float32)
 
-                def compute_constant_base(meters: torch.Tensor, dones: torch.Tensor) -> torch.Tensor:
-                    """Constant base + shaped bonuses (DAC schema)."""
-                    reward = torch.full((self.num_agents,), base_reward, device=self.device, dtype=torch.float32)
-
-                    # Bar bonuses: bonus = scale * (bar_value - center)
-                    for bonus_config in bar_bonuses:
-                        bar_idx = self._get_bar_index(bonus_config.bar)
-                        bar_value = meters[:, bar_idx]
-                        bonus = bonus_config.scale * (bar_value - bonus_config.center)
-                        reward = reward + bonus
-
-                    # VFS variable bonuses: bonus = weight * var_value
-                    for var_bonus_config in variable_bonuses:
-                        var_value = self.vfs_registry.get(var_bonus_config.variable, reader=self.vfs_reader)
-                        bonus = var_bonus_config.weight * var_value
-                        reward = reward + bonus
-
-                    for modifier_name in getattr(strategy, "apply_modifiers", []):
-                        if modifier_name in self.modifiers:
-                            modifier_fn = self.modifiers[modifier_name]
-                            multiplier = modifier_fn(meters)
-                            reward = reward * multiplier
-
-                    reward = torch.where(dones, torch.zeros_like(reward), reward)
-                    return reward
-
-                return compute_constant_base
-
-            # Agent v2.1 path (agent.yaml: extrinsic.base + bonuses[bar, weight, transform])
-            base_reward = getattr(strategy, "base", None)
-            if base_reward is None:
-                base_reward = 0.0
-            bonuses = getattr(strategy, "bonuses", None) or []
-
-            def compute_constant_base_agent(meters: torch.Tensor, dones: torch.Tensor) -> torch.Tensor:
-                """Constant base + simple shaped bonuses from agent.yaml."""
-                reward = torch.full((self.num_agents,), float(base_reward), device=self.device, dtype=torch.float32)
-
-                for bonus_config in bonuses:
+                # Bar bonuses: bonus = scale * (bar_value - center)
+                for bonus_config in bar_bonuses:
                     bar_idx = self._get_bar_index(bonus_config.bar)
                     bar_value = meters[:, bar_idx]
-                    transform = getattr(bonus_config, "transform", "linear")
-                    weight = float(bonus_config.weight)
-
-                    if transform == "linear":
-                        bonus = weight * bar_value
-                    elif transform == "quadratic":
-                        bonus = weight * (bar_value**2)
-                    elif transform == "exponential":
-                        bonus = weight * torch.exp(bar_value)
-                    else:
-                        raise ValueError(f"Unsupported extrinsic transform '{transform}' for bar '{bonus_config.bar}'")
-
+                    bonus = bonus_config.scale * (bar_value - bonus_config.center)
                     reward = reward + bonus
 
-                for modifier_name in getattr(strategy, "apply_modifiers", []) or []:
+                # VFS variable bonuses: bonus = weight * var_value
+                for var_bonus_config in variable_bonuses:
+                    var_value = self.vfs_registry.get(var_bonus_config.variable, reader=self.vfs_reader)
+                    bonus = var_bonus_config.weight * var_value
+                    reward = reward + bonus
+
+                for modifier_name in getattr(strategy, "apply_modifiers", []):
                     if modifier_name in self.modifiers:
                         modifier_fn = self.modifiers[modifier_name]
                         multiplier = modifier_fn(meters)
@@ -263,7 +214,7 @@ class DACEngine:
                 reward = torch.where(dones, torch.zeros_like(reward), reward)
                 return reward
 
-            return compute_constant_base_agent
+            return compute_constant_base
 
         elif strategy.type == "additive_unweighted":
             # reward = base + sum(bars)

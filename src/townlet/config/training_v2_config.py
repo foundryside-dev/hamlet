@@ -85,7 +85,7 @@ class EnabledActionsConfig(BaseModel):
 class QLearningConfig(BaseModel):
     """Q-learning hyperparameters configuration (curriculum-level overrides).
 
-    These override agent.yaml brain settings for this curriculum level.
+    These override brain.yaml settings for this curriculum level.
     """
 
     model_config = ConfigDict(extra="forbid")

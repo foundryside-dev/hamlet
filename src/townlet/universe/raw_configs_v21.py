@@ -86,13 +86,14 @@ class RawConfigsV21:
               stratum.yaml
               environment.yaml
               actions.yaml
-              agent.yaml
+              brain.yaml
               levels/
                 <level_name>/
                   curriculum.yaml
                   bars.yaml
                   affordances.yaml
                   training.yaml
+                  drive.yaml
         """
 
         experiment_dir = Path(experiment_dir).resolve()

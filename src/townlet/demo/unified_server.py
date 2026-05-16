@@ -56,7 +56,7 @@ class UnifiedServer:
 
         Args:
             config_dir: Experiment root directory containing v2.1 configs
-                (experiment.yaml, stratum.yaml, environment.yaml, actions.yaml, agent.yaml, levels/*)
+                (experiment.yaml, stratum.yaml, environment.yaml, actions.yaml, brain.yaml, levels/*)
             total_episodes: Total number of episodes to train
             checkpoint_dir: Directory for checkpoints (auto-generated if None)
             inference_port: Port for inference WebSocket server

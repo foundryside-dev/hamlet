@@ -20,6 +20,7 @@ from townlet.environment.action_builder import ComposedActionSpace
 from townlet.environment.action_config import ActionConfig
 from townlet.environment.action_executor import ActionExecutor
 from townlet.environment.action_labels import ActionLabels
+from townlet.environment.action_mask_builder import ActionMaskBuilder
 from townlet.environment.affordance_engine import AffordanceEngine
 from townlet.environment.dac_engine import DACEngine
 from townlet.environment.observation_encoder import ObservationEncoder
@@ -409,6 +410,18 @@ class VectorizedHamletEnv:
         self.vtc_modulation_program: VTCModulationProgram = self.vtc_transition_schedule.modulation_program
         self.vtc_threshold_cascade_program: VTCThresholdCascadeProgram = self.vtc_transition_schedule.threshold_cascade_program
         self.vtc_reward_program: VTCRewardProgram = self.vtc_transition_schedule.reward_component_program
+
+        # Per-tick action-mask computation extracted from this class. The
+        # builder is stateless; per-tick state is passed at call time.
+        self.action_mask_builder = ActionMaskBuilder(
+            action_space=self.action_space,
+            device=self.device,
+            grid_size=self.grid_size,
+            substrate=self.substrate,
+            movement_deltas=self._movement_deltas,
+            action_ids=self.action_ids,
+            enable_temporal_mechanics=self.enable_temporal_mechanics,
+        )
 
         # State tensors (initialized in reset)
         self.positions = torch.zeros(
@@ -908,171 +921,22 @@ class VectorizedHamletEnv:
         return velocity
 
     def get_action_masks(self) -> torch.Tensor:
-        """
-        Get action masks for all agents (invalid actions = False).
+        """Compute valid-action masks for the current tick.
 
-        Action masking prevents agents from selecting movements that would
-        take them off the grid. This saves exploration budget and speeds learning.
-
-        Returns:
-            action_masks: [num_agents, action_dim] bool tensor
-                True = valid action, False = invalid
-                Grid2D (6 actions): [UP, DOWN, LEFT, RIGHT, INTERACT, WAIT]
-                Grid3D (8 actions): [UP, DOWN, LEFT, RIGHT, UP_Z, DOWN_Z, INTERACT, WAIT]
+        Delegates to :class:`ActionMaskBuilder`. Returns a
+        ``[num_agents, action_dim]`` bool tensor where ``True`` is a valid
+        action; semantics are documented on the builder.
         """
-        # Start with base mask (disabled actions = False)
-        action_masks = self.action_space.get_base_action_mask(
+        return self.action_mask_builder.build(
             num_agents=self.num_agents,
-            device=self.device,
+            positions=self.positions,
+            dones=self.dones if hasattr(self, "dones") else None,
+            item_inventory=self.item_inventory,
+            item_manager=self.item_manager,
+            item_handler=self.item_handler,
+            affordances=self.affordances,
+            is_affordance_open=self._is_affordance_open,
         )
-
-        # Item-specific masks (inventory state and position)
-        if self.item_inventory is not None:
-            # Narrow try-except to only catch ValueError from get_action_by_name
-            try:
-                get_action = self.action_space.get_action_by_name("GET")
-            except ValueError:
-                get_action = None  # GET action not present in action space
-
-            if get_action is not None:
-                get_action_id = get_action.id
-
-                # Mask GET when inventory is full
-                inventory_full = ~(self.item_inventory.slots == -1).any(dim=1)
-                if inventory_full.any():
-                    action_masks[inventory_full, get_action_id] = False
-
-                # Mask GET when no item at agent position
-                if self.item_manager is not None:
-                    for agent_idx in range(self.num_agents):
-                        # Skip if already masked (inventory full)
-                        if not action_masks[agent_idx, get_action_id]:
-                            continue
-
-                        # Check if there's an item at this agent's position
-                        agent_pos_tuple = tuple(self.positions[agent_idx].tolist())
-                        item_at_position = False
-                        for item in self.item_manager.active_items.values():
-                            if item.position == agent_pos_tuple:
-                                item_at_position = True
-                                break
-
-                        # Mask GET if no item at position
-                        if not item_at_position:
-                            action_masks[agent_idx, get_action_id] = False
-
-            for slot_idx in range(self.item_inventory.max_items_per_agent):
-                try:
-                    use_id = self.action_space.get_action_by_name(f"USE_SLOT_{slot_idx}").id
-                except ValueError:
-                    use_id = None
-                try:
-                    drop_id = self.action_space.get_action_by_name(f"DROP_SLOT_{slot_idx}").id
-                except ValueError:
-                    drop_id = None
-
-                if use_id is None and drop_id is None:
-                    continue
-
-                slot_items = self.item_inventory.slots[:, slot_idx]
-                slot_empty = slot_items == -1
-                if slot_empty.any():
-                    if use_id is not None:
-                        action_masks[slot_empty, use_id] = False
-                    if drop_id is not None:
-                        action_masks[slot_empty, drop_id] = False
-
-        # Custom item verbs (local/inventory) mask based on availability
-        if self.item_handler is not None:
-            self.item_handler.compute_custom_action_masks(self.action_space, action_masks, self.positions)
-
-        # Check boundary constraints (only for discrete grid substrates)
-        # Continuous substrates handle boundaries in apply_movement() via boundary modes
-        if self.grid_size is not None and self.substrate.position_dim >= 2:
-            # positions[:, 0] = x (column), positions[:, 1] = y (row)
-            at_top = self.positions[:, 1] == 0  # y == 0
-            at_bottom = self.positions[:, 1] == self.grid_size - 1  # y == max
-            at_left = self.positions[:, 0] == 0  # x == 0
-            at_right = self.positions[:, 0] == self.grid_size - 1  # x == max
-
-            # Mask invalid movements using movement deltas (metadata-driven, no hardcoded names)
-            deltas = self._movement_deltas
-            # Up/down along y-axis
-            up_action_ids = torch.nonzero(deltas[:, 1] < 0, as_tuple=False).squeeze(1)
-            down_action_ids = torch.nonzero(deltas[:, 1] > 0, as_tuple=False).squeeze(1)
-            # Left/right along x-axis
-            left_action_ids = torch.nonzero(deltas[:, 0] < 0, as_tuple=False).squeeze(1)
-            right_action_ids = torch.nonzero(deltas[:, 0] > 0, as_tuple=False).squeeze(1)
-
-            if up_action_ids.numel() > 0:
-                rows = at_top.nonzero(as_tuple=True)[0]
-                if rows.numel() > 0:
-                    action_masks[rows.unsqueeze(1), up_action_ids] = False
-            if down_action_ids.numel() > 0:
-                rows = at_bottom.nonzero(as_tuple=True)[0]
-                if rows.numel() > 0:
-                    action_masks[rows.unsqueeze(1), down_action_ids] = False
-            if left_action_ids.numel() > 0:
-                rows = at_left.nonzero(as_tuple=True)[0]
-                if rows.numel() > 0:
-                    action_masks[rows.unsqueeze(1), left_action_ids] = False
-            if right_action_ids.numel() > 0:
-                rows = at_right.nonzero(as_tuple=True)[0]
-                if rows.numel() > 0:
-                    action_masks[rows.unsqueeze(1), right_action_ids] = False
-
-        # 3D-specific: mask Z-axis movements at floor/ceiling (discrete grids only)
-        if self.grid_size is not None and self.substrate.position_dim == 3:
-            at_floor = self.positions[:, 2] == 0  # z == 0
-            # Assume depth from substrate
-            if hasattr(self.substrate, "depth"):
-                at_ceiling = self.positions[:, 2] == self.substrate.depth - 1
-            else:
-                at_ceiling = torch.zeros(self.num_agents, dtype=torch.bool, device=self.device)
-
-            deltas = self._movement_deltas
-            up_z_action_ids = torch.nonzero(deltas[:, 2] > 0, as_tuple=False).squeeze(1)
-            down_z_action_ids = torch.nonzero(deltas[:, 2] < 0, as_tuple=False).squeeze(1)
-            if up_z_action_ids.numel() > 0:
-                rows = at_ceiling.nonzero(as_tuple=True)[0]
-                if rows.numel() > 0:
-                    action_masks[rows.unsqueeze(1), up_z_action_ids] = False
-            if down_z_action_ids.numel() > 0:
-                rows = at_floor.nonzero(as_tuple=True)[0]
-                if rows.numel() > 0:
-                    action_masks[rows.unsqueeze(1), down_z_action_ids] = False
-
-        # Mask INTERACT - only valid when on an open affordance
-        # P1.4: Removed affordability check - agents can attempt INTERACT even when broke
-        # Affordability is checked inside interaction handlers; failing to afford just
-        # wastes a turn (passive decay) and teaches economic planning
-
-        # Use cached INTERACT index (from ActionSpaceBuilder)
-        interact_action_idx = self.action_ids.get("INTERACT")
-
-        on_valid_affordance = torch.zeros(self.num_agents, dtype=torch.bool, device=self.device)
-
-        # Check each affordance using AffordanceEngine
-        for affordance_name, affordance_pos in self.affordances.items():
-            if self.enable_temporal_mechanics and not self._is_affordance_open(affordance_name):
-                continue
-
-            on_this_affordance = self.substrate.is_on_position(self.positions, affordance_pos)
-            on_valid_affordance |= on_this_affordance
-
-        if interact_action_idx is not None:
-            base_interact_mask = action_masks[:, interact_action_idx].clone()
-            # Respect config-disabled INTERACT entries by preserving the base mask.
-            action_masks[:, interact_action_idx] = base_interact_mask & on_valid_affordance
-
-        # P3.1: Mask all actions for dead agents according to terminal conditions.
-        # This must be LAST to override all other masking. Terminal conditions are
-        # defined in bars.yaml (lethal_min/lethal_max); the env's dones flag is the
-        # single source of truth instead of hardcoded meter names.
-        if hasattr(self, "dones"):
-            action_masks[self.dones] = False
-
-        return action_masks
 
     def step(
         self,

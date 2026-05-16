@@ -687,3 +687,60 @@ class TestActionMaskingIntegration:
         # INTERACT masking should be identical
         assert masks_rich[0, 4] == masks_broke[0, 4], "Money should not affect INTERACT masking"
         assert masks_rich[0, 4], "INTERACT should be available on Hospital regardless of money"
+
+
+class TestActionMaskBuilderDelegation:
+    """Golden tests that pin ``VectorizedHamletEnv.get_action_masks`` to the
+    extracted :class:`ActionMaskBuilder` (hamlet-278239308d).
+
+    These tests guard against the env regressing back to inline mask logic:
+    they assert that the builder exists, is wired into the env, and that
+    delegating produces the same tensor the env returns.
+    """
+
+    def test_env_owns_action_mask_builder(self, masking_env):
+        """Env constructs and retains a single ActionMaskBuilder."""
+        from townlet.environment.action_mask_builder import ActionMaskBuilder
+
+        assert isinstance(masking_env.action_mask_builder, ActionMaskBuilder)
+
+    def test_get_action_masks_matches_builder_output(self, masking_env):
+        """Env.get_action_masks must produce exactly the builder's output."""
+        from_env = masking_env.get_action_masks()
+        from_builder = masking_env.action_mask_builder.build(
+            num_agents=masking_env.num_agents,
+            positions=masking_env.positions,
+            dones=masking_env.dones,
+            item_inventory=masking_env.item_inventory,
+            item_manager=masking_env.item_manager,
+            item_handler=masking_env.item_handler,
+            affordances=masking_env.affordances,
+            is_affordance_open=masking_env._is_affordance_open,
+        )
+        assert torch.equal(from_env, from_builder), (
+            "Env.get_action_masks must delegate to ActionMaskBuilder without modification."
+        )
+
+    def test_builder_is_pure_under_repeated_calls(self, masking_env):
+        """The builder is stateless: same inputs → same outputs across calls."""
+        first = masking_env.action_mask_builder.build(
+            num_agents=masking_env.num_agents,
+            positions=masking_env.positions,
+            dones=masking_env.dones,
+            item_inventory=masking_env.item_inventory,
+            item_manager=masking_env.item_manager,
+            item_handler=masking_env.item_handler,
+            affordances=masking_env.affordances,
+            is_affordance_open=masking_env._is_affordance_open,
+        )
+        second = masking_env.action_mask_builder.build(
+            num_agents=masking_env.num_agents,
+            positions=masking_env.positions,
+            dones=masking_env.dones,
+            item_inventory=masking_env.item_inventory,
+            item_manager=masking_env.item_manager,
+            item_handler=masking_env.item_handler,
+            affordances=masking_env.affordances,
+            is_affordance_open=masking_env._is_affordance_open,
+        )
+        assert torch.equal(first, second)

@@ -625,6 +625,104 @@ class TestVectorizedHamletEnvStep:
         assert torch.equal(temporal["is_night"], torch.tensor(False, device=env.device))
 
 
+class TestVectorizedHamletEnvGoldenTick:
+    """Golden tick test: pin env.step's delegation contract (hamlet-278239308d).
+
+    The architecture report named VectorizedHamletEnv.step as the canonical
+    tick choreography. These tests assert that one step actually flows
+    through the named runtime components — action executor, VTC schedule
+    runner, reward calculator, and (via get_action_masks) the action mask
+    builder — and produces well-shaped obs/reward/done outputs. If a future
+    change inlines any of those phases back into the env without going
+    through its component, these tests fail.
+    """
+
+    def test_env_owns_extracted_runtime_components(self, cpu_env_factory):
+        """The env must hold every component the task scope names."""
+        from townlet.environment.action_mask_builder import ActionMaskBuilder
+
+        env = cpu_env_factory(num_agents=2)
+        assert isinstance(env.action_mask_builder, ActionMaskBuilder)
+        # Components already extracted before this milestone; the contract
+        # below pins that nothing accidentally moves back into env body.
+        assert env._action_executor is not None
+        assert env._observation_encoder is not None
+        assert env._reward_calculator is not None
+        assert env.vtc_transition_runner is not None
+
+    def test_golden_tick_delegates_through_components(self, cpu_env_factory, monkeypatch):
+        """A single env.step invokes the named delegation chain in order."""
+        env = cpu_env_factory(num_agents=2)
+        env.reset()
+
+        invocation_log: list[str] = []
+
+        real_execute = env._action_executor._execute_actions
+
+        def spy_execute(actions):
+            invocation_log.append("action_executor._execute_actions")
+            return real_execute(actions)
+
+        monkeypatch.setattr(env._action_executor, "_execute_actions", spy_execute)
+
+        real_run_phases = env._run_vtc_transition_phases
+
+        def spy_phases(*args, **kwargs):
+            invocation_log.append("vtc_transition_runner.phases")
+            return real_run_phases(*args, **kwargs)
+
+        monkeypatch.setattr(env, "_run_vtc_transition_phases", spy_phases)
+
+        real_rewards = env._reward_calculator._calculate_shaped_rewards
+
+        def spy_rewards():
+            invocation_log.append("reward_calculator._calculate_shaped_rewards")
+            return real_rewards()
+
+        monkeypatch.setattr(env._reward_calculator, "_calculate_shaped_rewards", spy_rewards)
+
+        actions = torch.zeros(2, dtype=torch.long, device=env.device)
+        obs, rewards, dones, info = env.step(actions)
+
+        # Delegation contract: action executor runs first, then at least one
+        # VTC phase batch, then reward calculation. Order matters for the
+        # tick semantics.
+        assert "action_executor._execute_actions" in invocation_log
+        assert "vtc_transition_runner.phases" in invocation_log
+        assert "reward_calculator._calculate_shaped_rewards" in invocation_log
+        executor_idx = invocation_log.index("action_executor._execute_actions")
+        rewards_idx = invocation_log.index("reward_calculator._calculate_shaped_rewards")
+        assert executor_idx < rewards_idx, (
+            "action_executor must run before reward_calculator within a tick"
+        )
+
+        # Output contract: shapes and types are stable.
+        assert obs.shape == (2, env.observation_dim)
+        assert rewards.shape == (2,)
+        assert dones.shape == (2,)
+        assert dones.dtype == torch.bool
+        assert isinstance(info, dict)
+
+    def test_get_action_masks_flows_through_builder(self, cpu_env_factory, monkeypatch):
+        """env.get_action_masks must reach the extracted ActionMaskBuilder."""
+        env = cpu_env_factory(num_agents=2)
+        env.reset()
+
+        invoked = {"flag": False}
+        real_build = env.action_mask_builder.build
+
+        def spy_build(**kwargs):
+            invoked["flag"] = True
+            return real_build(**kwargs)
+
+        monkeypatch.setattr(env.action_mask_builder, "build", spy_build)
+
+        masks = env.get_action_masks()
+        assert invoked["flag"], "env.get_action_masks must delegate to ActionMaskBuilder.build"
+        assert masks.shape == (2, env.action_dim)
+        assert masks.dtype == torch.bool
+
+
 class TestExecuteActions:
     """Test VectorizedHamletEnv._execute_actions() method."""
 

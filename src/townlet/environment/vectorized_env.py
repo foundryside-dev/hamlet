@@ -137,8 +137,6 @@ class VectorizedHamletEnv:
             else:
                 self.day_length = inactive_day_length
         self.agent_lifespan = training_cfg.training_loop.max_steps_per_episode
-        partial_observability = self.partial_observability
-        vision_range = self.vision_range
 
         from townlet.substrate.factory import SubstrateFactory
 
@@ -188,82 +186,12 @@ class VectorizedHamletEnv:
         self.meter_count = self.metadata.meter_count
         meter_count = self.meter_count
 
-        # Derive vision radius/window for partial observability (POMDP) when applicable.
-        # Uses the same semantics as the v2.1 compiler:
-        #   radius = ceil(vision_range * (grid_size / 2))
-        #   window_size = 2 * radius + 1 (clamped to grid_size)
-        # Safety: Max radius of 50 prevents OOM with large grids (101x101 window max).
-        max_vision_radius = 50
+        # POMDP support and vision-window sizing live in a single helper so
+        # the env body reads as orchestration, not validation. The helper
+        # writes to vision_radius and local_window_size on self.
         self.vision_radius: int = 0
         self.local_window_size: int = 0
-        if self.partial_observability and self.grid_size is not None:
-            grid_size = float(self.grid_size)
-            raw_radius = int(math.ceil(self.vision_range * (grid_size / 2.0)))
-            if raw_radius > max_vision_radius:
-                raise ValueError(
-                    f"Vision radius {raw_radius} exceeds maximum {max_vision_radius}. "
-                    f"This would create a {2*raw_radius+1}x{2*raw_radius+1} observation window, "
-                    f"causing OOM. Reduce vision_range ({self.vision_range}) or grid_size ({self.grid_size}). "
-                    f"Max supported configuration: vision_range * (grid_size / 2) <= {max_vision_radius}"
-                )
-            self.vision_radius = max(1, raw_radius)
-            self.local_window_size = min((2 * self.vision_radius) + 1, int(grid_size))
-
-        # Validate partial observability support
-        if partial_observability and self.substrate.position_dim == 0:
-            raise ValueError(
-                "Partial observability (POMDP) is not supported for aspatial substrates. "
-                "A local vision window requires at least 1 spatial dimension. "
-                "Set partial_observability=False when using an aspatial substrate."
-            )
-        if partial_observability and isinstance(self.substrate, ContinuousSubstrate):
-            raise ValueError(
-                "Partial observability (POMDP) is not supported for continuous substrates. "
-                "Continuous spaces have infinite positions within any local window, making discrete vision grids undefined. "
-                "Use partial_observability=False with 'relative' or 'scaled' observation_encoding instead."
-            )
-        if partial_observability and self.substrate.position_dim >= 4:
-            # Exponential blow-up for high-dimensional local windows.
-            window_size = self.local_window_size or 0
-            cell_count = window_size**self.substrate.position_dim if window_size > 0 else 0
-            raise ValueError(
-                f"Partial observability (POMDP) is not supported for {self.substrate.position_dim}D substrates. "
-                f"\n\nProblem: Local window size grows EXPONENTIALLY with dimensionality:"
-                f"\n  - 2D: {window_size}×{window_size} = {window_size**2} cells (practical)"
-                f"\n  - 3D: {window_size}×{window_size}×{window_size} = {window_size**3} cells (supported up to vision_range=2)"
-                f"\n  - {self.substrate.position_dim}D: {window_size}^{self.substrate.position_dim} = {cell_count:,} cells (IMPRACTICAL)"
-                f"\n\nThis creates:"
-                f"\n  - Network input explosion ({cell_count:,} vision features + position + meters)"
-                f"\n  - Memory explosion (each agent's observation is massive)"
-                f"\n  - Training slowdown (gradient computation over huge inputs)"
-                f"\n\nSolution: Use full observability (partial_observability=False) with normalized position encoding:"
-                f"\n  - observation_encoding='relative': Just {self.substrate.position_dim} dims (normalized coordinates)"
-                f"\n  - observation_encoding='scaled': {self.substrate.position_dim * 2} dims (coordinates + grid sizes)"
-                f"\n  - Enables dimension-independent learning WITHOUT exponential curse"
-                f"\n\nSee docs/manual/pomdp_compatibility_matrix.md for details."
-            )
-
-        # Validate Grid3D POMDP vision range (prevent memory explosion)
-        if partial_observability and self.substrate.position_dim == 3:
-            window_size = self.local_window_size or 0
-            window_volume = window_size**3 if window_size > 0 else 0
-            if window_volume > 125:  # 5×5×5 = 125 is the threshold
-                raise ValueError(
-                    f"Grid3D POMDP with vision_range={vision_range} requires {window_volume} cells "
-                    f"(window size {window_size}×{window_size}×{window_size}), which is excessive. "
-                    f"Use vision_range ≤ 2 (5×5×5 = 125 cells) for Grid3D partial observability, "
-                    f"or disable partial_observability."
-                )
-
-        # Validate observation_encoding compatibility with POMDP
-        if partial_observability and hasattr(self.substrate, "observation_encoding"):
-            if self.substrate.observation_encoding != "relative":
-                raise ValueError(
-                    f"Partial observability (POMDP) requires observation_encoding='relative', "
-                    f"but substrate is configured with observation_encoding='{self.substrate.observation_encoding}'. "
-                    f"POMDP uses normalized positions for recurrent network position encoder. "
-                    f"Set observation_encoding='relative' in substrate.yaml or disable partial_observability."
-                )
+        self._configure_partial_observability()
 
         # Observation dimension is derived from the level-specific spec.
         self.observation_dim = self.observation_spec.total_dims
@@ -678,6 +606,81 @@ class VectorizedHamletEnv:
                 set(runtime_action_space.enabled_action_names) if runtime_action_space.enabled_action_names is not None else None
             ),
         )
+
+    def _configure_partial_observability(self) -> None:
+        """Derive POMDP vision window and validate substrate compatibility.
+
+        Writes ``self.vision_radius`` and ``self.local_window_size`` when
+        partial observability is enabled. Raises ``ValueError`` for any
+        substrate / encoding combination that is unsupported under POMDP —
+        these are configuration errors that should fail at compile time,
+        not silently produce broken observations.
+        """
+        max_vision_radius = 50
+        if self.partial_observability and self.grid_size is not None:
+            grid_size = float(self.grid_size)
+            raw_radius = int(math.ceil(self.vision_range * (grid_size / 2.0)))
+            if raw_radius > max_vision_radius:
+                raise ValueError(
+                    f"Vision radius {raw_radius} exceeds maximum {max_vision_radius}. "
+                    f"This would create a {2 * raw_radius + 1}x{2 * raw_radius + 1} observation window, "
+                    f"causing OOM. Reduce vision_range ({self.vision_range}) or grid_size ({self.grid_size}). "
+                    f"Max supported configuration: vision_range * (grid_size / 2) <= {max_vision_radius}"
+                )
+            self.vision_radius = max(1, raw_radius)
+            self.local_window_size = min((2 * self.vision_radius) + 1, int(grid_size))
+
+        if not self.partial_observability:
+            return
+
+        if self.substrate.position_dim == 0:
+            raise ValueError(
+                "Partial observability (POMDP) is not supported for aspatial substrates. "
+                "A local vision window requires at least 1 spatial dimension. "
+                "Set partial_observability=False when using an aspatial substrate."
+            )
+        if isinstance(self.substrate, ContinuousSubstrate):
+            raise ValueError(
+                "Partial observability (POMDP) is not supported for continuous substrates. "
+                "Continuous spaces have infinite positions within any local window, making discrete vision grids undefined. "
+                "Use partial_observability=False with 'relative' or 'scaled' observation_encoding instead."
+            )
+        if self.substrate.position_dim >= 4:
+            window_size = self.local_window_size or 0
+            cell_count = window_size**self.substrate.position_dim if window_size > 0 else 0
+            raise ValueError(
+                f"Partial observability (POMDP) is not supported for {self.substrate.position_dim}D substrates. "
+                f"\n\nProblem: Local window size grows EXPONENTIALLY with dimensionality:"
+                f"\n  - 2D: {window_size}×{window_size} = {window_size**2} cells (practical)"
+                f"\n  - 3D: {window_size}×{window_size}×{window_size} = {window_size**3} cells (supported up to vision_range=2)"
+                f"\n  - {self.substrate.position_dim}D: {window_size}^{self.substrate.position_dim} = {cell_count:,} cells (IMPRACTICAL)"
+                f"\n\nThis creates:"
+                f"\n  - Network input explosion ({cell_count:,} vision features + position + meters)"
+                f"\n  - Memory explosion (each agent's observation is massive)"
+                f"\n  - Training slowdown (gradient computation over huge inputs)"
+                f"\n\nSolution: Use full observability (partial_observability=False) with normalized position encoding:"
+                f"\n  - observation_encoding='relative': Just {self.substrate.position_dim} dims (normalized coordinates)"
+                f"\n  - observation_encoding='scaled': {self.substrate.position_dim * 2} dims (coordinates + grid sizes)"
+                f"\n  - Enables dimension-independent learning WITHOUT exponential curse"
+                f"\n\nSee docs/manual/pomdp_compatibility_matrix.md for details."
+            )
+        if self.substrate.position_dim == 3:
+            window_size = self.local_window_size or 0
+            window_volume = window_size**3 if window_size > 0 else 0
+            if window_volume > 125:
+                raise ValueError(
+                    f"Grid3D POMDP with vision_range={self.vision_range} requires {window_volume} cells "
+                    f"(window size {window_size}×{window_size}×{window_size}), which is excessive. "
+                    f"Use vision_range ≤ 2 (5×5×5 = 125 cells) for Grid3D partial observability, "
+                    f"or disable partial_observability."
+                )
+        if hasattr(self.substrate, "observation_encoding") and self.substrate.observation_encoding != "relative":
+            raise ValueError(
+                f"Partial observability (POMDP) requires observation_encoding='relative', "
+                f"but substrate is configured with observation_encoding='{self.substrate.observation_encoding}'. "
+                f"POMDP uses normalized positions for recurrent network position encoder. "
+                f"Set observation_encoding='relative' in substrate.yaml or disable partial_observability."
+            )
 
     def _build_movement_deltas(self) -> torch.Tensor:
         """Build movement delta tensor from action space (metadata-driven).

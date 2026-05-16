@@ -822,20 +822,24 @@ class TestAdversarialCurriculumStatePersistence:
         curriculum = AdversarialCurriculum(device=cpu_device)
         curriculum.initialize_population(num_agents=2)
 
-        # Modify state
-        curriculum.tracker.agent_stages = torch.tensor([2, 3])
+        # Modify state across every tracker field.
+        curriculum.tracker.agent_stages = torch.tensor([2, 3], dtype=torch.long)
         curriculum.tracker.episode_rewards = torch.tensor([10.0, 20.0])
         curriculum.tracker.episode_steps = torch.tensor([5.0, 8.0])
         curriculum.tracker.prev_avg_reward = torch.tensor([1.5, 2.5])
         curriculum.tracker.steps_at_stage = torch.tensor([500.0, 800.0])
+        curriculum.tracker.episodes_at_stage = torch.tensor([4, 7], dtype=torch.long)
+        curriculum.tracker.last_survival_rate = torch.tensor([0.6, 0.9])
 
         state = curriculum.checkpoint_state()
 
-        assert torch.equal(state["agent_stages"], torch.tensor([2, 3]))
+        assert torch.equal(state["agent_stages"], torch.tensor([2, 3], dtype=torch.long))
         assert torch.allclose(state["episode_rewards"], torch.tensor([10.0, 20.0]))
         assert torch.allclose(state["episode_steps"], torch.tensor([5.0, 8.0]))
         assert torch.allclose(state["prev_avg_reward"], torch.tensor([1.5, 2.5]))
         assert torch.allclose(state["steps_at_stage"], torch.tensor([500.0, 800.0]))
+        assert torch.equal(state["episodes_at_stage"], torch.tensor([4, 7], dtype=torch.long))
+        assert torch.allclose(state["last_survival_rate"], torch.tensor([0.6, 0.9]))
 
     def test_load_state_restores_all_state(self, cpu_device):
         """load_state should restore all performance tracker state."""
@@ -843,20 +847,24 @@ class TestAdversarialCurriculumStatePersistence:
         curriculum.initialize_population(num_agents=2)
 
         state = {
-            "agent_stages": torch.tensor([4, 5]),
+            "agent_stages": torch.tensor([4, 5], dtype=torch.long),
             "episode_rewards": torch.tensor([15.0, 25.0]),
             "episode_steps": torch.tensor([7.0, 9.0]),
             "prev_avg_reward": torch.tensor([2.0, 3.0]),
             "steps_at_stage": torch.tensor([1200.0, 1500.0]),
+            "episodes_at_stage": torch.tensor([2, 6], dtype=torch.long),
+            "last_survival_rate": torch.tensor([0.55, 0.85]),
         }
 
         curriculum.load_state(state)
 
-        assert torch.equal(curriculum.tracker.agent_stages, torch.tensor([4, 5]))
+        assert torch.equal(curriculum.tracker.agent_stages, torch.tensor([4, 5], dtype=torch.long))
         assert torch.allclose(curriculum.tracker.episode_rewards, torch.tensor([15.0, 25.0]))
         assert torch.allclose(curriculum.tracker.episode_steps, torch.tensor([7.0, 9.0]))
         assert torch.allclose(curriculum.tracker.prev_avg_reward, torch.tensor([2.0, 3.0]))
         assert torch.allclose(curriculum.tracker.steps_at_stage, torch.tensor([1200.0, 1500.0]))
+        assert torch.equal(curriculum.tracker.episodes_at_stage, torch.tensor([2, 6], dtype=torch.long))
+        assert torch.allclose(curriculum.tracker.last_survival_rate, torch.tensor([0.55, 0.85]))
 
 
 # =============================================================================
@@ -932,3 +940,153 @@ class TestCurriculumSignalPurity:
         # Verify stage was restored
         restored_stage = curriculum2.tracker.agent_stages[0].item()
         assert restored_stage == original_stage, f"Stage should be restored: {original_stage} vs {restored_stage}"
+
+
+# =============================================================================
+# ADVERSARIAL CURRICULUM CHECKPOINT/RESUME (hamlet-e87f06a740)
+# =============================================================================
+#
+# The architecture report flagged that PerformanceTracker has seven fields of
+# state but checkpoint_state() only persisted five. The two missing fields
+# (last_survival_rate, episodes_at_stage) are read by get_stage_info() and
+# updated by update_step(); silently resetting them on resume means telemetry
+# and per-stage progression counters reset every checkpoint. These tests pin
+# the exact round-trip and lock in strict failure-on-missing behaviour so old
+# checkpoints can't quietly mismatch the new schema.
+
+
+class TestAdversarialCurriculumFullStateRoundtrip:
+    """Exact round-trip of every tensor PerformanceTracker carries."""
+
+    def _populated_curriculum(self, cpu_device):
+        curriculum = AdversarialCurriculum(
+            max_steps_per_episode=500,
+            survival_advance_threshold=0.7,
+            survival_retreat_threshold=0.3,
+            entropy_gate=0.5,
+            min_steps_at_stage=100,
+            device=cpu_device,
+        )
+        curriculum.initialize_population(num_agents=3)
+        # Drive each tracker tensor into a non-default state so a reset to
+        # zeros on load would be observable.
+        curriculum.tracker.agent_stages = torch.tensor([3, 2, 4], dtype=torch.long, device=cpu_device)
+        curriculum.tracker.steps_at_stage = torch.tensor([750.0, 220.0, 1300.0], device=cpu_device)
+        curriculum.tracker.episodes_at_stage = torch.tensor([5, 1, 9], dtype=torch.long, device=cpu_device)
+        curriculum.tracker.episode_rewards = torch.tensor([12.0, 3.5, 0.0], device=cpu_device)
+        curriculum.tracker.episode_steps = torch.tensor([400.0, 80.0, 0.0], device=cpu_device)
+        curriculum.tracker.prev_avg_reward = torch.tensor([0.03, 0.01, 0.05], device=cpu_device)
+        curriculum.tracker.last_survival_rate = torch.tensor([0.8, 0.4, 0.95], device=cpu_device)
+        return curriculum
+
+    def test_checkpoint_state_includes_all_tracker_tensors(self, cpu_device):
+        """All seven tracker tensors must be in the checkpoint dict."""
+        curriculum = self._populated_curriculum(cpu_device)
+        state = curriculum.checkpoint_state()
+
+        expected_keys = {
+            "agent_stages",
+            "steps_at_stage",
+            "episodes_at_stage",
+            "episode_rewards",
+            "episode_steps",
+            "prev_avg_reward",
+            "last_survival_rate",
+        }
+        assert expected_keys.issubset(state.keys()), (
+            f"checkpoint_state missing required keys: {expected_keys - set(state.keys())}. "
+            "All PerformanceTracker tensors must round-trip through checkpoint."
+        )
+
+    def test_load_state_restores_every_tensor_exactly(self, cpu_device):
+        """Round-trip preserves every tracker tensor bit-for-bit."""
+        original = self._populated_curriculum(cpu_device)
+        state = original.checkpoint_state()
+
+        restored = AdversarialCurriculum(
+            max_steps_per_episode=500,
+            min_steps_at_stage=100,
+            device=cpu_device,
+        )
+        restored.initialize_population(num_agents=3)
+        restored.load_state(state)
+
+        for field in [
+            "agent_stages",
+            "steps_at_stage",
+            "episodes_at_stage",
+            "episode_rewards",
+            "episode_steps",
+            "prev_avg_reward",
+            "last_survival_rate",
+        ]:
+            assert torch.equal(
+                getattr(restored.tracker, field),
+                getattr(original.tracker, field),
+            ), f"Tracker field {field} did not round-trip exactly"
+
+    def test_resume_continues_episode_counter(self, cpu_device):
+        """After load, completing an episode increments from the saved count."""
+        original = self._populated_curriculum(cpu_device)
+        # Capture the saved counter before round-trip.
+        saved_episodes = original.tracker.episodes_at_stage.clone()
+        state = original.checkpoint_state()
+
+        restored = AdversarialCurriculum(
+            max_steps_per_episode=500,
+            min_steps_at_stage=100,
+            device=cpu_device,
+        )
+        restored.initialize_population(num_agents=3)
+        restored.load_state(state)
+
+        # Drive one episode boundary on agent 0 only.
+        rewards = torch.tensor([100.0, 0.0, 0.0], device=cpu_device)
+        dones = torch.tensor([True, False, False], device=cpu_device, dtype=torch.bool)
+        restored.tracker.update_step(rewards, dones)
+
+        assert restored.tracker.episodes_at_stage[0].item() == saved_episodes[0].item() + 1, (
+            "episodes_at_stage must resume from the saved value, not reset to 0."
+        )
+        # Other agents unchanged by the partial done batch.
+        assert restored.tracker.episodes_at_stage[1].item() == saved_episodes[1].item()
+        assert restored.tracker.episodes_at_stage[2].item() == saved_episodes[2].item()
+
+
+class TestAdversarialCurriculumLoadStateStrictness:
+    """No silent backwards-compatibility: bad shapes / missing keys must raise."""
+
+    def test_load_state_raises_on_missing_key(self, cpu_device):
+        """An old checkpoint without last_survival_rate must fail loudly."""
+        curriculum = AdversarialCurriculum(device=cpu_device)
+        curriculum.initialize_population(num_agents=1)
+
+        partial_state = {
+            "agent_stages": torch.tensor([2], dtype=torch.long),
+            "steps_at_stage": torch.tensor([500.0]),
+            "episodes_at_stage": torch.tensor([3], dtype=torch.long),
+            "episode_rewards": torch.tensor([1.0]),
+            "episode_steps": torch.tensor([100.0]),
+            "prev_avg_reward": torch.tensor([0.01]),
+            # last_survival_rate omitted on purpose
+        }
+        with pytest.raises(KeyError, match="last_survival_rate"):
+            curriculum.load_state(partial_state)
+
+    def test_load_state_raises_on_num_agents_mismatch(self, cpu_device):
+        """A checkpoint sized for N agents cannot load into an M-agent tracker."""
+        curriculum = AdversarialCurriculum(device=cpu_device)
+        curriculum.initialize_population(num_agents=2)
+
+        # State produced for a 3-agent population.
+        mismatched_state = {
+            "agent_stages": torch.tensor([1, 2, 3], dtype=torch.long),
+            "steps_at_stage": torch.tensor([0.0, 100.0, 200.0]),
+            "episodes_at_stage": torch.tensor([0, 1, 2], dtype=torch.long),
+            "episode_rewards": torch.tensor([0.0, 1.0, 2.0]),
+            "episode_steps": torch.tensor([0.0, 10.0, 20.0]),
+            "prev_avg_reward": torch.tensor([0.0, 0.1, 0.2]),
+            "last_survival_rate": torch.tensor([0.0, 0.5, 0.8]),
+        }
+        with pytest.raises(ValueError, match="num_agents"):
+            curriculum.load_state(mismatched_state)

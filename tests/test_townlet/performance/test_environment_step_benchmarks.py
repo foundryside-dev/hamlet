@@ -154,6 +154,34 @@ class TestVTCTransitionRunnerBenchmarks:
 
         benchmark(_cascades)
 
+    @pytest.mark.benchmark(group="vtc-runner")
+    @pytest.mark.parametrize("num_agents", _AGENT_SCALE)
+    def test_vtc_interaction_progress_program(self, benchmark, _compile_universe, num_agents):
+        """VTCInteractionProgressProgram.apply has a per-agent Python loop and
+        was named in the architecture report as a vectorisation candidate.
+        Measure it in isolation so the hot-path ranking is evidence-backed.
+        """
+        env = _build_env(_compile_universe, "configs/default_curriculum", "L0_5_dual_resource", num_agents=num_agents)
+        program = env.vtc_interaction_progress_program
+        interaction_affordances: dict[int, str] = {}
+        last_affordances: list[str | None] = [None] * num_agents
+        last_positions = env.positions.clone()
+        active_mask = torch.ones(num_agents, dtype=torch.bool, device=env.device)
+        _record_scale_axes(benchmark, env, label=f"vtc_interaction_progress_n{num_agents}")
+
+        def _apply():
+            program.apply(
+                interaction_affordances=interaction_affordances,
+                positions=env.positions,
+                interaction_progress=env.interaction_progress,
+                last_affordances=last_affordances,
+                last_positions=last_positions,
+                active_mask=active_mask,
+                device=env.device,
+            )
+
+        benchmark(_apply)
+
 
 class TestRewardCalculatorBenchmarks:
     """Benchmark reward calculation in isolation across scale."""

@@ -593,7 +593,7 @@ Replaced hardcoded 2D grid assumptions with config-driven spatial substrate syst
 
 ---
 
-## [0.2.0] - 2025-11-05 (Post-0.1.0 Improvements)
+## 2025-11-05 - 0.1.0 Alpha Worklog
 
 ### Added (TASK-001 - Variable-Size Meter System)
 

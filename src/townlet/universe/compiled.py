@@ -43,8 +43,14 @@ from townlet.vfs.observation_builder import VFSObservationSpec
 from townlet.vfs.profiles import CompiledGlobalProfile
 from townlet.vfs.schema import ObservationField as VfsObservationField
 from townlet.vfs.schema import VariableDef
+from townlet.vfs.transition_schedule import (
+    VTCTransitionSchedule,
+    build_vtc_transition_schedule,
+    serialize_vtc_transition_schedule,
+    social_rules_from_transition_payload,
+)
 
-COMPILED_SCHEMA_VERSION = "1.12"
+COMPILED_SCHEMA_VERSION = "1.13"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",
@@ -59,6 +65,7 @@ REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "runtime_action_space",
     "action_schema_hash",
     "transition_graph_hash",
+    "transition_schedule",
     "vfs_hash",
     "meter_metadata",
     "affordance_metadata",
@@ -121,6 +128,7 @@ class CompiledUniverse:
     runtime_action_space: RuntimeActionSpace
     action_schema_hash: str
     transition_graph_hash: str
+    transition_schedule: VTCTransitionSchedule
     vfs_hash: str
     meter_metadata: MeterMetadata
     affordance_metadata: AffordanceMetadata
@@ -184,6 +192,7 @@ class CompiledUniverse:
         runtime_action_space: RuntimeActionSpace
         action_schema_hash: str
         transition_graph_hash: str
+        transition_schedule: VTCTransitionSchedule
         vfs_hash: str
         meter_metadata: MeterMetadata
         affordance_metadata: AffordanceMetadata
@@ -264,6 +273,7 @@ class CompiledUniverse:
             runtime_action_space=deepcopy(self.runtime_action_space),
             action_schema_hash=self.action_schema_hash,
             transition_graph_hash=self.transition_graph_hash,
+            transition_schedule=deepcopy(self.transition_schedule),
             vfs_hash=self.vfs_hash,
             meter_metadata=deepcopy(self.meter_metadata),
             affordance_metadata=deepcopy(self.affordance_metadata),
@@ -308,6 +318,7 @@ class CompiledUniverse:
             "runtime_action_space": _dataclass_to_plain(self.runtime_action_space),
             "action_schema_hash": self.action_schema_hash,
             "transition_graph_hash": self.transition_graph_hash,
+            "transition_schedule": serialize_vtc_transition_schedule(self.transition_schedule),
             "vfs_hash": self.vfs_hash,
             "meter_metadata": _dataclass_to_plain(self.meter_metadata),
             "affordance_metadata": _dataclass_to_plain(self.affordance_metadata),
@@ -366,6 +377,7 @@ class CompiledUniverse:
                         "runtime_action_space": _dataclass_to_plain(meta.runtime_action_space),
                         "action_schema_hash": meta.action_schema_hash,
                         "transition_graph_hash": meta.transition_graph_hash,
+                        "transition_schedule": serialize_vtc_transition_schedule(meta.transition_schedule),
                         "vfs_hash": meta.vfs_hash,
                         "meter_metadata": _dataclass_to_plain(meta.meter_metadata),
                         "affordance_metadata": _dataclass_to_plain(meta.affordance_metadata),
@@ -404,29 +416,51 @@ class CompiledUniverse:
                 level_affordance_position_map = _deserialize_affordance_positions(
                     _required_field(level_opt_payload, f"all_levels.{name}.optimization_data_raw.affordance_position_map")
                 )
+                level_bars = BarsV2Config.model_validate(meta["bars"])
+                level_affordances = AffordancesV2Config.model_validate(meta["affordances"])
+                level_drive = DriveAsCodeConfig.model_validate(meta["drive"])
+                level_curriculum = CurriculumConfig.model_validate(meta["curriculum"])
+                level_training = TrainingV2Config.model_validate(meta["training"])
+                level_runtime_action_space = _runtime_action_space_from_plain(
+                    _required_mapping(meta, f"all_levels.{name}.runtime_action_space"),
+                    f"all_levels.{name}.runtime_action_space",
+                )
+                level_vfs_variables = tuple(VariableDef(**var) for var in _required_field(meta, f"all_levels.{name}.vfs_variables"))
+                level_transition_payload = _required_mapping(meta, f"all_levels.{name}.transition_schedule")
+                level_schedule = build_vtc_transition_schedule(
+                    runtime_action_space=level_runtime_action_space,
+                    level=_SerializedLevel(
+                        bars=level_bars,
+                        affordances=level_affordances,
+                        drive=level_drive,
+                    ),
+                    social_residue_rules=social_rules_from_transition_payload(
+                        level_transition_payload,
+                        field_name=f"all_levels.{name}.transition_schedule",
+                    ),
+                    vfs_variables=level_vfs_variables,
+                )
                 all_levels[name] = CompiledUniverse.LevelMetadata(
                     level_name=meta["level_name"],
-                    bars=BarsV2Config.model_validate(meta["bars"]),
-                    affordances=AffordancesV2Config.model_validate(meta["affordances"]),
-                    drive=DriveAsCodeConfig.model_validate(meta["drive"]),
+                    bars=level_bars,
+                    affordances=level_affordances,
+                    drive=level_drive,
                     drive_hash=_required_field(meta, f"all_levels.{name}.drive_hash"),
                     curriculum_hash=_required_field(meta, f"all_levels.{name}.curriculum_hash"),
                     bars_hash=_required_field(meta, f"all_levels.{name}.bars_hash"),
                     affordances_hash=_required_field(meta, f"all_levels.{name}.affordances_hash"),
                     training_hash=_required_field(meta, f"all_levels.{name}.training_hash"),
-                    curriculum=CurriculumConfig.model_validate(meta["curriculum"]),
-                    training=TrainingV2Config.model_validate(meta["training"]),
+                    curriculum=level_curriculum,
+                    training=level_training,
                     observation_spec=_observation_spec_from_plain(meta["observation_spec"]),
                     observation_activity=_observation_activity_from_plain(
                         _required_mapping(meta, f"all_levels.{name}.observation_activity")
                     ),
                     action_metadata=_action_space_metadata_from_plain(meta["action_metadata"], f"all_levels.{name}.action_metadata"),
-                    runtime_action_space=_runtime_action_space_from_plain(
-                        _required_mapping(meta, f"all_levels.{name}.runtime_action_space"),
-                        f"all_levels.{name}.runtime_action_space",
-                    ),
+                    runtime_action_space=level_runtime_action_space,
                     action_schema_hash=_required_field(meta, f"all_levels.{name}.action_schema_hash"),
                     transition_graph_hash=_required_field(meta, f"all_levels.{name}.transition_graph_hash"),
+                    transition_schedule=level_schedule,
                     vfs_hash=_required_field(meta, f"all_levels.{name}.vfs_hash"),
                     meter_metadata=_meter_metadata_from_plain(meta["meter_metadata"], f"all_levels.{name}.meter_metadata"),
                     affordance_metadata=_affordance_metadata_from_plain(
@@ -441,9 +475,38 @@ class CompiledUniverse:
                         VfsObservationField(**field) for field in _required_field(meta, f"all_levels.{name}.vfs_observation_fields")
                     ),
                     observation_schema_hash=_required_field(meta, f"all_levels.{name}.observation_schema_hash"),
-                    vfs_variables=tuple(VariableDef(**var) for var in _required_field(meta, f"all_levels.{name}.vfs_variables")),
+                    vfs_variables=level_vfs_variables,
                     variable_schema_hash=_required_field(meta, f"all_levels.{name}.variable_schema_hash"),
                 )
+
+        top_runtime_action_space = _runtime_action_space_from_plain(_required_mapping(payload, "runtime_action_space"))
+        top_vfs_variables = tuple(VariableDef(**var) for var in _required_field(payload, "vfs_variables"))
+        top_bars = None
+        top_affordances = None
+        top_drive = None
+        if all_levels is not None:
+            for level_meta in all_levels.values():
+                if (
+                    level_meta.transition_graph_hash == _required_field(payload, "transition_graph_hash")
+                    and level_meta.vfs_hash == _required_field(payload, "vfs_hash")
+                    and level_meta.action_schema_hash == _required_field(payload, "action_schema_hash")
+                ):
+                    top_bars = level_meta.bars
+                    top_affordances = level_meta.affordances
+                    top_drive = level_meta.drive
+                    break
+        if top_bars is None or top_affordances is None or top_drive is None:
+            raise ValueError("Compiled universe cache cannot resolve primary transition level; recompile the config pack.")
+        top_transition_payload = _required_mapping(payload, "transition_schedule")
+        top_transition_schedule = build_vtc_transition_schedule(
+            runtime_action_space=top_runtime_action_space,
+            level=_SerializedLevel(bars=top_bars, affordances=top_affordances, drive=top_drive),
+            social_residue_rules=social_rules_from_transition_payload(
+                top_transition_payload,
+                field_name="transition_schedule",
+            ),
+            vfs_variables=top_vfs_variables,
+        )
 
         return CompiledUniverse(
             metadata=UniverseMetadata(**payload["metadata"]),
@@ -451,12 +514,13 @@ class CompiledUniverse:
             observation_activity=_observation_activity_from_plain(_required_mapping(payload, "observation_activity")),
             vfs_observation_fields=tuple(VfsObservationField(**field) for field in _required_field(payload, "vfs_observation_fields")),
             observation_schema_hash=_required_field(payload, "observation_schema_hash"),
-            vfs_variables=tuple(VariableDef(**var) for var in _required_field(payload, "vfs_variables")),
+            vfs_variables=top_vfs_variables,
             variable_schema_hash=_required_field(payload, "variable_schema_hash"),
             action_space_metadata=_action_space_metadata_from_plain(payload["action_space_metadata"]),
-            runtime_action_space=_runtime_action_space_from_plain(_required_mapping(payload, "runtime_action_space")),
+            runtime_action_space=top_runtime_action_space,
             action_schema_hash=_required_field(payload, "action_schema_hash"),
             transition_graph_hash=_required_field(payload, "transition_graph_hash"),
+            transition_schedule=top_transition_schedule,
             vfs_hash=_required_field(payload, "vfs_hash"),
             meter_metadata=_meter_metadata_from_plain(payload["meter_metadata"]),
             affordance_metadata=_affordance_metadata_from_plain(payload["affordance_metadata"]),
@@ -589,6 +653,13 @@ def _dataclass_to_plain(obj: Any) -> Any:
     if isinstance(obj, slice):
         return [obj.start, obj.stop]
     return obj
+
+
+@dataclass(frozen=True)
+class _SerializedLevel:
+    bars: BarsV2Config
+    affordances: AffordancesV2Config
+    drive: DriveAsCodeConfig
 
 
 def _missing_required_field(field_name: str) -> ValueError:

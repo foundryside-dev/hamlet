@@ -41,6 +41,12 @@ from townlet.universe.dto import MeterInfo, MeterMetadata
 from townlet.universe.errors import CompilationError
 from townlet.vfs.profiles import CompiledGlobalProfile, CompiledVariable
 from townlet.vfs.schema import WriteSpec
+from townlet.vfs.schema_hashes import compute_transition_graph_hash, compute_vfs_hash
+from townlet.vfs.transition_schedule import (
+    build_vtc_transition_schedule,
+    serialize_vtc_transition_schedule,
+    social_rules_from_transition_payload,
+)
 
 DEFAULT_CURRICULUM_LEVELS = (
     "L0_0_minimal",
@@ -125,11 +131,45 @@ def _with_runtime_action_surface(
 
     runtime_action_space = replace(level.runtime_action_space, actions=tuple(patched_actions))
     patched_level = replace(level, runtime_action_space=runtime_action_space)
+    schedule_payload = serialize_vtc_transition_schedule(level.transition_schedule)
+    transition_schedule = build_vtc_transition_schedule(
+        runtime_action_space=runtime_action_space,
+        level=patched_level,
+        social_residue_rules=social_rules_from_transition_payload(schedule_payload, field_name="test.transition_schedule"),
+        vfs_variables=level.vfs_variables,
+    )
+    transition_graph_hash = compute_transition_graph_hash(
+        transition_schedule.phase_graph,
+        transition_schedule.action_write_program,
+        affordance_gate_program=transition_schedule.affordance_gate_program,
+        interaction_progress_program=transition_schedule.interaction_progress_program,
+        terminal_condition_program=transition_schedule.terminal_condition_program,
+        threshold_cascade_program=transition_schedule.threshold_cascade_program,
+        modulation_program=transition_schedule.modulation_program,
+        passive_depletion_program=transition_schedule.passive_depletion_program,
+        social_residue_program=transition_schedule.social_residue_program,
+        reward_component_program=transition_schedule.reward_component_program,
+    )
+    vfs_hash = compute_vfs_hash(
+        level.variable_schema_hash,
+        level.observation_schema_hash,
+        level.action_schema_hash,
+        transition_graph_hash,
+    )
+    patched_level = replace(
+        patched_level,
+        transition_schedule=transition_schedule,
+        transition_graph_hash=transition_graph_hash,
+        vfs_hash=vfs_hash,
+    )
     all_levels = dict(universe.all_levels or {})
     all_levels[level_name] = patched_level
     return replace(
         universe,
         runtime_action_space=runtime_action_space,
+        transition_schedule=transition_schedule,
+        transition_graph_hash=transition_graph_hash,
+        vfs_hash=vfs_hash,
         all_levels=all_levels,
         compiled_vfs_profiles=None if disable_vfs_profiles else universe.compiled_vfs_profiles,
         vfs_observation_spec=None if disable_vfs_profiles else universe.vfs_observation_spec,

@@ -108,6 +108,8 @@ emit_telemetry
 
 The environment still orchestrates the step loop, item manager, effect manager, and tensor synchronization. VTC owns the declared transition rules and their ordering, composition, masks, clamps, and provenance identity.
 
+At runtime, compiled transition programs are carried on `CompiledUniverse.transition_schedule` and each level's `LevelMetadata.transition_schedule`. `VectorizedHamletEnv` consumes that schedule through `VTCTransitionRunner`; it does not branch on rule-family semantics such as social residue, trust, reputation, or institutional effects. Social residue rules come from experiment-level `transition_rules.yaml`, compile into the schedule, participate in `transition_graph_hash` and `vfs_hash`, and write only through the generic VTC phase runner into `VariableRegistry` state.
+
 ### Hashes Make World Semantics Resume-Safe
 
 VFS computes deterministic hashes for each part of the ABI:
@@ -173,6 +175,7 @@ This gives Townlet a direct way to test whether an agent or configuration family
 | Profile compiler and dependency sorting | `src/townlet/vfs/profiles.py` |
 | Runtime expression evaluator | `src/townlet/vfs/evaluator.py` |
 | Transition phase graph | `src/townlet/vfs/transition_graph.py` |
+| Runtime transition schedule and runner | `src/townlet/vfs/transition_schedule.py` |
 | VTC programs and rule compilers | `src/townlet/vfs/vtc.py` |
 | TorchScript VTC kernels | `src/townlet/vfs/vtc_kernels.py` |
 | Schema/provenance hashes | `src/townlet/vfs/schema_hashes.py` |

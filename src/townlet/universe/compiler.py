@@ -32,17 +32,7 @@ from townlet.vfs.schema_hashes import (
     compute_variable_schema_hash,
     compute_vfs_hash,
 )
-from townlet.vfs.transition_graph import TransitionPhaseGraph
-from townlet.vfs.vtc import (
-    compile_vtc_action_writes_with_phase_graph,
-    compile_vtc_affordance_gates_with_phase_graph,
-    compile_vtc_interaction_progress_with_phase_graph,
-    compile_vtc_modulations_with_phase_graph,
-    compile_vtc_passive_depletions_with_phase_graph,
-    compile_vtc_reward_components_with_phase_graph,
-    compile_vtc_terminal_conditions_with_phase_graph,
-    compile_vtc_threshold_cascades_with_phase_graph,
-)
+from townlet.vfs.transition_schedule import build_vtc_transition_schedule
 from townlet.world.expression.type_checker import TypeCheckError
 
 from .compiled import CompiledVFSProfiles
@@ -384,31 +374,23 @@ class UniverseCompiler:
             )
             observation_schema_hash = compute_observation_schema_hash(vfs_fields)
             variable_schema_hash = compute_variable_schema_hash(vfs_variables)
-            transition_phase_graph = TransitionPhaseGraph.default()
-            transition_action_writes = compile_vtc_action_writes_with_phase_graph(runtime_action_space.actions, transition_phase_graph)
-            transition_affordance_gates = compile_vtc_affordance_gates_with_phase_graph(
-                level.affordances.affordances,
-                transition_phase_graph,
+            transition_schedule = build_vtc_transition_schedule(
+                runtime_action_space=runtime_action_space,
+                level=level,
+                social_residue_rules=raw.social_residue_rules,
+                vfs_variables=vfs_variables,
             )
-            transition_interaction_progress = compile_vtc_interaction_progress_with_phase_graph(
-                level.affordances.affordances,
-                transition_phase_graph,
-            )
-            transition_terminal_conditions = compile_vtc_terminal_conditions_with_phase_graph(level.bars.meters, transition_phase_graph)
-            transition_passive_depletions = compile_vtc_passive_depletions_with_phase_graph(level.bars.meters, transition_phase_graph)
-            transition_modulations = compile_vtc_modulations_with_phase_graph(level.affordances.modulations, transition_phase_graph)
-            transition_threshold_cascades = compile_vtc_threshold_cascades_with_phase_graph(level.bars.cascades, transition_phase_graph)
-            transition_reward_components = compile_vtc_reward_components_with_phase_graph(level.drive, transition_phase_graph)
             transition_graph_hash = compute_transition_graph_hash(
-                transition_phase_graph,
-                transition_action_writes,
-                affordance_gate_program=transition_affordance_gates,
-                interaction_progress_program=transition_interaction_progress,
-                terminal_condition_program=transition_terminal_conditions,
-                threshold_cascade_program=transition_threshold_cascades,
-                modulation_program=transition_modulations,
-                passive_depletion_program=transition_passive_depletions,
-                reward_component_program=transition_reward_components,
+                transition_schedule.phase_graph,
+                transition_schedule.action_write_program,
+                affordance_gate_program=transition_schedule.affordance_gate_program,
+                interaction_progress_program=transition_schedule.interaction_progress_program,
+                terminal_condition_program=transition_schedule.terminal_condition_program,
+                threshold_cascade_program=transition_schedule.threshold_cascade_program,
+                modulation_program=transition_schedule.modulation_program,
+                passive_depletion_program=transition_schedule.passive_depletion_program,
+                social_residue_program=transition_schedule.social_residue_program,
+                reward_component_program=transition_schedule.reward_component_program,
             )
             vfs_hash = compute_vfs_hash(variable_schema_hash, observation_schema_hash, action_schema_hash, transition_graph_hash)
 
@@ -445,6 +427,7 @@ class UniverseCompiler:
                 observation_schema_hash=observation_schema_hash,
                 vfs_variables=vfs_variables,
                 variable_schema_hash=variable_schema_hash,
+                transition_schedule=transition_schedule,
                 items_appearance=level.items_appearance,
             )
 
@@ -510,6 +493,7 @@ class UniverseCompiler:
             runtime_action_space=primary_meta.runtime_action_space,
             action_schema_hash=primary_meta.action_schema_hash,
             transition_graph_hash=primary_meta.transition_graph_hash,
+            transition_schedule=primary_meta.transition_schedule,
             vfs_hash=primary_meta.vfs_hash,
             meter_metadata=primary_meta.meter_metadata,
             affordance_metadata=primary_meta.affordance_metadata,

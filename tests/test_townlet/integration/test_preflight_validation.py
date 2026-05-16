@@ -6,6 +6,7 @@ import pytest
 import torch
 
 from townlet.demo.runner import DemoRunner
+from townlet.training.checkpoint_utils import persist_checkpoint_digest
 
 LEVEL_NAME = "L1_full_observability"
 
@@ -26,6 +27,7 @@ def test_preflight_detects_old_checkpoints(tmp_path):
         },
         old_checkpoint,
     )
+    persist_checkpoint_digest(old_checkpoint)
 
     # Attempting to create DemoRunner should detect and reject old checkpoint
     with pytest.raises(ValueError) as exc_info:
@@ -58,6 +60,7 @@ def test_preflight_allows_new_checkpoints(tmp_path):
         },
         new_checkpoint,
     )
+    persist_checkpoint_digest(new_checkpoint)
 
     # Should not raise error
     runner = DemoRunner(

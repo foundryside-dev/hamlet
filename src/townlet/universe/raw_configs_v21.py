@@ -68,6 +68,7 @@ class RawConfigsV21:
     effects: EffectsConfig | None = None
     action_label_overrides: dict[int, str] | None = None
     variables_reference: tuple[VariableDef, ...] | None = None
+    social_residue_rules: tuple[dict[str, object], ...] = ()
 
     def __post_init__(self) -> None:
         """Validate local DTO construction invariants."""
@@ -101,6 +102,7 @@ class RawConfigsV21:
         experiment = stratum = environment = actions = brain = items = vfs_profiles = effects = None
         action_label_overrides: dict[int, str] | None = None
         variables_reference: tuple[VariableDef, ...] | None = None
+        social_residue_rules: tuple[dict[str, object], ...] = ()
         shared_specs = [
             ("experiment.yaml", ExperimentConfig, "experiment"),
             ("stratum.yaml", StratumConfig, "stratum"),
@@ -211,6 +213,24 @@ class RawConfigsV21:
                     location=str(variables_reference_path),
                 )
 
+        # Load transition_rules.yaml (optional experiment-level declarative VTC rule families)
+        transition_rules_path = experiment_dir / "transition_rules.yaml"
+        if transition_rules_path.exists():
+            try:
+                transition_rules_data = yaml.safe_load(transition_rules_path.read_text()) or {}
+                raw_rules = transition_rules_data.get("social_residue", ())
+                if raw_rules is None:
+                    raw_rules = ()
+                if not isinstance(raw_rules, list):
+                    raise ValueError("transition_rules.yaml social_residue field must be a list")
+                social_residue_rules = tuple(dict(rule) for rule in raw_rules)
+            except Exception as exc:  # noqa: BLE001
+                errors.add(
+                    f"Failed to load transition rules from transition_rules.yaml: {exc}",
+                    code="LOAD_ERROR",
+                    location=str(transition_rules_path),
+                )
+
         # If any shared config failed, surface now.
         if errors.errors:
             errors.check_and_raise()
@@ -286,6 +306,7 @@ class RawConfigsV21:
             effects=effects,
             action_label_overrides=action_label_overrides,
             variables_reference=variables_reference,
+            social_residue_rules=social_residue_rules,
             levels=levels,
             experiment_dir=experiment_dir,
         )

@@ -440,7 +440,7 @@ class LiveInferenceServer:
         # Load checkpoint
         logger.info(f"Loading checkpoint: {latest_checkpoint.name} (episode {episode_num})")
 
-        verify_checkpoint_digest(latest_checkpoint, required=False)
+        verify_checkpoint_digest(latest_checkpoint, required=True)
         checkpoint = safe_torch_load(latest_checkpoint, weights_only=False)
 
         # Load Q-network weights

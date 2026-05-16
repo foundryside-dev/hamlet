@@ -30,6 +30,7 @@ from townlet.universe.dto import RuntimeActionSpace
 from townlet.vfs.evaluator import EvaluationMode, VFSEvaluator
 from townlet.vfs.observation_builder import VFSObservationSpec
 from townlet.vfs.registry import VariableRegistry
+from townlet.vfs.transition_schedule import VTCTransitionContext, VTCTransitionRunner, VTCTransitionState
 from townlet.vfs.vtc import (
     VTCActionWriteProgram,
     VTCAffordanceGateProgram,
@@ -39,14 +40,6 @@ from townlet.vfs.vtc import (
     VTCRewardProgram,
     VTCTerminalConditionProgram,
     VTCThresholdCascadeProgram,
-    compile_vtc_action_writes,
-    compile_vtc_affordance_gates,
-    compile_vtc_interaction_progress,
-    compile_vtc_modulations,
-    compile_vtc_passive_depletions,
-    compile_vtc_reward_components,
-    compile_vtc_terminal_conditions,
-    compile_vtc_threshold_cascades,
 )
 
 if TYPE_CHECKING:
@@ -406,16 +399,16 @@ class VectorizedHamletEnv:
         self.action_dim = self.action_space.action_dim
         self.action_ids = level.runtime_action_space.action_ids
         self._movement_deltas = self._build_movement_deltas()
-        self.vtc_action_write_program = compile_vtc_action_writes(self.action_space.actions)
-        self.vtc_affordance_gate_program: VTCAffordanceGateProgram = compile_vtc_affordance_gates(level.affordances.affordances)
-        self.vtc_interaction_progress_program: VTCInteractionProgressProgram = compile_vtc_interaction_progress(
-            level.affordances.affordances
-        )
-        self.vtc_terminal_condition_program: VTCTerminalConditionProgram = compile_vtc_terminal_conditions(self.bars_config.meters)
-        self.vtc_passive_depletion_program: VTCPassiveDepletionProgram = compile_vtc_passive_depletions(self.bars_config.meters)
-        self.vtc_modulation_program: VTCModulationProgram = compile_vtc_modulations(level.affordances.modulations)
-        self.vtc_threshold_cascade_program = compile_vtc_threshold_cascades(self.bars_config.cascades)
-        self.vtc_reward_program: VTCRewardProgram = compile_vtc_reward_components(level.drive)
+        self.vtc_transition_schedule = level.transition_schedule
+        self.vtc_transition_runner = VTCTransitionRunner(self.vtc_transition_schedule)
+        self.vtc_action_write_program: VTCActionWriteProgram = self.vtc_transition_schedule.action_write_program
+        self.vtc_affordance_gate_program: VTCAffordanceGateProgram = self.vtc_transition_schedule.affordance_gate_program
+        self.vtc_interaction_progress_program: VTCInteractionProgressProgram = self.vtc_transition_schedule.interaction_progress_program
+        self.vtc_terminal_condition_program: VTCTerminalConditionProgram = self.vtc_transition_schedule.terminal_condition_program
+        self.vtc_passive_depletion_program: VTCPassiveDepletionProgram = self.vtc_transition_schedule.passive_depletion_program
+        self.vtc_modulation_program: VTCModulationProgram = self.vtc_transition_schedule.modulation_program
+        self.vtc_threshold_cascade_program: VTCThresholdCascadeProgram = self.vtc_transition_schedule.threshold_cascade_program
+        self.vtc_reward_program: VTCRewardProgram = self.vtc_transition_schedule.reward_component_program
 
         # State tensors (initialized in reset)
         self.positions = torch.zeros(
@@ -1103,7 +1096,11 @@ class VectorizedHamletEnv:
         self.vfs_registry.reset_tick_scoped()
         # 1. Execute actions and track successful interactions
         successful_interactions = self._action_executor._execute_actions(actions)
-        self._apply_vtc_action_writes(actions, torch.logical_not(prev_dones))
+        self._run_vtc_transition_phases(
+            self.vtc_transition_runner.phases_through("apply_completion_bonuses"),
+            actions=actions,
+            active_mask=torch.logical_not(prev_dones),
+        )
 
         # 2. Deplete meters (base passive decay with curriculum difficulty)
         self._apply_vtc_passive_depletion(depletion_multiplier)
@@ -1165,6 +1162,11 @@ class VectorizedHamletEnv:
                     if var_name in self.vfs_registry.variables:
                         self.vfs_registry.set_engine_value(var_name, value)
 
+        self._run_vtc_transition_phases(
+            self.vtc_transition_runner.phases_between("apply_threshold_cascades", "evaluate_terminal_conditions"),
+            active_mask=torch.logical_not(prev_dones),
+        )
+
         # 4. Evaluate VTC terminal conditions
         self._apply_vtc_terminal_conditions()
 
@@ -1223,64 +1225,67 @@ class VectorizedHamletEnv:
 
     def _apply_vtc_action_writes(self, actions: torch.Tensor, active_mask: torch.Tensor) -> None:
         """Apply compiled VFS transition writes for selected actions."""
-        program: VTCActionWriteProgram = self.vtc_action_write_program
-        if len(program.writes) == 0:
-            return
-
-        updated_vfs = program.apply(
+        self._run_vtc_transition_phases(
+            self.vtc_transition_runner.phases_through("apply_completion_bonuses"),
             actions=actions,
-            vfs_state=self._current_vfs_state(),
-            bars_state=self._current_bar_state(),
             active_mask=active_mask,
-            device=self.device,
         )
-        for variable_id, value in updated_vfs.items():
-            if variable_id in self.meter_name_to_index:
-                self._set_vtc_bar_value(variable_id, value)
-            elif variable_id in self.vfs_registry.variables:
-                self.vfs_registry.set(variable_id, value, writer="engine")
 
     def _apply_vtc_passive_depletion(self, depletion_multiplier: float) -> None:
         """Apply compiled VFS passive-depletion rules to meter bars."""
-        program: VTCPassiveDepletionProgram = self.vtc_passive_depletion_program
-        if len(program.rules) == 0:
-            return
-
-        updated_bars = program.apply(
-            bars_state=self._current_bar_state(),
+        self._run_vtc_transition_phases(
+            ("apply_passive_depletion",),
             active_mask=torch.ones_like(self.dones, dtype=torch.bool, device=self.device),
-            device=self.device,
             depletion_multiplier=depletion_multiplier,
         )
-        for bar_name, value in updated_bars.items():
-            self._set_vtc_bar_value(bar_name, value)
 
     def _apply_vtc_threshold_cascades(self) -> None:
         """Apply compiled VFS threshold-cascade rules to meter bars."""
-        program: VTCThresholdCascadeProgram = self.vtc_threshold_cascade_program
-        if len(program.rules) == 0:
-            return
-
-        updated_bars = program.apply(
-            bars_state=self._current_bar_state(),
+        self._run_vtc_transition_phases(
+            ("apply_threshold_cascades",),
             active_mask=torch.ones_like(self.dones, dtype=torch.bool, device=self.device),
-            device=self.device,
         )
-        for bar_name, value in updated_bars.items():
-            self._set_vtc_bar_value(bar_name, value)
 
     def _apply_vtc_terminal_conditions(self) -> None:
         """Evaluate compiled VFS terminal-condition rules over meter bars."""
-        program: VTCTerminalConditionProgram = self.vtc_terminal_condition_program
-        if len(program.rules) == 0:
-            return
-
-        self.dones = program.apply(
-            bars_state=self._current_bar_state(),
+        self._run_vtc_transition_phases(
+            ("evaluate_terminal_conditions",),
             dones=self.dones,
             active_mask=torch.logical_not(self.dones),
-            device=self.device,
         )
+
+    def _run_vtc_transition_phases(
+        self,
+        phases: tuple[str, ...],
+        *,
+        active_mask: torch.Tensor,
+        actions: torch.Tensor | None = None,
+        dones: torch.Tensor | None = None,
+        depletion_multiplier: float = 1.0,
+    ) -> None:
+        """Execute generic compiled VTC transition phases and commit their writes."""
+        result = self.vtc_transition_runner.run_phases(
+            phases,
+            VTCTransitionContext(
+                actions=actions,
+                vfs_state=self._current_vfs_state(),
+                bars_state=self._current_bar_state(),
+                active_mask=active_mask,
+                device=self.device,
+                dones=dones,
+                depletion_multiplier=depletion_multiplier,
+            ),
+        )
+        self._commit_vtc_transition_state(result)
+
+    def _commit_vtc_transition_state(self, state: VTCTransitionState) -> None:
+        for bar_name, value in state.bars_state.items():
+            self._set_vtc_bar_value(bar_name, value)
+        for variable_id, value in state.vfs_state.items():
+            if variable_id in self.vfs_registry.variables:
+                self.vfs_registry.set_engine_value(variable_id, value)
+        if state.dones is not None:
+            self.dones = state.dones
 
     def _current_vfs_state(self) -> dict[str, torch.Tensor]:
         """Return the engine-readable VFS registry snapshot."""

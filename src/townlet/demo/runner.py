@@ -181,7 +181,7 @@ class DemoRunner:
         first_checkpoint_path = checkpoint_files[0]
 
         try:
-            verify_checkpoint_digest(first_checkpoint_path, required=False)
+            verify_checkpoint_digest(first_checkpoint_path, required=True)
             checkpoint = safe_torch_load(first_checkpoint_path, weights_only=False)
 
             # Validate checkpoint has required metadata
@@ -338,7 +338,7 @@ class DemoRunner:
         latest_checkpoint = checkpoints[-1]
         logger.info(f"Loading checkpoint: {latest_checkpoint}")
 
-        verify_checkpoint_digest(latest_checkpoint, required=False)
+        verify_checkpoint_digest(latest_checkpoint, required=True)
         checkpoint = safe_torch_load(latest_checkpoint, weights_only=False)
 
         if universe is None:

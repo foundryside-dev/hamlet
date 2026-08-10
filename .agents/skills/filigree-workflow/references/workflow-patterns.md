@@ -3,6 +3,27 @@
 Detailed procedural patterns for common filigree workflows. Load this reference
 when facing a specific workflow challenge.
 
+## Session Recipes
+
+### Before Starting Work
+
+1. Run `filigree ready` to see available work
+2. Check `filigree critical-path` — unblocking the critical path has highest leverage
+3. Pick work that matches the current session's context (e.g., if code is already open)
+
+### When Finishing Work
+
+1. Add a comment summarising what was done and any follow-up needed
+2. Close with a reason: `filigree close <id> --reason="implemented X, tested Y"`
+3. Check if closing this issue unblocks anything: `filigree ready`
+
+### When Blocked
+
+1. Add a comment explaining the blocker
+2. Create the blocking issue if it doesn't exist
+3. Add the dependency: `filigree add-dep <blocked> <blocker>`
+4. Move to other available work
+
 ## Triage Pattern
 
 Triage turns an unsorted pile of issues into a prioritised, actionable backlog.
@@ -95,23 +116,36 @@ filigree remove-dep <blocked> <blocker>
 
 ### Standard Flow
 
-```
-create (open) → in_progress → closed
-```
-
-Use `filigree start-work <issue-id> --assignee <name>` to make the
-`open → in_progress` transition atomically.
-
-### With Verification
-
-For types that support it (check `filigree type-info bug`):
+Bugs in the core pack do **not** start in a directly-startable state. They
+open at `triage` and walk soft transitions toward work (run
+`filigree type-info bug` for the authoritative graph):
 
 ```
-open → fixing → verifying → closed
+create (triage) → confirmed → fixing → verifying → closed
 ```
 
-Pass `--target-status fixing` to `start-work` if the workflow has multiple
-`wip`-category targets and the resolver needs disambiguation.
+`triage` has no single-hop transition into a `wip` status, so a fresh bug is
+*ready* but not *startable*. Pass `--advance` to walk the soft transitions to
+the nearest working status automatically:
+
+```bash
+filigree start-work <bug-id> --assignee <name> --advance   # triage → confirmed → fixing
+```
+
+Without `--advance`, `start-work` on a `triage` bug returns
+`INVALID_TRANSITION` naming the next status (`confirmed`), and
+`start-next-work` skips it.
+
+`--advance` only walks *soft* transitions: missing required fields become
+warnings rather than blocks, and hard edges are never auto-walked.
+
+### Disambiguating the wip target
+
+If the workflow has multiple `wip`-category targets reachable from the
+current status and the resolver needs disambiguation, pass
+`--target-status fixing` to `start-work` / `start-next-work`. (`claim` /
+`claim-next` only reserve and never transition, so they do not take
+`--target-status` or `--advance`.)
 
 ### Bug Report Template
 

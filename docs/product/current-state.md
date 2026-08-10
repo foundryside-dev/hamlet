@@ -27,15 +27,29 @@ children reparented into WS-0 / WS-3 / WS-5 with scope corrected.
 
 ## Open questions / blocked-on-owner
 
-- **Confirm `vision.md` reads as you meant it.** It was written this session from your in-session
-  statements (the authoring pivot; Townlet Town as first-class tech demo; the two claims and their
-  tension). The words are mine; the substance is yours. A vision change is a one-way door — please
-  read it back. **[escalation]**
-- **The public README carries a false claim.** The 70% coverage badge is contradicted by the
-  project's own audit (19%, itself untrusted). The repo is public. Correcting or removing it is an
-  outward-facing edit — not done. **[escalation]**
-- **Confirm the `src/townlet/recording/` deletion** (~1,150 LOC + ~2,600 test lines, WS-2). Filed
-  as intent, not executed. **[escalation]**
+All three escalations from this session were **resolved by the owner on 2026-08-11**:
+
+- ✅ **Vision — EXPLICITLY ENDORSED.** `vision.md` is authoritative, not a draft. Changing it from
+  here escalates. This also unblocks the README narrative.
+- ✅ **README — complete rewrite endorsed.** Filed `hamlet-6730ba7915`. Can start ahead of the rest
+  of WS-5: the narrative is unblocked by the endorsed vision, and the factual falsehoods
+  (nonexistent config packs, the 70% badge, stale test counts) are wrong today regardless of WS-4.
+  Per-field schema docs still wait for WS-4. **Drafting and committing locally is in scope;
+  pushing it public remains the owner's call.**
+- ✅ **`recording/` deletion — endorsed, conditional on preserving intent.** Owner: *"endorsed but
+  let's make sure we don't lose the intent."* Gated by `hamlet-16ae192d42`, which requires a
+  capability spec (what it was for, the async-queue and versioned-envelope designs worth keeping,
+  why it went inert, what a rebuilt version looks like) **before** any deletion. The capability is
+  now a Later roadmap item so it reads as deferred, not rejected.
+
+Still open, not blocking:
+
+- **Which knockdown is first?** Terrain/substrate is the strongest candidate — three of four
+  substrate crashes collapse to one change, and it is where the 6-D demo hits its only wall.
+- **Determinism beyond CPU** — GPU float nondeterminism and the `vtc_kernels.py` TorchScript-JIT
+  path are untested. Both could weaken the oracle.
+- **What is the real test coverage?** Needs one clean full-suite run. Until then the README should
+  carry **no** coverage number rather than a replacement guess.
 - **Which knockdown is first?** Terrain/substrate is the strongest candidate — three of four
   substrate crashes collapse to one change, and it is where the 6-D demo hits its only wall.
 - **Determinism beyond CPU** — GPU float nondeterminism and the `vtc_kernels.py` TorchScript-JIT

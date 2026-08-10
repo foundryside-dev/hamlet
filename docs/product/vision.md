@@ -1,8 +1,14 @@
 # Vision — HAMLET / Townlet
 
-> Bootstrapped 2026-08-11 from observed repo, git history, and tracker state.
-> Items marked **[assumption]** were inferred and need owner confirmation.
-> Items marked **[stated]** were given directly by the owner on 2026-08-11.
+> **Status: ENDORSED by the owner, 2026-08-11.** Explicitly confirmed after review, so this
+> document is authoritative — not a bootstrap draft. Changing it from here is a vision change and
+> escalates under the authority grant below.
+>
+> Drafted 2026-08-11 from observed repo, git history, and tracker state. Tags are retained as
+> provenance of how each claim was established: **[stated]** = given directly by the owner;
+> **[verified-from-source]** = established by reading the tree; **[assumption]** = inferred. The
+> remaining `[assumption]` tags are *subordinate details* — the purpose, audience, tech-demo role,
+> and pivot arc are all owner-endorsed.
 
 ## Purpose
 

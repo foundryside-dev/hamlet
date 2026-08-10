@@ -86,6 +86,15 @@
   rather than editing YAML by hand (templates, scaffolding, validation feedback, live preview).
   Directional only; unshaped. This is where "writing a game as experience" stops being an
   architecture claim and becomes a user experience.
+- **Re-enable episode recording and replay** — deferred, not rejected. The implementation is being
+  deleted in WS-2 (unreachable at three points, 9 months stale), but the *capability* was real and
+  advertised: episode capture, real-time replay, export for teaching and demo material. It serves
+  `PDR-0003`'s tech-demo obligation — showing what agents actually do is how the demo makes its
+  "powerful example" claim. Intent captured before deletion by `hamlet-16ae192d42`; rebuild against
+  the compiled-universe contract rather than restoring. `PDR-0007` reading: an option not yet
+  enabled.
+  · tracker: `hamlet-16ae192d42` (capture) · metric: none yet
+
 - **External adoption readiness** — the secondary audience (other RL researchers / OSS users)
   becomes real only after the authoring claim is measured and the docs are true. Deliberately
   last; note that anything user-facing here crosses the authority boundary and needs owner

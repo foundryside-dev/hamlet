@@ -1,0 +1,193 @@
+# Vision — HAMLET / Townlet
+
+> Bootstrapped 2026-08-11 from observed repo, git history, and tracker state.
+> Items marked **[assumption]** were inferred and need owner confirmation.
+> Items marked **[stated]** were given directly by the owner on 2026-08-11.
+
+## Purpose
+
+> **The pivot, in one line: from *game as experience* to *writing a game as experience*.** **[stated]**
+>
+> The thing the user does for fun is no longer playing the simulation — it is **authoring** it.
+> Every design decision is judged by whether it makes the act of writing a world (and a mind)
+> more expressive, more immediate, and more legible. The simulation is the output; the authoring
+> is the product.
+
+Townlet is a **DRL substrate as code**: a declaratively-specified reinforcement-learning
+environment where the *entire universe* — variables, observation spec, substrate topology,
+affordances, effects, items, reward function, and curriculum — is expressed in YAML, compiled
+into a frozen content-addressed `CompiledUniverse`, and executed GPU-natively against torch
+tensors. **[stated]**
+
+The change it exists to make, stated at full strength: **someone with a cool idea for a game
+system, mechanic, or interaction can turn it into a working DRL gym trivially.** Not "students
+learn RL by playing a game" — *authoring* is the product. The barrier between "I wonder what
+agents would do with this mechanic" and a running, trainable, reproducible environment should
+collapse to writing config. No Python, no environment-class subclassing, no observation-tensor
+plumbing, no reward-function code. **[stated]**
+
+That is what the machinery underneath is *for*. The universe compiler, VFS (declarative variable
+and feature system), VTC (compiled transition programs), and DAC (declarative reward functions)
+are not architectural elegance for its own sake — each one exists to move a category of "you must
+write Python for this" into "you can declare this." The **preset grammar of problems** — a family
+of RL tasks sharing one action/observation vocabulary — is the expressive range a novice author
+gets for free, and the reason checkpoints transfer across universes at all. Provenance hashes make
+every authored universe traceable to the exact run it produced. **[stated]**
+
+### The three-pivot arc (where this is going)
+
+The architecture is the vision made concrete. Read in order, the major pivots describe one
+destination: **both halves of an experiment — the world and the mind — are declarative, compiled
+by one standard compiler, content-addressed, and replayable.** The three pivots and this
+destination are **[stated]**; the per-pivot status below is **[verified-from-source, 2026-08-11]**
+— a bootstrap reading of the tree, not the owner's assessment, and explicitly subject to the
+maturity assessment that is now the Now bet.
+
+1. **Universe as Code (UAC)** — the world is config, not Python: meters, cascades, affordances,
+   effects, items, substrate topology, terminal conditions, rewards. *Largely shipped* (compiler,
+   VFS, VTC transition schedule, DAC). **[verified-from-source]**
+2. **Brain as Code (BAC)** — the *agent's mind* is config: a behaviour contract, module
+   architecture, and a think-loop execution graph, per `docs/architecture/hld/02-brain-as-code.md`.
+   *Partially shipped* — Layer 2 (network architecture, optimizer, loss, replay, Q-learning
+   variants) is live and rich in `brain.yaml` + `brain_config.py` + the factory modules. Layer 1
+   (cognitive topology: behaviour contract, ethics, panic, personality) and Layer 3 (think-loop
+   DAG with governance ordering) are **not implemented**. **[verified-from-source]**
+3. **One standard experimental compiler** — UAC and BAC pass through the same nine-stage pipeline
+   to a single frozen, content-addressed `CompiledUniverse` carrying 7+ provenance hashes, with
+   run bundles, exact resume semantics, and chain-of-custody. *Shipped for UAC; BAC participates
+   via `brain_hash` but is not yet a full first-class compiled artefact alongside the universe.*
+   **[verified-from-source]**
+
+**Caveat on all three status calls:** "shipped" here means *present and wired*, not *mature*.
+The owner reports the project came out of six months of intermittent attention and is buggy,
+underspecified, and unfinished in places. Presence is not maturity — establishing the difference
+is exactly what the Now bet exists to do.
+
+The HLD's three-axis success test (`hld/10-success-criteria.md`) is the honest bar and is adopted
+here: **technical** (snapshot discipline, checkpoint provenance, telemetry), **pedagogical**
+(YAML-only reasoning, controlled ablations), and **governance** (tick-level proof, checkpoint
+replay, lineage, chain-of-custody). All three must hold — "we built a neural net" is not success.
+
+### Townlet Town is the first-class tech demo, not a demoted mission
+
+Its origin was pedagogical — "trick students into learning graduate-level RL by making them think
+they're just playing The Sims," still the stated mission in `README.md`, `CLAUDE.md`, and
+`pyproject.toml`. The correct reading of what changed is **not** that pedagogy was demoted: *"we
+promoted the world around it — it's gone from being 'the product' to being 'the first-class tech
+demo of the product'."* **[stated]**
+
+That distinction is load-bearing, and "first-class" is the operative word. The Sims-flavoured
+survival universe (Townlet Town, its curriculum levels, and its "interesting failures" like Low
+Energy Delirium) is the flagship demonstrator of the substrate: the proof that the thing works,
+the artefact you show someone, and the widest existing exercise of the grammar's expressive range.
+It carries real quality obligations and is maintained to them. It is not legacy, not a sample, and
+not something recovery is free to let rot.
+
+**The demo makes two claims at once**, and this is its actual specification: *"this is a powerful
+example of what you can make — **but you can also make anything else you can think of**."*
+**[stated]**
+
+Those two claims pull against each other, and the tension is the design constraint:
+
+- **Claim 1 — power.** The demo must be genuinely impressive and non-trivial. Something a person
+  sees and *wants*. A thin demo makes the substrate look like a toy.
+- **Claim 2 — generality.** The demo must simultaneously prove it is **not special** — that the
+  substrate is not secretly built around it. The moment the demo is impressive *because* it was
+  special-cased, claim 1 is bought by destroying claim 2, and the product's promise dies with it.
+
+Nearly every impressive demo in software resolves this tension by cheating toward claim 1. This
+one may not.
+
+**Obligation A — the dogfooding rule (serves claim 2).** A first-class tech demo only proves
+anything if it was built the way a user would build it. **Townlet Town must be authored through
+the same door as everyone else**: expressed in config, compiled by the standard compiler, with no
+privileged Python path a novice author would not have. Any place the demo reaches for Python that
+an outside author could not reach for is, by definition, an **authorability gap** — and it is the
+most diagnostic kind, because it is a gap the project has already proven it cannot live without.
+This makes the demo a permanent, running test of the central claim rather than a showcase that
+flatters it.
+
+**Obligation B — generality needs a second witness (also serves claim 2).** One universe, however
+honestly authored, cannot demonstrate "anything else you can think of" — it can only fail to
+contradict it. Proving generality requires further universes that vary one axis of the grammar
+while holding the rest fixed.
+
+**First witness found and verified, 2026-08-11: "Sims in six dimensions."** The owner's proposed
+demo — take the Sims universe and re-substrate it into a 6-D world — was executed end-to-end.
+**One file, ~6 lines of `stratum.yaml`, zero lines changed under `src/townlet/`.** It compiles,
+resets, and steps; agents carry 6-D positions; the action vocabulary auto-expands from the
+dimensionality to `DIM0_NEG … DIM5_POS` plus the domain actions; and the entire Sims domain — bars,
+affordances, items, effects, rewards, curriculum — carries over untouched. Full detail and the one
+real caveat (gridnd has no partial-vision support) in `metrics.md` → Trial 001.
+
+This is a *better* witness than a from-scratch dissimilar universe would have been: holding the
+domain fixed and varying only the substrate isolates exactly the thing being demonstrated. A
+**domain-varying** witness is still wanted as the second axis; the existing non-Town packs
+(`aspatial_test`, `L5_multi_agent`, `simple`, `reference`) are candidates of unverified depth.
+**[assumption]**
+
+The learner, correspondingly, is now an **author** rather than a player being tricked — but the
+pedagogical value is undiminished by the promotion of everything around it.
+
+## Who it serves
+
+- **Primary:** the sole researcher/builder (John) — Townlet is the substrate their own experiments
+  run on. Its first duty is to be trustworthy and fast to iterate for one expert user. **[stated]**
+- **Secondary:** other RL researchers and OSS users who would adopt the substrate to express their
+  own problem grammars. Served, but not at the primary's expense — no adoption-driven API freezing
+  while the substrate is still being shaped. **[stated]**
+- **The aspirational end-user (what success looks like, not who is served today):** the *novice
+  author* — someone with a game-mechanic idea and no RL engineering background, who can express it
+  as a universe and watch agents attack it. Every authoring barrier that requires Python is a
+  defect against this user. They are not a current user; they are the standard the substrate is
+  judged by. **[stated]**
+- **Also served (downstream, not driving):** students and instructors using the pedagogical
+  curriculum levels as a teaching artefact — now as *authors* rather than as players. Townlet Town
+  serves them as the **first-class tech demo** (see Purpose): maintained to demonstrator standard,
+  not left to rot, and bound by the dogfooding rule.
+- **Explicitly not:** teams wanting a production RL training platform, an agent-serving runtime,
+  or a general-purpose Gym-compatible environment zoo. Townlet optimises for expressiveness,
+  authorability, and provenance over generality and stability.
+
+## Anti-goals (what it refuses to be)
+
+These are drawn verbatim from `CLAUDE.md` / `AGENTS.md` and the 2026-05-16 architecture report —
+they are already binding project commitments, not new inventions.
+
+- **Backwards compatible.** Pre-release, zero users, zero downloads. No fallbacks, no deprecation
+  warnings, no migration paths, no "support both old and new." Old configs and checkpoints must
+  fail loudly, not be accommodated. A compatibility shim is a defect.
+- **A producer of production-ready agents.** The goal is understanding and teachability, not SOTA
+  policies or benchmark scores.
+- **A bug-fixer of interesting failures.** Reward hacking and pathological emergent strategies
+  (e.g. "Low Energy Delirium") are *artefacts to preserve and document*, not defects to patch out.
+- **Implicitly defaulted.** The no-defaults principle holds: every behavioural parameter is
+  explicit in config. Hidden defaults produce non-reproducible universes.
+- **Two codebases.** `src/hamlet/` is obsolete legacy. Work happens only in `src/townlet/`.
+- **Domain-aware in the runtime.** `VectorizedHamletEnv` must not name or branch on experiment
+  semantics (trust, obligation, reputation, social residue). Domain meaning lives in compiled
+  artefacts; the runtime stays experiment-agnostic. This is the load-bearing invariant of the
+  substrate-as-code thesis.
+
+## Authority grant
+
+Granted by: John Morrissey (qacona@gmail.com)     Last reviewed: 2026-08-11
+Review cadence: monthly, or on any vision change
+Status: **CONFIRMED** by the owner on 2026-08-11 (standard grant)
+
+Autonomous within strategy — the agent MAY, without asking:
+  prioritize the backlog, write PRDs, dispatch delivery, accept against
+  criteria, reprioritize, kill a failing bet per metrics.md.
+
+Escalate BEFORE acting — the agent MUST get owner sign-off for:
+  changing this vision/strategy/grant, public release or announcement,
+  deprecating a feature users depend on, pricing/commercial change,
+  data deletion, anything touching an external party.
+  (Taxonomy + rationale: product-ownership-operating-model.md.)
+
+**Note on this product's specifics:** because Townlet is pre-release with zero users, the
+"deprecating a feature users depend on" clause is currently near-vacuous — deleting code is
+explicitly encouraged by `CLAUDE.md`. The clauses with real teeth here are *vision/strategy
+change*, *public release or announcement* (the GitHub repo is public at
+`github.com/tachyon-beep/hamlet`), and *data deletion* — which for this product includes
+deleting `runs/`, checkpoints, or recorded episodes that are experimental evidence.

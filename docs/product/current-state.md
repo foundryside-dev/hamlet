@@ -53,6 +53,10 @@ This was the **first** checkpoint; the workspace did not exist at session start.
 - Reframed inert surfaces as **unfinished plan steps, not decisions** — default is wire, not
   delete. `PDR-0005`, later amended.
 - Adopted the **strangler strategy** and filed the whole program into filigree. `PDR-0006`.
+- Adopted **universality + configurability as the default** — capability gaps are options not yet
+  enabled; "should we implement it" is usually "yes, and expose it as config" — paired with a
+  definition-of-done (authored non-default, driven to runtime, pinned by a test), because the
+  unpaired principle is what produced the ~40 inert fields. `PDR-0007`.
 - **Trial 001 passed**: Sims in six dimensions, ~6 lines of config, zero `src/townlet/` changes.
 - **Verified determinism is satisfiable** but found no seeding door — a provenance hole, filed.
 

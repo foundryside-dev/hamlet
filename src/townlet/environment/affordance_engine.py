@@ -156,23 +156,35 @@ class AffordanceEngine:
         meters: torch.Tensor,
         affordance_name: str,
         agent_mask: torch.Tensor,
-        check_affordability: bool = False,
+        *,
+        current_tick: int,
     ) -> torch.Tensor:
         """
         Apply instant affordance interaction.
 
+        Affordability is a PRECONDITION, not an option. The caller gates on
+        :meth:`can_afford` and this method asserts it, so the gate and the
+        application cannot drift apart. The old ``check_affordability: bool = False``
+        made the safe behaviour opt-in and every production caller left it off.
+
         Args:
-            meters: [num_agents, 8] current meter values
+            meters: [num_agents, meter_count] current meter values
             affordance_name: Name of affordance (e.g., "Shower")
             agent_mask: [num_agents] bool mask of agents to apply to
-            check_affordability: If True, check if agents can afford costs
+            current_tick: Current global tick. REQUIRED and deliberately without a
+                default — it seeds the effect command RNG and anchors the scheduler,
+                so a missing value silently degrades to tick 0 with no error.
 
         Returns:
-            updated_meters: [num_agents, 8] after effects applied
+            updated_meters: [num_agents, meter_count] after effects applied
+
+        Raises:
+            ValueError: Unknown affordance, wrong interaction type, or any masked
+                agent that cannot pay the declared costs.
         """
         affordance = self.affordance_map.get(affordance_name)
         if affordance is None:
-            return meters
+            raise ValueError(f"Unknown affordance '{affordance_name}'. Known affordances: {sorted(self.affordance_map)}")
 
         if affordance.interaction_type not in ["instant", "dual"]:
             raise ValueError(
@@ -183,10 +195,17 @@ class AffordanceEngine:
         # Clone meters to avoid modifying input
         updated_meters = meters.clone()
 
-        # Check affordability if requested
-        if check_affordability and len(affordance.costs) > 0:
-            can_afford = self._check_affordability(meters, affordance.costs)
-            agent_mask = agent_mask & can_afford
+        # Affordability is asserted, never silently narrowed. Narrowing the mask here
+        # would let the caller record a completed interaction the engine declined.
+        if len(affordance.costs) > 0:
+            affordable = self.can_afford(affordance_name, meters, cost_mode="instant")
+            offenders = torch.nonzero(agent_mask & ~affordable, as_tuple=False).flatten()
+            if offenders.numel() > 0:
+                declared = {meter: amount for meter, amount in (self._cost_fields(c) for c in self._iter_costs(affordance.costs))}
+                raise ValueError(
+                    f"Agents {offenders.tolist()} cannot pay for affordance '{affordance_name}'; "
+                    f"declared costs {declared}. Gate on can_afford() before applying."
+                )
 
         # Apply costs (modern dict format)
         multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
@@ -202,10 +221,14 @@ class AffordanceEngine:
             agent_mask,
             updated_meters,
             multipliers=multipliers,
-            current_tick=None,
+            current_tick=current_tick,
         )
 
-        # Clamp meters to [0, 1]
+        # Clamp meters to [0, 1].
+        # RETAINED deliberately (PDR-0014 B3 / PDR-0015): bars.*.bounds is currently
+        # the only declaration of a meter ceiling and nothing reads it, so deleting
+        # this would make bounds.max a lie at runtime. Task 3a retargets this literal
+        # onto the declared per-meter bounds; do not delete it and do not add a second.
         updated_meters = torch.clamp(updated_meters, 0.0, 1.0)
 
         return updated_meters
@@ -239,7 +262,6 @@ class AffordanceEngine:
         current_tick: int,
         agent_mask: torch.Tensor,
         completion_mask: torch.Tensor,
-        check_affordability: bool = False,
     ) -> torch.Tensor:
         """
         Apply VTC-selected multi-tick affordance effects for a single tick.
@@ -250,7 +272,6 @@ class AffordanceEngine:
             current_tick: Current tick number selected by VTC [0, duration_ticks-1]
             agent_mask: [num_agents] bool mask of agents to apply to
             completion_mask: [num_agents] bool mask of agents completed by the VTC rule
-            check_affordability: If True, check if agents can afford costs
 
         Returns:
             updated_meters: [num_agents, 8] after VTC-selected effects are applied
@@ -273,11 +294,12 @@ class AffordanceEngine:
         agent_mask = agent_mask.to(device=meters.device, dtype=torch.bool)
         completion_mask = completion_mask.to(device=meters.device, dtype=torch.bool)
 
-        # Check affordability if requested
-        if check_affordability and len(affordance.costs_per_tick) > 0:
-            can_afford = self._check_affordability(meters, affordance.costs_per_tick)
-            agent_mask = agent_mask & can_afford
-            completion_mask = completion_mask & can_afford
+        # NO affordability raise on this path, deliberately. Effects are applied a
+        # tick at a time after the interaction has already begun, so the
+        # gate-and-apply invariant that apply_instant_interaction asserts does not
+        # hold here: an agent can become unable to pay mid-interaction through no
+        # fault of the caller. The executor gates at the START of a multi-tick
+        # interaction instead.
 
         # Apply per-tick costs (modern dict format)
         multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
@@ -311,26 +333,46 @@ class AffordanceEngine:
 
         return updated_meters
 
-    def _check_affordability(self, meters: torch.Tensor, costs: list) -> torch.Tensor:
-        """
-        Check if agents can afford the costs.
+    def can_afford(self, affordance_name: str, meters: torch.Tensor, *, cost_mode: str = "instant") -> torch.Tensor:
+        """Which agents can pay EVERY declared cost of this affordance.
+
+        Public because the action mask and the application path must agree: the
+        executor gates on this, and ``apply_instant_interaction`` asserts it. A
+        private helper invited the two to drift, which is how the gate came to
+        consider only ``money`` while every other declared cost was ignored.
 
         Args:
-            meters: [batch_size, 8] current meter values
-            costs: List of cost dicts with 'meter' and 'amount' keys
+            affordance_name: Name of the affordance.
+            meters: ``[batch_size, meter_count]`` current meter values.
+            cost_mode: ``"instant"`` (``costs``) or ``"per_tick"`` (``costs_per_tick``).
 
         Returns:
-            can_afford: [batch_size] bool tensor
+            ``[batch_size]`` bool tensor.
+
+        Raises:
+            ValueError: Unknown affordance, or an unrecognised ``cost_mode``.
         """
-        batch_size = meters.shape[0]
-        can_afford = torch.ones(batch_size, dtype=torch.bool, device=self.device)
+        affordance = self.affordance_map.get(affordance_name)
+        if affordance is None:
+            raise ValueError(f"Unknown affordance '{affordance_name}'. Known affordances: {sorted(self.affordance_map)}")
+        if cost_mode not in ("instant", "per_tick"):
+            raise ValueError(f"Unknown cost_mode '{cost_mode}' for affordance '{affordance_name}'; expected 'instant' or 'per_tick'.")
+
+        costs = affordance.costs if cost_mode == "instant" else affordance.costs_per_tick
+
+        # Accumulator on the METERS' device, not self.device: callers pass tensors
+        # that may live elsewhere, and a device mismatch here is a silent crash in
+        # the hottest path.
+        affordable = torch.ones(meters.shape[0], dtype=torch.bool, device=meters.device)
 
         for cost in self._iter_costs(costs):
             meter, amount = self._cost_fields(cost)
-            meter_idx = self._get_meter_idx(meter, "affordability check")
-            can_afford = can_afford & (meters[:, meter_idx] >= amount)
+            # The context string is load-bearing: an existing test asserts the
+            # resulting error message contains "affordance".
+            meter_idx = self._get_meter_idx(meter, f"affordance '{affordance_name}' {cost_mode} cost")
+            affordable = affordable & (meters[:, meter_idx] >= amount)
 
-        return can_afford
+        return affordable
 
     # HIGH-09: Deleted get_action_masks() - dead code with hardcoded dimensions (num_affordances=15).
     # Action masking is handled by vectorized_env.py using ActionBuilder.get_base_action_mask().
@@ -352,32 +394,6 @@ class AffordanceEngine:
         """Get the number of affordances defined in config."""
         return len(self.affordances)
 
-    def get_affordance_cost(self, affordance_name: str, cost_mode: str = "instant") -> float:
-        """
-        Get the monetary cost for an affordance interaction.
-
-        Args:
-            affordance_name: Name of affordance
-            cost_mode: "instant" or "per_tick"
-
-        Returns:
-            Normalized cost [0, 1] where 1.0 = $100
-        """
-        affordance = self.affordance_map.get(affordance_name)
-        if affordance is None:
-            return 0.0
-
-        # Get costs list based on mode (modern dict format)
-        costs = affordance.costs if cost_mode == "instant" else affordance.costs_per_tick
-
-        # Find money cost (most affordances only have money cost)
-        for cost in self._iter_costs(costs):
-            meter, amount = self._cost_fields(cost)
-            if meter == "money":
-                return float(amount)
-
-        return 0.0
-
     def get_duration_ticks(self, affordance_name: str) -> int:
         """
         Get the duration in ticks for a multi-tick affordance.
@@ -392,60 +408,6 @@ class AffordanceEngine:
         if affordance is None or affordance.duration_ticks is None:
             return 1
         return int(affordance.duration_ticks)
-
-    def apply_interaction(
-        self,
-        meters: torch.Tensor,
-        affordance_name: str,
-        agent_mask: torch.Tensor,
-        current_tick: int | None = None,
-    ) -> torch.Tensor:
-        """
-        Apply affordance effects to agent meters.
-
-        This method applies the effects and costs defined in the config
-        for a given affordance to the specified agents.
-
-        Args:
-            meters: [num_agents, 8] meter values
-            affordance_name: Name of the affordance being interacted with
-            agent_mask: [num_agents] bool mask indicating which agents interact
-
-        Returns:
-            Updated meters tensor [num_agents, 8]
-
-        Raises:
-            ValueError: If affordance_name is not recognized
-        """
-        # Validate affordance exists
-        if affordance_name not in self.affordance_name_to_idx:
-            raise ValueError(f"Unknown affordance: {affordance_name}")
-
-        # Get affordance config
-        affordance = self.affordances[self.affordance_name_to_idx[affordance_name]]
-
-        # Clone meters to avoid in-place modification
-        result_meters = meters.clone()
-
-        multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
-
-        # Apply costs first
-        for cost in self._iter_costs(affordance.costs):
-            meter_name, amount = self._cost_fields(cost)
-            meter_idx = self._get_meter_idx(meter_name, f"affordance '{affordance_name}' cost")
-            result_meters[agent_mask, meter_idx] -= amount * multipliers[agent_mask]
-
-        # Execute compiled Effects commands (on_start stage)
-        result_meters = self._execute_affordance_effects(
-            affordance_name,
-            "on_start",
-            agent_mask,
-            result_meters,
-            multipliers=multipliers,
-            current_tick=current_tick,
-        )
-
-        return result_meters
 
     @staticmethod
     def _iter_costs(costs) -> Any:

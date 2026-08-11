@@ -152,3 +152,6 @@ tmp_sim_4m/
 # Wardline scan artifacts
 .wardline/
 findings.jsonl
+
+# Filigree server-mode MCP config embeds a literal federation token
+.mcp.json

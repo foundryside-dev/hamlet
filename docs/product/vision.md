@@ -4,6 +4,13 @@
 > document is authoritative — not a bootstrap draft. Changing it from here is a vision change and
 > escalates under the authority grant below.
 >
+> **Amendment log** (a vision change requires owner sign-off; each entry names the PDR that carries
+> the provenance):
+> - *2026-08-11* — added the anti-goal **"A carrier of technical debt — at all, until 1.0"**.
+>   Escalated by `PDR-0012`, approved by the owner (*"yes, put it into the vision — it's absolutely
+>   load bearing"*), recorded as `PDR-0013`. No other section changed; the authority grant is
+>   untouched.
+>
 > Drafted 2026-08-11 from observed repo, git history, and tracker state. Tags are retained as
 > provenance of how each claim was established: **[stated]** = given directly by the owner;
 > **[verified-from-source]** = established by reading the tree; **[assumption]** = inferred. The
@@ -163,6 +170,22 @@ they are already binding project commitments, not new inventions.
 - **Backwards compatible.** Pre-release, zero users, zero downloads. No fallbacks, no deprecation
   warnings, no migration paths, no "support both old and new." Old configs and checkpoints must
   fail loudly, not be accommodated. A compatibility shim is a defect.
+- **A carrier of technical debt — at all, until 1.0 is declared.** *"I have a strict 'no tech debt'
+  policy, until we declare 1.0 we aren't carrying tech debt **not even for RL work** — when we feel
+  like we have something worth testing then we'll freeze and test properly."* **[stated]** The
+  second clause is the load-bearing one: the exemption that research and ML codebases almost
+  universally grant themselves — *it's only experimental code* — **does not exist here**. Nor does
+  the deferral argument that a defect is currently unreachable; broken-but-unreached is still
+  broken. The owner's worry states the cost concretely: *"I don't want to have 20 or 30 data
+  migration pathways in our code base before we even have a single user."* Each one is defensible
+  alone; the twentieth is the codebase. This anti-goal **generalises** the one above — backwards
+  compatibility is the specific debt this project is most prone to, but the refusal is not limited
+  to it. Debt is what is wired *wrong*: failing gates, declared-but-inert config surfaces,
+  computed-but-unconsumed outputs, known-wrong docs, duplicate live-but-weaker code paths. It is
+  **not** what is merely *absent* (an unbuilt option is `PDR-0007`'s "not yet enabled"), and it is
+  **not** the "interesting failures" the anti-goal below protects — this refusal must never be
+  cited to delete those. Rationale, edge cases, and the interaction with `PDR-0007`: `PDR-0012`,
+  `PDR-0013`.
 - **A producer of production-ready agents.** The goal is understanding and teachability, not SOTA
   policies or benchmark scores.
 - **A bug-fixer of interesting failures.** Reward hacking and pathological emergent strategies

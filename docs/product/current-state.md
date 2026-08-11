@@ -37,9 +37,12 @@ Tracker drift from last session is resolved: `hamlet-7a932c4e40` closed `cancell
   provenance breach did **zero historical damage** — it is a live hazard, not a legacy one. Policy
   recorded: no artifact predating the WS-1 provenance fixes is trusted evidence, and any that
   surfaces later is discarded rather than re-stamped.
-- **Owner decision — promote no-tech-debt into `vision.md` as an anti-goal?** `PDR-0012` records
-  the policy and it binds regardless. But anti-goals are where refusals live, and adding one is a
-  **vision change**, which escalates. `vision.md` is ENDORSED; I have not touched it.
+- ~~Owner decision — promote no-tech-debt into `vision.md`?~~ **CLOSED, `PDR-0013`.** Owner
+  approved (*"absolutely load bearing"*). Added as a distinct anti-goal that **generalises** the
+  backwards-compatibility one rather than replacing it — the older entry's enumerated patterns
+  (fallbacks, deprecation warnings, "support both") are what make it enforceable in review and
+  would have been lost in a merge. `vision.md` now carries an **amendment log**; the authority
+  grant is untouched.
 - **Which knockdown is first?** Terrain/substrate remains the strongest candidate — three of four
   substrate crashes collapse to one change, and it is where the 6-D demo hits its only wall.
 - **Determinism beyond CPU** — GPU float nondeterminism and the `vtc_kernels.py` TorchScript-JIT

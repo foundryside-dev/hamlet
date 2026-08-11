@@ -131,3 +131,9 @@ tmp_sim_4m/
 
 # Filigree issue tracker
 .filigree/
+
+# Filigree issue tracker
+.weft/
+# Wardline scan artifacts
+.wardline/
+findings.jsonl

@@ -47,14 +47,21 @@ Recovery milestone **`hamlet-1ade187dcc`**, work streams WS-0…WS-7.
 - **Filed, deliberately NOT in WS-1** (`PDR-0021`): `hamlet-2dde1015fe` (the dead-hash set is
   nine, not four) and `hamlet-df2b972c49` (P1 — two further checkpoint stamp/compare paths).
   Both must enter WS-7's known-divergences register before the freeze.
+- **New this session, from the owner's two framings:** `hamlet-0dd4ac24d9` (P1 — **do not
+  moneyfy**: the frontend dresses a normalised variable as currency, `PDR-0023`) and
+  `hamlet-0cdb8a6d1a` (P1 — **no model export path**; TASK-008 designed 2025-11, never built,
+  `PDR-0024`). `hamlet-365e996511` is now **unblocked** and re-scoped to `range_type` alone.
 
 ## Open questions / blocked-on-owner
 
-- ⚠️ **WHAT UNIT IS `money` IN?** (`PDR-0020`) `docs/architecture/vfs.md:739` and
-  `frontend/formatting.js:26` say a fraction where `1.0 ≈ $100`; the shipped configs denominate in
-  dollars (EAT 5.0, DOCTOR 20.0, WORK +22.5). Under the doc WORK pays $2250; under the configs the
-  frontend renders $22.50 as "$2250". They cannot both be right, and the contradiction only became
-  visible when WS-1(e) stopped clamping money to 1.0. Decide once; config, docs and frontend follow.
+- ⚠️ **AMEND `vision.md`'s "Who it serves" to name the prototyping game developer?**
+  (`PDR-0024`, **proposed** — `vision.md` NOT touched.) Owner-stated core use case: *game devs
+  rapidly throwing a prototype together, getting a model and an interface contract, and taking
+  the model to their own game code.* `vision.md`'s novice author *"watches agents attack it"* —
+  the journey ends inside HAMLET. This one ends in the dev's own engine, and that handoff step
+  is nowhere in the vision. It also exposes a metric gap: the north-star measures **authoring**
+  cost, so a product could score perfectly and still be useless to a game dev who can't get the
+  model out. **Accept, alter, or reject the proposed wording.**
 - ⚠️ **`config_hash_warning` — delete it, or make it raise?** (`PDR-0022`, **proposed**) The plan
   contradicts itself: §0's W4 says resolve it this batch, task 4's text says don't touch it. A
   *warning* is the silent acceptance the Provenance guardrail forbids — but `config_hash` is the

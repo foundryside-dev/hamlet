@@ -61,6 +61,8 @@ central claim. If a new mechanic still needs Python, the substrate-as-code thesi
 mechanic, regardless of how green the gates are. It is measurable today with a fixed corpus of
 candidate ideas and a `git diff --stat src/townlet/` check after each authoring attempt.
 
+**2026-08-12 — A SECOND AXIS IS NOW NAMED AND UNMEASURED (`PDR-0024`, proposed).** The owner named a core use case the north-star does not cover: *game devs prototype here, then take a model and an interface contract to their own game code.* This metric measures **authoring** cost only. A product could score perfectly on it and still be useless to that user, because **export cost is measured by nothing** — and `grep` finds no model-export entry point in `src/townlet/` at all (`hamlet-0cdb8a6d1a`; `TASK-008` has been *Planned* since 2025-11-05). Whether export becomes a second north-star input or stays subordinate to authoring is the owner's call, pending on `PDR-0024`.
+
 **Instrumentation still not built.** Trial 001 was run by hand. Defining the N-idea corpus and a
 repeatable trial protocol remains a bet (`roadmap.md` → Next). Until it exists, `1 of 1` is an
 existence proof, not a rate — it proves the substrate axis works, and proves nothing about the

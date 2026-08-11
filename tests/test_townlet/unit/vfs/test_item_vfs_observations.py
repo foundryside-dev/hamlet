@@ -264,3 +264,43 @@ def test_vfs_observation_handles_mixed_global_agent_item():
     assert obs[1, 1].item() == pytest.approx(0.6)  # agent: energy
     assert obs[1, 2].item() == 0.0  # item slot 0 masked
     assert obs[1, 3].item() == 0.0  # item slot 1 masked
+
+
+def test_item_vfs_observation_rejects_unregistered_row_profile():
+    """An inventory row with no registered profile must fail loudly.
+
+    HONEST NOTE: this passes on current production code — it is a *regression
+    lock*, not a red-before pin. It exists because the guard it exercises had
+    zero test coverage, and the tempting way to "fix" the broken benchmark
+    fixture in ``tests/test_townlet/performance/test_component_benchmarks.py``
+    was to soften this raise into a silent zero-fill.
+
+    Verified: softening the raise makes the builder emit an all-zero item block
+    for a slot that genuinely holds an item, so an agent carrying a full
+    inventory observes an empty one and nothing anywhere reports it.
+    """
+    from townlet.vfs.registry import ScopedVariableRegistry
+
+    registry = ScopedVariableRegistry(device=torch.device("cpu"))
+    registry.set_global("day_count", torch.tensor(1.0))
+    registry.set_agent("energy", torch.tensor([0.5], dtype=torch.float32))
+
+    registry.item_vfs = torch.ones((2, 1), dtype=torch.float32)
+    # Deliberately left unpopulated: row 0 is referenced by the inventory below
+    # but maps to no profile.
+    registry.item_profile_map = {"food_stats": {"nutrition": 0}}
+    registry.item_vfs_index_to_profile = {}
+
+    agent_item_inventory = torch.tensor([[0]], dtype=torch.long)
+
+    spec = VFSObservationSpec(
+        global_vfs_dim=1,
+        agent_vfs_dim=1,
+        item_vfs_dim=1,
+        max_items_per_agent=1,
+        max_item_profiles=1,
+        item_profile_vars={"food_stats": ("nutrition",)},
+    )
+
+    with pytest.raises(RuntimeError, match="cannot resolve exposed variables"):
+        build_vfs_observation(registry, spec, batch_size=1, agent_item_inventory=agent_item_inventory)

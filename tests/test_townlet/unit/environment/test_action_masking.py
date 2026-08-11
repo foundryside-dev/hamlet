@@ -698,6 +698,39 @@ class TestActionMaskBuilderDelegation:
     delegating produces the same tensor the env returns.
     """
 
+    def test_builder_type_annotations_resolve_to_real_symbols(self):
+        """Every annotation on the builder must name a symbol that exists.
+
+        Fails before the fix with ``NameError: name 'Substrate' is not defined``:
+        the ``TYPE_CHECKING`` import named a class that ``townlet.substrate.base``
+        has never exported, so the annotation was unresolvable at runtime and
+        invisible to every test.
+
+        The second assertion rejects the *wrong* fix. Adding
+        ``Substrate = SpatialSubstrate`` to ``townlet/substrate/base.py`` would
+        make the first assertion pass while creating an alias for a name that
+        never existed — a backwards-compatibility shim for zero callers.
+        """
+        import typing
+
+        import townlet.substrate.base
+        from townlet.environment.action_builder import ComposedActionSpace
+        from townlet.environment.action_mask_builder import ActionMaskBuilder
+        from townlet.substrate.base import SpatialSubstrate
+
+        hints = typing.get_type_hints(
+            ActionMaskBuilder.__init__,
+            localns={
+                "ComposedActionSpace": ComposedActionSpace,
+                "SpatialSubstrate": SpatialSubstrate,
+            },
+        )
+
+        assert hints["substrate"] is SpatialSubstrate
+        assert not hasattr(
+            townlet.substrate.base, "Substrate"
+        ), "Substrate is an alias shim for a name that never existed — delete it and use SpatialSubstrate"
+
     def test_env_owns_action_mask_builder(self, masking_env):
         """Env constructs and retains a single ActionMaskBuilder."""
         from townlet.environment.action_mask_builder import ActionMaskBuilder
@@ -717,9 +750,7 @@ class TestActionMaskBuilderDelegation:
             affordances=masking_env.affordances,
             is_affordance_open=masking_env._is_affordance_open,
         )
-        assert torch.equal(from_env, from_builder), (
-            "Env.get_action_masks must delegate to ActionMaskBuilder without modification."
-        )
+        assert torch.equal(from_env, from_builder), "Env.get_action_masks must delegate to ActionMaskBuilder without modification."
 
     def test_builder_is_pure_under_repeated_calls(self, masking_env):
         """The builder is stateless: same inputs → same outputs across calls."""

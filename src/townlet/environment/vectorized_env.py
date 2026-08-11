@@ -64,6 +64,8 @@ class VectorizedHamletEnv:
 
     EFFECT_OBS_SLOTS = 8  # Fixed number of observable effect slots per agent
 
+    runtime_registry: AgentRuntimeRegistry | None
+
     def __init__(
         self,
         *,
@@ -642,7 +644,7 @@ class VectorizedHamletEnv:
             num_agents=self.num_agents,
             bar_index_map=bar_index_map,
         )
-        self.runtime_registry: AgentRuntimeRegistry | None = None
+        self.runtime_registry = None
 
     def _initialize_item_subsystem(self, num_agents: int) -> None:
         """Build the item manager, inventory, and action handler — or leave

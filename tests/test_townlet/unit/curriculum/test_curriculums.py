@@ -1045,9 +1045,9 @@ class TestAdversarialCurriculumFullStateRoundtrip:
         dones = torch.tensor([True, False, False], device=cpu_device, dtype=torch.bool)
         restored.tracker.update_step(rewards, dones)
 
-        assert restored.tracker.episodes_at_stage[0].item() == saved_episodes[0].item() + 1, (
-            "episodes_at_stage must resume from the saved value, not reset to 0."
-        )
+        assert (
+            restored.tracker.episodes_at_stage[0].item() == saved_episodes[0].item() + 1
+        ), "episodes_at_stage must resume from the saved value, not reset to 0."
         # Other agents unchanged by the partial done batch.
         assert restored.tracker.episodes_at_stage[1].item() == saved_episodes[1].item()
         assert restored.tracker.episodes_at_stage[2].item() == saved_episodes[2].item()

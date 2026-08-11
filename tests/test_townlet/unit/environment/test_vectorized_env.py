@@ -692,9 +692,7 @@ class TestVectorizedHamletEnvGoldenTick:
         assert "reward_calculator._calculate_shaped_rewards" in invocation_log
         executor_idx = invocation_log.index("action_executor._execute_actions")
         rewards_idx = invocation_log.index("reward_calculator._calculate_shaped_rewards")
-        assert executor_idx < rewards_idx, (
-            "action_executor must run before reward_calculator within a tick"
-        )
+        assert executor_idx < rewards_idx, "action_executor must run before reward_calculator within a tick"
 
         # Output contract: shapes and types are stable.
         assert obs.shape == (2, env.observation_dim)

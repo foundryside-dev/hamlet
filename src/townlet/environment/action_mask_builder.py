@@ -18,7 +18,7 @@ import torch
 if TYPE_CHECKING:
     from townlet.environment.action_builder import ComposedActionSpace
     from townlet.items import InventoryState, ItemActionHandler, ItemManager
-    from townlet.substrate.base import Substrate
+    from townlet.substrate.base import SpatialSubstrate
 
 
 class ActionMaskBuilder:
@@ -35,7 +35,7 @@ class ActionMaskBuilder:
         action_space: ComposedActionSpace,
         device: torch.device,
         grid_size: int | None,
-        substrate: Substrate,
+        substrate: SpatialSubstrate,
         movement_deltas: torch.Tensor,
         action_ids: dict[str, int],
         enable_temporal_mechanics: bool,

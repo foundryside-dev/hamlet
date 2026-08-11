@@ -102,6 +102,7 @@ class DACEngine:
         compiled: dict[str, Callable] = {}
 
         for mod_name, mod_config in self.dac_config.modifiers.items():
+
             def create_modifier_fn(config) -> Callable:
                 # Pre-compute range boundaries and multipliers as tensors
                 ranges = sorted(config.ranges, key=lambda r: r.min)

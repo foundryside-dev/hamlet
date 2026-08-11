@@ -289,18 +289,43 @@ def test_obs_meters_observation_is_scaled_by_declared_bounds(tmp_path: Path) -> 
 
 
 def test_every_declared_normalization_reaches_the_observation(tmp_path: Path) -> None:
-    """The VFS normalization ABI has production callers.
+    """The VFS normalization ABI has production callers, for EVERY field that declares one.
 
     `apply_normalization` was fully implemented, tested and hashed into
     `observation_schema_hash` with ZERO production callers. This pins that every field
     declaring a spec now has it applied, so the surface cannot go inert again silently.
+
+    Every field is first driven OFF its identity point, without which this test cannot
+    cash that promise. At reset every declared spec happens to be an identity map —
+    `minmax` over [0, 1] is the identity for the seven unit-interval meters, money is
+    0.0, and the four environment-declared variables are permanently 0.0 because nothing
+    writes them (`hamlet-dc8f887cd5`). A version of this test that observed the reset
+    state passed with the whole normalization half reverted.
     """
     env = _env(_pack(tmp_path, L1), L1)
-    obs = env._get_observations()
 
     declared = {f.id: f.normalization for f in env.universe.vfs_observation_fields if f.normalization is not None}
     assert "obs_meters" in declared, "obs_meters must be among the normalized fields"
 
+    # Drive every normalized field off its identity point. obs_meters via money (the only
+    # non-unit ceiling in any shipped pack); the rest by writing the registry directly,
+    # since they have no production writer to do it for us.
+    env.meters[:, env.meter_name_to_index["money"]] = 22.5
+    off_identity = {"obs_meters"}
+    for field_id, spec in declared.items():
+        if field_id == "obs_meters" or field_id not in env.vfs_registry.variables:
+            continue
+        maximum = spec.max if isinstance(spec.max, float) else None
+        if spec.kind != "minmax" or maximum is None or maximum == 1.0:
+            continue
+        current = env.vfs_registry.get(field_id, reader="engine")
+        env.vfs_registry.set(field_id, torch.full_like(current, maximum / 2.0), writer="engine")
+        off_identity.add(field_id)
+
+    assert len(off_identity) >= 2, f"only {off_identity} could be driven off identity — the test would not discriminate"
+
+    obs = env._get_observations()
+    checked = 0
     for field in env.observation_spec.fields:
         normalization = declared.get(field.name)
         if normalization is None:
@@ -311,6 +336,13 @@ def test_every_declared_normalization_reaches_the_observation(tmp_path: Path) ->
         expected = apply_normalization(raw, normalization)
         actual = obs[:, field.start_index : field.end_index]
         assert torch.allclose(expected, actual, atol=1e-6), f"{field.name} is not normalized as declared"
+        if field.name in off_identity:
+            # Vacuity guard: prove this field's spec is NOT the identity here, so the
+            # assertion above actually discriminated.
+            assert not torch.allclose(raw, actual, atol=1e-6), f"{field.name} normalization is an identity map — assertion was vacuous"
+            checked += 1
+
+    assert checked >= 2, f"only {checked} field(s) discriminated; this test cannot detect the surface going inert"
 
 
 def test_dimension_changing_normalization_is_rejected(tmp_path: Path) -> None:

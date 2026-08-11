@@ -4,8 +4,8 @@
 
 **Strangler rewrite behind the compiled-universe contract** (`PDR-0006`) — freeze the current
 system as an oracle, then knock down and rebuild one design-space unit at a time against it.
-Guarded by **Provenance integrity**, which was BREACHED in three places and is now **1 of 3
-closed**.
+Guarded by **Provenance integrity**, which was BREACHED in three places and is now **2 of 3
+closed** (task 5 closes the third).
 
 The owner's framing of what the strangler is *for*, recorded 2026-08-11: *"the original 'game
 engine' needs to be strangled out by the engine engine"* — VFS and the dynamic engine parts are
@@ -73,9 +73,11 @@ authoring one for the first time is filed as `hamlet-e979f2ba37` (WS-4, downstre
 
 ## What this checkpoint did
 
-- **Landed 4 of 10 WS-1 units** — gates (`c2f61beb`), cache identity (`22b7616d` + `cf122ff1`),
-  declared costs gate (`30c433e3`) — plus an unplanned dependency remediation (`e082afd5`).
-  Full suite **2939 passed, 0 failed**; all four gates green.
+- **Landed 6 of 10 WS-1 units** — gates (`c2f61beb`), cache identity (`22b7616d` + `cf122ff1`),
+  declared costs gate (`30c433e3`), bounds + normalization (`7065729a` + `174914d3`), content
+  hashes + effective `brain_hash` (`31c17111` + `39026beb`) — plus an unplanned dependency
+  remediation (`e082afd5`). Full suite **2962 passed, 0 failed**; all four gates green.
+  *(This section spans work since the last formal checkpoint, not one session.)*
 - **Recorded `PDR-0015`, `PDR-0016`, `PDR-0017`.** 0015: `PDR-0014`'s bounds site list was an
   undercount and wiring the four sites it named would have changed *nothing*. 0016: bounds and
   the VFS normalization surface are one feature and land together (owner-approved). 0017: the

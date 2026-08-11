@@ -14,7 +14,6 @@ import torch
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
-from townlet.config.brain_config import compute_brain_hash
 from townlet.curriculum.adversarial import AdversarialCurriculum
 from townlet.curriculum.factory import build_curriculum
 from townlet.demo.database import DemoDatabase
@@ -361,13 +360,7 @@ class LiveInferenceServer:
         from townlet.config.brain_config import apply_training_overrides
 
         base_brain_config = self.compiled_universe.brain
-        brain_hash = compute_brain_hash(base_brain_config)
         logger.info(f"Brain config from brain.yaml: {base_brain_config.description}")
-        logger.info(f"Brain hash: {brain_hash[:16]}... (SHA256)")
-
-        # Store base brain_config for checkpoint provenance
-        self.brain_config = base_brain_config
-        self.brain_hash = brain_hash
 
         # Apply curriculum-level overrides from training.yaml to derive effective brain config
         effective_brain_config = apply_training_overrides(base_brain_config, training_cfg)

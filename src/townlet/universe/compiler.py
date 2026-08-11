@@ -12,6 +12,7 @@ from typing import Any
 import torch
 import yaml
 
+from townlet.config.brain_config import apply_training_overrides, compute_brain_hash
 from townlet.effects.catalog import EffectCatalog
 from townlet.universe.compiled import CompiledUniverse
 from townlet.universe.dto import (
@@ -195,7 +196,17 @@ class UniverseCompiler:
         self._log_stage(7, "Compile levels and optimization data")
         # Stage 6: Compile levels (per-level artifacts)
         # Compute config hashes for provenance
-        brain_hash = self._compute_pydantic_hash(raw.brain)
+        # brain_hash covers the EFFECTIVE brain config: brain.yaml merged with the primary
+        # level's training.yaml overrides. Two deliberate changes from the sibling lines
+        # below, both load-bearing:
+        #   1. the INPUT is the effective config, not raw.brain — a training.yaml q_learning
+        #      edit changes the network that trains, and must move the hash;
+        #   2. the FUNCTION is compute_brain_hash, not _compute_pydantic_hash — it is what
+        #      docs/config-schemas/brain.md documents and what every other brain-hash
+        #      producer uses. Do NOT "match local style" and revert this to
+        #      _compute_pydantic_hash; that silently diverges from every other producer.
+        # This makes brain_hash level-scoped, exactly as drive_hash already is.
+        brain_hash = compute_brain_hash(apply_training_overrides(raw.brain, raw.levels[primary_level].training))
         experiment_hash = self._compute_pydantic_hash(raw.experiment)
         stratum_hash = self._compute_pydantic_hash(raw.stratum)
         environment_hash = self._compute_pydantic_hash(raw.environment)
@@ -518,6 +529,10 @@ class UniverseCompiler:
             vfs_observation_spec=vfs_observation_spec,
             experiment_dir=experiment_dir,
             drive_hash=primary_meta.drive_hash,
+            curriculum_hash=primary_meta.curriculum_hash,
+            bars_hash=primary_meta.bars_hash,
+            affordances_hash=primary_meta.affordances_hash,
+            training_hash=primary_meta.training_hash,
             brain_hash=brain_hash,
             experiment_hash=experiment_hash,
             stratum_hash=stratum_hash,

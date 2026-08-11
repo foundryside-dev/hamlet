@@ -86,6 +86,10 @@ REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "vfs_observation_spec",
     "experiment_dir",
     "drive_hash",
+    "curriculum_hash",
+    "bars_hash",
+    "affordances_hash",
+    "training_hash",
     "brain_hash",
     "experiment_hash",
     "stratum_hash",
@@ -166,6 +170,13 @@ class CompiledUniverse:
     # Provenance
     experiment_dir: Path | None = None
     drive_hash: str | None = None
+    curriculum_hash: str | None = None
+    bars_hash: str | None = None
+    affordances_hash: str | None = None
+    training_hash: str | None = None
+    # brain_hash is the SHA256 of the PRIMARY LEVEL's EFFECTIVE brain config —
+    # brain.yaml merged with that level's training.yaml overrides via
+    # apply_training_overrides — not of brain.yaml. It is level-scoped, like drive_hash.
     brain_hash: str | None = None
     experiment_hash: str | None = None
     stratum_hash: str | None = None
@@ -301,6 +312,10 @@ class CompiledUniverse:
             vfs_observation_spec=deepcopy(self.vfs_observation_spec) if self.vfs_observation_spec is not None else None,
             experiment_dir=self.experiment_dir,
             drive_hash=self.drive_hash,
+            curriculum_hash=self.curriculum_hash,
+            bars_hash=self.bars_hash,
+            affordances_hash=self.affordances_hash,
+            training_hash=self.training_hash,
             brain_hash=self.brain_hash,
             experiment_hash=self.experiment_hash,
             stratum_hash=self.stratum_hash,
@@ -356,6 +371,10 @@ class CompiledUniverse:
             "vfs_observation_spec": (_dataclass_to_plain(self.vfs_observation_spec) if self.vfs_observation_spec is not None else None),
             "experiment_dir": None if self.experiment_dir is None else str(self.experiment_dir),
             "drive_hash": self.drive_hash,
+            "curriculum_hash": self.curriculum_hash,
+            "bars_hash": self.bars_hash,
+            "affordances_hash": self.affordances_hash,
+            "training_hash": self.training_hash,
             "brain_hash": self.brain_hash,
             "experiment_hash": self.experiment_hash,
             "stratum_hash": self.stratum_hash,
@@ -574,6 +593,10 @@ class CompiledUniverse:
             vfs_observation_spec=_vfs_observation_spec_from_plain(_required_field(payload, "vfs_observation_spec")),
             experiment_dir=None if _required_field(payload, "experiment_dir") is None else Path(payload["experiment_dir"]),
             drive_hash=_required_field(payload, "drive_hash"),
+            curriculum_hash=_required_field(payload, "curriculum_hash"),
+            bars_hash=_required_field(payload, "bars_hash"),
+            affordances_hash=_required_field(payload, "affordances_hash"),
+            training_hash=_required_field(payload, "training_hash"),
             brain_hash=_required_field(payload, "brain_hash"),
             experiment_hash=_required_field(payload, "experiment_hash"),
             stratum_hash=_required_field(payload, "stratum_hash"),

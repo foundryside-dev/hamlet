@@ -12,7 +12,6 @@ from typing import Any
 
 import torch
 
-from townlet.config.brain_config import compute_brain_hash
 from townlet.curriculum.factory import build_curriculum
 from townlet.demo.database import DemoDatabase
 from townlet.environment.vectorized_env import VectorizedHamletEnv
@@ -145,11 +144,6 @@ class DemoRunner:
         self.curriculum = None
         self.exploration = None
         self.recorder = None  # Episode recorder (initialized if recording enabled)
-
-        # Brain As Code configuration is loaded from brain.yaml; per-level
-        # overrides come from the level's training.yaml.
-        # self.brain_config is already set from self.compiled.brain
-        self.brain_hash: str | None = None
 
         # Shutdown flag
         self.should_shutdown = False
@@ -310,10 +304,6 @@ class DemoRunner:
         # Persist the training configuration for provenance
         checkpoint["training_config"] = self.training_config.model_dump()
         checkpoint["config_dir"] = str(self.config_dir)
-
-        # TASK-005 Phase 1: Add brain_hash for checkpoint provenance
-        if self.brain_hash is not None:
-            checkpoint["brain_hash"] = self.brain_hash
 
         if universe is None:
             universe = self.compiled
@@ -481,13 +471,7 @@ class DemoRunner:
         from townlet.config.brain_config import apply_training_overrides
 
         base_brain_config = self.brain_config
-        brain_hash = compute_brain_hash(base_brain_config)
         logger.info(f"Brain config from brain.yaml: {base_brain_config.description}")
-        logger.info(f"Brain hash: {brain_hash[:16]}... (SHA256)")
-
-        # Store base brain_config and brain_hash for checkpoint provenance
-        self.brain_config = base_brain_config
-        self.brain_hash = brain_hash
 
         # Apply curriculum-level overrides from training.yaml to derive effective brain config
         effective_brain_config = apply_training_overrides(base_brain_config, self.training_config)

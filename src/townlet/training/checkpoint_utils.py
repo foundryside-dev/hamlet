@@ -41,6 +41,10 @@ def attach_universe_metadata(checkpoint: dict[str, Any], universe: CompiledUnive
     checkpoint["observation_field_uuids"] = [field.uuid for field in universe.observation_spec.fields]
     checkpoint["observation_schema_hash"] = universe.observation_schema_hash
     checkpoint["drive_hash"] = universe.drive_hash
+    checkpoint["curriculum_hash"] = universe.curriculum_hash
+    checkpoint["bars_hash"] = universe.bars_hash
+    checkpoint["affordances_hash"] = universe.affordances_hash
+    checkpoint["training_hash"] = universe.training_hash
     checkpoint["brain_hash"] = universe.brain_hash
     checkpoint["vfs_hash"] = universe.vfs_hash
 
@@ -115,11 +119,67 @@ def assert_checkpoint_dimensions(checkpoint: Mapping[str, Any], universe: Compil
     checkpoint_brain_hash = checkpoint.get("brain_hash")
     if checkpoint_brain_hash is None:
         raise ValueError("Checkpoint missing brain_hash; regenerate the checkpoint with the latest compiler.")
-    if universe.brain_hash is not None and checkpoint_brain_hash != universe.brain_hash:
+    if universe.brain_hash is None:
+        raise ValueError("Universe missing brain_hash; ensure the brain config is compiled.")
+    if checkpoint_brain_hash != universe.brain_hash:
         raise ValueError(
             f"Checkpoint brain_hash mismatch: checkpoint={checkpoint_brain_hash[:16]}..., "
             f"current={universe.brain_hash[:16]}... "
             "The network architecture configuration has changed since the checkpoint was created."
+        )
+
+    # WS-1 task 4: the four per-level content hashes. Computed and serialized since the
+    # compiler was written, compared by nobody until now — a level's bars/affordances/
+    # curriculum/training could change under a checkpoint with no signal at all.
+    # These copy the drive_hash pattern deliberately: missing on either side RAISES.
+    # Do not reintroduce an `if universe.<x> is not None` escape; that is what made the
+    # brain_hash guard above vacuous on one side.
+    checkpoint_curriculum_hash = checkpoint.get("curriculum_hash")
+    if checkpoint_curriculum_hash is None:
+        raise ValueError("Checkpoint missing curriculum_hash; regenerate the checkpoint with the latest compiler.")
+    if universe.curriculum_hash is None:
+        raise ValueError("Universe missing curriculum_hash; recompile the config pack.")
+    if checkpoint_curriculum_hash != universe.curriculum_hash:
+        raise ValueError(
+            f"Checkpoint curriculum_hash mismatch: checkpoint={checkpoint_curriculum_hash[:16]}..., "
+            f"current={universe.curriculum_hash[:16]}... "
+            "The curriculum configuration has changed since the checkpoint was created."
+        )
+
+    checkpoint_bars_hash = checkpoint.get("bars_hash")
+    if checkpoint_bars_hash is None:
+        raise ValueError("Checkpoint missing bars_hash; regenerate the checkpoint with the latest compiler.")
+    if universe.bars_hash is None:
+        raise ValueError("Universe missing bars_hash; recompile the config pack.")
+    if checkpoint_bars_hash != universe.bars_hash:
+        raise ValueError(
+            f"Checkpoint bars_hash mismatch: checkpoint={checkpoint_bars_hash[:16]}..., "
+            f"current={universe.bars_hash[:16]}... "
+            "The bars configuration has changed since the checkpoint was created."
+        )
+
+    checkpoint_affordances_hash = checkpoint.get("affordances_hash")
+    if checkpoint_affordances_hash is None:
+        raise ValueError("Checkpoint missing affordances_hash; regenerate the checkpoint with the latest compiler.")
+    if universe.affordances_hash is None:
+        raise ValueError("Universe missing affordances_hash; recompile the config pack.")
+    if checkpoint_affordances_hash != universe.affordances_hash:
+        raise ValueError(
+            f"Checkpoint affordances_hash mismatch: checkpoint={checkpoint_affordances_hash[:16]}..., "
+            f"current={universe.affordances_hash[:16]}... "
+            "The affordances configuration has changed since the checkpoint was created."
+        )
+
+    checkpoint_training_hash = checkpoint.get("training_hash")
+    if checkpoint_training_hash is None:
+        raise ValueError("Checkpoint missing training_hash; regenerate the checkpoint with the latest compiler.")
+    if universe.training_hash is None:
+        raise ValueError("Universe missing training_hash; recompile the config pack.")
+    if checkpoint_training_hash != universe.training_hash:
+        raise ValueError(
+            f"Checkpoint training_hash mismatch: checkpoint={checkpoint_training_hash[:16]}..., "
+            f"current={universe.training_hash[:16]}... "
+            "The training configuration has changed since the checkpoint was created."
         )
 
 

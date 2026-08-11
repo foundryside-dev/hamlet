@@ -560,15 +560,29 @@ replay:
 
 ## Checkpoint Provenance: brain_hash
 
-Every checkpoint includes a `brain_hash` field (SHA256 of brain.yaml) for reproducibility:
+Every checkpoint includes a `brain_hash` field — the SHA256 of the **effective** brain
+config **at the primary level**: `brain.yaml` merged with that level's `training.yaml`
+overrides. It is **not** the hash of `brain.yaml`. Because `training.yaml` is per-level,
+`brain_hash` is level-scoped, exactly as `drive_hash` is.
 
 ```python
-from townlet.agent.brain_config import load_brain_config, compute_brain_hash
+from pathlib import Path
 
-config = load_brain_config(Path("configs/L0_0_minimal"))
-brain_hash = compute_brain_hash(config)
-# Checkpoint: {'brain_hash': brain_hash, 'q_network': state_dict, ...}
+from townlet.config.brain_config import apply_training_overrides, compute_brain_hash
+from townlet.universe.compiler import UniverseCompiler
+
+universe = UniverseCompiler().compile(Path("configs/default_curriculum"), primary_level="L1_full_observability")
+
+# The stamped value, reproduced:
+level = universe.get_level(universe.metadata.primary_level)
+brain_hash = compute_brain_hash(apply_training_overrides(universe.brain, level.training))
+assert brain_hash == universe.brain_hash
 ```
+
+Alongside it the checkpoint carries four **per-level content hashes** —
+`curriculum_hash`, `bars_hash`, `affordances_hash`, `training_hash` — each compared on
+resume. A change to any of those four files rejects the checkpoint with a
+`Checkpoint <field> mismatch` error naming which one moved.
 
 **Purpose:**
 - Ensures checkpoints match brain configuration

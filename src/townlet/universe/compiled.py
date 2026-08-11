@@ -248,6 +248,13 @@ class CompiledUniverse:
 
         return replace(
             self.metadata,
+            # primary_level MUST be re-projected with the rest. This method realigns
+            # eight fields onto the requested level; leaving the ninth pointing at
+            # the level the universe was COMPILED at makes the returned object
+            # internally inconsistent, and primary_level is the one field that is
+            # not recoverable from any other — L0_5_dual_resource and
+            # L1_full_observability are identical on every hash a checkpoint stamps.
+            primary_level=level_name,
             meter_count=len(meter_names),
             meter_names=meter_names,
             meter_name_to_index=meter_name_to_index,

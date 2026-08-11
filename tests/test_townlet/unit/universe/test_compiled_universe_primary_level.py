@@ -77,3 +77,32 @@ def test_from_dict_rejects_a_payload_whose_declared_primary_level_is_absent(tmp_
 
     with pytest.raises(ValueError, match="primary_level"):
         CompiledUniverse.from_dict(payload)
+
+
+def test_metadata_for_level_reprojects_primary_level(tmp_path: Path) -> None:
+    """``metadata_for_level`` must realign primary_level with the other eight fields.
+
+    Found by adversarial verification of the WS-1(a) fix, and missed by it: this is
+    the FIFTH UniverseMetadata construction site (via ``dataclasses.replace``), and
+    the only one that does not go through ``UniverseMetadata(...)`` directly, so a
+    grep for the constructor does not find it.
+
+    It re-projects meter_count, meter_names, meter_name_to_index, affordance_count,
+    affordance_ids, affordance_id_to_index, action_count, observation_dim and
+    ticks_per_day onto the requested level. Leaving primary_level pointing at the
+    COMPILED level made the returned object internally inconsistent — and since
+    VectorizedHamletEnv.__init__ does ``self.metadata = universe.metadata_for_level(
+    level_name)``, a live env built at level B from a universe compiled at level A
+    carried A's identity.
+
+    Reachable through the documented multi-level API (``create_environment`` /
+    ``from_universe``), which is the entire reason ``all_levels`` exists.
+    """
+    universe = _compile(tmp_path, "L0_0_minimal")
+
+    for level in ("L0_0_minimal", "L0_5_dual_resource", "L1_full_observability"):
+        projected = universe.metadata_for_level(level)
+        assert projected.primary_level == level, (
+            f"metadata_for_level({level!r}) reports primary_level={projected.primary_level!r} — "
+            "the level the universe was compiled at, not the one requested"
+        )

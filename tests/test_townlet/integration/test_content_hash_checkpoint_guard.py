@@ -171,8 +171,15 @@ def test_training_edit_is_caught(tmp_path: Path) -> None:
     """Drop `DOCTOR` from L1 `enabled_affordances`.
 
     NOT a q_learning edit — that moves `brain_hash` too and makes the message ambiguous.
-    No runtime leg: this edit is **compile-time inert** (plan §0.3 correction 17), which is
-    precisely why the content hash is the only thing that can catch it.
+
+    Plan §0.3 correction 17 claimed this edit is "compile-time inert" and specified no runtime
+    leg. **That correction was wrong**, measured 2026-08-12: the edit deterministically removes
+    DOCTOR from the deployed affordance set (14 → 13, stable across trials). The runtime leg is
+    restored, so this test is not structurally blind to `enabled_affordances` becoming a dead
+    config key — the exact inert-surface class WS-1 keeps finding.
+
+    The affordance SET is the right witness; the observation tensor and action mask are not.
+    L1 declares `randomize_affordances: true`, so those differ run to run even base-vs-base.
     """
 
     def mutate(data: dict) -> None:
@@ -180,7 +187,12 @@ def test_training_edit_is_caught(tmp_path: Path) -> None:
         assert "DOCTOR" in enabled, "fixture drifted: DOCTOR is not in enabled_affordances"
         enabled.remove("DOCTOR")
 
-    _six_legs(tmp_path, L1, "training.yaml", mutate, "training_hash", None)
+    def runtime(base_env: VectorizedHamletEnv, mut_env: VectorizedHamletEnv) -> None:
+        assert "DOCTOR" in base_env.affordances
+        assert "DOCTOR" not in mut_env.affordances
+        assert len(mut_env.affordances) == len(base_env.affordances) - 1
+
+    _six_legs(tmp_path, L1, "training.yaml", mutate, "training_hash", runtime)
 
 
 def test_curriculum_edit_is_caught(tmp_path: Path) -> None:
@@ -216,6 +228,29 @@ def test_brain_hash_covers_the_effective_training_config(tmp_path: Path) -> None
 
     # LEG 2 — passes even if only the training_hash half shipped. Keep leg 1.
     assert universe.brain_hash != compute_brain_hash(universe.brain)
+
+
+def test_brain_hash_follows_the_primary_level(tmp_path: Path) -> None:
+    """`brain_hash` is the effective config of the level the universe was COMPILED AT.
+
+    Sibling to the test above, and it exists because that one cannot cash this claim: it
+    compiles only L0_0, which is also the level `next(iter(raw.levels))` yields. A wrong-level
+    bug — reading the overrides from the first level rather than the primary one — is therefore
+    invisible to it, and was measured to leave the full suite green.
+
+    L0_0 is the only `default_curriculum` level whose `training.yaml` overrides `brain.yaml`,
+    so L0_0 and the rest MUST land on different hashes. If a future edit makes every level's
+    overrides identical, the inequality below fails loudly rather than silently un-pinning.
+    """
+    pack = _pack(tmp_path)
+    hashes = {}
+    for level in (L0, L0_5, L1, L3):
+        universe = _compile(pack, level)
+        expected = compute_brain_hash(apply_training_overrides(universe.brain, universe.get_level(level).training))
+        assert universe.brain_hash == expected, f"{level}: brain_hash is not that level's effective config"
+        hashes[level] = universe.brain_hash
+
+    assert hashes[L0] != hashes[L1], "L0_0 and L1 no longer differ — this test can no longer detect a wrong-level hash"
 
 
 def test_overridden_brain_yaml_value_does_not_block_resume(tmp_path: Path) -> None:

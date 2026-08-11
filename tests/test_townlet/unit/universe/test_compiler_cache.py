@@ -174,6 +174,14 @@ def test_compile_recovers_from_corrupted_cache(tmp_path: Path, monkeypatch: pyte
         "vfs_hash",
         "optimization_data_raw",
         "vfs_observation_spec",
+        # WS-1 task 4. The per-level copies are covered by the level-provenance test below;
+        # these are the TOP-LEVEL projections, which are what attach_universe_metadata stamps
+        # and assert_checkpoint_dimensions compares. Without these entries the whole
+        # REQUIRED_COMPILED_UNIVERSE_FIELDS half of task 4 reverts with no test signal.
+        "curriculum_hash",
+        "bars_hash",
+        "affordances_hash",
+        "training_hash",
     ],
 )
 def test_direct_cache_load_rejects_missing_required_top_level_fields(tmp_path: Path, missing_field: str) -> None:

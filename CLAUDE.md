@@ -184,10 +184,11 @@ src/townlet/
 
 **Observation Dimensions** (Grid2D with "relative" encoding):
 
-⚠️ **The per-level dimension counts previously listed here were wrong.** `L0_0_minimal`
-compiles to **124 dims**, measured 2026-08-11, not the 29 claimed. Do not trust a hardcoded
-number in documentation — read `universe.levels[<name>].observation_spec.total_dim` off the
-compiled artifact, which is the only authority.
+⚠️ **The per-level dimension counts previously listed here (29 / 54) were wrong by roughly 4×,
+and no replacement literal is given on purpose.** Observation width moves whenever the observed
+surface changes, so any number written here starts decaying immediately — that is how the old
+ones got wrong. Read `universe.levels[<name>].observation_spec.total_dim` off the compiled
+artifact. It is the only authority, and it is correct by construction at every commit.
 
 **Key insight**: Observation dim is **constant** across all Grid2D grid sizes, enabling true transfer learning.
 

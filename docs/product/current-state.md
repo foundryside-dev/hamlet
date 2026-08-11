@@ -12,6 +12,15 @@ engine' needs to be strangled out by the engine engine"* — VFS and the dynamic
 the guiding star, not `health = 0..100`. That converts the strangler from an ordering question
 into a **selection criterion**: strangle wherever the runtime still knows what the game is.
 
+**Sequencing is deliberately open, recorded 2026-08-12.** The owner: *"once we lock in the VFS
+system, we can pick another system to pin (e.g. migrating the obs to a better system or
+something else entirely, as long as we're replacing, refactoring and fixing I'm happy for us to
+float from system to system."* So **WS-N numbering is an inventory, not a required order** —
+pin one system, then choose the next on the selection criterion (*where does the runtime still
+know what the game is?*), not by stream number. Observation encoding is a named live candidate
+(`PDR-0017`). What is **not** open: doing several systems at once, or work that is neither
+replacing, refactoring nor fixing. To be formalised as a PDR at the next checkpoint.
+
 ## In flight
 
 Recovery milestone **`hamlet-1ade187dcc`**, work streams WS-0…WS-7.

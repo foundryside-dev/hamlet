@@ -35,10 +35,11 @@ replacing, refactoring nor fixing. To be formalised as a PDR at the next checkpo
 
 Recovery milestone **`hamlet-1ade187dcc`**, work streams WS-0…WS-7.
 
-- **WS-1** `hamlet-67ffbd282a` (P0, claimed, `fixing`) — **5 of 10 units landed, tree green at
+- **WS-1** `hamlet-67ffbd282a` (P0, claimed, `fixing`) — **6 of 10 units landed, tree green at
   every commit.** Grew 7 → 10 units across two reviews (`PDR-0015`, `PDR-0016`).
-  Order: ~~gates(1)~~ → ~~a(2)~~ → ~~d(3)~~ → ~~bounds+normalization(3a)~~ → **new1(4) ← next**
-  → new2(5) → b(6) → c(7) → close(8), plus sibling `3b` (`hamlet-88acec4bb5`) before the freeze.
+  Order: ~~gates(1)~~ → ~~a(2)~~ → ~~d(3)~~ → ~~bounds+normalization(3a)~~ → ~~new1(4)~~ →
+  **new2(5) ← next** → b(6) → c(7) → close(8), plus sibling `3b` (`hamlet-88acec4bb5`).
+  **Provenance integrity: 2 of 3 breaches closed.** Task 5 closes the third.
 - **WS-7** `hamlet-e3af412673` (P0) — the strangler's enabling stream. Blocked by WS-1.
 - **WS-6** `hamlet-5e39fcccb0`, **WS-0** `hamlet-8eeaba1461` — ready, untouched.
 - **WS-4** gained `hamlet-f46e2b381a` (`clamp_and_validate` declared-but-empty) and
@@ -88,31 +89,53 @@ authoring one for the first time is filed as `hamlet-e979f2ba37` (WS-4, downstre
 
 ## Next session, start here
 
-**Implement task 4** (`hamlet-ae6601e463`) — stamp and compare the four per-level content
-hashes (`bars`, `affordances`, `curriculum`, `training`), which are computed today and read by
-**nobody**, and fix `brain_hash`. This is **breach 2 of 3** on the Provenance-integrity
-guardrail. Plan §2 task 4. Its `H2` dependency on 3a is satisfied: money now survives a tick,
-so task 4's affordance leg can set it and have it persist.
+**Implement task 5** (`hamlet-1029f99f4b`) — route the serving path through the shared identity
+guard. **Breach 3 of 3**, and the last WS-1 provenance unit. Plan §2 task 5, and read **§0.3
+corrections 13, 19 and 21 first** — they are task-5-relevant:
+
+- **Task 5 owns `assert_checkpoint_identity`**, which does not exist yet (its only mention in
+  the repo is a comment at `checkpoint_utils.py:36`). Task 4's D5 test deliberately stops at
+  stamp-plus-collision; the `pytest.raises(match="primary_level")` leg is task 5's, and it
+  must run against a pack whose L1 `run_metadata.output_subdir` is normalised to L0_5's —
+  otherwise `training_hash` fires first and the test passes for the wrong reason.
+- **Ordering hazard, live right now:** task 4 deleted `runner.py`'s dead `brain_hash` write but
+  deliberately left the `if universe is not None:` gate for task 5. Until task 5 lands, a path
+  where `universe is None` writes a checkpoint with **zero** provenance keys.
+- **`config_hash_warning` is unresolved and escalated** — §0's W4 says resolve it in this batch,
+  Task 4's text says don't touch it. §0 outranks task text, but "resolve" ≠ "delete". Options:
+  delete it (now largely redundant) or make it raise (a *warning* is the silent acceptance the
+  guardrail forbids, and `config_hash` is the broadest signal we have). **Owner's call.**
+
+**Task 4 is done** (`31c17111` + `39026beb`) — the four content hashes stamped and hard-compared,
+`brain_hash` now covering the effective config at the primary level. Recon (42 agents) overturned
+enough of the spec that §0.3 exists; verification (15 agents) refuted 8 findings and lost 3 to a
+rate limit, all 3 about my own tests, all 3 upheld on re-measurement and fixed.
 
 **Task 3a is done** (`7065729a` + `174914d3`) — bounds at all six runtime sites *and* the VFS
 normalization ABI given its first production callers. Measured on L1: money `1.000000 →
-22.500000` per tick, money affordances `1 of 7 → 7 of 7`, `transition_graph_hash` moved to
-exactly the value the plan predicted. Its adversarial pass (18 agents, 5 lenses) confirmed
-**one** finding — a weak-sentinel test — now fixed and verified by mutation rather than by
-re-running green.
+22.500000` per tick, money affordances `1 of 7 → 7 of 7`.
 
-Carry these into task 4:
+Carry these into task 5:
 
 1. `find configs -name '*.msgpack' -delete` before **every** measurement, red and green —
    provenance uses `git rev-parse HEAD` and ignores dirty state.
 2. **Verify red by mutation in a detached worktree**, never `git stash` (hard-blocked by an
    operator hook that has caused silent work loss). `git worktree add --detach <path> HEAD`,
    copy the test in, run with `PYTHONPATH=<wt>/src` and the main venv's python.
-3. **A green test is not evidence.** Two units running, two weak tests found by mutating the
-   implementation and re-running. Mutate before believing.
+3. **A green test is not evidence.** Three units running, **five** weak tests found by mutating
+   the implementation and re-running — and in task 4 the three that mattered most were found
+   only because three refuter agents died on a rate limit and I re-measured their findings by
+   hand instead of dropping them. Mutate before believing.
+4. **Run review agents in isolated worktrees** (`isolation: 'worktree'`). Task 3a's pass ran
+   mutations in the live tree while another agent was reading it; task 4's left four stray
+   worktrees behind when it was killed mid-flight. Nothing was lost either time, but neither
+   was by design.
+5. **A correction is not self-verifying.** §0.3 correction 17 came out of a pass whose whole
+   purpose was catching wrong spec claims — and was itself wrong (retracted in place). An
+   "X is inert" claim needs the same measurement as the claim it replaces.
 
-**A recurring lesson, now seen three times — carry it into tasks 4 and 5, which both add fields
-to exactly this kind of structure:** grep finds *the shape of a call*, not the set of places a
+**A recurring lesson, now seen three times — carry it into task 5 and into
+`hamlet-df2b972c49`, which both touch exactly this kind of structure:** grep finds *the shape of a call*, not the set of places a
 value is produced. `grep torch.clamp(` missed compile-time tuple literals. `grep
 UniverseMetadata(` missed a `dataclasses.replace()`. A grep against a *documented* filename
 (`drive_as_code.yaml`) returned zero hits and falsely confirmed a claim, because every pack

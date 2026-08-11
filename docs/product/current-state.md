@@ -71,9 +71,14 @@ Closed this session: *"what is the real test coverage?"* — **81%** (`PDR-0010`
 
 ## Next session, start here
 
-**Fix WS-1 in the reordered sequence** (`PDR-0008`): **(a)** compile-cache key + `metadata.primary_level`,
-then **`hamlet-ae6601e463`** (stamp the four per-level hashes — cheapest win), then
-**(d)-affordability**, then **(b)**, then **(c)**.
+**Execute the WS-1 fix plan: `docs/plans/2026-08-11-ws1-fix-set.md`.** Nine tasks, reviewed by four
+`axiom-planning` lenses (zero hallucinations across ~45 checked claims; sequencing and pinning-test
+discipline clean), with three blockers resolved in the plan's §0 by `PDR-0014`. **Read §0 first —
+it overrides the task text where they conflict.** Order per `PDR-0008`: gates → (a) cache key +
+`primary_level` → (d) affordability → four-hash stamp → serving guards → (b) → (c), plus
+`hamlet-88acec4bb5` (dead-agent filter) and the `bars.*.bounds` wiring.
+
+The plan's own review does **not** carry forward — re-review after the amendments land.
 
 Two traps recorded on `hamlet-67ffbd282a`, both of which will bite silently:
 1. **(c)'s spec does not compile against (b)'s** — (b) makes `hidden` a required positional and

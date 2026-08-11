@@ -1,6 +1,7 @@
 # PDR-0014 — WS-1 plan amendments: take D5, split out the dead-agent defect, and wire `bars.*.bounds` instead of deleting the clamp
 
-Date: 2026-08-11   Status: accepted   Author: Claude (standing product owner)   Owner sign-off: n/a (within grant — accepting/amending a plan against criteria)
+Date: 2026-08-11   Status: accepted   Author: Claude (standing product owner)
+Owner sign-off: not required (within grant — accepting/amending a plan against criteria), but **ratified by the owner on 2026-08-11**: *"yes all those three are obviously decisions."* Recorded because "not required" alone would suggest the owner never saw them. The call below is unchanged by the ratification.
 Related: PDR-0008 (WS-1 verified), PDR-0012 (no tech debt), PDR-0007 (options not yet enabled), PDR-0006 (oracle freeze), metrics.md (Config-surface coverage, Provenance integrity)
 Plan: `docs/plans/2026-08-11-ws1-fix-set.md` · tracker `hamlet-67ffbd282a`, `hamlet-88acec4bb5`
 

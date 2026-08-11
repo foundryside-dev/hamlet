@@ -31,10 +31,12 @@ Tracker drift from last session is resolved: `hamlet-7a932c4e40` closed `cancell
   L0_5/L1/L2/L3 before WS-1(a) lands silently resumes the wrong weights *and* writes checkpoints
   stamped with the wrong identity. `rm -rf configs/*/.compiled` before the next run. It is
   deliberately **not** deleted — it is the standing repro.
-- **Owner decision — audit `runs/`?** Any checkpoint produced from a poisoned compile carries the
-  wrong `vfs_hash` permanently, and the mislabelling is inverted (accepted by the wrong universe,
-  rejected by the right one). Deleting or re-stamping those artifacts is **data deletion** under
-  the grant and needs your call. Escalated, not acted on.
+- ~~Owner decision — audit `runs/`?~~ **CLOSED, `PDR-0011`.** Audited on owner authorisation:
+  `runs/` holds only `.gitkeep`, **zero `.pt` files exist anywhere in the tree**, and no tensorboard
+  or run-database artifacts exist. Nothing to cut loose; no deletion was required or performed. The
+  provenance breach did **zero historical damage** — it is a live hazard, not a legacy one. Policy
+  recorded: no artifact predating the WS-1 provenance fixes is trusted evidence, and any that
+  surfaces later is discarded rather than re-stamped.
 - **Which knockdown is first?** Terrain/substrate remains the strongest candidate — three of four
   substrate crashes collapse to one change, and it is where the 6-D demo hits its only wall.
 - **Determinism beyond CPU** — GPU float nondeterminism and the `vtc_kernels.py` TorchScript-JIT

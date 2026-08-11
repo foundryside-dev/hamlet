@@ -978,9 +978,9 @@ class TestHandleInteractions:
             affordances = ()
 
             @staticmethod
-            def get_affordance_cost(_affordance_name, *, cost_mode):
+            def can_afford(_affordance_name, meters, *, cost_mode):
                 assert cost_mode == "per_tick"
-                return 0.0
+                return torch.ones(meters.shape[0], dtype=torch.bool, device=meters.device)
 
             @staticmethod
             def apply_vtc_multi_tick_effects(
@@ -990,10 +990,8 @@ class TestHandleInteractions:
                 current_tick,
                 agent_mask,
                 completion_mask,
-                check_affordability,
             ):
                 assert affordance_name == "REST"
-                assert check_affordability is False
                 calls.append((current_tick, agent_mask.clone(), completion_mask.clone()))
                 updated = meters.clone()
                 updated[agent_mask, 0] += 0.1

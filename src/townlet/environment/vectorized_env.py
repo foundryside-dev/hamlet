@@ -587,7 +587,7 @@ class VectorizedHamletEnv:
         Phase method of __init__ (hamlet-2559b98232). Writes:
         ``vfs_variables``, ``vfs_registry``, ``vfs_observation_spec``,
         ``vfs_evaluator``, ``vfs_observation_marks``, ``meter_name_to_index``,
-        ``money_idx``. Depends on ``self.metadata``, ``self.num_agents``,
+        Depends on ``self.metadata``, ``self.num_agents``,
         ``self.device``, ``self.universe``.
         """
         universe = self.universe
@@ -627,7 +627,6 @@ class VectorizedHamletEnv:
 
         meter_name_to_index = dict(self.metadata.meter_name_to_index)
         self.meter_name_to_index = meter_name_to_index
-        self.money_idx = meter_name_to_index.get("money")
 
     def _initialize_dac_engine(self) -> None:
         """Construct the DAC reward backend and prepare the runtime-registry slot.

@@ -93,6 +93,28 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
                     location=str(experiment_dir / "levels" / level_name / "curriculum.yaml"),
                 )
 
+    # A multi_tick affordance needs a tick schedule to progress through. Without
+    # active temporal mechanics its interaction can be started and never completes,
+    # which is a config error the compiler should refuse rather than a runtime
+    # behaviour to debug. Predicate is == "multi_tick" ONLY: a "dual" affordance has
+    # an instant path and stays legal. No shipped pack is affected.
+    for level_name, level in raw.levels.items():
+        temporal_active = temporal_supported and level.curriculum.curriculum.active_temporal
+        if temporal_active:
+            continue
+        for affordance in level.affordances.affordances:
+            if affordance.interaction_type == "multi_tick":
+                errors.add(
+                    (
+                        f"Affordance '{affordance.name}' is interaction_type: multi_tick, but level "
+                        f"'{level_name}' has no active temporal mechanics "
+                        "(stratum.temporal_support='enabled' and curriculum.active_temporal=true). "
+                        "A multi-tick interaction cannot progress without a tick schedule."
+                    ),
+                    code="MULTI_TICK_REQUIRES_TEMPORAL",
+                    location=str(experiment_dir / "levels" / level_name / "affordances.yaml"),
+                )
+
     vision_support = raw.stratum.stratum.vision_support
     for level_name, level in raw.levels.items():
         active = level.curriculum.curriculum.active_vision

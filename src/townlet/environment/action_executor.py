@@ -181,10 +181,10 @@ class ActionExecutor:
 
             is_multi_tick = env.vtc_interaction_progress_program.contains_affordance(affordance_name)
             cost_mode = "per_tick" if is_multi_tick else "instant"
-            cost_per_tick = env.affordance_engine.get_affordance_cost(affordance_name, cost_mode=cost_mode)
-            if env.money_idx is not None:
-                can_afford = env.meters[:, env.money_idx] >= cost_per_tick
-                at_affordance = at_affordance & can_afford
+            # Gate on EVERY declared cost, not just money. The previous form read a
+            # single hardcoded money meter, so an affordance declaring energy or mood
+            # costs was affordable to an agent who could not pay them.
+            at_affordance = at_affordance & env.affordance_engine.can_afford(affordance_name, env.meters, cost_mode=cost_mode)
 
             if not at_affordance.any():
                 continue
@@ -193,7 +193,7 @@ class ActionExecutor:
                 agent_indices = torch.where(at_affordance)[0]
                 for agent_idx in agent_indices:
                     successful_interactions[int(agent_idx.item())] = affordance_name
-                env.meters = env.affordance_engine.apply_interaction(
+                env.meters = env.affordance_engine.apply_instant_interaction(
                     meters=env.meters,
                     affordance_name=affordance_name,
                     agent_mask=at_affordance,
@@ -226,7 +226,6 @@ class ActionExecutor:
                     current_tick=int(ticks_done.item()) - 1,
                     agent_mask=tick_mask,
                     completion_mask=completion_mask,
-                    check_affordability=False,
                 )
 
         env._update_affordance_tracking(successful_interactions)
@@ -264,20 +263,19 @@ class ActionExecutor:
             if not at_affordance.any():
                 continue
 
-            cost_normalized = env.affordance_engine.get_affordance_cost(affordance_name, cost_mode="instant")
-            if cost_normalized > 0:
-                if env.money_idx is not None:
-                    can_afford = env.meters[:, env.money_idx] >= cost_normalized
-                    at_affordance = at_affordance & can_afford
+            # Gate on EVERY declared cost. get_affordance_cost() returned only the
+            # money component — and, despite its docstring promising a normalized
+            # [0,1] value, returned the raw declared amount.
+            at_affordance = at_affordance & env.affordance_engine.can_afford(affordance_name, env.meters, cost_mode="instant")
 
-                if not at_affordance.any():
-                    continue
+            if not at_affordance.any():
+                continue
 
             agent_indices = torch.where(at_affordance)[0]
             for agent_idx in agent_indices:
                 successful_interactions[agent_idx.item()] = affordance_name
 
-            env.meters = env.affordance_engine.apply_interaction(
+            env.meters = env.affordance_engine.apply_instant_interaction(
                 meters=env.meters,
                 affordance_name=affordance_name,
                 agent_mask=at_affordance,

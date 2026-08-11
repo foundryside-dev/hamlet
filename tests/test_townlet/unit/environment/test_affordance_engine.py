@@ -6,7 +6,7 @@ independently of the environment.
 Coverage focus (post-v2.1 refactor):
 - Edge cases (affordance not found, invalid inputs)
 - Opening hours and affordability checks
-- Cost queries (get_affordance_cost, get_duration_ticks)
+- Cost queries (get_duration_ticks)
 - Multi-tick vs instant/dual interaction semantics
 
 Note: Full interaction flows and action masking are tested via
@@ -303,7 +303,7 @@ class TestAffordanceQueries:
 class TestAffordabilityChecking:
     """Test affordability validation logic."""
 
-    def test_check_affordability_single_cost(self, cpu_device, affordance_engine_components):
+    def test_can_afford_single_cost(self, cpu_device, affordance_engine_components):
         """Check affordability with single cost (money)."""
         bars_config, affordance_config = affordance_engine_components
         engine = AffordanceEngine(affordance_config, num_agents=4, device=cpu_device, meter_name_to_idx=bars_config.meter_name_to_index)
@@ -313,14 +313,13 @@ class TestAffordabilityChecking:
         meters[:, 3] = torch.tensor([0.10, 0.05, 0.00, 0.15], device=cpu_device)  # Money
 
         # Hospital costs $0.15 (money)
-        hospital = engine.affordance_map["Hospital"]
-        can_afford = engine._check_affordability(meters, hospital.costs)
+        can_afford = engine.can_afford("Hospital", meters)
 
         # Agents with >= $0.15 can afford (only agent 3)
         expected = torch.tensor([False, False, False, True], device=cpu_device)
         assert torch.equal(can_afford, expected)
 
-    def test_check_affordability_multiple_costs(self, cpu_device, affordance_engine_components):
+    def test_can_afford_multiple_costs(self, cpu_device, affordance_engine_components):
         """Check affordability with no costs (always affordable)."""
         bars_config, affordance_config = affordance_engine_components
         engine = AffordanceEngine(affordance_config, num_agents=4, device=cpu_device, meter_name_to_idx=bars_config.meter_name_to_index)
@@ -331,14 +330,13 @@ class TestAffordabilityChecking:
         meters[:, 3] = torch.tensor([0.10, 0.10, 0.00, 0.10], device=cpu_device)  # Money
 
         # Park has no costs, so all agents can afford
-        park = engine.affordance_map["Park"]
-        can_afford = engine._check_affordability(meters, park.costs)
+        can_afford = engine.can_afford("Park", meters)
 
         # All agents should be able to afford (no costs)
         expected = torch.tensor([True, True, True, True], device=cpu_device)
         assert torch.equal(can_afford, expected)
 
-    def test_check_affordability_all_agents_can_afford(self, cpu_device, affordance_engine_components):
+    def test_can_afford_all_agents_can_afford(self, cpu_device, affordance_engine_components):
         """All agents can afford should return all True."""
         bars_config, affordance_config = affordance_engine_components
         engine = AffordanceEngine(affordance_config, num_agents=4, device=cpu_device, meter_name_to_idx=bars_config.meter_name_to_index)
@@ -347,13 +345,12 @@ class TestAffordabilityChecking:
         meters = torch.ones((4, 8), dtype=torch.float32, device=cpu_device)
 
         # Shower costs $0.03
-        shower = engine.affordance_map["Shower"]
-        can_afford = engine._check_affordability(meters, shower.costs)
+        can_afford = engine.can_afford("Shower", meters)
 
         # All should be able to afford
         assert torch.all(can_afford)
 
-    def test_check_affordability_mixed_affordability(self, cpu_device, affordance_engine_components):
+    def test_can_afford_mixed_affordability(self, cpu_device, affordance_engine_components):
         """Mixed affordability should return correct mask."""
         bars_config, affordance_config = affordance_engine_components
         engine = AffordanceEngine(affordance_config, num_agents=4, device=cpu_device, meter_name_to_idx=bars_config.meter_name_to_index)
@@ -363,8 +360,7 @@ class TestAffordabilityChecking:
         meters[:, 3] = torch.tensor([0.20, 0.02, 0.10, 0.00], device=cpu_device)
 
         # FastFood costs $0.05
-        fastfood = engine.affordance_map["FastFood"]
-        can_afford = engine._check_affordability(meters, fastfood.costs)
+        can_afford = engine.can_afford("FastFood", meters)
 
         # Agent 0: $0.20 ✅, Agent 1: $0.02 ❌, Agent 2: $0.10 ✅, Agent 3: $0.00 ❌
         expected = torch.tensor([True, False, True, False], device=cpu_device)
@@ -373,36 +369,6 @@ class TestAffordabilityChecking:
 
 class TestCostQueries:
     """Test cost and tick requirement queries."""
-
-    def test_get_affordance_cost_instant_mode(self, cpu_device, affordance_engine_components):
-        """Get instant mode cost should return correct value."""
-        bars_config, affordance_config = affordance_engine_components
-        engine = AffordanceEngine(affordance_config, num_agents=1, device=cpu_device, meter_name_to_idx=bars_config.meter_name_to_index)
-
-        # Shower instant cost: $0.03
-        cost = engine.get_affordance_cost("Shower", cost_mode="instant")
-        assert abs(cost - 0.03) < 1e-6
-
-        # Hospital instant cost: $0.15
-        cost = engine.get_affordance_cost("Hospital", cost_mode="instant")
-        assert abs(cost - 0.15) < 1e-6
-
-    def test_get_affordance_cost_per_tick_mode(self, cpu_device, affordance_engine_components):
-        """Get per-tick mode cost should return correct value."""
-        bars_config, affordance_config = affordance_engine_components
-        engine = AffordanceEngine(affordance_config, num_agents=1, device=cpu_device, meter_name_to_idx=bars_config.meter_name_to_index)
-
-        # Bed per-tick cost: $0.01 per tick
-        cost = engine.get_affordance_cost("Bed", cost_mode="per_tick")
-        assert abs(cost - 0.01) < 1e-6
-
-    def test_get_affordance_cost_invalid_affordance(self, cpu_device, affordance_engine_components):
-        """Get cost for invalid affordance should return 0.0."""
-        bars_config, affordance_config = affordance_engine_components
-        engine = AffordanceEngine(affordance_config, num_agents=1, device=cpu_device, meter_name_to_idx=bars_config.meter_name_to_index)
-
-        cost = engine.get_affordance_cost("InvalidAffordance", cost_mode="instant")
-        assert cost == 0.0
 
     def test_get_duration_ticks_instant(self, cpu_device, affordance_engine_components):
         """Get required ticks for dual-mode affordances returns actual tick count."""
@@ -460,12 +426,37 @@ class TestDictCostAffordances:
         meters = torch.tensor([[1.0, 0.5]], device=cpu_device)
         mask = torch.tensor([True], device=cpu_device)
 
-        updated = engine.apply_instant_interaction(meters, "Eat", mask, check_affordability=True)
+        updated = engine.apply_instant_interaction(meters, "Eat", mask, current_tick=0)
 
         assert torch.isclose(updated[0, 0], torch.tensor(0.8, device=cpu_device))  # energy
         assert torch.isclose(updated[0, 1], torch.tensor(0.4, device=cpu_device))  # money
 
-    def test_check_affordability_with_dict_costs(self, cpu_device):
+    def test_apply_instant_interaction_refuses_an_agent_that_cannot_pay(self, cpu_device):
+        """Sibling of the test above, and the reason it is not just a kwarg drop.
+
+        Deleting ``check_affordability=True`` from that test without adding this one
+        would silently stop exercising affordability altogether. Affordability is now
+        a precondition, so an unaffordable agent must RAISE rather than be quietly
+        dropped from the mask — a narrowed mask lets the caller record a completed
+        interaction the engine declined.
+        """
+        affordance = DictCostAffordance(
+            name="Eat",
+            interaction_type="instant",
+            duration_ticks=None,
+            costs={"energy": 0.2, "money": 0.1},
+            costs_per_tick={},
+            interactions={},
+            opening_hours=make_opening_hours((0, 24)),
+        )
+        engine = self._build_engine((affordance,), cpu_device)
+        meters = torch.tensor([[0.05, 0.5]], device=cpu_device)  # energy 0.05 < 0.2
+        mask = torch.tensor([True], device=cpu_device)
+
+        with pytest.raises(ValueError, match="cannot pay"):
+            engine.apply_instant_interaction(meters, "Eat", mask, current_tick=0)
+
+    def test_can_afford_with_dict_costs(self, cpu_device):
         affordance = DictCostAffordance(
             name="Expensive",
             interaction_type="instant",
@@ -478,7 +469,7 @@ class TestDictCostAffordances:
         engine = self._build_engine((affordance,), cpu_device)
         meters = torch.tensor([[0.5, 1.0]], device=cpu_device)
 
-        result = engine._check_affordability(meters, affordance.costs)
+        result = engine.can_afford("Expensive", meters)
 
         assert torch.equal(result, torch.tensor([False], device=cpu_device))
 
@@ -502,24 +493,9 @@ class TestDictCostAffordances:
             current_tick=0,
             agent_mask=mask,
             completion_mask=torch.tensor([False], device=cpu_device),
-            check_affordability=True,
         )
 
         assert torch.isclose(updated[0, 1], torch.tensor(0.9, device=cpu_device))
-
-    def test_get_affordance_cost_reads_money_from_dict(self, cpu_device):
-        affordance = DictCostAffordance(
-            name="Taxi",
-            interaction_type="instant",
-            duration_ticks=None,
-            costs={"money": 0.25},
-            costs_per_tick={},
-            interactions={},
-            opening_hours=make_opening_hours((0, 24)),
-        )
-        engine = self._build_engine((affordance,), cpu_device)
-
-        assert engine.get_affordance_cost("Taxi", cost_mode="instant") == 0.25
 
 
 def test_affordance_engine_executes_effects_commands():
@@ -693,7 +669,7 @@ def test_affordance_effects_apply_modulation_multiplier():
     )
 
     meters = torch.tensor([[0.0]], dtype=torch.float32)
-    updated = engine.apply_instant_interaction(meters, "TEST_AFFORDANCE", torch.tensor([True]))
+    updated = engine.apply_instant_interaction(meters, "TEST_AFFORDANCE", torch.tensor([True]), current_tick=0)
 
     # Interaction delta is 0.4 but should be scaled by multiplier (0.5 at energy=0.0)
     assert updated[0, 0].item() == pytest.approx(0.2)
@@ -748,7 +724,7 @@ def test_affordance_effects_apply_vtc_modulation_multiplier():
     )
 
     meters = torch.tensor([[0.0]], dtype=torch.float32)
-    updated = engine.apply_instant_interaction(meters, "TEST_AFFORDANCE", torch.tensor([True]))
+    updated = engine.apply_instant_interaction(meters, "TEST_AFFORDANCE", torch.tensor([True]), current_tick=0)
 
     assert updated[0, 0].item() == pytest.approx(0.2)
 
@@ -802,7 +778,7 @@ def test_get_meter_idx_validation_raises_on_unknown_meter():
 
     # Trying to apply this affordance should raise KeyError with context
     with pytest.raises(KeyError) as excinfo:
-        engine.apply_instant_interaction(meters, "BadMeterAffordance", torch.tensor([True]))
+        engine.apply_instant_interaction(meters, "BadMeterAffordance", torch.tensor([True]), current_tick=0)
 
     error_msg = str(excinfo.value)
     # Should mention the unknown meter

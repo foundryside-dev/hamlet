@@ -47,10 +47,12 @@ Recovery milestone **`hamlet-1ade187dcc`**, work streams WS-0…WS-7.
 - **Filed, deliberately NOT in WS-1** (`PDR-0021`): `hamlet-2dde1015fe` (the dead-hash set is
   nine, not four) and `hamlet-df2b972c49` (P1 — two further checkpoint stamp/compare paths).
   Both must enter WS-7's known-divergences register before the freeze.
-- **New this session, from the owner's two framings:** `hamlet-0dd4ac24d9` (P1 — **do not
-  moneyfy**: the frontend dresses a normalised variable as currency, `PDR-0023`) and
+- **New this session, from the owner's framings:** `hamlet-0dd4ac24d9` (P1 — presentation is
+  hardcoded by variable name; make it **declared**, honest by default, `PDR-0023`+`PDR-0025`) and
   `hamlet-0cdb8a6d1a` (P1 — **no model export path**; TASK-008 designed 2025-11, never built,
   `PDR-0024`). `hamlet-365e996511` is now **unblocked** and re-scoped to `range_type` alone.
+  Two **Later** bets added to `roadmap.md` as intent: model+contract export, and the "locked"
+  showcase experiment (the one place prettified presentation belongs).
 
 ## Open questions / blocked-on-owner
 

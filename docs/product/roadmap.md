@@ -1,4 +1,4 @@
-# Roadmap — HAMLET / Townlet            Updated: 2026-08-12 (PDR-0019) · prior: 2026-08-11 (PDR-0017, PDR-0006, PDR-0008, PDR-0009)
+# Roadmap — HAMLET / Townlet            Updated: 2026-08-12 (PDR-0019, PDR-0024, PDR-0025) · prior: 2026-08-11 (PDR-0017, PDR-0006, PDR-0008, PDR-0009)
 
 > Sequencing, WSJF / cost-of-delay, and dated forecasts are produced by
 > /axiom-program-management. This file records bets as INTENT, not a delivery
@@ -98,6 +98,19 @@
 
 ## Later (directional bets, no order, no dates)
 
+- **Model + interface-contract export** — a trained agent leaves HAMLET and runs in someone
+  else's game engine. Serves the prototyping game developer (`PDR-0024`, audience amendment
+  **proposed**). Half of it already exists: the "interface contract" is the observation/action
+  schema and its hashes, which WS-1 has been hardening. The other half — a standalone model,
+  decoupled from the training stack — is designed and unbuilt (`TASK-008`, *Planned* since
+  2025-11-05; `hamlet-0cdb8a6d1a`). Sequence after the oracle freeze: the contract must be stable
+  before it is handed to anyone.
+- **The "locked" showcase experiment** — a distributable, frozen artefact for sharing a design:
+  *"look at this cool thing I designed."* Distinct from the oracle freeze (internal reference) and
+  from model export (a model for someone else's engine). This is the one place prettified
+  presentation is appropriate — currency rendered as currency — because the audience is looking at
+  a designed artefact, not learning what the substrate is (`PDR-0025`). Intent only; building or
+  distributing one is outward-facing and gates to the owner.
 - **BAC as a first-class compiled artefact** — brain and universe through one standard
   experimental compiler, symmetric hashing and provenance, so an experiment is a single
   content-addressed pair.

@@ -184,8 +184,10 @@ src/townlet/
 
 **Observation Dimensions** (Grid2D with "relative" encoding):
 
-- **L0/L0.5/L1/L3**: 29 dims (2 coords + 8 meters + 15 affordances + 4 temporal)
-- **L2 (POMDP)**: 54 dims (25 local window + 2 coords + 8 meters + 15 affordances + 4 temporal)
+⚠️ **The per-level dimension counts previously listed here were wrong.** `L0_0_minimal`
+compiles to **124 dims**, measured 2026-08-11, not the 29 claimed. Do not trust a hardcoded
+number in documentation — read `universe.levels[<name>].observation_spec.total_dim` off the
+compiled artifact, which is the only authority.
 
 **Key insight**: Observation dim is **constant** across all Grid2D grid sizes, enabling true transfer learning.
 
@@ -248,15 +250,23 @@ Drive As Code (DAC) is a declarative reward function compiler that extracts all 
 
 ### Key Components
 
-**Files**: Each config pack requires `drive_as_code.yaml`:
+**Files**: Each level requires `drive.yaml`. The real pack layout is pack-level shared files
+plus per-level overrides — **not** a flat `configs/<level>/` directory:
 ```
-configs/<level>/
-├── substrate.yaml
-├── bars.yaml
-├── drive_as_code.yaml    # DAC reward specification (REQUIRED)
-├── training.yaml
-└── variables_reference.yaml
+configs/default_curriculum/
+├── stratum.yaml          # substrate: grid 8×8, shared by EVERY level
+├── environment.yaml      # VFS variable definitions, shared
+├── brain.yaml            # network architecture, shared (no per-level override exists)
+├── actions.yaml, effects.yaml, items.yaml, vfs_profiles.yaml
+└── levels/<level>/
+    ├── bars.yaml
+    ├── affordances.yaml
+    ├── drive.yaml        # DAC reward specification (REQUIRED)
+    ├── training.yaml
+    └── curriculum.yaml   # vision + temporal switches
 ```
+**No file named `drive_as_code.yaml` exists in any shipped pack.** A grep for that filename
+returns zero hits and will falsely "confirm" whatever you were checking.
 
 **Architecture**: All reward logic defined in `drive_as_code.yaml` → compiled by UAC → executed by DACEngine in environment. RewardStrategy classes fully removed.
 
@@ -302,10 +312,16 @@ where:
 
 **Bug**: Multiplicative reward (energy × health) + high intrinsic weight → agents exploit low bars for exploration
 
-**Curriculum**:
-- **L0_0_minimal**: Demonstrates bug (multiplicative, no suppression)
-- **L0_5_dual_resource**: Fixes bug (constant_base_with_shaped_bonus)
-- **Comparison**: Students learn importance of reward structure design
+⚠️ **THIS CURRICULUM IS NOT IMPLEMENTED.** Verified 2026-08-12: `L0_0_minimal/drive.yaml` and
+`L0_5_dual_resource/drive.yaml` are **byte-identical**. Both declare
+`constant_base_with_shaped_bonus` with `adaptive_rnd` at `base_weight: 0.1`. No shipped level
+declares a `multiplicative` extrinsic, so the contrast the lesson depends on does not exist and
+cannot be demonstrated by running these packs.
+
+The intended design, for whoever authors it:
+- **L0_0_minimal**: should demonstrate the bug (multiplicative, no suppression)
+- **L0_5_dual_resource**: should fix it (constant_base_with_shaped_bonus)
+- **Comparison**: students learn the importance of reward structure design
 
 ### Breaking Changes
 
@@ -399,11 +415,21 @@ configs/<level>/
 
 ### Active Config Packs (Curriculum)
 
-**L0_0_minimal**: Temporal credit assignment (3×3 grid, 1 affordance)
-**L0_5_dual_resource**: Multiple resources (7×7 grid, 4 affordances)
-**L1_full_observability**: Full observability baseline (8×8 grid, 14 affordances)
-**L2_partial_observability**: POMDP with LSTM (8×8 grid, 5×5 vision window)
-**L3_temporal_mechanics**: Time-based dynamics (24-tick day/night cycle)
+⚠️ **What follows is the INTENDED curriculum. The shipped configs do not implement it.**
+Verified by diff, 2026-08-12 — the levels live under `configs/default_curriculum/levels/`:
+
+| level | intended | actually shipped |
+|---|---|---|
+| L0_0_minimal | 3×3 grid, 1 affordance | 8×8, 14 affordances |
+| L0_5_dual_resource | 7×7 grid, 4 affordances | 8×8, 14 affordances — `training.yaml` **identical to L1** but for `output_subdir` |
+| L1_full_observability | 8×8, 14 affordances | as intended |
+| L2_partial_observability | POMDP, 5×5 window | genuinely differs (`active_vision: partial`) |
+| L3_temporal_mechanics | 24-tick day/night | genuinely differs (`active_temporal: true`, `day_length: 24`) |
+
+`bars.yaml`, `affordances.yaml` and `drive.yaml` are **byte-identical across all five levels**.
+Grid size is set once in pack-level `stratum.yaml` (8×8) and **no level can override it**.
+L0_0/L0_5/L1 differ from one another only in training hyperparameters; their `curriculum.yaml`
+files differ only in comments. Five documented levels are **three distinct universes**.
 
 **Future**: L4 (multi-zone), L5 (multi-agent), L6 (communication)
 

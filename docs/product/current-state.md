@@ -1,4 +1,4 @@
-# Current State — HAMLET / Townlet        Checkpoint: 2026-08-11 · third checkpoint
+# Current State — HAMLET / Townlet        Checkpoint: 2026-08-12 · third checkpoint, amended
 
 ## The bet right now
 
@@ -27,25 +27,29 @@ Recovery milestone **`hamlet-1ade187dcc`**, work streams WS-0…WS-7.
 
 ## Open questions / blocked-on-owner
 
-- ⚠️ **THE CURRICULUM WAS TUNED WHILE HALF ITS ECONOMY WAS INERT — who re-authors the packs?**
-  Task 3 measured a **35–58%** drop in interactions that used to complete; task 3a revives the
-  money economy on top of that. The packs' balance was never tested at declared values. Per
-  `PDR-0015`'s reversal trigger, if L1 training collapses the fix is **not** to re-cap money or
-  re-inert the costs — it is to re-author the packs. That is a curriculum decision, not WS-1's.
+- ⚠️ **`vision.md`'s FLAGSHIP DEMONSTRATOR IS NOT IMPLEMENTED — does that change the vision, or
+  the packs?** `vision.md:94` calls "Low Energy Delirium" *"the flagship demonstrator of the
+  substrate: the proof that the thing works."* Measured 2026-08-12 (`PDR-0018`): `L0_0` and
+  `L0_5` `drive.yaml` are **byte-identical**, both `constant_base_with_shaped_bonus`, and **no
+  shipped level declares a `multiplicative` extrinsic** — the contrast the lesson needs has never
+  existed. `vision.md` is ENDORSED and was **not** touched. This is the owner's call.
 - ⚠️ **WHEN DO WE STOP ADDING TO WS-1 AND FREEZE?** WS-1 has grown 7 → 10 units. Each addition
   was justified individually and none was optional under `PDR-0012`. `PDR-0014`'s reversal
   trigger 2 (*"the bounds wiring materially delays the oracle freeze"*) is **approaching, not
-  definitively tripped** — flagged here so the next DECIDE acts on it deliberately.
-- ⚠️ **THE "LOW ENERGY DELIRIUM" TEACHING CLAIM IS NOW UNVERIFIED.** The L0_0-vs-L0_5
-  comparison is a documented pedagogical centrepiece and it does not carry across `30c433e3`.
-  Any teaching claim resting on pre-today runs needs re-measuring.
+  definitively tripped**. `PDR-0018` removes the largest reason to go slowly — there is no
+  calibrated behaviour at risk — so the argument now leans toward freezing sooner.
 - **Design fork inside `PDR-0009`** — per-level `architecture` override, or make `brain.yaml`
-  level-overridable the way `training.yaml` is? Now has two consumers (`PDR-0017`). Decide
-  before implementing.
+  level-overridable the way `training.yaml` is? Now has **three** consumers (`PDR-0017`,
+  `PDR-0018`). A level cannot currently vary its grid *or* its brain, which bounds what any
+  curriculum can express. Decide before implementing.
 - **README push** remains the owner's call; drafting and committing locally is endorsed.
+- **Open, not blocking** — the five shipped levels are **three universes**, a thin coverage set
+  for WS-3's differential harness. An input to WS-3 scoping; does **not** reopen `PDR-0006`.
 
 Closed: the poisoned-cache hazard (WS-1(a) landed); CUDA blocked (was an unused dependency);
-*"what is the real test coverage?"* (**81%**, `PDR-0010`).
+*"what is the real test coverage?"* (**81%**, `PDR-0010`); *"who re-authors the packs?"* —
+**premise was false** (`PDR-0018`), the packs were never tuned, so there is nothing to re-author;
+authoring one for the first time is filed as `hamlet-e979f2ba37` (WS-4, downstream of the freeze).
 
 ## What this checkpoint did
 
@@ -86,6 +90,11 @@ value is produced. `grep torch.clamp(` missed compile-time tuple literals. `grep
 UniverseMetadata(` missed a `dataclasses.replace()`. A grep against a *documented* filename
 (`drive_as_code.yaml`) returned zero hits and falsely confirmed a claim, because every pack
 actually uses `drive.yaml`. **Enumerate producers, not call shapes.**
+
+**A fourth instance, in a new costume (`PDR-0018`): a name is not evidence of the thing it names.**
+Five directories named for five pedagogical stages contained three universes; I escalated a
+question premised on their being tuned without running the one `diff` that refutes it. Before
+escalating on a property of an artifact, verify the artifact has that property.
 
 Do not re-litigate `PDR-0006` (strangler), `PDR-0007` (universality), `PDR-0014`/`PDR-0015`
 (bounds scope) or `PDR-0016` (bounds+normalization together) — all decided on measured evidence.

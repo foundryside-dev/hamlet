@@ -12,6 +12,16 @@ engine' needs to be strangled out by the engine engine"* — VFS and the dynamic
 the guiding star, not `health = 0..100`. That converts the strangler from an ordering question
 into a **selection criterion**: strangle wherever the runtime still knows what the game is.
 
+**READ `docs/architecture/vfs.md` BEFORE TOUCHING VFS.** 2455 lines, current enough to be
+binding, and it pre-answers questions that look open. Chapter 9 (normalisation) prescribes
+`clipped_log_scaled` for money — already implemented, never wired — and states money is
+normalised such that `1.0 ≈ $100`, which the shipped dollar-denominated configs contradict.
+The owner's framing of what VFS is *for*, 2026-08-12: *"end users don't need to think too hard
+about the mechanics under the hood, it's effectively like a 'complex type' that they can trust
+to be enforced mechanically."* Authors declare **intent**; VFS owns the mechanics. Two
+confident diagnoses have now been corrected by a design doc that existed the whole time —
+**check `docs/architecture/` before concluding shipped behaviour is simply wrong.**
+
 **Sequencing is deliberately open, recorded 2026-08-12.** The owner: *"once we lock in the VFS
 system, we can pick another system to pin (e.g. migrating the obs to a better system or
 something else entirely, as long as we're replacing, refactoring and fixing I'm happy for us to

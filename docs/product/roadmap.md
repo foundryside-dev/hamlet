@@ -1,8 +1,14 @@
-# Roadmap — HAMLET / Townlet            Updated: 2026-08-11 (PDR-0017) · prior: 2026-08-11 (PDR-0006, PDR-0008, PDR-0009)
+# Roadmap — HAMLET / Townlet            Updated: 2026-08-12 (PDR-0019) · prior: 2026-08-11 (PDR-0017, PDR-0006, PDR-0008, PDR-0009)
 
 > Sequencing, WSJF / cost-of-delay, and dated forecasts are produced by
 > /axiom-program-management. This file records bets as INTENT, not a delivery
 > schedule. Do not compute WSJF here; hand the committed bet over for sequencing.
+
+> **Within Now, the order is open (`PDR-0019`, owner-stated).** The WS-0…WS-7 work streams are an
+> **inventory, not a sequence**. One system is pinned at a time; the next is chosen on the
+> strangler's selection criterion — *where does the runtime still know what the game is?* — not by
+> stream number. Two constraints hold: one system at a time, and the work must be replacing,
+> refactoring or fixing. Real blocking edges (WS-1 gates WS-7) are unaffected.
 
 > **Bootstrap seed.** Now is derived from observed tracker + git state. Next/Later are derived
 > from the three-pivot arc in `vision.md` and the HLD, and are **proposals awaiting the owner's

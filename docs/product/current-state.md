@@ -1,4 +1,4 @@
-# Current State — HAMLET / Townlet        Checkpoint: 2026-08-12 · third checkpoint, amended
+# Current State — HAMLET / Townlet        Checkpoint: 2026-08-12 · fourth checkpoint
 
 ## The bet right now
 
@@ -22,14 +22,12 @@ to be enforced mechanically."* Authors declare **intent**; VFS owns the mechanic
 confident diagnoses have now been corrected by a design doc that existed the whole time —
 **check `docs/architecture/` before concluding shipped behaviour is simply wrong.**
 
-**Sequencing is deliberately open, recorded 2026-08-12.** The owner: *"once we lock in the VFS
-system, we can pick another system to pin (e.g. migrating the obs to a better system or
-something else entirely, as long as we're replacing, refactoring and fixing I'm happy for us to
-float from system to system."* So **WS-N numbering is an inventory, not a required order** —
-pin one system, then choose the next on the selection criterion (*where does the runtime still
-know what the game is?*), not by stream number. Observation encoding is a named live candidate
-(`PDR-0017`). What is **not** open: doing several systems at once, or work that is neither
-replacing, refactoring nor fixing. To be formalised as a PDR at the next checkpoint.
+**Sequencing is deliberately open (`PDR-0019`, owner-stated).** WS-N numbering is an
+**inventory, not a required order** — pin one system, then choose the next on the selection
+criterion (*where does the runtime still know what the game is?*), not by stream number.
+Observation encoding is a named live candidate (`PDR-0017`). Two constraints hold: **one system
+at a time**, and the work must be **replacing, refactoring or fixing**. Real blocking edges
+(WS-1 gates WS-7) are unaffected.
 
 ## In flight
 
@@ -42,11 +40,27 @@ Recovery milestone **`hamlet-1ade187dcc`**, work streams WS-0…WS-7.
   **Provenance integrity: 2 of 3 breaches closed.** Task 5 closes the third.
 - **WS-7** `hamlet-e3af412673` (P0) — the strangler's enabling stream. Blocked by WS-1.
 - **WS-6** `hamlet-5e39fcccb0`, **WS-0** `hamlet-8eeaba1461` — ready, untouched.
-- **WS-4** gained `hamlet-f46e2b381a` (`clamp_and_validate` declared-but-empty) and
-  `hamlet-fa6bb6da4a` (token observations, blocked by `hamlet-0d0115383e`).
+- **WS-4** gained `hamlet-f46e2b381a` (`clamp_and_validate` declared-but-empty),
+  `hamlet-fa6bb6da4a` (token observations, blocked by `hamlet-0d0115383e`),
+  `hamlet-e979f2ba37` (author the curriculum — the five levels are three universes),
+  `hamlet-365e996511` (`range_type` inert + money unit ambiguous, `PDR-0020`).
+- **Filed, deliberately NOT in WS-1** (`PDR-0021`): `hamlet-2dde1015fe` (the dead-hash set is
+  nine, not four) and `hamlet-df2b972c49` (P1 — two further checkpoint stamp/compare paths).
+  Both must enter WS-7's known-divergences register before the freeze.
 
 ## Open questions / blocked-on-owner
 
+- ⚠️ **WHAT UNIT IS `money` IN?** (`PDR-0020`) `docs/architecture/vfs.md:739` and
+  `frontend/formatting.js:26` say a fraction where `1.0 ≈ $100`; the shipped configs denominate in
+  dollars (EAT 5.0, DOCTOR 20.0, WORK +22.5). Under the doc WORK pays $2250; under the configs the
+  frontend renders $22.50 as "$2250". They cannot both be right, and the contradiction only became
+  visible when WS-1(e) stopped clamping money to 1.0. Decide once; config, docs and frontend follow.
+- ⚠️ **`config_hash_warning` — delete it, or make it raise?** (`PDR-0022`, **proposed**) The plan
+  contradicts itself: §0's W4 says resolve it this batch, task 4's text says don't touch it. A
+  *warning* is the silent acceptance the Provenance guardrail forbids — but `config_hash` is the
+  broadest signal we have, covering five surfaces that have no hard check of their own. My
+  recommendation is **delete**, conditional on `hamlet-2dde1015fe` entering the known-divergences
+  register. Task 5 needs the answer to state its final check count.
 - ⚠️ **`vision.md`'s FLAGSHIP DEMONSTRATOR IS NOT IMPLEMENTED — does that change the vision, or
   the packs?** `vision.md:94` calls "Low Energy Delirium" *"the flagship demonstrator of the
   substrate: the proof that the thing works."* Measured 2026-08-12 (`PDR-0018`): `L0_0` and
@@ -78,10 +92,16 @@ authoring one for the first time is filed as `hamlet-e979f2ba37` (WS-4, downstre
   hashes + effective `brain_hash` (`31c17111` + `39026beb`) — plus an unplanned dependency
   remediation (`e082afd5`). Full suite **2962 passed, 0 failed**; all four gates green.
   *(This section spans work since the last formal checkpoint, not one session.)*
-- **Recorded `PDR-0015`, `PDR-0016`, `PDR-0017`.** 0015: `PDR-0014`'s bounds site list was an
-  undercount and wiring the four sites it named would have changed *nothing*. 0016: bounds and
-  the VFS normalization surface are one feature and land together (owner-approved). 0017: the
-  token-observation direction is recorded, not started.
+- **Recorded `PDR-0015` … `PDR-0022`.** Since the last formal checkpoint: 0018 (the packs are
+  test infrastructure, never a curriculum — two escalations corrected, a larger one raised),
+  0019 (sequencing is open: pin one system, then float), 0020 (`vfs.md` is design authority; the
+  money diagnosis was wrong — `range_type` is inert, not the ceiling), 0021 (task 4's two adjacent
+  provenance gaps are filed, **not** folded into WS-1), 0022 (**proposed** — `config_hash_warning`).
+- **Adversarial orchestration ran four times and changed the work every time.** Recon before
+  task 4 found its spec's change 1 was a `TypeError` as written (§0.3). Verification after found
+  three weak tests — including one where a wrong-level `brain_hash` left **all 2957 tests green**.
+  Three refuter agents died on a rate limit; all three of their findings were about my own tests,
+  and all three held when I re-measured by hand.
 - **Moved two guardrails for the first time since May** — Gates green **1 of 4 → 4 of 4**, and
   Provenance integrity **1 of 3 breaches closed**. Also first movement on Config-surface
   coverage, and the first Pre-release hygiene recount since 2026-05-16.

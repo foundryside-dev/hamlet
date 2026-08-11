@@ -1,4 +1,4 @@
-# Roadmap — HAMLET / Townlet            Updated: 2026-08-11 (PDR-0006, PDR-0008, PDR-0009)
+# Roadmap — HAMLET / Townlet            Updated: 2026-08-11 (PDR-0017) · prior: 2026-08-11 (PDR-0006, PDR-0008, PDR-0009)
 
 > Sequencing, WSJF / cost-of-delay, and dated forecasts are produced by
 > /axiom-program-management. This file records bets as INTENT, not a delivery
@@ -109,6 +109,19 @@
   the compiled-universe contract rather than restoring. `PDR-0007` reading: an option not yet
   enabled.
   · tracker: `hamlet-16ae192d42` (capture) · metric: none yet
+
+- **Token-based observation encoding, and whether the observation shape is a game-engine fact**
+  — the fixed 124-dim vector with its fixed 14-affordance vocabulary is a hardcoded statement
+  about one universe. Owner-raised (*"move to embedded transformers"*), captured rather than
+  started. Notable: the token encoder ALREADY EXISTS (`SetEncoderQNetwork`, authorable as
+  `architecture.type: set_encoder`) and is used by zero of 21 packs — so the first unit is
+  proving it works, not adding attention. Separates cleanly into **structure** (tokens kill the
+  fixed vocabulary — real strangling) and **scale** (magnitude belongs to the declared
+  normalization surface, which `PDR-0016` wires now). Sequenced after the oracle freeze and
+  after the HLD-vs-implementation divergence map, because it is a "what should a well-implemented
+  version look like" question and that map is what answers those.
+  · tracker: `hamlet-fa6bb6da4a` (blocked by `hamlet-0d0115383e`) · `PDR-0017` · metric:
+  Config-surface coverage, Declared-but-inert config surfaces
 
 - **External adoption readiness** — the secondary audience (other RL researchers / OSS users)
   becomes real only after the authoring claim is measured and the docs are true. Deliberately

@@ -35,7 +35,14 @@ def _build_parser() -> argparse.ArgumentParser:
         "inspect",
         help="Inspect a compiled universe artifact (MessagePack file).",
     )
-    inspect_parser.add_argument("artifact", help="Path to config directory or .compiled/universe.msgpack artifact")
+    inspect_parser.add_argument(
+        "artifact", help="Path to a .compiled/universe-<level>.msgpack artifact, or a config directory (then --primary-level is required)"
+    )
+    inspect_parser.add_argument(
+        "--primary-level",
+        default=None,
+        help="Level to inspect. Required when ARTIFACT is a config directory, because one artifact exists per level.",
+    )
     inspect_parser.add_argument(
         "--format",
         choices=("table", "json"),
@@ -91,7 +98,7 @@ def _cmd_compile(args: argparse.Namespace) -> int:
     print(f"Compilation succeeded in {elapsed_ms:.1f} ms")
 
     if not args.no_cache:
-        cache_path = config_dir / ".compiled" / "universe.msgpack"
+        cache_path = config_dir / ".compiled" / f"universe-{args.primary_level}.msgpack"
         if cache_path.exists():
             print(f"Cache artifact written to: {cache_path}")
 
@@ -124,7 +131,12 @@ def _cmd_inspect(args: argparse.Namespace) -> int:
 
     # Auto-resolve config directory to artifact path for better UX
     if artifact_path.is_dir():
-        artifact_path = artifact_path / ".compiled" / "universe.msgpack"
+        if not args.primary_level:
+            raise ValueError(
+                f"{artifact_path} is a config directory and holds one artifact per level; "
+                "pass --primary-level to say which one to inspect."
+            )
+        artifact_path = artifact_path / ".compiled" / f"universe-{args.primary_level}.msgpack"
 
     if not artifact_path.exists():
         raise FileNotFoundError(f"Artifact not found: {artifact_path}")

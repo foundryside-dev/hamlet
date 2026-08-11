@@ -56,9 +56,9 @@ def test_cache_artifact_path_points_inside_cache_dir(tmp_path: Path) -> None:
     config_dir = tmp_path / "pack"
     config_dir.mkdir()
 
-    artifact_path = compiler._cache_artifact_path(config_dir)
+    artifact_path = compiler._cache_artifact_path(config_dir, "L0_test")
 
-    assert artifact_path == config_dir / ".compiled" / "universe.msgpack"
+    assert artifact_path == config_dir / ".compiled" / "universe-L0_test.msgpack"
 
 
 def test_compile_uses_cache_when_hash_matches(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -141,7 +141,7 @@ def test_compile_recovers_from_corrupted_cache(tmp_path: Path, monkeypatch: pyte
     compiler = UniverseCompiler()
     compiler.compile(config_dir, primary_level="L0_test", use_cache=True)
 
-    cache_path = compiler._cache_artifact_path(config_dir)
+    cache_path = compiler._cache_artifact_path(config_dir, "L0_test")
     cache_path.write_bytes(b"corrupted")
 
     original_loader = compiler_module.load_v21_configs
@@ -344,7 +344,7 @@ def test_compile_cache_fast_path_recovers_from_missing_required_fields(tmp_path:
 
     payload = compiled.to_dict()
     payload.pop(missing_field)
-    compiler._cache_artifact_path(config_dir).write_bytes(msgpack.packb(payload, use_bin_type=True))
+    compiler._cache_artifact_path(config_dir, "L0_test").write_bytes(msgpack.packb(payload, use_bin_type=True))
 
     recompiled = UniverseCompiler().compile(config_dir, primary_level="L0_test", use_cache=True)
 

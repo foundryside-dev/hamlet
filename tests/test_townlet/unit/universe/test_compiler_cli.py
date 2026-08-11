@@ -21,7 +21,7 @@ def _copy_experiment(tmp_path: Path) -> Path:
 
 def test_cli_compile_creates_cache(tmp_path, capsys) -> None:
     config_dir = _copy_experiment(tmp_path)
-    cache_path = config_dir / ".compiled" / "universe.msgpack"
+    cache_path = config_dir / ".compiled" / "universe-L0_test.msgpack"
 
     exit_code = compiler_cli.main(["compile", str(config_dir), "--primary-level", "L0_test"])
 
@@ -35,7 +35,7 @@ def test_cli_compile_creates_cache(tmp_path, capsys) -> None:
 
 def test_cli_inspect_displays_metadata(tmp_path, capsys) -> None:
     config_dir = _copy_experiment(tmp_path)
-    cache_path = config_dir / ".compiled" / "universe.msgpack"
+    cache_path = config_dir / ".compiled" / "universe-L0_test.msgpack"
     compiler_cli.main(["compile", str(config_dir), "--primary-level", "L0_test"])
     capsys.readouterr()  # Clear compile output
 
@@ -49,7 +49,7 @@ def test_cli_inspect_displays_metadata(tmp_path, capsys) -> None:
 
 def test_cli_inspect_json_output(tmp_path, capsys) -> None:
     config_dir = _copy_experiment(tmp_path)
-    cache_path = config_dir / ".compiled" / "universe.msgpack"
+    cache_path = config_dir / ".compiled" / "universe-L0_test.msgpack"
     compiler_cli.main(["compile", str(config_dir), "--primary-level", "L0_test"])
     capsys.readouterr()
 

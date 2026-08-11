@@ -50,7 +50,7 @@ from townlet.vfs.transition_schedule import (
     social_rules_from_transition_payload,
 )
 
-COMPILED_SCHEMA_VERSION = "1.13"
+COMPILED_SCHEMA_VERSION = "1.14"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",
@@ -485,16 +485,22 @@ class CompiledUniverse:
         top_affordances = None
         top_drive = None
         if all_levels is not None:
-            for level_meta in all_levels.values():
-                if (
-                    level_meta.transition_graph_hash == _required_field(payload, "transition_graph_hash")
-                    and level_meta.vfs_hash == _required_field(payload, "vfs_hash")
-                    and level_meta.action_schema_hash == _required_field(payload, "action_schema_hash")
-                ):
-                    top_bars = level_meta.bars
-                    top_affordances = level_meta.affordances
-                    top_drive = level_meta.drive
-                    break
+            # Look the primary level up BY NAME. The previous implementation scanned
+            # for the first level matching (transition_graph_hash, vfs_hash,
+            # action_schema_hash), which is sound only if that triple is unique —
+            # and it is not: L0_5_dual_resource and L1_full_observability collide on
+            # all three in the shipped pack, so popping L1 out silently rebuilt the
+            # projection from L0_5's bars with no raise.
+            declared_primary = _required_field(_required_mapping(payload, "metadata"), "primary_level")
+            level_meta = all_levels.get(declared_primary)
+            if level_meta is None:
+                raise ValueError(
+                    f"Compiled universe declares primary_level '{declared_primary}' but all_levels "
+                    f"contains {sorted(all_levels)}; recompile the config pack."
+                )
+            top_bars = level_meta.bars
+            top_affordances = level_meta.affordances
+            top_drive = level_meta.drive
         if top_bars is None or top_affordances is None or top_drive is None:
             raise ValueError("Compiled universe cache cannot resolve primary transition level; recompile the config pack.")
         top_transition_payload = _required_mapping(payload, "transition_schedule")

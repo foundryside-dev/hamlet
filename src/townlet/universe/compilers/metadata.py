@@ -158,6 +158,7 @@ class MetadataCompiler:
         return UniverseMetadata(
             universe_name=raw.experiment.experiment.metadata.name,
             schema_version=self._schema_version,
+            primary_level=primary_meta.level_name,
             substrate_type=substrate_type,
             position_dim=position_dim,
             meter_count=len(meter_names),

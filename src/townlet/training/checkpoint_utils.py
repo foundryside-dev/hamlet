@@ -32,6 +32,9 @@ def attach_universe_metadata(checkpoint: dict[str, Any], universe: CompiledUnive
         raise ValueError("universe parameter cannot be None - compiled universe required for metadata attachment")
 
     checkpoint["config_hash"] = universe.metadata.config_hash
+    # D5. The only field separating two levels that collide on every content hash.
+    # Stamped here; compared on resume by assert_checkpoint_identity (task 5).
+    checkpoint["primary_level"] = universe.metadata.primary_level
     checkpoint["observation_dim"] = universe.metadata.observation_dim
     checkpoint["action_dim"] = universe.metadata.action_count
     checkpoint["meter_count"] = universe.metadata.meter_count

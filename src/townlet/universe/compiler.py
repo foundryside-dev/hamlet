@@ -101,45 +101,49 @@ class UniverseCompiler:
         # Stage 0: scoping preflight (no YAML parsing yet)
         validate_scoping(experiment_dir)
 
+        # The cache path is derived from primary_level, so an unknown level must be
+        # rejected BEFORE it can name an artifact. Exact-name membership against the
+        # directory listing — not is_dir(), which admits "." and "..".
+        self._validate_primary_level_exists(experiment_dir, primary_level)
+
         # Optional cache fast-path
-        cache_path = self._cache_artifact_path(experiment_dir)
+        cache_path = self._cache_artifact_path(experiment_dir, primary_level)
         config_hash: str | None = None
         config_mtime: float | None = None
 
         if use_cache and cache_path.exists():
-            try:
-                cache_size = cache_path.stat().st_size
-                if cache_size > MAX_CACHE_FILE_SIZE:
-                    logger.warning(
-                        "Cache file exceeds size limit (%d bytes > %d bytes)",
-                        cache_size,
-                        MAX_CACHE_FILE_SIZE,
+            cached = self._read_cache_artifact(cache_path)
+            if cached is not None:
+                # OUTSIDE the defensive read above, deliberately. A raise left inside
+                # that broad `except Exception` is downgraded to a warning and compile()
+                # returns normally — verified by execution — so a mislabelled artifact
+                # would silently recompile instead of failing loudly.
+                if cached.metadata.primary_level != primary_level:
+                    raise ValueError(
+                        f"Compiled artifact at {cache_path} declares primary_level "
+                        f"'{cached.metadata.primary_level}' but was loaded for '{primary_level}'. "
+                        "The cache is mislabelled; delete .compiled/ and recompile."
+                    )
+
+                config_hash, provenance_id = self._build_cache_fingerprint(experiment_dir)
+                config_mtime = self._compute_config_mtime(experiment_dir)
+                cached_meta = cached.metadata
+
+                # Treat missing fingerprint fields as stale cache
+                if cached_meta.config_hash and cached_meta.config_mtime and cached_meta.provenance_id:
+                    if (
+                        cached_meta.config_hash == config_hash
+                        and cached_meta.provenance_id == provenance_id
+                        and cached_meta.config_mtime >= config_mtime
+                    ):
+                        logger.info("Loading compiled universe from cache: %s", cache_path)
+                        return cached
+                    logger.info(
+                        "Cache stale for %s (hash/provenance/mtime mismatch); recompiling.",
+                        experiment_dir,
                     )
                 else:
-                    # Compute fingerprint once for comparison
-                    config_hash, provenance_id = self._build_cache_fingerprint(experiment_dir)
-                    config_mtime = self._compute_config_mtime(experiment_dir)
-
-                    cached = CompiledUniverse.load_from_cache(cache_path)
-                    cached_meta = cached.metadata
-
-                    # Treat missing fingerprint fields as stale cache
-                    if cached_meta.config_hash and cached_meta.config_mtime and cached_meta.provenance_id:
-                        if (
-                            cached_meta.config_hash == config_hash
-                            and cached_meta.provenance_id == provenance_id
-                            and cached_meta.config_mtime >= config_mtime
-                        ):
-                            logger.info("Loading compiled universe from cache: %s", cache_path)
-                            return cached
-                        logger.info(
-                            "Cache stale for %s (hash/provenance/mtime mismatch); recompiling.",
-                            experiment_dir,
-                        )
-                    else:
-                        logger.info("Cached universe at %s missing fingerprint/provenance fields; recompiling.", cache_path)
-            except Exception as exc:  # pragma: no cover - defensive
-                logger.warning("Failed to load cached universe from %s: %s", cache_path, exc)
+                    logger.info("Cached universe at %s missing fingerprint/provenance fields; recompiling.", cache_path)
 
         # Stage 0: YAML syntax validation (lightweight)
         validate_yaml_syntax(experiment_dir)
@@ -592,10 +596,51 @@ class UniverseCompiler:
 
         return config_dir / ".compiled"
 
-    def _cache_artifact_path(self, config_dir: Path) -> Path:
-        """Return the expected cache artifact path for a config pack."""
+    def _validate_primary_level_exists(self, config_dir: Path, primary_level: str) -> None:
+        """Reject an unknown primary level before it can name a cache artifact.
 
-        return self._cache_directory_for(config_dir) / "universe.msgpack"
+        Mirrors ``select_primary_level``'s message, which runs much later (after
+        YAML load). Without this, an unknown level names a cache path nothing will
+        ever hit and the failure surfaces far from its cause.
+        """
+
+        levels_dir = config_dir / "levels"
+        available = sorted(entry.name for entry in levels_dir.iterdir()) if levels_dir.is_dir() else []
+        if primary_level not in available:
+            raise ValueError(f"Primary level '{primary_level}' not found. Available: {available}")
+
+    def _read_cache_artifact(self, cache_path: Path) -> CompiledUniverse | None:
+        """Load a cached artifact, or return None if it is unusable.
+
+        Defensive by design: a corrupt or oversized artifact is a cache miss, not a
+        crash. The level-identity guard deliberately lives at the CALL SITE, outside
+        this try — a mislabelled artifact is a provenance failure, not a miss.
+        """
+
+        try:
+            cache_size = cache_path.stat().st_size
+            if cache_size > MAX_CACHE_FILE_SIZE:
+                logger.warning(
+                    "Cache file exceeds size limit (%d bytes > %d bytes)",
+                    cache_size,
+                    MAX_CACHE_FILE_SIZE,
+                )
+                return None
+            return CompiledUniverse.load_from_cache(cache_path)
+        except Exception as exc:  # pragma: no cover - defensive
+            logger.warning("Failed to load cached universe from %s: %s", cache_path, exc)
+            return None
+
+    def _cache_artifact_path(self, config_dir: Path, primary_level: str) -> Path:
+        """Return the cache artifact path for a pack compiled at ``primary_level``.
+
+        One artifact per level. There is deliberately no default for
+        ``primary_level``: a pack-wide ``universe.msgpack`` is what let a request
+        for one level be served another level's projection, and a default would
+        quietly reintroduce it.
+        """
+
+        return self._cache_directory_for(config_dir) / f"universe-{primary_level}.msgpack"
 
     def _prepare_cache_directory(self, cache_dir: Path) -> None:
         """Ensure the cache directory exists and is writable."""

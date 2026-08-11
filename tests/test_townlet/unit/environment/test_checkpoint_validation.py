@@ -18,12 +18,16 @@ from tests.test_townlet.utils.builders import make_vectorized_env_from_pack
 
 @pytest.fixture(autouse=True)
 def invalidate_compiled_cache(test_config_pack_path):
-    """Force recompilation so action labels from the compiler are present."""
+    """Force recompilation so action labels from the compiler are present.
+
+    Removes the whole ``.compiled`` directory rather than a single filename. Since
+    WS-1(a) there is one artifact per level (``universe-<level>.msgpack``), so the
+    old ``unlink("universe.msgpack")`` would silently delete nothing and this suite
+    would run against a stale cache — passing for the wrong reason.
+    """
     pack_path = Path(test_config_pack_path).resolve()
-    compiled_artifact = pack_path / ".compiled" / "universe.msgpack"
     builders._UNIVERSE_CACHE.pop(pack_path, None)
-    if compiled_artifact.exists():
-        compiled_artifact.unlink()
+    shutil.rmtree(pack_path / ".compiled", ignore_errors=True)
 
 
 class TestCheckpointValidation:

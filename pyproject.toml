@@ -36,32 +36,21 @@ classifiers = [
     "Framework :: Pytest",
     "Typing :: Typed",
 ]
+# Every entry below is imported somewhere in src/, tests/ or scripts/. Floors are
+# the versions actually exercised, not aspirational lower bounds — an untested
+# floor is a claim about compatibility that nothing verifies.
 dependencies = [
-    "pettingzoo>=1.24.0",
-    "gymnasium>=1.0.0",
-    "numpy>=1.24.0",
-    "pandas>=2.0.0",
-    "scikit-learn>=1.3.0",
-    "torch>=2.9.0,<2.12",  # upper bound: triton 3.7 segfaults inside pytest (filigree hamlet-74197422b3)
-    "tensorboard>=2.15.0",
-    "fastapi>=0.100.0",
-    "uvicorn[standard]>=0.23.0",
-    "websockets>=11.0",
-    "flask>=3.0.0",
-    "flask-cors>=4.0.0",
-    "pydantic>=2.0.0",
-    "pyyaml>=6.0",
-    "python-dotenv>=1.0.0",
-    "cloudpickle>=3.0.0",
-    "gitpython>=3.1.0",
-    "requests>=2.31.0",
-    "rich>=13.0.0",
-    "mlflow>=2.9.0",
-    "tensorflow[and-cuda]>=2.20.0",
-    "tensorflow>=2.20.0",
+    "numpy>=2.4.4",
+    "torch>=2.11.0,<2.12",  # upper bound: triton 3.7.0 segfaults inside pytest (filigree hamlet-74197422b3)
+    "tensorboard>=2.20.0",  # no direct import: required by torch.utils.tensorboard.SummaryWriter
+    "fastapi>=0.136.1",
+    "uvicorn[standard]>=0.46.0",
+    "websockets>=16.0",  # wire protocol behind fastapi.WebSocket / uvicorn[standard]
+    "pydantic>=2.13.4",
+    "pyyaml>=6.0.3",
     "msgpack>=1.1.2",
     "lz4>=4.4.5",
-    "pyparsing>=3.1.0",
+    "pyparsing>=3.3.2",
 ]
 
 [project.urls]
@@ -73,23 +62,24 @@ Changelog = "https://github.com/tachyon-beep/hamlet/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.4.0,<9.0.0",
-    "pytest-cov>=4.1.0",
-    "pytest-asyncio>=0.21.0",
-    "pytest-benchmark>=4.0.0",
-    "black>=23.7.0",
-    "ruff>=0.0.280",
-    "mypy>=1.4.0",
-    "types-PyYAML>=6.0.12.12",
-    "hypothesis>=6.100.0",
-    "vulture>=2.0.0",
+    "pytest>=8.4.2,<9.0.0",  # upper bound unverified against pytest 9; lift only with a full-suite run
+    "pytest-cov>=7.1.0",
+    "pytest-asyncio>=1.3.0",
+    "pytest-benchmark>=5.2.3",
+    "black>=26.3.1",
+    "ruff>=0.15.12",
+    "mypy>=2.1.0",
+    "types-PyYAML>=6.0.12.20260510",
+    "hypothesis>=6.152.7",
+    "vulture>=2.16",
 ]
+# Consumed only by src/townlet/recording/. That subsystem is slated for removal
+# once its intent is captured (filigree hamlet-16ae192d42) — delete this extra in
+# the same change. msgpack/lz4 are not repeated here: they are runtime deps.
 recording = [
-    "msgpack>=1.0.0",       # Serialization
-    "lz4>=4.0.0",           # Compression
     "ffmpeg-python>=0.2.0", # Video export
-    "pillow>=10.0.0",       # Image manipulation
-    "matplotlib>=3.7.0",    # Frame rendering
+    "pillow>=12.2.0",       # Image manipulation
+    "matplotlib>=3.10.9",   # Frame rendering
 ]
 
 [build-system]

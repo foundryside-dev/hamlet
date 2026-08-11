@@ -86,9 +86,15 @@ HAMLET is a pedagogical Deep Reinforcement Learning (DRL) environment where agen
 ### Setup
 
 ```bash
-uv sync                  # Install dependencies
-uv sync --extra dev      # Install with development tools
+uv sync                                    # Runtime dependencies only
+uv sync --extra dev --extra recording      # Development environment
 ```
+
+**Both extras are required for development.** `mypy src/townlet` type-checks
+`src/townlet/recording/`, whose imports (matplotlib, pillow) live in the
+`recording` extra. Omitting it produces four spurious `import-not-found` errors.
+Until the recording subsystem is removed (filigree `hamlet-16ae192d42`), the dev
+environment needs both.
 
 ### Training (Townlet System)
 

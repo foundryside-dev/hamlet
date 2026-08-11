@@ -220,7 +220,9 @@ class PrioritizedReplayBuffer:
             # MED-08: abs() is defensive - ensures positive priorities even if caller forgets
             self.priorities[idx] = abs(td_error) + 1e-6  # Small epsilon to avoid zero priority
 
-        self.max_priority = max(self.max_priority, self.priorities[: self.size_current].max())
+        # float() is required, not cosmetic: ndarray.max() returns np.floating, and
+        # max(float, np.floating) widens to SupportsDunderLT | SupportsDunderGT.
+        self.max_priority = max(self.max_priority, float(self.priorities[: self.size_current].max()))
 
     def anneal_beta(self, total_steps: int, current_step: int) -> None:
         """Anneal beta toward 1.0 over training.

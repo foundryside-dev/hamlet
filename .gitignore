@@ -31,7 +31,10 @@ env/
 
 # UV
 .uv/
-uv.lock
+# uv.lock is DELIBERATELY tracked. Townlet is an application, not a library: the
+# lockfile is the only artifact that makes an environment reproducible, and a
+# project whose spine is content-addressed provenance cannot ship without one.
+# It was ignored here until 2026-08-11.
 
 # IDEs
 .vscode/
@@ -91,7 +94,19 @@ test_mlruns/
 data/
 *.csv
 !.claude/skills/**/*.json
+# WARNING: this `*.json` is GLOBAL despite sitting under "# Data". It is the root
+# cause WS-0 (hamlet-8eeaba1461) is chasing: it silently excluded the frontend's
+# package metadata from version control, which is why hamlet-d892e161c0 reads as
+# "package.json is missing" rather than "package.json was never committable".
+# The negation above shows someone hit this before and patched one case instead
+# of the rule. Narrowing it fully is WS-0's call — it also catches .mcp.json and
+# the plan review artifacts, which need their own triage.
 *.json
+# Dependency manifests are never data. These MUST be tracked.
+!frontend/package.json
+!frontend/package-lock.json
+!package.json
+!package-lock.json
 *.pkl
 *.pickle
 

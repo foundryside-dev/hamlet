@@ -357,7 +357,19 @@ class TestNetworkComparison:
         """Recurrent network should take longer due to sequential LSTM."""
         import time
 
-        simple_net = SimpleQNetwork(obs_dim=basic_env.observation_dim, action_dim=basic_env.action_dim, hidden_dim=128)
+        # Both networks MUST live on the same device, and GPU work MUST be
+        # synchronised before reading the clock. Until WS-1's dependency cleanup
+        # restored CUDA on this machine, pomdp_env.device was always CPU and both
+        # conditions held by accident. With a GPU present, this timed a CPU net
+        # against an async GPU net and measured the device, not the architecture:
+        # observed simple 4072ms vs recurrent 59ms, i.e. kernel launch latency.
+        device = pomdp_env.device
+
+        def _sync() -> None:
+            if device.type == "cuda":
+                torch.cuda.synchronize(device)
+
+        simple_net = SimpleQNetwork(obs_dim=basic_env.observation_dim, action_dim=basic_env.action_dim, hidden_dim=128).to(device)
         recurrent_net = RecurrentSpatialQNetwork(
             action_dim=pomdp_env.action_dim,
             window_size=getattr(pomdp_env, "local_window_size", 5) or 5,
@@ -370,25 +382,29 @@ class TestNetworkComparison:
         ).to(pomdp_env.device)
 
         batch_size = 32
-        obs_simple = torch.randn(batch_size, basic_env.observation_dim)
-        obs_recurrent = pomdp_env.reset().repeat(batch_size, 1)
+        obs_simple = torch.randn(batch_size, basic_env.observation_dim, device=device)
+        obs_recurrent = pomdp_env.reset().repeat(batch_size, 1).to(device)
 
         # Warm up
         _ = simple_net(obs_simple)
         recurrent_net.reset_hidden_state(batch_size, device=next(recurrent_net.parameters()).device)
         _ = recurrent_net(obs_recurrent)
+        _sync()
 
         # Time simple network
         start = time.time()
         for _ in range(100):
             _ = simple_net(obs_simple)
+        _sync()
         simple_time = time.time() - start
 
         # Time recurrent network
         recurrent_net.reset_hidden_state(batch_size, device=next(recurrent_net.parameters()).device)
+        _sync()
         start = time.time()
         for _ in range(100):
             _ = recurrent_net(obs_recurrent)
+        _sync()
         recurrent_time = time.time() - start
 
         print("\n⏱️ Inference time (100 forward passes):")

@@ -481,7 +481,11 @@ See `configs/templates/` for substrate configuration examples and `docs/config-s
 **Training Details**:
 
 - Gradient clipping: `max_norm=10.0` (prevents exploding gradients)
-- Economic balance: Job payment = $22.5, sustainable with proper cycles
+- Economic balance: WORK pays $22.5. **This became true at runtime only in WS-1(e)**
+  (2026-08-12) — before that, six hardcoded `[0.0, 1.0]` clamps crushed every payout to
+  `1.0` despite `money.bounds.max: 999999.0`, so six of seven priced affordances were
+  permanently unaffordable. "Sustainable with proper cycles" has **never been measured**
+  against a working economy; treat it as an intention, not a finding.
 - Intrinsic weight annealing: threshold=100.0, requires mean survival >50 steps
 
 ## Frontend Visualization

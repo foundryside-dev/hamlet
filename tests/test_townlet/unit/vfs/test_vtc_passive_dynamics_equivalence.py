@@ -105,7 +105,7 @@ def test_vtc_decay_and_cascades_match_legacy_formulas(level_name: str, depletion
         device=torch.device("cpu"),
         depletion_multiplier=depletion_multiplier,
     )
-    actual = compile_vtc_threshold_cascades(bars.cascades).apply(
+    actual = compile_vtc_threshold_cascades(bars.cascades, bars.meters).apply(
         bars_state=depleted,
         active_mask=active_mask,
         device=torch.device("cpu"),

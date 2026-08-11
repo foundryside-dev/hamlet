@@ -64,6 +64,9 @@ class AffordanceEngine:
         effect_manager: Any | None = None,  # NEW: EffectManager required for Effects commands
         item_manager: Any | None = None,  # NEW: ItemManager required for spawn_item
         affordance_overrides: dict[str, bool] | None = None,  # NEW: dynamic availability toggles
+        *,
+        meter_bounds_min: torch.Tensor,
+        meter_bounds_max: torch.Tensor,
     ):
         """
         Initialize AffordanceEngine.
@@ -77,9 +80,13 @@ class AffordanceEngine:
             vfs_registry: VFS registry for Effects system (optional)
             effects_schema: Effects schema for command compilation (optional)
             command_executor: Effects command executor (optional)
+            meter_bounds_min: Declared per-meter floors, shape [meter_count]. Required.
+            meter_bounds_max: Declared per-meter ceilings, shape [meter_count]. Required.
         """
         self.num_agents = num_agents
         self.device = device
+        self.meter_bounds_min = meter_bounds_min
+        self.meter_bounds_max = meter_bounds_max
 
         self.affordances = affordance_config
 
@@ -224,12 +231,10 @@ class AffordanceEngine:
             current_tick=current_tick,
         )
 
-        # Clamp meters to [0, 1].
-        # RETAINED deliberately (PDR-0014 B3 / PDR-0015): bars.*.bounds is currently
-        # the only declaration of a meter ceiling and nothing reads it, so deleting
-        # this would make bounds.max a lie at runtime. Task 3a retargets this literal
-        # onto the declared per-meter bounds; do not delete it and do not add a second.
-        updated_meters = torch.clamp(updated_meters, 0.0, 1.0)
+        # Clamp meters to their DECLARED per-meter bounds (WS-1(e)).
+        # RETAINED deliberately (PDR-0014 B3 / PDR-0015): this is a real ceiling, not a
+        # duplicate of the VTC clamp — do not delete it and do not add a second.
+        updated_meters = torch.clamp(updated_meters, self.meter_bounds_min, self.meter_bounds_max)
 
         return updated_meters
 
@@ -328,8 +333,8 @@ class AffordanceEngine:
                 current_tick=current_tick,
             )
 
-        # Clamp meters to [0, 1]
-        updated_meters = torch.clamp(updated_meters, 0.0, 1.0)
+        # Clamp meters to their DECLARED per-meter bounds (WS-1(e)).
+        updated_meters = torch.clamp(updated_meters, self.meter_bounds_min, self.meter_bounds_max)
 
         return updated_meters
 

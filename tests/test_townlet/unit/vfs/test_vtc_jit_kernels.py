@@ -26,7 +26,9 @@ def test_vtc_generated_hot_paths_do_not_call_expression_interpreter(monkeypatch)
     device = torch.device("cpu")
     active_mask = torch.tensor([True, True, False], device=device)
 
-    passive_program = vtc.compile_vtc_passive_depletions([{"name": "energy", "depletion": {"passive": 0.1}}])
+    passive_program = vtc.compile_vtc_passive_depletions(
+        [{"name": "energy", "depletion": {"passive": 0.1}, "bounds": {"min": 0.0, "max": 1.0}}]
+    )
     passive = passive_program.apply(
         bars_state={"energy": torch.tensor([0.5, 0.05, 0.9], device=device)},
         active_mask=active_mask,
@@ -35,7 +37,10 @@ def test_vtc_generated_hot_paths_do_not_call_expression_interpreter(monkeypatch)
     )
     assert torch.allclose(passive["energy"], torch.tensor([0.3, 0.0, 0.9], device=device))
 
-    cascade_program = vtc.compile_vtc_threshold_cascades([{"source": "satiation", "target": "energy", "threshold": 0.3, "strength": 0.006}])
+    cascade_program = vtc.compile_vtc_threshold_cascades(
+        [{"source": "satiation", "target": "energy", "threshold": 0.3, "strength": 0.006}],
+        [{"name": "energy", "depletion": {"passive": 0.0}, "bounds": {"min": 0.0, "max": 1.0}}],
+    )
     cascade = cascade_program.apply(
         bars_state={
             "energy": torch.tensor([1.0, 1.0, 1.0], device=device),

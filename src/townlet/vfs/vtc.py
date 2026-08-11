@@ -57,6 +57,9 @@ class VTCPassiveDepletionSource(Protocol):
     @property
     def depletion(self) -> Any: ...
 
+    @property
+    def bounds(self) -> Any: ...
+
 
 class VTCModulationSource(Protocol):
     """Minimal modulation shape needed by the VTC modulation compiler."""
@@ -2274,18 +2277,35 @@ def _coerce_write_spec(write: WriteSpec | Mapping[str, Any], action_name: str) -
     raise TypeError(f"Action '{action_name}' write entry must be a WriteSpec or mapping")
 
 
-def compile_vtc_threshold_cascades(cascades: Sequence[VTCThresholdCascadeSource | Mapping[str, Any]]) -> VTCThresholdCascadeProgram:
+def compile_vtc_threshold_cascades(
+    cascades: Sequence[VTCThresholdCascadeSource | Mapping[str, Any]],
+    meters: Sequence[VTCPassiveDepletionSource | Mapping[str, Any]],
+) -> VTCThresholdCascadeProgram:
     """Compile bars.yaml cascades into VTC threshold-delta transition rules."""
-    return compile_vtc_threshold_cascades_with_phase_graph(cascades, TransitionPhaseGraph.default())
+    return compile_vtc_threshold_cascades_with_phase_graph(cascades, meters, TransitionPhaseGraph.default())
 
 
 def compile_vtc_threshold_cascades_with_phase_graph(
     cascades: Sequence[VTCThresholdCascadeSource | Mapping[str, Any]],
+    meters: Sequence[VTCPassiveDepletionSource | Mapping[str, Any]],
     phase_graph: TransitionPhaseGraph,
 ) -> VTCThresholdCascadeProgram:
-    """Compile bars.yaml cascades using an explicit VTC transition phase graph."""
+    """Compile bars.yaml cascades using an explicit VTC transition phase graph.
+
+    ``meters`` supplies the declared bounds of each cascade's *target*: a cascade
+    writes the target meter, so the target's ceiling is the one that applies.
+    """
     parser = ExpressionParser()
     compiled_rules: list[CompiledVTCThresholdCascade] = []
+    bounds_by_meter: dict[str, tuple[float, float]] = {}
+    for raw_meter in meters:
+        if isinstance(raw_meter, Mapping):
+            meter_name = str(raw_meter["name"])
+            meter_bounds = raw_meter["bounds"]
+        else:
+            meter_name = raw_meter.name
+            meter_bounds = raw_meter.bounds
+        bounds_by_meter[meter_name] = _coerce_meter_bounds(meter_bounds)
 
     for priority, raw_cascade in enumerate(cascades):
         cascade = _coerce_threshold_cascade(raw_cascade)
@@ -2298,6 +2318,15 @@ def compile_vtc_threshold_cascades_with_phase_graph(
             else f"{strength_literal} * (({threshold_literal} - bar.{cascade['source']}) / {threshold_literal})"
         )
         rule_id = cascade["rule_id"]
+        target_bounds = bounds_by_meter.get(cascade["target"])
+        if target_bounds is None:
+            raise ValueError(
+                "Threshold cascade targets a meter with no declared bounds.\n"
+                f"  Cascade: {rule_id}\n"
+                f"  Target meter: {cascade['target']}\n"
+                f"  Meters supplied: {sorted(bounds_by_meter)}\n"
+                "  Rule: a cascade writes its target, so the target must declare bounds.min/bounds.max."
+            )
         compiled_rules.append(
             CompiledVTCThresholdCascade(
                 rule_id=rule_id,
@@ -2311,7 +2340,7 @@ def compile_vtc_threshold_cascades_with_phase_graph(
                 composition="additive_delta",
                 phase="apply_threshold_cascades",
                 priority=priority,
-                clamp=(0.0, 1.0),
+                clamp=target_bounds,
                 telemetry_label=f"threshold_delta:{rule_id}",
                 cascade_threshold=cascade["threshold"],
                 cascade_strength=cascade["strength"],
@@ -2381,7 +2410,7 @@ def compile_vtc_passive_depletions_with_phase_graph(
                 composition="overwrite",
                 phase="apply_passive_depletion",
                 priority=priority,
-                clamp=(0.0, 1.0),
+                clamp=(meter["bounds_min"], meter["bounds_max"]),
                 telemetry_label=f"passive_depletion:{meter['name']}",
                 passive_rate=meter["passive"],
             )
@@ -2397,18 +2426,34 @@ def compile_vtc_passive_depletions_with_phase_graph(
     )
 
 
+def _coerce_meter_bounds(bounds: Any) -> tuple[float, float]:
+    """Read the declared [min, max] off a bar's bounds, mapping or attribute form.
+
+    Shared by the passive-depletion, threshold-cascade and terminal-condition
+    coercions so the declared ceiling is read one way everywhere.
+    """
+    if isinstance(bounds, Mapping):
+        return float(bounds["min"]), float(bounds["max"])
+    return float(bounds.min), float(bounds.max)
+
+
 def _coerce_passive_depletion(meter: VTCPassiveDepletionSource | Mapping[str, Any]) -> dict[str, Any]:
     if isinstance(meter, Mapping):
         name = str(meter["name"])
         depletion = meter["depletion"]
         passive = float(depletion["passive"] if isinstance(depletion, Mapping) else getattr(depletion, "passive"))
+        bounds = meter["bounds"]
     else:
         name = meter.name
         passive = float(meter.depletion.passive)
+        bounds = meter.bounds
 
+    bounds_min, bounds_max = _coerce_meter_bounds(bounds)
     return {
         "name": name,
         "passive": passive,
+        "bounds_min": bounds_min,
+        "bounds_max": bounds_max,
     }
 
 
@@ -2453,6 +2498,10 @@ def compile_vtc_modulations_with_phase_graph(
                     composition="multiplicative_modifier",
                     phase="apply_modulations",
                     priority=len(compiled_rules),
+                    # B3: this clamp bounds an affordance EFFECTIVENESS MULTIPLIER, not a
+                    # meter. [0, 1] is the multiplier's own domain and has nothing to do
+                    # with bars.*.bounds — do not "harmonise" it onto the declared meter
+                    # bounds the way WS-1(e) did for the passive/cascade/runtime clamps.
                     clamp=(0.0, 1.0),
                     telemetry_label=f"modulation:{rule_id}",
                     modulation_threshold=modulation["threshold"],

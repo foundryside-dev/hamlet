@@ -363,11 +363,19 @@ class ObservationCompiler:
         self,
         obs_spec: ObservationSpec,
         environment: EnvConfigV21,
+        bars: Any,
+        meter_metadata: Any,
     ) -> tuple[VFSObservationField, ...]:
         """Mirror ObservationSpec fields into VFS observation fields for runtime consumption."""
         env_norm_by_name: dict[str, NormalizationSpec] = {}
         for var in environment.environment.variables:
             env_norm_by_name[var.name] = self._convert_normalization(var.name, getattr(var, "normalization", None))
+
+        # `obs_meters` is normalized against the DECLARED bar bounds (WS-1(e)/PDR-0016).
+        # bounds.max is exactly the range a minmax normalizer needs, so the same
+        # declaration that ceilings the runtime also scales the observation — rather
+        # than a divisor invented here, which would be papering over the magnitude.
+        env_norm_by_name["obs_meters"] = self._meter_normalization(bars, meter_metadata)
 
         fields: list[VFSObservationField] = []
         allowed_semantic = {"bars", "spatial", "affordance", "temporal", "custom"}
@@ -386,6 +394,31 @@ class ObservationCompiler:
                 )
             )
         return tuple(fields)
+
+    @staticmethod
+    def _meter_normalization(bars: Any, meter_metadata: Any) -> NormalizationSpec:
+        """Build the per-meter minmax spec from declared bar bounds, in observation order."""
+        bounds_by_name = {meter.name: meter.bounds for meter in bars.meters}
+        ordered = sorted(meter_metadata.meters, key=lambda meter: meter.index)
+        mins: list[float] = []
+        maxes: list[float] = []
+        for meter in ordered:
+            declared = bounds_by_name.get(meter.name)
+            if declared is None:
+                raise ValueError(
+                    "Meter present in compiled metadata has no declared bar to supply bounds.\n"
+                    f"  Meter: {meter.name} (index {meter.index})\n"
+                    "  Rule: every observed meter must declare bounds.min/bounds.max in bars.yaml."
+                )
+            if declared.max <= declared.min:
+                raise ValueError(
+                    "Meter bounds cannot be normalized: max must be strictly greater than min.\n"
+                    f"  Meter: {meter.name}\n"
+                    f"  Declared bounds: [{declared.min}, {declared.max}]"
+                )
+            mins.append(float(declared.min))
+            maxes.append(float(declared.max))
+        return NormalizationSpec(kind="minmax", min=mins, max=maxes)
 
     def build_vfs_variables(self, obs_spec: ObservationSpec, environment: EnvConfigV21) -> tuple[VariableDef, ...]:
         """Build VFS variables from observation fields + environment variables."""

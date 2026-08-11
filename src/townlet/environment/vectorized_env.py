@@ -242,6 +242,29 @@ class VectorizedHamletEnv:
             if idx is not None:
                 self.initial_meter_values[idx] = bar.initial
 
+        # Declared meter bounds drive every runtime ceiling and floor (WS-1(e)).
+        # Two vectorized [meter_count] tensors, never a branch on a bar name: the
+        # runtime stays domain-agnostic and `money` is not special-cased anywhere.
+        self.meter_bounds_min = torch.zeros(meter_count, dtype=torch.float32, device=self.device)
+        self.meter_bounds_max = torch.zeros(meter_count, dtype=torch.float32, device=self.device)
+        covered_indices: set[int] = set()
+        for bar in self.bars_config.meters:
+            idx = self.meter_name_to_index.get(bar.name)
+            if idx is None:
+                continue
+            self.meter_bounds_min[idx] = bar.bounds.min
+            self.meter_bounds_max[idx] = bar.bounds.max
+            covered_indices.add(idx)
+        uncovered = sorted(set(range(meter_count)) - covered_indices)
+        if uncovered:
+            index_to_name = {idx: name for name, idx in self.meter_name_to_index.items()}
+            uncovered_names = [index_to_name.get(idx, f"<index {idx}>") for idx in uncovered]
+            raise ValueError(
+                "Meter indices in the compiled metadata have no declared bar to supply bounds.\n"
+                f"  Uncovered meters: {uncovered_names}\n"
+                "  Rule: every meter must declare bounds.min/bounds.max in bars.yaml; there is no default."
+            )
+
         # Initialize affordance engine with AffordanceParamConfig directly
         # No RuntimeAffordanceConfig conversion needed - AffordanceEngine uses interactions field
 
@@ -707,6 +730,8 @@ class VectorizedHamletEnv:
             effects_schema=self.effects_schema,
             command_executor=self.command_executor,
             effect_manager=self.effect_manager,
+            meter_bounds_min=self.meter_bounds_min,
+            meter_bounds_max=self.meter_bounds_max,
             item_manager=self.item_manager or NullItemManager(),
             affordance_overrides=self.affordance_overrides,
         )

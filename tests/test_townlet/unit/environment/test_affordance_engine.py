@@ -25,6 +25,22 @@ from townlet.environment.affordance_engine import (
 from townlet.vfs import vtc
 
 
+def _bounds_kwargs(meter_name_to_idx, device=None):
+    """Declared meter bounds for engines whose meters are all unit-interval.
+
+    Since WS-1(e) the engine clamps to declared per-meter bounds rather than a
+    hardcoded [0, 1], so every construction site must supply them. These fixtures
+    all use unit-interval meters; a test that needs a different ceiling (e.g. a
+    money-like meter) should build its own tensors rather than widen this helper.
+    """
+    count = len(meter_name_to_idx)
+    resolved = device or torch.device("cpu")
+    return {
+        "meter_bounds_min": torch.zeros(count, device=resolved),
+        "meter_bounds_max": torch.ones(count, device=resolved),
+    }
+
+
 @dataclass
 class RuntimeEffect:
     meter: str
@@ -254,7 +270,13 @@ class TestAffordanceQueries:
     def test_get_affordance_by_id(self, cpu_device, affordance_engine_components):
         """Get affordance by ID should return correct config."""
         bars_config, affordance_config = affordance_engine_components
-        engine = AffordanceEngine(affordance_config, num_agents=1, device=cpu_device, meter_name_to_idx=bars_config.meter_name_to_index)
+        engine = AffordanceEngine(
+            affordance_config,
+            num_agents=1,
+            device=cpu_device,
+            meter_name_to_idx=bars_config.meter_name_to_index,
+            **_bounds_kwargs(bars_config.meter_name_to_index, cpu_device),
+        )
 
         # Get Bed by ID (Bed is the first affordance in action_masking pack)
         bed = engine.get_affordance("0")
@@ -264,7 +286,13 @@ class TestAffordanceQueries:
     def test_get_affordance_invalid_id_returns_none(self, cpu_device, affordance_engine_components):
         """Get affordance with invalid ID should return None."""
         bars_config, affordance_config = affordance_engine_components
-        engine = AffordanceEngine(affordance_config, num_agents=1, device=cpu_device, meter_name_to_idx=bars_config.meter_name_to_index)
+        engine = AffordanceEngine(
+            affordance_config,
+            num_agents=1,
+            device=cpu_device,
+            meter_name_to_idx=bars_config.meter_name_to_index,
+            **_bounds_kwargs(bars_config.meter_name_to_index, cpu_device),
+        )
 
         # Invalid ID
         result = engine.get_affordance("invalid_id_12345")
@@ -273,7 +301,13 @@ class TestAffordanceQueries:
     def test_get_num_affordances(self, cpu_device, affordance_engine_components):
         """Get number of affordances should return correct count."""
         bars_config, affordance_config = affordance_engine_components
-        engine = AffordanceEngine(affordance_config, num_agents=1, device=cpu_device, meter_name_to_idx=bars_config.meter_name_to_index)
+        engine = AffordanceEngine(
+            affordance_config,
+            num_agents=1,
+            device=cpu_device,
+            meter_name_to_idx=bars_config.meter_name_to_index,
+            **_bounds_kwargs(bars_config.meter_name_to_index, cpu_device),
+        )
 
         # Synthetic fixture defines 7 affordances
         assert engine.get_num_affordances() == 7
@@ -281,7 +315,13 @@ class TestAffordanceQueries:
     def test_get_affordance_action_map(self, cpu_device, affordance_engine_components):
         """Get affordance action map should return name-to-index mapping."""
         bars_config, affordance_config = affordance_engine_components
-        engine = AffordanceEngine(affordance_config, num_agents=1, device=cpu_device, meter_name_to_idx=bars_config.meter_name_to_index)
+        engine = AffordanceEngine(
+            affordance_config,
+            num_agents=1,
+            device=cpu_device,
+            meter_name_to_idx=bars_config.meter_name_to_index,
+            **_bounds_kwargs(bars_config.meter_name_to_index, cpu_device),
+        )
 
         action_map = engine.get_affordance_action_map()
 
@@ -306,7 +346,13 @@ class TestAffordabilityChecking:
     def test_can_afford_single_cost(self, cpu_device, affordance_engine_components):
         """Check affordability with single cost (money)."""
         bars_config, affordance_config = affordance_engine_components
-        engine = AffordanceEngine(affordance_config, num_agents=4, device=cpu_device, meter_name_to_idx=bars_config.meter_name_to_index)
+        engine = AffordanceEngine(
+            affordance_config,
+            num_agents=4,
+            device=cpu_device,
+            meter_name_to_idx=bars_config.meter_name_to_index,
+            **_bounds_kwargs(bars_config.meter_name_to_index, cpu_device),
+        )
 
         # Create meter tensors (4 agents)
         meters = torch.zeros((4, 8), dtype=torch.float32, device=cpu_device)
@@ -322,7 +368,13 @@ class TestAffordabilityChecking:
     def test_can_afford_multiple_costs(self, cpu_device, affordance_engine_components):
         """Check affordability with no costs (always affordable)."""
         bars_config, affordance_config = affordance_engine_components
-        engine = AffordanceEngine(affordance_config, num_agents=4, device=cpu_device, meter_name_to_idx=bars_config.meter_name_to_index)
+        engine = AffordanceEngine(
+            affordance_config,
+            num_agents=4,
+            device=cpu_device,
+            meter_name_to_idx=bars_config.meter_name_to_index,
+            **_bounds_kwargs(bars_config.meter_name_to_index, cpu_device),
+        )
 
         # Create meter tensors
         meters = torch.zeros((4, 8), dtype=torch.float32, device=cpu_device)
@@ -339,7 +391,13 @@ class TestAffordabilityChecking:
     def test_can_afford_all_agents_can_afford(self, cpu_device, affordance_engine_components):
         """All agents can afford should return all True."""
         bars_config, affordance_config = affordance_engine_components
-        engine = AffordanceEngine(affordance_config, num_agents=4, device=cpu_device, meter_name_to_idx=bars_config.meter_name_to_index)
+        engine = AffordanceEngine(
+            affordance_config,
+            num_agents=4,
+            device=cpu_device,
+            meter_name_to_idx=bars_config.meter_name_to_index,
+            **_bounds_kwargs(bars_config.meter_name_to_index, cpu_device),
+        )
 
         # All agents have plenty of money
         meters = torch.ones((4, 8), dtype=torch.float32, device=cpu_device)
@@ -353,7 +411,13 @@ class TestAffordabilityChecking:
     def test_can_afford_mixed_affordability(self, cpu_device, affordance_engine_components):
         """Mixed affordability should return correct mask."""
         bars_config, affordance_config = affordance_engine_components
-        engine = AffordanceEngine(affordance_config, num_agents=4, device=cpu_device, meter_name_to_idx=bars_config.meter_name_to_index)
+        engine = AffordanceEngine(
+            affordance_config,
+            num_agents=4,
+            device=cpu_device,
+            meter_name_to_idx=bars_config.meter_name_to_index,
+            **_bounds_kwargs(bars_config.meter_name_to_index, cpu_device),
+        )
 
         # Varied money levels
         meters = torch.zeros((4, 8), dtype=torch.float32, device=cpu_device)
@@ -373,7 +437,13 @@ class TestCostQueries:
     def test_get_duration_ticks_instant(self, cpu_device, affordance_engine_components):
         """Get required ticks for dual-mode affordances returns actual tick count."""
         bars_config, affordance_config = affordance_engine_components
-        engine = AffordanceEngine(affordance_config, num_agents=1, device=cpu_device, meter_name_to_idx=bars_config.meter_name_to_index)
+        engine = AffordanceEngine(
+            affordance_config,
+            num_agents=1,
+            device=cpu_device,
+            meter_name_to_idx=bars_config.meter_name_to_index,
+            **_bounds_kwargs(bars_config.meter_name_to_index, cpu_device),
+        )
 
         # Shower is dual-mode, requires 3 ticks
         ticks = engine.get_duration_ticks("Shower")
@@ -386,7 +456,13 @@ class TestCostQueries:
     def test_get_duration_ticks_multi_tick(self, cpu_device, affordance_engine_components):
         """Get required ticks for multi-tick affordance should return correct value."""
         bars_config, affordance_config = affordance_engine_components
-        engine = AffordanceEngine(affordance_config, num_agents=1, device=cpu_device, meter_name_to_idx=bars_config.meter_name_to_index)
+        engine = AffordanceEngine(
+            affordance_config,
+            num_agents=1,
+            device=cpu_device,
+            meter_name_to_idx=bars_config.meter_name_to_index,
+            **_bounds_kwargs(bars_config.meter_name_to_index, cpu_device),
+        )
 
         # Bed requires 5 ticks
         ticks = engine.get_duration_ticks("Bed")
@@ -399,7 +475,13 @@ class TestCostQueries:
     def test_get_duration_ticks_invalid_affordance(self, cpu_device, affordance_engine_components):
         """Get required ticks for invalid affordance should return 1."""
         bars_config, affordance_config = affordance_engine_components
-        engine = AffordanceEngine(affordance_config, num_agents=1, device=cpu_device, meter_name_to_idx=bars_config.meter_name_to_index)
+        engine = AffordanceEngine(
+            affordance_config,
+            num_agents=1,
+            device=cpu_device,
+            meter_name_to_idx=bars_config.meter_name_to_index,
+            **_bounds_kwargs(bars_config.meter_name_to_index, cpu_device),
+        )
 
         ticks = engine.get_duration_ticks("InvalidAffordance")
         assert ticks == 1
@@ -410,7 +492,9 @@ class TestDictCostAffordances:
 
     def _build_engine(self, affordances: tuple, cpu_device):
         meter_map = {"energy": 0, "money": 1}
-        return AffordanceEngine(affordances, num_agents=1, device=cpu_device, meter_name_to_idx=meter_map)
+        return AffordanceEngine(
+            affordances, num_agents=1, device=cpu_device, meter_name_to_idx=meter_map, **_bounds_kwargs(meter_map, cpu_device)
+        )
 
     def test_apply_instant_interaction_handles_dict_costs(self, cpu_device):
         affordance = DictCostAffordance(
@@ -544,6 +628,7 @@ def test_affordance_engine_executes_effects_commands():
         num_agents=2,
         device=torch.device("cpu"),
         meter_name_to_idx=meter_name_to_idx,
+        **_bounds_kwargs(meter_name_to_idx, torch.device("cpu")),
         modulation_program=None,
         vfs_registry=mock_registry,
         effects_schema=effects_schema,
@@ -590,6 +675,7 @@ def test_vtc_multi_tick_effects_apply_completion_commands_only_for_completion_ma
         num_agents=1,
         device=torch.device("cpu"),
         meter_name_to_idx={"energy": 0, "health": 1},
+        **_bounds_kwargs({"energy": 0, "health": 1}, torch.device("cpu")),
         effects_schema={"target.bar.energy": "float", "target.bar.health": "float"},
         command_executor=CommandExecutor(),
     )
@@ -662,6 +748,7 @@ def test_affordance_effects_apply_modulation_multiplier():
         num_agents=1,
         device=torch.device("cpu"),
         meter_name_to_idx={"energy": 0},
+        **_bounds_kwargs({"energy": 0}, torch.device("cpu")),
         modulation_program=modulation_program,
         vfs_registry=None,
         effects_schema=effects_schema,
@@ -717,6 +804,7 @@ def test_affordance_effects_apply_vtc_modulation_multiplier():
         num_agents=1,
         device=torch.device("cpu"),
         meter_name_to_idx={"energy": 0},
+        **_bounds_kwargs({"energy": 0}, torch.device("cpu")),
         modulation_program=modulation_program,
         vfs_registry=None,
         effects_schema={"target.bar.energy": "float"},
@@ -768,6 +856,7 @@ def test_get_meter_idx_validation_raises_on_unknown_meter():
         num_agents=1,
         device=torch.device("cpu"),
         meter_name_to_idx={"energy": 0, "health": 1},
+        **_bounds_kwargs({"energy": 0, "health": 1}, torch.device("cpu")),
         modulation_program=None,
         vfs_registry=None,
         effects_schema={},

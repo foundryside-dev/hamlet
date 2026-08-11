@@ -431,8 +431,8 @@ def test_transition_graph_hash_binds_passive_depletion_rules() -> None:
 
     phase_graph = TransitionPhaseGraph.default()
     action_program = compile_vtc_action_writes_with_phase_graph([], phase_graph)
-    meter = {"name": "energy", "depletion": {"passive": 0.1}}
-    changed_meter = {"name": "energy", "depletion": {"passive": 0.2}}
+    meter = {"name": "energy", "depletion": {"passive": 0.1}, "bounds": {"min": 0.0, "max": 1.0}}
+    changed_meter = {"name": "energy", "depletion": {"passive": 0.2}, "bounds": {"min": 0.0, "max": 1.0}}
 
     passive_program = vtc.compile_vtc_passive_depletions_with_phase_graph([meter], phase_graph)
 
@@ -774,6 +774,7 @@ def test_compiler_surfaces_vfs_hash(tmp_path: Path) -> None:
         ),
         threshold_cascade_program=compile_vtc_threshold_cascades_with_phase_graph(
             compiled.get_level(PRIMARY_LEVEL_NAME).bars.cascades,
+            compiled.get_level(PRIMARY_LEVEL_NAME).bars.meters,
             phase_graph,
         ),
         modulation_program=vtc.compile_vtc_modulations_with_phase_graph(

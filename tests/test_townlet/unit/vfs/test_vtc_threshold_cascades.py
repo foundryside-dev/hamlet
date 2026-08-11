@@ -7,6 +7,12 @@ import torch
 from townlet.config.bars_v2_config import CascadeParamConfig
 from townlet.vfs.vtc import compile_vtc_threshold_cascades
 
+# A cascade writes its TARGET meter, so the compiler needs the target's declared
+# bounds to emit the rule's clamp (WS-1(e)). These fixtures are unit-interval.
+_METERS = [
+    {"name": name, "depletion": {"passive": 0.0}, "bounds": {"min": 0.0, "max": 1.0}} for name in ("energy", "mood", "satiation", "hygiene")
+]
+
 
 def _cascade(*, source: str, target: str, threshold: float, strength: float) -> CascadeParamConfig:
     return CascadeParamConfig(source=source, target=target, threshold=threshold, strength=strength)
@@ -16,7 +22,8 @@ def test_compile_vtc_threshold_cascades_emits_threshold_delta_rule_metadata() ->
     program = compile_vtc_threshold_cascades(
         [
             _cascade(source="satiation", target="energy", threshold=0.3, strength=0.006),
-        ]
+        ],
+        _METERS,
     )
 
     assert len(program.rules) == 1
@@ -37,7 +44,8 @@ def test_vtc_threshold_cascades_sum_target_penalties_from_phase_snapshot() -> No
             _cascade(source="satiation", target="energy", threshold=0.3, strength=0.006),
             _cascade(source="mood", target="energy", threshold=0.2, strength=0.001),
             _cascade(source="hygiene", target="mood", threshold=0.4, strength=0.003),
-        ]
+        ],
+        _METERS,
     )
 
     updated = program.apply(

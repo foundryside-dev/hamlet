@@ -57,7 +57,7 @@ class ActionExecutor:
                     movement_costs[idx] = float(bar.depletion.move)
 
             env.meters[movement_mask] -= movement_costs.unsqueeze(0)
-            env.meters = torch.clamp(env.meters, 0.0, 1.0)
+            env.meters = torch.clamp(env.meters, env.meter_bounds_min, env.meter_bounds_max)
 
         if env.item_handler is not None:
             current_ticks = env.step_counts.clone()
@@ -147,7 +147,7 @@ class ActionExecutor:
                         interaction_costs[idx] = float(bar.depletion.interact)
 
                 env.meters[interact_mask] -= interaction_costs.unsqueeze(0)
-                env.meters = torch.clamp(env.meters, 0.0, 1.0)
+                env.meters = torch.clamp(env.meters, env.meter_bounds_min, env.meter_bounds_max)
 
                 successful_interactions = env._handle_interactions(interact_mask)
                 progress_advanced = env.enable_temporal_mechanics and env.vtc_interaction_progress_program.has_multi_tick_affordances()

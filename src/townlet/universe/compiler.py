@@ -369,7 +369,7 @@ class UniverseCompiler:
                 affordance_metadata,
                 action_metadata,
             )
-            vfs_fields = self._observation_compiler.build_vfs_observation_fields(obs_spec, raw.environment)
+            vfs_fields = self._observation_compiler.build_vfs_observation_fields(obs_spec, raw.environment, level.bars, meter_metadata)
             base_vfs_variables = self._observation_compiler.build_vfs_variables(obs_spec, raw.environment)
             vfs_variables = self._vfs_compiler.build_runtime_variables(
                 base_vfs_variables,

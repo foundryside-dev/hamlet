@@ -15,6 +15,7 @@ def test_compile_vtc_passive_depletions_emits_rule_metadata() -> None:
             {
                 "name": "energy",
                 "depletion": {"passive": 0.1},
+                "bounds": {"min": 0.0, "max": 1.0},
             }
         ]
     )
@@ -41,8 +42,8 @@ def test_vtc_passive_depletions_apply_scaled_decay_clamp_and_masking() -> None:
 
     program = vtc.compile_vtc_passive_depletions(
         [
-            {"name": "energy", "depletion": {"passive": 0.1}},
-            {"name": "health", "depletion": {"passive": 0.0}},
+            {"name": "energy", "depletion": {"passive": 0.1}, "bounds": {"min": 0.0, "max": 1.0}},
+            {"name": "health", "depletion": {"passive": 0.0}, "bounds": {"min": 0.0, "max": 1.0}},
         ]
     )
     bars_state = {

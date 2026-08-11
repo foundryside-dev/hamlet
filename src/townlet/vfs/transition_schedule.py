@@ -214,7 +214,7 @@ def build_vtc_transition_schedule(
     terminal_conditions = compile_vtc_terminal_conditions_with_phase_graph(level.bars.meters, phase_graph)
     passive_depletions = compile_vtc_passive_depletions_with_phase_graph(level.bars.meters, phase_graph)
     modulations = compile_vtc_modulations_with_phase_graph(level.affordances.modulations, phase_graph)
-    threshold_cascades = compile_vtc_threshold_cascades_with_phase_graph(level.bars.cascades, phase_graph)
+    threshold_cascades = compile_vtc_threshold_cascades_with_phase_graph(level.bars.cascades, level.bars.meters, phase_graph)
     social_program = compile_vtc_social_residue_rules_with_phase_graph(social_residue_rules, phase_graph)
     _validate_state_residue_targets(social_program, (variable.id for variable in vfs_variables))
     rewards = compile_vtc_reward_components_with_phase_graph(level.drive, phase_graph)

@@ -28,6 +28,7 @@ from townlet.effects.manager import ActiveEffect
 
 # Removed: calculate_expected_observation_dim (now using env.observation_dim directly)
 from townlet.universe.errors import CompilationError
+from townlet.vfs.observation_builder import apply_normalization
 
 
 class TestFullObservability:
@@ -153,8 +154,17 @@ class TestFullObservability:
         meter_obs = obs[:, meters_field.start_index : meters_field.end_index]
         meter_vfs = env.vfs_registry.get("obs_meters", reader="engine")
 
-        assert torch.allclose(meter_vfs, meter_obs)
+        # The registry still holds the RAW meter values...
         assert torch.allclose(meter_vfs, meter_values)
+
+        # ...and the observation is those values put through the field's DECLARED
+        # normalization. Since WS-1(e) that spec is minmax over bars.*.bounds, so the
+        # observation is no longer a pass-through of the registry whenever a meter
+        # declares a ceiling other than 1.0 (`money` does). Sourcing is still what this
+        # test pins: the observation must derive from the registry, not from env.meters.
+        normalization = next(field for field in env.universe.vfs_observation_fields if field.id == "obs_meters").normalization
+        assert normalization is not None, "obs_meters must declare a normalization spec"
+        assert torch.allclose(apply_normalization(meter_vfs, normalization), meter_obs)
 
     def test_single_meter_observation_is_sourced_from_vfs_registry(self, cpu_device: torch.device, env_factory):
         """Single-meter obs_meters uses scalar VFS storage and still returns a 2D observation slice."""

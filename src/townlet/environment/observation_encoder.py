@@ -8,7 +8,8 @@ from typing import TYPE_CHECKING, cast
 
 import torch
 
-from townlet.vfs.observation_builder import VFSObservationSpec, build_vfs_observation
+from townlet.vfs.observation_builder import VFSObservationSpec, apply_normalization, build_vfs_observation
+from townlet.vfs.schema import NormalizationSpec
 
 if TYPE_CHECKING:
     from townlet.environment.vectorized_env import VectorizedHamletEnv
@@ -86,11 +87,41 @@ class ObservationEncoder:
             agent_vars=(source_variable,),
             agent_active_mask=tuple(True for _ in range(dims)),
         )
-        return build_vfs_observation(
+        raw = build_vfs_observation(
             registry=env.vfs_registry,
             spec=spec,
             batch_size=env.num_agents,
         )
+        return self._apply_declared_normalization(field_name, raw, vfs_field.normalization, dims)
+
+    def _apply_declared_normalization(
+        self,
+        field_name: str,
+        value: torch.Tensor,
+        normalization: NormalizationSpec | None,
+        dims: int,
+    ) -> torch.Tensor:
+        """Apply a field's DECLARED normalization spec, if it declares one.
+
+        Until WS-1(e) nothing applied these specs: `apply_normalization` implements the
+        whole VFS normalization ABI, the specs are compiled and hashed into
+        `observation_schema_hash`, and the `obs_meters` field description has always read
+        "meter values (normalized)" — but no production code path ever called it. The
+        declaration is now what drives the observation.
+        """
+        if normalization is None:
+            return value
+        normalized = apply_normalization(value, normalization)
+        if normalized.shape[-1] != dims:
+            raise ValueError(
+                "Declared normalization changed an observation field's width.\n"
+                f"  Field: {field_name}\n"
+                f"  Normalization kind: {normalization.kind}\n"
+                f"  Declared dims: {dims}, produced: {normalized.shape[-1]}\n"
+                "  Rule: the compiled observation layout is fixed; a dimension-changing "
+                "normalizer (cyclical_sin_cos, one_hot) must be reflected in the field's dims."
+            )
+        return normalized
 
     def _compiled_vfs_observation_field(self, field_name: str):
         """Return the compiler-emitted VFS observation field for an observation id."""

@@ -16,10 +16,10 @@ into a **selection criterion**: strangle wherever the runtime still knows what t
 
 Recovery milestone **`hamlet-1ade187dcc`**, work streams WS-0…WS-7.
 
-- **WS-1** `hamlet-67ffbd282a` (P0, claimed, `fixing`) — **4 of 10 units landed, tree green at
+- **WS-1** `hamlet-67ffbd282a` (P0, claimed, `fixing`) — **5 of 10 units landed, tree green at
   every commit.** Grew 7 → 10 units across two reviews (`PDR-0015`, `PDR-0016`).
-  Order: ~~gates(1)~~ → ~~a(2)~~ → ~~d(3)~~ → **3a ← next** → new1(4) → new2(5) → b(6) → c(7)
-  → close(8), plus sibling `3b` (`hamlet-88acec4bb5`) after 3a and before the freeze.
+  Order: ~~gates(1)~~ → ~~a(2)~~ → ~~d(3)~~ → ~~bounds+normalization(3a)~~ → **new1(4) ← next**
+  → new2(5) → b(6) → c(7) → close(8), plus sibling `3b` (`hamlet-88acec4bb5`) before the freeze.
 - **WS-7** `hamlet-e3af412673` (P0) — the strangler's enabling stream. Blocked by WS-1.
 - **WS-6** `hamlet-5e39fcccb0`, **WS-0** `hamlet-8eeaba1461` — ready, untouched.
 - **WS-4** gained `hamlet-f46e2b381a` (`clamp_and_validate` declared-but-empty) and
@@ -69,20 +69,28 @@ authoring one for the first time is filed as `hamlet-e979f2ba37` (WS-4, downstre
 
 ## Next session, start here
 
-**Implement task 3a** — `bars.*.bounds` **and** the VFS observation normalization, together
-(`PDR-0016`). Read plan **§0.2 first** — it overrides §0.1 and §0, and its corrections are
-load-bearing:
+**Implement task 4** (`hamlet-ae6601e463`) — stamp and compare the four per-level content
+hashes (`bars`, `affordances`, `curriculum`, `training`), which are computed today and read by
+**nobody**, and fix `brain_hash`. This is **breach 2 of 3** on the Provenance-integrity
+guardrail. Plan §2 task 4. Its `H2` dependency on 3a is satisfied: money now survives a tick,
+so task 4's affordance leg can set it and have it persist.
 
-1. The site that actually binds is `vfs/vtc.py:2384` (passive depletion, `composition="overwrite"`,
-   every tick, every meter). Wiring only the four clamps `PDR-0014` named changes **nothing**.
-2. **Three of four "red today" literals in the spec are wrong** — real reds are `0.990000`, not
-   `1.000000`. An implementer writing `1.0` will see `0.99` and "fix" a working harness.
-3. `find configs -name '*.msgpack' -delete` before **every** measurement, red and green —
+**Task 3a is done** (`7065729a` + `174914d3`) — bounds at all six runtime sites *and* the VFS
+normalization ABI given its first production callers. Measured on L1: money `1.000000 →
+22.500000` per tick, money affordances `1 of 7 → 7 of 7`, `transition_graph_hash` moved to
+exactly the value the plan predicted. Its adversarial pass (18 agents, 5 lenses) confirmed
+**one** finding — a weak-sentinel test — now fixed and verified by mutation rather than by
+re-running green.
+
+Carry these into task 4:
+
+1. `find configs -name '*.msgpack' -delete` before **every** measurement, red and green —
    provenance uses `git rev-parse HEAD` and ignores dirty state.
-4. No second `COMPILED_SCHEMA_VERSION` bump (D1 holds; task 2 owns the only one).
-
-Then the normalization half needs **its own adversarial pass** — it touches every observation,
-a wider blast radius than the bounds half.
+2. **Verify red by mutation in a detached worktree**, never `git stash` (hard-blocked by an
+   operator hook that has caused silent work loss). `git worktree add --detach <path> HEAD`,
+   copy the test in, run with `PYTHONPATH=<wt>/src` and the main venv's python.
+3. **A green test is not evidence.** Two units running, two weak tests found by mutating the
+   implementation and re-running. Mutate before believing.
 
 **A recurring lesson, now seen three times — carry it into tasks 4 and 5, which both add fields
 to exactly this kind of structure:** grep finds *the shape of a call*, not the set of places a

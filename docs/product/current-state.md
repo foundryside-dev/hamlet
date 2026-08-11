@@ -1,87 +1,80 @@
-# Current State — HAMLET / Townlet        Checkpoint: 2026-08-11 · first checkpoint (workspace created this session)
+# Current State — HAMLET / Townlet        Checkpoint: 2026-08-11 · second checkpoint
 
 ## The bet right now
 
-**Strangler rewrite behind the compiled-universe contract** — freeze the current system as an
-oracle, then knock down and rebuild one design-space unit at a time against it. Keeps the
-provenance spine; re-earns the rest through a differential harness. Moves **Declared-but-inert
-config surfaces** (~40 → 0) and **Config-surface coverage** (~2 of 7 → 7 of 7). `PDR-0006`.
+**Strangler rewrite behind the compiled-universe contract** (`PDR-0006`) — freeze the current
+system as an oracle, then knock down and rebuild one design-space unit at a time against it.
+Guarded by **Provenance integrity**, which this session measured as **BREACHED**.
 
 ## In flight
 
-Recovery milestone **`hamlet-1ade187dcc`**, eight work streams, dependency graph wired.
+Recovery milestone **`hamlet-1ade187dcc`**, work streams WS-0…WS-7.
 
-- **WS-1** `hamlet-67ffbd282a` (P0) — **ready, no prerequisites.** Cache not keyed on
-  `primary_level`; recurrent path trains memoryless; +2. Must land **before** the oracle freeze —
-  freezing a bug makes it a requirement.
+- **WS-1** `hamlet-67ffbd282a` (P0) — **ready, gates the oracle freeze.** All four defects now
+  **confirmed by execution** (`PDR-0008`), plus two new provenance issues split out:
+  `hamlet-ae6601e463` (four per-level hashes stamped by nobody — cheapest high-value fix in the
+  set) and `hamlet-1029f99f4b` (serving path runs zero identity guards).
 - **WS-7** `hamlet-e3af412673` (P0) — the strangler's enabling stream. Blocked by WS-1. Contains
   `hamlet-834108b55a` (no seeding API).
-- **WS-6** `hamlet-5e39fcccb0` — **ready.** Plan reconciliation, re-scoped down by `PDR-0006`.
-- **WS-0** `hamlet-8eeaba1461` — **ready.** Frontend metadata + `.gitignore` root cause; migrate
-  and retire the pre-filigree markdown stratum.
-- **WS-2 / WS-3 / WS-4 / WS-5** — `hamlet-337b9e80fb`, `hamlet-1f89714685`, `hamlet-15050f280a`,
-  `hamlet-ad2773718a`. All blocked. WS-3 now reshaped into the **differential harness**.
+- **WS-6** `hamlet-5e39fcccb0` — **ready.** Head of the critical path.
+- **WS-0** `hamlet-8eeaba1461` — **ready.** `frontend/package.json` confirmed still missing.
+- **WS-2/3/4/5** — `hamlet-337b9e80fb`, `1f89714685`, `15050f280a`, `ad2773718a`. Blocked.
+  WS-4 gained `hamlet-0d0115383e` (per-level `architecture` unauthorable, `PDR-0009`).
 
-Superseded: `hamlet-7a932c4e40` (2026-05-16 architecture-gap milestone), annotated; its three open
-children reparented into WS-0 / WS-3 / WS-5 with scope corrected.
+Tracker drift from last session is resolved: `hamlet-7a932c4e40` closed `cancelled`,
+`hamlet-f2c7439b63` closed superseded.
 
 ## Open questions / blocked-on-owner
 
-All three escalations from this session were **resolved by the owner on 2026-08-11**:
-
-- ✅ **Vision — EXPLICITLY ENDORSED.** `vision.md` is authoritative, not a draft. Changing it from
-  here escalates. This also unblocks the README narrative.
-- ✅ **README — complete rewrite endorsed.** Filed `hamlet-6730ba7915`. Can start ahead of the rest
-  of WS-5: the narrative is unblocked by the endorsed vision, and the factual falsehoods
-  (nonexistent config packs, the 70% badge, stale test counts) are wrong today regardless of WS-4.
-  Per-field schema docs still wait for WS-4. **Drafting and committing locally is in scope;
-  pushing it public remains the owner's call.**
-- ✅ **`recording/` deletion — endorsed, conditional on preserving intent.** Owner: *"endorsed but
-  let's make sure we don't lose the intent."* Gated by `hamlet-16ae192d42`, which requires a
-  capability spec (what it was for, the async-queue and versioned-envelope designs worth keeping,
-  why it went inert, what a rebuilt version looks like) **before** any deletion. The capability is
-  now a Later roadmap item so it reads as deferred, not rejected.
-
-Still open, not blocking:
-
-- **Which knockdown is first?** Terrain/substrate is the strongest candidate — three of four
+- ⚠️ **A poisoned compile cache is in the working tree right now.**
+  `configs/default_curriculum/.compiled/universe.msgpack` holds **L0's** projection. Any run at
+  L0_5/L1/L2/L3 before WS-1(a) lands silently resumes the wrong weights *and* writes checkpoints
+  stamped with the wrong identity. `rm -rf configs/*/.compiled` before the next run. It is
+  deliberately **not** deleted — it is the standing repro.
+- **Owner decision — audit `runs/`?** Any checkpoint produced from a poisoned compile carries the
+  wrong `vfs_hash` permanently, and the mislabelling is inverted (accepted by the wrong universe,
+  rejected by the right one). Deleting or re-stamping those artifacts is **data deletion** under
+  the grant and needs your call. Escalated, not acted on.
+- **Which knockdown is first?** Terrain/substrate remains the strongest candidate — three of four
   substrate crashes collapse to one change, and it is where the 6-D demo hits its only wall.
 - **Determinism beyond CPU** — GPU float nondeterminism and the `vtc_kernels.py` TorchScript-JIT
-  path are untested. Both could weaken the oracle.
-- **What is the real test coverage?** Needs one clean full-suite run. Until then the README should
-  carry **no** coverage number rather than a replacement guess.
-- **Which knockdown is first?** Terrain/substrate is the strongest candidate — three of four
-  substrate crashes collapse to one change, and it is where the 6-D demo hits its only wall.
-- **Determinism beyond CPU** — GPU float nondeterminism and the `vtc_kernels.py` TorchScript-JIT
-  path are untested. Both could weaken the oracle.
-- **What is the real test coverage?** Unresolved from bootstrap. Needs one clean full-suite run.
+  path remain untested. Note: this machine's CUDA is currently broken
+  (`nvrtc: failed to open libnvrtc-builtins.so.13.0`), so GPU verification is blocked on that.
+- **Design fork inside `PDR-0009`** — per-level `architecture` override, or make `brain.yaml`
+  level-overridable the way `training.yaml` is? The second is more coherent with the grammar.
+  Decide before implementing.
+- **README push** remains the owner's call; drafting and committing locally is already endorsed.
+
+Closed this session: *"what is the real test coverage?"* — **81%** (`PDR-0010`).
 
 ## Last checkpoint did
 
-This was the **first** checkpoint; the workspace did not exist at session start.
-
-- Bootstrapped the five artifacts and recorded the **vision pivot** — from *game as experience* to
-  *writing a game as experience*; authoring-first, UAC → BAC → one compiler. `PDR-0001`, `PDR-0003`.
-- Ran a **maturity assessment** (12 agents, `wf_4ca82820-274`): REPAIR × 8, ~40 declared-but-inert
-  config surfaces, `specification` weak in all 8. Report saved under `assessments/`. `PDR-0004`.
-- Reframed inert surfaces as **unfinished plan steps, not decisions** — default is wire, not
-  delete. `PDR-0005`, later amended.
-- Adopted the **strangler strategy** and filed the whole program into filigree. `PDR-0006`.
-- Adopted **universality + configurability as the default** — capability gaps are options not yet
-  enabled; "should we implement it" is usually "yes, and expose it as config" — paired with a
-  definition-of-done (authored non-default, driven to runtime, pinned by a test), because the
-  unpaired principle is what produced the ~40 inert fields. `PDR-0007`.
-- **Trial 001 passed**: Sims in six dimensions, ~6 lines of config, zero `src/townlet/` changes.
-- **Verified determinism is satisfiable** but found no seeding door — a provenance hole, filed.
+- **Verified WS-1 by execution** — 20 agents, adversarial lenses per verdict, plus a completeness
+  critic. (b), (c), (d) and both session findings **confirmed**; (d) narrowed to its affordability
+  leg; **four claims retired as false alarms**; fix order changed on reachability grounds — (b)/(c)
+  are correct but unreachable on all 21 shipped packs. `PDR-0008`.
+- **Filed three new issues** — two provenance defects under WS-1, and the authorability gap under
+  WS-4. `PDR-0009` classifies the last of these as *an option not yet enabled*, not a bug.
+- **Read the guardrails for the first time since 2026-05-16.** Coverage resolves to **81%** and the
+  disputed 19% is *diagnosed* as a partial-run artefact (reproduced deliberately). `Gates green` is
+  **1 of 4**, not 4 of 4 — recorded green for three months while three were red. `PDR-0010`.
+- **Resolved the workspace's contradiction with itself** — `roadmap.md` now matches `PDR-0006` §2b
+  on EnvFactory and states the Now bet in strangler/oracle terms.
 
 ## Next session, start here
 
-**WS-1** (`hamlet-67ffbd282a`) — ready, P0, and it gates the oracle freeze. Confirm the
-cache→checkpoint-provenance link **by execution** first; that link is source-inferred, not run.
+**Fix WS-1 in the reordered sequence** (`PDR-0008`): **(a)** compile-cache key + `metadata.primary_level`,
+then **`hamlet-ae6601e463`** (stamp the four per-level hashes — cheapest win), then
+**(d)-affordability**, then **(b)**, then **(c)**.
 
-Then **WS-7**, starting with the seeding fix (`hamlet-834108b55a`), and mine
-`docs/plans/2026-05-15-compiler-cleanup-modernization.md` for the knockdown playbook — the owner
-already ran this operation on the compiler successfully.
+Two traps recorded on `hamlet-67ffbd282a`, both of which will bite silently:
+1. **(c)'s spec does not compile against (b)'s** — (b) makes `hidden` a required positional and
+   deletes `self.hidden_state`, which (c)'s pinning-test mitigation depends on. Rewrite (c) against
+   (b)'s post-fix API; do not extend it.
+2. **(a)'s spec does not touch `compiled.py:487-499`**, where `from_dict` rebuilds the transition
+   schedule by scanning for the *first* level matching a hash triple, with no primary-level check.
+   Sound-by-construction today, but it survives (a) unless someone adds the lookup.
 
-Read `vision.md` before deciding anything, then `PDR-0006` for why strangler beat both repair and
-full rebuild. Do not re-litigate that; it was decided with the owner on evidence.
+Do not re-litigate `PDR-0006` (strangler) or `PDR-0007` (universality + definition-of-done); both
+were decided with the owner on evidence. Read `vision.md` first — it is ENDORSED, and changing it
+escalates.

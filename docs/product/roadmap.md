@@ -1,4 +1,4 @@
-# Roadmap — HAMLET / Townlet            Updated: 2026-08-11 (PDR-0001)
+# Roadmap — HAMLET / Townlet            Updated: 2026-08-11 (PDR-0006, PDR-0008, PDR-0009)
 
 > Sequencing, WSJF / cost-of-delay, and dated forecasts are produced by
 > /axiom-program-management. This file records bets as INTENT, not a delivery
@@ -13,20 +13,30 @@
 
 ## Now  (committed, in-flight)
 
-- **Teardown, rebuild, recover — assessment gate PASSED, program filed.** The owner returned from
-  six months of intermittent attention to a codebase best described in their own words as *"best
-  we could do at the time, but uneven and lumpy in places that didn't get an extra quality pass."*
-  The maturity assessment ran and returned **REPAIR for all 8 subsystems** — no rebuilds, nothing
-  to throw away. The recovery is therefore **finishing work that was started and interrupted**,
-  not reconstruction.
-  · tracker: milestone `hamlet-1ade187dcc`, work streams WS-0…WS-6 with the dependency graph wired
-  · metric: **Subsystem maturity established** ✅ 8 of 8; now guardrails **Declared-but-inert
-  config surfaces** (~40 → 0) and **Documentation truth** (≥12 false claims → 0)
-  · **PDR-0002** gated it · **PDR-0004** adopts the dispositions · **PDR-0005** sets the triage
-  rule: inert surfaces are unfinished plan steps, so the default is **wire, not delete**
-  · ready now with no prerequisites: **WS-1** (`hamlet-67ffbd282a`, P0 — two defects corrupting
-  artifacts today) and **WS-6** (`hamlet-5e39fcccb0` — plan reconciliation, head of the critical
-  path)
+- **Strangler rewrite behind the compiled-universe contract** — freeze the current system as an
+  **oracle**, then knock down and rebuild one *design-space unit* at a time against it, keeping the
+  provenance spine and re-earning the rest through a differential harness. The owner returned from
+  six months of intermittent attention to a codebase they described as *"best we could do at the
+  time, but uneven and lumpy in places that didn't get an extra quality pass."* The maturity
+  assessment returned REPAIR for all 8 subsystems, but `PDR-0006` supersedes that *execution model*
+  (the assessment's instrument was biased toward REPAIR, and the spec is as spotty as the code):
+  the oracle dissolves the specification bottleneck for preserved behaviour, so spec-writing
+  collapses onto genuinely **new** surface only.
+  · tracker: milestone `hamlet-1ade187dcc`, work streams **WS-0…WS-7** with the dependency graph
+  wired. **WS-7** (`hamlet-e3af412673`) is the enabling stream — determinism, oracle tag,
+  differential harness, known-divergences register, per-unit seam cutting — and gates every
+  knockdown. **WS-3** is reshaped into the differential harness and becomes the program's central
+  artifact.
+  · metric: **Subsystem maturity established** ✅ 8 of 8; now guarded by **Provenance integrity**
+  (BREACHED, `PDR-0008`), **Declared-but-inert config surfaces** (~40 → 0), **Documentation truth**
+  (≥14 false claims → 0) and **Gates green** (1 of 4 → 4 of 4)
+  · **PDR-0002** gated the assessment · **PDR-0004** adopts the dispositions · **PDR-0005** sets the
+  triage rule (**wire, not delete**) · **PDR-0006** chose the strangler · **PDR-0008** verified
+  WS-1 by execution and reordered it
+  · ready now, no prerequisites: **WS-1** (`hamlet-67ffbd282a`, P0 — now four *executed* defects
+  plus two new provenance issues, `hamlet-ae6601e463` and `hamlet-1029f99f4b`; it gates the oracle
+  freeze), **WS-6** (`hamlet-5e39fcccb0`, head of the critical path) and **WS-0**
+  (`hamlet-8eeaba1461`)
 
   The 2026-05-16 architecture-gap milestone `hamlet-7a932c4e40` is annotated **superseded in
   scope**; its three open children were reparented into WS-0 / WS-3 / WS-5 with their scope
@@ -48,9 +58,14 @@
   · metric: input **Config-surface coverage** (~2 of 7 → 7 of 7)
   · largest single win: populate `RuntimeAction.reads/writes` from config — the entire 11-mode
   composition engine already exists and is tested; only the YAML door is missing
-  · note: `hamlet-030f2ce0aa` (EnvFactory, P3) is *not* this bet — it is an internal construction
-  refactor serving **changeability**, not authorability. Kept separate so this bet does not
-  inherit a false tracker anchor.
+  · note: `hamlet-030f2ce0aa` (EnvFactory) is *not* this bet, but its framing here is **corrected
+  by `PDR-0006`** — under a strangler, changeability *is* the enabling constraint, so seam-cutting
+  is strategic rather than incidental. Per `PDR-0006` §2b it is nonetheless cut **per knockdown
+  unit inside WS-7**, not as an up-front global gate, so it stays out of this bet.
+  · added `PDR-0009`: **per-level `architecture` is unauthorable** (`hamlet-0d0115383e`) — no pack
+  can express the documented MLP→LSTM progression. Sequenced *after* WS-1(b)/(c), because enabling
+  recurrent authoring before the recurrent training path is fixed would ship an option whose
+  observable behaviour is wrong.
 
 - **Prove generality — substrate axis DONE, domain axis outstanding.** `PDR-0003` obligation B.
   The **"Sims in six dimensions"** witness passed on 2026-08-11 (one file, ~6 lines, zero

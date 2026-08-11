@@ -17,6 +17,13 @@ Every literal here was MEASURED, not derived. Note that passive depletion runs A
 the interaction within a step, so a ceiling of 0.5 with `passive: 0.01` reads back
 0.490000, not 0.500000 — see `PDR-0015`/§0.2 of the plan, where three of the four
 originally-specified red baselines were wrong for exactly this reason.
+
+**Only `bounds.max` is pinned, and that is not an omission.** All 108 declared floors
+across all 25 packs are `0.0` — identical to the floor the old hardcoded clamp used —
+so wiring `bounds.min` and hardcoding `0.0` are numerically indistinguishable on every
+shipped pack. The difference is not expressible as behaviour by any config that exists,
+so there is no honest test for it. Do not read the absence of a floor test as the
+wiring being half-done.
 """
 
 from __future__ import annotations

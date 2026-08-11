@@ -2429,8 +2429,10 @@ def compile_vtc_passive_depletions_with_phase_graph(
 def _coerce_meter_bounds(bounds: Any) -> tuple[float, float]:
     """Read the declared [min, max] off a bar's bounds, mapping or attribute form.
 
-    Shared by the passive-depletion, threshold-cascade and terminal-condition
-    coercions so the declared ceiling is read one way everywhere.
+    Shared by the passive-depletion and threshold-cascade coercions so the declared
+    ceiling is read one way in both. `_coerce_terminal_condition_meter` deliberately
+    does NOT use it: it needs `lethal_min`/`lethal_max` as well, which a 2-tuple
+    cannot carry.
     """
     if isinstance(bounds, Mapping):
         return float(bounds["min"]), float(bounds["max"])

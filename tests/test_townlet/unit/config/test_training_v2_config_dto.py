@@ -33,6 +33,28 @@ class TestTrainingV2ConfigLoading:
         assert config.training_loop.max_episodes == 10_000
         assert config.training_loop.max_steps_per_episode == 1_000
 
+    def test_seed_is_required(self):
+        """A training config without `seed` must fail loudly (no-defaults principle).
+
+        The seed is THE reproducibility parameter: a hidden or optional seed is a
+        non-reproducible run by construction (hamlet-834108b55a). It also rides
+        `training_hash` into checkpoint identity, so it must live in config.
+        """
+        level_dir = Path("configs/test/model_config/levels/L0_test")
+        config = load_training_v2_config(level_dir)
+        data = config.model_dump()
+
+        data.pop("seed")
+
+        with pytest.raises(ValidationError, match="seed"):
+            TrainingV2Config(**data)
+
+    def test_seed_loads_from_yaml(self):
+        """The shipped test pack declares an explicit seed and it round-trips."""
+        level_dir = Path("configs/test/model_config/levels/L0_test")
+        config = load_training_v2_config(level_dir)
+        assert isinstance(config.seed, int)
+
     def test_enabled_affordances_must_not_be_null(self):
         """enabled_affordances must be provided as a list, not null."""
         level_dir = Path("configs/test/model_config/levels/L0_test")

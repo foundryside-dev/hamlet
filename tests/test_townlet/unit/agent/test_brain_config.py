@@ -511,6 +511,7 @@ def test_apply_training_overrides_merges_q_learning_and_replay():
     )
     training_cfg = TrainingV2Config(
         version="1.0",
+        seed=42,
         population=TrainingPopulationConfig(size=128),
         enabled_affordances=[],
         randomize_affordances=False,

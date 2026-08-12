@@ -8,7 +8,6 @@ environment with tensor operations [num_agents, ...].
 from __future__ import annotations
 
 import math
-import random
 from numbers import Number
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
@@ -1462,12 +1461,14 @@ class VectorizedHamletEnv:
                     break  # No collisions, we're done
             else:
                 # Retries exhausted (very rare for large grids, possible for small grids)
-                # Fall back to enumeration to guarantee collision-free placement
+                # Fall back to enumeration to guarantee collision-free placement.
+                # Permutation is drawn from torch's CPU RNG, not Python's global
+                # `random` — placement must be reproducible from seed_all alone.
                 all_positions = self.substrate.get_all_positions()
-                random.shuffle(all_positions)
+                perm = torch.randperm(len(all_positions))
                 sampled = torch.stack(
                     [
-                        torch.tensor(all_positions[idx], dtype=self.substrate.position_dtype, device=self.device)
+                        torch.tensor(all_positions[int(perm[idx])], dtype=self.substrate.position_dtype, device=self.device)
                         for idx in range(total_positions_needed)
                     ]
                 )

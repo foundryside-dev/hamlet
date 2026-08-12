@@ -357,6 +357,14 @@ class TrainingV2Config(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     version: Literal["1.0"] = Field(description="Config version")
+    seed: int = Field(
+        ge=0,
+        description=(
+            "Master RNG seed for the run. Seeds torch, Python `random`, and numpy through "
+            "townlet.determinism.seed_all before anything random is constructed. Required: "
+            "an implicit seed is a non-reproducible run by construction."
+        ),
+    )
     population: PopulationConfig = Field(description="Population settings")
     enabled_affordances: list[str] = Field(
         description=(

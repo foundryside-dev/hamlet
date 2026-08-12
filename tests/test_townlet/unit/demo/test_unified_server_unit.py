@@ -26,6 +26,7 @@ def minimal_config_dir(tmp_path: Path) -> Path:
                 "  enabled: false",
                 "training:",
                 '  version: "1.0"',
+                "  seed: 42",
                 "  population:",
                 "    size: 1",
                 "  enabled_affordances: []",

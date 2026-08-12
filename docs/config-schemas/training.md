@@ -10,6 +10,26 @@
 
 ## Core Training Parameters
 
+### `seed` (integer, REQUIRED)
+
+**Type**: `int` (≥ 0)
+**Required**: Yes (no default)
+**Example**: `seed: 42`
+
+Master RNG seed for the run. Seeds torch (CPU and all CUDA devices), Python `random`,
+and numpy together through `townlet.determinism.seed_all` at `DemoRunner` construction —
+before any network, buffer, or environment is built. All three streams matter: the
+sequential replay buffer samples off Python's `random`, the prioritized buffer off numpy,
+everything else off torch. Seeding only one produces divergent runs.
+
+The seed rides `training_hash` into checkpoint identity and is persisted in the
+checkpoint's `training_config`, so a run is reproducible from its own artifact.
+
+**Validation**: Must be a non-negative integer. Missing field fails config load loudly —
+an implicit seed is a non-reproducible run by construction.
+
+---
+
 ### `device` (string, REQUIRED)
 
 **Type**: `str`

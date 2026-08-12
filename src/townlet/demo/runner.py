@@ -14,6 +14,7 @@ import torch
 
 from townlet.curriculum.factory import build_curriculum
 from townlet.demo.database import DemoDatabase
+from townlet.determinism import seed_all
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
 from townlet.population.vectorized import VectorizedPopulation
@@ -119,6 +120,9 @@ class DemoRunner:
         self.bars_config = level_config.bars
         self.affordances_config = level_config.affordances
         self.training_config = level_config.training
+        # Seed every RNG stream before anything random is constructed; the seed is
+        # config-declared so the run is reproducible from its own checkpoint.
+        seed_all(self.training_config.seed)
         # Expose training config in the legacy dict shape for downstream callers/tests
         self.config: dict[str, Any] = {
             "training": self.training_config.model_dump(exclude_none=True),

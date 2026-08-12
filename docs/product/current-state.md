@@ -1,182 +1,104 @@
-# Current State — HAMLET / Townlet        Checkpoint: 2026-08-12 · fourth checkpoint
+# Current State — HAMLET / Townlet        Checkpoint: 2026-08-13 · fifth checkpoint
 
 ## The bet right now
 
 **Strangler rewrite behind the compiled-universe contract** (`PDR-0006`) — freeze the current
 system as an oracle, then knock down and rebuild one design-space unit at a time against it.
-Guarded by **Provenance integrity**, which was BREACHED in three places and is now **2 of 3
-closed** (task 5 closes the third).
+The **Provenance-integrity** guardrail's three original breaches are **all closed** as of
+`ebb8fa85`; the row goes green when the two filed adjacent gaps enter WS-7's known-divergences
+register (`PDR-0028` routing). Selection criterion for what gets strangled next, owner-stated:
+*"strangle wherever the runtime still knows what the game is"* (`PDR-0019`).
 
-The owner's framing of what the strangler is *for*, recorded 2026-08-11: *"the original 'game
-engine' needs to be strangled out by the engine engine"* — VFS and the dynamic engine parts are
-the guiding star, not `health = 0..100`. That converts the strangler from an ordering question
-into a **selection criterion**: strangle wherever the runtime still knows what the game is.
+**READ `docs/architecture/vfs.md` BEFORE TOUCHING VFS** (2455 lines, binding). Two confident
+diagnoses were corrected by design docs that existed the whole time — **check
+`docs/architecture/` before concluding shipped behaviour is simply wrong.**
 
-**READ `docs/architecture/vfs.md` BEFORE TOUCHING VFS.** 2455 lines, current enough to be
-binding, and it pre-answers questions that look open. Chapter 9 (normalisation) prescribes
-`clipped_log_scaled` for money — already implemented, never wired — and states money is
-normalised such that `1.0 ≈ $100`, which the shipped dollar-denominated configs contradict.
-The owner's framing of what VFS is *for*, 2026-08-12: *"end users don't need to think too hard
-about the mechanics under the hood, it's effectively like a 'complex type' that they can trust
-to be enforced mechanically."* Authors declare **intent**; VFS owns the mechanics. Two
-confident diagnoses have now been corrected by a design doc that existed the whole time —
-**check `docs/architecture/` before concluding shipped behaviour is simply wrong.**
+**WS-1's scope is FROZEN at ten units (`PDR-0028`).** Seven landed. New findings route by kind:
+provenance-shaped → WS-7's register; authoring-surface-shaped → WS-4; else → triage. The
+three-part exception clause is in the PDR; two of three is a filed issue, not a WS-1 unit.
 
-**Sequencing is deliberately open (`PDR-0019`, owner-stated).** WS-N numbering is an
-**inventory, not a required order** — pin one system, then choose the next on the selection
-criterion (*where does the runtime still know what the game is?*), not by stream number.
-Observation encoding is a named live candidate (`PDR-0017`). Two constraints hold: **one system
-at a time**, and the work must be **replacing, refactoring or fixing**. Real blocking edges
-(WS-1 gates WS-7) are unaffected.
+## The owner cleared the escalation queue (2026-08-13)
+
+All four blocked-on-owner questions were answered in one session — record of each:
+
+- **`PDR-0022` accepted**: `config_hash_warning` **deleted** (done, in `ebb8fa85`), conditional
+  on `hamlet-2dde1015fe` entering the register. Task 5's check count was four.
+- **`PDR-0024` accepted with alteration**: audience **widened** — *"anyone interested in game
+  dev, simulations, or modelling the real world in an abstract way."* `vision.md` amended
+  (owner-approved): **the prototyping modeller** is a core use case; they leave with a model +
+  interface contract. Export cost is now an `UNMEASURED` input metric.
+- **`PDR-0026` (new)**: the flagship-demonstrator claim was **mis-tensed intent, not a false
+  claim** — *"the idea outran the codebase"*; Townlet Town is one of several tech demos at
+  release. `vision.md` re-tagged (owner-approved). Vehicle: `hamlet-e979f2ba37`, with a tripwire:
+  if authoring the LED contrast needs Python, escalate immediately — the flagship demo would be
+  an authorability counterexample.
+- **`PDR-0027` (new)**: `PDR-0009`'s fork resolved — `brain.yaml` becomes **level-overridable**
+  like `training.yaml`, PLUS owner's acceptance criterion: a brain override **forks the lineage
+  and the fork must be legible at load** (*"I shouldn't be downloading/loading an experiment and
+  then finding out it's not what I thought it was"*). `hamlet-0d0115383e` re-scoped; still after
+  WS-1(b)/(c).
 
 ## In flight
 
 Recovery milestone **`hamlet-1ade187dcc`**, work streams WS-0…WS-7.
 
-- **WS-1** `hamlet-67ffbd282a` (P0, claimed, `fixing`) — **6 of 10 units landed, tree green at
-  every commit.** Grew 7 → 10 units across two reviews (`PDR-0015`, `PDR-0016`).
-  Order: ~~gates(1)~~ → ~~a(2)~~ → ~~d(3)~~ → ~~bounds+normalization(3a)~~ → ~~new1(4)~~ →
-  **new2(5) ← next** → b(6) → c(7) → close(8), plus sibling `3b` (`hamlet-88acec4bb5`).
-  **Provenance integrity: 2 of 3 breaches closed.** Task 5 closes the third.
-- **WS-7** `hamlet-e3af412673` (P0) — the strangler's enabling stream. Blocked by WS-1.
+- **WS-1** `hamlet-67ffbd282a` (P0, claimed, `fixing`) — **7 of 10 units landed, tree green at
+  every commit.** Order: ~~gates~~ → ~~a~~ → ~~d~~ → ~~bounds+norm~~ → ~~new1~~ → ~~new2(5)~~ →
+  **b(6) ← next** → c(7) → close(8), plus sibling 3b (`hamlet-88acec4bb5`).
+  **Task 5 landed (`ebb8fa85`)**: serving path routes through the new shared
+  `assert_checkpoint_identity`; D5 cross-level rejection done end-to-end; `config_hash_warning`
+  deleted; both `runner.py` silent skips gone; `unified_server` raises on dead startup.
+  `hamlet-1029f99f4b` CLOSED. Full suite **2969 passed, 0 failed**; all four gates green.
+- **WS-7** `hamlet-e3af412673` (P0) — the strangler's enabling stream, blocked by WS-1. **The
+  known-divergences register must be one of its FIRST artifacts** (`PDR-0028` reversal trigger
+  fires on routing-to-nowhere; `PDR-0022`'s deletion condition depends on it).
 - **WS-6** `hamlet-5e39fcccb0`, **WS-0** `hamlet-8eeaba1461` — ready, untouched.
-- **WS-4** gained `hamlet-f46e2b381a` (`clamp_and_validate` declared-but-empty),
-  `hamlet-fa6bb6da4a` (token observations, blocked by `hamlet-0d0115383e`),
-  `hamlet-e979f2ba37` (author the curriculum — the five levels are three universes),
-  `hamlet-365e996511` (`range_type` inert + money unit ambiguous, `PDR-0020`).
-- **Filed, deliberately NOT in WS-1** (`PDR-0021`): `hamlet-2dde1015fe` (the dead-hash set is
-  nine, not four) and `hamlet-df2b972c49` (P1 — two further checkpoint stamp/compare paths).
-  Both must enter WS-7's known-divergences register before the freeze.
-- **New this session, from the owner's framings:** `hamlet-0dd4ac24d9` (P1 — presentation is
-  hardcoded by variable name; make it **declared**, honest by default, `PDR-0023`+`PDR-0025`) and
-  `hamlet-0cdb8a6d1a` (P1 — **no model export path**; TASK-008 designed 2025-11, never built,
-  `PDR-0024`). `hamlet-365e996511` is now **unblocked** and re-scoped to `range_type` alone.
-  Two **Later** bets added to `roadmap.md` as intent: model+contract export, and the "locked"
-  showcase experiment (the one place prettified presentation belongs).
+- **WS-4** additions: `hamlet-310e336786` (NEW — `AdversarialCurriculum` hardcodes the six bar
+  names into engine logic; promoted from the expiring observation; the selection criterion made
+  literal), `hamlet-f46e2b381a`, `hamlet-fa6bb6da4a`, `hamlet-e979f2ba37` (now carries
+  `PDR-0026`'s acceptance shape), `hamlet-365e996511`, `hamlet-0dd4ac24d9`, `hamlet-0cdb8a6d1a`
+  (audience widened, `PDR-0024`).
+- **Register-routed, NOT WS-1** (`PDR-0021`/`PDR-0028`): `hamlet-2dde1015fe` (nine dead hashes;
+  precondition of the `config_hash_warning` deletion) and `hamlet-df2b972c49` (P1 — the two
+  remaining stamp/compare paths: `_validate_checkpoint_compatibility` at `runner.py:181` unpickles
+  before any universe exists, and `VectorizedPopulation.get_checkpoint_state/load`).
 
 ## Open questions / blocked-on-owner
 
-- ⚠️ **AMEND `vision.md`'s "Who it serves" to name the prototyping game developer?**
-  (`PDR-0024`, **proposed** — `vision.md` NOT touched.) Owner-stated core use case: *game devs
-  rapidly throwing a prototype together, getting a model and an interface contract, and taking
-  the model to their own game code.* `vision.md`'s novice author *"watches agents attack it"* —
-  the journey ends inside HAMLET. This one ends in the dev's own engine, and that handoff step
-  is nowhere in the vision. It also exposes a metric gap: the north-star measures **authoring**
-  cost, so a product could score perfectly and still be useless to a game dev who can't get the
-  model out. **Accept, alter, or reject the proposed wording.**
-- ⚠️ **`config_hash_warning` — delete it, or make it raise?** (`PDR-0022`, **proposed**) The plan
-  contradicts itself: §0's W4 says resolve it this batch, task 4's text says don't touch it. A
-  *warning* is the silent acceptance the Provenance guardrail forbids — but `config_hash` is the
-  broadest signal we have, covering five surfaces that have no hard check of their own. My
-  recommendation is **delete**, conditional on `hamlet-2dde1015fe` entering the known-divergences
-  register. Task 5 needs the answer to state its final check count.
-- ⚠️ **`vision.md`'s FLAGSHIP DEMONSTRATOR IS NOT IMPLEMENTED — does that change the vision, or
-  the packs?** `vision.md:94` calls "Low Energy Delirium" *"the flagship demonstrator of the
-  substrate: the proof that the thing works."* Measured 2026-08-12 (`PDR-0018`): `L0_0` and
-  `L0_5` `drive.yaml` are **byte-identical**, both `constant_base_with_shaped_bonus`, and **no
-  shipped level declares a `multiplicative` extrinsic** — the contrast the lesson needs has never
-  existed. `vision.md` is ENDORSED and was **not** touched. This is the owner's call.
-- ⚠️ **WHEN DO WE STOP ADDING TO WS-1 AND FREEZE?** WS-1 has grown 7 → 10 units. Each addition
-  was justified individually and none was optional under `PDR-0012`. `PDR-0014`'s reversal
-  trigger 2 (*"the bounds wiring materially delays the oracle freeze"*) is **approaching, not
-  definitively tripped**. `PDR-0018` removes the largest reason to go slowly — there is no
-  calibrated behaviour at risk — so the argument now leans toward freezing sooner.
-- **Design fork inside `PDR-0009`** — per-level `architecture` override, or make `brain.yaml`
-  level-overridable the way `training.yaml` is? Now has **three** consumers (`PDR-0017`,
-  `PDR-0018`). A level cannot currently vary its grid *or* its brain, which bounds what any
-  curriculum can express. Decide before implementing.
 - **README push** remains the owner's call; drafting and committing locally is endorsed.
-- **Open, not blocking** — the five shipped levels are **three universes**, a thin coverage set
-  for WS-3's differential harness. An input to WS-3 scoping; does **not** reopen `PDR-0006`.
-
-Closed: the poisoned-cache hazard (WS-1(a) landed); CUDA blocked (was an unused dependency);
-*"what is the real test coverage?"* (**81%**, `PDR-0010`); *"who re-authors the packs?"* —
-**premise was false** (`PDR-0018`), the packs were never tuned, so there is nothing to re-author;
-authoring one for the first time is filed as `hamlet-e979f2ba37` (WS-4, downstream of the freeze).
+- **Nothing else is blocked on the owner.** First time since 2026-08-11.
+- Open, not blocking: the five shipped levels are three universes (WS-3 scoping input); the
+  inert-surface baseline (~40) needs one itemized recount before the two counters can merge.
 
 ## What this checkpoint did
 
-- **Landed 6 of 10 WS-1 units** — gates (`c2f61beb`), cache identity (`22b7616d` + `cf122ff1`),
-  declared costs gate (`30c433e3`), bounds + normalization (`7065729a` + `174914d3`), content
-  hashes + effective `brain_hash` (`31c17111` + `39026beb`) — plus an unplanned dependency
-  remediation (`e082afd5`). Full suite **2962 passed, 0 failed**; all four gates green.
-  *(This section spans work since the last formal checkpoint, not one session.)*
-- **Recorded `PDR-0015` … `PDR-0022`.** Since the last formal checkpoint: 0018 (the packs are
-  test infrastructure, never a curriculum — two escalations corrected, a larger one raised),
-  0019 (sequencing is open: pin one system, then float), 0020 (`vfs.md` is design authority; the
-  money diagnosis was wrong — `range_type` is inert, not the ceiling), 0021 (task 4's two adjacent
-  provenance gaps are filed, **not** folded into WS-1), 0022 (**proposed** — `config_hash_warning`).
-- **Adversarial orchestration ran four times and changed the work every time.** Recon before
-  task 4 found its spec's change 1 was a `TypeError` as written (§0.3). Verification after found
-  three weak tests — including one where a wrong-level `brain_hash` left **all 2957 tests green**.
-  Three refuter agents died on a rate limit; all three of their findings were about my own tests,
-  and all three held when I re-measured by hand.
-- **Moved two guardrails for the first time since May** — Gates green **1 of 4 → 4 of 4**, and
-  Provenance integrity **1 of 3 breaches closed**. Also first movement on Config-surface
-  coverage, and the first Pre-release hygiene recount since 2026-05-16.
-- **Used adversarial verification twice, and it paid both times** — it caught a real miss in my
-  own task 2 fix (`metadata_for_level`, found independently by two agents), and recon before
-  task 3a overturned **four** of its spec's claims including three wrong red-baseline literals.
+- **Landed task 5** (`ebb8fa85`) — breach 3 of 3 closed; verified red on the pre-fix tree
+  (B2/B4/B5 fail exactly as the A/B predicted) and by four named mutations, all caught.
+- **Recorded the owner's four resolutions**: `PDR-0022`/`PDR-0024` proposed→accepted (in place,
+  with Resolution sections); `PDR-0026`–`PDR-0028` new. `vision.md` amended twice, both
+  owner-approved, amendment log updated.
+- **Tracker reconciled live**: `hamlet-1029f99f4b` closed with commit anchor; decision comments
+  threaded to six issues; the expiring observation promoted (`hamlet-310e336786`); WS-1
+  heartbeated.
+- **Metrics re-read**: Gates green 4 of 4 held (2969/0); Provenance 3 of 3 closed, row not yet
+  green; inert-surface counter canonicalized; export-cost input added (`UNMEASURED`). No
+  reversal trigger fired; `PDR-0014` trigger 2 retired unfired by `PDR-0028`.
 
 ## Next session, start here
 
-**Implement task 5** (`hamlet-1029f99f4b`) — route the serving path through the shared identity
-guard. **Breach 3 of 3**, and the last WS-1 provenance unit. Plan §2 task 5, and read **§0.3
-corrections 13, 19 and 21 first** — they are task-5-relevant:
+**Task b(6)** — thread LSTM hidden state so the recurrent weights actually train. Plan §2 task 6,
+and §3 hazards H3 (vacuity guard is an acceptance condition), H6 (task 7 amends this test —
+blocking), H7 (do not "simplify" `batch_size 12 ≠ population 8`), H8 (`no_grad`/return
+placement). **Tasks 6+7 are one atomic merge unit (§0 W1)** — the tree is red between them by
+design; do not treat task 6's intermediate failure count as a target. Pinning-test source of
+record: `scratchpad/PINNING_TEST_b_FINAL_test_recurrent_bptt_runtime.py`.
 
-- **Task 5 owns `assert_checkpoint_identity`**, which does not exist yet (its only mention in
-  the repo is a comment at `checkpoint_utils.py:36`). Task 4's D5 test deliberately stops at
-  stamp-plus-collision; the `pytest.raises(match="primary_level")` leg is task 5's, and it
-  must run against a pack whose L1 `run_metadata.output_subdir` is normalised to L0_5's —
-  otherwise `training_hash` fires first and the test passes for the wrong reason.
-- **Ordering hazard, live right now:** task 4 deleted `runner.py`'s dead `brain_hash` write but
-  deliberately left the `if universe is not None:` gate for task 5. Until task 5 lands, a path
-  where `universe is None` writes a checkpoint with **zero** provenance keys.
-- **`config_hash_warning` is unresolved and escalated** — §0's W4 says resolve it in this batch,
-  Task 4's text says don't touch it. §0 outranks task text, but "resolve" ≠ "delete". Options:
-  delete it (now largely redundant) or make it raise (a *warning* is the silent acceptance the
-  guardrail forbids, and `config_hash` is the broadest signal we have). **Owner's call.**
+Carry-ins that keep paying: purge `configs/**/*.msgpack` before every measurement; verify red by
+mutation in a detached worktree (never `git stash` — operator hook); a green test is not evidence,
+mutate before believing; enumerate producers, not call shapes (it found the third loader this
+session — already filed as `hamlet-df2b972c49`); a correction is not self-verifying.
 
-**Task 4 is done** (`31c17111` + `39026beb`) — the four content hashes stamped and hard-compared,
-`brain_hash` now covering the effective config at the primary level. Recon (42 agents) overturned
-enough of the spec that §0.3 exists; verification (15 agents) refuted 8 findings and lost 3 to a
-rate limit, all 3 about my own tests, all 3 upheld on re-measurement and fixed.
-
-**Task 3a is done** (`7065729a` + `174914d3`) — bounds at all six runtime sites *and* the VFS
-normalization ABI given its first production callers. Measured on L1: money `1.000000 →
-22.500000` per tick, money affordances `1 of 7 → 7 of 7`.
-
-Carry these into task 5:
-
-1. `find configs -name '*.msgpack' -delete` before **every** measurement, red and green —
-   provenance uses `git rev-parse HEAD` and ignores dirty state.
-2. **Verify red by mutation in a detached worktree**, never `git stash` (hard-blocked by an
-   operator hook that has caused silent work loss). `git worktree add --detach <path> HEAD`,
-   copy the test in, run with `PYTHONPATH=<wt>/src` and the main venv's python.
-3. **A green test is not evidence.** Three units running, **five** weak tests found by mutating
-   the implementation and re-running — and in task 4 the three that mattered most were found
-   only because three refuter agents died on a rate limit and I re-measured their findings by
-   hand instead of dropping them. Mutate before believing.
-4. **Run review agents in isolated worktrees** (`isolation: 'worktree'`). Task 3a's pass ran
-   mutations in the live tree while another agent was reading it; task 4's left four stray
-   worktrees behind when it was killed mid-flight. Nothing was lost either time, but neither
-   was by design.
-5. **A correction is not self-verifying.** §0.3 correction 17 came out of a pass whose whole
-   purpose was catching wrong spec claims — and was itself wrong (retracted in place). An
-   "X is inert" claim needs the same measurement as the claim it replaces.
-
-**A recurring lesson, now seen three times — carry it into task 5 and into
-`hamlet-df2b972c49`, which both touch exactly this kind of structure:** grep finds *the shape of a call*, not the set of places a
-value is produced. `grep torch.clamp(` missed compile-time tuple literals. `grep
-UniverseMetadata(` missed a `dataclasses.replace()`. A grep against a *documented* filename
-(`drive_as_code.yaml`) returned zero hits and falsely confirmed a claim, because every pack
-actually uses `drive.yaml`. **Enumerate producers, not call shapes.**
-
-**A fourth instance, in a new costume (`PDR-0018`): a name is not evidence of the thing it names.**
-Five directories named for five pedagogical stages contained three universes; I escalated a
-question premised on their being tuned without running the one `diff` that refutes it. Before
-escalating on a property of an artifact, verify the artifact has that property.
-
-Do not re-litigate `PDR-0006` (strangler), `PDR-0007` (universality), `PDR-0014`/`PDR-0015`
-(bounds scope) or `PDR-0016` (bounds+normalization together) — all decided on measured evidence.
-Read `vision.md` first: it is ENDORSED, and changing it escalates.
+Do not re-litigate: `PDR-0006` (strangler), `PDR-0007` (universality), `PDR-0014`–`PDR-0016`
+(bounds), `PDR-0022` (deletion, decided), `PDR-0026`–`PDR-0028` (owner-resolved). Read
+`vision.md` first: ENDORSED, amended 2026-08-13 with owner sign-off; changing it further
+escalates.

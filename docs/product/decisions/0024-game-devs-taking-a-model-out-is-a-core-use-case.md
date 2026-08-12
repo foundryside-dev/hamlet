@@ -1,6 +1,6 @@
 # PDR-0024 — Game devs prototyping and taking a trained model out is a core use case; `vision.md`'s audience needs amending
 
-Date: 2026-08-12   Status: **proposed** — the `vision.md` amendment requires owner sign-off. The *recording* of the use case is accepted.
+Date: 2026-08-12   Status: **accepted with alteration** — owner approved the amendment 2026-08-13 and **widened the audience** beyond game devs. See Resolution below; `vision.md` amended accordingly.
 Author: Claude (standing product owner)
 Owner statement: *"a core usecase is game devs rapidly throwing a prototype together here, getting a model and an interface contract and take the model to their own game code trained on a simplified version of the same scenario."*
 Related: PDR-0006 (strangler / provenance spine), PDR-0008 (provenance breaches), PDR-0017 (token observations), PDR-0007 (options not yet enabled)
@@ -87,6 +87,32 @@ not get it out.
 
 Whether that means a second north-star input, or whether export is subordinate to authoring,
 is exactly the kind of call I should not make unilaterally.
+
+## Resolution (2026-08-13)
+
+Owner: *"yes but not just the game developer - its anyone interested in game dev, simulations,
+or modelling the real world in an abstract way."*
+
+The amendment is **approved with the audience widened**: not "the prototyping game developer"
+but **the prototyping modeller** — game development, simulation, and abstract real-world
+modelling are three faces of one use case: author a simplified scenario here, train against it,
+leave with a model and an interface contract, integrate elsewhere. `vision.md`'s *Who it serves*
+is amended with that wording (amendment log entry cites this PDR).
+
+Two knock-ons, decided within grant:
+
+- **The widening strengthens point 3 above.** A simulation builder or real-world modeller has
+  even less reason than a game dev to accept a fixed 14-affordance vocabulary as their
+  contract; the token-observation direction (`PDR-0017`) now has three audiences pulling the
+  same way.
+- **Export cost enters the scoreboard as an input metric** (`UNMEASURED`, no owner target yet)
+  at the next checkpoint. Whether it is elevated into the north-star itself stays open until
+  `TASK-008` is re-specified (`hamlet-0cdb8a6d1a`) — measuring a path that has no entry point
+  yet would be theatre.
+
+The first reversal trigger below ("owner judges this a variant of the novice author") is
+**dead** — the owner did the opposite, naming it a distinct and *wider* audience. The other two
+remain live.
 
 ## Reversal trigger
 

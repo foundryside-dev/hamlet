@@ -10,6 +10,15 @@
 >   Escalated by `PDR-0012`, approved by the owner (*"yes, put it into the vision — it's absolutely
 >   load bearing"*), recorded as `PDR-0013`. No other section changed; the authority grant is
 >   untouched.
+> - *2026-08-13* — added **the prototyping modeller** to *Who it serves*. Escalated by `PDR-0024`,
+>   approved by the owner **with the audience widened** beyond game devs (*"anyone interested in
+>   game dev, simulations, or modelling the real world in an abstract way"*). Recorded in
+>   `PDR-0024`'s Resolution. The authority grant is untouched.
+> - *2026-08-13* — re-tagged the **tech-demo demonstrator claim** as delivery intent: "Low Energy
+>   Delirium" was never implemented (*"the idea outran the codebase and we pivotd a few times"*),
+>   and Townlet Town is **one of several tech demos** to be provided at the end. Escalated by the
+>   2026-08-12 checkpoint, resolved by the owner, recorded as `PDR-0026`. The ambition, the
+>   dogfooding rule, and both demo claims are unchanged.
 >
 > Drafted 2026-08-11 from observed repo, git history, and tracker state. Tags are retained as
 > provenance of how each claim was established: **[stated]** = given directly by the owner;
@@ -96,6 +105,13 @@ the artefact you show someone, and the widest existing exercise of the grammar's
 It carries real quality obligations and is maintained to them. It is not legacy, not a sample, and
 not something recovery is free to let rot.
 
+**Status of the demonstrator claim (owner-resolved 2026-08-13, `PDR-0026`):** the paragraph above
+is **delivery intent, not a description of the shipped packs**. "Low Energy Delirium" has never
+been implemented — the five shipped levels are three undifferentiated universes (`PDR-0018`) —
+because *"the idea outran the codebase"* across several pivots; the project never finished it.
+Townlet Town is **one of several tech demos to be provided at the end**; authoring its curriculum
+for the first time is `hamlet-e979f2ba37`. The ambition stands; the tense was wrong. **[stated]**
+
 **The demo makes two claims at once**, and this is its actual specification: *"this is a powerful
 example of what you can make — **but you can also make anything else you can think of**."*
 **[stated]**
@@ -154,6 +170,13 @@ pedagogical value is undiminished by the promotion of everything around it.
   as a universe and watch agents attack it. Every authoring barrier that requires Python is a
   defect against this user. They are not a current user; they are the standard the substrate is
   judged by. **[stated]**
+- **The prototyping modeller (core use case; served at release, `PDR-0024`):** anyone interested
+  in game development, simulation, or modelling the real world in an abstract way, who wants a
+  trained agent for a system of their own. They author a *simplified* version of their scenario
+  here, train against it, and **leave with a model and an interface contract** they can code
+  against in their own engine or pipeline. Where the novice author's journey ends inside HAMLET,
+  this one ends outside it: HAMLET is the harness, not the destination. Every barrier between
+  "it trains here" and "it runs in my system" is a defect against this user. **[stated]**
 - **Also served (downstream, not driving):** students and instructors using the pedagogical
   curriculum levels as a teaching artefact — now as *authors* rather than as players. Townlet Town
   serves them as the **first-class tech demo** (see Purpose): maintained to demonstrator standard,

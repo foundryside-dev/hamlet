@@ -1,4 +1,4 @@
-# Roadmap — HAMLET / Townlet            Updated: 2026-08-12 (PDR-0019, PDR-0024, PDR-0025) · prior: 2026-08-11 (PDR-0017, PDR-0006, PDR-0008, PDR-0009)
+# Roadmap — HAMLET / Townlet            Updated: 2026-08-13 (PDR-0026, PDR-0027, PDR-0028) · prior: 2026-08-12 (PDR-0019, PDR-0024, PDR-0025)
 
 > Sequencing, WSJF / cost-of-delay, and dated forecasts are produced by
 > /axiom-program-management. This file records bets as INTENT, not a delivery
@@ -34,8 +34,12 @@
   knockdown. **WS-3** is reshaped into the differential harness and becomes the program's central
   artifact.
   · metric: **Subsystem maturity established** ✅ 8 of 8; now guarded by **Provenance integrity**
-  (BREACHED, `PDR-0008`), **Declared-but-inert config surfaces** (~40 → 0), **Documentation truth**
-  (≥14 false claims → 0) and **Gates green** (1 of 4 → 4 of 4)
+  (all 3 breaches CLOSED 2026-08-13 — row goes green when the two filed gaps enter WS-7's
+  register, `PDR-0028`), **Declared-but-inert config surfaces** (baseline ~40; post-assessment
+  7 found / 2 closed), **Documentation truth** (≥14 false claims → 0) and **Gates green**
+  (✅ 4 of 4, held)
+  · **WS-1 scope is FROZEN at ten units** (`PDR-0028`): 7 landed, remaining b → c → 3b → close.
+  New findings route to WS-7's known-divergences register or WS-4, never into WS-1.
   · **PDR-0002** gated the assessment · **PDR-0004** adopts the dispositions · **PDR-0005** sets the
   triage rule (**wire, not delete**) · **PDR-0006** chose the strangler · **PDR-0008** verified
   WS-1 by execution and reordered it
@@ -71,7 +75,10 @@
   · added `PDR-0009`: **per-level `architecture` is unauthorable** (`hamlet-0d0115383e`) — no pack
   can express the documented MLP→LSTM progression. Sequenced *after* WS-1(b)/(c), because enabling
   recurrent authoring before the recurrent training path is fixed would ship an option whose
-  observable behaviour is wrong.
+  observable behaviour is wrong. **Fork RESOLVED by `PDR-0027`** (owner, 2026-08-13): `brain.yaml`
+  becomes level-overridable the way `training.yaml` is, PLUS a lineage-legibility acceptance
+  criterion — a brain override forks the lineage, and the fork must be stated at load, never
+  discovered at runtime.
 
 - **Prove generality — substrate axis DONE, domain axis outstanding.** `PDR-0003` obligation B.
   The **"Sims in six dimensions"** witness passed on 2026-08-11 (one file, ~6 lines, zero
@@ -99,12 +106,20 @@
 ## Later (directional bets, no order, no dates)
 
 - **Model + interface-contract export** — a trained agent leaves HAMLET and runs in someone
-  else's game engine. Serves the prototyping game developer (`PDR-0024`, audience amendment
-  **proposed**). Half of it already exists: the "interface contract" is the observation/action
-  schema and its hashes, which WS-1 has been hardening. The other half — a standalone model,
-  decoupled from the training stack — is designed and unbuilt (`TASK-008`, *Planned* since
-  2025-11-05; `hamlet-0cdb8a6d1a`). Sequence after the oracle freeze: the contract must be stable
-  before it is handed to anyone.
+  else's engine or pipeline. Serves **the prototyping modeller** — game dev, simulation, and
+  abstract real-world modelling (`PDR-0024` **accepted with alteration** 2026-08-13; audience
+  widened by the owner beyond game devs; `vision.md` amended). Half of it already exists: the
+  "interface contract" is the observation/action schema and its hashes, which WS-1 has been
+  hardening. The other half — a standalone model, decoupled from the training stack — is designed
+  and unbuilt (`TASK-008`, *Planned* since 2025-11-05, needs re-specifying under `PDR-0012`;
+  `hamlet-0cdb8a6d1a`). Sequence after the oracle freeze: the contract must be stable before it
+  is handed to anyone.
+- **The tech-demo suite at release** — what *"one of several tech demos we'll provide at the
+  end"* means concretely (`PDR-0026`, owner-resolved). Obvious members already on the board:
+  Townlet Town with the LED contrast actually authored for the first time (`hamlet-e979f2ba37`),
+  the "Sims in six dimensions" substrate witness (Trial 001, passed), and the still-wanted
+  domain-varying witness. Townlet Town remains first-class among them (`PDR-0003` unchanged).
+  Intent only; anything distributable is outward-facing and gates to the owner.
 - **The "locked" showcase experiment** — a distributable, frozen artefact for sharing a design:
   *"look at this cool thing I designed."* Distinct from the oracle freeze (internal reference) and
   from model export (a model for someone else's engine). This is the one place prettified

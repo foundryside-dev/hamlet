@@ -1,6 +1,6 @@
 # PDR-0022 — `config_hash_warning` warns where the guardrail forbids warning; the plan contradicts itself and the call is the owner's
 
-Date: 2026-08-12   Status: **proposed** — owner sign-off required before task 5 implements either option
+Date: 2026-08-12   Status: **accepted** — owner adopted the recommendation 2026-08-13 (*"I'll take your recommendation"*). See Resolution below.
 Author: Claude (standing product owner)
 Related: PDR-0008 (provenance breaches), PDR-0012 (no tech debt), PDR-0021 (adjacent gaps filed), PDR-0006 (oracle freeze)
 Plan: `docs/plans/2026-08-11-ws1-fix-set.md` §0 warning W4 vs Task 4 change 5 · §0.3 correction 21
@@ -69,6 +69,22 @@ one silently is how a contradiction becomes an unexamined precedent.
 - If it is still unresolved when task 5 lands, task 5 should implement **around** it and this
   PDR stays open rather than being resolved by default. A decision made by drift is the failure
   mode this workspace exists to prevent.
+
+## Resolution (2026-08-13)
+
+The owner adopted the recommendation: **Option 1 — delete `config_hash_warning` and its caller,
+conditional on `hamlet-2dde1015fe` being entered in WS-7's known-divergences register.**
+
+Consequences now binding:
+
+- **Task 5's final check count is FOUR** (`assert_checkpoint_vfs_hash`,
+  `assert_checkpoint_dimensions` incl. the four per-level content hashes, `brain_hash`,
+  `drive_hash` — no warning leg). The §0 W4 / task-4 contradiction is resolved in W4's favour,
+  with "resolve" = delete.
+- **The condition is a real precondition, not decoration**: if the freeze approaches and
+  `hamlet-2dde1015fe` is not in the divergences register, the deletion has not met its terms —
+  register it first or the five pack-level surfaces lose their only signal silently.
+- The **(if deleted)** reversal trigger below is now the live one.
 
 ## Reversal trigger
 

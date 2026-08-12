@@ -32,7 +32,12 @@ import yaml
 
 from townlet.config.brain_config import apply_training_overrides, compute_brain_hash
 from townlet.environment.vectorized_env import VectorizedHamletEnv
-from townlet.training.checkpoint_utils import assert_checkpoint_dimensions, attach_universe_metadata
+from townlet.training.checkpoint_utils import (
+    CHECKPOINT_FORMAT_VERSION,
+    assert_checkpoint_dimensions,
+    assert_checkpoint_identity,
+    attach_universe_metadata,
+)
 from townlet.universe.compiled import CompiledUniverse
 from townlet.universe.compiler import UniverseCompiler
 
@@ -311,3 +316,39 @@ def test_two_levels_collide_on_almost_every_identity_field(tmp_path: Path) -> No
     checkpoint: dict = {}
     attach_universe_metadata(checkpoint, a)
     assert checkpoint["primary_level"] == L0_5
+
+
+def test_cross_level_resume_is_rejected_by_primary_level(tmp_path: Path) -> None:
+    """D5's rejection half (task 5): `assert_checkpoint_identity` refuses a cross-level resume.
+
+    `run_metadata.output_subdir` is normalised to L0_5's value FIRST, so all four content
+    hashes (and every other identity hash) collide and `primary_level` is provably the only
+    check that fires. Without the normalisation, `training_hash` raises first — the string
+    embeds the level name — and this test would pass for the wrong reason (§0.3 correction 14).
+    """
+    pack = _pack(tmp_path)
+    l0_5_training = yaml.safe_load((pack / "levels" / L0_5 / "training.yaml").read_text())
+
+    def _normalise_subdir(data: dict) -> None:
+        data["run_metadata"]["output_subdir"] = l0_5_training["run_metadata"]["output_subdir"]
+
+    _edit(pack, L1, "training.yaml", _normalise_subdir)
+
+    a = _compile(pack, L0_5)
+    b = _compile(pack, L1)
+
+    # With output_subdir normalised, the collision is TOTAL across the identity hashes —
+    # if any of these differs, primary_level is no longer the only separator and the
+    # rejection below stops being evidence for D5.
+    for field in ("curriculum_hash", "bars_hash", "affordances_hash", "training_hash", "vfs_hash", "drive_hash", "brain_hash"):
+        assert getattr(a, field) == getattr(b, field), f"{field} differs — primary_level is not the lone separator any more"
+
+    checkpoint: dict = {"version": CHECKPOINT_FORMAT_VERSION, "episode": 1}
+    attach_universe_metadata(checkpoint, a)
+
+    # The honest resume is accepted...
+    assert assert_checkpoint_identity(checkpoint, a, force_new_vfs=False) is True
+
+    # ...and the cross-level resume is rejected, by the ONE check that can see it.
+    with pytest.raises(ValueError, match="primary_level"):
+        assert_checkpoint_identity(checkpoint, b, force_new_vfs=False)

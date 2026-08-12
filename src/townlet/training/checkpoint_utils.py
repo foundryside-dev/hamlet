@@ -16,6 +16,10 @@ from townlet.universe.compiled import CompiledUniverse
 _DIGEST_SUFFIX = ".sha256"
 _DIGEST_BUFFER_SIZE = 1024 * 1024  # 1 MiB chunks keep memory bounded
 
+# WS-1 task 5: the single source of truth for the checkpoint payload format.
+# Previously hardcoded as a magic `3` at two sites in demo/runner.py.
+CHECKPOINT_FORMAT_VERSION = 3
+
 logger = logging.getLogger(__name__)
 
 
@@ -47,29 +51,6 @@ def attach_universe_metadata(checkpoint: dict[str, Any], universe: CompiledUnive
     checkpoint["training_hash"] = universe.training_hash
     checkpoint["brain_hash"] = universe.brain_hash
     checkpoint["vfs_hash"] = universe.vfs_hash
-
-
-def config_hash_warning(checkpoint: Mapping[str, Any], universe: CompiledUniverse) -> str | None:
-    """Return warning message if checkpoint hash mismatches current universe.
-
-    Raises:
-        ValueError: If universe is None
-    """
-    # LOW-05: Explicit None check for universe parameter
-    if universe is None:
-        raise ValueError("universe parameter cannot be None - compiled universe required for hash validation")
-
-    checkpoint_hash = checkpoint.get("config_hash")
-    if checkpoint_hash is None:
-        return "Checkpoint missing config_hash; transfer learning may be unstable. Retrain or regenerate checkpoint with Stage 7 compiler."
-
-    if checkpoint_hash != universe.metadata.config_hash:
-        return (
-            "Checkpoint config hash mismatch; transfer learning may diverge.\n"
-            f"  Checkpoint: {checkpoint_hash[:16]}...\n"
-            f"  Current:    {universe.metadata.config_hash[:16]}..."
-        )
-    return None
 
 
 def assert_checkpoint_dimensions(checkpoint: Mapping[str, Any], universe: CompiledUniverse) -> None:
@@ -208,6 +189,59 @@ def assert_checkpoint_vfs_hash(checkpoint: Mapping[str, Any], universe: Compiled
         logger.warning("%s Starting a new VFS branch without loading checkpoint state.", message)
         return False
     raise ValueError(f"{message} Re-run with --force-new-vfs to start a new VFS branch.")
+
+
+def assert_checkpoint_identity(checkpoint: Mapping[str, Any], universe: CompiledUniverse, *, force_new_vfs: bool) -> bool:
+    """The single identity gate every checkpoint consumer routes through.
+
+    WS-1 task 5 (hamlet-1029f99f4b): both DemoRunner (training resume) and
+    LiveInferenceServer (the serving path) call this, so a check added here is
+    enforced on both paths at once. Do not hand-roll this chain at a call site.
+
+    Composes, in order:
+      1. format version — first, because a wrong-format checkpoint may lack
+         ``vfs_hash`` entirely;
+      2. ``assert_checkpoint_vfs_hash`` — the only leg that can return ``False``
+         (the explicit force-new-VFS branch: start fresh, skip state load);
+      3. ``assert_checkpoint_dimensions`` — dims, field UUIDs, ``drive_hash``,
+         effective ``brain_hash``, and the four per-level content hashes;
+      4. ``primary_level`` equality (D5) — the only field separating two levels
+         that collide on every content hash (see
+         ``test_two_levels_collide_on_almost_every_identity_field``).
+
+    ``config_hash_warning`` is deliberately absent: a warning is the silent
+    acceptance the Provenance-integrity guardrail forbids, and it was deleted
+    per PDR-0022. The pack-level surfaces it loosely covered are tracked as a
+    known divergence (hamlet-2dde1015fe).
+
+    Returns True when the checkpoint may be resumed. Every mismatch raises
+    ValueError except the explicit force-new-VFS branch, which returns False.
+    """
+    if universe is None:
+        raise ValueError("universe parameter cannot be None - compiled universe required for identity validation")
+
+    version = checkpoint.get("version")
+    if version != CHECKPOINT_FORMAT_VERSION:
+        raise ValueError(
+            f"Unsupported checkpoint version: {version}\nExpected version {CHECKPOINT_FORMAT_VERSION}. Please retrain from scratch."
+        )
+
+    if not assert_checkpoint_vfs_hash(checkpoint, universe, force_new_vfs=force_new_vfs):
+        return False
+
+    assert_checkpoint_dimensions(checkpoint, universe)
+
+    checkpoint_primary_level = checkpoint.get("primary_level")
+    if checkpoint_primary_level is None:
+        raise ValueError("Checkpoint missing primary_level; regenerate the checkpoint with the latest compiler.")
+    if checkpoint_primary_level != universe.metadata.primary_level:
+        raise ValueError(
+            f"Checkpoint primary_level mismatch: checkpoint={checkpoint_primary_level}, "
+            f"current={universe.metadata.primary_level}. "
+            "A checkpoint trained at one level must not resume into a different level of the same pack."
+        )
+
+    return True
 
 
 def _digest_path(checkpoint_path: Path) -> Path:

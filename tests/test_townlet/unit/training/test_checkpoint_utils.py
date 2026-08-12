@@ -8,10 +8,11 @@ import pytest
 import torch
 
 from townlet.training.checkpoint_utils import (
+    CHECKPOINT_FORMAT_VERSION,
     assert_checkpoint_dimensions,
+    assert_checkpoint_identity,
     assert_checkpoint_vfs_hash,
     attach_universe_metadata,
-    config_hash_warning,
     persist_checkpoint_digest,
     safe_torch_load,
     verify_checkpoint_digest,
@@ -39,16 +40,47 @@ def test_attach_universe_metadata(compiled_universe) -> None:
     assert checkpoint["vfs_hash"] == compiled_universe.vfs_hash
 
 
-def test_config_hash_warning_detects_mismatch(compiled_universe) -> None:
-    attach = {}
-    attach_universe_metadata(attach, compiled_universe)
-    warn = config_hash_warning(attach, compiled_universe)
-    assert warn is None
+def test_assert_checkpoint_identity_composes_all_legs(compiled_universe) -> None:
+    """WS-1 task 5: the single identity gate both checkpoint consumers route through.
 
-    attach["config_hash"] = "deadbeef"
-    warn = config_hash_warning(attach, compiled_universe)
-    assert warn is not None
-    assert "Checkpoint" in warn
+    `config_hash_warning` is deliberately gone (PDR-0022): a warning is the silent
+    acceptance the Provenance-integrity guardrail forbids. The composed chain is
+    format version → vfs_hash → dimensions/content hashes → primary_level.
+    """
+    checkpoint: dict[str, object] = {"version": CHECKPOINT_FORMAT_VERSION}
+    attach_universe_metadata(checkpoint, compiled_universe)
+
+    # Honest A/A resumes.
+    assert assert_checkpoint_identity(checkpoint, compiled_universe, force_new_vfs=False) is True
+
+    # Leg 1 — format version, checked FIRST: a wrong-format checkpoint may lack
+    # vfs_hash entirely, so nothing downstream can be trusted to even be present.
+    with pytest.raises(ValueError, match="Unsupported checkpoint version"):
+        assert_checkpoint_identity({"version": 2}, compiled_universe, force_new_vfs=False)
+
+    # Leg 2 — VFS ABI. force_new_vfs=True is the ONLY False-returning branch.
+    mismatched_vfs = dict(checkpoint)
+    mismatched_vfs["vfs_hash"] = "deadbeef" * 8
+    with pytest.raises(ValueError, match="vfs_hash mismatch"):
+        assert_checkpoint_identity(mismatched_vfs, compiled_universe, force_new_vfs=False)
+    assert assert_checkpoint_identity(mismatched_vfs, compiled_universe, force_new_vfs=True) is False
+
+    # Leg 3 — dimensions + content hashes are enforced through the composed gate.
+    mismatched_drive = dict(checkpoint)
+    mismatched_drive["drive_hash"] = "deadbeef" * 8
+    with pytest.raises(ValueError, match="drive_hash mismatch"):
+        assert_checkpoint_identity(mismatched_drive, compiled_universe, force_new_vfs=False)
+
+    # Leg 4 — D5: primary_level. Missing raises (no-hidden-defaults); mismatch raises.
+    missing_level = dict(checkpoint)
+    del missing_level["primary_level"]
+    with pytest.raises(ValueError, match="missing primary_level"):
+        assert_checkpoint_identity(missing_level, compiled_universe, force_new_vfs=False)
+
+    wrong_level = dict(checkpoint)
+    wrong_level["primary_level"] = "L9_not_this_level"
+    with pytest.raises(ValueError, match="primary_level mismatch"):
+        assert_checkpoint_identity(wrong_level, compiled_universe, force_new_vfs=False)
 
 
 def test_assert_checkpoint_dimensions_raises_on_mismatch(compiled_universe) -> None:

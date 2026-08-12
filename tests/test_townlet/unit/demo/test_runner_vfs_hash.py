@@ -42,7 +42,7 @@ def test_runner_rejects_checkpoint_vfs_hash_mismatch(tmp_path: Path) -> None:
 
     try:
         try:
-            runner.load_checkpoint(runner.compiled)
+            runner.load_checkpoint()
         except ValueError as exc:
             assert "vfs_hash mismatch" in str(exc)
             assert "--force-new-vfs" in str(exc)
@@ -67,10 +67,39 @@ def test_runner_force_new_vfs_branches_without_loading_checkpoint(tmp_path: Path
     )
 
     try:
-        assert runner.load_checkpoint(runner.compiled) is None
+        assert runner.load_checkpoint() is None
         assert runner.current_episode == 0
     finally:
         runner._cleanup()
+
+
+def test_both_checkpoint_consumers_call_the_shared_identity_guard() -> None:
+    """WS-1 task 5: `assert_checkpoint_identity` is the single insertion point.
+
+    The claim "a check added there is enforced on both paths" is only true while
+    both consumers actually route through it and neither keeps a hand-rolled copy
+    of the chain. Source-level pin so a drive-by 'optimization' on either path
+    fails here by name.
+    """
+    import inspect
+
+    from townlet.demo import live_inference
+
+    runner_src = inspect.getsource(DemoRunner.load_checkpoint)
+    serving_src = inspect.getsource(live_inference.LiveInferenceServer._check_and_load_checkpoint)
+
+    assert "assert_checkpoint_identity(" in runner_src, "DemoRunner.load_checkpoint no longer routes through the shared identity guard"
+    assert "assert_checkpoint_identity(" in serving_src, "the serving path no longer routes through the shared identity guard"
+
+    # No second hand-rolled copy of the chain on either path — the piecemeal
+    # checks must be called only inside assert_checkpoint_identity itself.
+    for name, source in (("DemoRunner.load_checkpoint", runner_src), ("LiveInferenceServer._check_and_load_checkpoint", serving_src)):
+        for piecemeal in ("assert_checkpoint_vfs_hash(", "assert_checkpoint_dimensions(", "config_hash_warning("):
+            assert piecemeal not in source, f"{name} hand-rolls {piecemeal}...) instead of the shared guard"
+
+    # H8: the named regression shape. `if self.compiled_universe is not None:` around the
+    # guard is the silent skip this unit exists to delete — None must RAISE, not skip.
+    assert "if self.compiled_universe is not None" not in serving_src, "the serving path reintroduced the silent skip (plan §3 H8)"
 
 
 def test_runner_requires_checkpoint_digest_before_pickle_load(tmp_path: Path) -> None:
@@ -88,6 +117,6 @@ def test_runner_requires_checkpoint_digest_before_pickle_load(tmp_path: Path) ->
 
     try:
         with pytest.raises(FileNotFoundError, match="Missing checksum file"):
-            runner.load_checkpoint(runner.compiled)
+            runner.load_checkpoint()
     finally:
         runner._cleanup()

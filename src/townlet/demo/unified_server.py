@@ -431,6 +431,13 @@ class UnifiedServer:
             finally:
                 loop.close()
 
+            # WS-1 task 5: uvicorn (pinned 0.46.0, verified) returns NORMALLY from
+            # serve() when lifespan startup fails — e.g. the identity guard rejecting
+            # the checkpoint during startup(). Without this check, a dead inference
+            # server logs "stopped normally" and training continues for hours.
+            if not server.started:
+                raise RuntimeError("Inference server failed to start (lifespan startup error); see logs above for the cause.")
+
             logger.info("[Inference] Server stopped normally")
 
         except Exception as e:

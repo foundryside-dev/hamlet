@@ -122,7 +122,7 @@ VFS computes deterministic hashes for each part of the ABI:
 | `transition_graph_hash` | Identity of the transition phase graph plus compiled transition rules. |
 | `vfs_hash` | Combined identity over variable, observation, action, and transition hashes. |
 
-Checkpoint resume calls `assert_checkpoint_vfs_hash()`. If the checkpoint hash differs from the current compiled universe hash, resume fails loudly unless the caller explicitly requests a new VFS branch with `force_new_vfs`.
+Both checkpoint consumers — `DemoRunner` (training resume) and `LiveInferenceServer` (the serving path) — route through the shared `assert_checkpoint_identity()` gate, which composes the format-version check, `assert_checkpoint_vfs_hash()`, `assert_checkpoint_dimensions()` (dimensions, field UUIDs, `drive_hash`, effective `brain_hash`, and the four per-level content hashes), and the `primary_level` equality check. If the checkpoint's `vfs_hash` differs from the current compiled universe hash, resume fails loudly unless the caller explicitly requests a new VFS branch with `force_new_vfs`; every other identity mismatch fails loudly with no override.
 
 ### Scopes Include Social And Relational State
 

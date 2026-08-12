@@ -18,10 +18,9 @@ from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
 from townlet.population.vectorized import VectorizedPopulation
 from townlet.training.checkpoint_utils import (
-    assert_checkpoint_dimensions,
-    assert_checkpoint_vfs_hash,
+    CHECKPOINT_FORMAT_VERSION,
+    assert_checkpoint_identity,
     attach_universe_metadata,
-    config_hash_warning,
     persist_checkpoint_digest,
     safe_torch_load,
     verify_checkpoint_digest,
@@ -79,7 +78,6 @@ class DemoRunner:
         self.db_path = Path(db_path)
         self.checkpoint_dir = Path(checkpoint_dir)
         self.force_new_vfs = force_new_vfs
-        self.compiled: CompiledUniverse | None = None
 
         # Create directories
         self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
@@ -108,7 +106,7 @@ class DemoRunner:
 
         # v2.1: Compile hierarchical configs (multi-level aware)
         compiler = UniverseCompiler()
-        self.compiled = compiler.compile(self.config_dir, primary_level=level_name)
+        self.compiled: CompiledUniverse = compiler.compile(self.config_dir, primary_level=level_name)
 
         self.level_name = level_name
         level_config = self.compiled.get_level(self.level_name)
@@ -260,7 +258,7 @@ class DemoRunner:
         for agent_idx in range(self.population.num_agents):
             self.population.flush_episode(agent_idx)
 
-    def save_checkpoint(self, universe: CompiledUniverse | None = None):
+    def save_checkpoint(self):
         """Save checkpoint at current episode."""
         # P1.1 Phase 5: Flush all agents before checkpoint
         self.flush_all_agents()
@@ -269,7 +267,7 @@ class DemoRunner:
 
         # P1.1 Phase 2: Use population's complete checkpoint state
         checkpoint: dict[str, Any] = {
-            "version": 3,  # Phase 5: Version 3 includes substrate metadata
+            "version": CHECKPOINT_FORMAT_VERSION,
             "episode": self.current_episode,
             "timestamp": time.time(),
         }
@@ -305,10 +303,9 @@ class DemoRunner:
         checkpoint["training_config"] = self.training_config.model_dump()
         checkpoint["config_dir"] = str(self.config_dir)
 
-        if universe is None:
-            universe = self.compiled
-        if universe is not None:
-            attach_universe_metadata(checkpoint, universe)
+        # WS-1 task 5: unconditional. The old `if universe is not None:` skip meant a
+        # checkpoint could be written with ZERO provenance keys, making every guard vacuous.
+        attach_universe_metadata(checkpoint, self.compiled)
 
         torch.save(checkpoint, checkpoint_path)
         persist_checkpoint_digest(checkpoint_path)
@@ -317,11 +314,12 @@ class DemoRunner:
         # Update system state
         self.db.set_system_state("last_checkpoint", str(checkpoint_path))
 
-    def load_checkpoint(self, universe: CompiledUniverse | None = None) -> int | None:
+    def load_checkpoint(self) -> int | None:
         """Load latest checkpoint if exists.
 
         Returns:
             Episode number of loaded checkpoint, or None if no checkpoint
+            (or when force-new-VFS explicitly branches instead of resuming)
         """
         # Find latest checkpoint
         checkpoints = sorted(self.checkpoint_dir.glob("checkpoint_ep*.pt"))
@@ -336,20 +334,10 @@ class DemoRunner:
         # See _detect_old_checkpoints above for the trust-boundary rationale.
         checkpoint = safe_torch_load(latest_checkpoint, allow_unsafe_pickle=True)
 
-        if universe is None:
-            universe = self.compiled
-        if universe is not None:
-            if not assert_checkpoint_vfs_hash(checkpoint, universe, force_new_vfs=self.force_new_vfs):
-                return None
-            warning = config_hash_warning(checkpoint, universe)
-            if warning:
-                logger.warning(warning)
-            assert_checkpoint_dimensions(checkpoint, universe)
-
-        # P1.1: Check checkpoint version
-        checkpoint_version = checkpoint.get("version")
-        if checkpoint_version != 3:
-            raise ValueError(f"Unsupported checkpoint version: {checkpoint_version}\nExpected version 3. Please retrain from scratch.")
+        # WS-1 task 5: the shared identity gate (format version, VFS ABI, dimensions,
+        # content hashes, primary_level). The serving path runs the identical chain.
+        if not assert_checkpoint_identity(checkpoint, self.compiled, force_new_vfs=self.force_new_vfs):
+            return None
 
         self.current_episode = checkpoint["episode"]
 
@@ -520,7 +508,7 @@ class DemoRunner:
             logger.info("Episode recording disabled")
 
         # Try to resume from checkpoint
-        loaded_episode = self.load_checkpoint(self.compiled)
+        loaded_episode = self.load_checkpoint()
         if loaded_episode is not None:
             self.current_episode = loaded_episode + 1
 
@@ -916,7 +904,7 @@ class DemoRunner:
 
                 # Checkpoint every CHECKPOINT_INTERVAL episodes
                 if self.current_episode % self.CHECKPOINT_INTERVAL == 0:
-                    self.save_checkpoint(self.compiled)
+                    self.save_checkpoint()
 
                 # Decay epsilon for next episode and sync telemetry
                 self.exploration.decay_epsilon()
@@ -927,7 +915,7 @@ class DemoRunner:
         finally:
             # Save final checkpoint
             logger.info("Training complete, saving final checkpoint...")
-            self.save_checkpoint(self.compiled)
+            self.save_checkpoint()
 
             # Phase 4 - Log final metrics with hyperparameters
             if self.population is not None:

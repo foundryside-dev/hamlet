@@ -25,7 +25,7 @@ from townlet.substrate.continuous import ContinuousSubstrate
 from townlet.substrate.grid2d import Grid2DSubstrate
 from townlet.substrate.grid3d import Grid3DSubstrate
 from townlet.substrate.gridnd import GridNDSubstrate
-from townlet.training.checkpoint_utils import safe_torch_load, verify_checkpoint_digest
+from townlet.training.checkpoint_utils import assert_checkpoint_identity, safe_torch_load, verify_checkpoint_digest
 from townlet.universe.compiled import CompiledUniverse
 from townlet.universe.compiler import UniverseCompiler
 
@@ -438,6 +438,17 @@ class LiveInferenceServer:
         # have just verified; those checkpoints embed trusted Python state
         # (population, exploration, curriculum) that requires pickle loading.
         checkpoint = safe_torch_load(latest_checkpoint, allow_unsafe_pickle=True)
+
+        # WS-1 task 5 (hamlet-1029f99f4b): the serving path ran ZERO identity guards —
+        # digest verification above is INTEGRITY (file not corrupted), not IDENTITY
+        # (checkpoint matches this universe). This is the tech-demo path; without the
+        # gate it renders an agent trained against a different universe with no error.
+        # Raising HERE means no weights are applied below, so the server keeps serving
+        # its previous valid checkpoint. No `if ... is not None:` softening — that is
+        # the silent skip this unit exists to delete (plan §3 H8).
+        if self.compiled_universe is None:
+            raise RuntimeError("compiled_universe is None: _initialize_components() must run before a checkpoint can be validated.")
+        assert_checkpoint_identity(checkpoint, self.compiled_universe, force_new_vfs=False)
 
         # Load Q-network weights
         if "population_state" in checkpoint:

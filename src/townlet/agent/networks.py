@@ -172,9 +172,6 @@ class RecurrentSpatialQNetwork(nn.Module):
             nn.Linear(128, action_dim),
         )
 
-        # Hidden state (initialized per episode)
-        self.hidden_state: tuple[torch.Tensor, torch.Tensor] | None = None
-
         # Optional observation-spec-driven slicing (v2.1 pipeline).
         self._use_observation_spec = observation_spec is not None
         self._grid_slice: slice | None = None
@@ -205,10 +202,15 @@ class RecurrentSpatialQNetwork(nn.Module):
                 self._use_observation_spec = False
 
     def forward(
-        self, obs: torch.Tensor, hidden: tuple[torch.Tensor, torch.Tensor] | None = None
+        self,
+        obs: torch.Tensor,
+        hidden: tuple[torch.Tensor, torch.Tensor],
     ) -> tuple[torch.Tensor, tuple[torch.Tensor, torch.Tensor]]:
         """
         Forward pass with LSTM memory.
+
+        The network owns no hidden state: callers thread it explicitly. Use
+        `initial_hidden(batch_size, device)` at episode/sequence start.
 
         Args:
             obs: [batch, obs_dim] observations where:
@@ -217,7 +219,7 @@ class RecurrentSpatialQNetwork(nn.Module):
                 - obs[:, window_size²+position_dim:window_size²+position_dim+num_meters] = meters
                 - obs[:, window_size²+position_dim+num_meters:window_size²+position_dim+num_meters+num_affordance_dims] = affordance
                 - obs[:, window_size²+position_dim+num_meters+num_affordance_dims:] = temporal (if enabled)
-            hidden: Optional LSTM hidden state (h, c), each [1, batch, hidden_dim]
+            hidden: LSTM hidden state (h, c), each [num_layers, batch, hidden_dim] (required)
 
         Returns:
             q_values: [batch, action_dim]
@@ -267,16 +269,6 @@ class RecurrentSpatialQNetwork(nn.Module):
         # LSTM expects [batch, seq_len, input_dim]
         combined = combined.unsqueeze(1)  # [batch, 1, lstm_input_dim]
 
-        # Use provided hidden state or self.hidden_state
-        if hidden is None:
-            hidden = self.hidden_state
-
-        # If still None, initialize with zeros
-        if hidden is None:
-            h = torch.zeros(1, batch_size, self.hidden_dim, device=obs.device)
-            c = torch.zeros(1, batch_size, self.hidden_dim, device=obs.device)
-            hidden = (h, c)
-
         # LSTM forward
         lstm_out, new_hidden = self.lstm(combined, hidden)  # lstm_out: [batch, 1, hidden_dim]
         lstm_out = lstm_out.squeeze(1)  # [batch, hidden_dim]
@@ -289,33 +281,21 @@ class RecurrentSpatialQNetwork(nn.Module):
 
         return q_values, new_hidden
 
-    def reset_hidden_state(self, batch_size: int, device: torch.device | None = None) -> None:
-        """
-        Reset LSTM hidden state (call at episode start).
+    def initial_hidden(self, batch_size: int, device: torch.device) -> tuple[torch.Tensor, torch.Tensor]:
+        """Fresh all-zero LSTM hidden state for a new episode or sampled sequence.
+
+        The network owns no mutable hidden state; callers hold and thread it.
 
         Args:
-            batch_size: Batch size for hidden state
-            device: Device for tensors (default: cpu). Infrastructure default - PDR-002 exemption.
+            batch_size: Batch size for the hidden state
+            device: Device for the tensors (required)
+
+        Returns:
+            (h, c), each [num_layers, batch_size, hidden_dim], all zeros
         """
-        if device is None:
-            device = torch.device("cpu")
-
-        h = torch.zeros(1, batch_size, self.hidden_dim, device=device)
-        c = torch.zeros(1, batch_size, self.hidden_dim, device=device)
-        self.hidden_state = (h, c)
-
-    def set_hidden_state(self, hidden: tuple[torch.Tensor, torch.Tensor]) -> None:
-        """
-        Set LSTM hidden state (for episode rollouts).
-
-        Args:
-            hidden: Tuple of (h, c) hidden states
-        """
-        self.hidden_state = hidden
-
-    def get_hidden_state(self) -> tuple[torch.Tensor, torch.Tensor] | None:
-        """Get current LSTM hidden state."""
-        return self.hidden_state
+        h = torch.zeros(self.lstm.num_layers, batch_size, self.hidden_dim, device=device)
+        c = torch.zeros(self.lstm.num_layers, batch_size, self.hidden_dim, device=device)
+        return (h, c)
 
 
 class DuelingQNetwork(nn.Module):

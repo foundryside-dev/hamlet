@@ -156,10 +156,14 @@ class TestRecurrentSpatialQNetwork:
         assert isinstance(network.q_head[2], nn.ReLU)
         assert isinstance(network.q_head[3], nn.Linear)  # 128 → 6
 
-    def test_forward_pass_without_hidden_state(self, network, pomdp_env):
-        """Forward pass should work without providing hidden state."""
+    def test_forward_pass_requires_hidden_state(self, network, pomdp_env):
+        """Forward requires an explicit hidden state; initial_hidden provides it."""
         obs = pomdp_env.reset()
-        q_values, hidden = network(obs)
+
+        with pytest.raises(TypeError):
+            network(obs)  # hidden is required, not optional
+
+        q_values, hidden = network(obs, network.initial_hidden(1, pomdp_env.device))
 
         assert q_values.shape == (1, pomdp_env.action_dim)
         assert hidden is not None
@@ -171,8 +175,8 @@ class TestRecurrentSpatialQNetwork:
         """Forward pass should accept and update hidden state."""
         obs = pomdp_env.reset()
 
-        # First forward pass
-        q1, hidden1 = network(obs)
+        # First forward pass from a fresh hidden state
+        q1, hidden1 = network(obs, network.initial_hidden(1, pomdp_env.device))
 
         # Second forward pass with previous hidden state
         q2, hidden2 = network(obs, hidden1)
@@ -181,52 +185,25 @@ class TestRecurrentSpatialQNetwork:
         assert not torch.equal(q1, q2), "Q-values should differ with different hidden states"
         assert not torch.equal(hidden1[0], hidden2[0]), "Hidden state should be updated"
 
-    def test_hidden_state_management(self, network, pomdp_env):
-        """Hidden state should persist across forward passes."""
-        batch_size = 1
+    def test_network_owns_no_hidden_state(self, network, pomdp_env):
+        """The network is stateless: identical (obs, hidden) inputs give identical outputs."""
         obs = pomdp_env.reset()
+        fresh = network.initial_hidden(1, pomdp_env.device)
 
-        # Reset hidden state
-        network.reset_hidden_state(batch_size, device=pomdp_env.device)
-        h, c = network.get_hidden_state()
+        assert torch.all(fresh[0] == 0), "initial hidden state should be zeroed"
+        assert torch.all(fresh[1] == 0), "initial cell state should be zeroed"
 
-        assert h is not None
-        assert c is not None
-        assert h.shape == (1, batch_size, 256)
-        assert torch.all(h == 0), "Hidden state should be zeroed"
-        assert torch.all(c == 0), "Cell state should be zeroed"
-
-        # Forward pass returns new hidden state but doesn't auto-update stored state
-        q_values, new_hidden = network(obs)
+        q_first, new_hidden = network(obs, fresh)
 
         # New hidden state should be different from zeros (it was updated by LSTM)
         assert not torch.equal(new_hidden[0], torch.zeros_like(new_hidden[0]))
         assert not torch.equal(new_hidden[1], torch.zeros_like(new_hidden[1]))
 
-        # But stored state should still be zeros (not automatically updated)
-        stored_h, stored_c = network.get_hidden_state()
-        assert torch.all(stored_h == 0), "Stored hidden state should still be zero (not auto-updated)"
-        assert torch.all(stored_c == 0), "Stored cell state should still be zero (not auto-updated)"
-
-        # Manually update stored state
-        network.set_hidden_state(new_hidden)
-        stored_h, stored_c = network.get_hidden_state()
-
-        # Now stored state should match
-        assert torch.equal(stored_h, new_hidden[0])
-        assert torch.equal(stored_c, new_hidden[1])
-
-    def test_set_hidden_state(self, network):
-        """Should be able to manually set hidden state."""
-        batch_size = 2
-        custom_h = torch.randn(1, batch_size, 256)
-        custom_c = torch.randn(1, batch_size, 256)
-
-        network.set_hidden_state((custom_h, custom_c))
-
-        stored_h, stored_c = network.get_hidden_state()
-        assert torch.equal(stored_h, custom_h)
-        assert torch.equal(stored_c, custom_c)
+        # The forward pass mutated nothing: repeating it gives identical results
+        q_second, repeat_hidden = network(obs, fresh)
+        assert torch.equal(q_first, q_second), "forward must not mutate network state"
+        assert torch.equal(new_hidden[0], repeat_hidden[0])
+        assert torch.equal(new_hidden[1], repeat_hidden[1])
 
     def test_batch_processing(self, network, pomdp_env):
         """Network should handle batched observations."""
@@ -234,8 +211,7 @@ class TestRecurrentSpatialQNetwork:
         single = pomdp_env.reset()
         obs = single.repeat(batch_size, 1)
 
-        network.reset_hidden_state(batch_size, device=next(network.parameters()).device)
-        q_values, hidden = network(obs)
+        q_values, hidden = network(obs, network.initial_hidden(batch_size, next(network.parameters()).device))
 
         assert q_values.shape == (batch_size, pomdp_env.action_dim)
         assert hidden[0].shape == (1, batch_size, 256)
@@ -244,7 +220,7 @@ class TestRecurrentSpatialQNetwork:
     def test_vision_encoding(self, network, pomdp_env):
         """Vision encoder should process 5×5 window correctly."""
         obs = pomdp_env.reset().repeat(4, 1)
-        q_values, _ = network(obs)
+        q_values, _ = network(obs, network.initial_hidden(4, pomdp_env.device))
 
         assert q_values.shape == (4, pomdp_env.action_dim)
         assert not torch.isnan(q_values).any()
@@ -252,9 +228,8 @@ class TestRecurrentSpatialQNetwork:
     def test_gradient_flow_through_lstm(self, network, pomdp_env):
         """Gradients should flow through LSTM."""
         obs = pomdp_env.reset().repeat(4, 1).requires_grad_()
-        network.reset_hidden_state(4, device=pomdp_env.device)
 
-        q_values, _ = network(obs)
+        q_values, _ = network(obs, network.initial_hidden(4, pomdp_env.device))
         loss = q_values.mean()
         loss.backward()
 
@@ -265,14 +240,13 @@ class TestRecurrentSpatialQNetwork:
                 assert not torch.isnan(param.grad).any(), f"NaN gradient in {name}"
 
     def test_sequential_hidden_state_evolution(self, network, pomdp_env):
-        """Hidden state should evolve over multiple steps."""
-        batch_size = 1
-        network.reset_hidden_state(batch_size, device=pomdp_env.device)
+        """Hidden state should evolve over multiple steps when threaded."""
+        hidden = network.initial_hidden(1, pomdp_env.device)
 
         hidden_states = []
-        for step in range(5):
+        for _step in range(5):
             obs = pomdp_env.reset()
-            q_values, hidden = network(obs)
+            q_values, hidden = network(obs, hidden)
             hidden_states.append(hidden[0].clone())
 
         # Hidden states should differ across steps
@@ -293,33 +267,32 @@ class TestRecurrentSpatialQNetwork:
         ).to(pomdp_env.device)
 
         obs = pomdp_env.reset()
-        q, _ = net(obs)
+        q, _ = net(obs, net.initial_hidden(1, pomdp_env.device))
         assert q.shape == (1, pomdp_env.action_dim)
 
     def test_lstm_memory_effect(self, network, pomdp_env):
-        """LSTM should show memory effect across sequence."""
-        batch_size = 1
+        """LSTM should show memory effect across a threaded sequence."""
         device = next(network.parameters()).device
-        network.reset_hidden_state(batch_size, device=device)
 
         # Create sequence of similar observations
         obs_sequence = [pomdp_env.reset() for _ in range(3)]
 
-        # Get Q-values for each step
+        # Get Q-values for each step, threading hidden state
+        hidden = network.initial_hidden(1, device)
         q_values_list = []
         for obs in obs_sequence:
-            q_values, _ = network(obs)
+            q_values, hidden = network(obs, hidden)
             q_values_list.append(q_values.clone())
 
         # Q-values should change even for similar inputs (due to hidden state)
         assert not torch.equal(q_values_list[0], q_values_list[1])
         assert not torch.equal(q_values_list[1], q_values_list[2])
 
-        # Now reset and try same sequence - should get same results
-        network.reset_hidden_state(batch_size, device=device)
+        # Now restart from a fresh hidden state - should get same results
+        hidden = network.initial_hidden(1, device)
         q_values_reset_list = []
         for obs in obs_sequence:
-            q_values, _ = network(obs)
+            q_values, hidden = network(obs, hidden)
             q_values_reset_list.append(q_values.clone())
 
         # Should match original sequence
@@ -387,8 +360,8 @@ class TestNetworkComparison:
 
         # Warm up
         _ = simple_net(obs_simple)
-        recurrent_net.reset_hidden_state(batch_size, device=next(recurrent_net.parameters()).device)
-        _ = recurrent_net(obs_recurrent)
+        recurrent_hidden = recurrent_net.initial_hidden(batch_size, next(recurrent_net.parameters()).device)
+        _ = recurrent_net(obs_recurrent, recurrent_hidden)
         _sync()
 
         # Time simple network
@@ -399,11 +372,11 @@ class TestNetworkComparison:
         simple_time = time.time() - start
 
         # Time recurrent network
-        recurrent_net.reset_hidden_state(batch_size, device=next(recurrent_net.parameters()).device)
+        recurrent_hidden = recurrent_net.initial_hidden(batch_size, next(recurrent_net.parameters()).device)
         _sync()
         start = time.time()
         for _ in range(100):
-            _ = recurrent_net(obs_recurrent)
+            _ = recurrent_net(obs_recurrent, recurrent_hidden)
         _sync()
         recurrent_time = time.time() - start
 

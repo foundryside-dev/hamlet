@@ -875,6 +875,7 @@ class TestEpisodeStorage:
         # Create a short episode (5 steps)
         episode = {
             "observations": torch.randn(5, 10),  # [seq_len, obs_dim]
+            "next_observations": torch.randn(5, 10),
             "actions": torch.randint(0, 4, (5,)),  # [seq_len]
             "rewards": torch.randn(5),  # [seq_len]
             "dones": torch.tensor([False, False, False, False, True]),  # [seq_len]
@@ -893,6 +894,7 @@ class TestEpisodeStorage:
         for length in [5, 10, 7]:
             episode = {
                 "observations": torch.randn(length, 10),
+                "next_observations": torch.randn(length, 10),
                 "actions": torch.randint(0, 4, (length,)),
                 "rewards": torch.randn(length),
                 "dones": torch.zeros(length, dtype=torch.bool),
@@ -916,6 +918,7 @@ class TestEpisodeStorage:
             buffer.store_episode(
                 {
                     "observations": torch.randn(5, 10),
+                    "next_observations": torch.randn(5, 10),
                     "actions": torch.randint(0, 4, (3,)),  # Wrong length
                     "rewards": torch.randn(5),
                     "dones": torch.zeros(5, dtype=torch.bool),
@@ -934,6 +937,7 @@ class TestSequentialCircularBufferLogic:
         for _ in range(30):  # 30 episodes * 5 transitions = 150 transitions
             episode = {
                 "observations": torch.randn(5, 10),
+                "next_observations": torch.randn(5, 10),
                 "actions": torch.randint(0, 4, (5,)),
                 "rewards": torch.randn(5),
                 "dones": torch.zeros(5, dtype=torch.bool),
@@ -952,6 +956,7 @@ class TestSequentialCircularBufferLogic:
         for reward_val in [1.0, 2.0, 3.0, 4.0, 5.0]:
             episode = {
                 "observations": torch.randn(5, 10),
+                "next_observations": torch.randn(5, 10),
                 "actions": torch.randint(0, 4, (5,)),
                 "rewards": torch.full((5,), reward_val),  # Unique marker
                 "dones": torch.zeros(5, dtype=torch.bool),
@@ -975,6 +980,7 @@ class TestSequenceSampling:
         # Store one long episode
         episode = {
             "observations": torch.randn(20, 10),
+            "next_observations": torch.randn(20, 10),
             "actions": torch.randint(0, 4, (20,)),
             "rewards": torch.randn(20),
             "dones": torch.zeros(20, dtype=torch.bool),
@@ -999,6 +1005,7 @@ class TestSequenceSampling:
         for _ in range(5):
             episode = {
                 "observations": torch.randn(20, 10),
+                "next_observations": torch.randn(20, 10),
                 "actions": torch.randint(0, 4, (20,)),
                 "rewards": torch.randn(20),
                 "dones": torch.zeros(20, dtype=torch.bool),
@@ -1022,6 +1029,7 @@ class TestSequenceSampling:
         obs_seq = torch.arange(20).unsqueeze(-1).float()  # [20, 1] with values 0-19
         episode = {
             "observations": obs_seq,
+            "next_observations": obs_seq,
             "actions": torch.zeros(20, dtype=torch.long),
             "rewards": torch.zeros(20),
             "dones": torch.zeros(20, dtype=torch.bool),
@@ -1049,6 +1057,7 @@ class TestSequenceSampling:
         # Store short episode
         episode = {
             "observations": torch.randn(3, 10),
+            "next_observations": torch.randn(3, 10),
             "actions": torch.randint(0, 4, (3,)),
             "rewards": torch.randn(3),
             "dones": torch.zeros(3, dtype=torch.bool),
@@ -1071,6 +1080,7 @@ class TestEpisodeBoundaryHandling:
         # Store two episodes with distinct patterns
         episode1 = {
             "observations": torch.ones(10, 10),  # All ones
+            "next_observations": torch.ones(10, 10),
             "actions": torch.zeros(10, dtype=torch.long),
             "rewards": torch.zeros(10),
             "dones": torch.zeros(10, dtype=torch.bool),
@@ -1079,6 +1089,7 @@ class TestEpisodeBoundaryHandling:
 
         episode2 = {
             "observations": torch.full((10, 10), 2.0),  # All twos
+            "next_observations": torch.full((10, 10), 2.0),
             "actions": torch.zeros(10, dtype=torch.long),
             "rewards": torch.zeros(10),
             "dones": torch.zeros(10, dtype=torch.bool),
@@ -1107,6 +1118,7 @@ class TestSequentialDeviceHandling:
 
         episode = {
             "observations": torch.randn(5, 10),
+            "next_observations": torch.randn(5, 10),
             "actions": torch.randint(0, 4, (5,)),
             "rewards": torch.randn(5),
             "dones": torch.zeros(5, dtype=torch.bool),
@@ -1124,6 +1136,7 @@ class TestSequentialDeviceHandling:
 
         episode = {
             "observations": torch.randn(5, 10, device="cuda"),
+            "next_observations": torch.randn(5, 10, device="cuda"),
             "actions": torch.randint(0, 4, (5,), device="cuda"),
             "rewards": torch.randn(5, device="cuda"),
             "dones": torch.zeros(5, dtype=torch.bool, device="cuda"),
@@ -1144,6 +1157,7 @@ class TestSequentialRewardSupport:
 
         episode = {
             "observations": torch.randn(5, 10),
+            "next_observations": torch.randn(5, 10),
             "actions": torch.randint(0, 4, (5,)),
             "rewards": torch.randn(5),  # CRIT-07: Single rewards field (DAC-composed)
             "dones": torch.zeros(5, dtype=torch.bool),
@@ -1161,6 +1175,7 @@ class TestSequentialRewardSupport:
         reward_values = torch.tensor([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0])
         episode = {
             "observations": torch.randn(10, 10),
+            "next_observations": torch.randn(10, 10),
             "actions": torch.randint(0, 4, (10,)),
             "rewards": reward_values,  # CRIT-07: Single rewards field
             "dones": torch.zeros(10, dtype=torch.bool),
@@ -1183,6 +1198,7 @@ class TestSequentialRewardSupport:
         reward_values = torch.full((10,), 5.0)  # All 5.0
         episode = {
             "observations": torch.randn(10, 10),
+            "next_observations": torch.randn(10, 10),
             "actions": torch.randint(0, 4, (10,)),
             "rewards": reward_values,  # CRIT-07: DAC-composed totals
             "dones": torch.zeros(10, dtype=torch.bool),
@@ -1217,6 +1233,7 @@ class TestPostTerminalMasking:
         # Store episode with terminal in middle
         episode = {
             "observations": torch.randn(10, basic_env.observation_dim, device=cpu_device),
+            "next_observations": torch.randn(10, basic_env.observation_dim, device=cpu_device),
             "actions": torch.randint(0, 6, (10,), device=cpu_device),
             "rewards": torch.randn(10, device=cpu_device),  # CRIT-07: Single rewards field
             "dones": torch.tensor([False] * 5 + [True] + [False] * 4, device=cpu_device),
@@ -1234,6 +1251,7 @@ class TestPostTerminalMasking:
         # Episode with no terminal
         episode = {
             "observations": torch.randn(10, basic_env.observation_dim, device=cpu_device),
+            "next_observations": torch.randn(10, basic_env.observation_dim, device=cpu_device),
             "actions": torch.randint(0, 6, (10,), device=cpu_device),
             "rewards": torch.randn(10, device=cpu_device),  # CRIT-07: Single rewards field
             "dones": torch.zeros(10, dtype=torch.bool, device=cpu_device),
@@ -1250,6 +1268,7 @@ class TestPostTerminalMasking:
         # Episode: terminal at index 3
         episode = {
             "observations": torch.randn(10, basic_env.observation_dim, device=cpu_device),
+            "next_observations": torch.randn(10, basic_env.observation_dim, device=cpu_device),
             "actions": torch.randint(0, 6, (10,), device=cpu_device),
             "rewards": torch.randn(10, device=cpu_device),  # CRIT-07: Single rewards field
             "dones": torch.tensor([False, False, False, True, False, False, False, False, False, False], device=cpu_device),
@@ -1279,6 +1298,7 @@ class TestPostTerminalMasking:
         # Episode with terminal at index 2
         episode = {
             "observations": torch.randn(5, basic_env.observation_dim, device=cpu_device),
+            "next_observations": torch.randn(5, basic_env.observation_dim, device=cpu_device),
             "actions": torch.randint(0, 6, (5,), device=cpu_device),
             "rewards": torch.randn(5, device=cpu_device),  # CRIT-07: Single rewards field
             "dones": torch.tensor([False, False, True, False, False], device=cpu_device),
@@ -1306,18 +1326,21 @@ class TestPostTerminalMasking:
         episodes = [
             {  # Terminal at index 2
                 "observations": torch.randn(10, basic_env.observation_dim, device=cpu_device),
+                "next_observations": torch.randn(10, basic_env.observation_dim, device=cpu_device),
                 "actions": torch.randint(0, 6, (10,), device=cpu_device),
                 "rewards": torch.randn(10, device=cpu_device),
                 "dones": torch.tensor([False, False, True] + [False] * 7, device=cpu_device),
             },
             {  # Terminal at index 5
                 "observations": torch.randn(10, basic_env.observation_dim, device=cpu_device),
+                "next_observations": torch.randn(10, basic_env.observation_dim, device=cpu_device),
                 "actions": torch.randint(0, 6, (10,), device=cpu_device),
                 "rewards": torch.randn(10, device=cpu_device),
                 "dones": torch.tensor([False] * 5 + [True] + [False] * 4, device=cpu_device),
             },
             {  # No terminal
                 "observations": torch.randn(10, basic_env.observation_dim, device=cpu_device),
+                "next_observations": torch.randn(10, basic_env.observation_dim, device=cpu_device),
                 "actions": torch.randint(0, 6, (10,), device=cpu_device),
                 "rewards": torch.randn(10, device=cpu_device),
                 "dones": torch.zeros(10, dtype=torch.bool, device=cpu_device),
@@ -1349,6 +1372,7 @@ class TestPostTerminalMasking:
         """Mask shape should match [batch_size, seq_len]."""
         episode = {
             "observations": torch.randn(20, basic_env.observation_dim, device=cpu_device),
+            "next_observations": torch.randn(20, basic_env.observation_dim, device=cpu_device),
             "actions": torch.randint(0, 6, (20,), device=cpu_device),
             "rewards": torch.randn(20, device=cpu_device),  # CRIT-07: Single rewards field
             "dones": torch.zeros(20, dtype=torch.bool, device=cpu_device),
@@ -1363,6 +1387,7 @@ class TestPostTerminalMasking:
         """CRIT-07: Mask should work with DAC-composed rewards (single rewards field)."""
         episode = {
             "observations": torch.randn(10, basic_env.observation_dim, device=cpu_device),
+            "next_observations": torch.randn(10, basic_env.observation_dim, device=cpu_device),
             "actions": torch.randint(0, 6, (10,), device=cpu_device),
             "rewards": torch.randn(10, device=cpu_device),  # CRIT-07: DAC-composed total
             "dones": torch.tensor([False] * 4 + [True] + [False] * 5, device=cpu_device),
@@ -1388,6 +1413,7 @@ class TestMaskIntegrationWithLoss:
         # Episode with terminal at index 3 (4 valid timesteps: 0,1,2,3)
         episode = {
             "observations": torch.randn(10, basic_env.observation_dim, device=cpu_device),
+            "next_observations": torch.randn(10, basic_env.observation_dim, device=cpu_device),
             "actions": torch.randint(0, 6, (10,), device=cpu_device),
             "rewards": torch.randn(10, device=cpu_device),  # CRIT-07: Single rewards field
             "dones": torch.tensor([False, False, False, True] + [False] * 6, device=cpu_device),
@@ -1407,6 +1433,7 @@ class TestMaskIntegrationWithLoss:
         """Demonstrate masked loss computation pattern."""
         episode = {
             "observations": torch.randn(10, basic_env.observation_dim, device=cpu_device),
+            "next_observations": torch.randn(10, basic_env.observation_dim, device=cpu_device),
             "actions": torch.randint(0, 6, (10,), device=cpu_device),
             "rewards": torch.randn(10, device=cpu_device),  # CRIT-07: Single rewards field
             "dones": torch.tensor([False] * 5 + [True] + [False] * 4, device=cpu_device),

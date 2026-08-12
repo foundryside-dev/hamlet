@@ -4,7 +4,9 @@ Sequential Replay Buffer for LSTM Training.
 CRIT-07: Updated to use single 'rewards' field for DAC-composed totals.
 Episodes store pre-composed total rewards with optional component breakdown.
 
-format_version 3: Includes optional reward components (rewards_extrinsic,
+format_version 4: Requires 'next_observations' (WS-1(c): the successor of the
+last index of a sampled window, needed for the boundary bootstrap).
+format_version 3 included optional reward components (rewards_extrinsic,
 rewards_intrinsic, rewards_shaping) for TensorBoard analysis.
 
 Unlike standard replay buffers that sample individual transitions,
@@ -110,6 +112,8 @@ class SequentialReplayBuffer:
         Store a complete episode.
 
         CRIT-07: Now requires 'rewards' key with pre-composed totals.
+        WS-1(c): 'next_observations' is REQUIRED - the boundary bootstrap needs the
+        successor of every timestep, and a missing key must fail loudly, not default.
         Component keys (rewards_extrinsic, rewards_intrinsic, rewards_shaping) are optional.
 
         Args:
@@ -118,6 +122,7 @@ class SequentialReplayBuffer:
                 - 'actions': [seq_len]
                 - 'rewards': [seq_len] - DAC-composed total rewards
                 - 'dones': [seq_len]
+                - 'next_observations': [seq_len, obs_dim] - successor observations
                 - 'rewards_extrinsic': [seq_len] (optional) - extrinsic component
                 - 'rewards_intrinsic': [seq_len] (optional) - intrinsic component
                 - 'rewards_shaping': [seq_len] (optional) - shaping component
@@ -126,7 +131,7 @@ class SequentialReplayBuffer:
             ValueError: If episode structure is invalid
         """
         # Validate episode structure
-        required_keys = {"observations", "actions", "rewards", "dones"}
+        required_keys = {"observations", "actions", "rewards", "dones", "next_observations"}
         optional_component_keys = {"rewards_extrinsic", "rewards_intrinsic", "rewards_shaping"}
 
         missing_keys = required_keys - set(episode.keys())
@@ -152,6 +157,8 @@ class SequentialReplayBuffer:
             raise ValueError(f"rewards must be 1D [seq_len], got shape {episode['rewards'].shape}")
         if episode["dones"].ndim != 1:
             raise ValueError(f"dones must be 1D [seq_len], got shape {episode['dones'].shape}")
+        if episode["next_observations"].ndim != 2:
+            raise ValueError(f"next_observations must be 2D [seq_len, obs_dim], got shape {episode['next_observations'].shape}")
 
         # Validate optional component keys if present
         for component_key in optional_component_keys:
@@ -193,6 +200,8 @@ class SequentialReplayBuffer:
                 - 'actions': [batch_size, seq_len]
                 - 'rewards': [batch_size, seq_len]
                 - 'dones': [batch_size, seq_len]
+                - 'next_observations': [batch_size, seq_len, obs_dim] - successors
+                  (WS-1(c): [:, -1] is the window-boundary bootstrap target)
                 - 'mask': [batch_size, seq_len] bool - True for valid timesteps,
                           False after terminal (for post-terminal masking in loss)
 
@@ -243,6 +252,7 @@ class SequentialReplayBuffer:
                 "actions": episode["actions"][start_idx:end_idx],
                 "rewards": episode["rewards"][start_idx:end_idx],  # CRIT-07: Use pre-composed rewards
                 "dones": episode["dones"][start_idx:end_idx],
+                "next_observations": episode["next_observations"][start_idx:end_idx],
             }
 
             # Create validity mask (P2.2: Post-terminal masking)
@@ -268,6 +278,7 @@ class SequentialReplayBuffer:
             "actions": torch.stack([s["actions"] for s in sampled_sequences]),
             "rewards": torch.stack([s["rewards"] for s in sampled_sequences]),
             "dones": torch.stack([s["dones"] for s in sampled_sequences]),
+            "next_observations": torch.stack([s["next_observations"] for s in sampled_sequences]),
             "mask": torch.stack([s["mask"] for s in sampled_sequences]),
         }
 
@@ -277,14 +288,14 @@ class SequentialReplayBuffer:
         """
         Serialize episode buffer for checkpointing (P1.1).
 
-        format_version 3 includes optional reward component keys.
+        format_version 4 requires 'next_observations' (WS-1(c)).
 
         Returns:
             Dictionary with all episodes on CPU for saving
         """
         if len(self.episodes) == 0:
             return {
-                "format_version": 3,  # Version 3 includes optional component keys
+                "format_version": 4,  # Version 4 requires next_observations (WS-1(c))
                 "num_transitions": 0,
                 "episodes": [],
                 "capacity": self.capacity,
@@ -298,6 +309,7 @@ class SequentialReplayBuffer:
                 "actions": episode["actions"].cpu(),
                 "rewards": episode["rewards"].cpu(),
                 "dones": episode["dones"].cpu(),
+                "next_observations": episode["next_observations"].cpu(),
             }
             # Add components if present
             for key in ["rewards_extrinsic", "rewards_intrinsic", "rewards_shaping"]:
@@ -306,7 +318,7 @@ class SequentialReplayBuffer:
             serialized_episodes.append(serialized_episode)
 
         return {
-            "format_version": 3,  # Version 3 includes optional component keys
+            "format_version": 4,  # Version 4 requires next_observations (WS-1(c))
             "num_transitions": self.num_transitions,
             "episodes": serialized_episodes,
             "capacity": self.capacity,
@@ -316,19 +328,19 @@ class SequentialReplayBuffer:
         """
         Restore episode buffer from serialized state (P1.1).
 
-        Now requires format_version >= 3. Legacy formats not supported.
+        Now requires format_version >= 4. Legacy formats not supported.
 
         Args:
             state: Dictionary from serialize()
 
         Raises:
-            ValueError: If loading legacy format (version < 3)
+            ValueError: If loading legacy format (version < 4)
         """
         # Reject legacy format (per CLAUDE.md: zero backwards compatibility)
         format_version = state.get("format_version", 1)
-        if format_version < 3:
+        if format_version < 4:
             raise ValueError(
-                "Cannot load legacy sequential buffer checkpoint (format_version < 3). "
+                "Cannot load legacy sequential buffer checkpoint (format_version < 4). "
                 "Regenerate checkpoint with current Townlet version."
             )
 
@@ -350,6 +362,7 @@ class SequentialReplayBuffer:
                 "actions": ep_state["actions"].to(self.device),
                 "rewards": ep_state["rewards"].to(self.device),
                 "dones": ep_state["dones"].to(self.device),
+                "next_observations": ep_state["next_observations"].to(self.device),
             }
             # Restore components if present
             for key in ["rewards_extrinsic", "rewards_intrinsic", "rewards_shaping"]:

@@ -138,19 +138,18 @@ class TestRecurrentNetworkInitialization:
             sequence_length=5,
         )
 
-        # Reset population (should initialize hidden states)
+        # Reset population (should seed the population-owned rollout memory)
         population.reset()
 
-        # Verify hidden state exists and has correct shape
+        # Verify the network is recurrent and the POPULATION owns the memory
         from townlet.agent.networks import RecurrentSpatialQNetwork
 
         recurrent_network = population.q_network
         assert isinstance(recurrent_network, RecurrentSpatialQNetwork)
 
-        hidden_state = recurrent_network.get_hidden_state()
-        assert hidden_state is not None, "Hidden state should be initialized"
+        assert population.rollout_hidden is not None, "Rollout memory should be seeded"
 
-        h, c = hidden_state
+        h, c = population.rollout_hidden
         # Hidden state shape: [num_layers, batch_size, hidden_dim]
         assert h.shape[1] == 1, "Batch size should match num_agents"
         assert c.shape[1] == 1, "Cell state batch size should match num_agents"
@@ -183,21 +182,17 @@ class TestLSTMHiddenStateManagement:
 
         population.reset()
 
-        # Get initial hidden state
-
-        recurrent_network = population.q_network
-        h_before, c_before = recurrent_network.get_hidden_state()
-
-        # Set some non-zero values for testing
-        h_before[:, :, :] = torch.randn_like(h_before)
-        c_before[:, :, :] = torch.randn_like(c_before)
-        recurrent_network.set_hidden_state((h_before.clone(), c_before.clone()))
+        # Fill the population-owned rollout memory with non-zero values
+        assert population.rollout_hidden is not None
+        h_before = torch.randn_like(population.rollout_hidden[0])
+        c_before = torch.randn_like(population.rollout_hidden[1])
+        population.rollout_hidden = (h_before.clone(), c_before.clone())
 
         # Reset hidden state for agent 1 only
         population._reset_hidden_state(agent_idx=1)
 
         # Verify agent 1's hidden state is zeroed
-        h_after, c_after = recurrent_network.get_hidden_state()
+        h_after, c_after = population.rollout_hidden
 
         # Agent 1 should be zeroed
         assert torch.all(h_after[:, 1, :] == 0.0), "Agent 1 h should be zeroed"
@@ -244,6 +239,7 @@ class TestEpisodeBuffering:
             episode["actions"].append(torch.tensor(i % env.action_dim, device=cpu_device))
             episode["rewards"].append(torch.tensor(1.1, device=cpu_device))  # Combined reward
             episode["dones"].append(torch.tensor(False, device=cpu_device))
+            episode["next_observations"].append(torch.randn(env.observation_dim, device=cpu_device))
 
         # Store episode
         result = population._store_episode_and_reset(agent_idx)
@@ -317,6 +313,7 @@ class TestEpisodeBuffering:
             episode["actions"].append(torch.tensor(0, device=cpu_device))
             episode["rewards"].append(torch.tensor(1.0, device=cpu_device))  # Combined reward
             episode["dones"].append(torch.tensor(False, device=cpu_device))
+            episode["next_observations"].append(torch.randn(env.observation_dim, device=cpu_device))
 
         # Flush episode
         population.flush_episode(agent_idx)
@@ -373,6 +370,7 @@ class TestRecurrentTraining:
                 "actions": torch.randint(0, env.action_dim, (10,), device=cpu_device),
                 "rewards": torch.rand(10, device=cpu_device),  # Combined rewards
                 "dones": torch.zeros(10, dtype=torch.bool, device=cpu_device),
+                "next_observations": torch.randn(10, env.observation_dim, device=cpu_device),
             }
             episode_data["dones"][-1] = True
             buffer.store_episode(episode_data)

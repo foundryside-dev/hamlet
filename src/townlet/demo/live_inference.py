@@ -8,12 +8,13 @@ import asyncio
 import logging
 import math
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import torch
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
+from townlet.agent.networks import RecurrentSpatialQNetwork
 from townlet.curriculum.adversarial import AdversarialCurriculum
 from townlet.curriculum.factory import build_curriculum
 from townlet.demo.database import DemoDatabase
@@ -460,7 +461,8 @@ class LiveInferenceServer:
             with torch.no_grad():
                 dummy_obs = torch.zeros(1, self.population.current_obs.shape[1], device=self.device)
                 if self.population.is_recurrent:
-                    dummy_output, _ = self.population.q_network(dummy_obs)
+                    recurrent_network = cast(RecurrentSpatialQNetwork, self.population.q_network)
+                    dummy_output, _ = recurrent_network(dummy_obs, recurrent_network.initial_hidden(1, self.device))
                 else:
                     dummy_output = self.population.q_network(dummy_obs)
                 assert self.env is not None, "Environment must be initialized before loading checkpoint"
@@ -725,10 +727,15 @@ class LiveInferenceServer:
             # Get action using epsilon-greedy (respects current epsilon from checkpoint)
             actions = self.population.select_epsilon_greedy_actions(self.env, self.current_epsilon)
 
-            # Get Q-values for display
-            with torch.no_grad():
-                q_output = self.population.q_network(self.population.current_obs)
-                q_values = q_output[0] if isinstance(q_output, tuple) else q_output
+            # Q-values for display: recorded by the selector above. A fallback
+            # forward here would advance the rollout hidden state a second time
+            # per step (the double-advance WS-1(b) removed) - raise instead.
+            q_values = self.population.last_selected_q_values
+            if q_values is None:
+                raise RuntimeError(
+                    "select_epsilon_greedy_actions recorded no Q-values; refusing a display "
+                    "fallback forward (it would double-advance the rollout hidden state)"
+                )
 
             # Step environment with curriculum difficulty
             next_obs, rewards, dones, info = self.env.step(actions, current_multiplier)

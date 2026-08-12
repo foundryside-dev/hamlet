@@ -211,7 +211,7 @@ def test_build_recurrent_basic():
     batch_size = 4
     obs = torch.randn(batch_size, obs_spec.total_dims)
 
-    q_values, hidden = network(obs)
+    q_values, hidden = network(obs, network.initial_hidden(batch_size, torch.device("cpu")))
 
     assert q_values.shape == (batch_size, 8)
     assert isinstance(hidden, tuple)
@@ -332,7 +332,7 @@ def test_build_recurrent_custom_lstm_size():
     batch_size = 2
     obs = torch.randn(batch_size, obs_spec.total_dims)
 
-    q_values, hidden = network(obs)
+    q_values, hidden = network(obs, network.initial_hidden(batch_size, torch.device("cpu")))
 
     assert q_values.shape == (batch_size, 8)
     assert hidden[0].shape == (1, batch_size, 128)  # h with custom size
@@ -393,7 +393,7 @@ def test_build_recurrent_aspatial():
     batch_size = 2
     obs = torch.randn(batch_size, obs_spec.total_dims)
 
-    q_values, hidden = network(obs)
+    q_values, hidden = network(obs, network.initial_hidden(batch_size, torch.device("cpu")))
 
     assert q_values.shape == (batch_size, 4)
     assert hidden[0].shape == (1, batch_size, 256)

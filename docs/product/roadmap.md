@@ -1,4 +1,4 @@
-# Roadmap — HAMLET / Townlet            Updated: 2026-08-13 (PDR-0026, PDR-0027, PDR-0028) · prior: 2026-08-12 (PDR-0019, PDR-0024, PDR-0025)
+# Roadmap — HAMLET / Townlet            Updated: 2026-08-13 (status correction only: WS-1 b+c landed at `97e4b16b`, no horizon change, no new PDR) · prior: 2026-08-13 (PDR-0026, PDR-0027, PDR-0028)
 
 > Sequencing, WSJF / cost-of-delay, and dated forecasts are produced by
 > /axiom-program-management. This file records bets as INTENT, not a delivery
@@ -38,8 +38,9 @@
   register, `PDR-0028`), **Declared-but-inert config surfaces** (baseline ~40; post-assessment
   7 found / 2 closed), **Documentation truth** (≥14 false claims → 0) and **Gates green**
   (✅ 4 of 4, held)
-  · **WS-1 scope is FROZEN at ten units** (`PDR-0028`): 7 landed, remaining b → c → 3b → close.
-  New findings route to WS-7's known-divergences register or WS-4, never into WS-1.
+  · **WS-1 scope is FROZEN at ten units** (`PDR-0028`): **9 landed** (b+c landed atomically at
+  `97e4b16b`, 2026-08-13 — the recurrent path trains and window boundaries bootstrap), remaining
+  sibling 3b → close. New findings route to WS-7's known-divergences register or WS-4, never into WS-1.
   · **PDR-0002** gated the assessment · **PDR-0004** adopts the dispositions · **PDR-0005** sets the
   triage rule (**wire, not delete**) · **PDR-0006** chose the strangler · **PDR-0008** verified
   WS-1 by execution and reordered it

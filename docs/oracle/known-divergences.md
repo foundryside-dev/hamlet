@@ -3,9 +3,8 @@
 **Stream:** WS-7 (`hamlet-e3af412673`) — the strangler's enabling stream (`PDR-0006`).
 **Stood up:** 2026-08-13, as WS-7's first artifact (`PDR-0028` — routed findings need a
 register that exists; routing to a register that doesn't is filing to /dev/null).
-**Oracle tag:** NOT YET PINNED. Every entry below is recorded against the pre-tag tree
-(`project-recovery`, ≥ `e8ad4985`). When the tag lands, each entry's *Oracle behaviour* is
-re-read at the tagged commit and the entry is stamped with the tag.
+**Oracle tag:** `oracle-2026-08-13` → `0e875d7a` (pinned 2026-08-13; see `ORACLE.md`).
+Entries below were re-verified at the tagged commit and are stamped `tag-stamped`.
 
 ## What this register is
 
@@ -46,7 +45,8 @@ evidence — never copied from a filed issue unchecked), the **intended new beha
 
 ## DIV-001 — Five pack-level provenance hashes: computed, serialized, compared by nobody
 
-- **Status:** `registered` (2026-08-13)
+- **Status:** `tag-stamped` at `oracle-2026-08-13` (re-verified at `0e875d7a`: the five
+  names still appear only in `universe/compiled.py` and `universe/compiler.py`)
 - **Provenance:** `hamlet-2dde1015fe` · `PDR-0021` (filed-not-folded) · `PDR-0022` (the
   `config_hash_warning` deletion's precondition — this entry existing is that condition) ·
   `PDR-0028` (routing rule)
@@ -83,7 +83,8 @@ actually change, is a rebuild defect.
 
 ## DIV-002 — Two checkpoint stamp/compare paths outside the guarded boundary
 
-- **Status:** `registered` (2026-08-13)
+- **Status:** `tag-stamped` at `oracle-2026-08-13` (re-verified at `0e875d7a`: the
+  string-matched broad `except` sits at `demo/runner.py:202`)
 - **Provenance:** `hamlet-df2b972c49` · `PDR-0008` (the breach this outlives) · `PDR-0028`
   (routing rule) · WS-1 tasks 4/5 (`hamlet-ae6601e463`, `hamlet-1029f99f4b`) which guarded
   the DemoRunner and serving paths but not these.

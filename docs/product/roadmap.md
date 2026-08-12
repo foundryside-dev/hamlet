@@ -1,4 +1,4 @@
-# Roadmap — HAMLET / Townlet            Updated: 2026-08-13 (status correction only: WS-1 b+c landed at `97e4b16b`, no horizon change, no new PDR) · prior: 2026-08-13 (PDR-0026, PDR-0027, PDR-0028)
+# Roadmap — HAMLET / Townlet            Updated: 2026-08-13 (status only: WS-1 COMPLETE and CLOSED at `e8ad4985`, `PDR-0029`; WS-7 unblocked and is the critical path; no horizon change) · prior: 2026-08-13 (PDR-0026, PDR-0027, PDR-0028)
 
 > Sequencing, WSJF / cost-of-delay, and dated forecasts are produced by
 > /axiom-program-management. This file records bets as INTENT, not a delivery
@@ -38,16 +38,16 @@
   register, `PDR-0028`), **Declared-but-inert config surfaces** (baseline ~40; post-assessment
   7 found / 2 closed), **Documentation truth** (≥14 false claims → 0) and **Gates green**
   (✅ 4 of 4, held)
-  · **WS-1 scope is FROZEN at ten units** (`PDR-0028`): **9 landed** (b+c landed atomically at
-  `97e4b16b`, 2026-08-13 — the recurrent path trains and window boundaries bootstrap), remaining
-  sibling 3b → close. New findings route to WS-7's known-divergences register or WS-4, never into WS-1.
+  · **WS-1 is COMPLETE and CLOSED** (`PDR-0029`, 2026-08-13, `e8ad4985`): all ten frozen units
+  landed, tree green at every commit, batch gate 2981/0. The `PDR-0028` fence held — nothing
+  entered after the freeze. Routing rule stands for new findings: WS-7's register or WS-4.
   · **PDR-0002** gated the assessment · **PDR-0004** adopts the dispositions · **PDR-0005** sets the
   triage rule (**wire, not delete**) · **PDR-0006** chose the strangler · **PDR-0008** verified
   WS-1 by execution and reordered it
-  · ready now, no prerequisites: **WS-1** (`hamlet-67ffbd282a`, P0 — now four *executed* defects
-  plus two new provenance issues, `hamlet-ae6601e463` and `hamlet-1029f99f4b`; it gates the oracle
-  freeze), **WS-6** (`hamlet-5e39fcccb0`, head of the critical path) and **WS-0**
-  (`hamlet-8eeaba1461`)
+  · ready now, no prerequisites: **WS-7** (`hamlet-e3af412673`, P0 — unblocked by WS-1's close;
+  the known-divergences register is its FIRST artifact, `PDR-0028` reversal trigger), **WS-6**
+  (`hamlet-5e39fcccb0`) and **WS-0** (`hamlet-8eeaba1461`). WS-1 (`hamlet-67ffbd282a`) closed
+  2026-08-13.
 
   The 2026-05-16 architecture-gap milestone `hamlet-7a932c4e40` is annotated **superseded in
   scope**; its three open children were reparented into WS-0 / WS-3 / WS-5 with their scope

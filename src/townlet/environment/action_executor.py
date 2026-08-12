@@ -138,8 +138,14 @@ class ActionExecutor:
         successful_interactions = {}
         progress_advanced = False
         if interact_action_idx is not None:
-            interact_mask = (actions == interact_action_idx) & substrate_mask
-            if interact_mask.any():
+            # Two names on purpose: the *intent* mask (action-id range only) keeps
+            # the block's trigger condition, so tracking side-effects fire on the
+            # same ticks as before; the *dones-filtered* mask gates the debit and
+            # the interaction itself. Collapsing them changes which ticks call
+            # _update_affordance_tracking.
+            interact_intent = (actions == interact_action_idx) & substrate_mask
+            interact_mask = interact_intent & torch.logical_not(env.dones)
+            if interact_intent.any():
                 interaction_costs = torch.zeros(env.meter_count, device=env.device)
                 for bar in env.bars_config.meters:
                     idx = env.meter_name_to_index.get(bar.name)

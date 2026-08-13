@@ -90,6 +90,9 @@ models/
 mlruns/
 test_mlruns/
 
+# Oracle / Differential harness
+.oracle/
+
 # Data
 data/
 *.csv

@@ -8,7 +8,7 @@ from pathlib import Path
 import numpy as np
 
 from townlet.oracle import driver
-from townlet.oracle.trace_io import load_trace
+from townlet.oracle.trace_io import TRACE_FORMAT_VERSION, load_trace
 
 PACK = "configs/default_curriculum"
 LEVEL = "L0_0_minimal"
@@ -29,6 +29,16 @@ def test_driver_writes_a_loadable_trace(tmp_path: Path) -> None:
     assert trace.hashes["vfs_hash"]
     assert trace.hashes["observation_schema_hash"]
     assert "training_hash" in trace.hashes
+    # FIX 5: the driver records the code root it actually imported townlet
+    # from, so the harness can catch a failed PYTHONPATH injection.
+    assert trace.code_root
+    assert Path(trace.code_root).name == "src"
+
+
+def test_driver_format_version_matches_trace_io() -> None:
+    """driver.py is self-contained and cannot import trace_io.py, so the two
+    modules' TRACE_FORMAT_VERSION constants must be kept in sync by hand."""
+    assert driver.TRACE_FORMAT_VERSION == TRACE_FORMAT_VERSION == 2
 
 
 def test_driver_is_deterministic_for_same_seed(tmp_path: Path) -> None:

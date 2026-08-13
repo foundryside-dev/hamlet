@@ -6,7 +6,8 @@ Usage:
     uv run python -m townlet.oracle.harness --cell default_curriculum:L1_full_observability
 
 Verdict per cell: AGREE | DIVERGE | HASH_MISMATCH | OLD_SIDE_ERROR |
-NEW_SIDE_ERROR | SKIPPED. Exit 0 iff every cell is AGREE or SKIPPED.
+NEW_SIDE_ERROR | SKIPPED | HARNESS_ERROR. Exit 0 iff every cell is AGREE or
+SKIPPED.
 No register entry can manifest in an env trace today (DIV-001/002 are
 checkpoint-boundary), so any DIVERGE or HASH_MISMATCH is a rebuild defect or a
 missing register entry — both findings: docs/oracle/known-divergences.md.
@@ -101,6 +102,12 @@ def run_side(*, driver: Path, src: Path, params: RunParams, out: Path, repo_root
     result = subprocess.run(cmd, cwd=repo_root, env=env, capture_output=True, text=True)
     if result.returncode != 0:
         return result.stderr
+    if not out.exists():
+        # A driver that exits 0 without writing --out (argparse SystemExit
+        # swallowed upstream, a driver bug) must not be treated as success —
+        # left uncaught, load_trace raises FileNotFoundError deep inside
+        # run_cell instead of yielding a side-error verdict (FIX 4).
+        return f"driver exited 0 but did not write --out file {out}\n" f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
     return None
 
 
@@ -121,7 +128,63 @@ def run_cell(*, repo_root: Path, old_src: Path, new_src: Path, cell: Cell, run_d
         stderr = run_side(driver=driver, src=src, params=cell.params, out=out, repo_root=repo_root)
         if stderr is not None:
             return CellVerdict(kind=kind, cell_id=cell.cell_id, detail={"side": side, "stderr": stderr})
-    return compare_traces(load_trace(old_out), load_trace(new_out), cell_id=cell.cell_id)
+
+    old_trace = load_trace(old_out)
+    new_trace = load_trace(new_out)
+
+    # PYTHONPATH injection guard (FIX 5): nothing else asserts the injection
+    # actually took effect. If it silently failed, both subprocesses would
+    # import the SAME working-tree townlet regardless of which src root was
+    # declared — every cell would trivially AGREE and the whole differential
+    # run's evidence would be a false AGREE. Gated on old_src != new_src so
+    # the deliberate self-comparison test (old_src == new_src) is unaffected.
+    if old_src != new_src and old_trace.code_root == new_trace.code_root:
+        return CellVerdict(
+            kind="HARNESS_ERROR",
+            cell_id=cell.cell_id,
+            detail={
+                "reason": "PYTHONPATH injection did not take effect — both sides ran the same code",
+                "code_root": old_trace.code_root,
+            },
+        )
+
+    return compare_traces(old_trace, new_trace, cell_id=cell.cell_id)
+
+
+def run_cell_safely(*, repo_root: Path, old_src: Path, new_src: Path, cell: Cell, run_dir: Path, run_cuda: bool) -> CellVerdict:
+    """run_cell, contained (FIX 4).
+
+    run_cell is called once per matrix cell in main()'s loop, with
+    write_report deferred until after the whole loop. Without containment,
+    any escaping exception (HarnessError on a params mismatch,
+    FileNotFoundError from load_trace if a driver exits 0 without writing
+    --out, anything else) aborts the entire run and destroys report.json for
+    the cells already computed. An exception here becomes a HARNESS_ERROR
+    verdict for just this cell instead.
+    """
+    try:
+        return run_cell(repo_root=repo_root, old_src=old_src, new_src=new_src, cell=cell, run_dir=run_dir, run_cuda=run_cuda)
+    except Exception as e:  # noqa: BLE001 — containment boundary, see docstring
+        return CellVerdict(
+            kind="HARNESS_ERROR",
+            cell_id=cell.cell_id,
+            detail={"exception_type": type(e).__name__, "message": str(e)},
+        )
+
+
+def _collect_run_meta(repo_root: Path, oracle_ref: str, run_id: str) -> dict[str, object]:
+    """Commit-level provenance for report.json — gathered once per run, not
+    per trace (a trace's own metadata carries only params/hashes/code_root,
+    see trace_io.py). A separate function, called by main() BEFORE the cell
+    loop, so a git failure here (check=True) aborts at pre-flight instead of
+    destroying every verdict run_cell_safely already computed (FIX 4)."""
+    return {
+        "oracle_ref": oracle_ref,
+        "oracle_commit": _git(repo_root, "rev-parse", f"{oracle_ref}^{{commit}}"),
+        "new_commit": _git(repo_root, "rev-parse", "HEAD"),
+        "new_dirty": bool(_git(repo_root, "status", "--porcelain")),
+        "generated": run_id,
+    }
 
 
 def exit_code(verdicts: list[CellVerdict]) -> int:
@@ -167,9 +230,20 @@ def main(argv: list[str] | None = None) -> int:
     run_dir = repo_root / "runs" / "differential" / run_id
     run_dir.mkdir(parents=True, exist_ok=False)
 
+    # Gathered BEFORE the cell loop, not after (FIX 4): a git failure here
+    # (index.lock contention, a concurrent git operation — exactly what the
+    # "not safe to run concurrently with itself" note warns about) would
+    # otherwise destroy every verdict already computed by run_cell_safely,
+    # reintroducing the all-or-nothing failure mode containment was built to
+    # eliminate. Gathered up front, a git failure aborts at pre-flight
+    # instead, before any cell executes — consistent with the harness's
+    # other pre-flight failures — and it means new_dirty records the tree
+    # the cells actually ran against.
+    meta = _collect_run_meta(repo_root, args.oracle_ref, run_id)
+
     verdicts = []
     for cell in cells:
-        verdict = run_cell(
+        verdict = run_cell_safely(
             repo_root=repo_root,
             old_src=worktree / "src",
             new_src=repo_root / "src",
@@ -181,13 +255,6 @@ def main(argv: list[str] | None = None) -> int:
         print(f"{verdict.kind:<16} {verdict.cell_id}{detail}")
         verdicts.append(verdict)
 
-    meta: dict[str, object] = {
-        "oracle_ref": args.oracle_ref,
-        "oracle_commit": _git(repo_root, "rev-parse", f"{args.oracle_ref}^{{commit}}"),
-        "new_commit": _git(repo_root, "rev-parse", "HEAD"),
-        "new_dirty": bool(_git(repo_root, "status", "--porcelain")),
-        "generated": run_id,
-    }
     report = write_report(run_dir, verdicts, meta)
     code = exit_code(verdicts)
     print(f"\nreport: {report}\nexit: {code}")

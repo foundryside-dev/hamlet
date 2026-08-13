@@ -6,9 +6,12 @@ not exist. It may import stdlib, numpy, torch, and townlet modules present at
 the oracle tag ONLY. It must never reference the oracle module (pinned by
 test_driver_source_is_self_contained).
 
-The trace file it writes is format_version 1, matching
-trace_io.py exactly (keys: obs, rewards, dones, meta). The
-pairing is pinned by the Task 5 integration test.
+The trace file it writes is format_version 2, matching
+trace_io.py exactly (keys: obs, rewards, dones, meta; meta carries params,
+hashes, and code_root). trace_io.py cannot be imported here (same rule), so
+the two modules' TRACE_FORMAT_VERSION constants and meta shape are kept in
+sync by hand — see FIX 5, WS-7 fix wave 2. The pairing is pinned by the
+Task 5 integration test.
 
 Recipe mirrors tests/test_townlet/integration/test_determinism.py::_trace_hash,
 the recipe whose determinism is verified CPU + CUDA at the tag (PDR-0030).
@@ -26,11 +29,12 @@ from pathlib import Path
 import numpy as np
 import torch
 
+import townlet
 from townlet.determinism import seed_all
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.universe.compiler import UniverseCompiler
 
-TRACE_FORMAT_VERSION = 1
+TRACE_FORMAT_VERSION = 2
 
 
 def collect_provenance_hashes(universe: object) -> dict[str, str | None]:
@@ -71,6 +75,14 @@ def run_trace(*, pack: str, level: str, num_agents: int, steps: int, seed: int, 
             "device": device,
         },
         "hashes": collect_provenance_hashes(universe),
+        # The resolved src root this process actually imported townlet from —
+        # derived from the imported package itself, NOT from __file__ of this
+        # driver script (which is the same injected new-tree file on both
+        # sides regardless of which PYTHONPATH was set). Lets the harness
+        # detect a PYTHONPATH injection that silently failed to take effect
+        # (FIX 5): if it did, both sides would import the same working-tree
+        # townlet and every cell would trivially — and falsely — AGREE.
+        "code_root": str(Path(townlet.__file__).resolve().parent.parent),
     }
     np.savez_compressed(
         out,

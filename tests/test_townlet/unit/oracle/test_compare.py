@@ -32,6 +32,7 @@ def _mk_trace() -> Trace:
         obs=rng.random((4, 4, 7), dtype=np.float32),
         rewards=rng.random((3, 4), dtype=np.float32),
         dones=np.zeros((3, 4), dtype=bool),
+        code_root="/fake/src",
     )
 
 
@@ -127,6 +128,77 @@ def test_identical_nan_agrees() -> None:
     new.rewards[0, 0] = np.nan
     verdict = compare_traces(old, new, cell_id="c1")
     assert verdict.kind == "AGREE"
+
+
+def test_shape_mismatch_diverges_instead_of_false_agreeing() -> None:
+    """tobytes() is shape-blind: np.zeros((4,)) and np.zeros((4,1)) serialize
+    identically. A rebuild that returns rewards as [num_agents,1] instead of
+    [num_agents] must DIVERGE, not silently AGREE via byte equality."""
+    old, new = _mk_trace(), _mk_trace()
+    object.__setattr__(new, "rewards", new.rewards.reshape(3, 4, 1))
+    verdict = compare_traces(old, new, cell_id="c1")
+    assert verdict.kind == "DIVERGE"
+    assert verdict.detail["step"] == 0
+    assert verdict.detail["stream"] == "rewards"
+    assert verdict.detail["old_shape"] == [4]
+    assert verdict.detail["new_shape"] == [4, 1]
+    assert verdict.detail["old_dtype"] == "float32"
+    assert verdict.detail["new_dtype"] == "float32"
+    # JSON-safe.
+    import json
+
+    json.dumps(dataclasses.asdict(verdict))
+
+
+def test_dtype_mismatch_diverges() -> None:
+    old, new = _mk_trace(), _mk_trace()
+    object.__setattr__(new, "dones", new.dones.astype(np.int64))
+    verdict = compare_traces(old, new, cell_id="c1")
+    assert verdict.kind == "DIVERGE"
+    assert verdict.detail["stream"] == "dones"
+    assert verdict.detail["old_dtype"] == "bool"
+    assert verdict.detail["new_dtype"] == "int64"
+
+
+def test_shape_preflight_runs_before_byte_comparison() -> None:
+    """Shape/dtype divergence must be caught even when the reshaped array's
+    bytes happen to be identical to the original (tobytes() alone would
+    falsely AGREE)."""
+    old, new = _mk_trace(), _mk_trace()
+    same_bytes_reshaped = old.rewards.reshape(3, 4, 1).copy()
+    assert same_bytes_reshaped.tobytes() == old.rewards.tobytes()
+    object.__setattr__(new, "rewards", same_bytes_reshaped)
+    verdict = compare_traces(old, new, cell_id="c1")
+    assert verdict.kind == "DIVERGE"
+    assert verdict.detail["old_shape"] == [4]
+    assert verdict.detail["new_shape"] == [4, 1]
+
+
+def test_broadcast_incompatible_shapes_diverge_not_raise() -> None:
+    """Before the shape preflight, a broadcast-incompatible mismatch reached
+    _divergence_mask and raised ValueError instead of yielding a verdict —
+    exactly the case (emitted tensor vs. declared VFS schema width) the
+    harness exists to catch. Must DIVERGE, never raise."""
+    old, new = _mk_trace(), _mk_trace()
+    object.__setattr__(new, "rewards", np.zeros((3, 7), dtype=np.float32))  # 7 != 4, not broadcastable
+    verdict = compare_traces(old, new, cell_id="c1")
+    assert verdict.kind == "DIVERGE"
+    assert verdict.detail["old_shape"] == [4]
+    assert verdict.detail["new_shape"] == [7]
+
+
+def test_absent_hash_key_distinguished_from_none_value() -> None:
+    """.get(name) returns None both when a key is missing and when it is
+    present with value None — a field ABSENT from the rebuild's hash surface
+    must not be indistinguishable from a field PRESENT but unset."""
+    old, new = _mk_trace(), _mk_trace()
+    object.__setattr__(old, "hashes", {"items_hash": None})
+    object.__setattr__(new, "hashes", {})
+    verdict = compare_traces(old, new, cell_id="c1")
+    assert verdict.kind == "HASH_MISMATCH"
+    assert "items_hash" in verdict.detail["mismatched"]
+    assert verdict.detail["mismatched"]["items_hash"]["old"] is None
+    assert verdict.detail["mismatched"]["items_hash"]["new"] == "<absent>"
 
 
 def test_nan_vs_number_diverges_with_json_safe_verdict() -> None:

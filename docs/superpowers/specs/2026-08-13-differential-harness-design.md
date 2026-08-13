@@ -41,9 +41,12 @@ Checkpoint-boundary probe scenarios are added when a knockdown first touches tha
 
 ### `driver.py` — the injected trace producer
 - **Self-contained by rule:** imports only stdlib, numpy, torch, and townlet modules that
-  exist at the tag (`townlet.determinism`, `townlet.universe.compiler`,
+  exist at the tag (`townlet`, `townlet.determinism`, `townlet.universe.compiler`,
   `townlet.environment.vectorized_env`). It must never import from `townlet.oracle` itself —
-  it runs unmodified in *either* side's interpreter, including the frozen one.
+  it runs unmodified in *either* side's interpreter, including the frozen one. The bare
+  `townlet` import exists only to read `townlet.__file__` back off the *imported package
+  object*, deriving `code_root` for the injection guard — never `__file__` of `driver.py`
+  itself, which is the same injected new-tree file regardless of which side is running it.
 - **CLI:** `python -m townlet.oracle.driver --pack <dir> --level <name> --num-agents N
   --steps N --seed N --device cpu|cuda --out <file.npz>`.
   (Invoked with explicit `PYTHONPATH`; on the old side `townlet.oracle` does not exist, so
@@ -58,20 +61,38 @@ Checkpoint-boundary probe scenarios are added when a knockdown first touches tha
   5. Write the trace file (format below), then exit 0. Any exception: traceback to stderr,
      exit non-zero.
 
-### `trace.py` — format and comparison
+### `trace_io.py` — format and comparison
+
+**Named `trace_io.py`, NOT `trace.py`:** the driver runs by file path with this directory
+implicitly reachable on `sys.path` for some interpreters, and a sibling module literally
+named `trace.py` shadows the stdlib `trace` module for any of them — an import that works
+in isolation breaks the moment something downstream (pytest, coverage, `-m` invocation)
+tries to import stdlib `trace`. Named `trace_io.py` from the start of implementation to
+avoid that trap.
+
 - **Format:** one `.npz` per run:
   - arrays: `obs` (steps+1 × agents × obs_dim — includes the reset observation),
     `rewards` (steps × agents), `dones` (steps × agents)
-  - metadata (stored as an npz string field, JSON-encoded): `side`, `commit`
-    (`git rev-parse HEAD` of the side's tree), `pack`, `level`, `num_agents`, `steps`,
-    `seed`, `device`, and the compiled universe's provenance hashes as exposed on
-    `CompiledUniverse`.
+  - per-trace metadata (stored as an npz string field, JSON-encoded): `format_version`,
+    `params` (`pack`, `level`, `num_agents`, `steps`, `seed`, `device`), `hashes` (the
+    compiled universe's provenance hashes as exposed on `CompiledUniverse`), and
+    `code_root` — the resolved src root this side actually imported `townlet` from
+    (`Path(townlet.__file__).resolve().parent.parent`), recorded so the harness can catch
+    a `PYTHONPATH` injection that silently failed to take effect (see `run_cell` below).
+  - **commit-level provenance is NOT per-trace.** `git rev-parse HEAD` of each side's tree,
+    the oracle ref, and dirty-worktree state are recorded once, in `report.json`'s `meta`
+    block, not duplicated into every trace file — the commit is a property of the run, not
+    of an individual array dump.
 - **Comparison:** `compare_traces(old, new) -> CellVerdict`.
   - Stage 1 — provenance: if the two sides' compiled hashes differ → `HASH_MISMATCH`
-    (names which hashes differ). Trace arrays are not consulted.
-  - Stage 2 — exact bytes per array, in step order. On mismatch: first divergent step,
-    which stream (`obs`/`rewards`/`dones`), divergent agent/dim indices at that step, and
-    a max-abs-diff summary → `DIVERGE`.
+    (names which hashes differ). Absent-vs-`None` is distinguished with a sentinel default
+    on the `.get()` lookup, not `None` itself, so a hash field the rebuild added or removed
+    is never mistaken for an unchanged field. Trace arrays are not consulted.
+  - Stage 2 — per array, in step order: first a shape/dtype preflight (`tobytes()` alone is
+    shape-blind — `np.zeros((4,))` and `np.zeros((4,1))` serialize identically), then exact
+    bytes. On mismatch: first divergent step, which stream (`obs`/`rewards`/`dones`),
+    divergent agent/dim indices at that step (or the two shapes/dtypes, for a preflight
+    mismatch), and a max-abs-diff summary → `DIVERGE`.
   - Metadata that must match by construction (pack, level, seed, steps, device) mismatching
     is a harness bug → hard error, not a verdict.
 
@@ -83,8 +104,26 @@ Checkpoint-boundary probe scenarios are added when a knockdown first touches tha
   worktree failure aborts loudly, printing the exact remedy command.
 - **Per cell:** two driver subprocesses (old side: `PYTHONPATH=.oracle/<tag>/src`, invoked
   by driver file path; new side: `PYTHONPATH=src`), `cwd` = repo root for both so the
-  **shared pack path from the working tree** is read by both sides. Then
-  `compare_traces`.
+  **shared pack path from the working tree** is read by both sides. `run_side` then asserts
+  the `--out` file actually exists before declaring the subprocess a success — a driver that
+  exits 0 without writing it (an argparse `SystemExit` swallowed upstream, a driver bug) is
+  reported as a side error, not left to raise `FileNotFoundError` later inside `load_trace`.
+  Then, after both traces load, `run_cell` checks that the injection actually took effect
+  (see the guard below) before handing off to `compare_traces`.
+- **PYTHONPATH injection guard:** nothing else in the pipeline asserts that setting
+  `PYTHONPATH` in the subprocess env actually changed which `townlet` package got imported.
+  If injection silently failed, both sides would import the *same* working-tree `townlet`
+  regardless of which src root was declared, every cell would trivially — and falsely —
+  `AGREE`, and the entire differential run's evidence would be worthless. `run_cell` compares
+  the two traces' `code_root` (see `trace_io.py` above) whenever `old_src != new_src` — a
+  genuine differential run — and returns `HARNESS_ERROR` if they match. Gated on
+  `old_src != new_src` so it never fires for the deliberate working-tree-vs-working-tree
+  self-comparison test.
+- **Per-cell containment:** `run_cell` is wrapped by `run_cell_safely`, which converts any
+  escaping exception (a params-mismatch `HarnessError`, a missing-trace `FileNotFoundError`,
+  anything else) into a `HARNESS_ERROR` verdict for that one cell. `main()`'s loop calls only
+  `run_cell_safely`, so one bad cell can no longer abort the whole run and destroy
+  `report.json` for the cells already computed.
 - **Environment hygiene:** subprocess env carries only what the run needs; the msgpack
   compile cache is bypassed (`use_cache=False` in the driver) so neither side reads the
   other's artifacts.
@@ -93,7 +132,20 @@ Checkpoint-boundary probe scenarios are added when a knockdown first touches tha
   lock, the old side gets its own env — that change lands with the knockdown that forces
   it.
 - **Output:** `runs/differential/<run-id>/` containing all trace files and `report.json`;
-  human-readable table to stdout. Exit 0 iff every cell is `AGREE` or `SKIPPED`.
+  human-readable table to stdout. Exit 0 iff every cell is `AGREE` or `SKIPPED`
+  (`exit_code` is an allowlist of exactly those two kinds — every other kind, including
+  `HARNESS_ERROR`, is non-green by construction, not by a maintained denylist).
+- **Not safe to run concurrently with itself in one checkout.** A manual mutation-style
+  acceptance step (deliberately perturbing working-tree behaviour to verify `DIVERGE` is
+  reachable) edits a tracked file in place; two harness invocations racing in the same
+  checkout can observe each other's in-flight edit. Run one harness invocation at a time per
+  checkout — use a second worktree for a concurrent run.
+- **The oracle tag is annotated.** `git rev-parse <tag>` on an annotated tag returns the tag
+  *object*'s SHA, not the commit it points at, so every place the harness records or compares
+  a commit resolves through `<tag>^{commit}` (both `ensure_worktree`'s reuse check and
+  `main()`'s `report.json` `meta.oracle_commit`) — never a bare `rev-parse <tag>`. The code
+  already does this correctly; this note exists so a future edit doesn't regress it by
+  "simplifying" back to a bare `rev-parse`.
 
 ### `matrix.py` — the declared comparison matrix
 - Explicit list of cells: `(pack, level, num_agents, steps, seed, device)`. No discovery
@@ -106,8 +158,14 @@ Checkpoint-boundary probe scenarios are added when a knockdown first touches tha
 
 ## Verdicts
 
-`AGREE` · `DIVERGE(step, stream, indices, max_abs_diff)` · `HASH_MISMATCH(hash_names)` ·
-`OLD_SIDE_ERROR(stderr)` · `NEW_SIDE_ERROR(stderr)` · `SKIPPED(reason)`
+`AGREE` · `DIVERGE(step, stream, indices | shapes/dtypes, max_abs_diff)` ·
+`HASH_MISMATCH(hash_names)` · `OLD_SIDE_ERROR(stderr)` · `NEW_SIDE_ERROR(stderr)` ·
+`SKIPPED(reason)` · `HARNESS_ERROR(exception_type, message)`
+
+`HARNESS_ERROR` covers both an exception `run_cell_safely` caught on this cell's behalf and
+the PYTHONPATH-injection guard's finding — a defect in the harness or its invocation, not a
+differential finding about the two runtimes. Like every kind besides `AGREE`/`SKIPPED`, it is
+non-green (`exit_code` is an allowlist, not a denylist).
 
 `report.json` per cell additionally carries `register_refs: []` — the binding point where a
 future register entry that touches traces will attach its suppression. v1 has no
@@ -122,6 +180,10 @@ register's own rule). The report states this and cites `docs/oracle/known-diverg
   DIV-002 exists to delete).
 - Harness pre-flight failures (tag missing, worktree add fails, pack path absent): abort
   the whole run with the remedy, before any cell executes.
+- Per-cell harness defects (params mismatch, a driver that exits 0 without writing `--out`,
+  a failed PYTHONPATH injection, anything else escaping `run_cell`): `HARNESS_ERROR` for that
+  cell only, via `run_cell_safely` — the run continues and `report.json` is still written for
+  every cell, including the ones after the failure.
 
 ## Testing (TDD, in `tests/test_townlet/unit/oracle/` + one integration test)
 

@@ -27,6 +27,7 @@ def _mk_trace(**overrides) -> Trace:
         obs=rng.random((4, 4, 7), dtype=np.float32),  # steps+1, agents, obs_dim
         rewards=rng.random((3, 4), dtype=np.float32),
         dones=np.zeros((3, 4), dtype=bool),
+        code_root="/fake/oracle-tag/src",
     )
     fields.update(overrides)
     return Trace(**fields)
@@ -44,6 +45,7 @@ def test_save_load_round_trip(tmp_path: Path) -> None:
     np.testing.assert_array_equal(loaded.dones, trace.dones)
     assert loaded.obs.dtype == np.float32
     assert loaded.dones.dtype == np.bool_
+    assert loaded.code_root == trace.code_root
 
 
 def test_load_rejects_unknown_format_version(tmp_path: Path) -> None:

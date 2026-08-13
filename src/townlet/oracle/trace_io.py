@@ -13,7 +13,12 @@ from pathlib import Path
 
 import numpy as np
 
-TRACE_FORMAT_VERSION = 1
+TRACE_FORMAT_VERSION = 2
+
+# Sentinel distinguishing an ABSENT hash key from a key PRESENT with value
+# None — dict.get(name) alone conflates the two, which would let a field
+# added or removed by a rebuild masquerade as unchanged (FIX 2).
+_ABSENT = object()
 
 
 @dataclass(frozen=True)
@@ -37,6 +42,7 @@ class Trace:
     obs: np.ndarray  # (steps + 1, num_agents, obs_dim) float32; index 0 is reset
     rewards: np.ndarray  # (steps, num_agents) float32
     dones: np.ndarray  # (steps, num_agents) bool
+    code_root: str  # resolved src root this side actually imported townlet from (FIX 5)
 
 
 def save_trace(path: Path, trace: Trace) -> None:
@@ -44,6 +50,7 @@ def save_trace(path: Path, trace: Trace) -> None:
         "format_version": TRACE_FORMAT_VERSION,
         "params": asdict(trace.params),
         "hashes": trace.hashes,
+        "code_root": trace.code_root,
     }
     np.savez_compressed(
         path,
@@ -65,6 +72,7 @@ def load_trace(path: Path) -> Trace:
             obs=data["obs"],
             rewards=data["rewards"],
             dones=data["dones"],
+            code_root=meta["code_root"],
         )
 
 
@@ -82,7 +90,7 @@ class CellVerdict:
     defect or a missing register entry — see docs/oracle/known-divergences.md.
     """
 
-    kind: str  # AGREE | DIVERGE | HASH_MISMATCH | OLD_SIDE_ERROR | NEW_SIDE_ERROR | SKIPPED
+    kind: str  # AGREE | DIVERGE | HASH_MISMATCH | OLD_SIDE_ERROR | NEW_SIDE_ERROR | SKIPPED | HARNESS_ERROR
     cell_id: str
     detail: dict[str, object]
     register_refs: tuple[str, ...] = ()
@@ -134,15 +142,43 @@ def compare_traces(old: Trace, new: Trace, cell_id: str) -> CellVerdict:
             f"trace params differ between sides for cell {cell_id}: " f"{old.params} vs {new.params} — harness bug, not a finding"
         )
 
-    mismatched = {
-        name: {"old": old.hashes.get(name), "new": new.hashes.get(name)}
-        for name in sorted(set(old.hashes) | set(new.hashes))
-        if old.hashes.get(name) != new.hashes.get(name)
-    }
+    mismatched: dict[str, dict[str, object]] = {}
+    for name in sorted(set(old.hashes) | set(new.hashes)):
+        # .get(name) alone cannot distinguish an ABSENT key from a key
+        # PRESENT with value None (eleven *_hash fields default to None) —
+        # use a sentinel default so a field added/removed by the rebuild is
+        # never mistaken for an unchanged field (FIX 2).
+        old_val = old.hashes.get(name, _ABSENT)
+        new_val = new.hashes.get(name, _ABSENT)
+        if old_val != new_val:
+            mismatched[name] = {
+                "old": "<absent>" if old_val is _ABSENT else old_val,
+                "new": "<absent>" if new_val is _ABSENT else new_val,
+            }
     if mismatched:
         return CellVerdict(kind="HASH_MISMATCH", cell_id=cell_id, detail={"mismatched": mismatched})
 
     for (old_step, old_stream, old_arr), (_, _, new_arr) in zip(_stream_steps(old), _stream_steps(new), strict=True):
+        # Shape/dtype preflight (FIX 1): tobytes() serializes the C-order
+        # buffer only — it is shape-blind. np.zeros((4,)) and np.zeros((4,1))
+        # produce identical bytes despite differing rank, which would let a
+        # rebuild returning e.g. rewards as [num_agents,1] instead of
+        # [num_agents] report a false AGREE. This must run BEFORE the byte
+        # comparison and before _divergence_mask, which raises ValueError on
+        # broadcast-incompatible shapes rather than yielding a verdict.
+        if old_arr.shape != new_arr.shape or old_arr.dtype != new_arr.dtype:
+            return CellVerdict(
+                kind="DIVERGE",
+                cell_id=cell_id,
+                detail={
+                    "step": old_step,
+                    "stream": old_stream,
+                    "old_shape": list(old_arr.shape),
+                    "new_shape": list(new_arr.shape),
+                    "old_dtype": str(old_arr.dtype),
+                    "new_dtype": str(new_arr.dtype),
+                },
+            )
         # Comparison is exact bytes, per spec: value equality is wrong for
         # -0.0 vs 0.0 (equal value, different bytes) and NaN vs NaN (equal
         # bytes, "unequal" value).

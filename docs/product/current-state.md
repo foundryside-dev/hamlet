@@ -20,9 +20,11 @@ before concluding shipped behaviour is simply wrong.
   session. `origin/project-recovery` has tracked HEAD through four pushes (2026-08-08, 08-11,
   08-13, and 08-13 20:16 UTC — the last one carrying the ninth checkpoint). This is no longer
   an agent gate and no longer a blocker; do not re-raise it.
-- **Blocked on owner (standing, narrowed):** the **README** (`hamlet-6730ba7915` — the public
-  face of a public repo), the **oracle tag** (`git push origin oracle-2026-08-13`, owner's
-  push to make when convenient), the **wardline fork**, and the **`vision.md` URL** (below).
+- **BLOCKED ON OWNER: NOTHING. The queue is empty for the first time since bootstrap.** All
+  four standing items were cleared in one turn (`PDR-0038`): the oracle tag is **pushed** and
+  verified on origin; the wardline instruction is **deleted** (`hamlet-f894ade20a` → `wont_fix`,
+  capability deferred to roadmap Later); `vision.md`'s URL is **corrected** with an
+  amendment-log entry; the README is **rewritten** (`hamlet-6730ba7915`).
 
 ## In flight / ready
 
@@ -43,19 +45,16 @@ Recovery milestone `hamlet-1ade187dcc`. 22 ready, 5 blocked.
   `hamlet-c8c316ba03` (hash-boundary tests), `hamlet-2dde1015fe` / `hamlet-df2b972c49`
   (DIV-001 / DIV-002 fix trackers), and the WS-4 additions.
 
-## Open questions / blocked-on-owner
+## Open questions
 
-- **The `vision.md` repo URL is stale and was deliberately NOT corrected.** It says
-  `github.com/tachyon-beep/hamlet`; `origin` is `github.com/foundryside-dev/hamlet`. Both
-  resolve and both are `PUBLIC`, so nothing about the grant's reach changes. The fix was
-  offered alongside the grant confirmation and not taken, and `vision.md` is ENDORSED — its own
-  header makes an unrequested edit a vision change. Recorded in `metrics.md` → Documentation
-  truth. **One-word fix whenever you want it.**
-- **The wardline fork (`hamlet-f894ade20a`) — needs the owner, since wardline is theirs.**
-  `CLAUDE.md` instructs every agent to run `wardline scan . --fail-on ERROR` as a gate. It
-  passes, and `--fail-on-inert` fails: 0 trust boundaries across 1555 functions, no boundary
-  decorators in `src/townlet/`, wardline not even a dependency. Unfalsifiable as written.
-  Wire real boundaries, or delete the instruction?
+- **CI IS DEAD, and it is a decision waiting to happen (`hamlet-2100105c9a`, P1).** Found
+  verifying README claims. **No workflow has ever run on `project-recovery`** — three of four
+  trigger on `push: branches: ["main"]` + `pull_request`, and this branch is neither — so all
+  145 recovery commits are CI-unvalidated. Last green run of anything: **2025-11-28**. The
+  nightly failed on every run on record thereafter (last 2026-01-30) and has since gone
+  dormant. **Ordering trap:** fix `validate_compiler_cli.py`'s input *before* pointing any
+  workflow at this branch, or the first run is red on arrival and the signal is worthless from
+  the start. Not blocking WS-7; genuinely competing for priority with it.
 - Open, not blocking: the inert-surface baseline (~40) still needs one itemized recount.
 
 ## What this checkpoint did
@@ -75,8 +74,17 @@ Recovery milestone `hamlet-1ade187dcc`. 22 ready, 5 blocked.
   the harness's `exit_code` passes only `AGREE`/`SKIPPED`, so a *correctly* rebuilt substrate
   would exit 1 on every cell. `PDR-0033`'s practice paid off inverted — not *what a green tool
   cannot see* but **what its red cannot distinguish**.
-- **Closed the push question and narrowed the blocked-on-owner list** from four standing items
-  to three-plus-one-new. No code committed this session; `Gates green` correctly not re-read.
+- **Closed the push question, then the owner cleared the entire escalation queue** (`PDR-0038`):
+  tag pushed, wardline instruction deleted with the capability deferred, `vision.md` URL fixed,
+  README rewritten. Four items, three of them standing across multiple checkpoints.
+- **Rewrote `README.md` against verified source** — a ten-agent sweep catalogued **102 false
+  claims** in the old one, drafted from 147 evidence-backed facts, then three adversarial lenses
+  found **24 more** in the draft (8 FALSE, 15 MISLEADING, 1 UNVERIFIABLE) before it was
+  finalized. The new file states no test count, coverage figure or observation width on purpose
+  — those are what decayed last time.
+- **Found CI is dead** (`hamlet-2100105c9a`) while checking the draft's claims. Fourth instance
+  of the `PDR-0010` pattern in four days, and the one with the widest blast radius: the entire
+  recovery is CI-unvalidated and nobody knew.
 
 ## Next session, start here
 

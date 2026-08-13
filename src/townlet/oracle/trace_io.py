@@ -92,7 +92,12 @@ _MAX_REPORTED_INDICES = 10
 
 
 def _stream_steps(trace: Trace) -> list[tuple[int, str, np.ndarray]]:
-    """Trace arrays flattened into adjudication order: reset obs, then per-step."""
+    """Trace arrays flattened into adjudication order: reset obs, then per-step.
+
+    Within each step, dones and rewards precede obs[t+1] to mirror env.step's causal
+    order: a divergent done at step t reflects the agent's actual termination at that
+    step and must be attributed to step t, not misattributed as an obs[t+1] echo.
+    """
     entries: list[tuple[int, str, np.ndarray]] = [(0, "obs", trace.obs[0])]
     for t in range(trace.params.steps):
         entries.append((t, "dones", trace.dones[t]))

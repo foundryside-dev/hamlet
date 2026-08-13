@@ -14,6 +14,12 @@
 >   approved by the owner **with the audience widened** beyond game devs (*"anyone interested in
 >   game dev, simulations, or modelling the real world in an abstract way"*). Recorded in
 >   `PDR-0024`'s Resolution. The authority grant is untouched.
+> - *2026-08-14* — corrected the **public-repo URL** in the authority-grant note below from
+>   `github.com/tachyon-beep/hamlet` to `github.com/foundryside-dev/hamlet`. Measured: the old
+>   path redirects to the new one and **both report `PUBLIC`**, so the grant's reach is
+>   unchanged. Offered at the 2026-08-14 grant re-confirmation and approved by the owner in the
+>   same session; recorded as `PDR-0038`. Factual correction only — no section's meaning
+>   changes and the authority grant itself is untouched.
 > - *2026-08-13* — re-tagged the **tech-demo demonstrator claim** as delivery intent: "Low Energy
 >   Delirium" was never implemented (*"the idea outran the codebase and we pivotd a few times"*),
 >   and Townlet Town is **one of several tech demos** to be provided at the end. Escalated by the
@@ -241,5 +247,5 @@ Escalate BEFORE acting — the agent MUST get owner sign-off for:
 "deprecating a feature users depend on" clause is currently near-vacuous — deleting code is
 explicitly encouraged by `CLAUDE.md`. The clauses with real teeth here are *vision/strategy
 change*, *public release or announcement* (the GitHub repo is public at
-`github.com/tachyon-beep/hamlet`), and *data deletion* — which for this product includes
+`github.com/foundryside-dev/hamlet`), and *data deletion* — which for this product includes
 deleting `runs/`, checkpoints, or recorded episodes that are experimental evidence.

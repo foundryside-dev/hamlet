@@ -185,6 +185,17 @@
   · tracker: `hamlet-fa6bb6da4a` (blocked by `hamlet-0d0115383e`) · `PDR-0017` · metric:
   Config-surface coverage, Declared-but-inert config surfaces
 
+- **Adopt wardline as a hygiene activity** — declare real trust boundaries in `src/townlet/`
+  so a taint gate can actually fail, then re-instate the agent instruction. Owner-stated
+  intent, 2026-08-14: *"we'll adopt wardline as a hygiene activity later on."* The mandated
+  gate was **deleted** from `CLAUDE.md`/`AGENTS.md` this session (`PDR-0038`) because it was
+  unfalsifiable — 0 boundaries across 1555 functions, no decorators, not even a dependency, so
+  no code change could make it fail. Deferred capability under `PDR-0007`, not a rejection: the
+  `wardline-gate` skill and the `weft.toml` references are deliberately left in place because
+  they are what adoption will need. Intent only, unshaped.
+  · tracker: `hamlet-f894ade20a` (closed as deleted-with-intent-captured) · metric: guardrail
+  **Gates green** — a fifth gate becomes real only when `--fail-on-inert` can pass
+
 - **External adoption readiness** — the secondary audience (other RL researchers / OSS users)
   becomes real only after the authoring claim is measured and the docs are true. Deliberately
   last; note that anything user-facing here crosses the authority boundary and needs owner

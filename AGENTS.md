@@ -78,11 +78,6 @@ does Y".
 Full reference: `loomweave-workflow` skill, `loomweave --help`, MCP schemas.
 <!-- /loomweave:instructions -->
 
-<!-- wardline:instructions:v1:bcd19330 -->
-<!-- wardline:last-writer:wardline install -->
-This project uses **wardline** as its trust-boundary gate. Before handing back code that touches external input, run `wardline scan . --fail-on ERROR` (exit 0 = clean, 1 = gate tripped, 2 = wardline error) and fix findings at the boundary, not the sink. The full scan -> explain -> fix -> rescan loop and the baseline-vs-waiver discipline live in the `wardline-gate` skill and in `docs/agents.md`.
-<!-- /wardline:instructions -->
-
 <!-- warpline:instructions:v1.3.0 -->
 ## Warpline (temporal change-impact)
 

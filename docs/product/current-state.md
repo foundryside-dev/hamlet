@@ -1,79 +1,78 @@
-# Current State — HAMLET / Townlet        Checkpoint: 2026-08-13 · seventh checkpoint
+# Current State — HAMLET / Townlet        Checkpoint: 2026-08-13 · eighth checkpoint
 
 ## The bet right now
 
-**Strangler rewrite behind the compiled-universe contract** (`PDR-0006`). **WS-1 is COMPLETE
-and CLOSED** (`PDR-0029`, all ten units, tree green at every commit, batch gate 2981/0 at
-`e8ad4985`) — the oracle freeze is no longer gated on correctness fixes. **WS-7 is now the
-critical path** and is unclaimed. Selection criterion for what gets strangled next,
-owner-stated: *"strangle wherever the runtime still knows what the game is"* (`PDR-0019`).
+**Strangler rewrite behind the compiled-universe contract** (`PDR-0006`). **THE ORACLE IS
+PINNED: tag `oracle-2026-08-13` → `0e875d7a`** (`PDR-0030`, owner-endorsed GPU-first
+sequencing). The tagged tree is now the spec for preserved behaviour; the freeze record is
+`docs/oracle/ORACLE.md`, the register `docs/oracle/known-divergences.md` (DIV-001/DIV-002,
+tag-stamped). WS-7 (`hamlet-e3af412673`, claimed by claude, in progress) has contents 1
+(determinism), 2 (oracle tag) and 4 (register) **done**; remaining: **3 — differential
+harness** (reshapes WS-3) and **5 — per-unit seam cutting**. Selection criterion for
+knockdowns, owner-stated: *"strangle wherever the runtime still knows what the game is"*
+(`PDR-0019`); the issue nominates **terrain/substrate** as first candidate.
 
-**READ `docs/architecture/vfs.md` BEFORE TOUCHING VFS** (2455 lines, binding). Two confident
-diagnoses were corrected by design docs that existed the whole time — **check
-`docs/architecture/` before concluding shipped behaviour is simply wrong.**
+**READ `docs/architecture/vfs.md` BEFORE TOUCHING VFS** (binding). Check
+`docs/architecture/` before concluding shipped behaviour is simply wrong.
 
 ## Owner state (2026-08-13)
 
-- **Authority grant re-confirmed verbatim** by the owner this session; the standard grant in
-  `vision.md` stands unchanged.
-- **Nothing is blocked on the owner** except the standing item: the README *push* (drafting
-  and committing locally is endorsed).
+- Grant re-confirmed at session start, standard scope, unchanged.
+- Owner endorsed verifying GPU determinism before pinning the tag (recorded in `PDR-0030`).
+- **Blocked on owner:** the README push (standing), and now **pushing the branch + oracle
+  tag to the public repo** — the tag exists locally only; a push is outward-facing.
 
 ## In flight / ready
 
-Recovery milestone **`hamlet-1ade187dcc`**. Nothing is claimed right now.
+Recovery milestone `hamlet-1ade187dcc`.
 
-- **WS-7** `hamlet-e3af412673` (P0, READY — unblocked by WS-1's close). **The
-  known-divergences register must be its FIRST artifact** (`PDR-0028` reversal trigger fires
-  on routing-to-nowhere; `PDR-0022`'s deletion condition depends on it). Waiting to enter the
-  register: `hamlet-2dde1015fe` (nine dead hashes) and `hamlet-df2b972c49` (two uncovered
-  stamp/compare paths). Then determinism via child `hamlet-834108b55a` (no seeding API — fix
-  FIRST per the issue), oracle tag, differential harness, per-unit seam cutting. **Mine
-  `docs/plans/2026-05-15-compiler-cleanup-modernization.md` for the knockdown playbook** —
-  the owner already ran this operation once on the compiler. First knockdown candidate to
-  decide: terrain/substrate.
+- **WS-7** `hamlet-e3af412673` (P0, **in progress**, claude). Next unit: the **differential
+  harness** — old worktree at `oracle-2026-08-13` vs new, same `CompiledUniverse`, assert
+  agreement everywhere the register doesn't say otherwise. Runs are now reproducible
+  (`seed_all`, config-declared seed), so trace comparison is real. Then the first knockdown
+  decision (terrain/substrate); **mine `docs/plans/2026-05-15-compiler-cleanup-modernization.md`
+  for the playbook**. Child `hamlet-834108b55a` CLOSED at `6f60060e`.
 - **WS-6** `hamlet-5e39fcccb0`, **WS-0** `hamlet-8eeaba1461` — ready, untouched.
 - **WS-4 additions** (unchanged): `hamlet-310e336786`, `hamlet-f46e2b381a`,
-  `hamlet-fa6bb6da4a`, `hamlet-e979f2ba37` (`PDR-0026` acceptance shape),
-  `hamlet-365e996511`, `hamlet-0dd4ac24d9`, `hamlet-0cdb8a6d1a` (`PDR-0024`), and
-  `hamlet-0d0115383e` (per-level `architecture`, `PDR-0027`, unblocked).
-- Hash-boundary tests remain unwritten: `hamlet-c8c316ba03`.
+  `hamlet-fa6bb6da4a`, `hamlet-e979f2ba37` (`PDR-0026`), `hamlet-365e996511`,
+  `hamlet-0dd4ac24d9`, `hamlet-0cdb8a6d1a` (`PDR-0024`), `hamlet-0d0115383e` (`PDR-0027`).
+- Hash-boundary tests remain unwritten: `hamlet-c8c316ba03`. DIV-001/DIV-002 fixes land in
+  the rebuild (`hamlet-2dde1015fe`, `hamlet-df2b972c49` stay open as fix trackers).
 
 ## Open questions / blocked-on-owner
 
-- **README push** remains the owner's call; drafting and committing locally is endorsed.
+- **Push of branch + oracle tag** to the public repo — owner's call (see Owner state).
 - Open, not blocking: the five shipped levels are three universes (WS-3 scoping input); the
-  inert-surface baseline (~40) needs one itemized recount before the two counters can merge.
+  inert-surface baseline (~40) still needs one itemized recount.
 
 ## What this checkpoint did
 
-- **Landed task 3b** (dead agents stop transacting; two-name form per plan §0.1) and **ran
-  task 8**, closing WS-1 at `e8ad4985`. Red/green verified; two named mutations each caught
-  by its intended test in a detached worktree. One gate-time surprise root-caused: two
-  latent CPU-vs-CUDA test defects exposed by the fix, repaired to the file's own pattern.
-- **PDR-0029** — WS-1 accepted complete against the plan's §4 definition of done and closed;
-  reversal triggers bound to the oracle tag and the differential harness.
-- **Metrics re-read**: Gates green 4 of 4 HELD (2981/16/0). No reversal trigger fired.
-  Provenance-integrity row still amber pending the register.
-- **Tracker reconciled live**: `hamlet-88acec4bb5` and `hamlet-67ffbd282a` closed with full
-  landing records (WS-1 comments #125–#127; #127 corrects #126's normalization-mode claim);
-  WS-7 auto-unblocked. Smoke record for the freeze owner is in comment #126.
+- **Stood up the known-divergences register** (`ce9288c0`) as WS-7's first artifact; entered
+  and source-verified DIV-001/DIV-002; `PDR-0028`'s trigger unfireable, `PDR-0022`'s
+  precondition met. **Provenance-integrity guardrail is GREEN** for the first time.
+- **Closed the seeding bug** (`hamlet-834108b55a`, `6f60060e`): `seed_all` single door,
+  required `training.seed` in all 25 packs (`PDR-0031`), env off the global RNG, runner
+  seeds at construction. TDD throughout; three named mutations caught in a detached worktree.
+- **Verified GPU + TorchScript-JIT determinism** (`0e875d7a`): same seed → bit-identical
+  CUDA trace. GPU *training-loop* determinism explicitly unclaimed.
+- **Pinned the oracle** (`PDR-0030`): clean full suite at the exact commit (2992/16/0);
+  `PDR-0029` trigger 1 tested and did not fire. `PDR-0030`, `PDR-0031` appended.
 
 ## Next session, start here
 
-**Claim WS-7 (`hamlet-e3af412673`)** and stand up the known-divergences register first —
-enter `hamlet-2dde1015fe` and `hamlet-df2b972c49` before anything else routes there. Then
-the seeding API (`hamlet-834108b55a`), then the oracle tag. The Provenance-integrity
-guardrail row goes green when the two filed gaps are in the register.
+**Build the differential harness** (WS-7 content 3, reshapes WS-3 `hamlet-1f89714685`):
+old side = worktree at `oracle-2026-08-13`, new side = working tree, same compiled
+universe + same seed, assert trace agreement, adjudicate diffs against the register. Then
+DECIDE the first knockdown unit (terrain/substrate nominated). Do not fix DIV-001/DIV-002
+pre-harness — they are registered divergences the rebuild owns.
 
 Carry-ins that keep paying: purge `configs/**/*.msgpack` before every measurement; verify
-red by mutation in a detached worktree (never `git stash` — operator hook); a green test is
-not evidence, mutate before believing; enumerate producers, not call shapes; a correction is
-not self-verifying — check it against source before recording it (comment #127 is this
-session's instance).
+red by mutation in a detached worktree (never `git stash`); a green test is not evidence,
+mutate before believing; enumerate producers, not call shapes; a correction is not
+self-verifying — check against source before recording.
 
-Do not re-litigate: `PDR-0006` (strangler), `PDR-0007` (universality), `PDR-0014`–`PDR-0016`
-(bounds), `PDR-0022` (deletion, decided), `PDR-0026`–`PDR-0028` (owner-resolved),
-`PDR-0029` (WS-1 closed — residuals route to the register or WS-4, not to a reopened WS-1).
-Read `vision.md` first: ENDORSED, amended 2026-08-13 with owner sign-off, grant re-confirmed
-2026-08-13; changing it further escalates.
+Do not re-litigate: `PDR-0006` (strangler), `PDR-0019` (selection criterion), `PDR-0022`,
+`PDR-0026`–`PDR-0029` (owner-resolved / closed), **`PDR-0030` (the oracle is pinned — a
+found pre-tag defect moves the oracle FORWARD via a new tag, it never reopens the pin)**,
+`PDR-0031` (seed is config). Read `vision.md` first: ENDORSED; grant re-confirmed
+2026-08-13; changing it escalates.

@@ -1,4 +1,4 @@
-# Roadmap — HAMLET / Townlet            Updated: 2026-08-13 (status only: WS-1 COMPLETE and CLOSED at `e8ad4985`, `PDR-0029`; WS-7 unblocked and is the critical path; no horizon change) · prior: 2026-08-13 (PDR-0026, PDR-0027, PDR-0028)
+# Roadmap — HAMLET / Townlet            Updated: 2026-08-13 (status only: ORACLE PINNED — `oracle-2026-08-13` at `0e875d7a`, `PDR-0030`; WS-7 contents 1/2/4 done, seeding closed at `6f60060e` (`PDR-0031`); remaining on the stream: differential harness + seam cutting; no horizon change) · prior: 2026-08-13 (WS-1 closed, `PDR-0029`)
 
 > Sequencing, WSJF / cost-of-delay, and dated forecasts are produced by
 > /axiom-program-management. This file records bets as INTENT, not a delivery

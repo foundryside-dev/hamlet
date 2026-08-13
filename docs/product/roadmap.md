@@ -1,4 +1,4 @@
-# Roadmap — HAMLET / Townlet            Updated: 2026-08-13 (status + one scope correction: DIFFERENTIAL HARNESS BUILT AND ACCEPTED at `d54ad7df` (`PDR-0032`, `PDR-0033`); WS-7 contents 1/2/3/4 done, remaining: content 5 seam cutting + the first knockdown decision. **Correction, `PDR-0034`: the harness does NOT subsume WS-3** — a differential instrument cannot see inertness, so WS-3's wiring-test mandate is untouched and still gates WS-4. No horizon change) · prior: 2026-08-13 (oracle pinned, `PDR-0030`)
+# Roadmap — HAMLET / Townlet            Updated: 2026-08-14 (`PDR-0035`, `PDR-0036`, `PDR-0037`: the first knockdown unit is DECIDED — the substrate→observation-dim seam — and content 5's order is changed by a blocking finding in the harness. One Next bet narrowed by one item. **No horizon change**) · prior: 2026-08-13 (harness accepted, `PDR-0032`–`PDR-0034`) · prior: 2026-08-13 (oracle pinned, `PDR-0030`)
 
 > Sequencing, WSJF / cost-of-delay, and dated forecasts are produced by
 > /axiom-program-management. This file records bets as INTENT, not a delivery
@@ -34,6 +34,20 @@
   knockdown. The **differential harness is BUILT and ACCEPTED** (`PDR-0032`/`PDR-0033`,
   `d54ad7df`, `src/townlet/oracle/`): oracle worktree vs working tree, same pack + seed,
   provenance-hash pre-check then byte-exact trace comparison; mutation-verified red.
+  · **The first knockdown unit is DECIDED (`PDR-0035`): the substrate→observation-dim seam** —
+  the contract by which the compiler learns a substrate's observation shape. Not the
+  `substrate/` package (the crashes are the compiler's; that boundary would leave all four
+  intact) and not the one-line repair. Chosen on `PDR-0019`'s criterion: the compiler switches
+  on `substrate.type` strings at `compilers/observation.py:64-76` and `:135-145`, while
+  `:146-155` **already asks the substrate instance** for `continuous`/`continuousnd` — the
+  right pattern, in the same function, applied to 2 of 5 types.
+  · **Content 5's order changed by a blocking finding (`PDR-0037`, `hamlet-56ec575ae2`, P0):
+  the harness cannot PASS a divergence it predicted.** `exit_code` is 0 iff every verdict is
+  AGREE or SKIPPED, and no verdict means *diverged as the register said*. A correctly rebuilt
+  substrate would exit 1 on every new cell, so the before/after gate breaks at the first
+  knockdown it is used for. The hook exists — `CellVerdict.register_refs` is documented as the
+  binding point and already serialized; nothing populates it. Order is now: harness first,
+  then DIV-003 (`PDR-0036`), then matrix cells, then cut.
   · **`PDR-0034` corrects a claim this bullet used to carry.** WS-3 is **NOT** reshaped into the
   differential harness. The harness asks *did old and new behave the same?* — a surface inert on
   **both** sides yields identical traces and correctly reports AGREE, so inertness is invisible
@@ -76,6 +90,10 @@
   scopes are inert; curriculum stages are a Python literal capped at 6 meters.
   · tracker: `hamlet-15050f280a` (WS-4), blocked by WS-1 and WS-3
   · metric: input **Config-surface coverage** (~2 of 7 → 7 of 7)
+  · **narrowed by one item, `PDR-0035`:** *delegate substrate observation dims to the substrate
+  instance* (assessment line 227) is subsumed by WS-7's first knockdown and no longer waits on
+  WS-3 — the knockdown carries its own instrument. Exactly one item moves; every other
+  ledger item stays here and stays behind WS-3 (`PDR-0034` unchanged).
   · largest single win: populate `RuntimeAction.reads/writes` from config — the entire 11-mode
   composition engine already exists and is tested; only the YAML door is missing
   · note: `hamlet-030f2ce0aa` (EnvFactory) is *not* this bet, but its framing here is **corrected

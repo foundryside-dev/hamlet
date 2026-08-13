@@ -1,4 +1,4 @@
-# Roadmap — HAMLET / Townlet            Updated: 2026-08-13 (status only: ORACLE PINNED — `oracle-2026-08-13` at `0e875d7a`, `PDR-0030`; WS-7 contents 1/2/4 done, seeding closed at `6f60060e` (`PDR-0031`); remaining on the stream: differential harness + seam cutting; no horizon change) · prior: 2026-08-13 (WS-1 closed, `PDR-0029`)
+# Roadmap — HAMLET / Townlet            Updated: 2026-08-13 (status + one scope correction: DIFFERENTIAL HARNESS BUILT AND ACCEPTED at `d54ad7df` (`PDR-0032`, `PDR-0033`); WS-7 contents 1/2/3/4 done, remaining: content 5 seam cutting + the first knockdown decision. **Correction, `PDR-0034`: the harness does NOT subsume WS-3** — a differential instrument cannot see inertness, so WS-3's wiring-test mandate is untouched and still gates WS-4. No horizon change) · prior: 2026-08-13 (oracle pinned, `PDR-0030`)
 
 > Sequencing, WSJF / cost-of-delay, and dated forecasts are produced by
 > /axiom-program-management. This file records bets as INTENT, not a delivery
@@ -31,8 +31,17 @@
   · tracker: milestone `hamlet-1ade187dcc`, work streams **WS-0…WS-7** with the dependency graph
   wired. **WS-7** (`hamlet-e3af412673`) is the enabling stream — determinism, oracle tag,
   differential harness, known-divergences register, per-unit seam cutting — and gates every
-  knockdown. **WS-3** is reshaped into the differential harness and becomes the program's central
-  artifact.
+  knockdown. The **differential harness is BUILT and ACCEPTED** (`PDR-0032`/`PDR-0033`,
+  `d54ad7df`, `src/townlet/oracle/`): oracle worktree vs working tree, same pack + seed,
+  provenance-hash pre-check then byte-exact trace comparison; mutation-verified red.
+  · **`PDR-0034` corrects a claim this bullet used to carry.** WS-3 is **NOT** reshaped into the
+  differential harness. The harness asks *did old and new behave the same?* — a surface inert on
+  **both** sides yields identical traces and correctly reports AGREE, so inertness is invisible
+  to it by construction. WS-3 (`hamlet-1f89714685`) remains the **wiring-test** mandate — change
+  a YAML value, assert runtime behaviour changed — still `open`, still blocking WS-4, and still
+  the answer to *why six consecutive declarative features shipped inert*. The two instruments are
+  complementary: **differential = did behaviour change; wiring = does the declaration do
+  anything.**
   · metric: **Subsystem maturity established** ✅ 8 of 8; now guarded by **Provenance integrity**
   (all 3 breaches CLOSED 2026-08-13 — row goes green when the two filed gaps enter WS-7's
   register, `PDR-0028`), **Declared-but-inert config surfaces** (baseline ~40; post-assessment

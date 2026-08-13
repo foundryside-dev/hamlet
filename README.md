@@ -291,7 +291,8 @@ Treat the badge-shaped assumption that CI is guarding this repository as false:
   returns nothing. No commit of the rewrite has been checked by CI.
 - Full Test Suite runs on a 06:00 UTC schedule against the default branch. Every scheduled run on
   record after the last green build failed, the most recent being 2026-01-30, and none is recorded
-  since — which is what GitHub's dormancy policy does to scheduled workflows on a quiet repository.
+  since: GitHub reports that workflow's state as `disabled_inactivity`. Re-enabling it is a
+  deliberate act (`gh workflow enable "Full Test Suite"`), not something the next push restores.
 - The last successful run of any workflow was 2025-11-28, on the merge of PR #31 into `main`.
 
 Three of the four — every one except Lint — run `scripts/validate_compiler_cli.py` before their

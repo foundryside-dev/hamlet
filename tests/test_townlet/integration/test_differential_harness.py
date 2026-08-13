@@ -60,4 +60,5 @@ def test_driver_failure_is_a_loud_side_error(tmp_path: Path) -> None:
         run_dir=tmp_path,
     )
     assert verdict.kind == "OLD_SIDE_ERROR"  # old side runs first, fails first
-    assert "NO_SUCH_LEVEL" in str(verdict.detail["stderr"]) or verdict.detail["stderr"]
+    assert verdict.detail["side"] == "old"
+    assert "NO_SUCH_LEVEL" in str(verdict.detail["stderr"])

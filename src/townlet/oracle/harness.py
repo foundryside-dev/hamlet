@@ -42,9 +42,30 @@ def _git(repo_root: Path, *args: str) -> str:
 
 
 def ensure_worktree(repo_root: Path, tag: str) -> Path:
-    """Create (or reuse) the detached oracle worktree at .oracle/<tag>."""
+    """Create (or reuse) the detached oracle worktree at .oracle/<tag>.
+
+    Reuse is verified, not assumed: a worktree directory can survive a tag
+    rewrite, a manual checkout, or an interrupted run with local edits, and
+    silently comparing against that would produce verdicts for the wrong
+    commit. On the reuse path this checks the worktree's HEAD against the
+    tag's commit and that it is clean; either failure aborts loudly with the
+    exact remedy rather than running the harness against stale or dirty
+    state.
+    """
     path = repo_root / ".oracle" / tag
+    remedy = f"git worktree remove --force {path} && git worktree add --detach {path} {tag}"
     if (path / "src" / "townlet").is_dir():
+        expected = _git(repo_root, "rev-parse", f"{tag}^{{commit}}")
+        actual = _git(path, "rev-parse", "HEAD")
+        if actual != expected:
+            raise SystemExit(
+                f"oracle worktree at {path} is at commit {actual}, but tag {tag!r} "
+                f"resolves to {expected} — worktree is stale or was checked out by hand.\n"
+                f"remedy: {remedy}"
+            )
+        status = _git(path, "status", "--porcelain")
+        if status:
+            raise SystemExit(f"oracle worktree at {path} has local changes:\n{status}\n" f"remedy: {remedy}")
         return path
     try:
         _git(repo_root, "worktree", "add", "--detach", str(path), tag)
@@ -83,9 +104,12 @@ def run_side(*, driver: Path, src: Path, params: RunParams, out: Path, repo_root
     return None
 
 
-def run_cell(*, repo_root: Path, old_src: Path, new_src: Path, cell: Cell, run_dir: Path) -> CellVerdict:
-    if cell.params.device == "cuda" and not torch.cuda.is_available():
-        return CellVerdict(kind="SKIPPED", cell_id=cell.cell_id, detail={"reason": "cuda unavailable"})
+def run_cell(*, repo_root: Path, old_src: Path, new_src: Path, cell: Cell, run_dir: Path, run_cuda: bool) -> CellVerdict:
+    if cell.params.device == "cuda":
+        if not run_cuda:
+            return CellVerdict(kind="SKIPPED", cell_id=cell.cell_id, detail={"reason": "cuda not requested"})
+        if not torch.cuda.is_available():
+            return CellVerdict(kind="SKIPPED", cell_id=cell.cell_id, detail={"reason": "cuda unavailable"})
     driver = new_src / "townlet" / "oracle" / "driver.py"
     safe = cell.cell_id.replace(":", "_")
     old_out = run_dir / f"{safe}.old.npz"
@@ -132,7 +156,7 @@ def main(argv: list[str] | None = None) -> int:
 
     repo_root = Path(__file__).resolve().parents[3]
     worktree = ensure_worktree(repo_root, args.oracle_ref)
-    cells = list(default_cells(include_cuda=args.cuda))
+    cells = list(default_cells())
     if args.cell:
         wanted = set(args.cell)
         cells = [c for c in cells if ":".join(c.cell_id.split(":")[:2]) in wanted]
@@ -151,6 +175,7 @@ def main(argv: list[str] | None = None) -> int:
             new_src=repo_root / "src",
             cell=cell,
             run_dir=run_dir,
+            run_cuda=args.cuda,
         )
         detail = "" if not verdict.detail else f"  {json.dumps(verdict.detail)[:120]}"
         print(f"{verdict.kind:<16} {verdict.cell_id}{detail}")

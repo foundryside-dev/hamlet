@@ -13,25 +13,28 @@ LEVELS = (
 )
 
 
-def test_default_matrix_is_the_five_levels_on_cpu() -> None:
+def test_default_matrix_declares_all_ten_cells() -> None:
+    """CUDA duplicates of each cell are always declared — never absent from
+    the matrix — so the harness can report them SKIPPED instead of silently
+    omitting them when --cuda is not passed (spec: 'never silent')."""
     cells: tuple[Cell, ...] = default_cells()
-    assert tuple(c.params.level for c in cells) == LEVELS
-    assert all(c.params.device == "cpu" for c in cells)
+    assert len(cells) == 10
     assert all(c.params.pack == "configs/default_curriculum" for c in cells)
     assert all(c.params.num_agents == 4 for c in cells)
     assert all(c.params.steps == 100 for c in cells)
     assert all(c.params.seed == 42 for c in cells)
 
 
-def test_cuda_flag_appends_cuda_variants() -> None:
-    cells = default_cells(include_cuda=True)
-    assert len(cells) == 10
-    cuda = [c for c in cells if c.params.device == "cuda"]
-    assert tuple(c.params.level for c in cuda) == LEVELS
+def test_cpu_block_precedes_cuda_block() -> None:
+    cells = default_cells()
+    assert tuple(c.params.device for c in cells[:5]) == ("cpu",) * 5
+    assert tuple(c.params.device for c in cells[5:]) == ("cuda",) * 5
+    assert tuple(c.params.level for c in cells[:5]) == LEVELS
+    assert tuple(c.params.level for c in cells[5:]) == LEVELS
 
 
 def test_cell_id_is_unique_and_readable() -> None:
-    cells = default_cells(include_cuda=True)
+    cells = default_cells()
     ids = [c.cell_id for c in cells]
     assert len(set(ids)) == len(ids)
     assert "default_curriculum:L0_0_minimal:cpu:seed42" in ids

@@ -106,6 +106,28 @@ def _stream_steps(trace: Trace) -> list[tuple[int, str, np.ndarray]]:
     return entries
 
 
+def _divergence_mask(old_arr: np.ndarray, new_arr: np.ndarray) -> np.ndarray:
+    """Elementwise divergence used to localize a byte-level mismatch.
+
+    Plain value equality (`!=`) gets two float cases wrong relative to the
+    byte-exact AGREE/DIVERGE decision above it: -0.0 and 0.0 compare equal
+    despite differing bytes (a real divergence would be missed), and NaN
+    never compares equal to itself despite identical bytes (an identical
+    value would be falsely localized as diverging). This mask corrects both
+    so localization always agrees with the byte-level verdict.
+    """
+    if not np.issubdtype(old_arr.dtype, np.floating):
+        return np.asarray(old_arr != new_arr)
+    old_nan = np.isnan(old_arr)
+    new_nan = np.isnan(new_arr)
+    both_nan = old_nan & new_nan
+    value_diff = (old_arr != new_arr) & ~both_nan
+    nan_mismatch = old_nan ^ new_nan
+    both_zero = (old_arr == 0) & (new_arr == 0)
+    sign_diff = both_zero & (np.signbit(old_arr) != np.signbit(new_arr))
+    return np.asarray(value_diff | nan_mismatch | sign_diff)
+
+
 def compare_traces(old: Trace, new: Trace, cell_id: str) -> CellVerdict:
     if old.params != new.params:
         raise HarnessError(
@@ -121,9 +143,18 @@ def compare_traces(old: Trace, new: Trace, cell_id: str) -> CellVerdict:
         return CellVerdict(kind="HASH_MISMATCH", cell_id=cell_id, detail={"mismatched": mismatched})
 
     for (old_step, old_stream, old_arr), (_, _, new_arr) in zip(_stream_steps(old), _stream_steps(new), strict=True):
-        if np.array_equal(old_arr, new_arr):
+        # Comparison is exact bytes, per spec: value equality is wrong for
+        # -0.0 vs 0.0 (equal value, different bytes) and NaN vs NaN (equal
+        # bytes, "unequal" value).
+        if old_arr.tobytes() == new_arr.tobytes():
             continue
-        diff_indices = np.argwhere(old_arr != new_arr)
+        mask = _divergence_mask(old_arr, new_arr)
+        if not mask.any():
+            # Bytes differ but nothing trips value/NaN/sign localization
+            # (e.g. two distinct NaN bit-payloads) — flag every position
+            # rather than silently reporting an empty divergence.
+            mask = np.ones_like(mask)
+        diff_indices = np.argwhere(mask)
         detail: dict[str, object] = {
             "step": old_step,
             "stream": old_stream,
@@ -131,7 +162,9 @@ def compare_traces(old: Trace, new: Trace, cell_id: str) -> CellVerdict:
             "diff_count": int(len(diff_indices)),
         }
         if old_arr.dtype != np.bool_:
-            detail["max_abs_diff"] = float(np.max(np.abs(old_arr.astype(np.float64) - new_arr.astype(np.float64))))
+            diffs = np.abs(old_arr[mask].astype(np.float64) - new_arr[mask].astype(np.float64))
+            max_abs_diff = float(np.max(diffs)) if diffs.size else 0.0
+            detail["max_abs_diff"] = max_abs_diff if np.isfinite(max_abs_diff) else "non-finite"
         return CellVerdict(kind="DIVERGE", cell_id=cell_id, detail=detail)
 
     return CellVerdict(kind="AGREE", cell_id=cell_id, detail={})

@@ -104,3 +104,43 @@ def test_verdict_is_json_serializable() -> None:
     new.rewards[1, 2] += 0.5
     verdict = compare_traces(old, new, cell_id="c1")
     json.dumps(dataclasses.asdict(verdict))  # must not raise
+
+
+def test_negative_zero_vs_zero_diverges_and_localizes() -> None:
+    """0.0 == -0.0 under value equality but their bytes differ — the spec
+    requires byte-exact comparison, so this must DIVERGE, not AGREE."""
+    old, new = _mk_trace(), _mk_trace()
+    old.rewards[0, 0] = 0.0
+    new.rewards[0, 0] = -0.0
+    verdict = compare_traces(old, new, cell_id="c1")
+    assert verdict.kind == "DIVERGE"
+    assert verdict.detail["step"] == 0
+    assert verdict.detail["stream"] == "rewards"
+    assert [0] == [idx[0] for idx in verdict.detail["indices"]]
+
+
+def test_identical_nan_agrees() -> None:
+    """NaN != NaN under value equality but identical bytes are identical —
+    byte-exact comparison must treat this as AGREE, not a false DIVERGE."""
+    old, new = _mk_trace(), _mk_trace()
+    old.rewards[0, 0] = np.nan
+    new.rewards[0, 0] = np.nan
+    verdict = compare_traces(old, new, cell_id="c1")
+    assert verdict.kind == "AGREE"
+
+
+def test_nan_vs_number_diverges_with_json_safe_verdict() -> None:
+    import json
+
+    old, new = _mk_trace(), _mk_trace()
+    old.rewards[0, 0] = np.nan
+    new.rewards[0, 0] = 1.0
+    verdict = compare_traces(old, new, cell_id="c1")
+    assert verdict.kind == "DIVERGE"
+    assert verdict.detail["step"] == 0
+    assert verdict.detail["stream"] == "rewards"
+    assert [0] == [idx[0] for idx in verdict.detail["indices"]]
+    assert verdict.detail["max_abs_diff"] == "non-finite"
+    dumped = json.dumps(dataclasses.asdict(verdict))
+    assert "NaN" not in dumped
+    json.loads(dumped)  # must be valid JSON, not the bare-NaN literal

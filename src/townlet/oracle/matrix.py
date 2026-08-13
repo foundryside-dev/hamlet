@@ -33,8 +33,15 @@ class Cell:
         return f"{Path(p.pack).name}:{p.level}:{p.device}:seed{p.seed}"
 
 
-def default_cells(include_cuda: bool = False) -> tuple[Cell, ...]:
-    devices = ("cpu", "cuda") if include_cuda else ("cpu",)
+def default_cells() -> tuple[Cell, ...]:
+    """The full declared matrix: all 5 levels on cpu, then all 5 on cuda.
+
+    CUDA cells are always declared, never conditionally omitted — per spec,
+    the RUN decision (whether to actually execute them) belongs to the
+    harness, which reports them SKIPPED when --cuda is not passed. A matrix
+    that drops CUDA cells entirely without the flag would make that skip
+    silent instead of reported.
+    """
     return tuple(
         Cell(
             RunParams(
@@ -46,6 +53,6 @@ def default_cells(include_cuda: bool = False) -> tuple[Cell, ...]:
                 device=device,
             )
         )
-        for device in devices
+        for device in ("cpu", "cuda")
         for level in _DEFAULT_LEVELS
     )

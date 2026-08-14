@@ -1,4 +1,4 @@
-# Roadmap — HAMLET / Townlet            Updated: 2026-08-15, thirteenth checkpoint (`PDR-0041`: the FIRST KNOCKDOWN is COMPLETE — the substrate→observation-dim seam is cut, the harness adjudicated it end-to-end, and the strangler method is proven once. **No horizon change**) · prior: 2026-08-14, eleventh checkpoint (`PDR-0038`, `PDR-0039`: the owner cleared the whole escalation queue; the README is rewritten and ships branch-scoped; the merge to `main` gains two named gates, CI restoration and README re-verification. New Later bet: adopt wardline as hygiene) · prior: 2026-08-14 (`PDR-0035`–`PDR-0037`: the first knockdown unit is DECIDED — the substrate→observation-dim seam — and content 5's order is changed by a blocking finding in the harness. One Next bet narrowed by one item. **No horizon change**) · prior: 2026-08-13 (harness accepted, `PDR-0032`–`PDR-0034`) · prior: 2026-08-13 (oracle pinned, `PDR-0030`)
+# Roadmap — HAMLET / Townlet            Updated: 2026-08-15, fifteenth checkpoint (`PDR-0043`: merge gate 1 — CI restoration — EXECUTED and in verifying; the measured gate set widened 4→6, all green locally; the first CI run in this branch's history fires on the owner's push. **No horizon change**) · prior: 2026-08-15, thirteenth checkpoint (`PDR-0041`: the FIRST KNOCKDOWN is COMPLETE — the substrate→observation-dim seam is cut, the harness adjudicated it end-to-end, and the strangler method is proven once. **No horizon change**) · prior: 2026-08-14, eleventh checkpoint (`PDR-0038`, `PDR-0039`: the owner cleared the whole escalation queue; the README is rewritten and ships branch-scoped; the merge to `main` gains two named gates, CI restoration and README re-verification. New Later bet: adopt wardline as hygiene) · prior: 2026-08-14 (`PDR-0035`–`PDR-0037`: the first knockdown unit is DECIDED — the substrate→observation-dim seam — and content 5's order is changed by a blocking finding in the harness. One Next bet narrowed by one item. **No horizon change**) · prior: 2026-08-13 (harness accepted, `PDR-0032`–`PDR-0034`) · prior: 2026-08-13 (oracle pinned, `PDR-0030`)
 
 > Sequencing, WSJF / cost-of-delay, and dated forecasts are produced by
 > /axiom-program-management. This file records bets as INTENT, not a delivery
@@ -84,6 +84,15 @@
   the merge, after the current knockdown. (2) **README re-verification** by the same method that
   produced it, not a re-read — its rough-edges and CI sections describe conditions the recovery
   intends to *fix*, and merging them unchanged converts honest status into stale claims on `main`.
+
+  · **Gate 1 status (`PDR-0043`, 2026-08-15): EXECUTED, in verifying.** Inputs fixed first per
+  the issue's own ordering (two drifted packs repaired; the previously-unknown second failing
+  gate `no_defaults_lint` adjudicated); three workflows now fire on push to this branch; the
+  nightly cron is deleted and the Full Test Suite parked `disabled_manually` until the merge
+  (on-demand via dispatch). `hamlet-2100105c9a` closes on the first green run after the owner's
+  push. **The merge checklist inherits `PDR-0043` reversal trigger 2**: the merge must restore
+  the nightly (or record the PDR that kills it) — merging without it converts a deliberate
+  deferral into silent capability loss.
 
   The 2026-05-16 architecture-gap milestone `hamlet-7a932c4e40` is annotated **superseded in
   scope**; its three open children were reparented into WS-0 / WS-3 / WS-5 with their scope

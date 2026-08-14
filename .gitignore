@@ -158,3 +158,6 @@ findings.jsonl
 
 # Filigree server-mode MCP config embeds a literal federation token
 .mcp.json
+
+# Claude Code agent worktrees (transient; never track)
+.claude/worktrees/

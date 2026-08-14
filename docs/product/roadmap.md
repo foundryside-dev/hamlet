@@ -1,4 +1,4 @@
-# Roadmap — HAMLET / Townlet            Updated: 2026-08-14 (`PDR-0035`, `PDR-0036`, `PDR-0037`: the first knockdown unit is DECIDED — the substrate→observation-dim seam — and content 5's order is changed by a blocking finding in the harness. One Next bet narrowed by one item. **No horizon change**) · prior: 2026-08-13 (harness accepted, `PDR-0032`–`PDR-0034`) · prior: 2026-08-13 (oracle pinned, `PDR-0030`)
+# Roadmap — HAMLET / Townlet            Updated: 2026-08-14, eleventh checkpoint (`PDR-0038`, `PDR-0039`: the owner cleared the whole escalation queue; the README is rewritten and ships branch-scoped; the merge to `main` gains two named gates, CI restoration and README re-verification. New Later bet: adopt wardline as hygiene) · prior: 2026-08-14 (`PDR-0035`–`PDR-0037`: the first knockdown unit is DECIDED — the substrate→observation-dim seam — and content 5's order is changed by a blocking finding in the harness. One Next bet narrowed by one item. **No horizon change**) · prior: 2026-08-13 (harness accepted, `PDR-0032`–`PDR-0034`) · prior: 2026-08-13 (oracle pinned, `PDR-0030`)
 
 > Sequencing, WSJF / cost-of-delay, and dated forecasts are produced by
 > /axiom-program-management. This file records bets as INTENT, not a delivery
@@ -71,6 +71,14 @@
   the known-divergences register is its FIRST artifact, `PDR-0028` reversal trigger), **WS-6**
   (`hamlet-5e39fcccb0`) and **WS-0** (`hamlet-8eeaba1461`). WS-1 (`hamlet-67ffbd282a`) closed
   2026-08-13.
+
+  · **The merge to `main` is the bet's exit, and it now has two named gates** (`PDR-0039`, owner:
+  *"hopefully we'll recover before we push back to main"*). (1) **CI restoration**
+  (`hamlet-2100105c9a`, P1) — no workflow has ever run on this branch and nothing has passed since
+  2025-11-28, so merging would put 145 unvalidated commits on the default branch; sequenced before
+  the merge, after the current knockdown. (2) **README re-verification** by the same method that
+  produced it, not a re-read — its rough-edges and CI sections describe conditions the recovery
+  intends to *fix*, and merging them unchanged converts honest status into stale claims on `main`.
 
   The 2026-05-16 architecture-gap milestone `hamlet-7a932c4e40` is annotated **superseded in
   scope**; its three open children were reparented into WS-0 / WS-3 / WS-5 with their scope

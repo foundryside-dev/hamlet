@@ -117,6 +117,21 @@ other axes. No bet may be accepted on north-star grounds from a single hand-run 
   the ~40 inert surfaces below. The `Declared-but-inert` row is therefore **not** instrumented
   by the harness and still moves only by hand — WS-3's wiring tests are the instrument that
   would move it, and they remain unbuilt.
+- **This row's biggest win is branch-scoped and expires** (`PDR-0039`, 2026-08-14). The README
+  rewrite retired ~102 confirmed-false claims, but it describes `project-recovery` and is stamped
+  with the commit and date every claim was checked at. Its *Known rough edges* and *Continuous
+  integration* sections describe conditions the recovery intends to **fix** — so merging the file
+  unchanged to `main` would convert honest status into stale claims, re-creating this row's
+  failure through the passage of time rather than through carelessness. Re-verification before
+  the merge is a named gate, and it must use the **same method**, not a re-read: the adversarial
+  pass caught **24 defects in a draft written expressly not to lie**.
+- **A correction is not self-verifying either — and this row proved it on itself.** 2026-08-14:
+  the commit that retired 102 false claims (`be3ebc2e`) shipped **two new ones**, and one of them
+  was *in this cell* — it still read "NOT corrected" about the `vision.md` URL after the owner had
+  approved the fix and the fix had landed. A guardrail counting false claims in canonical docs
+  contained a false claim about itself for one commit. Fixed at `dcc5f803`. The operational rule
+  this yields: **when you correct a document, re-read every other cell that referenced the thing
+  you corrected** — the stale reference is never where you were looking.
 - **And it cannot yet PASS a divergence it predicted** (`PDR-0037`, 2026-08-14). The companion
   to the bullet above, found planning the first knockdown. `exit_code` (`harness.py:190-193`)
   returns 0 **iff** every verdict is `AGREE` or `SKIPPED`; the vocabulary has no verdict meaning

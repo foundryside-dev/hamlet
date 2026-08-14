@@ -41,8 +41,11 @@ itself.
   changes land directly.
 
 *Every command, file path, count and quotation below was executed or read against the working tree
-at commit `a099663c` (2026-08-14). There are deliberately no test counts, coverage percentages,
-observation widths or training-performance figures in this README — see [Numbers](#numbers).*
+at commit `a099663c`; the repository-state facts under [Continuous integration](#continuous-integration)
+were read from the GitHub API the same day. Both on 2026-08-14. There are deliberately no test
+counts, coverage percentages, observation widths or training-performance figures in this README —
+see [Numbers](#numbers). This file describes the `project-recovery` branch and is expected to
+go out of date as the rewrite proceeds; it is re-verified before it reaches `main`.*
 
 ## A universe is YAML
 

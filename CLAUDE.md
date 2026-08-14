@@ -4,82 +4,106 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-HAMLET is a pedagogical Deep Reinforcement Learning (DRL) environment where agents learn to survive by managing multiple competing needs (energy, hygiene, satiation, money, health, fitness, mood, social). The primary mission is to "trick students into learning graduate-level RL by making them think they're just playing The Sims."
+Townlet is **a rapid DRL experimentation framework for game designers** — a deep
+reinforcement-learning substrate expressed as configuration. An environment (variables,
+observation layout, substrate topology, affordances, effects, items, reward function) is written
+in YAML, compiled into one frozen hash-carrying `CompiledUniverse`, and executed GPU-natively
+against torch tensors.
 
-**Current Implementation**: **Townlet** - GPU-native vectorized training system with adversarial curriculum and intrinsic exploration.
+**The point is authoring.** Someone with an idea for a mechanic should be able to turn it into a
+running, trainable, reproducible RL environment by writing config — no environment subclass, no
+observation-tensor plumbing, no reward-function code. Every subsystem exists to move a category
+of "you must write Python for this" into "you can declare this."
 
-**Key insight**: The project deliberately produces "interesting failures" (like reward hacking) as teaching moments rather than bugs to fix.
+**This is the load-bearing judgement call.** When something can only be expressed by editing
+Python, that is a product defect, not a shortcut. Prefer declarative surface over engine
+special-casing, even when the special case is smaller.
 
-## CRITICAL: Pre-Release Status - ZERO Backwards Compatibility Required
+The survival world in `configs/default_curriculum` — eight meters, fourteen affordances, one 8×8
+grid — is **the first-class demonstration of the idea, not the product**. Do not harden its
+content into the framework.
 
-**THIS PROJECT IS PRE-RELEASE WITH ZERO USERS AND ZERO DOWNLOADS.**
+Repo directory is `hamlet`; the distribution and the only live source tree are `townlet`. Same
+project. **Work only in `src/townlet/`** — `src/hamlet/` is obsolete legacy code.
 
-**ABSOLUTE RULES:**
+Fuller framing, and the honest status section: `README.md` (it is current and accurate — prefer
+it over anything in `docs/architecture/`). Product vision: `docs/product/vision.md`.
 
-1. **NO backwards compatibility arrangements** - Delete old code paths immediately
-2. **NO fallback mechanisms** - Breaking changes are free and encouraged
-3. **NO deprecation warnings** - Just break things and update references
-4. **NO migration paths** - Old configs/code should fail loudly, not be supported
-5. **NO "support both old and new"** - Technical debt for a non-existent user base is inexcusable
+**Pedagogical value is a property of the framework, not the mission.** The project deliberately
+preserves "interesting failures" (like reward hacking) as teaching material rather than
+immediately fixing them.
 
-**Why this matters:**
+## CRITICAL: Zero backwards compatibility
 
-- Every fallback path is technical debt that serves zero users
-- Every "support both" pattern doubles maintenance burden for no benefit
-- Every deprecation warning delays inevitable breaking changes
-- Clean breaks now = simpler codebase at launch
+**Pre-release, zero users, zero downloads. Breaking changes are free — take them.** No fallbacks,
+no deprecation warnings, no migration paths, no "support both old and new". If it's old and not
+in use, **delete it**; git history preserves it. Old configs should fail loudly, not be
+accommodated.
 
-**When you see:**
-- "Let's support the old way too" → **NO. Delete it.**
-- "We should maintain backwards compatibility" → **NO. We have zero users.**
-- "Let's add a fallback for old configs" → **NO. Break them and update the templates.**
-- "What if someone was using the old API?" → **They don't exist. Break it.**
+These are antipatterns here, not good practice. Recognise the shape, apply the fix:
 
-**Examples of correct behavior:**
-- VFS integration: Deleted all old observation code, required `variables_reference.yaml` for all packs
-- reward_strategy field: Made it REQUIRED, broke old configs, updated all test fixtures
-- Obsolete code: `src/hamlet/` marked obsolete, work exclusively in `src/townlet/`
+| shape | fix |
+|---|---|
+| `if hasattr(obj, 'old_field')` — old vs new attribute | delete the old path, update references |
+| `try/except` catching an old config format | let it raise, update the config, delete the handler |
+| version check or feature flag for "legacy support" | delete both the check and the old path |
+| field made `Optional` that should be required | make it required, set it explicitly in every config (see No-Defaults Principle) |
+| a comment saying "for backwards compatibility" | delete the code and the comment |
+| obsolete code kept "just in case" | delete it |
 
-**ANTIPATTERNS - These are WRONG and should be removed immediately:**
+Done correctly before: old observation code deleted outright at VFS integration rather than
+dual-pathed; `reward_strategy` removed with its `RewardStrategy` classes when `drive.yaml`
+became required; `src/hamlet/` abandoned rather than maintained alongside `src/townlet/`.
 
-❌ **ANTIPATTERN**: `if hasattr(obj, 'old_field')` checks for old vs new attributes
-- Why it's wrong: Maintaining dual code paths for zero users
-- Fix: Delete the old code path, update all references to new field
+**One exception, and it is not backwards compatibility:** the pinned oracle below. It is a frozen
+specification to diff against, never a code path to keep alive.
 
-❌ **ANTIPATTERN**: `try/except` blocks catching old config formats
-- Why it's wrong: Silent fallbacks hide breaking changes that should fail loudly
-- Fix: Let it raise, update the config, delete the try/except
+## Reading `docs/` — intent vs record
 
-❌ **ANTIPATTERN**: Version checks or feature flags for "legacy support"
-- Why it's wrong: We have no legacy users to support
-- Fix: Delete version checks, delete old code paths
+⚠️ **`docs/` is 573 markdown files, ~90% of them last touched 2026-05, before the current
+recovery work. Treat it as design intent, never as a record of what shipped.** Verified
+2026-08-15 (`docs/architecture/REVIEW-2026-08-15-architecture-docs-and-hld.md`).
 
-❌ **ANTIPATTERN**: Making fields "Optional" when they should be required
-- Why it's wrong: Implicit defaults create non-reproducible configs
-- Fix: Make fields required, update all configs with explicit values
+The sharpest case: `docs/architecture/BRAIN_AS_CODE.md` and
+`docs/architecture/hld/02-brain-as-code.md` both say
+*"Status: Approved for Implementation"*, while `execution_graph` / `cognitive_topology` /
+`agent_architecture` return **zero grep hits** in `src/` and `configs/`. The design is the
+target; the status line is false. That pattern repeats across the architecture corpus.
 
-❌ **ANTIPATTERN**: Code comments saying "for backwards compatibility"
-- Why it's wrong: If you're writing this comment, you're doing it wrong
-- Fix: Delete the backwards compatibility code and the comment
+**Rules:**
 
-❌ **ANTIPATTERN**: Keeping obsolete code "just in case"
-- Why it's wrong: Dead code confuses future developers and bloats the codebase
-- Fix: Delete it. Git history preserves it if you really need it later
+1. **Never cite a doc as evidence something is implemented.** Check `src/townlet/` first.
+2. **Where a doc disagrees with `README.md`, README is right.** It is current, honest about
+   status, and carries the correct product framing.
+3. `docs/architecture/` does not know about `src/townlet/oracle/`, the strangler rewrite,
+   `items/`, or `effects/`. Absence there means nothing.
+4. Many (not all) files carry frontmatter with an "AI-Friendly Summary" and "Reading Strategy".
+   Where present, read it first to decide relevance before opening a 2000-line file.
 
-**The rule is simple: If it's old and not in use, DELETE IT. Don't maintain it, don't support it, don't document it. Pre-release means freedom to break everything without consequence. Backwards compatibility patterns are ANTIPATTERNS at this stage.**
+**Current-and-trustworthy:** `README.md`, `docs/product/`, `docs/oracle/`,
+`docs/architecture/vfs.md`, `docs/architecture/vfs-current-implementation.md`,
+`docs/config-schemas/`.
 
-## AI-Friendly Documentation Pattern
+### The oracle (strangler discipline)
 
-**All documentation files in `docs/` use structured frontmatter** to help AI assistants understand content before reading the entire file. This saves tokens and improves context efficiency.
-
-**Best Practice**: Read frontmatter FIRST, use the "AI-Friendly Summary" to decide relevance, then follow the "Reading Strategy" guidance. This helps avoid reading 2000+ line files when only specific sections are relevant.
+Work is mid **strangler rewrite behind a pinned oracle**. Tag `oracle-2026-08-13` freezes the
+previous system as the specification for preserved behaviour. From `docs/oracle/ORACLE.md`:
+*"The oracle never mutates"*, and *"a diff against the oracle is a defect in the rebuild unless
+the register says otherwise."* Accepted differences are registered in
+`docs/oracle/known-divergences.md`. **Never edit anything under `.oracle/`.**
 
 ### Universe Compiler (UAC) Quick Reference
 
 - **Source**: `src/townlet/universe/compiler.py` - seven-stage pipeline (parse → symbol table → resolve → cross-validate → metadata → optimization → emit/cache)
-- **Docs**: Start with `docs/UNIVERSE-COMPILER.md`, then `docs/architecture/COMPILER_ARCHITECTURE.md`
+- **Docs**: `docs/UNIVERSE-COMPILER.md`. `docs/architecture/COMPILER_ARCHITECTURE.md` is
+  design-era (2025-11): useful for intent, but it describes sub-compilers that were never wired
+  (notably `CuesCompiler`, instantiated at `compiler.py:69` and never called) and asserts a
+  backwards-compatibility success criterion this project rejects.
 - **Tests**: `uv run pytest tests/test_townlet/unit/universe/` (use `UV_CACHE_DIR=.uv-cache` in sandboxed environments)
-- **CLI**: `python -m townlet.universe {compile,inspect,validate}` - wired into CI via `.github/workflows/config-validation.yml`
+- **CLI**: `python -m townlet.universe {compile,inspect,validate}` - wired into CI via
+  `.github/workflows/config-validation.yml`. **Caveat: no workflow has ever run on
+  `project-recovery`** (filigree `hamlet-2100105c9a`) — the gates that actually hold here are
+  run locally, by hand.
 
 ## Development Commands
 
@@ -129,9 +153,14 @@ runner.load_checkpoint()   # Resources stay open indefinitely!
 
 ### State Representation
 
-**Fixed Affordance Vocabulary**: All curriculum levels observe the same 14 affordances (for transfer learning), even if not all are deployed.
+**Fixed Affordance Vocabulary**: All curriculum levels observe the same 14 affordances (for
+transfer learning), even if not all are deployed. In `default_curriculum` these are EAT, SLEEP,
+WORK, SHOWER, EXERCISE, SOCIALIZE, MEDITATE, DRINK_WATER, BRUSH_TEETH, LAUNDRY, COOK,
+CLEAN_HOUSE, ENTERTAINMENT, DOCTOR — `affordances.yaml` is byte-identical across all five levels
+(verified 2026-08-15). Several `docs/architecture/` documents list a *different* affordance set;
+they are wrong, this one is the shipped pack.
 
-**Observation Encoding Modes** (configurable via `substrate.yaml`):
+**Observation Encoding Modes** (configurable via pack-level `stratum.yaml`):
 
 - **relative** (default): Normalized [0,1] coordinates - best for transfer learning, required for POMDP
 - **scaled**: Coordinates scaled to grid dimensions [0, grid_size] - value range conveys grid size implicitly
@@ -165,9 +194,11 @@ See `tests/test_townlet/unit/environment/test_pomdp_validation.py` for validatio
 
 ### Variable & Feature System (VFS)
 
-**Status**: ✅ INTEGRATED INTO PRODUCTION (TASK-002C Complete)
+**Status**: in production. VFS is the typed state / observation / transition ABI between UAC and
+BAC — not just an observation helper.
 
-**Purpose**: Declarative state space configuration for observation specs, access control, and action dependencies.
+**Purpose**: Declarative state space configuration for observation specs, access control, action
+dependencies, and (via VTC) compiled transitions.
 
 **Pipeline**: `YAML Config → Schema Validation → Observation Spec → Runtime Registry → Observations`
 
@@ -176,23 +207,35 @@ See `tests/test_townlet/unit/environment/test_pomdp_validation.py` for validatio
 - `schema.py`: VariableDef, ObservationField, NormalizationSpec, WriteSpec
 - `registry.py`: Runtime storage with GPU tensors, access control enforcement
 - `observation_builder.py`: Compile-time spec generation, dimension validation
+- `vtc.py`: VFS Transition Compiler — action writes, passive dynamics, cascades, terminal
+  conditions, reward components, occupancy claims
 
-**Variable Scopes**: `global` (shared), `agent` (per-agent), `agent_private` (hidden state)
+**Variable Scopes** — nine, not three (`VariableScope` in `vfs/schema.py`): `global`, `agent`,
+`agent_private`, `item`, `pair`, `group`, `affordance`, `zone`, `message`.
 
-**Access Control**: Readers (agent, engine, acs, bac), Writers (engine, actions, bac)
+**Access Control**: `readable_by` / `writable_by` role lists per variable, enforced at
+`registry.get()` / `set()`. Roles are open strings, not a closed enum — `agent`, `engine`,
+`actions`, `vtc`, `social_model` are the common ones.
 
-**Breaking Change**: All config packs **MUST** include `variables_reference.yaml`. See `docs/vfs-integration-guide.md` for migration.
+**Which files a pack needs** (corrected 2026-08-15 — the previous "all packs MUST include
+`variables_reference.yaml`" was **false**):
 
-**Documentation**:
+- `vfs_profiles.yaml` — **required**, pack root. Authoritative source for compiled global, agent
+  and item profiles. Level directories must NOT contain one.
+- `variables_reference.yaml` — **optional** static overlay for non-item variables and observation
+  marks. Static only: no expressions, no item-scoped variables. `configs/default_curriculum`
+  does not have one; `configs/L5_multi_agent` does.
 
-- Configuration guide: `docs/config-schemas/variables.md`
-- Design document: `docs/plans/2025-11-06-variables-and-features-system.md`
+**Documentation**: `docs/config-schemas/variables.md`, `docs/config-schemas/vfs-profiles.md`,
+and `docs/architecture/vfs-current-implementation.md` (current, source-mapped).
 
 ### Action Space (Composable)
 
 **Architecture**: Action Space = Substrate Actions + Custom Actions
 
-- **Global Vocabulary** (`configs/global_actions.yaml`): All levels share same action vocabulary
+- **Global Vocabulary** (pack-level `actions.yaml`, e.g. `configs/default_curriculum/actions.yaml`):
+  all levels in a pack share one action vocabulary. There is no `configs/global_actions.yaml` —
+  that path is dead and several docs still cite it.
 - **Custom Actions**: REST (energy recovery), MEDITATE (mood boost)
 - **Action Labels**: Configurable terminology (gaming, 6dof, cardinal, math presets)
 
@@ -200,9 +243,9 @@ See `docs/config-schemas/enabled_actions.md` for details.
 
 ## Drive As Code (DAC)
 
-**Status**: ✅ PRODUCTION - Fully Integrated (TASK-004C Complete, Runtime Integration Complete)
+**Status**: in production, runtime-integrated.
 
-**Purpose**: Declarative reward function system for HAMLET environments
+**Purpose**: Declarative reward function system for Townlet environments
 
 Drive As Code (DAC) is a declarative reward function compiler that extracts all reward logic from Python into composable YAML configurations. Operators can A/B test reward structures without code changes. DAC compiles YAML specs into GPU-native computation graphs with provenance tracking.
 
@@ -278,9 +321,6 @@ The intended design, for whoever authors it:
 
 - **Config Reference**: `docs/config-schemas/drive_as_code.md`
 - **Migration Guide**: `docs/guides/dac-migration.md`
-- **Implementation Plans**:
-  - DAC implementation: `docs/plans/2025-11-12-drive-as-code-implementation.md`
-  - Runtime integration: `docs/plans/2025-11-12-dac-runtime-integration.md`
 
 ### Q-Learning Algorithm Variants
 
@@ -327,14 +367,21 @@ files differ only in comments. Five documented levels are **three distinct unive
 
 **Distance Metrics**: manhattan (L1), euclidean (L2), chebyshev (L∞)
 
-See `configs/templates/` for substrate configuration examples and `docs/config-schemas/` for detailed schema documentation.
+Substrate config examples: the shipped packs (`configs/default_curriculum/stratum.yaml`,
+`configs/aspatial_test/`, `configs/test/action_space/*/`). There is no `configs/templates/`
+directory — that path is dead. Schemas: `docs/config-schemas/`.
 
 ### No-Defaults Principle
 
-**All behavioral parameters must be explicitly specified in config files.** The DTO layer enforces this:
+**All behavioral parameters must be explicitly specified in config files.** The DTO layer
+enforces this, with `ConfigDict(extra="forbid")` so stray keys fail at parse time.
 
-- `townlet.config.{training,environment,population,curriculum,bar,cascade,affordance,hamlet}.{*}Config`
-- Existing: `townlet.substrate.config.SubstrateConfig`, `townlet.environment.action_config.ActionConfig`
+DTOs live in `src/townlet/config/` — `training_v2_config.py`, `environment_config.py`,
+`bars_v2_config.py`, `affordances_v2_config.py`, `stratum_config.py` (`SubstrateConfig`,
+`StratumConfig`), `curriculum_config.py`, `drive_as_code.py`, `vfs_profiles_config.py`,
+`effects_config.py`, `items_config.py` — plus
+`townlet.environment.action_config.ActionConfig`. (`townlet.substrate.config` does not exist;
+`SubstrateConfig` is in `config/stratum_config.py`.)
 
 **Why**: Hidden defaults create non-reproducible configs. Changing code defaults silently breaks old configs.
 
@@ -376,15 +423,19 @@ Tests focus on:
 
 ## Development Philosophy
 
-> "Trick students into learning graduate-level RL by making them think they're just playing The Sims."
+> From game as experience to **writing a game** as experience.
 
 When in doubt:
 
-- Prioritize pedagogical value over technical purity
-- Preserve "interesting failures" as teaching moments
-- Document unexpected behaviors rather than immediately fixing them
-- Remember: The goal is to teach RL intuitively, not build production-ready agents
-- **Work only in `src/townlet/`** - hamlet is obsolete legacy code
+- **Ask "can a designer express this in a config pack?"** If the answer is "only by editing
+  Python", that is the defect worth fixing — not the symptom you were chasing.
+- Prefer declarative surface over engine special-casing, even when the special case is smaller.
+- Keep the framework/instance boundary sharp: `default_curriculum` content (its meters,
+  affordances, 8×8 grid) is example data, not framework. Do not freeze it into the engine.
+- Preserve "interesting failures" as teaching material; document unexpected behaviour rather
+  than immediately fixing it.
+- The goal is a framework others author in, not production-ready agents.
+- **Work only in `src/townlet/`** — `src/hamlet/` is obsolete legacy code.
 
 <!-- filigree:instructions:v3.1.0:c1c023c3 -->
 <!-- filigree:last-writer:filigree install -->

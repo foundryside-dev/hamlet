@@ -13,6 +13,7 @@ import torch
 from townlet.config.affordances_v2_config import AffordancesV2Config
 from townlet.config.bars_v2_config import BarsV2Config
 from townlet.config.environment_config import EnvironmentConfig as EnvConfigV21
+from townlet.substrate.factory import SubstrateFactory
 from townlet.universe.compiled import CompiledUniverse
 from townlet.universe.dto import AffordanceInfo, AffordanceMetadata, MeterInfo, MeterMetadata, UniverseMetadata
 from townlet.universe.raw_configs_v21 import RawConfigsV21
@@ -102,27 +103,21 @@ class MetadataCompiler:
         affordance_ids = tuple(a.id for a in primary_meta.affordance_metadata.affordances)
         affordance_id_to_index = {a.id: idx for idx, a in enumerate(primary_meta.affordance_metadata.affordances)}
 
-        grid_size = None
-        grid_cells = None
-        position_dim = 0
+        # Shape facts come from the substrate instance, not substrate.type
+        # switches (WS-7 first knockdown, PDR-0035 — this function's old
+        # `grid_size = width` silently discarded height, assessment §3).
         substrate_cfg = raw.stratum.stratum.substrate
         substrate_type = substrate_cfg.type
-        if substrate_type in {"grid", "grid3d"} and substrate_cfg.grid is not None:
-            width = substrate_cfg.grid.width
-            height = substrate_cfg.grid.height
-            grid_size = width
-            depth = getattr(substrate_cfg.grid, "depth", None)
-            if depth is not None:
-                grid_cells = width * height * depth
-                position_dim = 3
-            else:
-                grid_cells = width * height
-                position_dim = 2
-        elif substrate_type == "gridnd" and substrate_cfg.gridnd is not None:
-            grid_cells = 1
-            for size in substrate_cfg.gridnd.dimension_sizes:
-                grid_cells *= size
-            position_dim = len(substrate_cfg.gridnd.dimension_sizes)
+        substrate_instance = SubstrateFactory.build(substrate_cfg, torch.device("cpu"))
+        position_dim = substrate_instance.position_dim
+        # Finite substrates report their cell count; continuous/aspatial None.
+        grid_cells = substrate_instance.get_capacity() if position_dim else None
+        # grid_size is the SQUARE display size legacy consumers expect
+        # (demo runner, recording). A non-square grid has no such number —
+        # None, honestly, rather than width masquerading as both axes.
+        width = getattr(substrate_instance, "width", None)
+        height = getattr(substrate_instance, "height", None)
+        grid_size = width if width is not None and width == height else None
 
         curriculum_day_length = primary_meta.curriculum.curriculum.day_length
         temporal_supported = raw.stratum.stratum.temporal_support == "enabled"

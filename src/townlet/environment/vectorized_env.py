@@ -7,7 +7,6 @@ environment with tensor operations [num_agents, ...].
 
 from __future__ import annotations
 
-import math
 from numbers import Number
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
@@ -172,16 +171,14 @@ class VectorizedHamletEnv:
         # (e.g., POMDP vs full observability) get correct shapes.
         self.observation_spec = level.observation_spec
 
-        # Get grid_size from substrate (single source of truth)
-        # For grid substrates, read directly from substrate dimensions
-        # For non-grid substrates (aspatial, continuous), grid_size will be None
-        if hasattr(self.substrate, "width") and hasattr(self.substrate, "height"):
-            if self.substrate.width != self.substrate.height:
-                raise ValueError(f"Non-square grids not yet supported: {self.substrate.width}×{self.substrate.height}")
-            self.grid_size = self.substrate.width
-        else:
-            # For non-grid substrates (aspatial, continuous), use metadata if available
-            self.grid_size = self.metadata.grid_size
+        # grid_size is the SQUARE display size legacy consumers expect; the
+        # metadata compiler derives it from the substrate instance (None for
+        # non-square and non-grid substrates). Nothing shape-bearing reads it
+        # any more — boundary masking asks the substrate per axis and the
+        # vision window asks the substrate directly (WS-7 first knockdown;
+        # the non-square guard that used to live here was DIV-003's third
+        # registered crash).
+        self.grid_size = self.metadata.grid_size
 
         # Observation/model metadata
         self.meter_count = self.metadata.meter_count
@@ -317,7 +314,6 @@ class VectorizedHamletEnv:
         self.action_mask_builder = ActionMaskBuilder(
             action_space=self.action_space,
             device=self.device,
-            grid_size=self.grid_size,
             substrate=self.substrate,
             movement_deltas=self._movement_deltas,
             action_ids=self.action_ids,
@@ -538,18 +534,20 @@ class VectorizedHamletEnv:
         not silently produce broken observations.
         """
         max_vision_radius = 50
-        if self.partial_observability and self.grid_size is not None:
-            grid_size = float(self.grid_size)
-            raw_radius = int(math.ceil(self.vision_range * (grid_size / 2.0)))
+        if self.partial_observability and self.substrate.supports_partial_vision:
+            # The substrate owns the radius derivation and the window width
+            # (WS-7 first knockdown): the same numbers the compiler asked for
+            # at build_spec time, so declared and produced dims cannot drift.
+            raw_radius = self.substrate.get_vision_radius(self.vision_range)
             if raw_radius > max_vision_radius:
                 raise ValueError(
                     f"Vision radius {raw_radius} exceeds maximum {max_vision_radius}. "
                     f"This would create a {2 * raw_radius + 1}x{2 * raw_radius + 1} observation window, "
-                    f"causing OOM. Reduce vision_range ({self.vision_range}) or grid_size ({self.grid_size}). "
-                    f"Max supported configuration: vision_range * (grid_size / 2) <= {max_vision_radius}"
+                    f"causing OOM. Reduce vision_range ({self.vision_range}) or the grid extent. "
+                    f"Max supported configuration: derived vision radius <= {max_vision_radius}"
                 )
-            self.vision_radius = max(1, raw_radius)
-            self.local_window_size = min((2 * self.vision_radius) + 1, int(grid_size))
+            self.vision_radius = raw_radius
+            self.local_window_size = (2 * self.vision_radius) + 1
 
         if not self.partial_observability:
             return

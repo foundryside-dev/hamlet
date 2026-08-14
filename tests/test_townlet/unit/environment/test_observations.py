@@ -330,16 +330,25 @@ class TestPartialObservabilityWindowDimensions:
         curriculum_path = level_dir / "curriculum.yaml"
         curriculum = yaml.safe_load(curriculum_path.read_text())
         curriculum["curriculum"]["active_vision"] = "partial"
-        curriculum["curriculum"]["vision_range"] = 1.0
+        # 0.5 on a 5-cube -> radius 2 -> 5^3 = 125 dims, exactly at the 3D cap.
+        # (1.0 -> radius 3 -> 343 is correctly rejected by the 125-cell cap.)
+        curriculum["curriculum"]["vision_range"] = 0.5
         curriculum_path.write_text(yaml.safe_dump(curriculum, sort_keys=False))
 
         env = env_factory(config_dir=config_dir, num_agents=1, device_override=device)
         assert env.substrate.position_dim == 3
 
         local_window_field = env.observation_spec.get_field_by_name("obs_local_window")
-        # Current implementation flattens a 2D window even for 3D grids; ensure dims match emitted spec.
-        expected_dims = (env.local_window_size or 0) ** 2
+        # The window is a CUBE: local_window_size^position_dim, matching what
+        # Grid3D.encode_partial_observation actually emits. The previous pin
+        # (window^2 — "flattens a 2D window even for 3D grids") certified the
+        # DIV-003 cubic crash: reset() would have died on 125 produced vs 25
+        # declared, which is why this test never called it (WS-7 knockdown).
+        expected_dims = (env.local_window_size or 0) ** 3
+        assert expected_dims == 125
         assert local_window_field.dims == expected_dims, f"Expected obs_local_window dims {expected_dims}, got {local_window_field.dims}"
+        obs = env.reset()
+        assert obs.shape == (1, env.observation_spec.total_dims)
 
     def test_aspatial_partial_observability_rejected(
         self,

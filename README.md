@@ -389,8 +389,9 @@ Intent, not yet built — stated plainly because older docs blur the line:
     `Literal`, its docstring and an unread `icm_config` field. `composition.normalize` and
     `composition.clip` validate but have no reader; `dac_engine.py` takes only `log_components`
     and `log_modifiers` from that block.
-  - `grid3d` passes the substrate schema but has no branch in `SubstrateFactory.build`; 3-D grids
-    are reachable as `type: grid` with `topology: cubic`.
+  - `type: grid3d` was deleted from the substrate schema (it never had a
+    `SubstrateFactory.build` branch, so it could only compile toward a guaranteed crash); 3-D
+    grids are `type: grid` with `topology: cubic`.
   - All four VFS variables declared in `configs/default_curriculum/environment.yaml` —
     `deficit_energy`, `deficit_satiation`, `time_since_last_eat`, `time_since_last_sleep` — are
     observed but written by nothing: those names appear nowhere under `src/townlet/`, and in no

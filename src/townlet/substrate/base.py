@@ -192,6 +192,68 @@ class SpatialSubstrate(ABC):
         """
         pass
 
+    # --- Observation-shape contract (WS-7 first knockdown, PDR-0035) --------
+    #
+    # The compiler learns a substrate's observation shape by asking the
+    # instance — these five members ARE that contract, and each answer must
+    # equal the width of the tensor the substrate's own encoder produces
+    # (pinned by test_observation_shape_contract.py). Deriving these numbers
+    # anywhere else is the defect class behind DIV-003
+    # (docs/oracle/known-divergences.md).
+
+    @property
+    @abstractmethod
+    def supports_partial_vision(self) -> bool:
+        """Whether this substrate can emit a local vision window (POMDP).
+
+        True only where encode_partial_observation is a real encoding
+        (Grid2D, Grid3D). Substrates returning False never receive
+        get_vision_radius / get_partial_window_dim calls.
+        """
+        pass
+
+    @abstractmethod
+    def get_grid_encoding_dim(self) -> int:
+        """Width of the global spatial encoding (`obs_grid_encoding`).
+
+        Must equal what the runtime publishes under global vision:
+        _encode_full_grid's width where it exists (Grid2D/Grid3D occupancy
+        grids), otherwise encode_observation's width (GridND coordinate
+        encoding), otherwise 0 (aspatial, continuous — no grid field).
+        """
+        pass
+
+    @abstractmethod
+    def get_position_feature_dim(self) -> int:
+        """Width of the position-features encoding (`obs_position`).
+
+        Must equal the width of the runtime's published position features —
+        observation_encoder's fallback chain: _encode_position_features →
+        encode_position_features → encode_observation → normalize_positions.
+        0 for aspatial (no field is declared).
+        """
+        pass
+
+    @abstractmethod
+    def get_vision_radius(self, vision_range: float) -> int:
+        """Radius (in cells) for a declared vision_range fraction.
+
+        The single home of the historical `ceil(vision_range * grid_size/2)`
+        formula, generalized to the longest axis (identical on squares).
+        Substrates without partial vision raise ValueError.
+        """
+        pass
+
+    @abstractmethod
+    def get_partial_window_dim(self, vision_radius: int) -> int:
+        """Width of the local-window encoding (`obs_local_window`) at a radius.
+
+        Must equal encode_partial_observation's actual output width for the
+        same radius — (2r+1)² for Grid2D, (2r+1)³ for Grid3D. Substrates
+        without partial vision raise ValueError.
+        """
+        pass
+
     @abstractmethod
     def normalize_positions(self, positions: torch.Tensor) -> torch.Tensor:
         """Normalize positions to [0, 1] range (always relative encoding).

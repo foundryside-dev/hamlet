@@ -74,6 +74,24 @@ class AspatialSubstrate(SpatialSubstrate):
         """Aspatial has zero observation dimensions (no position encoding)."""
         return 0
 
+    @property
+    def supports_partial_vision(self) -> bool:
+        return False
+
+    def get_grid_encoding_dim(self) -> int:
+        """No positions, no grid: nothing to encode."""
+        return 0
+
+    def get_position_feature_dim(self) -> int:
+        """No positions: no obs_position field is ever declared."""
+        return 0
+
+    def get_vision_radius(self, vision_range: float) -> int:
+        raise ValueError("Aspatial substrates do not support partial vision; no vision radius exists.")
+
+    def get_partial_window_dim(self, vision_radius: int) -> int:
+        raise ValueError("Aspatial substrates do not support partial vision; no local window exists.")
+
     def normalize_positions(self, positions: torch.Tensor) -> torch.Tensor:
         """Normalize positions to [0, 1] range (always relative encoding).
 

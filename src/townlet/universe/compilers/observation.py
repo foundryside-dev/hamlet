@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import math
 from typing import Any, Literal, cast
 
 import torch
@@ -59,29 +58,35 @@ class ObservationCompiler:
                 "Partial observability requires vision_support to be 'partial' or 'both'."
             )
 
-        grid_width = grid_height = 0
-        grid_cells = 0
-        if substrate.type in {"grid", "grid3d"} and substrate.grid is not None:
-            grid_width = substrate.grid.width
-            grid_height = substrate.grid.height
-            depth = getattr(substrate.grid, "depth", None)
-            grid_cells = grid_width * grid_height * depth if depth is not None else grid_width * grid_height
-        elif substrate.type == "gridnd" and substrate.gridnd is not None:
-            position_dims = len(substrate.gridnd.dimension_sizes)
-            if substrate.gridnd.observation_encoding == "scaled":
-                grid_cells = 2 * position_dims
-            elif substrate.gridnd.observation_encoding in {"relative", "absolute"}:
-                grid_cells = position_dims
-            else:
-                raise ValueError(f"Invalid gridnd observation_encoding: {substrate.gridnd.observation_encoding!r}")
+        # The substrate INSTANCE is the single authority on observation shape
+        # (WS-7 first knockdown, PDR-0035): every spatial dim below is asked,
+        # never re-derived from substrate.type strings. The instance is built
+        # through the same factory door the runtime uses, so the compiled
+        # widths cannot drift from what the runtime encoders produce — the
+        # drift was DIV-003's three crashes. A config the factory rejects
+        # fails compilation loudly, before any level artifact exists.
+        try:
+            substrate_instance = SubstrateFactory.build(substrate, torch.device("cpu"))
+        except Exception as exc:
+            raise ValueError(
+                "Failed to build substrate instance for observation dimension calculation. "
+                "Fix the substrate config; compiler observation dimensions must come from the runtime substrate implementation."
+            ) from exc
+
+        grid_cells = substrate_instance.get_grid_encoding_dim()
 
         if vision_support in {"both", "global"} and grid_cells:
             dims = grid_cells
             is_active = canon_active_vision == "global"
-            if substrate.type == "gridnd":
+            # Descriptions are presentation only — every dim above came from
+            # the instance. gridnd keeps its historical wording byte-for-byte.
+            width = getattr(substrate_instance, "width", 0)
+            height = getattr(substrate_instance, "height", 0)
+            if hasattr(substrate_instance, "dimension_sizes"):
                 desc = f"{dims}-cell gridnd encoding"
-            elif grid_width and grid_height:
-                desc = f"{grid_width}x{grid_height} grid encoding"
+            elif width and height:
+                depth = getattr(substrate_instance, "depth", None)
+                desc = f"{width}x{height}x{depth} grid encoding" if depth is not None else f"{width}x{height} grid encoding"
             else:
                 desc = "Global grid encoding"
             fields.append(
@@ -101,18 +106,12 @@ class ObservationCompiler:
             offset += dims
 
         if vision_support in {"both", "partial"}:
-            if substrate.type == "gridnd" and canon_active_vision == "partial":
-                raise ValueError(
-                    "Partial observability (local vision) is not supported for gridnd substrates. "
-                    "Use active_vision='global' or vision_support='global'/'both' with grid substrates."
-                )
-
-            if substrate.type in {"grid", "grid3d"} and grid_width and grid_height:
-                radius = max(1, int(math.ceil(vision_range * (grid_width / 2.0))))
-                window_size = min((2 * radius) + 1, grid_width)
-                dims = window_size * window_size
+            if substrate_instance.supports_partial_vision:
+                radius = substrate_instance.get_vision_radius(vision_range)
+                dims = substrate_instance.get_partial_window_dim(radius)
+                window_span = 2 * radius + 1
                 is_active = canon_active_vision == "partial"
-                desc = f"{window_size}x{window_size} local window"
+                desc = "x".join([str(window_span)] * substrate_instance.position_dim) + " local window"
                 fields.append(
                     ObservationField(
                         uuid=None,
@@ -128,31 +127,14 @@ class ObservationCompiler:
                     )
                 )
                 offset += dims
-
-        position_dim = 0
-        velocity_dim = 0
-
-        if substrate.type == "aspatial":
-            position_dim = 0
-            velocity_dim = 0
-        elif substrate.type in {"grid", "grid3d"}:
-            if substrate.grid is not None:
-                position_dim = 3 if substrate.grid.topology == "cubic" else 2
-            velocity_dim = position_dim
-        elif substrate.type == "gridnd":
-            if substrate.gridnd is not None:
-                position_dim = len(substrate.gridnd.dimension_sizes)
-            velocity_dim = position_dim
-        elif substrate.type in {"continuous", "continuousnd"}:
-            try:
-                substrate_instance = SubstrateFactory.build(substrate, torch.device("cpu"))
-                position_dim = substrate_instance.get_observation_dim()
-                velocity_dim = substrate_instance.position_dim
-            except Exception as exc:
+            elif canon_active_vision == "partial":
                 raise ValueError(
-                    "Failed to build substrate instance for observation dimension calculation. "
-                    "Fix the substrate config; compiler observation dimensions must come from the runtime substrate implementation."
-                ) from exc
+                    f"Partial observability (local vision) is not supported for {substrate.type} substrates. "
+                    "Use active_vision='global' or vision_support='global'/'both' with grid substrates."
+                )
+
+        position_dim = substrate_instance.get_position_feature_dim()
+        velocity_dim = substrate_instance.position_dim
 
         if position_dim:
             fields.append(

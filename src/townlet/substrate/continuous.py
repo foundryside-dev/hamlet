@@ -330,6 +330,25 @@ class ContinuousSubstrate(SpatialSubstrate):
         else:
             raise ValueError(f"Invalid observation_encoding: {self.observation_encoding}")
 
+    @property
+    def supports_partial_vision(self) -> bool:
+        return False
+
+    def get_grid_encoding_dim(self) -> int:
+        """Continuous spaces have no grid; no obs_grid_encoding field exists."""
+        return 0
+
+    def get_position_feature_dim(self) -> int:
+        """The whole continuous encoding is position features
+        (encode_observation is what the runtime publishes for obs_position)."""
+        return self.get_observation_dim()
+
+    def get_vision_radius(self, vision_range: float) -> int:
+        raise ValueError("Continuous substrates do not support partial vision; no vision radius exists.")
+
+    def get_partial_window_dim(self, vision_radius: int) -> int:
+        raise ValueError("Continuous substrates do not support partial vision; no local window exists.")
+
     def normalize_positions(self, positions: torch.Tensor) -> torch.Tensor:
         """Normalize positions to [0, 1] range (always relative encoding).
 

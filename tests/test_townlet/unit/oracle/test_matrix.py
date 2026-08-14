@@ -17,14 +17,36 @@ LEVELS = (
     "L3_temporal_mechanics",
 )
 
+# Deliberately DUPLICATED from matrix.py, not imported: these are pins. The
+# signatures are the verbatim final-exception lines re-verified at
+# oracle-2026-08-13 (0e875d7a) on 2026-08-15 — see DIV-003 in
+# docs/oracle/known-divergences.md. A matrix edit that moves a signature must
+# consciously move the pin too.
+_DIV003_SIGNATURES = {
+    "div003_scaled": ("ValueError: Observation field 'obs_position' produced shape (4, 4), expected (4, 2)."),
+    "div003_cubic_partial": ("ValueError: Observation field 'obs_local_window' produced shape (4, 125), expected (4, 25)."),
+    "div003_rect": "ValueError: Non-square grids not yet supported: 8×6",
+}
+_DIV003_LEVELS = {
+    "div003_scaled": "L1_full_observability",
+    "div003_cubic_partial": "L2_partial_observability",
+    "div003_rect": "L1_full_observability",
+}
 
-def test_default_matrix_declares_all_ten_cells() -> None:
+
+def test_matrix_declares_sixteen_cells() -> None:
     """CUDA duplicates of each cell are always declared — never absent from
     the matrix — so the harness can report them SKIPPED instead of silently
-    omitting them when --cuda is not passed (spec: 'never silent')."""
+    omitting them when --cuda is not passed (spec: 'never silent'). 16 =
+    the 10 standing default_curriculum cells + 3 DIV-003 fixture packs x 2
+    devices (content 5 step 3)."""
     cells: tuple[Cell, ...] = default_cells()
-    assert len(cells) == 10
-    assert all(c.params.pack == "configs/default_curriculum" for c in cells)
+    assert len(cells) == 16
+    standing = [c for c in cells if c.params.pack == "configs/default_curriculum"]
+    div003 = [c for c in cells if c.params.pack.startswith("configs/differential/")]
+    assert len(standing) == 10
+    assert len(div003) == 6
+    assert len(standing) + len(div003) == len(cells)
     assert all(c.params.num_agents == 4 for c in cells)
     assert all(c.params.steps == 100 for c in cells)
     assert all(c.params.seed == 42 for c in cells)
@@ -33,9 +55,12 @@ def test_default_matrix_declares_all_ten_cells() -> None:
 def test_cpu_block_precedes_cuda_block() -> None:
     cells = default_cells()
     assert tuple(c.params.device for c in cells[:5]) == ("cpu",) * 5
-    assert tuple(c.params.device for c in cells[5:]) == ("cuda",) * 5
+    assert tuple(c.params.device for c in cells[5:10]) == ("cuda",) * 5
     assert tuple(c.params.level for c in cells[:5]) == LEVELS
-    assert tuple(c.params.level for c in cells[5:]) == LEVELS
+    assert tuple(c.params.level for c in cells[5:10]) == LEVELS
+    # DIV-003 block appended after the standing matrix, same cpu-then-cuda rule
+    assert tuple(c.params.device for c in cells[10:13]) == ("cpu",) * 3
+    assert tuple(c.params.device for c in cells[13:16]) == ("cuda",) * 3
 
 
 def test_cell_id_is_unique_and_readable() -> None:
@@ -113,11 +138,57 @@ def test_registered_divergence_rejects_unicode_digit_refs() -> None:
         RegisteredDivergence(register_ref="DIV-٠٠٣", old_stderr_substring=_GOOD_SIGNATURE)
 
 
-def test_default_cells_declare_no_expectations_yet() -> None:
-    """Pin: expectations arrive with the DIV-003 matrix cells (content 5 step 3),
-    not before. A default cell sprouting one silently would change what exit 0
-    certifies for the whole standing matrix."""
-    assert all(c.expected is None for c in default_cells())
+def test_standing_cells_declare_no_expectations() -> None:
+    """Pin: the standing default_curriculum cells still certify bare
+    agreement. Expectations live ONLY on the DIV-003 fixture cells — a
+    standing cell sprouting one silently would change what exit 0 certifies
+    for the whole standing matrix."""
+    for c in default_cells():
+        if c.params.pack == "configs/default_curriculum":
+            assert c.expected is None, f"standing cell {c.cell_id} declares an expectation"
+
+
+def test_div003_cells_bind_the_registered_signatures() -> None:
+    """Every DIV-003 cell binds DIV-003 with the verbatim final-exception
+    line re-verified at the oracle tag, on the level whose crash it is. A
+    drifted signature would quietly turn DIVERGED_AS_REGISTERED into
+    OLD_SIDE_ERROR (fail-closed, but for the wrong stated reason) — or, if
+    loosened, widen what the suppression can match (PDR-0040: loosen nothing
+    without a new adversarial pass)."""
+    div003 = [c for c in default_cells() if c.params.pack.startswith("configs/differential/")]
+    assert {Path(c.params.pack).name for c in div003} == set(_DIV003_SIGNATURES)
+    for c in div003:
+        name = Path(c.params.pack).name
+        assert c.expected is not None, f"{c.cell_id} declares no expectation"
+        assert c.expected.register_ref == "DIV-003"
+        assert c.expected.old_stderr_substring == _DIV003_SIGNATURES[name]
+        assert c.params.level == _DIV003_LEVELS[name]
+
+
+def test_div003_fixture_packs_vary_only_the_declared_axis() -> None:
+    """Trial-001 discipline: a fixture pack is default_curriculum with ONE
+    axis moved. Every yaml except stratum.yaml (the moved axis) and
+    experiment.yaml (name + single-level list) must be byte-identical to its
+    default_curriculum counterpart, and the pack carries exactly its declared
+    level. A fixture that drifted measures something other than the
+    registered crash."""
+    root = Path(__file__).resolve().parents[4]
+    base = root / "configs" / "default_curriculum"
+    for pack_name, level in _DIV003_LEVELS.items():
+        pack = root / "configs" / "differential" / pack_name
+        yamls = sorted(p.relative_to(pack) for p in pack.rglob("*.yaml"))
+        assert yamls, f"{pack_name}: pack missing or empty"
+        level_dirs = {p.parts[1] for p in yamls if p.parts[0] == "levels"}
+        assert level_dirs == {level}, f"{pack_name}: levels {level_dirs} != {{{level!r}}}"
+        for rel in yamls:
+            counterpart = base / rel
+            assert counterpart.exists(), f"{pack_name}/{rel} has no default_curriculum counterpart"
+            if rel.name in ("stratum.yaml", "experiment.yaml"):
+                continue
+            assert (pack / rel).read_bytes() == counterpart.read_bytes(), f"{pack_name}/{rel} drifted from default_curriculum"
+        assert (pack / "stratum.yaml").read_bytes() != (
+            base / "stratum.yaml"
+        ).read_bytes(), f"{pack_name}: stratum.yaml does not move the declared axis"
 
 
 def _register_sections() -> dict[str, str]:

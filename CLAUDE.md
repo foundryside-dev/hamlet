@@ -436,8 +436,8 @@ files differ only in comments. Five documented levels are **three distinct unive
 
 ### Substrate Types
 
-- `grid`: 2D discrete grid (Grid2DSubstrate)
-- `grid3d`: 3D discrete grid (Grid3DSubstrate)
+- `grid`: 2D discrete grid (Grid2DSubstrate) — or 3D with `topology: cubic` (Grid3DSubstrate).
+  There is no `grid3d` type; that literal was deleted (it never had a factory branch).
 - `gridnd`: 4D-100D discrete grid (GridNDSubstrate)
 - `continuous`: 1D/2D/3D continuous space
 - `continuousnd`: 4D-100D continuous space

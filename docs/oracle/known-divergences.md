@@ -124,6 +124,72 @@ surface is deliberately open-ended and MUST NOT be treated as "just the two know
 
 ---
 
+## DIV-003 — Substrate→observation-dim seam: three declared configs compile, then crash before producing a trace
+
+- **Status:** `built` (2026-08-15 — the seam is cut; full 16-cell matrix CPU+CUDA exit 0
+  with all six DIV-003 cells `DIVERGED_AS_REGISTERED`, runs `20260815-055108` /
+  `20260815-055207`). Previously `tag-stamped` the same day: all three crashes re-executed
+  at `0e875d7a` through the harness's own driver under the oracle worktree's `src` with the
+  injection probe-verified first — not copied from the 2026-08-11 assessment, which predicted
+  the first two messages exactly and had never captured the third verbatim.
+- **Harness shape: old-side-crash**
+- **Provenance:** `hamlet-e3af412673` (WS-7, first knockdown) · `PDR-0035` (the unit) ·
+  `PDR-0036` (declared-and-crashing is a divergence — authorizes this entry) · `PDR-0037`
+  (record-then-bind order) · `PDR-0040` (the conjunctive match these cells are adjudicated
+  by) · assessment §3/§4 (first found; superseded by the tag re-verification above)
+- **Surface:** the contract by which the compiler learns a substrate's observation shape.
+  `universe/compilers/observation.py` derives dims by switching on `substrate.type` string
+  literals (`:64-76` grid cells, `:135-145` position/velocity dims — including a 2-D window
+  formula that never reads `depth`) instead of asking the substrate instance, the pattern the
+  same function already applies to `continuous`/`continuousnd` at `:146-155`; and
+  `environment/vectorized_env.py:180` hard-rejects non-square grids the compiler itself
+  handles correctly.
+
+**Oracle behaviour (verified 2026-08-15 at `0e875d7a`):** three declared, schema-valid
+configurations compile and then crash at env construction/reset — nonzero exit, **no trace
+written**. Reproduced with the harness driver (`num_agents=4`, `steps=100`, `seed=42`,
+`cpu`); final exception lines verbatim (these are the cell signatures):
+
+| fixture pack | level | final exception |
+|---|---|---|
+| `configs/differential/div003_scaled` — `observation_encoding: scaled`, sole change | `L1_full_observability` | `ValueError: Observation field 'obs_position' produced shape (4, 4), expected (4, 2).` |
+| `configs/differential/div003_cubic_partial` — `topology: cubic` + `depth: 3`, sole changes | `L2_partial_observability` | `ValueError: Observation field 'obs_local_window' produced shape (4, 125), expected (4, 25).` |
+| `configs/differential/div003_rect` — `height: 6` (width 8), sole change | `L1_full_observability` | `ValueError: Non-square grids not yet supported: 8×6` |
+
+Raise sites at the tag: the first two from the shape guard at
+`environment/observation_encoder.py:140` — the substrate honours the declared config
+(`grid2d.py` `_encode_scaled` returns `[N,4]`; `grid3d.py` partial window returns a
+`(2r+1)³` cube) while the compiler hardcoded 2 position dims and a 2-D window; the third
+from `environment/vectorized_env.py:180`. Each fixture pack is a copy of
+`configs/default_curriculum` varying **only** the named stratum values, reduced to its one
+level (shape-mismatch first dim is `num_agents`, so signatures are stable only at the
+declared `num_agents=4`).
+
+**Intended new behaviour:** the rebuilt seam asks the substrate instance for its
+observation shape for **all** substrate types; all three configs compile **and run**,
+producing traces valid for their cells' params. The divergence is old-crashes/new-runs —
+there is no old trace to compare, which is exactly the `PDR-0037` shape.
+
+**Harness adjudication:** bound per-cell in `src/townlet/oracle/matrix.py` via
+`RegisteredDivergence("DIV-003", <verbatim final-exception line above>)`. A cell passes
+as `DIVERGED_AS_REGISTERED` only on `PDR-0040`'s full conjunction (old crashed + no trace
++ signature inside the final exception text + new side ran with a valid lone trace from
+the declared src root). Pre-cut, both sides crash and the cells land `NEW_SIDE_ERROR`
+("not (yet) built") — red, honestly; they flip at the cut. The old side is frozen, so
+`REGISTERED_DIVERGENCE_ABSENT` on these cells can only mean the oracle moved forward (new
+tag) — retire the entry then.
+
+**Deliberately NOT covered: `type: grid3d`.** The fourth crash the knockdown carries
+(`ValueError: Unknown substrate type: grid3d`, `substrate/factory.py:152`, reproduced at
+the tag 2026-08-15 — it dies at *compile*, via `compilers/actions.py`) is inside the seam
+but outside this entry: the assessment's zero-BC disposition is to **delete the dead
+literal** (the working 3-D path is `type: grid` + `topology: cubic`, and no factory branch
+has ever existed), and a config that crashes on *both* sides produces no trace-visible
+divergence to register. If the cut instead builds a `grid3d` factory branch, extend this
+entry — or add DIV-004 — with its cell **before** cutting, per this register's own rule.
+
+---
+
 ## Adding an entry
 
 Record the divergence **before** cutting the seam that produces it — at knockdown plan time,

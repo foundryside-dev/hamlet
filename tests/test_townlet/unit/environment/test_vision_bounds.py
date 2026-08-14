@@ -135,12 +135,17 @@ class TestVisionRadiusBounds:
         expected_window_size = 2 * 13 + 1  # 27
         assert env.local_window_size == expected_window_size, f"Expected window_size={expected_window_size}, got {env.local_window_size}"
 
-    def test_local_window_clamped_to_grid_size(self, grid_50x50_config_pack):
-        """Local window size should not exceed grid size.
+    def test_local_window_may_overhang_the_grid(self, grid_50x50_config_pack):
+        """The window is NOT clamped to the grid: declared width must equal
+        what encode_partial_observation actually emits, and the encoder always
+        returns (2r+1)^2 with out-of-bounds cells empty.
 
-        With vision_range=1.0 on a 50x50 grid:
-        - raw_radius = ceil(1.0 * 25) = 25
-        - window = 2*25+1 = 51, but clamped to grid_size = 50
+        With vision_range=1.0 on a 50x50 grid: radius = ceil(1.0 * 25) = 25,
+        window = 2*25+1 = 51. The old min(2r+1, grid_size) clamp declared 50^2
+        while the encoder produced 51^2 — a guaranteed reset() crash on any
+        config where the clamp engaged, the same declared-vs-produced drift as
+        DIV-003 (WS-7 knockdown). reset() below is the proof the old pin
+        could never have survived.
         """
         mutate_curriculum_yaml(grid_50x50_config_pack, _set_partial_with_vision(1.0))
 
@@ -151,8 +156,10 @@ class TestVisionRadiusBounds:
             device=torch.device("cpu"),
         )
 
-        # Window size should be clamped to grid size
-        assert env.local_window_size <= 50, f"Window size should be <= grid size 50, got {env.local_window_size}"
+        assert env.local_window_size == 51, f"Expected unclamped window 51, got {env.local_window_size}"
+        assert env.observation_spec.get_field_by_name("obs_local_window").dims == 51**2
+        obs = env.reset()
+        assert obs.shape == (1, env.observation_spec.total_dims)
 
     # Note: test_vision_radius_exceeds_max_raises_error was removed because:
     # - vision_range is validated to be <= 1.0 by CurriculumConfig

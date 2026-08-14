@@ -34,7 +34,6 @@ class ActionMaskBuilder:
         *,
         action_space: ComposedActionSpace,
         device: torch.device,
-        grid_size: int | None,
         substrate: SpatialSubstrate,
         movement_deltas: torch.Tensor,
         action_ids: dict[str, int],
@@ -42,7 +41,6 @@ class ActionMaskBuilder:
     ) -> None:
         self.action_space = action_space
         self.device = device
-        self.grid_size = grid_size
         self.substrate = substrate
         self.movement_deltas = movement_deltas
         self.action_ids = action_ids
@@ -135,12 +133,17 @@ class ActionMaskBuilder:
         if item_handler is not None:
             item_handler.compute_custom_action_masks(self.action_space, action_masks, positions)
 
-        # Boundary constraints — only for discrete grid substrates.
-        if self.grid_size is not None and self.substrate.position_dim >= 2:
+        # Boundary constraints — only for discrete rectangular grid
+        # substrates, per axis from the substrate's own extents (the old
+        # single grid_size masked the y axis with the x extent, which was
+        # only correct on square grids — WS-7 first knockdown).
+        width = getattr(self.substrate, "width", None)
+        height = getattr(self.substrate, "height", None)
+        if width is not None and height is not None and self.substrate.position_dim >= 2:
             at_top = positions[:, 1] == 0
-            at_bottom = positions[:, 1] == self.grid_size - 1
+            at_bottom = positions[:, 1] == height - 1
             at_left = positions[:, 0] == 0
-            at_right = positions[:, 0] == self.grid_size - 1
+            at_right = positions[:, 0] == width - 1
 
             deltas = self.movement_deltas
             up_action_ids = torch.nonzero(deltas[:, 1] < 0, as_tuple=False).squeeze(1)
@@ -165,7 +168,7 @@ class ActionMaskBuilder:
                 if rows.numel() > 0:
                     action_masks[rows.unsqueeze(1), right_action_ids] = False
 
-        if self.grid_size is not None and self.substrate.position_dim == 3:
+        if width is not None and height is not None and self.substrate.position_dim == 3:
             at_floor = positions[:, 2] == 0
             if hasattr(self.substrate, "depth"):
                 at_ceiling = positions[:, 2] == self.substrate.depth - 1

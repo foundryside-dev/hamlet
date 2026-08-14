@@ -28,6 +28,33 @@ _DEFAULT_LEVELS = (
     "L3_temporal_mechanics",
 )
 
+# DIV-003 fixture cells (docs/oracle/known-divergences.md — the
+# substrate→observation-dim seam, PDR-0035/PDR-0036). Each pack is
+# default_curriculum with exactly one stratum axis moved (pinned by
+# test_div003_fixture_packs_vary_only_the_declared_axis); each signature is
+# the verbatim final-exception line re-verified at oracle-2026-08-13
+# (0e875d7a) on 2026-08-15. The shape-mismatch messages embed num_agents in
+# their first dim, so these signatures are stable only at num_agents=4 —
+# change the cell params and the signatures must be re-verified at the tag.
+_DIV003_FIXTURES = (
+    # (pack dir under configs/differential, level, registered signature)
+    (
+        "div003_scaled",
+        "L1_full_observability",
+        "ValueError: Observation field 'obs_position' produced shape (4, 4), expected (4, 2).",
+    ),
+    (
+        "div003_cubic_partial",
+        "L2_partial_observability",
+        "ValueError: Observation field 'obs_local_window' produced shape (4, 125), expected (4, 25).",
+    ),
+    (
+        "div003_rect",
+        "L1_full_observability",
+        "ValueError: Non-square grids not yet supported: 8×6",
+    ),
+)
+
 # ASCII: \d alone also matches Unicode decimal digits ('DIV-٠٠٣'), which would
 # construct a ref no register heading can ever carry.
 _REGISTER_REF_RE = re.compile(r"DIV-\d{3}", re.ASCII)
@@ -109,7 +136,9 @@ class Cell:
 
 
 def default_cells() -> tuple[Cell, ...]:
-    """The full declared matrix: all 5 levels on cpu, then all 5 on cuda.
+    """The full declared matrix: the standing block (all 5 default_curriculum
+    levels on cpu, then all 5 on cuda), followed by the DIV-003 block (each
+    fixture pack on cpu, then each on cuda).
 
     CUDA cells are always declared, never conditionally omitted — per spec,
     the RUN decision (whether to actually execute them) belongs to the
@@ -117,12 +146,13 @@ def default_cells() -> tuple[Cell, ...]:
     that drops CUDA cells entirely without the flag would make that skip
     silent instead of reported.
 
-    No default cell declares an expected divergence (pinned by test): the
-    DIV-003 cells arrive with the crashing-config fixtures in content 5
-    step 3, and a default cell sprouting an expectation would change what
-    exit 0 certifies for the whole standing matrix.
+    No STANDING cell declares an expected divergence (pinned by test) — only
+    the DIV-003 fixture cells do, each binding the register entry with its
+    tag-verified signature. Pre-cut they land NEW_SIDE_ERROR (both sides
+    crash — the divergence is not yet built); they flip to
+    DIVERGED_AS_REGISTERED when the seam is cut.
     """
-    return tuple(
+    standing = tuple(
         Cell(
             RunParams(
                 pack=_DEFAULT_PACK,
@@ -136,3 +166,19 @@ def default_cells() -> tuple[Cell, ...]:
         for device in ("cpu", "cuda")
         for level in _DEFAULT_LEVELS
     )
+    div003 = tuple(
+        Cell(
+            RunParams(
+                pack=f"configs/differential/{pack_dir}",
+                level=level,
+                num_agents=4,
+                steps=100,
+                seed=42,
+                device=device,
+            ),
+            expected=RegisteredDivergence(register_ref="DIV-003", old_stderr_substring=signature),
+        )
+        for device in ("cpu", "cuda")
+        for pack_dir, level, signature in _DIV003_FIXTURES
+    )
+    return standing + div003

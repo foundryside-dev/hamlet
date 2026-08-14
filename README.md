@@ -265,10 +265,14 @@ uv run python -m townlet.oracle.harness --cell default_curriculum:L0_0_minimal
 
 Its declared matrix is five levels × {cpu, cuda}; the CUDA cells are always declared and reported
 SKIPPED rather than silently dropped when `--cuda` is absent. It exits 0 only when every cell is
-AGREE or SKIPPED, and an empty run exits 1 so that doing nothing cannot look green. Both entries in
-the divergence register are checkpoint-boundary surfaces and cannot appear in an env-step trace, so
-under v1's trace-only scope the harness treats any DIVERGE or HASH_MISMATCH as a rebuild defect or
-a missing register entry — both findings.
+AGREE, SKIPPED, or DIVERGED_AS_REGISTERED — the last meaning the cell's declared binding to a
+divergence-register entry matched narrowly: the oracle side crashed without producing a trace, the
+registered signature appearing in the final exception text of its stderr, *and* the rebuild side
+ran and produced a valid trace. An unmatched red of any kind still fails, and an empty or
+all-SKIPPED run exits 1 so that doing nothing cannot look green. Both checkpoint-boundary
+entries in the divergence register cannot appear in an env-step trace, so the harness treats any
+DIVERGE or HASH_MISMATCH with no matched entry as a rebuild defect or a missing register entry —
+both findings.
 
 ### Checks, run locally
 

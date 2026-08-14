@@ -84,13 +84,18 @@ class HarnessError(RuntimeError):
 class CellVerdict:
     """The harness's judgement for one matrix cell.
 
-    register_refs is the binding point for known-divergences entries; empty in
-    v1 because no current entry can manifest in an env trace (DIV-001/002 are
-    checkpoint-boundary). Any DIVERGE or HASH_MISMATCH is therefore a rebuild
-    defect or a missing register entry — see docs/oracle/known-divergences.md.
+    register_refs names the known-divergences entries this cell's observed
+    outcome matched. It is populated ONLY by the harness's expectation matcher
+    and ONLY on kind="DIVERGED_AS_REGISTERED" (hamlet-56ec575ae2); exit_code
+    enforces both directions. DIV-001/002 are checkpoint-boundary and cannot
+    manifest in an env trace, so a DIVERGE or HASH_MISMATCH — necessarily with
+    empty refs — is a rebuild defect or a missing register entry: see
+    docs/oracle/known-divergences.md.
     """
 
-    kind: str  # AGREE | DIVERGE | HASH_MISMATCH | OLD_SIDE_ERROR | NEW_SIDE_ERROR | SKIPPED | HARNESS_ERROR
+    # AGREE | DIVERGE | HASH_MISMATCH | OLD_SIDE_ERROR | NEW_SIDE_ERROR |
+    # SKIPPED | HARNESS_ERROR | DIVERGED_AS_REGISTERED | REGISTERED_DIVERGENCE_ABSENT
+    kind: str
     cell_id: str
     detail: dict[str, object]
     register_refs: tuple[str, ...] = ()

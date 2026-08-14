@@ -13,10 +13,14 @@ at a time against it, with a differential harness asserting old and new agree. T
 records **every place the new system is EXPECTED to differ from the oracle** — up front, at
 plan time, rather than discovered as a failing diff.
 
-An entry here means: *a diff on this surface is intended*. The harness adjudicates diffs
-against this register — a diff matching an entry is verified against that entry's *Intended
-new behaviour*; a diff matching nothing is a defect in the rebuild (or a missing entry, which
-is a process failure to record before cutting the seam).
+An entry here means: *a diff on this surface is intended*. Adjudication is split by whether
+the entry can manifest in an env trace. **Trace-visible entries** bind to the harness through
+a per-cell declaration in the matrix (see *Binding a trace-visible entry* below); the harness
+verifies the observed outcome against that declaration narrowly — it does not read this file
+at runtime. **Checkpoint-boundary entries** (DIV-001/002) cannot appear in a trace; their
+intended new behaviour is verified by the rebuilt boundary's own tests, not by the harness.
+Either way, a diff matching nothing is a defect in the rebuild (or a missing entry, which is
+a process failure to record before cutting the seam).
 
 **What does NOT belong here:**
 
@@ -127,3 +131,22 @@ not when the harness fires. An entry needs: verified oracle behaviour (read the 
 the evidence), intended new behaviour, the expected diff shape and its adjudication rule,
 and tracker + PDR provenance. A diff the harness finds that matches no entry is either a
 rebuild defect or a failure of this process; both are findings, neither is normal.
+
+**Binding a trace-visible entry to the harness** (`hamlet-56ec575ae2` / `PDR-0037`): a cell
+expected to produce a registered divergence declares it in `src/townlet/oracle/matrix.py` via
+`RegisteredDivergence(register_ref="DIV-NNN", old_stderr_substring=...)`. The harness passes
+that cell as `DIVERGED_AS_REGISTERED` **only** when ALL of these hold: the oracle side
+crashed (nonzero exit) **without writing a trace**, the declared signature appears **inside
+the final exception text of its stderr** (frame paths, warnings, log noise, stdout and
+harness-synthesized diagnostics can never satisfy it), and the rebuild side ran, producing a
+trace valid for the cell's own params from the declared src root. Everything else stays red,
+each with its own reason in the report: a crash without the signature in its final exception,
+a crash with no traceback at all, a non-crash failure (exit 0, no trace), a crash that still
+wrote a trace, a new side that also crashes (divergence not yet built — the honest
+pre-knockdown state), and an old side that runs (`REGISTERED_DIVERGENCE_ABSENT` — this entry
+is stale; reconcile it, don't ignore it). The signature must be distinctive of THE registered
+crash; declaration-time validation rejects empty, bare-exception-name and
+traceback-boilerplate signatures. Matrix-side tests require every declared ref to exist as a
+`## DIV-NNN` heading in this file **and** that entry to carry a machine-readable
+`Harness shape: old-side-crash` line — an entry predicting any other diff shape cannot be
+bound, which is what stops a typo-bind from certifying the wrong entry.

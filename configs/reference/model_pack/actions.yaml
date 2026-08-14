@@ -8,8 +8,6 @@ actions:
     - name: WAIT
       description: "Do nothing"
       enabled_by_default: true
-      costs: {}
-      effects: {}
 
   labels:
     preset: gaming

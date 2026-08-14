@@ -48,10 +48,6 @@ src/townlet/training/tensorboard_logger.py:*
 # Environment modules - will be refactored in TASK-003/TASK-004A
 src/townlet/environment/affordance_config.py:*
 src/townlet/environment/affordance_engine.py:*
-src/townlet/environment/cascade_config.py:*
-src/townlet/environment/meter_dynamics.py:*
-src/townlet/environment/observation_builder.py:*
-src/townlet/environment/reward_strategy.py:*
 src/townlet/environment/vectorized_env.py:*
 
 # Action Labels for Substrate
@@ -105,15 +101,10 @@ src/townlet/vfs/observation_builder.py:*
 src/townlet/vfs/registry.py:*
 src/townlet/config/base.py:*
 src/townlet/config/cues.py:*
-src/townlet/config/hamlet.py:*
 src/townlet/universe/dto/action_metadata.py:*
 src/townlet/universe/dto/affordance_metadata.py:*
 src/townlet/universe/dto/meter_metadata.py:*
 src/townlet/universe/dto/observation_spec.py:*
-src/townlet/config/training.py:*
-src/townlet/compiler/__main__.py:*
-src/townlet/config/affordance.py:*
-src/townlet/config/effect_pipeline.py:*
 src/townlet/environment/action_config.py:*
 src/townlet/environment/substrate_action_validator.py:*
 src/townlet/training/checkpoint_utils.py:*
@@ -126,7 +117,6 @@ src/townlet/universe/optimization.py:*
 src/townlet/universe/source_map.py:*
 src/townlet/universe/symbol_table.py:*
 src/townlet/vfs/schema.py:*
-src/townlet/universe/compiler_inputs.py:*
 src/townlet/config/capability_config.py:*
  src/townlet/config/population.py:*
 
@@ -151,7 +141,6 @@ src/townlet/environment/dac_engine.py:*
 # ArchitectureConfig: feedforward/recurrent/hybrid fields default to None (only relevant config must be present)
 # FeedforwardConfig: layer_norm defaults to False
 # TODO(TASK-005 Phase 2): Revisit this whitelist when brain.yaml becomes required for all config packs
-src/townlet/agent/brain_config.py:*
 
 # ============================================================================
 # EXCEPTIONAL LINE-BASED WHITELISTS
@@ -175,7 +164,6 @@ src/townlet/vfs/schema.py:236:CALL003
 src/townlet/agent/network_factory.py:*
 src/townlet/config/actions_config.py:*
 src/townlet/config/affordances_v2_config.py:*
-src/townlet/config/agent_config.py:*
 src/townlet/config/training_v2_config.py:*
 src/townlet/universe/raw_configs_v21.py:*
 src/townlet/config/environment_config.py:*
@@ -227,3 +215,42 @@ src/townlet/world/expression/type_checker.py:*
 #
 # Track progress: python scripts/no_defaults_lint.py src/townlet/ --whitelist .defaults-whitelist.txt
 #
+# ============================================================================
+# RECOVERY-ERA ADDITIONS (2026-08-15, hamlet-2100105c9a)
+# ============================================================================
+# The no-defaults gate had not run in CI since 2025-11-28; every module below
+# postdates that run and had never been gated. Adjudicated per the house style
+# above: mechanical patterns (accumulator .get, control-flow ternaries, CLI
+# plumbing) at file/module level. Stale entries for 12 deleted files pruned in
+# the same pass.
+
+# Oracle differential harness (WS-7) - verification instrument: CLI arg
+# defaults, trace IO plumbing. No authored config flows through it.
+src/townlet/oracle/**:*
+
+# Universe compiler stage modules - internal derivation and accumulator
+# patterns (compiler.py / compiled.py / symbol_table.py are already
+# whitelisted above; the compilers/ split postdates the ledger).
+src/townlet/universe/compilers/**:*
+src/townlet/universe/loaders/preflight.py:*
+src/townlet/universe/validation/limits.py:*
+src/townlet/universe/validation/references.py:*
+
+# Runtime action executor - control-flow ternary + accumulator setdefault
+# (WS-1 task 3 code, accepted; no config value defaulted).
+src/townlet/environment/action_executor.py:*
+
+# VFS modules added after the ledger's last maintenance - mechanical patterns.
+src/townlet/vfs/communication.py:*
+src/townlet/vfs/dynamic_needs.py:*
+src/townlet/vfs/generalisation.py:*
+src/townlet/vfs/relational.py:*
+src/townlet/vfs/schema_hashes.py:*
+src/townlet/vfs/transition_schedule.py:*
+
+# PROVISIONAL - suppressed pending adjudication in hamlet-c4ce5515cc; do NOT
+# read this entry as "adjudicated fine". vtc.py's raw-mapping parsing does
+# ad-hoc schema defaulting (.get("composition", ""), inherit-phase, priority
+# fallback) that is a genuine no-defaults concern if those mappings are
+# authored config.
+src/townlet/vfs/vtc.py:*

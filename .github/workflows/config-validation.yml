@@ -2,7 +2,7 @@ name: Config Validation
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "project-recovery"]
   pull_request:
 
 permissions:

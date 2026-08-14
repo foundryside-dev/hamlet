@@ -8,8 +8,6 @@ actions:
     - name: WAIT
       description: "Do nothing (pass turn)"
       enabled_by_default: true
-      costs: {}
-      effects: {}
 
   labels:
     preset: gaming

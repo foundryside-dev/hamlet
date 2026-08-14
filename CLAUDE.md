@@ -100,39 +100,11 @@ environment needs both.
 
 ```bash
 export PYTHONPATH=$(pwd)/src:$PYTHONPATH
-
-# Curriculum levels (pedagogical progression):
-uv run scripts/run_demo.py --config configs/L0_0_minimal           # Temporal credit assignment
-uv run scripts/run_demo.py --config configs/L0_5_dual_resource     # Multiple resources
-uv run scripts/run_demo.py --config configs/L1_full_observability  # All affordances
-uv run scripts/run_demo.py --config configs/L2_partial_observability  # POMDP + LSTM
-uv run scripts/run_demo.py --config configs/L3_temporal_mechanics  # Time-based dynamics
+uv run scripts/run_demo.py --config configs/default_curriculum --level L1_full_observability
 ```
 
-### Inference Server (Live Visualization)
-
-```bash
-# Terminal 1: Start inference server (from directory with checkpoints)
-export PYTHONPATH=$(pwd)/src:$PYTHONPATH
-python -m townlet.demo.live_inference <checkpoint_dir> 8766 0.2 10000 <config_path>
-# Args: checkpoint_dir, port, speed, total_episodes, config_path
-
-# Terminal 2: Start frontend
-cd frontend && npm run dev
-# Open http://localhost:5173
-```
-
-### Testing & Code Quality
-
-```bash
-uv run pytest                                        # Run all tests
-uv run pytest tests/test_townlet/test_integration.py # Specific test
-uv run pytest --cov=townlet --cov-report=term-missing # With coverage
-
-uv run black src/townlet tests/    # Format
-uv run ruff check src/townlet      # Lint
-uv run mypy src/townlet            # Type check
-```
+Levels live under `configs/default_curriculum/levels/` — there are no flat
+`configs/<level>/` packs. Live visualization: the `live-inference` skill.
 
 ### DemoRunner Context Manager Pattern
 
@@ -152,21 +124,6 @@ runner.load_checkpoint()   # Resources stay open indefinitely!
 ## Architecture Overview
 
 ### Townlet System (ACTIVE)
-
-```
-src/townlet/
-├── agent/networks.py           # SimpleQNetwork, RecurrentSpatialQNetwork (LSTM)
-├── environment/vectorized_env.py  # VectorizedHamletEnv (GPU-native)
-├── population/vectorized.py    # VectorizedPopulation (batched training)
-├── curriculum/{adversarial,static}.py  # Curriculum strategies
-├── exploration/{adaptive_intrinsic,rnd,epsilon_greedy}.py
-├── training/{state,replay_buffer}.py
-├── universe/compiler.py        # UAC seven-stage pipeline
-└── vfs/                        # Variable & Feature System
-    ├── schema.py               # Pydantic schemas
-    ├── registry.py             # Runtime storage with access control
-    └── observation_builder.py  # Compile-time spec generation
-```
 
 **Note**: Work only in `src/townlet/` - hamlet is obsolete legacy code.
 
@@ -269,12 +226,9 @@ configs/default_curriculum/
 **No file named `drive_as_code.yaml` exists in any shipped pack.** A grep for that filename
 returns zero hits and will falsely "confirm" whatever you were checking.
 
-**Architecture**: All reward logic defined in `drive_as_code.yaml` → compiled by UAC → executed by DACEngine in environment. RewardStrategy classes fully removed.
-
-**Runtime Components**:
-- `drive_as_code.yaml`: Declarative reward configuration (required for all config packs)
-- `DACEngine`: Runtime reward computation engine with GPU-native operations (`src/townlet/environment/dac_engine.py`)
-- `drive_hash`: Checkpoint provenance tracking for reward function reproducibility
+**Architecture**: Reward logic lives in each level's `drive.yaml` → compiled by UAC →
+executed by `DACEngine` (`src/townlet/environment/dac_engine.py`). RewardStrategy classes
+fully removed. Checkpoint provenance via `drive_hash` (SHA256 of the compiled DAC config).
 
 **Formula**:
 ```
@@ -286,28 +240,8 @@ where:
 
 ### Components
 
-**Modifiers** (Context-Sensitive Adjustment):
-- Range-based multipliers for bars or VFS variables
-- Use case: Crisis suppression (disable intrinsic when resources low)
-- Example: `energy_crisis` modifier suppresses intrinsic when energy < 0.2
-
-**Extrinsic Strategies** (Base Rewards - 9 types):
-- `multiplicative`: reward = base × bar₁ × bar₂ (compound survival)
-- `constant_base_with_shaped_bonus`: reward = base + Σ(bonuses) (fixes "Low Energy Delirium")
-- `additive_unweighted`: reward = base + Σ(bars)
-- `weighted_sum`, `polynomial`, `threshold_based`, `aggregation`, `vfs_variable`, `hybrid`
-
-**Intrinsic Strategies** (Exploration Drives - 5 types):
-- `rnd`: Random Network Distillation (novelty-seeking)
-- `icm`: Intrinsic Curiosity Module
-- `count_based`: Pseudo-count bonuses
-- `adaptive_rnd`: RND with performance-based annealing
-- `none`: Pure extrinsic (ablation studies)
-
-**Shaping Bonuses** (Behavioral Incentives - 11 types):
-- `approach_reward`, `completion_bonus`, `efficiency_bonus`, `state_achievement`
-- `streak_bonus`, `diversity_bonus`, `timing_bonus`, `economic_efficiency`
-- `balance_bonus`, `crisis_avoidance`, `vfs_variable`
+Modifier, extrinsic (9 types), intrinsic (5 types), and shaping (11 types) vocabularies:
+see `docs/config-schemas/drive_as_code.md`.
 
 ### Pedagogical Pattern: "Low Energy Delirium" Bug
 
@@ -333,39 +267,12 @@ The intended design, for whoever authors it:
 - All legacy reward strategy tests → DELETED (349 lines removed)
 
 **New System** (REQUIRED):
-- `drive_as_code.yaml` required for all config packs
+- `drive.yaml` required for every level (see pack layout above)
 - DACEngine compiles YAML → GPU computation graphs
 - Checkpoint provenance via `drive_hash` (SHA256 of DAC config)
 - All checkpoints must have matching `drive_hash`
 
 **Migration**: See `docs/guides/dac-migration.md`
-
-### Example: L0_0_minimal
-
-```yaml
-drive_as_code:
-  version: "1.0"
-
-  modifiers: {}
-
-  extrinsic:
-    type: multiplicative
-    base: 1.0
-    bars: [energy]
-
-  intrinsic:
-    strategy: rnd
-    base_weight: 0.1
-    apply_modifiers: []
-
-  shaping: []
-
-  composition:
-    normalize: false
-    clip: null
-    log_components: true
-    log_modifiers: true
-```
 
 ### Documentation
 
@@ -377,42 +284,15 @@ drive_as_code:
 
 ### Q-Learning Algorithm Variants
 
-**Configurable via** `training.yaml: use_double_dqn`
-
-**Vanilla DQN** (Mnih et al. 2015):
-- Q-target: `r + γ * max_a Q_target(s', a)`
-- Uses target network for both action selection and evaluation
-- Susceptible to Q-value overestimation (max operator bias)
-
-**Double DQN** (van Hasselt et al. 2016):
-- Q-target: `r + γ * Q_target(s', argmax_a Q_online(s', a))`
-- Decouples action selection (online network) from evaluation (target network)
-- Reduces overestimation, typically converges faster
-
-**Implementation Notes**:
-- Feedforward: Minimal overhead (<1%)
-- Recurrent: 3 forward passes required (online prediction, online selection, target evaluation) vs 2 for vanilla
-- All curriculum levels support both algorithms
-- Checkpoints persist `use_double_dqn` flag for reproducibility
-
-**Usage Recommendation**: Run baseline with `use_double_dqn: false`, then compare against `use_double_dqn: true` to quantify improvement.
-
-**Documentation**: See `docs/config-schemas/training.md` for detailed configuration guide.
+`training.yaml: use_double_dqn` selects vanilla vs Double DQN; checkpoints persist the flag.
+Non-obvious cost: recurrent Double DQN needs 3 forward passes vs 2 for vanilla.
+Details: `docs/config-schemas/training.md`.
 
 ## Configuration System
 
-Training controlled via YAML configs in `configs/`. Each config pack is a directory containing:
-
-```
-configs/<level>/
-├── substrate.yaml       # Spatial substrate (grid size, topology, boundaries)
-├── bars.yaml            # Meter definitions (energy, health, etc.)
-├── cascades.yaml        # Meter relationships
-├── affordances.yaml     # Interaction definitions
-├── cues.yaml            # UI metadata
-├── training.yaml        # Hyperparameters
-└── variables_reference.yaml  # VFS configuration (REQUIRED)
-```
+Training is controlled via YAML config packs in `configs/`. The real pack layout —
+pack-level shared files plus `levels/<level>/` overrides, NOT flat `configs/<level>/`
+directories — is shown in the DAC "Key Components" section above.
 
 ### Active Config Packs (Curriculum)
 
@@ -462,20 +342,11 @@ See `configs/templates/` for substrate configuration examples and `docs/config-s
 
 ## Network Architecture Selection
 
-**SimpleQNetwork** (Full observability - L0, L0.5, L1):
+**SimpleQNetwork** (full observability — L0, L0.5, L1) and **RecurrentSpatialQNetwork**
+(POMDP — L2, L3: CNN vision encoder + LSTM). Layer shapes: read
+`src/townlet/agent/networks.py`. Observation width comes only from the compiled artifact
+(see State Representation above) — do not write dimension literals here.
 
-- MLP: obs_dim → 256 → 128 → action_dim
-- All Grid2D configs: 29→8 architecture (enables checkpoint transfer!)
-- ~26K params
-
-**RecurrentSpatialQNetwork** (Partial observability - L2, L3):
-
-- Vision encoder: 5×5 local window → CNN → 128 features
-- Position encoder: (x,y) → MLP → 32 features
-- Meter encoder: 8 meters → MLP → 32 features
-- LSTM: 192 input → 256 hidden (memory for POMDP)
-- Q-head: 256 → 128 → action_dim
-- ~650K params
 - LSTM hidden state: resets at episode start, persists during rollout, resets per transition in batch training
 
 **Training Details**:
@@ -490,31 +361,7 @@ See `configs/templates/` for substrate configuration examples and `docs/config-s
 
 ## Frontend Visualization
 
-**Location**: `frontend/src/components/`
-
-**Rendering Modes** (substrate-specific):
-
-### Spatial Mode (Grid2D/3D Substrates)
-
-Component: `Grid.vue` (SVG-based 2D grid)
-
-Features: Grid cells, agent positions, affordances, heat map overlay, agent trails, novelty heatmap (RND)
-
-### Aspatial Mode (Aspatial Substrates)
-
-Component: `AspatialView.vue` (meters-only dashboard)
-
-Features: Meter bars with color coding, affordance list, action log
-
-**Rationale**: Aspatial universes have no position concept - rendering a fake grid would be pedagogically harmful.
-
-**WebSocket**: Server broadcasts on `localhost:8766`, frontend connects on mount
-
-**Customization**:
-
-- Affordance icons: `frontend/src/utils/constants.js`
-- Meter colors: `frontend/src/styles/tokens.js`
-- Grid cell size: `frontend/src/utils/constants.js`
+See `frontend/CLAUDE.md` (loads automatically when working under `frontend/`).
 
 ## Testing Strategy
 

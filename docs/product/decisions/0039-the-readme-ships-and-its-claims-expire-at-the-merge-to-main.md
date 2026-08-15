@@ -20,10 +20,20 @@ Two things made this need an explicit decision rather than an assumption:
    us knew about the CI state — that was discovered while verifying the draft's claims. A rewrite
    authorization does not automatically extend to publishing a newly-found fact about project
    health.
-2. **Publication is not gated by an agent action.** The agent pushes nothing; the owner pushes the
-   branch routinely (four times, the most recent sixty seconds before this session opened). So the
-   file would have gone public on the next reflexive push with nobody having decided to publish it.
-   Absent a decision, the default was accidental publication.
+2. **Publication is not gated by an agent action.** ~~The agent pushes nothing;~~ the owner pushes
+   the branch routinely (four times, the most recent sixty seconds before this session opened). So
+   the file would have gone public on the next reflexive push with nobody having decided to publish
+   it. Absent a decision, the default was accidental publication.
+
+   > ⚠️ **Amended by [`PDR-0046`](0046-the-agent-may-push-the-branch-and-the-merge-becomes-the-reversibility-boundary.md)
+   > (2026-08-15).** "The agent pushes nothing" is no longer true — the agent may now push
+   > `project-recovery` without asking, because a branch push is cheaply reversible. **The risk
+   > identified here is not eliminated, only relocated**: it was "the owner pushes without
+   > deciding", it is now "the agent pushes without deciding". Same risk, different actor — and the
+   > mitigation was never the push gate. **It is the merge gate, and both gates below stand
+   > unchanged.** Note also that a branch push has never been the publication event: this repo is
+   > public, so `project-recovery` was already readable. The merge to `main` is what makes a claim
+   > the project's default answer.
 
 ## The call
 

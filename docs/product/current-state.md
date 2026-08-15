@@ -3,10 +3,14 @@
 ## The bet right now
 
 **Strangler rewrite behind the compiled-universe contract** (`PDR-0006`). The first knockdown
-is COMPLETE and accepted (`PDR-0041`, `b7574132`). Merge gate 1 (CI restoration, `PDR-0043`,
-`cb865af4`) is EXECUTED and `hamlet-2100105c9a` sits in **verifying** — it closes on the
-**first green CI run**, which this checkpoint's push fires. A gate restored is not a gate
-verified.
+is COMPLETE and accepted (`PDR-0041`, `b7574132`). **Merge gate 1 (CI restoration, `PDR-0043`,
+`cb865af4`) is DONE — `hamlet-2100105c9a` is CLOSED on remote evidence.** This checkpoint's
+push fired the **first CI runs in this branch's history and all three are green**: Lint
+(1m11s), Config Validation (1m14s), Tests (24m21s), on `dd94e122`. `PDR-0043` trigger 1 did
+**not** fire — nothing was red for a cause the local set covers, so the local-vs-CI gate
+correspondence held on first contact. **The nightly cron is still deferred, not fixed**
+(the scheduler reads the default branch's file), carried as `PDR-0043` trigger 2 on the merge
+checklist. **One merge gate left: README re-verification by method.**
 
 **This checkpoint began the `docs/` triage** and, chasing one contradiction inside it, landed
 two owner-stated principles: the token-observation direction was authoritative all along
@@ -20,11 +24,18 @@ before concluding shipped behaviour is simply wrong.
 ## Owner state (2026-08-15)
 
 - **Grant standing, unchanged** (re-confirmed 2026-08-14).
-- ⚠️ **The "owner pushes the branch themselves" practice was set aside this session, by the
-  owner, explicitly:** *"please commit all your updates including your checkpoint and sync to
-  remote."* So this checkpoint **committed and pushed**, which also fired the **first CI run in
-  this branch's history**. Treat as a one-time direction, not a standing change: the next
-  session should assume the owner pushes unless told otherwise again.
+- ✅ **The "owner pushes the branch themselves" practice is RETIRED** (`PDR-0046`; owner, 2026-08-15):
+  *"I don't really care who pushes because with git you can generally roll back and forward
+  easily anyway."* **The agent may commit and push `project-recovery` without asking.** The
+  reasoning is reversibility, and it is right: a pushed commit on a working branch is
+  `git revert` / `git reset` away, and the branch is not `main`.
+  **The two limits are the ones reversibility does not cover, and they are unchanged:**
+  1. **The merge to `main` still gates on `PDR-0039`'s two conditions.** Pushing a branch is
+     cheap to undo; merging to the default branch of a **public** repo publishes, and
+     publication is not reversible by pushing again.
+  2. **Anything genuinely outward-facing still stops for the owner** — releases, issues or PRs
+     on the public repo, anything leaving the machine to a third party. Git's undo does not
+     reach a reader who already saw it.
 - Was ahead of `origin/project-recovery` by 4 commits (`cb865af4` CI restoration; `3191cd90`
   **owner-committed mid-session** — CLAUDE.md rewrite + `REVIEW-2026-08-15-architecture-docs-and-hld.md`,
   a 14-agent docs review that feeds WS-5 `hamlet-7a52a63e0b`, read it before docs work;
@@ -41,10 +52,10 @@ before concluding shipped behaviour is simply wrong.
 
 Recovery milestone `hamlet-1ade187dcc`.
 
-- **`hamlet-2100105c9a`** (P1, **verifying**, claude) — CI restoration. Close on the first
-  green run of Lint + Tests + Config Validation on `project-recovery` (after owner push):
-  `gh run list --branch project-recovery`. Optional full matrix afterward:
-  `gh workflow enable 203224930 && gh workflow run full-tests.yml --ref project-recovery`.
+- ~~**`hamlet-2100105c9a`**~~ — **CLOSED** this checkpoint on its stated criterion
+  (`close_commit dd94e122`; runs 31852298597 / 31852298591 / 31852298586). Optional and still
+  unrun: the full matrix, `gh workflow enable 203224930 && gh workflow run full-tests.yml
+  --ref project-recovery`.
 - **`hamlet-c4ce5515cc`** (P2) — adjudicate the PROVISIONAL no-defaults whitelist
   entries (`vtc.py` raw-mapping parse defaults; `metadata.py` hasattr-guarded cost). Carries
   a `PDR-0019` sighting: `vtc.py` hardcodes social-residue telemetry labels — the compiler
@@ -66,12 +77,18 @@ Recovery milestone `hamlet-1ade187dcc`.
 - **WS-3** `hamlet-1f89714685` still gates WS-4 `hamlet-15050f280a` (`PDR-0034`). **WS-6**,
   **WS-0** ready, untouched. Tooling P3s: `hamlet-312f75963b`, `hamlet-5e2032b166`.
 
-## Two gates on the merge to `main` (`PDR-0039`)
+## Merge gates to `main` (`PDR-0039`) — one down, one left
 
-1. **CI restoration — EXECUTED, verifying** (above). The merge checklist inherits `PDR-0043`
-   trigger 2: restore the nightly cron at merge (or PDR its death) — the deferral must not
-   decay into silent capability loss.
-2. **README re-verification by the same method, not a re-read** — unchanged.
+1. ~~**CI restoration**~~ — **DONE AND VERIFIED GREEN** (above). The merge checklist still
+   inherits `PDR-0043` trigger 2: restore the nightly cron at merge (or PDR its death) — the
+   deferral must not decay into silent capability loss. **Closing the issue did not close the
+   deferral.**
+2. **README re-verification by the same method, not a re-read** — unchanged, and now the only
+   gate standing between this branch and `main`.
+
+**The merge is the reversibility boundary.** Pushing this branch is freely undoable and the
+owner has said so (`Owner state`, above); merging to the default branch of a **public** repo
+publishes, and no push undoes a reader. Gate 2 is not a formality.
 
 ## What this checkpoint did
 
@@ -107,13 +124,17 @@ Recovery milestone `hamlet-1ade187dcc`.
 - Superseded banners (not corrections) on the two `docs/vfs/observation-dimension-*.md` files
   and the orphaned `docs/vfs-integration-guide.md` — under `PDR-0044` the **method** is
   obsolete, not the arithmetic. **No reversal trigger fired.** Nothing escalated.
+- **Committed and pushed** (`f7ef6691` work, `dd94e122` checkpoint), owner-directed — which
+  fired the branch's first-ever CI runs, all green, closing `hamlet-2100105c9a` and merge
+  gate 1 within the same session that pushed. The "owner pushes" practice is **retired**, not
+  suspended: the owner's reason is reversibility (see `Owner state`).
 
 ## Next session, start here
 
-1. **Verify the CI runs this checkpoint's push fired** — three workflows, first run in this
-   branch's history. Then close `hamlet-2100105c9a` naming the run IDs and `close_commit`. If
-   any run is red for a cause the local set covers, `PDR-0043` trigger 1 has fired — reopen and
-   re-examine the verification protocol itself.
+1. **Merge gate 2 is the only one left** — README re-verification *by method, not a re-read*
+   (`PDR-0039`). Gate 1 closed green this session. Note what the closure does **not** cover:
+   the nightly cron is still deferred to the merge (`PDR-0043` trigger 2), and the full-matrix
+   workflow remains unrun.
 2. **The standing DECIDE** (unchanged): next knockdown unit on `PDR-0019`'s criterion — the
    `vtc.py` social-residue sighting is a fresh candidate, and **`PDR-0045` now supplies its
    rule**, which strengthens it — and WS-7 close-or-keep in the same DECIDE. Playbook fixed:
@@ -143,11 +164,20 @@ validates the intended config against shipped code finds an agreement that does 
 every ✓ in it is false and it is more convincing than a doc with no ticks*; *when two
 quantities share a name (allocated vs active width), no table quoting one of them can ever be
 reconciled — say which*; *name-based inference is the hardest special-casing to see, because
-`if name == "money"` reads as a helpful default rather than a hardcoded domain fact*.
+`if name == "money"` reads as a helpful default rather than a hardcoded domain fact*. **New
+(`PDR-0046`), and the sharpest of the session:** *do not read an observed regularity as a rule —
+"the owner has always pushed" became "only the owner may push" became "this push is an
+exception", none of which the owner ever said. **Treating a description of what happened as a
+prescription about what is permitted** is the same mis-inference as `PDR-0044`'s, running the
+other way, and it invents ceremony where there was none.* And its replacement: ***gate on
+reversibility, not on the verb** — "who does it" is a weak control and is satisfiable vacuously;
+"can this be undone, and by what" names the real boundary, which is why the merge gate is strict
+while the push gate is gone.*
 
 Do not re-litigate: `PDR-0006`, `PDR-0019`, `PDR-0022`, `PDR-0026`–`PDR-0029`, `PDR-0030`,
 `PDR-0031`, `PDR-0032`, `PDR-0034`–`PDR-0042` (per their stated triggers), `PDR-0043` (the
 nightly deferral and the provisional-whitelist pattern — reverse only via its three triggers),
 `PDR-0044` (the direction's authority — a change of direction supersedes it, nothing else
-does), `PDR-0045` (name-blindness — reverse only via its three triggers).
+does), `PDR-0045` (name-blindness — reverse only via its three triggers), `PDR-0046` (the agent
+may push the branch; do not re-derive a push gate — the boundary is the merge).
 Read `vision.md` first: ENDORSED; grant re-confirmed 2026-08-14, unchanged; changing it escalates.

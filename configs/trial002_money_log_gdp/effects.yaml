@@ -1,0 +1,12 @@
+version: "1.0"
+
+effect_definitions:
+  - id: business_cycle
+    scope: global
+    duration: 100000
+    intensity: 1.0
+    reapply_policy: renew
+    observable: false
+    on_tick:
+      - modify: bar.money
+        value: "1000.0 * (2.0 + phase_sin(elapsed_ticks, 24.0))"

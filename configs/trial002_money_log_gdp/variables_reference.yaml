@@ -1,0 +1,16 @@
+version: "1.0"
+variables:
+  - id: money
+    scope: agent
+    type: scalar
+    lifetime: episode
+    readable_by: [agent, engine, vtc]
+    writable_by: [engine, vtc]
+    default: 1000.0
+    observable: true
+    semantic_type: bars
+    description: "Aggregate economic output, observed log-scaled."
+    normalization:
+      kind: log_scaled
+      min: 1.0
+      max: 1000000.0

@@ -42,45 +42,26 @@ TEST ORGANIZATION:
    - Temporal mechanics with adversarial curriculum
    - Temporal state recording (time_of_day, interaction_progress)
 
-IMPLEMENTATION STATUS:
-----------------------
-✅ ALL TESTS PASSING (17/17 tests, 1 skipped)
+IMPLEMENTATION STATUS (corrected 2026-08-16, hamlet-a0832f9004):
+----------------------------------------------------------------
+This block previously read "ALL TESTS PASSING (17/17)". That was false, and it was
+false invisibly: every test here is `slow`-marked and `pyproject.toml` puts
+`-m "not slow"` in the default pytest addopts, so no gate ran them.
 
-Temporal mechanics is FULLY IMPLEMENTED and working! The xfail markers were due to
-test bugs (hardcoded affordance positions), not missing implementation.
+PASSING (7): time progression, operating hours on WORK, the always-open SLEEP
+affordance, temporal observation features, and the disabled-temporal fallback.
 
-- Time progression: ✅ PASSING (3/3 tests)
-  - 24-hour cycle with wraparound
-  - Observation dimensions (4 temporal features: sin/cos time, progress, lifetime)
+FAILING (10), all for one reason: they were written against a pack whose
+affordances were Bed / Job / Bar / Hospital, with multi-tick interactions and a
+wraparound (6pm-4am) schedule. The shipped pack ships SLEEP / WORK / ENTERTAINMENT /
+DOCTOR, every affordance is `interaction_type: instant`, and no schedule crosses
+midnight. Both engine capabilities ARE implemented (multi_tick + duration_ticks in
+affordances_v2_config.py; wraparound at world/expression/functions.py:740-743) and
+these tests are their ONLY coverage, so they are being repaired against a
+purpose-authored test pack rather than deleted. Do NOT re-point them at an
+always-open instant affordance to make them green: that passes vacuously while
+exercising none of the behaviour named in the test.
 
-- Operating hours: ✅ PASSING (3/3 tests)
-  - Time-based action masking working correctly
-  - Wraparound hours (Bar: 6pm-4am) handled properly
-  - Always-open affordances (Bed, Hospital) verified
-
-- Multi-tick interactions: ✅ PASSING (6/6 tests)
-  - Progressive benefit accumulation (75% linear)
-  - Completion bonus (25% on final tick only)
-  - Per-tick cost charging
-  - Interaction progress tracking in observations
-
-- Early exit: ✅ PASSING (2/2 tests)
-  - Accumulated benefits preserved on early exit
-  - No completion bonus for partial interactions
-
-- Multi-agent temporal: ✅ PASSING (1/1 test)
-  - Independent interaction states per agent verified
-
-- Integrations: ✅ PASSING (2/3 tests, 1 skipped)
-  - Temporal mechanics disabled fallback (legacy mode) works
-  - Curriculum integration verified
-  - Recording integration skipped (requires recorder module)
-
-FIXES APPLIED:
---------------
-All tests updated to use dynamic affordance positions via env.affordances dict
-instead of hardcoded positions (which don't match randomized placements).
-Tests will then run normally and report failures if implementation doesn't match spec.
 """
 
 from pathlib import Path
@@ -88,8 +69,19 @@ from pathlib import Path
 import pytest
 import torch
 
-# All temporal mechanics features are implemented - all 17 tests passing
 pytestmark = pytest.mark.slow
+
+
+def _interact_idx(env) -> int:
+    """Resolve the INTERACT action index from the compiled action vocabulary.
+
+    The index is NOT a constant: the vocabulary is composed from the substrate's
+    movement actions plus the pack's custom actions, so it moves whenever either
+    changes. These tests previously hardcoded 4, which is UP_LEFT on an 8-way
+    Grid2D — the assertions were reading a diagonal move and tracking whether it
+    happened to be in bounds.
+    """
+    return env.action_mask_builder.action_ids["INTERACT"]
 
 
 # =============================================================================
@@ -130,7 +122,7 @@ class TestTimeProgression:
         # Step 24 times
         for i in range(24):
             assert env.time_of_day == i
-            env.step(torch.tensor([4], device=env.device))  # INTERACT action
+            env.step(torch.tensor([0], device=env.device))  # any action advances the clock
 
         # Should wrap back to 0
         assert env.time_of_day == 0
@@ -144,7 +136,7 @@ class TestTimeProgression:
         NOTE: Updated to expect 4 temporal features (was 3) to match actual implementation.
         The 4th feature (lifetime_progress) was added for forward compatibility.
         """
-        env = cpu_env_factory(config_dir=Path("configs/default_curriculum/levels/L3_temporal_mechanics"), num_agents=2)
+        env = cpu_env_factory(config_dir=Path("configs/default_curriculum"), level_name="L3_temporal_mechanics", num_agents=2)
 
         obs = env.reset()
 
@@ -152,16 +144,16 @@ class TestTimeProgression:
         expected_dim = env.metadata.observation_dim
         assert obs.shape == (2, expected_dim)
 
-        time_sin = obs[0, -4]
-        time_cos = obs[0, -3]
-        progress_feature = obs[0, -2]
-        lifetime_feature = obs[0, -1]
+        # Locate the temporal block by its declared group, not by counting back from
+        # the end — negative indices silently follow any layout change.
+        temporal = obs[0, env.observation_activity.group_slices["temporal"]]
+        time_sin, time_cos, day_progress, is_night = temporal
 
         # time_of_day = 0 at reset => sin = 0, cos = 1
         assert time_sin == pytest.approx(0.0, abs=1e-6)
         assert time_cos == pytest.approx(1.0, abs=1e-6)
-        assert progress_feature == 0.0  # No interaction yet
-        assert lifetime_feature == 0.0  # Just reset
+        assert day_progress == 0.0  # midnight is 0/24 of the way through the day
+        assert is_night == 1.0  # midnight IS night (threshold is day_length * 0.25)
 
 
 # =============================================================================
@@ -173,7 +165,7 @@ class TestOperatingHours:
     """Time-based affordance availability and action masking."""
 
     def test_operating_hours_mask_job(self, temporal_env):
-        """Verify Job is masked out after 6pm (closed hours).
+        """Verify WORK is masked out outside its declared operating hours.
 
         Migrated from: test_temporal_integration.py::test_operating_hours_mask_job
         """
@@ -181,20 +173,20 @@ class TestOperatingHours:
 
         env.reset()
 
-        # Use actual Job position (randomized on reset)
-        assert "Job" in env.affordances, "Job affordance not deployed in test config"
-        env.positions[0] = env.affordances["Job"]
+        # Use actual WORK position (randomized on reset)
+        assert "WORK" in env.affordances, "WORK affordance not deployed in test config"
+        env.positions[0] = env.affordances["WORK"]
         env.meters[0, 3] = 1.0
 
-        # 10am: Job open (operating hours: 8-18)
+        # 10am: WORK open (L3 declares opening_hours 9-17)
         env.time_of_day = 10
         masks = env.get_action_masks()
-        assert masks[0, 4]  # INTERACT allowed
+        assert masks[0, _interact_idx(env)]  # INTERACT allowed
 
-        # 7pm: Job closed
+        # 7pm: WORK closed
         env.time_of_day = 19
         masks = env.get_action_masks()
-        assert not masks[0, 4]  # INTERACT blocked
+        assert not masks[0, _interact_idx(env)]  # INTERACT blocked
 
     def test_bar_wraparound_hours(self, temporal_env):
         """Verify Bar operating hours wrap around midnight (6pm-4am).
@@ -213,36 +205,38 @@ class TestOperatingHours:
         # 8pm: Bar open (operating hours: 18-28, i.e., 6pm-4am)
         env.time_of_day = 20
         masks = env.get_action_masks()
-        assert masks[0, 4]  # INTERACT allowed
+        assert masks[0, _interact_idx(env)]  # INTERACT allowed
 
         # 2am: Bar still open (wraparound)
         env.time_of_day = 2
         masks = env.get_action_masks()
-        assert masks[0, 4]  # INTERACT allowed
+        assert masks[0, _interact_idx(env)]  # INTERACT allowed
 
         # 5am: Bar closed
         env.time_of_day = 5
         masks = env.get_action_masks()
-        assert not masks[0, 4]  # INTERACT blocked
+        assert not masks[0, _interact_idx(env)]  # INTERACT blocked
 
     def test_24_hour_affordances(self, temporal_env):
-        """Verify 24-hour affordances (Bed, Hospital) are always available.
+        """Verify a 24-hour affordance (SLEEP) is available at every hour.
 
-        New test: Validates always-open affordances.
+        SLEEP declares `opening_hours.enabled: false`, which the engine treats as
+        always-open. That is asserted here rather than assumed: "no schedule" and
+        "always open" are the same config and opposite behaviours if read wrong.
         """
         env = temporal_env
 
         env.reset()
 
-        # Use actual Bed position (randomized on reset)
-        assert "Bed" in env.affordances, "Bed affordance not deployed in test config"
-        env.positions[0] = env.affordances["Bed"]
+        # Use actual SLEEP position (randomized on reset)
+        assert "SLEEP" in env.affordances, "SLEEP affordance not deployed in test config"
+        env.positions[0] = env.affordances["SLEEP"]
 
         # Test at multiple times
         for time in [0, 6, 12, 18, 23]:
             env.time_of_day = time
             masks = env.get_action_masks()
-            assert masks[0, 4], f"Bed should be available at {time}:00"
+            assert masks[0, _interact_idx(env)], f"SLEEP should be available at {time}:00"
 
 
 # =============================================================================
@@ -541,7 +535,7 @@ class TestMultiAgentTemporal:
 
         New test: Validates that each agent has independent interaction progress.
         """
-        env = cpu_env_factory(config_dir=Path("configs/default_curriculum/levels/L3_temporal_mechanics"), num_agents=3)
+        env = cpu_env_factory(config_dir=Path("configs/default_curriculum"), level_name="L3_temporal_mechanics", num_agents=3)
 
         env.reset()
 
@@ -617,25 +611,30 @@ class TestTemporalIntegrations:
 
         obs = env.reset()
 
-        # Temporal features always included for forward compatibility
-        expected_dim = env.substrate.get_observation_dim() + env.meter_count + (env.num_affordance_types + 1) + 4
-        assert obs.shape == (1, expected_dim)
+        # Temporal features always included for forward compatibility. The width comes
+        # from the compiled artifact — reconstructing it from a layout formula is how
+        # this assertion went stale (the meter block became one field per meter).
+        assert obs.shape == (1, env.observation_dim)
+
+        # The temporal block is ALLOCATED even with temporal mechanics off; it is the
+        # activity mask that makes it dormant, not a narrower tensor.
+        assert "temporal" in env.observation_activity.group_slices
 
         # Temporal state is dormant but present
         assert hasattr(env, "time_of_day")
         assert env.time_of_day == 0
 
         # Interactions work (legacy single-shot mode)
-        assert "Bed" in env.affordances, "Bed affordance not deployed in test config"
-        env.positions[0] = env.affordances["Bed"]
+        assert "SLEEP" in env.affordances, "SLEEP affordance not deployed in test config"
+        env.positions[0] = env.affordances["SLEEP"]
         env.meters[0, 0] = 0.3  # Start low to see increase
 
         initial_energy = env.meters[0, 0].item()
 
-        env.step(torch.tensor([4], device=env.device))  # INTERACT
+        env.step(torch.tensor([_interact_idx(env)], device=env.device))
 
         final_energy = env.meters[0, 0].item()
-        # Legacy mode: single-shot benefit (+50% energy from Bed)
+        # Legacy mode: single-shot benefit from SLEEP.
         # Even with depletion, should see significant increase
         assert (final_energy - initial_energy) > 0.4  # At least 40% gain
 
@@ -646,7 +645,7 @@ class TestTemporalIntegrations:
         """
         from townlet.curriculum.adversarial import AdversarialCurriculum
 
-        env = cpu_env_factory(config_dir=Path("configs/default_curriculum/levels/L3_temporal_mechanics"), num_agents=1)
+        env = cpu_env_factory(config_dir=Path("configs/default_curriculum"), level_name="L3_temporal_mechanics", num_agents=1)
 
         curriculum = AdversarialCurriculum(
             max_steps_per_episode=50,
@@ -672,9 +671,20 @@ class TestTemporalIntegrations:
             else:
                 break
 
-        # Agent should survive all 100 steps (or very close to it)
-        # Some depletion is expected, but temporal mechanics shouldn't cause premature death
-        assert step_count >= 95  # Allow for some meter depletion
+        # This test's subject is that temporal mechanics does not BREAK the loop, so it
+        # asserts that the environment ran and time advanced. It deliberately does NOT
+        # assert a survival count: how long an agent walking UP survives is a property
+        # of the demo pack's balance, and pinning it here makes a content-tuning change
+        # look like a temporal-mechanics regression (CLAUDE.md: do not test for
+        # "correct" strategies).
+        assert step_count > 0, "environment did not run a single step"
+
+        # Time advances with stepping. Checked on a fresh episode so a mid-loop death
+        # (which resets the clock) cannot confuse the reading.
+        env.reset()
+        before = env.time_of_day
+        env.step(torch.tensor([0], device=env.device))
+        assert env.time_of_day != before, "time did not advance with steps"
 
         # Key test: Temporal mechanics (time progression, operating hours) doesn't
         # break basic environment operation - agent survived and curriculum can be used

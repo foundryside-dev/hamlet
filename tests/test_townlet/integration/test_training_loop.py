@@ -13,6 +13,7 @@ Focus: Test training loop over multiple episodes with real components
 import pytest
 import torch
 
+from tests.test_townlet.helpers.config_builder import mutate_curriculum_yaml
 from townlet.curriculum.static import StaticCurriculum
 from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
 from townlet.population.vectorized import VectorizedPopulation
@@ -48,17 +49,18 @@ class TestMaskedLossIntegration:
         """
 
         def _modifier(cfg):
-            env_cfg = cfg["environment"]
-            env_cfg.update(
-                {
-                    "partial_observability": True,
-                    "vision_range": 2,
-                    "enable_temporal_mechanics": False,
-                }
-            )
-            cfg["curriculum"].update({"max_steps_per_episode": 1000})
+            # The modifier mutates training.yaml only; vision and temporal switches
+            # live in curriculum.yaml and are set below.
+            cfg["training"]["training_loop"]["max_steps_per_episode"] = 1000
 
         config_dir = config_pack_factory(modifier=_modifier, name="masked_loss")
+
+        # POMDP: a 5-cell window on the 8×8 grid, matching L2_partial_observability.
+        # vision_range is a FRACTION of the grid now, not a cell radius.
+        mutate_curriculum_yaml(
+            config_dir,
+            lambda c: c["curriculum"].update({"active_vision": "partial", "vision_range": 0.5, "active_temporal": False}),
+        )
         env = cpu_env_factory(config_dir=config_dir, num_agents=1)
 
         # Brain config loaded from fixture
@@ -78,11 +80,13 @@ class TestMaskedLossIntegration:
             exploration=exploration,
             agent_ids=["agent_0"],
             device=cpu_device,
-            # action_dim defaults to env.action_dim
+            obs_dim=env.observation_dim,
+            action_dim=env.action_dim,
             brain_config=brain_cfg,  # LSTM for masked loss
             vision_window_size=5,
             batch_size=4,  # Small batch for fast test
             sequence_length=8,
+            max_grad_norm=10.0,
             train_frequency=4,
         )
 
@@ -149,9 +153,13 @@ class TestMaskedLossIntegration:
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=env.observation_dim,
-            # action_dim defaults to env.action_dim
+            action_dim=env.action_dim,
             brain_config=brain_cfg,
             batch_size=16,
+            sequence_length=1,
+            max_grad_norm=10.0,
+            vision_window_size=5,
+            train_frequency=4,
         )
 
         # Reset and run steps
@@ -205,9 +213,13 @@ class TestMaskedLossIntegration:
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=env.observation_dim,
-            # action_dim defaults to env.action_dim
+            action_dim=env.action_dim,
             brain_config=brain_cfg,
             batch_size=16,
+            sequence_length=1,
+            max_grad_norm=10.0,
+            vision_window_size=5,
+            train_frequency=4,
         )
 
         # Reset and run steps
@@ -275,9 +287,12 @@ class TestMultiEpisodeTraining:
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=env.observation_dim,
-            # action_dim defaults to env.action_dim
+            action_dim=env.action_dim,
             brain_config=brain_cfg,
             batch_size=16,
+            sequence_length=1,
+            max_grad_norm=10.0,
+            vision_window_size=5,
             train_frequency=4,
         )
 
@@ -351,9 +366,13 @@ class TestMultiEpisodeTraining:
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=env.observation_dim,
-            # action_dim defaults to env.action_dim
+            action_dim=env.action_dim,
             brain_config=brain_cfg,
             batch_size=16,
+            sequence_length=1,
+            max_grad_norm=10.0,
+            vision_window_size=5,
+            train_frequency=4,
         )
 
         # Track epsilon over 20 episodes
@@ -414,9 +433,13 @@ class TestMultiEpisodeTraining:
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=env.observation_dim,
-            # action_dim defaults to env.action_dim
+            action_dim=env.action_dim,
             brain_config=brain_cfg,
             batch_size=16,
+            sequence_length=1,
+            max_grad_norm=10.0,
+            vision_window_size=5,
+            train_frequency=4,
         )
 
         # Verify buffer starts empty
@@ -456,8 +479,11 @@ class TestMultiEpisodeTraining:
         """
         env = cpu_env_factory(num_agents=1)
 
-        # Brain config loaded from fixture
+        # Target-network cadence is authored in the brain config, not passed to the
+        # constructor — VectorizedPopulation reads
+        # brain_config.q_learning.target_update_frequency.
         brain_cfg = minimal_brain_config
+        brain_cfg.q_learning.target_update_frequency = 10
 
         # Create population with short target update frequency
         curriculum = StaticCurriculum(difficulty_level=0.5)
@@ -470,11 +496,13 @@ class TestMultiEpisodeTraining:
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=env.observation_dim,
-            # action_dim defaults to env.action_dim
+            action_dim=env.action_dim,
             brain_config=brain_cfg,
             batch_size=16,
+            sequence_length=1,
+            max_grad_norm=10.0,
+            vision_window_size=5,
             train_frequency=4,
-            target_update_frequency=10,  # Update every 10 training steps
         )
 
         # Capture initial target network weights
@@ -536,9 +564,12 @@ class TestMultiEpisodeTraining:
             agent_ids=["agent_0"],
             device=cpu_device,
             obs_dim=env.observation_dim,
-            # action_dim defaults to env.action_dim
+            action_dim=env.action_dim,
             brain_config=brain_cfg,
             batch_size=16,
+            sequence_length=1,
+            max_grad_norm=10.0,
+            vision_window_size=5,
             train_frequency=4,
         )
 

@@ -193,7 +193,9 @@ entry — or add DIV-004 — with its cell **before** cutting, per this register
 ## DIV-004 — The normalization-vocabulary programme: the authoring surface changes, so the compiled provenance moves and behaviour does not
 
 - **Status:** `built` (2026-08-15 — declared before the first cut of the programme, per this
-  register's own record-then-bind rule; W1 is the first cut it covers).
+  register's own record-then-bind rule; W1 is the first cut it covers. Full 16-cell matrix
+  exit 0 with all ten standing cells `DIVERGED_AS_REGISTERED (DIV-004)` and every trace
+  stream byte-identical: runs `20260815-175940` (CPU) / `20260815-180022` (CPU+CUDA).)
 - **Harness shape: hash-only**
 - **Provenance:** `PDR-0054` (the plan this entry serves) · `PDR-0052` / `PDR-0053`
   (underspecification is a compile error; `range_type` is the complete type declaration) ·

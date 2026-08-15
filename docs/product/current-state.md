@@ -61,14 +61,18 @@ That is exactly the failure the issue exists to name, committed inside the sessi
 it. Reopened to `verifying`; it closes when `hamlet-6f98e38a36` closes and `-m "not slow"` leaves
 `pyproject.toml` in the same commit (`PDR-0062`'s reversal trigger).
 
-## Two CI expectations for the next session, so neither reads as a regression
+## CI: one verified, one expected
 
-1. **31 integration tests enter the per-push CI gate for the first time.** `tests.yml` runs bare
-   `uv run pytest` and so inherits `-m "not slow"`; removing the marker puts them in CI, under
-   always-on `--cov`. This repo has two documented flakes of exactly that shape
-   (`test_vfs_overhead_under_limit`, `test_scripted_vtc_threshold_kernel…`) — wall-clock ratios
-   measured under coverage instrumentation. `PDR-0043`'s rule applies verbatim: **a gate restored
-   is not a gate verified.** Read the Tests run for `e62a5e4a`/`e5e631ff` before calling this done.
+1. **DISCHARGED — the 31 ran in CI and it is green.** They entered the per-push gate for the
+   first time here (`tests.yml` runs bare `uv run pytest` and so inherited the marker), under
+   always-on `--cov`, where this repo has two documented wall-clock flakes
+   (`test_vfs_overhead_under_limit`, `test_scripted_vtc_threshold_kernel…`). **Neither fired.**
+   Tests **success on all three commits** — `e62a5e4a`, `e5e631ff`, `fda18b83` — with run
+   `31911162104` reporting **3181 passed, 24 skipped, 2 deselected, 0 failed** (24m49s). The
+   evidence that they actually RAN rather than merely passing is the deselect count: **2, not
+   33.** Totals reconcile exactly against local (3189+16 = 3181+24 = 3205; the 8 are CUDA tests
+   skipped on CI runners). `PDR-0043`'s rule — *a gate restored is not a gate verified* — is
+   satisfied by reading, not assumed.
 2. **The nightly `full-tests.yml` will report RED (2 failures).** That is `hamlet-6f98e38a36`,
    expected and tracked — not a new regression.
 

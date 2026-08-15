@@ -1,105 +1,116 @@
-# Current State — HAMLET / Townlet        Checkpoint: 2026-08-15 (latest) · seventeenth checkpoint
+# Current State — HAMLET / Townlet        Checkpoint: 2026-08-15 (latest) · eighteenth checkpoint
 
 ## The bet right now
 
-**Strangler rewrite behind the compiled-universe contract** (`PDR-0006`). **Both merge gates to
-`main` are now SATISFIED** (`PDR-0048`) — gate 1 at `dd94e122`, gate 2 (README re-verification
-*by method*) at `1b25c99d`. **Neither is banked**: `PDR-0039` fires the sweep again at the merge,
-unconditionally, and three commits have landed since. The merge itself is the owner's call.
+**Strangler rewrite behind the compiled-universe contract** (`PDR-0006`). This session was
+**WS-4 work done for real** — the authoring surface, not the scaffolding around it. The
+normalization surface is closed: a meter's `range_type` is now its complete, parameterized
+observation type, and all nine VFS normalization kinds are authorable *and executed*.
 
-The session's other half was the compiler's authoring grammar, and it produced **an owner ruling**
-(`PDR-0047`) that now governs the Next bet's first concrete unit.
+**Both merge gates to `main` remain SATISFIED but NOT BANKED** (`PDR-0048`). `PDR-0039` re-fires
+the README sweep at the merge, unconditionally, and **six commits have landed since**. The merge
+is the owner's call.
 
 **READ `docs/architecture/vfs.md` AND `docs/architecture/vfs-current-implementation.md` BEFORE
-TOUCHING VFS** (binding; the owner named both this session, and following them corrected a claim
-this session had just written).
+TOUCHING VFS** (binding, owner-named). Both were corrected this session — the ten-kind list is
+now nine.
 
-## Owner state (2026-08-15)
+## Owner state
 
-- **Grant re-confirmed, scope unchanged**, at this session's `/own-product`. `vision.md`'s stamp
-  is now correct — `Last reviewed: 2026-08-15`, owner-approved, amendment-logged (`PDR-0050`).
-  The two-checkpoint bookkeeping debt is **closed**. Next review due **2026-09-15**.
-- **`PDR-0046` stands**: the agent may commit and push `project-recovery` without asking. The
-  merge to `main` and anything outward-facing still stop for the owner.
-- **Owner rulings this session, both load-bearing:**
-  1. *"It should work like a regular compiler, the author defines it from a list of pre-approved
-     types, scalings and so on"* — `PDR-0047`, resolving the `semantic_type` fork to option (a).
-  2. The scope-setting example: *"money might be an int between 1 and 100 capped for an
-     individual, or it might be a log float that models a GDP multiplied by through sin(time)."*
-     Both are `money`; neither is more correct; the palette must express both without Python.
-- **Owner directed, in-flight now:** run **Trial 002** (author both money designs as config, zero
-  lines under `src/townlet/`) **before** building the fix. *"and then move straight into the
-  trial."*
+- **Grant unchanged.** Re-confirmed 2026-08-15 (`PDR-0050`); next review due **2026-09-15**.
+- **`PDR-0046` stands**: commit and push `project-recovery*` freely; the merge to `main` and
+  anything outward-facing stop for the owner.
+- **Owner rulings still governing:** `PDR-0047` (closed vocabularies, authors pick from a
+  palette), `PDR-0052` (underspecification is a compile error; wiring comes first), `PDR-0053`
+  ruling (a) (`range_type` is the complete type declaration) — **all three are now IMPLEMENTED**,
+  not pending.
+- **Standing directive, still live:** *"the system likely has more ambiguities, this
+  strangulation exercise is our chance to clean them all up."* Three were closed this session;
+  the taxonomy in `PDR-0053` is the map for the rest.
 
 ## In flight / ready
 
 Recovery milestone `hamlet-1ade187dcc`.
 
-- **`hamlet-2fe1c34ebb`** (P1, the decided direction) — `semantic_type` has three disagreeing
-  vocabularies and no authority; the authored declaration is never consulted; `default="custom"`
-  violates No-Defaults on a parameter that feeds a provenance hash. Governed by `PDR-0047`'s four
-  rules (comment 145). **Hash-moving → takes the `PDR-0037` register-first order**, with
-  `PDR-0041` as the worked example. Also governs `hamlet-365e996511` (`range_type`) per the
-  ruling's *"and so on"* — coordinate, do not solve them differently.
-- **`hamlet-cbb747a51e`** (P2, new) — a pack compiles, prints `Compilation succeeded`, exits 0,
-  and silently writes **no cache artifact**. CI cannot see it: the gate runs `validate`, which
-  writes no cache. *The covered command and the broken command are not the same command.*
-- **`hamlet-f9090ec3e8`** (P2, new) — `test_vfs_overhead_under_limit` is flaky by construction
-  (5% wall-clock ratio under always-on coverage) and sits in the CI gate.
-- **`hamlet-c4ce5515cc`** (P2) — still owns the `hasattr` antipattern at `metadata.py:83`; that
-  line was reclassified, not fixed, by `PDR-0049`.
-- **WS-7** `hamlet-e3af412673` (P0, in progress, claude — claim to 2026-08-17 00:49 UTC). Open
-  DECIDE unchanged: close now, or keep as the standing knockdown home.
+- **`hamlet-2fe1c34ebb`** (P1) — `semantic_type` has three disagreeing vocabularies and no
+  authority; `default="custom"` violates No-Defaults on a parameter feeding a provenance hash.
+  **This is the next unit**: it is the same shape as the one just closed (a declared surface the
+  compiler does not consult), governed by the same `PDR-0047` rules, and `PDR-0057` is now its
+  worked example. Hash-moving → `PDR-0037` register-first order, and DIV-004 already exists to
+  extend rather than a new entry.
+- **`hamlet-0dd4ac24d9`** (P1) — presentation hardcoded by variable name. Same family; the
+  `PDR-0045` name-branch class this session deleted one instance of.
+- **`hamlet-f46e2b381a`** (P1) — `clamp_and_validate` is a declared-but-empty transition phase,
+  bounds enforcement hardcoded in 7 places. Adjacent to the work just done.
+- **`hamlet-cbb747a51e`** (P2) — a pack compiles, exits 0, writes **no cache artifact**; CI
+  cannot see it because the gate runs `validate`, which writes no cache.
+- **`hamlet-f9090ec3e8`** (P2) — `test_vfs_overhead_under_limit` flaky by construction, in the CI
+  gate. **Now more relevant**: this session measured a real ~21% `env.step` regression, so a
+  flaky perf gate is actively unhelpful.
+- **WS-7** `hamlet-e3af412673` (P0, in progress). Open DECIDE unchanged: close now, or keep as
+  the standing knockdown home. It has now absorbed two harness units (`49bdf28e`, `ecc37241`).
 - **WS-3** `hamlet-1f89714685` still gates WS-4 `hamlet-15050f280a` (`PDR-0034`). **WS-6**,
-  **WS-0**, **WS-5** (`hamlet-7a52a63e0b`, body still gated by its own notes) ready, untouched.
-- ~~`hamlet-60dd3c4b53`~~ — **CLOSED** by deletion+correction; its headline was falsified by
-  execution. Do not re-derive the observation-hash claim.
+  **WS-0**, **WS-5** ready, untouched.
+- **Closed this session:** `hamlet-2090c9f16d` (P0 blocker), `hamlet-1dba1910c0`,
+  `hamlet-fba56feca5`, `hamlet-3d3039f340`, `hamlet-365e996511`, `hamlet-7b126ad3fa`
+  (`not_a_bug` — the finding was false).
+
+## Open questions / blocked on owner
+
+- **Nothing is blocked.** No escalation from this session.
+- **The merge remains available and untaken** — six commits now sit ahead of the last gate
+  reading, and `PDR-0039` re-fires the sweep at the merge regardless.
+- **Watch, do not act:** the ~21% `env.step` cost is recorded in `metrics.md` and `PDR-0057`
+  with an explicit trigger — escalate only if it is measured as blocking a real training run.
+  A number is not a problem until something it gates fails.
 
 ## What this checkpoint did
 
-- **Closed merge gate 2** (`PDR-0048`). Ten README claims had gone stale in one day, every one
-  because the recovery fixed what was described. Filed `hamlet-cbb747a51e` from the sweep.
-- **Falsified `PDR-0045`'s two cited violations by executing them** (`PDR-0049`). `vfs_adapter.py`
-  was **dead code** — zero callers, not even imported by the compiler — so the "currency name
-  changes the observation schema hash" claim is false in the shipped compiler; `metadata.py:83`
-  runs but nothing consumes its output. Deleted the module and its tests, **proved inert** by a
-  byte-identical hash diff across all five levels and five hash fields. **The principle is
-  untouched; the instances were struck by pointer** (`PDR-0020` practice). The
-  `Demo dogfooding` metric's counting rule changed with it: **count executed behaviour, not grep
-  hits.**
-- **Recorded the owner's authoring-grammar ruling** (`PDR-0047`), and — following the owner's
-  pointer to `vfs.md` — found that **`vfs.md` §9.2's ten normalisation kinds are all declarable,
-  all implemented, and wired since WS-1(e)**. The scalings palette the ruling describes already
-  exists. The real gaps are three *bindings*: `range_type` inert, no integer type, no expression
-  slot on a bar.
-- **Closed the `vision.md` grant-stamp debt** with owner approval (`PDR-0050`).
+- **Closed the P0 oracle blocker and then the normalization programme behind it.** The oracle's
+  *inputs* are now frozen (`49bdf28e`), clamping became a required parameter with the redundant
+  clamping member deleted (`PDR-0055`), and `range_type` became the meter's complete type with
+  one observation field per meter (`PDR-0057`). Money at 1000 observes **0.5**, not **0.000999**.
+- **Gave the oracle a second divergence shape, and recorded what it costs** (`PDR-0056`).
+  `compare_traces` short-circuited on hash inequality *before* comparing any stream, so WS-4
+  would have blinded the harness at the moment of use. Fixed — but `AGREE` is now unreachable
+  matrix-wide and the pack-drift guard is armed on zero cells. Both recorded in DIV-004 with
+  re-tagging as the reversal trigger.
+- **Ran two multi-agent passes and both changed the outcome.** A pre-cut census changed the
+  *design* three times (a VTC namespace collision, a silent contiguity hazard, a checkpoint
+  mismatch that warned and loaded anyway). A post-cut adversarial review returned 23 findings, of
+  which **21 were refuted with executed repros** — and proved the thing that mattered: **9/9
+  kinds compile, observe and step**.
+- **Corrected the tracker record for `hamlet-1dba1910c0`**, which read `not_a_bug` for a bug that
+  was fixed. The workflow only offers `wont_fix`/`not_a_bug` from `triage`; the correct route is
+  `triage → confirmed → fixing → verifying → closed`.
 
 ## Next session, start here
 
-1. **Trial 002 is in flight and owner-directed** — author both money designs as config, zero lines
-   under `src/townlet/`. `PDR-0047` records the *predicted* outcome (money A fails on the missing
-   integer type; money B fails on the absent bar-level expression binding) **so the trial can
-   falsify it**. Report what actually happens, not what was predicted.
-2. **Then `hamlet-2fe1c34ebb`**, register-first. Do not start with the code.
-3. **The merge is available but not taken.** Both gates satisfied; gate 2 re-fires at the merge;
-   `PDR-0043` trigger 2 (nightly cron) rides the checklist.
+1. **`hamlet-2fe1c34ebb`** (`semantic_type`), register-first. It is the same shape just closed,
+   under the same ruling, with `PDR-0057` as the worked example and DIV-004 to extend rather than
+   a new register entry. **Measure the hash movement against a worktree, do not predict it.**
+2. **Then `hamlet-0dd4ac24d9`** — the sibling name-branch defect.
+3. **The merge is available but not taken.** Both gates satisfied; gate 2 re-fires at the merge.
 
-**Harness gate contract** (carry): `uv run python -m townlet.oracle.harness` — exit 0 iff every
-cell is AGREE, SKIPPED, or DIVERGED_AS_REGISTERED naming its register entry; empty and all-SKIPPED
-runs fail. NOT safe to run concurrently with itself in one checkout.
+**Harness gate contract** (carry): `uv run python -m townlet.oracle.harness [--cuda]` — exit 0 iff
+every cell is AGREE, SKIPPED, or DIVERGED_AS_REGISTERED naming its register entry; empty and
+all-SKIPPED runs fail. **Read `PDR-0056` before trusting a green run**: exit 0 now means
+"everything diverged exactly as registered", which is weaker than "old and new agree". NOT safe
+to run concurrently with itself in one checkout.
 
 Carry-ins that keep paying: purge `configs/**/*.msgpack` before measurements; verify red by
 mutation; a green test is not evidence; a correction is not self-verifying; a verifier is not
-self-verifying. **New (`PDR-0049`), and the sharpest of this session:** *a red found by reading is
-not a defect until it executes* — this project already knew a green tool is not evidence
-(`PDR-0033`) and a recorded green is not a green (`PDR-0010`); this is the mirror, and **the
-cheapest fix would have been indistinguishable from progress**. Also: *when two quantities share a
-name, say which*; *count executed behaviour, not grep hits*; *a gate that reddens at random is how
-a verified gate becomes a waved-through gate*; and — three times this session — ***the false claim
-was in this workspace's own files, including one written earlier in the same session***.
+self-verifying; *a red found by reading is not a defect until it executes* (`PDR-0049`); *a red
+found by a TOOL is not a defect until the tool is validated against something you already know
+the answer for* (`PDR-0053`). **New this session, and the one that paid best:** *point an
+instrument at the code BEFORE the design, not only after it* — the pre-cut census changed the
+design three times, and every one of those would otherwise have been found by a failing test at
+best and by silent breakage at worst. Also: **measure hash movement, never predict it** — the
+prediction was recorded first precisely so a surprise would be visible as one, and the fourth
+mover appeared exactly where predicted.
 
 Do not re-litigate: `PDR-0006`, `PDR-0019`, `PDR-0022`, `PDR-0026`–`PDR-0032`, `PDR-0034`–`PDR-0042`,
-`PDR-0043` (nightly deferral), `PDR-0044`, `PDR-0045` (principle intact — only its two cited
-instances are struck, per `PDR-0049`), `PDR-0046` (the boundary is the merge, not the push),
-`PDR-0047` (owner ruling — reverse only via its three triggers), `PDR-0048`, `PDR-0049`, `PDR-0050`.
+`PDR-0043`, `PDR-0044`, `PDR-0045` (principle intact; its two cited instances struck per
+`PDR-0049`), `PDR-0046`, `PDR-0047`, `PDR-0048`, `PDR-0049`, `PDR-0050`, `PDR-0051`, `PDR-0052`,
+`PDR-0053` (Finding A withdrawn — do not resurrect it), `PDR-0054`–`PDR-0057`.
 Read `vision.md` first: ENDORSED; grant re-confirmed 2026-08-15, unchanged; changing it escalates.

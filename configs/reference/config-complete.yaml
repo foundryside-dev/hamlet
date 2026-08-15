@@ -161,7 +161,11 @@ stratum:
   #   full_manual : include only explicit include_fields (required)
   observation_mode:
     mode: full_auto
-    # include_fields: ["obs_grid_encoding", "obs_meters"]  # required when mode=full_manual
+    # include_fields: ["obs_grid_encoding", "obs_meter_energy"]  # required when mode=full_manual
+    # NOTE: meters are one field EACH (obs_meter_<name>), not one "obs_meters" block.
+    # A manual selection must keep a semantic group's fields together — splitting the
+    # bars group apart is a compile error, because group_slices is how consumers
+    # address the block without knowing field names.
 
   # ---------------------------------------------------------------------------
   # [CONFIG] Temporal Support
@@ -200,11 +204,14 @@ environment:
   # [CONFIG] Meters
   # [TAGS]   BREAKING, OBS_DIM
   # ---------------------------------------------------------------------------
-  # Each meter adds +1 dim to observation space.
+  # Each meter adds its DECLARED observed width to the observation space: 1 for most
+  # range_type kinds, 2 for cyclical_sin_cos, and `categories` for one_hot.
   meters:
     - name: energy
       description: "Physical energy for movement and actions"
-      range_type: normalized
+      range_type:
+        kind: minmax
+        clip: false
       # range_type is metadata only (UI display hint), does NOT affect obs_dim
       # | normalized | UI displays as 0-100%              |
       # | unbounded  | UI displays raw value (can exceed) |
@@ -212,15 +219,21 @@ environment:
 
     - name: health
       description: "Physical health, death at 0"
-      range_type: normalized
+      range_type:
+        kind: minmax
+        clip: false
 
     - name: satiation
       description: "Hunger level, affects health cascade"
-      range_type: normalized
+      range_type:
+        kind: minmax
+        clip: false
 
     - name: hygiene
       description: "Cleanliness, affects mood and social"
-      range_type: normalized
+      range_type:
+        kind: minmax
+        clip: false
 
     - name: money
       description: "Economic resource for purchasing"
@@ -228,18 +241,24 @@ environment:
 
     - name: fitness
       description: "Physical conditioning from exercise"
-      range_type: normalized
+      range_type:
+        kind: minmax
+        clip: false
 
     - name: mood
       description: "Mental state, affects energy cascade"
-      range_type: normalized
+      range_type:
+        kind: minmax
+        clip: false
 
     - name: social
       description: "Social connection level"
-      range_type: normalized
+      range_type:
+        kind: minmax
+        clip: false
 
   # BREAKING: Adding/removing meters changes obs_dim (+1 per meter)
-  # Current: 8 meters = +8 dims
+  # Current: 8 meters, all minmax = +8 dims
 
   # ---------------------------------------------------------------------------
   # [CONFIG] Cascade Graph

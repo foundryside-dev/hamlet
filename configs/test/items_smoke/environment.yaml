@@ -4,15 +4,21 @@ environment:
   meters:
     - name: energy
       description: "Physical energy"
-      range_type: normalized
+      range_type:
+        kind: minmax
+        clip: false
 
     - name: health
       description: "Physical health"
-      range_type: normalized
+      range_type:
+        kind: minmax
+        clip: false
 
     - name: money
       description: "Currency"
-      range_type: unbounded
+      range_type:
+        kind: minmax
+        clip: false
 
   cascade_graph: []
 

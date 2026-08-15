@@ -13,7 +13,8 @@ from townlet.config.brain_config import (
     MLPEncoderConfig,
     RecurrentConfig,
 )
-from townlet.universe.dto import ObservationField, ObservationSpec
+from townlet.universe.compilers.observation import ObservationCompiler
+from townlet.universe.dto import ObservationActivity, ObservationField, ObservationSpec
 
 
 def _make_observation_spec(
@@ -59,20 +60,25 @@ def _make_observation_spec(
         )
         start += position_dim
 
-    fields.append(
-        ObservationField(
-            uuid=None,
-            name="obs_meters",
-            type="vector",
-            dims=num_meters,
-            start_index=start,
-            end_index=start + num_meters,
-            scope="agent",
-            description="Meter values",
-            semantic_type="meters",
+    # One field per meter, semantic_type="bars", matching what the compiler emits
+    # (PDR-0054 ruling 1). The old single `obs_meters` field carried semantic_type
+    # "meters", which is not even in the allowed vocabulary — it only worked because
+    # the network located the block by literal field name.
+    for meter_index in range(num_meters):
+        fields.append(
+            ObservationField(
+                uuid=None,
+                name=f"obs_meter_m{meter_index}",
+                type="scalar",
+                dims=1,
+                start_index=start,
+                end_index=start + 1,
+                scope="agent",
+                description=f"Meter m{meter_index} observed as minmax",
+                semantic_type="bars",
+            )
         )
-    )
-    start += num_meters
+        start += 1
 
     affordance_dims = num_affordance_types + 1  # network expects +1 for "none"
     fields.append(
@@ -91,6 +97,12 @@ def _make_observation_spec(
     start += affordance_dims
 
     return ObservationSpec.from_fields(fields)
+
+
+def _make_observation_activity(spec: ObservationSpec) -> ObservationActivity:
+    """Derive the activity from the spec through the REAL compiler path, so these
+    fixtures cannot drift from what a compiled universe actually produces."""
+    return ObservationCompiler().build_activity(spec)
 
 
 def test_build_feedforward_basic():
@@ -199,9 +211,10 @@ def test_build_recurrent_basic():
         action_dim=8,
         window_size=5,
         position_dim=2,
-        num_meters=8,
+        bars_dim=8,
         num_affordance_types=14,
         observation_spec=obs_spec,
+        observation_activity=_make_observation_activity(obs_spec),
     )
 
     # Verify network type
@@ -265,9 +278,10 @@ def test_build_recurrent_parameter_count():
         action_dim=8,
         window_size=5,
         position_dim=2,
-        num_meters=8,
+        bars_dim=8,
         num_affordance_types=14,
         observation_spec=obs_spec,
+        observation_activity=_make_observation_activity(obs_spec),
     )
 
     total_params = sum(p.numel() for p in network.parameters())
@@ -320,9 +334,10 @@ def test_build_recurrent_custom_lstm_size():
         action_dim=8,
         window_size=5,
         position_dim=2,
-        num_meters=8,
+        bars_dim=8,
         num_affordance_types=14,
         observation_spec=obs_spec,
+        observation_activity=_make_observation_activity(obs_spec),
     )
 
     # Verify LSTM hidden size is 128 (not default 256)
@@ -384,9 +399,10 @@ def test_build_recurrent_aspatial():
         action_dim=4,
         window_size=5,
         position_dim=0,  # Aspatial (no position)
-        num_meters=8,
+        bars_dim=8,
         num_affordance_types=14,
         observation_spec=obs_spec,
+        observation_activity=_make_observation_activity(obs_spec),
     )
 
     # Test forward pass without position component

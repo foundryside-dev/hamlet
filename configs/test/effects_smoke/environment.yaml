@@ -4,10 +4,14 @@ environment:
   meters:
     - name: energy
       description: Energy
-      range_type: normalized
+      range_type:
+        kind: minmax
+        clip: false
     - name: health
       description: Health
-      range_type: normalized
+      range_type:
+        kind: minmax
+        clip: false
 
   cascade_graph: []
   modulation_graph: []

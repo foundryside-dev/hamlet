@@ -13,10 +13,130 @@ Example:
 """
 
 from pathlib import Path
-from typing import Literal
+from typing import Annotated, Literal
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Discriminator, Field, model_validator
+
+
+class _MeterRangeBase(BaseModel):
+    """Shared base for the `range_type` members. Each member forbids extras, so a
+    parameter belonging to a DIFFERENT member is a parse error naming the meter,
+    not a silently ignored key."""
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class MeterRangeNone(_MeterRangeBase):
+    """Observe the meter's raw value. An explicit author choice, never an absence of one."""
+
+    kind: Literal["none"]
+
+
+class MeterRangeMinMax(_MeterRangeBase):
+    """Linear rescale of the meter's declared bar bounds onto [0, 1]."""
+
+    kind: Literal["minmax"]
+    clip: bool = Field(
+        ...,
+        description=(
+            "Clamp into the declared bounds before rescaling. Required: a bar whose bounds are "
+            "enforced at runtime does not need it, an expression-driven one does, and the "
+            "compiler must not guess which this is."
+        ),
+    )
+
+
+class MeterRangeLogScaled(_MeterRangeBase):
+    """Logarithmic rescale of the declared bar bounds onto [0, 1].
+
+    The member `hamlet-3d3039f340` exists for: with bounds `[1, 1e6]`, minmax crushes the
+    whole operating range 1..100,000 into `[0, 0.0999]` and the agent is effectively blind
+    to the meter. This gives it back its dynamic range.
+    """
+
+    kind: Literal["log_scaled"]
+    clip: bool = Field(..., description="Clamp into the declared bounds before log-scaling.")
+
+
+class MeterRangeZScore(_MeterRangeBase):
+    """Standardize against a declared mean and standard deviation."""
+
+    kind: Literal["zscore"]
+    mean: float = Field(..., description="Distribution mean. Declared, never inferred from bounds.")
+    std: float = Field(..., description="Distribution standard deviation. Must be non-zero.")
+
+
+class MeterRangeCyclicalSinCos(_MeterRangeBase):
+    """Encode a wrapping quantity as a (sin, cos) pair. Observes TWO dimensions, not one."""
+
+    kind: Literal["cyclical_sin_cos"]
+    period: float = Field(..., gt=0.0, description="The value at which the quantity wraps (e.g. 24 for hours).")
+
+
+class MeterRangeOneHot(_MeterRangeBase):
+    """Expand an integer-valued meter into a one-hot vector. Observes `categories` dimensions."""
+
+    kind: Literal["one_hot"]
+    categories: int = Field(..., ge=2, description="Number of categories; the meter's value indexes into them.")
+
+
+class MeterRangeBinary(_MeterRangeBase):
+    """Threshold the meter into 0/1."""
+
+    kind: Literal["binary"]
+    threshold: float = Field(..., description="Values strictly above this observe as 1.0.")
+
+
+class MeterRangeRankScaled(_MeterRangeBase):
+    """Scale the meter to its rank within the batch. Note this makes the observation
+    depend on the other agents, which is a deliberate choice and rarely the right one."""
+
+    kind: Literal["rank_scaled"]
+
+
+class MeterRangeMaskedValue(_MeterRangeBase):
+    """Replace a sentinel value with a fill value, passing everything else through."""
+
+    kind: Literal["masked_value"]
+    mask_value: float = Field(..., description="The sentinel to replace.")
+    fill_value: float = Field(..., description="What to replace it with.")
+
+
+MeterRangeType = Annotated[
+    MeterRangeNone
+    | MeterRangeMinMax
+    | MeterRangeLogScaled
+    | MeterRangeZScore
+    | MeterRangeCyclicalSinCos
+    | MeterRangeOneHot
+    | MeterRangeBinary
+    | MeterRangeRankScaled
+    | MeterRangeMaskedValue,
+    Discriminator("kind"),
+]
+"""A meter's COMPLETE observation type (PDR-0053 ruling (a), PDR-0054 ruling 2).
+
+Nine members, one per VFS normalization kind, **tagged by the kind's own name** — there is
+no translation layer, because a translation layer is where a member learns to lie
+(`PDR-0047` rule 1; `hamlet-1dba1910c0` was exactly that defect). Each member carries its
+own required parameters and omitting one is a compile error (`PDR-0052`).
+
+The `minmax` and `log_scaled` members take their `min`/`max` from the meter's declared
+`bars.yaml` bounds rather than restating them — `PDR-0016` made bounds and normalization one
+feature, so the declaration that ceilings the runtime also scales the observation. Every
+other member's parameters are declared inline, because no other member's parameters are
+implied by anything already written down.
+
+Two members change the OBSERVED WIDTH: `cyclical_sin_cos` observes 2 dims and `one_hot`
+observes `categories`. That is why the compiled observation field's width and its VFS source
+variable's width are two different numbers (`PDR-0054` W4).
+
+This REPLACES `Literal["normalized", "unbounded", "integer"]`, which was accepted, hashed
+into `environment_hash`, and drove nothing (`PDR-0051` measured it, `hamlet-365e996511`
+tracked it). The old members are deleted, not mapped: translating `unbounded` to a log
+family would be a hidden default of exactly the kind this work removes.
+"""
 
 
 class MeterConfig(BaseModel):
@@ -24,11 +144,12 @@ class MeterConfig(BaseModel):
 
     name: str = Field(..., description="Meter name (e.g., 'energy', 'health')")
     description: str = Field(..., description="Human-readable description")
-    range_type: Literal["normalized", "unbounded", "integer"] = Field(
+    range_type: MeterRangeType = Field(
         ...,
         description=(
-            "Value range type (normalized=[0,1], unbounded=any float, integer=discrete points). "
-            "Metadata only for UI; does not affect obs_dim."
+            "The meter's complete observation type: a closed, parameterized vocabulary tagged "
+            "by the VFS normalization kind. Determines how the meter is observed AND how wide "
+            "its observation is."
         ),
     )
 

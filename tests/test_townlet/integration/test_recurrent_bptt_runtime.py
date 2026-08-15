@@ -169,7 +169,7 @@ def test_initial_hidden_is_zero_and_forward_requires_hidden() -> None:
         action_dim=8,
         window_size=5,
         position_dim=2,
-        num_meters=8,
+        bars_dim=8,
         num_affordance_types=14,
         enable_temporal_features=False,
         hidden_dim=64,

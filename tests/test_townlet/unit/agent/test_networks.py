@@ -119,17 +119,20 @@ class TestRecurrentSpatialQNetwork:
         """Create RecurrentSpatialQNetwork with standard config."""
         window_size = getattr(pomdp_env, "local_window_size", 5) or 5
         position_dim = getattr(pomdp_env.substrate, "position_dim", 2)
-        num_meters = getattr(pomdp_env, "meter_count", 8)
         num_affordance_types = getattr(pomdp_env, "num_affordance_types", 15)
+        # The OBSERVED bars width, read off the compiled artifact rather than from
+        # meter_count — the two are equal only while every meter observes one dim.
+        bars = pomdp_env.observation_activity.group_slices["bars"]
         return RecurrentSpatialQNetwork(
             action_dim=pomdp_env.action_dim,
             window_size=window_size,
             position_dim=position_dim,
-            num_meters=num_meters,
+            bars_dim=bars.stop - bars.start,
             num_affordance_types=num_affordance_types,
             enable_temporal_features=True,
             hidden_dim=256,
             observation_spec=pomdp_env.observation_spec,
+            observation_activity=pomdp_env.observation_activity,
         ).to(pomdp_env.device)
 
     def test_initialization(self, network):
@@ -259,11 +262,12 @@ class TestRecurrentSpatialQNetwork:
             action_dim=pomdp_env.action_dim,
             window_size=getattr(pomdp_env, "local_window_size", 5) or 5,
             position_dim=getattr(pomdp_env.substrate, "position_dim", 2),
-            num_meters=getattr(pomdp_env, "meter_count", 8),
+            bars_dim=pomdp_env.observation_activity.group_slices["bars"].stop - pomdp_env.observation_activity.group_slices["bars"].start,
             num_affordance_types=getattr(pomdp_env, "num_affordance_types", 15),
             enable_temporal_features=True,
             hidden_dim=256,
             observation_spec=pomdp_env.observation_spec,
+            observation_activity=pomdp_env.observation_activity,
         ).to(pomdp_env.device)
 
         obs = pomdp_env.reset()
@@ -310,11 +314,12 @@ class TestNetworkComparison:
             action_dim=pomdp_env.action_dim,
             window_size=getattr(pomdp_env, "local_window_size", 5) or 5,
             position_dim=getattr(pomdp_env.substrate, "position_dim", 2),
-            num_meters=getattr(pomdp_env, "meter_count", 8),
+            bars_dim=pomdp_env.observation_activity.group_slices["bars"].stop - pomdp_env.observation_activity.group_slices["bars"].start,
             num_affordance_types=getattr(pomdp_env, "num_affordance_types", 15),
             enable_temporal_features=True,
             hidden_dim=256,
             observation_spec=pomdp_env.observation_spec,
+            observation_activity=pomdp_env.observation_activity,
         ).to(pomdp_env.device)
 
         simple_params = sum(p.numel() for p in simple_net.parameters())
@@ -347,11 +352,12 @@ class TestNetworkComparison:
             action_dim=pomdp_env.action_dim,
             window_size=getattr(pomdp_env, "local_window_size", 5) or 5,
             position_dim=getattr(pomdp_env.substrate, "position_dim", 2),
-            num_meters=getattr(pomdp_env, "meter_count", 8),
+            bars_dim=pomdp_env.observation_activity.group_slices["bars"].stop - pomdp_env.observation_activity.group_slices["bars"].start,
             num_affordance_types=getattr(pomdp_env, "num_affordance_types", 15),
             enable_temporal_features=True,
             hidden_dim=256,
             observation_spec=pomdp_env.observation_spec,
+            observation_activity=pomdp_env.observation_activity,
         ).to(pomdp_env.device)
 
         batch_size = 32

@@ -74,11 +74,12 @@ class RecurrentSpatialQNetwork(nn.Module):
         action_dim: int,
         window_size: int,
         position_dim: int,
-        num_meters: int,
+        bars_dim: int,
         num_affordance_types: int,
         enable_temporal_features: bool,
         hidden_dim: int,
         observation_spec: ObservationSpec | None = None,
+        observation_activity: ObservationActivity | None = None,
         temporal_embed_dim: int = 16,
     ):
         """
@@ -88,7 +89,10 @@ class RecurrentSpatialQNetwork(nn.Module):
             action_dim: Number of actions
             window_size: Size of local vision window (5 for 5×5)
             position_dim: Dimensionality of position (2 for Grid2D, 3 for Grid3D, 0 for Aspatial)
-            num_meters: Number of meter values
+            bars_dim: OBSERVED width of the meter block. Not the meter COUNT — the two differ
+                whenever a meter declares a widening normalization (cyclical_sin_cos observes 2
+                dims, one_hot observes its category count). Read it from
+                observation_activity.group_slices["bars"], never from a meter count.
             num_affordance_types: Number of affordance types
             enable_temporal_features: Whether to expect temporal features
             hidden_dim: LSTM hidden dimension (typically 256)
@@ -104,7 +108,7 @@ class RecurrentSpatialQNetwork(nn.Module):
         self.action_dim = action_dim
         self.window_size = window_size
         self.position_dim = position_dim
-        self.num_meters = num_meters
+        self.bars_dim = bars_dim
         self.num_affordance_types = num_affordance_types
         self.enable_temporal_features = enable_temporal_features
         self.temporal_dims = 4  # Fixed v2.1 temporal feature count
@@ -138,9 +142,11 @@ class RecurrentSpatialQNetwork(nn.Module):
             self.position_encoder = None
             position_features = 0
 
-        # Meter Encoder: num_meters → 32 features
+        # Meter Encoder: the OBSERVED bars width → 32 features. This took `num_meters`, a
+        # STATE count threaded in from env.meter_count — an observation-side layer sized by a
+        # state-side quantity, which held only while every meter observed exactly one dim.
         self.meter_encoder = nn.Sequential(
-            nn.Linear(num_meters, 32),
+            nn.Linear(bars_dim, 32),
             nn.ReLU(),
         )
 
@@ -172,7 +178,17 @@ class RecurrentSpatialQNetwork(nn.Module):
             nn.Linear(128, action_dim),
         )
 
-        # Optional observation-spec-driven slicing (v2.1 pipeline).
+        # Observation-spec-driven slicing (v2.1 pipeline).
+        #
+        # The meter block is addressed through `observation_activity.group_slices["bars"]`,
+        # NOT by a field literally named `obs_meters` — there is no such field any more, the
+        # bars group is N per-meter fields (PDR-0054 ruling 1). That also removes the
+        # PDR-0045 name-branch this loop used to carry.
+        #
+        # The `except Exception: self._use_observation_spec = False` that wrapped this block
+        # is gone with it. It converted "I cannot find the meter block" into "silently fall
+        # back", and the fallback path then raised in forward() with a message about slicing
+        # rather than about the missing group. A missing bars group is a defect; it fails here.
         self._use_observation_spec = observation_spec is not None
         self._grid_slice: slice | None = None
         self._position_slice: slice | None = None
@@ -181,25 +197,29 @@ class RecurrentSpatialQNetwork(nn.Module):
         self._temporal_slice: slice | None = None
 
         if observation_spec is not None:
-            try:
-                fields = observation_spec.fields
-                for field in fields:
-                    if field.name == "obs_local_window":
-                        self._grid_slice = slice(field.start_index, field.end_index)
-                    elif field.name == "obs_position":
-                        self._position_slice = slice(field.start_index, field.end_index)
-                    elif field.name == "obs_meters":
-                        self._meters_slice = slice(field.start_index, field.end_index)
-                    elif field.name in {"obs_affordance_at_position", "obs_affordances"}:
-                        self._affordance_slice = slice(field.start_index, field.end_index)
-                    elif field.name == "obs_temporal":
-                        self._temporal_slice = slice(field.start_index, field.end_index)
+            for field in observation_spec.fields:
+                if field.name == "obs_local_window":
+                    self._grid_slice = slice(field.start_index, field.end_index)
+                elif field.name == "obs_position":
+                    self._position_slice = slice(field.start_index, field.end_index)
+                elif field.name in {"obs_affordance_at_position", "obs_affordances"}:
+                    self._affordance_slice = slice(field.start_index, field.end_index)
+                elif field.name == "obs_temporal":
+                    self._temporal_slice = slice(field.start_index, field.end_index)
 
-                # Enable spec-driven slicing only if we have the critical fields.
-                if self._grid_slice is None or self._meters_slice is None or self._affordance_slice is None:
-                    self._use_observation_spec = False
-            except Exception:  # pragma: no cover - defensive
-                self._use_observation_spec = False
+            if observation_activity is not None:
+                self._meters_slice = observation_activity.group_slices.get("bars")
+
+            if self._grid_slice is None or self._meters_slice is None or self._affordance_slice is None:
+                raise ValueError(
+                    "RecurrentSpatialQNetwork requires the grid, bars and affordance blocks to be "
+                    "locatable in the compiled observation.\n"
+                    f"  obs_local_window: {'found' if self._grid_slice else 'MISSING'}\n"
+                    f"  bars group slice: {'found' if self._meters_slice else 'MISSING'}\n"
+                    f"  affordance field: {'found' if self._affordance_slice else 'MISSING'}\n"
+                    "  Rule: the bars block comes from observation_activity.group_slices['bars'], so "
+                    "an ObservationActivity must be supplied alongside the spec."
+                )
 
     def forward(
         self,
@@ -232,7 +252,7 @@ class RecurrentSpatialQNetwork(nn.Module):
 
         grid = obs[:, self._grid_slice]
         position = obs[:, self._position_slice] if (self._position_slice is not None and self.position_dim > 0) else None
-        meters = obs[:, self._meters_slice] if self._meters_slice is not None else obs.new_zeros((batch_size, self.num_meters))
+        meters = obs[:, self._meters_slice]
         affordance = (
             obs[:, self._affordance_slice] if self._affordance_slice is not None else obs.new_zeros((batch_size, self.num_affordance_dims))
         )

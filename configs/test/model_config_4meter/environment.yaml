@@ -4,19 +4,27 @@ environment:
   meters:
     - name: energy
       description: "Physical energy for movement and actions"
-      range_type: normalized
+      range_type:
+        kind: minmax
+        clip: false
 
     - name: health
       description: "Physical health, death at 0"
-      range_type: normalized
+      range_type:
+        kind: minmax
+        clip: false
 
     - name: money
       description: "Economic resource for purchasing"
-      range_type: unbounded
+      range_type:
+        kind: minmax
+        clip: false
 
     - name: mood
       description: "Mental state, affects energy cascade"
-      range_type: normalized
+      range_type:
+        kind: minmax
+        clip: false
 
   cascade_graph:
     - source: mood

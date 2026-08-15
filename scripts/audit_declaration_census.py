@@ -121,9 +121,9 @@ PROBES = [
         "range_type",
         "environment.yaml",
         "environment.meters.0.range_type",
-        "integer",
+        {"kind": "log_scaled", "clip": True},
         "structural",
-        "normalized->integer on meter 0",
+        "minmax->log_scaled on meter 0",
     ),
     (
         "norm_method",

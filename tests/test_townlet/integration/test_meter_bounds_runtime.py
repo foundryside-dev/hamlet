@@ -29,6 +29,7 @@ wiring being half-done.
 from __future__ import annotations
 
 import inspect
+import math
 import shutil
 from collections.abc import Callable
 from pathlib import Path
@@ -36,11 +37,13 @@ from pathlib import Path
 import pytest
 import torch
 import yaml
+from pydantic import ValidationError
 
 from townlet.environment.action_executor import ActionExecutor
 from townlet.environment.affordance_engine import AffordanceEngine
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.universe.compiler import UniverseCompiler
+from townlet.universe.compilers.observation import meter_name_from_observation_field, meter_observation_field_name
 from townlet.vfs import vtc
 from townlet.vfs.observation_builder import apply_normalization
 
@@ -257,19 +260,31 @@ def test_meter_without_declared_bounds_is_fatal() -> None:
 # --------------------------------------------------------------------------------------
 
 
-def test_obs_meters_declares_normalization_sourced_from_bounds() -> None:
-    """The compiled `obs_meters` normalization IS the declared bounds, in meter order."""
+def test_each_meter_declares_its_own_normalization_sourced_from_its_own_bounds() -> None:
+    """Every meter carries its OWN spec, and the bounds half still comes from bars.yaml.
+
+    This asserted one block spec whose `min`/`max` were parallel LISTS. Per-meter
+    parameters were therefore always expressible; per-meter KIND was not, which is the
+    whole of hamlet-3d3039f340. Now each meter has its own spec, and PDR-0016's coupling
+    — the declaration that ceilings the runtime also scales the observation — is asserted
+    meter by meter.
+    """
     universe = UniverseCompiler().compile(SOURCE_PACK, primary_level=L1, use_cache=False)
     level = universe.get_level(L1)
 
-    field = next(f for f in universe.vfs_observation_fields if f.id == "obs_meters")
-    assert field.normalization is not None, "obs_meters must declare a normalization"
-    assert field.normalization.kind == "minmax"
-
     declared = {meter.name: meter.bounds for meter in level.bars.meters}
-    ordered = sorted(universe.meter_metadata.meters, key=lambda meter: meter.index)
-    assert field.normalization.min == [declared[m.name].min for m in ordered]
-    assert field.normalization.max == [declared[m.name].max for m in ordered]
+    specs = {f.id: f.normalization for f in universe.vfs_observation_fields}
+    bars_fields = [f for f in universe.observation_spec.fields if f.semantic_type == "bars"]
+    assert len(bars_fields) == len(declared), "one observation field per declared meter"
+
+    for field in bars_fields:
+        meter_name = meter_name_from_observation_field(field.name)
+        spec = specs[field.name]
+        assert spec is not None, f"{field.name} must declare a normalization"
+        assert spec.kind == "minmax", "default_curriculum declares minmax for every meter"
+        # Scalars now, not list entries: the spec belongs to ONE meter.
+        assert spec.min == declared[meter_name].min
+        assert spec.max == declared[meter_name].max
 
 
 def test_obs_meters_observation_is_scaled_by_declared_bounds(tmp_path: Path) -> None:
@@ -286,13 +301,15 @@ def test_obs_meters_observation_is_scaled_by_declared_bounds(tmp_path: Path) -> 
     env.meters[:, money_idx] = 22.5
     env.meters[:, energy_idx] = 0.5
 
-    field = env.observation_spec.get_field_by_name("obs_meters")
-    observed = env._get_observations()[0, field.start_index : field.end_index]
+    obs = env._get_observations()[0]
+    money_field = env.observation_spec.get_field_by_name(meter_observation_field_name("money"))
+    energy_field = env.observation_spec.get_field_by_name(meter_observation_field_name("energy"))
+    observed = {"money": obs[money_field.start_index], "energy": obs[energy_field.start_index]}
 
-    assert observed[money_idx].item() == pytest.approx(22.5 / money_max, rel=1e-6)
+    assert observed["money"].item() == pytest.approx(22.5 / money_max, rel=1e-6)
     # A unit-interval meter is unchanged by minmax over [0, 1] — the normalization is
     # per-meter, not a single global divisor.
-    assert observed[energy_idx].item() == pytest.approx(0.5, abs=1e-6)
+    assert observed["energy"].item() == pytest.approx(0.5, abs=1e-6)
 
 
 def test_every_declared_normalization_reaches_the_observation(tmp_path: Path) -> None:
@@ -312,15 +329,16 @@ def test_every_declared_normalization_reaches_the_observation(tmp_path: Path) ->
     env = _env(_pack(tmp_path, L1), L1)
 
     declared = {f.id: f.normalization for f in env.universe.vfs_observation_fields if f.normalization is not None}
-    assert "obs_meters" in declared, "obs_meters must be among the normalized fields"
+    money_field_name = meter_observation_field_name("money")
+    assert money_field_name in declared, "every meter must be among the normalized fields"
 
-    # Drive every normalized field off its identity point. obs_meters via money (the only
-    # non-unit ceiling in any shipped pack); the rest by writing the registry directly,
-    # since they have no production writer to do it for us.
+    # Drive every normalized field off its identity point. The money meter via its value
+    # (the only non-unit ceiling in any shipped pack); the rest by writing the registry
+    # directly, since they have no production writer to do it for us.
     env.meters[:, env.meter_name_to_index["money"]] = 22.5
-    off_identity = {"obs_meters"}
+    off_identity = {money_field_name}
     for field_id, spec in declared.items():
-        if field_id == "obs_meters" or field_id not in env.vfs_registry.variables:
+        if field_id == money_field_name or field_id not in env.vfs_registry.variables:
             continue
         maximum = spec.max if isinstance(spec.max, float) else None
         if spec.kind != "minmax" or maximum is None or maximum == 1.0:
@@ -352,23 +370,187 @@ def test_every_declared_normalization_reaches_the_observation(tmp_path: Path) ->
     assert checked >= 2, f"only {checked} field(s) discriminated; this test cannot detect the surface going inert"
 
 
-def test_dimension_changing_normalization_is_rejected(tmp_path: Path) -> None:
-    """A normalizer that changes a field's width must fail loudly, not silently shift.
+def test_dimension_changing_normalization_is_rejected_only_when_it_disagrees_with_dims(tmp_path: Path) -> None:
+    """A widening normalizer is legal — the field must simply DECLARE the width it produces.
 
-    No config-sourced spec can trip this today — environment.yaml can only express
-    minmax and zscore — but `dynamic_needs.py` constructs specs directly, so the guard
-    protects the compiled observation layout from a dimension-changing kind.
+    This test used to read "a normalizer that changes a field's width must fail loudly",
+    which conflated two things: producing a different width than the SOURCE (fine, and now
+    authorable) versus producing a different width than the field DECLARES (a defect). The
+    first is what `cyclical_sin_cos` and `one_hot` are for; only the second is an error.
+
+    Both halves are pinned, because dropping the mismatch guard while making widening legal
+    would let a wrong-width normalizer corrupt the observation layout silently.
     """
     from townlet.vfs.schema import NormalizationSpec
 
     env = _env(_pack(tmp_path, L1), L1)
     encoder = env._observation_encoder
-    value = torch.zeros((env.num_agents, 8))
+    source = torch.zeros((env.num_agents, 1))
+    widening = NormalizationSpec(kind="cyclical_sin_cos", period=24.0)
 
+    # Declared 2, produces 2: accepted.
+    widened = encoder._apply_declared_normalization("obs_meter_test", source, widening, 2)
+    assert widened.shape == (env.num_agents, 2)
+
+    # Declared 1, produces 2: still a defect, still loud.
     with pytest.raises(ValueError, match="changed an observation field's width"):
-        encoder._apply_declared_normalization(
-            "obs_meters",
-            value,
-            NormalizationSpec(kind="cyclical_sin_cos", period=24.0),
-            8,
+        encoder._apply_declared_normalization("obs_meter_test", source, widening, 1)
+
+
+# --------------------------------------------------------------------------------------
+# Per-meter normalization kinds (hamlet-3d3039f340, PDR-0054)
+# --------------------------------------------------------------------------------------
+
+
+def test_a_meter_can_declare_a_log_family_and_it_reaches_the_observation() -> None:
+    """ACCEPTANCE LEG 2, verbatim from hamlet-3d3039f340.
+
+    The ticket measured that `money` with bounds [1, 1e6] under a linear normalizer
+    observes 0.000999 at money=1000 — the whole operating range 1..100,000 crushed into
+    [0, 0.0999], leaving the agent effectively blind to money. It required that after the
+    fix the compiled spec reports `log_scaled` and the observed value at money=1000 is
+    0.5.
+
+    Leg 1 (the pack compiles with zero src/ diff) is how the defect arose in the first
+    place: `variables_reference.yaml` accepted exactly this declaration, validated it,
+    compiled green, and discarded it. So this asserts the OBSERVED VALUE, not the schema.
+    """
+    pack = Path("configs/trial002_money_log_gdp")
+    universe = UniverseCompiler().compile(pack, primary_level="L0_simple", use_cache=False)
+
+    spec = next(f.normalization for f in universe.vfs_observation_fields if f.id == meter_observation_field_name("money"))
+    assert spec is not None and spec.kind == "log_scaled", "money must compile to the declared log family"
+
+    observed = {value: apply_normalization(torch.tensor([value]), spec).item() for value in (1.0, 10.0, 1000.0, 100000.0, 1000000.0)}
+    assert observed[1000.0] == pytest.approx(0.5, abs=1e-6), "the ticket's headline number"
+    # The rest of the ticket's table, so a partial regression cannot pass on one point.
+    assert observed[1.0] == pytest.approx(0.0, abs=1e-6)
+    assert observed[10.0] == pytest.approx(1.0 / 6.0, abs=1e-6)
+    assert observed[100000.0] == pytest.approx(5.0 / 6.0, abs=1e-6)
+    assert observed[1000000.0] == pytest.approx(1.0, abs=1e-6)
+
+    # And the defect it replaces: linear scaling would have crushed it to ~0.001.
+    assert observed[1000.0] > 100 * (1000.0 / 1000000.0)
+
+
+def test_a_widening_meter_kind_grows_the_observation_by_exactly_its_extra_dims(tmp_path: Path) -> None:
+    """The width couplings are genuinely broken, not merely bypassed.
+
+    Before this cut the observed bars width was pinned to the meter COUNT in three places
+    (the meter-encoder Linear, its zero fallback, and the encoder's source-shape assert),
+    so a widening kind could not be used even though `apply_normalization` implemented it.
+    Declaring `cyclical_sin_cos` on one meter must now widen the observation by exactly
+    one dimension, end to end — compiled spec, bars group slice, and the real observation
+    tensor.
+    """
+    baseline = UniverseCompiler().compile(SOURCE_PACK, primary_level=L1, use_cache=False)
+    baseline_dims = baseline.observation_spec.total_dims
+    baseline_bars = baseline.observation_activity.group_slices["bars"]
+
+    pack = _pack(tmp_path, L1)
+    env_yaml = pack / "environment.yaml"
+    data = yaml.safe_load(env_yaml.read_text())
+    for meter in data["environment"]["meters"]:
+        if meter["name"] == "mood":
+            meter["range_type"] = {"kind": "cyclical_sin_cos", "period": 24.0}
+    env_yaml.write_text(yaml.safe_dump(data))
+
+    widened = UniverseCompiler().compile(pack, primary_level=L1, use_cache=False)
+
+    assert widened.observation_spec.total_dims == baseline_dims + 1
+    bars = widened.observation_activity.group_slices["bars"]
+    assert (bars.stop - bars.start) == (baseline_bars.stop - baseline_bars.start) + 1
+
+    mood_field = widened.observation_spec.get_field_by_name(meter_observation_field_name("mood"))
+    assert mood_field.dims == 2, "sin and cos"
+
+    # The SOURCE stays one scalar — the extra dimension is produced by the normalizer at
+    # observation time, not stored. Conflating these is what made the kind unreachable.
+    source = next(f for f in widened.vfs_observation_fields if f.id == mood_field.name)
+    assert source.shape == [1]
+
+    # End to end: the real observation is (sin, cos) of the meter's value.
+    env = _env(pack, L1)
+    env.meters[:, env.meter_name_to_index["mood"]] = 6.0
+    obs = env._get_observations()[0, mood_field.start_index : mood_field.end_index]
+    angle = 6.0 * (2.0 * math.pi / 24.0)
+    assert obs[0].item() == pytest.approx(math.sin(angle), abs=1e-5)
+    assert obs[1].item() == pytest.approx(math.cos(angle), abs=1e-5)
+
+
+def test_a_meter_observation_id_that_collides_is_a_compile_error(tmp_path: Path) -> None:
+    """The namespacing prefix is asserted, not trusted.
+
+    A bare meter name as a variable id is unusable twice over: the VTC merges bars and VFS
+    variables into one evaluation namespace and raises at RUNTIME on the first bar write,
+    and `build_vfs_variables` SKIPS a field shadowed by a declared variable, silently
+    producing an observation field with no backing variable. Both are found at compile
+    time, with the meter named.
+    """
+    pack = _pack(tmp_path, L1)
+    env_yaml = pack / "environment.yaml"
+    data = yaml.safe_load(env_yaml.read_text())
+    data["environment"]["variables"].append(
+        {
+            "name": meter_observation_field_name("energy"),
+            "type": "scalar",
+            "dims": 1,
+            "scope": "agent",
+            "description": "A variable that shadows a meter's observation id",
+            "normalization": {"method": "normalize", "range": [0.0, 1.0], "clip": False},
+        }
+    )
+    env_yaml.write_text(yaml.safe_dump(data))
+
+    with pytest.raises(Exception, match="collides with a declared environment variable"):
+        UniverseCompiler().compile(pack, primary_level=L1, use_cache=False)
+
+
+def test_an_underspecified_meter_type_is_a_compile_error(tmp_path: Path) -> None:
+    """PDR-0052's ruling, at the meter: 'there is no such thing as unspecified here'.
+
+    Each member of the range_type vocabulary fully determines its own required parameters,
+    and omitting one fails at parse time rather than being defaulted. Pinned for the two
+    shapes that matter: a member missing its parameter, and a parameter belonging to a
+    DIFFERENT member.
+    """
+    from townlet.config.environment_config import MeterConfig
+
+    with pytest.raises(ValidationError):
+        MeterConfig(name="m", description="d", range_type={"kind": "minmax"})  # no clip
+    with pytest.raises(ValidationError):
+        MeterConfig(name="m", description="d", range_type={"kind": "cyclical_sin_cos"})  # no period
+    with pytest.raises(ValidationError):
+        MeterConfig(name="m", description="d", range_type={"kind": "minmax", "clip": True, "period": 24.0})
+    with pytest.raises(ValidationError):
+        MeterConfig(name="m", description="d", range_type={"kind": "normalized"})  # deleted member
+
+
+def test_semantic_groups_must_be_contiguous() -> None:
+    """group_slices is the name-blind way to address a block, and W6 sizes a network layer
+    from it — so a group that spans foreign dimensions produces a wrong TENSOR SHAPE, far
+    from its cause. build_activity records a group's start on first sighting and its end on
+    every sighting, so interleaving was previously silent."""
+    from townlet.universe.compilers.observation import ObservationCompiler
+    from townlet.universe.dto import ObservationField, ObservationSpec
+
+    def _field(name: str, start: int, semantic: str) -> ObservationField:
+        return ObservationField(
+            uuid=None,
+            name=name,
+            type="scalar",
+            dims=1,
+            start_index=start,
+            end_index=start + 1,
+            scope="agent",
+            description=name,
+            semantic_type=semantic,
         )
+
+    interleaved = ObservationSpec.from_fields([_field("a", 0, "bars"), _field("b", 1, "spatial"), _field("c", 2, "bars")])
+    with pytest.raises(ValueError, match="not contiguous"):
+        ObservationCompiler().build_activity(interleaved)
+
+    contiguous = ObservationSpec.from_fields([_field("a", 0, "bars"), _field("c", 1, "bars"), _field("b", 2, "spatial")])
+    activity = ObservationCompiler().build_activity(contiguous)
+    assert activity.group_slices["bars"] == slice(0, 2)

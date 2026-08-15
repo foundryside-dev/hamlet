@@ -188,15 +188,28 @@ class RegisteredHashDivergence:
         return frozenset(self.hash_fields)
 
 
-# DIV-004 — the normalization-vocabulary programme (WS-4, PDR-0054). MEASURED
-# on all five default_curriculum levels by compiling the live tree against a
-# worktree at the pre-change commit: exactly these three hashes move, and
-# observation_spec.total_dims is unchanged at every level. `environment_hash`
-# is RAW (_compute_pydantic_hash over the whole file) so it would move for any
-# edit; the two DERIVED hashes are what the entry actually asserts.
+# DIV-004 — the normalization-vocabulary programme (WS-4, PDR-0054). MEASURED on all
+# five default_curriculum levels at each cut by compiling the live tree against a git
+# worktree at the pre-cut commit — never predicted, and re-measured when the set grew.
+#
+# W1 (the `clip` parameter) moved three. W2/W3/W4 (`range_type` as the complete type
+# declaration, one observation field per meter, source width split from observed width)
+# added `variable_schema_hash`, because the VFS variable SET changed: one N-wide
+# `obs_meters` variable became N 1-wide `obs_meter_<name>` variables.
+#
+# `environment_hash` is RAW (`_compute_pydantic_hash` over the whole file) so it would
+# move for any edit to environment.yaml; the three DERIVED hashes are what this entry
+# actually asserts. `transition_graph_hash` deliberately does NOT appear: the cut is
+# observation-side only, and the VTC bridge reads bars through `_current_bar_state`, not
+# through the observation.
 _DIV004 = RegisteredHashDivergence(
     register_ref="DIV-004",
-    hash_fields=("environment_hash", "observation_schema_hash", "vfs_hash"),
+    hash_fields=(
+        "environment_hash",
+        "observation_schema_hash",
+        "variable_schema_hash",
+        "vfs_hash",
+    ),
 )
 
 

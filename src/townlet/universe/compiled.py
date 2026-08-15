@@ -50,7 +50,11 @@ from townlet.vfs.transition_schedule import (
     social_rules_from_transition_payload,
 )
 
-COMPILED_SCHEMA_VERSION = "1.14"
+# 1.15: the bars block became N per-meter observation fields with per-meter normalization
+# specs, and VFS source widths split from observed widths (PDR-0054 W3/W4). Every cache built
+# before that describes a different observation layout, so the bump converts a silent
+# wrong-shape serve into the "recompile the config pack" error this constant already implements.
+COMPILED_SCHEMA_VERSION = "1.15"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",

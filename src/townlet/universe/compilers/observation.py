@@ -7,7 +7,20 @@ from typing import Any, Literal, cast
 import torch
 
 from townlet.config.curriculum_config import CurriculumConfig
-from townlet.config.environment_config import EnvironmentConfig as EnvConfigV21
+from townlet.config.environment_config import (
+    EnvironmentConfig as EnvConfigV21,
+)
+from townlet.config.environment_config import (
+    MeterRangeBinary,
+    MeterRangeCyclicalSinCos,
+    MeterRangeLogScaled,
+    MeterRangeMaskedValue,
+    MeterRangeMinMax,
+    MeterRangeNone,
+    MeterRangeOneHot,
+    MeterRangeRankScaled,
+    MeterRangeZScore,
+)
 from townlet.config.items_config import ItemsCatalogConfig
 from townlet.config.stratum_config import ObservationModeConfig, StratumConfig
 from townlet.effects.catalog import EffectCatalog
@@ -18,6 +31,68 @@ from townlet.universe.validation.limits import EFFECT_OBSERVATION_SLOTS
 from townlet.vfs.observation_builder import VFSObservationSpec
 from townlet.vfs.schema import NormalizationSpec, VariableDef
 from townlet.vfs.schema import ObservationField as VFSObservationField
+
+# Per-meter observation identifiers are NAMESPACED, and the prefix is load-bearing rather
+# than cosmetic. Two in-tree mechanisms make a bare meter name unusable as a variable id:
+#
+#   1. `vtc.py::VTCActionWriteProgram.apply` merges the VFS registry snapshot and the bars
+#      dict into ONE evaluation namespace and RAISES on a collision. A variable literally
+#      named `energy` beside the bar `energy` would break every pack that writes a bar.
+#   2. `build_vfs_variables` skips any observation field whose name matches a declared
+#      `environment.variables[]` entry — so a collision would silently produce a field with
+#      no backing variable, which is PDR-0053 shape #5 (accepted then dropped).
+#
+# `_assert_meter_ids_are_disjoint` turns both into a compile error rather than trusting the
+# prefix to be lucky.
+METER_OBSERVATION_PREFIX = "obs_meter_"
+
+# Widths the VFS normalization kinds produce from a 1-wide source
+# (`vfs/observation_builder.py::apply_normalization`): `cyclical_sin_cos` concatenates sin
+# and cos, `one_hot` expands to its category count, and every other kind is width-preserving.
+_WIDTH_PRESERVING_KINDS = frozenset({"none", "minmax", "zscore", "binary", "log_scaled", "rank_scaled", "masked_value"})
+
+
+def meter_observation_field_name(meter_name: str) -> str:
+    """The observation field / VFS variable id for a meter. One definition, no f-strings at
+    call sites — this string is baked into `observation_field_uuids` in every checkpoint."""
+    return f"{METER_OBSERVATION_PREFIX}{meter_name}"
+
+
+def meter_name_from_observation_field(field_name: str) -> str:
+    """Inverse of `meter_observation_field_name`. Raises rather than guessing.
+
+    Only ever called on fields the compiler emitted with `semantic_type="bars"`, so a name
+    without the prefix means something else got into the bars group — which is a defect
+    worth a loud failure, not a silently skipped meter.
+    """
+    if not field_name.startswith(METER_OBSERVATION_PREFIX):
+        raise ValueError(
+            f"Observation field '{field_name}' carries semantic_type 'bars' but is not a meter "
+            f"observation (expected the '{METER_OBSERVATION_PREFIX}' prefix)."
+        )
+    return field_name[len(METER_OBSERVATION_PREFIX) :]
+
+
+def meter_observed_width(range_type: Any) -> int:
+    """How many observation dimensions a meter's declared type occupies.
+
+    The meter's SOURCE is always one scalar; this is the width AFTER normalization, and the
+    two differ for exactly the two widening kinds. Keeping the arithmetic here — rather than
+    inline at the emitter — is what lets the field emitter, the VFS variable builder and the
+    contiguity assertion agree by construction instead of by coincidence.
+    """
+    kind = range_type.kind
+    if kind == "cyclical_sin_cos":
+        return 2
+    if kind == "one_hot":
+        return int(range_type.categories)
+    if kind in _WIDTH_PRESERVING_KINDS:
+        return 1
+    raise ValueError(
+        f"Meter range_type '{kind}' has no declared observed width.\n"
+        "  Rule: every member of the range_type vocabulary must state its width here. "
+        "A new member added to the DTO without a width is a compile error, not a default of 1."
+    )
 
 
 class ObservationCompiler:
@@ -168,21 +243,32 @@ class ObservationCompiler:
             )
             offset += velocity_dim
 
-        meter_count = len(environment.environment.meters)
-        fields.append(
-            ObservationField(
-                uuid=None,
-                name="obs_meters",
-                type="vector",
-                dims=meter_count,
-                start_index=offset,
-                end_index=offset + meter_count,
-                scope="agent",
-                description=f"{meter_count} meter values (normalized)",
-                semantic_type="bars",
+        # ONE FIELD PER METER, contiguous, in declaration order (PDR-0054 ruling 1).
+        #
+        # This was a single `obs_meters` field of width == meter count carrying ONE
+        # NormalizationSpec, which is why 8 of the 9 normalization kinds were unreachable
+        # for bars from any config pack (hamlet-3d3039f340): min/max were already lists so
+        # per-meter PARAMETERS worked, but a block cannot carry a per-meter KIND.
+        #
+        # Contiguity is what keeps `group_slices["bars"]` — the name-blind replacement for
+        # the old literal-name lookups — meaning "the meter block". It is asserted, not
+        # assumed: see `_assert_semantic_groups_are_contiguous`.
+        for meter in environment.environment.meters:
+            observed_dims = meter_observed_width(meter.range_type)
+            fields.append(
+                ObservationField(
+                    uuid=None,
+                    name=meter_observation_field_name(meter.name),
+                    type="vector" if observed_dims > 1 else "scalar",
+                    dims=observed_dims,
+                    start_index=offset,
+                    end_index=offset + observed_dims,
+                    scope="agent",
+                    description=f"Meter '{meter.name}' observed as {meter.range_type.kind}",
+                    semantic_type="bars",
+                )
             )
-        )
-        offset += meter_count
+            offset += observed_dims
 
         affordance_count = len(environment.environment.affordances)
         affordance_dim = affordance_count + 1
@@ -317,6 +403,7 @@ class ObservationCompiler:
         active_uuids_list: list[str] = []
         group_boundaries: dict[str, int] = {}
         group_end_indices: dict[str, int] = {}
+        group_dims: dict[str, int] = {}
         current_idx = 0
 
         for field in obs_spec.fields:
@@ -333,13 +420,46 @@ class ObservationCompiler:
 
             current_idx += dims
             group_end_indices[group_name] = current_idx
+            group_dims[group_name] = group_dims.get(group_name, 0) + dims
 
         group_slices = {name: slice(group_boundaries[name], group_end_indices[name]) for name in group_boundaries.keys()}
+        self._assert_semantic_groups_are_contiguous(group_slices, group_dims)
         return ObservationActivity(
             active_mask=tuple(active_mask_list),
             group_slices=group_slices,
             active_field_uuids=tuple(active_uuids_list),
         )
+
+    @staticmethod
+    def _assert_semantic_groups_are_contiguous(group_slices: dict[str, slice], group_dims: dict[str, int]) -> None:
+        """A group's slice must contain its own fields and nothing else.
+
+        `build_activity` records a group's start on FIRST sighting and its end on EVERY
+        sighting, so a group whose fields are interleaved with another's yields a slice that
+        silently SPANS the foreign dimensions. That was harmless while every group was one
+        field. It stops being harmless the moment `group_slices["bars"]` becomes the
+        name-blind source of the meter block — PDR-0054 W6 sizes a network layer from it, so
+        a span produces a wrong tensor shape rather than a wrong answer, and the failure
+        surfaces far from its cause.
+
+        Summing each group's own dims and comparing to its span turns that into a compile
+        error. `_apply_observation_mode`'s `full_manual` branch is the one path that can
+        reorder fields arbitrarily, and this is what stops it reordering a group apart.
+        """
+        for name, span in group_slices.items():
+            width = span.stop - span.start
+            declared = group_dims[name]
+            if width != declared:
+                raise ValueError(
+                    "Observation fields of one semantic group are not contiguous.\n"
+                    f"  Group: {name}\n"
+                    f"  Spans dims [{span.start}, {span.stop}) = {width}, but its own fields total {declared}.\n"
+                    "  Rule: a semantic group must be a single contiguous run, because "
+                    "observation_activity.group_slices is how consumers address a group without "
+                    "knowing any field's name. Interleaving groups makes that slice span foreign "
+                    "dimensions silently. If this came from observation_mode: full_manual, list a "
+                    "group's fields together."
+                )
 
     def build_vfs_observation_fields(
         self,
@@ -353,14 +473,19 @@ class ObservationCompiler:
         for var in environment.environment.variables:
             env_norm_by_name[var.name] = self._convert_normalization(var.name, getattr(var, "normalization", None))
 
-        # `obs_meters` is normalized against the DECLARED bar bounds (WS-1(e)/PDR-0016).
-        # bounds.max is exactly the range a minmax normalizer needs, so the same
-        # declaration that ceilings the runtime also scales the observation — rather
-        # than a divisor invented here, which would be papering over the magnitude.
-        env_norm_by_name["obs_meters"] = self._meter_normalization(bars, meter_metadata)
+        # Each meter gets its OWN spec, built from its own declared range_type. The bounds
+        # half still comes from bars.yaml (PDR-0016: the declaration that ceilings the
+        # runtime also scales the observation) — what changed is that the KIND now comes
+        # from the author instead of being minmax for everyone.
+        env_norm_by_name.update(self._meter_normalizations(environment, bars))
 
         fields: list[VFSObservationField] = []
         allowed_semantic = {"bars", "spatial", "affordance", "temporal", "custom"}
+        # SOURCE width, not observed width. Every meter's source is one scalar; the field's
+        # `dims` may be wider (cyclical_sin_cos -> 2, one_hot -> categories). Conflating the
+        # two is what made the widening kinds unusable — the runtime read the registry at
+        # the OBSERVED width and tripped its own shape guard before normalization ever ran.
+        source_width_by_name = {meter_observation_field_name(m.name): 1 for m in environment.environment.meters}
         for field in obs_spec.fields:
             norm = env_norm_by_name.get(field.name)
             semantic = field.semantic_type if field.semantic_type in allowed_semantic else "custom"
@@ -369,7 +494,7 @@ class ObservationCompiler:
                     id=field.name,
                     source_variable=field.name,
                     exposed_to=["agent"],
-                    shape=[field.dims],
+                    shape=[source_width_by_name.get(field.name, field.dims)],
                     normalization=norm,
                     semantic_type=semantic,  # type: ignore[arg-type]
                     curriculum_active=field.curriculum_active,
@@ -378,52 +503,151 @@ class ObservationCompiler:
         return tuple(fields)
 
     @staticmethod
-    def _meter_normalization(bars: Any, meter_metadata: Any) -> NormalizationSpec:
-        """Build the per-meter minmax spec from declared bar bounds, in observation order."""
+    def _declared_bounds(meter_name: str, kind: str, bounds_by_name: dict[str, Any]) -> tuple[float, float]:
+        """The bars.yaml bounds a range-based member scales against (PDR-0016)."""
+        declared = bounds_by_name.get(meter_name)
+        if declared is None:
+            raise ValueError(
+                "Meter declares a bounds-based observation type but has no bar to supply bounds.\n"
+                f"  Meter: {meter_name}\n"
+                f"  Declared range_type: {kind}\n"
+                "  Rule: minmax and log_scaled take min/max from bars.yaml (PDR-0016). "
+                "Declare bounds.min/bounds.max for this meter, or choose a range_type that "
+                "carries its own parameters."
+            )
+        if declared.max <= declared.min:
+            raise ValueError(
+                "Meter bounds cannot be normalized: max must be strictly greater than min.\n"
+                f"  Meter: {meter_name}\n"
+                f"  Declared bounds: [{declared.min}, {declared.max}]"
+            )
+        return float(declared.min), float(declared.max)
+
+    def _meter_normalizations(self, environment: EnvConfigV21, bars: Any) -> dict[str, NormalizationSpec]:
+        """One NormalizationSpec per meter, built from its declared `range_type`.
+
+        Replaces `_meter_normalization`, which returned ONE minmax spec for the whole block
+        (deleted outright, per PDR-0054's reversal trigger: growing a second path beside it
+        would have meant the split was not the root fix).
+
+        Only the two range-based members read `bars.yaml`. That asymmetry is deliberate and
+        is the whole content of PDR-0016: bounds are already declared, so restating them on
+        the meter would be two sources for one fact. Every other member's parameters are not
+        implied by anything already written down, so the author states them inline.
+        """
         bounds_by_name = {meter.name: meter.bounds for meter in bars.meters}
-        ordered = sorted(meter_metadata.meters, key=lambda meter: meter.index)
-        mins: list[float] = []
-        maxes: list[float] = []
-        for meter in ordered:
-            declared = bounds_by_name.get(meter.name)
-            if declared is None:
-                raise ValueError(
-                    "Meter present in compiled metadata has no declared bar to supply bounds.\n"
-                    f"  Meter: {meter.name} (index {meter.index})\n"
-                    "  Rule: every observed meter must declare bounds.min/bounds.max in bars.yaml."
+        specs: dict[str, NormalizationSpec] = {}
+
+        for meter in environment.environment.meters:
+            declared_type = meter.range_type
+            field_name = meter_observation_field_name(meter.name)
+
+            # isinstance dispatch, not a string switch on `.kind`: the members are distinct
+            # types, so this narrows for the type checker AND makes a member added to the
+            # union without a branch here fail at the `else` rather than compiling to no spec.
+            if isinstance(declared_type, MeterRangeMinMax | MeterRangeLogScaled):
+                bounds = self._declared_bounds(meter.name, declared_type.kind, bounds_by_name)
+                specs[field_name] = NormalizationSpec(
+                    kind=declared_type.kind,
+                    min=bounds[0],
+                    max=bounds[1],
+                    clip=declared_type.clip,
                 )
-            if declared.max <= declared.min:
+            elif isinstance(declared_type, MeterRangeNone):
+                specs[field_name] = NormalizationSpec(kind="none")
+            elif isinstance(declared_type, MeterRangeZScore):
+                specs[field_name] = NormalizationSpec(kind="zscore", mean=declared_type.mean, std=declared_type.std)
+            elif isinstance(declared_type, MeterRangeCyclicalSinCos):
+                specs[field_name] = NormalizationSpec(kind="cyclical_sin_cos", period=declared_type.period)
+            elif isinstance(declared_type, MeterRangeOneHot):
+                specs[field_name] = NormalizationSpec(kind="one_hot", categories=declared_type.categories)
+            elif isinstance(declared_type, MeterRangeBinary):
+                specs[field_name] = NormalizationSpec(kind="binary", threshold=declared_type.threshold)
+            elif isinstance(declared_type, MeterRangeRankScaled):
+                specs[field_name] = NormalizationSpec(kind="rank_scaled")
+            elif isinstance(declared_type, MeterRangeMaskedValue):
+                specs[field_name] = NormalizationSpec(
+                    kind="masked_value",
+                    mask_value=declared_type.mask_value,
+                    fill_value=declared_type.fill_value,
+                )
+            else:
+                # Unreachable through the DTO, which is a closed discriminated union. Present
+                # so that ADDING a member without teaching this function about it fails loudly
+                # here rather than silently emitting no spec — which would be PDR-0053 shape #5
+                # (declaration accepted, then dropped) reintroduced by the next author.
                 raise ValueError(
-                    "Meter bounds cannot be normalized: max must be strictly greater than min.\n"
+                    f"Meter range_type '{declared_type.kind}' has no compiled NormalizationSpec.\n"
                     f"  Meter: {meter.name}\n"
-                    f"  Declared bounds: [{declared.min}, {declared.max}]"
+                    "  Rule: every member of the range_type vocabulary must compile to a spec here."
                 )
-            mins.append(float(declared.min))
-            maxes.append(float(declared.max))
-        # `clip=False` here is behaviour-preserving, not a chosen default: minmax has always been
-        # pure affine rescaling, and bar values stay in range because the BAR is clamped at
-        # runtime, not because the normalizer clamps. Meters cannot declare `clip` at all yet —
-        # they cannot declare a normalization kind either. That is hamlet-3d3039f340, planned as
-        # PDR-0054 W2/W3, which deletes this method rather than parameterizing it further.
-        return NormalizationSpec(kind="minmax", min=mins, max=maxes, clip=False)
+
+        return specs
+
+    @staticmethod
+    def _assert_meter_ids_are_disjoint(environment: EnvConfigV21, user_var_names: set[str]) -> None:
+        """A meter's observation id must collide with nothing — not a declared variable, and
+        not the meter's own bar name.
+
+        Both collisions are silent in opposite directions, which is why this is a compile
+        error and not a naming convention:
+
+        - Against `environment.variables[]`: `build_vfs_variables` SKIPS a field whose name
+          matches a declared variable, so the meter would compile to an observation field
+          with no backing VFS variable — accepted, then dropped (PDR-0053 shape #5).
+        - Against a bar name: `vtc.py::VTCActionWriteProgram.apply` merges the registry
+          snapshot and the bars dict into one namespace and raises at RUNTIME, on the first
+          tick of the first pack that writes a bar. A compile error names the meter instead.
+
+        The `obs_meter_` prefix makes both unreachable today. This asserts it rather than
+        trusting it, because the prefix is one edit away from being removed by someone who
+        reads it as cosmetic.
+        """
+        meter_names = {meter.name for meter in environment.environment.meters}
+        for meter in environment.environment.meters:
+            field_name = meter_observation_field_name(meter.name)
+            if field_name in user_var_names:
+                raise ValueError(
+                    "Meter observation id collides with a declared environment variable.\n"
+                    f"  Meter: {meter.name}  ->  observation id: {field_name}\n"
+                    "  Rule: the meter's observation would be accepted and then silently dropped "
+                    "(build_vfs_variables skips fields that shadow a declared variable). "
+                    f"Rename the variable '{field_name}' in environment.yaml."
+                )
+            if field_name in meter_names:
+                raise ValueError(
+                    "Meter observation id collides with another meter's bar name.\n"
+                    f"  Meter: {meter.name}  ->  observation id: {field_name}\n"
+                    "  Rule: bars and VFS variables share one evaluation namespace in the VTC, "
+                    "so this would raise at runtime on the first bar write."
+                )
 
     def build_vfs_variables(self, obs_spec: ObservationSpec, environment: EnvConfigV21) -> tuple[VariableDef, ...]:
         """Build VFS variables from observation fields + environment variables."""
         vars_out: list[VariableDef] = []
         user_var_names = {var.name for var in environment.environment.variables}
+        self._assert_meter_ids_are_disjoint(environment, user_var_names)
+
+        # SOURCE widths. A meter's backing variable is always one scalar, whatever its
+        # observed width — the widening kinds produce their extra dimensions at
+        # normalization time, downstream of the registry. Deriving this from `field.dims`
+        # (as it did) makes the variable 2-wide for a cyclical_sin_cos meter, and the
+        # encoder's own shape guard then fires before `apply_normalization` ever runs.
+        meter_source_widths = {meter_observation_field_name(m.name): 1 for m in environment.environment.meters}
 
         for field in obs_spec.fields:
             if field.name in user_var_names:
                 continue
 
-            is_vector = field.dims > 1
-            default = [0.0] * field.dims if is_vector else 0.0
+            source_dims = meter_source_widths.get(field.name, field.dims)
+            is_vector = source_dims > 1
+            default = [0.0] * source_dims if is_vector else 0.0
             vars_out.append(
                 VariableDef(
                     id=field.name,
                     scope="agent",
                     type="vecNf" if is_vector else "scalar",
-                    dims=field.dims if is_vector else None,
+                    dims=source_dims if is_vector else None,
                     lifetime="tick",
                     readable_by=["agent", "engine"],
                     writable_by=["engine"],

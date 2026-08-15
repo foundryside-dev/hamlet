@@ -233,11 +233,20 @@ pre-change commit — **exactly three hashes move, uniformly, at every level**:
 
 | hash | family | moves | why |
 |---|---|---|---|
-| `environment_hash` | RAW | yes | `_compute_pydantic_hash` over the whole file — moves for any edit, so it is the weakest of the three as evidence |
-| `observation_schema_hash` | DERIVED | yes | the compiled `NormalizationSpec` carries a new field |
+| `environment_hash` | RAW | yes | `_compute_pydantic_hash` over the whole file — moves for any edit, so it is the weakest of the four as evidence |
+| `observation_schema_hash` | DERIVED | yes | the compiled `NormalizationSpec` carries a new field (W1), then one field per meter with its own spec (W3) |
 | `vfs_hash` | DERIVED | yes | same specs, mirrored into the VFS observation fields |
+| `variable_schema_hash` | DERIVED | **added at W2/W3/W4** | the VFS variable SET changed: one N-wide `obs_meters` became N 1-wide `obs_meter_<name>` |
 
-and `observation_spec.total_dims` is **unchanged at 124** on every level.
+`transition_graph_hash` deliberately does **not** appear. The cut is observation-side only:
+the VTC reads bars through `_current_bar_state`, a name-keyed view of the STATE tensor, and
+never through the observation. Its absence is an assertion, not an omission — if it ever
+moves, the cut reached the transition graph and that is a finding.
+
+`observation_spec.total_dims` is **unchanged at 124** on every level, because every meter in
+`default_curriculum` declares a width-preserving `minmax`. A pack that declares
+`cyclical_sin_cos` or `one_hot` on a meter widens it by design, which is pinned by
+`test_a_widening_meter_kind_grows_the_observation_by_exactly_its_extra_dims`.
 
 **Harness adjudication.** Bound per-cell in `src/townlet/oracle/matrix.py` via
 `RegisteredHashDivergence("DIV-004", hash_fields=(...))` on every STANDING cell. A cell
@@ -260,8 +269,13 @@ The six DIV-003 fixture cells declare `pack_divergence="DIV-004"` (their packs a
 old side crashes and writes no trace, so there are no hashes to compare.
 
 **Retire this entry** when the oracle is re-tagged past the programme. Until then, expanding
-it is correct — extending the `hash_fields` tuple as W2/W3 move more derived hashes — but
-each expansion must be re-measured, not predicted, and the measurement recorded here.
+it is correct — extending the `hash_fields` tuple as later cuts move more derived hashes —
+but each expansion must be re-measured, not predicted, and the measurement recorded here.
+
+**Expansion log.** W1 measured three movers. W2/W3/W4 re-measured and found a fourth,
+`variable_schema_hash`, exactly as the pre-cut recon predicted it would — the prediction was
+recorded first so that a surprise would have been visible as one. Method both times: a git
+worktree at the pre-cut commit, compiled against the live tree, all five levels.
 
 
 ---

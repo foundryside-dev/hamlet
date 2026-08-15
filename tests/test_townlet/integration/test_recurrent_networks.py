@@ -403,7 +403,7 @@ class TestLSTMBatchTraining:
             action_dim=2,  # Actions: 0 (A→B) or 1 (B→C)
             window_size=1,  # Minimal spatial observation
             position_dim=2,
-            num_meters=2,  # Minimal state (just state_id encoded)
+            bars_dim=2,  # Minimal state (just state_id encoded)
             num_affordance_types=1,
             enable_temporal_features=False,
             hidden_dim=32,  # Small for fast training
@@ -460,7 +460,7 @@ class TestLSTMBatchTraining:
             action_dim=2,
             window_size=1,
             position_dim=2,
-            num_meters=2,
+            bars_dim=2,
             num_affordance_types=1,
             enable_temporal_features=False,
             hidden_dim=32,
@@ -554,7 +554,7 @@ class TestLSTMBatchTraining:
             action_dim=2,
             window_size=1,
             position_dim=2,
-            num_meters=2,
+            bars_dim=2,
             num_affordance_types=1,
             enable_temporal_features=False,
             hidden_dim=16,
@@ -614,7 +614,7 @@ class TestLSTMForwardPass:
             action_dim=env.action_dim,
             window_size=5,
             position_dim=2,
-            num_meters=8,
+            bars_dim=8,
             num_affordance_types=env.num_affordance_types,
             enable_temporal_features=False,
             hidden_dim=256,

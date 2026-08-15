@@ -54,15 +54,21 @@ class TestStructuredNetworkInstantiation:
         compiled = compiler.compile(config_dir, primary_level="L2_partial_observability", use_cache=False)
         env = VectorizedHamletEnv.from_universe(compiled, level_name="L2_partial_observability", num_agents=4, device="cpu")
 
-        # Manually create RecurrentSpatialQNetwork as population would
+        # Manually create RecurrentSpatialQNetwork as population would. Both the bars
+        # width and the block's location come from the compiled artifact — the network
+        # no longer accepts a meter COUNT, and no longer finds the block by field name.
+        bars = env.observation_activity.group_slices["bars"]
         network = RecurrentSpatialQNetwork(
             action_dim=env.action_dim,
             window_size=5,
             position_dim=2,
-            num_meters=8,
+            bars_dim=bars.stop - bars.start,
             num_affordance_types=14,
             enable_temporal_features=True,
             hidden_dim=256,
+            observation_spec=env.observation_spec,
+            observation_activity=env.observation_activity,
         )
 
         assert isinstance(network, RecurrentSpatialQNetwork)
+        assert network.bars_dim == 8, "eight meters, each observing one dim, is still eight"

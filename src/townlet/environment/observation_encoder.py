@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, cast
 
 import torch
 
+from townlet.universe.compilers.observation import meter_name_from_observation_field
 from townlet.vfs.observation_builder import VFSObservationSpec, apply_normalization, build_vfs_observation
 from townlet.vfs.schema import NormalizationSpec
 
@@ -74,18 +75,25 @@ class ObservationEncoder:
         if source_variable not in env.vfs_registry.variables:
             raise ValueError(f"Observation field '{field_name}' is not backed by a VFS variable.")
 
-        shape_dims = 1
+        # SOURCE width, not observed width. The registry is read at the width the variable
+        # actually stores; the declared normalizer may then WIDEN it (cyclical_sin_cos -> 2,
+        # one_hot -> categories), and `_apply_declared_normalization` below is what checks the
+        # result against the field's declared dims.
+        #
+        # This used to assert `shape_dims == dims` and read at `dims`. That equality is only
+        # true for width-preserving kinds, so it fired before `apply_normalization` ever ran —
+        # which is one of the reasons the widening kinds were unreachable in practice as well
+        # as unauthorable (hamlet-3d3039f340).
+        source_dims = 1
         for shape_dim in vfs_field.shape:
-            shape_dims *= shape_dim
-        if shape_dims != dims:
-            raise ValueError(f"Observation field '{field_name}' VFS shape {vfs_field.shape} does not match {dims} dims.")
+            source_dims *= shape_dim
 
         spec = VFSObservationSpec(
             global_vfs_dim=0,
-            agent_vfs_dim=dims,
+            agent_vfs_dim=source_dims,
             item_vfs_dim=0,
             agent_vars=(source_variable,),
-            agent_active_mask=tuple(True for _ in range(dims)),
+            agent_active_mask=tuple(True for _ in range(source_dims)),
         )
         raw = build_vfs_observation(
             registry=env.vfs_registry,
@@ -230,21 +238,43 @@ class ObservationEncoder:
         self._set_observation_variable("obs_position", position, position_field.dims)
 
     def _sync_meter_observation_to_vfs(self) -> None:
-        """Publish the current bar/meter observation into VFS state."""
-        env = self._env
-        meter_field = next((field for field in env.observation_spec.fields if field.name == "obs_meters"), None)
-        if meter_field is None:
-            return
-        if "obs_meters" not in env.vfs_registry.variables:
-            raise ValueError("Observation field 'obs_meters' is present but no matching VFS variable exists.")
+        """Publish each meter's current value into its own VFS source variable.
 
-        expected_shape = (env.num_agents, meter_field.dims)
-        if tuple(env.meters.shape) != expected_shape:
-            raise ValueError(f"Observation field 'obs_meters' source shape {tuple(env.meters.shape)}, expected {expected_shape}.")
+        `env.meters` is the STATE tensor and stays `[num_agents, meter_count]` — one column
+        per meter, unchanged by this cut. What changed is the destination: one 1-wide VFS
+        variable per meter instead of a single block variable, because a block cannot carry
+        a per-meter normalization kind (hamlet-3d3039f340).
+
+        The meter -> column mapping comes from compiled metadata, never from parsing a field
+        name back into a meter name. The observation ORDER comes from the compiled fields.
+        Those are the same order by construction (both are environment.yaml declaration
+        order), and this asserts it rather than assuming it.
+        """
+        env = self._env
+        meter_fields = [field for field in env.observation_spec.fields if field.semantic_type == "bars"]
+        if not meter_fields:
+            return
+
+        name_to_column = env.meter_name_to_index
+        if tuple(env.meters.shape) != (env.num_agents, len(name_to_column)):
+            raise ValueError(
+                f"Meter state tensor shape {tuple(env.meters.shape)} does not match "
+                f"({env.num_agents}, {len(name_to_column)}) — one column per declared meter."
+            )
+
         meter_values = env.meters.to(device=env.device, dtype=torch.float32)
-        if meter_field.dims == 1:
-            meter_values = meter_values[:, 0]
-        env.vfs_registry.set("obs_meters", meter_values, writer="engine")
+        for field in meter_fields:
+            meter_name = meter_name_from_observation_field(field.name)
+            column = name_to_column.get(meter_name)
+            if column is None:
+                raise ValueError(
+                    f"Observation field '{field.name}' names meter '{meter_name}', which has no " "column in the compiled meter metadata."
+                )
+            if field.name not in env.vfs_registry.variables:
+                raise ValueError(f"Observation field '{field.name}' is present but no matching VFS variable exists.")
+            # 1-D column view: the SOURCE is a scalar per agent. A widening normalizer
+            # (cyclical_sin_cos, one_hot) expands it downstream, at observation build time.
+            env.vfs_registry.set(field.name, meter_values[:, column], writer="engine")
 
     def _sync_affordance_observation_to_vfs(self) -> None:
         """Publish current affordance-at-position observation into VFS state."""

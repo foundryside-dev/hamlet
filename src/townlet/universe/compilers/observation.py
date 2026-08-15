@@ -515,12 +515,34 @@ class ObservationCompiler:
 
     @staticmethod
     def _convert_normalization(var_name: str, norm_cfg: Any) -> NormalizationSpec:
-        """Map environment.yaml normalization into VFS NormalizationSpec."""
+        """Map environment.yaml normalization into VFS NormalizationSpec.
+
+        `clip` and `none` were removed from the method vocabulary
+        (hamlet-1dba1910c0). Both were ambiguities of the kind PDR-0047 rule 1
+        forbids, and neither is coming back in this form:
+
+        - `clip` compiled to a byte-identical `minmax` spec — the same
+          behaviour as `normalize` under a name that promised something else.
+          `minmax` is `(v - min) / (max - min)`, pure rescaling with no clamp,
+          so an author declaring `clip` on `[0, 1]` and feeding `7.0` got
+          `7.0` back. All 25 in-tree declarations were migrated to `normalize`,
+          which is behaviour-preserving precisely because the two were
+          identical.
+        - `none` was in the approved vocabulary and rejected unconditionally
+          here — a member no author could ever select.
+
+        Real clamping is a genuine capability and is NOT provided by removing
+        the false promise of it: no plain clamp exists in the VFS kind
+        vocabulary either (`clipped_log_scaled` clamps but also log-scales).
+        Adding one is a grammar extension, owner-gated under PDR-0016 —
+        tracked separately rather than smuggled in here.
+        """
         if norm_cfg is None:
             raise ValueError(
                 "Missing normalization for variable declared in environment.yaml.\n"
                 f"  Variable: {var_name}\n"
-                "  Rule: All variables must declare normalization (clip/normalize/standardize); method 'none' is not allowed."
+                "  Rule: every variable must declare normalization explicitly; there is no default (No-Defaults Principle).\n"
+                "  Provide method: normalize (scale to [0,1] against range) | standardize (mean/std)."
             )
 
         method = getattr(norm_cfg, "method", None)
@@ -532,17 +554,10 @@ class ObservationCompiler:
             raise ValueError(
                 "Normalization entry missing 'method' in environment.yaml.\n"
                 f"  Variable: {var_name}\n"
-                "  Provide method: clip | normalize | standardize."
+                "  Provide method: normalize | standardize."
             )
 
-        if method == "none":
-            raise ValueError(
-                "Normalization method 'none' is not permitted (no defaults). "
-                "Specify clip/normalize/standardize with explicit parameters.\n"
-                f"  Variable: {var_name}"
-            )
-
-        if method in {"clip", "normalize"}:
+        if method == "normalize":
             if not range_values or len(range_values) != 2:
                 raise ValueError(
                     f"Normalization range must provide exactly two values [min, max].\n  Variable: {var_name}\n  Got: {range_values}"
@@ -553,8 +568,8 @@ class ObservationCompiler:
                 raise ValueError(
                     "Normalization method 'standardize' requires 'mean' and 'std' parameters in environment.yaml.\n"
                     f"  Variable: {var_name}\n"
-                    "  Action: add mean/std fields to normalization or use clip/normalize with explicit ranges."
+                    "  Action: add mean/std fields to normalization, or use normalize with an explicit range."
                 )
             return NormalizationSpec(kind="zscore", mean=mean, std=std)
 
-        raise ValueError(f"Unsupported normalization method '{method}' for variable '{var_name}'. Use clip | normalize | standardize.")
+        raise ValueError(f"Unsupported normalization method '{method}' for variable '{var_name}'. Use normalize | standardize.")

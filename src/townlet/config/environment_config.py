@@ -73,10 +73,12 @@ class AffordanceDefinition(BaseModel):
 class NormalizationConfig(BaseModel):
     """Variable normalization configuration."""
 
-    method: Literal["clip", "normalize", "standardize", "none"] = Field(
+    method: Literal["normalize", "standardize"] = Field(
         ...,
         description=(
-            "Normalization method: clip (clamp to range), normalize (scale to [0,1]), " "standardize (mean/std), or none (pass-through)."
+            "Normalization method: normalize (scale to [0,1] against `range`) or "
+            "standardize (mean/std). Every member is distinct and does what its name says "
+            "(PDR-0047 rule 1)."
         ),
     )
     range: list[float] = Field(..., description="Value range [min, max]", min_length=2, max_length=2)

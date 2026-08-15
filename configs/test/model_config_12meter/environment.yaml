@@ -144,7 +144,7 @@ environment:
       scope: agent
       description: "How far below target energy (0.0 = at/above target)"
       normalization:
-        method: clip
+        method: normalize
         range: [0.0, 1.0]
 
     - name: deficit_satiation
@@ -153,7 +153,7 @@ environment:
       scope: agent
       description: "How far below target satiation"
       normalization:
-        method: clip
+        method: normalize
         range: [0.0, 1.0]
 
     - name: time_since_last_eat

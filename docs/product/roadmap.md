@@ -1,4 +1,4 @@
-# Roadmap — HAMLET / Townlet            Updated: 2026-08-15, seventeenth checkpoint (`PDR-0048`: **merge gate 2 SATISFIED** — both gates now stand, both commit-scoped, and gate 2 is already owed again at merge; `PDR-0047`: the owner's authoring-grammar ruling gives the Next bet *"close the you-must-write-Python gaps"* its first decided unit. **No horizon change**) · prior: 2026-08-15, fifteenth checkpoint (`PDR-0043`: merge gate 1 — CI restoration — EXECUTED and in verifying; the measured gate set widened 4→6, all green locally; the first CI run in this branch's history fires on the owner's push. **No horizon change**) · prior: 2026-08-15, thirteenth checkpoint (`PDR-0041`: the FIRST KNOCKDOWN is COMPLETE — the substrate→observation-dim seam is cut, the harness adjudicated it end-to-end, and the strangler method is proven once. **No horizon change**) · prior: 2026-08-14, eleventh checkpoint (`PDR-0038`, `PDR-0039`: the owner cleared the whole escalation queue; the README is rewritten and ships branch-scoped; the merge to `main` gains two named gates, CI restoration and README re-verification. New Later bet: adopt wardline as hygiene) · prior: 2026-08-14 (`PDR-0035`–`PDR-0037`: the first knockdown unit is DECIDED — the substrate→observation-dim seam — and content 5's order is changed by a blocking finding in the harness. One Next bet narrowed by one item. **No horizon change**) · prior: 2026-08-13 (harness accepted, `PDR-0032`–`PDR-0034`) · prior: 2026-08-13 (oracle pinned, `PDR-0030`)
+# Roadmap — HAMLET / Townlet            Updated: 2026-08-15, nineteenth checkpoint (`PDR-0058`: **THE MERGE TO `main` LANDED** at `07b26ed5`, both gates discharged first at `33bfff51` — and the owner ruled the bet's **exit was mis-stated**: the merge was an output, not the outcome. The Now bet continues with its exit restated as an outcome condition. `PDR-0059`: the gate hides 31 failures behind a marker, and closing that is the next unit. **No horizon change**) · prior: 2026-08-15, seventeenth checkpoint (`PDR-0048`: **merge gate 2 SATISFIED** — both gates now stand, both commit-scoped, and gate 2 is already owed again at merge; `PDR-0047`: the owner's authoring-grammar ruling gives the Next bet *"close the you-must-write-Python gaps"* its first decided unit. **No horizon change**) · prior: 2026-08-15, fifteenth checkpoint (`PDR-0043`: merge gate 1 — CI restoration — EXECUTED and in verifying; the measured gate set widened 4→6, all green locally; the first CI run in this branch's history fires on the owner's push. **No horizon change**) · prior: 2026-08-15, thirteenth checkpoint (`PDR-0041`: the FIRST KNOCKDOWN is COMPLETE — the substrate→observation-dim seam is cut, the harness adjudicated it end-to-end, and the strangler method is proven once. **No horizon change**) · prior: 2026-08-14, eleventh checkpoint (`PDR-0038`, `PDR-0039`: the owner cleared the whole escalation queue; the README is rewritten and ships branch-scoped; the merge to `main` gains two named gates, CI restoration and README re-verification. New Later bet: adopt wardline as hygiene) · prior: 2026-08-14 (`PDR-0035`–`PDR-0037`: the first knockdown unit is DECIDED — the substrate→observation-dim seam — and content 5's order is changed by a blocking finding in the harness. One Next bet narrowed by one item. **No horizon change**) · prior: 2026-08-13 (harness accepted, `PDR-0032`–`PDR-0034`) · prior: 2026-08-13 (oracle pinned, `PDR-0030`)
 
 > Sequencing, WSJF / cost-of-delay, and dated forecasts are produced by
 > /axiom-program-management. This file records bets as INTENT, not a delivery
@@ -65,7 +65,9 @@
   (all 3 breaches CLOSED 2026-08-13 — row goes green when the two filed gaps enter WS-7's
   register, `PDR-0028`), **Declared-but-inert config surfaces** (baseline ~40; post-assessment
   7 found / 2 closed), **Documentation truth** (≥14 false claims → 0) and **Gates green**
-  (✅ 4 of 4, held)
+  (**NOT GREEN as of 2026-08-15** — 31 tests fail on `main` behind the default `-m "not slow"`
+  deselection, so every prior "✅ 4 of 4, held" reading was taken from a command that excluded
+  them; `PDR-0059`, `hamlet-a0832f9004`)
   · **WS-1 is COMPLETE and CLOSED** (`PDR-0029`, 2026-08-13, `e8ad4985`): all ten frozen units
   landed, tree green at every commit, batch gate 2981/0. The `PDR-0028` fence held — nothing
   entered after the freeze. Routing rule stands for new findings: WS-7's register or WS-4.
@@ -77,13 +79,39 @@
   (`hamlet-5e39fcccb0`) and **WS-0** (`hamlet-8eeaba1461`). WS-1 (`hamlet-67ffbd282a`) closed
   2026-08-13.
 
-  · **The merge to `main` is the bet's exit, and it now has two named gates** (`PDR-0039`, owner:
+  · **THE EXIT IS RESTATED — the merge is NOT the exit (`PDR-0058`, owner-ruled, 2026-08-15).**
+  This bullet used to say *"the merge to `main` is the bet's exit."* The merge landed at
+  `07b26ed5` (PR #32, by the owner, both gates discharged first at `33bfff51`) while the strangler
+  had cut **two** units, WS-0/3/4/5/6 were all open, and `Config-surface coverage` read ~2 of 7 —
+  so the recorded exit fired without the bet being finished. The owner's ruling: the merge was an
+  **output**, not the outcome. **The Now bet exits when the pinned oracle can be RETIRED**, on
+  three conditions that must be *read*, not asserted: (1) every entry in
+  `docs/oracle/known-divergences.md` is terminal — closed by an adjudicated rebuild, or accepted
+  as permanent with its own PDR; (2) the harness's verdict vocabulary is re-earned or its
+  successor recorded (`PDR-0056` put this on the clock — `AGREE` is currently unreachable
+  matrix-wide); (3) `Gates green` is read on a suite that hides nothing (`PDR-0059`). **Merging is
+  a publication step that may happen any number of times inside the bet**, each time owing
+  `PDR-0039`'s unconditional re-sweep — **13 commits already sit ahead of `main`, so the next
+  merge owes it now.** And the authorability threshold (`Config-surface coverage` 7 of 7) is
+  explicitly **NOT** this bet's exit — that is WS-4, in *Next*. Conflating the two is what
+  produced the mis-statement.
+
+  · **The two named gates, and how they now stand** (`PDR-0039`, owner:
   *"hopefully we'll recover before we push back to main"*). (1) **CI restoration**
   (`hamlet-2100105c9a`, P1) — no workflow has ever run on this branch and nothing has passed since
   2025-11-28, so merging would put 145 unvalidated commits on the default branch; sequenced before
   the merge, after the current knockdown. (2) **README re-verification** by the same method that
   produced it, not a re-read — its rough-edges and CI sections describe conditions the recovery
   intends to *fix*, and merging them unchanged converts honest status into stale claims on `main`.
+
+  · **BOTH GATES WERE DISCHARGED AT THE MERGE, and gate 2 is already owed again (`PDR-0058`,
+  2026-08-15).** `33bfff51` executed both conditions before PR #32: the nightly cron **restored**
+  (so `PDR-0043` reversal trigger 2 did **not** fire) and gate 2 **re-swept at the merge commit**
+  per `PDR-0039`, finding *five more* stale README claims in four commits. `PDR-0043` trigger 2 is
+  discharged, not lost. **Gate 2 re-fires at the NEXT merge, unconditionally** — 13 commits sit
+  ahead of `main` already. The first scheduled run of the restored nightly then failed
+  (`PDR-0059`) — the deferral paid off immediately by surfacing 31 hidden failures. Historical
+  reading below, superseded by this bullet and by `PDR-0058`:
 
   · **BOTH GATES ARE NOW SATISFIED, and both are commit-scoped (`PDR-0048`, 2026-08-15).**
   Gate 1 closed on remote evidence at `dd94e122` (first CI runs in the branch's history, all

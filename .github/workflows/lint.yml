@@ -2,7 +2,7 @@ name: Lint
 
 on:
   push:
-    branches: ["main", "project-recovery"]
+    branches: ["main", "project-recovery*"]  # glob: every repair branch, not just the first
   pull_request:
 
 permissions:

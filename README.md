@@ -23,18 +23,20 @@ itself.
 
 - Version 0.1.0, classified `Development Status :: 3 - Alpha`. There are no release tags; the
   repository's only tag, locally and on `origin`, is the oracle tag below.
-- All live work is on branch `project-recovery`, **162 commits ahead of `main`**. `main`'s tip
-  commit is dated 2025-11-28 and does not describe the current system: `docs/product/`,
-  `docs/oracle/` and `src/townlet/oracle/` do not exist on it at all.
+- **`main` carries the recovery as of 2026-08-15.** The 167 commits of the `project-recovery`
+  rewrite were merged (fast-forward) after both of the merge gates it was held behind were
+  satisfied — CI restoration, and a claim-by-claim re-verification of this file. Before that
+  merge, `main`'s tip was dated 2025-11-28 and described a system that no longer existed.
+  Ongoing repair work continues on `project-recovery-2`; `main` is now current, not frozen.
 - The project is mid **strangler rewrite behind a pinned oracle**. Tag `oracle-2026-08-13`
   (commit `0e875d7a`) freezes the previous system as the specification for preserved behaviour.
   From `docs/oracle/ORACLE.md`: "The oracle never mutates", and "a diff against the oracle is a
   defect in the rebuild unless the register says otherwise." Accepted differences are recorded in
   `docs/oracle/known-divergences.md`.
-- **CI now runs on this branch and is green** — as of 2026-08-15, and not before. Lint, Config
-  Validation and Tests fire on every push to `project-recovery`; the first runs in the branch's
-  history all passed. Read this as young rather than settled: the history is two pushes deep,
-  and the nightly full-matrix job is still parked. See
+- **CI runs and is green** — as of 2026-08-15, and not before. Lint, Config Validation and Tests
+  fire on every push; every run in the recovery branch's history passed, six pushes' worth. Read
+  this as young rather than settled: before 2026-08-15 nothing had run on the recovery at all,
+  and nothing had passed anywhere since 2025-11-28. See
   [Continuous integration](#continuous-integration).
 - Where this file calls something shipped, it means *present and wired*, not mature. The project
   came out of a long stretch of intermittent attention and is unfinished in places; the specific
@@ -43,14 +45,15 @@ itself.
   changes land directly.
 
 *Every command, file path, count and quotation below was executed or read against the working tree
-at commit `569a7738`; the repository-state facts under [Continuous integration](#continuous-integration)
-were read from the GitHub API the same day. Both on 2026-08-15, in a full claim-by-claim
-re-verification that replaced the previous stamp (`a099663c`, 2026-08-14) — ten claims had gone
-stale in one day, every one of them because the recovery fixed the thing being described. There
-are deliberately no test counts, coverage percentages, observation widths or training-performance
-figures in this README — see [Numbers](#numbers). This file describes the `project-recovery`
-branch and is expected to go out of date as the rewrite proceeds; it is re-verified before it
-reaches `main`.*
+at commit `1576e280`; the repository-state facts under [Continuous integration](#continuous-integration)
+were read from the GitHub API the same day. Both on 2026-08-15, at the merge to `main`, in the
+second full claim-by-claim re-verification in two days. The first (`1b25c99d`) found **ten claims
+stale in a single day**, every one because the recovery had fixed the thing being described; this
+one found five more in four commits. There are deliberately no test counts, coverage percentages,
+observation widths or training-performance figures here — see [Numbers](#numbers). **This file
+decays fast because the project moves fast**: it is a status report stamped at a commit, not a
+standing description, and it is re-verified by sweep — not by re-reading — whenever it is
+published.*
 
 ## A universe is YAML
 
@@ -201,13 +204,12 @@ optional; the runtime falls back to CPU.
 ```bash
 git clone https://github.com/foundryside-dev/hamlet
 cd hamlet
-git checkout project-recovery
 uv sync --all-extras
 ```
 
-The `git checkout` is not optional: the remote's default branch is `main`, and the paths this file
-references — `docs/product/`, `docs/oracle/`, `src/townlet/oracle/`, `configs/L5_multi_agent` — do
-not exist there.
+No branch checkout is needed as of 2026-08-15: `main` carries the recovery. Ongoing repair lands
+on `project-recovery-2` first, so `main` trails active work by design — it is the last state that
+passed both merge gates, not the newest state.
 
 Use `--all-extras`: it is what all four CI workflows specify, and a bare `uv sync` installs runtime
 dependencies only — pytest, black, ruff and mypy live in the `dev` extra. No `PYTHONPATH` export is
@@ -297,27 +299,33 @@ uv run pytest
 Four GitHub Actions workflows exist, all specifying `uv sync --all-extras` on Python 3.13: Lint,
 Config Validation, Tests, and Full Test Suite.
 
-**Three of the four now run on this branch, and pass.** That became true on 2026-08-15 and had
-never been true before: between 2025-11-28 and that date no workflow had ever run against
-`project-recovery` at all, and the entire rewrite went unchecked by CI. Two pushes have been
-checked so far — treat the gates as restored, not as seasoned.
+**Three of the four run on every push and pass.** That became true on 2026-08-15 and had never
+been true before: between 2025-11-28 and that date no workflow had run against the recovery at
+all, and 167 commits went unchecked by CI. Six pushes have been checked — treat the gates as
+restored, not as seasoned.
 
-- Lint, Config Validation and Tests trigger on `push` to `project-recovery` (and on
-  `pull_request`, which is the merge-gate mechanism and is deliberately kept). The first runs in
-  the branch's history were green: Lint 1m11s, Config Validation 1m14s, Tests 24m21s.
-- Full Test Suite — the full matrix — is parked `disabled_manually` on purpose, and its nightly
-  06:00 UTC cron is deleted. The scheduler reads the workflow file from the *default* branch, so
-  a nightly enabled here would keep running against a `main` that is 162 commits stale, which is
-  what produced its 15-run failure streak in the first place. Running it on demand is
-  `gh workflow enable "Full Test Suite" && gh workflow run full-tests.yml --ref project-recovery`.
-  Restoring the nightly is a named condition of the merge to `main`, not an oversight.
+- Lint, Config Validation and Tests trigger on `push` to `main` and to `project-recovery*` (and
+  on `pull_request`). The glob is deliberate: the original defect was that the recovery branch
+  simply was not named in the trigger list, so naming the *next* branch individually would have
+  rebuilt the same trap on the next rename. The first runs in the recovery's history were green —
+  Lint 1m11s, Config Validation 1m14s, Tests 24m21s — and every run since has passed.
+- Full Test Suite — the full matrix — had its nightly 06:00 UTC cron **deleted during the
+  recovery and restored at the merge**. The reason is worth knowing, because it is a property of
+  GitHub rather than of this repo: the scheduler reads the workflow file from the **default**
+  branch, so while the recovery lived on a branch, an enabled cron would have kept testing a
+  `main` that was 167 commits stale — which is exactly what produced its 15-run failure streak
+  and then GitHub's dormancy disable. Now that `main` carries the recovery, the nightly tests
+  something someone is working on. The workflow itself may still need one
+  `gh workflow enable "Full Test Suite"` to clear the sticky `disabled_manually` state.
 - Three of the four — every one except Lint — run `scripts/validate_compiler_cli.py` before their
-  other steps, and no step sets `continue-on-error`, so that script gates the rest. It exits 0 on
-  this tree, sweeping every pack it does not explicitly exclude.
+  other steps, and no step sets `continue-on-error`, so that script gates the rest. It exits 0,
+  sweeping every pack it does not explicitly exclude.
 
-What CI still does not cover, stated so the green is not read as wider than it is: the full
-matrix has not been run on this branch, and the harness that adjudicates the rewrite
-(`townlet.oracle.harness`) is run locally by the operator, not in CI.
+What CI does not cover, stated so the green is not read as wider than it is: the full matrix has
+not yet completed a run against the merged tree; the harness that adjudicates the rewrite
+(`townlet.oracle.harness`) is run locally by the operator, not in CI; and one member of the
+default suite — a performance-threshold test asserting a 5% wall-clock ratio under always-on
+coverage instrumentation — is known to be flaky by construction and is tracked as a defect.
 
 ## Architecture at a glance
 

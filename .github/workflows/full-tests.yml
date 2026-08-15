@@ -2,6 +2,14 @@ name: Full Test Suite
 
 on:
   workflow_dispatch:
+  # Restored at the merge to `main` (PDR-0043 reversal trigger 2). It was deleted
+  # while the recovery lived on a branch: the scheduler reads this file from the
+  # DEFAULT branch, so a cron enabled then would have kept running against a `main`
+  # that was 167 commits stale — which is what produced its 15-run failure streak
+  # and GitHub's dormancy disable. `main` now carries the recovery, so the nightly
+  # tests something someone is working on again.
+  schedule:
+    - cron: "0 6 * * *"
 
 permissions:
   contents: read

@@ -5,6 +5,7 @@ effects:
     - id: ate_food
       scope: agent
       duration: 10
+      intensity: 1.0
       reapply_policy: stack
       observable: true
       on_spawn:

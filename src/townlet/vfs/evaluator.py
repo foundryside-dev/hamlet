@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 import logging
-import os
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 import torch
@@ -17,7 +16,7 @@ from townlet.world.expression.history import TemporalHistory
 __all__ = ["VFSEvaluator", "EvaluationMode"]
 
 
-class EvaluationMode(str, Enum):
+class EvaluationMode(StrEnum):
     """VFS evaluation mode."""
 
     MARK_AND_SWEEP = "mark_and_sweep"  # Only evaluate observed variables
@@ -27,14 +26,19 @@ class EvaluationMode(str, Enum):
 class VFSEvaluator:
     """Evaluates VFS expressions using compiled profiles."""
 
-    def __init__(self, mode: EvaluationMode = EvaluationMode.MARK_AND_SWEEP, history_spec: dict[str, int] | None = None):
+    def __init__(
+        self,
+        mode: EvaluationMode = EvaluationMode.MARK_AND_SWEEP,
+        history_spec: dict[str, int] | None = None,
+        debug_logging: bool = False,
+    ):
         """Initialize VFS evaluator.
 
         Args:
             mode: Evaluation mode (mark_and_sweep or eager)
         """
         self.mode = mode
-        self._debug_vfs = os.getenv("HAMLET_DEBUG_VFS", "").strip().lower() in {"1", "true", "yes", "on"}
+        self._debug_vfs = debug_logging
         self._logger = logging.getLogger("hamlet.vfs")
         self.history_spec = history_spec or {}
         self._history: TemporalHistory | None = TemporalHistory(self.history_spec, torch.device("cpu")) if self.history_spec else None
@@ -92,6 +96,8 @@ class VFSEvaluator:
         marks: set[str] | None = None,
         device: torch.device = torch.device("cpu"),
         step: int | None = None,
+        affordances: dict[str, Any] | None = None,
+        temporal: dict[str, torch.Tensor] | None = None,
         agent_positions: torch.Tensor | None = None,
         affordance_positions: dict[str, torch.Tensor] | None = None,
         vfs_types: dict[str, str] | None = None,
@@ -114,15 +120,18 @@ class VFSEvaluator:
         """
         # Determine which variables to evaluate
         if self.mode == EvaluationMode.MARK_AND_SWEEP:
-            # When no marks are provided, fall back to evaluating all variables
-            # so expressions do not silently skip and leave stale defaults.
+            # Mark-and-sweep requires explicit marks. Use EAGER mode when every
+            # variable should be evaluated intentionally.
             vars_to_eval: set[str]
             if marks is None:
-                vars_to_eval = {var.name for var in profile.variables}
+                raise ValueError("MARK_AND_SWEEP evaluation requires explicit marks; use EAGER mode to evaluate every variable.")
             else:
                 # Evaluate marked variables plus their in-profile dependencies
                 dependencies = getattr(profile, "dependencies", {}) or {}
                 var_names = {var.name for var in profile.variables}
+                unknown_marks = marks - var_names
+                if unknown_marks:
+                    raise KeyError(f"VFS mark(s) not found in profile: {sorted(unknown_marks)}")
 
                 def add_with_deps(var_name: str, acc: set[str]) -> None:
                     """Add variable and its dependencies to evaluation set."""
@@ -134,9 +143,7 @@ class VFSEvaluator:
 
                 vars_to_eval = set()
                 for marked in marks:
-                    # Ignore marks that are not part of this profile
-                    if marked in dependencies or marked in var_names:
-                        add_with_deps(marked, vars_to_eval)
+                    add_with_deps(marked, vars_to_eval)
         else:  # EAGER mode
             vars_to_eval = {var.name for var in profile.variables}
 
@@ -149,10 +156,10 @@ class VFSEvaluator:
         context = ExecutionContext(
             bars=bars,
             vfs=vfs_state.copy(),  # Copy so we can update during evaluation
-            affordances={},  # TODO: Add affordance state support (Task 3)
+            affordances=affordances or {},
             affordance_positions=affordance_positions,
             agent_positions=agent_positions,
-            temporal={},  # TODO: Add temporal support (Task 3)
+            temporal=temporal or {},
             device=device,
             vfs_types=vfs_types,
             num_agents=num_agents,

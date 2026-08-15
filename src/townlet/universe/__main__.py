@@ -24,6 +24,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
     compile_parser = subparsers.add_parser("compile", help="Compile a config pack and optionally cache the artifact.")
     compile_parser.add_argument("config_dir", help="Path to config directory (contains training.yaml, bars.yaml, etc.)")
+    compile_parser.add_argument("--primary-level", required=True, help="Curriculum level to compile as the primary level.")
     compile_parser.add_argument(
         "--no-cache",
         action="store_true",
@@ -34,7 +35,14 @@ def _build_parser() -> argparse.ArgumentParser:
         "inspect",
         help="Inspect a compiled universe artifact (MessagePack file).",
     )
-    inspect_parser.add_argument("artifact", help="Path to config directory or .compiled/universe.msgpack artifact")
+    inspect_parser.add_argument(
+        "artifact", help="Path to a .compiled/universe-<level>.msgpack artifact, or a config directory (then --primary-level is required)"
+    )
+    inspect_parser.add_argument(
+        "--primary-level",
+        default=None,
+        help="Level to inspect. Required when ARTIFACT is a config directory, because one artifact exists per level.",
+    )
     inspect_parser.add_argument(
         "--format",
         choices=("table", "json"),
@@ -44,6 +52,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
     validate_parser = subparsers.add_parser("validate", help="Run compilation without touching the cache (lint-style check).")
     validate_parser.add_argument("config_dir", help="Path to config directory to validate")
+    validate_parser.add_argument("--primary-level", required=True, help="Curriculum level to validate as the primary level.")
 
     return parser
 
@@ -77,14 +86,19 @@ def _cmd_compile(args: argparse.Namespace) -> int:
 
     compiler = UniverseCompiler()
     start = time.perf_counter()
-    compiled = compiler.compile(config_dir, use_cache=not args.no_cache)
+    compiled = compiler.compile(config_dir, primary_level=args.primary_level, use_cache=not args.no_cache)
     elapsed_ms = (time.perf_counter() - start) * 1000.0
 
     _print_summary(compiled.metadata)
+    print(f"  VFS Hash : {compiled.vfs_hash[:16]}")
+    print(f"  Action Schema Hash : {compiled.action_schema_hash[:16]}")
+    print(f"  Observation Schema Hash : {compiled.observation_schema_hash[:16]}")
+    print(f"  Variable Schema Hash : {compiled.variable_schema_hash[:16]}")
+    print(f"  Transition Graph Hash : {_format_transition_hash(compiled.transition_graph_hash)}")
     print(f"Compilation succeeded in {elapsed_ms:.1f} ms")
 
     if not args.no_cache:
-        cache_path = config_dir / ".compiled" / "universe.msgpack"
+        cache_path = config_dir / ".compiled" / f"universe-{args.primary_level}.msgpack"
         if cache_path.exists():
             print(f"Cache artifact written to: {cache_path}")
 
@@ -106,12 +120,23 @@ def _metadata_to_dict(metadata) -> dict:
     return payload
 
 
+def _format_transition_hash(transition_graph_hash: str) -> str:
+    if transition_graph_hash == "":
+        return "<empty>"
+    return transition_graph_hash[:16]
+
+
 def _cmd_inspect(args: argparse.Namespace) -> int:
     artifact_path = Path(args.artifact).resolve()
 
     # Auto-resolve config directory to artifact path for better UX
     if artifact_path.is_dir():
-        artifact_path = artifact_path / ".compiled" / "universe.msgpack"
+        if not args.primary_level:
+            raise ValueError(
+                f"{artifact_path} is a config directory and holds one artifact per level; "
+                "pass --primary-level to say which one to inspect."
+            )
+        artifact_path = artifact_path / ".compiled" / f"universe-{args.primary_level}.msgpack"
 
     if not artifact_path.exists():
         raise FileNotFoundError(f"Artifact not found: {artifact_path}")
@@ -121,10 +146,20 @@ def _cmd_inspect(args: argparse.Namespace) -> int:
         payload = {
             "artifact": str(artifact_path),
             "metadata": _metadata_to_dict(compiled.metadata),
+            "vfs_hash": compiled.vfs_hash,
+            "action_schema_hash": compiled.action_schema_hash,
+            "observation_schema_hash": compiled.observation_schema_hash,
+            "variable_schema_hash": compiled.variable_schema_hash,
+            "transition_graph_hash": compiled.transition_graph_hash,
         }
         print(json.dumps(payload, indent=2, sort_keys=True))
     else:
         _print_summary(compiled.metadata)
+        print(f"  VFS Hash : {compiled.vfs_hash[:16]}")
+        print(f"  Action Schema Hash : {compiled.action_schema_hash[:16]}")
+        print(f"  Observation Schema Hash : {compiled.observation_schema_hash[:16]}")
+        print(f"  Variable Schema Hash : {compiled.variable_schema_hash[:16]}")
+        print(f"  Transition Graph Hash : {_format_transition_hash(compiled.transition_graph_hash)}")
         print(f"Artifact path: {artifact_path}")
     return 0
 
@@ -136,7 +171,7 @@ def _cmd_validate(args: argparse.Namespace) -> int:
 
     compiler = UniverseCompiler()
     start = time.perf_counter()
-    compiler.compile(config_dir, use_cache=False)
+    compiler.compile(config_dir, primary_level=args.primary_level, use_cache=False)
     elapsed_ms = (time.perf_counter() - start) * 1000.0
     print(f"Validation succeeded in {elapsed_ms:.1f} ms (no cache artifacts written)")
     return 0

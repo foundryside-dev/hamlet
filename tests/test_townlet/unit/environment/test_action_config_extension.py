@@ -6,6 +6,19 @@ from townlet.environment.action_config import ActionConfig
 from townlet.vfs.schema import WriteSpec
 
 
+def make_write_spec(variable_id: str, expression: str, *, telemetry_label: str) -> WriteSpec:
+    return WriteSpec(
+        variable_id=variable_id,
+        expression=expression,
+        condition=None,
+        composition="additive_delta",
+        phase="action_effects",
+        priority=0,
+        clamp=None,
+        telemetry_label=telemetry_label,
+    )
+
+
 class TestActionConfigReadsField:
     """Test ActionConfig with reads field (variable dependencies)."""
 
@@ -76,7 +89,11 @@ class TestActionConfigWritesField:
 
     def test_action_config_with_writes(self):
         """ActionConfig with writes field specifies variable updates."""
-        write_spec = WriteSpec(variable_id="position", expression="home_pos")
+        write_spec = make_write_spec(
+            variable_id="position",
+            expression="home_pos",
+            telemetry_label="teleport_home_position",
+        )
 
         action = ActionConfig(
             id=0,
@@ -101,8 +118,16 @@ class TestActionConfigWritesField:
     def test_action_config_with_multiple_writes(self):
         """ActionConfig with multiple write specs."""
         write_specs = [
-            WriteSpec(variable_id="energy", expression="energy - 0.1"),
-            WriteSpec(variable_id="mood", expression="mood + 0.05"),
+            make_write_spec(
+                variable_id="energy",
+                expression="energy - 0.1",
+                telemetry_label="rest_energy_cost",
+            ),
+            make_write_spec(
+                variable_id="mood",
+                expression="mood + 0.05",
+                telemetry_label="rest_mood_gain",
+            ),
         ]
 
         action = ActionConfig(
@@ -151,7 +176,11 @@ class TestActionConfigSerialization:
 
     def test_action_config_serialization_with_reads_writes(self):
         """ActionConfig serializes/deserializes with reads/writes."""
-        write_spec = WriteSpec(variable_id="energy", expression="energy - 0.1")
+        write_spec = make_write_spec(
+            variable_id="energy",
+            expression="energy - 0.1",
+            telemetry_label="rest_energy_cost",
+        )
 
         action = ActionConfig(
             id=0,

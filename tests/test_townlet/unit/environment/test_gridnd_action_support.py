@@ -40,7 +40,7 @@ def gridnd_env(
     """Instantiate a 4D GridND environment for action support tests."""
     from townlet.universe.compiler import UniverseCompiler
 
-    universe = UniverseCompiler().compile(gridnd_4d_config_pack, use_cache=False)
+    universe = UniverseCompiler().compile(gridnd_4d_config_pack, primary_level="L0_test", use_cache=False)
     return VectorizedHamletEnv.from_universe(
         universe,
         level_name="L0_test",

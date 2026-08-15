@@ -4,7 +4,7 @@ from pathlib import Path
 
 import yaml
 
-from tests.test_townlet.helpers.config_builder import prepare_config_dir
+from tests.test_townlet.helpers.config_builder import PRIMARY_LEVEL_NAME, prepare_config_dir
 from townlet.universe.compiler import UniverseCompiler
 
 
@@ -16,6 +16,8 @@ def test_compiler_marks_vfs_variables_used_in_observations(tmp_path: Path):
     # Add VFS profiles with global variables
     vfs_profiles = {
         "version": "1.0",
+        "evaluation_mode": "mark_and_sweep",
+        "debug_logging": False,
         "global_profile": {
             "variables": [
                 {"name": "day_count", "type": "int", "initial_value": 0},
@@ -55,7 +57,7 @@ def test_compiler_marks_vfs_variables_used_in_observations(tmp_path: Path):
 
     # Exercise
     compiler = UniverseCompiler()
-    compiled = compiler.compile(config_dir, use_cache=False)
+    compiled = compiler.compile(config_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
 
     # Verify: day_count is marked, unused_var is not
     assert compiled.vfs_observation_marks is not None
@@ -71,6 +73,8 @@ def test_compiler_marks_empty_when_no_vfs_observations(tmp_path: Path):
     # Add VFS profiles
     vfs_profiles = {
         "version": "1.0",
+        "evaluation_mode": "mark_and_sweep",
+        "debug_logging": False,
         "global_profile": {
             "variables": [
                 {"name": "some_var", "type": "int", "initial_value": 0},
@@ -99,7 +103,7 @@ def test_compiler_marks_empty_when_no_vfs_observations(tmp_path: Path):
 
     # Exercise
     compiler = UniverseCompiler()
-    compiled = compiler.compile(config_dir, use_cache=False)
+    compiled = compiler.compile(config_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
 
     # Verify: marks are empty or None
     assert compiled.vfs_observation_marks is None or len(compiled.vfs_observation_marks.get("global", set())) == 0

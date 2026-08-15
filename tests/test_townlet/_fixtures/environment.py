@@ -66,7 +66,7 @@ def pomdp_env(
     Returns:
         VectorizedHamletEnv instance with POMDP
     """
-    universe = compile_universe(Path("configs/default_curriculum"))
+    universe = compile_universe(Path("configs/default_curriculum"), primary_level="L2_partial_observability")
     return VectorizedHamletEnv.from_universe(
         universe,
         level_name="L2_partial_observability",
@@ -92,7 +92,7 @@ def temporal_env(
     Returns:
         VectorizedHamletEnv instance with temporal mechanics
     """
-    universe = compile_universe(Path("configs/default_curriculum"))
+    universe = compile_universe(Path("configs/default_curriculum"), primary_level="L3_temporal_mechanics")
     return VectorizedHamletEnv.from_universe(
         universe,
         level_name="L3_temporal_mechanics",
@@ -152,7 +152,7 @@ def env_factory(
         target_universe = universe
         if target_universe is None:
             pack_path = Path(config_dir) if config_dir is not None else test_config_pack_path
-            target_universe = compile_universe(pack_path)
+            target_universe = compile_universe(pack_path, primary_level=level_name)
 
         target_device = device_override if device_override is not None else device
         target_level = level_name or (target_universe.available_levels[0] if target_universe.available_levels else None)
@@ -191,6 +191,7 @@ def custom_env_builder(
         num_agents: int = 1,
         overrides: dict[str, Any] | None = None,
         source_pack: Path | str | None = None,
+        level_name: str | None = None,
     ):
         source_path = Path(source_pack) if source_pack is not None else test_config_pack_path
         target_dir = tmp_path / f"config_pack_{uuid.uuid4().hex}"
@@ -217,6 +218,7 @@ def custom_env_builder(
 
         return env_factory(
             config_dir=target_dir,
+            level_name=level_name,
             num_agents=num_agents,
             device_override=cpu_device,
         )
@@ -248,7 +250,7 @@ def grid2d_3x3_env(
     Returns:
         VectorizedHamletEnv with 3×3 Grid2D substrate
     """
-    universe = compile_universe(Path("configs/default_curriculum"))
+    universe = compile_universe(Path("configs/default_curriculum"), primary_level="L0_0_minimal")
     return VectorizedHamletEnv.from_universe(
         universe,
         level_name="L0_0_minimal",
@@ -313,16 +315,16 @@ def aspatial_env(
 
     # Patch stratum to aspatial
     stratum_path = aspatial_config_path / "stratum.yaml"
-    stratum_path.write_text(
-        """stratum:
+    stratum_path.write_text("""stratum:
   version: "1.0"
   substrate:
     type: aspatial
     aspatial: {}
   vision_support: global
   temporal_support: disabled
-"""
-    )
+  observation_mode:
+    mode: full_auto
+""")
 
     # Patch bars for expected base/move/interaction costs used in movement mask tests.
     import yaml
@@ -404,8 +406,7 @@ def continuous3d_env(
 
     # Patch stratum to 3D continuous
     stratum_path = config_dir / "stratum.yaml"
-    stratum_path.write_text(
-        """stratum:
+    stratum_path.write_text("""stratum:
   version: "1.0"
   substrate:
     type: continuous
@@ -425,8 +426,9 @@ def continuous3d_env(
         num_magnitudes: 3
   vision_support: global
   temporal_support: disabled
-"""
-    )
+  observation_mode:
+    mode: full_auto
+""")
 
     # Patch bars for expected base/move/interaction depletions
     bars_path = config_dir / "levels" / "L0" / "bars.yaml"

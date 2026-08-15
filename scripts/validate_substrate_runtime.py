@@ -51,7 +51,7 @@ class SubstrateRuntimeValidator:
         self.warnings = []
         self.compiler = UniverseCompiler()
 
-    def validate_config_pack(self, config_path: Path) -> bool:
+    def validate_config_pack(self, config_path: Path, *, primary_level: str) -> bool:
         """Validate a single config pack.
 
         Args:
@@ -65,9 +65,10 @@ class SubstrateRuntimeValidator:
 
         try:
             # Create environment
-            universe = self.compiler.compile(config_path)
+            universe = self.compiler.compile(config_path, primary_level=primary_level)
             env = VectorizedHamletEnv.from_universe(
                 universe,
+                level_name=primary_level,
                 num_agents=2,  # Test multi-agent
                 device=torch.device("cpu"),  # Use CPU for validation
             )
@@ -164,7 +165,7 @@ class SubstrateRuntimeValidator:
             self.log(f"  ERROR: {e}", "ERROR")
             return False
 
-    def validate_all_configs(self, config_dir: Path) -> bool:
+    def validate_all_configs(self, config_dir: Path, *, primary_level: str) -> bool:
         """Validate all config packs in directory.
 
         Args:
@@ -190,7 +191,7 @@ class SubstrateRuntimeValidator:
 
         success_count = 0
         for config_path in sorted(config_packs):
-            if self.validate_config_pack(config_path):
+            if self.validate_config_pack(config_path, primary_level=primary_level):
                 success_count += 1
             print()
 
@@ -234,6 +235,7 @@ Examples:
         default=None,
         help="Path to specific config pack (default: validate all in configs/)",
     )
+    parser.add_argument("--primary-level", required=True, help="Curriculum level to validate.")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
 
     args = parser.parse_args()
@@ -242,11 +244,11 @@ Examples:
 
     if args.config:
         # Validate single config pack
-        success = validator.validate_config_pack(args.config)
+        success = validator.validate_config_pack(args.config, primary_level=args.primary_level)
     else:
         # Validate all config packs
         config_dir = Path(__file__).parent.parent / "configs"
-        success = validator.validate_all_configs(config_dir)
+        success = validator.validate_all_configs(config_dir, primary_level=args.primary_level)
 
     sys.exit(0 if success else 1)
 

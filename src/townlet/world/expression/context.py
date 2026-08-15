@@ -1,5 +1,6 @@
 """Execution context for expression evaluation."""
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
@@ -57,6 +58,8 @@ class ExecutionContext:
 
         if root == "bar":
             return self._read_bar(tail, path)
+        if root == "affordance":
+            return self._read_affordance(tail, path)
         if root == "temporal":
             return self._read_temporal(tail, path)
         if root == "global":
@@ -201,6 +204,31 @@ class ExecutionContext:
         if len(tail) != 1:
             raise KeyError(f"Path '{original_path}' not found in execution context")
         return self._bar_tensor(tail[0], original_path)
+
+    def _read_affordance(self, tail: list[str], original_path: str) -> torch.Tensor:
+        if len(tail) < 2:
+            raise KeyError(f"Path '{original_path}' not found in execution context")
+
+        affordance_name, *field_path = tail
+        if affordance_name not in self.affordances:
+            raise KeyError(f"Path '{original_path}' not found in execution context")
+
+        value: Any = self.affordances[affordance_name]
+        for field_name in field_path:
+            if isinstance(value, Mapping):
+                if field_name not in value:
+                    raise KeyError(f"Path '{original_path}' not found in execution context")
+                value = value[field_name]
+            elif hasattr(value, field_name):
+                value = getattr(value, field_name)
+            else:
+                raise KeyError(f"Path '{original_path}' not found in execution context")
+
+        if isinstance(value, torch.Tensor):
+            return value
+        if isinstance(value, bool | int | float):
+            return torch.tensor(value, device=self.device)
+        raise KeyError(f"Path '{original_path}' resolved to non-tensor affordance value")
 
     def _read_temporal(self, tail: list[str], original_path: str) -> torch.Tensor:
         if len(tail) != 1 or tail[0] not in self.temporal:

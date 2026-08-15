@@ -19,7 +19,8 @@ def make_episode(length: int, *, reward_value: float = 1.0) -> dict[str, torch.T
         reward_value: Value for all rewards (default 1.0)
 
     Returns:
-        Episode dict with observations, actions, rewards (DAC-composed), dones
+        Episode dict with observations, actions, rewards (DAC-composed), dones,
+        and next_observations (WS-1(c): required successor observations)
     """
     obs = torch.arange(length * 2, dtype=torch.float32).view(length, 2)
     actions = torch.arange(length, dtype=torch.long)
@@ -31,6 +32,7 @@ def make_episode(length: int, *, reward_value: float = 1.0) -> dict[str, torch.T
         "actions": actions,
         "rewards": torch.full((length,), reward_value),  # CRIT-07: Single rewards field
         "dones": dones,
+        "next_observations": obs + 2.0,  # successor of obs[t] is obs[t+1] in this layout
     }
 
     return episode
@@ -183,8 +185,8 @@ class TestSequentialReplayBufferRewardComponents:
         assert "rewards_intrinsic" not in stored_episode
         assert "rewards_shaping" not in stored_episode
 
-    def test_serialization_format_version_3(self):
-        """Serialized buffer has format_version 3."""
+    def test_serialization_format_version_4(self):
+        """Serialized buffer has format_version 4 and carries next_observations."""
         buffer = SequentialReplayBuffer(capacity=100, device=torch.device("cpu"))
 
         # Add episode with components
@@ -196,8 +198,9 @@ class TestSequentialReplayBufferRewardComponents:
 
         serialized = buffer.serialize()
 
-        assert serialized["format_version"] == 3
+        assert serialized["format_version"] == 4
         assert len(serialized["episodes"]) == 1
+        assert "next_observations" in serialized["episodes"][0]
         assert "rewards_extrinsic" in serialized["episodes"][0]
         assert "rewards_intrinsic" in serialized["episodes"][0]
         assert "rewards_shaping" in serialized["episodes"][0]
@@ -212,37 +215,37 @@ class TestSequentialReplayBufferRewardComponents:
 
         serialized = buffer.serialize()
 
-        assert serialized["format_version"] == 3
+        assert serialized["format_version"] == 4
         assert len(serialized["episodes"]) == 1
         # Components should not be present
         assert "rewards_extrinsic" not in serialized["episodes"][0]
         assert "rewards_intrinsic" not in serialized["episodes"][0]
         assert "rewards_shaping" not in serialized["episodes"][0]
 
-    def test_empty_buffer_serialization_version_3(self):
-        """Empty buffer serialization should have format_version 3."""
+    def test_empty_buffer_serialization_version_4(self):
+        """Empty buffer serialization should have format_version 4."""
         buffer = SequentialReplayBuffer(capacity=100, device=torch.device("cpu"))
 
         serialized = buffer.serialize()
 
-        assert serialized["format_version"] == 3
+        assert serialized["format_version"] == 4
         assert serialized["num_transitions"] == 0
         assert len(serialized["episodes"]) == 0
 
     def test_legacy_format_rejection(self):
-        """Loading format_version < 3 raises ValueError."""
+        """Loading format_version < 4 raises ValueError."""
         buffer = SequentialReplayBuffer(capacity=100, device=torch.device("cpu"))
 
-        # Format version 2
-        old_format_v2 = {
-            "format_version": 2,
+        # Format version 3 (pre-WS-1(c): no next_observations)
+        old_format_v3 = {
+            "format_version": 3,
             "num_transitions": 0,
             "episodes": [],
             "capacity": 100,
         }
 
-        with pytest.raises(ValueError, match="format_version < 3"):  # type: ignore[name-defined]
-            buffer.load_from_serialized(old_format_v2)
+        with pytest.raises(ValueError, match="format_version < 4"):  # type: ignore[name-defined]
+            buffer.load_from_serialized(old_format_v3)
 
         # Format version 1
         old_format_v1 = {
@@ -252,7 +255,7 @@ class TestSequentialReplayBufferRewardComponents:
             "capacity": 100,
         }
 
-        with pytest.raises(ValueError, match="format_version < 3"):  # type: ignore[name-defined]
+        with pytest.raises(ValueError, match="format_version < 4"):  # type: ignore[name-defined]
             buffer.load_from_serialized(old_format_v1)
 
     def test_round_trip_with_components(self):
@@ -347,11 +350,13 @@ class TestSequentialReplayBufferStatsAPI:
 
         # CRIT-07: Each episode has: observations [5,2], actions [5], rewards [5], dones [5]
         # (single rewards field instead of split extrinsic/intrinsic)
+        # WS-1(c): plus next_observations [5,2]
         expected_bytes = (
             5 * 2 * 4  # observations (float32)
             + 5 * 8  # actions (int64)
             + 5 * 4  # rewards (float32) - CRIT-07: Single field
             + 5 * 1  # dones (bool)
+            + 5 * 2 * 4  # next_observations (float32) - WS-1(c)
         )
 
         assert stats["memory_bytes"] == expected_bytes

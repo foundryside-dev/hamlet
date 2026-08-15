@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from tests.test_townlet.helpers.config_builder import mutate_curriculum_yaml, prepare_config_dir
+from tests.test_townlet.helpers.config_builder import PRIMARY_LEVEL_NAME, mutate_curriculum_yaml, prepare_config_dir
 from townlet.universe.compiler import UniverseCompiler
 
 
@@ -13,7 +13,7 @@ def _compile(tmp_path, name: str, curriculum_mutator=None):
         mutate_curriculum_yaml(config_dir, curriculum_mutator)
 
     compiler = UniverseCompiler()
-    return compiler.compile(config_dir, use_cache=False)
+    return compiler.compile(config_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
 
 
 def _get_field(spec, name: str):

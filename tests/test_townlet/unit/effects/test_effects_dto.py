@@ -60,6 +60,38 @@ def test_command_config_spawn_effect():
     assert cmd.intensity == 2.0
 
 
+def test_command_config_spawn_effect_requires_target_and_intensity():
+    """spawn_effect commands must spell out behavior-affecting fields."""
+    with pytest.raises(ValidationError, match="target"):
+        CommandConfig(spawn_effect="poisoned", intensity=1.0)
+
+    with pytest.raises(ValidationError, match="intensity"):
+        CommandConfig(spawn_effect="poisoned", target="self")
+
+
+def test_command_config_sample_rejects_distribution_alias():
+    """sample is the only accepted stochastic command key."""
+    with pytest.raises(ValidationError, match="Extra inputs"):
+        CommandConfig(distribution="uniform", params={"min": 0.0, "max": 1.0}, store_in="target.vfs.roll")
+
+
+def test_command_config_rejects_trigger_cascade_command():
+    """Passive cascades are VTC rules, not effects commands."""
+    with pytest.raises(ValidationError, match="Extra inputs"):
+        CommandConfig(trigger_cascade="hunger_cascade", cascade_strength=1.0)
+
+
+def test_command_config_rejects_removed_trigger_cascade_even_with_valid_command():
+    """Deleted command keys must fail loudly instead of being ignored."""
+    with pytest.raises(ValidationError, match="Extra inputs"):
+        CommandConfig(
+            modify="target.bar.energy",
+            value="target.bar.energy + 0.05",
+            trigger_cascade="hunger_cascade",
+            cascade_strength=1.0,
+        )
+
+
 def test_command_config_requires_one_command_type():
     """CommandConfig requires exactly one command type."""
     with pytest.raises(ValidationError, match="Exactly one command"):
@@ -97,6 +129,7 @@ def test_effect_definition_minimal():
         id="ate_food",
         scope="agent",
         duration=10,
+        intensity=1.0,
         reapply_policy="stack",
     )
 
@@ -104,7 +137,7 @@ def test_effect_definition_minimal():
     assert effect.scope == EffectScope.AGENT
     assert effect.duration == 10
     assert effect.reapply_policy == ReapplyPolicy.STACK
-    assert effect.intensity == 1.0  # Default
+    assert effect.intensity == 1.0
     assert effect.observable is True  # Default
     assert effect.on_spawn == []
     assert effect.on_tick == []
@@ -155,6 +188,17 @@ def test_effect_definition_requires_reapply_policy():
         )
 
 
+def test_effect_definition_requires_intensity():
+    """EffectDefinitionConfig requires intensity (no hidden default)."""
+    with pytest.raises(ValidationError, match="intensity"):
+        EffectDefinitionConfig(
+            id="invalid",
+            scope="agent",
+            duration=10,
+            reapply_policy="stack",
+        )
+
+
 def test_effects_config_minimal():
     """EffectsConfig loads from YAML structure."""
     from townlet.config.effects_config import EffectsConfig
@@ -166,6 +210,7 @@ def test_effects_config_minimal():
                 "id": "ate_food",
                 "scope": "agent",
                 "duration": 10,
+                "intensity": 1.0,
                 "reapply_policy": "stack",
             }
         ],
@@ -184,8 +229,8 @@ def test_effects_config_rejects_duplicate_ids():
         EffectsConfig(
             version="1.0",
             effect_definitions=[
-                {"id": "poisoned", "scope": "agent", "duration": 10, "reapply_policy": "stack"},
-                {"id": "poisoned", "scope": "agent", "duration": 20, "reapply_policy": "merge"},
+                {"id": "poisoned", "scope": "agent", "duration": 10, "intensity": 1.0, "reapply_policy": "stack"},
+                {"id": "poisoned", "scope": "agent", "duration": 20, "intensity": 1.0, "reapply_policy": "merge"},
             ],
         )
 
@@ -203,6 +248,7 @@ effect_definitions:
   - id: "ate_food"
     scope: agent
     duration: 10
+    intensity: 1.0
     reapply_policy: stack
     on_tick:
       - modify: target.bar.energy

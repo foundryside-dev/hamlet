@@ -161,8 +161,7 @@ def test_on_spawn_commands_execute_immediately(compile_universe, effects_smoke_c
     initial_health = 0.5
 
     # Spawn health_boost (on_spawn adds 0.2 health)
-    # Note: The environment's effect_manager needs env_state to execute commands
-    # We need to pass this through spawn or it will execute on first tick
+    # Build the command context explicitly so on_spawn runs immediately.
     from townlet.config.effects_config import EffectScope
 
     effect = env.effect_manager.spawn_effect(

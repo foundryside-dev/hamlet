@@ -18,6 +18,7 @@ def test_catalog_from_config():
                 "id": "ate_food",
                 "scope": "agent",
                 "duration": 10,
+                "intensity": 1.0,
                 "reapply_policy": "stack",
             }
         ],
@@ -52,7 +53,7 @@ def test_catalog_get_effect():
     """EffectCatalog.get() retrieves effect by ID."""
     config = EffectsConfig(
         version="1.0",
-        effect_definitions=[{"id": "ate_food", "scope": "agent", "duration": 10, "reapply_policy": "stack"}],
+        effect_definitions=[{"id": "ate_food", "scope": "agent", "duration": 10, "intensity": 1.0, "reapply_policy": "stack"}],
     )
 
     catalog = EffectCatalog.from_config(config)
@@ -74,7 +75,7 @@ def test_catalog_contains():
     """EffectCatalog.__contains__() checks effect existence."""
     config = EffectsConfig(
         version="1.0",
-        effect_definitions=[{"id": "ate_food", "scope": "agent", "duration": 10, "reapply_policy": "stack"}],
+        effect_definitions=[{"id": "ate_food", "scope": "agent", "duration": 10, "intensity": 1.0, "reapply_policy": "stack"}],
     )
 
     catalog = EffectCatalog.from_config(config)
@@ -88,8 +89,8 @@ def test_catalog_len():
     config = EffectsConfig(
         version="1.0",
         effect_definitions=[
-            {"id": "effect1", "scope": "agent", "duration": 10, "reapply_policy": "stack"},
-            {"id": "effect2", "scope": "agent", "duration": 20, "reapply_policy": "renew"},
+            {"id": "effect1", "scope": "agent", "duration": 10, "intensity": 1.0, "reapply_policy": "stack"},
+            {"id": "effect2", "scope": "agent", "duration": 20, "intensity": 1.0, "reapply_policy": "renew"},
         ],
     )
 

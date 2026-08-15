@@ -30,7 +30,8 @@ class CommandParser:
 
         elif config.spawn_effect is not None:
             # Normalize target: keep simple values on `target` for executor, preserve expr string
-            raw_target = config.target if config.target is not None else "self"
+            raw_target = config.target
+            assert raw_target is not None
             resolved_target: str | int | None
             if isinstance(raw_target, str):
                 if raw_target in {"self", "target"}:
@@ -48,8 +49,8 @@ class CommandParser:
                 type=CommandType.SPAWN_EFFECT,
                 effect_id=config.spawn_effect,
                 target=resolved_target,
-                target_expr=str(raw_target) if raw_target is not None else None,
-                intensity=config.intensity or 1.0,
+                target_expr=str(raw_target),
+                intensity=config.intensity,
             )
 
         elif config.spawn_item is not None:
@@ -60,9 +61,8 @@ class CommandParser:
                 position_expr=config.position,
             )
 
-        elif config.sample is not None or config.distribution is not None:
-            distribution = config.sample or config.distribution
-            assert distribution is not None
+        elif config.sample is not None:
+            distribution = config.sample
             return CommandNode(
                 type=CommandType.SAMPLE,
                 sample_distribution=distribution,
@@ -99,9 +99,7 @@ class CommandParser:
                 collection=collection,
                 collection_expr=collection_expr,
                 iterator=config.as_,
-                iterator_var=config.as_,
                 body=[self.parse_command(cmd) for cmd in config.do],
-                do_commands=[self.parse_command(cmd) for cmd in config.do],
             )
 
         elif config.switch is not None:
@@ -143,13 +141,6 @@ class CommandParser:
                 type=CommandType.DELAY,
                 delay_ticks_expr=config.delay,
                 delay_commands=[self.parse_command(cmd) for cmd in config.delay_do],
-            )
-
-        elif config.trigger_cascade is not None:
-            return CommandNode(
-                type=CommandType.TRIGGER_CASCADE,
-                cascade_id=config.trigger_cascade,
-                cascade_strength=config.cascade_strength,
             )
 
         else:

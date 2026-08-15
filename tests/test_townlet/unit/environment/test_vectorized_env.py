@@ -6,7 +6,7 @@ with mocked dependencies to achieve 70%+ coverage.
 Test Coverage Plan (Sprint 15):
 - Phase 15A: Initialization & Setup (__init__, reset, _build_movement_deltas)
 - Phase 15B: Core Loop (step, _execute_actions, _get_observations, get_action_masks)
-- Phase 15C: Interactions & Rewards (_handle_interactions, _calculate_shaped_rewards, _apply_custom_action)
+- Phase 15C: Interactions & Rewards (_handle_interactions, _calculate_shaped_rewards)
 - Phase 15D: Checkpointing (get/set_affordance_positions, randomize_affordance_positions)
 
 Testing Strategy:
@@ -19,23 +19,162 @@ Testing Strategy:
 from __future__ import annotations
 
 import shutil
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
 import torch
 import yaml
 
-from townlet.environment.vectorized_env import (
+import townlet.environment.action_executor as action_executor_module
+import townlet.environment.env_factory as env_factory_module
+import townlet.environment.observation_encoder as observation_encoder_module
+import townlet.environment.reward_calculator as reward_calculator_module
+import townlet.environment.vectorized_env as vectorized_env_module
+from townlet.environment.env_factory import (
     _build_bar_index_map,
     _resolve_deployable_affordances,
 )
+from townlet.universe.compiled import CompiledVFSProfiles
 from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.dto import MeterInfo, MeterMetadata
 from townlet.universe.errors import CompilationError
+from townlet.vfs.profiles import CompiledGlobalProfile, CompiledVariable
+from townlet.vfs.schema import WriteSpec
+from townlet.vfs.schema_hashes import compute_transition_graph_hash, compute_vfs_hash
+from townlet.vfs.transition_schedule import (
+    build_vtc_transition_schedule,
+    serialize_vtc_transition_schedule,
+    social_rules_from_transition_payload,
+)
+
+DEFAULT_CURRICULUM_LEVELS = (
+    "L0_0_minimal",
+    "L0_5_dual_resource",
+    "L1_full_observability",
+    "L2_partial_observability",
+    "L3_temporal_mechanics",
+)
 
 # =============================================================================
 # AFFORDANCE FILTERING HELPERS
 # =============================================================================
+
+
+def test_environment_runtime_modules_own_extracted_clusters():
+    """R-1 ownership guard: vectorized_env delegates the extracted method clusters."""
+    env_source = Path(vectorized_env_module.__file__).read_text()
+
+    expected_module_methods = {
+        action_executor_module: [
+            "def _execute_actions",
+            "def _handle_interactions",
+            "def _handle_instant_interactions",
+        ],
+        observation_encoder_module: [
+            "def _get_observations",
+            "def _build_affordance_encoding",
+            "def _encode_position_observation",
+        ],
+        reward_calculator_module: ["def _calculate_shaped_rewards"],
+        env_factory_module: ["def from_universe"],
+    }
+    for module, method_markers in expected_module_methods.items():
+        source = Path(module.__file__).read_text()
+        for marker in method_markers:
+            assert marker in source
+
+    delegated_implementation_markers = [
+        "movement_actions =",
+        "build_vfs_observation(",
+        "dac_engine.calculate_rewards(",
+        "return env_cls(",
+    ]
+    for marker in delegated_implementation_markers:
+        assert marker not in env_source
+
+
+def _with_runtime_action_write(universe, level_name: str, action_name: str, write: WriteSpec):
+    """Return a compiled universe whose named runtime action carries one VFS write."""
+    return _with_runtime_action_surface(universe, level_name, action_name, writes=(write,), disable_vfs_profiles=True)
+
+
+def _with_runtime_action_surface(
+    universe,
+    level_name: str,
+    action_name: str,
+    *,
+    costs: dict[str, float] | None = None,
+    effects: dict[str, float] | None = None,
+    writes: tuple[WriteSpec, ...] = (),
+    disable_vfs_profiles: bool = False,
+):
+    """Return a compiled universe with patched runtime action effects/writes for equivalence tests."""
+    level = universe.get_level(level_name)
+    patched_actions = []
+    found = False
+    for action in level.runtime_action_space.actions:
+        if action.name == action_name:
+            patched_actions.append(
+                replace(
+                    action,
+                    costs=costs if costs is not None else action.costs,
+                    effects=effects if effects is not None else action.effects,
+                    writes=tuple(write.model_dump(mode="json") for write in writes),
+                )
+            )
+            found = True
+        else:
+            patched_actions.append(action)
+    if not found:
+        raise AssertionError(f"Test action '{action_name}' was not present in runtime action space")
+
+    runtime_action_space = replace(level.runtime_action_space, actions=tuple(patched_actions))
+    patched_level = replace(level, runtime_action_space=runtime_action_space)
+    schedule_payload = serialize_vtc_transition_schedule(level.transition_schedule)
+    transition_schedule = build_vtc_transition_schedule(
+        runtime_action_space=runtime_action_space,
+        level=patched_level,
+        social_residue_rules=social_rules_from_transition_payload(schedule_payload, field_name="test.transition_schedule"),
+        vfs_variables=level.vfs_variables,
+    )
+    transition_graph_hash = compute_transition_graph_hash(
+        transition_schedule.phase_graph,
+        transition_schedule.action_write_program,
+        affordance_gate_program=transition_schedule.affordance_gate_program,
+        interaction_progress_program=transition_schedule.interaction_progress_program,
+        terminal_condition_program=transition_schedule.terminal_condition_program,
+        threshold_cascade_program=transition_schedule.threshold_cascade_program,
+        modulation_program=transition_schedule.modulation_program,
+        passive_depletion_program=transition_schedule.passive_depletion_program,
+        social_residue_program=transition_schedule.social_residue_program,
+        reward_component_program=transition_schedule.reward_component_program,
+    )
+    vfs_hash = compute_vfs_hash(
+        level.variable_schema_hash,
+        level.observation_schema_hash,
+        level.action_schema_hash,
+        transition_graph_hash,
+    )
+    patched_level = replace(
+        patched_level,
+        transition_schedule=transition_schedule,
+        transition_graph_hash=transition_graph_hash,
+        vfs_hash=vfs_hash,
+    )
+    all_levels = dict(universe.all_levels or {})
+    all_levels[level_name] = patched_level
+    return replace(
+        universe,
+        runtime_action_space=runtime_action_space,
+        transition_schedule=transition_schedule,
+        transition_graph_hash=transition_graph_hash,
+        vfs_hash=vfs_hash,
+        all_levels=all_levels,
+        compiled_vfs_profiles=None if disable_vfs_profiles else universe.compiled_vfs_profiles,
+        vfs_observation_spec=None if disable_vfs_profiles else universe.vfs_observation_spec,
+        vfs_observation_marks=None if disable_vfs_profiles else universe.vfs_observation_marks,
+    )
 
 
 def test_build_bar_index_map():
@@ -265,15 +404,102 @@ class TestVectorizedHamletEnvStep:
 
         assert not torch.allclose(env.meters, initial_meters)
 
+    def test_step_executes_vtc_action_writes(self, compile_universe, test_config_pack_path, cpu_device):
+        universe = compile_universe(test_config_pack_path)
+        write = WriteSpec(
+            variable_id="deficit_energy",
+            expression="0.25",
+            condition=None,
+            composition="additive_delta",
+            phase="apply_action_effects",
+            priority=0,
+            clamp=(0.0, 1.0),
+            telemetry_label="wait_deficit_energy",
+        )
+        universe = _with_runtime_action_write(universe, "L0_test", "WAIT", write)
+        env = vectorized_env_module.VectorizedHamletEnv.from_universe(
+            universe,
+            level_name="L0_test",
+            num_agents=2,
+            device=cpu_device,
+        )
+        env.reset()
+
+        before = env.vfs_registry.get("deficit_energy", reader="engine").clone()
+        actions = torch.tensor([env.action_ids["WAIT"], env.action_ids["REST"]], device=env.device)
+        env.step(actions)
+        after = env.vfs_registry.get("deficit_energy", reader="engine")
+
+        assert torch.allclose(after, torch.tensor([before[0] + 0.25, before[1]], device=env.device))
+
+    def test_vtc_action_effects_apply_all_curriculum_levels(self, compile_universe, cpu_device):
+        write = WriteSpec(
+            variable_id="energy",
+            expression="0.13",
+            condition=None,
+            composition="additive_delta",
+            phase="apply_action_effects",
+            priority=0,
+            clamp=(0.0, 1.0),
+            telemetry_label="rest_energy_gain",
+        )
+
+        for level_name in DEFAULT_CURRICULUM_LEVELS:
+            universe = compile_universe(Path("configs/default_curriculum"), primary_level=level_name)
+            vtc_universe = _with_runtime_action_surface(
+                universe,
+                level_name,
+                "REST",
+                writes=(write,),
+            )
+            control_env = vectorized_env_module.VectorizedHamletEnv.from_universe(
+                universe,
+                level_name=level_name,
+                num_agents=3,
+                device=cpu_device,
+            )
+            vtc_env = vectorized_env_module.VectorizedHamletEnv.from_universe(
+                vtc_universe,
+                level_name=level_name,
+                num_agents=3,
+                device=cpu_device,
+            )
+
+            torch.manual_seed(17)
+            control_env.reset()
+            torch.manual_seed(17)
+            vtc_env.reset()
+            vtc_env.positions = control_env.positions.clone()
+            vtc_env.meters = control_env.meters.clone()
+            vtc_env.dones = control_env.dones.clone()
+            vtc_env.step_counts = control_env.step_counts.clone()
+            vtc_env.global_tick = control_env.global_tick
+            vtc_env.time_of_day = control_env.time_of_day
+
+            energy_idx = control_env.meter_name_to_index["energy"]
+            control_env.meters[:, energy_idx] = 0.5
+            vtc_env.meters[:, energy_idx] = 0.5
+
+            actions = torch.full((control_env.num_agents,), control_env.action_ids["REST"], dtype=torch.long, device=control_env.device)
+            assert torch.equal(control_env.get_action_masks(), vtc_env.get_action_masks())
+
+            _, control_rewards, control_dones, _ = control_env.step(actions)
+            _, vtc_rewards, vtc_dones, _ = vtc_env.step(actions)
+
+            energy_delta = vtc_env.meters[:, energy_idx] - control_env.meters[:, energy_idx]
+            assert torch.allclose(energy_delta, torch.full_like(energy_delta, 0.13), atol=1e-6), level_name
+            assert torch.all(torch.isfinite(control_rewards)).item(), level_name
+            assert torch.all(torch.isfinite(vtc_rewards)).item(), level_name
+            assert torch.equal(control_dones, vtc_dones), level_name
+            assert torch.equal(control_env.get_action_masks(), vtc_env.get_action_masks()), level_name
+
     def test_step_increments_time_of_day(self, custom_env_builder):
         # Use temporal-enabled level to ensure mechanics are active
         env = custom_env_builder(
             source_pack=Path("configs/default_curriculum"),
+            level_name="L3_temporal_mechanics",
             overrides=None,
         )
-        # Swap to temporal level explicitly
-        env.level_name = "L3_temporal_mechanics"
-        env = env.universe.create_environment(num_agents=1, level_name="L3_temporal_mechanics", device=env.device)
         env.reset()
 
         wait_action_idx = env.action_ids["WAIT"]
@@ -344,6 +570,155 @@ class TestVectorizedHamletEnvStep:
         assert "intrinsic_weight" in info
         assert isinstance(info["intrinsic_weight"], torch.Tensor)
         assert info["intrinsic_weight"].shape == (2,)
+
+    def test_step_threads_vfs_affordance_and_temporal_context(self, custom_env_builder, monkeypatch):
+        """Runtime VFS evaluation should receive current affordance and temporal state."""
+        env = custom_env_builder(overrides={"environment": {"enable_temporal_mechanics": True}})
+        env.reset()
+        env.time_of_day = 10
+        env.global_tick = 7
+
+        profile = CompiledGlobalProfile(
+            variables=[
+                CompiledVariable(
+                    name="context_probe",
+                    type="bool",
+                    exposed_to=("agent",),
+                    semantic_type="custom",
+                    initial_value=True,
+                    result_type="bool",
+                )
+            ],
+            dependencies={"context_probe": tuple()},
+        )
+        env.universe = replace(
+            env.universe,
+            compiled_vfs_profiles=CompiledVFSProfiles(
+                evaluation_mode="mark_and_sweep",
+                debug_logging=False,
+                global_profile=profile,
+                item_profiles={},
+            ),
+        )
+        env.vfs_observation_marks = {"global": {"context_probe"}}
+
+        captured_context: dict[str, object] = {}
+
+        def capture_evaluation(**kwargs):
+            captured_context.update(kwargs)
+            return {}
+
+        assert env.vfs_evaluator is not None
+        monkeypatch.setattr(env.vfs_evaluator, "evaluate_global_profile", capture_evaluation)
+
+        env.step(torch.zeros(env.num_agents, dtype=torch.long))
+
+        assert set(captured_context["affordances"]) == set(env.affordances)
+        first_affordance = env.affordance_names[0]
+        affordance_state = captured_context["affordances"][first_affordance]
+        assert torch.equal(affordance_state["available"], torch.tensor(env._is_affordance_open(first_affordance), device=env.device))
+
+        temporal = captured_context["temporal"]
+        assert torch.equal(temporal["tick"], torch.tensor(7, device=env.device))
+        assert torch.equal(temporal["time_of_day"], torch.tensor(10.0, device=env.device))
+        assert torch.equal(temporal["day_progress"], torch.tensor(10.0 / float(env.day_length), device=env.device))
+        assert torch.equal(temporal["is_night"], torch.tensor(False, device=env.device))
+
+
+class TestVectorizedHamletEnvGoldenTick:
+    """Golden tick test: pin env.step's delegation contract (hamlet-278239308d).
+
+    The architecture report named VectorizedHamletEnv.step as the canonical
+    tick choreography. These tests assert that one step actually flows
+    through the named runtime components — action executor, VTC schedule
+    runner, reward calculator, and (via get_action_masks) the action mask
+    builder — and produces well-shaped obs/reward/done outputs. If a future
+    change inlines any of those phases back into the env without going
+    through its component, these tests fail.
+    """
+
+    def test_env_owns_extracted_runtime_components(self, cpu_env_factory):
+        """The env must hold every component the task scope names."""
+        from townlet.environment.action_mask_builder import ActionMaskBuilder
+
+        env = cpu_env_factory(num_agents=2)
+        assert isinstance(env.action_mask_builder, ActionMaskBuilder)
+        # Components already extracted before this milestone; the contract
+        # below pins that nothing accidentally moves back into env body.
+        assert env._action_executor is not None
+        assert env._observation_encoder is not None
+        assert env._reward_calculator is not None
+        assert env.vtc_transition_runner is not None
+
+    def test_golden_tick_delegates_through_components(self, cpu_env_factory, monkeypatch):
+        """A single env.step invokes the named delegation chain in order."""
+        env = cpu_env_factory(num_agents=2)
+        env.reset()
+
+        invocation_log: list[str] = []
+
+        real_execute = env._action_executor._execute_actions
+
+        def spy_execute(actions):
+            invocation_log.append("action_executor._execute_actions")
+            return real_execute(actions)
+
+        monkeypatch.setattr(env._action_executor, "_execute_actions", spy_execute)
+
+        real_run_phases = env._run_vtc_transition_phases
+
+        def spy_phases(*args, **kwargs):
+            invocation_log.append("vtc_transition_runner.phases")
+            return real_run_phases(*args, **kwargs)
+
+        monkeypatch.setattr(env, "_run_vtc_transition_phases", spy_phases)
+
+        real_rewards = env._reward_calculator._calculate_shaped_rewards
+
+        def spy_rewards():
+            invocation_log.append("reward_calculator._calculate_shaped_rewards")
+            return real_rewards()
+
+        monkeypatch.setattr(env._reward_calculator, "_calculate_shaped_rewards", spy_rewards)
+
+        actions = torch.zeros(2, dtype=torch.long, device=env.device)
+        obs, rewards, dones, info = env.step(actions)
+
+        # Delegation contract: action executor runs first, then at least one
+        # VTC phase batch, then reward calculation. Order matters for the
+        # tick semantics.
+        assert "action_executor._execute_actions" in invocation_log
+        assert "vtc_transition_runner.phases" in invocation_log
+        assert "reward_calculator._calculate_shaped_rewards" in invocation_log
+        executor_idx = invocation_log.index("action_executor._execute_actions")
+        rewards_idx = invocation_log.index("reward_calculator._calculate_shaped_rewards")
+        assert executor_idx < rewards_idx, "action_executor must run before reward_calculator within a tick"
+
+        # Output contract: shapes and types are stable.
+        assert obs.shape == (2, env.observation_dim)
+        assert rewards.shape == (2,)
+        assert dones.shape == (2,)
+        assert dones.dtype == torch.bool
+        assert isinstance(info, dict)
+
+    def test_get_action_masks_flows_through_builder(self, cpu_env_factory, monkeypatch):
+        """env.get_action_masks must reach the extracted ActionMaskBuilder."""
+        env = cpu_env_factory(num_agents=2)
+        env.reset()
+
+        invoked = {"flag": False}
+        real_build = env.action_mask_builder.build
+
+        def spy_build(**kwargs):
+            invoked["flag"] = True
+            return real_build(**kwargs)
+
+        monkeypatch.setattr(env.action_mask_builder, "build", spy_build)
+
+        masks = env.get_action_masks()
+        assert invoked["flag"], "env.get_action_masks must delegate to ActionMaskBuilder.build"
+        assert masks.shape == (2, env.action_dim)
+        assert masks.dtype == torch.bool
 
 
 class TestExecuteActions:
@@ -434,12 +809,7 @@ class TestGetObservations:
         env = custom_env_builder(
             num_agents=2,
             source_pack=Path("configs/default_curriculum"),
-        )
-        # Switch to partial-observability level
-        env = env.universe.create_environment(
-            num_agents=2,
             level_name="L2_partial_observability",
-            device=env.device,
         )
         env.reset()
         obs = env._get_observations()
@@ -592,6 +962,87 @@ class TestHandleInteractions:
         assert hasattr(env, "last_interaction_affordance")
         assert hasattr(env, "last_interaction_position")
 
+    def test_handle_interactions_advances_multi_tick_progress_via_vtc(self):
+        """Multi-tick progress should be advanced by the compiled VTC program."""
+        from townlet.environment.action_executor import ActionExecutor
+        from townlet.vfs import vtc
+
+        calls = []
+
+        class Substrate:
+            @staticmethod
+            def is_on_position(positions, affordance_pos):
+                return torch.eq(positions, affordance_pos).all(dim=1)
+
+        class AffordanceEngineStub:
+            affordances = ()
+
+            @staticmethod
+            def can_afford(_affordance_name, meters, *, cost_mode):
+                assert cost_mode == "per_tick"
+                return torch.ones(meters.shape[0], dtype=torch.bool, device=meters.device)
+
+            @staticmethod
+            def apply_vtc_multi_tick_effects(
+                *,
+                meters,
+                affordance_name,
+                current_tick,
+                agent_mask,
+                completion_mask,
+            ):
+                assert affordance_name == "REST"
+                calls.append((current_tick, agent_mask.clone(), completion_mask.clone()))
+                updated = meters.clone()
+                updated[agent_mask, 0] += 0.1
+                updated[completion_mask, 1] += 0.2
+                return updated
+
+        class EnvStub:
+            enable_temporal_mechanics = True
+            num_agents = 1
+            device = torch.device("cpu")
+            affordance_engine = AffordanceEngineStub()
+            affordances = {"REST": torch.tensor([1, 1])}
+            substrate = Substrate()
+            money_idx = None
+            global_tick = 0
+            dones = torch.tensor([False])
+
+            def __init__(self):
+                self.positions = torch.tensor([[1, 1]])
+                self.meters = torch.tensor([[0.0, 0.0]])
+                self.interaction_progress = torch.tensor([0])
+                self.last_interaction_affordance = [None]
+                self.last_interaction_position = torch.zeros((1, 2), dtype=torch.long)
+                self.tracked_interactions = {}
+                self.vtc_interaction_progress_program = vtc.compile_vtc_interaction_progress(
+                    [{"name": "REST", "interaction_type": "multi_tick", "duration_ticks": 2}]
+                )
+
+            @staticmethod
+            def _is_affordance_open(_affordance_name):
+                return True
+
+            def _update_affordance_tracking(self, successful_interactions):
+                self.tracked_interactions = dict(successful_interactions)
+
+        env = EnvStub()
+        executor = ActionExecutor(env)
+
+        assert executor._handle_interactions(torch.tensor([True])) == {0: "REST"}
+        assert torch.equal(env.interaction_progress, torch.tensor([1]))
+        assert env.last_interaction_affordance == ["REST"]
+
+        assert executor._handle_interactions(torch.tensor([True])) == {0: "REST"}
+        assert env.interaction_progress[0] == 0
+        assert env.last_interaction_affordance[0] is None
+        assert torch.allclose(env.meters, torch.tensor([[0.2, 0.2]]))
+        assert calls[0][0] == 0
+        assert calls[0][2].item() is False
+        assert calls[1][0] == 1
+        assert calls[1][2].item() is True
+
     def test_handle_interactions_returns_empty_when_no_interact(self, cpu_env_factory):
         """Should return empty dict when no agents interact."""
         env = cpu_env_factory(num_agents=2)
@@ -644,45 +1095,33 @@ class TestCalculateShapedRewards:
         assert torch.all(torch.isfinite(rewards)).item()
 
 
-class TestApplyCustomAction:
-    """Test VectorizedHamletEnv._apply_custom_action()."""
+class TestCustomActionExecution:
+    """Test custom actions after VTC owns action meter effects."""
 
-    def test_apply_custom_action_rest_action(self, cpu_env_factory):
-        """Should handle REST custom action."""
-        env = cpu_env_factory()
+    def test_execute_actions_does_not_apply_legacy_runtime_costs_or_effects(self, compile_universe, cpu_device):
+        universe = compile_universe(Path("configs/default_curriculum"), primary_level="L0_0_minimal")
+        universe = _with_runtime_action_surface(
+            universe,
+            "L0_0_minimal",
+            "REST",
+            costs={"mood": 0.1},
+            effects={"energy": 0.2},
+            writes=(),
+        )
+        env = vectorized_env_module.VectorizedHamletEnv.from_universe(
+            universe,
+            level_name="L0_0_minimal",
+            num_agents=2,
+            device=cpu_device,
+        )
         env.reset()
+        env.meters.fill_(0.5)
 
-        # Find REST action
-        rest_action = env.action_ids.get("REST")
-        if rest_action is not None:
-            action_config = env.action_space.get_action_by_id(rest_action)
+        before = env.meters.clone()
+        actions = torch.full((env.num_agents,), env.action_ids["REST"], dtype=torch.long, device=env.device)
+        env._execute_actions(actions)
 
-            # Apply REST action (should execute without error)
-            # Note: Meters may or may not change depending on action config costs
-            # (test configs may have very low/zero costs for balancing)
-            env._apply_custom_action(0, action_config)
-
-            # Verify method executed without error and meters are still valid
-            assert env.meters.shape == (1, env.meter_count)
-
-    def test_apply_custom_action_meditate_action(self, cpu_env_factory):
-        """Should handle MEDITATE custom action."""
-        env = cpu_env_factory()
-        env.reset()
-
-        # Find MEDITATE action
-        meditate_action = env.action_ids.get("MEDITATE")
-        if meditate_action is not None:
-            action_config = env.action_space.get_action_by_id(meditate_action)
-
-            # Apply MEDITATE action (should execute without error)
-            # Note: Meters may or may not change depending on action config costs
-            # (test configs may have very low/zero costs for balancing)
-            env._apply_custom_action(0, action_config)
-
-            # Verify method executed without error and meters are still valid
-            assert isinstance(env.meters, torch.Tensor)
-            assert env.meters.shape == (1, 8)
+        assert torch.allclose(env.meters, before)
 
     def test_action_id_lookup_returns_int_or_none(self, cpu_env_factory):
         """action_ids lookup returns int for valid actions, None otherwise."""

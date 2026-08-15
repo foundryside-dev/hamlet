@@ -36,7 +36,7 @@ class TestCurriculumCompatibility:
     @pytest.mark.parametrize("level_name", CURRICULUM_LEVELS)
     def test_level_compiles(self, compiler, curriculum_dir, level_name):
         """Curriculum level compiles successfully."""
-        universe = compiler.compile(curriculum_dir)
+        universe = compiler.compile(curriculum_dir, primary_level=level_name)
 
         # Verify level exists
         assert level_name in universe.available_levels, f"Level {level_name} not found in compiled universe"
@@ -55,7 +55,7 @@ class TestCurriculumCompatibility:
 
     def test_all_levels_have_stable_obs_dim(self, compiler, curriculum_dir):
         """All levels produce consistent observation dimensions."""
-        universe = compiler.compile(curriculum_dir)
+        universe = compiler.compile(curriculum_dir, primary_level="L0_0_minimal")
 
         obs_dims = {}
         for level_name in universe.available_levels:

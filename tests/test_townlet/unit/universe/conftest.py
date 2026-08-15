@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from tests.test_townlet.helpers.config_builder import prepare_config_dir
+from tests.test_townlet.helpers.config_builder import PRIMARY_LEVEL_NAME, prepare_config_dir
 from townlet.universe.compiler import UniverseCompiler
 
 
@@ -18,6 +18,8 @@ def minimal_compiled_universe_with_profiles(tmp_path: Path):
     # Add VFS profiles with global variables
     profiles = {
         "version": "1.0",
+        "evaluation_mode": "mark_and_sweep",
+        "debug_logging": False,
         "global_profile": {
             "variables": [
                 {"name": "day_count", "type": "int", "initial_value": 0},
@@ -29,7 +31,7 @@ def minimal_compiled_universe_with_profiles(tmp_path: Path):
 
     # Compile
     compiler = UniverseCompiler()
-    compiled = compiler.compile(experiment_dir, use_cache=False)
+    compiled = compiler.compile(experiment_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
 
     return compiled
 
@@ -43,6 +45,8 @@ def minimal_compiled_universe_with_effects(tmp_path: Path):
     # Add VFS profiles (required for effects)
     profiles = {
         "version": "1.0",
+        "evaluation_mode": "mark_and_sweep",
+        "debug_logging": False,
         "global_profile": {"variables": [{"name": "day_count", "type": "int", "initial_value": 0}]},
     }
     (experiment_dir / "vfs_profiles.yaml").write_text(yaml.dump(profiles))
@@ -79,6 +83,6 @@ def minimal_compiled_universe_with_effects(tmp_path: Path):
 
     # Compile
     compiler = UniverseCompiler()
-    compiled = compiler.compile(experiment_dir, use_cache=False)
+    compiled = compiler.compile(experiment_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
 
     return compiled

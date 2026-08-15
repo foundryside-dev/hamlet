@@ -153,6 +153,9 @@ class VectorizedPopulation(PopulationManager):
         # Set is_dueling flag from brain_config
         self.is_dueling = brain_config.architecture.type == "dueling"
 
+        # Set is_set_encoder flag from brain_config
+        self.is_set_encoder = brain_config.architecture.type == "set_encoder"
+
         # Target network (stabilises training for both feed-forward and recurrent agents)
         # Build using DRY helper (POP-001)
         self.target_network: nn.Module = self._build_network(brain_config, obs_dim, action_dim, env, vision_window_size).to(device)
@@ -247,14 +250,22 @@ class VectorizedPopulation(PopulationManager):
         self.current_curriculum_decisions: list[CurriculumDecision] = []  # Store curriculum decisions
         self.current_depletion_multiplier: float = 1.0  # Track curriculum difficulty
 
+        # WS-1(b): rollout memory is population-owned; the network holds no state.
+        self.rollout_hidden: tuple[torch.Tensor, torch.Tensor] | None = None
+        if self.is_recurrent:
+            recurrent_network = cast(RecurrentSpatialQNetwork, self.q_network)
+            self.rollout_hidden = recurrent_network.initial_hidden(self.num_agents, self.device)
+        # Q-values recorded by the action selectors (read by the live-inference display).
+        self.last_selected_q_values: torch.Tensor | None = None
+
     def reset(self) -> None:
         """Reset all environments and state."""
         self.current_obs = self.env.reset()
 
-        # Reset recurrent network hidden state (if applicable)
+        # Re-seed population-owned rollout memory (if applicable)
         if self.is_recurrent:
             recurrent_network = cast(RecurrentSpatialQNetwork, self.q_network)
-            recurrent_network.reset_hidden_state(batch_size=self.num_agents, device=self.device)
+            self.rollout_hidden = recurrent_network.initial_hidden(self.num_agents, self.device)
 
         # Get epsilon from exploration strategy (handle both direct and composed)
         # Sync telemetry + exploration metrics (initial epsilon / stage)
@@ -278,6 +289,7 @@ class VectorizedPopulation(PopulationManager):
             "rewards_intrinsic": [],  # DAC intrinsic component (after modifiers)
             "rewards_shaping": [],  # DAC shaping component
             "dones": [],
+            "next_observations": [],  # WS-1(c): successor for the window-boundary bootstrap
         }
 
     # ------------------------------------------------------------------ #
@@ -381,8 +393,16 @@ class VectorizedPopulation(PopulationManager):
                 obs_dim=obs_dim,
                 action_dim=action_dim,
             )
+        elif arch.type == "set_encoder":
+            assert arch.set_encoder is not None, "set_encoder config must be present"
+            return NetworkFactory.build_set_encoder(
+                config=arch.set_encoder,
+                obs_dim=obs_dim,
+                action_dim=action_dim,
+                observation_spec=self.observation_spec,
+            )
         else:
-            raise ValueError(f"Unsupported architecture type: {arch.type}. Supported: feedforward, recurrent, dueling")
+            raise ValueError(f"Unsupported architecture type: {arch.type}. Supported: feedforward, recurrent, dueling, set_encoder")
 
     def _store_episode_and_reset(self, agent_idx: int) -> bool:
         """Store accumulated episode for agent and reset buffers."""
@@ -401,6 +421,7 @@ class VectorizedPopulation(PopulationManager):
             "actions": torch.stack(episode["actions"]),
             "rewards": torch.stack(episode["rewards"]),
             "dones": torch.stack(episode["dones"]),
+            "next_observations": torch.stack(episode["next_observations"]),
         }
 
         # Add components if present
@@ -415,20 +436,43 @@ class VectorizedPopulation(PopulationManager):
         return True
 
     def _reset_hidden_state(self, agent_idx: int) -> None:
-        """Zero recurrent hidden state for a single agent."""
+        """Zero the population-owned rollout memory for a single agent (episode boundary)."""
         if not self.is_recurrent:
             return
 
-        recurrent_network = cast(RecurrentSpatialQNetwork, self.q_network)
-        hidden = recurrent_network.get_hidden_state()
-        if hidden is None:
-            return
-
-        h, c = hidden
-
+        assert self.rollout_hidden is not None, "rollout_hidden is seeded in __init__ for recurrent populations"
+        h, c = self.rollout_hidden
+        # In-place zeroing is deliberate and safe: every producer of rollout_hidden
+        # runs under torch.no_grad(), so there is no autograd graph to corrupt.
+        # Do not "fix" this into a clone.
         h[:, agent_idx, :] = 0.0
         c[:, agent_idx, :] = 0.0
-        recurrent_network.set_hidden_state((h, c))
+
+    def _unroll_recurrent(
+        self, network: RecurrentSpatialQNetwork, observations: torch.Tensor
+    ) -> tuple[list[torch.Tensor], tuple[torch.Tensor, torch.Tensor]]:
+        """Unroll `network` over a sampled batch, threading hidden state t -> t+1.
+
+        Hidden state is LOCAL to this unroll: it starts at zeros for every sampled
+        sequence (DRQN zero-start, retained deliberately - the WS-1(b) defect was
+        the missing carry between timesteps, not the zero start). The rollout
+        memory in self.rollout_hidden is never touched.
+
+        Args:
+            observations: [batch, seq_len, obs_dim]
+
+        Returns:
+            (q_values_per_step, final_hidden): per-timestep Q-values, each
+            [batch, action_dim], and the hidden state after the last timestep -
+            the state the WS-1(c) boundary bootstrap must evaluate under.
+        """
+        batch_size, seq_len = observations.shape[0], observations.shape[1]
+        hidden = network.initial_hidden(batch_size, observations.device)
+        q_values_per_step: list[torch.Tensor] = []
+        for t in range(seq_len):
+            q_values, hidden = network(observations[:, t, :], hidden)
+            q_values_per_step.append(q_values)
+        return q_values_per_step, hidden
 
     # ------------------------------------------------------------------ #
     # Telemetry synchronisation helpers
@@ -544,10 +588,15 @@ class VectorizedPopulation(PopulationManager):
             actions: [num_agents] tensor of selected actions
         """
         with torch.no_grad():
-            # Get Q-values from network
-            q_output = self.q_network(self.current_obs)
-            # Recurrent networks return (q_values, hidden_state)
-            q_values = q_output[0] if isinstance(q_output, tuple) else q_output
+            # Get Q-values from network (recurrent: advance the rollout memory)
+            if self.is_recurrent:
+                recurrent_network = cast(RecurrentSpatialQNetwork, self.q_network)
+                assert self.rollout_hidden is not None
+                q_values, self.rollout_hidden = recurrent_network(self.current_obs, self.rollout_hidden)
+            else:
+                q_values = self.q_network(self.current_obs)
+            # Record BEFORE any early exit so the live Q-value display never reads stale values (plan §3 H8).
+            self.last_selected_q_values = q_values
 
             # Get action masks from environment
             action_masks = env.get_action_masks()
@@ -576,10 +625,17 @@ class VectorizedPopulation(PopulationManager):
             actions: [num_agents] tensor of selected actions
         """
         with torch.no_grad():
-            # Get Q-values from network
-            q_output = self.q_network(self.current_obs)
-            # Recurrent networks return (q_values, hidden_state)
-            q_values = q_output[0] if isinstance(q_output, tuple) else q_output
+            # Get Q-values from network (recurrent: advance the rollout memory)
+            if self.is_recurrent:
+                recurrent_network = cast(RecurrentSpatialQNetwork, self.q_network)
+                assert self.rollout_hidden is not None
+                q_values, self.rollout_hidden = recurrent_network(self.current_obs, self.rollout_hidden)
+            else:
+                q_values = self.q_network(self.current_obs)
+            # The return below sits inside this no_grad block: record the Q-values
+            # HERE, before the action-mask fetch, or the live display is permanently
+            # None (plan §3 H8 - a silent regression no test upstream catches).
+            self.last_selected_q_values = q_values
 
             # Get action masks from environment
             action_masks = env.get_action_masks()
@@ -629,9 +685,9 @@ class VectorizedPopulation(PopulationManager):
         with torch.no_grad():
             if self.is_recurrent:
                 recurrent_network = cast(RecurrentSpatialQNetwork, self.q_network)
-                q_values, new_hidden = recurrent_network(self.current_obs)
-                # Update hidden state for next step (episode rollout memory)
-                recurrent_network.set_hidden_state(new_hidden)
+                assert self.rollout_hidden is not None
+                # Thread and advance the population-owned rollout memory.
+                q_values, self.rollout_hidden = recurrent_network(self.current_obs, self.rollout_hidden)
             else:
                 q_values = self.q_network(self.current_obs)
 
@@ -717,6 +773,10 @@ class VectorizedPopulation(PopulationManager):
                 self.current_episodes[i]["rewards_intrinsic"].append(components["intrinsic"][i].cpu())
                 self.current_episodes[i]["rewards_shaping"].append(components["shaping"][i].cpu())
                 self.current_episodes[i]["dones"].append(dones[i].cpu())
+                # WS-1(c): at a done step next_obs[i] is the post-reset observation -
+                # harmless and correct, the (~dones) factor zeros its bootstrap, and it
+                # is exactly what the feedforward path stores. Do not special-case it.
+                self.current_episodes[i]["next_observations"].append(next_obs[i].cpu())
         else:
             # For feedforward networks: store individual transitions
             # Both ReplayBuffer and PrioritizedReplayBuffer accept RewardTensor
@@ -757,76 +817,68 @@ class VectorizedPopulation(PopulationManager):
                     seq_len=self.sequence_length,
                 )
 
-                batch_size = batch["observations"].shape[0]
                 seq_len = batch["observations"].shape[1]
 
-                # PASS 1: Collect Q-predictions from online network
-                # Unroll through sequence, maintaining hidden state for gradient computation
+                # PASS 1: Q-predictions from the online network, hidden state threaded
+                # t -> t+1 through the sampled window (gradient flows through the unroll).
                 recurrent_network = cast(RecurrentSpatialQNetwork, self.q_network)
-                recurrent_network.reset_hidden_state(batch_size=batch_size, device=self.device)
+                q_values_online_list, online_final_hidden = self._unroll_recurrent(recurrent_network, batch["observations"])
                 q_pred_list = []
-
                 for t in range(seq_len):
-                    q_values, _ = recurrent_network(batch["observations"][:, t, :])
-                    q_pred = q_values.gather(1, batch["actions"][:, t].unsqueeze(1)).squeeze()
+                    q_pred = q_values_online_list[t].gather(1, batch["actions"][:, t].unsqueeze(1)).squeeze()
                     q_pred_list.append(q_pred)
 
-                # PASS 2: Collect Q-targets from target network
-                # Unroll through sequence with target network to maintain hidden state
+                # PASS 2: Q-targets. The last index of a sampled window is a WINDOW
+                # boundary, not a terminal (WS-1(c)): it bootstraps from the stored
+                # successor next_observations[:, -1], evaluated under the hidden
+                # state accumulated over the window. A real terminal at the boundary
+                # is still zeroed by the (~dones) factor in the shared formula.
                 with torch.no_grad():
-                    target_recurrent = cast(RecurrentSpatialQNetwork, self.target_network)
-                    target_recurrent.reset_hidden_state(batch_size=batch_size, device=self.device)
+                    boundary_next_obs = batch["next_observations"][:, -1, :]
 
                     if self.use_double_dqn:
-                        # Double DQN: Use online network for action selection
-                        online_recurrent = cast(RecurrentSpatialQNetwork, self.q_network)
-                        online_recurrent.reset_hidden_state(batch_size=batch_size, device=self.device)
+                        # Boundary forward for the ONLINE network, immediately after
+                        # its unroll and under ITS final hidden state. Order is
+                        # load-bearing: moving this after the target unroll, or
+                        # crossing the two hidden states, silently evaluates the
+                        # successor under the wrong network's trajectory (plan H6;
+                        # the networks have different weights).
+                        q_online_boundary, _ = recurrent_network(boundary_next_obs, online_final_hidden)
 
-                        # First pass: Get action selections from online network
-                        next_action_list = []
-                        for t in range(seq_len):
-                            q_values_online, _ = online_recurrent(batch["observations"][:, t, :])
-                            next_actions = q_values_online.argmax(1)
-                            next_action_list.append(next_actions)
+                    target_recurrent = cast(RecurrentSpatialQNetwork, self.target_network)
+                    q_values_target_list, target_final_hidden = self._unroll_recurrent(target_recurrent, batch["observations"])
+                    # Boundary forward for the TARGET network, under its own final hidden state.
+                    q_target_boundary, _ = target_recurrent(boundary_next_obs, target_final_hidden)
 
-                        # Second pass: Evaluate those actions with target network
-                        q_values_list = []
-                        for t in range(seq_len):
-                            q_values_target, _ = target_recurrent(batch["observations"][:, t, :])
-                            q_values_list.append(q_values_target)
+                    if self.use_double_dqn:
+                        # Double DQN: online network selects, target network evaluates.
+                        # Action selection reuses PASS 1's online unroll - a third
+                        # unroll would recompute the same trajectory.
+                        next_action_list = [q_values_online.argmax(1) for q_values_online in q_values_online_list]
 
-                        # Compute targets using selected actions
                         q_target_list = []
                         for t in range(seq_len):
                             if t < seq_len - 1:
                                 # Use Q-values from t+1, evaluated at actions selected by online network
                                 next_actions = next_action_list[t + 1]
-                                q_next = q_values_list[t + 1].gather(1, next_actions.unsqueeze(1)).squeeze()
-                                q_target = batch["rewards"][:, t] + self.gamma * q_next * (~batch["dones"][:, t]).float()
+                                q_next = q_values_target_list[t + 1].gather(1, next_actions.unsqueeze(1)).squeeze(1)
                             else:
-                                # Terminal state: no next observation
-                                q_target = batch["rewards"][:, t]
+                                # Window boundary: successor evaluated at the online network's argmax
+                                boundary_actions = q_online_boundary.argmax(1)
+                                q_next = q_target_boundary.gather(1, boundary_actions.unsqueeze(1)).squeeze(1)
+                            q_target = batch["rewards"][:, t] + self.gamma * q_next * (~batch["dones"][:, t]).float()
                             q_target_list.append(q_target)
                     else:
-                        # Vanilla DQN: Use target network for both selection and evaluation
-                        q_values_list = []
-
-                        # First, unroll through entire sequence to collect Q-values
-                        for t in range(seq_len):
-                            q_values, _ = target_recurrent(batch["observations"][:, t, :])
-                            q_values_list.append(q_values)
-
-                        # Now compute targets using Q-values from next timestep
+                        # Vanilla DQN: target network both selects and evaluates
                         q_target_list = []
                         for t in range(seq_len):
                             if t < seq_len - 1:
                                 # Use Q-values from t+1 (computed with hidden state from t)
-                                q_next = q_values_list[t + 1].max(1)[0]
-                                q_target = batch["rewards"][:, t] + self.gamma * q_next * (~batch["dones"][:, t]).float()
+                                q_next = q_values_target_list[t + 1].max(1)[0]
                             else:
-                                # Terminal state: no next observation
-                                q_target = batch["rewards"][:, t]
-
+                                # Window boundary: successor evaluated by the target network
+                                q_next = q_target_boundary.max(1)[0]
+                            q_target = batch["rewards"][:, t] + self.gamma * q_next * (~batch["dones"][:, t]).float()
                             q_target_list.append(q_target)
 
                 # Compute loss across all timesteps with post-terminal masking (P2.2)
@@ -882,9 +934,10 @@ class VectorizedPopulation(PopulationManager):
                 if self.training_step_counter % self.target_update_frequency == 0:
                     self.target_network.load_state_dict(self.q_network.state_dict())
 
-                # Reset hidden state back to episode batch size after training
-                recurrent_network = cast(RecurrentSpatialQNetwork, self.q_network)
-                recurrent_network.reset_hidden_state(batch_size=self.num_agents, device=self.device)
+                # NOTE (WS-1(b)): no rollout-memory reset here. Training uses hidden
+                # state local to _unroll_recurrent; the old post-training reset was
+                # the clobber that zeroed mid-episode rollout memory (measured:
+                # 207/936 mid-episode forwards received an exactly-zero hidden state).
             else:
                 # Standard feedforward DQN training (with optional PER)
                 # TASK-005 Phase 3: Support both standard and prioritized replay

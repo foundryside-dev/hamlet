@@ -9,8 +9,9 @@ from townlet.config.vfs_profiles_config import (
     GlobalVFSProfileConfig,
     GlobalVFSVariableConfig,
 )
-from townlet.vfs.observation_builder import VFSObservationSpec, build_vfs_observation
+from townlet.vfs.observation_builder import VFSObservationSpec, apply_normalization, build_vfs_observation
 from townlet.vfs.registry import ScopedVariableRegistry
+from townlet.vfs.schema import NormalizationSpec
 
 
 def test_vfs_obs_spec_global_variables():
@@ -112,6 +113,53 @@ def test_vfs_obs_spec_vecn_dimensions():
     assert spec.agent_vfs_dim == 4
 
 
+def test_apply_cyclical_sin_cos_normalization():
+    """Cyclical normalization expands scalar time into sin/cos features."""
+    values = torch.tensor([0.0, 6.0, 12.0])
+    normalized = apply_normalization(values, NormalizationSpec(kind="cyclical_sin_cos", period=24.0))
+
+    expected = torch.tensor(
+        [
+            [0.0, 1.0],
+            [1.0, 0.0],
+            [0.0, -1.0],
+        ]
+    )
+    assert torch.allclose(normalized, expected, atol=1e-6)
+
+
+def test_apply_discrete_and_mask_normalizations():
+    """Binary, one-hot, and masked-value normalizations produce stable tensors."""
+    binary = apply_normalization(torch.tensor([0.2, 0.7]), NormalizationSpec(kind="binary", threshold=0.5))
+    one_hot = apply_normalization(torch.tensor([0, 2, 1]), NormalizationSpec(kind="one_hot", categories=3))
+    masked = apply_normalization(torch.tensor([-1.0, 2.5]), NormalizationSpec(kind="masked_value", mask_value=-1.0, fill_value=0.0))
+
+    assert torch.equal(binary, torch.tensor([0.0, 1.0]))
+    assert torch.equal(
+        one_hot,
+        torch.tensor(
+            [
+                [1.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0],
+                [0.0, 1.0, 0.0],
+            ]
+        ),
+    )
+    assert torch.equal(masked, torch.tensor([0.0, 2.5]))
+
+
+def test_apply_log_and_rank_normalizations():
+    """Log and rank normalization scale numeric tensors without hidden Python loops."""
+    values = torch.tensor([0.0, 9.0, 99.0])
+    log_scaled = apply_normalization(values, NormalizationSpec(kind="log_scaled", min=0.0, max=99.0))
+    clipped_log = apply_normalization(torch.tensor([-10.0, 999.0]), NormalizationSpec(kind="clipped_log_scaled", min=0.0, max=99.0))
+    ranked = apply_normalization(torch.tensor([20.0, 10.0, 30.0]), NormalizationSpec(kind="rank_scaled"))
+
+    assert torch.allclose(log_scaled, torch.log1p(values) / torch.log1p(torch.tensor(99.0)))
+    assert torch.allclose(clipped_log, torch.tensor([0.0, 1.0]))
+    assert torch.equal(ranked, torch.tensor([0.5, 0.0, 1.0]))
+
+
 def test_vfs_obs_spec_complete():
     """Complete VFS profile with global + agent + items."""
     from townlet.config.vfs_profiles_config import ItemVFSProfileConfig, ItemVFSVariableConfig
@@ -197,6 +245,48 @@ def test_build_vfs_observation_agent_only():
     assert torch.equal(obs[:, 3:], torch.ones(batch_size, 4))  # flattened tensor_feat
 
 
+def test_build_vfs_observation_masks_curriculum_inactive_dimensions():
+    """Inactive curriculum dimensions should stay in the ABI but emit zeros."""
+    registry = ScopedVariableRegistry(device=torch.device("cpu"))
+    registry.set_global("visible_global", torch.tensor(5.0))
+    registry.set_global("inactive_global", torch.tensor(7.0))
+    registry.set_agent("visible_agent", torch.tensor([1.0, 2.0]))
+    registry.set_agent("inactive_agent", torch.tensor([3.0, 4.0]))
+
+    spec = VFSObservationSpec(
+        global_vfs_dim=2,
+        agent_vfs_dim=2,
+        item_vfs_dim=0,
+        global_vars=("visible_global", "inactive_global"),
+        agent_vars=("visible_agent", "inactive_agent"),
+        global_active_mask=(True, False),
+        agent_active_mask=(True, False),
+    )
+
+    obs = build_vfs_observation(registry, spec, batch_size=2)
+
+    assert obs.shape == (2, 4)
+    assert torch.equal(obs, torch.tensor([[5.0, 0.0, 1.0, 0.0], [5.0, 0.0, 2.0, 0.0]]))
+
+
+def test_build_vfs_observation_rejects_misaligned_active_mask():
+    """A curriculum mask that no longer matches the ABI should fail loudly."""
+    registry = ScopedVariableRegistry(device=torch.device("cpu"))
+    registry.set_global("visible_global", torch.tensor(5.0))
+    registry.set_global("inactive_global", torch.tensor(7.0))
+
+    spec = VFSObservationSpec(
+        global_vfs_dim=2,
+        agent_vfs_dim=0,
+        item_vfs_dim=0,
+        global_vars=("visible_global", "inactive_global"),
+        global_active_mask=(True,),
+    )
+
+    with pytest.raises(ValueError, match="global_active_mask length 1 does not match global_vfs_dim 2"):
+        build_vfs_observation(registry, spec, batch_size=2)
+
+
 def test_build_vfs_observation_complete():
     """Build observation vector with global + agent + items."""
     registry = ScopedVariableRegistry(device=torch.device("cpu"))
@@ -255,6 +345,30 @@ def test_build_vfs_observation_flattens_tensors():
     assert torch.equal(obs[:, :4], expected_global)
     # Next four dims: agent tensor flattened per agent
     assert torch.equal(obs[:, 4:], torch.ones(batch_size, 4))
+
+
+def test_build_vfs_observation_raises_for_missing_item_profile_map():
+    """A registered item profile must have a registry index map; typos are fatal."""
+    registry = ScopedVariableRegistry(device=torch.device("cpu"))
+    registry.item_vfs = torch.tensor([[3.0]], dtype=torch.float32)
+    registry.item_profile_map = {}
+    registry.item_vfs_index_to_profile = {0: "missing_profile"}
+
+    spec = VFSObservationSpec(
+        global_vfs_dim=0,
+        agent_vfs_dim=0,
+        item_vfs_dim=1,
+        item_profile_vars={"missing_profile": ("durability",)},
+        max_items_per_agent=1,
+    )
+
+    with pytest.raises(RuntimeError, match="missing_profile"):
+        build_vfs_observation(
+            registry,
+            spec,
+            batch_size=1,
+            agent_item_inventory=torch.tensor([[0]], dtype=torch.long),
+        )
 
 
 def test_vfs_observation_spec_tensor_dims_with_guardrail():

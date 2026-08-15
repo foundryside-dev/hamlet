@@ -155,10 +155,9 @@ class TestEpisodeLifecycle:
         # (cascade effects like satiation→energy/health can kill agent even with minimal costs)
         env.meters.fill_(1.0)
 
-        # Capture initial hidden state
-        recurrent_network = population.q_network
-        h0, c0 = recurrent_network.get_hidden_state()
-        initial_h = h0.clone()
+        # Capture initial rollout memory (population-owned since WS-1(b))
+        assert population.rollout_hidden is not None
+        initial_h = population.rollout_hidden[0].clone()
 
         # Run episode for 10 steps (reduced from 20 to avoid cascade-induced death)
         # Even with ultra-minimal costs and full meters, cascade effects can kill agents over longer runs
@@ -185,7 +184,8 @@ class TestEpisodeLifecycle:
         ), f"Agent died after {step_count} steps (cascade effects). Death resets hidden state to zeros, invalidating test."
 
         # Verify hidden state evolved during episode
-        h_final, c_final = recurrent_network.get_hidden_state()
+        assert population.rollout_hidden is not None
+        h_final = population.rollout_hidden[0]
         assert not torch.allclose(initial_h, h_final, atol=1e-6), "Hidden state should change during episode (memory accumulation)"
 
         # Episode should complete

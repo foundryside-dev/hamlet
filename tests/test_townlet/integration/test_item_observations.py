@@ -9,7 +9,7 @@ from townlet.universe.compiler import UniverseCompiler
 def test_agent_observes_item_durability():
     """Agent should see item durability in observations."""
     compiler = UniverseCompiler()
-    universe = compiler.compile(Path("configs/test/items_smoke"), use_cache=False)
+    universe = compiler.compile(Path("configs/test/items_smoke"), primary_level="L0_smoke", use_cache=False)
 
     env = VectorizedHamletEnv(
         universe=universe,

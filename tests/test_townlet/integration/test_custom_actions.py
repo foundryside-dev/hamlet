@@ -26,7 +26,7 @@ def custom_actions_pack(tmp_path):
     custom_actions = actions_data["actions"].setdefault("custom_actions", [])
     existing = {action["name"] for action in custom_actions}
 
-    def _add_action(name: str, costs: dict | None = None, effects: dict | None = None) -> None:
+    def _add_action(name: str) -> None:
         if name in existing:
             return
         custom_actions.append(
@@ -34,13 +34,11 @@ def custom_actions_pack(tmp_path):
                 "name": name,
                 "description": f"Test action {name}",
                 "enabled_by_default": False,
-                "costs": costs or {},
-                "effects": effects or {},
             }
         )
 
-    _add_action("REST", costs={"energy": 0.01}, effects={"energy": 0.1})
-    _add_action("MEDITATE", costs={"energy": 0.01}, effects={"health": 0.05})
+    _add_action("REST")
+    _add_action("MEDITATE")
 
     actions_path.write_text(yaml.safe_dump(actions_data, sort_keys=False))
 
@@ -80,8 +78,8 @@ def test_meditate_action_is_enabled(cpu_env_factory, custom_actions_pack):
     assert torch.all((env.meters >= 0.0) & (env.meters <= 1.0))
 
 
-def test_rest_action_respects_dynamic_meter_lookup(cpu_env_factory, custom_actions_pack):
-    """REST should be resolved via meter names rather than fixed indices."""
+def test_rest_action_without_vtc_write_only_runs_passive_step_dynamics(cpu_env_factory, custom_actions_pack):
+    """REST without VTC writes should not depend on legacy custom-action meter lookup."""
     env = cpu_env_factory(config_dir=custom_actions_pack, num_agents=1)
     env.reset()
 

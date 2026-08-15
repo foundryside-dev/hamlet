@@ -23,9 +23,12 @@ import yaml
 
 from tests.test_townlet.conftest import SUBSTRATE_FIXTURES
 from tests.test_townlet.helpers.config_builder import mutate_curriculum_yaml, mutate_stratum_yaml
+from townlet.config.effects_config import EffectScope
+from townlet.effects.manager import ActiveEffect
 
 # Removed: calculate_expected_observation_dim (now using env.observation_dim directly)
 from townlet.universe.errors import CompilationError
+from townlet.vfs.observation_builder import apply_normalization
 
 
 class TestFullObservability:
@@ -67,6 +70,55 @@ class TestFullObservability:
         obs = basic_env.reset()
         assert obs.shape[1] == basic_env.observation_dim
 
+    def test_obs_vfs_field_requires_compiled_vfs_observation_spec(self, cpu_device: torch.device, env_factory):
+        """obs_vfs fields fail loudly when the compiled VFS observation spec is missing."""
+        env = env_factory(
+            config_dir=Path("configs/test/items_smoke"),
+            level_name="L0_smoke",
+            num_agents=1,
+            device_override=cpu_device,
+        )
+
+        env.reset()
+        assert any(field.name == "obs_vfs" for field in env.observation_spec.fields)
+
+        env.vfs_observation_spec = None
+
+        with pytest.raises(ValueError, match="obs_vfs.*compiled VFS observation spec"):
+            env._get_observations()
+
+    @pytest.mark.parametrize(
+        "env_fixture_name,expected_reads",
+        [
+            ("basic_env", {"obs_grid_encoding", "obs_velocity"}),
+            ("pomdp_env", {"obs_local_window", "obs_velocity"}),
+        ],
+    )
+    def test_spatial_observation_fields_are_sourced_from_vfs_registry(
+        self,
+        request,
+        env_fixture_name: str,
+        expected_reads: set[str],
+        monkeypatch,
+    ):
+        """Spatial primitives are assembled from VFS registry state, not direct concatenation branches."""
+        env = request.getfixturevalue(env_fixture_name)
+        env.reset()
+
+        observed_reads: set[str] = set()
+        original_get_agent = env.vfs_registry.get_agent
+
+        def tracking_get_agent(variable_id: str) -> torch.Tensor:
+            if variable_id in expected_reads:
+                observed_reads.add(variable_id)
+            return original_get_agent(variable_id)
+
+        monkeypatch.setattr(env.vfs_registry, "get_agent", tracking_get_agent)
+
+        env._get_observations()
+
+        assert observed_reads == expected_reads
+
     # REMOVED: test_grid_shows_agent_position - tested obsolete one-hot grid encoding
     # REMOVED: test_grid_shows_affordances_at_positions - tested obsolete one-hot grid encoding
     # REMOVED: test_agent_on_affordance_marked_with_value_2 - tested obsolete one-hot grid encoding
@@ -85,6 +137,52 @@ class TestFullObservability:
         assert (meters >= 0.0).all()
         assert (meters <= 1.0).all()
 
+    def test_meter_observation_is_sourced_from_vfs_registry(self, test_config_pack_path, cpu_device, env_factory):
+        """obs_meters is generated from the VFS registry value, not direct env.meters concatenation."""
+        env = env_factory(
+            config_dir=test_config_pack_path,
+            num_agents=1,
+            device_override=cpu_device,
+        )
+
+        env.reset()
+        meter_values = torch.linspace(0.1, 0.8, steps=env.meter_count, device=cpu_device).unsqueeze(0)
+        env.meters = meter_values.clone()
+
+        meters_field = env.observation_spec.get_field_by_name("obs_meters")
+        obs = env._get_observations()
+        meter_obs = obs[:, meters_field.start_index : meters_field.end_index]
+        meter_vfs = env.vfs_registry.get("obs_meters", reader="engine")
+
+        # The registry still holds the RAW meter values...
+        assert torch.allclose(meter_vfs, meter_values)
+
+        # ...and the observation is those values put through the field's DECLARED
+        # normalization. Since WS-1(e) that spec is minmax over bars.*.bounds, so the
+        # observation is no longer a pass-through of the registry whenever a meter
+        # declares a ceiling other than 1.0 (`money` does). Sourcing is still what this
+        # test pins: the observation must derive from the registry, not from env.meters.
+        normalization = next(field for field in env.universe.vfs_observation_fields if field.id == "obs_meters").normalization
+        assert normalization is not None, "obs_meters must declare a normalization spec"
+        assert torch.allclose(apply_normalization(meter_vfs, normalization), meter_obs)
+
+    def test_single_meter_observation_is_sourced_from_vfs_registry(self, cpu_device: torch.device, env_factory):
+        """Single-meter obs_meters uses scalar VFS storage and still returns a 2D observation slice."""
+        env = env_factory(
+            config_dir=Path("configs/test/vfs_dependency_chain"),
+            level_name="L0_deps",
+            num_agents=2,
+            device_override=cpu_device,
+        )
+
+        obs = env.reset()
+        meters_field = env.observation_spec.get_field_by_name("obs_meters")
+        meter_obs = obs[:, meters_field.start_index : meters_field.end_index]
+        meter_vfs = env.vfs_registry.get("obs_meters", reader="engine")
+
+        assert tuple(meter_vfs.shape) == (2,)
+        assert torch.allclose(meter_vfs.unsqueeze(1), meter_obs)
+
     def test_affordance_encoding_is_one_hot(self, basic_env):
         """Affordance encoding should be one-hot (15 dims: 14 types + 1 "none")."""
         obs = basic_env.reset()
@@ -99,6 +197,27 @@ class TestFullObservability:
         # Should be one-hot: sum = 1.0, all values 0 or 1
         assert affordance.sum() == 1.0
         assert ((affordance == 0.0) | (affordance == 1.0)).all()
+
+    def test_affordance_observation_is_sourced_from_vfs_registry(self, test_config_pack_path, cpu_device, env_factory):
+        """obs_affordance_at_position is generated from the VFS registry value."""
+        env = env_factory(
+            config_dir=test_config_pack_path,
+            num_agents=1,
+            device_override=cpu_device,
+        )
+
+        env.reset()
+        affordance_name, affordance_position = next(iter(env.affordances.items()))
+        env.positions[0] = affordance_position.clone()
+
+        affordance_field = env.observation_spec.get_field_by_name("obs_affordance_at_position")
+        obs = env._get_observations()
+        affordance_obs = obs[:, affordance_field.start_index : affordance_field.end_index]
+        affordance_vfs = env.vfs_registry.get("obs_affordance_at_position", reader="engine")
+
+        assert affordance_name in env.affordance_names
+        assert torch.allclose(affordance_vfs, affordance_obs)
+        assert affordance_vfs.sum() == 1.0
 
 
 class TestPartialObservability:
@@ -144,6 +263,25 @@ class TestPartialObservability:
         # Should be normalized to [0, 1]
         assert (position >= 0.0).all(), f"Position values should be >= 0.0: {position}"
         assert (position <= 1.0).all(), f"Position values should be <= 1.0: {position}"
+
+    def test_position_observation_is_sourced_from_vfs_registry(self, test_config_pack_path, cpu_device, env_factory):
+        """obs_position is generated from the VFS registry value, not a direct env.positions concat."""
+        env = env_factory(
+            config_dir=test_config_pack_path,
+            num_agents=1,
+            device_override=cpu_device,
+        )
+
+        env.reset()
+        env.positions[0] = torch.tensor([4, 4], device=cpu_device, dtype=torch.long)
+
+        position_field = env.observation_spec.get_field_by_name("obs_position")
+        obs = env._get_observations()
+        position_obs = obs[:, position_field.start_index : position_field.end_index]
+        position_vfs = env.vfs_registry.get("obs_position", reader="engine")
+
+        assert torch.allclose(position_vfs, position_obs)
+        assert not torch.allclose(position_vfs, torch.zeros_like(position_vfs))
 
     def test_vision_window_size_is_5x5(self, pomdp_env):
         """POMDP with vision_range=2 should produce 5×5 window (2*2+1)."""
@@ -192,16 +330,25 @@ class TestPartialObservabilityWindowDimensions:
         curriculum_path = level_dir / "curriculum.yaml"
         curriculum = yaml.safe_load(curriculum_path.read_text())
         curriculum["curriculum"]["active_vision"] = "partial"
-        curriculum["curriculum"]["vision_range"] = 1.0
+        # 0.5 on a 5-cube -> radius 2 -> 5^3 = 125 dims, exactly at the 3D cap.
+        # (1.0 -> radius 3 -> 343 is correctly rejected by the 125-cell cap.)
+        curriculum["curriculum"]["vision_range"] = 0.5
         curriculum_path.write_text(yaml.safe_dump(curriculum, sort_keys=False))
 
         env = env_factory(config_dir=config_dir, num_agents=1, device_override=device)
         assert env.substrate.position_dim == 3
 
         local_window_field = env.observation_spec.get_field_by_name("obs_local_window")
-        # Current implementation flattens a 2D window even for 3D grids; ensure dims match emitted spec.
-        expected_dims = (env.local_window_size or 0) ** 2
+        # The window is a CUBE: local_window_size^position_dim, matching what
+        # Grid3D.encode_partial_observation actually emits. The previous pin
+        # (window^2 — "flattens a 2D window even for 3D grids") certified the
+        # DIV-003 cubic crash: reset() would have died on 125 produced vs 25
+        # declared, which is why this test never called it (WS-7 knockdown).
+        expected_dims = (env.local_window_size or 0) ** 3
+        assert expected_dims == 125
         assert local_window_field.dims == expected_dims, f"Expected obs_local_window dims {expected_dims}, got {local_window_field.dims}"
+        obs = env.reset()
+        assert obs.shape == (1, env.observation_spec.total_dims)
 
     def test_aspatial_partial_observability_rejected(
         self,
@@ -330,6 +477,84 @@ class TestTemporalFeatures:
         obs = basic_env._get_observations()
         if obs.shape[1] >= 4:
             assert torch.allclose(obs[:, -4:], torch.zeros_like(obs[:, -4:]))
+
+    def test_temporal_observation_is_sourced_from_vfs_registry(
+        self,
+        tmp_path: Path,
+        test_config_pack_path: Path,
+        cpu_device: torch.device,
+        env_factory,
+    ):
+        """obs_temporal is generated from the VFS registry value."""
+        config_dir = tmp_path / "temporal_vfs_source"
+        shutil.copytree(test_config_pack_path, config_dir)
+
+        curriculum_path = config_dir / "levels" / "L0_test" / "curriculum.yaml"
+        curriculum_config = yaml.safe_load(curriculum_path.read_text())
+        curriculum_config["curriculum"]["active_temporal"] = True
+        curriculum_config["curriculum"]["day_length"] = 100
+        curriculum_path.write_text(yaml.safe_dump(curriculum_config, sort_keys=False))
+
+        env = env_factory(
+            config_dir=config_dir,
+            num_agents=1,
+            device_override=cpu_device,
+        )
+
+        env.reset()
+        env.time_of_day = 25
+
+        temporal_field = env.observation_spec.get_field_by_name("obs_temporal")
+        obs = env._get_observations()
+        temporal_obs = obs[:, temporal_field.start_index : temporal_field.end_index]
+        temporal_vfs = env.vfs_registry.get("obs_temporal", reader="engine")
+
+        expected_temporal = torch.tensor([[1.0, 0.0, 0.25, 0.0]], device=cpu_device)
+        assert torch.allclose(temporal_vfs, temporal_obs, atol=1e-6)
+        assert torch.allclose(temporal_vfs, expected_temporal, atol=1e-6)
+
+
+class TestEffectObservation:
+    """Test effect observation construction."""
+
+    def test_effect_observation_is_sourced_from_vfs_registry(self, cpu_device: torch.device, env_factory):
+        """obs_effects is generated from the VFS registry value."""
+        env = env_factory(
+            config_dir=Path("configs/test/effects_smoke"),
+            level_name="L0_effects",
+            num_agents=1,
+            device_override=cpu_device,
+        )
+
+        env.reset()
+        assert env.effect_manager is not None
+        env.effect_manager.agent_effects[0] = [
+            ActiveEffect(
+                effect_id="energy_regen",
+                instance_id=1,
+                target_entity_id=0,
+                scope=EffectScope.AGENT,
+                intensity=1.0,
+                duration_total=10,
+                duration_remaining=4,
+                elapsed_ticks=0,
+                spawn_step=0,
+                observable=True,
+                effect_index=5,
+            )
+        ]
+
+        effects_field = env.observation_spec.get_field_by_name("obs_effects")
+        obs = env._get_observations()
+        effects_obs = obs[:, effects_field.start_index : effects_field.end_index]
+        effects_vfs = env.vfs_registry.get("obs_effects", reader="engine")
+
+        expected_effects = torch.zeros((1, effects_field.dims), device=cpu_device)
+        expected_effects[0, 0] = 5.0
+        expected_effects[0, 1] = 0.4
+        expected_effects[0, 2] = 1.0
+        assert torch.allclose(effects_vfs, effects_obs)
+        assert torch.allclose(effects_vfs, expected_effects)
 
 
 class TestObservationUpdates:

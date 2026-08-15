@@ -10,6 +10,8 @@ import pytest
 
 from townlet.universe.compiler import UniverseCompiler
 
+PRIMARY_LEVEL = "L0_0_minimal"
+
 
 @pytest.fixture
 def compiler():
@@ -30,7 +32,7 @@ class TestWorldCompilerPipeline:
     def test_compile_minimal_config(self, compiler, integration_config_dir):
         """Compiler can parse and validate minimal config pack."""
         # Compile the config
-        universe = compiler.compile(integration_config_dir)
+        universe = compiler.compile(integration_config_dir, primary_level=PRIMARY_LEVEL)
 
         # Verify compilation succeeded
         assert universe is not None
@@ -44,7 +46,7 @@ class TestWorldCompilerPipeline:
 
     def test_compiled_universe_structure(self, compiler, integration_config_dir):
         """CompiledUniverse has correct structure."""
-        universe = compiler.compile(integration_config_dir)
+        universe = compiler.compile(integration_config_dir, primary_level=PRIMARY_LEVEL)
 
         # Check metadata structure
         assert hasattr(universe.metadata, "meter_names")
@@ -52,7 +54,7 @@ class TestWorldCompilerPipeline:
         assert hasattr(universe.metadata, "action_count")
 
         # Check optimization data
-        assert hasattr(universe.optimization_data, "action_mask_table")
+        assert not hasattr(universe.optimization_data, "action_mask_table")
         assert hasattr(universe.optimization_data, "modulation_data")
 
         # Check level structure
@@ -63,7 +65,7 @@ class TestWorldCompilerPipeline:
 
     def test_affordance_effects_compilation(self, compiler, integration_config_dir):
         """Affordance interactions compile to Effects commands."""
-        universe = compiler.compile(integration_config_dir)
+        universe = compiler.compile(integration_config_dir, primary_level=PRIMARY_LEVEL)
 
         level = universe.get_level("L0_0_minimal")
         eat_affordance = next(a for a in level.affordances.affordances if a.name == "EAT")

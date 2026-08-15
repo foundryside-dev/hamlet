@@ -319,7 +319,7 @@ def test_assert_positions_in_bounds_3d():
 
 def test_assert_valid_rewards_success(basic_env):
     """Test assert_valid_rewards passes for valid rewards."""
-    actions = torch.zeros(basic_env.num_agents, dtype=torch.long)
+    actions = torch.zeros(basic_env.num_agents, dtype=torch.long, device=basic_env.device)
     _, rewards, _, _ = basic_env.step(actions)
 
     assert_valid_rewards(rewards, basic_env.num_agents)  # Should not raise
@@ -335,7 +335,7 @@ def test_assert_valid_rewards_invalid_shape():
 
 def test_assert_valid_dones_success(basic_env):
     """Test assert_valid_dones passes for valid dones."""
-    actions = torch.zeros(basic_env.num_agents, dtype=torch.long)
+    actions = torch.zeros(basic_env.num_agents, dtype=torch.long, device=basic_env.device)
     _, _, dones, _ = basic_env.step(actions)
 
     assert_valid_dones(dones, basic_env.num_agents)  # Should not raise

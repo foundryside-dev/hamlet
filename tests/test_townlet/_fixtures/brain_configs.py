@@ -22,8 +22,7 @@ def minimal_brain_config(tmp_path):
     Architecture: SimpleQNetwork (MLP: obs_dim → 128 → 64 → action_dim)
     """
     brain_yaml = tmp_path / "brain.yaml"
-    brain_yaml.write_text(
-        """
+    brain_yaml.write_text("""
 version: "1.0"
 description: "Minimal brain config for testing"
 
@@ -56,8 +55,7 @@ q_learning:
 replay:
   capacity: 10000
   prioritized: false
-"""
-    )
+""")
     return load_brain_config(tmp_path)
 
 
@@ -69,8 +67,7 @@ def recurrent_brain_config(tmp_path):
     Architecture: RecurrentSpatialQNetwork (CNN+LSTM)
     """
     brain_yaml = tmp_path / "brain.yaml"
-    brain_yaml.write_text(
-        """
+    brain_yaml.write_text("""
 version: "1.0"
 description: "Recurrent brain config for POMDP tests"
 
@@ -122,6 +119,5 @@ q_learning:
 replay:
   capacity: 5000
   prioritized: false
-"""
-    )
+""")
     return load_brain_config(tmp_path)

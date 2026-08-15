@@ -152,10 +152,3 @@ class AffordanceConfigCollection(BaseModel):
     def get_affordances_by_type(self, interaction_type: str) -> list[AffordanceConfig]:
         """Get all affordances of a given type."""
         return [aff for aff in self.affordances if aff.interaction_type == interaction_type]
-
-
-# ============================================================================
-# DELETED: is_affordance_open() moved to temporal_utils.py (JANK-09 fix)
-# If you get an ImportError, update your import to:
-#   from townlet.environment.temporal_utils import is_affordance_open
-# ============================================================================

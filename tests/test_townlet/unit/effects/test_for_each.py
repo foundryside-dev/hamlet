@@ -294,14 +294,20 @@ def test_for_each_inventory_items_skips_empty_and_uses_ints():
             self.values = {"durability": torch.tensor([5.0, 6.0, 7.0])}
             self.variables = {"durability": object()}
 
-        def read(self, name, context_index, scope=None):
-            return self.values[name][context_index]
+        def read_item(self, profile_name, name, vfs_index):
+            return self.values[name][vfs_index]
 
-        def write(self, name, value, context_index, scope=None):
-            self.values[name][context_index] = value
+        def write_item(self, profile_name, name, value, vfs_index):
+            self.values[name][vfs_index] = value
 
         def get(self, name, reader=None):
             return self.values[name]
+
+        def get_item_profile_for_index(self, vfs_index):
+            return "default"
+
+        def get_item_variable_type(self, profile_name, name):
+            return "float"
 
     vfs = DummyVFS()
 

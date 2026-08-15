@@ -5,8 +5,7 @@ from pathlib import Path
 import pytest
 
 from townlet.universe.compiler import UniverseCompiler
-from townlet.vfs.profiles import CircularDependencyError
-from townlet.world.expression.type_checker import TypeCheckError
+from townlet.universe.errors import CompilationError
 
 
 def test_circular_dependency_detected_at_compile_time():
@@ -17,7 +16,7 @@ def test_circular_dependency_detected_at_compile_time():
     config_dir = Path(__file__).parent.parent.parent.parent / "configs" / "test" / "vfs_circular_dependency"
 
     # Exercise & Verify: Compilation should fail with clear error
-    with pytest.raises(CircularDependencyError, match="[Cc]ircular"):
+    with pytest.raises(CompilationError, match="[Cc]ircular"):
         compiler = UniverseCompiler()
         compiler.compile(config_dir, primary_level="L0_circular", use_cache=False)
 
@@ -29,7 +28,7 @@ def test_missing_vfs_variable_reference():
     config_dir = Path(__file__).parent.parent.parent.parent / "configs" / "test" / "vfs_undefined_var"
 
     # Exercise & Verify: Compilation should fail
-    with pytest.raises(TypeCheckError, match="not found"):
+    with pytest.raises(CompilationError, match="not found"):
         compiler = UniverseCompiler()
         compiler.compile(config_dir, primary_level="L0_undefined", use_cache=False)
 
@@ -41,6 +40,6 @@ def test_type_mismatch_in_vfs_expression():
     config_dir = Path(__file__).parent.parent.parent.parent / "configs" / "test" / "vfs_type_mismatch"
 
     # Exercise & Verify: Compilation should fail with type error
-    with pytest.raises(TypeCheckError, match="declared as int but expression returns bool"):
+    with pytest.raises(CompilationError, match="declared as int but expression returns bool"):
         compiler = UniverseCompiler()
         compiler.compile(config_dir, primary_level="L0_type_mismatch", use_cache=False)

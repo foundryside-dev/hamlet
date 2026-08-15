@@ -4,7 +4,7 @@ from pathlib import Path
 
 import yaml
 
-from tests.test_townlet.helpers.config_builder import prepare_config_dir
+from tests.test_townlet.helpers.config_builder import PRIMARY_LEVEL_NAME, prepare_config_dir
 from townlet.universe.compiler import UniverseCompiler
 
 
@@ -17,6 +17,8 @@ def test_compiler_generates_vfs_expression_schema(tmp_path: Path):
     vfs_profiles_yaml = experiment_dir / "vfs_profiles.yaml"
     vfs_profiles = {
         "version": "1.0",
+        "evaluation_mode": "mark_and_sweep",
+        "debug_logging": False,
         "global_profile": {
             "variables": [
                 {
@@ -44,7 +46,7 @@ def test_compiler_generates_vfs_expression_schema(tmp_path: Path):
 
     # Exercise: Compile universe
     compiler = UniverseCompiler()
-    compiled = compiler.compile(experiment_dir, use_cache=False)
+    compiled = compiler.compile(experiment_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
 
     # Verify: Schema includes bars (from template) and VFS variables
     assert compiled.vfs_expression_schema is not None
@@ -70,7 +72,7 @@ def test_vfs_expression_schema_without_vfs_profiles(tmp_path: Path):
 
     # Exercise: Compile universe (no vfs_profiles.yaml created)
     compiler = UniverseCompiler()
-    compiled = compiler.compile(experiment_dir, use_cache=False)
+    compiled = compiler.compile(experiment_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
 
     # Verify: Schema includes bars but no VFS variables
     assert compiled.vfs_expression_schema is not None

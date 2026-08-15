@@ -304,6 +304,8 @@ class TestTimeBasedMasking:
         """Job should be masked outside business hours (8am-6pm)."""
         masking_env.reset()
 
+        assert not hasattr(masking_env, "action_mask_table")
+
         job_pos = masking_env.affordances["Job"]
         masking_env.positions[0] = job_pos.clone()
 
@@ -685,3 +687,91 @@ class TestActionMaskingIntegration:
         # INTERACT masking should be identical
         assert masks_rich[0, 4] == masks_broke[0, 4], "Money should not affect INTERACT masking"
         assert masks_rich[0, 4], "INTERACT should be available on Hospital regardless of money"
+
+
+class TestActionMaskBuilderDelegation:
+    """Golden tests that pin ``VectorizedHamletEnv.get_action_masks`` to the
+    extracted :class:`ActionMaskBuilder` (hamlet-278239308d).
+
+    These tests guard against the env regressing back to inline mask logic:
+    they assert that the builder exists, is wired into the env, and that
+    delegating produces the same tensor the env returns.
+    """
+
+    def test_builder_type_annotations_resolve_to_real_symbols(self):
+        """Every annotation on the builder must name a symbol that exists.
+
+        Fails before the fix with ``NameError: name 'Substrate' is not defined``:
+        the ``TYPE_CHECKING`` import named a class that ``townlet.substrate.base``
+        has never exported, so the annotation was unresolvable at runtime and
+        invisible to every test.
+
+        The second assertion rejects the *wrong* fix. Adding
+        ``Substrate = SpatialSubstrate`` to ``townlet/substrate/base.py`` would
+        make the first assertion pass while creating an alias for a name that
+        never existed — a backwards-compatibility shim for zero callers.
+        """
+        import typing
+
+        import townlet.substrate.base
+        from townlet.environment.action_builder import ComposedActionSpace
+        from townlet.environment.action_mask_builder import ActionMaskBuilder
+        from townlet.substrate.base import SpatialSubstrate
+
+        hints = typing.get_type_hints(
+            ActionMaskBuilder.__init__,
+            localns={
+                "ComposedActionSpace": ComposedActionSpace,
+                "SpatialSubstrate": SpatialSubstrate,
+            },
+        )
+
+        assert hints["substrate"] is SpatialSubstrate
+        assert not hasattr(
+            townlet.substrate.base, "Substrate"
+        ), "Substrate is an alias shim for a name that never existed — delete it and use SpatialSubstrate"
+
+    def test_env_owns_action_mask_builder(self, masking_env):
+        """Env constructs and retains a single ActionMaskBuilder."""
+        from townlet.environment.action_mask_builder import ActionMaskBuilder
+
+        assert isinstance(masking_env.action_mask_builder, ActionMaskBuilder)
+
+    def test_get_action_masks_matches_builder_output(self, masking_env):
+        """Env.get_action_masks must produce exactly the builder's output."""
+        from_env = masking_env.get_action_masks()
+        from_builder = masking_env.action_mask_builder.build(
+            num_agents=masking_env.num_agents,
+            positions=masking_env.positions,
+            dones=masking_env.dones,
+            item_inventory=masking_env.item_inventory,
+            item_manager=masking_env.item_manager,
+            item_handler=masking_env.item_handler,
+            affordances=masking_env.affordances,
+            is_affordance_open=masking_env._is_affordance_open,
+        )
+        assert torch.equal(from_env, from_builder), "Env.get_action_masks must delegate to ActionMaskBuilder without modification."
+
+    def test_builder_is_pure_under_repeated_calls(self, masking_env):
+        """The builder is stateless: same inputs → same outputs across calls."""
+        first = masking_env.action_mask_builder.build(
+            num_agents=masking_env.num_agents,
+            positions=masking_env.positions,
+            dones=masking_env.dones,
+            item_inventory=masking_env.item_inventory,
+            item_manager=masking_env.item_manager,
+            item_handler=masking_env.item_handler,
+            affordances=masking_env.affordances,
+            is_affordance_open=masking_env._is_affordance_open,
+        )
+        second = masking_env.action_mask_builder.build(
+            num_agents=masking_env.num_agents,
+            positions=masking_env.positions,
+            dones=masking_env.dones,
+            item_inventory=masking_env.item_inventory,
+            item_manager=masking_env.item_manager,
+            item_handler=masking_env.item_handler,
+            affordances=masking_env.affordances,
+            is_affordance_open=masking_env._is_affordance_open,
+        )
+        assert torch.equal(first, second)

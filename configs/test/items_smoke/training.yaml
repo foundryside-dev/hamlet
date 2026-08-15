@@ -1,5 +1,6 @@
 training:
   version: "1.0"
+  seed: 42
 
   # === Q-LEARNING ALGORITHM ===
   use_double_dqn: false

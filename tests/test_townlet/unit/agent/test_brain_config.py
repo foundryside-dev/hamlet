@@ -10,6 +10,7 @@ from townlet.config.brain_config import (
     LossConfig,
     OptimizerConfig,
     QLearningConfig,
+    SetEncoderConfig,
     apply_training_overrides,
     compute_brain_hash,
     load_brain_config,
@@ -40,6 +41,31 @@ def test_feedforward_config_rejects_empty_layers():
             layer_norm=False,
         )
     assert "hidden_layers" in str(exc_info.value)
+
+
+def test_set_encoder_config_valid():
+    """SetEncoderConfig accepts explicit variable-token architecture parameters."""
+    config = SetEncoderConfig(
+        token_field_name="dynamic_need_tokens",
+        max_tokens=32,
+        token_dim=16,
+        token_embed_dim=64,
+        base_hidden_dim=128,
+        q_head_hidden_dim=256,
+    )
+
+    arch = ArchitectureConfig(type="set_encoder", set_encoder=config)
+
+    assert arch.type == "set_encoder"
+    assert arch.set_encoder is config
+
+
+def test_architecture_config_rejects_set_encoder_without_config():
+    """ArchitectureConfig requires set_encoder config when type is set_encoder."""
+    with pytest.raises(ValidationError) as exc_info:
+        ArchitectureConfig(type="set_encoder")
+
+    assert "type='set_encoder' requires set_encoder config" in str(exc_info.value)
 
 
 def test_feedforward_config_rejects_invalid_activation():
@@ -222,8 +248,7 @@ def test_brain_config_requires_feedforward_when_type_feedforward():
 def test_load_brain_config_valid(tmp_path):
     """load_brain_config loads valid brain.yaml."""
     brain_yaml = tmp_path / "brain.yaml"
-    brain_yaml.write_text(
-        """
+    brain_yaml.write_text("""
 version: "1.0"
 description: "Test feedforward network"
 
@@ -256,8 +281,7 @@ q_learning:
 replay:
   capacity: 10000
   prioritized: false
-"""
-    )
+""")
 
     config = load_brain_config(tmp_path)
     assert config.version == "1.0"
@@ -275,8 +299,7 @@ def test_load_brain_config_missing_file(tmp_path):
 def test_load_brain_config_invalid_yaml(tmp_path):
     """load_brain_config raises ValueError for invalid YAML."""
     brain_yaml = tmp_path / "brain.yaml"
-    brain_yaml.write_text(
-        """
+    brain_yaml.write_text("""
 version: "1.0"
 architecture:
   type: feedforward
@@ -296,8 +319,7 @@ q_learning:
   gamma: 0.99
   target_update_frequency: 100
   use_double_dqn: false
-"""
-    )
+""")
 
     with pytest.raises(ValueError) as exc_info:
         load_brain_config(tmp_path)
@@ -489,6 +511,7 @@ def test_apply_training_overrides_merges_q_learning_and_replay():
     )
     training_cfg = TrainingV2Config(
         version="1.0",
+        seed=42,
         population=TrainingPopulationConfig(size=128),
         enabled_affordances=[],
         randomize_affordances=False,

@@ -1,6 +1,6 @@
 """Tests for continuous substrate observation spec generation."""
 
-from tests.test_townlet.helpers.config_builder import mutate_stratum_yaml, prepare_config_dir
+from tests.test_townlet.helpers.config_builder import PRIMARY_LEVEL_NAME, mutate_stratum_yaml, prepare_config_dir
 from townlet.universe.compiler import UniverseCompiler
 
 
@@ -31,7 +31,7 @@ def test_continuous1d_relative_encoding_adds_position_velocity_fields(tmp_path):
 
     # Compile the config
     compiler = UniverseCompiler()
-    compiled = compiler.compile(config_dir, use_cache=False)
+    compiled = compiler.compile(config_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
 
     # Verify observation spec has position and velocity fields
     field_names = {f.name for f in compiled.observation_spec.fields}
@@ -80,7 +80,7 @@ def test_continuous1d_scaled_encoding_doubles_position_dims(tmp_path):
 
     # Compile
     compiler = UniverseCompiler()
-    compiled = compiler.compile(config_dir, use_cache=False)
+    compiled = compiler.compile(config_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
 
     # Verify dimensions (scaled encoding: position=2, velocity=1)
     pos_field = next(f for f in compiled.observation_spec.fields if f.name == "obs_position")
@@ -123,7 +123,7 @@ def test_continuousnd_4d_relative_encoding(tmp_path):
 
     # Compile
     compiler = UniverseCompiler()
-    compiled = compiler.compile(config_dir, use_cache=False)
+    compiled = compiler.compile(config_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
 
     # Verify 4D observations
     pos_field = next(f for f in compiled.observation_spec.fields if f.name == "obs_position")

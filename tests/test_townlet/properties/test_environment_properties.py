@@ -39,6 +39,7 @@ class TestEnvironmentBoundaryProperties:
         """
         env = make_vectorized_env_from_pack(
             Path("configs/default_curriculum"),
+            level_name="L0_0_minimal",
             num_agents=1,
             device=torch.device("cpu"),
         )
@@ -78,6 +79,7 @@ class TestEnvironmentBoundaryProperties:
         """
         env = make_vectorized_env_from_pack(
             Path("configs/default_curriculum"),
+            level_name="L0_0_minimal",
             num_agents=num_agents,
             device=torch.device("cpu"),
         )
@@ -116,6 +118,7 @@ class TestEnvironmentBoundaryProperties:
 
         env = make_vectorized_env_from_pack(
             Path(config_name),
+            level_name="L0_0_minimal",
             num_agents=num_agents,
             device=torch.device("cpu"),
         )

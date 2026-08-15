@@ -10,7 +10,6 @@ from pathlib import Path
 
 import msgpack  # type: ignore[import]
 import pytest
-import torch
 
 from townlet.universe.compiled import CompiledUniverse
 from townlet.universe.compiler import UniverseCompiler
@@ -41,7 +40,7 @@ def test_universe_metadata_round_trip() -> None:
     """UniverseMetadata and related DTOs should survive JSON round-trip."""
     config_dir = Path("configs/test/model_config")
     compiler = UniverseCompiler()
-    compiled = compiler.compile(config_dir, use_cache=False)
+    compiled = compiler.compile(config_dir, primary_level="L0_test", use_cache=False)
 
     metadata = compiled.metadata
     observation_spec = compiled.observation_spec
@@ -99,32 +98,29 @@ def test_universe_metadata_round_trip() -> None:
 
 def test_compiled_universe_msgpack_round_trip(tmp_path: Path) -> None:
     compiler = UniverseCompiler()
-    compiled = compiler.compile(Path("configs/test/model_config"))
+    compiled = compiler.compile(Path("configs/test/model_config"), primary_level="L0_test")
 
     artifact_path = tmp_path / "compiled.msgpack"
     compiled.save_to_cache(artifact_path)
     reconstructed = CompiledUniverse.load_from_cache(artifact_path)
 
+    assert reconstructed.observation_activity.active_dim_count > 0
+    assert reconstructed.observation_activity == compiled.observation_activity
     assert reconstructed.metadata == compiled.metadata
     assert reconstructed.observation_spec == compiled.observation_spec
     assert reconstructed.action_space_metadata == compiled.action_space_metadata
     assert reconstructed.meter_metadata == compiled.meter_metadata
     assert reconstructed.affordance_metadata == compiled.affordance_metadata
-    assert torch.allclose(
-        reconstructed.optimization_data.base_depletions,
-        compiled.optimization_data.base_depletions,
-    )
-    assert torch.equal(
-        reconstructed.optimization_data.action_mask_table,
-        compiled.optimization_data.action_mask_table,
-    )
+    assert "base_depletions" not in compiled.to_dict()["optimization_data_raw"]
+    assert "action_mask_table" not in compiled.to_dict()["optimization_data_raw"]
+    assert not hasattr(reconstructed.optimization_data, "action_mask_table")
     with pytest.raises(FrozenInstanceError):
         reconstructed.metadata = None  # type: ignore[attr-defined]
 
 
 def test_compiled_universe_schema_version_guard(tmp_path: Path) -> None:
     compiler = UniverseCompiler()
-    compiled = compiler.compile(Path("configs/test/model_config"), use_cache=False)
+    compiled = compiler.compile(Path("configs/test/model_config"), primary_level="L0_test", use_cache=False)
     artifact_path = tmp_path / "compiled.msgpack"
     compiled.save_to_cache(artifact_path)
 
@@ -140,3 +136,15 @@ def test_compiled_universe_schema_version_guard(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="schema mismatch"):
         CompiledUniverse.load_from_cache(tampered_path)
+
+
+def test_compiled_universe_requires_schema_version(tmp_path: Path) -> None:
+    compiler = UniverseCompiler()
+    compiled = compiler.compile(Path("configs/test/model_config"), primary_level="L0_test", use_cache=False)
+    payload = compiled.to_dict()
+    payload.pop("compiled_schema_version")
+    missing_version_path = tmp_path / "missing-schema-version.msgpack"
+    missing_version_path.write_bytes(msgpack.packb(payload, use_bin_type=True))
+
+    with pytest.raises(ValueError, match="missing required field 'compiled_schema_version'"):
+        CompiledUniverse.load_from_cache(missing_version_path)

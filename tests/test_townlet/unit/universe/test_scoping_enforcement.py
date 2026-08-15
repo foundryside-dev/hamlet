@@ -88,7 +88,7 @@ def test_missing_experiment_files_rejected():
         # Do NOT create vfs_profiles/effects/items
         compiler = UniverseCompiler()
         with pytest.raises(CompilationError, match="Missing required experiment-level file"):
-            compiler.compile(root)
+            compiler.compile(root, primary_level="L1")
 
 
 def test_level_scoped_shared_files_rejected():
@@ -108,4 +108,4 @@ def test_level_scoped_shared_files_rejected():
 
         compiler = UniverseCompiler()
         with pytest.raises(CompilationError, match="SCOPING_FORBIDDEN_LEVEL_FILE"):
-            compiler.compile(root)
+            compiler.compile(root, primary_level="L1")

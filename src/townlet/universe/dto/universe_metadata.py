@@ -14,6 +14,11 @@ class UniverseMetadata:
     # Identification
     universe_name: str
     schema_version: str
+    # The level this projection was compiled FOR. Required, no default: it is the
+    # only field that distinguishes two levels which collide on every content hash
+    # (measured: L0_5_dual_resource and L1_full_observability share vfs_hash,
+    # transition_graph_hash and action_schema_hash in the shipped pack).
+    primary_level: str
 
     # Substrate + topology
     substrate_type: str

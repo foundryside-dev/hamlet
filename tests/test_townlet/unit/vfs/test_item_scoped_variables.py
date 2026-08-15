@@ -1,5 +1,8 @@
 """Tests for item-scoped VFS variables."""
 
+import pytest
+from pydantic import ValidationError
+
 from townlet.vfs.schema import VariableDef, VariableScope
 
 
@@ -20,8 +23,8 @@ def test_item_scope_is_valid():
     assert var.id == "durability"
 
 
-def test_item_scoped_variables_parse_from_yaml():
-    """Item-scoped variables should parse from YAML config."""
+def test_item_scoped_variables_rejected_from_variables_reference_yaml():
+    """variables_reference.yaml must reject item scope; item vars live in profiles."""
     from townlet.config.vfs_config import VariablesReferenceConfig
 
     yaml_content = """
@@ -42,7 +45,6 @@ variables:
     import yaml
 
     data = yaml.safe_load(StringIO(yaml_content))
-    config = VariablesReferenceConfig(**data)
 
-    durability_var = next(v for v in config.variables if v.id == "durability")
-    assert durability_var.scope == "item"
+    with pytest.raises(ValidationError, match="item-scoped variables"):
+        VariablesReferenceConfig(**data)

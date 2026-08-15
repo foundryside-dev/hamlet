@@ -1,0 +1,23 @@
+version: "1.0"
+variables:
+  - id: trust
+    scope: pair
+    type: scalar
+    lifetime: episode
+    readable_by: [agent, engine, social_model]
+    writable_by: [engine, vtc]
+    default: 0.5
+    observable: false
+    semantic_type: custom
+    description: "Directed trust from one agent to another."
+
+  - id: occupied_by
+    scope: affordance
+    type: agent_ref
+    lifetime: tick
+    readable_by: [engine, vtc]
+    writable_by: [engine, vtc]
+    default: null
+    observable: false
+    semantic_type: affordance
+    description: "Current claimant for each affordance row, using -1 for free rows."

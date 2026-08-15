@@ -7,96 +7,49 @@ environment with tensor operations [num_agents, ...].
 
 from __future__ import annotations
 
-import math
-import random
-from collections.abc import Callable
 from numbers import Number
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import torch
 
+from townlet.environment import env_factory
 from townlet.environment.action_builder import ComposedActionSpace
+from townlet.environment.action_config import ActionConfig
+from townlet.environment.action_executor import ActionExecutor
 from townlet.environment.action_labels import ActionLabels
+from townlet.environment.action_mask_builder import ActionMaskBuilder
 from townlet.environment.affordance_engine import AffordanceEngine
 from townlet.environment.dac_engine import DACEngine
-from townlet.environment.meter_dynamics import MeterDynamics
+from townlet.environment.observation_encoder import ObservationEncoder
+from townlet.environment.reward_calculator import RewardCalculator
 from townlet.items import InventoryState, ItemActionHandler, ItemManager
-from townlet.substrate import SpatialSubstrate
 from townlet.substrate.continuous import ContinuousSubstrate
-from townlet.universe.dto import ActionSpaceMetadata, MeterMetadata
+from townlet.universe.dto import RuntimeActionSpace
 from townlet.vfs.evaluator import EvaluationMode, VFSEvaluator
-from townlet.vfs.observation_builder import VFSObservationSpec, build_vfs_observation
-from townlet.vfs.registry import ScopedVariableRegistry, VariableRegistry
+from townlet.vfs.observation_builder import VFSObservationSpec
+from townlet.vfs.registry import VariableRegistry
+from townlet.vfs.transition_schedule import VTCTransitionContext, VTCTransitionRunner, VTCTransitionState
+from townlet.vfs.vtc import (
+    VTCActionWriteProgram,
+    VTCAffordanceGateProgram,
+    VTCInteractionProgressProgram,
+    VTCModulationProgram,
+    VTCPassiveDepletionProgram,
+    VTCRewardProgram,
+    VTCTerminalConditionProgram,
+    VTCThresholdCascadeProgram,
+)
 
 if TYPE_CHECKING:
-    from townlet.environment.action_config import ActionConfig, ActionSpaceConfig
     from townlet.exploration.base import ExplorationStrategy
     from townlet.population.runtime_registry import AgentRuntimeRegistry
     from townlet.universe.compiled import CompiledUniverse
+    from townlet.vfs.schema import VariableDef
 
 
 # Import consolidated NullItemManager (ENV-009)
 from townlet.environment.null_managers import NullItemManager
-
-# Valid VFS variable types for VariableDef
-_VALID_VFS_TYPES = frozenset({"scalar", "bool", "tensor1d", "tensor2d", "tensor3d", "tensorNd", "agent_ref", "item_ref"})
-
-
-def _normalize_vfs_type(raw_type: str, var_id: str) -> str:
-    """Normalize VFS variable type to canonical form.
-
-    Args:
-        raw_type: Type string from config (e.g., "int", "float", "scalar", "bool")
-        var_id: Variable ID for error messages
-
-    Returns:
-        Normalized type string compatible with VariableDef
-
-    Raises:
-        ValueError: If type is not recognized
-    """
-    # Map common aliases to canonical types
-    if raw_type in ("int", "float"):
-        return "scalar"
-    if raw_type in _VALID_VFS_TYPES:
-        return raw_type
-
-    raise ValueError(f"Unsupported VFS variable type '{raw_type}' for variable '{var_id}'. " f"Valid types: {sorted(_VALID_VFS_TYPES)}")
-
-
-def _build_bar_index_map(meter_metadata: MeterMetadata) -> dict[str, int]:
-    """Build mapping from bar IDs to meter tensor indices.
-
-    Args:
-        meter_metadata: Universe meter metadata
-
-    Returns:
-        Dictionary mapping bar_id -> tensor_index
-    """
-    return {meter.name: meter.index for meter in meter_metadata.meters}
-
-
-def _resolve_deployable_affordances(
-    all_affordance_names: list[str],
-    enabled_affordances: list[str] | None,
-    name_to_id: dict[str, str],
-) -> list[str]:
-    """Return affordances that should be deployed, respecting IDs and names in config."""
-
-    if enabled_affordances is None:
-        raise ValueError("enabled_affordances must be an explicit list (empty to deploy none); null is not allowed.")
-
-    enabled_lookup = {str(entry) for entry in enabled_affordances}
-    deployable: list[str] = []
-    for name in all_affordance_names:
-        if name in enabled_lookup:
-            deployable.append(name)
-            continue
-        aff_id = name_to_id.get(name)
-        if aff_id is not None and aff_id in enabled_lookup:
-            deployable.append(name)
-    return deployable
 
 
 class VectorizedHamletEnv:
@@ -108,6 +61,8 @@ class VectorizedHamletEnv:
     """
 
     EFFECT_OBS_SLOTS = 8  # Fixed number of observable effect slots per agent
+
+    runtime_registry: AgentRuntimeRegistry | None
 
     def __init__(
         self,
@@ -142,7 +97,11 @@ class VectorizedHamletEnv:
         self.config_pack_path = Path(universe.experiment_dir or ".")
         self.num_agents = num_agents
         self.device = torch_device
+        self._action_executor = ActionExecutor(self)
+        self._observation_encoder = ObservationEncoder(self)
+        self._reward_calculator = RewardCalculator(self)
         self.optimization_data = level.optimization_data
+        self.metadata = self.universe.metadata_for_level(level_name)
 
         # Training/runtime controls: derive from level.training
         training_cfg = level.training
@@ -174,12 +133,10 @@ class VectorizedHamletEnv:
             # Temporal inactive: allow day_length to be null; use metadata ticks_per_day (may be 0) when absent.
             inactive_day_length = level.curriculum.curriculum.day_length
             if inactive_day_length is None:
-                self.day_length = getattr(universe.metadata, "ticks_per_day", 0) or 0
+                self.day_length = getattr(self.metadata, "ticks_per_day", 0) or 0
             else:
                 self.day_length = inactive_day_length
         self.agent_lifespan = training_cfg.training_loop.max_steps_per_episode
-        partial_observability = self.partial_observability
-        vision_range = self.vision_range
 
         from townlet.substrate.factory import SubstrateFactory
 
@@ -199,7 +156,6 @@ class VectorizedHamletEnv:
         )
 
         # Metadata and observation activity
-        self.metadata = self.universe.metadata
         # Experiment-level label for batching/logging, derived from experiment.yaml.
         # experiment_name is mandatory in v2.1; treat missing or empty values as a configuration error.
         experiment_root = self.universe.experiment.experiment
@@ -215,282 +171,34 @@ class VectorizedHamletEnv:
         # (e.g., POMDP vs full observability) get correct shapes.
         self.observation_spec = level.observation_spec
 
-        # Get grid_size from substrate (single source of truth)
-        # For grid substrates, read directly from substrate dimensions
-        # For non-grid substrates (aspatial, continuous), grid_size will be None
-        if hasattr(self.substrate, "width") and hasattr(self.substrate, "height"):
-            if self.substrate.width != self.substrate.height:
-                raise ValueError(f"Non-square grids not yet supported: {self.substrate.width}×{self.substrate.height}")
-            self.grid_size = self.substrate.width
-        else:
-            # For non-grid substrates (aspatial, continuous), use metadata if available
-            self.grid_size = self.metadata.grid_size
+        # grid_size is the SQUARE display size legacy consumers expect; the
+        # metadata compiler derives it from the substrate instance (None for
+        # non-square and non-grid substrates). Nothing shape-bearing reads it
+        # any more — boundary masking asks the substrate per axis and the
+        # vision window asks the substrate directly (WS-7 first knockdown;
+        # the non-square guard that used to live here was DIV-003's third
+        # registered crash).
+        self.grid_size = self.metadata.grid_size
 
         # Observation/model metadata
         self.meter_count = self.metadata.meter_count
         meter_count = self.meter_count
-        self.base_depletions = self.optimization_data.base_depletions.to(self.device)
 
-        # Derive vision radius/window for partial observability (POMDP) when applicable.
-        # Uses the same semantics as the v2.1 compiler:
-        #   radius = ceil(vision_range * (grid_size / 2))
-        #   window_size = 2 * radius + 1 (clamped to grid_size)
-        # Safety: Max radius of 50 prevents OOM with large grids (101x101 window max).
-        max_vision_radius = 50
+        # POMDP support and vision-window sizing live in a single helper so
+        # the env body reads as orchestration, not validation. The helper
+        # writes to vision_radius and local_window_size on self.
         self.vision_radius: int = 0
         self.local_window_size: int = 0
-        if self.partial_observability and self.grid_size is not None:
-            grid_size = float(self.grid_size)
-            raw_radius = int(math.ceil(self.vision_range * (grid_size / 2.0)))
-            if raw_radius > max_vision_radius:
-                raise ValueError(
-                    f"Vision radius {raw_radius} exceeds maximum {max_vision_radius}. "
-                    f"This would create a {2*raw_radius+1}x{2*raw_radius+1} observation window, "
-                    f"causing OOM. Reduce vision_range ({self.vision_range}) or grid_size ({self.grid_size}). "
-                    f"Max supported configuration: vision_range * (grid_size / 2) <= {max_vision_radius}"
-                )
-            self.vision_radius = max(1, raw_radius)
-            self.local_window_size = min((2 * self.vision_radius) + 1, int(grid_size))
-
-        # Validate partial observability support
-        if partial_observability and self.substrate.position_dim == 0:
-            raise ValueError(
-                "Partial observability (POMDP) is not supported for aspatial substrates. "
-                "A local vision window requires at least 1 spatial dimension. "
-                "Set partial_observability=False when using an aspatial substrate."
-            )
-        if partial_observability and isinstance(self.substrate, ContinuousSubstrate):
-            raise ValueError(
-                "Partial observability (POMDP) is not supported for continuous substrates. "
-                "Continuous spaces have infinite positions within any local window, making discrete vision grids undefined. "
-                "Use partial_observability=False with 'relative' or 'scaled' observation_encoding instead."
-            )
-        if partial_observability and self.substrate.position_dim >= 4:
-            # Exponential blow-up for high-dimensional local windows.
-            window_size = self.local_window_size or 0
-            cell_count = window_size**self.substrate.position_dim if window_size > 0 else 0
-            raise ValueError(
-                f"Partial observability (POMDP) is not supported for {self.substrate.position_dim}D substrates. "
-                f"\n\nProblem: Local window size grows EXPONENTIALLY with dimensionality:"
-                f"\n  - 2D: {window_size}×{window_size} = {window_size**2} cells (practical)"
-                f"\n  - 3D: {window_size}×{window_size}×{window_size} = {window_size**3} cells (supported up to vision_range=2)"
-                f"\n  - {self.substrate.position_dim}D: {window_size}^{self.substrate.position_dim} = {cell_count:,} cells (IMPRACTICAL)"
-                f"\n\nThis creates:"
-                f"\n  - Network input explosion ({cell_count:,} vision features + position + meters)"
-                f"\n  - Memory explosion (each agent's observation is massive)"
-                f"\n  - Training slowdown (gradient computation over huge inputs)"
-                f"\n\nSolution: Use full observability (partial_observability=False) with normalized position encoding:"
-                f"\n  - observation_encoding='relative': Just {self.substrate.position_dim} dims (normalized coordinates)"
-                f"\n  - observation_encoding='scaled': {self.substrate.position_dim * 2} dims (coordinates + grid sizes)"
-                f"\n  - Enables dimension-independent learning WITHOUT exponential curse"
-                f"\n\nSee docs/manual/pomdp_compatibility_matrix.md for details."
-            )
-
-        # Validate Grid3D POMDP vision range (prevent memory explosion)
-        if partial_observability and self.substrate.position_dim == 3:
-            window_size = self.local_window_size or 0
-            window_volume = window_size**3 if window_size > 0 else 0
-            if window_volume > 125:  # 5×5×5 = 125 is the threshold
-                raise ValueError(
-                    f"Grid3D POMDP with vision_range={vision_range} requires {window_volume} cells "
-                    f"(window size {window_size}×{window_size}×{window_size}), which is excessive. "
-                    f"Use vision_range ≤ 2 (5×5×5 = 125 cells) for Grid3D partial observability, "
-                    f"or disable partial_observability."
-                )
-
-        # Validate observation_encoding compatibility with POMDP
-        if partial_observability and hasattr(self.substrate, "observation_encoding"):
-            if self.substrate.observation_encoding != "relative":
-                raise ValueError(
-                    f"Partial observability (POMDP) requires observation_encoding='relative', "
-                    f"but substrate is configured with observation_encoding='{self.substrate.observation_encoding}'. "
-                    f"POMDP uses normalized positions for recurrent network position encoder. "
-                    f"Set observation_encoding='relative' in substrate.yaml or disable partial_observability."
-                )
+        self._configure_partial_observability()
 
         # Observation dimension is derived from the level-specific spec.
         self.observation_dim = self.observation_spec.total_dims
 
-        # VFS INTEGRATION: Initialize variable registry from compiled VFS variables
-        from townlet.vfs.schema import VariableDef
-
-        self.vfs_variables: list[VariableDef] = list(universe.vfs_variables)
-
-        # Add global variables from vfs_profiles (if present)
-        if universe.compiled_vfs_profiles is not None and universe.compiled_vfs_profiles.global_profile is not None:
-            for var in universe.compiled_vfs_profiles.global_profile.variables:
-                # Convert CompiledVariable to VariableDef for registry
-                # Global variables have empty readable_by/writable_by (managed by evaluator)
-                # VFS profiles use "int"/"float"/"bool" but VariableDef uses "scalar"/"bool"
-                # Expression-based variables have initial_value=None, use 0.0 as placeholder (evaluator will overwrite)
-                if var.type in ("agent_ref", "item_ref"):
-                    default_value = var.initial_value  # None -> sentinel (-1) in registry
-                else:
-                    default_value = var.initial_value if var.initial_value is not None else (0.0 if var.type in ("int", "float") else False)
-                var_type = _normalize_vfs_type(var.type, var.name)
-                var_def = VariableDef(
-                    id=var.name,
-                    scope="global",
-                    type=cast(Literal["scalar", "bool", "tensor1d", "tensor2d", "tensor3d", "tensorNd"], var_type),
-                    default=default_value,
-                    lifetime="persistent",  # Global variables persist across steps
-                    readable_by=["agent", "engine"],  # Global vars readable by all
-                    writable_by=["engine"],  # Only engine can write
-                    description="Global VFS variable from vfs_profiles.yaml",
-                    shape=getattr(var, "shape", None),
-                    dims=getattr(var, "dims", None),
-                    initial_value_mode=getattr(var, "initial_value_mode", None),
-                    initial_value_params=getattr(var, "initial_value_params", None),
-                )
-                self.vfs_variables.append(var_def)
-
-        # Add agent variables from vfs_profiles (if present)
-        if universe.compiled_vfs_profiles is not None and universe.compiled_vfs_profiles.agent_profile is not None:
-            for var in universe.compiled_vfs_profiles.agent_profile.variables:
-                if var.type in ("agent_ref", "item_ref"):
-                    default_value = var.initial_value  # None -> sentinel (-1) in registry
-                else:
-                    default_value = var.initial_value if var.initial_value is not None else (0.0 if var.type in ("int", "float") else False)
-                var_type = _normalize_vfs_type(var.type, var.name)
-                var_def = VariableDef(
-                    id=var.name,
-                    scope="agent",
-                    type=cast(Literal["scalar", "bool", "tensor1d", "tensor2d", "tensor3d", "tensorNd"], var_type),
-                    default=default_value,
-                    lifetime="episode",
-                    readable_by=["agent", "engine"],
-                    writable_by=["engine"],  # Engine updates via evaluator
-                    description="Agent VFS variable from vfs_profiles.yaml",
-                    shape=getattr(var, "shape", None),
-                    dims=getattr(var, "dims", None),
-                    initial_value_mode=getattr(var, "initial_value_mode", None),
-                    initial_value_params=getattr(var, "initial_value_params", None),
-                )
-                self.vfs_variables.append(var_def)
-
-        max_items_in_world = universe.items_catalog.max_items_in_world if universe.items_catalog else 0
-
-        # Extract item profiles from compiled universe
-        item_profiles = None
-        if universe.compiled_vfs_profiles is not None:
-            item_profiles = universe.compiled_vfs_profiles.item_profiles
-
-        self.vfs_registry = VariableRegistry(
-            variables=self.vfs_variables,
-            num_agents=num_agents,
-            device=self.device,
-            max_items=max_items_in_world,
-            item_profiles=item_profiles,
-        )
-
-        # Build VFSObservationSpec for observation generation
-        self.vfs_observation_spec: VFSObservationSpec | None = None
-        if universe.compiled_vfs_profiles is not None:
-            # Extract VFS profiles to build spec
-            from townlet.config.vfs_profiles_config import (
-                AgentVFSProfileConfig,
-                GlobalVFSProfileConfig,
-                ItemVFSProfileConfig,
-            )
-
-            def _compiled_var_to_cfg_payload(var: Any) -> dict[str, Any]:
-                """Convert compiled variable to config payload with expression or initial_value."""
-                payload: dict[str, Any] = {
-                    "name": var.name,
-                    "type": var.type,
-                    "exposed_to": tuple(getattr(var, "exposed_to", []) or ["agent"]),
-                    "semantic_type": getattr(var, "semantic_type", "custom"),
-                }
-                expression = getattr(var, "expression", None)
-                if var.initial_value is not None:
-                    payload["initial_value"] = var.initial_value
-                elif expression is not None:
-                    payload["expression"] = expression
-                else:
-                    # Preserve existing behavior but stay valid for pydantic (will raise if both missing)
-                    payload["initial_value"] = None
-                if getattr(var, "shape", None) is not None:
-                    payload["shape"] = var.shape
-                if getattr(var, "dims", None) is not None:
-                    payload["dims"] = var.dims
-                if getattr(var, "initial_value_mode", None) is not None:
-                    payload["initial_value_mode"] = var.initial_value_mode
-                if getattr(var, "initial_value_params", None) is not None:
-                    payload["initial_value_params"] = var.initial_value_params
-                return payload
-
-            # Build config objects from compiled profiles
-            global_profile_cfg = None
-            if universe.compiled_vfs_profiles.global_profile is not None:
-                # Convert compiled profile back to config format
-                global_profile_cfg = GlobalVFSProfileConfig(
-                    variables=cast(
-                        list[Any],
-                        [_compiled_var_to_cfg_payload(var) for var in universe.compiled_vfs_profiles.global_profile.variables],
-                    ),
-                )
-
-            agent_profile_cfg = None
-            if universe.compiled_vfs_profiles.agent_profile is not None:
-                agent_vars = getattr(universe.compiled_vfs_profiles.agent_profile, "variables", [])
-                agent_profile_cfg = AgentVFSProfileConfig(
-                    variables=cast(
-                        list[Any],
-                        [_compiled_var_to_cfg_payload(var) for var in agent_vars],
-                    )
-                )
-
-            item_profiles_list = []
-            if universe.compiled_vfs_profiles.item_profiles:
-                for profile_name, profile in universe.compiled_vfs_profiles.item_profiles.items():
-                    profile_vars = getattr(profile, "variables", [])
-                    item_profiles_list.append(
-                        ItemVFSProfileConfig(
-                            profile_name=profile_name,
-                            variables=cast(
-                                list[Any],
-                                [_compiled_var_to_cfg_payload(var) for var in profile_vars],
-                            ),
-                        )
-                    )
-
-            self.vfs_observation_spec = VFSObservationSpec.from_profiles(
-                global_profile=global_profile_cfg,
-                agent_profile=agent_profile_cfg,
-                item_profiles=item_profiles_list,
-            )
-
-        # Initialize VFS evaluator (if profiles present)
-        self.vfs_evaluator: VFSEvaluator | None = None
-        if universe.compiled_vfs_profiles is not None:
-            # Default to mark-and-sweep for efficiency
-            # Can override with EAGER mode via env var for debugging
-            import os
-
-            mode = EvaluationMode.EAGER if os.getenv("VFS_EVAL_MODE") == "eager" else EvaluationMode.MARK_AND_SWEEP
-
-            self.vfs_evaluator = VFSEvaluator(mode=mode, history_spec=getattr(universe, "vfs_history_spec", None))
-            self.vfs_observation_marks = universe.vfs_observation_marks
-        else:
-            self.vfs_observation_marks = None
-
-        # Initialize reward strategy (TASK-001: variable meters)
-        meter_name_to_index = dict(self.metadata.meter_name_to_index)
-        self.meter_name_to_index = meter_name_to_index
-        self.money_idx = meter_name_to_index.get("money")
-
-        # Build bar index map from universe metadata
-        bar_index_map = _build_bar_index_map(self.universe.meter_metadata)
-
-        # Instantiate DACEngine using agent drive config (v2.1)
-        self.dac_engine = DACEngine(
-            dac_config=self.level.drive,
-            vfs_registry=self.vfs_registry,
-            device=self.device,
-            num_agents=self.num_agents,
-            bar_index_map=bar_index_map,
-        )
-        self.runtime_registry: AgentRuntimeRegistry | None = None  # Injected by population/inference controllers
+        # Phases below are private helpers that mutate self in a fixed order
+        # (hamlet-2559b98232). __init__ reads as orchestration; each phase is
+        # individually grokable.
+        self._initialize_vfs_subsystem()
+        self._initialize_dac_engine()
 
         # EFFECTS INTEGRATION: Use compiled effect catalog from UniverseCompiler
         from townlet.effects.executor import CommandExecutor
@@ -510,27 +218,15 @@ class VectorizedHamletEnv:
                 device=str(self.device),
                 time_enabled=self.temporal_support_enabled,
                 affordance_overrides=self.affordance_overrides,
-                meter_dynamics=None,  # Patched after meter_dynamics constructed
             )
             if effect_catalog is not None
             else None
         )
         self.effect_observation_slots = getattr(universe, "effect_observation_slots", self.EFFECT_OBS_SLOTS)
 
-        # Rebuild effects schema for affordance compilation
-        # TODO(Task 5): Move affordance compilation to compile-time, then remove this
-        effects_schema: dict[str, str] = {}
-        effects_schema["intensity"] = "float"
-        effects_schema["elapsed_ticks"] = "float"
-        effects_schema["duration_remaining"] = "float"
-        for bar_name in self.meter_name_to_index.keys():
-            effects_schema[f"bar.{bar_name}"] = "float"
-            effects_schema[f"target.bar.{bar_name}"] = "float"
-        for vfs_var in self.vfs_variables:
-            vfs_type: str = vfs_var.type if vfs_var.type in {"bool", "agent_ref", "item_ref"} else "float"
-            effects_schema[f"vfs.{vfs_var.id}"] = vfs_type
-            effects_schema[f"target.vfs.{vfs_var.id}"] = vfs_type
-        self.effects_schema = effects_schema
+        if universe.effects_schema is None:
+            raise ValueError("Compiled universe is missing effects_schema. Recompile the config pack before creating an environment.")
+        self.effects_schema = dict(universe.effects_schema)
 
         # Bars configuration (per-level)
         self.bars_config = level.bars
@@ -538,45 +234,31 @@ class VectorizedHamletEnv:
         # Precompute meter initialization tensor from bars config
         self.initial_meter_values = torch.zeros(meter_count, dtype=torch.float32, device=self.device)
         for bar in self.bars_config.meters:
-            idx = meter_name_to_index.get(bar.name)
+            idx = self.meter_name_to_index.get(bar.name)
             if idx is not None:
                 self.initial_meter_values[idx] = bar.initial
 
-        # Build terminal conditions from lethal bounds
-        terminal_specs: list[dict[str, Any]] = []
+        # Declared meter bounds drive every runtime ceiling and floor (WS-1(e)).
+        # Two vectorized [meter_count] tensors, never a branch on a bar name: the
+        # runtime stays domain-agnostic and `money` is not special-cased anywhere.
+        self.meter_bounds_min = torch.zeros(meter_count, dtype=torch.float32, device=self.device)
+        self.meter_bounds_max = torch.zeros(meter_count, dtype=torch.float32, device=self.device)
+        covered_indices: set[int] = set()
         for bar in self.bars_config.meters:
-            idx = meter_name_to_index.get(bar.name)
+            idx = self.meter_name_to_index.get(bar.name)
             if idx is None:
                 continue
-            if bar.bounds.lethal_min:
-                terminal_specs.append({"meter_idx": idx, "operator": "<=", "value": bar.bounds.min})
-            if bar.bounds.lethal_max:
-                terminal_specs.append({"meter_idx": idx, "operator": ">=", "value": bar.bounds.max})
-
-        # Initialize meter dynamics directly from optimization tensors
-        self.meter_dynamics = MeterDynamics(
-            base_depletions=self.optimization_data.base_depletions,
-            cascade_data=self.optimization_data.cascade_data,
-            # v2.1: modulation_data encodes bar→affordance modulation (environment.yaml modulation_graph)
-            # and is consumed by AffordanceEngine. MeterDynamics currently only supports
-            # meter→meter modulations, so we pass an empty sequence here.
-            modulation_data=[],
-            terminal_conditions=terminal_specs,
-            meter_name_to_index=meter_name_to_index,
-            device=self.device,
-        )
-        if self.effect_manager is not None:
-            self.effect_manager.meter_dynamics = self.meter_dynamics
-
-        # Cache action mask table (24 × affordance_count) for temporal mechanics
-        self.action_mask_table = self.optimization_data.action_mask_table.to(self.device).clone()
-        # Guard against division by zero if action mask table is empty (shape[0] == 0)
-        self.hours_per_day = max(1, self.action_mask_table.shape[0]) if self.action_mask_table.ndim > 0 else 24
-        # Explicit validation instead of assert (assertions can be disabled with -O)
-        if self.hours_per_day <= 0:
+            self.meter_bounds_min[idx] = bar.bounds.min
+            self.meter_bounds_max[idx] = bar.bounds.max
+            covered_indices.add(idx)
+        uncovered = sorted(set(range(meter_count)) - covered_indices)
+        if uncovered:
+            index_to_name = {idx: name for name, idx in self.meter_name_to_index.items()}
+            uncovered_names = [index_to_name.get(idx, f"<index {idx}>") for idx in uncovered]
             raise ValueError(
-                f"hours_per_day must be positive to avoid division by zero (got {self.hours_per_day}). "
-                f"Check action_mask_table configuration."
+                "Meter indices in the compiled metadata have no declared bar to supply bounds.\n"
+                f"  Uncovered meters: {uncovered_names}\n"
+                "  Rule: every meter must declare bounds.min/bounds.max in bars.yaml; there is no default."
             )
 
         # Initialize affordance engine with AffordanceParamConfig directly
@@ -592,13 +274,7 @@ class VectorizedHamletEnv:
             return None
 
         # Affordance vocabulary and positions from compiled metadata
-        level_affordance_lookup = {info.name: idx for idx, info in enumerate(level.affordance_metadata.affordances)}
         self.affordance_name_to_id = {aff.name: aff.name for aff in affordances_list}
-        self.affordance_name_to_mask_idx = {
-            name: level_affordance_lookup.get(aff_id)
-            for name, aff_id in self.affordance_name_to_id.items()
-            if level_affordance_lookup.get(aff_id) is not None
-        }
         self.affordance_positions_from_config = {aff.name: _extract_position(aff) for aff in affordances_list}
         optimization_position_map = getattr(self.optimization_data, "affordance_position_map", {})
         self.affordance_positions_from_optimization = {
@@ -606,7 +282,7 @@ class VectorizedHamletEnv:
         }
 
         all_affordance_names = [aff.name for aff in affordances_list]
-        affordance_names_to_deploy = _resolve_deployable_affordances(
+        affordance_names_to_deploy = env_factory._resolve_deployable_affordances(
             all_affordance_names,
             training_cfg.enabled_affordances,
             self.affordance_name_to_id,
@@ -617,16 +293,32 @@ class VectorizedHamletEnv:
         self.affordance_names = all_affordance_names
         self.num_affordance_types = len(all_affordance_names)
 
-        # NOTE: modulation_rules is built later, just before AffordanceEngine init (ENV-010: removed dead code)
-
-        # Build composed action space from compiler metadata and substrate defaults
-        self.action_space = self._build_action_space_from_metadata(
-            level_action_metadata,
-            self.substrate,
-        )
+        # Build composed action space from compiler-emitted runtime artifact
+        self.action_space = self._build_action_space_from_runtime_artifact(level.runtime_action_space)
         self.action_dim = self.action_space.action_dim
-        self.action_ids: dict[str, int] = {action.name: action.id for action in self.action_space.actions}
+        self.action_ids = level.runtime_action_space.action_ids
         self._movement_deltas = self._build_movement_deltas()
+        self.vtc_transition_schedule = level.transition_schedule
+        self.vtc_transition_runner = VTCTransitionRunner(self.vtc_transition_schedule)
+        self.vtc_action_write_program: VTCActionWriteProgram = self.vtc_transition_schedule.action_write_program
+        self.vtc_affordance_gate_program: VTCAffordanceGateProgram = self.vtc_transition_schedule.affordance_gate_program
+        self.vtc_interaction_progress_program: VTCInteractionProgressProgram = self.vtc_transition_schedule.interaction_progress_program
+        self.vtc_terminal_condition_program: VTCTerminalConditionProgram = self.vtc_transition_schedule.terminal_condition_program
+        self.vtc_passive_depletion_program: VTCPassiveDepletionProgram = self.vtc_transition_schedule.passive_depletion_program
+        self.vtc_modulation_program: VTCModulationProgram = self.vtc_transition_schedule.modulation_program
+        self.vtc_threshold_cascade_program: VTCThresholdCascadeProgram = self.vtc_transition_schedule.threshold_cascade_program
+        self.vtc_reward_program: VTCRewardProgram = self.vtc_transition_schedule.reward_component_program
+
+        # Per-tick action-mask computation extracted from this class. The
+        # builder is stateless; per-tick state is passed at call time.
+        self.action_mask_builder = ActionMaskBuilder(
+            action_space=self.action_space,
+            device=self.device,
+            substrate=self.substrate,
+            movement_deltas=self._movement_deltas,
+            action_ids=self.action_ids,
+            enable_temporal_mechanics=self.enable_temporal_mechanics,
+        )
 
         # State tensors (initialized in reset)
         self.positions = torch.zeros(
@@ -645,108 +337,12 @@ class VectorizedHamletEnv:
         self.step_counts = torch.zeros(self.num_agents, dtype=torch.long, device=self.device)
         self.global_tick: int = 0  # HIGH-01: Track global time independently of agent 0
         self.intrinsic_weights = torch.ones(self.num_agents, dtype=torch.float32, device=self.device)  # Default: 1.0 (full exploration)
+        self._last_reward_components: dict[str, torch.Tensor] = {}
 
-        # === ITEMS INITIALIZATION ===
-        # Must happen AFTER self.meters is initialized because ItemActionHandler needs it
-        self.item_manager: ItemManager | None = None
-        self.item_inventory: InventoryState | None = None
-        self.item_handler: ItemActionHandler | None = None
-        if universe.items_catalog is not None:
-            if universe.compiled_vfs_profiles is None or not universe.compiled_vfs_profiles.item_profiles:
-                raise ValueError(
-                    "items_catalog provided but compiled_vfs_profiles.item_profiles is missing. "
-                    "Define item VFS profiles in vfs_profiles.yaml for all item types."
-                )
-            # Build schema for item interaction compilation from compiled universe data
-            schema: dict[str, str] = {}
-
-            # Add bar paths from compiled meter metadata
-            for bar_name in self.meter_name_to_index.keys():
-                schema[f"target.bar.{bar_name}"] = "float"
-
-            # Add VFS paths from compiled VFS variables
-            for vfs_var in self.vfs_variables:
-                # Preserve declared type so reference traversal is allowed.
-                vfs_type_target: str = (
-                    vfs_var.type if vfs_var.type in {"agent_ref", "item_ref", "affordance_ref", "effect_ref", "bool"} else "float"
-                )
-                schema[f"target.vfs.{vfs_var.id}"] = vfs_type_target
-
-            # Add self.vfs.* paths from compiled item VFS profiles
-            # Items can modify their own VFS state via self.vfs.*
-            if universe.compiled_vfs_profiles and universe.compiled_vfs_profiles.item_profiles:
-                for profile_name, compiled_profile in universe.compiled_vfs_profiles.item_profiles.items():
-                    for var in compiled_profile.variables:
-                        vfs_type_item: str = (
-                            var.type if var.type in {"agent_ref", "item_ref", "affordance_ref", "effect_ref", "bool"} else "float"
-                        )
-                        schema[f"self.vfs.{var.name}"] = vfs_type_item
-
-            self.item_manager = ItemManager(
-                catalog=universe.items_catalog,
-                max_items=universe.items_catalog.max_items_in_world,
-                device=self.device,
-                schema=schema,  # NEW: Enable Effects compilation
-                vfs_registry=self.vfs_registry,  # NEW: Pass VFS registry for item state storage
-                effect_manager=self.effect_manager,  # NEW: allow scheduler cancellation on item despawn
-            )
-
-            self.item_inventory = InventoryState(
-                batch_size=num_agents,
-                max_items_per_agent=universe.items_catalog.max_items_per_agent,
-                device=str(self.device),
-            )
-
-            self.item_handler = ItemActionHandler(
-                manager=self.item_manager,
-                inventory=self.item_inventory,
-                command_executor=self.command_executor,
-                vfs_registry=self.vfs_registry,
-                meter_name_to_index=self.meter_name_to_index,
-                effect_manager=self.effect_manager,  # NEW: pass EffectManager for ExecutionContext
-                affordance_overrides=self.affordance_overrides,
-                meter_dynamics=self.meter_dynamics,
-            )
-        else:
-            self.item_manager = None
-            self.item_inventory = None
-            self.item_handler = None
-
-        # === AFFORDANCE ENGINE INITIALIZATION ===
-        # Requires Effects + Items managers to satisfy fail-forward ExecutionContext
-        modulation_rules = []
-        for entry in self.optimization_data.modulation_data:
-            aff_idx = entry.get("affordance_idx")
-            bar_idx = entry.get("bar_idx")
-            if aff_idx is None or bar_idx is None:
-                continue
-            if aff_idx < 0 or aff_idx >= len(all_affordance_names):
-                continue
-            aff_name = all_affordance_names[aff_idx]
-            modulation_rules.append(
-                {
-                    "affordance": aff_name,
-                    "bar_idx": bar_idx,
-                    "threshold": entry.get("threshold", 0.0),
-                    "min_multiplier": entry.get("min_multiplier", 1.0),
-                }
-            )
-
-        # Pass AffordanceParamConfig objects directly (have interactions field for compilation)
-        self.affordance_engine = AffordanceEngine(
-            tuple(level.affordances.affordances),  # AffordanceParamConfig with interactions
-            num_agents,
-            self.device,
-            self.meter_name_to_index,
-            modulation_rules=modulation_rules,
-            vfs_registry=self.vfs_registry,
-            effects_schema=self.effects_schema,
-            command_executor=self.command_executor,
-            effect_manager=self.effect_manager,
-            item_manager=self.item_manager or NullItemManager(),
-            affordance_overrides=self.affordance_overrides,
-            meter_dynamics=self.meter_dynamics,
-        )
+        # Items + affordance engine wiring (depends on meters, vfs_registry,
+        # effect_manager, command_executor — all set above).
+        self._initialize_item_subsystem(num_agents)
+        self._initialize_affordance_engine(num_agents)
 
         # Exploration module (optional, set by population or external code)
         self.exploration_module: ExplorationStrategy | None = None
@@ -862,100 +458,279 @@ class VectorizedHamletEnv:
         if not self.enable_temporal_mechanics:
             return True
 
-        if self.action_mask_table.shape[1] == 0:
-            raise ValueError(
-                "Temporal mechanics enabled but action_mask_table is empty; compiler must provide temporal availability metadata."
-            )
-
-        idx = self.affordance_name_to_mask_idx.get(affordance_name)
-        if idx is None or idx >= self.action_mask_table.shape[1]:
-            raise ValueError(
-                f"Missing temporal mask metadata for affordance '{affordance_name}'; all affordances must have explicit mask entries."
-            )
-
         active_hour = self.time_of_day if hour is None else hour
-        hour_idx = active_hour % self.hours_per_day
-        return bool(self.action_mask_table[hour_idx, idx].item())
-
-    def _compose_action_space(
-        self,
-        global_actions: ActionSpaceConfig,
-        enabled_action_names: list[str] | None,
-    ) -> ComposedActionSpace:
-        """Legacy builder path removed in v2.1 runtime.
-
-        All callers must use _build_action_space_from_metadata fed by
-        ActionSpaceMetadata from the UniverseCompiler.
-        """
-        raise RuntimeError("Action space must be provided via compiler metadata in v2.1 runtime")
-
-    def _build_action_space_from_metadata(
-        self,
-        action_metadata: ActionSpaceMetadata,
-        substrate: SpatialSubstrate,
-    ) -> ComposedActionSpace:
-        """Build ComposedActionSpace using compiler action metadata + substrate default actions."""
-        from townlet.environment.action_config import ActionConfig
-
-        actions: list[ActionConfig] = []
-        substrate_actions = substrate.get_default_actions()
-        substrate_names = [a.name for a in substrate_actions]
-
-        enabled_lookup = {a.name: a.enabled for a in action_metadata.actions}
-        id_lookup = {a.name: a.id for a in action_metadata.actions}
-        type_lookup = {a.name: a.type for a in action_metadata.actions}
-        source_lookup = {a.name: a.source for a in action_metadata.actions}
-        movement_delta_lookup = {a.name: a.movement_delta for a in action_metadata.actions}
-
-        for action in substrate_actions:
-            if action.name not in id_lookup:
-                raise ValueError(f"Action '{action.name}' missing from compiler metadata; no defaults allowed.")
-            enabled = enabled_lookup.get(action.name, True)
-            action.id = id_lookup[action.name]
-            action.enabled = enabled
-            action.type = type_lookup.get(action.name, action.type)
-            action.source = source_lookup.get(action.name, "substrate")
-            delta_override = movement_delta_lookup.get(action.name)
-            if delta_override is not None:
-                action.delta = list(delta_override)
-            actions.append(action)
-
-        for meta_action in action_metadata.actions:
-            if meta_action.name in substrate_names:
-                continue
-            if meta_action.type == "movement":
-                raise ValueError(
-                    f"Custom movement action '{meta_action.name}' is not supported without explicit delta/teleport; "
-                    "define it in the substrate defaults instead."
-                )
-            action = ActionConfig(
-                id=meta_action.id,
-                name=meta_action.name,
-                type=meta_action.type,
-                costs={},
-                effects={},
-                delta=list(meta_action.movement_delta) if meta_action.movement_delta is not None else None,
-                teleport_to=None,
-                enabled=meta_action.enabled,
-                description=meta_action.description or None,
-                icon=None,
-                source=meta_action.source,
-                source_affordance=None,
-                reads=[],
-                writes=[],
+        try:
+            return self.vtc_affordance_gate_program.is_affordance_open(
+                affordance_name,
+                time_of_day=active_hour,
+                device=self.device,
             )
-            actions.append(action)
+        except KeyError as exc:
+            raise ValueError(f"Missing VTC operating-hour gate for affordance '{affordance_name}'") from exc
 
-        actions = sorted(actions, key=lambda a: a.id)
-        substrate_action_count = len(substrate_actions)
-        custom_action_count = len(actions) - substrate_action_count
+    def _build_vfs_affordance_context(self) -> dict[str, dict[str, torch.Tensor]]:
+        """Build affordance state exposed to VFS expressions."""
+        return {
+            affordance_name: {"available": torch.tensor(self._is_affordance_open(affordance_name), device=self.device)}
+            for affordance_name in self.affordances
+        }
 
+    def _build_vfs_temporal_context(self) -> dict[str, torch.Tensor]:
+        """Build temporal state exposed to VFS expressions."""
+        if not self.enable_temporal_mechanics:
+            return {}
+
+        day_length = float(self.day_length)
+        time_of_day = float(self.time_of_day)
+        day_progress = time_of_day / day_length
+        night_threshold = day_length * 0.25
+        is_night = time_of_day < night_threshold or time_of_day >= (day_length - night_threshold)
+
+        return {
+            "tick": torch.tensor(self.global_tick, device=self.device),
+            "time_of_day": torch.tensor(time_of_day, device=self.device),
+            "day_progress": torch.tensor(day_progress, device=self.device),
+            "is_night": torch.tensor(is_night, device=self.device),
+        }
+
+    def _build_action_space_from_runtime_artifact(self, runtime_action_space: RuntimeActionSpace) -> ComposedActionSpace:
+        """Build ComposedActionSpace from compiler-emitted runtime actions."""
+        actions = [
+            ActionConfig(
+                id=action.id,
+                name=action.name,
+                type=action.type,
+                costs=dict(action.costs),
+                effects=dict(action.effects),
+                delta=list(action.delta) if action.delta is not None else None,
+                teleport_to=list(action.teleport_to) if action.teleport_to is not None else None,
+                enabled=action.enabled,
+                description=action.description,
+                icon=action.icon,
+                source=action.source,
+                source_affordance=action.source_affordance,
+                reads=list(action.reads),
+                writes=cast(Any, [dict(write) for write in action.writes]),
+            )
+            for action in runtime_action_space.actions
+        ]
         return ComposedActionSpace(
             actions=actions,
-            substrate_action_count=substrate_action_count,
-            custom_action_count=custom_action_count,
-            affordance_action_count=0,
-            enabled_action_names=None,
+            substrate_action_count=runtime_action_space.substrate_action_count,
+            custom_action_count=runtime_action_space.custom_action_count,
+            affordance_action_count=runtime_action_space.affordance_action_count,
+            enabled_action_names=(
+                set(runtime_action_space.enabled_action_names) if runtime_action_space.enabled_action_names is not None else None
+            ),
+        )
+
+    def _configure_partial_observability(self) -> None:
+        """Derive POMDP vision window and validate substrate compatibility.
+
+        Writes ``self.vision_radius`` and ``self.local_window_size`` when
+        partial observability is enabled. Raises ``ValueError`` for any
+        substrate / encoding combination that is unsupported under POMDP —
+        these are configuration errors that should fail at compile time,
+        not silently produce broken observations.
+        """
+        max_vision_radius = 50
+        if self.partial_observability and self.substrate.supports_partial_vision:
+            # The substrate owns the radius derivation and the window width
+            # (WS-7 first knockdown): the same numbers the compiler asked for
+            # at build_spec time, so declared and produced dims cannot drift.
+            raw_radius = self.substrate.get_vision_radius(self.vision_range)
+            if raw_radius > max_vision_radius:
+                raise ValueError(
+                    f"Vision radius {raw_radius} exceeds maximum {max_vision_radius}. "
+                    f"This would create a {2 * raw_radius + 1}x{2 * raw_radius + 1} observation window, "
+                    f"causing OOM. Reduce vision_range ({self.vision_range}) or the grid extent. "
+                    f"Max supported configuration: derived vision radius <= {max_vision_radius}"
+                )
+            self.vision_radius = raw_radius
+            self.local_window_size = (2 * self.vision_radius) + 1
+
+        if not self.partial_observability:
+            return
+
+        if self.substrate.position_dim == 0:
+            raise ValueError(
+                "Partial observability (POMDP) is not supported for aspatial substrates. "
+                "A local vision window requires at least 1 spatial dimension. "
+                "Set partial_observability=False when using an aspatial substrate."
+            )
+        if isinstance(self.substrate, ContinuousSubstrate):
+            raise ValueError(
+                "Partial observability (POMDP) is not supported for continuous substrates. "
+                "Continuous spaces have infinite positions within any local window, making discrete vision grids undefined. "
+                "Use partial_observability=False with 'relative' or 'scaled' observation_encoding instead."
+            )
+        if self.substrate.position_dim >= 4:
+            window_size = self.local_window_size or 0
+            cell_count = window_size**self.substrate.position_dim if window_size > 0 else 0
+            raise ValueError(
+                f"Partial observability (POMDP) is not supported for {self.substrate.position_dim}D substrates. "
+                f"\n\nProblem: Local window size grows EXPONENTIALLY with dimensionality:"
+                f"\n  - 2D: {window_size}×{window_size} = {window_size**2} cells (practical)"
+                f"\n  - 3D: {window_size}×{window_size}×{window_size} = {window_size**3} cells (supported up to vision_range=2)"
+                f"\n  - {self.substrate.position_dim}D: {window_size}^{self.substrate.position_dim} = {cell_count:,} cells (IMPRACTICAL)"
+                f"\n\nThis creates:"
+                f"\n  - Network input explosion ({cell_count:,} vision features + position + meters)"
+                f"\n  - Memory explosion (each agent's observation is massive)"
+                f"\n  - Training slowdown (gradient computation over huge inputs)"
+                f"\n\nSolution: Use full observability (partial_observability=False) with normalized position encoding:"
+                f"\n  - observation_encoding='relative': Just {self.substrate.position_dim} dims (normalized coordinates)"
+                f"\n  - observation_encoding='scaled': {self.substrate.position_dim * 2} dims (coordinates + grid sizes)"
+                f"\n  - Enables dimension-independent learning WITHOUT exponential curse"
+                f"\n\nSee docs/manual/pomdp_compatibility_matrix.md for details."
+            )
+        if self.substrate.position_dim == 3:
+            window_size = self.local_window_size or 0
+            window_volume = window_size**3 if window_size > 0 else 0
+            if window_volume > 125:
+                raise ValueError(
+                    f"Grid3D POMDP with vision_range={self.vision_range} requires {window_volume} cells "
+                    f"(window size {window_size}×{window_size}×{window_size}), which is excessive. "
+                    f"Use vision_range ≤ 2 (5×5×5 = 125 cells) for Grid3D partial observability, "
+                    f"or disable partial_observability."
+                )
+        if hasattr(self.substrate, "observation_encoding") and self.substrate.observation_encoding != "relative":
+            raise ValueError(
+                f"Partial observability (POMDP) requires observation_encoding='relative', "
+                f"but substrate is configured with observation_encoding='{self.substrate.observation_encoding}'. "
+                f"POMDP uses normalized positions for recurrent network position encoder. "
+                f"Set observation_encoding='relative' in substrate.yaml or disable partial_observability."
+            )
+
+    def _initialize_vfs_subsystem(self) -> None:
+        """Build the VFS variable registry, observation spec, and evaluator.
+
+        Phase method of __init__ (hamlet-2559b98232). Writes:
+        ``vfs_variables``, ``vfs_registry``, ``vfs_observation_spec``,
+        ``vfs_evaluator``, ``vfs_observation_marks``, ``meter_name_to_index``,
+        Depends on ``self.metadata``, ``self.num_agents``,
+        ``self.device``, ``self.universe``.
+        """
+        universe = self.universe
+        self.vfs_variables: list[VariableDef] = list(universe.vfs_variables)
+
+        max_items_in_world = universe.items_catalog.max_items_in_world if universe.items_catalog else 0
+        item_profiles = None
+        if universe.compiled_vfs_profiles is not None:
+            item_profiles = universe.compiled_vfs_profiles.item_profiles
+
+        self.vfs_registry = VariableRegistry(
+            variables=self.vfs_variables,
+            num_agents=self.num_agents,
+            device=self.device,
+            max_items=max_items_in_world,
+            num_affordances=self.metadata.affordance_count,
+            item_profiles=item_profiles,
+        )
+
+        self.vfs_observation_spec: VFSObservationSpec | None = None
+        if universe.compiled_vfs_profiles is not None:
+            if universe.vfs_observation_spec is None:
+                raise ValueError("Compiled universe is missing vfs_observation_spec; recompile the config pack.")
+            self.vfs_observation_spec = universe.vfs_observation_spec
+
+        self.vfs_evaluator: VFSEvaluator | None = None
+        if universe.compiled_vfs_profiles is not None:
+            mode = EvaluationMode(universe.compiled_vfs_profiles.evaluation_mode)
+            self.vfs_evaluator = VFSEvaluator(
+                mode=mode,
+                history_spec=universe.vfs_history_spec,
+                debug_logging=universe.compiled_vfs_profiles.debug_logging,
+            )
+            self.vfs_observation_marks = universe.vfs_observation_marks
+        else:
+            self.vfs_observation_marks = None
+
+        meter_name_to_index = dict(self.metadata.meter_name_to_index)
+        self.meter_name_to_index = meter_name_to_index
+
+    def _initialize_dac_engine(self) -> None:
+        """Construct the DAC reward backend and prepare the runtime-registry slot.
+
+        Phase method of __init__ (hamlet-2559b98232). Writes ``dac_engine``
+        and ``runtime_registry``. Depends on ``vfs_registry`` from the VFS
+        phase.
+        """
+        bar_index_map = env_factory._build_bar_index_map(self.universe.meter_metadata)
+        self.dac_engine = DACEngine(
+            dac_config=self.level.drive,
+            vfs_registry=self.vfs_registry,
+            device=self.device,
+            num_agents=self.num_agents,
+            bar_index_map=bar_index_map,
+        )
+        self.runtime_registry = None
+
+    def _initialize_item_subsystem(self, num_agents: int) -> None:
+        """Build the item manager, inventory, and action handler — or leave
+        every slot None when the universe has no items catalog.
+
+        Phase method of __init__ (hamlet-2559b98232). Must run after meters
+        are allocated (the action handler captures the meter index map) and
+        after the effect manager + command executor exist.
+        """
+        universe = self.universe
+        self.item_manager: ItemManager | None = None
+        self.item_inventory: InventoryState | None = None
+        self.item_handler: ItemActionHandler | None = None
+
+        if universe.items_catalog is None:
+            return
+
+        if universe.compiled_vfs_profiles is None or not universe.compiled_vfs_profiles.item_profiles:
+            raise ValueError(
+                "items_catalog provided but compiled_vfs_profiles.item_profiles is missing. "
+                "Define item VFS profiles in vfs_profiles.yaml for all item types."
+            )
+
+        self.item_manager = ItemManager(
+            catalog=universe.items_catalog,
+            max_items=universe.items_catalog.max_items_in_world,
+            device=self.device,
+            schema=self.effects_schema,
+            vfs_registry=self.vfs_registry,
+            effect_manager=self.effect_manager,
+        )
+        self.item_inventory = InventoryState(
+            batch_size=num_agents,
+            max_items_per_agent=universe.items_catalog.max_items_per_agent,
+            device=str(self.device),
+        )
+        self.item_handler = ItemActionHandler(
+            manager=self.item_manager,
+            inventory=self.item_inventory,
+            command_executor=self.command_executor,
+            vfs_registry=self.vfs_registry,
+            meter_name_to_index=self.meter_name_to_index,
+            effect_manager=self.effect_manager,
+            affordance_overrides=self.affordance_overrides,
+        )
+
+    def _initialize_affordance_engine(self, num_agents: int) -> None:
+        """Build the affordance engine.
+
+        Phase method of __init__ (hamlet-2559b98232). Must run after the
+        item subsystem; depends on the VTC modulation program, VFS registry,
+        effects schema, command executor, and effect manager.
+        """
+        self.affordance_engine = AffordanceEngine(
+            tuple(self.level.affordances.affordances),
+            num_agents,
+            self.device,
+            self.meter_name_to_index,
+            modulation_program=self.vtc_modulation_program,
+            vfs_registry=self.vfs_registry,
+            effects_schema=self.effects_schema,
+            command_executor=self.command_executor,
+            effect_manager=self.effect_manager,
+            meter_bounds_min=self.meter_bounds_min,
+            meter_bounds_max=self.meter_bounds_max,
+            item_manager=self.item_manager or NullItemManager(),
+            affordance_overrides=self.affordance_overrides,
         )
 
     def _build_movement_deltas(self) -> torch.Tensor:
@@ -1045,6 +820,7 @@ class VectorizedHamletEnv:
         self.step_counts = torch.zeros(self.num_agents, dtype=torch.long, device=self.device)
         self.global_tick = 0  # HIGH-01: Reset global time counter
         self.intrinsic_weights = torch.ones(self.num_agents, dtype=torch.float32, device=self.device)  # Reset to 1.0
+        self.vfs_registry.reset_episode_scoped()
 
         # Reset temporal mechanics state
         if self.enable_temporal_mechanics:
@@ -1103,7 +879,7 @@ class VectorizedHamletEnv:
                     temporal=temporal_context,
                 )
 
-        return self._get_observations()
+        return self._observation_encoder._get_observations()
 
     @classmethod
     def from_universe(
@@ -1126,211 +902,21 @@ class VectorizedHamletEnv:
         Returns:
             VectorizedHamletEnv instance
         """
-
-        if level_name is None:
-            raise ValueError(
-                "VectorizedHamletEnv.from_universe requires an explicit level_name; "
-                "implicit default level selection is not allowed in v2.1 runtime."
-            )
-
-        torch_device = torch.device(device) if isinstance(device, str) else device
-
-        return cls(
+        return env_factory.from_universe(
+            cls,
             universe=universe,
             level_name=level_name,
             num_agents=num_agents,
-            device=torch_device,
+            device=device,
         )
 
     def _get_observations(self) -> torch.Tensor:
-        """
-        Construct observation vector using compiled observation spec.
-        """
-        import math
-
-        obs_fields = self.observation_spec.fields
-        outputs: list[torch.Tensor] = []
-
-        for field in obs_fields:
-            name = field.name
-            dims = field.dims
-
-            if name == "obs_grid_encoding":
-                if self.partial_observability:
-                    value = torch.zeros((self.num_agents, dims), device=self.device)
-                else:
-                    if hasattr(self.substrate, "_encode_full_grid"):
-                        grid_encoding = self.substrate._encode_full_grid(self.positions, self.affordances)
-                    else:
-                        grid_encoding = self.substrate.encode_observation(self.positions, self.affordances)
-                    value = grid_encoding
-                    # Pad or truncate to match spec dims for high-dimensional grids
-                    if value.dim() == 1:
-                        value = value.unsqueeze(1)
-                    if value.shape[1] != dims:
-                        padded = torch.zeros((self.num_agents, dims), device=self.device)
-                        if value.shape[1] > 0:
-                            fill = min(value.shape[1], dims)
-                            padded[:, :fill] = value[:, :fill]
-                        value = padded
-            elif name == "obs_local_window":
-                if not self.partial_observability:
-                    value = torch.zeros((self.num_agents, dims), device=self.device)
-                else:
-                    local_window = self.substrate.encode_partial_observation(
-                        self.positions,
-                        self.affordances,
-                        vision_range=self.vision_radius,
-                    )
-                    value = local_window
-            elif name == "obs_position":
-                pos = self._encode_position_observation()
-                if pos is None:
-                    value = torch.zeros((self.num_agents, dims), device=self.device)
-                else:
-                    # Align encoded dims with spec dims defensively.
-                    if pos.dim() == 1:
-                        pos = pos.unsqueeze(1)
-                    if pos.shape[1] == dims:
-                        value = pos
-                    elif pos.shape[1] > dims:
-                        value = pos[:, :dims]
-                    else:
-                        value = torch.zeros((self.num_agents, dims), device=self.device)
-                        value[:, : pos.shape[1]] = pos
-            elif name == "obs_velocity":
-                vel = self._encode_velocity_observation()
-                if vel is None:
-                    value = torch.zeros((self.num_agents, dims), device=self.device)
-                else:
-                    if vel.dim() == 1:
-                        vel = vel.unsqueeze(1)
-                    if vel.shape[1] == dims:
-                        value = vel
-                    elif vel.shape[1] > dims:
-                        value = vel[:, :dims]
-                    else:
-                        value = torch.zeros((self.num_agents, dims), device=self.device)
-                        value[:, : vel.shape[1]] = vel
-            elif name == "obs_meters":
-                value = self.meters
-            elif name in {"obs_affordance_at_position", "obs_affordances"}:
-                value = self._build_affordance_encoding(dims)
-            elif name == "obs_effects":
-                value = self._build_effects_observation(dims)
-            elif name == "obs_temporal":
-                # Temporal observation behavior:
-                # - If temporal_support is disabled at experiment level, obs_temporal should not exist.
-                # - If support enabled but curriculum marks temporal inactive, emit all zeros (masked).
-                # - If support enabled and temporal is active, emit full rich encoding.
-                if not self.temporal_support_enabled or not self.enable_temporal_mechanics:
-                    value = torch.zeros((self.num_agents, dims), device=self.device)
-                else:
-                    time_of_day = self.time_of_day
-                    day_length = float(self.day_length)
-                    time_angle = (time_of_day / day_length) * 2 * math.pi
-                    time_sin = torch.tensor(math.sin(time_angle), device=self.device)
-                    time_cos = torch.tensor(math.cos(time_angle), device=self.device)
-                    day_progress = float(time_of_day) / day_length
-                    # Simple day/night split relative to configured day_length:
-                    # first quarter and last quarter of the day are treated as night.
-                    night_threshold = day_length * 0.25
-                    is_night = 1.0 if time_of_day < night_threshold or time_of_day >= (day_length - night_threshold) else 0.0
-
-                    # Populate rich temporal encoding, padding/truncating to dims as needed.
-                    value = torch.zeros((self.num_agents, dims), device=self.device)
-                    if dims > 0:
-                        value[:, 0] = time_sin
-                    if dims > 1:
-                        value[:, 1] = time_cos
-                    if dims > 2:
-                        value[:, 2] = day_progress
-                    if dims > 3:
-                        value[:, 3] = is_night
-            elif name == "obs_vfs":
-                # VFS observations (global + agent + item VFS)
-                if self.vfs_observation_spec is not None:
-                    # Get item inventory if available
-                    agent_item_inventory = None
-                    if self.item_inventory is not None:
-                        agent_item_inventory = self.item_inventory.slots
-
-                    value = build_vfs_observation(
-                        registry=cast(ScopedVariableRegistry, self.vfs_registry),
-                        spec=self.vfs_observation_spec,
-                        batch_size=self.num_agents,
-                        agent_item_inventory=agent_item_inventory,
-                    )
-                else:
-                    # No VFS profiles, emit zeros
-                    value = torch.zeros((self.num_agents, dims), device=self.device)
-            else:
-                # Environment variables mapping: expect variables named by obs field
-                if name not in self.vfs_registry._definitions:
-                    raise ValueError(f"Observation field '{name}' not found in VFS variables (no defaults allowed).")
-                val = self.vfs_registry.get(name, reader="engine")
-                value = val if val.dim() > 1 else val.unsqueeze(1)
-
-            if value.dim() == 1:
-                value = value.unsqueeze(1)
-            outputs.append(value)
-
-        observations = torch.cat(outputs, dim=1)
-
-        # Apply curriculum activity mask as a final safety net to ensure masked
-        # dimensions are zeroed, even if individual field encoders evolve.
-        activity = getattr(self, "observation_activity", None)
-        if activity is not None and activity.active_mask:
-            if len(activity.active_mask) != observations.shape[1]:
-                raise ValueError(
-                    "ObservationActivity mask length does not match observation_dim.\n"
-                    f"  mask_len={len(activity.active_mask)}, obs_dim={observations.shape[1]}"
-                )
-            mask = torch.tensor(activity.active_mask, device=self.device, dtype=observations.dtype)
-            observations = observations * mask.unsqueeze(0)
-
-        return observations
+        """Construct observation vector using compiled observation spec."""
+        return self._observation_encoder._get_observations()
 
     def _build_affordance_encoding(self, dims: int) -> torch.Tensor:
-        """Build one-hot encoding of current affordance under each agent.
-
-        This encodes against the FULL affordance vocabulary (from affordances.yaml),
-        not just deployed affordances. This ensures observation dimensions stay
-        constant across curriculum levels.
-
-        Returns:
-            encoding: [num_agents, num_affordance_types + 1]
-                One-hot over affordance types plus explicit \"none\" category.
-        """
-        # Total affordance classes (excluding the explicit "none" slot)
-        num_types = self.num_affordance_types
-        total_dims = num_types + 1
-
-        # Initialize all zeros; last column is reserved for "none".
-        affordance_encoding = torch.zeros(self.num_agents, total_dims, device=self.device)
-
-        # Iterate over full affordance vocabulary (not just deployed positions).
-        for affordance_idx, affordance_name in enumerate(self.affordance_names):
-            if affordance_name in self.affordances:
-                affordance_pos = self.affordances[affordance_name]
-                on_affordance = self.substrate.is_on_position(self.positions, affordance_pos)
-                if on_affordance.any():
-                    affordance_encoding[on_affordance, affordance_idx] = 1.0
-
-        # Agents not on any affordance get "none" category = 1.0 in last slot.
-        row_sums = affordance_encoding.sum(dim=1)
-        none_mask = row_sums == 0
-        affordance_encoding[none_mask, num_types] = 1.0
-
-        # Align with spec dims defensively (older artifacts may differ).
-        if dims == total_dims:
-            return affordance_encoding
-        if dims < total_dims:
-            return affordance_encoding[:, :dims]
-
-        padded = torch.zeros(self.num_agents, dims, device=self.device)
-        padded[:, :total_dims] = affordance_encoding
-        return padded
+        """Build one-hot encoding of current affordance under each agent."""
+        return self._observation_encoder._build_affordance_encoding(dims)
 
     def _build_effects_observation(self, dims: int) -> torch.Tensor:
         """Encode observable effects into a fixed-size tensor."""
@@ -1340,7 +926,13 @@ class VectorizedHamletEnv:
         if self.effect_manager is None or self.effect_observation_slots <= 0:
             return torch.zeros(self.num_agents, dims, device=self.device)
 
-        slots = max(1, min(self.effect_observation_slots, dims // 3))
+        expected_dims = self.effect_observation_slots * 3
+        if dims != expected_dims:
+            raise ValueError(
+                f"Observation field 'obs_effects' expected {dims} dims, but effect observation metadata requires {expected_dims}."
+            )
+
+        slots = self.effect_observation_slots
         effect_obs = torch.zeros(self.num_agents, slots, 3, device=self.device)
 
         for agent_idx in range(self.num_agents):
@@ -1351,51 +943,11 @@ class VectorizedHamletEnv:
                 effect_obs[agent_idx, slot_idx, 1] = float(remaining) / float(total)
                 effect_obs[agent_idx, slot_idx, 2] = 1.0
 
-        flat = effect_obs.reshape(self.num_agents, slots * 3)
-        if flat.shape[1] == dims:
-            return flat
-        if flat.shape[1] > dims:
-            return flat[:, :dims]
-
-        padded = torch.zeros(self.num_agents, dims, device=self.device)
-        padded[:, : flat.shape[1]] = flat
-        return padded
+        return effect_obs.reshape(self.num_agents, slots * 3)
 
     def _encode_position_observation(self) -> torch.Tensor | None:
-        """Encode agent position using substrate-native semantics.
-
-        Returns:
-            [num_agents, position_dim] tensor or None for aspatial substrates.
-        """
-        # Aspatial substrates have no positional encoding.
-        if getattr(self.substrate, "position_dim", 0) == 0:
-            return None
-
-        # Prefer substrate-provided encoders; fall back to normalizer/observation encoder.
-        encode_fn = Callable[[torch.Tensor, dict[str, torch.Tensor]], torch.Tensor]
-
-        encoder = getattr(self.substrate, "_encode_position_features", None)
-        if callable(encoder):
-            typed_encoder = cast(encode_fn, encoder)
-            return typed_encoder(self.positions, self.affordances)
-
-        public_encoder = getattr(self.substrate, "encode_position_features", None)
-        if callable(public_encoder):
-            typed_public = cast(encode_fn, public_encoder)
-            return typed_public(self.positions, self.affordances)
-
-        encode_observation = getattr(self.substrate, "encode_observation", None)
-        if callable(encode_observation):
-            typed_encode_obs = cast(encode_fn, encode_observation)
-            return typed_encode_obs(self.positions, self.affordances)
-
-        # Normalized positions so obs_position dims match substrate.position_dim
-        normalizer = getattr(self.substrate, "normalize_positions", None)
-        if callable(normalizer):
-            typed_normalizer = cast(Callable[[torch.Tensor], torch.Tensor], normalizer)
-            return typed_normalizer(self.positions)
-
-        return None
+        """Encode agent position using substrate-native semantics."""
+        return self._observation_encoder._encode_position_observation()
 
     def _encode_velocity_observation(self) -> torch.Tensor | None:
         """Encode agent velocity as delta position per step.
@@ -1423,172 +975,22 @@ class VectorizedHamletEnv:
         return velocity
 
     def get_action_masks(self) -> torch.Tensor:
-        """
-        Get action masks for all agents (invalid actions = False).
+        """Compute valid-action masks for the current tick.
 
-        Action masking prevents agents from selecting movements that would
-        take them off the grid. This saves exploration budget and speeds learning.
-
-        Returns:
-            action_masks: [num_agents, action_dim] bool tensor
-                True = valid action, False = invalid
-                Grid2D (6 actions): [UP, DOWN, LEFT, RIGHT, INTERACT, WAIT]
-                Grid3D (8 actions): [UP, DOWN, LEFT, RIGHT, UP_Z, DOWN_Z, INTERACT, WAIT]
+        Delegates to :class:`ActionMaskBuilder`. Returns a
+        ``[num_agents, action_dim]`` bool tensor where ``True`` is a valid
+        action; semantics are documented on the builder.
         """
-        # Start with base mask (disabled actions = False)
-        action_masks = self.action_space.get_base_action_mask(
+        return self.action_mask_builder.build(
             num_agents=self.num_agents,
-            device=self.device,
+            positions=self.positions,
+            dones=self.dones if hasattr(self, "dones") else None,
+            item_inventory=self.item_inventory,
+            item_manager=self.item_manager,
+            item_handler=self.item_handler,
+            affordances=self.affordances,
+            is_affordance_open=self._is_affordance_open,
         )
-
-        # Item-specific masks (inventory state and position)
-        if self.item_inventory is not None:
-            # Narrow try-except to only catch ValueError from get_action_by_name
-            try:
-                get_action = self.action_space.get_action_by_name("GET")
-            except ValueError:
-                get_action = None  # GET action not present in action space
-
-            if get_action is not None:
-                get_action_id = get_action.id
-
-                # Mask GET when inventory is full
-                inventory_full = ~(self.item_inventory.slots == -1).any(dim=1)
-                if inventory_full.any():
-                    action_masks[inventory_full, get_action_id] = False
-
-                # Mask GET when no item at agent position
-                if self.item_manager is not None:
-                    for agent_idx in range(self.num_agents):
-                        # Skip if already masked (inventory full)
-                        if not action_masks[agent_idx, get_action_id]:
-                            continue
-
-                        # Check if there's an item at this agent's position
-                        agent_pos_tuple = tuple(self.positions[agent_idx].tolist())
-                        item_at_position = False
-                        for item in self.item_manager.active_items.values():
-                            if item.position == agent_pos_tuple:
-                                item_at_position = True
-                                break
-
-                        # Mask GET if no item at position
-                        if not item_at_position:
-                            action_masks[agent_idx, get_action_id] = False
-
-            for slot_idx in range(self.item_inventory.max_items_per_agent):
-                try:
-                    use_id = self.action_space.get_action_by_name(f"USE_SLOT_{slot_idx}").id
-                except ValueError:
-                    use_id = None
-                try:
-                    drop_id = self.action_space.get_action_by_name(f"DROP_SLOT_{slot_idx}").id
-                except ValueError:
-                    drop_id = None
-
-                if use_id is None and drop_id is None:
-                    continue
-
-                slot_items = self.item_inventory.slots[:, slot_idx]
-                slot_empty = slot_items == -1
-                if slot_empty.any():
-                    if use_id is not None:
-                        action_masks[slot_empty, use_id] = False
-                    if drop_id is not None:
-                        action_masks[slot_empty, drop_id] = False
-
-        # Custom item verbs (local/inventory) mask based on availability
-        if self.item_handler is not None:
-            self.item_handler.compute_custom_action_masks(self.action_space, action_masks, self.positions)
-
-        # Check boundary constraints (only for discrete grid substrates)
-        # Continuous substrates handle boundaries in apply_movement() via boundary modes
-        if self.grid_size is not None and self.substrate.position_dim >= 2:
-            # positions[:, 0] = x (column), positions[:, 1] = y (row)
-            at_top = self.positions[:, 1] == 0  # y == 0
-            at_bottom = self.positions[:, 1] == self.grid_size - 1  # y == max
-            at_left = self.positions[:, 0] == 0  # x == 0
-            at_right = self.positions[:, 0] == self.grid_size - 1  # x == max
-
-            # Mask invalid movements using movement deltas (metadata-driven, no hardcoded names)
-            deltas = self._movement_deltas
-            # Up/down along y-axis
-            up_action_ids = torch.nonzero(deltas[:, 1] < 0, as_tuple=False).squeeze(1)
-            down_action_ids = torch.nonzero(deltas[:, 1] > 0, as_tuple=False).squeeze(1)
-            # Left/right along x-axis
-            left_action_ids = torch.nonzero(deltas[:, 0] < 0, as_tuple=False).squeeze(1)
-            right_action_ids = torch.nonzero(deltas[:, 0] > 0, as_tuple=False).squeeze(1)
-
-            if up_action_ids.numel() > 0:
-                rows = at_top.nonzero(as_tuple=True)[0]
-                if rows.numel() > 0:
-                    action_masks[rows.unsqueeze(1), up_action_ids] = False
-            if down_action_ids.numel() > 0:
-                rows = at_bottom.nonzero(as_tuple=True)[0]
-                if rows.numel() > 0:
-                    action_masks[rows.unsqueeze(1), down_action_ids] = False
-            if left_action_ids.numel() > 0:
-                rows = at_left.nonzero(as_tuple=True)[0]
-                if rows.numel() > 0:
-                    action_masks[rows.unsqueeze(1), left_action_ids] = False
-            if right_action_ids.numel() > 0:
-                rows = at_right.nonzero(as_tuple=True)[0]
-                if rows.numel() > 0:
-                    action_masks[rows.unsqueeze(1), right_action_ids] = False
-
-        # 3D-specific: mask Z-axis movements at floor/ceiling (discrete grids only)
-        if self.grid_size is not None and self.substrate.position_dim == 3:
-            at_floor = self.positions[:, 2] == 0  # z == 0
-            # Assume depth from substrate
-            if hasattr(self.substrate, "depth"):
-                at_ceiling = self.positions[:, 2] == self.substrate.depth - 1
-            else:
-                at_ceiling = torch.zeros(self.num_agents, dtype=torch.bool, device=self.device)
-
-            deltas = self._movement_deltas
-            up_z_action_ids = torch.nonzero(deltas[:, 2] > 0, as_tuple=False).squeeze(1)
-            down_z_action_ids = torch.nonzero(deltas[:, 2] < 0, as_tuple=False).squeeze(1)
-            if up_z_action_ids.numel() > 0:
-                rows = at_ceiling.nonzero(as_tuple=True)[0]
-                if rows.numel() > 0:
-                    action_masks[rows.unsqueeze(1), up_z_action_ids] = False
-            if down_z_action_ids.numel() > 0:
-                rows = at_floor.nonzero(as_tuple=True)[0]
-                if rows.numel() > 0:
-                    action_masks[rows.unsqueeze(1), down_z_action_ids] = False
-
-        # Mask INTERACT - only valid when on an open affordance
-        # P1.4: Removed affordability check - agents can attempt INTERACT even when broke
-        # Affordability is checked inside interaction handlers; failing to afford just
-        # wastes a turn (passive decay) and teaches economic planning
-
-        # Use cached INTERACT index (from ActionSpaceBuilder)
-        interact_action_idx = self.action_ids.get("INTERACT")
-
-        on_valid_affordance = torch.zeros(self.num_agents, dtype=torch.bool, device=self.device)
-
-        # Check each affordance using AffordanceEngine
-        for affordance_name, affordance_pos in self.affordances.items():
-            if self.enable_temporal_mechanics and not self._is_affordance_open(affordance_name):
-                continue
-
-            on_this_affordance = self.substrate.is_on_position(self.positions, affordance_pos)
-            on_valid_affordance |= on_this_affordance
-
-        if interact_action_idx is not None:
-            base_interact_mask = action_masks[:, interact_action_idx].clone()
-            # Respect config-disabled INTERACT entries by preserving the base mask.
-            action_masks[:, interact_action_idx] = base_interact_mask & on_valid_affordance
-
-        # P3.1: Mask all actions for dead agents according to terminal conditions.
-        # This must be LAST to override all other masking. Terminal conditions are
-        # defined in bars.yaml (lethal_min/lethal_max) and enforced by MeterDynamics;
-        # we use the env's dones flag as single source of truth instead of hardcoded
-        # meter names.
-        if hasattr(self, "dones"):
-            action_masks[self.dones] = False
-
-        return action_masks
 
     def step(
         self,
@@ -1609,16 +1011,20 @@ class VectorizedHamletEnv:
             info: dict with metadata
         """
         prev_dones = self.dones.clone()
+        self.vfs_registry.reset_tick_scoped()
         # 1. Execute actions and track successful interactions
-        successful_interactions = self._execute_actions(actions)
+        successful_interactions = self._action_executor._execute_actions(actions)
+        self._run_vtc_transition_phases(
+            self.vtc_transition_runner.phases_through("apply_completion_bonuses"),
+            actions=actions,
+            active_mask=torch.logical_not(prev_dones),
+        )
 
         # 2. Deplete meters (base passive decay with curriculum difficulty)
-        self.meters = self.meter_dynamics.deplete_meters(self.meters, depletion_multiplier)
+        self._apply_vtc_passive_depletion(depletion_multiplier)
 
-        # 3. Cascading effects (coupled differential equations!)
-        self.meters = self.meter_dynamics.apply_secondary_to_primary_effects(self.meters)
-        self.meters = self.meter_dynamics.apply_tertiary_to_secondary_effects(self.meters)
-        self.meters = self.meter_dynamics.apply_tertiary_to_primary_effects(self.meters)
+        # 3. Passive threshold cascades via VTC relationship rules.
+        self._apply_vtc_threshold_cascades()
 
         # 3.5. Execute active effects (after cascades, before terminal checks)
         # Effects can modify bars based on current state after all natural dynamics applied
@@ -1645,14 +1051,12 @@ class VectorizedHamletEnv:
 
             # Get current VFS state from registry
             # HIGH-02: Use proper VFS API instead of direct _storage access
-            current_vfs_state = {}
-            for var_name in self.vfs_registry.variables.keys():
-                current_vfs_state[var_name] = self.vfs_registry.get(var_name, reader="engine")
+            current_vfs_state = self._current_vfs_state()
 
             # Evaluate global profile
             global_profile = self.universe.compiled_vfs_profiles.global_profile
             if global_profile is not None:
-                marks = self.vfs_observation_marks.get("global", set()) if self.vfs_observation_marks else None
+                marks = self.vfs_observation_marks.get("global", set()) if self.vfs_observation_marks else set()
 
                 updated_vfs = self.vfs_evaluator.evaluate_global_profile(
                     profile=global_profile,
@@ -1661,32 +1065,28 @@ class VectorizedHamletEnv:
                     marks=marks,
                     device=self.device,
                     step=self.global_tick,  # HIGH-01: Use global tick instead of agent 0
+                    affordances=self._build_vfs_affordance_context(),
+                    temporal=self._build_vfs_temporal_context(),
                     agent_positions=self.positions.to(dtype=torch.float32, device=self.device),
                     affordance_positions={k: v.to(dtype=torch.float32, device=self.device) for k, v in self.affordances.items()},
                     vfs_types={name: var.type for name, var in self.vfs_registry.variables.items()},
                     num_agents=self.num_agents,
-                    item_vfs=getattr(self.vfs_registry, "item_vfs", None),
-                    item_profile_map=getattr(self.vfs_registry, "item_profile_map", None),
-                    item_index_to_profile=getattr(self.vfs_registry, "item_vfs_index_to_profile", None),
+                    item_vfs=self.vfs_registry.item_vfs,
+                    item_profile_map=self.vfs_registry.item_profile_map,
+                    item_index_to_profile=self.vfs_registry.item_vfs_index_to_profile,
                 )
 
-                # Write updated values back to registry
-                # Note: Direct _storage access required because VFS expressions with bar
-                # references produce batched results (shape [num_agents]) even when the
-                # variable is declared as scalar. The evaluator output is correct; the
-                # shape mismatch is expected for bar-referencing expressions.
                 for var_name, value in updated_vfs.items():
                     if var_name in self.vfs_registry.variables:
-                        # Cast to expected dtype (VFS uses float32 for all values)
-                        # This handles cases where evaluator produces int64 (e.g., day_count)
-                        expected_dtype = self.vfs_registry._expected_dtypes.get(var_name, torch.float32)
-                        if value.dtype != expected_dtype:
-                            value = value.to(dtype=expected_dtype)
-                        # Direct storage access - bypasses shape validation for engine writes
-                        self.vfs_registry._storage[var_name] = value.to(self.vfs_registry.device).clone()
+                        self.vfs_registry.set_engine_value(var_name, value)
 
-        # 4. Check terminal conditions
-        self.dones = self.meter_dynamics.check_terminal_conditions(self.meters, self.dones)
+        self._run_vtc_transition_phases(
+            self.vtc_transition_runner.phases_between("apply_threshold_cascades", "evaluate_terminal_conditions"),
+            active_mask=torch.logical_not(prev_dones),
+        )
+
+        # 4. Evaluate VTC terminal conditions
+        self._apply_vtc_terminal_conditions()
 
         # 5. Increment step counts (before retirement check)
         self.step_counts += 1
@@ -1708,7 +1108,7 @@ class VectorizedHamletEnv:
         retired = self.step_counts >= self.agent_lifespan
 
         # 6. Calculate rewards (interoception-aware)
-        rewards = self._calculate_shaped_rewards()
+        rewards = self._reward_calculator._calculate_shaped_rewards()
         rewards = torch.where(retired, rewards + 1.0, rewards)  # +1 retirement bonus
         self.dones = torch.logical_or(self.dones, retired)
 
@@ -1725,7 +1125,7 @@ class VectorizedHamletEnv:
         else:
             self.time_of_day = 0
 
-        observations = self._get_observations()
+        observations = self._observation_encoder._get_observations()
 
         info = {
             "step_counts": self.step_counts.clone(),
@@ -1738,397 +1138,100 @@ class VectorizedHamletEnv:
         return observations, rewards, self.dones, info
 
     def _execute_actions(self, actions: torch.Tensor) -> dict:
-        """
-        Execute movement, interaction, and wait actions.
-
-        Args:
-            actions: [num_agents] tensor of action IDs from the composed action space
-
-        Returns:
-            Dictionary mapping agent indices to affordance names for successful interactions
-        """
-        # === CUSTOM ACTION DISPATCH (early) ===
-        # Custom actions start after substrate actions
-        custom_action_start_id = self.action_space.substrate_action_count
-        custom_mask = actions >= custom_action_start_id
-
-        if custom_mask.any():
-            custom_agent_indices = torch.where(custom_mask)[0]
-            for agent_idx in custom_agent_indices:
-                action_id = int(actions[agent_idx].item())
-                action = self.action_space.get_action_by_id(action_id)
-
-                # Apply custom action costs/effects/teleportation
-                self._apply_custom_action(agent_idx, action)
-
-        # Store old positions for temporal mechanics progress tracking AND velocity calculation
-        old_positions = self.positions.clone()
-
-        # Apply movement using pre-built delta tensor from ActionConfig
-        # Only for substrate actions (custom actions already handled above)
-        substrate_mask = actions < custom_action_start_id
-        if substrate_mask.any():
-            movement_deltas = self._movement_deltas[actions[substrate_mask]]  # [num_substrate_agents, position_dim]
-            self.positions[substrate_mask] = self.substrate.apply_movement(self.positions[substrate_mask], movement_deltas)
-
-        # Calculate velocity (movement delta since last step)
-        # Cast to float32 (grid substrates use int positions, continuous use float)
-        velocity = (self.positions - old_positions).float()  # [num_agents, position_dim]
-        self._velocity = velocity
-
-        # Write velocity components to VFS (if velocity variables exist)
-        # Scalar variables require shape (num_agents,) not (num_agents, 1)
-        if "velocity_x" in self.vfs_registry._definitions:
-            self.vfs_registry.set("velocity_x", velocity[:, 0], writer="engine")
-
-        if "velocity_y" in self.vfs_registry._definitions and velocity.shape[1] >= 2:
-            self.vfs_registry.set("velocity_y", velocity[:, 1], writer="engine")
-
-        if "velocity_z" in self.vfs_registry._definitions and velocity.shape[1] >= 3:
-            self.vfs_registry.set("velocity_z", velocity[:, 2], writer="engine")
-
-        # Calculate and write velocity magnitude (speed)
-        if "velocity_magnitude" in self.vfs_registry._definitions:
-            magnitude = torch.norm(velocity, dim=1)  # [num_agents]
-            self.vfs_registry.set("velocity_magnitude", magnitude, writer="engine")
-
-        # Reset progress for agents that moved away (temporal mechanics)
-        if self.enable_temporal_mechanics:
-            for agent_idx in range(self.num_agents):
-                if not torch.equal(old_positions[agent_idx], self.positions[agent_idx]):
-                    self.interaction_progress[agent_idx] = 0
-                    self.last_interaction_affordance[agent_idx] = None
-
-        # Apply action costs (configurable)
-        # Determine movement actions directly from the movement deltas to support
-        # substrates where non-movement actions appear before all movement actions
-        # (e.g., 3D where INTERACT/WAIT sit at indices < last movement deltas).
-        # Only apply to substrate actions (not custom actions)
-        movement_actions = self._movement_deltas.ne(0).any(dim=1)
-        # Create a full mask (initialize to False for all agents)
-        movement_mask = torch.zeros(self.num_agents, dtype=torch.bool, device=self.device)
-        # Only check movement for substrate actions
-        if substrate_mask.any():
-            movement_mask[substrate_mask] = movement_actions[actions[substrate_mask]]
-        if movement_mask.any():
-            # Create dynamic cost tensor from bars.yaml (per-level BarsV2Config).
-            movement_costs = torch.zeros(self.meter_count, device=self.device)
-            for bar in self.bars_config.meters:
-                idx = self.meter_name_to_index.get(bar.name)
-                if idx is not None:
-                    movement_costs[idx] = float(bar.depletion.move)
-
-            self.meters[movement_mask] -= movement_costs.unsqueeze(0)
-            self.meters = torch.clamp(self.meters, 0.0, 1.0)
-
-        # WAIT action - NO additional cost
-        # WAIT only pays base_depletion (handled by MeterDynamics), no action-specific cost
-        # This is architecturally correct: WAIT = existence without action
-
-        # === ITEM ACTION DISPATCH ===
-        if self.item_handler is not None:
-            # Capture current tick per agent for item action scheduling
-            # step_counts stores ticks per agent; use scalar int for handlers
-            current_ticks = self.step_counts.clone()
-            # GET action - narrow try-except to only catch action lookup failure
-            try:
-                get_action = self.action_space.get_action_by_name("GET")
-            except ValueError:
-                get_action = None  # GET action not in action space
-
-            if get_action is not None:
-                get_action_id = get_action.id
-                get_mask = actions == get_action_id
-                if get_mask.any():
-                    for agent_idx in torch.where(get_mask)[0]:
-                        self.item_handler.handle_get_action(
-                            agent_idx=int(agent_idx.item()),
-                            agent_position=self.positions[agent_idx],
-                            current_tick=int(current_ticks[agent_idx].item()),
-                            meters=self.meters,
-                        )
-
-            if self.item_inventory is not None:
-                # USE_SLOT_N actions - narrow try-except to only catch action lookup failure
-                for slot_idx in range(self.item_inventory.max_items_per_agent):
-                    use_action_name = f"USE_SLOT_{slot_idx}"
-                    try:
-                        use_action = self.action_space.get_action_by_name(use_action_name)
-                    except ValueError:
-                        use_action = None  # Action not in action space
-
-                    if use_action is not None:
-                        use_action_id = use_action.id
-                        use_mask = actions == use_action_id
-                        if use_mask.any():
-                            for agent_idx in torch.where(use_mask)[0]:
-                                self.item_handler.handle_use_slot_action(
-                                    agent_idx=int(agent_idx.item()),
-                                    slot_idx=slot_idx,
-                                    current_tick=int(current_ticks[agent_idx].item()),
-                                    meters=self.meters,
-                                )
-
-                # DROP_SLOT_N actions - narrow try-except to only catch action lookup failure
-                for slot_idx in range(self.item_inventory.max_items_per_agent):
-                    drop_action_name = f"DROP_SLOT_{slot_idx}"
-                    try:
-                        drop_action = self.action_space.get_action_by_name(drop_action_name)
-                    except ValueError:
-                        drop_action = None  # Action not in action space
-
-                    if drop_action is not None:
-                        drop_action_id = drop_action.id
-                        drop_mask = actions == drop_action_id
-                        if drop_mask.any():
-                            for agent_idx in torch.where(drop_mask)[0]:
-                                self.item_handler.handle_drop_slot_action(
-                                    agent_idx=int(agent_idx.item()),
-                                    slot_idx=slot_idx,
-                                    agent_position=self.positions[agent_idx],
-                                    current_tick=int(current_ticks[agent_idx].item()),
-                                )
-
-            # Custom item verbs (local and inventory scoped)
-            for action_name in self.item_handler.custom_action_specs.keys():
-                try:
-                    action_id = self.action_space.get_action_by_name(action_name).id
-                except ValueError:
-                    continue
-                action_mask = actions == action_id
-                if action_mask.any():
-                    for agent_idx in torch.where(action_mask)[0]:
-                        self.item_handler.handle_custom_action(
-                            action_name=action_name,
-                            agent_idx=int(agent_idx.item()),
-                            agent_position=self.positions[agent_idx],
-                            current_tick=int(current_ticks[agent_idx].item()),
-                            meters=self.meters,
-                        )
-
-        # Handle INTERACT actions (if present in the action space)
-        interact_action_idx = self.action_ids.get("INTERACT")
-
-        successful_interactions = {}
-        if interact_action_idx is not None:
-            interact_mask = (actions == interact_action_idx) & substrate_mask
-            if interact_mask.any():
-                # Apply interaction costs from bars.yaml (per-level BarsV2Config).
-                interaction_costs = torch.zeros(self.meter_count, device=self.device)
-                for bar in self.bars_config.meters:
-                    idx = self.meter_name_to_index.get(bar.name)
-                    if idx is not None:
-                        interaction_costs[idx] = float(bar.depletion.interact)
-
-                self.meters[interact_mask] -= interaction_costs.unsqueeze(0)
-                self.meters = torch.clamp(self.meters, 0.0, 1.0)
-
-                successful_interactions = self._handle_interactions(interact_mask)
-
-        return successful_interactions
-
-    def _handle_interactions(self, interact_mask: torch.Tensor) -> dict:
-        """
-        Handle INTERACT actions with multi-tick accumulation.
-
-        Args:
-            interact_mask: [num_agents] bool mask
-
-        Returns:
-            Dictionary mapping agent indices to affordance names
-        """
-        if not self.enable_temporal_mechanics:
-            # No temporal mechanics: always use instant interactions.
-            return self._handle_instant_interactions(interact_mask)
-
-        # If temporal mechanics are enabled but there are no multi-tick affordances
-        # (interaction_type in {"multi_tick", "dual"}), treat interactions as instant
-        # with time-of-day gating only.
-        if not any(getattr(aff, "interaction_type", "instant") in {"multi_tick", "dual"} for aff in self.affordance_engine.affordances):
-            return self._handle_instant_interactions(interact_mask)
-
-        # Multi-tick interaction logic using AffordanceEngine
-        successful_interactions: dict[int, str] = {}
-
-        for affordance_name, affordance_pos in self.affordances.items():
-            if not self._is_affordance_open(affordance_name):
-                continue
-
-            # Check if still on same affordance (using substrate)
-            at_affordance = self.substrate.is_on_position(self.positions, affordance_pos) & interact_mask
-
-            if not at_affordance.any():
-                continue
-
-            # Check affordability using AffordanceEngine
-            cost_per_tick = self.affordance_engine.get_affordance_cost(affordance_name, cost_mode="per_tick")
-            # TASK-001: Use dynamic money index (if money meter exists)
-            if self.money_idx is not None:
-                can_afford = self.meters[:, self.money_idx] >= cost_per_tick
-                at_affordance = at_affordance & can_afford
-            # else: no money meter, affordability always passes
-
-            if not at_affordance.any():
-                continue
-
-            # Get duration ticks from AffordanceEngine
-            duration_ticks = self.affordance_engine.get_duration_ticks(affordance_name)
-
-            # Track successful interactions
-            agent_indices = torch.where(at_affordance)[0]
-
-            for agent_idx in agent_indices:
-                agent_idx_int = agent_idx.item()
-                current_pos = self.positions[agent_idx]
-
-                # Check if continuing same affordance at same position
-                if self.last_interaction_affordance[agent_idx_int] == affordance_name and torch.equal(
-                    current_pos, self.last_interaction_position[agent_idx_int]
-                ):
-                    # Continue progress
-                    self.interaction_progress[agent_idx] += 1
-                else:
-                    # New affordance - reset progress
-                    self.interaction_progress[agent_idx] = 1
-                    self.last_interaction_affordance[agent_idx_int] = affordance_name
-                    self.last_interaction_position[agent_idx_int] = current_pos.clone()
-
-                ticks_done = int(self.interaction_progress[agent_idx].item())
-
-                # Create single-agent mask for this agent
-                single_agent_mask = torch.zeros(self.num_agents, dtype=torch.bool, device=self.device)
-                single_agent_mask[agent_idx] = True
-
-                # Apply multi-tick interaction using AffordanceEngine
-                # This applies per-tick effects and costs
-                self.meters = self.affordance_engine.apply_multi_tick_interaction(
-                    meters=self.meters,
-                    affordance_name=affordance_name,
-                    current_tick=ticks_done - 1,  # 0-indexed
-                    agent_mask=single_agent_mask,
-                    check_affordability=False,  # Already checked above
-                )
-
-                # Reset progress if completed
-                if ticks_done == duration_ticks:
-                    self.interaction_progress[agent_idx] = 0
-                    self.last_interaction_affordance[agent_idx_int] = None
-
-                successful_interactions[agent_idx_int] = affordance_name
-
-        # Update affordance tracking after all interactions
-        self._update_affordance_tracking(successful_interactions)
-
-        return successful_interactions
-
-    def _handle_instant_interactions(self, interact_mask: torch.Tensor) -> dict:
-        """
-        Handle INTERACT action at affordances (instant mode - no temporal mechanics).
-
-        Uses AffordanceEngine for all logic - no hardcoded costs!
-
-        Args:
-            interact_mask: [num_agents] bool mask
-
-        Returns:
-            Dictionary mapping agent indices to affordance names for successful interactions
-        """
-        # Track successful interactions for this step
-        successful_interactions = {}  # {agent_idx: affordance_name}
-
-        # Check each affordance
-        for affordance_name, affordance_pos in self.affordances.items():
-            if self.enable_temporal_mechanics and not self._is_affordance_open(affordance_name):
-                continue
-
-            # Check which agents are on this affordance (using substrate)
-            at_affordance = self.substrate.is_on_position(self.positions, affordance_pos) & interact_mask
-
-            if not at_affordance.any():
-                continue
-
-            # Check affordability using AffordanceEngine
-            cost_normalized = self.affordance_engine.get_affordance_cost(affordance_name, cost_mode="instant")
-            if cost_normalized > 0:
-                # TASK-001: Use dynamic money index (if money meter exists)
-                if self.money_idx is not None:
-                    can_afford = self.meters[:, self.money_idx] >= cost_normalized
-                    at_affordance = at_affordance & can_afford
-                # else: no money meter, affordability always passes
-
-                if not at_affordance.any():
-                    # No one at this affordance can afford it, skip
-                    continue
-
-            # Track successful interactions
-            agent_indices = torch.where(at_affordance)[0]
-            for agent_idx in agent_indices:
-                successful_interactions[agent_idx.item()] = affordance_name
-
-            # Apply affordance effects using AffordanceEngine
-            self.meters = self.affordance_engine.apply_interaction(
-                meters=self.meters,
-                affordance_name=affordance_name,
-                agent_mask=at_affordance,
-                current_tick=self.global_tick,  # HIGH-01: Use global tick instead of agent 0
-            )
-
-        # Update affordance tracking after all interactions
-        self._update_affordance_tracking(successful_interactions)
-
-        return successful_interactions
-
-    def _calculate_shaped_rewards(self) -> torch.Tensor:
-        """Calculate total rewards using DACEngine.
-
-        Computes: extrinsic + (intrinsic × modifiers) + shaping bonuses
-
-        Returns:
-            rewards: [num_agents] final rewards
-        """
-        # Gather intrinsic raw values from exploration module (if available)
-        if self.exploration_module is not None:
-            # Get current observations for intrinsic reward computation
-            observations = self._get_observations()
-            # BUG-22 FIX: Update stats during training rollouts so normalization tracks distribution
-            intrinsic_raw = self.exploration_module.compute_intrinsic_rewards(observations, update_stats=True)
-        else:
-            # Fallback to zeros if no exploration module is set
-            intrinsic_raw = torch.zeros(self.num_agents, device=self.device)
-
-        # Gather additional context for shaping bonuses
-        # Use float positions so DACEngine distance computations operate in a
-        # consistent continuous space (grid indices or continuous coords).
-        agent_positions = self.positions.to(device=self.device, dtype=torch.float32)
-
-        kwargs = {
-            "agent_positions": agent_positions,
-            "affordance_positions": self._get_affordance_positions(),
-            "last_action_affordance": self._get_last_action_affordances(),
-            "affordance_streak": self._get_affordance_streaks(),
-            "unique_affordances_used": self._get_unique_affordances_used(),
-        }
-
-        # Add temporal context if temporal mechanics enabled
-        if self.enable_temporal_mechanics:
-            kwargs["current_hour"] = self.time_of_day
-
-        # Calculate rewards using DACEngine
-        total_rewards, intrinsic_weights, components = self.dac_engine.calculate_rewards(
-            step_counts=self.step_counts,
-            dones=self.dones,
-            meters=self.meters,
-            intrinsic_raw=intrinsic_raw,
-            **kwargs,
+        """Execute movement, interaction, and wait actions."""
+        return self._action_executor._execute_actions(actions)
+
+    def _apply_vtc_action_writes(self, actions: torch.Tensor, active_mask: torch.Tensor) -> None:
+        """Apply compiled VFS transition writes for selected actions."""
+        self._run_vtc_transition_phases(
+            self.vtc_transition_runner.phases_through("apply_completion_bonuses"),
+            actions=actions,
+            active_mask=active_mask,
         )
 
-        # Store intrinsic weights for population-level annealing
-        self.intrinsic_weights = intrinsic_weights
+    def _apply_vtc_passive_depletion(self, depletion_multiplier: float) -> None:
+        """Apply compiled VFS passive-depletion rules to meter bars."""
+        self._run_vtc_transition_phases(
+            ("apply_passive_depletion",),
+            active_mask=torch.ones_like(self.dones, dtype=torch.bool, device=self.device),
+            depletion_multiplier=depletion_multiplier,
+        )
 
-        # Store components for logging (optional)
-        self._last_reward_components = components
+    def _apply_vtc_threshold_cascades(self) -> None:
+        """Apply compiled VFS threshold-cascade rules to meter bars."""
+        self._run_vtc_transition_phases(
+            ("apply_threshold_cascades",),
+            active_mask=torch.ones_like(self.dones, dtype=torch.bool, device=self.device),
+        )
 
-        return total_rewards
+    def _apply_vtc_terminal_conditions(self) -> None:
+        """Evaluate compiled VFS terminal-condition rules over meter bars."""
+        self._run_vtc_transition_phases(
+            ("evaluate_terminal_conditions",),
+            dones=self.dones,
+            active_mask=torch.logical_not(self.dones),
+        )
+
+    def _run_vtc_transition_phases(
+        self,
+        phases: tuple[str, ...],
+        *,
+        active_mask: torch.Tensor,
+        actions: torch.Tensor | None = None,
+        dones: torch.Tensor | None = None,
+        depletion_multiplier: float = 1.0,
+    ) -> None:
+        """Execute generic compiled VTC transition phases and commit their writes."""
+        result = self.vtc_transition_runner.run_phases(
+            phases,
+            VTCTransitionContext(
+                actions=actions,
+                vfs_state=self._current_vfs_state(),
+                bars_state=self._current_bar_state(),
+                active_mask=active_mask,
+                device=self.device,
+                dones=dones,
+                depletion_multiplier=depletion_multiplier,
+            ),
+        )
+        self._commit_vtc_transition_state(result)
+
+    def _commit_vtc_transition_state(self, state: VTCTransitionState) -> None:
+        for bar_name, value in state.bars_state.items():
+            self._set_vtc_bar_value(bar_name, value)
+        for variable_id, value in state.vfs_state.items():
+            if variable_id in self.vfs_registry.variables:
+                self.vfs_registry.set_engine_value(variable_id, value)
+        if state.dones is not None:
+            self.dones = state.dones
+
+    def _current_vfs_state(self) -> dict[str, torch.Tensor]:
+        """Return the engine-readable VFS registry snapshot."""
+        return {var_name: self.vfs_registry.get(var_name, reader="engine") for var_name in self.vfs_registry.variables.keys()}
+
+    def _current_bar_state(self) -> dict[str, torch.Tensor]:
+        """Return meter bars in the VTC expression namespace."""
+        return {bar_name: self.meters[:, idx] for bar_name, idx in self.meter_name_to_index.items()}
+
+    def _set_vtc_bar_value(self, bar_name: str, value: torch.Tensor) -> None:
+        """Write a VTC-updated bar tensor back to the environment meters."""
+        meter_idx = self.meter_name_to_index[bar_name]
+        expected = self.meters[:, meter_idx]
+        if value.shape != expected.shape:
+            raise ValueError(f"VTC action write for bar '{bar_name}' produced shape {tuple(value.shape)}, expected {tuple(expected.shape)}")
+        self.meters[:, meter_idx] = value.to(device=self.device, dtype=expected.dtype)
+
+    def _handle_interactions(self, interact_mask: torch.Tensor) -> dict:
+        """Handle INTERACT actions with multi-tick accumulation."""
+        return self._action_executor._handle_interactions(interact_mask)
+
+    def _handle_instant_interactions(self, interact_mask: torch.Tensor) -> dict:
+        """Handle INTERACT action at affordances in instant mode."""
+        return self._action_executor._handle_instant_interactions(interact_mask)
+
+    def _calculate_shaped_rewards(self) -> torch.Tensor:
+        """Calculate total rewards using DACEngine."""
+        return self._reward_calculator._calculate_shaped_rewards()
 
     def _get_affordance_positions(self) -> dict[str, torch.Tensor]:
         """Get current affordance positions as dict.
@@ -2287,68 +1390,6 @@ class VectorizedHamletEnv:
             if name in self.affordances:
                 self.affordances[name] = torch.tensor(pos, device=self.device, dtype=self.substrate.position_dtype)
 
-    def _get_meter_index(self, meter_name: str, context: str = "") -> int:
-        """Get meter index by name with validation.
-
-        Args:
-            meter_name: Meter name (e.g., "energy", "mood")
-            context: Context string for error messages (e.g., "custom action 'REST'")
-
-        Returns:
-            Meter index
-
-        Raises:
-            ValueError: If meter_name_to_index not initialized
-            KeyError: If meter name doesn't exist
-        """
-        mapping: dict[str, int] | None = getattr(self, "meter_name_to_index", None)
-        if mapping is None:
-            raise ValueError("meter_name_to_index not initialized")
-        if meter_name not in mapping:
-            ctx_msg = f" in {context}" if context else ""
-            raise KeyError(f"Unknown meter '{meter_name}'{ctx_msg}. " f"Available meters: {sorted(mapping.keys())}")
-        return mapping[meter_name]
-
-    def _apply_custom_action(self, agent_idx: int, action: ActionConfig):
-        """Apply custom action effects, movement delta, and teleportation.
-
-        Args:
-            agent_idx: Agent index
-            action: Custom action config
-
-        Raises:
-            KeyError: If a cost/effect references an unknown meter
-        """
-        action_context = f"custom action '{action.name}' costs"
-        # Apply costs (negative costs = restoration)
-        for meter_name, cost in action.costs.items():
-            meter_idx = self._get_meter_index(meter_name, context=action_context)
-            self.meters[agent_idx, meter_idx] -= cost  # Subtract cost (negative = add)
-
-        # Apply effects
-        action_context = f"custom action '{action.name}' effects"
-        for meter_name, effect in action.effects.items():
-            meter_idx = self._get_meter_index(meter_name, context=action_context)
-            self.meters[agent_idx, meter_idx] += effect  # Add effect
-
-        # Apply movement delta (for movement-type custom actions like SPRINT)
-        if action.delta is not None:
-            delta_tensor = torch.tensor(action.delta, device=self.device, dtype=self.substrate.position_dtype)
-            new_position = self.substrate.apply_movement(self.positions[agent_idx : agent_idx + 1], delta_tensor.unsqueeze(0))
-            self.positions[agent_idx] = new_position.squeeze(0)
-
-        # Handle teleportation (overrides movement delta if both present)
-        if action.teleport_to is not None:
-            target_pos = torch.tensor(
-                action.teleport_to,
-                device=self.device,
-                dtype=self.substrate.position_dtype,
-            )
-            self.positions[agent_idx] = target_pos
-
-        # Clamp meters to [0, 1]
-        self.meters = torch.clamp(self.meters, 0.0, 1.0)
-
     def randomize_affordance_positions(self) -> torch.Tensor | None:
         """Randomize affordance positions and return agent spawn positions.
 
@@ -2418,12 +1459,14 @@ class VectorizedHamletEnv:
                     break  # No collisions, we're done
             else:
                 # Retries exhausted (very rare for large grids, possible for small grids)
-                # Fall back to enumeration to guarantee collision-free placement
+                # Fall back to enumeration to guarantee collision-free placement.
+                # Permutation is drawn from torch's CPU RNG, not Python's global
+                # `random` — placement must be reproducible from seed_all alone.
                 all_positions = self.substrate.get_all_positions()
-                random.shuffle(all_positions)
+                perm = torch.randperm(len(all_positions))
                 sampled = torch.stack(
                     [
-                        torch.tensor(all_positions[idx], dtype=self.substrate.position_dtype, device=self.device)
+                        torch.tensor(all_positions[int(perm[idx])], dtype=self.substrate.position_dtype, device=self.device)
                         for idx in range(total_positions_needed)
                     ]
                 )

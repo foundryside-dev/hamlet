@@ -27,7 +27,7 @@ class TestBaseDepletion:
     """Test per-step meter depletion mechanics."""
 
     def test_base_depletion_rates(self, cpu_env_factory):
-        """Base depletion rates applied correctly via MeterDynamics (v2.1 config)."""
+        """Base depletion rates applied correctly via VTC passive-depletion rules."""
         env = cpu_env_factory()
         env.reset()
 
@@ -35,7 +35,7 @@ class TestBaseDepletion:
         env.meters = torch.ones(1, 8)
 
         # Run one depletion cycle
-        env.meters = env.meter_dynamics.deplete_meters(env.meters)
+        env._apply_vtc_passive_depletion(1.0)
 
         # Expected after depletion (configs/default_curriculum v2.1, L0_0_minimal):
         # energy:   1.0 - 0.010 = 0.990
@@ -58,11 +58,23 @@ class TestBaseDepletion:
         env.meters = torch.full((1, 8), 0.001)
 
         # Run depletion (should clamp at 0.0)
-        env.meters = env.meter_dynamics.deplete_meters(env.meters)
+        env._apply_vtc_passive_depletion(1.0)
 
         # All should be 0.0 or near-zero (except money which doesn't deplete)
         assert torch.all(env.meters[:, [0, 1, 2, 4, 5, 6, 7]] >= 0.0)
         assert torch.all(env.meters[:, [0, 1, 2, 4, 5, 6, 7]] <= 0.001)
+
+    def test_step_uses_vtc_passive_depletion_not_meter_dynamics(self, cpu_env_factory):
+        """The environment step should not call the legacy MeterDynamics depletion executor."""
+        env = cpu_env_factory()
+        env.reset()
+        assert hasattr(env, "vtc_passive_depletion_program")
+        assert not hasattr(env, "meter_dynamics")
+        env.meters = torch.ones(1, 8)
+
+        env.step(torch.tensor([0]))
+
+        assert env.meters[0, env.meter_name_to_index["energy"]].item() < 1.0
 
 
 class TestCascadeEffects:
@@ -86,7 +98,7 @@ class TestCascadeEffects:
         initial_energy = env.meters[0, energy_idx].item()
 
         # Apply cascade
-        env.meters = env.meter_dynamics.apply_secondary_to_primary_effects(env.meters)
+        env._apply_vtc_threshold_cascades()
 
         # Both should decrease
         assert env.meters[0, health_idx] < initial_health  # health decreased
@@ -115,7 +127,7 @@ class TestCascadeEffects:
         initial_energy = env.meters[0, energy_idx].item()
 
         # Apply cascade
-        env.meters = env.meter_dynamics.apply_secondary_to_primary_effects(env.meters)
+        env._apply_vtc_threshold_cascades()
 
         # Energy should decrease
         assert env.meters[0, energy_idx] < initial_energy
@@ -140,11 +152,34 @@ class TestCascadeEffects:
         initial_health = env.meters[0, health_idx].item()
         initial_energy = env.meters[0, energy_idx].item()
 
-        env.meters = env.meter_dynamics.apply_secondary_to_primary_effects(env.meters)
+        env._apply_vtc_threshold_cascades()
 
         # No change
         assert env.meters[0, health_idx] == initial_health
         assert env.meters[0, energy_idx] == initial_energy
+
+    def test_step_applies_threshold_cascades_through_vtc_rules(self, cpu_env_factory):
+        """The step path should execute passive threshold cascades through VTC rules."""
+        env = cpu_env_factory()
+        env.reset()
+
+        energy_idx = env.meter_name_to_index["energy"]
+        satiation_idx = env.meter_name_to_index["satiation"]
+        env.meters = torch.ones(1, 8)
+        env.meters[0, satiation_idx] = 0.2
+
+        actions = torch.tensor([env.action_ids["WAIT"]], device=env.device)
+        env.step(actions)
+
+        passive_energy = 1.0 - env.vtc_passive_depletion_program.passive_rate_for("energy")
+        passive_satiation = 0.2 - env.vtc_passive_depletion_program.passive_rate_for("satiation")
+        expected_cascade_penalty = 0.006 * ((0.3 - passive_satiation) / 0.3)
+
+        assert torch.isclose(
+            env.meters[0, energy_idx],
+            torch.tensor(passive_energy - expected_cascade_penalty, device=env.device),
+            atol=1e-5,
+        )
 
     # Note: v2.1 default curriculum expresses cascades directly in bars.yaml
     # as a small set of meter-to-meter edges (satiation→health/energy,
@@ -168,7 +203,7 @@ class TestTerminalConditions:
         env.meters[0, health_idx] = 0.0  # health at 0
         env.dones = torch.tensor([False])
 
-        env.dones = env.meter_dynamics.check_terminal_conditions(env.meters, env.dones)
+        env._apply_vtc_terminal_conditions()
 
         assert env.dones[0]
 
@@ -183,7 +218,7 @@ class TestTerminalConditions:
         env.meters[0, energy_idx] = 0.0  # energy at 0
         env.dones = torch.tensor([False])
 
-        env.dones = env.meter_dynamics.check_terminal_conditions(env.meters, env.dones)
+        env._apply_vtc_terminal_conditions()
 
         assert env.dones[0]
 
@@ -200,7 +235,7 @@ class TestTerminalConditions:
         env.meters[0, health_idx] = 0.5  # health at 50%
         env.dones = torch.tensor([False])
 
-        env.dones = env.meter_dynamics.check_terminal_conditions(env.meters, env.dones)
+        env._apply_vtc_terminal_conditions()
 
         assert not env.dones[0]
 
@@ -218,7 +253,7 @@ class TestMeterClamping:
 
         # Run multiple depletion cycles
         for _ in range(5):
-            env.meters = env.meter_dynamics.deplete_meters(env.meters)
+            env._apply_vtc_passive_depletion(1.0)
 
         # All should be >= 0.0
         assert torch.all(env.meters >= 0.0)
@@ -252,7 +287,7 @@ class TestMultiAgentMeters:
         # Agent 2: both primaries > 0 → alive
         env.dones = torch.tensor([False, False, False])
 
-        env.dones = env.meter_dynamics.check_terminal_conditions(env.meters, env.dones)
+        env._apply_vtc_terminal_conditions()
 
         assert env.dones[0]  # dead (health=0)
         assert env.dones[1]  # dead (energy=0)
@@ -302,9 +337,9 @@ class TestCascadeIntegration:
         initial_energy = env.meters[0, energy_idx].item()
 
         # Run full cascade as in step()
-        env.meters = env.meter_dynamics.deplete_meters(env.meters)
-        env.meters = env.meter_dynamics.apply_secondary_to_primary_effects(env.meters)
-        env.dones = env.meter_dynamics.check_terminal_conditions(env.meters, env.dones)
+        env._apply_vtc_passive_depletion(1.0)
+        env._apply_vtc_threshold_cascades()
+        env._apply_vtc_terminal_conditions()
 
         # Health and energy should be reduced (cascade effects accumulate)
         assert env.meters[0, health_idx] < initial_health  # health decreased

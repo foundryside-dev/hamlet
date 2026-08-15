@@ -450,29 +450,60 @@ class AdversarialCurriculum(CurriculumManager):
 
         return normalized_entropy
 
+    # All tensor fields PerformanceTracker carries; the checkpoint schema is
+    # the union of these keys and load_state will not tolerate any missing.
+    _TRACKER_FIELDS: tuple[str, ...] = (
+        "agent_stages",
+        "steps_at_stage",
+        "episodes_at_stage",
+        "episode_rewards",
+        "episode_steps",
+        "prev_avg_reward",
+        "last_survival_rate",
+    )
+
     def checkpoint_state(self) -> dict[str, Any]:
-        """Return serializable state for checkpoint saving."""
+        """Return serializable state for checkpoint saving.
+
+        Every tensor in :class:`PerformanceTracker` must round-trip: telemetry
+        and stage-progression counters (``episodes_at_stage``,
+        ``last_survival_rate``) used to silently reset on resume, hiding
+        progress and confusing the recorder. Returns an empty dict only when
+        the population has not been initialised yet.
+        """
         if self.tracker is None:
             return {}
 
-        return {
-            "agent_stages": self.tracker.agent_stages.cpu(),
-            "episode_rewards": self.tracker.episode_rewards.cpu(),
-            "episode_steps": self.tracker.episode_steps.cpu(),
-            "prev_avg_reward": self.tracker.prev_avg_reward.cpu(),
-            "steps_at_stage": self.tracker.steps_at_stage.cpu(),
-        }
+        return {field: getattr(self.tracker, field).cpu() for field in self._TRACKER_FIELDS}
 
     def load_state(self, state: dict[str, Any]) -> None:
-        """Restore curriculum manager from checkpoint."""
+        """Restore curriculum manager from checkpoint.
+
+        Strict schema: any missing tracker field raises ``KeyError``, and a
+        size mismatch against the current population raises ``ValueError``.
+        Old checkpoints predating the full schema must be regenerated.
+        """
         if self.tracker is None:
             raise RuntimeError("Must initialize_population before loading state")
 
-        self.tracker.agent_stages = state["agent_stages"].to(self.device)
-        self.tracker.episode_rewards = state["episode_rewards"].to(self.device)
-        self.tracker.episode_steps = state["episode_steps"].to(self.device)
-        self.tracker.prev_avg_reward = state["prev_avg_reward"].to(self.device)
-        self.tracker.steps_at_stage = state["steps_at_stage"].to(self.device)
+        missing = [f for f in self._TRACKER_FIELDS if f not in state]
+        if missing:
+            raise KeyError(
+                f"Checkpoint missing required curriculum tracker fields: {missing}. "
+                "This checkpoint predates the full adversarial-curriculum schema; "
+                "regenerate it with the current Townlet version."
+            )
+
+        num_agents = self.tracker.num_agents
+        for field in self._TRACKER_FIELDS:
+            tensor = state[field]
+            if tensor.shape[0] != num_agents:
+                raise ValueError(
+                    f"Checkpoint curriculum tracker field {field!r} has shape "
+                    f"{tuple(tensor.shape)} but current tracker num_agents={num_agents}. "
+                    "Resuming into a differently-sized population is not supported."
+                )
+            setattr(self.tracker, field, tensor.to(self.device))
 
     def load_checkpoint_state(self, state: dict[str, Any]) -> None:
         """Alias for load_state() for API consistency."""

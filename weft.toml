@@ -1,0 +1,6 @@
+# Created by `wardline doctor --repair`.
+# Keep the scan rooted at the project root for stable identity; bound the
+# analyzed source here so agent gates do not traverse caches or run artifacts.
+[wardline]
+source_roots = ["src"]
+exclude = [".git/**", ".venv/**", "venv/**", ".uv-cache/**", ".mypy_cache/**", ".pytest_cache/**", ".ruff_cache/**", ".tox/**", ".nox/**", "node_modules/**", "telemetry/**", "data/**"]

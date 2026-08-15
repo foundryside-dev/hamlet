@@ -111,15 +111,24 @@ def compile_universe() -> Callable[[Path | str], CompiledUniverse]:
     """Compile config packs to CompiledUniverse objects with simple caching."""
 
     compiler = UniverseCompiler()
-    cache: dict[Path, CompiledUniverse] = {}
+    cache: dict[tuple[Path, str], CompiledUniverse] = {}
     repo_configs = (Path(__file__).parent.parent.parent.parent / "configs").resolve()
 
-    def _compile(config_dir: Path | str) -> CompiledUniverse:
+    def _compile(config_dir: Path | str, *, primary_level: str | None = None) -> CompiledUniverse:
         target_path = Path(config_dir).resolve()
-        cache_key: Path | None = None
+        target_level = primary_level
+        if not target_path.exists():
+            return compiler.compile(target_path, primary_level=target_level or "__missing__", use_cache=False)
+        if target_level is None:
+            level_dirs = sorted((target_path / "levels").iterdir())
+            if len(level_dirs) != 1:
+                raise ValueError(f"compile_universe test fixture requires an explicit primary_level, found: {level_dirs}")
+            target_level = level_dirs[0].name
+
+        cache_key: tuple[Path, str] | None = None
         try:
             target_path.relative_to(repo_configs)
-            cache_key = target_path
+            cache_key = (target_path, target_level)
         except ValueError:
             cache_key = None
 
@@ -128,7 +137,7 @@ def compile_universe() -> Callable[[Path | str], CompiledUniverse]:
 
         # Disable on-disk cache to ensure tests see the latest
         # compiler semantics; rely on this in-memory cache instead.
-        compiled = compiler.compile(target_path, use_cache=False)
+        compiled = compiler.compile(target_path, primary_level=target_level, use_cache=False)
         if cache_key is not None:
             cache[cache_key] = compiled
         return compiled

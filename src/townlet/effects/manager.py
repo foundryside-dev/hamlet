@@ -67,7 +67,6 @@ class EffectManager:
         scheduler: Any | None = None,
         time_enabled: bool = True,
         affordance_overrides: dict[str, bool] | None = None,
-        meter_dynamics: Any | None = None,
     ) -> None:
         """Initialize effect manager with compiled catalog.
 
@@ -83,7 +82,6 @@ class EffectManager:
 
         self.scheduler = scheduler or Scheduler(time_enabled=time_enabled)
         self.affordance_overrides = affordance_overrides
-        self.meter_dynamics = meter_dynamics
         self.current_step = 0  # Track environment step
         self.next_instance_id = 0
 
@@ -126,7 +124,7 @@ class EffectManager:
         """
         # Get compiled effect definition (validates effect_id exists)
         effect_def = self.catalog.effects[effect_id]
-        effect_index = self.catalog.get_effect_index(effect_id) if hasattr(self.catalog, "get_effect_index") else -1
+        effect_index = self.catalog.get_effect_index(effect_id)
         observable = getattr(effect_def, "observable", False)
 
         # Check for existing effect on same target
@@ -159,7 +157,6 @@ class EffectManager:
                         current_tick=current_step,
                         scheduler=self.scheduler,
                         affordance_overrides=self.affordance_overrides,
-                        meter_dynamics=self.meter_dynamics,
                     )
 
                     for command in effect_def.on_interrupt:
@@ -188,7 +185,6 @@ class EffectManager:
                         current_tick=current_step,  # NEW
                         scheduler=self.scheduler,
                         affordance_overrides=self.affordance_overrides,
-                        meter_dynamics=self.meter_dynamics,
                     )
 
                     for command in effect_def.on_interrupt:
@@ -236,7 +232,6 @@ class EffectManager:
                 current_tick=current_step,  # NEW
                 scheduler=self.scheduler,
                 affordance_overrides=self.affordance_overrides,
-                meter_dynamics=self.meter_dynamics,
             )
 
             for command in effect_def.on_spawn:
@@ -352,7 +347,6 @@ class EffectManager:
         bars: dict[str, torch.Tensor],
         vfs_registry: Any | None,
         current_step: int,
-        env_state: Any | None = None,  # Keep for backward compatibility
         item_manager: Any | None = None,  # NEW: ItemManager for spawn_item commands
         agent_positions: Any | None = None,
     ) -> None:
@@ -366,7 +360,6 @@ class EffectManager:
             bars: Current meter values
             vfs_registry: VFS registry
             current_step: Current environment step
-            env_state: Environment state for command execution (deprecated, use bars/vfs_registry)
             item_manager: ItemManager for spawn_item commands (optional)
         """
 
@@ -467,7 +460,6 @@ class EffectManager:
                 current_tick=self.current_step,
                 scheduler=self.scheduler,
                 affordance_overrides=self.affordance_overrides,
-                meter_dynamics=self.meter_dynamics,
             )
 
             for cmd in item.commands:
@@ -507,7 +499,6 @@ class EffectManager:
                     current_tick=self.current_step,  # NEW
                     scheduler=self.scheduler,
                     affordance_overrides=self.affordance_overrides,
-                    meter_dynamics=self.meter_dynamics,
                 )
 
                 for command in compiled.on_tick:
@@ -550,7 +541,6 @@ class EffectManager:
                     current_tick=self.current_step,  # NEW
                     scheduler=self.scheduler,
                     affordance_overrides=self.affordance_overrides,
-                    meter_dynamics=self.meter_dynamics,
                 )
 
                 for command in compiled.on_despawn:
@@ -590,7 +580,6 @@ class EffectManager:
             current_tick=current_tick,
             scheduler=self.scheduler,
             affordance_overrides=self.affordance_overrides,
-            meter_dynamics=self.meter_dynamics,
         )
 
     def get_all_active_effects(self) -> list[ActiveEffect]:
@@ -687,6 +676,7 @@ class EffectManager:
                 interrupt_reason="manually_cancelled",
                 current_tick=current_step,
                 scheduler=self.scheduler,
+                affordance_overrides=self.affordance_overrides,
             )
 
             for command in compiled.on_interrupt:

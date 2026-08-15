@@ -1,5 +1,6 @@
 """2D square grid substrate (replicates current HAMLET behavior)."""
 
+import math
 from typing import Literal, cast
 
 import torch
@@ -465,23 +466,40 @@ class Grid2DSubstrate(SpatialSubstrate):
         return torch.cat([global_grid, position_features], dim=1)
 
     def get_observation_dim(self) -> int:
-        """Return dimensionality of position encoding.
+        """Return dimensionality of grid + position encoding."""
+        return self.get_grid_encoding_dim() + self.get_position_feature_dim()
 
-        Returns:
-            - relative: 2 (normalized x, y)
-            - scaled: 4 (normalized x, y, width, height)
-            - absolute: 2 (raw x, y)
+    @property
+    def supports_partial_vision(self) -> bool:
+        return True
+
+    def get_grid_encoding_dim(self) -> int:
+        """Width of _encode_full_grid's output: one cell per grid position."""
+        return self.width * self.height
+
+    def get_position_feature_dim(self) -> int:
+        """Width of _encode_position_features' output, per encoding mode.
+
+        - relative: 2 (normalized x, y)
+        - scaled: 4 (normalized x, y, width, height)
+        - absolute: 2 (raw x, y)
         """
-        grid_dim = self.width * self.height
-
         if self.observation_encoding == "relative":
-            return grid_dim + 2
+            return 2
         if self.observation_encoding == "scaled":
-            return grid_dim + 4
+            return 4
         if self.observation_encoding == "absolute":
-            return grid_dim + 2
-
+            return 2
         raise ValueError(f"Invalid observation_encoding: {self.observation_encoding}")
+
+    def get_vision_radius(self, vision_range: float) -> int:
+        """Radius from the declared fraction of the longest axis (min 1)."""
+        span = max(self.width, self.height)
+        return max(1, int(math.ceil(vision_range * (span / 2.0))))
+
+    def get_partial_window_dim(self, vision_radius: int) -> int:
+        """Width of encode_partial_observation's output: a (2r+1)² window."""
+        return (2 * vision_radius + 1) ** 2
 
     def normalize_positions(self, positions: torch.Tensor) -> torch.Tensor:
         """Normalize positions to [0, 1] range (always relative encoding).

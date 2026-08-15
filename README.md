@@ -1,459 +1,466 @@
-# Hamlet
+# Townlet
 
-**A pedagogical Deep Reinforcement Learning environment designed to "trick students into learning graduate-level RL by making them think they're just playing The Sims."**
+The repository directory is named `hamlet`; the Python distribution and the only live source tree
+are `townlet`. Same project.
 
-[![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![Tests](https://img.shields.io/badge/tests-644%2B%20passing-brightgreen)](tests/)
-[![Coverage](https://img.shields.io/badge/coverage-70%25-yellowgreen)](tests/)
+Townlet is a deep reinforcement-learning substrate expressed as configuration. An environment —
+variables, observation layout, substrate topology, affordances, effects, items and reward
+function — is written in YAML, compiled into a single frozen, hash-carrying `CompiledUniverse`
+artifact, and executed GPU-natively against torch tensors.
 
-## Overview
+The point is authoring. The project's endorsed vision (`docs/product/vision.md`) puts the pivot in
+one line: *from game as experience to writing a game as experience*. The change it exists to make
+is that someone with an idea for a mechanic or a game system can turn it into a running, trainable,
+reproducible RL environment by writing config — no environment subclass, no observation-tensor
+plumbing, no reward-function code. Each subsystem below exists to move a category of "you must
+write Python for this" into "you can declare this."
 
-Hamlet is a GPU-accelerated DRL training environment where agents learn to survive by managing 8 interconnected physiological and economic meters through strategic interaction with 14 affordances. Progressive complexity levels introduce partial observability (POMDP), temporal mechanics, and intrinsic motivation.
+The survival world shipped in `configs/default_curriculum` — eight meters, fourteen affordances,
+one 8×8 grid — is intended as the first-class demonstration of that idea, not as the product
+itself.
 
-### Key Features
+## Status: pre-release, mid-rewrite
 
-- 🎮 **Vectorized GPU Training** - PyTorch tensors throughout for maximum performance
-- 🧠 **Progressive Complexity** - Three training levels (L1→L2→L3) with increasing challenge
-- 🔄 **Adversarial Curriculum** - Adaptive difficulty from shaped to sparse rewards (5 stages)
-- 🌟 **Intrinsic Motivation** - RND-based exploration with variance-based annealing
-- 📊 **Live Visualization** - Real-time inference server + Vue.js frontend
-- 🎬 **Episode Recording & Replay** - Record episodes, replay in real-time, export to YouTube-ready MP4
-- 🧪 **70% Test Coverage** - 644+ tests passing (73 for recording system), production-ready codebase
+- Version 0.1.0, classified `Development Status :: 3 - Alpha`. There are no release tags; the
+  repository's only tag, locally and on `origin`, is the oracle tag below.
+- **`main` carries the recovery as of 2026-08-15.** The 167 commits of the `project-recovery`
+  rewrite were merged (fast-forward) after both of the merge gates it was held behind were
+  satisfied — CI restoration, and a claim-by-claim re-verification of this file. Before that
+  merge, `main`'s tip was dated 2025-11-28 and described a system that no longer existed.
+  Ongoing repair work continues on `project-recovery-2`; `main` is now current, not frozen.
+- The project is mid **strangler rewrite behind a pinned oracle**. Tag `oracle-2026-08-13`
+  (commit `0e875d7a`) freezes the previous system as the specification for preserved behaviour.
+  From `docs/oracle/ORACLE.md`: "The oracle never mutates", and "a diff against the oracle is a
+  defect in the rebuild unless the register says otherwise." Accepted differences are recorded in
+  `docs/oracle/known-divergences.md`.
+- **CI runs and is green** — as of 2026-08-15, and not before. Lint, Config Validation and Tests
+  fire on every push; every run in the recovery branch's history passed, six pushes' worth. Read
+  this as young rather than settled: before 2026-08-15 nothing had run on the recovery at all,
+  and nothing had passed anywhere since 2025-11-28. See
+  [Continuous integration](#continuous-integration).
+- Where this file calls something shipped, it means *present and wired*, not mature. The project
+  came out of a long stretch of intermittent attention and is unfinished in places; the specific
+  gaps are under [Known rough edges](#known-rough-edges).
+- No backwards compatibility: no fallbacks, no deprecation cycle, no migration paths. Breaking
+  changes land directly.
 
-## Quick Start
+*Every command, file path, count and quotation below was executed or read against the working tree
+at commit `1576e280`; the repository-state facts under [Continuous integration](#continuous-integration)
+were read from the GitHub API the same day. Both on 2026-08-15, at the merge to `main`, in the
+second full claim-by-claim re-verification in two days. The first (`1b25c99d`) found **ten claims
+stale in a single day**, every one because the recovery had fixed the thing being described; this
+one found five more in four commits. There are deliberately no test counts, coverage percentages,
+observation widths or training-performance figures here — see [Numbers](#numbers). **This file
+decays fast because the project moves fast**: it is a status report stamped at a commit, not a
+standing description, and it is re-verified by sweep — not by re-reading — whenever it is
+published.*
 
-> **Note (Phase 5):** Checkpoint format changed. If you have old checkpoints, delete them: `rm -rf checkpoints_*` or `rm -rf runs/*/checkpoints/`. See [CHANGELOG.md](CHANGELOG.md) for details.
+## A universe is YAML
 
-### Prerequisites
+`configs/default_curriculum/stratum.yaml` declares the world's physics. This is the entire file:
 
-- Python 3.13+
-- [uv](https://github.com/astral-sh/uv) package manager
-- CUDA-capable GPU (optional but recommended)
-- Node.js 18+ (for frontend visualization)
+```yaml
+stratum:
+  version: "1.0"
 
-### Installation
+  substrate:
+    type: grid
+
+    grid:
+      topology: square
+      width: 8
+      height: 8
+
+      boundary: clamp
+
+      distance_metric: manhattan
+
+      observation_encoding: relative
+      diagonals: true
+
+  vision_support: both
+
+  temporal_support: enabled
+
+  observation_mode:
+    mode: full_auto
+```
+
+Nothing else defines the substrate. The grid is 8×8 for every level in the pack: `stratum.yaml`
+exists only at pack root, and the level loader reads no substrate file from a level directory.
+Replacing that `substrate` block re-substrates the same experiment. The measured case is recorded
+as Trial 001 in `docs/product/metrics.md`: the survival pack was moved to a 6-dimensional
+`gridnd` world by editing about six lines of `stratum.yaml`, with zero lines changed under
+`src/townlet/` — it compiled, reset and stepped, the movement vocabulary auto-expanded to
+`DIM0_NEG … DIM5_POS`, and the entire domain carried over. That trial also found the real caveat:
+`gridnd` has no partial-vision support, so the pack's POMDP levels have to be switched to
+`active_vision: global` or the whole-pack compile fails.
+
+Rewards are declarative in the same way. This is
+`configs/default_curriculum/levels/L1_full_observability/drive.yaml`, in full:
+
+```yaml
+drive:
+  version: '1.0'
+  modifiers:
+    energy_crisis:
+      bar: energy
+      ranges:
+      - name: range_0
+        min: 0.0
+        max: 0.2
+        multiplier: 0.0
+      - name: range_1
+        min: 0.2
+        max: 1.0
+        multiplier: 1.0
+  extrinsic:
+    type: constant_base_with_shaped_bonus
+    base_reward: 0.01
+    bar_bonuses:
+    - bar: energy
+      center: 0.0
+      scale: 0.5
+    - bar: health
+      center: 0.0
+      scale: 0.5
+    variable_bonuses: []
+    apply_modifiers: []
+  intrinsic:
+    strategy: adaptive_rnd
+    base_weight: 0.1
+    apply_modifiers:
+    - energy_crisis
+    adaptive_config:
+      enabled: true
+      threshold: 100.0
+      decay_rate: 0.995
+      min_weight: 0.01
+  shaping:
+  - type: approach_reward
+    weight: 0.01
+    target_affordance: EAT
+    max_distance: 5.0
+  - type: completion_bonus
+    weight: 0.1
+    affordance: SLEEP
+  composition:
+    normalize: false
+    clip: null
+    log_components: true
+    log_modifiers: true
+```
+
+There are no reward classes to subclass — `src/townlet/environment/reward_strategy.py` does not
+exist and no `RewardStrategy` remains anywhere under `src/`. The compiler turns that YAML into a
+GPU-native computation graph and hashes it into the compiled artifact, so a checkpoint knows which
+reward function produced it. Two fields in that file are inert: `composition.normalize` and
+`composition.clip` validate but have no reader (see [Known rough edges](#known-rough-edges)).
+
+### Pack layout
+
+```
+configs/default_curriculum/
+  experiment.yaml       # which levels the pack declares
+  stratum.yaml          # substrate, topology, observation mode
+  environment.yaml      # VFS variable definitions, cascade graph
+  actions.yaml          # substrate and custom actions, action labels
+  brain.yaml            # architecture, optimizer, loss, Q-learning, replay
+  items.yaml  effects.yaml  vfs_profiles.yaml
+  levels/<level>/
+    curriculum.yaml     # vision and temporal switches
+    bars.yaml           # meters, bounds, cascades
+    affordances.yaml    # interactions, costs, opening hours, placement
+    drive.yaml          # reward specification
+    training.yaml       # hyperparameters, enabled actions
+```
+
+A level directory carries those five required files plus an optional `items.yaml` declaring
+level-scoped item spawns; the loader (`src/townlet/universe/raw_configs_v21.py`) reads nothing else
+from it. The shared catalogs `vfs_profiles.yaml` and `effects.yaml` are rejected outright at level
+scope, and a level `items.yaml` must declare the v1.0 ItemsAppearance schema
+(`src/townlet/universe/loaders/preflight.py`). Notably the network architecture is pack-level: a
+level's `training.yaml` overrides exactly five scalars of `brain.yaml` — gamma, target-update
+frequency, the double-DQN flag, learning rate and replay capacity — and none of them live in the
+`architecture` block.
+
+**About the shipped curriculum, since older docs oversell it.** `default_curriculum` declares five
+levels, but `bars.yaml`, `affordances.yaml` and `drive.yaml` are byte-identical across all five,
+and the substrate is pack-level. Only two levels change the world the agent sees:
+`L2_partial_observability` (`active_vision: partial`) and `L3_temporal_mechanics`
+(`active_temporal: true`, `day_length: 24`). Compiling all five and comparing artifacts,
+`observation_schema_hash` takes exactly three distinct values — one shared by L0_0, L0_5 and L1,
+one for L2, one for L3. Five level directories, three distinct observation surfaces. Within the
+first group, `L0_5_dual_resource` and `L1_full_observability` differ in one line of one file
+(`output_subdir`), and `L0_0_minimal` differs from them in Q-learning and replay hyperparameters
+and in enabling one fewer custom action (`REST` only, against `REST` and `MEDITATE`) — which does
+move its `action_schema_hash` and `vfs_hash`.
+
+## Install
+
+Python 3.13 or newer (`.python-version` pins 3.13) and [uv](https://docs.astral.sh/uv/). A GPU is
+optional; the runtime falls back to CPU.
 
 ```bash
-# Clone the repository
-git clone https://github.com/tachyon-beep/hamlet
+git clone https://github.com/foundryside-dev/hamlet
 cd hamlet
-
-# Install dependencies using uv
-uv sync
-
-# Run tests (644+ tests, 70% coverage)
-uv run pytest tests/ --cov=src/townlet --cov-report=term-missing -v
+uv sync --all-extras
 ```
 
-## Development Workflow
+No branch checkout is needed as of 2026-08-15: `main` carries the recovery. Ongoing repair lands
+on `project-recovery-2` first, so `main` trails active work by design — it is the last state that
+passed both merge gates, not the newest state.
 
-### Continuous Integration
+Use `--all-extras`: it is what all four CI workflows specify, and a bare `uv sync` installs runtime
+dependencies only — pytest, black, ruff and mypy live in the `dev` extra. No `PYTHONPATH` export is
+needed; the project installs editable. There are no console-script entry points, so everything runs
+as `uv run scripts/<name>.py` or `uv run python -m townlet.<module>`.
 
-GitHub Actions keeps the main branch green:
+## Run something
 
-| Workflow | Trigger | What it runs |
-| --- | --- | --- |
-| `Lint` | push / PR | Ruff (`ruff check`), Black (`--check`), Mypy |
-| `Tests` | push / PR | `pytest` (default suite, skips `slow`) |
-| `Full Test Suite` | nightly @ 06:00 UTC & manual dispatch | `pytest -m "slow or not slow"` to exercise the entire matrix |
-
-All workflows use `uv` to create the environment and install `.[dev]`, so local parity is as simple as `uv sync`.
-
-### Run Training + Visualization
-
-**Two-Terminal Workflow (Recommended):**
+Check that a pack compiles (no cache written):
 
 ```bash
-# Terminal 1: Training + Inference Server
-source .venv/bin/activate
-python scripts/run_demo.py --config configs/L1_full_observability --episodes 10000
-
-# Terminal 2: Frontend (once checkpoints exist)
-cd frontend && npm run dev
-# Open http://localhost:5173
+uv run python -m townlet.universe validate configs/default_curriculum \
+    --primary-level L1_full_observability
 ```
 
-**The unified server:**
-
-- Runs training in background thread
-- Saves checkpoints every 100 episodes to `runs/LX_name/timestamp/checkpoints/`
-- Inference server watches for new checkpoints and broadcasts state to frontend
-- WebSocket server on port 8766
-
-See [docs/manual/UNIFIED_SERVER_USAGE.md](docs/manual/UNIFIED_SERVER_USAGE.md) for complete guide.
-
-## Training Levels (Progressive Complexity)
-
-### Level 1: Full Observability Baseline
-
-**Config:** `configs/L1_full_observability`
+Compile it, and inspect the artifact:
 
 ```bash
-python scripts/run_demo.py --config configs/L1_full_observability --episodes 10000
+uv run python -m townlet.universe compile configs/default_curriculum \
+    --primary-level L1_full_observability
+uv run python -m townlet.universe inspect configs/default_curriculum \
+    --primary-level L1_full_observability --format json
 ```
 
-**Features:**
+`--primary-level` is required by `compile` and `validate`, and by `inspect` whenever you point it
+at a pack rather than at a `.msgpack` artifact. Compiling a pack compiles every level in it, but
+the cache holds one artifact per primary level, at
+`<pack>/.compiled/universe-<level>.msgpack` (gitignored).
 
-- Agent sees full 8×8 grid (complete information)
-- Standard MLP Q-Network (no memory needed)
-- Sparse rewards (milestone bonuses only)
-- Expected: 1000-2000 episodes to learn, peak survival 250-350 steps
-
-**Why:** Clean baseline for comparing POMDP performance, faster learning curve.
-
-### Level 2: Partial Observability (POMDP)
-
-**Config:** `configs/L2_partial_observability`
+Train. `--config` takes the pack root, not a level directory, and `--level` and `--inference-port`
+are both required:
 
 ```bash
-python scripts/run_demo.py --config configs/L2_partial_observability --episodes 10000
+uv run scripts/run_demo.py --config configs/default_curriculum \
+    --level L1_full_observability --episodes 10000 --inference-port 8766
 ```
 
-**Features:**
+This runs training and a WebSocket inference server in one process and writes
+`runs/<output_subdir>/<timestamp>/`, where `output_subdir` is read from the level's
+`training.yaml` (`run_metadata.output_subdir`, required — there is no fallback; each
+`default_curriculum` level sets it to its own directory name). The run directory holds
+`checkpoints/` with `.sha256` sidecars, `metrics.db`, `tensorboard/`, `training.log`, and a
+`config_snapshot/` of the configuration that produced them.
 
-- Agent sees only 5×5 local window (partial observability)
-- RecurrentSpatialQNetwork with LSTM memory
-- Must build mental map through exploration
-- Expected: 3000-5000 episodes to learn, peak survival 150-250 steps
-
-**Why:** Introduces working memory, spatial reasoning, and realistic cognitive constraints.
-
-### Level 3: Temporal Mechanics
-
-**Config:** `configs/L3_temporal_mechanics`
+Serve a trained checkpoint on its own — six positional arguments, the last two being the pack and
+the level:
 
 ```bash
-python scripts/run_demo.py --config configs/L3_temporal_mechanics --episodes 10000
+uv run python -m townlet.demo.live_inference <checkpoint_dir> 8766 0.2 10000 \
+    configs/default_curriculum L1_full_observability
 ```
 
-**Features:**
-
-- 24-tick day/night cycle with operating hours
-- Multi-tick interactions (jobs take 5 ticks to complete)
-- Time-based action masking (Bar: 6pm-4am, Job: 8am-6pm)
-- Progressive benefits + completion bonuses
-- LSTM learns time-dependent strategies
-
-**Why:** Teaches temporal planning, opportunity cost, and delayed gratification.
-
-See [docs/architecture/TRAINING_LEVELS.md](docs/architecture/TRAINING_LEVELS.md) for complete formal specification.
-
-## The Environment
-
-### 8 Interconnected Meters
-
-**PRIMARY (Death Conditions):**
-
-- `health` - Are you alive?
-- `energy` - Can you move?
-
-**SECONDARY (Strong → Primary):**
-
-- `satiation` - Hunger (affects health AND energy)
-- `fitness` - Physical condition (affects health)
-- `mood` - Mental state (affects energy)
-
-**TERTIARY (Quality of Life):**
-
-- `hygiene` - Cleanliness (affects secondary + primary)
-- `social` - Social needs (affects secondary + primary)
-
-**RESOURCE:**
-
-- `money` - Enables affordances ($0-$100 normalized)
-
-### 14 Affordances
-
-Agents interact with affordances to restore meters and earn money:
-
-**24/7 Available:**
-
-- `Bed` / `LuxuryBed` - Energy restoration (tiered)
-- `Shower` - Hygiene restoration
-- `HomeMeal` - Satiation + health
-- `FastFood` - Quick satiation (fitness/health penalty)
-- `Hospital` - Health restoration (tier 2, expensive)
-- `Gym` - Fitness builder
-
-**Business Hours (8am-6pm):**
-
-- `Job` - Office work ($22.50, -15% energy)
-- `Labor` - Physical labor ($30, -20% energy, -5% fitness/health)
-- `Doctor` - Health restoration (tier 1, cheaper than hospital)
-- `Therapist` - Mood restoration
-- `Recreation` - Mood + social (8am-10pm)
-
-**Dynamic (Time-Dependent):**
-
-- `Bar` - Social (BEST: +50%) + mood (6pm-4am)
-- `Park` - FREE fitness + social + mood (6am-10pm)
-
-### Cascade Physics
-
-Meters cascade downward through 10 threshold-based effects:
-
-```
-satiation < 30% → health -0.4%/tick, energy -0.4%/tick
-fitness < 30%  → health -0.4%/tick (modulates base health depletion 0.5x-3.0x)
-mood < 30%     → energy -0.4%/tick
-hygiene < 30%  → satiation -0.4%/tick, fitness -0.4%/tick, mood -0.4%/tick
-social < 30%   → satiation -0.4%/tick, fitness -0.4%/tick, mood -0.4%/tick
-```
-
-**Teaching Value:** Students experiment with cascade strengths by editing `configs/cascades.yaml`
-
-### Observation Space
-
-The observation space is **standardized across all curriculum levels** to enable transfer learning and observation stability.
-
-#### Fixed Affordance Vocabulary
-
-All levels observe the **same 14 affordances** in their state representation, even if not all are deployed in that level:
-
-- `Bed`, `LuxuryBed`, `Shower`, `HomeMeal`, `FastFood`, `Doctor`, `Hospital`, `Therapist`, `Recreation`, `Bar`, `Job`, `Labor`, `Gym`, `Park`
-
-**Key Insight**: A model trained on L0 (minimal) can be promoted to L1 (full) without architecture changes because the affordance encoding dimension is constant.
-
-#### Full Observability (L1)
-
-**Observation components**:
-
-- **Grid encoding**: `grid_size × grid_size` one-hot (e.g., 64 dims for 8×8 grid)
-- **Meters**: 8 normalized values [0.0-1.0] (energy, health, satiation, money, mood, social, fitness, hygiene)
-- **Affordance at position**: 15 one-hot (14 affordances + "none")
-- **Temporal extras**: 4 values (time_of_day, retirement_age, interaction_progress, interaction_ticks)
-
-**Dimensions by level**:
-
-- **L0_0_minimal**: 36 dims (3×3 grid=9 + 8 meters + 15 affordances + 4 extras)
-- **L0_5_dual_resource**: 76 dims (7×7 grid=49 + 8 meters + 15 affordances + 4 extras)
-- **L1_full_observability**: 91 dims (8×8 grid=64 + 8 meters + 15 affordances + 4 extras)
-
-**Network**: Standard MLP Q-Network (~26K-70K params depending on grid size)
-
-#### Partial Observability (L2 POMDP)
-
-**Observation components**:
-
-- **Local grid**: 5×5 window (25 dims) - agent sees only nearby region
-- **Position**: Normalized (x, y) (2 dims) - "where am I on the grid?"
-- **Meters**: 8 normalized values (8 dims)
-- **Affordance at position**: 15 one-hot (15 dims)
-- **Temporal extras**: 4 values (4 dims)
-
-**Total**: 54 dimensions (fixed regardless of full grid size)
-
-**Network**: RecurrentSpatialQNetwork with LSTM (~600K params) for spatial memory
-
-**Challenge**: Agent must build mental map through exploration under uncertainty.
-
-#### Action Space
-
-**5 discrete actions** (currently hardcoded, will move to YAML per TASK-003):
-
-- `UP` = 0
-- `DOWN` = 1
-- `LEFT` = 2
-- `RIGHT` = 3
-- `INTERACT` = 4
-
-**Note**: Action space will become configurable to support diagonal movement, rest actions, and alternative universes.
-
-#### Key Design Principles
-
-1. **Observation stability**: Same affordance vocabulary across all levels
-2. **Transfer learning**: Models trained on smaller grids work on larger grids
-3. **Temporal awareness**: All levels include time-based features for L3 temporal mechanics
-4. **POMDP support**: Partial observability uses fixed 5×5 window regardless of full grid size
-
-## Project Structure
-
-```text
-hamlet/
-├── src/townlet/              # Active codebase
-│   ├── agent/                # Neural networks (Simple, Recurrent)
-│   ├── curriculum/           # Adversarial difficulty adjustment
-│   ├── demo/                 # Training runner + inference server
-│   ├── environment/          # Vectorized grid world + meter dynamics
-│   ├── exploration/          # RND + adaptive intrinsic motivation
-│   ├── population/           # Training loop coordinator
-│   ├── recording/            # Episode recording and replay system
-│   └── training/             # Replay buffer + state management
-├── tests/test_townlet/       # 644+ tests, 70% coverage
-├── configs/                  # YAML configurations (L1-L3)
-├── frontend/                 # Vue 3 + Vite visualization
-├── scripts/                  # Utility scripts
-│   └── run_demo.py           # Unified server entry point
-└── docs/                     # Documentation
-    ├── architecture/         # System design and roadmap
-    └── manual/               # User guides
-```
-
-## Visualization
-
-The frontend shows:
-
-- **Grid View** - Agent position, affordances, interaction progress
-- **Meter Bars** - All 8 meters with cascade indicators
-- **Q-Value Heatmap** - Action preferences by direction
-- **Time-of-Day** - Current tick in 24-tick cycle (L3)
-- **Affordance Status** - Open/closed, costs, benefits
-
-**Features:**
-
-- Auto-reconnect to inference server
-- Speed control (0.1x - 2.0x)
-- Episode navigation (watch past episodes)
-- Responsive design
-
-## Development
-
-### Run Tests
+Run the differential harness that adjudicates the rewrite. It creates or reuses a detached git
+worktree at the oracle tag under `.oracle/`, runs the same pack, level, seed, agent count and step
+count on both trees as subprocesses, and compares the env-step traces:
 
 ```bash
-# Full test suite with coverage
-uv run pytest tests/ --cov=src/townlet --cov-report=term-missing -v
-
-# Specific test file
-uv run pytest tests/test_townlet/test_affordance_effects.py -v
-
-# Watch mode (requires pytest-watch)
-uv run ptw tests/
+uv run python -m townlet.oracle.harness --cell default_curriculum:L0_0_minimal
 ```
 
-### View Logs
+Its declared matrix is sixteen cells: five levels of `default_curriculum` × {cpu, cuda}, plus
+three single-axis fixture packs under `configs/differential/` × {cpu, cuda} that bind to the
+`DIV-003` register entry. The CUDA cells are always declared and reported SKIPPED rather than
+silently dropped when `--cuda` is absent. It exits 0 only when every cell is
+AGREE, SKIPPED, or DIVERGED_AS_REGISTERED — the last meaning the cell's declared binding to a
+divergence-register entry matched narrowly: the oracle side crashed without producing a trace, the
+registered signature appearing in the final exception text of its stderr, *and* the rebuild side
+ran and produced a valid trace. An unmatched red of any kind still fails, and an empty or
+all-SKIPPED run exits 1 so that doing nothing cannot look green. Both checkpoint-boundary
+entries in the divergence register cannot appear in an env-step trace, so the harness treats any
+DIVERGE or HASH_MISMATCH with no matched entry as a rebuild defect or a missing register entry —
+both findings.
+
+### Checks, run locally
 
 ```bash
-# TensorBoard (training metrics)
-tensorboard --logdir runs/L1_full_observability/2025-11-02_123456/tensorboard
-
-# SQLite database (episode details)
-sqlite3 runs/L1_full_observability/2025-11-02_123456/metrics.db
+uv run ruff check .
+uv run black --check src tests
+uv run mypy src/townlet --show-error-codes
+uv run python scripts/no_defaults_lint.py src/townlet/ --whitelist .defaults-whitelist.txt
+uv run python scripts/validate_compiler_cli.py
+uv run pytest
 ```
 
-### Code Quality
+## Continuous integration
 
-```bash
-# Linting (configured in pyproject.toml)
-uv run ruff check src/
+Four GitHub Actions workflows exist, all specifying `uv sync --all-extras` on Python 3.13: Lint,
+Config Validation, Tests, and Full Test Suite.
 
-# Format code
-uv run black src/ tests/
+**Three of the four run on every push and pass.** That became true on 2026-08-15 and had never
+been true before: between 2025-11-28 and that date no workflow had run against the recovery at
+all, and 167 commits went unchecked by CI. Six pushes have been checked — treat the gates as
+restored, not as seasoned.
 
-# Type checking
-uv run mypy src/
-```
+- Lint, Config Validation and Tests trigger on `push` to `main` and to `project-recovery*` (and
+  on `pull_request`). The glob is deliberate: the original defect was that the recovery branch
+  simply was not named in the trigger list, so naming the *next* branch individually would have
+  rebuilt the same trap on the next rename. The first runs in the recovery's history were green —
+  Lint 1m11s, Config Validation 1m14s, Tests 24m21s — and every run since has passed.
+- Full Test Suite — the full matrix — had its nightly 06:00 UTC cron **deleted during the
+  recovery and restored at the merge**. The reason is worth knowing, because it is a property of
+  GitHub rather than of this repo: the scheduler reads the workflow file from the **default**
+  branch, so while the recovery lived on a branch, an enabled cron would have kept testing a
+  `main` that was 167 commits stale — which is exactly what produced its 15-run failure streak
+  and then GitHub's dormancy disable. Now that `main` carries the recovery, the nightly tests
+  something someone is working on. The workflow itself may still need one
+  `gh workflow enable "Full Test Suite"` to clear the sticky `disabled_manually` state.
+- Three of the four — every one except Lint — run `scripts/validate_compiler_cli.py` before their
+  other steps, and no step sets `continue-on-error`, so that script gates the rest. It exits 0,
+  sweeping every pack it does not explicitly exclude.
 
-## Current Status
+What CI does not cover, stated so the green is not read as wider than it is: the full matrix has
+not yet completed a run against the merged tree; the harness that adjudicates the rewrite
+(`townlet.oracle.harness`) is run locally by the operator, not in CI; and one member of the
+default suite — a performance-threshold test asserting a 5% wall-clock ratio under always-on
+coverage instrumentation — is known to be flaky by construction and is tracked as a defect.
 
-**Phase 3 Complete (2025-11-04):**
+## Architecture at a glance
 
-- ✅ Vectorized GPU training environment
-- ✅ Level 1-3 progressive complexity working
-- ✅ Adversarial curriculum (5-stage progression)
-- ✅ RND-based intrinsic motivation with adaptive annealing
-- ✅ Unified training + inference server
-- ✅ Vue 3 frontend with live visualization
-- ✅ Episode recording and replay system
-- ✅ 70% test coverage (644+ tests passing)
-- ✅ TensorBoard integration
-- ✅ SQLite metrics storage
+`src/townlet/` is the only source tree — there is no `src/hamlet/` — and holds 16 packages. The
+load-bearing ones:
 
-**Phase 3.5: Multi-Day Tech Demo (Next):**
+- **`universe/` — the universe compiler (UAC).** Parses and cross-validates a pack, resolves its
+  references and shared schemas, compiles every level, and emits one `CompiledUniverse`: a frozen
+  dataclass carrying 16 declared `*_hash` fields plus per-level metadata. Not all sixteen are
+  enforced — see checkpoint identity below. The cache is keyed on a config hash and a provenance id
+  (compiler version, git sha, python, torch and pydantic versions), and is discarded when any
+  config file's mtime is newer than the artifact's.
+- **`vfs/` — variables, observation spec, and compiled transition programs (VTC).** Access control
+  is enforced at runtime, not merely declared: `VariableRegistry` raises `PermissionError` when a
+  reader or writer is not on the variable's list. The compiled transition schedule is built into
+  `VectorizedHamletEnv` and drives the ordered phases of the step loop.
+- **`environment/dac_engine.py` — declarative rewards (DAC),** compiled from a level's `drive.yaml`.
+- **`agent/` — brain-as-code, layer 2.** `brain.yaml` selects architecture, optimizer and loss
+  through `network_factory.py`, `optimizer_factory.py` and `loss_factory.py`.
+- **`environment/`, `population/`, `substrate/` — the vectorized torch runtime.** Device is an
+  explicit parameter: `VectorizedHamletEnv` requires one and raises rather than picking a default.
+- **`training/checkpoint_utils.py` — checkpoint identity.** One shared gate,
+  `assert_checkpoint_identity`, called by both the training-resume path (`demo/runner.py`) and the
+  serving path (`demo/live_inference.py`). Eight of the sixteen `*_hash` fields are stamped into a
+  checkpoint, and seven of those are hard-compared on load — `vfs_hash`, `drive_hash`, the
+  effective `brain_hash`, and the four per-level content hashes — alongside observation dim, action
+  count, observation-field UUIDs and `primary_level`, so a checkpoint refuses to load into a
+  universe it does not match, including a different level of the same pack. What is *not* enforced
+  is recorded rather than hidden: `observation_schema_hash` is stamped and never compared, and the
+  five pack-level hashes (`experiment`, `stratum`, `environment`, `actions`, `items`) are computed
+  and serialized and read by nobody — `DIV-001` in `docs/oracle/known-divergences.md`.
+- **`oracle/` — the differential harness** described above.
 
-- 🎯 Validate system stability over 48+ hours (10K episodes)
-- 🎯 Observe exploration→exploitation transition in production
-- 🎯 Generate teaching materials from real training data
+## Delivered, and intended
 
-## Roadmap
+Delivered and wired at this commit: a YAML pack compiles to a frozen, hash-carrying artifact
+(`configs/default_curriculum` and `configs/L5_multi_agent` both validate clean); that artifact
+drives the vectorized torch environment; reward functions are specified in config, with no Python
+reward classes left to subclass; VFS access control is enforced at runtime; and the training entry
+point runs end to end, writing a run directory whose `training.log` ends *Training loop completed
+normally* beside a `config_snapshot/` of the pack that produced it.
 
-### Phase 4: POMDP Extension
+Intent, not yet built — stated plainly because older docs blur the line:
 
-- Validate LSTM memory with systematic testing (ACTION #9)
-- Tune recurrent architecture for spatial reasoning
-- Add target network for temporal credit assignment
+- **Brain-as-code layers 1 and 3.** The behaviour contract (panic thresholds, forbidden actions,
+  personality dials, allowed goals) and the declarative think-loop graph are specified in
+  `docs/architecture/hld/02-brain-as-code.md` and have no implementation: their identifiers appear
+  in zero files under `src/` and `configs/`. Layer 2, the network/optimizer/loss surface, is real.
+- **One standard compiler for both halves of an experiment.** The universe compiles to an artifact;
+  the brain rides inside it as a validated `BrainConfig` plus a `brain_hash`, rather than compiling
+  to an artifact of its own. `CompiledBrain` exists only in `docs/`.
+- **A second demonstrator that varies the domain rather than the substrate.** The substrate axis
+  has a measured witness (Trial 001, above). `docs/product/vision.md` names four existing packs as
+  domain-varying candidates of unverified depth (`aspatial_test`, `L5_multi_agent`, `simple`,
+  `reference`). All four compile as of 2026-08-15; whether any varies the *domain* enough to count
+  as a witness is unassessed, and that — not the compile status — is the open question.
+- **The "Low Energy Delirium" reward-hacking lesson** described in older docs. It is not
+  implemented: no level of the shipped curriculum declares the multiplicative reward the lesson
+  depends on.
 
-### Phase 5: Informed Optimization
+## Known rough edges
 
-- Profile complete system, optimize real bottlenecks
-- ✅ Double DQN implemented (configurable via `use_double_dqn` in training.yaml)
-- Dueling Architecture
-- GPU optimization for RND (eliminate CPU transfers)
+- **The frontend cannot be built as shipped.** `frontend/` holds real Vue single-file components
+  and a `vite.config.js`, but there is no `package.json` or lockfile anywhere in the repository, so
+  `npm run dev` cannot run — although `scripts/run_demo.py --help` still tells you to run it.
+- **A compiled pack can fail to cache without failing the command.** `configs/reference/model_pack`
+  compiles, prints `Compilation succeeded`, and exits 0 — while its cache artifact is *not*
+  written: serialization raises `can not serialize 'CompiledGlobalProfile' object`, the failure is
+  reported as a message, and nothing propagates it to the exit code. Every other pack writes its
+  `.msgpack`. CI cannot see this, because the gate runs `validate`, which writes no cache. This is
+  the project's recurring shape — a failure that is not loud — and it is tracked as a defect rather
+  than left as folklore. (`configs/` holds 23 directories carrying an `experiment.yaml`; 15 are
+  fixtures under `configs/test/`, three of which the script declares expected-to-fail. The two
+  packs that used to fail at parse on schema drift, `configs/simple` and
+  `configs/reference/model_pack`, were repaired on 2026-08-15 and both validate clean.)
+- **The declarable surface exceeds the exercised surface.** Measured at this commit by compiling
+  every pack that compiles and counting rules in-process:
+  - Two of the nine compiled transition-program families — `action_write` and `social_residue` —
+    carry zero rules in every one of them. `action_write` is worse than unexercised: no YAML can
+    produce one, because `universe/compilers/actions.py` hardcodes `writes=()` for every action.
+    (A third, `interaction_progress`, was also empty everywhere until 2026-08-15; repairing
+    `configs/reference/model_pack` brought the only pack that exercises it back into the measured
+    set, where it carries two progress rules and two completion-bonus rules. The surface did not
+    change — the sample did.)
+  - `drive.yaml`'s `intrinsic.strategy` accepts `icm` and `count_based`, which have no
+    implementation anywhere — those tokens occur only inside `config/drive_as_code.py`, in the
+    `Literal`, its docstring and an unread `icm_config` field. `composition.normalize` and
+    `composition.clip` validate but have no reader; `dac_engine.py` takes only `log_components`
+    and `log_modifiers` from that block.
+  - `type: grid3d` was deleted from the substrate schema (it never had a
+    `SubstrateFactory.build` branch, so it could only compile toward a guaranteed crash); 3-D
+    grids are `type: grid` with `topology: cubic`.
+  - All four VFS variables declared in `configs/default_curriculum/environment.yaml` —
+    `deficit_energy`, `deficit_satiation`, `time_since_last_eat`, `time_since_last_sleep` — are
+    observed but written by nothing: those names appear nowhere under `src/townlet/`, and in no
+    config anywhere beyond their own declaration.
+- **Documentation outside `docs/product/` and `docs/oracle/` is being reconciled.** `CLAUDE.md`,
+  `scripts/README.md` and older architecture docs still name config paths, filenames and scripts
+  that do not exist in the tree — `scripts/README.md`, for one, documents
+  `scripts/validate_configs.py` and `scripts/validate_substrates.py`, neither of which is present.
+  The count of confirmed-false claims in canonical docs is tracked as a product guardrail in
+  `docs/product/metrics.md`.
+- **The recording subsystem is slated for removal** once its intent is captured
+  (`pyproject.toml`, `recording` extra). Its MP4 export also shells out to an `ffmpeg` binary that
+  is not a Python dependency.
 
-### Phase 6: Multi-Agent Competition
+## Numbers
 
-- Multiple agents compete for resources
-- Theory of mind and strategic behavior
-- Emergent cooperation vs competition
-
-### Phase 7: Emergent Communication
-
-- Family units with information sharing
-- Discrete symbol communication channel
-- Language grounding in shared experience
-
-### North Star: Social Hamlet (Vision)
-
-- 50×50 grid with dozens of agents
-- Economic hierarchy and job competition
-- Emergent social dynamics and territoriality
-- Nash equilibria emerging naturally
-
-See [docs/architecture/ROADMAP.md](docs/architecture/ROADMAP.md) for complete strategic plan.
-
-## Technologies
-
-- **Python 3.13** - Modern Python baseline
-- **PyTorch 2.9** - GPU-accelerated neural networks
-- **FastAPI + uvicorn** - Async inference server
-- **Vue 3 + Vite** - Reactive frontend visualization
-- **uv** - Fast Python package manager
-- **pytest** - Testing framework (644+ tests, 70% coverage)
-- **TensorBoard** - Training metrics visualization
-- **SQLite** - Episode metrics storage
+This README states no test count, no coverage percentage, no observation-vector width and no
+learning-curve figures. Numbers like those start decaying the moment they are written, which is
+how the last set went wrong: the README still on `main` badges a test count and a coverage
+percentage and states an observation width, and `docs/product/metrics.md` records that coverage
+figure as measured-false, while the width it gives is not what the compiler reports for any
+`default_curriculum` level at this commit. Read them off the tree instead: compile a level and read
+`Observation Dim` from the summary (the field is `metadata.observation_dim`, set from
+`observation_spec.total_dims` — plural — and it is a property of the pack, not a constant of the
+project); run `uv run pytest` for the suite; and read `docs/product/metrics.md` for measurements
+stamped with the commit and date they were taken at.
 
 ## Documentation
 
-- **[docs/manual/UNIFIED_SERVER_USAGE.md](docs/manual/UNIFIED_SERVER_USAGE.md)** - Complete usage guide
-- **[docs/architecture/ROADMAP.md](docs/architecture/ROADMAP.md)** - Strategic development plan
-- **[docs/architecture/TRAINING_LEVELS.md](docs/architecture/TRAINING_LEVELS.md)** - Formal level specifications
-- **[docs/manual/REPLAY_USAGE.md](docs/manual/REPLAY_USAGE.md)** - Real-time episode replay system
-- **[docs/manual/VIDEO_EXPORT_USAGE.md](docs/manual/VIDEO_EXPORT_USAGE.md)** - Video export for YouTube
-- **[docs/manual/RECORDING_SYSTEM_SUMMARY.md](docs/manual/RECORDING_SYSTEM_SUMMARY.md)** - Complete recording system overview
+Current and maintained as part of the recovery:
 
-## Contributing
+- `docs/product/vision.md` — purpose, audiences, anti-goals. Owner-endorsed; it separates what is
+  shipped from what is intended, and tags each claim with how it was established.
+- `docs/product/current-state.md` — where the rewrite stands.
+- `docs/product/roadmap.md` — the current bet list, stated as intent rather than dates.
+- `docs/product/metrics.md` — dated measurements and the documentation-truth guardrail.
+- `docs/oracle/ORACLE.md` and `docs/oracle/known-divergences.md` — the rewrite's rules and its
+  accepted divergences.
 
-This is a pedagogical project designed to teach Deep RL concepts through hands-on experimentation. Key principles:
-
-- **"Interesting failures" are features** - Reward hacking and cascade failures create teaching moments
-- **Configuration over code** - Students experiment by editing YAML files
-- **Progressive complexity** - Start simple (L1), add challenges incrementally
-- **Real implementations** - No black boxes, build DRL from scratch
-
-Feel free to experiment, extend, and learn!
+Subsystem detail lives in `docs/architecture/` and `docs/config-schemas/`. Those have not been
+reconciled against the tree; the concepts are useful, but treat specific filenames, paths and
+numbers there as unverified until you check them.
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file for details
-
-## Citation
-
-```bibtex
-@software{hamlet2025,
-  title={Hamlet: A Pedagogical Deep Reinforcement Learning Environment},
-  author={Tachyon-Beep},
-  year={2025},
-  url={https://github.com/tachyon-beep/hamlet}
-}
-```
-
-## Acknowledgments
-
-Built on foundational RL research:
-
-- **DQN** - Mnih et al. (2015) - [Nature Paper](https://www.nature.com/articles/nature14236)
-- **RND** - Burda et al. (2019) - [OpenAI Blog](https://openai.com/blog/reinforcement-learning-with-prediction-based-rewards/)
-- **Adversarial Curriculum** - Inspired by OpenAI's Dota 2 project
+MIT. See `LICENSE` — Copyright (c) 2025 John.

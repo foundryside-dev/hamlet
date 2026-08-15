@@ -231,7 +231,7 @@ class VFSProfileCompiler:
         if var.initial_value is not None:
             return CompiledVariable(
                 name=var.name,
-                exposed_to=tuple(getattr(var, "exposed_to", []) or ["agent"]),
+                exposed_to=tuple(var.exposed_to),
                 semantic_type=getattr(var, "semantic_type", "custom"),
                 type=var.type,
                 expression=None,
@@ -258,7 +258,7 @@ class VFSProfileCompiler:
 
         return CompiledVariable(
             name=var.name,
-            exposed_to=tuple(getattr(var, "exposed_to", []) or ["agent"]),
+            exposed_to=tuple(var.exposed_to),
             semantic_type=getattr(var, "semantic_type", "custom"),
             type=var.type,
             expression=var.expression,

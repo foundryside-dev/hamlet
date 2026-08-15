@@ -66,14 +66,21 @@ class CommandCompiler:
             node.value_ast = value_ast
 
         elif node.type == CommandType.SPAWN_EFFECT:
+            from townlet.world.expression.type_checker import TypeCheckError
+
+            if node.effect_id is None:
+                raise TypeCheckError("SPAWN_EFFECT command requires 'effect_id'")
+            if node.target is None and node.target_expr is None:
+                raise TypeCheckError("SPAWN_EFFECT command requires 'target'")
+            if node.intensity is None:
+                raise TypeCheckError("SPAWN_EFFECT command requires 'intensity'")
+
             # Validate and compile target expression only when not a simple literal
             simple_target = node.target in {"self", "target"} or isinstance(node.target, int)
             if not simple_target and node.target_expr:
                 target_ast = self.parser.parse(node.target_expr)
                 target_type = self.type_checker.check(target_ast)
                 if target_type != "int":
-                    from townlet.world.expression.type_checker import TypeCheckError
-
                     raise TypeCheckError(f"spawn_effect target expression must be int, got {target_type} for '{node.target_expr}'")
 
                 # ✅ Store compiled AST
@@ -204,12 +211,11 @@ class CommandCompiler:
             # Recursively compile nested commands (with None check for mypy)
             nested: list[CommandNode] = []
             seen_ids: set[int] = set()
-            for seq in (node.do_commands or [], node.body or []):
-                for cmd in seq:
-                    if id(cmd) in seen_ids:
-                        continue
-                    seen_ids.add(id(cmd))
-                    nested.append(cmd)
+            for cmd in node.body or []:
+                if id(cmd) in seen_ids:
+                    continue
+                seen_ids.add(id(cmd))
+                nested.append(cmd)
             for cmd in nested:
                 self.compile_command(cmd)
 
@@ -218,7 +224,6 @@ class CommandCompiler:
                 children: list[CommandNode] = []
                 children.extend(cmd.then_commands or [])
                 children.extend(cmd.else_commands or [])
-                children.extend(cmd.do_commands or [])
                 children.extend(cmd.body or [])
                 children.extend(cmd.default_commands or [])
                 children.extend(cmd.parallel_commands or [])
@@ -333,7 +338,6 @@ class CommandCompiler:
                 for seq in (
                     cmd.then_commands or [],
                     cmd.else_commands or [],
-                    cmd.do_commands or [],
                     cmd.body or [],
                     cmd.default_commands or [],
                     cmd.parallel_commands or [],
@@ -390,14 +394,6 @@ class CommandCompiler:
                 # Position expressions should produce coordinates - type check for sanity
                 self.type_checker.check(position_ast)
                 node.position_ast = position_ast
-
-        elif node.type == CommandType.TRIGGER_CASCADE:
-            from townlet.world.expression.type_checker import TypeCheckError
-
-            if not node.cascade_id:
-                raise TypeCheckError("TRIGGER_CASCADE command requires 'cascade_id'")
-            if node.cascade_strength is not None and node.cascade_strength <= 0:
-                raise TypeCheckError("TRIGGER_CASCADE 'cascade_strength' must be positive")
 
         return node
 

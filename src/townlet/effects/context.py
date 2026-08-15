@@ -8,7 +8,6 @@ from typing import Any
 import torch
 
 from townlet.vfs.registry import VariableRegistry
-from townlet.vfs.schema import VariableScope
 
 __all__ = ["ExecutionContext"]
 
@@ -46,7 +45,6 @@ class ExecutionContext:
     rng: torch.Generator | None = None
     seed: int | None = None  # Optional deterministic seed for sampling
     affordance_overrides: dict[str, bool] | None = None  # Runtime affordance availability overrides
-    meter_dynamics: Any | None = None  # Optional MeterDynamics for trigger_cascade
 
     def __post_init__(self) -> None:
         if self.effect_manager is None:
@@ -119,20 +117,14 @@ class ExecutionContext:
 
             # NEW: Special handling for self.vfs.* when self is an item
             if rest.startswith("vfs.") and self.self_is_item:
-                from townlet.vfs.schema import VariableScope
-
                 var_name = rest[len("vfs.") :]
                 if self.vfs_registry is None:
                     raise ValueError("VFS registry not set in context")
-                value = self.vfs_registry.read(
-                    var_name,
-                    context_index=self.self_index,
-                    scope=VariableScope.ITEM,
-                )
-                # Convert to tensor if needed
-                if not isinstance(value, torch.Tensor):
-                    value = torch.tensor(value, dtype=torch.float32)
-                return value
+                profile_name = self.vfs_registry.get_item_profile_for_index(self.self_index)
+                if profile_name is None:
+                    raise KeyError(f"No item profile registered for vfs_index {self.self_index}")
+                value = self.vfs_registry.read_item(profile_name, var_name, self.self_index)
+                return torch.as_tensor(value, dtype=torch.float32)
 
             tensor = self.get_path(rest)
 
@@ -182,18 +174,14 @@ class ExecutionContext:
             # Get original tensor and mutate in-place
             # Item target VFS handling
             if rest.startswith("vfs.") and self.target_is_item:
-                from townlet.vfs.schema import VariableScope
-
                 var_name = rest[len("vfs.") :]
                 if self.vfs_registry is None:
                     raise ValueError("VFS registry not set in context")
                 write_value = value.item() if isinstance(value, torch.Tensor) and value.numel() == 1 else value
-                self.vfs_registry.write(
-                    var_name,
-                    write_value,
-                    context_index=self.target_index,
-                    scope=VariableScope.ITEM,
-                )
+                profile_name = self.vfs_registry.get_item_profile_for_index(self.target_index)
+                if profile_name is None:
+                    raise KeyError(f"No item profile registered for vfs_index {self.target_index}")
+                self.vfs_registry.write_item(profile_name, var_name, write_value, self.target_index)
                 return
 
             if rest.startswith("vfs."):
@@ -223,19 +211,15 @@ class ExecutionContext:
 
             # NEW: Special handling for self.vfs.* when self is an item
             if rest.startswith("vfs.") and self.self_is_item:
-                from townlet.vfs.schema import VariableScope
-
                 var_name = rest[len("vfs.") :]
                 if self.vfs_registry is None:
                     raise ValueError("VFS registry not set in context")
-                # Convert value to Python float if it's a tensor (VFS registry.write() accepts both)
+                # Convert scalar tensors to Python floats for item VFS storage.
                 write_value = value.item() if isinstance(value, torch.Tensor) and value.numel() == 1 else value
-                self.vfs_registry.write(
-                    var_name,
-                    write_value,
-                    context_index=self.self_index,
-                    scope=VariableScope.ITEM,
-                )
+                profile_name = self.vfs_registry.get_item_profile_for_index(self.self_index)
+                if profile_name is None:
+                    raise KeyError(f"No item profile registered for vfs_index {self.self_index}")
+                self.vfs_registry.write_item(profile_name, var_name, write_value, self.self_index)
                 return
 
             if rest.startswith("vfs."):
@@ -288,7 +272,6 @@ class ExecutionContext:
 
             var_name = path[len("vfs.") :]
 
-            # VariableRegistry API compatibility
             if var_name in self.vfs_registry.variables:
                 self.vfs_registry.set(var_name, value, writer="engine")
                 return
@@ -374,12 +357,10 @@ class ExecutionContext:
         if scope == "item":
             if index is None:
                 raise ValueError("Item scope VFS access requires an index")
-            profile_name = (
-                self.vfs_registry.get_item_profile_for_index(index) if hasattr(self.vfs_registry, "get_item_profile_for_index") else None
-            )
-            if hasattr(self.vfs_registry, "get_item_profile_for_index") and profile_name is None:
+            profile_name = self.vfs_registry.get_item_profile_for_index(index)
+            if profile_name is None:
                 raise KeyError(f"No item profile registered for vfs_index {index}")
-            val = self.vfs_registry.read(var_name, context_index=index, scope=VariableScope.ITEM)
+            val = self.vfs_registry.read_item(profile_name, var_name, index)
             if isinstance(val, torch.Tensor):
                 return val
             return torch.tensor(val, device=self.bars[next(iter(self.bars))].device if self.bars else torch.device("cpu"))
@@ -393,13 +374,10 @@ class ExecutionContext:
         if scope == "item":
             if index is None:
                 return None
-            profile_name = (
-                self.vfs_registry.get_item_profile_for_index(index) if hasattr(self.vfs_registry, "get_item_profile_for_index") else None
-            )
+            profile_name = self.vfs_registry.get_item_profile_for_index(index)
             if profile_name:
                 return self.vfs_registry.get_item_variable_type(profile_name, var_name)
-        getter = getattr(self.vfs_registry, "get_variable_type", None)
-        return getter(var_name) if callable(getter) else None
+        return self.vfs_registry.get_variable_type(var_name)
 
     def _write_agent_vfs_value(self, var_name: str, index: int, value: torch.Tensor) -> None:
         """Write an agent-scoped VFS variable for a specific agent."""

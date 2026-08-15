@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import math
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 import torch
 
@@ -52,6 +53,24 @@ def _ensure_int(name: str, arg: str) -> None:
         raise ValueError(f"Function '{name}' requires integer argument, got {arg}")
 
 
+def _ensure_bool_arg(name: str, arg: str, position: int) -> None:
+    if arg != "bool":
+        raise ValueError(f"Function '{name}' argument {position} must be bool, got {arg}")
+
+
+def _ensure_matching_or_numeric(name: str, left: str, right: str) -> None:
+    if left == right:
+        return
+    if left in Numeric and right in Numeric:
+        return
+    raise ValueError(f"Function '{name}' requires matching value types or numeric promotion, got {left} and {right}")
+
+
+def _ensure_optional_string_arg(name: str, args: list[str], index: int) -> None:
+    if len(args) > index and args[index] != "str":
+        raise ValueError(f"Function '{name}' argument {index + 1} must be a string metric literal, got {args[index]}")
+
+
 def _run_validators(*validators: Callable[[], None]) -> None:
     """Execute multiple validator functions in sequence and return None."""
     for validator in validators:
@@ -74,6 +93,20 @@ def _return_int(_: list[str]) -> str:
     return "int"
 
 
+def _return_where(args: list[str]) -> str:
+    left, right = args[1], args[2]
+    if left in Numeric and right in Numeric:
+        return "float" if "float" in {left, right} else "int"
+    return left
+
+
+def _return_masked_numeric(args: list[str]) -> str:
+    left, right = args[0], args[1]
+    if left in Numeric and right in Numeric:
+        return "float" if "float" in {left, right} else "int"
+    return left
+
+
 def _eval_stack_numeric(
     args: list[torch.Tensor],
     reducer: Callable[[torch.Tensor], torch.Tensor],
@@ -89,6 +122,63 @@ def _resolve_device(args: list[torch.Tensor], context: ExecutionContext) -> torc
     if args:
         return args[0].device
     return torch.device("cpu")
+
+
+def _broadcast_bool_mask(mask: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+    broadcast = mask.to(device=target.device, dtype=torch.bool)
+    while broadcast.dim() < target.dim():
+        broadcast = broadcast.unsqueeze(-1)
+    return broadcast
+
+
+def _eval_all(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
+    return torch.all(torch.stack([arg.bool() for arg in args], dim=0), dim=0)
+
+
+def _eval_any(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
+    return torch.any(torch.stack([arg.bool() for arg in args], dim=0), dim=0)
+
+
+def _eval_where(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
+    return torch.where(args[0].bool(), args[1], args[2])
+
+
+def _eval_masked_add(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
+    value, delta, mask = args
+    return torch.where(_broadcast_bool_mask(mask, value), value + delta.to(device=value.device, dtype=value.dtype), value)
+
+
+def _eval_masked_set(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
+    value, replacement, mask = args
+    return torch.where(_broadcast_bool_mask(mask, value), replacement.to(device=value.device, dtype=value.dtype), value)
+
+
+def _eval_gather(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
+    values = cast(torch.Tensor, args[0])
+    indices = cast(torch.Tensor, args[1]).to(device=values.device, dtype=torch.long)
+    if values.dim() == 0:
+        raise ValueError("Function 'gather' cannot gather from a scalar tensor")
+    return values[indices]
+
+
+def _eval_scatter(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
+    base = cast(torch.Tensor, args[0]).clone()
+    indices = cast(torch.Tensor, args[1]).to(device=base.device, dtype=torch.long)
+    updates = cast(torch.Tensor, args[2]).to(device=base.device, dtype=base.dtype)
+    if base.dim() == 0:
+        raise ValueError("Function 'scatter' cannot scatter into a scalar tensor")
+    base[indices] = updates
+    return base
+
+
+def _eval_one_hot(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
+    indices, class_count = args
+    if class_count.numel() != 1:
+        raise ValueError("Function 'one_hot' expects a scalar class count")
+    classes = int(class_count.item())
+    if classes < 2:
+        raise ValueError("Function 'one_hot' requires at least 2 classes")
+    return torch.nn.functional.one_hot(indices.to(dtype=torch.long), num_classes=classes).to(device=indices.device, dtype=torch.float32)
 
 
 def _temporal_key(arg_node: ASTNode) -> str:
@@ -462,6 +552,119 @@ _register(
 )
 
 
+# --- Boolean/tensor/mask ---
+_register(
+    FunctionSpec(
+        name="all",
+        min_args=1,
+        max_args=None,
+        return_type=_return_bool,
+        validate_args=lambda args: _run_validators(lambda: _ensure_arg_count("all", args, 1, None), lambda: _ensure_all_bool("all", args)),
+        eval_fn=_eval_all,
+    )
+)
+
+_register(
+    FunctionSpec(
+        name="any",
+        min_args=1,
+        max_args=None,
+        return_type=_return_bool,
+        validate_args=lambda args: _run_validators(lambda: _ensure_arg_count("any", args, 1, None), lambda: _ensure_all_bool("any", args)),
+        eval_fn=_eval_any,
+    )
+)
+
+_register(
+    FunctionSpec(
+        name="where",
+        min_args=3,
+        max_args=3,
+        return_type=_return_where,
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("where", args, 3, 3),
+            lambda: _ensure_bool_arg("where", args[0], 1),
+            lambda: _ensure_matching_or_numeric("where", args[1], args[2]),
+        ),
+        eval_fn=_eval_where,
+    )
+)
+
+_register(
+    FunctionSpec(
+        name="masked_add",
+        min_args=3,
+        max_args=3,
+        return_type=_return_masked_numeric,
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("masked_add", args, 3, 3),
+            lambda: _ensure_all_numeric("masked_add", args[:2]),
+            lambda: _ensure_bool_arg("masked_add", args[2], 3),
+        ),
+        eval_fn=_eval_masked_add,
+    )
+)
+
+_register(
+    FunctionSpec(
+        name="masked_set",
+        min_args=3,
+        max_args=3,
+        return_type=_return_masked_numeric,
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("masked_set", args, 3, 3),
+            lambda: _ensure_matching_or_numeric("masked_set", args[0], args[1]),
+            lambda: _ensure_bool_arg("masked_set", args[2], 3),
+        ),
+        eval_fn=_eval_masked_set,
+    )
+)
+
+_register(
+    FunctionSpec(
+        name="gather",
+        min_args=2,
+        max_args=2,
+        return_type=lambda args: args[0],
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("gather", args, 2, 2),
+            lambda: _ensure_int("gather", args[1]),
+        ),
+        eval_fn=_eval_gather,
+    )
+)
+
+_register(
+    FunctionSpec(
+        name="scatter",
+        min_args=3,
+        max_args=3,
+        return_type=lambda args: args[0],
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("scatter", args, 3, 3),
+            lambda: _ensure_int("scatter", args[1]),
+            lambda: _ensure_matching_or_numeric("scatter", args[0], args[2]),
+        ),
+        eval_fn=_eval_scatter,
+    )
+)
+
+_register(
+    FunctionSpec(
+        name="one_hot",
+        min_args=2,
+        max_args=2,
+        return_type=_return_float,
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("one_hot", args, 2, 2),
+            lambda: _ensure_int("one_hot", args[0]),
+            lambda: _ensure_int("one_hot", args[1]),
+        ),
+        eval_fn=_eval_one_hot,
+    )
+)
+
+
 # --- Noise/sampling (vectorized-safe) ---
 _register(
     FunctionSpec(
@@ -515,6 +718,116 @@ def _scalar_float(arg: torch.Tensor, name: str) -> float:
     if arg.numel() != 1:
         raise ValueError(f"Function '{name}' expects a scalar float argument")
     return float(arg.item())
+
+
+def _validate_elapsed_ticks_args(args: list[str]) -> None:
+    _ensure_arg_count("elapsed_ticks", args, 0, 2)
+    if args:
+        _ensure_all_numeric("elapsed_ticks", args)
+
+
+def _eval_time_in_window(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
+    time_value = args[0]
+    period = torch.tensor(24.0, device=time_value.device, dtype=time_value.dtype)
+    hour = torch.remainder(time_value, period)
+    start_raw = args[1].to(device=time_value.device, dtype=time_value.dtype)
+    end_raw = args[2].to(device=time_value.device, dtype=time_value.dtype)
+    start = torch.remainder(start_raw, period)
+    end = torch.remainder(end_raw, period)
+
+    always_open = torch.remainder(end_raw - start_raw, period) == 0
+    non_wrapping = start < end
+    inside_non_wrapping = (hour >= start) & (hour < end)
+    inside_wrapping = (hour >= start) | (hour < end)
+    return torch.where(
+        always_open, torch.ones_like(inside_non_wrapping, dtype=torch.bool), torch.where(non_wrapping, inside_non_wrapping, inside_wrapping)
+    )
+
+
+def _phase_radians(value: torch.Tensor, period: torch.Tensor, name: str) -> torch.Tensor:
+    period = period.to(device=value.device, dtype=torch.float32)
+    if (period <= 0).any():
+        raise ValueError(f"Function '{name}' period must be > 0")
+    return value.to(dtype=torch.float32) * (2.0 * math.pi) / period
+
+
+def _eval_phase_sin(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
+    return torch.sin(_phase_radians(args[0], args[1], "phase_sin"))
+
+
+def _eval_phase_cos(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
+    return torch.cos(_phase_radians(args[0], args[1], "phase_cos"))
+
+
+def _eval_elapsed_ticks(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
+    if not args:
+        if context.step is None:
+            raise RuntimeError("Function 'elapsed_ticks' requires context.step when called without arguments")
+        return torch.tensor(context.step, device=context.device, dtype=torch.long)
+
+    start = args[0]
+    if len(args) == 1:
+        if context.step is None:
+            raise RuntimeError("Function 'elapsed_ticks' requires context.step or an explicit current tick")
+        current = torch.full(start.shape, context.step, device=start.device, dtype=start.dtype)
+    else:
+        current = args[1].to(device=start.device, dtype=start.dtype)
+
+    return torch.clamp(current - start, min=0).to(dtype=torch.long)
+
+
+_register(
+    FunctionSpec(
+        name="time_in_window",
+        min_args=3,
+        max_args=3,
+        return_type=_return_bool,
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("time_in_window", args, 3, 3),
+            lambda: _ensure_all_numeric("time_in_window", args),
+        ),
+        eval_fn=_eval_time_in_window,
+    )
+)
+
+_register(
+    FunctionSpec(
+        name="phase_sin",
+        min_args=2,
+        max_args=2,
+        return_type=_return_float,
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("phase_sin", args, 2, 2),
+            lambda: _ensure_all_numeric("phase_sin", args),
+        ),
+        eval_fn=_eval_phase_sin,
+    )
+)
+
+_register(
+    FunctionSpec(
+        name="phase_cos",
+        min_args=2,
+        max_args=2,
+        return_type=_return_float,
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("phase_cos", args, 2, 2),
+            lambda: _ensure_all_numeric("phase_cos", args),
+        ),
+        eval_fn=_eval_phase_cos,
+    )
+)
+
+_register(
+    FunctionSpec(
+        name="elapsed_ticks",
+        min_args=0,
+        max_args=2,
+        return_type=_return_int,
+        validate_args=_validate_elapsed_ticks_args,
+        eval_fn=_eval_elapsed_ticks,
+    )
+)
 
 
 _register(
@@ -651,6 +964,59 @@ _register(
 # --- Spatial ---
 
 
+def _metric_from_args(name: str, args: list[Any], fallback: str) -> str:
+    if len(args) < 1:
+        return fallback
+    metric = args[0]
+    if not isinstance(metric, str):
+        raise ValueError(f"Function '{name}' metric must be a string literal")
+    metric_l = metric.lower()
+    if metric_l not in {"manhattan", "euclidean"}:
+        raise ValueError(f"Function '{name}' metric must be 'manhattan' or 'euclidean', got '{metric}'")
+    return metric_l
+
+
+def _distance_between(left: torch.Tensor, right: torch.Tensor, metric: str) -> torch.Tensor:
+    diff = left - right.to(device=left.device, dtype=left.dtype)
+    if metric == "manhattan":
+        return diff.abs().sum(dim=-1)
+    return diff.pow(2).sum(dim=-1).sqrt()
+
+
+def _pairwise_distance(points: torch.Tensor, candidates: torch.Tensor, metric: str) -> torch.Tensor:
+    if points.shape[-1] != candidates.shape[-1]:
+        raise ValueError("Function 'nearest' requires point and candidate tensors with the same trailing dimension")
+    diff = points.unsqueeze(-2) - candidates.unsqueeze(0)
+    if metric == "manhattan":
+        return diff.abs().sum(dim=-1)
+    return diff.pow(2).sum(dim=-1).sqrt()
+
+
+def _eval_distance(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
+    return _distance_between(args[0], args[1], _metric_from_args("distance", args[2:], "euclidean"))
+
+
+def _eval_manhattan_distance(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
+    return _distance_between(args[0], args[1], "manhattan")
+
+
+def _eval_within_radius(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
+    distance = _distance_between(args[0], args[1], _metric_from_args("within_radius", args[3:], "euclidean"))
+    radius = cast(torch.Tensor, args[2]).to(device=distance.device, dtype=distance.dtype)
+    return distance <= radius
+
+
+def _eval_nearest(args: list[Any], context: ExecutionContext, arg_nodes: list[ASTNode]) -> torch.Tensor:
+    points = args[0]
+    candidates = args[1].to(device=points.device, dtype=points.dtype)
+    if points.dim() == 1:
+        points = points.unsqueeze(0)
+    if candidates.dim() == 1:
+        candidates = candidates.unsqueeze(0)
+    distances = _pairwise_distance(points, candidates, _metric_from_args("nearest", args[2:], "euclidean"))
+    return torch.argmin(distances, dim=-1)
+
+
 def _scalar_metric(name: str, args: list[Any]) -> str:
     if len(args) < 1:
         return "manhattan"
@@ -672,6 +1038,66 @@ def _distance(agent_positions: torch.Tensor, target: torch.Tensor, metric: str) 
     if metric == "manhattan":
         return diff.abs().sum(dim=-1)
     return diff.pow(2).sum(dim=-1).sqrt()
+
+
+_register(
+    FunctionSpec(
+        name="distance",
+        min_args=2,
+        max_args=3,
+        return_type=_return_float,
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("distance", args, 2, 3),
+            lambda: _ensure_all_numeric("distance", args[:2]),
+            lambda: _ensure_optional_string_arg("distance", args, 2),
+        ),
+        eval_fn=_eval_distance,
+    )
+)
+
+_register(
+    FunctionSpec(
+        name="manhattan_distance",
+        min_args=2,
+        max_args=2,
+        return_type=_return_float,
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("manhattan_distance", args, 2, 2),
+            lambda: _ensure_all_numeric("manhattan_distance", args),
+        ),
+        eval_fn=_eval_manhattan_distance,
+    )
+)
+
+_register(
+    FunctionSpec(
+        name="within_radius",
+        min_args=3,
+        max_args=4,
+        return_type=_return_bool,
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("within_radius", args, 3, 4),
+            lambda: _ensure_all_numeric("within_radius", args[:3]),
+            lambda: _ensure_optional_string_arg("within_radius", args, 3),
+        ),
+        eval_fn=_eval_within_radius,
+    )
+)
+
+_register(
+    FunctionSpec(
+        name="nearest",
+        min_args=2,
+        max_args=3,
+        return_type=_return_int,
+        validate_args=lambda args: _run_validators(
+            lambda: _ensure_arg_count("nearest", args, 2, 3),
+            lambda: _ensure_all_numeric("nearest", args[:2]),
+            lambda: _ensure_optional_string_arg("nearest", args, 2),
+        ),
+        eval_fn=_eval_nearest,
+    )
+)
 
 
 _register(

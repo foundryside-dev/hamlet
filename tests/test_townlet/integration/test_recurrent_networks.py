@@ -88,9 +88,9 @@ class TestLSTMHiddenStatePersistence:
         # Initialize all meters to 1.0 to prevent cascade-induced death during test
         env.meters.fill_(1.0)
 
-        # Capture initial hidden state
-        recurrent_network = population.q_network
-        h0, c0 = recurrent_network.get_hidden_state()
+        # Capture initial rollout memory (population-owned since WS-1(b))
+        assert population.rollout_hidden is not None
+        h0, c0 = population.rollout_hidden
         hidden_states = [(h0.clone(), c0.clone())]
 
         # Run 10 steps and verify agent survives
@@ -103,7 +103,7 @@ class TestLSTMHiddenStatePersistence:
                 "This test requires agent to survive 10 steps to verify hidden state persistence. "
                 "If this fails, energy costs may need to be reduced further."
             )
-            h, c = recurrent_network.get_hidden_state()
+            h, c = population.rollout_hidden
             hidden_states.append((h.clone(), c.clone()))
 
         # Verify hidden state changed across steps
@@ -174,9 +174,9 @@ class TestLSTMHiddenStatePersistence:
 
         assert done, "Agent should have died"
 
-        # After death, hidden state should be zeros
-        recurrent_network = population.q_network
-        h, c = recurrent_network.get_hidden_state()
+        # After death, rollout memory should be zeros
+        assert population.rollout_hidden is not None
+        h, c = population.rollout_hidden
 
         assert torch.allclose(h, torch.zeros_like(h)), "Hidden state should be zeros after death"
         assert torch.allclose(c, torch.zeros_like(c)), "Cell state should be zeros after death"
@@ -236,9 +236,9 @@ class TestLSTMHiddenStatePersistence:
         # Flush episode (max_steps survival)
         population.flush_episode(agent_idx=0)
 
-        # Hidden state should be zeros after flush
-        recurrent_network = population.q_network
-        h, c = recurrent_network.get_hidden_state()
+        # Rollout memory should be zeros after flush
+        assert population.rollout_hidden is not None
+        h, c = population.rollout_hidden
 
         assert torch.allclose(h, torch.zeros_like(h)), "Hidden state should be zeros after flush"
         assert torch.allclose(c, torch.zeros_like(c)), "Cell state should be zeros after flush"
@@ -293,15 +293,15 @@ class TestLSTMHiddenStatePersistence:
         env.meters.fill_(1.0)
 
         # Verify initial shape
-        recurrent_network = population.q_network
-        h, c = recurrent_network.get_hidden_state()
+        assert population.rollout_hidden is not None
+        h, c = population.rollout_hidden
         assert h.shape == (1, 2, 256), f"Expected shape (1, 2, 256), got {h.shape}"
         assert c.shape == (1, 2, 256), f"Expected shape (1, 2, 256), got {c.shape}"
 
         # Run 10 steps and verify shape remains consistent
         for _ in range(10):
             population.step_population(env)
-            h, c = recurrent_network.get_hidden_state()
+            h, c = population.rollout_hidden
             assert h.shape == (1, 2, 256), f"Hidden state shape should be (1, 2, 256), got {h.shape}"
             assert c.shape == (1, 2, 256), f"Cell state shape should be (1, 2, 256), got {c.shape}"
 
@@ -367,8 +367,8 @@ class TestLSTMBatchTraining:
         env.meters.fill_(1.0)
 
         # Verify initial shape (episode batch size = num_agents)
-        recurrent_network = population.q_network
-        h, c = recurrent_network.get_hidden_state()
+        assert population.rollout_hidden is not None
+        h, c = population.rollout_hidden
         assert h.shape == (1, 2, 256), f"Initial hidden state should be (1, 2, 256), got {h.shape}"
 
         # Run enough steps to trigger training (need 16+ episodes in buffer)
@@ -380,8 +380,8 @@ class TestLSTMBatchTraining:
                 if state.dones.any():
                     break
 
-        # After training, hidden state should be back to num_agents
-        h, c = recurrent_network.get_hidden_state()
+        # Training must not touch the rollout memory: still num_agents-shaped
+        h, c = population.rollout_hidden
         assert h.shape == (1, 2, 256), f"After training, hidden state should be (1, 2, 256), got {h.shape}"
 
     def test_lstm_training_with_sequences(self, cpu_device):
@@ -480,24 +480,24 @@ class TestLSTMBatchTraining:
 
             gamma = 0.99
 
-            # PASS 1: Collect Q-predictions from online network
-            network.reset_hidden_state(batch_size=8, device=cpu_device)
+            # PASS 1: Collect Q-predictions from online network, threading hidden state
+            hidden = network.initial_hidden(8, cpu_device)
             q_pred_list = []
 
             for t in range(3):
-                q_values, _ = network(batch["observations"][:, t, :])
+                q_values, hidden = network(batch["observations"][:, t, :], hidden)
                 q_pred = q_values.gather(1, batch["actions"][:, t].unsqueeze(1)).squeeze()
                 q_pred_list.append(q_pred)
 
-            # PASS 2: Collect Q-targets from target network (maintains hidden state!)
+            # PASS 2: Collect Q-targets from target network, threading hidden state
             with torch.no_grad():
-                target_network.reset_hidden_state(batch_size=8, device=cpu_device)
+                target_hidden = target_network.initial_hidden(8, cpu_device)
                 q_target_list = []
                 q_values_list = []
 
                 # First, unroll through entire sequence to get Q-values at each step
                 for t in range(3):
-                    q_values, _ = target_network(batch["observations"][:, t, :])
+                    q_values, target_hidden = target_network(batch["observations"][:, t, :], target_hidden)
                     q_values_list.append(q_values)
 
                 # Now compute targets using the Q-values from next timestep
@@ -563,14 +563,14 @@ class TestLSTMBatchTraining:
         # Create a sequence of 3 observations
         obs_sequence = torch.randn(4, 3, 7)  # [batch=4, seq_len=3, obs_dim=7]
 
-        # Reset hidden state once for the batch
-        network.reset_hidden_state(batch_size=4, device=cpu_device)
+        # Fresh hidden state once for the batch, threaded through the unroll
+        hidden = network.initial_hidden(4, cpu_device)
 
         # Unroll through sequence, tracking hidden states
         hidden_states = []
 
         for t in range(3):
-            q_values, hidden = network(obs_sequence[:, t, :])
+            q_values, hidden = network(obs_sequence[:, t, :], hidden)
             h, c = hidden
             hidden_states.append((h.clone(), c.clone()))
 
@@ -627,11 +627,11 @@ class TestLSTMForwardPass:
         expected_obs_dim = env.metadata.observation_dim
         assert obs.shape == (1, expected_obs_dim), f"Expected obs shape (1, {expected_obs_dim}), got {obs.shape}"
 
-        # Reset hidden state
-        network.reset_hidden_state(batch_size=1, device=cpu_device)
+        # Fresh hidden state
+        initial_hidden = network.initial_hidden(1, cpu_device)
 
         # Forward pass
-        q_values, new_hidden = network(obs)
+        q_values, new_hidden = network(obs, initial_hidden)
 
         # Verify Q-values shape
         assert q_values.shape == (1, env.action_dim), f"Expected Q-values shape (1, {env.action_dim}), got {q_values.shape}"
@@ -645,6 +645,6 @@ class TestLSTMForwardPass:
         assert torch.isfinite(q_values).all(), "Q-values should be finite"
 
         # Verify hidden state changed from initial zeros
-        initial_h, initial_c = network.get_hidden_state()
+        initial_h, initial_c = initial_hidden
         assert not torch.allclose(h, initial_h, atol=1e-6), "Hidden state should change after forward pass"
         assert not torch.allclose(c, initial_c, atol=1e-6), "Cell state should change after forward pass"

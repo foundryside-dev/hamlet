@@ -2,7 +2,7 @@ name: Tests
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "project-recovery*"]  # glob: every repair branch, not just the first
   pull_request:
 
 permissions:

@@ -132,6 +132,7 @@ def test_universe_metadata_instantiation():
     metadata = UniverseMetadata(
         universe_name="L0_0_minimal",
         schema_version="1.0",
+        primary_level="L0_0_minimal",
         substrate_type="grid",
         position_dim=2,
         meter_count=2,

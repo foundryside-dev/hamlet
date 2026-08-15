@@ -12,16 +12,16 @@ from typing import Any
 
 import torch
 
-from townlet.config.brain_config import compute_brain_hash
 from townlet.curriculum.factory import build_curriculum
 from townlet.demo.database import DemoDatabase
+from townlet.determinism import seed_all
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
 from townlet.population.vectorized import VectorizedPopulation
 from townlet.training.checkpoint_utils import (
-    assert_checkpoint_dimensions,
+    CHECKPOINT_FORMAT_VERSION,
+    assert_checkpoint_identity,
     attach_universe_metadata,
-    config_hash_warning,
     persist_checkpoint_digest,
     safe_torch_load,
     verify_checkpoint_digest,
@@ -50,17 +50,19 @@ class DemoRunner:
         training_config_path: Path | str | None = None,
         *,
         level_name: str | None = None,
+        force_new_vfs: bool = False,
     ):
         """Initialize demo runner.
 
         Args:
             config_dir: Experiment root directory containing v2.1 configs
-                (experiment.yaml, stratum.yaml, environment.yaml, actions.yaml, agent.yaml, levels/*)
+                (experiment.yaml, stratum.yaml, environment.yaml, actions.yaml, brain.yaml, levels/*)
             level_name: Which curriculum level to run (e.g., "L0_0_minimal"). Required.
             db_path: Path to SQLite database
             checkpoint_dir: Directory for checkpoint files
             max_episodes: Maximum number of episodes to run (if None, reads from level training.yaml)
             training_config_path: Deprecated; overrides are no longer supported.
+            force_new_vfs: Start a fresh run branch instead of resuming an incompatible VFS checkpoint.
         """
         self.config_dir = Path(config_dir)
         # Resolve training config path:
@@ -76,7 +78,7 @@ class DemoRunner:
             raise FileNotFoundError(f"Training config not found: {self.training_config_path}")
         self.db_path = Path(db_path)
         self.checkpoint_dir = Path(checkpoint_dir)
-        self.compiled: CompiledUniverse | None = None
+        self.force_new_vfs = force_new_vfs
 
         # Create directories
         self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
@@ -105,19 +107,9 @@ class DemoRunner:
 
         # v2.1: Compile hierarchical configs (multi-level aware)
         compiler = UniverseCompiler()
-        self.compiled = compiler.compile(self.config_dir, primary_level=level_name)
+        self.compiled: CompiledUniverse = compiler.compile(self.config_dir, primary_level=level_name)
 
-        # Determine effective level_name (supports callers that omitted it)
-        if level_name is None:
-            available_levels = getattr(self.compiled, "available_levels", [])
-            if not available_levels:
-                raise ValueError("Compiled universe has no curriculum levels; DemoRunner requires at least one level to be available.")
-            self.level_name: str = available_levels[0]
-            logger.info("No level_name specified; defaulting to %s", self.level_name)
-        else:
-            self.level_name = level_name
-
-        # Type narrowing: self.level_name is now guaranteed to be str
+        self.level_name = level_name
         level_config = self.compiled.get_level(self.level_name)
         self.experiment_config = self.compiled.experiment
         self.stratum_config = self.compiled.stratum
@@ -128,6 +120,9 @@ class DemoRunner:
         self.bars_config = level_config.bars
         self.affordances_config = level_config.affordances
         self.training_config = level_config.training
+        # Seed every RNG stream before anything random is constructed; the seed is
+        # config-declared so the run is reproducible from its own checkpoint.
+        seed_all(self.training_config.seed)
         # Expose training config in the legacy dict shape for downstream callers/tests
         self.config: dict[str, Any] = {
             "training": self.training_config.model_dump(exclude_none=True),
@@ -151,10 +146,6 @@ class DemoRunner:
         self.curriculum = None
         self.exploration = None
         self.recorder = None  # Episode recorder (initialized if recording enabled)
-
-        # TASK-005 Phase 1: Brain As Code configuration derived from agent.yaml + training.yaml
-        # self.brain_config is already set from self.compiled.brain
-        self.brain_hash: str | None = None
 
         # Shutdown flag
         self.should_shutdown = False
@@ -187,8 +178,11 @@ class DemoRunner:
         first_checkpoint_path = checkpoint_files[0]
 
         try:
-            verify_checkpoint_digest(first_checkpoint_path, required=False)
-            checkpoint = safe_torch_load(first_checkpoint_path, weights_only=False)
+            verify_checkpoint_digest(first_checkpoint_path, required=True)
+            # Demo checkpoints embed trusted custom Python objects (population
+            # state, curriculum state, replay buffers). The digest above pins
+            # the file we are about to unpickle to one we produced ourselves.
+            checkpoint = safe_torch_load(first_checkpoint_path, allow_unsafe_pickle=True)
 
             # Validate checkpoint has required metadata
             if "substrate_metadata" not in checkpoint:
@@ -268,7 +262,7 @@ class DemoRunner:
         for agent_idx in range(self.population.num_agents):
             self.population.flush_episode(agent_idx)
 
-    def save_checkpoint(self, universe: CompiledUniverse | None = None):
+    def save_checkpoint(self):
         """Save checkpoint at current episode."""
         # P1.1 Phase 5: Flush all agents before checkpoint
         self.flush_all_agents()
@@ -277,7 +271,7 @@ class DemoRunner:
 
         # P1.1 Phase 2: Use population's complete checkpoint state
         checkpoint: dict[str, Any] = {
-            "version": 3,  # Phase 5: Version 3 includes substrate metadata
+            "version": CHECKPOINT_FORMAT_VERSION,
             "episode": self.current_episode,
             "timestamp": time.time(),
         }
@@ -313,14 +307,9 @@ class DemoRunner:
         checkpoint["training_config"] = self.training_config.model_dump()
         checkpoint["config_dir"] = str(self.config_dir)
 
-        # TASK-005 Phase 1: Add brain_hash for checkpoint provenance
-        if self.brain_hash is not None:
-            checkpoint["brain_hash"] = self.brain_hash
-
-        if universe is None:
-            universe = self.compiled
-        if universe is not None:
-            attach_universe_metadata(checkpoint, universe)
+        # WS-1 task 5: unconditional. The old `if universe is not None:` skip meant a
+        # checkpoint could be written with ZERO provenance keys, making every guard vacuous.
+        attach_universe_metadata(checkpoint, self.compiled)
 
         torch.save(checkpoint, checkpoint_path)
         persist_checkpoint_digest(checkpoint_path)
@@ -329,11 +318,12 @@ class DemoRunner:
         # Update system state
         self.db.set_system_state("last_checkpoint", str(checkpoint_path))
 
-    def load_checkpoint(self, universe: CompiledUniverse | None = None) -> int | None:
+    def load_checkpoint(self) -> int | None:
         """Load latest checkpoint if exists.
 
         Returns:
             Episode number of loaded checkpoint, or None if no checkpoint
+            (or when force-new-VFS explicitly branches instead of resuming)
         """
         # Find latest checkpoint
         checkpoints = sorted(self.checkpoint_dir.glob("checkpoint_ep*.pt"))
@@ -344,21 +334,14 @@ class DemoRunner:
         latest_checkpoint = checkpoints[-1]
         logger.info(f"Loading checkpoint: {latest_checkpoint}")
 
-        verify_checkpoint_digest(latest_checkpoint, required=False)
-        checkpoint = safe_torch_load(latest_checkpoint, weights_only=False)
+        verify_checkpoint_digest(latest_checkpoint, required=True)
+        # See _detect_old_checkpoints above for the trust-boundary rationale.
+        checkpoint = safe_torch_load(latest_checkpoint, allow_unsafe_pickle=True)
 
-        if universe is None:
-            universe = self.compiled
-        if universe is not None:
-            warning = config_hash_warning(checkpoint, universe)
-            if warning:
-                logger.warning(warning)
-            assert_checkpoint_dimensions(checkpoint, universe)
-
-        # P1.1: Check checkpoint version
-        checkpoint_version = checkpoint.get("version")
-        if checkpoint_version != 3:
-            raise ValueError(f"Unsupported checkpoint version: {checkpoint_version}\nExpected version 3. Please retrain from scratch.")
+        # WS-1 task 5: the shared identity gate (format version, VFS ABI, dimensions,
+        # content hashes, primary_level). The serving path runs the identical chain.
+        if not assert_checkpoint_identity(checkpoint, self.compiled, force_new_vfs=self.force_new_vfs):
+            return None
 
         self.current_episode = checkpoint["episode"]
 
@@ -476,17 +459,11 @@ class DemoRunner:
         # Create agent IDs
         agent_ids = [f"agent_{i}" for i in range(num_agents)]
 
-        # Derive brain configuration from agent.yaml (v2.1 AgentConfig)
+        # Use the BrainConfig loaded from brain.yaml during compilation.
         from townlet.config.brain_config import apply_training_overrides
 
         base_brain_config = self.brain_config
-        brain_hash = compute_brain_hash(base_brain_config)
-        logger.info(f"Brain config derived from agent.yaml: {base_brain_config.description}")
-        logger.info(f"Brain hash: {brain_hash[:16]}... (SHA256)")
-
-        # Store base brain_config and brain_hash for checkpoint provenance
-        self.brain_config = base_brain_config
-        self.brain_hash = brain_hash
+        logger.info(f"Brain config from brain.yaml: {base_brain_config.description}")
 
         # Apply curriculum-level overrides from training.yaml to derive effective brain config
         effective_brain_config = apply_training_overrides(base_brain_config, self.training_config)
@@ -535,7 +512,7 @@ class DemoRunner:
             logger.info("Episode recording disabled")
 
         # Try to resume from checkpoint
-        loaded_episode = self.load_checkpoint(self.compiled)
+        loaded_episode = self.load_checkpoint()
         if loaded_episode is not None:
             self.current_episode = loaded_episode + 1
 
@@ -552,6 +529,7 @@ class DemoRunner:
             "initial_intrinsic_weight": 1.0,
             "variance_threshold": self.training_config.intrinsic.annealing.threshold,
             "max_steps_per_episode": loop_cfg.max_steps_per_episode,
+            "observation_schema_hash": self.compiled.observation_schema_hash,
         }
         # Note: final metrics will be logged at end of training
         self.tb_logger.log_hyperparameters(hparams=self.hparams, metrics={})
@@ -747,6 +725,7 @@ class DemoRunner:
                     intrinsic_weight=intrinsic_weight_value,
                     curriculum_stage=int(stages_cpu[0].item()),
                     epsilon=epsilon_value,
+                    observation_schema_hash=self.compiled.observation_schema_hash,
                 )
 
                 # NEW: Insert affordance transitions for agent 0
@@ -929,7 +908,7 @@ class DemoRunner:
 
                 # Checkpoint every CHECKPOINT_INTERVAL episodes
                 if self.current_episode % self.CHECKPOINT_INTERVAL == 0:
-                    self.save_checkpoint(self.compiled)
+                    self.save_checkpoint()
 
                 # Decay epsilon for next episode and sync telemetry
                 self.exploration.decay_epsilon()
@@ -940,7 +919,7 @@ class DemoRunner:
         finally:
             # Save final checkpoint
             logger.info("Training complete, saving final checkpoint...")
-            self.save_checkpoint(self.compiled)
+            self.save_checkpoint()
 
             # Phase 4 - Log final metrics with hyperparameters
             if self.population is not None:

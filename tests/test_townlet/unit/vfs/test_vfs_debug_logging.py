@@ -13,13 +13,12 @@ class DummyVar:
         self.initial_value = initial_value
 
 
-def test_vfs_debug_logging(monkeypatch, caplog):
-    monkeypatch.setenv("HAMLET_DEBUG_VFS", "true")
-    evaluator = VFSEvaluator()
+def test_vfs_debug_logging(caplog):
+    evaluator = VFSEvaluator(debug_logging=True)
     profile = SimpleNamespace(variables=[DummyVar("foo", 1.0)], dependencies={})
 
     with caplog.at_level(logging.DEBUG):
-        evaluator.evaluate_global_profile(profile, bars={}, vfs_state={}, device=torch.device("cpu"))
+        evaluator.evaluate_global_profile(profile, bars={}, vfs_state={}, marks={"foo"}, device=torch.device("cpu"))
 
     assert any("vfs_evaluation" in rec.message for rec in caplog.records)
 
@@ -29,6 +28,17 @@ def test_vfs_debug_disabled_by_default(caplog):
     profile = SimpleNamespace(variables=[DummyVar("foo", 1.0)], dependencies={})
 
     with caplog.at_level(logging.DEBUG):
-        evaluator.evaluate_global_profile(profile, bars={}, vfs_state={}, device=torch.device("cpu"))
+        evaluator.evaluate_global_profile(profile, bars={}, vfs_state={}, marks={"foo"}, device=torch.device("cpu"))
+
+    assert not any("vfs_evaluation" in rec.message for rec in caplog.records)
+
+
+def test_vfs_debug_env_var_does_not_enable_logging(monkeypatch, caplog):
+    monkeypatch.setenv("HAMLET_DEBUG_VFS", "true")
+    evaluator = VFSEvaluator(debug_logging=False)
+    profile = SimpleNamespace(variables=[DummyVar("foo", 1.0)], dependencies={})
+
+    with caplog.at_level(logging.DEBUG):
+        evaluator.evaluate_global_profile(profile, bars={}, vfs_state={}, marks=set(), device=torch.device("cpu"))
 
     assert not any("vfs_evaluation" in rec.message for rec in caplog.records)

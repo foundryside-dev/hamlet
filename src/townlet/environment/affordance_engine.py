@@ -2,7 +2,7 @@
 AffordanceEngine: Config-driven affordance interaction system.
 
 This module processes affordance interactions using YAML configuration instead
-of hardcoded logic. Follows the same pattern as MeterDynamics (ACTION #1).
+of hardcoded logic.
 
 Architecture:
 - Load affordance configs at initialization
@@ -20,7 +20,7 @@ Status: Ready for integration with vectorized_env.py
 """
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 import torch
 
@@ -30,7 +30,6 @@ from townlet.effects.executor import CommandExecutor, ExecutionContext
 from townlet.effects.parser import CommandParser
 from townlet.effects.schema import CommandNode
 from townlet.environment.null_managers import NullItemManager
-from townlet.environment.temporal_utils import is_affordance_open as canonical_is_affordance_open
 
 
 @dataclass
@@ -58,14 +57,16 @@ class AffordanceEngine:
         num_agents: int,
         device: torch.device,
         meter_name_to_idx: dict[str, int],
-        modulation_rules: list[dict[str, Any]] | None = None,
+        modulation_program: Any | None = None,
         vfs_registry: Any | None = None,  # NEW: VFS registry for Effects
         effects_schema: Any | None = None,  # NEW: Effects schema for compilation
         command_executor: CommandExecutor | None = None,  # NEW: Effects executor
         effect_manager: Any | None = None,  # NEW: EffectManager required for Effects commands
         item_manager: Any | None = None,  # NEW: ItemManager required for spawn_item
         affordance_overrides: dict[str, bool] | None = None,  # NEW: dynamic availability toggles
-        meter_dynamics: Any | None = None,  # NEW: for trigger_cascade command support
+        *,
+        meter_bounds_min: torch.Tensor,
+        meter_bounds_max: torch.Tensor,
     ):
         """
         Initialize AffordanceEngine.
@@ -75,24 +76,27 @@ class AffordanceEngine:
             num_agents: Number of agents in parallel
             device: torch.device for GPU/CPU
             meter_name_to_idx: Mapping of meter names to indices (from bars_config)
-            modulation_rules: Modulation rules for affordance effectiveness
+            modulation_program: Compiled VTC modulation program for affordance effectiveness
             vfs_registry: VFS registry for Effects system (optional)
             effects_schema: Effects schema for command compilation (optional)
             command_executor: Effects command executor (optional)
+            meter_bounds_min: Declared per-meter floors, shape [meter_count]. Required.
+            meter_bounds_max: Declared per-meter ceilings, shape [meter_count]. Required.
         """
         self.num_agents = num_agents
         self.device = device
+        self.meter_bounds_min = meter_bounds_min
+        self.meter_bounds_max = meter_bounds_max
 
         self.affordances = affordance_config
 
         self.meter_name_to_idx = meter_name_to_idx
-        self.modulation_rules = modulation_rules or []
+        self.modulation_program = modulation_program
         self.vfs_registry = vfs_registry  # NEW
         self.command_executor = command_executor  # NEW
         self.effect_manager = effect_manager or NullEffectManager()
         self.item_manager = item_manager or NullItemManager()
         self.affordance_overrides = affordance_overrides
-        self.meter_dynamics = meter_dynamics
 
         # Build lookup maps
         self._build_lookup_maps()
@@ -154,89 +158,61 @@ class AffordanceEngine:
         """Get affordance config by ID."""
         return self.affordance_map_by_id.get(affordance_id)
 
-    def is_affordance_open(self, affordance_name: str, time_of_day: int) -> bool:
-        """Check if affordance is open at given time.
-
-        Args:
-            affordance_name: Name of affordance (e.g., "Job", "Bar")
-            time_of_day: Current hour [0-23]
-
-        Returns:
-            True if open, False if closed
-
-        Note:
-            Delegates to canonical temporal_utils.is_affordance_open() to avoid
-            logic drift (see JANK-09). Do not re-implement this logic.
-        """
-        affordance = self.affordance_map.get(affordance_name)
-        if affordance is None:
-            return False
-
-        # Require opening_hours from config (structured format with schedule support)
-        opening_hours = getattr(affordance, "opening_hours", None)
-        if opening_hours is None:
-            raise ValueError(
-                f"Affordance '{affordance_name}' missing opening_hours; " "runtime affordances must provide explicit availability windows."
-            )
-
-        if not getattr(opening_hours, "enabled", False):
-            return True  # 24/7 availability
-
-        schedule = getattr(opening_hours, "schedule", []) or []
-        if not schedule:
-            raise ValueError(
-                f"Affordance '{affordance_name}' has opening_hours.enabled=true but an empty schedule; " "provide at least one time window."
-            )
-
-        for window in schedule:
-            start = getattr(window, "start", None)
-            end = getattr(window, "end", None)
-            if start is None or end is None:
-                raise ValueError(
-                    f"Affordance '{affordance_name}' has malformed opening_hours window: {window!r}. "
-                    "Expected 'start' and 'end' integers."
-                )
-            if canonical_is_affordance_open(time_of_day, (start, end)):
-                return True
-
-        return False
-
     def apply_instant_interaction(
         self,
         meters: torch.Tensor,
         affordance_name: str,
         agent_mask: torch.Tensor,
-        check_affordability: bool = False,
+        *,
+        current_tick: int,
     ) -> torch.Tensor:
         """
         Apply instant affordance interaction.
 
+        Affordability is a PRECONDITION, not an option. The caller gates on
+        :meth:`can_afford` and this method asserts it, so the gate and the
+        application cannot drift apart. The old ``check_affordability: bool = False``
+        made the safe behaviour opt-in and every production caller left it off.
+
         Args:
-            meters: [num_agents, 8] current meter values
+            meters: [num_agents, meter_count] current meter values
             affordance_name: Name of affordance (e.g., "Shower")
             agent_mask: [num_agents] bool mask of agents to apply to
-            check_affordability: If True, check if agents can afford costs
+            current_tick: Current global tick. REQUIRED and deliberately without a
+                default — it seeds the effect command RNG and anchors the scheduler,
+                so a missing value silently degrades to tick 0 with no error.
 
         Returns:
-            updated_meters: [num_agents, 8] after effects applied
+            updated_meters: [num_agents, meter_count] after effects applied
+
+        Raises:
+            ValueError: Unknown affordance, wrong interaction type, or any masked
+                agent that cannot pay the declared costs.
         """
         affordance = self.affordance_map.get(affordance_name)
         if affordance is None:
-            return meters
+            raise ValueError(f"Unknown affordance '{affordance_name}'. Known affordances: {sorted(self.affordance_map)}")
 
         if affordance.interaction_type not in ["instant", "dual"]:
             raise ValueError(
                 f"Affordance '{affordance_name}' is {affordance.interaction_type}, "
-                f"not instant or dual. Use apply_multi_tick_interaction instead."
+                f"not instant or dual. Use apply_vtc_multi_tick_effects instead."
             )
 
         # Clone meters to avoid modifying input
         updated_meters = meters.clone()
 
-        # Check affordability if requested
-        if check_affordability and len(affordance.costs) > 0:
-            can_afford = self._check_affordability(meters, affordance.costs)
-            agent_mask = agent_mask & can_afford
+        # Affordability is asserted, never silently narrowed. Narrowing the mask here
+        # would let the caller record a completed interaction the engine declined.
+        if len(affordance.costs) > 0:
+            affordable = self.can_afford(affordance_name, meters, cost_mode="instant")
+            offenders = torch.nonzero(agent_mask & ~affordable, as_tuple=False).flatten()
+            if offenders.numel() > 0:
+                declared = {meter: amount for meter, amount in (self._cost_fields(c) for c in self._iter_costs(affordance.costs))}
+                raise ValueError(
+                    f"Agents {offenders.tolist()} cannot pay for affordance '{affordance_name}'; "
+                    f"declared costs {declared}. Gate on can_afford() before applying."
+                )
 
         # Apply costs (modern dict format)
         multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
@@ -252,61 +228,58 @@ class AffordanceEngine:
             agent_mask,
             updated_meters,
             multipliers=multipliers,
-            current_tick=None,
+            current_tick=current_tick,
         )
 
-        # Clamp meters to [0, 1]
-        updated_meters = torch.clamp(updated_meters, 0.0, 1.0)
+        # Clamp meters to their DECLARED per-meter bounds (WS-1(e)).
+        # RETAINED deliberately (PDR-0014 B3 / PDR-0015): this is a real ceiling, not a
+        # duplicate of the VTC clamp — do not delete it and do not add a second.
+        updated_meters = torch.clamp(updated_meters, self.meter_bounds_min, self.meter_bounds_max)
 
         return updated_meters
 
     def _compute_affordance_multiplier(self, affordance_name: str, meters: torch.Tensor, agent_mask: torch.Tensor) -> torch.Tensor:
         """Compute modulation multiplier for a given affordance based on bar values."""
-        multiplier = torch.ones(meters.shape[0], device=meters.device, dtype=meters.dtype)
-        for rule in self.modulation_rules:
-            if rule.get("affordance") != affordance_name:
-                continue
-            bar_idx = rule.get("bar_idx")
-            threshold = rule.get("threshold")
-            min_multiplier = rule.get("min_multiplier")
-            if bar_idx is None or threshold is None or min_multiplier is None:
-                continue
-            val = meters[:, bar_idx]
-            factor = torch.ones_like(val)
-            below = val < threshold
-            if below.any():
-                factor = torch.where(
-                    below,
-                    min_multiplier + (1.0 - min_multiplier) * (val / threshold),
-                    torch.ones_like(val),
-                )
-            multiplier = multiplier * factor
-        # Zero out masked agents to avoid applying to inactive ones
-        masked = ~agent_mask
-        if masked.any():
-            multiplier[masked] = 0.0
-        return multiplier
+        if self.modulation_program is None:
+            active = agent_mask.to(device=meters.device, dtype=torch.bool)
+            return torch.where(
+                active,
+                torch.ones(meters.shape[0], device=meters.device, dtype=meters.dtype),
+                torch.zeros(meters.shape[0], device=meters.device, dtype=meters.dtype),
+            )
 
-    def apply_multi_tick_interaction(
+        bars_state = {name: meters[:, idx] for name, idx in self.meter_name_to_idx.items() if 0 <= idx < meters.shape[1]}
+        return cast(
+            torch.Tensor,
+            self.modulation_program.compute_affordance_multiplier(
+                affordance_name,
+                bars_state,
+                active_mask=agent_mask,
+                device=meters.device,
+            ),
+        )
+
+    def apply_vtc_multi_tick_effects(
         self,
+        *,
         meters: torch.Tensor,
         affordance_name: str,
         current_tick: int,
         agent_mask: torch.Tensor,
-        check_affordability: bool = False,
+        completion_mask: torch.Tensor,
     ) -> torch.Tensor:
         """
-        Apply multi-tick affordance interaction for a single tick.
+        Apply VTC-selected multi-tick affordance effects for a single tick.
 
         Args:
             meters: [num_agents, 8] current meter values
             affordance_name: Name of affordance (e.g., "Bed", "Job")
-            current_tick: Current tick number [0, duration_ticks-1]
+            current_tick: Current tick number selected by VTC [0, duration_ticks-1]
             agent_mask: [num_agents] bool mask of agents to apply to
-            check_affordability: If True, check if agents can afford costs
+            completion_mask: [num_agents] bool mask of agents completed by the VTC rule
 
         Returns:
-            updated_meters: [num_agents, 8] after per-tick effects applied
+            updated_meters: [num_agents, 8] after VTC-selected effects are applied
         """
         affordance = self.affordance_map.get(affordance_name)
         if affordance is None:
@@ -318,13 +291,20 @@ class AffordanceEngine:
                 f"not multi_tick or dual. Use apply_instant_interaction instead."
             )
 
+        if completion_mask.shape != agent_mask.shape:
+            raise ValueError(f"completion_mask shape {tuple(completion_mask.shape)} must match agent_mask shape {tuple(agent_mask.shape)}")
+
         # Clone meters
         updated_meters = meters.clone()
+        agent_mask = agent_mask.to(device=meters.device, dtype=torch.bool)
+        completion_mask = completion_mask.to(device=meters.device, dtype=torch.bool)
 
-        # Check affordability if requested
-        if check_affordability and len(affordance.costs_per_tick) > 0:
-            can_afford = self._check_affordability(meters, affordance.costs_per_tick)
-            agent_mask = agent_mask & can_afford
+        # NO affordability raise on this path, deliberately. Effects are applied a
+        # tick at a time after the interaction has already begun, so the
+        # gate-and-apply invariant that apply_instant_interaction asserts does not
+        # hold here: an agent can become unable to pay mid-interaction through no
+        # fault of the caller. The executor gates at the START of a multi-tick
+        # interaction instead.
 
         # Apply per-tick costs (modern dict format)
         multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
@@ -343,46 +323,61 @@ class AffordanceEngine:
             current_tick=current_tick,
         )
 
-        duration_ticks = affordance.duration_ticks or 1
-
-        # Check if this is the final tick - if so, apply completion bonus
-        is_final_tick = current_tick == (duration_ticks - 1)
-        if is_final_tick:
-            # Execute compiled Effects commands (on_completion stage)
+        if completion_mask.any():
             updated_meters = self._execute_affordance_effects(
                 affordance_name,
                 "on_completion",
-                agent_mask,
+                completion_mask,
                 updated_meters,
                 multipliers=multipliers,
                 current_tick=current_tick,
             )
 
-        # Clamp meters to [0, 1]
-        updated_meters = torch.clamp(updated_meters, 0.0, 1.0)
+        # Clamp meters to their DECLARED per-meter bounds (WS-1(e)).
+        updated_meters = torch.clamp(updated_meters, self.meter_bounds_min, self.meter_bounds_max)
 
         return updated_meters
 
-    def _check_affordability(self, meters: torch.Tensor, costs: list) -> torch.Tensor:
-        """
-        Check if agents can afford the costs.
+    def can_afford(self, affordance_name: str, meters: torch.Tensor, *, cost_mode: str = "instant") -> torch.Tensor:
+        """Which agents can pay EVERY declared cost of this affordance.
+
+        Public because the action mask and the application path must agree: the
+        executor gates on this, and ``apply_instant_interaction`` asserts it. A
+        private helper invited the two to drift, which is how the gate came to
+        consider only ``money`` while every other declared cost was ignored.
 
         Args:
-            meters: [batch_size, 8] current meter values
-            costs: List of cost dicts with 'meter' and 'amount' keys
+            affordance_name: Name of the affordance.
+            meters: ``[batch_size, meter_count]`` current meter values.
+            cost_mode: ``"instant"`` (``costs``) or ``"per_tick"`` (``costs_per_tick``).
 
         Returns:
-            can_afford: [batch_size] bool tensor
+            ``[batch_size]`` bool tensor.
+
+        Raises:
+            ValueError: Unknown affordance, or an unrecognised ``cost_mode``.
         """
-        batch_size = meters.shape[0]
-        can_afford = torch.ones(batch_size, dtype=torch.bool, device=self.device)
+        affordance = self.affordance_map.get(affordance_name)
+        if affordance is None:
+            raise ValueError(f"Unknown affordance '{affordance_name}'. Known affordances: {sorted(self.affordance_map)}")
+        if cost_mode not in ("instant", "per_tick"):
+            raise ValueError(f"Unknown cost_mode '{cost_mode}' for affordance '{affordance_name}'; expected 'instant' or 'per_tick'.")
+
+        costs = affordance.costs if cost_mode == "instant" else affordance.costs_per_tick
+
+        # Accumulator on the METERS' device, not self.device: callers pass tensors
+        # that may live elsewhere, and a device mismatch here is a silent crash in
+        # the hottest path.
+        affordable = torch.ones(meters.shape[0], dtype=torch.bool, device=meters.device)
 
         for cost in self._iter_costs(costs):
             meter, amount = self._cost_fields(cost)
-            meter_idx = self._get_meter_idx(meter, "affordability check")
-            can_afford = can_afford & (meters[:, meter_idx] >= amount)
+            # The context string is load-bearing: an existing test asserts the
+            # resulting error message contains "affordance".
+            meter_idx = self._get_meter_idx(meter, f"affordance '{affordance_name}' {cost_mode} cost")
+            affordable = affordable & (meters[:, meter_idx] >= amount)
 
-        return can_afford
+        return affordable
 
     # HIGH-09: Deleted get_action_masks() - dead code with hardcoded dimensions (num_affordances=15).
     # Action masking is handled by vectorized_env.py using ActionBuilder.get_base_action_mask().
@@ -404,32 +399,6 @@ class AffordanceEngine:
         """Get the number of affordances defined in config."""
         return len(self.affordances)
 
-    def get_affordance_cost(self, affordance_name: str, cost_mode: str = "instant") -> float:
-        """
-        Get the monetary cost for an affordance interaction.
-
-        Args:
-            affordance_name: Name of affordance
-            cost_mode: "instant" or "per_tick"
-
-        Returns:
-            Normalized cost [0, 1] where 1.0 = $100
-        """
-        affordance = self.affordance_map.get(affordance_name)
-        if affordance is None:
-            return 0.0
-
-        # Get costs list based on mode (modern dict format)
-        costs = affordance.costs if cost_mode == "instant" else affordance.costs_per_tick
-
-        # Find money cost (most affordances only have money cost)
-        for cost in self._iter_costs(costs):
-            meter, amount = self._cost_fields(cost)
-            if meter == "money":
-                return float(amount)
-
-        return 0.0
-
     def get_duration_ticks(self, affordance_name: str) -> int:
         """
         Get the duration in ticks for a multi-tick affordance.
@@ -444,60 +413,6 @@ class AffordanceEngine:
         if affordance is None or affordance.duration_ticks is None:
             return 1
         return int(affordance.duration_ticks)
-
-    def apply_interaction(
-        self,
-        meters: torch.Tensor,
-        affordance_name: str,
-        agent_mask: torch.Tensor,
-        current_tick: int | None = None,
-    ) -> torch.Tensor:
-        """
-        Apply affordance effects to agent meters.
-
-        This method applies the effects and costs defined in the config
-        for a given affordance to the specified agents.
-
-        Args:
-            meters: [num_agents, 8] meter values
-            affordance_name: Name of the affordance being interacted with
-            agent_mask: [num_agents] bool mask indicating which agents interact
-
-        Returns:
-            Updated meters tensor [num_agents, 8]
-
-        Raises:
-            ValueError: If affordance_name is not recognized
-        """
-        # Validate affordance exists
-        if affordance_name not in self.affordance_name_to_idx:
-            raise ValueError(f"Unknown affordance: {affordance_name}")
-
-        # Get affordance config
-        affordance = self.affordances[self.affordance_name_to_idx[affordance_name]]
-
-        # Clone meters to avoid in-place modification
-        result_meters = meters.clone()
-
-        multipliers = self._compute_affordance_multiplier(affordance.name, meters, agent_mask)
-
-        # Apply costs first
-        for cost in self._iter_costs(affordance.costs):
-            meter_name, amount = self._cost_fields(cost)
-            meter_idx = self._get_meter_idx(meter_name, f"affordance '{affordance_name}' cost")
-            result_meters[agent_mask, meter_idx] -= amount * multipliers[agent_mask]
-
-        # Execute compiled Effects commands (on_start stage)
-        result_meters = self._execute_affordance_effects(
-            affordance_name,
-            "on_start",
-            agent_mask,
-            result_meters,
-            multipliers=multipliers,
-            current_tick=current_tick,
-        )
-
-        return result_meters
 
     @staticmethod
     def _iter_costs(costs) -> Any:
@@ -601,7 +516,6 @@ class AffordanceEngine:
                 scheduler=getattr(self.effect_manager, "scheduler", None),
                 current_tick=current_tick or 0,
                 affordance_overrides=self.affordance_overrides,
-                meter_dynamics=self.meter_dynamics,
             )
 
             for command in commands:

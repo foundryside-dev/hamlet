@@ -11,7 +11,7 @@ from townlet.universe.compiler import UniverseCompiler
 def test_item_use_modifies_item_durability():
     """Using an item should decrease its durability via Effects."""
     compiler = UniverseCompiler()
-    universe = compiler.compile(Path("configs/test/items_smoke"), use_cache=False)
+    universe = compiler.compile(Path("configs/test/items_smoke"), primary_level="L0_smoke", use_cache=False)
 
     # Modify medkit to have on_use that decreases durability
     # (Requires updating items.yaml before test)

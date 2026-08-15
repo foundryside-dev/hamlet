@@ -44,6 +44,7 @@ class ObservationField:
     description: str
     semantic_type: str | None = None
     categorical_labels: tuple[str, ...] | None = None
+    curriculum_active: bool = True
 
     def __post_init__(self) -> None:
         if not self.uuid:

@@ -29,6 +29,116 @@ class TestRegistryInitialization:
         assert registry.num_agents == 4
         assert registry.device == torch.device("cpu")
 
+    def test_registry_implements_observation_protocol(self):
+        """Both registry implementations must satisfy the observation builder contract."""
+        from townlet.vfs.registry import ScopedVariableRegistry, VariableRegistry, VFSRegistryProtocol
+
+        registry = VariableRegistry(
+            variables=[],
+            num_agents=4,
+            device=torch.device("cpu"),
+        )
+        scoped_registry = ScopedVariableRegistry(device=torch.device("cpu"))
+
+        assert isinstance(registry, VFSRegistryProtocol)
+        assert isinstance(scoped_registry, VFSRegistryProtocol)
+
+    def test_engine_write_path_allows_batched_global_values_but_checks_permissions(self):
+        """Engine writeback has a public registry method and still enforces writable_by."""
+        from townlet.vfs.registry import VariableRegistry
+        from townlet.vfs.schema import VariableDef
+
+        writable = VariableDef(
+            id="low_energy_flag",
+            scope="global",
+            type="bool",
+            lifetime="tick",
+            readable_by=["engine"],
+            writable_by=["engine"],
+            default=False,
+        )
+        protected = VariableDef(
+            id="action_owned",
+            scope="global",
+            type="scalar",
+            lifetime="tick",
+            readable_by=["engine"],
+            writable_by=["actions"],
+            default=0.0,
+        )
+        registry = VariableRegistry(
+            variables=[writable, protected],
+            num_agents=4,
+            device=torch.device("cpu"),
+        )
+
+        registry.set_engine_value("low_energy_flag", torch.tensor([True, False, True, False]))
+
+        value = registry.get_global("low_energy_flag")
+        assert value.shape == (4,)
+        assert value.dtype == torch.bool
+        assert torch.equal(value, torch.tensor([True, False, True, False]))
+        with pytest.raises(PermissionError, match="engine"):
+            registry.set_engine_value("action_owned", torch.tensor([1.0, 2.0]))
+
+    def test_lifetime_reset_methods_restore_tick_and_episode_defaults(self):
+        """Variable lifetime declarations must have runtime reset semantics."""
+        from townlet.vfs.registry import VariableRegistry
+        from townlet.vfs.schema import VariableDef
+
+        variables = [
+            VariableDef(
+                id="tick_flag",
+                scope="global",
+                type="bool",
+                lifetime="tick",
+                readable_by=["engine"],
+                writable_by=["engine"],
+                default=False,
+            ),
+            VariableDef(
+                id="episode_score",
+                scope="agent",
+                type="scalar",
+                lifetime="episode",
+                readable_by=["engine"],
+                writable_by=["engine"],
+                default=1.0,
+            ),
+            VariableDef(
+                id="persistent_counter",
+                scope="global",
+                type="scalar",
+                lifetime="persistent",
+                readable_by=["engine"],
+                writable_by=["engine"],
+                default=5.0,
+            ),
+        ]
+        registry = VariableRegistry(variables=variables, num_agents=2, device=torch.device("cpu"))
+        registry.set_engine_value("tick_flag", torch.tensor([True, True]))
+        registry.set("episode_score", torch.tensor([7.0, 8.0]), writer="engine")
+        registry.set("persistent_counter", torch.tensor(9.0), writer="engine")
+
+        registry.reset_tick_scoped()
+
+        assert registry.get_global("tick_flag").item() is False
+        assert torch.equal(registry.get_agent("episode_score"), torch.tensor([7.0, 8.0]))
+        assert registry.get_global("persistent_counter").item() == 9.0
+
+        registry.reset_episode_scoped()
+
+        assert registry.get_global("tick_flag").item() is False
+        assert torch.equal(registry.get_agent("episode_score"), torch.tensor([1.0, 1.0]))
+        assert registry.get_global("persistent_counter").item() == 9.0
+
+    def test_generic_read_write_api_removed_from_variable_registry(self):
+        """Item VFS callers should use read_item/write_item instead of partial wrappers."""
+        from townlet.vfs.registry import VariableRegistry
+
+        assert not hasattr(VariableRegistry, "read")
+        assert not hasattr(VariableRegistry, "write")
+
     def test_registry_with_global_scalar(self):
         """Initialize registry with global scalar variable."""
         from townlet.vfs.registry import VariableRegistry
@@ -735,6 +845,250 @@ class TestRegistryScopeSemantics:
 
         value = registry.get("private_vec", reader="engine")
         assert value.shape == torch.Size([10, 2])  # [num_agents, dims]
+
+
+class TestRegistryRelationalScopes:
+    """Test L5 relational and world-structure scope storage."""
+
+    def test_variable_scope_enum_includes_l5_storage_scopes(self):
+        """The schema should accept the L5 storage scopes as first-class enum values."""
+        from townlet.vfs.schema import VariableScope
+
+        assert VariableScope.PAIR == "pair"
+        assert VariableScope.GROUP == "group"
+        assert VariableScope.AFFORDANCE == "affordance"
+        assert VariableScope.ZONE == "zone"
+
+    def test_registry_initializes_pair_group_affordance_and_zone_scalars(self):
+        """Dense scope prefixes should match the declared world extents."""
+        from townlet.vfs.registry import VariableRegistry
+        from townlet.vfs.schema import VariableDef
+
+        variables = [
+            VariableDef(
+                id="trust",
+                scope="pair",
+                type="scalar",
+                lifetime="episode",
+                readable_by=["engine"],
+                writable_by=["engine"],
+                default=0.25,
+            ),
+            VariableDef(
+                id="group_norm_strength",
+                scope="group",
+                type="scalar",
+                lifetime="episode",
+                readable_by=["engine"],
+                writable_by=["engine"],
+                default=0.5,
+            ),
+            VariableDef(
+                id="occupied_by",
+                scope="affordance",
+                type="agent_ref",
+                lifetime="episode",
+                readable_by=["engine"],
+                writable_by=["engine"],
+                default=None,
+            ),
+            VariableDef(
+                id="zone_danger",
+                scope="zone",
+                type="scalar",
+                lifetime="episode",
+                readable_by=["engine"],
+                writable_by=["engine"],
+                default=0.0,
+            ),
+        ]
+
+        registry = VariableRegistry(
+            variables=variables,
+            num_agents=3,
+            num_groups=2,
+            num_affordances=4,
+            num_zones=5,
+            device=torch.device("cpu"),
+        )
+
+        assert registry.get("trust", reader="engine").shape == torch.Size([3, 3])
+        assert torch.all(registry.get("trust", reader="engine") == 0.25)
+        assert registry.get("group_norm_strength", reader="engine").shape == torch.Size([2])
+        assert registry.get("occupied_by", reader="engine").shape == torch.Size([4])
+        assert torch.all(registry.get("occupied_by", reader="engine") == -1)
+        assert registry.get("zone_danger", reader="engine").shape == torch.Size([5])
+
+    def test_registry_prefixes_vectors_and_tensors_with_relational_scopes(self):
+        """Vector and tensor storage should add the scope dimensions before payload dimensions."""
+        from townlet.vfs.registry import VariableRegistry
+        from townlet.vfs.schema import VariableDef
+
+        variables = [
+            VariableDef(
+                id="relative_offset",
+                scope="pair",
+                type="vecNf",
+                dims=2,
+                lifetime="episode",
+                readable_by=["engine"],
+                writable_by=["engine"],
+                default=[0.0, 1.0],
+            ),
+            VariableDef(
+                id="affordance_slots",
+                scope="affordance",
+                type="tensor2d",
+                shape=[2, 3],
+                lifetime="episode",
+                readable_by=["engine"],
+                writable_by=["engine"],
+                default=None,
+            ),
+        ]
+
+        registry = VariableRegistry(
+            variables=variables,
+            num_agents=4,
+            num_affordances=6,
+            device=torch.device("cpu"),
+        )
+
+        assert registry.get("relative_offset", reader="engine").shape == torch.Size([4, 4, 2])
+        assert registry.get("affordance_slots", reader="engine").shape == torch.Size([6, 2, 3])
+
+    def test_registry_requires_explicit_extent_for_non_agent_relational_scope(self):
+        """Missing world extents should fail loudly instead of allocating ambiguous storage."""
+        from townlet.vfs.registry import VariableRegistry
+        from townlet.vfs.schema import VariableDef
+
+        variable = VariableDef(
+            id="group_norm_strength",
+            scope="group",
+            type="scalar",
+            lifetime="episode",
+            readable_by=["engine"],
+            writable_by=["engine"],
+            default=0.5,
+        )
+
+        with pytest.raises(ValueError, match="num_groups.*positive"):
+            VariableRegistry(variables=[variable], num_agents=3, device=torch.device("cpu"))
+
+
+class TestRegistrySparsePairScopes:
+    """Test sparse pair-scope storage for neighbourhood-limited relationships."""
+
+    def _trust_variable(self):
+        from townlet.vfs.schema import VariableDef
+
+        return VariableDef(
+            id="trust",
+            scope="pair",
+            type="scalar",
+            lifetime="episode",
+            readable_by=["engine"],
+            writable_by=["engine"],
+            default=0.0,
+        )
+
+    def test_sparse_pair_scope_allocates_edge_rows_not_dense_matrix(self):
+        """Sparse pair variables should allocate active relationship rows instead of N x N storage."""
+        from townlet.vfs.registry import VariableRegistry
+
+        registry = VariableRegistry(
+            variables=[self._trust_variable()],
+            num_agents=1000,
+            pair_storage_mode="sparse",
+            pair_edges=[(0, 1), (1, 2)],
+            device=torch.device("cpu"),
+        )
+
+        assert registry.get("trust", reader="engine").shape == torch.Size([2])
+        assert torch.equal(registry.get_pair_edges(), torch.tensor([[0, 1], [1, 2]]))
+        mask = registry.get_pair_mask()
+        assert mask.shape == torch.Size([1000, 1000])
+        assert mask[0, 1]
+        assert mask[1, 2]
+        assert mask.sum().item() == 2
+
+    def test_sparse_pair_scope_requires_explicit_pair_edges(self):
+        """Sparse mode should fail loudly instead of silently falling back to dense storage."""
+        from townlet.vfs.registry import VariableRegistry
+
+        with pytest.raises(ValueError, match="pair_edges"):
+            VariableRegistry(
+                variables=[self._trust_variable()],
+                num_agents=3,
+                pair_storage_mode="sparse",
+                device=torch.device("cpu"),
+            )
+
+    def test_sparse_pair_scope_rejects_invalid_pair_edges(self):
+        """Neighbourhood edges must be directed in-range agent index pairs."""
+        from townlet.vfs.registry import VariableRegistry
+
+        with pytest.raises(ValueError, match="out of range"):
+            VariableRegistry(
+                variables=[self._trust_variable()],
+                num_agents=3,
+                pair_storage_mode="sparse",
+                pair_edges=[(0, 3)],
+                device=torch.device("cpu"),
+            )
+
+        with pytest.raises(ValueError, match="duplicate"):
+            VariableRegistry(
+                variables=[self._trust_variable()],
+                num_agents=3,
+                pair_storage_mode="sparse",
+                pair_edges=[(0, 1), (0, 1)],
+                device=torch.device("cpu"),
+            )
+
+    def test_sparse_pair_scope_rejects_dense_pair_writes(self):
+        """Sparse pair storage should only accept one row per active relationship."""
+        from townlet.vfs.registry import VariableRegistry
+
+        registry = VariableRegistry(
+            variables=[self._trust_variable()],
+            num_agents=3,
+            pair_storage_mode="sparse",
+            pair_edges=[(0, 1), (1, 2)],
+            device=torch.device("cpu"),
+        )
+
+        with pytest.raises(ValueError, match=r"expected \(2,\)"):
+            registry.set("trust", torch.zeros((3, 3)), writer="engine")
+
+        with pytest.raises(ValueError, match=r"expected \(2,\)"):
+            registry.set_engine_value("trust", torch.zeros((3, 3)))
+
+    def test_sparse_pair_scope_can_materialize_dense_debug_view(self):
+        """Sparse relationship values can be expanded into a dense read-only view for diagnostics."""
+        from townlet.vfs.registry import VariableRegistry
+
+        registry = VariableRegistry(
+            variables=[self._trust_variable()],
+            num_agents=3,
+            pair_storage_mode="sparse",
+            pair_edges=[(0, 1), (1, 2)],
+            device=torch.device("cpu"),
+        )
+        registry.set("trust", torch.tensor([0.25, 0.75]), writer="engine")
+
+        dense = registry.materialize_pair_dense("trust", reader="engine", fill_value=-1.0)
+
+        assert torch.equal(
+            dense,
+            torch.tensor(
+                [
+                    [-1.0, 0.25, -1.0],
+                    [-1.0, -1.0, 0.75],
+                    [-1.0, -1.0, -1.0],
+                ]
+            ),
+        )
 
 
 class TestRegistryVariablesProperty:

@@ -8,14 +8,14 @@ from townlet.universe.compiler import UniverseCompiler
 
 
 def test_cache_artifact_path_returns_expected_location(tmp_path: Path) -> None:
-    """Cache artifacts should live under .compiled/universe.msgpack."""
+    """Cache artifacts live under .compiled/universe-<level>.msgpack (one per level)."""
     compiler = UniverseCompiler()
     config_dir = tmp_path / "pack"
     config_dir.mkdir()
 
-    artifact_path = compiler._cache_artifact_path(config_dir)
+    artifact_path = compiler._cache_artifact_path(config_dir, "L0_test")
 
-    assert artifact_path == config_dir / ".compiled" / "universe.msgpack"
+    assert artifact_path == config_dir / ".compiled" / "universe-L0_test.msgpack"
 
 
 def test_build_cache_fingerprint_returns_tuple(tmp_path: Path) -> None:

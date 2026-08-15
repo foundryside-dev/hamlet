@@ -1,25 +1,35 @@
 # Pre-commit hooks for code quality enforcement
 # Install with: pip install pre-commit && pre-commit install
 
+# Ruff and black run from the project lockfile via `uv run`, NOT from pinned
+# upstream revs. A pinned rev is a second, invisible version of the toolchain:
+# the hooks were pinned to black 25.11.0 / ruff v0.14.5 while the lock resolved
+# black 26.3.1 / ruff 0.15.12, so every commit was formatted by a different
+# binary than CI checked with, and the black gate re-broke on its own. Local
+# hooks make the committed formatting and the gate the same thing by
+# construction.
 repos:
   # Ruff - Fast Python linter and formatter
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.5
+  - repo: local
     hooks:
-      # Run ruff linter
       - id: ruff
-        args: [--fix]
         name: Ruff Linter (auto-fix)
         description: Run ruff linter with auto-fix on staged files
+        entry: uv run ruff check --fix --force-exclude
+        language: system
+        types_or: [python, pyi]
+        require_serial: true
         exclude: ^(\.claude/|htmlcov/|runs/|\.uv-cache/|coverage.*|.*\.msgpack$)
 
   # Black - Python code formatter
-  - repo: https://github.com/psf/black
-    rev: 25.11.0
+  - repo: local
     hooks:
       - id: black
         name: Black Formatter
-        language_version: python3.13
+        entry: uv run black
+        language: system
+        types_or: [python, pyi]
+        require_serial: true
         exclude: ^(\.claude/|htmlcov/|runs/|\.uv-cache/|coverage.*|.*\.msgpack$)
 
   # Standard pre-commit hooks

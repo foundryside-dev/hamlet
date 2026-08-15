@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from tests.test_townlet.helpers.config_builder import prepare_config_dir
+from tests.test_townlet.helpers.config_builder import PRIMARY_LEVEL_NAME, prepare_config_dir
 from townlet.effects.schema import CommandType
 from townlet.universe.compiler import UniverseCompiler
 
@@ -54,7 +54,7 @@ class TestEffectsCompilationPipeline:
         self._write_effects_yaml(config_dir, effects)
 
         compiler = UniverseCompiler()
-        compiled = compiler.compile(config_dir, use_cache=False)
+        compiled = compiler.compile(config_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
 
         catalog = compiled.compiled_effect_catalog
         assert catalog is not None
@@ -105,6 +105,6 @@ class TestEffectsCompilationPipeline:
         compiler = UniverseCompiler()
 
         with pytest.raises(Exception) as exc_info:
-            compiler.compile(config_dir, use_cache=False)
+            compiler.compile(config_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
 
         assert "broken_effect" in str(exc_info.value)

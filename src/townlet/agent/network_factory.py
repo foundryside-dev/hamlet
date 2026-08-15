@@ -10,8 +10,8 @@ from typing import TYPE_CHECKING
 
 import torch.nn as nn
 
-from townlet.agent.networks import DuelingQNetwork, RecurrentSpatialQNetwork
-from townlet.config.brain_config import DuelingConfig, FeedforwardConfig, RecurrentConfig
+from townlet.agent.networks import DuelingQNetwork, RecurrentSpatialQNetwork, SetEncoderQNetwork
+from townlet.config.brain_config import DuelingConfig, FeedforwardConfig, RecurrentConfig, SetEncoderConfig
 
 if TYPE_CHECKING:
     from townlet.universe.dto import ObservationSpec
@@ -176,6 +176,34 @@ class NetworkFactory:
         )
 
         return network
+
+    @staticmethod
+    def build_set_encoder(
+        config: SetEncoderConfig,
+        obs_dim: int,
+        action_dim: int,
+        observation_spec: ObservationSpec,
+    ) -> SetEncoderQNetwork:
+        """Build a set-aware Q-network from a flattened token observation field."""
+        token_field = observation_spec.get_field_by_name(config.token_field_name)
+        expected_dims = config.max_tokens * config.token_dim
+        if token_field.dims != expected_dims:
+            raise ValueError(
+                f"Set encoder token field {config.token_field_name!r} has dims={token_field.dims}, "
+                f"expected max_tokens * token_dim = {expected_dims}"
+            )
+        if observation_spec.total_dims != obs_dim:
+            raise ValueError(f"ObservationSpec total_dims={observation_spec.total_dims} does not match obs_dim={obs_dim}")
+
+        return SetEncoderQNetwork(
+            obs_dim=obs_dim,
+            action_dim=action_dim,
+            token_slice=slice(token_field.start_index, token_field.end_index),
+            token_shape=(config.max_tokens, config.token_dim),
+            token_embed_dim=config.token_embed_dim,
+            base_hidden_dim=config.base_hidden_dim,
+            q_head_hidden_dim=config.q_head_hidden_dim,
+        )
 
     @staticmethod
     def _get_activation(activation: str) -> nn.Module:

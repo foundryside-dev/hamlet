@@ -64,6 +64,22 @@ def test_build_agent_telemetry_payload_handles_missing_population():
     assert payload == {"schema_version": live_inference.TELEMETRY_SCHEMA_VERSION, "episode_index": None, "agents": []}
 
 
+def test_live_inference_requires_explicit_level_name(tmp_path: Path, test_config_pack_path: Path, noop_qvalue_log) -> None:
+    checkpoint_dir = tmp_path / "ckpts"
+    checkpoint_dir.mkdir()
+
+    with pytest.raises(ValueError, match="level_name is required"):
+        LiveInferenceServer(
+            checkpoint_dir=checkpoint_dir,
+            port=9999,
+            step_delay=0.01,
+            total_episodes=10,
+            config_dir=test_config_pack_path,
+            level_name=None,
+            training_config_path=None,
+        )
+
+
 def test_build_substrate_metadata_for_grid2d(live_server: LiveInferenceServer):
     live_server.env = type("Env", (), {"substrate": Grid2DSubstrate(width=4, height=5, boundary="clamp", distance_metric="manhattan")})()
 

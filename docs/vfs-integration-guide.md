@@ -1,3 +1,30 @@
+> ## ⛔ SUPERSEDED — every concrete path and number below is wrong
+>
+> **Status: historical (2025-11-07). Orphaned — nothing links here. Candidate for deletion.**
+>
+> Superseded by [`architecture/vfs-current-implementation.md`](architecture/vfs-current-implementation.md)
+> (current, source-mapped) and [`config-schemas/vfs-profiles.md`](config-schemas/vfs-profiles.md).
+>
+> Verified wrong on `project-recovery`, 2026-08-15:
+>
+> 1. **The pack paths do not exist.** This guide uses flat `configs/L1_full_observability/`.
+>    Real levels live at `configs/default_curriculum/levels/<level>/`, under a pack root that
+>    holds the shared files.
+> 2. **`variables_reference.yaml` is optional, not per-level.** This guide implies every level
+>    has one. `configs/default_curriculum` has **none at all**. The required file is
+>    `vfs_profiles.yaml`, at pack root — and level directories must *not* contain one.
+>    `variables_reference.yaml` is an optional static overlay, present only in
+>    `configs/L5_multi_agent` and some test packs.
+> 3. **The dimension figures (38 / 78 / 93 / 54 / 93) do not mean what they say.** Every level
+>    allocates a fixed **124-slot** observation superset and applies a per-level activity mask;
+>    the figures here are closer to the *active* count. Measured 2026-08-15 —
+>    L0_0 / L0_5 / L1: 95 active of 124; L2: 56; L3: 99. The 38 and 78 entries are false outright
+>    (they assume 3×3 / 7×7 grids that no level can express). Not worth correcting in place: the
+>    whole fixed-width scheme is being replaced by token observations.
+>
+> The "Phase 1 COMPLETE, 88 passing tests" banner refers to a 2025-11 state and should not be
+> read as current coverage.
+
 # VFS Integration Guide
 
 **Document Type**: Integration Specification

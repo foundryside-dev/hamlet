@@ -8,6 +8,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import yaml
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CONFIGS_ROOT = REPO_ROOT / "configs"
 # Excluded directories:
@@ -43,8 +45,28 @@ def iter_config_dirs(base: Path) -> list[Path]:
     return dirs
 
 
+def resolve_primary_level(config_dir: Path) -> str:
+    """Return the first declared curriculum level for a v2.1 experiment pack."""
+    experiment_path = config_dir / "experiment.yaml"
+    data = yaml.safe_load(experiment_path.read_text()) or {}
+    experiment = data.get("experiment")
+    if not isinstance(experiment, dict):
+        raise ValueError(f"{experiment_path} must contain an 'experiment' mapping")
+
+    curriculum_levels = experiment.get("curriculum_levels")
+    if not isinstance(curriculum_levels, list) or not curriculum_levels:
+        raise ValueError(f"{experiment_path} must declare a non-empty experiment.curriculum_levels list")
+
+    primary_level = curriculum_levels[0]
+    if not isinstance(primary_level, str) or not primary_level:
+        raise ValueError(f"{experiment_path} has an invalid first curriculum level: {primary_level!r}")
+
+    return primary_level
+
+
 def run_cli_validate(config_dir: Path, expect_failure: bool = False) -> None:
-    cmd = [sys.executable, "-m", "townlet.universe", "validate", str(config_dir)]
+    primary_level = resolve_primary_level(config_dir)
+    cmd = [sys.executable, "-m", "townlet.universe", "validate", str(config_dir), "--primary-level", primary_level]
     result = subprocess.run(cmd, cwd=REPO_ROOT)
     if expect_failure:
         if result.returncode == 0:

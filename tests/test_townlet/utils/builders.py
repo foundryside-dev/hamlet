@@ -38,7 +38,7 @@ from townlet.universe.compiler import UniverseCompiler
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _CONFIGS_ROOT = (_REPO_ROOT / "configs").resolve()
 _COMPILER = UniverseCompiler()
-_UNIVERSE_CACHE: dict[Path, CompiledUniverse] = {}
+_UNIVERSE_CACHE: dict[tuple[Path, str], CompiledUniverse] = {}
 
 
 # Lightweight test-only DTOs for meter configuration. The v2.1 runtime uses
@@ -95,16 +95,17 @@ def _is_repo_config(path: Path) -> bool:
         return False
 
 
-def _compile_universe(config_dir: Path | str) -> CompiledUniverse:
+def _compile_universe(config_dir: Path | str, *, primary_level: str) -> CompiledUniverse:
     path = _resolve_config_path(config_dir)
     cacheable = _is_repo_config(path)
+    cache_key = (path, primary_level)
 
-    if cacheable and path in _UNIVERSE_CACHE:
-        return _UNIVERSE_CACHE[path]
+    if cacheable and cache_key in _UNIVERSE_CACHE:
+        return _UNIVERSE_CACHE[cache_key]
 
-    compiled = _COMPILER.compile(path)
+    compiled = _COMPILER.compile(path, primary_level=primary_level)
     if cacheable:
-        _UNIVERSE_CACHE[path] = compiled
+        _UNIVERSE_CACHE[cache_key] = compiled
     return compiled
 
 
@@ -477,17 +478,16 @@ def make_positions(
 def make_vectorized_env_from_pack(
     config_dir: Path | str,
     *,
-    level_name: str | None = None,
+    level_name: str,
     num_agents: int = 1,
     device: torch.device | str = "cpu",
 ) -> VectorizedHamletEnv:
     """Instantiate VectorizedHamletEnv from a compiled config pack."""
 
-    universe = _compile_universe(config_dir)
-    target_level = level_name or (universe.available_levels[0] if universe.available_levels else None)
+    universe = _compile_universe(config_dir, primary_level=level_name)
     return VectorizedHamletEnv.from_universe(
         universe,
-        level_name=target_level,
+        level_name=level_name,
         num_agents=num_agents,
         device=device,
     )

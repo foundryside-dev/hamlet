@@ -375,6 +375,26 @@ class GridNDSubstrate(SpatialSubstrate):
         else:
             raise ValueError(f"Invalid observation_encoding: {self.observation_encoding}")
 
+    @property
+    def supports_partial_vision(self) -> bool:
+        return False
+
+    def get_grid_encoding_dim(self) -> int:
+        """GridND has no occupancy grid; its published grid encoding IS its
+        coordinate encoding (encode_observation), N or 2N by encoding mode."""
+        return self.get_observation_dim()
+
+    def get_position_feature_dim(self) -> int:
+        """GridND has no separate position-feature encoder; the runtime
+        publishes encode_observation for obs_position too."""
+        return self.get_observation_dim()
+
+    def get_vision_radius(self, vision_range: float) -> int:
+        raise ValueError("GridND substrates do not support partial vision; no vision radius exists.")
+
+    def get_partial_window_dim(self, vision_radius: int) -> int:
+        raise ValueError("GridND substrates do not support partial vision; no local window exists.")
+
     def normalize_positions(self, positions: torch.Tensor) -> torch.Tensor:
         """Normalize positions to [0, 1] range (always relative encoding).
 

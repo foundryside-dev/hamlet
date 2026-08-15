@@ -21,6 +21,7 @@ class UniverseSymbolTable:
     affordances: dict[str, Any] = field(default_factory=dict)
     affordances_by_name: dict[str, Any] = field(default_factory=dict)
     variables: dict[str, VariableDef] = field(default_factory=dict)
+    profile_vfs_variables: dict[str, Any] = field(default_factory=dict)
     actions: dict[int, ActionConfig] = field(default_factory=dict)
     cues: dict[str, SimpleCueConfig | CompoundCueConfig] = field(default_factory=dict)
     items: dict[str, Any] = field(default_factory=dict)
@@ -37,6 +38,12 @@ class UniverseSymbolTable:
         if var_id in self.variables:
             raise CompilationError("Stage 2: Symbol Table", [f"Duplicate variable '{var_id}' detected."])
         self.variables[var_id] = config
+
+    def register_profile_vfs_variable(self, config: Any) -> None:
+        var_id = getattr(config, "id", None) or getattr(config, "name", None)
+        if var_id is None:
+            raise CompilationError("Stage 2: Symbol Table", ["VFS profile variable missing identifier during registration."])
+        self.profile_vfs_variables.setdefault(var_id, config)
 
     def register_action(self, config: ActionConfig) -> None:
         action_id = getattr(config, "id", None)
@@ -116,9 +123,9 @@ class UniverseSymbolTable:
         return sorted(self.affordances_by_name.keys())
 
     @property
-    def vfs_variables(self) -> dict[str, VariableDef]:
-        """Alias for variables (for DAC validation clarity)."""
-        return self.variables
+    def vfs_variables(self) -> dict[str, Any]:
+        """Variables that may be referenced through VFS-aware config surfaces."""
+        return {**self.variables, **self.profile_vfs_variables}
 
     def get_affordance(self, affordance_id: str) -> Any:
         return self.affordances[affordance_id]

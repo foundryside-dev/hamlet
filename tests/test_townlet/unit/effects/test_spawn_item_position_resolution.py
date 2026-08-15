@@ -223,7 +223,7 @@ def test_spawn_item_with_initial_state():
     """spawn_item should pass initial_state to ItemManager."""
     from townlet.vfs.profiles import CompiledItemProfile, CompiledVariable
 
-    # Create VFS registry using compiled item profiles (no legacy item vars)
+    # Create VFS registry using compiled item profiles.
     item_profiles = {
         "weapon": CompiledItemProfile(
             profile_name="weapon",

@@ -77,16 +77,13 @@ class _TargetAwareExecutionContext(ExprExecutionContext):
             if parts[1] == "vfs" and len(parts) >= 3 and self.self_is_item:
                 import torch
 
-                from townlet.vfs.schema import VariableScope
-
                 var_name = ".".join(parts[2:])
                 if self.vfs_registry is None or self.self_index is None:
                     raise ValueError("VFS registry or self_index not set for item-scoped VFS lookup")
-                value = self.vfs_registry.read(
-                    var_name,
-                    context_index=self.self_index,
-                    scope=VariableScope.ITEM,
-                )
+                profile_name = self.vfs_registry.get_item_profile_for_index(self.self_index)
+                if profile_name is None:
+                    raise KeyError(f"No item profile registered for vfs_index {self.self_index}")
+                value = self.vfs_registry.read_item(profile_name, var_name, self.self_index)
                 # Convert to tensor if needed
                 if not isinstance(value, torch.Tensor):
                     value = torch.tensor(value, dtype=torch.float32, device=self.device)
@@ -145,8 +142,6 @@ class CommandExecutor:
             self._execute_parallel(command, context)
         elif command.type == CommandType.DELAY:
             self._execute_delay(command, context)
-        elif command.type == CommandType.TRIGGER_CASCADE:
-            self._execute_trigger_cascade(command, context)
         else:
             raise NotImplementedError(f"Command type {command.type} not implemented")
 
@@ -227,13 +222,15 @@ class CommandExecutor:
 
         effect_def = context.effect_manager.catalog.get(command.effect_id)
         resolved_duration = command.duration if command.duration is not None else effect_def.duration
+        if command.intensity is None:
+            raise ValueError("spawn_effect command requires intensity")
 
         context.effect_manager.spawn_effect(
             effect_id=command.effect_id,
             target_entity_id=target_idx,
             scope=EffectScope.AGENT,
             duration=resolved_duration,
-            intensity=command.intensity or 1.0,
+            intensity=command.intensity,
             current_step=context.effect_manager.current_step,
             bars=context.bars,
             vfs_registry=context.vfs_registry,
@@ -642,26 +639,6 @@ class CommandExecutor:
             base_tick=None if context.current_tick is None else context.current_tick,
         )
 
-    def _execute_trigger_cascade(self, command: CommandNode, context: ExecutionContext) -> None:
-        """Invoke a named cascade on current meters."""
-        if context.meter_dynamics is None:
-            raise RuntimeError("trigger_cascade command requires meter_dynamics on ExecutionContext")
-        if command.cascade_id is None:
-            raise ValueError("trigger_cascade requires cascade_id")
-        strength = command.cascade_strength if command.cascade_strength is not None else 1.0
-        if strength <= 0:
-            raise ValueError("trigger_cascade cascade_strength must be positive")
-
-        cascade_fn = getattr(context.meter_dynamics, "apply_named_cascade", None)
-        if cascade_fn is None:
-            raise RuntimeError("MeterDynamics does not expose apply_named_cascade")
-
-        # Expect bars tensors in context.bars (batch-first)
-        updated = cascade_fn(command.cascade_id, context.bars, strength=strength)
-        # Sync bars back into context
-        for name, tensor in updated.items():
-            context.bars[name] = tensor
-
     def _make_eval_context(self, context: ExecutionContext, effect: Any | None = None) -> ExprExecutionContext:
         """Convert ExecutionContext to ExprExecutionContext.
 
@@ -678,7 +655,7 @@ class CommandExecutor:
         # Build dictionaries for ExprExecutionContext
         bars_dict = {}
         vfs_dict = {}
-        # Resolve device from bars (preferred) or fallback to executor/device attribute
+        # Resolve device from bars when available; otherwise use the executor device.
         device = None
         if context.bars:
             try:
@@ -702,7 +679,7 @@ class CommandExecutor:
         for bar_name, tensor in context.bars.items():
             bars_dict[bar_name] = tensor
 
-        # Add VFS variables (VariableRegistry API compatibility)
+        # Add VFS variables from the current registry contract.
         if context.vfs_registry:
             # VariableRegistry has .variables property with variable definitions
             for var_id, var_def in context.vfs_registry.variables.items():

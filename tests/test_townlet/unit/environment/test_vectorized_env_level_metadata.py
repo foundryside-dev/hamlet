@@ -10,10 +10,10 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
-import torch
 import yaml
 
 from townlet.universe.compiled import CompiledUniverse
+from townlet.universe.compiler import UniverseCompiler
 
 
 def _build_two_level_pack(tmp_path: Path, config_pack_factory) -> Path:
@@ -90,7 +90,7 @@ def _build_two_level_pack(tmp_path: Path, config_pack_factory) -> Path:
 
 def _compile_two_level_pack(tmp_path: Path, config_pack_factory, compile_universe) -> CompiledUniverse:
     pack_dir = _build_two_level_pack(tmp_path, config_pack_factory)
-    return compile_universe(pack_dir)
+    return compile_universe(pack_dir, primary_level="L0_test")
 
 
 def test_level_action_metadata_respected(tmp_path, config_pack_factory, compile_universe, cpu_device):
@@ -111,8 +111,8 @@ def test_level_action_metadata_respected(tmp_path, config_pack_factory, compile_
     assert base_mask_l1[0, meditate_id], "L1_alt should enable MEDITATE via level action metadata"
 
 
-def test_affordance_mask_alignment_uses_level_order(tmp_path, config_pack_factory, compile_universe, cpu_device):
-    """Temporal masks must align with the level's affordance ordering, not the primary level."""
+def test_affordance_gate_program_uses_selected_level_order(tmp_path, config_pack_factory, compile_universe, cpu_device):
+    """Temporal gates must compile from the selected level, not the primary level."""
 
     compiled = _compile_two_level_pack(tmp_path, config_pack_factory, compile_universe)
     level0 = compiled.get_level("L0_test")
@@ -123,17 +123,28 @@ def test_affordance_mask_alignment_uses_level_order(tmp_path, config_pack_factor
     assert level0_affordances != level1_affordances  # Sanity: order actually differs
 
     env = compiled.create_environment(num_agents=1, level_name="L1_alt", device=cpu_device)
-    names = env.affordance_names
+    gate_targets = [rule.target_affordance_id for rule in env.vtc_affordance_gate_program.rules]
 
-    # Synthetic mask table keyed to the level's affordance ordering.
-    mask = torch.zeros((2, len(names)), dtype=torch.bool, device=env.device)
-    mask[0, 0] = True  # names[0] open only at hour 0
-    mask[1, 1] = True  # names[1] open only at hour 1
+    assert not hasattr(env, "action_mask_table")
+    assert gate_targets == level1_affordances
 
-    env.action_mask_table = mask
-    env.hours_per_day = mask.shape[0]
 
-    assert env._is_affordance_open(names[0], hour=0)
-    assert not env._is_affordance_open(names[0], hour=1)
-    assert not env._is_affordance_open(names[1], hour=0)
-    assert env._is_affordance_open(names[1], hour=1)
+def test_environment_metadata_matches_selected_non_primary_level(tmp_path, cpu_device):
+    pack_dir = tmp_path / "default_curriculum"
+    shutil.copytree(Path("configs/default_curriculum"), pack_dir)
+    stratum_path = pack_dir / "stratum.yaml"
+    stratum_data = yaml.safe_load(stratum_path.read_text())
+    stratum_data["stratum"]["observation_mode"] = {"mode": "max_compact"}
+    stratum_path.write_text(yaml.safe_dump(stratum_data, sort_keys=False))
+
+    compiled = UniverseCompiler().compile(
+        pack_dir,
+        primary_level="L1_full_observability",
+        use_cache=False,
+    )
+
+    env = compiled.create_environment(num_agents=1, level_name="L2_partial_observability", device=cpu_device)
+
+    assert compiled.metadata.observation_dim != env.observation_spec.total_dims
+    assert env.metadata.observation_dim == env.observation_spec.total_dims
+    assert env.metadata.action_count == env.level.action_metadata.total_actions

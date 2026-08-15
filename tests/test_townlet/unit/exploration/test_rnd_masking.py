@@ -116,7 +116,7 @@ class TestRNDMaskingIntegration:
         compiler = UniverseCompiler()
         # v2.1: compile the experiment root, not the level directory.
         experiment_dir = level_path.parents[1]
-        compiled = compiler.compile(experiment_dir, use_cache=False)
+        compiled = compiler.compile(experiment_dir, primary_level=level_path.name, use_cache=False)
         env = compiled.create_environment(num_agents=4, device="cpu", level_name=level_path.name)
 
         obs_dim = env.observation_dim

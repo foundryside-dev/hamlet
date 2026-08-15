@@ -49,16 +49,18 @@ class UnifiedServer:
         inference_port: int = 8766,
         training_config_path: str | None = None,
         level_name: str = "L1_full_observability",
+        force_new_vfs: bool = False,
     ):
         """
         Initialize unified server.
 
         Args:
             config_dir: Experiment root directory containing v2.1 configs
-                (experiment.yaml, stratum.yaml, environment.yaml, actions.yaml, agent.yaml, levels/*)
+                (experiment.yaml, stratum.yaml, environment.yaml, actions.yaml, brain.yaml, levels/*)
             total_episodes: Total number of episodes to train
             checkpoint_dir: Directory for checkpoints (auto-generated if None)
             inference_port: Port for inference WebSocket server
+            force_new_vfs: Start a fresh run branch instead of resuming an incompatible VFS checkpoint.
         """
         self.config_dir = Path(config_dir)
         # training_config_path is optional; default to the selected level's training.yaml
@@ -74,6 +76,7 @@ class UnifiedServer:
         self.checkpoint_dir = Path(checkpoint_dir) if checkpoint_dir else None
         self.inference_port = inference_port
         self.level_name = level_name
+        self.force_new_vfs = force_new_vfs
         self._training_config: TrainingV2Config | None = None
 
         # Component handles (initialized in start())
@@ -354,6 +357,7 @@ class UnifiedServer:
                 db_path=str(db_path),
                 checkpoint_dir=str(self.checkpoint_dir),
                 max_episodes=self.total_episodes,
+                force_new_vfs=self.force_new_vfs,
             )
 
             logger.info("[Training] Starting training loop...")
@@ -426,6 +430,13 @@ class UnifiedServer:
                 loop.run_until_complete(server.serve())
             finally:
                 loop.close()
+
+            # WS-1 task 5: uvicorn (pinned 0.46.0, verified) returns NORMALLY from
+            # serve() when lifespan startup fails — e.g. the identity guard rejecting
+            # the checkpoint during startup(). Without this check, a dead inference
+            # server logs "stopped normally" and training continues for hours.
+            if not server.started:
+                raise RuntimeError("Inference server failed to start (lifespan startup error); see logs above for the cause.")
 
             logger.info("[Inference] Server stopped normally")
 

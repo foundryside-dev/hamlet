@@ -287,8 +287,7 @@ def generate_summary_report():
     worst_case_total = 93 + worst_case_vfs_dims
     worst_case_pct = (worst_case_total / 93 - 1) * 100
 
-    print(
-        f"""
+    print(f"""
 Phase 1 Design Decisions:
 - Max global VFS profiles:  {limits.max_global_profiles}
 - Max agent VFS profiles:   {limits.max_agent_profiles}
@@ -318,8 +317,7 @@ Conclusion:
 ✓ Realistic usage has minimal impact (+17%)
 ✓ Worst-case is manageable (+59%)
 ✓ No network architecture changes needed
-"""
-    )
+""")
 
 
 def main():

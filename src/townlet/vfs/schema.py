@@ -4,11 +4,11 @@ Variable & Feature System (VFS) schemas for defining variables, observations,
 and action effects. These schemas enable declarative configuration of the
 environment's state space.
 
-Phase 1: Basic types and validation
-Phase 2: Derivation graphs, complex types, expression parsing
+Supports typed variables, derivation graphs, complex types, and expression parsing
+for the runtime VFS profile pipeline.
 """
 
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 from typing import Any, Literal
 
@@ -25,21 +25,34 @@ __all__ = [
 ]
 
 
-class VariableScope(str, Enum):
+class VariableScope(StrEnum):
     """Variable scope determines storage layout and access patterns."""
 
     GLOBAL = "global"  # Shared across all agents (world state)
     AGENT = "agent"  # Per-agent state ([batch, ...])
     AGENT_PRIVATE = "agent_private"  # Hidden from agent observations
     ITEM = "item"  # Per-item state ([max_items, ...])
+    PAIR = "pair"  # Directed agent-agent state ([num_agents, num_agents, ...])
+    GROUP = "group"  # Group/faction/team state ([num_groups, ...])
+    AFFORDANCE = "affordance"  # Per-affordance-instance state ([num_affordances, ...])
+    ZONE = "zone"  # Per-zone state ([num_zones, ...])
+    MESSAGE = "message"  # Recent communication buffer state ([num_agents, num_message_slots, ...])
 
 
 class NormalizationSpec(BaseModel):
     """Observation normalization specification.
 
-    Supports two normalization kinds:
+    Supports normalization kinds from the VFS v1.1 observation ABI:
+    - none: Pass-through
     - minmax: Linear scaling to [min, max] range
     - zscore: Z-score normalization (value - mean) / std
+    - cyclical_sin_cos: Encode cyclical scalar values as sin/cos pairs
+    - binary: Threshold values into 0/1
+    - one_hot: Expand categorical integer ids into one-hot vectors
+    - log_scaled: Scale non-negative values logarithmically
+    - clipped_log_scaled: Clamp then log-scale values
+    - rank_scaled: Scale batch ranks to [0, 1]
+    - masked_value: Replace sentinel values with a configured fill value
 
     Examples:
         # Scalar minmax
@@ -54,16 +67,27 @@ class NormalizationSpec(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    kind: Literal["minmax", "zscore"] = Field(description="Normalization method: minmax or zscore")
+    kind: Literal[
+        "none",
+        "minmax",
+        "zscore",
+        "cyclical_sin_cos",
+        "one_hot",
+        "binary",
+        "log_scaled",
+        "clipped_log_scaled",
+        "rank_scaled",
+        "masked_value",
+    ] = Field(description="Normalization method from the VFS v1.1 vocabulary")
 
     # MinMax parameters (can be scalar or list)
     min: float | list[float] | None = Field(
         default=None,
-        description="Minimum value(s) for minmax normalization",
+        description="Minimum value(s) for minmax/log-scaled normalization",
     )
     max: float | list[float] | None = Field(
         default=None,
-        description="Maximum value(s) for minmax normalization",
+        description="Maximum value(s) for minmax/log-scaled normalization",
     )
 
     # Z-score parameters (can be scalar or list)
@@ -76,6 +100,31 @@ class NormalizationSpec(BaseModel):
         description="Standard deviation(s) for zscore normalization",
     )
 
+    period: float | None = Field(
+        default=None,
+        description="Positive period for cyclical_sin_cos normalization",
+    )
+
+    categories: int | None = Field(
+        default=None,
+        description="Category count for one_hot normalization",
+    )
+
+    threshold: float | None = Field(
+        default=None,
+        description="Threshold for binary normalization",
+    )
+
+    mask_value: float | None = Field(
+        default=None,
+        description="Sentinel value replaced by masked_value normalization",
+    )
+
+    fill_value: float | None = Field(
+        default=None,
+        description="Replacement value for masked_value normalization",
+    )
+
     @model_validator(mode="after")
     def validate_normalization_params(self) -> "NormalizationSpec":
         """Validate that required parameters are present for each kind."""
@@ -84,28 +133,89 @@ class NormalizationSpec(BaseModel):
                 raise ValueError("minmax normalization requires 'min' parameter")
             if self.max is None:
                 raise ValueError("minmax normalization requires 'max' parameter")
+            if not self._bounds_are_ordered():
+                raise ValueError("minmax normalization requires 'min' < 'max'")
         elif self.kind == "zscore":
             if self.mean is None:
                 raise ValueError("zscore normalization requires 'mean' parameter")
             if self.std is None:
                 raise ValueError("zscore normalization requires 'std' parameter")
+            if self._contains_zero(self.std):
+                raise ValueError("zscore normalization requires non-zero 'std'")
+        elif self.kind == "cyclical_sin_cos":
+            if self.period is None or self.period <= 0:
+                raise ValueError("cyclical_sin_cos normalization requires positive 'period'")
+        elif self.kind == "one_hot":
+            if self.categories is None or self.categories < 2:
+                raise ValueError("one_hot normalization requires at least 2 categories")
+        elif self.kind == "binary":
+            if self.threshold is None:
+                raise ValueError("binary normalization requires 'threshold'")
+        elif self.kind in {"log_scaled", "clipped_log_scaled"}:
+            if self.min is None or self.max is None:
+                raise ValueError(f"{self.kind} normalization requires 'min' and 'max' parameters")
+            if not self._bounds_are_ordered():
+                raise ValueError(f"{self.kind} normalization requires 'min' < 'max'")
+        elif self.kind == "masked_value":
+            if self.mask_value is None:
+                raise ValueError("masked_value normalization requires 'mask_value'")
+            if self.fill_value is None:
+                raise ValueError("masked_value normalization requires 'fill_value'")
         return self
+
+    def _bounds_are_ordered(self) -> bool:
+        """Return whether min/max parameters are broadcast-compatible and ordered."""
+        if self.min is None or self.max is None:
+            return False
+        min_values = self.min if isinstance(self.min, list) else [self.min]
+        max_values = self.max if isinstance(self.max, list) else [self.max]
+        if len(min_values) == 1 and len(max_values) > 1:
+            min_values = min_values * len(max_values)
+        if len(max_values) == 1 and len(min_values) > 1:
+            max_values = max_values * len(min_values)
+        if len(min_values) != len(max_values):
+            return False
+        return all(min_value < max_value for min_value, max_value in zip(min_values, max_values, strict=True))
+
+    @staticmethod
+    def _contains_zero(value: float | list[float]) -> bool:
+        values = value if isinstance(value, list) else [value]
+        return any(item == 0 for item in values)
 
 
 class WriteSpec(BaseModel):
     """Action write specification (variable update).
 
-    Defines how an action modifies a variable's value.
+    Defines how an action modifies a variable's value and how the transition
+    compiler should schedule, compose, clamp, and audit the write.
 
-    Phase 1: Expression is stored as string (no parsing)
-    Phase 2: Expression will be parsed into AST for validation and execution
+    Expressions are parsed into ASTs during profile/effect compilation before
+    runtime execution.
 
     Examples:
         # Simple constant
-        WriteSpec(variable_id="energy", expression="-0.005")
+        WriteSpec(
+            variable_id="energy",
+            expression="-0.005",
+            condition=None,
+            composition="additive_delta",
+            phase="action_costs",
+            priority=10,
+            clamp=(0.0, 1.0),
+            telemetry_label="movement_energy_cost",
+        )
 
-        # Complex expression (Phase 2)
-        WriteSpec(variable_id="money", expression="money + 10.0")
+        # Complex expression
+        WriteSpec(
+            variable_id="money",
+            expression="money + 10.0",
+            condition=None,
+            composition="overwrite",
+            phase="action_effects",
+            priority=0,
+            clamp=None,
+            telemetry_label="wage_credit",
+        )
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -117,15 +227,69 @@ class WriteSpec(BaseModel):
 
     expression: str = Field(
         min_length=1,
-        description="Expression to evaluate (Phase 1: string, Phase 2: parsed AST)",
+        description="Expression to parse, type-check, and evaluate through the expression runtime",
     )
+
+    condition: str | None = Field(
+        description="Optional mask or predicate expression that gates this write. Pass None for unconditional writes.",
+    )
+
+    composition: Literal[
+        "overwrite",
+        "additive_delta",
+        "multiplicative_modifier",
+        "min",
+        "max",
+        "clamp",
+        "priority_write",
+        "last_write_wins",
+        "claim_if_free",
+        "capacity_claim",
+        "append_event",
+    ] = Field(
+        description="How to compose this write with other writes targeting the same variable in the same phase",
+    )
+
+    phase: str = Field(
+        min_length=1,
+        description="Transition phase where this write is scheduled",
+    )
+
+    priority: int = Field(
+        ge=0,
+        description="Non-negative ordering key within the transition phase",
+    )
+
+    clamp: tuple[float, float] | None = Field(
+        description="Optional inclusive post-write bounds. Pass None when no clamp applies.",
+    )
+
+    telemetry_label: str = Field(
+        min_length=1,
+        description="Human-readable audit label emitted with write telemetry",
+    )
+
+    @model_validator(mode="after")
+    def validate_write_metadata(self) -> "WriteSpec":
+        """Validate explicit VFS v1.1 transition metadata."""
+        if self.condition is not None and not self.condition.strip():
+            raise ValueError("condition must be None or a non-empty expression")
+        if not self.phase.strip():
+            raise ValueError("phase must be a non-empty transition phase")
+        if not self.telemetry_label.strip():
+            raise ValueError("telemetry_label must be non-empty")
+        if self.clamp is not None:
+            low, high = self.clamp
+            if low > high:
+                raise ValueError("clamp lower bound must be <= upper bound")
+        return self
 
 
 class ObservationField(BaseModel):
     """Observation field specification.
 
     Maps a variable to an observation field that will be exposed to agents
-    or other systems (like the BAC compiler).
+    or other systems (like the VTC or brain compiler).
 
     Examples:
         # Scalar observation
@@ -254,8 +418,11 @@ class VariableDef(BaseModel):
         description="Semantic grouping for structured encoders (bars, spatial, affordance, temporal, custom)",
     )
 
-    scope: VariableScope | Literal["global", "agent", "agent_private", "item"] = Field(
-        description="Scope: global (shared), agent (per-agent public), agent_private (per-agent private), item (per-item)",
+    scope: VariableScope | Literal["global", "agent", "agent_private", "item", "pair", "group", "affordance", "zone", "message"] = Field(
+        description=(
+            "Scope: global (shared), agent (per-agent public), agent_private (per-agent private), item (per-item), "
+            "pair (directed agent-agent), group, affordance, zone, or message"
+        ),
     )
 
     type: Literal[
@@ -269,11 +436,14 @@ class VariableDef(BaseModel):
         "bool",
         "agent_ref",
         "item_ref",
+        "affordance_ref",
+        "effect_ref",
         "tensor1d",
         "tensor2d",
         "tensor3d",
         "tensorNd",
-    ] = Field(description="Variable type (scalar, vector, bool, reference, or tensor)")
+        "message_token",
+    ] = Field(description="Variable type (scalar, vector, bool, reference, tensor, or message token)")
 
     dims: int | None = Field(
         default=None,
@@ -332,9 +502,7 @@ class VariableDef(BaseModel):
     @model_validator(mode="after")
     def validate_vector_types(self) -> "VariableDef":
         """Validate that vecNi/vecNf have dims field, scalar/bool do not."""
-        if not self.exposed_to:
-            self.exposed_to = ["agent"]
-        if self.type in ("vecNi", "vecNf"):
+        if self.type in ("vecNi", "vecNf", "message_token"):
             if self.dims is None:
                 raise ValueError(f"Variable '{self.id}' with type '{self.type}' requires 'dims' field")
         elif self.type in ("scalar", "bool"):
@@ -359,6 +527,9 @@ class VariableDef(BaseModel):
             if self.type == "tensorNd" and rank < 1:
                 raise ValueError(f"Variable '{self.id}' with type 'tensorNd' must have shape of rank ≥1")
 
+        if self.type == "message_token" and self.shape is not None:
+            raise ValueError(f"Variable '{self.id}' with type 'message_token' should not set 'shape'; use 'dims' instead")
+
         return self
 
 
@@ -381,14 +552,17 @@ def load_variables_reference_config(config_dir: Path) -> list[VariableDef]:
     if variables_block is None:
         raise ValueError(f"{yaml_path} must include a top-level 'variables' list.")
 
-    # Explicitly reject expression DSL until implemented
+    # variables_reference.yaml remains a static registry input; expression DSL
+    # belongs to vfs_profiles.yaml and effect specs.
     for raw_var in variables_block:
         if "expression" in raw_var:
             raise ValueError(
-                "Variable expressions are not supported yet; variables_reference.yaml must define static variables only.\n"
+                "variables_reference.yaml must define static variables only; expressions belong in vfs_profiles.yaml or effects specs.\n"
                 f"  Variable: {raw_var.get('name') or raw_var.get('id')}\n"
-                "  Action: remove expression and provide static defaults; DSL support is future work."
+                "  Action: remove expression and provide static defaults, or move the derived variable into vfs_profiles.yaml."
             )
+        if raw_var.get("scope") == "item":
+            raise ValueError("variables_reference.yaml cannot define item-scoped variables; use vfs_profiles.yaml item_profiles.")
 
     try:
         return [VariableDef(**raw_var) for raw_var in variables_block]

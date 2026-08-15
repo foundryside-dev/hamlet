@@ -203,6 +203,19 @@ class DuelingConfig(BaseModel):
     layer_norm: bool = Field(description="Apply LayerNorm after shared layers")
 
 
+class SetEncoderConfig(BaseModel):
+    """Set-aware architecture configuration for variable-token observations."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    token_field_name: str = Field(min_length=1, description="ObservationSpec field containing flattened token rows")
+    max_tokens: int = Field(gt=0, description="Maximum number of token rows in the field")
+    token_dim: int = Field(gt=0, description="Feature width of each token row")
+    token_embed_dim: int = Field(gt=0, description="Embedding size produced for the pooled token set")
+    base_hidden_dim: int = Field(gt=0, description="Embedding size for non-token observation features")
+    q_head_hidden_dim: int = Field(gt=0, description="Hidden size for the final Q-value head")
+
+
 class ScheduleConfig(BaseModel):
     """Learning rate schedule configuration.
 
@@ -347,17 +360,18 @@ class LossConfig(BaseModel):
 class ArchitectureConfig(BaseModel):
     """Neural network architecture configuration.
 
-    Phase 3: Supports feedforward, recurrent (LSTM), and dueling architectures.
+    Supports feedforward, recurrent (LSTM), dueling, and set-encoder architectures.
     """
 
     model_config = ConfigDict(extra="forbid")
 
-    type: Literal["feedforward", "recurrent", "dueling"] = Field(description="Architecture type")
+    type: Literal["feedforward", "recurrent", "dueling", "set_encoder"] = Field(description="Architecture type")
 
     # Architecture-specific configs (exactly one required based on type)
     feedforward: FeedforwardConfig | None = Field(default=None, description="Feedforward MLP config (required when type=feedforward)")
     recurrent: RecurrentConfig | None = Field(default=None, description="Recurrent LSTM config (required when type=recurrent)")
     dueling: DuelingConfig | None = Field(default=None, description="Dueling DQN config (required when type=dueling)")
+    set_encoder: SetEncoderConfig | None = Field(default=None, description="Set encoder config (required when type=set_encoder)")
 
     @model_validator(mode="after")
     def validate_architecture_match(self) -> "ArchitectureConfig":
@@ -368,6 +382,8 @@ class ArchitectureConfig(BaseModel):
             raise ValueError("type='recurrent' requires recurrent config")
         if self.type == "dueling" and self.dueling is None:
             raise ValueError("type='dueling' requires dueling config")
+        if self.type == "set_encoder" and self.set_encoder is None:
+            raise ValueError("type='set_encoder' requires set_encoder config")
         return self
 
 

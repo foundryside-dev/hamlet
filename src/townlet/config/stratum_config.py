@@ -23,7 +23,7 @@ class ObservationModeConfig(BaseModel):
     """Observation mode selection for runtime observation layout."""
 
     mode: Literal["full_auto", "max_compact", "full_manual"] = Field(
-        default="full_auto",
+        ...,
         description="Observation layout strategy: full_auto (include all), max_compact (drop masked), or full_manual (explicit list).",
     )
     include_fields: list[str] | None = Field(
@@ -164,7 +164,11 @@ class AspatialConfig(BaseModel):
 class SubstrateConfig(BaseModel):
     """Substrate configuration (spatial or aspatial)."""
 
-    type: Literal["grid", "grid3d", "gridnd", "continuous", "continuousnd", "aspatial"] = Field(..., description="Substrate type")
+    # "grid3d" was deleted from this Literal (WS-7 first knockdown): it never
+    # had a SubstrateFactory branch, so it could only compile toward a
+    # guaranteed factory crash. The working 3-D path is type: grid with
+    # topology: cubic (Grid3DSubstrate).
+    type: Literal["grid", "gridnd", "continuous", "continuousnd", "aspatial"] = Field(..., description="Substrate type")
     grid: GridConfig | None = Field(None, description="Grid substrate parameters (2D or 3D)")
     gridnd: GridNDConfig | None = Field(None, description="GridND substrate parameters (4D+)")
     continuous: ContinuousConfig | None = Field(None, description="Continuous substrate parameters (required for continuous/continuousnd)")
@@ -207,7 +211,7 @@ class StratumConfigRoot(BaseModel):
     vision_support: Literal["global", "partial", "both", "none"] = Field(..., description="Vision modes supported by this stratum")
     temporal_support: Literal["enabled", "disabled"] = Field(..., description="Whether temporal mechanics are supported")
     observation_mode: ObservationModeConfig = Field(
-        default_factory=ObservationModeConfig,
+        ...,
         description="Observation layout mode: full_auto | max_compact | full_manual (requires include_fields).",
     )
 

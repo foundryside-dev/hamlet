@@ -172,9 +172,6 @@ class RecurrentSpatialQNetwork(nn.Module):
             nn.Linear(128, action_dim),
         )
 
-        # Hidden state (initialized per episode)
-        self.hidden_state: tuple[torch.Tensor, torch.Tensor] | None = None
-
         # Optional observation-spec-driven slicing (v2.1 pipeline).
         self._use_observation_spec = observation_spec is not None
         self._grid_slice: slice | None = None
@@ -205,10 +202,15 @@ class RecurrentSpatialQNetwork(nn.Module):
                 self._use_observation_spec = False
 
     def forward(
-        self, obs: torch.Tensor, hidden: tuple[torch.Tensor, torch.Tensor] | None = None
+        self,
+        obs: torch.Tensor,
+        hidden: tuple[torch.Tensor, torch.Tensor],
     ) -> tuple[torch.Tensor, tuple[torch.Tensor, torch.Tensor]]:
         """
         Forward pass with LSTM memory.
+
+        The network owns no hidden state: callers thread it explicitly. Use
+        `initial_hidden(batch_size, device)` at episode/sequence start.
 
         Args:
             obs: [batch, obs_dim] observations where:
@@ -217,7 +219,7 @@ class RecurrentSpatialQNetwork(nn.Module):
                 - obs[:, window_size²+position_dim:window_size²+position_dim+num_meters] = meters
                 - obs[:, window_size²+position_dim+num_meters:window_size²+position_dim+num_meters+num_affordance_dims] = affordance
                 - obs[:, window_size²+position_dim+num_meters+num_affordance_dims:] = temporal (if enabled)
-            hidden: Optional LSTM hidden state (h, c), each [1, batch, hidden_dim]
+            hidden: LSTM hidden state (h, c), each [num_layers, batch, hidden_dim] (required)
 
         Returns:
             q_values: [batch, action_dim]
@@ -267,16 +269,6 @@ class RecurrentSpatialQNetwork(nn.Module):
         # LSTM expects [batch, seq_len, input_dim]
         combined = combined.unsqueeze(1)  # [batch, 1, lstm_input_dim]
 
-        # Use provided hidden state or self.hidden_state
-        if hidden is None:
-            hidden = self.hidden_state
-
-        # If still None, initialize with zeros
-        if hidden is None:
-            h = torch.zeros(1, batch_size, self.hidden_dim, device=obs.device)
-            c = torch.zeros(1, batch_size, self.hidden_dim, device=obs.device)
-            hidden = (h, c)
-
         # LSTM forward
         lstm_out, new_hidden = self.lstm(combined, hidden)  # lstm_out: [batch, 1, hidden_dim]
         lstm_out = lstm_out.squeeze(1)  # [batch, hidden_dim]
@@ -289,33 +281,21 @@ class RecurrentSpatialQNetwork(nn.Module):
 
         return q_values, new_hidden
 
-    def reset_hidden_state(self, batch_size: int, device: torch.device | None = None) -> None:
-        """
-        Reset LSTM hidden state (call at episode start).
+    def initial_hidden(self, batch_size: int, device: torch.device) -> tuple[torch.Tensor, torch.Tensor]:
+        """Fresh all-zero LSTM hidden state for a new episode or sampled sequence.
+
+        The network owns no mutable hidden state; callers hold and thread it.
 
         Args:
-            batch_size: Batch size for hidden state
-            device: Device for tensors (default: cpu). Infrastructure default - PDR-002 exemption.
+            batch_size: Batch size for the hidden state
+            device: Device for the tensors (required)
+
+        Returns:
+            (h, c), each [num_layers, batch_size, hidden_dim], all zeros
         """
-        if device is None:
-            device = torch.device("cpu")
-
-        h = torch.zeros(1, batch_size, self.hidden_dim, device=device)
-        c = torch.zeros(1, batch_size, self.hidden_dim, device=device)
-        self.hidden_state = (h, c)
-
-    def set_hidden_state(self, hidden: tuple[torch.Tensor, torch.Tensor]) -> None:
-        """
-        Set LSTM hidden state (for episode rollouts).
-
-        Args:
-            hidden: Tuple of (h, c) hidden states
-        """
-        self.hidden_state = hidden
-
-    def get_hidden_state(self) -> tuple[torch.Tensor, torch.Tensor] | None:
-        """Get current LSTM hidden state."""
-        return self.hidden_state
+        h = torch.zeros(self.lstm.num_layers, batch_size, self.hidden_dim, device=device)
+        c = torch.zeros(self.lstm.num_layers, batch_size, self.hidden_dim, device=device)
+        return (h, c)
 
 
 class DuelingQNetwork(nn.Module):
@@ -438,6 +418,121 @@ class DuelingQNetwork(nn.Module):
             "elu": nn.ELU(),
         }
         return activations[activation]
+
+
+class SetEncoderQNetwork(nn.Module):
+    """Q-network that pools a fixed-capacity token set with permutation-invariant mean aggregation."""
+
+    def __init__(
+        self,
+        obs_dim: int,
+        action_dim: int,
+        token_slice: slice,
+        token_shape: tuple[int, int],
+        token_embed_dim: int,
+        base_hidden_dim: int,
+        q_head_hidden_dim: int,
+    ):
+        """Initialize a set-aware Q-network.
+
+        Args:
+            obs_dim: Total flattened observation dimension.
+            action_dim: Number of actions.
+            token_slice: Slice of the flattened observation that contains token rows.
+            token_shape: ``(max_tokens, token_dim)`` for reshaping the token slice.
+            token_embed_dim: Embedding size for pooled token features.
+            base_hidden_dim: Embedding size for non-token observation features.
+            q_head_hidden_dim: Hidden size for the Q-value head.
+        """
+        super().__init__()
+        self.obs_dim = obs_dim
+        self.action_dim = action_dim
+        self.token_slice = self._validate_token_slice(obs_dim, token_slice)
+        self.max_tokens, self.token_dim = self._validate_token_shape(token_shape)
+        self.token_embed_dim = token_embed_dim
+        self.base_hidden_dim = base_hidden_dim
+
+        expected_token_dims = self.max_tokens * self.token_dim
+        if self.token_slice.stop - self.token_slice.start != expected_token_dims:
+            raise ValueError(
+                "token_slice length must equal max_tokens * token_dim "
+                f"({expected_token_dims}), got {self.token_slice.stop - self.token_slice.start}"
+            )
+        if token_embed_dim <= 0:
+            raise ValueError("token_embed_dim must be positive")
+        if base_hidden_dim <= 0:
+            raise ValueError("base_hidden_dim must be positive")
+        if q_head_hidden_dim <= 0:
+            raise ValueError("q_head_hidden_dim must be positive")
+
+        self.base_dim = obs_dim - expected_token_dims
+        if self.base_dim < 0:
+            raise ValueError("token dimensions cannot exceed obs_dim")
+
+        self.token_encoder = nn.Sequential(
+            nn.Linear(self.token_dim, token_embed_dim),
+            nn.LayerNorm(token_embed_dim),
+            nn.ReLU(),
+        )
+        self.base_encoder: nn.Sequential | None
+        if self.base_dim > 0:
+            self.base_encoder = nn.Sequential(
+                nn.Linear(self.base_dim, base_hidden_dim),
+                nn.LayerNorm(base_hidden_dim),
+                nn.ReLU(),
+            )
+            q_head_input_dim = token_embed_dim + base_hidden_dim
+        else:
+            self.base_encoder = None
+            q_head_input_dim = token_embed_dim
+
+        self.q_head = nn.Sequential(
+            nn.Linear(q_head_input_dim, q_head_hidden_dim),
+            nn.LayerNorm(q_head_hidden_dim),
+            nn.ReLU(),
+            nn.Linear(q_head_hidden_dim, action_dim),
+        )
+
+    def forward(self, obs: torch.Tensor) -> torch.Tensor:
+        """Encode non-token observations and a token set into Q-values."""
+        if obs.dim() != 2 or obs.shape[1] != self.obs_dim:
+            raise ValueError(f"Expected observations with shape [batch, {self.obs_dim}], got {tuple(obs.shape)}")
+
+        token_flat = obs[:, self.token_slice]
+        tokens = token_flat.reshape(obs.shape[0], self.max_tokens, self.token_dim)
+        non_empty_mask = tokens.abs().sum(dim=-1, keepdim=True) > 0
+
+        token_embeddings = self.token_encoder(tokens)
+        token_embeddings = token_embeddings * non_empty_mask.to(dtype=token_embeddings.dtype)
+        token_counts = non_empty_mask.sum(dim=1).clamp(min=1).to(dtype=token_embeddings.dtype)
+        pooled_tokens = token_embeddings.sum(dim=1) / token_counts
+
+        parts = []
+        if self.base_encoder is not None:
+            base_obs = torch.cat((obs[:, : self.token_slice.start], obs[:, self.token_slice.stop :]), dim=1)
+            parts.append(self.base_encoder(base_obs))
+        parts.append(pooled_tokens)
+
+        return cast(torch.Tensor, self.q_head(torch.cat(parts, dim=1)))
+
+    @staticmethod
+    def _validate_token_slice(obs_dim: int, token_slice: slice) -> slice:
+        if token_slice.step not in (None, 1):
+            raise ValueError("token_slice step must be None or 1")
+        if token_slice.start is None or token_slice.stop is None:
+            raise ValueError("token_slice must have explicit start and stop")
+        if token_slice.start < 0 or token_slice.stop > obs_dim or token_slice.stop <= token_slice.start:
+            raise ValueError(f"token_slice must be within observation bounds 0..{obs_dim}")
+        return slice(token_slice.start, token_slice.stop)
+
+    @staticmethod
+    def _validate_token_shape(token_shape: tuple[int, int]) -> tuple[int, int]:
+        max_tokens, token_dim = token_shape
+        if max_tokens <= 0:
+            raise ValueError("token_shape max_tokens must be positive")
+        if token_dim <= 0:
+            raise ValueError("token_shape token_dim must be positive")
+        return max_tokens, token_dim
 
 
 class StructuredQNetwork(nn.Module):

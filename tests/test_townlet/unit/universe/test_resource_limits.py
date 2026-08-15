@@ -9,7 +9,10 @@ import yaml
 
 from tests.test_townlet.helpers.config_builder import PRIMARY_LEVEL_NAME, prepare_config_dir
 from townlet.universe.compiler import UniverseCompiler
-from townlet.universe.raw_configs_v21 import MAX_ITEM_TYPES, MAX_SPAWN_RULES_PER_ITEM, MAX_VFS_PROFILES
+from townlet.universe.errors import CompilationError
+from townlet.universe.loaders.v21 import load_v21_configs
+from townlet.universe.validation import limits
+from townlet.universe.validation.limits import MAX_ITEM_TYPES, MAX_SPAWN_RULES_PER_ITEM, MAX_VFS_PROFILES
 
 
 def _make_item_types(count: int, *, profile: str = "default") -> list[dict]:
@@ -59,6 +62,8 @@ def _write_vfs_profiles(config_dir: Path, *, profile_count: int) -> None:
     ]
     vfs_payload = {
         "version": "1.0",
+        "evaluation_mode": "mark_and_sweep",
+        "debug_logging": False,
         "item_profiles": profiles,
     }
     (config_dir / "vfs_profiles.yaml").write_text(yaml.safe_dump(vfs_payload))
@@ -71,8 +76,20 @@ def test_item_catalog_rejects_more_than_max_item_types(tmp_path: Path) -> None:
     _write_items_catalog(config_dir, item_types=_make_item_types(MAX_ITEM_TYPES + 1))
 
     compiler = UniverseCompiler()
-    with pytest.raises(ValueError, match="item_types exceeds safety limit"):
-        compiler.compile(config_dir, use_cache=False)
+    with pytest.raises(CompilationError, match="item_types exceeds safety limit"):
+        compiler.compile(config_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
+
+
+def test_item_catalog_limit_is_enforced_by_limits_validation_after_dto_load(tmp_path: Path) -> None:
+    """Stage 1 should load DTOs; the limits validator should own safety limit policy."""
+    config_dir = prepare_config_dir(tmp_path, name="too_many_items_limits_module")
+    _write_vfs_profiles(config_dir, profile_count=1)
+    _write_items_catalog(config_dir, item_types=_make_item_types(MAX_ITEM_TYPES + 1))
+
+    raw = load_v21_configs(config_dir).raw
+
+    with pytest.raises(CompilationError, match="item_types exceeds safety limit"):
+        limits.validate_v21_limits(raw, config_dir)
 
 
 def test_spawn_rules_per_item_are_capped(tmp_path: Path) -> None:
@@ -87,8 +104,8 @@ def test_spawn_rules_per_item_are_capped(tmp_path: Path) -> None:
     level_items_path.write_text(yaml.safe_dump({"version": "1.0", "items": level_items}))
 
     compiler = UniverseCompiler()
-    with pytest.raises(ValueError, match="spawn rules exceed safety limit"):
-        compiler.compile(config_dir, use_cache=False)
+    with pytest.raises(CompilationError, match="spawn rules exceed safety limit"):
+        compiler.compile(config_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
 
 
 def test_vfs_profiles_count_is_capped(tmp_path: Path) -> None:
@@ -99,4 +116,4 @@ def test_vfs_profiles_count_is_capped(tmp_path: Path) -> None:
 
     compiler = UniverseCompiler()
     with pytest.raises(ValueError, match="vfs_profiles.yaml exceeds safety limit"):
-        compiler.compile(config_dir, use_cache=False)
+        compiler.compile(config_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)

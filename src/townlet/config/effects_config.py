@@ -16,7 +16,7 @@ __all__ = [
 ]
 
 
-class ReapplyPolicy(str, enum.Enum):
+class ReapplyPolicy(enum.StrEnum):
     """Policy for handling multiple spawns of the same effect.
 
     - stack: Create independent instances (multiple timers)
@@ -40,7 +40,7 @@ class ReapplyPolicy(str, enum.Enum):
         return None
 
 
-class EffectScope(str, enum.Enum):
+class EffectScope(enum.StrEnum):
     """Scope where effect can attach.
 
     - global: Single instance shared across all agents
@@ -79,10 +79,9 @@ class CommandConfig(BaseModel):
     - parallel: Disjoint branch execution
     - delay/do: Schedule commands after N ticks
     - sample/store_in: Draw from distribution
-    - trigger_cascade: Manually trigger cascade rule
     """
 
-    model_config = ConfigDict(populate_by_name=True)  # Allow both "if" and "if_condition"
+    model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
     # modify command: Mutate VFS/bar variable
     modify: str | None = None
@@ -90,8 +89,8 @@ class CommandConfig(BaseModel):
 
     # spawn_effect command: Trigger another effect
     spawn_effect: str | None = None  # Effect ID
-    target: str | None = "self"  # Expression: "self", "target", or path
-    intensity: float | None = 1.0  # Strength multiplier
+    target: str | None = None  # Expression: "self", "target", or path
+    intensity: float | None = None  # Strength multiplier
 
     # spawn_item command: Create item in world (Phase 4)
     spawn_item: str | None = None  # Item type ID
@@ -128,28 +127,12 @@ class CommandConfig(BaseModel):
 
     # sample command: draw from distribution into path
     sample: str | None = None  # distribution name (e.g., "uniform")
-    distribution: str | None = None  # optional alias for sample
     params: dict[str, Any] = Field(default_factory=dict)
     store_in: str | None = None
-
-    # trigger_cascade command: manually trigger a cascade rule
-    trigger_cascade: str | None = None  # cascade_id from optimization data
-    cascade_strength: float | None = 1.0  # strength multiplier
 
     @model_validator(mode="after")
     def validate_exactly_one_command(self) -> CommandConfig:
         """Exactly one command type must be set."""
-        # Normalize sample/distribution alias to a single field to avoid double-counting
-        if self.sample is None and self.distribution is not None:
-            self.sample = self.distribution
-            self.distribution = None
-        elif self.sample is not None and self.distribution is None:
-            # Keep distribution unset to avoid duplicate command counting
-            self.distribution = None
-        elif self.sample is not None and self.distribution is not None:
-            # Prefer explicit sample field, drop alias
-            self.distribution = None
-
         fields = [
             "modify",
             "spawn_effect",
@@ -161,8 +144,6 @@ class CommandConfig(BaseModel):
             "parallel",
             "delay",
             "sample",
-            "distribution",
-            "trigger_cascade",
         ]
         set_fields = [f for f in fields if getattr(self, f) is not None]
 
@@ -173,6 +154,12 @@ class CommandConfig(BaseModel):
         # Also validate that modify command has value field
         if self.modify and not self.value:
             raise ValueError("modify command requires 'value' field")
+
+        if self.spawn_effect is not None:
+            if self.target is None:
+                raise ValueError("spawn_effect command requires 'target'")
+            if self.intensity is None:
+                raise ValueError("spawn_effect command requires 'intensity'")
 
         if self.switch is not None and not self.cases and not self.default:
             raise ValueError("switch command requires at least one case or default block")
@@ -221,12 +208,6 @@ class CommandConfig(BaseModel):
             if missing:
                 raise ValueError(f"sample '{dist}' missing params: {missing}")
 
-        if self.trigger_cascade is not None:
-            if not self.trigger_cascade.strip():
-                raise ValueError("trigger_cascade must be a non-empty cascade_id")
-            if self.cascade_strength is not None and self.cascade_strength <= 0:
-                raise ValueError("cascade_strength must be positive")
-
         return self
 
 
@@ -241,7 +222,7 @@ class EffectDefinitionConfig(BaseModel):
 
     # Lifecycle parameters (REQUIRED - no defaults to prevent surprises)
     duration: int = Field(..., description="Ticks until auto-despawn", gt=0)
-    intensity: float = Field(default=1.0, description="Default strength multiplier")
+    intensity: float = Field(..., description="Default strength multiplier")
 
     # Stacking policy (REQUIRED - must be explicit)
     reapply_policy: ReapplyPolicy = Field(..., description="Policy for multiple spawns")

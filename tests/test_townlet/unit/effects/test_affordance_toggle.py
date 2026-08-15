@@ -45,9 +45,6 @@ def test_is_affordance_open_respects_overrides_first():
         def __init__(self) -> None:
             self.affordance_overrides = {"cafe": False, "library": True}
             self.enable_temporal_mechanics = False
-            self.action_mask_table = torch.ones(1, 1)  # required fields for helper
-            self.affordance_name_to_mask_idx = {"cafe": 0, "library": 0}
-            self.hours_per_day = 1
             self.time_of_day = 0
 
     dummy = DummyEnv()

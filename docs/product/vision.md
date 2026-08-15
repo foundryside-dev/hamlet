@@ -20,6 +20,13 @@
 >   unchanged. Offered at the 2026-08-14 grant re-confirmation and approved by the owner in the
 >   same session; recorded as `PDR-0038`. Factual correction only — no section's meaning
 >   changes and the authority grant itself is untouched.
+> - *2026-08-15* — corrected the authority grant's **`Last reviewed` stamp** from `2026-08-11`
+>   to `2026-08-15`, and stated the two intervening re-confirmations (2026-08-14, and again at
+>   the 2026-08-15 `/own-product` resume) explicitly. The grant's **scope is unchanged** — same
+>   autonomous list, same escalation taxonomy — so this is a factual correction of a stale
+>   review date, not a vision change. The debt had been carried since 2026-08-14 as "fix at the
+>   next approved touch"; offered and approved at the 2026-08-15 grant re-confirmation, the same
+>   pattern `PDR-0038` set. Provenance PDR recorded at that session's checkpoint.
 > - *2026-08-13* — re-tagged the **tech-demo demonstrator claim** as delivery intent: "Low Energy
 >   Delirium" was never implemented (*"the idea outran the codebase and we pivotd a few times"*),
 >   and Townlet Town is **one of several tech demos** to be provided at the end. Escalated by the
@@ -229,9 +236,12 @@ they are already binding project commitments, not new inventions.
 
 ## Authority grant
 
-Granted by: John Morrissey (qacona@gmail.com)     Last reviewed: 2026-08-11
+Granted by: John Morrissey (qacona@gmail.com)     Last reviewed: 2026-08-15
 Review cadence: monthly, or on any vision change
-Status: **CONFIRMED** by the owner on 2026-08-11 (standard grant)
+Status: **CONFIRMED** by the owner on 2026-08-15, unchanged from the 2026-08-11 grant
+(re-confirmed 2026-08-14 and again at the 2026-08-15 `/own-product` resume; scope identical
+each time). Read together with `PDR-0046`: the agent may commit and push `project-recovery`
+without asking — the merge to `main` is the boundary, and it gates on `PDR-0039`.
 
 Autonomous within strategy — the agent MAY, without asking:
   prioritize the backlog, write PRDs, dispatch delivery, accept against

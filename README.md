@@ -23,7 +23,7 @@ itself.
 
 - Version 0.1.0, classified `Development Status :: 3 - Alpha`. There are no release tags; the
   repository's only tag, locally and on `origin`, is the oracle tag below.
-- All live work is on branch `project-recovery`, **145 commits ahead of `main`**. `main`'s tip
+- All live work is on branch `project-recovery`, **162 commits ahead of `main`**. `main`'s tip
   commit is dated 2025-11-28 and does not describe the current system: `docs/product/`,
   `docs/oracle/` and `src/townlet/oracle/` do not exist on it at all.
 - The project is mid **strangler rewrite behind a pinned oracle**. Tag `oracle-2026-08-13`
@@ -31,9 +31,11 @@ itself.
   From `docs/oracle/ORACLE.md`: "The oracle never mutates", and "a diff against the oracle is a
   defect in the rebuild unless the register says otherwise." Accepted differences are recorded in
   `docs/oracle/known-divergences.md`.
-- **CI has not validated any of this work.** No workflow has ever run on `project-recovery`, and
-  none has passed anywhere since 2025-11-28. See [Continuous integration](#continuous-integration)
-  — the quality gates that are actually enforced here are run locally, by hand.
+- **CI now runs on this branch and is green** — as of 2026-08-15, and not before. Lint, Config
+  Validation and Tests fire on every push to `project-recovery`; the first runs in the branch's
+  history all passed. Read this as young rather than settled: the history is two pushes deep,
+  and the nightly full-matrix job is still parked. See
+  [Continuous integration](#continuous-integration).
 - Where this file calls something shipped, it means *present and wired*, not mature. The project
   came out of a long stretch of intermittent attention and is unfinished in places; the specific
   gaps are under [Known rough edges](#known-rough-edges).
@@ -41,11 +43,14 @@ itself.
   changes land directly.
 
 *Every command, file path, count and quotation below was executed or read against the working tree
-at commit `a099663c`; the repository-state facts under [Continuous integration](#continuous-integration)
-were read from the GitHub API the same day. Both on 2026-08-14. There are deliberately no test
-counts, coverage percentages, observation widths or training-performance figures in this README —
-see [Numbers](#numbers). This file describes the `project-recovery` branch and is expected to
-go out of date as the rewrite proceeds; it is re-verified before it reaches `main`.*
+at commit `569a7738`; the repository-state facts under [Continuous integration](#continuous-integration)
+were read from the GitHub API the same day. Both on 2026-08-15, in a full claim-by-claim
+re-verification that replaced the previous stamp (`a099663c`, 2026-08-14) — ten claims had gone
+stale in one day, every one of them because the recovery fixed the thing being described. There
+are deliberately no test counts, coverage percentages, observation widths or training-performance
+figures in this README — see [Numbers](#numbers). This file describes the `project-recovery`
+branch and is expected to go out of date as the rewrite proceeds; it is re-verified before it
+reaches `main`.*
 
 ## A universe is YAML
 
@@ -263,8 +268,10 @@ count on both trees as subprocesses, and compares the env-step traces:
 uv run python -m townlet.oracle.harness --cell default_curriculum:L0_0_minimal
 ```
 
-Its declared matrix is five levels × {cpu, cuda}; the CUDA cells are always declared and reported
-SKIPPED rather than silently dropped when `--cuda` is absent. It exits 0 only when every cell is
+Its declared matrix is sixteen cells: five levels of `default_curriculum` × {cpu, cuda}, plus
+three single-axis fixture packs under `configs/differential/` × {cpu, cuda} that bind to the
+`DIV-003` register entry. The CUDA cells are always declared and reported SKIPPED rather than
+silently dropped when `--cuda` is absent. It exits 0 only when every cell is
 AGREE, SKIPPED, or DIVERGED_AS_REGISTERED — the last meaning the cell's declared binding to a
 divergence-register entry matched narrowly: the oracle side crashed without producing a trace, the
 registered signature appearing in the final exception text of its stderr, *and* the rebuild side
@@ -290,23 +297,27 @@ uv run pytest
 Four GitHub Actions workflows exist, all specifying `uv sync --all-extras` on Python 3.13: Lint,
 Config Validation, Tests, and Full Test Suite.
 
-**None of them has ever run against this branch, and none has passed anywhere since 2025-11-28.**
-Treat the badge-shaped assumption that CI is guarding this repository as false:
+**Three of the four now run on this branch, and pass.** That became true on 2026-08-15 and had
+never been true before: between 2025-11-28 and that date no workflow had ever run against
+`project-recovery` at all, and the entire rewrite went unchecked by CI. Two pushes have been
+checked so far — treat the gates as restored, not as seasoned.
 
-- Lint, Config Validation and Tests trigger on `push` to `main` and on `pull_request`.
-  `project-recovery` is pushed directly and is neither, so `gh run list --branch project-recovery`
-  returns nothing. No commit of the rewrite has been checked by CI.
-- Full Test Suite runs on a 06:00 UTC schedule against the default branch. Every scheduled run on
-  record after the last green build failed, the most recent being 2026-01-30, and none is recorded
-  since: GitHub reports that workflow's state as `disabled_inactivity`. Re-enabling it is a
-  deliberate act (`gh workflow enable "Full Test Suite"`), not something the next push restores.
-- The last successful run of any workflow was 2025-11-28, on the merge of PR #31 into `main`.
+- Lint, Config Validation and Tests trigger on `push` to `project-recovery` (and on
+  `pull_request`, which is the merge-gate mechanism and is deliberately kept). The first runs in
+  the branch's history were green: Lint 1m11s, Config Validation 1m14s, Tests 24m21s.
+- Full Test Suite — the full matrix — is parked `disabled_manually` on purpose, and its nightly
+  06:00 UTC cron is deleted. The scheduler reads the workflow file from the *default* branch, so
+  a nightly enabled here would keep running against a `main` that is 162 commits stale, which is
+  what produced its 15-run failure streak in the first place. Running it on demand is
+  `gh workflow enable "Full Test Suite" && gh workflow run full-tests.yml --ref project-recovery`.
+  Restoring the nightly is a named condition of the merge to `main`, not an oversight.
+- Three of the four — every one except Lint — run `scripts/validate_compiler_cli.py` before their
+  other steps, and no step sets `continue-on-error`, so that script gates the rest. It exits 0 on
+  this tree, sweeping every pack it does not explicitly exclude.
 
-Three of the four — every one except Lint — run `scripts/validate_compiler_cli.py` before their
-other steps, and on this tree that script exits 1 (see [Known rough edges](#known-rough-edges)). No
-step sets `continue-on-error`, so were CI to run here, all three would stop at that step; in Tests
-and Full Test Suite it precedes pytest, which would not be reached. Restoring CI therefore means
-fixing that script's input before the workflows are pointed at this branch.
+What CI still does not cover, stated so the green is not read as wider than it is: the full
+matrix has not been run on this branch, and the harness that adjudicates the rewrite
+(`townlet.oracle.harness`) is run locally by the operator, not in CI.
 
 ## Architecture at a glance
 
@@ -361,7 +372,8 @@ Intent, not yet built — stated plainly because older docs blur the line:
 - **A second demonstrator that varies the domain rather than the substrate.** The substrate axis
   has a measured witness (Trial 001, above). `docs/product/vision.md` names four existing packs as
   domain-varying candidates of unverified depth (`aspatial_test`, `L5_multi_agent`, `simple`,
-  `reference`); the last two of those do not compile (below).
+  `reference`). All four compile as of 2026-08-15; whether any varies the *domain* enough to count
+  as a witness is unassessed, and that — not the compile status — is the open question.
 - **The "Low Energy Delirium" reward-hacking lesson** described in older docs. It is not
   implemented: no level of the shipped curriculum declares the multiplicative reward the lesson
   depends on.
@@ -371,19 +383,25 @@ Intent, not yet built — stated plainly because older docs blur the line:
 - **The frontend cannot be built as shipped.** `frontend/` holds real Vue single-file components
   and a `vite.config.js`, but there is no `package.json` or lockfile anywhere in the repository, so
   `npm run dev` cannot run — although `scripts/run_demo.py --help` still tells you to run it.
-- **Two of the five config packs outside `configs/test/` do not compile.** `configs/simple` and
-  `configs/reference/model_pack` both fail at parse with the same schema drift in their
-  `actions.yaml` (custom actions declaring `costs`/`effects` blocks the current schema forbids).
-  The repo's own `scripts/validate_compiler_cli.py` sweeps every pack it does not explicitly
-  exclude and exits 1 on this tree, tripping on `reference/model_pack` in sorted order before it
-  ever reaches `simple`. (`configs/` holds 20 directories carrying an `experiment.yaml`; 15 are
-  fixtures under `configs/test/`, three of which the script declares expected-to-fail.)
+- **A compiled pack can fail to cache without failing the command.** `configs/reference/model_pack`
+  compiles, prints `Compilation succeeded`, and exits 0 — while its cache artifact is *not*
+  written: serialization raises `can not serialize 'CompiledGlobalProfile' object`, the failure is
+  reported as a message, and nothing propagates it to the exit code. Every other pack writes its
+  `.msgpack`. CI cannot see this, because the gate runs `validate`, which writes no cache. This is
+  the project's recurring shape — a failure that is not loud — and it is tracked as a defect rather
+  than left as folklore. (`configs/` holds 23 directories carrying an `experiment.yaml`; 15 are
+  fixtures under `configs/test/`, three of which the script declares expected-to-fail. The two
+  packs that used to fail at parse on schema drift, `configs/simple` and
+  `configs/reference/model_pack`, were repaired on 2026-08-15 and both validate clean.)
 - **The declarable surface exceeds the exercised surface.** Measured at this commit by compiling
   every pack that compiles and counting rules in-process:
-  - Three of the nine compiled transition-program families — `action_write`,
-    `interaction_progress` and `social_residue` — carry zero rules in every one of them.
-    `action_write` is worse than unexercised: no YAML can produce one, because
-    `universe/compilers/actions.py` hardcodes `writes=()` for every action.
+  - Two of the nine compiled transition-program families — `action_write` and `social_residue` —
+    carry zero rules in every one of them. `action_write` is worse than unexercised: no YAML can
+    produce one, because `universe/compilers/actions.py` hardcodes `writes=()` for every action.
+    (A third, `interaction_progress`, was also empty everywhere until 2026-08-15; repairing
+    `configs/reference/model_pack` brought the only pack that exercises it back into the measured
+    set, where it carries two progress rules and two completion-bonus rules. The surface did not
+    change — the sample did.)
   - `drive.yaml`'s `intrinsic.strategy` accepts `icm` and `count_based`, which have no
     implementation anywhere — those tokens occur only inside `config/drive_as_code.py`, in the
     `Literal`, its docstring and an unread `icm_config` field. `composition.normalize` and

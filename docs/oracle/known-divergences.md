@@ -272,6 +272,37 @@ old side crashes and writes no trace, so there are no hashes to compare.
 it is correct — extending the `hash_fields` tuple as later cuts move more derived hashes —
 but each expansion must be re-measured, not predicted, and the measurement recorded here.
 
+**What this entry COSTS — recorded because an adversarial review measured it, not because it
+was designed in.** A six-lens review of the W2/W3 cut (2026-08-15) refuted 21 of 23 findings
+with executed repros and confirmed the suppression cannot pass a stream difference — a
+14-test smuggle suite failed to get one through in any of reset-obs / last-obs / reward /
+done / `-0.0` vs `0.0` / NaN. But it surfaced two real losses of signal that this entry is
+responsible for:
+
+1. **`AGREE` is now unreachable for every cell in the 16-cell matrix.** All ten standing
+   cells necessarily return `DIVERGED_AS_REGISTERED (DIV-004)`, and the six DIV-003 cells
+   return it via the crash shape. Exit 0 therefore no longer means *"old and new agree"*; it
+   means *"everything diverged exactly as registered"*. That is a weaker statement, and it
+   is weaker for the whole remaining life of this entry.
+2. **The pack-drift guard is armed on zero cells.** All 16 now declare
+   `pack_divergence="DIV-004"`, and that field is a BOOLEAN gate — declaring it blesses
+   *arbitrary* drift between the frozen fixture and the live pack, not merely the schema
+   change it was declared for. The machinery built at `49bdf28e` for `hamlet-2090c9f16d` is
+   inert while this entry is open.
+
+**Reversal trigger for both.** Re-tag the oracle. This entry exists because the oracle is
+pinned behind an authoring-surface change it cannot parse, and every cost above dissolves the
+moment the tag moves forward. If a THIRD cut needs to widen `hash_fields` again, that is the
+signal the entry has outlived its usefulness and the tag should move instead — a register
+entry that suppresses more each time is converging on suppressing everything.
+
+**Not a cost, but worth recording where the measurement lives:** the split costs roughly
+**21% on `env.step` and 32% on `_get_observations`** for `default_curriculum` L1 at 32 agents
+on CPU (measured twice, independently, during the same review) — eight per-meter registry
+reads and writes per tick instead of one vectorized pair. Accepted deliberately: this project
+trades throughput for authorability by design, and the alternative was leaving 8 of 9
+normalization kinds unauthorable. Recorded so nobody rediscovers it as a mystery.
+
 **Expansion log.** W1 measured three movers. W2/W3/W4 re-measured and found a fourth,
 `variable_schema_hash`, exactly as the pre-cut recon predicted it would — the prediction was
 recorded first so that a surprise would have been visible as one. Method both times: a git

@@ -554,3 +554,68 @@ def test_semantic_groups_must_be_contiguous() -> None:
     contiguous = ObservationSpec.from_fields([_field("a", 0, "bars"), _field("c", 1, "bars"), _field("b", 2, "spatial")])
     activity = ObservationCompiler().build_activity(contiguous)
     assert activity.group_slices["bars"] == slice(0, 2)
+
+
+def test_the_reference_config_meters_parse_against_the_current_schema() -> None:
+    """`configs/reference/config-complete.yaml` calls itself the authoritative reference and
+    is reachable by no gate.
+
+    `scripts/validate_compiler_cli.py` only descends directories containing an
+    `experiment.yaml`, so a loose reference YAML is never validated — and the per-meter cut
+    initially left one meter on the deleted `unbounded` member because the migration matched
+    a bare value and that line carried a trailing comment. An author copying the block got a
+    parse error from a file whose whole job is to be copied.
+
+    This pins the meters block specifically, not the whole file: the file is a documentation
+    artifact with deliberate omissions elsewhere.
+    """
+    import yaml as _yaml
+
+    from townlet.config.environment_config import MeterConfig
+
+    reference = Path("configs/reference/config-complete.yaml")
+    data = _yaml.safe_load(reference.read_text())
+    meters = data["environment"]["meters"]
+    assert meters, "the reference config must declare meters"
+
+    for raw in meters:
+        parsed = MeterConfig(**raw)
+        assert parsed.range_type.kind, f"{parsed.name} must declare a range_type kind"
+
+
+def test_one_hot_over_an_unindexable_bar_range_is_a_compile_error(tmp_path: Path) -> None:
+    """A one_hot meter whose bar can hold an out-of-range index must fail at COMPILE time.
+
+    Found by review: declaring `categories: 5` on a bar bounded [1, 1e6] compiled green and
+    then died on the first observation build with "one_hot normalization received category
+    index outside configured range" — naming no meter, no value and no file. A bar that only
+    reaches the invalid region later would have failed mid-training.
+    """
+    pack = _pack(tmp_path, L1)
+    env_yaml = pack / "environment.yaml"
+    data = yaml.safe_load(env_yaml.read_text())
+    for meter in data["environment"]["meters"]:
+        if meter["name"] == "money":
+            meter["range_type"] = {"kind": "one_hot", "categories": 5}
+    env_yaml.write_text(yaml.safe_dump(data))
+
+    with pytest.raises(Exception, match="not a valid index range"):
+        UniverseCompiler().compile(pack, primary_level=L1, use_cache=False)
+
+
+def test_a_normalizer_failure_at_runtime_names_the_field(tmp_path: Path) -> None:
+    """`apply_normalization` is field-agnostic, so its messages name the KIND and never the
+    field. With one field per meter that leaves an author nothing to act on, so the encoder
+    re-raises with the field name attached."""
+    from townlet.vfs.schema import NormalizationSpec
+
+    env = _env(_pack(tmp_path, L1), L1)
+    encoder = env._observation_encoder
+
+    with pytest.raises(ValueError, match="obs_meter_money"):
+        encoder._apply_declared_normalization(
+            "obs_meter_money",
+            torch.full((env.num_agents, 1), 99.0),
+            NormalizationSpec(kind="one_hot", categories=4),
+            4,
+        )

@@ -523,6 +523,36 @@ class ObservationCompiler:
             )
         return float(declared.min), float(declared.max)
 
+    @staticmethod
+    def _assert_one_hot_bounds_are_indexable(meter_name: str, categories: int, bounds_by_name: dict[str, Any]) -> None:
+        """A one_hot meter's declared bar range must be a valid index range.
+
+        `apply_normalization` takes `value.long()` and rejects anything outside
+        `[0, categories)`. Without this, a pack declaring `categories: 5` on a bar bounded
+        `[1, 1e6]` COMPILES GREEN and then dies on the first observation build with
+        "one_hot normalization received category index outside configured range" — a message
+        naming no meter, no value and no file. Worse, a bar that only enters the invalid
+        region later fails mid-training rather than at compile time.
+
+        The check is deliberately narrow: it rejects only ranges where an invalid index is
+        REACHABLE by construction, never a range that merely looks unusual. A bar bounded
+        [0, 1] with categories 5 wastes three dimensions and is left alone — wasteful is the
+        author's business, unreachable-by-construction is the compiler's.
+        """
+        declared = bounds_by_name.get(meter_name)
+        if declared is None:
+            return  # a meter with no bar is caught elsewhere, with a better message
+        if declared.min < 0.0 or declared.max >= float(categories):
+            raise ValueError(
+                "Meter declares one_hot over a bar range that is not a valid index range.\n"
+                f"  Meter: {meter_name}\n"
+                f"  Declared bounds: [{declared.min}, {declared.max}]\n"
+                f"  Declared categories: {categories} (valid indices are 0..{categories - 1})\n"
+                "  Rule: one_hot indexes into its categories, so the bar's declared range must "
+                "fit inside them. Either raise `categories` above the bar's max, or lower the "
+                "bar's bounds in bars.yaml."
+            )
+
     def _meter_normalizations(self, environment: EnvConfigV21, bars: Any) -> dict[str, NormalizationSpec]:
         """One NormalizationSpec per meter, built from its declared `range_type`.
 
@@ -560,6 +590,7 @@ class ObservationCompiler:
             elif isinstance(declared_type, MeterRangeCyclicalSinCos):
                 specs[field_name] = NormalizationSpec(kind="cyclical_sin_cos", period=declared_type.period)
             elif isinstance(declared_type, MeterRangeOneHot):
+                self._assert_one_hot_bounds_are_indexable(meter.name, declared_type.categories, bounds_by_name)
                 specs[field_name] = NormalizationSpec(kind="one_hot", categories=declared_type.categories)
             elif isinstance(declared_type, MeterRangeBinary):
                 specs[field_name] = NormalizationSpec(kind="binary", threshold=declared_type.threshold)

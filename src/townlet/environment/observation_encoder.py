@@ -119,7 +119,19 @@ class ObservationEncoder:
         """
         if normalization is None:
             return value
-        normalized = apply_normalization(value, normalization)
+        try:
+            normalized = apply_normalization(value, normalization)
+        except ValueError as exc:
+            # `apply_normalization` is field-agnostic by design, so its messages name the
+            # KIND and never the field. At one field that was tolerable; with one field per
+            # meter, "one_hot normalization received category index outside configured range"
+            # gives an author nothing to act on. Re-raise with the field, so the error points
+            # at a line in their environment.yaml.
+            raise ValueError(
+                f"Declared normalization failed for observation field '{field_name}'.\n"
+                f"  Normalization kind: {normalization.kind}\n"
+                f"  Underlying error: {exc}"
+            ) from exc
         if normalized.shape[-1] != dims:
             raise ValueError(
                 "Declared normalization changed an observation field's width.\n"

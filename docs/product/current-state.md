@@ -62,12 +62,16 @@ Recovery milestone `hamlet-1ade187dcc`.
   still knows what the game is. **`PDR-0045` now names that sighting's rule**, and
   `hamlet-60dd3c4b53` covers the same `metadata.py:83` line from the name-blindness angle —
   coordinate, do not fix twice.
-- **`hamlet-60dd3c4b53`** (P1, new, triage) — the compiler infers variable semantics by
-  substring-matching English meter names (`vfs_adapter.py:31-41`), **and the result is hashed
-  into the observation field UUID**. A pack naming its currency `credits` gets a different
-  observation schema hash for no structural reason. Also satisfies `hamlet-0dd4ac24d9`'s
-  "enumerate the name-special-casing sites" precondition; sequence the compiler before the
-  frontend, since only the compiler one moves artifact identity.
+- ~~**`hamlet-60dd3c4b53`**~~ — **its headline was FALSIFIED by execution on 2026-08-15**
+  (`1b25c99d`, recon comment 144). `vfs_adapter.py:31-41` is **dead code** — zero callers, not
+  even imported by the compiler — so "the result is hashed into the observation field UUID" and
+  "a pack naming its currency `credits` gets a different observation schema hash" are **false in
+  the shipped compiler**. The second site (`metadata.py:83`) executes but its output
+  (`AffordanceInfo.cost`) has zero consumers. The dead module and its tests were deleted, proved
+  inert by an unchanged-hash diff across all five levels. **`PDR-0045` is untouched — only its
+  cited instances were struck** (corrected by pointer, `PDR-0020` practice). Do not re-derive
+  the hash claim; it was measured false. The live defect the recon found instead is
+  `hamlet-2fe1c34ebb`.
 - **`hamlet-7a52a63e0b`** (WS-5 docs) — **partially done and released, deliberately.** Its own
   notes gate the body ("do NOT start doc rewriting yet"); that gate is intact and untouched.
   Only the orthogonal slice ran — removing false completion signals. See comments 139/140.

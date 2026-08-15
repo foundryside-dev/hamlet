@@ -49,6 +49,41 @@ every site should take.
 
 ## Measured violations (2026-08-15, `project-recovery`)
 
+> ⚠️ **CORRECTED 2026-08-15 (same day), at `1b25c99d`, by execution rather than reading.**
+> **Violations 1 and 2 below do not hold as stated.** The principle is untouched — this
+> corrects the *instances cited for it*, per the `PDR-0020` practice (correct by pointer, do
+> not overwrite; the original text stands below so the error is legible).
+>
+> - **Violation 1 is DEAD CODE.** `vfs_to_observation_spec` / `VFSAdapter` have **zero callers
+>   in `src/`** — the only repo-wide references were their own two test files — and importing
+>   the compiler does not even load the module. The observation spec is built by
+>   `compilers/observation.py`, which hardcodes a semantic literal per block; the adapter's
+>   `position`/`meter` vocabulary appears in no compiled output. **So the "different provenance
+>   hash for a pack that names its currency `credits`" consequence is false in the shipped
+>   compiler.** The module and its tests were deleted, and the deletion was proved inert:
+>   all five levels' `observation_schema_hash`, `action_schema_hash`, `vfs_hash`,
+>   `variable_schema_hash` and `transition_graph_hash` are byte-identical before and after.
+> - **Violation 2 is LIVE BUT UNCONSUMED.** `metadata.py:83` does fire (`EAT` compiles to
+>   `cost=5.0`), but **`AffordanceInfo.cost` has zero consumers** — `grep -rn "\.cost\b"` over
+>   `src/` and `frontend/src/` returns nothing; `affordance_metadata` is read only for `.name`.
+>   So "an author whose currency is `credits` gets `cost=0.0` everywhere" is true of the
+>   artifact and inert in behaviour. It is the computed-but-unconsumed shape
+>   (`hamlet-2dde1015fe`), not an authorability defect.
+> - **What the recon found instead, and it is live:** `semantic_type` has **three disagreeing
+>   vocabularies and no authority** — declared (`Literal["bars","spatial","affordance",
+>   "temporal","custom"]`, `default="custom"`), compiler-emitted (adds `"effects"`, outside
+>   the declared Literal, unvalidated because the DTO field is `str | None`), and the dead
+>   adapter's. The authored declaration is never consulted for a compiler-emitted field, and
+>   the hidden default violates the No-Defaults Principle. Filed as `hamlet-2fe1c34ebb` for
+>   the owner's fork rather than designed — it is an authoring-grammar decision under
+>   `PDR-0016`'s "do not silently add a kind".
+>
+> **The lesson, and it is this PDR's own:** *an issue filed from code reading is a hypothesis,
+> not a measurement.* Name-based inference is the hardest special-casing to see — and the
+> second-hardest thing to see is that the special-casing you found is not reached. Both cited
+> instances read as obviously live; neither was. **Check that a defect executes before
+> counting it.**
+
 Filed as `hamlet-60dd3c4b53`. This is also the enumeration `hamlet-0dd4ac24d9` asks for before
 it can close — and it found the defect one layer deeper than presentation.
 

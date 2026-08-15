@@ -33,7 +33,7 @@ metadata, optimization tensors, and runtime views.
 | 2. Build Symbol Tables | `_stage_2_build_symbol_tables` | Register meters, cascades, variables, actions, affordances, cues; fail fast on duplicates. |
 | 3. Resolve References | `_stage_3_resolve_references` | Walk every cross-file reference (affordance effects, action costs, training overrides) with UAC error codes. |
 | 4. Cross-Validation | `_stage_4_cross_validate` + helpers + `CuesCompiler` | Enforce spatial feasibility, economic balance, cascade cycles, temporal rules, substrate/action alignment, capability semantics, and cue integrity. |
-| 5. Metadata & ObservationSpec | `_stage_5_compute_metadata`, `_stage_5_build_rich_metadata` | Use `VFSObservationSpecBuilder` + `vfs_to_observation_spec` to compute dims, populate meter/action/affordance metadata, and derive hash/provenance. |
+| 5. Metadata & ObservationSpec | `_stage_5_compute_metadata`, `_stage_5_build_rich_metadata` | Use `VFSObservationSpecBuilder` and `compilers/observation.py` to compute dims, populate meter/action/affordance metadata, and derive hash/provenance. |
 | 6. Optimization Data | `_stage_6_optimize` | Pre-compute tensors (base depletions, cascade/modulation tables, hourly action masks, position maps) in deterministic order. |
 | 7. Emit Artifact | `_stage_7_emit_compiled_universe` | Construct frozen `CompiledUniverse`, serialize/cache via MessagePack, expose runtime DTOs. |
 

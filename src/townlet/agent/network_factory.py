@@ -77,8 +77,8 @@ class NetworkFactory:
         position_dim: int,
         bars_dim: int,
         num_affordance_types: int,
-        observation_spec: ObservationSpec | None = None,
-        observation_activity: ObservationActivity | None = None,
+        observation_spec: ObservationSpec,
+        observation_activity: ObservationActivity,
     ) -> RecurrentSpatialQNetwork:
         """Build recurrent LSTM Q-network from configuration.
 
@@ -91,8 +91,10 @@ class NetworkFactory:
                 observation_activity.group_slices["bars"] — NOT the meter count, which
                 diverges as soon as a meter declares a widening normalization
             num_affordance_types: Number of affordance types
+            observation_spec: Compiled observation layout. REQUIRED — the network
+                addresses every input block through it
             observation_activity: Carries group_slices, which is how the meter block is
-                located without knowing any field's name
+                located without knowing any field's name. REQUIRED
 
         Returns:
             RecurrentSpatialQNetwork

@@ -10,58 +10,35 @@ Plus 5 new integration tests for critical gaps.
 
 Total: 17 tests organized into 6 test classes.
 
-TEST ORGANIZATION:
-------------------
-1. TestTimeProgression (3 tests)
-   - Full 24-hour cycle wrapping
-   - Time progression through 24 ticks
-   - Observation dimensions with temporal features (sin/cos time + progress)
+STATUS (2026-08-16, hamlet-a0832f9004 then hamlet-551be983a8): 17 tests, all
+passing, and — unlike every previous claim in this docstring — that statement is
+made against a suite that actually runs them.
 
-2. TestOperatingHours (3 tests)
-   - Job masking after 6pm (closed hours)
-   - Bar wraparound hours (6pm-4am across midnight)
-   - 24-hour affordances (Bed, Hospital always available)
+This block twice read "ALL TESTS PASSING (17/17)" while 15 of the 17 failed. The
+falsehood was invisible rather than careless: the file was `pytest.mark.slow`,
+`pyproject.toml` carries `-m "not slow"` in its default addopts, and so no gate
+reading ever executed a line of it. The marker is gone (the file runs in ~15s;
+it was never slow) and the honest reading is now the default one.
 
-3. TestMultiTickInteractions (6 tests)
-   - Progressive benefit accumulation (linear 75%)
-   - Completion bonus (25% on final tick)
-   - Multi-tick Job completion (4 ticks with money gain)
-   - Money charged per tick (not on completion)
-   - Interaction progress in observations (0.0-1.0)
-   - Completion bonus timing (only on final tick)
+WHY THIS FILE CARRIES ITS OWN CONFIG PACK
+-----------------------------------------
+These tests were written against a pack whose affordances were Bed / Job / Bar /
+Hospital, one multi-tick and one open 6pm-4am. The shipped pack has neither
+property: every affordance is `interaction_type: instant` and no schedule crosses
+midnight. Both engine capabilities are real — verified live on 2026-08-16, with
+progress advancing 1..n and resetting on completion, `costs_per_tick` charged
+every tick, and an 18->28 window open at 02:00 — but no shipped config exercises
+them, so the fixture below re-parameterizes a copy of the L3 pack.
 
-4. TestEarlyExitMechanics (2 tests)
-   - Early exit from interaction (keep linear benefits)
-   - Early exit progress verification
+The trap this file exists to avoid: do NOT re-point these at an always-open
+instant affordance to make them green. `test_wraparound_hours_cross_midnight`
+would pass while exercising zero wraparound logic. A vacuous green here is
+strictly worse than a red, because it is indistinguishable from coverage.
 
-5. TestMultiAgentTemporal (1 test)
-   - Multi-agent independent temporal states
-
-6. TestTemporalIntegrations (3 tests)
-   - Temporal mechanics disabled fallback (legacy mode)
-   - Temporal mechanics with adversarial curriculum
-   - Temporal state recording (time_of_day, interaction_progress)
-
-IMPLEMENTATION STATUS (corrected 2026-08-16, hamlet-a0832f9004):
-----------------------------------------------------------------
-This block previously read "ALL TESTS PASSING (17/17)". That was false, and it was
-false invisibly: every test here is `slow`-marked and `pyproject.toml` puts
-`-m "not slow"` in the default pytest addopts, so no gate ran them.
-
-PASSING (7): time progression, operating hours on WORK, the always-open SLEEP
-affordance, temporal observation features, and the disabled-temporal fallback.
-
-FAILING (10), all for one reason: they were written against a pack whose
-affordances were Bed / Job / Bar / Hospital, with multi-tick interactions and a
-wraparound (6pm-4am) schedule. The shipped pack ships SLEEP / WORK / ENTERTAINMENT /
-DOCTOR, every affordance is `interaction_type: instant`, and no schedule crosses
-midnight. Both engine capabilities ARE implemented (multi_tick + duration_ticks in
-affordances_v2_config.py; wraparound at world/expression/functions.py:740-743) and
-these tests are their ONLY coverage, so they are being repaired against a
-purpose-authored test pack rather than deleted. Do NOT re-point them at an
-always-open instant affordance to make them green: that passes vacuously while
-exercising none of the behaviour named in the test.
-
+Every assertion is derived from the declared constants below, never from a
+literal copied out of the vanished pack, and each is verified red by mutation:
+killing the wrapping branch, ignoring `duration_ticks`, and moving
+`costs_per_tick` to completion each fail a different named test.
 """
 
 from pathlib import Path
@@ -69,7 +46,13 @@ from pathlib import Path
 import pytest
 import torch
 
-pytestmark = pytest.mark.slow
+from tests.test_townlet.helpers.config_builder import copy_config_pack, mutate_affordances_yaml
+
+# NOT `slow`-marked. The whole file runs in ~15s, and the marker (combined with
+# `-m "not slow"` in pyproject's default addopts) is precisely what hid 15 failing
+# tests here from every gate reading — see hamlet-a0832f9004.
+
+TEMPORAL_LEVEL = "L3_temporal_mechanics"
 
 
 def _interact_idx(env) -> int:
@@ -82,6 +65,135 @@ def _interact_idx(env) -> int:
     happened to be in bounds.
     """
     return env.action_mask_builder.action_ids["INTERACT"]
+
+
+def _meter(env, name: str) -> int:
+    """Resolve a meter's column from the compiled meter vocabulary.
+
+    Same rule as `_interact_idx`: the old form hardcoded `meters[0, 3]` for money
+    and `meters[0, 0]` for energy, which is a name-branch wearing an integer.
+    """
+    idx = env.meter_name_to_index.get(name)
+    assert idx is not None, f"meter '{name}' not in compiled vocabulary {list(env.meter_name_to_index)}"
+    return idx
+
+
+# =============================================================================
+# THE TEMPORAL TEST PACK
+# =============================================================================
+#
+# The shipped pack declares no multi-tick affordance and no wraparound schedule,
+# so the behaviour below has no config to run against. Rather than point these
+# tests at an always-open instant affordance (which would go green while
+# exercising none of it), the fixture re-parameterizes the shipped L3 pack.
+#
+# The affordance *names* are the shipped vocabulary — the compiler cross-checks
+# them against environment.yaml and rejects additions with AFFORDANCE_VOCAB_MISMATCH,
+# so this changes parameters only. Every assertion below is derived from these
+# constants, never from a literal copied out of a vanished pack.
+
+WRAPAROUND_AFFORDANCE = "ENTERTAINMENT"
+WRAPAROUND_START = 18  # 6pm
+WRAPAROUND_END = 28  # 4am next day; the schema allows end<=28 for exactly this
+
+REST_AFFORDANCE = "SLEEP"
+REST_DURATION = 5
+REST_ENERGY_PER_TICK = 0.15
+REST_COMPLETION_ENERGY = 0.25
+REST_COMPLETION_HEALTH = 0.05
+REST_MONEY_PER_TICK = 1.0  # charged per tick, not on completion
+
+JOB_AFFORDANCE = "WORK"
+JOB_DURATION = 4
+JOB_PAY_PER_TICK = 5.625
+JOB_COMPLETION_PAY = 5.625
+JOB_OPEN_HOUR = 10  # inside the shipped 9-17 schedule
+
+# energy loses `interact` (0.05) + `passive` (0.01) on a tick it is interacting.
+REST_ENERGY_DECAY_PER_TICK = 0.06
+REST_NET_ENERGY_PER_TICK = REST_ENERGY_PER_TICK - REST_ENERGY_DECAY_PER_TICK
+HEALTH_DECAY_PER_TICK = 0.005
+
+
+def _apply_temporal_pack(data: dict) -> None:
+    """Give the shipped L3 affordances the temporal parameters these tests need."""
+    for affordance in data["affordances"]["affordances"]:
+        name = affordance["name"]
+
+        if name == WRAPAROUND_AFFORDANCE:
+            affordance["opening_hours"] = {
+                "enabled": True,
+                "schedule": [{"start": WRAPAROUND_START, "end": WRAPAROUND_END}],
+            }
+
+        elif name == REST_AFFORDANCE:
+            affordance["interaction_type"] = "multi_tick"
+            affordance["duration_ticks"] = REST_DURATION
+            affordance["costs_per_tick"] = {"money": REST_MONEY_PER_TICK}
+            affordance["interactions"]["on_start"] = []
+            affordance["interactions"]["per_tick"] = [
+                {"modify": "target.bar.energy", "value": f"target.bar.energy + {REST_ENERGY_PER_TICK}"},
+            ]
+            affordance["interactions"]["on_completion"] = [
+                {"modify": "target.bar.energy", "value": f"target.bar.energy + {REST_COMPLETION_ENERGY}"},
+                {"modify": "target.bar.health", "value": f"target.bar.health + {REST_COMPLETION_HEALTH}"},
+            ]
+
+        elif name == JOB_AFFORDANCE:
+            affordance["interaction_type"] = "multi_tick"
+            affordance["duration_ticks"] = JOB_DURATION
+            affordance["costs_per_tick"] = {}
+            affordance["interactions"]["on_start"] = []
+            affordance["interactions"]["per_tick"] = [
+                {"modify": "target.bar.money", "value": f"target.bar.money + {JOB_PAY_PER_TICK}"},
+            ]
+            affordance["interactions"]["on_completion"] = [
+                {"modify": "target.bar.money", "value": f"target.bar.money + {JOB_COMPLETION_PAY}"},
+            ]
+
+
+@pytest.fixture
+def temporal_pack_dir(tmp_path) -> Path:
+    """A copy of the shipped pack with multi-tick and wraparound parameters set."""
+    pack = copy_config_pack(Path("configs/default_curriculum"), tmp_path, name="temporal_pack")
+    mutate_affordances_yaml(pack, _apply_temporal_pack, level_name=TEMPORAL_LEVEL)
+    return pack
+
+
+@pytest.fixture
+def multitick_env(cpu_env_factory, temporal_pack_dir):
+    """Single-agent env on the re-parameterized temporal pack."""
+    return cpu_env_factory(config_dir=temporal_pack_dir, level_name=TEMPORAL_LEVEL, num_agents=1)
+
+
+def _free_cell(env) -> torch.Tensor:
+    """A grid cell with no affordance on it.
+
+    Affordance placement is not stable across resets, so a hardcoded "empty"
+    cell is a coin flip: this test file previously used [3, 3] and passed or
+    failed depending on where deployment happened to put things that run.
+    """
+    occupied = {tuple(int(v) for v in pos.tolist()) for pos in env.affordances.values()}
+    width, height = env.substrate.grid_size if hasattr(env.substrate, "grid_size") else (8, 8)
+    for x in range(int(width)):
+        for y in range(int(height)):
+            if (x, y) not in occupied:
+                return torch.tensor([x, y], device=env.device)
+    raise AssertionError("every grid cell carries an affordance; no free cell for an idle agent")
+
+
+def _park(env, affordance: str, *, hour: int | None = None, money: float = 500.0):
+    """Put agent 0 on an affordance, solvent, with the clock where we want it.
+
+    Money matters: `can_afford` gates the multi-tick path on EVERY declared cost,
+    so an agent parked on a priced affordance with the default balance silently
+    does nothing at all and the interaction never starts.
+    """
+    env.positions[0] = env.affordances[affordance]
+    env.meters[0, _meter(env, "money")] = money
+    if hour is not None:
+        env.time_of_day = hour
+    return _interact_idx(env)
 
 
 # =============================================================================
@@ -188,34 +300,34 @@ class TestOperatingHours:
         masks = env.get_action_masks()
         assert not masks[0, _interact_idx(env)]  # INTERACT blocked
 
-    def test_bar_wraparound_hours(self, temporal_env):
-        """Verify Bar operating hours wrap around midnight (6pm-4am).
+    def test_wraparound_hours_cross_midnight(self, multitick_env):
+        """An 18->28 schedule is open across midnight and closed in the morning.
 
-        New test: Validates wraparound logic for late-night affordances.
+        This is the only live exercise of the wrapping branch at
+        `world/expression/functions.py:741` (`hour >= start | hour < end`). The
+        non-wrapping branch would report CLOSED at both 20:00 and 02:00, so the
+        02:00 assertion is what distinguishes the two.
         """
-        env = temporal_env
-
+        env = multitick_env
         env.reset()
 
-        # Use actual Bar position (randomized on reset)
-        assert "Bar" in env.affordances, "Bar affordance not deployed in test config"
-        env.positions[0] = env.affordances["Bar"]
-        env.meters[0, 3] = 1.0  # $100 money
+        interact = _park(env, WRAPAROUND_AFFORDANCE)
 
-        # 8pm: Bar open (operating hours: 18-28, i.e., 6pm-4am)
+        # Inside the window, before midnight.
         env.time_of_day = 20
-        masks = env.get_action_masks()
-        assert masks[0, _interact_idx(env)]  # INTERACT allowed
+        assert env.get_action_masks()[0, interact], "20:00 is inside an 18->28 window"
 
-        # 2am: Bar still open (wraparound)
+        # Inside the window, AFTER midnight — only the wrapping branch allows this.
         env.time_of_day = 2
-        masks = env.get_action_masks()
-        assert masks[0, _interact_idx(env)]  # INTERACT allowed
+        assert env.get_action_masks()[0, interact], "02:00 is inside an 18->28 window (wraps)"
 
-        # 5am: Bar closed
+        # Outside the window: past the 04:00 close.
         env.time_of_day = 5
-        masks = env.get_action_masks()
-        assert not masks[0, _interact_idx(env)]  # INTERACT blocked
+        assert not env.get_action_masks()[0, interact], "05:00 is past the 04:00 close"
+
+        # Outside the window: the middle of the day.
+        env.time_of_day = 12
+        assert not env.get_action_masks()[0, interact], "12:00 is outside an 18->28 window"
 
     def test_24_hour_affordances(self, temporal_env):
         """Verify a 24-hour affordance (SLEEP) is available at every hour.
@@ -247,206 +359,148 @@ class TestOperatingHours:
 class TestMultiTickInteractions:
     """Multi-tick interaction mechanics (linear + completion bonus)."""
 
-    def test_progressive_benefit_accumulation(self, temporal_env):
-        """Verify linear benefits accumulate per tick.
-
-        Migrated from: test_multi_interaction.py::test_progressive_benefit_accumulation
-        """
-        env = temporal_env
-
+    def test_progressive_benefit_accumulation(self, multitick_env):
+        """`per_tick` effects accrue on every tick of a multi-tick interaction."""
+        env = multitick_env
         env.reset()
 
-        # Use actual Bed position (randomized on reset)
-        assert "Bed" in env.affordances, "Bed affordance not deployed in test config"
-        env.meters[0, 0] = 0.3  # Start at 30% energy to avoid clamping
-        env.positions[0] = env.affordances["Bed"]
+        energy = _meter(env, "energy")
+        interact = _park(env, REST_AFFORDANCE)
+        env.meters[0, energy] = 0.3  # low, so the +per_tick does not clamp at 1.0
 
-        initial_energy = env.meters[0, 0].item()
+        initial = env.meters[0, energy].item()
 
-        # Bed config: 5 ticks, +7.5% energy per tick (linear)
-        # But also -0.5% depletion per tick
-        # Net per tick: +7.0%
-        # First INTERACT
-        env.step(torch.tensor([4], device=env.device))
+        for tick in range(1, 3):
+            env.step(torch.tensor([interact], device=env.device))
+            env.positions[0] = env.affordances[REST_AFFORDANCE]
+            gained = env.meters[0, energy].item() - initial
+            assert gained == pytest.approx(REST_NET_ENERGY_PER_TICK * tick, abs=0.02), f"after {tick} tick(s)"
 
-        energy_after_1 = env.meters[0, 0].item()
-        # Expected: +0.075 (benefit) - 0.005 (depletion) + cascading ~= +0.070
-        assert abs((energy_after_1 - initial_energy) - 0.070) < 0.01
+        # Progress is mid-interaction, not complete: no completion effect yet.
+        assert env.interaction_progress[0] == 2
 
-        # Second INTERACT
-        env.step(torch.tensor([4], device=env.device))
-
-        energy_after_2 = env.meters[0, 0].item()
-        assert abs((energy_after_2 - initial_energy) - 0.140) < 0.02
-
-    def test_completion_bonus(self, temporal_env):
-        """Verify 25% bonus on full completion.
-
-        Migrated from: test_multi_interaction.py::test_completion_bonus
-        """
-        env = temporal_env
-
+    def test_completion_bonus(self, multitick_env):
+        """`on_completion` effects land once the full duration is served."""
+        env = multitick_env
         env.reset()
 
-        # Use actual Bed position (randomized on reset)
-        assert "Bed" in env.affordances, "Bed affordance not deployed in test config"
-        env.meters[0, 0] = 0.3  # Start at 30% energy
-        env.meters[0, 6] = 0.7  # Start at 70% health (to see bonus)
-        env.positions[0] = env.affordances["Bed"]
+        energy, health = _meter(env, "energy"), _meter(env, "health")
+        interact = _park(env, REST_AFFORDANCE)
+        env.meters[0, energy] = 0.1
+        env.meters[0, health] = 0.5
 
-        initial_energy = env.meters[0, 0].item()
-        initial_health = env.meters[0, 6].item()
+        initial_energy = env.meters[0, energy].item()
+        initial_health = env.meters[0, health].item()
 
-        # Complete all 5 ticks
-        for _ in range(5):
-            env.step(torch.tensor([4], device=env.device))
+        for _ in range(REST_DURATION):
+            env.step(torch.tensor([interact], device=env.device))
+            env.positions[0] = env.affordances[REST_AFFORDANCE]
 
-        final_energy = env.meters[0, 0].item()
-        final_health = env.meters[0, 6].item()
+        expected_energy = REST_NET_ENERGY_PER_TICK * REST_DURATION + REST_COMPLETION_ENERGY
+        assert env.meters[0, energy].item() - initial_energy == pytest.approx(expected_energy, abs=0.03)
 
-        # Total energy: 5 × 7.5% (linear) + 12.5% (completion) = 50%
-        # Minus 5 × 0.5% depletion = -2.5%
-        # Net: ~47.5%, but cascading effects apply
-        # Check that energy increased significantly (at least 40%)
-        assert (final_energy - initial_energy) > 0.40
+        # health has no per_tick effect at all, so its entire gain is the
+        # completion bonus net of passive decay — this dies if on_completion
+        # stops firing, which the energy assertion alone would not catch.
+        expected_health = REST_COMPLETION_HEALTH - HEALTH_DECAY_PER_TICK * REST_DURATION
+        assert env.meters[0, health].item() - initial_health == pytest.approx(expected_health, abs=0.01)
 
-        # Health bonus only on completion: +2%
-        # (cascading effects from energy/satiation also apply)
-        assert (final_health - initial_health) > 0.015
-
-    def test_multi_tick_job_completion(self, temporal_env):
-        """Verify Job completion over 4 ticks with money gain.
-
-        Migrated from: test_temporal_integration.py::test_multi_tick_job_completion
-        """
-        env = temporal_env
-
+    def test_multi_tick_job_completion(self, multitick_env):
+        """Progress advances 1..duration-1 then resets to 0 on completion."""
+        env = multitick_env
         env.reset()
 
-        # Use actual Job position (randomized on reset)
-        assert "Job" in env.affordances, "Job affordance not deployed in test config"
-        env.positions[0] = env.affordances["Job"]
-        env.meters[0, 3] = 0.5  # Start with $50
-        env.time_of_day = 10  # 10am (Job open 8-18)
+        money = _meter(env, "money")
+        interact = _park(env, JOB_AFFORDANCE, hour=JOB_OPEN_HOUR, money=50.0)
+        initial_money = env.meters[0, money].item()
 
-        initial_money = env.meters[0, 3].item()
+        for tick in range(JOB_DURATION):
+            env.step(torch.tensor([interact], device=env.device))
+            env.positions[0] = env.affordances[JOB_AFFORDANCE]
+            env.time_of_day = JOB_OPEN_HOUR
 
-        # Complete 4 ticks of Job
-        for i in range(4):
-            env.step(torch.tensor([4], device=env.device))  # INTERACT
-            # Progress: 1, 2, 3, then 0 (completes on 4th)
-            if i < 3:
-                assert env.interaction_progress[0] == (i + 1)
+            if tick < JOB_DURATION - 1:
+                assert env.interaction_progress[0] == tick + 1, f"tick {tick}"
             else:
-                assert env.interaction_progress[0] == 0  # Completed
+                assert env.interaction_progress[0] == 0, "progress resets on completion"
 
-        final_money = env.meters[0, 3].item()
+        # money has zero depletion, so this is exact rather than approximate.
+        expected = JOB_PAY_PER_TICK * JOB_DURATION + JOB_COMPLETION_PAY
+        assert env.meters[0, money].item() - initial_money == pytest.approx(expected, abs=0.001)
 
-        # Job pays: 4 × $5.625 (linear) + $5.625 (completion) = $28.125 total
-        # Normalized: +0.28125
-        assert (final_money - initial_money) > 0.25  # At least 25% gain
+    def test_money_charged_per_tick(self, multitick_env):
+        """`costs_per_tick` is charged every tick, not once at completion.
 
-    def test_money_charged_per_tick(self, temporal_env):
-        """Verify cost charged each tick, not on completion.
-
-        Migrated from: test_multi_interaction.py::test_money_charged_per_tick
+        Deliberately stops SHORT of the duration: if the charge were taken on
+        completion instead, the balance here would still be the opening one.
         """
-        env = temporal_env
-
+        env = multitick_env
         env.reset()
 
-        # Use actual Bed position (randomized on reset)
-        assert "Bed" in env.affordances, "Bed affordance not deployed in test config"
-        env.positions[0] = env.affordances["Bed"]
-        env.meters[0, 3] = 0.50  # Start with $50
+        money = _meter(env, "money")
+        interact = _park(env, REST_AFFORDANCE, money=50.0)
 
-        # Bed costs $1/tick = 0.01 normalized
-        env.step(torch.tensor([4], device=env.device))
+        for tick in range(1, REST_DURATION):  # never reaches completion
+            env.step(torch.tensor([interact], device=env.device))
+            env.positions[0] = env.affordances[REST_AFFORDANCE]
+            expected = 50.0 - REST_MONEY_PER_TICK * tick
+            assert env.meters[0, money].item() == pytest.approx(expected, abs=0.001), f"after {tick} tick(s)"
 
-        money_after_1 = env.meters[0, 3].item()
-        assert abs(money_after_1 - 0.49) < 0.001  # $50 - $1 = $49
+    def test_interaction_progress_is_tracked_but_not_observable(self, multitick_env):
+        """Progress advances as engine state — and is NOT in the observation.
 
-        env.step(torch.tensor([4], device=env.device))
-
-        money_after_2 = env.meters[0, 3].item()
-        assert abs(money_after_2 - 0.48) < 0.001  # $49 - $1 = $48
-
-    def test_interaction_progress_in_observations(self, temporal_env):
-        """Verify interaction progress (0.0-1.0) appears in observations.
-
-        New test: Validates that agents can observe their own progress.
+        This test was `test_interaction_progress_in_observations` and read
+        `obs[0, -2]`, expecting progress/10.0 in the last-but-one slot. The
+        temporal observation block is now exactly four features (sin, cos,
+        day_progress, is_night) — see `observation_encoder._build_temporal_observation`
+        — so `interaction_progress` is engine state with no VFS variable and no
+        observation mark. An author cannot declare it observable from a config
+        pack. That gap is filed separately; it is asserted here rather than
+        quietly dropped, so the day it becomes observable this test fails and
+        says so.
         """
-        env = temporal_env
-
+        env = multitick_env
         obs = env.reset()
 
-        # Use actual Bed position (randomized on reset)
-        assert "Bed" in env.affordances, "Bed affordance not deployed in test config"
-        env.positions[0] = env.affordances["Bed"]
-        env.meters[0, 0] = 0.3  # Low energy
+        interact = _park(env, REST_AFFORDANCE)
+        temporal = env.observation_activity.group_slices["temporal"]
+        assert obs[0, temporal].numel() == 4, "temporal block is sin/cos/day_progress/is_night"
 
-        # Initial observation: no progress (interaction_progress at -2, lifetime at -1)
-        progress_feature = obs[0, -2].cpu().item()
-        assert progress_feature == 0.0
+        for tick in range(1, 4):
+            obs, _, _, _ = env.step(torch.tensor([interact], device=env.device))
+            env.positions[0] = env.affordances[REST_AFFORDANCE]
+            assert env.interaction_progress[0] == tick
 
-        # After 1 tick: progress = 1 (raw) / 10.0 (normalization) = 0.1
-        obs, _, _, _ = env.step(torch.tensor([4], device=env.device))
-        progress_feature = obs[0, -2].cpu().item()
-        assert progress_feature == pytest.approx(0.1, abs=0.01)
+            # The progress value appears nowhere in the observation.
+            assert not torch.isclose(obs[0], torch.full_like(obs[0], tick / 10.0), atol=1e-6).any(), (
+                "interaction progress is unexpectedly present in the observation — "
+                "if it became observable, update this test and close the filed gap"
+            )
 
-        # After 2 ticks: progress = 2 / 10.0 = 0.2
-        obs, _, _, _ = env.step(torch.tensor([4], device=env.device))
-        progress_feature = obs[0, -2].cpu().item()
-        assert progress_feature == pytest.approx(0.2, abs=0.01)
-
-        # After 3 ticks: progress = 3 / 10.0 = 0.3
-        obs, _, _, _ = env.step(torch.tensor([4], device=env.device))
-        progress_feature = obs[0, -2].cpu().item()
-        assert progress_feature == pytest.approx(0.3, abs=0.01)
-
-    def test_completion_bonus_timing(self, temporal_env):
-        """Verify completion bonus applied ONLY on final tick.
-
-        New test: Validates that completion bonus doesn't leak into linear ticks.
-        """
-        env = temporal_env
-
+    def test_completion_bonus_timing(self, multitick_env):
+        """The completion bonus lands on the final tick ONLY, not earlier."""
+        env = multitick_env
         env.reset()
 
-        # Use actual Job position (randomized on reset)
-        assert "Job" in env.affordances, "Job affordance not deployed in test config"
-        env.positions[0] = env.affordances["Job"]
-        env.meters[0, 3] = 0.5  # Start with $50
-        env.time_of_day = 10  # 10am (Job open)
+        money = _meter(env, "money")
+        interact = _park(env, JOB_AFFORDANCE, hour=JOB_OPEN_HOUR, money=50.0)
 
-        # Track money after each tick
-        money_values = [0.5]  # Initial
+        balances = [env.meters[0, money].item()]
+        for _ in range(JOB_DURATION):
+            env.step(torch.tensor([interact], device=env.device))
+            env.positions[0] = env.affordances[JOB_AFFORDANCE]
+            env.time_of_day = JOB_OPEN_HOUR
+            balances.append(env.meters[0, money].item())
 
-        # Job: 4 ticks, $5.625/tick (linear) + $5.625 bonus (completion)
-        for i in range(4):
-            env.step(torch.tensor([4], device=env.device))
-            money_values.append(env.meters[0, 3].item())
+        # Every tick before the last pays exactly the per-tick rate.
+        for tick in range(1, JOB_DURATION):
+            gain = balances[tick] - balances[tick - 1]
+            assert gain == pytest.approx(JOB_PAY_PER_TICK, abs=0.001), f"tick {tick} should be linear only"
 
-        # Verify linear accumulation
-        # Tick 1: $50 + $5.625 = $55.625 (normalized: 0.55625)
-        assert money_values[1] == pytest.approx(0.55625, abs=0.001)
-
-        # Tick 2: $55.625 + $5.625 = $61.25 (normalized: 0.6125)
-        assert money_values[2] == pytest.approx(0.6125, abs=0.001)
-
-        # Tick 3: $61.25 + $5.625 = $66.875 (normalized: 0.66875)
-        assert money_values[3] == pytest.approx(0.66875, abs=0.001)
-
-        # Tick 4: $66.875 + $5.625 (linear) + $5.625 (bonus) = $78.125
-        # Normalized: 0.78125
-        assert money_values[4] == pytest.approx(0.78125, abs=0.001)
-
-        # Verify completion bonus magnitude
-        bonus_tick_gain = money_values[4] - money_values[3]
-        linear_tick_gain = money_values[1] - money_values[0]
-
-        # Completion tick should be ~2x linear tick (linear + bonus)
-        assert bonus_tick_gain > (linear_tick_gain * 1.9)
+        # The final tick pays the per-tick rate PLUS the completion bonus.
+        final_gain = balances[JOB_DURATION] - balances[JOB_DURATION - 1]
+        assert final_gain == pytest.approx(JOB_PAY_PER_TICK + JOB_COMPLETION_PAY, abs=0.001)
+        assert final_gain > balances[1] - balances[0], "completion tick must exceed a linear tick"
 
 
 # =============================================================================
@@ -457,69 +511,57 @@ class TestMultiTickInteractions:
 class TestEarlyExitMechanics:
     """Early exit from multi-tick interactions."""
 
-    def test_early_exit_from_interaction(self, temporal_env):
-        """Verify agent can exit early and keep linear benefits.
-
-        Migrated from: test_temporal_integration.py::test_early_exit_from_interaction
-        """
-        env = temporal_env
-
+    def test_early_exit_keeps_linear_benefit_without_bonus(self, multitick_env):
+        """Leaving before the duration keeps per-tick gains and forfeits the bonus."""
+        env = multitick_env
         env.reset()
 
-        # Use actual Bed position (randomized on reset)
-        assert "Bed" in env.affordances, "Bed affordance not deployed in test config"
-        env.meters[0, 0] = 0.3  # Low energy
-        env.positions[0] = env.affordances["Bed"]
+        energy, health = _meter(env, "energy"), _meter(env, "health")
+        interact = _park(env, REST_AFFORDANCE)
+        env.meters[0, energy] = 0.1
+        env.meters[0, health] = 0.5
+        initial_energy = env.meters[0, energy].item()
+        initial_health = env.meters[0, health].item()
 
-        initial_energy = env.meters[0, 0].item()
+        served = 2
+        for _ in range(served):  # REST_DURATION is 5, so this is an early exit
+            env.step(torch.tensor([interact], device=env.device))
+            env.positions[0] = env.affordances[REST_AFFORDANCE]
+        assert env.interaction_progress[0] == served
 
-        # Do 2 ticks of Bed (requires 5 for completion)
-        env.step(torch.tensor([4], device=env.device))
-        env.step(torch.tensor([4], device=env.device))
-        assert env.interaction_progress[0] == 2
+        gained = env.meters[0, energy].item() - initial_energy
+        assert gained == pytest.approx(REST_NET_ENERGY_PER_TICK * served, abs=0.02)
 
-        energy_after_2 = env.meters[0, 0].item()
+        # health only moves on completion, so it must be pure decay here. This is
+        # the assertion that actually distinguishes early exit from completion.
+        assert env.meters[0, health].item() - initial_health == pytest.approx(-HEALTH_DECAY_PER_TICK * served, abs=0.005)
 
-        # Move away - early exit from interaction
-        # Progress tracking state persists until next interaction (implicit reset)
-        env.step(torch.tensor([0], device=env.device))  # UP
+        # Walking away does not retroactively grant the completion bonus.
+        env.step(torch.tensor([0], device=env.device))  # a movement action
+        assert env.meters[0, health].item() - initial_health < REST_COMPLETION_HEALTH
 
-        # Key behavior: Energy should have increased from 2 ticks (no completion bonus)
-        # Each Bed tick gives ~7% energy, so 2 ticks ≈ 14%
-        assert (energy_after_2 - initial_energy) > 0.1
-
-        # Verify no completion bonus was applied (would give extra 25%)
-        # With completion bonus, gain would be ~21%, without it's ~14%
-        assert (energy_after_2 - initial_energy) < 0.18
-
-    def test_early_exit_keeps_progress(self, temporal_env):
-        """Verify agent keeps linear benefits if exiting early.
-
-        Migrated from: test_multi_interaction.py::test_early_exit_keeps_progress
-        """
-        env = temporal_env
-
+    def test_early_exit_progress_does_not_advance_off_affordance(self, multitick_env):
+        """Progress accrues only while the agent is actually on the affordance."""
+        env = multitick_env
         env.reset()
 
-        # Use actual Bed position (randomized on reset)
-        assert "Bed" in env.affordances, "Bed affordance not deployed in test config"
-        env.meters[0, 0] = 0.3  # Start at 30% energy
-        env.positions[0] = env.affordances["Bed"]
+        interact = _park(env, REST_AFFORDANCE)
 
-        initial_energy = env.meters[0, 0].item()
+        served = 3
+        for _ in range(served):
+            env.step(torch.tensor([interact], device=env.device))
+            env.positions[0] = env.affordances[REST_AFFORDANCE]
+        assert env.interaction_progress[0] == served
 
-        # Do 3 ticks, then move away
-        for _ in range(3):
-            env.step(torch.tensor([4], device=env.device))
-
-        energy_after_3 = env.meters[0, 0].item()
-
-        # Move away (UP action)
-        env.step(torch.tensor([0], device=env.device))
-
-        # Energy should be at approximately 3 × 7% = 21% gain
-        # (3 ticks of benefit minus depletion, no completion bonus)
-        assert abs((energy_after_3 - initial_energy) - 0.21) < 0.03
+        # Step away and keep pressing INTERACT on empty ground: no further progress.
+        env.positions[0] = (
+            torch.tensor([0, 0], device=env.device)
+            if not torch.equal(env.affordances[REST_AFFORDANCE], torch.tensor([0, 0], device=env.device))
+            else torch.tensor([1, 1], device=env.device)
+        )
+        before = int(env.interaction_progress[0])
+        env.step(torch.tensor([interact], device=env.device))
+        assert env.interaction_progress[0] <= before, "progress must not advance off the affordance"
 
 
 # =============================================================================
@@ -530,68 +572,39 @@ class TestEarlyExitMechanics:
 class TestMultiAgentTemporal:
     """Multi-agent temporal mechanics with independent states."""
 
-    def test_multi_agent_temporal_interactions(self, cpu_device, cpu_env_factory):
-        """Verify 3 agents with independent temporal states.
-
-        New test: Validates that each agent has independent interaction progress.
-        """
-        env = cpu_env_factory(config_dir=Path("configs/default_curriculum"), level_name="L3_temporal_mechanics", num_agents=3)
-
+    def test_multi_agent_temporal_interactions(self, cpu_env_factory, temporal_pack_dir):
+        """Three agents hold independent interaction progress in one vectorized step."""
+        env = cpu_env_factory(config_dir=temporal_pack_dir, level_name=TEMPORAL_LEVEL, num_agents=3)
         env.reset()
 
-        # Use actual affordance positions (randomized on reset)
-        assert "Bed" in env.affordances, "Bed affordance not deployed in test config"
-        assert "Job" in env.affordances, "Job affordance not deployed in test config"
+        interact = _interact_idx(env)
+        money = _meter(env, "money")
 
-        # Agent 0: On Bed (5 ticks), do 2 ticks
-        env.positions[0] = env.affordances["Bed"]
-        env.meters[0, 0] = 0.3  # Low energy
+        rest_pos = env.affordances[REST_AFFORDANCE]
+        job_pos = env.affordances[JOB_AFFORDANCE]
+        idle_pos = _free_cell(env)  # NOT a hardcoded cell: deployment moves between resets
 
-        # Agent 1: On Job (4 ticks), do 3 ticks
-        env.positions[1] = env.affordances["Job"]
-        env.meters[1, 3] = 0.5  # $50
-        env.time_of_day = 10  # Job open
+        env.positions[0] = rest_pos  # multi-tick, duration REST_DURATION
+        env.positions[1] = job_pos  # multi-tick, duration JOB_DURATION
+        env.positions[2] = idle_pos  # nothing here
+        env.meters[:, money] = 500.0
+        env.time_of_day = JOB_OPEN_HOUR
 
-        # Agent 2: Not interacting (move to empty position)
-        env.positions[2] = torch.tensor([3, 3], device=env.device)
+        steps = 3  # fewer than either duration, so nobody completes and resets
+        for step in range(steps):
+            env.step(torch.tensor([interact, interact, interact], device=env.device))
+            env.positions[0] = rest_pos
+            env.positions[1] = job_pos
+            env.positions[2] = idle_pos
+            env.time_of_day = JOB_OPEN_HOUR
 
-        # Execute 3 steps
-        for i in range(3):
-            # Agent 0: INTERACT only first 2 ticks, then move away
-            agent0_action = 4 if i < 2 else 0  # INTERACT for i=0,1, then UP
-            actions = torch.tensor(
-                [
-                    agent0_action,  # Agent 0: INTERACT twice, then UP
-                    4,  # Agent 1: INTERACT (Job) all 3 times
-                    0,  # Agent 2: UP (no interaction)
-                ],
-                device=env.device,
-            )
+            assert env.interaction_progress[0] == step + 1, "agent 0 progresses on rest"
+            assert env.interaction_progress[1] == step + 1, "agent 1 progresses on job"
+            assert env.interaction_progress[2] == 0, "agent 2 stands on nothing"
 
-            obs, _, _, _ = env.step(actions)
-
-            # Verify individual progress
-            if i < 2:
-                # Agent 0: Should show progress on Bed
-                assert env.interaction_progress[0] == (i + 1)
-                # Progress normalized by /10.0, not by tick count
-                assert obs[0, -2] == pytest.approx((i + 1) / 10.0, abs=0.01)
-
-            # Agent 1: Should show progress on Job
-            assert env.interaction_progress[1] == (i + 1)
-            # Progress normalized by /10.0, not by tick count
-            assert obs[1, -2] == pytest.approx((i + 1) / 10.0, abs=0.01)
-
-            # Agent 2: Should show no progress
-            assert env.interaction_progress[2] == 0
-            assert obs[2, -2] == 0.0
-
-        # Final verification - agents have independent interaction states
-        # Agent 0: Moved away after 2 interactions (progress behavior tested above)
-        # Agent 1: Completed 3 interactions
-        assert env.interaction_progress[1] == 3  # Job progress
-        # Agent 2: Never interacted
-        assert env.interaction_progress[2] == 0  # No progress
+        assert env.interaction_progress[0] == steps
+        assert env.interaction_progress[1] == steps
+        assert env.interaction_progress[2] == 0
 
 
 # =============================================================================

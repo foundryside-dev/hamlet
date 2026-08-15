@@ -19,7 +19,6 @@ YAML, by test_recurrent_bptt_runtime.py.
 
 from pathlib import Path
 
-import pytest
 import torch
 
 from tests.test_townlet.helpers.config_builder import mutate_curriculum_yaml, mutate_stratum_yaml
@@ -28,7 +27,9 @@ from townlet.curriculum.static import StaticCurriculum
 from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
 from townlet.population.vectorized import VectorizedPopulation
 
-pytestmark = pytest.mark.slow
+# NOT `slow`-marked. This file runs in seconds; the marker (with `-m "not slow"`
+# in pyproject's default addopts) is what hid its failures from every gate
+# reading — see hamlet-a0832f9004.
 
 # =============================================================================
 # TEST CLASS 1: LSTM Hidden State Persistence

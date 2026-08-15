@@ -149,3 +149,41 @@ def mutate_drive_yaml(config_dir: Path, mutator: Callable[[dict], None]) -> None
     mutator(data)
     with open(drive_yaml, "w") as handle:
         yaml.safe_dump(data, handle, sort_keys=False)
+
+
+def copy_config_pack(src_dir: Path, tmp_path: Path, name: str = "pack") -> Path:
+    """Copy a whole shipped config pack into tmp_path so a test can mutate it.
+
+    The other helpers here build a synthetic single-level pack from the
+    `configs/test/model_config` skeleton. Some behaviour is only reachable in a
+    real multi-level pack (temporal mechanics live in L3), so those tests copy
+    the shipped pack and re-parameterize it rather than reconstructing one.
+    """
+    dest = tmp_path / name
+    shutil.copytree(src_dir, dest)
+    return dest
+
+
+def mutate_affordances_yaml(
+    config_dir: Path,
+    mutator: Callable[[dict], None],
+    *,
+    level_name: str | None = None,
+) -> None:
+    """Load a level's affordances.yaml, apply mutator, and write back.
+
+    `level_name` selects the level in a multi-level pack; it defaults to the
+    primary level, matching the other mutators. Note that the affordance
+    *vocabulary* is cross-validated against environment.yaml — the compiler
+    rejects an added or renamed affordance with AFFORDANCE_VOCAB_MISMATCH — so
+    a mutator may change an affordance's parameters but must not change the set
+    of names.
+    """
+    level_dir = (config_dir / "levels" / level_name) if level_name else _get_primary_level_dir(config_dir)
+    affordances_yaml = level_dir / "affordances.yaml"
+    if not affordances_yaml.exists():
+        raise FileNotFoundError(f"affordances.yaml not found in {level_dir}")
+    data = yaml.safe_load(affordances_yaml.read_text())
+    mutator(data)
+    with open(affordances_yaml, "w") as handle:
+        yaml.safe_dump(data, handle, sort_keys=False)

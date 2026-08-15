@@ -157,22 +157,29 @@ def test_training_unroll_threads_hidden_state_for_configured_sequence_length(tmp
     )
 
 
-def test_initial_hidden_is_zero_and_forward_requires_hidden() -> None:
+def test_initial_hidden_is_zero_and_forward_requires_hidden(pomdp_env) -> None:
     """Post-WS-1(b) network API: the network owns no hidden state.
 
     `initial_hidden(batch_size, device)` is the only factory, and `forward`
     demands the hidden state explicitly - a one-argument call must fail at
     argument binding, so no caller can silently fall back to stale or zero
     memory.
+
+    The compiled spec/activity are passed because they are required parameters:
+    this construction previously omitted both and survived only by never
+    reaching a forward pass.
     """
+    bars = pomdp_env.observation_activity.group_slices["bars"]
     network = RecurrentSpatialQNetwork(
-        action_dim=8,
+        action_dim=pomdp_env.action_dim,
         window_size=5,
         position_dim=2,
-        bars_dim=8,
-        num_affordance_types=14,
+        bars_dim=bars.stop - bars.start,
+        num_affordance_types=pomdp_env.num_affordance_types,
         enable_temporal_features=False,
         hidden_dim=64,
+        observation_spec=pomdp_env.observation_spec,
+        observation_activity=pomdp_env.observation_activity,
     )
 
     hidden = network.initial_hidden(4, torch.device("cpu"))
@@ -183,6 +190,34 @@ def test_initial_hidden_is_zero_and_forward_requires_hidden() -> None:
 
     with pytest.raises(TypeError):
         network(torch.zeros(2, 165))  # hidden is required, not optional
+
+
+def test_observation_spec_is_required_at_construction(pomdp_env) -> None:
+    """The spec is mandatory at BINDING, not discovered on the first forward pass.
+
+    It used to default to None, so a network built without one constructed
+    happily, moved to a device, and only then raised inside `forward()` —
+    potentially mid-training. A parameter the object cannot function without is
+    not optional (No-Defaults Principle); the failure now lands at the authoring
+    mistake instead of arbitrarily far downstream.
+    """
+    bars = pomdp_env.observation_activity.group_slices["bars"]
+    kwargs = {
+        "action_dim": pomdp_env.action_dim,
+        "window_size": 5,
+        "position_dim": 2,
+        "bars_dim": bars.stop - bars.start,
+        "num_affordance_types": pomdp_env.num_affordance_types,
+        "enable_temporal_features": False,
+        "hidden_dim": 64,
+        "observation_spec": pomdp_env.observation_spec,
+        "observation_activity": pomdp_env.observation_activity,
+    }
+
+    for omitted in ("observation_spec", "observation_activity"):
+        missing = {k: v for k, v in kwargs.items() if k != omitted}
+        with pytest.raises(TypeError):
+            RecurrentSpatialQNetwork(**missing)
 
 
 def test_training_update_does_not_clobber_rollout_hidden_state(tmp_path: Path, monkeypatch) -> None:

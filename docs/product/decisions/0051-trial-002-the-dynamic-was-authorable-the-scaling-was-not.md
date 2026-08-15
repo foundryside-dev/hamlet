@@ -75,14 +75,34 @@ in the compiled universe — the echoed raw config — and in no derived artifac
 declared `integer` holds `33.33300018310547` without complaint. The DTO says so itself
 (`environment_config.py:27`: *"Metadata only for UI; does not affect obs_dim."*).
 
-**3. The real scaling gap is structural and larger than "no log for money."** All ten `vfs.md`
-§9.2 normalisation kinds are implemented and reachable at runtime — `PDR-0047` was right about
-that. But `universe/compilers/observation.py::_meter_normalization` returns **one**
-`NormalizationSpec(kind="minmax", …)` for the *entire meter block*, chosen by the compiler from
-declared bounds. So **no meter can carry a per-meter normalizer, and eight of the ten kinds are
-unreachable for bars no matter what any pack declares.** A meter cannot declare normalization
-directly either — `environment.yaml` `meters[]` is `extra="forbid"` and rejects the key.
-Declaring it on the VFS side validates and compiles green, and is then silently discarded.
+**3. The real scaling gap is structural and larger than "no log for money" — and larger than
+bars.** All ten `vfs.md` §9.2 normalisation kinds are implemented in
+`vfs/observation_builder.py::apply_normalization` and live in production. But **no pack authoring
+path was found that selects any of the other eight**, for a bar or for anything else. Three
+surfaces were probed and all three fail, in three different ways:
+
+- **A meter cannot declare normalization at all.** `environment.yaml` `meters[]` is
+  `extra="forbid"` and rejects the key: *"Extra inputs are not permitted"*. Honest failure.
+- **The meter block admits exactly one compiler-chosen spec.**
+  `universe/compilers/observation.py::_meter_normalization` returns **one**
+  `NormalizationSpec(kind="minmax", …)` for the *entire* block, built from declared bounds. No
+  meter can carry its own kind.
+- **`variables_reference.yaml` accepts the declaration and discards it.** A `VariableDef` with
+  `normalization: {kind: log_scaled, …}` validates and compiles green — and produces no
+  observation field whatsoever. A **non-meter** agent variable declared `observable: true` this
+  way appears in `vfs_observation_marks` as `{'agent': {'wealth_index'}}` and in the field list
+  **not at all**. `extract_observation_marks` (`compilers/vfs.py:124`) carries only the
+  observable-id set; normalization never travels.
+
+The one path that *does* create observation fields — `environment.yaml` `variables:` — is capped
+at `method: clip|normalize|standardize`, mapping to `minmax|zscore` only
+(`_convert_normalization`). **So the ceiling is 2 of 10 everywhere, not just for bars.** Every
+emitted kind in every pack probed was `minmax`.
+
+> This paragraph originally claimed all ten kinds were "reachable at runtime" and scoped the gap
+> to bars. That was true of the *implementation* and false of the *authoring surface*, and it
+> under-scoped the issue it filed. Corrected here after probing a non-meter variable — the same
+> leg-2 discipline applied to my own write-up.
 
 The consequence is not cosmetic. With `bounds [1, 1e6]`, the observed money value is linear to
 six decimal places, so the whole operating range 1 → 100,000 is crushed into `[0, 0.0999]` —
@@ -123,7 +143,14 @@ zero — and the meter block admits exactly one compiler-chosen normalizer.* The
 support has to exist before anything can select into it.
 
 **2. Two issues filed by this PDR**, both measured, both with reproductions in the pack READMEs:
-per-meter normalization, and effects surviving episode reset.
+`hamlet-3d3039f340` (per-meter normalization, scoped to the full 2-of-10 ceiling after the
+correction in result 3) and `hamlet-d76684f549` (effects surviving episode reset).
+
+**2a. One negative result, recorded because it was checked.** `WORK.interactions.on_start`'s
+`modify: target.bar.money → money + 0.5` in the *shipped* `configs/simple` pack **does fire**
+(money `0.5 → 1.0` on INTERACT). It was invisible in the trial pack only because the
+`business_cycle` effect overwrote it in the same tick. Not a third inert surface — the affordance
+interaction path is live, which is also what makes money B's dynamic authorable at all.
 
 **3. Reading `PDR-0047`'s "the scalings vocabulary is already built" claim correctly.** It is
 true of the *runtime* and false of the *bar authoring path*. Both halves matter and the PDR only

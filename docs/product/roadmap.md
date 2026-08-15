@@ -1,4 +1,4 @@
-# Roadmap — HAMLET / Townlet            Updated: 2026-08-15, fifteenth checkpoint (`PDR-0043`: merge gate 1 — CI restoration — EXECUTED and in verifying; the measured gate set widened 4→6, all green locally; the first CI run in this branch's history fires on the owner's push. **No horizon change**) · prior: 2026-08-15, thirteenth checkpoint (`PDR-0041`: the FIRST KNOCKDOWN is COMPLETE — the substrate→observation-dim seam is cut, the harness adjudicated it end-to-end, and the strangler method is proven once. **No horizon change**) · prior: 2026-08-14, eleventh checkpoint (`PDR-0038`, `PDR-0039`: the owner cleared the whole escalation queue; the README is rewritten and ships branch-scoped; the merge to `main` gains two named gates, CI restoration and README re-verification. New Later bet: adopt wardline as hygiene) · prior: 2026-08-14 (`PDR-0035`–`PDR-0037`: the first knockdown unit is DECIDED — the substrate→observation-dim seam — and content 5's order is changed by a blocking finding in the harness. One Next bet narrowed by one item. **No horizon change**) · prior: 2026-08-13 (harness accepted, `PDR-0032`–`PDR-0034`) · prior: 2026-08-13 (oracle pinned, `PDR-0030`)
+# Roadmap — HAMLET / Townlet            Updated: 2026-08-15, seventeenth checkpoint (`PDR-0048`: **merge gate 2 SATISFIED** — both gates now stand, both commit-scoped, and gate 2 is already owed again at merge; `PDR-0047`: the owner's authoring-grammar ruling gives the Next bet *"close the you-must-write-Python gaps"* its first decided unit. **No horizon change**) · prior: 2026-08-15, fifteenth checkpoint (`PDR-0043`: merge gate 1 — CI restoration — EXECUTED and in verifying; the measured gate set widened 4→6, all green locally; the first CI run in this branch's history fires on the owner's push. **No horizon change**) · prior: 2026-08-15, thirteenth checkpoint (`PDR-0041`: the FIRST KNOCKDOWN is COMPLETE — the substrate→observation-dim seam is cut, the harness adjudicated it end-to-end, and the strangler method is proven once. **No horizon change**) · prior: 2026-08-14, eleventh checkpoint (`PDR-0038`, `PDR-0039`: the owner cleared the whole escalation queue; the README is rewritten and ships branch-scoped; the merge to `main` gains two named gates, CI restoration and README re-verification. New Later bet: adopt wardline as hygiene) · prior: 2026-08-14 (`PDR-0035`–`PDR-0037`: the first knockdown unit is DECIDED — the substrate→observation-dim seam — and content 5's order is changed by a blocking finding in the harness. One Next bet narrowed by one item. **No horizon change**) · prior: 2026-08-13 (harness accepted, `PDR-0032`–`PDR-0034`) · prior: 2026-08-13 (oracle pinned, `PDR-0030`)
 
 > Sequencing, WSJF / cost-of-delay, and dated forecasts are produced by
 > /axiom-program-management. This file records bets as INTENT, not a delivery
@@ -84,6 +84,17 @@
   the merge, after the current knockdown. (2) **README re-verification** by the same method that
   produced it, not a re-read — its rough-edges and CI sections describe conditions the recovery
   intends to *fix*, and merging them unchanged converts honest status into stale claims on `main`.
+
+  · **BOTH GATES ARE NOW SATISFIED, and both are commit-scoped (`PDR-0048`, 2026-08-15).**
+  Gate 1 closed on remote evidence at `dd94e122` (first CI runs in the branch's history, all
+  three green). Gate 2 — README re-verification **by method** — executed at `1b25c99d`: ten
+  claims had gone stale in one day, every one because the recovery *fixed* the thing being
+  described, and the adversarial pass caught one defect in the new draft as well. **Neither gate
+  is banked.** `PDR-0039` fires the re-verification *at the merge, unconditionally*, and three
+  commits have landed since `1b25c99d`, so gate 2 is already owed again. The merge itself
+  remains the owner's decision (`PDR-0046`: publication is not undone by pushing again), and the
+  checklist still inherits `PDR-0043` trigger 2 — restore the nightly cron at merge or record
+  the PDR that kills it. **No horizon change.**
 
   · **Gate 1 status (`PDR-0043`, 2026-08-15): EXECUTED, in verifying.** Inputs fixed first per
   the issue's own ordering (two drifted packs repaired; the previously-unknown second failing

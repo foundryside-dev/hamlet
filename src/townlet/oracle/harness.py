@@ -138,14 +138,82 @@ def _final_exception_text(stderr: str) -> str | None:
     return "\n".join(lines) if lines else None
 
 
-def run_side(*, driver: Path, src: Path, params: RunParams, out: Path, repo_root: Path) -> SideFailure | None:
-    """Run the driver under one side's src. None on success, SideFailure otherwise."""
+# The oracle side's frozen config root (hamlet-2090c9f16d). Deliberately NOT
+# under configs/: scripts/validate_compiler_cli.py walks that tree recursively,
+# and a fixture deliberately held at an older schema must not be re-validated
+# against the current one.
+ORACLE_PACK_ROOT = "oracle_fixtures"
+
+# Build caches, not declarations — excluded from the drift comparison.
+_PACK_DRIFT_IGNORE = {".compiled", "__pycache__"}
+
+
+def _pack_files(pack_dir: Path) -> dict[str, bytes]:
+    """Every declaration file in a pack, keyed by path relative to the pack."""
+    out: dict[str, bytes] = {}
+    if not pack_dir.is_dir():
+        return out
+    for path in sorted(pack_dir.rglob("*")):
+        if not path.is_file():
+            continue
+        rel = path.relative_to(pack_dir)
+        if _PACK_DRIFT_IGNORE & set(rel.parts):
+            continue
+        out[str(rel)] = path.read_bytes()
+    return out
+
+
+def pack_drift(repo_root: Path, logical_pack: str) -> dict[str, list[str]]:
+    """Byte-level delta between the frozen oracle pack and the live pack.
+
+    Empty dict means the freeze is a provable no-op for this pack. A non-empty
+    result is NOT automatically a defect — once a pack-schema divergence is
+    declared, the two sides read different inputs by design — but it must never
+    be silent, which is the failure mode PDR-0052's reversal trigger names: a
+    frozen pack that has rotted into a different universe still compiles, and
+    then every cell AGREEs about nothing.
+    """
+    frozen = _pack_files(repo_root / ORACLE_PACK_ROOT / logical_pack)
+    live = _pack_files(repo_root / logical_pack)
+    # No live pack means there is no drift question to answer — the run will
+    # fail at compile with a far clearer message than a drift verdict, and
+    # synthetic cells (unit tests) legitimately name packs that exist on
+    # neither side. "Live pack with no frozen counterpart" IS the defect and
+    # is reported below; "neither exists" is a caller error, reported by the
+    # compiler.
+    if not live:
+        return {}
+    delta: dict[str, list[str]] = {}
+    only_frozen = sorted(set(frozen) - set(live))
+    only_live = sorted(set(live) - set(frozen))
+    changed = sorted(f for f in set(frozen) & set(live) if frozen[f] != live[f])
+    if only_frozen:
+        delta["only_in_frozen"] = only_frozen
+    if only_live:
+        delta["only_in_live"] = only_live
+    if changed:
+        delta["differing"] = changed
+    if not frozen:
+        delta["missing_frozen_pack"] = [str(Path(ORACLE_PACK_ROOT) / logical_pack)]
+    return delta
+
+
+def run_side(*, driver: Path, src: Path, params: RunParams, out: Path, repo_root: Path, pack_root: Path) -> SideFailure | None:
+    """Run the driver under one side's src AND its own pack root.
+
+    pack_root is per-side because the oracle pins code but not inputs
+    (hamlet-2090c9f16d): pack DTOs are extra="forbid", so one new key in a
+    live pack crashes every cell on the oracle side for a schema reason.
+    params.pack stays logical — compare_traces requires params equality.
+    """
     cmd = [
         sys.executable,
         "-P",  # do not prepend the script dir to sys.path (stdlib-shadowing guard)
         str(driver),
         "--pack",
         params.pack,
+        "--pack-root",
+        str(pack_root),
         "--level",
         params.level,
         "--num-agents",
@@ -218,7 +286,29 @@ def run_cell(*, repo_root: Path, old_src: Path, new_src: Path, cell: Cell, run_d
     new_out = run_dir / f"{safe}.new.npz"
     expected = cell.expected
 
-    old_failure = run_side(driver=driver, src=old_src, params=cell.params, out=old_out, repo_root=repo_root)
+    old_pack_root = repo_root / ORACLE_PACK_ROOT
+    new_pack_root = repo_root
+
+    drift = pack_drift(repo_root, cell.params.pack)
+    if drift and not cell.declares_pack_divergence:
+        # Undeclared drift: the oracle would be certifying a universe nobody
+        # authors. Fail the cell rather than compare two different worlds.
+        return CellVerdict(
+            kind="HARNESS_ERROR",
+            cell_id=cell.cell_id,
+            detail={
+                "reason": "frozen oracle pack differs from the live pack with no declared divergence",
+                "pack": cell.params.pack,
+                "frozen_root": str(old_pack_root),
+                "delta": drift,
+                "fix": (
+                    "Either re-freeze the fixture (the change was not a schema divergence) or declare "
+                    "the divergence on this cell and register it in docs/oracle/known-divergences.md."
+                ),
+            },
+        )
+
+    old_failure = run_side(driver=driver, src=old_src, params=cell.params, out=old_out, repo_root=repo_root, pack_root=old_pack_root)
     if old_failure is not None:
         # The registered shape (DIV-003 / PDR-0036) is "the oracle side fails
         # to produce a trace, crashing with the registered signature". Every
@@ -267,7 +357,7 @@ def run_cell(*, repo_root: Path, old_src: Path, new_src: Path, cell: Cell, run_d
         # sides crash, and the old side runs first — passing on the old crash
         # alone would certify a knockdown that never happened. The rebuild
         # must actually RUN and produce a valid trace to prove the divergence.
-        new_failure = run_side(driver=driver, src=new_src, params=cell.params, out=new_out, repo_root=repo_root)
+        new_failure = run_side(driver=driver, src=new_src, params=cell.params, out=new_out, repo_root=repo_root, pack_root=new_pack_root)
         if new_failure is not None:
             return CellVerdict(
                 kind="NEW_SIDE_ERROR",
@@ -308,7 +398,7 @@ def run_cell(*, repo_root: Path, old_src: Path, new_src: Path, cell: Cell, run_d
             register_refs=(expected.register_ref,),
         )
 
-    new_failure = run_side(driver=driver, src=new_src, params=cell.params, out=new_out, repo_root=repo_root)
+    new_failure = run_side(driver=driver, src=new_src, params=cell.params, out=new_out, repo_root=repo_root, pack_root=new_pack_root)
     if new_failure is not None:
         detail = {"side": "new", "failure_kind": new_failure.kind, "stderr": new_failure.stderr}
         if expected is not None:

@@ -128,6 +128,21 @@ class Cell:
     params: RunParams
     # None for the overwhelming default: the cell is expected to AGREE.
     expected: RegisteredDivergence | None = None
+    # Names the known-divergences entry under which this cell's FROZEN oracle
+    # pack is allowed to differ from the live pack (hamlet-2090c9f16d).
+    #
+    # Default None is the load-bearing choice: with no declaration, any drift
+    # between oracle_fixtures/<pack> and configs/<pack> fails the cell. Silent
+    # drift is the failure PDR-0052's reversal trigger names — a frozen pack
+    # that has rotted into a different universe still compiles, and then every
+    # cell AGREEs about nothing. Setting this is the recorded human judgement
+    # that the two packs still describe the SAME universe in two schemas; it is
+    # never inferred from the fact that they differ.
+    pack_divergence: str | None = None
+
+    @property
+    def declares_pack_divergence(self) -> bool:
+        return self.pack_divergence is not None
 
     @property
     def cell_id(self) -> str:

@@ -228,7 +228,7 @@ def test_run_side_flags_missing_out_after_zero_exit(tmp_path: Path) -> None:
     fake_driver.write_text("import sys\nsys.exit(0)\n")
     out = tmp_path / "missing.npz"
     params = RunParams(pack="p", level="l", num_agents=1, steps=1, seed=1, device="cpu")
-    result = run_side(driver=fake_driver, src=tmp_path, params=params, out=out, repo_root=tmp_path)
+    result = run_side(driver=fake_driver, src=tmp_path, params=params, out=out, repo_root=tmp_path, pack_root=tmp_path)
     assert result is not None
     assert result.kind == "no_trace"
     assert str(out) in result.stderr
@@ -239,7 +239,7 @@ def test_run_side_reports_a_nonzero_exit_as_crashed(tmp_path: Path) -> None:
     fake_driver.write_text("import sys\nsys.stderr.write('it broke loudly\\n')\nsys.exit(3)\n")
     out = tmp_path / "never.npz"
     params = RunParams(pack="p", level="l", num_agents=1, steps=1, seed=1, device="cpu")
-    result = run_side(driver=fake_driver, src=tmp_path, params=params, out=out, repo_root=tmp_path)
+    result = run_side(driver=fake_driver, src=tmp_path, params=params, out=out, repo_root=tmp_path, pack_root=tmp_path)
     assert result is not None
     assert result.kind == "crashed"
     assert "it broke loudly" in result.stderr
@@ -250,7 +250,7 @@ def test_run_side_succeeds_when_out_exists(tmp_path: Path) -> None:
     fake_driver = tmp_path / "fake_driver.py"
     fake_driver.write_text(f"import sys\nopen({str(out)!r}, 'w').close()\nsys.exit(0)\n")
     params = RunParams(pack="p", level="l", num_agents=1, steps=1, seed=1, device="cpu")
-    result = run_side(driver=fake_driver, src=tmp_path, params=params, out=out, repo_root=tmp_path)
+    result = run_side(driver=fake_driver, src=tmp_path, params=params, out=out, repo_root=tmp_path, pack_root=tmp_path)
     assert result is None
 
 
@@ -266,6 +266,7 @@ def _fake_trace(code_root: str) -> Trace:
         rewards=np.zeros((1, 1), dtype=np.float32),
         dones=np.zeros((1, 1), dtype=bool),
         code_root=code_root,
+        pack_root="/fake/pack-root",
     )
 
 
@@ -368,6 +369,7 @@ def _trace_for(params: RunParams, code_root: str, obs_fill: float = 0.0) -> Trac
         rewards=np.zeros((params.steps, params.num_agents), dtype=np.float32),
         dones=np.zeros((params.steps, params.num_agents), dtype=bool),
         code_root=code_root,
+        pack_root="/fake/pack-root",
     )
 
 
@@ -377,8 +379,14 @@ def _fake_sides(monkeypatch: pytest.MonkeyPatch, *, old: SideFailure | None, new
 
     calls: list[str] = []
 
-    def fake_run_side(*, driver: Path, src: Path, params: RunParams, out: Path, repo_root: Path) -> SideFailure | None:
+    def fake_run_side(*, driver: Path, src: Path, params: RunParams, out: Path, repo_root: Path, pack_root: Path) -> SideFailure | None:
         side = "old" if str(src).endswith("old") else "new"
+        # Each side must resolve its OWN pack root (hamlet-2090c9f16d): the
+        # oracle side reads frozen fixtures, the new side reads live packs.
+        # Asserting it here keeps the wiring from silently regressing to a
+        # single shared root, which is the bug this argument exists to fix.
+        expected_root = repo_root / harness_mod.ORACLE_PACK_ROOT if side == "old" else repo_root
+        assert Path(pack_root) == expected_root, f"{side} side resolved {pack_root}, expected {expected_root}"
         calls.append(side)
         return old if side == "old" else new
 
@@ -640,6 +648,7 @@ def test_matched_path_rejects_a_new_trace_with_inconsistent_shapes(monkeypatch: 
         rewards=good.rewards,
         dones=good.dones,
         code_root=good.code_root,
+        pack_root="/fake/pack-root",
     )
     monkeypatch.setattr(harness_mod, "load_trace", lambda path: truncated)
 

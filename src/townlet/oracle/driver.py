@@ -6,12 +6,21 @@ not exist. It may import stdlib, numpy, torch, and townlet modules present at
 the oracle tag ONLY. It must never reference the oracle module (pinned by
 test_driver_source_is_self_contained).
 
-The trace file it writes is format_version 2, matching
+The trace file it writes is format_version 3, matching
 trace_io.py exactly (keys: obs, rewards, dones, meta; meta carries params,
-hashes, and code_root). trace_io.py cannot be imported here (same rule), so
-the two modules' TRACE_FORMAT_VERSION constants and meta shape are kept in
-sync by hand — see FIX 5, WS-7 fix wave 2. The pairing is pinned by the
-Task 5 integration test.
+hashes, code_root, and pack_root). trace_io.py cannot be imported here (same
+rule), so the two modules' TRACE_FORMAT_VERSION constants and meta shape are
+kept in sync by hand — see FIX 5, WS-7 fix wave 2. The pairing is pinned by
+the Task 5 integration test.
+
+--pack-root exists because the oracle pins CODE and must also pin its INPUTS
+(hamlet-2090c9f16d). Every pack DTO is extra="forbid", so a key added to a
+live pack makes the frozen oracle reject it at Stage 1 and every cell crashes
+for a schema reason rather than yielding a verdict. Each side therefore
+resolves the SAME logical --pack against its OWN root. --pack stays logical
+because it is part of RunParams, which compare_traces requires to be equal
+across sides; the resolved root is recorded beside code_root instead, where
+it is reported but never compared.
 
 Recipe mirrors tests/test_townlet/integration/test_determinism.py::_trace_hash,
 the recipe whose determinism is verified CPU + CUDA at the tag (PDR-0030).
@@ -34,7 +43,7 @@ from townlet.determinism import seed_all
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.universe.compiler import UniverseCompiler
 
-TRACE_FORMAT_VERSION = 2
+TRACE_FORMAT_VERSION = 3
 
 
 def collect_provenance_hashes(universe: object) -> dict[str, str | None]:
@@ -47,8 +56,11 @@ def collect_provenance_hashes(universe: object) -> dict[str, str | None]:
     return {f.name: getattr(universe, f.name) for f in dataclasses.fields(universe) if f.name.endswith("_hash")}  # type: ignore[arg-type]
 
 
-def run_trace(*, pack: str, level: str, num_agents: int, steps: int, seed: int, device: str, out: Path) -> None:
-    universe = UniverseCompiler().compile(Path(pack), primary_level=level, use_cache=False)
+def run_trace(*, pack: str, pack_root: str, level: str, num_agents: int, steps: int, seed: int, device: str, out: Path) -> None:
+    # `pack` is LOGICAL (part of RunParams, compared across sides); `pack_root`
+    # is this side's resolution root and is reported, never compared.
+    resolved_pack = (Path(pack_root) / pack).resolve()
+    universe = UniverseCompiler().compile(resolved_pack, primary_level=level, use_cache=False)
     seed_all(seed)
     env = VectorizedHamletEnv(universe=universe, level_name=level, num_agents=num_agents, device=torch.device(device))
     obs = env.reset()
@@ -83,6 +95,11 @@ def run_trace(*, pack: str, level: str, num_agents: int, steps: int, seed: int, 
         # (FIX 5): if it did, both sides would import the same working-tree
         # townlet and every cell would trivially — and falsely — AGREE.
         "code_root": str(Path(townlet.__file__).resolve().parent.parent),
+        # The pack root this side actually read its config from. Sibling of
+        # code_root and, like it, excluded from compare_traces: the two sides
+        # resolve different roots BY DESIGN once a pack-schema divergence is
+        # declared. Recorded so the choice is never silent.
+        "pack_root": str(Path(pack_root).resolve()),
     }
     np.savez_compressed(
         out,
@@ -95,7 +112,8 @@ def run_trace(*, pack: str, level: str, num_agents: int, steps: int, seed: int, 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Produce one differential-harness trace.")
-    parser.add_argument("--pack", required=True)
+    parser.add_argument("--pack", required=True, help="logical pack path, resolved against --pack-root")
+    parser.add_argument("--pack-root", required=True, help="this side's config root (the oracle side reads frozen fixtures)")
     parser.add_argument("--level", required=True)
     parser.add_argument("--num-agents", type=int, required=True)
     parser.add_argument("--steps", type=int, required=True)
@@ -106,6 +124,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         run_trace(
             pack=args.pack,
+            pack_root=args.pack_root,
             level=args.level,
             num_agents=args.num_agents,
             steps=args.steps,

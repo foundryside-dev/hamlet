@@ -15,8 +15,8 @@ results is how a static sweep launders itself into a measurement).
 """
 
 import shutil
-import tempfile
 import sys
+import tempfile
 import traceback
 from pathlib import Path
 
@@ -31,26 +31,110 @@ HASHES = ("observation_schema_hash", "action_schema_hash", "vfs_hash", "variable
 
 # (id, relative file, dotted path into the YAML, new value, bucket, note)
 PROBES = [
-    # ---- stratum: substrate geometry and observation encoding -------------------
-    ("boundary",            "stratum.yaml", "stratum.substrate.grid.boundary",             "wrap",      "structural", "clamp->wrap: edge behaviour"),
-    ("distance_metric",     "stratum.yaml", "stratum.substrate.grid.distance_metric",      "euclidean", "structural", "manhattan->euclidean"),
-    ("observation_encoding","stratum.yaml", "stratum.substrate.grid.observation_encoding", "scaled",    "structural", "relative->scaled: coord encoding"),
-    ("diagonals",           "stratum.yaml", "stratum.substrate.grid.diagonals",            False,       "structural", "true->false: changes legal moves"),
-    ("observation_mode",    "stratum.yaml", "stratum.observation_mode.mode",               "max_compact","structural","full_auto->max_compact"),
-    ("temporal_support",    "stratum.yaml", "stratum.temporal_support",                    "disabled",  "structural", "enabled->disabled"),
-    ("vision_support",      "stratum.yaml", "stratum.vision_support",                      "global",    "control",    "declares SUPPORTED modes; gates validity, not structure"),
-
-    # ---- environment: the type declarations this ruling is about ----------------
-    ("range_type",          "environment.yaml", "environment.meters.0.range_type",             "integer",   "structural", "normalized->integer on meter 0"),
-    ("norm_method",         "environment.yaml", "environment.variables.0.normalization.method","normalize", "structural", "clip->normalize"),
-    ("var_scope",           "environment.yaml", "environment.variables.0.scope",               "global",    "structural", "agent->global"),
-
-    # ---- level: curriculum + affordances ---------------------------------------
-    ("active_vision",       f"levels/{LEVEL}/curriculum.yaml", "curriculum.active_vision", "partial", "structural", "global->partial (POMDP)"),
-
-    # ---- controls: presentation / training knobs -------------------------------
-    ("label_preset",        "actions.yaml", "actions.labels.preset",            "cardinal", "control", "action NAMES only"),
-    ("learning_rate",       f"levels/{LEVEL}/training.yaml", "training.population.size", 16,    "control", "hyperparameter"),
+    (
+        "boundary",
+        "stratum.yaml",
+        "stratum.substrate.grid.boundary",
+        "wrap",
+        "structural",
+        "clamp->wrap: edge behaviour",
+    ),
+    (
+        "distance_metric",
+        "stratum.yaml",
+        "stratum.substrate.grid.distance_metric",
+        "euclidean",
+        "structural",
+        "manhattan->euclidean",
+    ),
+    (
+        "observation_encoding",
+        "stratum.yaml",
+        "stratum.substrate.grid.observation_encoding",
+        "scaled",
+        "structural",
+        "relative->scaled: coord encoding",
+    ),
+    (
+        "diagonals",
+        "stratum.yaml",
+        "stratum.substrate.grid.diagonals",
+        False,
+        "structural",
+        "true->false: changes legal moves",
+    ),
+    (
+        "observation_mode",
+        "stratum.yaml",
+        "stratum.observation_mode.mode",
+        "max_compact",
+        "structural",
+        "full_auto->max_compact",
+    ),
+    (
+        "temporal_support",
+        "stratum.yaml",
+        "stratum.temporal_support",
+        "disabled",
+        "structural",
+        "enabled->disabled",
+    ),
+    (
+        "vision_support",
+        "stratum.yaml",
+        "stratum.vision_support",
+        "global",
+        "control",
+        "declares SUPPORTED modes; gates validity, not structure",
+    ),
+    (
+        "range_type",
+        "environment.yaml",
+        "environment.meters.0.range_type",
+        "integer",
+        "structural",
+        "normalized->integer on meter 0",
+    ),
+    (
+        "norm_method",
+        "environment.yaml",
+        "environment.variables.0.normalization.method",
+        "normalize",
+        "structural",
+        "clip->normalize",
+    ),
+    (
+        "var_scope",
+        "environment.yaml",
+        "environment.variables.0.scope",
+        "global",
+        "structural",
+        "agent->global",
+    ),
+    (
+        "active_vision",
+        f"levels/{LEVEL}/curriculum.yaml",
+        "curriculum.active_vision",
+        "partial",
+        "structural",
+        "global->partial (POMDP)",
+    ),
+    (
+        "label_preset",
+        "actions.yaml",
+        "actions.labels.preset",
+        "cardinal",
+        "control",
+        "action NAMES only",
+    ),
+    (
+        "learning_rate",
+        f"levels/{LEVEL}/training.yaml",
+        "training.population.size",
+        16,
+        "control",
+        "hyperparameter",
+    ),
 ]
 
 

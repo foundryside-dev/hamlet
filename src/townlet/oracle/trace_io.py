@@ -13,7 +13,7 @@ from pathlib import Path
 
 import numpy as np
 
-TRACE_FORMAT_VERSION = 2
+TRACE_FORMAT_VERSION = 3
 
 # Sentinel distinguishing an ABSENT hash key from a key PRESENT with value
 # None — dict.get(name) alone conflates the two, which would let a field
@@ -43,6 +43,11 @@ class Trace:
     rewards: np.ndarray  # (steps, num_agents) float32
     dones: np.ndarray  # (steps, num_agents) bool
     code_root: str  # resolved src root this side actually imported townlet from (FIX 5)
+    # Resolved config root this side read its pack from (hamlet-2090c9f16d).
+    # Like code_root it is REPORTED, never compared: once a pack-schema
+    # divergence is declared the two sides read different roots by design.
+    # RunParams.pack stays logical so compare_traces' params equality holds.
+    pack_root: str
 
 
 def save_trace(path: Path, trace: Trace) -> None:
@@ -51,6 +56,7 @@ def save_trace(path: Path, trace: Trace) -> None:
         "params": asdict(trace.params),
         "hashes": trace.hashes,
         "code_root": trace.code_root,
+        "pack_root": trace.pack_root,
     }
     np.savez_compressed(
         path,
@@ -73,6 +79,7 @@ def load_trace(path: Path) -> Trace:
             rewards=data["rewards"],
             dones=data["dones"],
             code_root=meta["code_root"],
+            pack_root=meta["pack_root"],
         )
 
 

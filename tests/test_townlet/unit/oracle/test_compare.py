@@ -33,6 +33,7 @@ def _mk_trace() -> Trace:
         rewards=rng.random((3, 4), dtype=np.float32),
         dones=np.zeros((3, 4), dtype=bool),
         code_root="/fake/src",
+        pack_root="/fake/pack-root",
     )
 
 

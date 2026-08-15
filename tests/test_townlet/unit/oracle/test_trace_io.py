@@ -28,6 +28,7 @@ def _mk_trace(**overrides) -> Trace:
         rewards=rng.random((3, 4), dtype=np.float32),
         dones=np.zeros((3, 4), dtype=bool),
         code_root="/fake/oracle-tag/src",
+        pack_root="/fake/pack-root",
     )
     fields.update(overrides)
     return Trace(**fields)

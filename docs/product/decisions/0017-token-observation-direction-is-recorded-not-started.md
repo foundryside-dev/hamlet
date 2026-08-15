@@ -1,7 +1,25 @@
 # PDR-0017 — The token/transformer observation direction is recorded, not started; the first step is proving `set_encoder` works
 
-Date: 2026-08-11   Status: accepted   Author: Claude (standing product owner)
-Owner sign-off: not required (within grant — sequencing work against existing strategy). The **direction** is the owner's: *"move to embedded transformers to 'solve' our obs problem"*, clarified immediately as *"more of an orthogonal comment … we should have put a pin in that a long time ago"* — i.e. raised to be captured, not to redirect the session.
+> ⚠️ **Provenance corrected by [`PDR-0044`](0044-the-token-observation-direction-was-authoritative-from-the-outset.md) (2026-08-15).**
+> This PDR reads the owner's *"orthogonal comment"* as a disclaimer of authority. It is not.
+> Owner, 2026-08-15: *"the comment was orthogonal to the work at the time but it was
+> **authoritative**."* Orthogonal answers *when*, not *whether* — the direction has been
+> owner-authoritative since 2026-08-11.
+>
+> **Struck:** the clause below claiming the owner *"disclaimed the urgency directly"*, and its
+> use as grounds for deferral in "Options considered" §1. Do not cite it again.
+>
+> **Preserved and still governing:** everything else — the option-3 sequencing (prove
+> `set_encoder` runs before adding attention), the structure-vs-scale split, the architecture
+> table, and all three reversal triggers. The sequencing never depended on the owner's urgency;
+> it rests on "an unexercised code path in this codebase is not presumptively working".
+>
+> Also resolved since: the third reversal trigger below notes the HLD "has not yet been read on
+> this question". It has been — the HLD specifies **no** observation encoding either way, so the
+> trigger does not fire.
+
+Date: 2026-08-11   Status: accepted — provenance corrected by `PDR-0044`   Author: Claude (standing product owner)
+Owner sign-off: not required (within grant — sequencing work against existing strategy). The **direction** is the owner's: *"move to embedded transformers to 'solve' our obs problem"*, clarified immediately as *"more of an orthogonal comment … we should have put a pin in that a long time ago"* — ~~i.e. raised to be captured, not to redirect the session~~ → **corrected by `PDR-0044`: raised as a standing direction, deferred only in timing.**
 Related: PDR-0016 (bounds + normalization), PDR-0007 (options not yet enabled), PDR-0006 (strangler), PDR-0009 (per-level architecture gap)
 Tracker: `hamlet-fa6bb6da4a`, blocked by `hamlet-0d0115383e`
 

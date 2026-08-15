@@ -19,8 +19,9 @@ Work continues on **`project-recovery-2`**, now **17 commits ahead** of `main` (
 
 ## What this checkpoint did
 
-- **Ran both remaining issues from `hamlet-a0832f9004` to ground and closed all three**
-  (`hamlet-551be983a8`, `hamlet-9a4b3e9b73`, and the parent). Landed `e62a5e4a`, pushed.
+- **Ran both remaining issues from `hamlet-a0832f9004` to ground and closed them**
+  (`hamlet-551be983a8`, `hamlet-9a4b3e9b73`). Landed `e62a5e4a`, pushed. **The parent is
+  deliberately NOT closed** — see below.
 - **Settled the escalation fork before writing a line of test code** (`PDR-0061`). `multi_tick` and
   wraparound hours **execute** — an 18→28 window is open at 02:00 across midnight; progress runs
   1→2→3→0 at `duration_ticks=4`; `costs_per_tick` is charged every tick. `PDR-0059`'s trigger did
@@ -48,6 +49,28 @@ the oracle context — that is the decision awaiting you.** Nothing is blocked o
 Also worth knowing: **the hidden-failure count was never 31, it was 33.** `hamlet-a0832f9004`
 enumerated failures from a CI log naming three files and never asked what *else* the marker
 covered. The fourth file is the harness above.
+
+## `hamlet-a0832f9004` is held in `verifying`, and the reason is the point
+
+It was briefly closed during this checkpoint and that was wrong on its own terms. Its acceptance is
+`-m "slow or not slow"` green at HEAD; it is not — 2 tests fail. The close carried an honest
+`fix_verification` disclosing the residual, but **status is what a reader scans**, and it said done.
+Its title — *"tests fail and no gate can see them"* — still describes 2 tests today.
+
+That is exactly the failure the issue exists to name, committed inside the session that was fixing
+it. Reopened to `verifying`; it closes when `hamlet-6f98e38a36` closes and `-m "not slow"` leaves
+`pyproject.toml` in the same commit (`PDR-0062`'s reversal trigger).
+
+## Two CI expectations for the next session, so neither reads as a regression
+
+1. **31 integration tests enter the per-push CI gate for the first time.** `tests.yml` runs bare
+   `uv run pytest` and so inherits `-m "not slow"`; removing the marker puts them in CI, under
+   always-on `--cov`. This repo has two documented flakes of exactly that shape
+   (`test_vfs_overhead_under_limit`, `test_scripted_vtc_threshold_kernel…`) — wall-clock ratios
+   measured under coverage instrumentation. `PDR-0043`'s rule applies verbatim: **a gate restored
+   is not a gate verified.** Read the Tests run for `e62a5e4a`/`e5e631ff` before calling this done.
+2. **The nightly `full-tests.yml` will report RED (2 failures).** That is `hamlet-6f98e38a36`,
+   expected and tracked — not a new regression.
 
 ## Open questions
 

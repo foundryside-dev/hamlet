@@ -65,12 +65,14 @@
   (all 3 breaches CLOSED 2026-08-13 — row goes green when the two filed gaps enter WS-7's
   register, `PDR-0028`), **Declared-but-inert config surfaces** (baseline ~40; post-assessment
   7 found / 2 closed), **Documentation truth** (≥14 false claims → 0) and **Gates green**
-  (**GREEN as of 2026-08-16, over a suite that finally runs what it claims** — all 31 repaired
-  and the `slow` marker removed after being measured against a clock and found false; deselect
-  falls 33 → 2. The residual 2 are `test_differential_harness.py`, filed `hamlet-6f98e38a36`,
-  and are stated rather than banked: **the harness's self-comparison disagrees, so the
-  instrument the strangler is measured with currently certifies nothing** — `PDR-0062`,
-  `PDR-0063`)
+  (**GREEN on `project-recovery-2` as of 2026-08-16 at `e62a5e4a`, over a suite that finally
+  runs what it claims** — all 31 repaired and the `slow` marker removed after being measured
+  against a clock and found false; deselect falls 33 → 2. **Scope matters and is stated here on
+  purpose: `main` is 17 commits behind and STILL CARRIES ALL 31 behind the marker** — both
+  repair commits are branch-only, so `main` does not go green until the next merge. The residual
+  2 are `test_differential_harness.py`, filed `hamlet-6f98e38a36`, and are stated rather than
+  banked: **the harness's self-comparison disagrees, so the instrument the strangler is measured
+  with currently certifies nothing** — `PDR-0062`, `PDR-0063`)
   · **WS-1 is COMPLETE and CLOSED** (`PDR-0029`, 2026-08-13, `e8ad4985`): all ten frozen units
   landed, tree green at every commit, batch gate 2981/0. The `PDR-0028` fence held — nothing
   entered after the freeze. Routing rule stands for new findings: WS-7's register or WS-4.

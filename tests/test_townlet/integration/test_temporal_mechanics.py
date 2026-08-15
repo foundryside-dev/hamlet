@@ -109,10 +109,19 @@ JOB_PAY_PER_TICK = 5.625
 JOB_COMPLETION_PAY = 5.625
 JOB_OPEN_HOUR = 10  # inside the shipped 9-17 schedule
 
-# energy loses `interact` (0.05) + `passive` (0.01) on a tick it is interacting.
-REST_ENERGY_DECAY_PER_TICK = 0.06
-REST_NET_ENERGY_PER_TICK = REST_ENERGY_PER_TICK - REST_ENERGY_DECAY_PER_TICK
-HEALTH_DECAY_PER_TICK = 0.005
+
+def _decay_per_interacting_tick(env, meter: str) -> float:
+    """Decay a meter suffers on a tick spent interacting: `passive` + `interact`.
+
+    Read from the compiled pack rather than frozen as a literal. The fixture
+    below AUTHORS every affordance parameter it asserts on; the depletion rates
+    it does not author must come from the artifact, or a change to `bars.yaml`
+    turns these tests into an unexplained arithmetic mismatch.
+    """
+    for bar in env.bars_config.meters:
+        if bar.name == meter:
+            return float(bar.depletion.passive) + float(bar.depletion.interact)
+    raise AssertionError(f"meter '{meter}' not found in the compiled bars config")
 
 
 def _apply_temporal_pack(data: dict) -> None:
@@ -174,9 +183,8 @@ def _free_cell(env) -> torch.Tensor:
     failed depending on where deployment happened to put things that run.
     """
     occupied = {tuple(int(v) for v in pos.tolist()) for pos in env.affordances.values()}
-    width, height = env.substrate.grid_size if hasattr(env.substrate, "grid_size") else (8, 8)
-    for x in range(int(width)):
-        for y in range(int(height)):
+    for x in range(int(env.substrate.width)):
+        for y in range(int(env.substrate.height)):
             if (x, y) not in occupied:
                 return torch.tensor([x, y], device=env.device)
     raise AssertionError("every grid cell carries an affordance; no free cell for an idle agent")
@@ -374,7 +382,8 @@ class TestMultiTickInteractions:
             env.step(torch.tensor([interact], device=env.device))
             env.positions[0] = env.affordances[REST_AFFORDANCE]
             gained = env.meters[0, energy].item() - initial
-            assert gained == pytest.approx(REST_NET_ENERGY_PER_TICK * tick, abs=0.02), f"after {tick} tick(s)"
+            net = REST_ENERGY_PER_TICK - _decay_per_interacting_tick(env, "energy")
+            assert gained == pytest.approx(net * tick, abs=0.02), f"after {tick} tick(s)"
 
         # Progress is mid-interaction, not complete: no completion effect yet.
         assert env.interaction_progress[0] == 2
@@ -396,13 +405,15 @@ class TestMultiTickInteractions:
             env.step(torch.tensor([interact], device=env.device))
             env.positions[0] = env.affordances[REST_AFFORDANCE]
 
-        expected_energy = REST_NET_ENERGY_PER_TICK * REST_DURATION + REST_COMPLETION_ENERGY
+        net = REST_ENERGY_PER_TICK - _decay_per_interacting_tick(env, "energy")
+        expected_energy = net * REST_DURATION + REST_COMPLETION_ENERGY
         assert env.meters[0, energy].item() - initial_energy == pytest.approx(expected_energy, abs=0.03)
 
         # health has no per_tick effect at all, so its entire gain is the
         # completion bonus net of passive decay — this dies if on_completion
         # stops firing, which the energy assertion alone would not catch.
-        expected_health = REST_COMPLETION_HEALTH - HEALTH_DECAY_PER_TICK * REST_DURATION
+        health_decay = _decay_per_interacting_tick(env, "health")
+        expected_health = REST_COMPLETION_HEALTH - health_decay * REST_DURATION
         assert env.meters[0, health].item() - initial_health == pytest.approx(expected_health, abs=0.01)
 
     def test_multi_tick_job_completion(self, multitick_env):
@@ -530,11 +541,13 @@ class TestEarlyExitMechanics:
         assert env.interaction_progress[0] == served
 
         gained = env.meters[0, energy].item() - initial_energy
-        assert gained == pytest.approx(REST_NET_ENERGY_PER_TICK * served, abs=0.02)
+        net = REST_ENERGY_PER_TICK - _decay_per_interacting_tick(env, "energy")
+        assert gained == pytest.approx(net * served, abs=0.02)
 
         # health only moves on completion, so it must be pure decay here. This is
         # the assertion that actually distinguishes early exit from completion.
-        assert env.meters[0, health].item() - initial_health == pytest.approx(-HEALTH_DECAY_PER_TICK * served, abs=0.005)
+        health_decay = _decay_per_interacting_tick(env, "health")
+        assert env.meters[0, health].item() - initial_health == pytest.approx(-health_decay * served, abs=0.005)
 
         # Walking away does not retroactively grant the completion bonus.
         env.step(torch.tensor([0], device=env.device))  # a movement action

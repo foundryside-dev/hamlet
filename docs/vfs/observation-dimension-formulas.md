@@ -1,3 +1,23 @@
+> ## ⛔ SUPERSEDED — do not use, do not correct
+>
+> **Status: historical. Slated for replacement in full (owner, 2026-08-15).**
+>
+> The observation system is moving to **embedded transformers / token observations**. Under a
+> token observation there is no width formula to document — the fixed-width flat concatenation
+> this file describes is the thing being removed, so correcting it is wasted work. See
+> `docs/product/decisions/0017-token-observation-direction-is-recorded-not-started.md`.
+>
+> Its companion `observation-dimension-manual-validation.md` carries the same banner and the
+> evidence. In short: the formula here computes something close to the *active* width, but the
+> compiled artifact allocates a fixed **124-slot superset** at every level and applies a
+> per-level activity mask. Measured 2026-08-15 — L0_0 / L0_5 / L1: 95 active of 124; L2: 56;
+> L3: 99. POMDP does not shrink the tensor, it swaps which block is live (zeroing the 64-dim
+> grid encoding, activating the 25-dim local window).
+>
+> The cited source line range (`vectorized_env.py:240-264`) is a 2025-11 anchor and has not
+> been re-verified; observation construction has since moved behind VFS. Treat the formula as
+> a record of how the pre-VFS engine computed width, not as current behaviour.
+
 # Current Observation Dimension Formulas
 
 **Purpose**: Document existing observation dimension calculations to ensure VFS implementation maintains checkpoint compatibility.

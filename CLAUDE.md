@@ -173,10 +173,34 @@ they are wrong, this one is the shipped pack.
 ⚠️ **The per-level dimension counts previously listed here (29 / 54) were wrong by roughly 4×,
 and no replacement literal is given on purpose.** Observation width moves whenever the observed
 surface changes, so any number written here starts decaying immediately — that is how the old
-ones got wrong. Read `universe.levels[<name>].observation_spec.total_dim` off the compiled
-artifact. It is the only authority, and it is correct by construction at every commit.
+ones got wrong. Ask the compiled artifact — it is the only authority, and correct by
+construction at every commit:
 
-**Key insight**: Observation dim is **constant** across all Grid2D grid sizes, enabling true transfer learning.
+```python
+from townlet.universe.compiler import UniverseCompiler
+u = UniverseCompiler().compile(Path("configs/default_curriculum"),
+                               primary_level="L1_full_observability")
+u.observation_spec.total_dims
+```
+
+`compile()` requires an explicit `primary_level` — implicit selection raises. `CompiledUniverse`
+is single-level by construction (`get_level` / `to_level` / `all_levels` navigate; there is no
+`.levels` mapping), and the field is `total_dims`, not `total_dim`.
+
+**"Observation dim" is two quantities, and conflating them is what corrupted every table in
+`docs/`.** The observation is a fixed-width **superset with a per-level activity mask**:
+
+- **Allocated** (`observation_spec.total_dims`) — identical at every level. This is the tensor
+  width, and the mechanism behind the transfer-learning property below.
+- **Active** (`sum(observation_activity.active_mask)`) — varies per level. Inactive slots are
+  held at zero, not removed.
+
+POMDP does **not** shrink the tensor: it zeroes the grid-encoding block and activates the local
+-window block instead. Quote which quantity you mean, or don't quote a number.
+
+**Key insight**: allocated observation width is **constant** across all Grid2D grid sizes —
+that is what enables true transfer learning, and it is a consequence of the superset+mask
+design, not a coincidence.
 
 **Action Space** (global vocabulary enables checkpoint transfer):
 
@@ -430,6 +454,13 @@ When in doubt:
 - **Ask "can a designer express this in a config pack?"** If the answer is "only by editing
   Python", that is the defect worth fixing — not the symptom you were chasing.
 - Prefer declarative surface over engine special-casing, even when the special case is smaller.
+- **Never branch on a variable's name.** A variable is a name plus declared parameters; the
+  compiler and runtime must not know that `money` is money (`PDR-0045`). Behaviour that varies
+  per variable comes from a declared parameter, never from what the variable is called. The
+  in-tree model: `drive_as_code.py` declares `money_bar: str` as **required, no default** — the
+  engine holds the *role*, the author binds the *referent*. Name-based inference is the hardest
+  form of this defect to spot, because `if name == "money"` reads as a helpful default rather
+  than as a hardcoded domain fact.
 - Keep the framework/instance boundary sharp: `default_curriculum` content (its meters,
   affordances, 8×8 grid) is example data, not framework. Do not freeze it into the engine.
 - Preserve "interesting failures" as teaching material; document unexpected behaviour rather

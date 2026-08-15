@@ -1,3 +1,37 @@
+> ## ⛔ SUPERSEDED — do not use, do not correct
+>
+> **Status: historical. Slated for replacement in full (owner, 2026-08-15).**
+>
+> The observation system is moving to **embedded transformers / token observations**, under
+> which this document has no successor form. A token observation has no total width to
+> validate: there is no `substrate_dim + meter_count + affordance_dims + temporal_dims`, no
+> fixed 15-wide affordance one-hot, and no grid-cell block. The **method** here is obsolete,
+> not merely its arithmetic — so nobody should spend effort correcting the numbers below.
+>
+> **The ✓ ticks do not mean what they appear to.** Two separate problems:
+>
+> - **The L0_0 = 38 and L0_5 = 78 rows are simply false.** They assume 3×3 and 7×7 grids, but
+>   grid size is set once in pack-level `stratum.yaml` at 8×8 and **no level can override it**.
+>   This document validated the *intended* curriculum against the *shipped* code and found an
+>   agreement that does not exist.
+> - **The remaining numbers measure the wrong thing, not nothing.** The observation is a
+>   fixed-width superset with a per-level activity mask: every level allocates **124** slots,
+>   and the mask decides which carry information. This file's totals are closer to the *active*
+>   count than to the allocated width. Measured on `project-recovery` 2026-08-15 —
+>   L0_0 / L0_5 / L1: 95 active of 124; L2: 56; L3: 99. So 93 → 95 and 54 → 56 differ only by
+>   the two `obs_velocity` dims added since, and L3 moved 93 → 99 once its temporal block became
+>   active. The error was labelling active width as the total.
+>
+> These numbers propagated into `docs/architecture/vfs.md` §2.3, where they were also marked
+> "Validated"; that table has been corrected and now states both quantities.
+>
+> Direction of travel: `docs/product/decisions/0017-token-observation-direction-is-recorded-not-started.md`.
+> The HLD does not specify an observation encoding either way, so it does not contest this.
+>
+> One thing worth carrying forward: line "affordance_dims: Always 15 (14 affordances + none)"
+> **reconciles a long-standing doc contradiction.** Docs saying 15 and CLAUDE.md saying 14 were
+> both right — one-hot width versus vocabulary size.
+
 # Manual Observation Dimension Validation
 
 **Purpose**: Manually calculate expected observation dimensions for each config to validate against VFS implementation (Cycle 5).

@@ -166,15 +166,50 @@ VFS supports the Hamlet progression:
 | L5 | Pairwise and affordance-scoped variables for contention, trust, proximity, blocking |
 | L6 | Message variables, communication buffers, shared reward features, group scopes |
 
-The immediate Phase 1 validated observation dimensions already demonstrate this role:
+⚠️ **Correction (2026-08-15).** This section previously carried a single column of per-level
+observation dimensions (38 / 78 / 93 / 54 / 93) marked "Validated". **That column conflated two
+different quantities**, which is why it could never be reconciled with the other tables in the
+corpus.
 
-| Config | Observation Dims | Status |
-|---|---:|---|
-| `L0_0_minimal` | 38 | Validated |
-| `L0_5_dual_resource` | 78 | Validated |
-| `L1_full_observability` | 93 | Validated |
-| `L2_partial_observability` | 54 | Validated |
-| `L3_temporal_mechanics` | 93 | Validated |
+The observation tensor is a **fixed-width superset with a per-level activity mask**. Every level
+allocates the same 124 slots; the mask decides which carry information and which are held at
+zero. So "observation dim" has two answers, and only stating both is honest.
+
+Measured by compiling `configs/default_curriculum` at each level on `project-recovery`:
+
+| Config | Allocated (`total_dims`) | Active | Zeroed fields |
+|---|---:|---:|---|
+| `L0_0_minimal` | 124 | 95 | `obs_local_window` (25), `obs_temporal` (4) |
+| `L0_5_dual_resource` | 124 | 95 | `obs_local_window` (25), `obs_temporal` (4) |
+| `L1_full_observability` | 124 | 95 | `obs_local_window` (25), `obs_temporal` (4) |
+| `L2_partial_observability` | 124 | 56 | `obs_grid_encoding` (64), `obs_temporal` (4) |
+| `L3_temporal_mechanics` | 124 | 99 | `obs_local_window` (25) |
+
+**Allocated width is constant by design** — that is precisely the mechanism behind the
+"observation dim is constant across grid sizes, enabling transfer learning" claim. It is not a
+sign that the levels are identical.
+
+**Active width has three distinct values (95 / 56 / 99)**, and they line up exactly with the
+three distinct universes in the pack: L0_0 / L0_5 / L1 are one universe, L2 another, L3 a third.
+POMDP does not shrink the tensor — it zeroes the 64-dim grid encoding and lights up the 25-dim
+local window instead, which is the reverse swap.
+
+The old numbers were therefore *the right quantity, gone stale*, not nonsense: 93 → 95 and
+54 → 56 differ by the two `obs_velocity` dims added since, and L3 moved 93 → 99 because its
+temporal block is now actually active. What made the table false was labelling active width as
+the total, and the L0_0 = 38 / L0_5 = 78 entries, which assumed 3×3 and 7×7 grids that no level
+can express (grid size is pack-level in `stratum.yaml` and unoverridable).
+
+**Do not re-add literals here.** Read `observation_spec.total_dims` off the compiled artifact
+(see `CLAUDE.md` → State Representation for the exact call). The numbers above are a dated
+measurement, not a specification, and will decay the moment the observed surface changes.
+
+**And they are on their way out entirely.** The observation system is moving to embedded
+transformers / token observations (owner, 2026-08-15; direction recorded in
+`docs/product/decisions/0017-...`), under which a single total width stops being a meaningful
+quantity at all. The two source documents for the old table —
+`docs/vfs/observation-dimension-formulas.md` and `observation-dimension-manual-validation.md` —
+are marked superseded in full rather than corrected, for that reason.
 
 The long-term aim is that level changes are expressed primarily by changing variables, exposures, scopes, rules, action definitions, and brain configuration — not by rewriting environment code.
 

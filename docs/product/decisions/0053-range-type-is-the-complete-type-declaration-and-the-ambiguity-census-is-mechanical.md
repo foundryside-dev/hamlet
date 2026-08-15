@@ -73,6 +73,48 @@ That distinction produced the most important finding below.
 | **`meters[].range_type`** | structural | **none** | ⚠️ **inert** (`PDR-0051`) |
 | **`variables[].normalization.method`** | structural | **none** | ⚠️ **vocabulary collision + a member that lies** |
 
+> ⚠️ **FINDING A IS WITHDRAWN — it was FALSE, and the census method that produced it is
+> downgraded. Corrected 2026-08-15, same day, before any work started; original text kept below
+> per the `PDR-0020` practice so the error stays legible.**
+>
+> **`boundary` and `distance_metric` ARE hashed** — both move `stratum_hash`. The headline claim
+> ("a torus and a walled box are checkpoint-interchangeable") is wrong; provenance guards that
+> transfer correctly today. `hamlet-7b126ad3fa` is closed **not_a_bug**.
+>
+> **The cause was the instrument.** The census compared five hand-picked hash fields;
+> `CompiledUniverse` has **sixteen**. `stratum_hash` was not in the list, so a declaration hashed
+> only there read as hashed nowhere. `driver.py` had this right all along
+> (`collect_provenance_hashes` reflects over every `*_hash` field) — the script did not.
+>
+> **And widening it exposed that the method was weak, not merely mis-parameterised.** With all 16
+> compared, the *controls* move hashes too, because there are two families and this PDR conflated
+> them:
+> - **RAW** (`stratum_hash`, `environment_hash`, `actions_hash`, `training_hash`, …) —
+>   `_compute_pydantic_hash` over a whole config file, so **every** declared value in that file
+>   moves it by construction. Proves provenance, never comprehension.
+> - **DERIVED** (`observation_schema`, `action_schema`, `vfs`, `variable_schema`,
+>   `transition_graph`) — what the compiler actually built.
+>
+> Under that split, `boundary`/`distance_metric` move a raw hash and no derived hash — which is
+> **correct**: they change dynamics, and no derived schema describes dynamics. The "structural"
+> bucket assignment for them was simply wrong.
+>
+> **This PDR's own second reversal trigger has therefore fired** — *"reverse the census method if
+> the structural/control bucketing turns out to be the real judgement call"*. It did.
+> `audit_declaration_census.py` no longer emits verdicts; it prints a **map split by hash family**
+> and stops, because *"should this declaration reach a derived artifact?"* is a judgement about
+> intent that no perturbation can settle.
+>
+> **Unaffected:** Finding B (`hamlet-1dba1910c0`) was measured on compiled `NormalizationSpec`
+> equality and on `apply_normalization`'s behaviour, **not on hashes**, and stands.
+> `range_type` also stands — it moves `environment_hash`, reaches no derived artifact, and Trial
+> 002 measured its behavioural inertness directly.
+>
+> **The lesson, and it is the third time this session:** `PDR-0049` said a red found by reading is
+> not a defect until it executes. This adds the sharper case — **a red found by a tool is not a
+> defect until the tool is validated against something you already know the answer for.** The
+> controls existed and were the right idea; they were just too weak to catch a truncated hash list.
+
 ### Finding A — two declarations change the world and enter no hash
 
 `boundary: clamp → wrap` and `distance_metric: manhattan → euclidean` move **none** of the five

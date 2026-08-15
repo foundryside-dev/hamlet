@@ -8,10 +8,29 @@ BUCKETS ARE ASSIGNED HERE, BEFORE ANY RESULT IS SEEN (PDR-0049: assigning bucket
 results is how a static sweep launders itself into a measurement).
 
   "structural" = this declaration CLAIMS to describe structure or semantics the compiled artifact
-                 should encode. Moving no hash makes it an ambiguity candidate.
-  "control"    = this legitimately affects runtime/presentation only. Moving no hash is CORRECT.
-                 Controls exist to test the prober: a control that moves a hash means the
-                 prober's own reasoning is wrong.
+                 should encode.
+  "control"    = this legitimately affects runtime/presentation only.
+
+TWO HASH FAMILIES, AND CONFLATING THEM IS WHAT BROKE THE FIRST VERSION OF THIS SCRIPT:
+
+  RAW    — stratum_hash, environment_hash, actions_hash, training_hash, bars_hash, ... Each is
+           _compute_pydantic_hash over a whole config file, so EVERY declared value in that file
+           moves it by construction. A raw-hash move proves only "this value is in a file that
+           gets hashed". It is provenance for checkpoint safety, and it is never evidence that
+           the compiler UNDERSTOOD the declaration.
+  DERIVED — observation_schema_hash, action_schema_hash, vfs_hash, variable_schema_hash,
+           transition_graph_hash. These cover what the compiler BUILT, so a move here means the
+           declaration reached a compiled artifact.
+
+WHAT THIS SCRIPT DOES *NOT* DO: emit a verdict. The first version compared five hand-picked
+hashes, found `boundary` and `distance_metric` moving none of them, and reported them as
+unhashed — a false finding (both move stratum_hash). Widening to all 16 then made the CONTROLS
+move hashes too, because raw-file hashes move for everything. Either way the automated verdict
+was wrong, because "should this declaration reach a derived artifact?" is a judgement about
+intent that no perturbation can settle: `boundary` changes dynamics and legitimately reaches no
+schema, while `range_type` claims to be a TYPE and should.
+
+So this prints a MAP and stops. Read it, and bring the judgement yourself.
 """
 
 import shutil
@@ -27,7 +46,18 @@ SRC = REPO / "configs/default_curriculum"
 TMP = Path(tempfile.gettempdir()) / "townlet-declaration-census"
 LEVEL = "L1_full_observability"
 
-HASHES = ("observation_schema_hash", "action_schema_hash", "vfs_hash", "variable_schema_hash", "transition_graph_hash")
+# Hashes over COMPILED artifacts rather than over a raw config file. See the
+# module docstring: only a move here shows the compiler acted on a declaration.
+_DERIVED = {"observation_schema", "action_schema", "vfs", "variable_schema", "transition_graph"}
+
+# EVERY *_hash field, by reflection — never a hardcoded list.
+#
+# The first version of this script compared five hashes chosen by hand and so
+# reported `boundary` and `distance_metric` as "structural declarations the
+# compiler does not encode". Both are in fact hashed, into `stratum_hash`,
+# which the hardcoded list omitted. A census that decides what to look at in
+# advance measures its own list, not the tree. driver.py already had this
+# right (collect_provenance_hashes); this now matches it.
 
 # (id, relative file, dotted path into the YAML, new value, bucket, note)
 PROBES = [
@@ -151,10 +181,12 @@ def dotted_set(doc, path, value):
 
 
 def compile_hashes(pack: Path):
+    import dataclasses
+
     from townlet.universe.compiler import UniverseCompiler
 
     u = UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
-    return {h: getattr(u, h) for h in HASHES}, u
+    return {f.name: getattr(u, f.name) for f in dataclasses.fields(u) if f.name.endswith("_hash")}, u
 
 
 def main():
@@ -186,7 +218,7 @@ def main():
             msg = str(exc).strip().splitlines()[-1][:110]
             rows.append((pid, bucket, path, "REJECTED", f"{old!r}->{newval!r}: {msg}", note))
             continue
-        moved = [h.replace("_hash", "") for h in HASHES if got[h] != base[h]]
+        moved = [h.replace("_hash", "") for h in sorted(set(base) | set(got)) if got.get(h) != base.get(h)]
         rows.append((pid, bucket, path, ",".join(moved) if moved else "NOTHING", f"{old!r}->{newval!r}", note))
 
     print(f"{'probe':<20} {'bucket':<11} {'hashes moved':<46} change")
@@ -194,19 +226,18 @@ def main():
     for pid, bucket, path, moved, change, note in rows:
         print(f"{pid:<20} {bucket:<11} {moved:<46} {change}")
 
-    print("\n=== VERDICTS ===")
+    print("\n=== READ THIS AS A MAP, NOT A VERDICT ===")
+    print("RAW hashes move for every value in their file — they prove provenance, not comprehension.")
+    print("DERIVED hashes (observation_schema/action_schema/vfs/variable_schema/transition_graph)")
+    print("show the declaration reached a compiled artifact.\n")
     for pid, bucket, path, moved, change, note in rows:
         if moved in ("REJECTED", "PATH-NOT-FOUND"):
-            v = "n/a — could not probe"
-        elif bucket == "structural" and moved == "NOTHING":
-            v = "*** AMBIGUITY CANDIDATE — structural declaration the compiler does not encode"
-        elif bucket == "structural":
-            v = "ok — encoded"
-        elif bucket == "control" and moved == "NOTHING":
-            v = "ok — control behaved as predicted"
-        else:
-            v = "!!! PROBER WRONG — a control moved a hash; re-examine the bucket assignment"
-        print(f"  {pid:<20} {v}")
+            print(f"  {pid:<20} not probed ({moved})")
+            continue
+        families = [m for m in moved.split(",") if m] if moved != "NOTHING" else []
+        derived = sorted(set(families) & _DERIVED)
+        raw = sorted(set(families) - _DERIVED)
+        print(f"  {pid:<20} derived={derived or '[]':<40} raw={raw}")
 
 
 if __name__ == "__main__":

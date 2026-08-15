@@ -151,7 +151,7 @@ def _dynamic_need_variable(field_name: str, max_slots: int) -> VariableDef:
 
 
 def _unit_interval_normalization() -> NormalizationSpec:
-    return NormalizationSpec(kind="minmax", min=0.0, max=1.0)
+    return NormalizationSpec(kind="minmax", min=0.0, max=1.0, clip=False)
 
 
 def _require_positive(name: str, value: int) -> None:

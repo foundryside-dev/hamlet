@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from townlet.oracle.matrix import Cell, RegisteredDivergence, default_cells
+from townlet.oracle.matrix import Cell, RegisteredDivergence, RegisteredHashDivergence, default_cells
 
 LEVELS = (
     "L0_0_minimal",
@@ -215,6 +215,8 @@ def test_declared_register_refs_exist_in_the_register() -> None:
     declares one; arms itself the moment DIV-003 cells land."""
     entries = set(_register_sections())
     declared = {c.expected.register_ref for c in default_cells() if c.expected is not None}
+    declared |= {c.hash_divergence.register_ref for c in default_cells() if c.hash_divergence is not None}
+    declared |= {c.pack_divergence for c in default_cells() if c.pack_divergence is not None}
     assert declared <= entries, f"matrix declares refs with no register entry: {sorted(declared - entries)}"
 
 
@@ -236,3 +238,52 @@ def test_declared_register_refs_bind_entries_with_the_matching_harness_shape() -
             f"`Harness shape: old-side-crash` — either the binding names the wrong "
             f"entry, or the entry predicts a diff shape this binding cannot certify"
         )
+
+
+def test_hash_divergence_bindings_bind_entries_with_the_hash_only_shape() -> None:
+    """The second shape gets the same typo-bind guard as the first.
+
+    A `RegisteredHashDivergence` certifies "provenance moved as registered,
+    behaviour did not". Binding it to an entry that predicts an old-side crash
+    (or a checkpoint-boundary entry that cannot manifest in a trace at all)
+    would certify the wrong thing, so the entry must say `Harness shape:
+    hash-only` in its own text.
+    """
+    sections = _register_sections()
+    for cell in default_cells():
+        if cell.hash_divergence is None:
+            continue
+        ref = cell.hash_divergence.register_ref
+        assert ref in sections, f"{ref} has no register entry"
+        assert "Harness shape: hash-only" in sections[ref], (
+            f"cell {cell.cell_id} binds {ref} as a hash-only divergence, but that entry " f"does not declare `Harness shape: hash-only`"
+        )
+
+
+def test_a_cell_never_declares_both_divergence_shapes() -> None:
+    """The two shapes are mutually exclusive by construction, and saying both
+    would be incoherent rather than merely redundant: the crash shape asserts
+    the old side produced NO trace, and the hash shape adjudicates the hashes
+    of a trace the old side DID produce. A cell claiming both is a declaration
+    error, not a stricter cell.
+    """
+    for cell in default_cells():
+        assert not (
+            cell.expected is not None and cell.hash_divergence is not None
+        ), f"cell {cell.cell_id} declares both an old-side-crash divergence and a hash-only one"
+
+
+def test_hash_divergence_declarations_are_enumerated_not_wildcards() -> None:
+    """PDR-0033: a suppression mechanism is a machine for manufacturing false
+    AGREEs if it is loose. Construction rejects the loose forms — an empty
+    field set (a wildcard by another name), duplicates, and any entry that is
+    not a provenance hash field.
+    """
+    with pytest.raises(ValueError, match="at least one"):
+        RegisteredHashDivergence(register_ref="DIV-004", hash_fields=())
+    with pytest.raises(ValueError, match="duplicates"):
+        RegisteredHashDivergence(register_ref="DIV-004", hash_fields=("vfs_hash", "vfs_hash"))
+    with pytest.raises(ValueError, match="not a provenance hash field"):
+        RegisteredHashDivergence(register_ref="DIV-004", hash_fields=("vfs_hash", "observation_schema"))
+    with pytest.raises(ValueError, match="DIV-004"):
+        RegisteredHashDivergence(register_ref="div-4", hash_fields=("vfs_hash",))

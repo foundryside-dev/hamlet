@@ -7,6 +7,7 @@ import dataclasses
 import numpy as np
 import pytest
 
+from townlet.oracle.matrix import RegisteredHashDivergence
 from townlet.oracle.trace_io import (
     HarnessError,
     RunParams,
@@ -217,3 +218,77 @@ def test_nan_vs_number_diverges_with_json_safe_verdict() -> None:
     dumped = json.dumps(dataclasses.asdict(verdict))
     assert "NaN" not in dumped
     json.loads(dumped)  # must be valid JSON, not the bare-NaN literal
+
+
+# --- the hash-only divergence shape (DIV-004, PDR-0054) ----------------------
+#
+# The second RegisteredDivergence shape: provenance moved as registered,
+# behaviour did not. Before it existed, compare_traces returned HASH_MISMATCH
+# and short-circuited BEFORE comparing a single stream — so on any authoring-
+# surface change (which is all of WS-4) the harness could not compare the thing
+# that matters. These tests pin that the declaration suppresses ONLY the
+# provenance inequality, never a behavioural one.
+
+
+def _declare(*fields: str, ref: str = "DIV-004") -> RegisteredHashDivergence:
+    return RegisteredHashDivergence(register_ref=ref, hash_fields=fields)
+
+
+def test_declared_hash_move_with_identical_streams_passes_as_registered() -> None:
+    old, new = _mk_trace(), _mk_trace()
+    new.hashes["vfs_hash"] = "moved"
+    verdict = compare_traces(old, new, cell_id="c1", hash_divergence=_declare("vfs_hash"))
+    assert verdict.kind == "DIVERGED_AS_REGISTERED"
+    assert verdict.register_refs == ("DIV-004",)
+    assert verdict.detail["shape"] == "hash-only"
+
+
+def test_an_undeclared_hash_moving_alongside_a_declared_one_still_fails() -> None:
+    """The declaration is enumerated, not a wildcard: a rebuild that moves more
+    than the entry claims must stay red, and the report must say which."""
+    old, new = _mk_trace(), _mk_trace()
+    new.hashes["vfs_hash"] = "moved"
+    new.hashes["action_schema_hash"] = "also moved"
+    verdict = compare_traces(old, new, cell_id="c1", hash_divergence=_declare("vfs_hash"))
+    assert verdict.kind == "HASH_MISMATCH"
+    assert verdict.register_refs == ()
+    assert verdict.detail["undeclared_movers"] == ["action_schema_hash"]
+
+
+def test_a_declared_hash_that_does_not_move_is_a_stale_entry() -> None:
+    """Symmetric with REGISTERED_DIVERGENCE_ABSENT for the crash shape: an
+    expectation that never fires leaves suppression machinery armed with
+    nothing to suppress (PDR-0037 reversal trigger 3)."""
+    old, new = _mk_trace(), _mk_trace()
+    new.hashes["vfs_hash"] = "moved"
+    verdict = compare_traces(old, new, cell_id="c1", hash_divergence=_declare("vfs_hash", "items_hash"))
+    assert verdict.kind == "REGISTERED_DIVERGENCE_ABSENT"
+    assert verdict.register_refs == ()
+    assert verdict.detail["declared_but_unmoved"] == ["items_hash"]
+
+
+def test_a_declaration_never_suppresses_a_stream_divergence() -> None:
+    """The load-bearing guarantee. If this ever fails, the shape has become the
+    false-AGREE machine PDR-0033 warns about and must be reverted, not relaxed."""
+    old, new = _mk_trace(), _mk_trace()
+    new.hashes["vfs_hash"] = "moved"
+    new.rewards[1, 2] += 0.5
+    verdict = compare_traces(old, new, cell_id="c1", hash_divergence=_declare("vfs_hash"))
+    assert verdict.kind == "DIVERGE"
+    assert verdict.register_refs == ()
+    assert verdict.detail["step"] == 1
+
+
+def test_no_declaration_leaves_the_original_hash_behaviour_untouched() -> None:
+    old, new = _mk_trace(), _mk_trace()
+    new.hashes["vfs_hash"] = "moved"
+    verdict = compare_traces(old, new, cell_id="c1")
+    assert verdict.kind == "HASH_MISMATCH"
+    assert verdict.register_refs == ()
+
+
+def test_a_declaration_with_nothing_to_declare_does_not_launder_an_agree() -> None:
+    """Streams agree and no hash moved, but the cell declared one would: that is
+    a stale entry, and reporting AGREE would hide it."""
+    verdict = compare_traces(_mk_trace(), _mk_trace(), cell_id="c1", hash_divergence=_declare("vfs_hash"))
+    assert verdict.kind == "REGISTERED_DIVERGENCE_ABSENT"

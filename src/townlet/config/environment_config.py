@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Literal
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class MeterConfig(BaseModel):
@@ -82,6 +82,14 @@ class NormalizationConfig(BaseModel):
         ),
     )
     range: list[float] = Field(..., description="Value range [min, max]", min_length=2, max_length=2)
+    clip: bool | None = Field(
+        default=None,
+        description=(
+            "Clamp the value into `range` before scaling. REQUIRED when method=normalize, "
+            "forbidden when method=standardize (which has no range to clamp against). "
+            "`None` is not a default — the validator rejects it where the parameter applies."
+        ),
+    )
     mean: float | list[float] | None = Field(
         default=None,
         description="Mean value(s) for standardize normalization (optional; required when method=standardize).",
@@ -92,6 +100,26 @@ class NormalizationConfig(BaseModel):
     )
 
     model_config = ConfigDict(extra="forbid")
+
+    @model_validator(mode="after")
+    def validate_clip_is_declared_where_it_applies(self) -> "NormalizationConfig":
+        """`clip` is required for `normalize` and forbidden for `standardize`.
+
+        Removing the false `clip` *member* (hamlet-1dba1910c0) did not give authors
+        clamping — they never had it, because `minmax` is pure affine rescaling.
+        This is the real thing (hamlet-fba56feca5), as a parameter rather than a
+        member, so it composes with `log_scaled` instead of multiplying members.
+        """
+        if self.method == "normalize" and self.clip is None:
+            raise ValueError(
+                "normalization method 'normalize' requires an explicit 'clip' (true or false).\n"
+                "  Rule: clamping is a declared choice, never inferred (No-Defaults Principle).\n"
+                "  clip: false — rescale only; an input outside `range` stays outside [0, 1].\n"
+                "  clip: true  — clamp into `range` first, so the observation is bounded."
+            )
+        if self.method == "standardize" and self.clip is not None:
+            raise ValueError("normalization method 'standardize' does not accept 'clip' — it has no range to clamp against.")
+        return self
 
 
 class VariableConfig(BaseModel):

@@ -100,6 +100,16 @@ and their parameter sources:
 | `rank_scaled` | *(none)* | — |
 | `none` | *(none)* | — |
 
+> ⚠️ **Corrected during W1, same day, by pointer — the table above says TEN and it is now
+> NINE.** Implementing ruling 3 exposed that adding `clip` as a parameter while leaving
+> `clipped_log_scaled` as a *member* would author `PDR-0053` taxonomy shape #3 — two members,
+> one behaviour — by hand, in the change whose purpose is removing that shape. So
+> `clipped_log_scaled` was deleted: `log_scaled` + `clip: true` is exactly what it did.
+> `docs/architecture/vfs.md` §9.2 had carried the tell all along, passing `clip: true` to a
+> kind whose name already implied it. Drop the `clipped_log_scaled` row; `log_scaled` keeps
+> `min`/`max` from bars bounds and gains a required `clip`. The count is the only thing that
+> changes — every kind remains reachable, which is the ruling's actual claim.
+
 Ten members, ten kinds, nothing unreachable. `none` is admitted here **only** because a meter's
 value may legitimately already be in observation units; it is an explicit author choice, not the
 absence of one, which is what `PDR-0052` forbids.

@@ -221,11 +221,12 @@ Supported runtime types include scalar values, booleans, fixed and N-dimensional
 - `one_hot`
 - `binary`
 - `log_scaled`
-- `clipped_log_scaled`
 - `rank_scaled`
 - `masked_value`
 
-The schema validates required parameters. For example, `minmax` requires ordered `min` and `max`, `zscore` requires non-zero `std`, `one_hot` requires at least two categories, and `cyclical_sin_cos` requires a positive period.
+Nine, not ten: `clipped_log_scaled` was deleted when clamping became a **parameter** (`hamlet-fba56feca5`, `PDR-0054`). `clip` is required on the two range-based kinds (`minmax`, `log_scaled`) and forbidden on the rest, so `log_scaled` + `clip: true` is exactly what `clipped_log_scaled` did — and a plain linear clamp, which had no member at all, is now `minmax` + `clip: true`.
+
+The schema validates required parameters. For example, `minmax` requires ordered `min` and `max` **and an explicit `clip`**, `zscore` requires non-zero `std`, `one_hot` requires at least two categories, and `cyclical_sin_cos` requires a positive period.
 
 ### `ObservationField`
 

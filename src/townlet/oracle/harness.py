@@ -46,9 +46,12 @@ from townlet.oracle.trace_io import CellVerdict, HarnessError, RunParams, Trace,
 _ADJUDICATION_NOTE = (
     "A cell passes only as AGREE, SKIPPED, or DIVERGED_AS_REGISTERED naming its "
     "known-divergences entry in register_refs. DIVERGED_AS_REGISTERED requires ALL "
-    "of: old side crashed (nonzero exit) leaving no trace, with the registered "
-    "signature inside the final exception text of its stderr; new side ran and "
-    "produced a trace valid for the cell's own params from the declared src root. "
+    "EITHER shape's conditions. Shape 1 (old-side-crash): old side crashed "
+    "(nonzero exit) leaving no trace, with the registered signature inside the "
+    "final exception text of its stderr; new side ran and produced a trace valid "
+    "for the cell's own params from the declared src root. Shape 2 (hash-only): "
+    "both sides ran, EXACTLY the enumerated provenance hashes differ — no more, "
+    "no fewer — and every trace stream matches byte-for-byte. "
     "Everything else fails the run — an old-side failure without the signature or "
     "without a traceback, a non-crash failure, a crash that still wrote a trace, a "
     "registered divergence whose new side also fails (not yet built), a registered "
@@ -427,7 +430,7 @@ def run_cell(*, repo_root: Path, old_src: Path, new_src: Path, cell: Cell, run_d
             },
         )
 
-    verdict = compare_traces(old_trace, new_trace, cell_id=cell.cell_id)
+    verdict = compare_traces(old_trace, new_trace, cell_id=cell.cell_id, hash_divergence=cell.hash_divergence)
     if expected is not None:
         # The old side RAN on a cell registered to crash: the registered
         # divergence did not manifest. This must fail even — especially — when

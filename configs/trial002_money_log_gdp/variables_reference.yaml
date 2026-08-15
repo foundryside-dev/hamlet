@@ -12,5 +12,6 @@ variables:
     description: "Aggregate economic output, observed log-scaled."
     normalization:
       kind: log_scaled
+      clip: false
       min: 1.0
       max: 1000000.0

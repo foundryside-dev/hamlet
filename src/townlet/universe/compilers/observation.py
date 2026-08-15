@@ -400,7 +400,12 @@ class ObservationCompiler:
                 )
             mins.append(float(declared.min))
             maxes.append(float(declared.max))
-        return NormalizationSpec(kind="minmax", min=mins, max=maxes)
+        # `clip=False` here is behaviour-preserving, not a chosen default: minmax has always been
+        # pure affine rescaling, and bar values stay in range because the BAR is clamped at
+        # runtime, not because the normalizer clamps. Meters cannot declare `clip` at all yet —
+        # they cannot declare a normalization kind either. That is hamlet-3d3039f340, planned as
+        # PDR-0054 W2/W3, which deletes this method rather than parameterizing it further.
+        return NormalizationSpec(kind="minmax", min=mins, max=maxes, clip=False)
 
     def build_vfs_variables(self, obs_spec: ObservationSpec, environment: EnvConfigV21) -> tuple[VariableDef, ...]:
         """Build VFS variables from observation fields + environment variables."""
@@ -531,11 +536,12 @@ class ObservationCompiler:
         - `none` was in the approved vocabulary and rejected unconditionally
           here — a member no author could ever select.
 
-        Real clamping is a genuine capability and is NOT provided by removing
-        the false promise of it: no plain clamp exists in the VFS kind
-        vocabulary either (`clipped_log_scaled` clamps but also log-scales).
-        Adding one is a grammar extension, owner-gated under PDR-0016 —
-        tracked separately rather than smuggled in here.
+        Real clamping was NOT provided by removing the false promise of it, and
+        it arrived separately as the owner-approved grammar extension
+        `hamlet-fba56feca5`: a required `clip` PARAMETER on `normalize`, which
+        composes with the range-based kinds instead of multiplying members. The
+        redundant `clipped_log_scaled` kind was deleted in the same change
+        (PDR-0054 ruling 3).
         """
         if norm_cfg is None:
             raise ValueError(
@@ -549,6 +555,7 @@ class ObservationCompiler:
         range_values = getattr(norm_cfg, "range", None)
         mean = getattr(norm_cfg, "mean", None)
         std = getattr(norm_cfg, "std", None)
+        clip = getattr(norm_cfg, "clip", None)
 
         if method is None:
             raise ValueError(
@@ -562,7 +569,7 @@ class ObservationCompiler:
                 raise ValueError(
                     f"Normalization range must provide exactly two values [min, max].\n  Variable: {var_name}\n  Got: {range_values}"
                 )
-            return NormalizationSpec(kind="minmax", min=range_values[0], max=range_values[1])
+            return NormalizationSpec(kind="minmax", min=range_values[0], max=range_values[1], clip=clip)
         if method == "standardize":
             if mean is None or std is None:
                 raise ValueError(

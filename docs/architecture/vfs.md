@@ -785,7 +785,6 @@ cyclical_sin_cos
 one_hot
 binary
 log_scaled
-clipped_log_scaled
 rank_scaled
 masked_value
 ```
@@ -800,11 +799,20 @@ Examples:
 
 - source_variable: "money"
   normalization:
-    kind: "clipped_log_scaled"
+    kind: "log_scaled"
     min: 0.0
     max: 1000.0
     clip: true
 ```
+
+> **Corrected 2026-08-15** (`PDR-0054`, `hamlet-fba56feca5`). This section listed **ten**
+> kinds including `clipped_log_scaled`, and its own money example then passed `clip: true`
+> to it — a parameter the kind's name already implied. That redundancy was the tell:
+> clamping is a *parameter*, not a member. It is now required on the two range-based kinds
+> (`minmax`, `log_scaled`) and forbidden on the rest, `clipped_log_scaled` is deleted, and
+> the example above is the same declaration with the member folded into the parameter.
+> The gain is that a **plain linear clamp** — which no member offered, so it was
+> unauthorable — is `minmax` + `clip: true`.
 
 Normalisation must be part of the observation schema hash.
 

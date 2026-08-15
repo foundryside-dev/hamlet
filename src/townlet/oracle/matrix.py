@@ -124,6 +124,83 @@ class RegisteredDivergence:
 
 
 @dataclass(frozen=True)
+class RegisteredHashDivergence:
+    """One cell's declared binding for the SECOND divergence shape: provenance
+    moved as intended, behaviour did not.
+
+    `RegisteredDivergence` above covers old-side-crash. This covers the shape
+    WS-4 produces by construction: the authoring surface changes, so the
+    compiled artifact hashes differently, while every observable byte of the
+    run is unchanged. Without it the harness cannot express that at all —
+    `compare_traces` returns HASH_MISMATCH and short-circuits BEFORE comparing
+    a single stream, so the oracle goes blind on exactly the surface WS-4
+    exists to change. Same failure as `hamlet-2090c9f16d` one layer up:
+    the harness stops answering at the moment of use.
+
+    Added because a register entry needs it (DIV-004), which is the bar the
+    sibling class sets for new shapes — not speculatively.
+
+    Narrowness (PDR-0033 — a suppression mechanism is a machine for
+    manufacturing false AGREEs if it is loose):
+
+    - `hash_fields` is an ENUMERATED set, never a wildcard. A hash moving
+      outside it keeps the cell red, and the verdict detail separates the
+      declared movers from the undeclared ones.
+    - The declared set must match the observed set EXACTLY. A declared field
+      that did NOT move is a stale entry and lands
+      `REGISTERED_DIVERGENCE_ABSENT`, the same treatment the crash shape gets
+      when the oracle stops crashing.
+    - Streams are still compared in full, byte-exact. The declaration
+      suppresses nothing about behaviour; it only stops provenance inequality
+      from pre-empting the comparison that matters.
+
+    What construction cannot decide is left to the declarer and review: RAW
+    hashes (`environment_hash`, `stratum_hash`, … — `_compute_pydantic_hash`
+    over a whole config file) move for ANY edit to that file, so listing one
+    is far weaker evidence than listing a DERIVED hash
+    (`observation_schema_hash`, `vfs_hash`, …) that names what the compiler
+    actually built. Declare the derived ones deliberately; the raw one is a
+    consequence.
+    """
+
+    register_ref: str  # e.g. "DIV-004" — must name a docs/oracle/known-divergences.md entry
+    hash_fields: tuple[str, ...]  # exact set of *_hash fields permitted (and required) to differ
+
+    def __post_init__(self) -> None:
+        if not _REGISTER_REF_RE.fullmatch(self.register_ref):
+            raise ValueError(f"register_ref must look like 'DIV-004', got {self.register_ref!r}")
+        if not self.hash_fields:
+            raise ValueError(
+                "hash_fields must enumerate at least one *_hash field — an empty set is a wildcard "
+                "by another name, and would let any provenance movement pass unremarked"
+            )
+        if len(set(self.hash_fields)) != len(self.hash_fields):
+            raise ValueError(f"hash_fields contains duplicates: {self.hash_fields!r}")
+        for name in self.hash_fields:
+            if not name.endswith("_hash"):
+                raise ValueError(
+                    f"hash_fields entry {name!r} is not a provenance hash field — entries must end in '_hash', "
+                    f"so a typo cannot silently widen the declaration to something that never matches"
+                )
+
+    @property
+    def declared(self) -> frozenset[str]:
+        return frozenset(self.hash_fields)
+
+
+# DIV-004 — the normalization-vocabulary programme (WS-4, PDR-0054). MEASURED
+# on all five default_curriculum levels by compiling the live tree against a
+# worktree at the pre-change commit: exactly these three hashes move, and
+# observation_spec.total_dims is unchanged at every level. `environment_hash`
+# is RAW (_compute_pydantic_hash over the whole file) so it would move for any
+# edit; the two DERIVED hashes are what the entry actually asserts.
+_DIV004 = RegisteredHashDivergence(
+    register_ref="DIV-004",
+    hash_fields=("environment_hash", "observation_schema_hash", "vfs_hash"),
+)
+
+
+@dataclass(frozen=True)
 class Cell:
     params: RunParams
     # None for the overwhelming default: the cell is expected to AGREE.
@@ -139,6 +216,12 @@ class Cell:
     # that the two packs still describe the SAME universe in two schemas; it is
     # never inferred from the fact that they differ.
     pack_divergence: str | None = None
+    # Names the entry under which this cell's compiled provenance hashes are
+    # allowed — and required — to differ, with behaviour unchanged. Distinct
+    # from pack_divergence on purpose: a declared INPUT delta and a declared
+    # OUTPUT delta are two decisions (oracle_fixtures/README.md), and one does
+    # not bless the other.
+    hash_divergence: RegisteredHashDivergence | None = None
 
     @property
     def declares_pack_divergence(self) -> bool:
@@ -161,11 +244,18 @@ def default_cells() -> tuple[Cell, ...]:
     that drops CUDA cells entirely without the flag would make that skip
     silent instead of reported.
 
-    No STANDING cell declares an expected divergence (pinned by test) — only
-    the DIV-003 fixture cells do, each binding the register entry with its
+    No STANDING cell declares an expected CRASH divergence (pinned by test) —
+    only the DIV-003 fixture cells do, each binding the register entry with its
     tag-verified signature. Pre-cut they land NEW_SIDE_ERROR (both sides
     crash — the divergence is not yet built); they flip to
     DIVERGED_AS_REGISTERED when the seam is cut.
+
+    Every standing cell DOES declare DIV-004, the hash-only shape: WS-4 changes
+    the authoring surface, so the frozen pack stays at the old schema, the two
+    sides compile different `environment.yaml` files, and the compiled
+    provenance moves by construction. The three fields are enumerated because
+    they were MEASURED across all five levels, not predicted — and the cells
+    still fail on any fourth mover or on any stream difference.
     """
     standing = tuple(
         Cell(
@@ -176,7 +266,9 @@ def default_cells() -> tuple[Cell, ...]:
                 steps=100,
                 seed=42,
                 device=device,
-            )
+            ),
+            pack_divergence="DIV-004",
+            hash_divergence=_DIV004,
         )
         for device in ("cpu", "cuda")
         for level in _DEFAULT_LEVELS
@@ -192,6 +284,11 @@ def default_cells() -> tuple[Cell, ...]:
                 device=device,
             ),
             expected=RegisteredDivergence(register_ref="DIV-003", old_stderr_substring=signature),
+            # These packs are copies of default_curriculum, so DIV-004's schema
+            # change reaches them too and the frozen fixtures stay behind. No
+            # hash_divergence: the old side crashes and writes no trace, so
+            # there is nothing to compare hashes against.
+            pack_divergence="DIV-004",
         )
         for device in ("cpu", "cuda")
         for pack_dir, level, signature in _DIV003_FIXTURES

@@ -190,6 +190,80 @@ entry — or add DIV-004 — with its cell **before** cutting, per this register
 
 ---
 
+## DIV-004 — The normalization-vocabulary programme: the authoring surface changes, so the compiled provenance moves and behaviour does not
+
+- **Status:** `built` (2026-08-15 — declared before the first cut of the programme, per this
+  register's own record-then-bind rule; W1 is the first cut it covers).
+- **Harness shape: hash-only**
+- **Provenance:** `PDR-0054` (the plan this entry serves) · `PDR-0052` / `PDR-0053`
+  (underspecification is a compile error; `range_type` is the complete type declaration) ·
+  `PDR-0037` (record-then-bind order) · `hamlet-fba56feca5`, `hamlet-3d3039f340`,
+  `hamlet-365e996511`
+- **Surface:** the meter/variable normalization authoring surface — `environment.yaml`
+  `variables[].normalization`, `MeterConfig.range_type`, and the `NormalizationSpec`
+  vocabulary they compile into.
+
+**Why one entry and not three.** W1 (the `clip` parameter), W2/W3 (`range_type` as the
+complete type declaration, and per-meter normalizers), and W7 (every pack rewritten) are
+three cuts of ONE continuous divergence: the frozen fixture sits at the pre-programme
+`environment.yaml` schema for the whole duration regardless. Three entries would describe
+three moments of one state.
+
+**Oracle behaviour (verified at `0e875d7a`, 2026-08-15).** The frozen `NormalizationConfig`
+is `ConfigDict(extra="forbid")` and rejects the new key outright — measured by parsing the
+live pack with the oracle worktree's `src` on `PYTHONPATH`:
+
+```
+4 validation errors for EnvironmentConfig
+environment.variables.0.normalization.clip
+  Extra inputs are not permitted [type=extra_forbidden, input_value=False, input_type=bool]
+```
+
+So the frozen fixtures under `oracle_fixtures/` **stay at the old schema deliberately**
+(`oracle_fixtures/README.md`: *"If it is a schema change, leave the fixture at the old
+schema, set `pack_divergence` on the affected cells, and register the entry"*). This is the
+first real use of the input-freeze built at `49bdf28e` for `hamlet-2090c9f16d`.
+
+**Intended new behaviour.** The two sides compile different `environment.yaml` files, so the
+compiled provenance differs; the WORLD does not. Measured across all five
+`default_curriculum` levels by compiling the live tree against a git worktree at the
+pre-change commit — **exactly three hashes move, uniformly, at every level**:
+
+| hash | family | moves | why |
+|---|---|---|---|
+| `environment_hash` | RAW | yes | `_compute_pydantic_hash` over the whole file — moves for any edit, so it is the weakest of the three as evidence |
+| `observation_schema_hash` | DERIVED | yes | the compiled `NormalizationSpec` carries a new field |
+| `vfs_hash` | DERIVED | yes | same specs, mirrored into the VFS observation fields |
+
+and `observation_spec.total_dims` is **unchanged at 124** on every level.
+
+**Harness adjudication.** Bound per-cell in `src/townlet/oracle/matrix.py` via
+`RegisteredHashDivergence("DIV-004", hash_fields=(...))` on every STANDING cell. A cell
+passes as `DIVERGED_AS_REGISTERED` only when the observed set of moved hashes equals the
+declared set **exactly** and **every trace stream matches byte-for-byte**. Specifically:
+
+- A **fourth** hash moving → `HASH_MISMATCH`, red. The rebuild changed more than this entry
+  claims.
+- A declared hash **not** moving → `REGISTERED_DIVERGENCE_ABSENT`, red. The entry is stale —
+  reconcile it, do not relax it. (Same treatment DIV-003 gets when the oracle stops crashing.)
+- Any stream difference → `DIVERGE`, red. **This entry suppresses nothing about behaviour.**
+  Before it existed, `compare_traces` returned `HASH_MISMATCH` and short-circuited *before*
+  comparing a single stream — the harness could not express "provenance moved as intended,
+  behaviour did not" at all, which would have made the oracle blind on precisely the surface
+  WS-4 exists to change. That is `hamlet-2090c9f16d` one layer up, and fixing it is the
+  second `RegisteredDivergence` shape.
+
+The six DIV-003 fixture cells declare `pack_divergence="DIV-004"` (their packs are copies of
+`default_curriculum`, so the schema change reaches them) but **no** `hash_divergence`: their
+old side crashes and writes no trace, so there are no hashes to compare.
+
+**Retire this entry** when the oracle is re-tagged past the programme. Until then, expanding
+it is correct — extending the `hash_fields` tuple as W2/W3 move more derived hashes — but
+each expansion must be re-measured, not predicted, and the measurement recorded here.
+
+
+---
+
 ## Adding an entry
 
 Record the divergence **before** cutting the seam that produces it — at knockdown plan time,

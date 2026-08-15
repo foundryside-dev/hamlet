@@ -129,6 +129,7 @@ environment:
       description: "How far below target energy (0.0 = at/above target)"
       normalization:
         method: normalize
+        clip: false
         range: [0.0, 1.0]
 
     - name: deficit_satiation
@@ -138,6 +139,7 @@ environment:
       description: "How far below target satiation"
       normalization:
         method: normalize
+        clip: false
         range: [0.0, 1.0]
 
     - name: time_since_last_eat
@@ -147,6 +149,7 @@ environment:
       description: "Timesteps since last EAT action"
       normalization:
         method: normalize
+        clip: false
         range: [0.0, 100.0]
 
     - name: time_since_last_sleep
@@ -156,6 +159,7 @@ environment:
       description: "Timesteps since last SLEEP action"
       normalization:
         method: normalize
+        clip: false
         range: [0.0, 100.0]
 
   cues:

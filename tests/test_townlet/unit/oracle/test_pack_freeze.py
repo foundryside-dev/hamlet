@@ -38,11 +38,32 @@ def test_every_matrix_pack_has_a_frozen_fixture() -> None:
 
 
 @pytest.mark.parametrize("logical_pack", _matrix_packs())
-def test_the_freeze_is_a_provable_no_op_today(logical_pack: str) -> None:
-    """Frozen and live packs are byte-identical, so pointing the oracle side at
-    the fixtures cannot change any verdict. When the first schema divergence
-    lands this test is what forces it to be DECLARED rather than absorbed."""
-    assert pack_drift(REPO_ROOT, logical_pack) == {}
+def test_every_drifting_pack_is_declared_by_every_cell_that_reads_it(logical_pack: str) -> None:
+    """The freeze was a provable no-op until DIV-004; now it is not, and this
+    test is what stopped that from being absorbed silently.
+
+    It was written as `pack_drift(...) == {}` and it FAILED the moment the
+    first schema change landed — which is exactly the job. Rewritten to the
+    weaker-but-still-load-bearing claim: drift is permitted only where every
+    cell reading that pack names a register entry for it. A pack that drifts
+    with even one cell silent still fails here, before the harness runs.
+    """
+    drift = pack_drift(REPO_ROOT, logical_pack)
+    readers = [cell for cell in default_cells() if cell.params.pack == logical_pack]
+    assert readers, f"no matrix cell reads {logical_pack}"
+    undeclared = [cell.cell_id for cell in readers if not cell.declares_pack_divergence]
+    if drift:
+        assert (
+            not undeclared
+        ), f"{logical_pack} drifts from its frozen fixture but these cells declare nothing: {undeclared}\n  drift: {drift}"
+    else:
+        # No drift is the resting state, and a declaration with nothing to
+        # declare is a stale entry — the same failure REGISTERED_DIVERGENCE_ABSENT
+        # names for output divergences.
+        stale = [cell.cell_id for cell in readers if cell.declares_pack_divergence]
+        assert (
+            not stale
+        ), f"{logical_pack} is byte-identical to its frozen fixture, but these cells still declare a pack divergence: {stale}"
 
 
 def test_fixtures_live_outside_configs() -> None:

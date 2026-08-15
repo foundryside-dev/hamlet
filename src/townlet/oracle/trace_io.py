@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
@@ -148,7 +149,16 @@ def _divergence_mask(old_arr: np.ndarray, new_arr: np.ndarray) -> np.ndarray:
     return np.asarray(value_diff | nan_mismatch | sign_diff)
 
 
-def compare_traces(old: Trace, new: Trace, cell_id: str) -> CellVerdict:
+def compare_traces(old: Trace, new: Trace, cell_id: str, *, hash_divergence: Any = None) -> CellVerdict:
+    """Adjudicate one cell from both sides' traces.
+
+    `hash_divergence` is an optional `matrix.RegisteredHashDivergence` (typed
+    loosely to keep this module free of a matrix import, the same way the crash
+    shape is matched in harness.py). When present it permits — and REQUIRES —
+    exactly the named provenance hashes to differ, and then continues to the
+    full byte-exact stream comparison instead of short-circuiting. Behaviour is
+    never suppressed: a stream divergence still returns DIVERGE.
+    """
     if old.params != new.params:
         raise HarnessError(
             f"trace params differ between sides for cell {cell_id}: " f"{old.params} vs {new.params} — harness bug, not a finding"
@@ -167,7 +177,30 @@ def compare_traces(old: Trace, new: Trace, cell_id: str) -> CellVerdict:
                 "old": "<absent>" if old_val is _ABSENT else old_val,
                 "new": "<absent>" if new_val is _ABSENT else new_val,
             }
-    if mismatched:
+    declared: frozenset[str] = hash_divergence.declared if hash_divergence is not None else frozenset()
+    observed = frozenset(mismatched)
+
+    if declared and observed != declared:
+        # Either shape is a finding, and they are reported apart because they
+        # mean opposite things: an undeclared mover is a rebuild changing more
+        # than the entry claims; a declared field that did NOT move is a stale
+        # entry, the same condition REGISTERED_DIVERGENCE_ABSENT names for the
+        # crash shape. Neither may pass.
+        undeclared = sorted(observed - declared)
+        absent = sorted(declared - observed)
+        hash_detail: dict[str, object] = {
+            "mismatched": mismatched,
+            "declared": sorted(declared),
+            "register_ref": hash_divergence.register_ref,
+        }
+        if undeclared:
+            hash_detail["undeclared_movers"] = undeclared
+        if absent:
+            hash_detail["declared_but_unmoved"] = absent
+        kind = "HASH_MISMATCH" if undeclared else "REGISTERED_DIVERGENCE_ABSENT"
+        return CellVerdict(kind=kind, cell_id=cell_id, detail=hash_detail)
+
+    if mismatched and not declared:
         return CellVerdict(kind="HASH_MISMATCH", cell_id=cell_id, detail={"mismatched": mismatched})
 
     for (old_step, old_stream, old_arr), (_, _, new_arr) in zip(_stream_steps(old), _stream_steps(new), strict=True):
@@ -214,5 +247,15 @@ def compare_traces(old: Trace, new: Trace, cell_id: str) -> CellVerdict:
             max_abs_diff = float(np.max(diffs)) if diffs.size else 0.0
             detail["max_abs_diff"] = max_abs_diff if np.isfinite(max_abs_diff) else "non-finite"
         return CellVerdict(kind="DIVERGE", cell_id=cell_id, detail=detail)
+
+    if declared:
+        # Every stream matched byte-for-byte and exactly the declared hashes
+        # moved: provenance changed as registered, behaviour did not.
+        return CellVerdict(
+            kind="DIVERGED_AS_REGISTERED",
+            cell_id=cell_id,
+            detail={"shape": "hash-only", "mismatched": mismatched},
+            register_refs=(hash_divergence.register_ref,),
+        )
 
     return CellVerdict(kind="AGREE", cell_id=cell_id, detail={})

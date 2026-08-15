@@ -90,7 +90,8 @@ def apply_normalization(value: torch.Tensor, normalization: NormalizationSpec) -
     if normalization.kind == "minmax":
         min_value = _normalization_parameter(normalization.min, value_float, "min")
         max_value = _normalization_parameter(normalization.max, value_float, "max")
-        return (value_float - min_value) / (max_value - min_value)
+        scaled = torch.clamp(value_float, min=min_value, max=max_value) if normalization.clip else value_float
+        return (scaled - min_value) / (max_value - min_value)
 
     if normalization.kind == "zscore":
         mean = _normalization_parameter(normalization.mean, value_float, "mean")
@@ -120,14 +121,10 @@ def apply_normalization(value: torch.Tensor, normalization: NormalizationSpec) -
             raise ValueError("one_hot normalization received category index outside configured range")
         return torch.nn.functional.one_hot(indices, num_classes=normalization.categories).to(dtype=torch.float32)
 
-    if normalization.kind in {"log_scaled", "clipped_log_scaled"}:
+    if normalization.kind == "log_scaled":
         min_value = _normalization_parameter(normalization.min, value_float, "min")
         max_value = _normalization_parameter(normalization.max, value_float, "max")
-        shifted = (
-            torch.clamp(value_float, min=min_value, max=max_value) - min_value
-            if normalization.kind == "clipped_log_scaled"
-            else value_float - min_value
-        )
+        shifted = (torch.clamp(value_float, min=min_value, max=max_value) if normalization.clip else value_float) - min_value
         if bool((shifted < 0).any().item()):
             raise ValueError("log_scaled normalization received value below configured min")
         return torch.log1p(shifted) / torch.log1p(max_value - min_value)

@@ -145,17 +145,35 @@ def test_registered_divergence_rejects_unicode_digit_refs() -> None:
         RegisteredDivergence(register_ref="DIV-٠٠٣", old_stderr_substring=_GOOD_SIGNATURE)
 
 
-def test_no_cell_declares_anything_at_this_tag() -> None:
-    """Pin (PDR-0074): at oracle-2026-08-17 the whole matrix certifies bare
-    agreement — no `expected`, no `pack_divergence`, no `hash_divergence` on
-    any cell — so exit 0 means AGREE, not "diverged exactly as registered".
-    A declaration sprouting anywhere silently changes what exit 0 certifies;
-    it returns only with a register entry that needs it (PDR-0037), and the
-    first is DIV-006 on the profile-variable cells."""
+def test_standing_and_differential_cells_declare_nothing_at_this_tag() -> None:
+    """Pin (PDR-0074): the sixteen non-profile cells certify bare agreement —
+    no `expected`, no `pack_divergence`, no `hash_divergence` — so for them
+    exit 0 means AGREE, not "diverged exactly as registered". A declaration
+    sprouting on one of them silently changes what exit 0 certifies; it
+    returns only with a register entry that needs it (PDR-0037)."""
     for c in default_cells():
+        if c.params.pack in _PROFILE_VARIABLE_CELLS:
+            continue
         assert c.expected is None, f"{c.cell_id} declares an old-side-crash expectation"
         assert c.pack_divergence is None, f"{c.cell_id} declares a pack divergence"
         assert c.hash_divergence is None, f"{c.cell_id} declares a hash divergence"
+
+
+def test_profile_variable_cells_bind_div006_narrowly() -> None:
+    """DIV-006 (PDR-0075) is hash-only on the four profile-variable cells: exactly the
+    three DERIVED hashes measured to move, no RAW hash, and a pack divergence only where
+    the frozen fixture actually differs (effects_smoke gained `semantic_type`; items_smoke
+    declares only item variables and is still a byte copy of its fixture)."""
+    profile = [c for c in default_cells() if c.params.pack in _PROFILE_VARIABLE_CELLS]
+    assert len(profile) == 4
+    for c in profile:
+        assert c.expected is None
+        assert c.hash_divergence is not None and c.hash_divergence.register_ref == "DIV-006"
+        assert c.hash_divergence.declared == {"observation_schema_hash", "variable_schema_hash", "vfs_hash"}
+        if c.params.pack == "configs/test/effects_smoke":
+            assert c.pack_divergence == "DIV-006"
+        else:
+            assert c.pack_divergence is None, f"{c.cell_id}: items_smoke's fixture is a byte copy; nothing to declare"
 
 
 def test_differential_cells_run_their_declared_levels() -> None:

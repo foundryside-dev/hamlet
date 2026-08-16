@@ -5,9 +5,11 @@ debug_logging: false
 global_profile:
   variables:
     - name: a
+      semantic_type: custom
       type: float
       expression: "b + 1"
     - name: b
+      semantic_type: custom
       type: float
       expression: "a + 1"
 

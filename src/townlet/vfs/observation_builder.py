@@ -57,6 +57,29 @@ def _agent_can_observe(var) -> bool:
     return "agent" in var.exposed_to
 
 
+def agent_can_observe(var) -> bool:
+    """True when a profile variable is exposed to the agent (public twin of the predicate the
+    spec builder uses, so the compiler emits fields for exactly the variables the runtime
+    would have flattened — one rule, two callers, PDR-0075)."""
+    return _agent_can_observe(var)
+
+
+def profile_variable_observation_dim(var, *, scope: str | None = None) -> int:
+    """Flattened observation width of one profile variable, by its declared type/shape/dims.
+
+    The same rule `VFSObservationSpec` sums per scope, exposed so the compiler can emit ONE
+    observation field per global/agent profile variable at exactly the width the runtime
+    reads (PDR-0075).
+    """
+    return _variable_observation_dim(
+        var.type,
+        getattr(var, "shape", None),
+        scope=scope,
+        dims=getattr(var, "dims", None),
+        max_elements=VFSObservationSpec.max_tensor_elements,
+    )
+
+
 def _normalization_parameter(
     value: float | list[float] | None,
     target: torch.Tensor,

@@ -22,18 +22,21 @@ def test_compiler_generates_vfs_expression_schema(tmp_path: Path):
         "global_profile": {
             "variables": [
                 {
+                    "semantic_type": "custom",
                     "name": "day_count",
                     "type": "int",
                     "initial_value": 0,
                     "description": "Number of days elapsed",
                 },
                 {
+                    "semantic_type": "custom",
                     "name": "is_night",
                     "type": "bool",
                     "initial_value": False,
                     "description": "Whether it is currently night time",
                 },
                 {
+                    "semantic_type": "custom",
                     "name": "ambient_temperature",
                     "type": "float",
                     "initial_value": 20.0,

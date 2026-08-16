@@ -131,23 +131,20 @@ def test_item_vfs_observations_include_held_items():
     assert obs.shape[1] == initial_obs_dim, f"Observation dimensions changed: {initial_obs_dim} -> {obs.shape[1]}"
 
     # Calculate item VFS slice indices from observation spec
-    # obs_vfs contains: [global_vfs | agent_vfs | item_vfs]
+    # PDR-0075: the item sub-block is its own compiler-emitted feature field, `obs_item_slots`;
+    # global/agent profile variables are separate per-variable fields and no longer share a block.
     vfs_field = None
     for field in env.observation_spec.fields:
-        if field.name == "obs_vfs":
+        if field.name == "obs_item_slots":
             vfs_field = field
             break
 
     assert (
         vfs_field is not None
-    ), f"obs_vfs field not found in observations! Available fields: {[f.name for f in env.observation_spec.fields]}"
+    ), f"obs_item_slots field not found in observations! Available fields: {[f.name for f in env.observation_spec.fields]}"
 
-    # Extract full VFS slice, then offset to item portion
-    vfs_obs = obs[:, vfs_field.start_index : vfs_field.end_index]
-
-    # Item VFS starts after global and agent VFS
-    item_vfs_offset = env.vfs_observation_spec.global_vfs_dim + env.vfs_observation_spec.agent_vfs_dim
-    item_vfs_obs = vfs_obs[:, item_vfs_offset : item_vfs_offset + item_vfs_dim]
+    item_vfs_obs = obs[:, vfs_field.start_index : vfs_field.end_index]
+    assert item_vfs_obs.shape[1] == item_vfs_dim
 
     # Verify shape: [batch, item_vfs_dim]
     assert item_vfs_obs.shape == (4, item_vfs_dim), f"Expected (4, {item_vfs_dim}), got {item_vfs_obs.shape}"
@@ -255,16 +252,16 @@ def test_item_vfs_masking_with_different_profiles():
     # Get observations and verify masking
     obs = env._get_observations()
 
-    # Find obs_vfs field in observations
+    # Find the item-slot feature field (PDR-0075: `obs_item_slots` IS the item sub-block)
     vfs_field = None
     for field in env.observation_spec.fields:
-        if field.name == "obs_vfs":
+        if field.name == "obs_item_slots":
             vfs_field = field
             break
 
     assert (
         vfs_field is not None
-    ), f"obs_vfs field not found in observations! Available fields: {[f.name for f in env.observation_spec.fields]}"
+    ), f"obs_item_slots field not found in observations! Available fields: {[f.name for f in env.observation_spec.fields]}"
 
     # Extract full VFS slice, then offset to item portion
     vfs_obs = obs[:, vfs_field.start_index : vfs_field.end_index]
@@ -335,16 +332,16 @@ def test_item_vfs_updates_in_observations():
     # Get observation after VFS update
     obs_after = env._get_observations()
 
-    # Find obs_vfs field in observations
+    # Find the item-slot feature field (PDR-0075: `obs_item_slots` IS the item sub-block)
     vfs_field = None
     for field in env.observation_spec.fields:
-        if field.name == "obs_vfs":
+        if field.name == "obs_item_slots":
             vfs_field = field
             break
 
     assert (
         vfs_field is not None
-    ), f"obs_vfs field not found in observations! Available fields: {[f.name for f in env.observation_spec.fields]}"
+    ), f"obs_item_slots field not found in observations! Available fields: {[f.name for f in env.observation_spec.fields]}"
 
     # Extract full VFS slice from both observations, then offset to item portion
     vfs_obs_before = obs_before[:, vfs_field.start_index : vfs_field.end_index]

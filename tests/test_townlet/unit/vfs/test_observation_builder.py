@@ -18,8 +18,8 @@ def test_vfs_obs_spec_global_variables():
     """Global VFS variables contribute to obs_dim."""
     global_profile = GlobalVFSProfileConfig(
         variables=[
-            GlobalVFSVariableConfig(name="day_count", type="int", initial_value=0),
-            GlobalVFSVariableConfig(name="is_night", type="bool", expression="tick % 24 >= 18"),
+            GlobalVFSVariableConfig(semantic_type="custom", name="day_count", type="int", initial_value=0),
+            GlobalVFSVariableConfig(semantic_type="custom", name="is_night", type="bool", expression="tick % 24 >= 18"),
         ]
     )
 
@@ -40,9 +40,9 @@ def test_vfs_obs_spec_agent_variables():
     """Agent VFS variables contribute to obs_dim."""
     agent_profile = AgentVFSProfileConfig(
         variables=[
-            AgentVFSVariableConfig(name="motivation", type="float", initial_value=1.0),
-            AgentVFSVariableConfig(name="is_crisis", type="bool", expression="bar.energy < 0.2"),
-            AgentVFSVariableConfig(name="crisis_duration", type="int", initial_value=0),
+            AgentVFSVariableConfig(semantic_type="custom", name="motivation", type="float", initial_value=1.0),
+            AgentVFSVariableConfig(semantic_type="custom", name="is_crisis", type="bool", expression="bar.energy < 0.2"),
+            AgentVFSVariableConfig(semantic_type="custom", name="crisis_duration", type="int", initial_value=0),
         ]
     )
 
@@ -64,14 +64,14 @@ def test_vfs_obs_spec_respects_exposed_to():
 
     global_profile = GlobalVFSProfileConfig(
         variables=[
-            GlobalVFSVariableConfig(name="g_visible", type="int", initial_value=0, exposed_to=["agent"]),
-            GlobalVFSVariableConfig(name="g_hidden", type="int", initial_value=1, exposed_to=["engine"]),
+            GlobalVFSVariableConfig(semantic_type="custom", name="g_visible", type="int", initial_value=0, exposed_to=["agent"]),
+            GlobalVFSVariableConfig(semantic_type="custom", name="g_hidden", type="int", initial_value=1, exposed_to=["engine"]),
         ]
     )
     agent_profile = AgentVFSProfileConfig(
         variables=[
-            AgentVFSVariableConfig(name="a_visible", type="bool", initial_value=True, exposed_to=["agent"]),
-            AgentVFSVariableConfig(name="a_hidden", type="bool", initial_value=False, exposed_to=["engine"]),
+            AgentVFSVariableConfig(semantic_type="custom", name="a_visible", type="bool", initial_value=True, exposed_to=["agent"]),
+            AgentVFSVariableConfig(semantic_type="custom", name="a_hidden", type="bool", initial_value=False, exposed_to=["engine"]),
         ]
     )
     item_profile = ItemVFSProfileConfig(
@@ -100,7 +100,7 @@ def test_vfs_obs_spec_vecn_dimensions():
     """Variable dims are honored for vecNi/vecNf variables."""
     agent_profile = AgentVFSProfileConfig(
         variables=[
-            AgentVFSVariableConfig(name="heading", type="vecNi", dims=4, initial_value=[0, 0, 1, 0]),
+            AgentVFSVariableConfig(semantic_type="custom", name="heading", type="vecNi", dims=4, initial_value=[0, 0, 1, 0]),
         ]
     )
 
@@ -167,12 +167,12 @@ def test_vfs_obs_spec_complete():
     spec = VFSObservationSpec.from_profiles(
         global_profile=GlobalVFSProfileConfig(
             variables=[
-                GlobalVFSVariableConfig(name="day_count", type="int", initial_value=0),
+                GlobalVFSVariableConfig(semantic_type="custom", name="day_count", type="int", initial_value=0),
             ]
         ),
         agent_profile=AgentVFSProfileConfig(
             variables=[
-                AgentVFSVariableConfig(name="motivation", type="float", initial_value=1.0),
+                AgentVFSVariableConfig(semantic_type="custom", name="motivation", type="float", initial_value=1.0),
             ]
         ),
         item_profiles=[
@@ -375,7 +375,7 @@ def test_vfs_observation_spec_tensor_dims_with_guardrail():
     """Spec computation respects tensor shape and guardrails."""
     global_profile = GlobalVFSProfileConfig(
         variables=[
-            GlobalVFSVariableConfig(name="g_tensor", type="tensor1d", shape=[4], initial_value_mode="ones"),
+            GlobalVFSVariableConfig(semantic_type="custom", name="g_tensor", type="tensor1d", shape=[4], initial_value_mode="ones"),
         ]
     )
 
@@ -391,7 +391,7 @@ def test_vfs_observation_spec_tensor_dims_with_guardrail():
     # Guardrail: too-large tensor should raise
     big_global_profile = GlobalVFSProfileConfig(
         variables=[
-            GlobalVFSVariableConfig(name="big", type="tensor2d", shape=[2000, 2000], initial_value=0),
+            GlobalVFSVariableConfig(semantic_type="custom", name="big", type="tensor2d", shape=[2000, 2000], initial_value=0),
         ]
     )
     with pytest.raises(ValueError):
@@ -415,7 +415,7 @@ def test_obs_dim_stable_across_levels():
     l0_spec = VFSObservationSpec.from_profiles(
         global_profile=GlobalVFSProfileConfig(
             variables=[
-                GlobalVFSVariableConfig(name="tick", type="int", initial_value=0),
+                GlobalVFSVariableConfig(semantic_type="custom", name="tick", type="int", initial_value=0),
             ]
         ),
         agent_profile=AgentVFSProfileConfig(variables=[]),
@@ -426,14 +426,14 @@ def test_obs_dim_stable_across_levels():
     l1_spec = VFSObservationSpec.from_profiles(
         global_profile=GlobalVFSProfileConfig(
             variables=[
-                GlobalVFSVariableConfig(name="tick", type="int", initial_value=0),
-                GlobalVFSVariableConfig(name="day_count", type="int", initial_value=0),
-                GlobalVFSVariableConfig(name="is_night", type="bool", expression="tick % 24 >= 18"),
+                GlobalVFSVariableConfig(semantic_type="custom", name="tick", type="int", initial_value=0),
+                GlobalVFSVariableConfig(semantic_type="custom", name="day_count", type="int", initial_value=0),
+                GlobalVFSVariableConfig(semantic_type="custom", name="is_night", type="bool", expression="tick % 24 >= 18"),
             ]
         ),
         agent_profile=AgentVFSProfileConfig(
             variables=[
-                AgentVFSVariableConfig(name="motivation", type="float", initial_value=1.0),
+                AgentVFSVariableConfig(semantic_type="custom", name="motivation", type="float", initial_value=1.0),
             ]
         ),
         item_profiles=[],

@@ -446,6 +446,76 @@ programme.
 
 ---
 
+## DIV-006 — The `obs_vfs` block: global and agent profile variables become one field each with a declared semantic type; the item-slot sub-block becomes a named feature; the compiled provenance moves and behaviour does not
+
+- **Status:** `tag-stamped` (2026-08-17 — oracle behaviour re-verified at `4222a917` by
+  compiling `configs/test/items_smoke` and `configs/test/effects_smoke` with the
+  `.oracle/oracle-2026-08-17` worktree's `src` on `PYTHONPATH`, before any code changed)
+- **Harness shape: hash-only** (`RegisteredHashDivergence`), bound on the **four
+  profile-variable cells only** (`items_smoke:L0_smoke`, `effects_smoke:L0_effects` × cpu/cuda).
+  The sixteen other cells declare nothing and must stay `AGREE`: no matrix pack outside these
+  two declares a profile variable, which is why the cells exist (`PDR-0074`).
+- **Provenance:** `PDR-0075` (the design call, incl. the item-layout fork it filed as
+  `hamlet-1ad6383186`) · `PDR-0066` (the declaration returns where it can reach a field) ·
+  `PDR-0047` / `PDR-0045` · `PDR-0037` (record-then-bind) · `hamlet-f0ed709ecf` (unit 3)
+- **Surface:** the compiled observation fields for VFS **profile** variables
+  (`vfs_profiles.yaml` `global_profile` / `agent_profile` / `item_profiles`), the runtime path
+  that assembles them, and the authoring side: `semantic_type` (required, closed vocabulary,
+  `bars` reserved) on global and agent profile variables.
+
+**Oracle behaviour (verified at `4222a917`, 2026-08-17, through the oracle worktree).** Every
+exposed profile variable is flattened into ONE compiled field `obs_vfs` (`scope="agent"`,
+`semantic_type="custom"`, width = global + agent + slots × max-profile-width), and one
+engine-written registry primitive of the same name is minted for it (`build_vfs_variables`),
+which the runtime then bypasses: `_build_observation_field_from_vfs` branches on
+`field_name != "obs_vfs"` and, for that name, calls `build_vfs_observation` directly against
+the compiled `VFSObservationSpec`. Measured: `items_smoke` L0_smoke — 9 fields, `total_dims`
+61, `obs_vfs` width 3 (two item profiles × one exposed variable each, 3 slots), registry
+primitives include `obs_vfs`; `effects_smoke` L0_effects — 8 fields, `total_dims` 59,
+`obs_vfs` width 1 (global `day_count`), registry variables include both `obs_vfs` and
+`day_count`. Hashes at the tag: items_smoke `observation_schema_hash 7f18e4477f25…`,
+`variable_schema_hash 966d7310298a…`, `vfs_hash 38e5f3407672…`, `environment_hash
+e36047b5ff6c…`; effects_smoke `3f2e8c5d01c7…` / `fa1dbe44459a…` / `aac239a3f749…` /
+`4fd25f6ff6de…`. The three profile variable classes carry **no** `semantic_type` (removed by
+DIV-005 because the block carried one value).
+
+**Intended new behaviour (`PDR-0075`).** One `ObservationField` per exposed global profile
+variable (`scope="global"`) and per exposed agent profile variable (`scope="agent"`), each
+named after its variable and carrying the **author's declared** `semantic_type`; where any
+item profile exposes variables, ONE compiler-emitted feature field `obs_item_slots`
+(`semantic_type="custom"`, same slot × max-width layout as the old sub-block). `obs_vfs` and
+its primitive are gone. The runtime reads every field by the compiled mirror's
+`source_variable` and the variable's **declared scope** — no name branch; `obs_item_slots` is
+synced each tick like the other primitives. `total_dims` unchanged by construction; every
+value at the same offset.
+
+**Diff shape — PREDICTED at `tag-stamped`, to be MEASURED at `built`** against a git worktree
+at the pre-cut commit compiled beside the live tree, on both profile packs and all five
+`default_curriculum` levels:
+
+| hash | family | moves (profile packs) | why |
+|---|---|---|---|
+| `observation_schema_hash` | DERIVED | yes | the field list changes: `obs_vfs` → per-variable fields (+ `obs_item_slots`) |
+| `variable_schema_hash` | DERIVED | yes | the `obs_vfs` primitive disappears; `obs_item_slots` appears where items are exposed |
+| `vfs_hash` | DERIVED | yes | composite of the two above |
+| `environment_hash` | RAW | **no** | `environment.yaml` is untouched by this cut |
+
+`default_curriculum` and the differential packs: **nothing moves** (they declare no profile
+variables), so their sixteen cells must read `AGREE` with no declaration.
+
+**Harness adjudication.** The four profile-variable cells bind
+`RegisteredHashDivergence(register_ref="DIV-006", hash_fields=(observation_schema_hash,
+variable_schema_hash, vfs_hash))` — the measured set, exactly — with every stream byte-exact.
+The frozen fixtures for the two packs stay at the pre-cut `vfs_profiles.yaml` (no
+`semantic_type` key on global/agent variables), so those four cells also declare
+`pack_divergence="DIV-006"`; every other fixture stays a byte copy and declares nothing. Any
+fourth mover is `HASH_MISMATCH`; a declared field that does not move is
+`REGISTERED_DIVERGENCE_ABSENT`; any stream difference is `DIVERGE` — all red.
+
+**Retire this entry** at the next forward move of the tag.
+
+---
+
 ## Adding an entry
 
 Record the divergence **before** cutting the seam that produces it — at knockdown plan time,

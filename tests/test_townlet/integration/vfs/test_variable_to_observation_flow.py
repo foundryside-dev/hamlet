@@ -43,12 +43,12 @@ def test_variable_registry_values_flow_into_agent_observation() -> None:
     ]
     global_profile = GlobalVFSProfileConfig(
         variables=[
-            GlobalVFSVariableConfig(name="weather", type="float", initial_value=0.25, exposed_to=["agent"]),
+            GlobalVFSVariableConfig(semantic_type="custom", name="weather", type="float", initial_value=0.25, exposed_to=["agent"]),
         ]
     )
     agent_profile = AgentVFSProfileConfig(
         variables=[
-            AgentVFSVariableConfig(name="stamina", type="float", initial_value=1.0, exposed_to=["agent"]),
+            AgentVFSVariableConfig(semantic_type="custom", name="stamina", type="float", initial_value=1.0, exposed_to=["agent"]),
         ]
     )
     item_profile = ItemVFSProfileConfig(

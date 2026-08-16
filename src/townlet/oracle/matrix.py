@@ -57,6 +57,7 @@ _PROFILE_VARIABLE_PACKS = (
     ("configs/test/effects_smoke", "L0_effects"),
 )
 
+
 # ASCII: \d alone also matches Unicode decimal digits ('DIV-٠٠٣'), which would
 # construct a ref no register heading can ever carry.
 _REGISTER_REF_RE = re.compile(r"DIV-\d{3}", re.ASCII)
@@ -193,6 +194,30 @@ class RegisteredHashDivergence:
         return frozenset(self.hash_fields)
 
 
+# DIV-006 — unit 3 (hamlet-f0ed709ecf, PDR-0075): the `obs_vfs` block became one field per
+# exposed global/agent profile variable plus the `obs_item_slots` feature. MEASURED on both
+# profile packs by compiling the pre-cut tree (the oracle worktree at 4222a917) beside the
+# live tree: exactly these three DERIVED hashes move; `environment_hash` does not
+# (environment.yaml is untouched), and neither does anything else. `default_curriculum` and
+# the differential packs declare no profile variables, so nothing moves there and their
+# sixteen cells stay undeclared.
+_DIV006 = RegisteredHashDivergence(
+    register_ref="DIV-006",
+    hash_fields=(
+        "observation_schema_hash",
+        "variable_schema_hash",
+        "vfs_hash",
+    ),
+)
+# Which profile packs' FROZEN fixture is held at the pre-cut vfs_profiles.yaml schema. The
+# cut requires `semantic_type` on global/agent profile variables, so effects_smoke (one global
+# variable) drifts from its fixture by exactly that key; items_smoke declares only item
+# variables, which take no semantic_type, so its live pack is still a byte copy of its
+# fixture and it must NOT declare a pack divergence (a declaration with nothing to declare is
+# a stale entry — test_pack_freeze pins this).
+_DIV006_PACK_DRIFT = frozenset({"configs/test/effects_smoke"})
+
+
 @dataclass(frozen=True)
 class Cell:
     params: RunParams
@@ -239,12 +264,13 @@ def default_cells() -> tuple[Cell, ...]:
     that drops CUDA cells entirely without the flag would make that skip
     silent instead of reported.
 
-    At oracle-2026-08-17 NO cell declares anything — no `expected`, no
-    `pack_divergence`, no `hash_divergence` — and every fixture under
-    oracle_fixtures/ is a byte copy of its live pack, so exit 0 means what it
-    says: old and new AGREE on every cell (PDR-0074). Declarations return
-    only when a register entry needs them (PDR-0037 record-then-bind); the
-    first expected is DIV-006 on the profile-variable cells.
+    At oracle-2026-08-17 the sixteen standing + differential cells declare
+    nothing — no `expected`, no `pack_divergence`, no `hash_divergence` — and
+    their fixtures under oracle_fixtures/ are byte copies of the live packs, so
+    for them exit 0 means what it says: old and new AGREE (PDR-0074). The four
+    profile-variable cells bind DIV-006 (hash-only, PDR-0075), the first entry
+    written against the new tag; declarations return only when a register
+    entry needs them (PDR-0037 record-then-bind).
     """
     standing = tuple(
         Cell(
@@ -283,7 +309,9 @@ def default_cells() -> tuple[Cell, ...]:
                 steps=100,
                 seed=42,
                 device=device,
-            )
+            ),
+            pack_divergence="DIV-006" if pack in _DIV006_PACK_DRIFT else None,
+            hash_divergence=_DIV006,
         )
         for device in ("cpu", "cuda")
         for pack, level in _PROFILE_VARIABLE_PACKS

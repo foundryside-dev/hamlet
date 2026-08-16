@@ -55,8 +55,8 @@ def test_vectorized_env_uses_compiled_vfs_variables_without_profile_synthesis(tm
         "version": "1.0",
         "evaluation_mode": "mark_and_sweep",
         "debug_logging": False,
-        "global_profile": {"variables": [{"name": "day_count", "type": "int", "initial_value": 0}]},
-        "agent_profile": {"variables": [{"name": "motivation", "type": "float", "initial_value": 0.5}]},
+        "global_profile": {"variables": [{"semantic_type": "custom", "name": "day_count", "type": "int", "initial_value": 0}]},
+        "agent_profile": {"variables": [{"semantic_type": "custom", "name": "motivation", "type": "float", "initial_value": 0.5}]},
     }
     (experiment_dir / "vfs_profiles.yaml").write_text(yaml.dump(profiles))
 
@@ -79,8 +79,8 @@ def test_vectorized_env_uses_compiled_effects_schema(tmp_path: Path) -> None:
         "version": "1.0",
         "evaluation_mode": "mark_and_sweep",
         "debug_logging": False,
-        "global_profile": {"variables": [{"name": "day_count", "type": "int", "initial_value": 0}]},
-        "agent_profile": {"variables": [{"name": "motivation", "type": "float", "initial_value": 0.5}]},
+        "global_profile": {"variables": [{"semantic_type": "custom", "name": "day_count", "type": "int", "initial_value": 0}]},
+        "agent_profile": {"variables": [{"semantic_type": "custom", "name": "motivation", "type": "float", "initial_value": 0.5}]},
     }
     (experiment_dir / "vfs_profiles.yaml").write_text(yaml.dump(profiles))
 

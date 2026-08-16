@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, cast
 
 import torch
 
-from townlet.universe.compilers.observation import meter_name_from_observation_field
+from townlet.universe.compilers.observation import ITEM_SLOTS_OBSERVATION_FIELD, meter_name_from_observation_field
 from townlet.vfs.observation_builder import VFSObservationSpec, apply_normalization, build_vfs_observation
 from townlet.vfs.schema import NormalizationSpec
 
@@ -48,53 +48,56 @@ class ObservationEncoder:
         return observations
 
     def _build_observation_field_from_vfs(self, field_name: str, dims: int) -> torch.Tensor:
-        """Build one compiled observation field from VFS state."""
-        env = self._env
-        if field_name != "obs_vfs":
-            return self._build_vfs_agent_observation_field(field_name, dims)
+        """Build one compiled observation field from VFS state.
 
-        if env.vfs_observation_spec is None:
-            raise ValueError("Observation field 'obs_vfs' is present but no compiled VFS observation spec exists.")
-
-        agent_item_inventory = None
-        if env.item_inventory is not None:
-            agent_item_inventory = env.item_inventory.slots
-
-        return build_vfs_observation(
-            registry=env.vfs_registry,
-            spec=env.vfs_observation_spec,
-            batch_size=env.num_agents,
-            agent_item_inventory=agent_item_inventory,
-        )
-
-    def _build_vfs_agent_observation_field(self, field_name: str, dims: int) -> torch.Tensor:
-        """Build a single agent-scoped observation field from VFS registry state."""
+        Every field is read the SAME way (PDR-0075): the compiled VFS mirror names the
+        field's source variable, the registry's declaration of that variable says which
+        scope it lives in, and the value is read from that scope and normalized as declared.
+        Compiler features (grid, meters, affordances, effects, temporal, item slots) reach here
+        too — their sync step has already published them into engine-written registry
+        variables — so there is no per-field name branch. This used to special-case a field
+        called `obs_vfs` and build it directly from the compiled profile spec, which is the
+        name-branch shape PDR-0045 forbids.
+        """
         env = self._env
         vfs_field = self._compiled_vfs_observation_field(field_name)
         source_variable = vfs_field.source_variable
-        if source_variable not in env.vfs_registry.variables:
+        declared = env.vfs_registry.variables.get(source_variable)
+        if declared is None:
             raise ValueError(f"Observation field '{field_name}' is not backed by a VFS variable.")
 
         # SOURCE width, not observed width. The registry is read at the width the variable
         # actually stores; the declared normalizer may then WIDEN it (cyclical_sin_cos -> 2,
         # one_hot -> categories), and `_apply_declared_normalization` below is what checks the
         # result against the field's declared dims.
-        #
-        # This used to assert `shape_dims == dims` and read at `dims`. That equality is only
-        # true for width-preserving kinds, so it fired before `apply_normalization` ever ran —
-        # which is one of the reasons the widening kinds were unreachable in practice as well
-        # as unauthorable (hamlet-3d3039f340).
         source_dims = 1
         for shape_dim in vfs_field.shape:
             source_dims *= shape_dim
 
-        spec = VFSObservationSpec(
-            global_vfs_dim=0,
-            agent_vfs_dim=source_dims,
-            item_vfs_dim=0,
-            agent_vars=(source_variable,),
-            agent_active_mask=tuple(True for _ in range(source_dims)),
-        )
+        if declared.scope == "global":
+            spec = VFSObservationSpec(
+                global_vfs_dim=source_dims,
+                agent_vfs_dim=0,
+                item_vfs_dim=0,
+                global_vars=(source_variable,),
+                global_active_mask=tuple(True for _ in range(source_dims)),
+            )
+        elif declared.scope in ("agent", "agent_private"):
+            spec = VFSObservationSpec(
+                global_vfs_dim=0,
+                agent_vfs_dim=source_dims,
+                item_vfs_dim=0,
+                agent_vars=(source_variable,),
+                agent_active_mask=tuple(True for _ in range(source_dims)),
+            )
+        else:
+            raise ValueError(
+                "Observation field is backed by a variable in a scope the encoder cannot read directly.\n"
+                f"  Field: {field_name}\n"
+                f"  Source variable: {source_variable} (scope {declared.scope!r})\n"
+                "  Rule: an observation field reads a global or agent variable; other scopes are "
+                "observed through a compiler feature (e.g. item slots), never as a bare field."
+            )
         raw = build_vfs_observation(
             registry=env.vfs_registry,
             spec=spec,
@@ -180,6 +183,44 @@ class ObservationEncoder:
         self._sync_affordance_observation_to_vfs()
         self._sync_effect_observation_to_vfs()
         self._sync_temporal_observation_to_vfs()
+        self._sync_item_slots_observation_to_vfs()
+
+    def _sync_item_slots_observation_to_vfs(self) -> None:
+        """Publish the item-slot feature — the exposed item-profile variables of the item in
+        each of the agent's slots — into its engine-written registry variable (PDR-0075).
+
+        The field's name is the compiler's own constant, imported, not a second literal; the
+        feature is present exactly when the compiled VFS observation spec has item width.
+        """
+        env = self._env
+        item_field = next((field for field in env.observation_spec.fields if field.name == ITEM_SLOTS_OBSERVATION_FIELD), None)
+        if item_field is None:
+            return
+        if env.vfs_observation_spec is None:
+            raise ValueError(f"Observation field '{ITEM_SLOTS_OBSERVATION_FIELD}' is present but no compiled VFS observation spec exists.")
+        if ITEM_SLOTS_OBSERVATION_FIELD not in env.vfs_registry.variables:
+            raise ValueError(f"Observation field '{ITEM_SLOTS_OBSERVATION_FIELD}' is present but no matching VFS variable exists.")
+
+        full = env.vfs_observation_spec
+        item_spec = VFSObservationSpec(
+            global_vfs_dim=0,
+            agent_vfs_dim=0,
+            item_vfs_dim=full.item_vfs_dim,
+            item_profile_vars=full.item_profile_vars,
+            item_vars_per_slot=full.item_vars_per_slot,
+            item_active_mask=full.item_active_mask,
+            max_items_per_agent=full.max_items_per_agent,
+            max_item_profiles=full.max_item_profiles,
+            max_tensor_elements=full.max_tensor_elements,
+        )
+        agent_item_inventory = env.item_inventory.slots if env.item_inventory is not None else None
+        item_obs = build_vfs_observation(
+            registry=env.vfs_registry,
+            spec=item_spec,
+            batch_size=env.num_agents,
+            agent_item_inventory=agent_item_inventory,
+        )
+        self._set_observation_variable(ITEM_SLOTS_OBSERVATION_FIELD, item_obs, item_field.dims)
 
     def _sync_grid_observation_to_vfs(self) -> None:
         """Publish current global grid observation into VFS state."""

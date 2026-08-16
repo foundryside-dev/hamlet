@@ -54,7 +54,11 @@ from townlet.vfs.transition_schedule import (
 # specs, and VFS source widths split from observed widths (PDR-0054 W3/W4). Every cache built
 # before that describes a different observation layout, so the bump converts a silent
 # wrong-shape serve into the "recompile the config pack" error this constant already implements.
-COMPILED_SCHEMA_VERSION = "1.15"
+# 1.16: the `obs_vfs` block became one field per exposed global/agent profile variable plus
+# the `obs_item_slots` feature (PDR-0075). A pack whose only profile variables are item-scoped
+# does not touch vfs_profiles.yaml for this cut, so its config fingerprint would NOT change and
+# a pre-cut cache would serve the old field list silently — the bump is what refuses it.
+COMPILED_SCHEMA_VERSION = "1.16"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",

@@ -308,8 +308,9 @@ uv run python -m townlet.oracle.harness --cell default_curriculum:L0_0_minimal
 Its declared matrix is twenty cells: five levels of `default_curriculum` × {cpu, cuda}, three
 single-axis packs under `configs/differential/` × {cpu, cuda}, and two packs whose
 `vfs_profiles.yaml` declares variables (`configs/test/items_smoke`, `configs/test/effects_smoke`)
-× {cpu, cuda} — the only runnable packs in which the compiled `obs_vfs` block has any width, added
-so the next authoring cut (splitting that block) is visible to the harness at all. The CUDA cells
+× {cpu, cuda} — the only runnable packs that expose VFS profile variables, added so the cut that
+split the old `obs_vfs` block into per-variable fields (`PDR-0075`, register entry `DIV-006`) was
+visible to the harness at all. The CUDA cells
 are always declared and reported SKIPPED rather than silently dropped when `--cuda` is absent. It
 exits 0 only when every cell is AGREE, SKIPPED, or DIVERGED_AS_REGISTERED — the last meaning the
 cell's declared binding to a divergence-register entry matched narrowly, in one of two shapes.
@@ -320,15 +321,17 @@ and no fewer — and every trace stream matches byte-for-byte. Behaviour is neve
 stream difference is DIVERGE, an undeclared hash moving is HASH_MISMATCH, and a declared divergence
 that fails to manifest is REGISTERED_DIVERGENCE_ABSENT — all red. An unmatched red of any kind
 still fails, and an empty or all-SKIPPED run exits 1 so that doing nothing cannot look green.
-**At `oracle-2026-08-17` no cell declares any divergence and every frozen fixture under
-`oracle_fixtures/` is a byte copy of its live pack**, so a green run means *old and new agree* on
-all twenty cells — the first time since 2026-08-15 that exit 0 has meant that. (Between 2026-08-15
-and the re-tag, all ten standing cells bound the hash-only entry `DIV-004` and AGREE was
-unreachable; the register records that as a cost, and its dissolution as the reason the tag
-moved.) The register holds five entries: `DIV-001` and `DIV-002` are checkpoint-boundary, open,
-and cannot appear in an env-step trace; `DIV-003`, `DIV-004` and `DIV-005` are retired at the new
-tag. The harness treats any DIVERGE or HASH_MISMATCH with no matched entry as a rebuild defect or
-a missing register entry — both findings.
+**At `oracle-2026-08-17` the sixteen `default_curriculum` and differential cells declare no
+divergence and their frozen fixtures under `oracle_fixtures/` are byte copies of the live packs**,
+so for them a green run means *old and new agree* — the first time since 2026-08-15 that exit 0 has
+meant that. (Between 2026-08-15 and the re-tag, all ten standing cells bound the hash-only entry
+`DIV-004` and AGREE was unreachable; the register records that as a cost, and its dissolution as
+the reason the tag moved.) The four profile-variable cells bind `DIV-006` — hash-only, exactly
+`observation_schema_hash`, `variable_schema_hash`, `vfs_hash` — the first entry written against the
+new tag. The register holds six entries: `DIV-001` and `DIV-002` are checkpoint-boundary, open, and
+cannot appear in an env-step trace; `DIV-003`, `DIV-004` and `DIV-005` are retired at the new tag;
+`DIV-006` is live. The harness treats any DIVERGE or HASH_MISMATCH with no matched entry as a
+rebuild defect or a missing register entry — both findings.
 
 ### Checks, run locally
 

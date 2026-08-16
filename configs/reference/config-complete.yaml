@@ -161,7 +161,11 @@ stratum:
   #   full_manual : include only explicit include_fields (required)
   observation_mode:
     mode: full_auto
-    # include_fields: ["obs_grid_encoding", "obs_meters"]  # required when mode=full_manual
+    # include_fields: ["obs_grid_encoding", "obs_meter_energy"]  # required when mode=full_manual
+    # NOTE: meters are one field EACH (obs_meter_<name>), not one "obs_meters" block.
+    # A manual selection must keep a semantic group's fields together — splitting the
+    # bars group apart is a compile error, because group_slices is how consumers
+    # address the block without knowing field names.
 
   # ---------------------------------------------------------------------------
   # [CONFIG] Temporal Support
@@ -200,46 +204,86 @@ environment:
   # [CONFIG] Meters
   # [TAGS]   BREAKING, OBS_DIM
   # ---------------------------------------------------------------------------
-  # Each meter adds +1 dim to observation space.
+  # Each meter adds its DECLARED observed width to the observation space: 1 for most
+  # range_type kinds, 2 for cyclical_sin_cos, and `categories` for one_hot.
   meters:
     - name: energy
       description: "Physical energy for movement and actions"
-      range_type: normalized
-      # range_type is metadata only (UI display hint), does NOT affect obs_dim
-      # | normalized | UI displays as 0-100%              |
-      # | unbounded  | UI displays raw value (can exceed) |
-      # | integer    | UI displays as integer points      |
+      range_type:
+        kind: minmax
+        clip: false
+      # range_type is the meter's COMPLETE observation type: it selects the
+      # normalization kind AND determines the meter's observed width. It is not a UI
+      # hint, and `normalized | unbounded | integer` are deleted — each was accepted,
+      # hashed, and drove nothing (PDR-0051, hamlet-365e996511).
+      #
+      # Nine members, tagged by the VFS normalization kind's own name. Each carries its
+      # own REQUIRED parameters; omitting one is a compile error naming the meter.
+      #
+      # | kind             | parameters              | observed width |
+      # |------------------|-------------------------|----------------|
+      # | none             | -                       | 1              |
+      # | minmax           | clip                    | 1              |
+      # | log_scaled       | clip                    | 1              |
+      # | zscore           | mean, std               | 1              |
+      # | binary           | threshold               | 1              |
+      # | rank_scaled      | -                       | 1              |
+      # | masked_value     | mask_value, fill_value  | 1              |
+      # | cyclical_sin_cos | period                  | 2              |
+      # | one_hot          | categories              | categories     |
+      #
+      # minmax and log_scaled take min/max from this meter's bars.yaml bounds — the
+      # declaration that ceilings the runtime also scales the observation (PDR-0016).
 
     - name: health
       description: "Physical health, death at 0"
-      range_type: normalized
+      range_type:
+        kind: minmax
+        clip: false
 
     - name: satiation
       description: "Hunger level, affects health cascade"
-      range_type: normalized
+      range_type:
+        kind: minmax
+        clip: false
 
     - name: hygiene
       description: "Cleanliness, affects mood and social"
-      range_type: normalized
+      range_type:
+        kind: minmax
+        clip: false
 
     - name: money
       description: "Economic resource for purchasing"
-      range_type: unbounded  # Can exceed 1.0 with job income
+      range_type:
+        # `unbounded` used to live here and drove nothing. A resource with a wide
+        # ceiling wants a LOG family, not a linear one: with bounds [1, 1e6], minmax
+        # crushes the whole operating range 1..100,000 into [0, 0.0999].
+        kind: log_scaled
+        clip: true
 
     - name: fitness
       description: "Physical conditioning from exercise"
-      range_type: normalized
+      range_type:
+        kind: minmax
+        clip: false
 
     - name: mood
       description: "Mental state, affects energy cascade"
-      range_type: normalized
+      range_type:
+        kind: minmax
+        clip: false
 
     - name: social
       description: "Social connection level"
-      range_type: normalized
+      range_type:
+        kind: minmax
+        clip: false
 
-  # BREAKING: Adding/removing meters changes obs_dim (+1 per meter)
-  # Current: 8 meters = +8 dims
+  # BREAKING: adding or removing a meter changes obs_dim, and so does changing an
+  # existing meter's range_type — a meter contributes its DECLARED observed width, not
+  # a fixed 1 (see the table above).
+  # Current: 7 meters at width 1 + money (log_scaled, width 1) = +8 dims
 
   # ---------------------------------------------------------------------------
   # [CONFIG] Cascade Graph
@@ -1067,7 +1111,6 @@ vfs_profiles:
       expression: "time_of_day >= 20 || time_of_day < 6"
       observation:
         exposed_to: [agent]  # Adds 1 dim to observation
-        semantic_type: temporal
 
   # AGENT SCOPE (Per-agent state)
   agent:

@@ -33,10 +33,29 @@ from townlet.training.state import BatchedAgentState, CurriculumDecision, Popula
 
 if TYPE_CHECKING:
     from townlet.environment.vectorized_env import VectorizedHamletEnv
+    from townlet.universe.dto import ObservationActivity
 
 _logger = logging.getLogger(__name__)
 
 EpisodeContainer = dict[str, list[torch.Tensor]]
+
+
+def _bars_observation_width(observation_activity: ObservationActivity) -> int:
+    """The compiled width of the meter block, addressed by semantic group rather than name.
+
+    This is the observation-side quantity a meter-encoder layer must be sized by. It equals
+    the meter count only while every meter observes one dimension; a meter declaring
+    `cyclical_sin_cos` observes two and `one_hot` observes its category count.
+    """
+    bars = observation_activity.group_slices.get("bars")
+    if bars is None:
+        raise ValueError(
+            "The compiled observation declares no 'bars' semantic group, so the meter block "
+            "cannot be located.\n"
+            "  Rule: meters are emitted as bars-semantic observation fields; a universe with "
+            "meters must produce a bars group."
+        )
+    return int(bars.stop) - int(bars.start)
 
 
 class VectorizedPopulation(PopulationManager):
@@ -382,9 +401,13 @@ class VectorizedPopulation(PopulationManager):
                 action_dim=action_dim,
                 window_size=vision_window_size,
                 position_dim=env.substrate.position_dim,
-                num_meters=env.meter_count,
+                # The OBSERVED bars width, from the compiled artifact. This passed
+                # env.meter_count — a STATE count — which held only while every meter
+                # observed exactly one dimension (PDR-0054 W6).
+                bars_dim=_bars_observation_width(env.observation_activity),
                 num_affordance_types=env.num_affordance_types,
                 observation_spec=self.observation_spec,  # POP-005: Always use validated spec
+                observation_activity=env.observation_activity,
             )
         elif arch.type == "dueling":
             assert arch.dueling is not None, "dueling config must be present"
@@ -1203,14 +1226,28 @@ class VectorizedPopulation(PopulationManager):
                 f"Cannot load checkpoint trained on different universe configuration."
             )
 
-        # Validate obs_dim matches (secondary check)
+        # Validate obs_dim matches.
+        #
+        # This was a WARNING that then proceeded to load_state_dict anyway. That was already
+        # wrong — a differing obs_dim means the first Linear layer has a different in_features
+        # and the load either raises with a shape message that names neither cause, or (for a
+        # recurrent net, whose encoders are sized per BLOCK) succeeds against a layout the
+        # weights were never trained on.
+        #
+        # PDR-0054 makes it sharper: meter count is no longer sufficient to characterise the
+        # observation, because a meter's declared range_type changes its observed width. So
+        # the count check above can pass while the layout differs entirely, and this is the
+        # check that actually catches it.
         checkpoint_obs_dim = metadata.get("obs_dim")
         current_obs_dim = self.env.observation_dim
         if checkpoint_obs_dim != current_obs_dim:
-            _logger.warning(
+            raise ValueError(
                 f"Checkpoint obs_dim mismatch: checkpoint has {checkpoint_obs_dim}, "
-                f"current env has {current_obs_dim}. This may indicate grid size or "
-                f"observability mode differences. Proceeding with caution."
+                f"current env has {current_obs_dim}.\n"
+                "  Cause: grid size, observability mode, or a meter's declared range_type "
+                "differs from the universe this checkpoint was trained on.\n"
+                "  Rule: the observation layout is part of a checkpoint's identity. Retrain, "
+                "or load against the universe the checkpoint names."
             )
 
         # Restore Q-network

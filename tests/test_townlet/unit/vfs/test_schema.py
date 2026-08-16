@@ -194,6 +194,7 @@ class TestNormalizationSpec:
             kind="minmax",
             min=0.0,
             max=1.0,
+            clip=False,
         )
 
         assert norm.kind == "minmax"
@@ -208,6 +209,7 @@ class TestNormalizationSpec:
             kind="minmax",
             min=[0.0, 0.0],
             max=[7.0, 7.0],
+            clip=False,
         )
 
         assert norm.kind == "minmax"
@@ -242,31 +244,36 @@ class TestNormalizationSpec:
         assert norm.mean == [0.5, 0.5]
         assert norm.std == [0.2, 0.2]
 
-    def test_full_v11_normalization_vocabulary_valid(self):
-        """NormalizationSpec accepts the full VFS v1.1 vocabulary with required parameters."""
+    def test_full_normalization_vocabulary_is_reachable_and_closed(self):
+        """Every kind constructs with its required parameters, and the set is
+        exactly the nine that exist.
+
+        It was ten until `clipped_log_scaled` was folded into `log_scaled` +
+        `clip=True` (hamlet-fba56feca5): clamping became a parameter, so a
+        separate clamping member would have been two names for one behaviour.
+        Enumerating the closed set here means adding a kind without meaning to
+        fails, which is what PDR-0047 asks a closed vocabulary to guarantee.
+        """
+        from typing import get_args
+
         from townlet.vfs.schema import NormalizationSpec
 
-        specs = [
-            NormalizationSpec(kind="none"),
-            NormalizationSpec(kind="cyclical_sin_cos", period=24.0),
-            NormalizationSpec(kind="binary", threshold=0.5),
-            NormalizationSpec(kind="one_hot", categories=4),
-            NormalizationSpec(kind="log_scaled", min=0.0, max=100.0),
-            NormalizationSpec(kind="clipped_log_scaled", min=0.0, max=100.0),
-            NormalizationSpec(kind="rank_scaled"),
-            NormalizationSpec(kind="masked_value", mask_value=-1.0, fill_value=0.0),
-        ]
+        constructed = {
+            "none": NormalizationSpec(kind="none"),
+            "minmax": NormalizationSpec(kind="minmax", min=0.0, max=1.0, clip=False),
+            "zscore": NormalizationSpec(kind="zscore", mean=0.5, std=0.2),
+            "cyclical_sin_cos": NormalizationSpec(kind="cyclical_sin_cos", period=24.0),
+            "one_hot": NormalizationSpec(kind="one_hot", categories=4),
+            "binary": NormalizationSpec(kind="binary", threshold=0.5),
+            "log_scaled": NormalizationSpec(kind="log_scaled", min=0.0, max=100.0, clip=False),
+            "rank_scaled": NormalizationSpec(kind="rank_scaled"),
+            "masked_value": NormalizationSpec(kind="masked_value", mask_value=-1.0, fill_value=0.0),
+        }
+        declared = set(get_args(NormalizationSpec.model_fields["kind"].annotation))
 
-        assert [spec.kind for spec in specs] == [
-            "none",
-            "cyclical_sin_cos",
-            "binary",
-            "one_hot",
-            "log_scaled",
-            "clipped_log_scaled",
-            "rank_scaled",
-            "masked_value",
-        ]
+        assert set(constructed) == declared
+        assert "clipped_log_scaled" not in declared
+        assert all(spec.kind == kind for kind, spec in constructed.items())
 
     def test_minmax_without_min_rejected(self):
         """MinMax normalization requires min field."""
@@ -276,6 +283,7 @@ class TestNormalizationSpec:
             NormalizationSpec(
                 kind="minmax",
                 max=1.0,
+                clip=False,
                 # Missing min!
             )
 
@@ -316,7 +324,7 @@ class TestNormalizationSpec:
         from townlet.vfs.schema import NormalizationSpec
 
         with pytest.raises(ValidationError, match="requires 'min' < 'max'"):
-            NormalizationSpec(kind="log_scaled", min=10.0, max=10.0)
+            NormalizationSpec(kind="log_scaled", min=10.0, max=10.0, clip=False)
 
     def test_masked_value_requires_mask_and_fill(self):
         """Masked-value normalization requires both mask and fill values."""
@@ -338,6 +346,7 @@ class TestObservationField:
             source_variable="energy",
             exposed_to=["agent"],
             shape=[],
+            semantic_type="custom",
         )
 
         assert obs.id == "obs_energy"
@@ -354,6 +363,7 @@ class TestObservationField:
             source_variable="position",
             exposed_to=["agent"],
             shape=[2],
+            semantic_type="custom",
         )
 
         assert obs.shape == [2]
@@ -367,10 +377,12 @@ class TestObservationField:
             source_variable="energy",
             exposed_to=["agent"],
             shape=[],
+            semantic_type="custom",
             normalization=NormalizationSpec(
                 kind="minmax",
                 min=0.0,
                 max=1.0,
+                clip=False,
             ),
         )
 
@@ -386,6 +398,7 @@ class TestObservationField:
             source_variable="money",
             exposed_to=["agent"],
             shape=[],
+            semantic_type="custom",
             normalization=None,
         )
 

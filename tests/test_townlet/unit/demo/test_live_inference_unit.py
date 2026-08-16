@@ -128,3 +128,62 @@ def test_build_agent_telemetry_payload_uses_episode_index(live_server: LiveInfer
 
     assert telemetry["schema_version"] == live_inference.TELEMETRY_SCHEMA_VERSION
     assert telemetry["episode_index"] == 0
+
+
+# --- Presentation is declared, never inferred (hamlet-0dd4ac24d9, PDR-0025) -------------------
+
+
+def _compile_for(server: LiveInferenceServer, level: str = "L0_test") -> None:
+    server.level_name = level
+    server.compiled_universe = server.compiler.compile(server.config_dir, primary_level=level)
+    server.presentation = live_inference.load_presentation(server.config_dir, server.compiled_universe)
+
+
+def test_observer_metadata_carries_declared_bounds_and_no_presentation_by_default(live_server: LiveInferenceServer) -> None:
+    _compile_for(live_server)
+    meta = live_server._build_observer_metadata()
+    assert meta["presentation"] is None, "no presentation.yaml → the honest default"
+    names = [row["name"] for row in meta["meters"]]
+    assert names == list(live_server.compiled_universe.metadata.meter_names)
+    money = next(row for row in meta["meters"] if row["name"] == "money")
+    assert money["bounds"]["max"] == 999999.0
+    assert live_server._affordance_icon("EAT") is None
+
+
+def test_no_module_level_name_to_icon_map_survives() -> None:
+    """The server may not know what EAT looks like; the pack declares it or nothing does."""
+    assert not hasattr(live_inference, "AFFORDANCE_ICON_MAP")
+
+
+def test_declared_icons_and_formats_reach_the_payload(tmp_path: Path, test_config_pack_path: Path, noop_qvalue_log) -> None:
+    import shutil
+
+    pack = tmp_path / "pack"
+    shutil.copytree(test_config_pack_path, pack)
+    (pack / "presentation.yaml").write_text(
+        'version: "1.0"\n'
+        "meters:\n"
+        "  money: {label: Money, format: {kind: currency, symbol: '$', decimals: 0}, color: '#fbbf24'}\n"
+        "affordances:\n"
+        "  EAT: {label: Eat, icon: 'E'}\n"
+    )
+    checkpoint_dir = tmp_path / "ckpts"
+    checkpoint_dir.mkdir()
+    server = LiveInferenceServer(
+        checkpoint_dir=checkpoint_dir,
+        port=9999,
+        step_delay=0.01,
+        total_episodes=10,
+        config_dir=pack,
+        level_name="L0_test",
+        training_config_path=None,
+    )
+    try:
+        _compile_for(server)
+        meta = server._build_observer_metadata()
+        assert meta["presentation"]["meters"]["money"]["format"] == {"kind": "currency", "symbol": "$", "decimals": 0}
+        assert server._affordance_icon("EAT") == "E"
+        assert server._affordance_icon("SLEEP") is None, "undeclared affordances get no icon, not a guessed one"
+    finally:
+        if getattr(server, "_qvalue_log_file", None):
+            server._qvalue_log_file.close()

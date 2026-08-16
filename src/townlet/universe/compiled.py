@@ -50,7 +50,11 @@ from townlet.vfs.transition_schedule import (
     social_rules_from_transition_payload,
 )
 
-COMPILED_SCHEMA_VERSION = "1.14"
+# 1.15: the bars block became N per-meter observation fields with per-meter normalization
+# specs, and VFS source widths split from observed widths (PDR-0054 W3/W4). Every cache built
+# before that describes a different observation layout, so the bump converts a silent
+# wrong-shape serve into the "recompile the config pack" error this constant already implements.
+COMPILED_SCHEMA_VERSION = "1.15"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",
@@ -821,7 +825,6 @@ def _serialize_vfs_profiles(profiles: CompiledVFSProfiles) -> dict[str, Any]:
                     "initial_value": var.initial_value,
                     "result_type": var.result_type,
                     "exposed_to": list(var.exposed_to),
-                    "semantic_type": getattr(var, "semantic_type", "custom"),
                 }
                 for var in profiles.global_profile.variables
             ],
@@ -849,7 +852,6 @@ def _serialize_vfs_profiles(profiles: CompiledVFSProfiles) -> dict[str, Any]:
                         "initial_value_params": var.initial_value_params,
                         "dims": var.dims,
                         "exposed_to": list(var.exposed_to),
-                        "semantic_type": getattr(var, "semantic_type", "custom"),
                     }
                     for var in profile.variables
                 ],
@@ -879,7 +881,6 @@ def _deserialize_vfs_profiles(payload: dict[str, Any]) -> CompiledVFSProfiles:
                     initial_value=var["initial_value"],
                     result_type=var.get("result_type"),
                     exposed_to=tuple(var.get("exposed_to", ["agent"])),
-                    semantic_type=var.get("semantic_type", "custom"),
                 )
             )
         dependencies = payload["global_profile"].get("dependencies", {})
@@ -904,7 +905,6 @@ def _deserialize_vfs_profiles(payload: dict[str, Any]) -> CompiledVFSProfiles:
                     initial_value_params=var.get("initial_value_params"),
                     dims=var.get("dims"),
                     exposed_to=tuple(var.get("exposed_to", ["agent"])),
-                    semantic_type=var.get("semantic_type", "custom"),
                 )
                 for var in profile.get("variables", [])
             ]

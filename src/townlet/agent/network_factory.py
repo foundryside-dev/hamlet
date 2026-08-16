@@ -14,7 +14,7 @@ from townlet.agent.networks import DuelingQNetwork, RecurrentSpatialQNetwork, Se
 from townlet.config.brain_config import DuelingConfig, FeedforwardConfig, RecurrentConfig, SetEncoderConfig
 
 if TYPE_CHECKING:
-    from townlet.universe.dto import ObservationSpec
+    from townlet.universe.dto import ObservationActivity, ObservationSpec
 
 
 class NetworkFactory:
@@ -75,9 +75,10 @@ class NetworkFactory:
         action_dim: int,
         window_size: int,
         position_dim: int,
-        num_meters: int,
+        bars_dim: int,
         num_affordance_types: int,
-        observation_spec: ObservationSpec | None = None,
+        observation_spec: ObservationSpec,
+        observation_activity: ObservationActivity,
     ) -> RecurrentSpatialQNetwork:
         """Build recurrent LSTM Q-network from configuration.
 
@@ -86,8 +87,14 @@ class NetworkFactory:
             action_dim: Number of actions
             window_size: Vision window size (5 for 5×5)
             position_dim: Position dimensionality (2 for Grid2D, 3 for Grid3D, 0 for Aspatial)
-            num_meters: Number of meter values
+            bars_dim: OBSERVED width of the meter block, from
+                observation_activity.group_slices["bars"] — NOT the meter count, which
+                diverges as soon as a meter declares a widening normalization
             num_affordance_types: Number of affordance types
+            observation_spec: Compiled observation layout. REQUIRED — the network
+                addresses every input block through it
+            observation_activity: Carries group_slices, which is how the meter block is
+                located without knowing any field's name. REQUIRED
 
         Returns:
             RecurrentSpatialQNetwork
@@ -110,7 +117,7 @@ class NetworkFactory:
             ...     action_dim=8,
             ...     window_size=5,
             ...     position_dim=2,
-            ...     num_meters=8,
+            ...     bars_dim=8,
             ...     num_affordance_types=14,
             ... )
         """
@@ -126,11 +133,12 @@ class NetworkFactory:
             action_dim=action_dim,
             window_size=window_size,
             position_dim=position_dim,
-            num_meters=num_meters,
+            bars_dim=bars_dim,
             num_affordance_types=num_affordance_types,
             enable_temporal_features=False,  # Will be determined by environment
             hidden_dim=lstm_hidden_size,  # From config instead of hardcoded!
             observation_spec=observation_spec,
+            observation_activity=observation_activity,
         )
 
         return network

@@ -11,15 +11,23 @@ REGISTERED_DIVERGENCE_ABSENT. Exit 0 iff every cell is AGREE, SKIPPED, or
 DIVERGED_AS_REGISTERED naming the known-divergences entry its matrix cell
 declared (hamlet-56ec575ae2 / PDR-0037).
 
-A cell declares an expected divergence by binding a matrix.RegisteredDivergence
-(currently one shape: oracle side crashes leaving no trace, with the declared
-signature in the FINAL EXCEPTION TEXT of its stderr; rebuild runs and produces
-a valid trace from the declared src root — DIV-003's shape, PDR-0036). The
-match is narrow on purpose: an old-side failure without the signature in its
-final exception, a non-crash failure (exit 0, no trace), a crash that still
-wrote a trace, a new side that also fails (divergence not yet built), and an
-old side that runs (stale register entry — REGISTERED_DIVERGENCE_ABSENT) all
-still fail the run, as does a run in which every cell was SKIPPED.
+A cell declares an expected divergence by binding a register entry, in one of
+two shapes. Shape 1, matrix.RegisteredDivergence (old-side crash — DIV-003,
+PDR-0036): the oracle side crashes leaving no trace, with the declared
+signature in the FINAL EXCEPTION TEXT of its stderr; the rebuild runs and
+produces a valid trace from the declared src root. Shape 2,
+matrix.RegisteredHashDivergence (hash-only — DIV-004, PDR-0056; DIV-005
+adjudicates under the same binding): both sides run, EXACTLY the enumerated
+provenance hashes differ, and every trace stream is byte-identical. The match
+is narrow on purpose: an old-side failure without the signature in its final
+exception, a non-crash failure (exit 0, no trace), a crash that still wrote a
+trace, a new side that also fails (divergence not yet built), an undeclared
+hash that moves (HASH_MISMATCH), a stream that differs at all (DIVERGE), and a
+declared divergence that fails to manifest (stale register entry —
+REGISTERED_DIVERGENCE_ABSENT) all still fail the run, as does a run in which
+every cell was SKIPPED. Each side is a (code root, pack root) pair: the oracle
+side reads its frozen packs under oracle_fixtures/, the rebuild side reads the
+live configs/.
 
 DIV-001/002 are checkpoint-boundary and cannot manifest in an env trace, so a
 DIVERGE or HASH_MISMATCH with empty register_refs is a rebuild defect or a
@@ -46,9 +54,12 @@ from townlet.oracle.trace_io import CellVerdict, HarnessError, RunParams, Trace,
 _ADJUDICATION_NOTE = (
     "A cell passes only as AGREE, SKIPPED, or DIVERGED_AS_REGISTERED naming its "
     "known-divergences entry in register_refs. DIVERGED_AS_REGISTERED requires ALL "
-    "of: old side crashed (nonzero exit) leaving no trace, with the registered "
-    "signature inside the final exception text of its stderr; new side ran and "
-    "produced a trace valid for the cell's own params from the declared src root. "
+    "EITHER shape's conditions. Shape 1 (old-side-crash): old side crashed "
+    "(nonzero exit) leaving no trace, with the registered signature inside the "
+    "final exception text of its stderr; new side ran and produced a trace valid "
+    "for the cell's own params from the declared src root. Shape 2 (hash-only): "
+    "both sides ran, EXACTLY the enumerated provenance hashes differ — no more, "
+    "no fewer — and every trace stream matches byte-for-byte. "
     "Everything else fails the run — an old-side failure without the signature or "
     "without a traceback, a non-crash failure, a crash that still wrote a trace, a "
     "registered divergence whose new side also fails (not yet built), a registered "
@@ -138,14 +149,87 @@ def _final_exception_text(stderr: str) -> str | None:
     return "\n".join(lines) if lines else None
 
 
-def run_side(*, driver: Path, src: Path, params: RunParams, out: Path, repo_root: Path) -> SideFailure | None:
-    """Run the driver under one side's src. None on success, SideFailure otherwise."""
+# The oracle side's frozen config root (hamlet-2090c9f16d). Deliberately NOT
+# under configs/: scripts/validate_compiler_cli.py walks that tree recursively,
+# and a fixture deliberately held at an older schema must not be re-validated
+# against the current one.
+ORACLE_PACK_ROOT = "oracle_fixtures"
+
+# Build caches, not declarations — excluded from the drift comparison.
+_PACK_DRIFT_IGNORE = {".compiled", "__pycache__"}
+
+
+def _pack_files(pack_dir: Path) -> dict[str, bytes]:
+    """Every declaration file in a pack, keyed by path relative to the pack."""
+    out: dict[str, bytes] = {}
+    if not pack_dir.is_dir():
+        return out
+    for path in sorted(pack_dir.rglob("*")):
+        if not path.is_file():
+            continue
+        rel = path.relative_to(pack_dir)
+        if _PACK_DRIFT_IGNORE & set(rel.parts):
+            continue
+        out[str(rel)] = path.read_bytes()
+    return out
+
+
+def pack_drift(old_pack_root: Path, new_pack_root: Path, logical_pack: str) -> dict[str, list[str]]:
+    """Byte-level delta between the pack as the OLD side reads it and as the NEW
+    side reads it — the two roots the sides actually resolve, not
+    `oracle_fixtures/` vs the repo root by construction. For an oracle run the
+    old root IS the frozen fixture tree; for a self-comparison both roots are
+    the live tree and the delta is empty for the honest reason
+    (hamlet-6f98e38a36).
+
+    Empty dict means the freeze is a provable no-op for this pack. A non-empty
+    result is NOT automatically a defect — once a pack-schema divergence is
+    declared, the two sides read different inputs by design — but it must never
+    be silent, which is the failure mode PDR-0052's reversal trigger names: a
+    frozen pack that has rotted into a different universe still compiles, and
+    then every cell AGREEs about nothing.
+    """
+    frozen = _pack_files(old_pack_root / logical_pack)
+    live = _pack_files(new_pack_root / logical_pack)
+    # No live pack means there is no drift question to answer — the run will
+    # fail at compile with a far clearer message than a drift verdict, and
+    # synthetic cells (unit tests) legitimately name packs that exist on
+    # neither side. "Live pack with no frozen counterpart" IS the defect and
+    # is reported below; "neither exists" is a caller error, reported by the
+    # compiler.
+    if not live:
+        return {}
+    delta: dict[str, list[str]] = {}
+    only_frozen = sorted(set(frozen) - set(live))
+    only_live = sorted(set(live) - set(frozen))
+    changed = sorted(f for f in set(frozen) & set(live) if frozen[f] != live[f])
+    if only_frozen:
+        delta["only_in_frozen"] = only_frozen
+    if only_live:
+        delta["only_in_live"] = only_live
+    if changed:
+        delta["differing"] = changed
+    if not frozen:
+        delta["missing_frozen_pack"] = [str(old_pack_root / logical_pack)]
+    return delta
+
+
+def run_side(*, driver: Path, src: Path, params: RunParams, out: Path, repo_root: Path, pack_root: Path) -> SideFailure | None:
+    """Run the driver under one side's src AND its own pack root.
+
+    pack_root is per-side because the oracle pins code but not inputs
+    (hamlet-2090c9f16d): pack DTOs are extra="forbid", so one new key in a
+    live pack crashes every cell on the oracle side for a schema reason.
+    params.pack stays logical — compare_traces requires params equality.
+    """
     cmd = [
         sys.executable,
         "-P",  # do not prepend the script dir to sys.path (stdlib-shadowing guard)
         str(driver),
         "--pack",
         params.pack,
+        "--pack-root",
+        str(pack_root),
         "--level",
         params.level,
         "--num-agents",
@@ -206,7 +290,18 @@ def _validate_lone_trace(trace: Trace, cell: Cell) -> None:
         )
 
 
-def run_cell(*, repo_root: Path, old_src: Path, new_src: Path, cell: Cell, run_dir: Path, run_cuda: bool) -> CellVerdict:
+def run_cell(
+    *, repo_root: Path, old_src: Path, old_pack_root: Path, new_src: Path, cell: Cell, run_dir: Path, run_cuda: bool
+) -> CellVerdict:
+    """Adjudicate one cell: old side (old_src, old_pack_root) vs new side (new_src, repo_root).
+
+    A side is a code root AND a pack root (hamlet-2090c9f16d, hamlet-6f98e38a36).
+    The new side always reads the live tree. The old side reads whatever the
+    caller names: `repo_root / ORACLE_PACK_ROOT` for a real oracle run, or
+    `repo_root` for a self-comparison — which has no oracle side and so no
+    frozen inputs. Required, not defaulted, so a self-comparison cannot be
+    written by omission and silently read the frozen fixtures again.
+    """
     if cell.params.device == "cuda":
         if not run_cuda:
             return CellVerdict(kind="SKIPPED", cell_id=cell.cell_id, detail={"reason": "cuda not requested"})
@@ -218,7 +313,28 @@ def run_cell(*, repo_root: Path, old_src: Path, new_src: Path, cell: Cell, run_d
     new_out = run_dir / f"{safe}.new.npz"
     expected = cell.expected
 
-    old_failure = run_side(driver=driver, src=old_src, params=cell.params, out=old_out, repo_root=repo_root)
+    new_pack_root = repo_root
+
+    drift = pack_drift(old_pack_root, new_pack_root, cell.params.pack)
+    if drift and not cell.declares_pack_divergence:
+        # Undeclared drift: the oracle would be certifying a universe nobody
+        # authors. Fail the cell rather than compare two different worlds.
+        return CellVerdict(
+            kind="HARNESS_ERROR",
+            cell_id=cell.cell_id,
+            detail={
+                "reason": "frozen oracle pack differs from the live pack with no declared divergence",
+                "pack": cell.params.pack,
+                "frozen_root": str(old_pack_root),
+                "delta": drift,
+                "fix": (
+                    "Either re-freeze the fixture (the change was not a schema divergence) or declare "
+                    "the divergence on this cell and register it in docs/oracle/known-divergences.md."
+                ),
+            },
+        )
+
+    old_failure = run_side(driver=driver, src=old_src, params=cell.params, out=old_out, repo_root=repo_root, pack_root=old_pack_root)
     if old_failure is not None:
         # The registered shape (DIV-003 / PDR-0036) is "the oracle side fails
         # to produce a trace, crashing with the registered signature". Every
@@ -267,7 +383,7 @@ def run_cell(*, repo_root: Path, old_src: Path, new_src: Path, cell: Cell, run_d
         # sides crash, and the old side runs first — passing on the old crash
         # alone would certify a knockdown that never happened. The rebuild
         # must actually RUN and produce a valid trace to prove the divergence.
-        new_failure = run_side(driver=driver, src=new_src, params=cell.params, out=new_out, repo_root=repo_root)
+        new_failure = run_side(driver=driver, src=new_src, params=cell.params, out=new_out, repo_root=repo_root, pack_root=new_pack_root)
         if new_failure is not None:
             return CellVerdict(
                 kind="NEW_SIDE_ERROR",
@@ -308,7 +424,7 @@ def run_cell(*, repo_root: Path, old_src: Path, new_src: Path, cell: Cell, run_d
             register_refs=(expected.register_ref,),
         )
 
-    new_failure = run_side(driver=driver, src=new_src, params=cell.params, out=new_out, repo_root=repo_root)
+    new_failure = run_side(driver=driver, src=new_src, params=cell.params, out=new_out, repo_root=repo_root, pack_root=new_pack_root)
     if new_failure is not None:
         detail = {"side": "new", "failure_kind": new_failure.kind, "stderr": new_failure.stderr}
         if expected is not None:
@@ -337,7 +453,7 @@ def run_cell(*, repo_root: Path, old_src: Path, new_src: Path, cell: Cell, run_d
             },
         )
 
-    verdict = compare_traces(old_trace, new_trace, cell_id=cell.cell_id)
+    verdict = compare_traces(old_trace, new_trace, cell_id=cell.cell_id, hash_divergence=cell.hash_divergence)
     if expected is not None:
         # The old side RAN on a cell registered to crash: the registered
         # divergence did not manifest. This must fail even — especially — when
@@ -363,7 +479,9 @@ def run_cell(*, repo_root: Path, old_src: Path, new_src: Path, cell: Cell, run_d
     return verdict
 
 
-def run_cell_safely(*, repo_root: Path, old_src: Path, new_src: Path, cell: Cell, run_dir: Path, run_cuda: bool) -> CellVerdict:
+def run_cell_safely(
+    *, repo_root: Path, old_src: Path, old_pack_root: Path, new_src: Path, cell: Cell, run_dir: Path, run_cuda: bool
+) -> CellVerdict:
     """run_cell, contained (FIX 4).
 
     run_cell is called once per matrix cell in main()'s loop, with
@@ -375,7 +493,15 @@ def run_cell_safely(*, repo_root: Path, old_src: Path, new_src: Path, cell: Cell
     verdict for just this cell instead.
     """
     try:
-        return run_cell(repo_root=repo_root, old_src=old_src, new_src=new_src, cell=cell, run_dir=run_dir, run_cuda=run_cuda)
+        return run_cell(
+            repo_root=repo_root,
+            old_src=old_src,
+            old_pack_root=old_pack_root,
+            new_src=new_src,
+            cell=cell,
+            run_dir=run_dir,
+            run_cuda=run_cuda,
+        )
     except Exception as e:  # noqa: BLE001 — containment boundary, see docstring
         return CellVerdict(
             kind="HARNESS_ERROR",
@@ -478,6 +604,7 @@ def main(argv: list[str] | None = None) -> int:
         verdict = run_cell_safely(
             repo_root=repo_root,
             old_src=worktree / "src",
+            old_pack_root=repo_root / ORACLE_PACK_ROOT,  # the oracle side reads FROZEN inputs
             new_src=repo_root / "src",
             cell=cell,
             run_dir=run_dir,

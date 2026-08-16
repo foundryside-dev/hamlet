@@ -1,4 +1,4 @@
-# Roadmap — HAMLET / Townlet            Updated: 2026-08-15, seventeenth checkpoint (`PDR-0048`: **merge gate 2 SATISFIED** — both gates now stand, both commit-scoped, and gate 2 is already owed again at merge; `PDR-0047`: the owner's authoring-grammar ruling gives the Next bet *"close the you-must-write-Python gaps"* its first decided unit. **No horizon change**) · prior: 2026-08-15, fifteenth checkpoint (`PDR-0043`: merge gate 1 — CI restoration — EXECUTED and in verifying; the measured gate set widened 4→6, all green locally; the first CI run in this branch's history fires on the owner's push. **No horizon change**) · prior: 2026-08-15, thirteenth checkpoint (`PDR-0041`: the FIRST KNOCKDOWN is COMPLETE — the substrate→observation-dim seam is cut, the harness adjudicated it end-to-end, and the strangler method is proven once. **No horizon change**) · prior: 2026-08-14, eleventh checkpoint (`PDR-0038`, `PDR-0039`: the owner cleared the whole escalation queue; the README is rewritten and ships branch-scoped; the merge to `main` gains two named gates, CI restoration and README re-verification. New Later bet: adopt wardline as hygiene) · prior: 2026-08-14 (`PDR-0035`–`PDR-0037`: the first knockdown unit is DECIDED — the substrate→observation-dim seam — and content 5's order is changed by a blocking finding in the harness. One Next bet narrowed by one item. **No horizon change**) · prior: 2026-08-13 (harness accepted, `PDR-0032`–`PDR-0034`) · prior: 2026-08-13 (oracle pinned, `PDR-0030`)
+# Roadmap — HAMLET / Townlet            Updated: 2026-08-17, twenty-fourth checkpoint (`PDR-0071`: `PDR-0068`'s trigger lit on both prongs — 27 commits ahead, README decay measured — so the merge is banked before unit 3, owner-chosen; `PDR-0072`: gate 2 EXECUTED for the second merge at `905acd96`, stamped at `54132aaf` — twenty-one claims stale in 27 commits, ten more caught by the adversarial pass, and a new durable rule: a claim about `main` in a file that will *become* `main`'s README must be written to survive the merge. **No horizon change**; the merge is the owner's) · prior: 2026-08-17, twenty-third checkpoint (`PDR-0069`: the declared presentation surface is a separate observer-only `presentation.yaml` — the compiler never reads it, no compiled hash moves, no register entry; `PDR-0070`: unit 2 is every live observer site, server and frontend, and the frontend toolchain (`hamlet-d892e161c0`) was restored as its prerequisite — the frontend has a test gate for the first time. Suite 3247/16/0, matrix 16/16, npm test 37/37. **No horizon change**) · prior: 2026-08-16, twenty-second checkpoint (`PDR-0066`: the semantic-type surface is authorable and authoritative — one closed vocabulary, the compiled DTO constrains the compiler, `environment.yaml` variables declare it and the compiler obeys, `effects` admitted, `bars` reserved, unreachable declarations deleted; DIV-005 `built`, matrix 16/16 exit 0, suite 3220/16/0; `interaction_type` required from one vocabulary; `PDR-0067` grant stamp corrected at an approved touch; `PDR-0068` the authoring queue runs before the merge is banked. **No horizon change**) · prior: 2026-08-16, twenty-first checkpoint (`PDR-0065`: the harness fork `PDR-0063` posed was already answered by DIV-004; the self-tests were the defect — a side is (code root, pack root) — and they are whole again; `-m "not slow"` is gone with the marker, so **exit condition 3 is MET ON THE BRANCH**; `hamlet-6f98e38a36` and `hamlet-a0832f9004` closed. **No horizon change**) · prior: 2026-08-16, twentieth checkpoint (`PDR-0061`: `multi_tick` and wraparound hours EXECUTE — the escalation trigger did **not** fire, the pack was the defect, not the engine; `PDR-0062`: the `slow` marker is removed and the default gate reading is honest, deselect 33 → 2; `PDR-0063`: the differential harness's self-comparison DISAGREES, so it currently certifies nothing — filed, deliberately not fixed; `PDR-0064`: a parameter the object cannot function without is required at binding. **No horizon change**) · prior: 2026-08-15, nineteenth checkpoint (`PDR-0058`: **THE MERGE TO `main` LANDED** at `07b26ed5`, both gates discharged first at `33bfff51` — and the owner ruled the bet's **exit was mis-stated**: the merge was an output, not the outcome. The Now bet continues with its exit restated as an outcome condition. `PDR-0059`: the gate hides 31 failures behind a marker, and closing that is the next unit. **No horizon change**) · prior: 2026-08-15, seventeenth checkpoint (`PDR-0048`: **merge gate 2 SATISFIED** — both gates now stand, both commit-scoped, and gate 2 is already owed again at merge; `PDR-0047`: the owner's authoring-grammar ruling gives the Next bet *"close the you-must-write-Python gaps"* its first decided unit. **No horizon change**) · prior: 2026-08-15, fifteenth checkpoint (`PDR-0043`: merge gate 1 — CI restoration — EXECUTED and in verifying; the measured gate set widened 4→6, all green locally; the first CI run in this branch's history fires on the owner's push. **No horizon change**) · prior: 2026-08-15, thirteenth checkpoint (`PDR-0041`: the FIRST KNOCKDOWN is COMPLETE — the substrate→observation-dim seam is cut, the harness adjudicated it end-to-end, and the strangler method is proven once. **No horizon change**) · prior: 2026-08-14, eleventh checkpoint (`PDR-0038`, `PDR-0039`: the owner cleared the whole escalation queue; the README is rewritten and ships branch-scoped; the merge to `main` gains two named gates, CI restoration and README re-verification. New Later bet: adopt wardline as hygiene) · prior: 2026-08-14 (`PDR-0035`–`PDR-0037`: the first knockdown unit is DECIDED — the substrate→observation-dim seam — and content 5's order is changed by a blocking finding in the harness. One Next bet narrowed by one item. **No horizon change**) · prior: 2026-08-13 (harness accepted, `PDR-0032`–`PDR-0034`) · prior: 2026-08-13 (oracle pinned, `PDR-0030`)
 
 > Sequencing, WSJF / cost-of-delay, and dated forecasts are produced by
 > /axiom-program-management. This file records bets as INTENT, not a delivery
@@ -65,7 +65,15 @@
   (all 3 breaches CLOSED 2026-08-13 — row goes green when the two filed gaps enter WS-7's
   register, `PDR-0028`), **Declared-but-inert config surfaces** (baseline ~40; post-assessment
   7 found / 2 closed), **Documentation truth** (≥14 false claims → 0) and **Gates green**
-  (✅ 4 of 4, held)
+  (**GREEN on `project-recovery-2` as of 2026-08-16 at `a725bf66`, over a suite that deselects
+  NOTHING** — 3193 passed / 16 skipped / 0 failed, `-m "not slow"` gone with the marker; the
+  harness matrix at the same tree 16/16 `DIVERGED_AS_REGISTERED`, exit 0, run `20260816-184228`.
+  **Scope matters and is stated here on purpose: `main` is 20+ commits behind and STILL CARRIES
+  ALL 33 behind the marker** — every repair is branch-only, so `main` does not go green until the
+  next merge; its nightly reported 31 failed again this morning, as expected. The 2026-08-16
+  claim that *"the instrument the strangler is measured with currently certifies nothing"* was an
+  overstatement: the matrix certified the meter cut all along; the harness's two SELF-tests were
+  the defect — `PDR-0062`, `PDR-0063` superseded in part by `PDR-0065`)
   · **WS-1 is COMPLETE and CLOSED** (`PDR-0029`, 2026-08-13, `e8ad4985`): all ten frozen units
   landed, tree green at every commit, batch gate 2981/0. The `PDR-0028` fence held — nothing
   entered after the freeze. Routing rule stands for new findings: WS-7's register or WS-4.
@@ -77,13 +85,55 @@
   (`hamlet-5e39fcccb0`) and **WS-0** (`hamlet-8eeaba1461`). WS-1 (`hamlet-67ffbd282a`) closed
   2026-08-13.
 
-  · **The merge to `main` is the bet's exit, and it now has two named gates** (`PDR-0039`, owner:
+  · **THE EXIT IS RESTATED — the merge is NOT the exit (`PDR-0058`, owner-ruled, 2026-08-15).**
+  This bullet used to say *"the merge to `main` is the bet's exit."* The merge landed at
+  `07b26ed5` (PR #32, by the owner, both gates discharged first at `33bfff51`) while the strangler
+  had cut **two** units, WS-0/3/4/5/6 were all open, and `Config-surface coverage` read ~2 of 7 —
+  so the recorded exit fired without the bet being finished. The owner's ruling: the merge was an
+  **output**, not the outcome. **The Now bet exits when the pinned oracle can be RETIRED**, on
+  three conditions that must be *read*, not asserted: (1) every entry in
+  `docs/oracle/known-divergences.md` is terminal — closed by an adjudicated rebuild, or accepted
+  as permanent with its own PDR; (2) the harness's verdict vocabulary is re-earned or its
+  successor recorded (`PDR-0056` put this on the clock — `AGREE` is currently unreachable
+  matrix-wide); (3) `Gates green` is read on a suite that hides nothing (`PDR-0059`) —
+  **MET ON THE BRANCH, 2026-08-16 (`PDR-0065`, `a725bf66`): the default suite deselects nothing,
+  all 33 formerly-hidden tests execute and pass, and the marker they hid behind no longer exists
+  in the project.** Met *on the branch* is the honest scope: `main` still carries all 33 until the
+  next merge, so the condition is read as met for the oracle-retirement question — the code the
+  oracle is diffed against is the branch — while the merge remains owed. Condition (2) is
+  untouched by this: the harness's self-comparison is whole again, but `AGREE` stays unreachable
+  matrix-wide by construction until DIV-004 closes.
+  **Merging is
+  a publication step that may happen any number of times inside the bet**, each time owing
+  `PDR-0039`'s unconditional re-sweep — **20+ commits already sit ahead of `main`, so the next
+  merge owes it now.** And the authorability threshold (`Config-surface coverage` 7 of 7) is
+  explicitly **NOT** this bet's exit — that is WS-4, in *Next*. Conflating the two is what
+  produced the mis-statement.
+
+  · **SECOND MERGE: gate 2 EXECUTED again at `905acd96`, stamped at `54132aaf` (`PDR-0072`,
+  2026-08-17), and the branch is merge-ready for the owner.** Sequenced ahead of unit 3 by
+  `PDR-0071` because `PDR-0068`'s trigger lit on both prongs. Twenty-one README claims stale in 27
+  commits (frontend gate, `slow` marker, two harness shapes, nightly red on `main`, 168-commit PR
+  merge, …) plus ten adversarial-pass catches — all fixed, not re-described. Gate 1 read on the
+  push: Lint ✅ Config Validation ✅ at `905acd96`, Tests in progress at checkpoint. `PDR-0039`
+  stands: a code commit landing before the owner merges re-owes the sweep.
+
+  · **The two named gates, and how they now stand** (`PDR-0039`, owner:
   *"hopefully we'll recover before we push back to main"*). (1) **CI restoration**
   (`hamlet-2100105c9a`, P1) — no workflow has ever run on this branch and nothing has passed since
   2025-11-28, so merging would put 145 unvalidated commits on the default branch; sequenced before
   the merge, after the current knockdown. (2) **README re-verification** by the same method that
   produced it, not a re-read — its rough-edges and CI sections describe conditions the recovery
   intends to *fix*, and merging them unchanged converts honest status into stale claims on `main`.
+
+  · **BOTH GATES WERE DISCHARGED AT THE MERGE, and gate 2 is already owed again (`PDR-0058`,
+  2026-08-15).** `33bfff51` executed both conditions before PR #32: the nightly cron **restored**
+  (so `PDR-0043` reversal trigger 2 did **not** fire) and gate 2 **re-swept at the merge commit**
+  per `PDR-0039`, finding *five more* stale README claims in four commits. `PDR-0043` trigger 2 is
+  discharged, not lost. **Gate 2 re-fires at the NEXT merge, unconditionally** — 13 commits sit
+  ahead of `main` already. The first scheduled run of the restored nightly then failed
+  (`PDR-0059`) — the deferral paid off immediately by surfacing 31 hidden failures. Historical
+  reading below, superseded by this bullet and by `PDR-0058`:
 
   · **BOTH GATES ARE NOW SATISFIED, and both are commit-scoped (`PDR-0048`, 2026-08-15).**
   Gate 1 closed on remote evidence at `dd94e122` (first CI runs in the branch's history, all
@@ -127,6 +177,17 @@
   instance* (assessment line 227) is subsumed by WS-7's first knockdown and no longer waits on
   WS-3 — the knockdown carries its own instrument. Exactly one item moves; every other
   ledger item stays here and stays behind WS-3 (`PDR-0034` unchanged).
+  · **unit 2 LANDED (`PDR-0069`/`PDR-0070`, `fb791193`, 2026-08-17): presentation is declared
+  (`presentation.yaml`, observer-only), honest by default (declared bounds, no `%`/`$`), never inferred —
+  every live name-branch in server and frontend gone; `hamlet-0dd4ac24d9` closed.** Next in the queue:
+  `hamlet-f0ed709ecf` — but read `PDR-0068`'s trigger first: 26 commits sit ahead of `main`.
+  · **first two units under `PDR-0047` LANDED (`PDR-0066`, `a2f349d7`, 2026-08-16):** the
+  `semantic_type` vocabulary has one definition and the author's declaration reaches the compiled
+  field for `environment.yaml` variables; `interaction_type` is required from one vocabulary.
+  Follow-up filed inside this bet: `hamlet-f0ed709ecf` — split the `obs_vfs` block into
+  per-variable fields (vfs.md §8.1) so profile variables can declare their group and the
+  runtime's `obs_vfs` name branch dies. Next in the queue: `hamlet-0dd4ac24d9` (presentation
+  hardcoded by variable name).
   · largest single win: populate `RuntimeAction.reads/writes` from config — the entire 11-mode
   composition engine already exists and is tested; only the YAML door is missing
   · note: `hamlet-030f2ce0aa` (EnvFactory) is *not* this bet, but its framing here is **corrected
@@ -187,6 +248,9 @@
   presentation is appropriate — currency rendered as currency — because the audience is looking at
   a designed artefact, not learning what the substrate is (`PDR-0025`). Intent only; building or
   distributing one is outward-facing and gates to the owner.
+  **2026-08-17: the declared surface it needs now EXISTS** — `presentation.yaml` (`PDR-0069`), currency
+  formatting is one `format: {kind: currency, …}` away for a showcase pack; the curriculum packs
+  ship none. Building the pack itself is unchanged: outward-facing, owner's call.
 - **BAC as a first-class compiled artefact** — brain and universe through one standard
   experimental compiler, symmetric hashing and provenance, so an experiment is a single
   content-addressed pair.

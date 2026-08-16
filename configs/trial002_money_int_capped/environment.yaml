@@ -1,0 +1,111 @@
+environment:
+  version: "1.0"
+
+  meters:
+    - name: energy
+      description: "Physical energy for movement and actions"
+      range_type:
+        kind: minmax
+        clip: false
+    - name: health
+      description: "Basic well-being; recover at doctor"
+      range_type:
+        kind: minmax
+        clip: false
+    - name: money
+      description: "Cash on hand for an individual: a whole number of coins, 1..100, capped"
+      range_type:
+        kind: minmax
+        clip: false
+    - name: sustenance
+      description: "Food and nutrition for maintaining energy"
+      range_type:
+        kind: minmax
+        clip: false
+
+  cascade_graph: []
+
+  modulation_graph: []
+
+  affordances:
+    - name: SLEEP
+      description: "Rest to restore energy"
+      category: sustenance
+    - name: DOCTOR
+      description: "Medical checkup to restore health"
+      category: health
+    - name: WORK
+      description: "Earn money at the cost of energy"
+      category: money
+    - name: COOK
+      description: "Cook food to restore energy"
+      category: sustenance
+
+  variables:
+    - name: deficit_energy
+      type: scalar
+      dims: 1
+      scope: agent
+      description: "How far below target energy (0.0 = at/above target)"
+      semantic_type: custom
+      normalization:
+        method: normalize
+        clip: false
+        range: [0.0, 1.0]
+
+    - name: time_since_last_sleep
+      type: scalar
+      dims: 1
+      scope: agent
+      description: "Timesteps since last SLEEP action"
+      semantic_type: custom
+      normalization:
+        method: normalize
+        clip: false
+        range: [0.0, 100.0]
+
+    - name: deficit_health
+      type: scalar
+      dims: 1
+      scope: agent
+      description: "How far below max health (0.0 = at/above target)"
+      semantic_type: custom
+      normalization:
+        method: normalize
+        clip: false
+        range: [0.0, 1.0]
+
+    - name: time_since_last_doctor
+      type: scalar
+      dims: 1
+      scope: agent
+      description: "Timesteps since last DOCTOR action"
+      semantic_type: custom
+      normalization:
+        method: normalize
+        clip: false
+        range: [0.0, 100.0]
+
+    - name: deficit_satiation
+      type: scalar
+      dims: 1
+      scope: agent
+      description: "How far below max satiation (0.0 = at/above target)"
+      semantic_type: custom
+      normalization:
+        method: normalize
+        clip: false
+        range: [0.0, 1.0]
+
+    - name: time_since_last_cook
+      type: scalar
+      dims: 1
+      scope: agent
+      description: "Timesteps since last COOK action"
+      semantic_type: custom
+      normalization:
+        method: normalize
+        clip: false
+        range: [0.0, 100.0]
+
+  cues: []

@@ -5,170 +5,70 @@
       <h3 id="meter-heading">Agent Meters</h3>
     </div>
 
-    <!-- ✅ Grouped meter tiers showing cascading relationships -->
+    <!--
+      One flat list in compiled index order (PDR-0025). Every rendering decision below comes
+      from the meter's declared metadata or the pack's declared presentation — never from
+      the meter's name.
+    -->
     <div v-if="meters" class="meters" role="list">
-      <!-- Tier 1: Primary (Survival-Critical) -->
-      <div class="meter-tier" data-tier-level="primary">
-        <div class="tier-header">
-          <span class="tier-icon">🎯</span>
-          <h4 class="tier-name">SURVIVAL-CRITICAL</h4>
-        </div>
-        <div class="tier-meters">
-          <template v-for="name in primaryMeters" :key="name">
-          <div
-            v-if="meters && meters[name] !== undefined"
-            class="meter"
-            role="listitem"
-            :data-meter="name"
-            :class="{
-              critical: isCritical(name, meters[name])
-            }"
-            :aria-label="`${capitalize(name)}: ${formatMeterValue(name, meters[name])}`"
-          >
-            <div class="meter-header">
-              <span class="meter-name">{{ capitalize(name) }}</span>
-              <span class="meter-value" aria-live="polite" aria-atomic="true" role="status">
-                {{ formatMeterValue(name, meters[name]) }}
-              </span>
-            </div>
-            <div class="meter-bar-container">
-              <div
-                class="meter-bar"
-                role="progressbar"
-                :aria-valuenow="getMeterPercentage(name, meters[name])"
-                aria-valuemin="0"
-                aria-valuemax="100"
-                :style="{
-                  width: getMeterPercentage(name, meters[name]) + '%',
-                  background: getMeterColor(name, meters[name])
-                }"
-              ></div>
-            </div>
+      <template v-for="row in rows" :key="row.name">
+        <div
+          class="meter"
+          role="listitem"
+          :data-meter="row.name"
+          :class="{ critical: row.critical }"
+          :aria-label="`${row.label}: ${row.display}`"
+        >
+          <div class="meter-header">
+            <span class="meter-name">{{ row.label }}</span>
+            <span class="meter-value" aria-live="polite" aria-atomic="true" role="status">
+              {{ row.display }}
+            </span>
           </div>
-          </template>
+          <div v-if="row.lethal || row.cascade" class="meter-notes">
+            <span
+              v-if="row.lethal"
+              class="meter-lethal"
+              :title="`Lethal at ${row.lethal} of declared range`"
+            >⚠ lethal at {{ row.lethal }}</span>
+            <span v-if="row.cascade" class="meter-relationship">{{ row.cascade }}</span>
+          </div>
+          <div class="meter-bar-container">
+            <div
+              class="meter-bar"
+              role="progressbar"
+              :aria-valuenow="row.percentage"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              :style="{
+                width: row.percentage + '%',
+                background: row.color
+              }"
+            ></div>
+          </div>
+        </div>
+      </template>
 
-          <!-- Age meter (progress to retirement) -->
-          <div class="meter" role="listitem" data-meter="age">
-            <div class="meter-header">
-              <span class="meter-name">Age</span>
-              <span class="meter-value" aria-live="polite" aria-atomic="true" role="status">
-                {{ (props.agentAge / 24).toFixed(1) }} days
-              </span>
-            </div>
-            <div class="meter-bar-container">
-              <div
-                class="meter-bar age-bar"
-                role="progressbar"
-                :aria-valuenow="Math.round(props.lifetimeProgress * 100)"
-                aria-valuemin="0"
-                aria-valuemax="100"
-                :style="{
-                  width: (props.lifetimeProgress * 100) + '%',
-                  background: getAgeColor(props.lifetimeProgress)
-                }"
-              ></div>
-            </div>
-          </div>
+      <!-- Age meter (progress to retirement) -->
+      <div class="meter" role="listitem" data-meter="age">
+        <div class="meter-header">
+          <span class="meter-name">Age</span>
+          <span class="meter-value" aria-live="polite" aria-atomic="true" role="status">
+            {{ (props.agentAge / 24).toFixed(1) }} days
+          </span>
         </div>
-      </div>
-
-      <!-- Tier 2: Secondary (Modifiers) -->
-      <div class="meter-tier" data-tier-level="secondary">
-        <div class="tier-header">
-          <span class="tier-icon">🔄</span>
-          <h4 class="tier-name">MODIFIERS</h4>
-          <span class="tier-description">affect primary</span>
-        </div>
-        <div class="tier-meters">
-          <template v-for="name in secondaryMeters" :key="name">
+        <div class="meter-bar-container">
           <div
-            v-if="meters && meters[name] !== undefined"
-            class="meter"
-            role="listitem"
-            :data-meter="name"
-            :data-affects="getMeterAffects(name)"
-            :class="{
-              critical: isCritical(name, meters[name]),
-              'strobe-slow': name === 'mood' && isLonely() && !isMoodCritical(),
-              'strobe-fast': name === 'mood' && isLonely() && isMoodCritical()
+            class="meter-bar age-bar"
+            role="progressbar"
+            :aria-valuenow="Math.round(props.lifetimeProgress * 100)"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            :style="{
+              width: (props.lifetimeProgress * 100) + '%',
+              background: getAgeColor(props.lifetimeProgress)
             }"
-            :aria-label="`${capitalize(name)}: ${formatMeterValue(name, meters[name])}`"
-          >
-            <div class="meter-header">
-              <span class="meter-name">
-                {{ capitalize(name) }}
-              </span>
-              <span class="meter-value" aria-live="polite" aria-atomic="true" role="status">
-                {{ formatMeterValue(name, meters[name]) }}
-              </span>
-            </div>
-            <div class="meter-relationship">
-              → {{ getRelationshipText(name) }}
-            </div>
-            <div class="meter-bar-container">
-              <div
-                class="meter-bar"
-                role="progressbar"
-                :aria-valuenow="getMeterPercentage(name, meters[name])"
-                aria-valuemin="0"
-                aria-valuemax="100"
-                :style="{
-                  width: getMeterPercentage(name, meters[name]) + '%',
-                  background: getMeterColor(name, meters[name])
-                }"
-              ></div>
-            </div>
-          </div>
-          </template>
-        </div>
-      </div>
-
-      <!-- Tier 3: Tertiary (Accelerators) -->
-      <div class="meter-tier" data-tier-level="tertiary">
-        <div class="tier-header">
-          <span class="tier-icon">⚡</span>
-          <h4 class="tier-name">ACCELERATORS</h4>
-          <span class="tier-description">speed up effects</span>
-        </div>
-        <div class="tier-meters">
-          <template v-for="name in tertiaryMeters" :key="name">
-          <div
-            v-if="meters && meters[name] !== undefined"
-            class="meter"
-            role="listitem"
-            :data-meter="name"
-            :data-affects="getMeterAffects(name)"
-            :class="{
-              critical: isCritical(name, meters[name])
-            }"
-            :aria-label="`${capitalize(name)}: ${formatMeterValue(name, meters[name])}`"
-          >
-            <div class="meter-header">
-              <span class="meter-name">
-                {{ capitalize(name) }}
-              </span>
-              <span class="meter-value" aria-live="polite" aria-atomic="true" role="status">
-                {{ formatMeterValue(name, meters[name]) }}
-              </span>
-            </div>
-            <div class="meter-relationship accelerator">
-              ⚡ {{ getRelationshipText(name) }}
-            </div>
-            <div class="meter-bar-container">
-              <div
-                class="meter-bar"
-                role="progressbar"
-                :aria-valuenow="getMeterPercentage(name, meters[name])"
-                aria-valuemin="0"
-                aria-valuemax="100"
-                :style="{
-                  width: getMeterPercentage(name, meters[name]) + '%',
-                  background: getMeterColor(name, meters[name])
-                }"
-              ></div>
-            </div>
-          </div>
-          </template>
+          ></div>
         </div>
       </div>
     </div>
@@ -184,15 +84,32 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import EmptyState from './EmptyState.vue'
-import { capitalize, formatMeterValue, getMeterPercentage } from '../utils/formatting'
+import {
+  formatMeterValue,
+  getMeterFraction,
+  getMeterPercentage,
+  isMeterCritical,
+  meterLabel,
+  cascadeText
+} from '../utils/formatting'
 
 // ✅ Props First: Receive data from parent instead of importing store
 const props = defineProps({
   agentMeters: {
     type: Object,
     default: () => ({})
+  },
+  // Declared per-meter facts in compiled index order (from `connected.meters`).
+  meterMetadata: {
+    type: Array,
+    default: () => []
+  },
+  // The pack's opt-in presentation.yaml as JSON, or null — the honest default.
+  presentation: {
+    type: Object,
+    default: null
   },
   lifetimeProgress: {
     type: Number,
@@ -204,143 +121,68 @@ const props = defineProps({
   }
 })
 
-// Meter tier arrays (matching actual game code, secondary in alphabetical order)
-const primaryMeters = ['energy', 'health', 'money']
-const secondaryMeters = ['fitness', 'mood', 'satiation']
-const tertiaryMeters = ['hygiene', 'social']
-
-// Relationship map: meter → what it affects (matching actual game code)
-const meterRelationships = {
-  // Tertiary → Secondary
-  hygiene: ['satiation', 'fitness', 'mood'],
-  social: ['mood'],
-  // Secondary → Primary
-  mood: ['energy'],
-  satiation: ['energy', 'health'],
-  fitness: ['health']
-}
-
 const meters = computed(() => {
   const agent = props.agentMeters['agent_0']
   return agent ? agent.meters : null
 })
 
-// ✅ Use imported formatting utilities
-// (capitalize, formatMeterValue, getMeterPercentage are imported above)
+const metaByName = computed(() => {
+  const byName = {}
+  for (const meta of props.meterMetadata) byName[meta.name] = meta
+  return byName
+})
 
-function isCritical(name, value) {
-  // All meters are 0-1 normalized, convert to percentage
-  const percentage = value * 100
-  // Low mood or other meters trigger critical state when percentage < 20
-  return percentage < 20
+function presentationEntry(name) {
+  const declared = props.presentation && props.presentation.meters
+  return declared && declared[name] ? declared[name] : null
 }
 
-function isLonely() {
-  // Check if social is at 0 (causes mood to drop rapidly)
-  if (!meters.value) return false
-  const social = meters.value.social
-  return social <= 0.01
+// Generic fraction-based bar colour when no colour is declared. Coloured by distance from
+// the lethal bound where there is one; a lethal_max-only meter reads "danger" at the top.
+function defaultColor(fraction, meta) {
+  const danger = meta.lethal_max && !meta.lethal_min ? 1 - fraction : fraction
+  if (danger > 0.6) return 'var(--color-success)'
+  if (danger > 0.3) return 'var(--color-warning)'
+  return 'var(--color-error)'
 }
 
-function isMoodCritical() {
-  // Check if mood is dangerously low
-  if (!meters.value) return false
-  const mood = meters.value.mood
-  // Mood is already normalized to [0, 1], so 0.2 = 20%
-  return mood < 0.2
+function lethalMarker(meta) {
+  if (meta.lethal_min && meta.lethal_max) return 'min and max'
+  if (meta.lethal_min) return 'min'
+  if (meta.lethal_max) return 'max'
+  return null
 }
 
-function getMeterTier(name) {
-  // Updated classification based on actual game mechanics:
-  // Primary: Direct survival-critical (death risk if <20%)
-  // Secondary: Direct modifiers of primary meters
-  // Tertiary: Accelerators/multipliers
-  const primary = ['energy', 'health', 'money']
-  const secondary = ['mood', 'satiation', 'hygiene']
-  // tertiary: fitness, social
-
-  if (primary.includes(name)) return 'primary'
-  if (secondary.includes(name)) return 'secondary'
-  return 'tertiary'
-}
-
-// ✅ Extract meter color logic using CSS variables
-function getMeterColor(name, value) {
-  // All meters are 0-1 normalized, convert to percentage
-  const percentage = value * 100
-
-  // Color mapping using CSS custom properties
-  const colors = {
-    energy: {
-      high: 'var(--color-meter-energy)',
-      mid: 'var(--color-warning)',
-      low: 'var(--color-error)'
-    },
-    hygiene: {
-      high: 'var(--color-meter-hygiene)',
-      mid: 'var(--color-warning)',
-      low: 'var(--color-error)'
-    },
-    satiation: {
-      high: 'var(--color-meter-satiation)',
-      mid: 'var(--color-warning)',
-      low: 'var(--color-error)'
-    },
-    money: {
-      high: 'var(--color-meter-money)',
-      mid: 'var(--color-meter-money)',
-      low: 'var(--color-error)'
-    },
-    health: {
-      high: '#10b981',  // Green - healthy
-      mid: 'var(--color-warning)',
-      low: 'var(--color-error)'
-    },
-    mood: {
-      high: 'var(--color-meter-mood-high)',
-      mid: 'var(--color-meter-mood-mid)',
-      low: 'var(--color-meter-mood-low)'
-    },
-    social: {
-      high: 'var(--color-meter-social)',
-      mid: 'var(--color-meter-social)',
-      low: 'var(--color-error)'
-    },
-    fitness: {
-      high: '#8b5cf6',  // Purple - athletic
-      mid: 'var(--color-warning)',
-      low: 'var(--color-error)'
-    }
+// One row per declared meter present in the agent payload, in compiled order.
+const rows = computed(() => {
+  const values = meters.value
+  if (!values) return []
+  const out = []
+  for (const meta of props.meterMetadata) {
+    const value = values[meta.name]
+    if (value === undefined) continue
+    const entry = presentationEntry(meta.name)
+    const fraction = getMeterFraction(value, meta.bounds)
+    out.push({
+      name: meta.name,
+      label: meterLabel(meta.name, entry),
+      display: formatMeterValue(value, meta.bounds, entry),
+      percentage: getMeterPercentage(value, meta.bounds),
+      color: entry ? entry.color : defaultColor(fraction, meta),
+      critical: isMeterCritical(value, meta),
+      lethal: lethalMarker(meta),
+      cascade: cascadeText(meta, metaByName.value, props.presentation)
+    })
   }
-
-  const colorSet = colors[name] || colors.energy
-
-  // Normal meters - HIGH is good
-  if (percentage > 60) return colorSet.high
-  if (percentage > 30) return colorSet.mid
-  return colorSet.low
-}
-
-// Get what meters this meter affects (for data-affects attribute)
-function getMeterAffects(name) {
-  return (meterRelationships[name] || []).join(',')
-}
-
-// Get compact relationship text (always visible)
-function getRelationshipText(name) {
-  const affects = meterRelationships[name] || []
-  if (affects.length === 0) return ''
-
-  // Capitalize and join with "+"
-  return affects.map(m => capitalize(m)).join(' + ')
-}
+  return out
+})
 
 // Get color for age/retirement progress bar
 function getAgeColor(progress) {
   // Green -> Yellow -> Red as agent ages
-  if (progress < 0.5) return '#10b981' // Green - young
-  if (progress < 0.75) return 'var(--color-warning)' // Yellow - middle age
-  return 'var(--color-error)' // Red - near retirement/death
+  if (progress < 0.5) return 'var(--color-success)' // young
+  if (progress < 0.75) return 'var(--color-warning)' // middle age
+  return 'var(--color-error)' // near retirement/death
 }
 </script>
 
@@ -371,7 +213,7 @@ function getAgeColor(progress) {
 .meters {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: var(--spacing-sm);
   flex: 1;
   overflow-y: auto;
 }
@@ -379,124 +221,44 @@ function getAgeColor(progress) {
 .meter {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
-  position: relative;
-  transition: all var(--transition-base);
-}
-
-/* ===== Tier Container Styling ===== */
-.meter-tier {
-  margin-bottom: var(--spacing-sm);
-  border-left: 4px solid var(--tier-color);
-  padding-left: var(--spacing-md);
-  transition: all var(--transition-base);
-}
-
-.meter-tier[data-tier-level="primary"] {
-  --tier-color: #fbbf24; /* Gold */
-}
-
-.meter-tier[data-tier-level="secondary"] {
-  --tier-color: #06b6d4; /* Cyan */
-  margin-top: var(--spacing-md);
-}
-
-.meter-tier[data-tier-level="tertiary"] {
-  --tier-color: #a78bfa; /* Purple */
-  margin-top: var(--spacing-md);
-}
-
-/* Tier Header Styling */
-.tier-header {
-  display: flex;
-  align-items: center;
   gap: var(--spacing-xs);
-  margin-bottom: var(--spacing-sm);
-}
-
-.tier-icon {
-  font-size: var(--font-size-base);
-}
-
-.tier-name {
-  margin: 0;
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-bold);
-  color: var(--tier-color);
-  letter-spacing: 0.05em;
-}
-
-.tier-description {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-tertiary);
-  font-style: italic;
-  margin-left: auto;
-}
-
-/* Primary tier gets more visual weight */
-.meter-tier[data-tier-level="primary"] .tier-name {
-  font-size: var(--font-size-base);
-}
-
-/* Tier Meters Container */
-.tier-meters {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
-
-/* ===== Meter Sizing by Tier ===== */
-.meter-tier[data-tier-level="primary"] .meter {
-  padding: var(--spacing-md);
+  position: relative;
+  padding: var(--spacing-sm) var(--spacing-md);
   background: rgba(255, 255, 255, 0.02);
   border-radius: var(--border-radius-sm);
+  transition: all var(--transition-base);
 }
 
-.meter-tier[data-tier-level="primary"] .meter-bar-container {
-  height: 22px;
-}
-
-.meter-tier[data-tier-level="secondary"] .meter-bar-container {
-  height: 22px;
-}
-
-.meter-tier[data-tier-level="tertiary"] .meter-bar-container {
-  height: 22px;
-}
-
-/* ===== Relationship Text (Always Visible) ===== */
-.meter-relationship {
+.meter-notes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
   font-size: var(--font-size-xs);
-  color: var(--tier-color);
-  margin-top: var(--spacing-xs);
-  padding: calc(var(--spacing-xs) / 2) var(--spacing-xs);
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: var(--border-radius-sm);
-  border-left: 2px solid var(--tier-color);
-  font-weight: var(--font-weight-medium);
-  opacity: 0.85;
   line-height: 1.2;
 }
 
-.meter-relationship.accelerator {
-  color: #a78bfa;
-  border-left-color: #a78bfa;
+/* ===== Declared facts: lethal bound marker and cascade text ===== */
+.meter-lethal {
+  color: var(--color-error);
+  font-weight: var(--font-weight-medium);
+  padding: calc(var(--spacing-xs) / 2) var(--spacing-xs);
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--border-radius-sm);
+  border-left: 2px solid var(--color-error);
+}
+
+.meter-relationship {
+  color: var(--color-text-secondary);
+  padding: calc(var(--spacing-xs) / 2) var(--spacing-xs);
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--border-radius-sm);
+  border-left: 2px solid var(--color-info);
+  font-weight: var(--font-weight-medium);
+  opacity: 0.85;
 }
 
 .meter.critical {
   animation: pulse 1s ease-in-out infinite;
-  will-change: transform, opacity;
-  transform: translateZ(0);
-}
-
-.meter.strobe-slow {
-  animation: strobe-slow 3s ease-in-out infinite !important;
-  will-change: transform, opacity;
-  transform: translateZ(0);
-}
-
-.meter.strobe-fast {
-  animation: strobe-fast 1s ease-in-out infinite !important;
   will-change: transform, opacity;
   transform: translateZ(0);
 }
@@ -507,36 +269,6 @@ function getAgeColor(progress) {
   }
   50% {
     opacity: 0.6;
-  }
-}
-
-@keyframes strobe-slow {
-  0%, 100% {
-    opacity: 1;
-  }
-  25% {
-    opacity: 0.3;
-  }
-  50% {
-    opacity: 1;
-  }
-  75% {
-    opacity: 0.3;
-  }
-}
-
-@keyframes strobe-fast {
-  0%, 100% {
-    opacity: 1;
-  }
-  25% {
-    opacity: 0.2;
-  }
-  50% {
-    opacity: 1;
-  }
-  75% {
-    opacity: 0.2;
   }
 }
 
@@ -574,24 +306,6 @@ function getAgeColor(progress) {
   height: 100%;
   border-radius: var(--border-radius-full);
   transition: width var(--transition-base), background var(--transition-base);
-}
-
-/* Panel explanation */
-.panel-explanation {
-  margin-top: auto;
-  padding: var(--spacing-sm);
-  background: var(--color-bg-primary);
-  border-radius: var(--border-radius-sm);
-  border-top: 1px solid var(--color-border);
-}
-
-.panel-explanation p {
-  margin: 0;
-  font-size: var(--font-size-xs);
-  color: var(--color-text-tertiary);
-  font-style: italic;
-  line-height: 1.4;
-  opacity: 0.9;
 }
 
 /* Respect user's reduced motion preference */

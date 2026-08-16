@@ -27,6 +27,7 @@ from townlet.config.effects_config import EffectScope
 from townlet.effects.manager import ActiveEffect
 
 # Removed: calculate_expected_observation_dim (now using env.observation_dim directly)
+from townlet.universe.compilers.observation import meter_name_from_observation_field, meter_observation_field_name
 from townlet.universe.errors import CompilationError
 from townlet.vfs.observation_builder import apply_normalization
 
@@ -138,7 +139,13 @@ class TestFullObservability:
         assert (meters <= 1.0).all()
 
     def test_meter_observation_is_sourced_from_vfs_registry(self, test_config_pack_path, cpu_device, env_factory):
-        """obs_meters is generated from the VFS registry value, not direct env.meters concatenation."""
+        """Each meter's observation derives from its own VFS variable, not from env.meters.
+
+        The property pinned here is unchanged by the per-meter split (PDR-0054): the
+        observation must come through the registry and through the meter's DECLARED
+        normalization. What changed is that there are now N source variables and N specs
+        instead of one block of each, so this asserts it meter by meter.
+        """
         env = env_factory(
             config_dir=test_config_pack_path,
             num_agents=1,
@@ -148,26 +155,34 @@ class TestFullObservability:
         env.reset()
         meter_values = torch.linspace(0.1, 0.8, steps=env.meter_count, device=cpu_device).unsqueeze(0)
         env.meters = meter_values.clone()
-
-        meters_field = env.observation_spec.get_field_by_name("obs_meters")
         obs = env._get_observations()
-        meter_obs = obs[:, meters_field.start_index : meters_field.end_index]
-        meter_vfs = env.vfs_registry.get("obs_meters", reader="engine")
 
-        # The registry still holds the RAW meter values...
-        assert torch.allclose(meter_vfs, meter_values)
+        bars_fields = [f for f in env.observation_spec.fields if f.semantic_type == "bars"]
+        assert len(bars_fields) == env.meter_count, "one observation field per meter"
 
-        # ...and the observation is those values put through the field's DECLARED
-        # normalization. Since WS-1(e) that spec is minmax over bars.*.bounds, so the
-        # observation is no longer a pass-through of the registry whenever a meter
-        # declares a ceiling other than 1.0 (`money` does). Sourcing is still what this
-        # test pins: the observation must derive from the registry, not from env.meters.
-        normalization = next(field for field in env.universe.vfs_observation_fields if field.id == "obs_meters").normalization
-        assert normalization is not None, "obs_meters must declare a normalization spec"
-        assert torch.allclose(apply_normalization(meter_vfs, normalization), meter_obs)
+        specs = {f.id: f.normalization for f in env.universe.vfs_observation_fields}
+        for field in bars_fields:
+            meter_name = meter_name_from_observation_field(field.name)
+            column = env.meter_name_to_index[meter_name]
+            meter_vfs = env.vfs_registry.get(field.name, reader="engine")
+
+            # The registry holds the RAW value for this meter...
+            assert torch.allclose(meter_vfs, meter_values[:, column]), meter_name
+
+            # ...and the observation is that value through the meter's own declared spec.
+            normalization = specs[field.name]
+            assert normalization is not None, f"{field.name} must declare a normalization spec"
+            expected = apply_normalization(meter_vfs, normalization)
+            observed = obs[:, field.start_index : field.end_index]
+            assert torch.allclose(expected.reshape(observed.shape), observed), meter_name
 
     def test_single_meter_observation_is_sourced_from_vfs_registry(self, cpu_device: torch.device, env_factory):
-        """Single-meter obs_meters uses scalar VFS storage and still returns a 2D observation slice."""
+        """A meter's VFS source is scalar-per-agent and still yields a 2D observation slice.
+
+        Every meter source is 1-wide now, so what was the single-meter special case is the
+        general case — which is the point: the SOURCE width is always one scalar, and any
+        extra observed width comes from the declared normalizer downstream.
+        """
         env = env_factory(
             config_dir=Path("configs/test/vfs_dependency_chain"),
             level_name="L0_deps",
@@ -176,9 +191,12 @@ class TestFullObservability:
         )
 
         obs = env.reset()
-        meters_field = env.observation_spec.get_field_by_name("obs_meters")
-        meter_obs = obs[:, meters_field.start_index : meters_field.end_index]
-        meter_vfs = env.vfs_registry.get("obs_meters", reader="engine")
+        bars_fields = [f for f in env.observation_spec.fields if f.semantic_type == "bars"]
+        assert len(bars_fields) == 1, "this pack declares exactly one meter"
+        field = bars_fields[0]
+
+        meter_vfs = env.vfs_registry.get(field.name, reader="engine")
+        meter_obs = obs[:, field.start_index : field.end_index]
 
         assert tuple(meter_vfs.shape) == (2,)
         assert torch.allclose(meter_vfs.unsqueeze(1), meter_obs)
@@ -622,9 +640,9 @@ class TestObservationUpdates:
         """Interacting with affordances should change meter values."""
         obs1 = basic_env.reset()
 
-        meters_field = next(f for f in basic_env.universe.observation_spec.fields if f.name == "obs_meters")
-        energy_idx = 0  # energy is first meter in test pack
-        energy1 = obs1[0, meters_field.start_index + energy_idx]
+        # Address the meter by NAME through its own field, not by an index into a block.
+        energy_field = basic_env.universe.observation_spec.get_field_by_name(meter_observation_field_name("energy"))
+        energy1 = obs1[0, energy_field.start_index]
 
         # Take several steps to allow interactions
         for _ in range(10):
@@ -632,7 +650,7 @@ class TestObservationUpdates:
             if dones[0]:
                 break
 
-        energy_final = obs[0, meters_field.start_index + energy_idx]
+        energy_final = obs[0, energy_field.start_index]
 
         # Energy should have decreased (movement costs energy)
         assert energy_final < energy1, f"Energy should decrease after interactions: {energy1} -> {energy_final}"

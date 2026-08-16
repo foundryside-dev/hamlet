@@ -24,17 +24,14 @@
           v-for="event in sortedEvents"
           :key="event.id"
           class="event-item"
-          :class="`tier-${event.tier}`"
         >
           <div class="event-icon">
-            <span v-if="event.tier === 'primary'">🔴</span>
-            <span v-else-if="event.tier === 'secondary'">🟡</span>
-            <span v-else>🟠</span>
+            <span>🔴</span>
           </div>
           <div class="event-content">
             <div class="event-header-row">
-              <span class="event-meter">{{ event.meterName }}</span>
-              <span class="event-value">{{ event.value }}%</span>
+              <span class="event-meter">{{ event.label }}</span>
+              <span class="event-value">{{ event.display }}</span>
             </div>
             <div class="event-timestamp">{{ formatTimestamp(event.timestamp) }}</div>
             <div v-if="event.cascade" class="event-cascade">
@@ -283,30 +280,15 @@ function formatTimestamp(timestamp) {
   display: flex;
   gap: var(--spacing-sm);
   padding: var(--spacing-sm);
-  background: var(--color-bg-primary);
+  background: rgba(239, 68, 68, 0.05);
   border-radius: var(--border-radius-sm);
-  border-left: 3px solid transparent;
+  border-left: 3px solid var(--color-error);
   transition: all var(--transition-base);
 
   /* GPU acceleration for smooth list updates */
   will-change: transform, opacity;
   transform: translateZ(0);
   backface-visibility: hidden;
-}
-
-.event-item.tier-primary {
-  border-left-color: var(--color-error);
-  background: rgba(239, 68, 68, 0.05);
-}
-
-.event-item.tier-secondary {
-  border-left-color: var(--color-warning);
-  background: rgba(245, 158, 11, 0.05);
-}
-
-.event-item.tier-tertiary {
-  border-left-color: #f97316; /* Orange for tertiary */
-  background: rgba(249, 115, 22, 0.05);
 }
 
 .event-icon {
@@ -332,7 +314,6 @@ function formatTimestamp(timestamp) {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
-  text-transform: capitalize;
 }
 
 .event-value {

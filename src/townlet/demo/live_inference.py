@@ -15,9 +15,11 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
 from townlet.agent.networks import RecurrentSpatialQNetwork
+from townlet.config.presentation_config import PresentationConfig
 from townlet.curriculum.adversarial import AdversarialCurriculum
 from townlet.curriculum.factory import build_curriculum
 from townlet.demo.database import DemoDatabase
+from townlet.demo.presentation import build_meter_metadata, load_presentation, presentation_payload
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
 from townlet.population.vectorized import VectorizedPopulation
@@ -32,23 +34,6 @@ from townlet.universe.compiler import UniverseCompiler
 
 logger = logging.getLogger(__name__)
 
-# UI icons for affordances (emoji codepoints escaped to keep ASCII source)
-AFFORDANCE_ICON_MAP: dict[str, str] = {
-    "EAT": "\U0001f37d\ufe0f",
-    "SLEEP": "\U0001f6cf\ufe0f",
-    "SHOWER": "\U0001f6bf",
-    "EXERCISE": "\U0001f4aa",
-    "WORK": "\U0001f4bc",
-    "SOCIALIZE": "\U0001f5e3\ufe0f",
-    "MEDITATE": "\U0001f9d8",
-    "DRINK_WATER": "\U0001f4a7",
-    "BRUSH_TEETH": "\U0001faa5",
-    "LAUNDRY": "\U0001f9fa",
-    "COOK": "\U0001f373",
-    "CLEAN_HOUSE": "\U0001f9f9",
-    "ENTERTAINMENT": "\U0001f3ae",
-    "DOCTOR": "\u2695\ufe0f",
-}
 
 TELEMETRY_SCHEMA_VERSION = "1.0.0"
 
@@ -112,6 +97,8 @@ class LiveInferenceServer:
         self.training_config_path: Path | None = Path(training_config_path) if training_config_path else None
         self.compiler = UniverseCompiler()
         self.compiled_universe: CompiledUniverse | None = None
+        # Observer-only presentation (PDR-0025): None is the honest default.
+        self.presentation: PresentationConfig | None = None
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.clients: set[WebSocket] = set()
@@ -180,6 +167,27 @@ class LiveInferenceServer:
         if not self.population:
             return {"schema_version": TELEMETRY_SCHEMA_VERSION, "episode_index": None, "agents": []}
         return build_agent_telemetry_payload(self.population, episode_index=self.current_episode)
+
+    def _build_observer_metadata(self) -> dict[str, Any]:
+        """What a frontend needs to render the universe without knowing what the game is.
+
+        ``meters``: declared bounds, lethality and cascade edges per meter, in compiled order.
+        ``presentation``: the pack's opt-in ``presentation.yaml`` as JSON, or ``None`` — the
+        honest default (PDR-0025). Both are static per universe and ride on ``connected``.
+        """
+        if self.compiled_universe is None:
+            return {"meters": [], "presentation": None}
+        return {
+            "meters": build_meter_metadata(self.compiled_universe),
+            "presentation": presentation_payload(self.presentation),
+        }
+
+    def _affordance_icon(self, name: str) -> str | None:
+        """The declared icon for an affordance, or ``None`` when the pack declares none."""
+        if self.presentation is None:
+            return None
+        entry = self.presentation.affordances.get(name)
+        return entry.icon if entry is not None else None
 
     def _build_substrate_metadata(self) -> dict[str, Any]:
         """Build substrate metadata for WebSocket messages.
@@ -291,6 +299,7 @@ class LiveInferenceServer:
         """Initialize environment and agent components."""
         logger.info("Compiling universe for live inference from %s", self.config_dir)
         self.compiled_universe = self.compiler.compile(self.config_dir, primary_level=self.level_name)
+        self.presentation = load_presentation(self.config_dir, self.compiled_universe)
 
         level_meta = self.compiled_universe.get_level(self.level_name)
 
@@ -541,6 +550,7 @@ class LiveInferenceServer:
                 "auto_checkpoint_mode": self.auto_checkpoint_mode,
                 "substrate": self._build_substrate_metadata(),
                 "action_labels": action_labels,  # Dynamic action space labels
+                **self._build_observer_metadata(),
             }
         )
 
@@ -837,7 +847,7 @@ class LiveInferenceServer:
             pos_list = pos.cpu().tolist()
             affordance_data = {
                 "type": name,  # Frontend expects 'type' not 'name'
-                "icon": AFFORDANCE_ICON_MAP.get(name),
+                "icon": self._affordance_icon(name),
             }
 
             # Add position data based on substrate dimensionality
@@ -1145,7 +1155,7 @@ class LiveInferenceServer:
                 }
             ],
             "affordances": [
-                {"type": name, "x": pos[0], "y": pos[1], "icon": AFFORDANCE_ICON_MAP.get(name)} for name, pos in affordances.items()
+                {"type": name, "x": pos[0], "y": pos[1], "icon": self._affordance_icon(name)} for name, pos in affordances.items()
             ],
         }
 

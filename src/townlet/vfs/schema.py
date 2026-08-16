@@ -15,6 +15,8 @@ from typing import Any, Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
+from townlet.vfs.semantic_type import SemanticType
+
 __all__ = [
     "NormalizationSpec",
     "WriteSpec",
@@ -50,18 +52,29 @@ class NormalizationSpec(BaseModel):
     - binary: Threshold values into 0/1
     - one_hot: Expand categorical integer ids into one-hot vectors
     - log_scaled: Scale non-negative values logarithmically
-    - clipped_log_scaled: Clamp then log-scale values
     - rank_scaled: Scale batch ranks to [0, 1]
     - masked_value: Replace sentinel values with a configured fill value
 
+    Clamping is a PARAMETER (`clip`), not a kind. It is required on the two
+    range-based kinds (`minmax`, `log_scaled`) and forbidden on the rest, which
+    have no range to clamp against (hamlet-fba56feca5, PDR-0054 ruling 3).
+
+    `clipped_log_scaled` was DELETED in the same change. It was the only clamping
+    member, so an author who wanted a plain clamp had to accept a log curve with
+    it. Once `clip` exists as a parameter, `log_scaled` + `clip=True` is exactly
+    what `clipped_log_scaled` did, and keeping both would be PDR-0053 taxonomy
+    shape #3 — two members, one behaviour — authored deliberately while cleaning
+    up that very shape. `docs/architecture/vfs.md` §9.2's own example
+    (`kind: clipped_log_scaled ... clip: true`) carried the redundancy already.
+
     Examples:
-        # Scalar minmax
-        NormalizationSpec(kind="minmax", min=0.0, max=1.0)
+        # Scalar minmax, pure affine rescaling — out-of-range input stays out of range
+        NormalizationSpec(kind="minmax", min=0.0, max=1.0, clip=False)
 
-        # Vector minmax
-        NormalizationSpec(kind="minmax", min=[0.0, 0.0], max=[7.0, 7.0])
+        # Vector minmax, clamped into the declared range first
+        NormalizationSpec(kind="minmax", min=[0.0, 0.0], max=[7.0, 7.0], clip=True)
 
-        # Scalar z-score
+        # Scalar z-score (no range, so no clip)
         NormalizationSpec(kind="zscore", mean=0.5, std=0.2)
     """
 
@@ -75,7 +88,6 @@ class NormalizationSpec(BaseModel):
         "one_hot",
         "binary",
         "log_scaled",
-        "clipped_log_scaled",
         "rank_scaled",
         "masked_value",
     ] = Field(description="Normalization method from the VFS v1.1 vocabulary")
@@ -125,9 +137,31 @@ class NormalizationSpec(BaseModel):
         description="Replacement value for masked_value normalization",
     )
 
+    clip: bool | None = Field(
+        default=None,
+        description=(
+            "Clamp the value into [min, max] before scaling. REQUIRED on the range-based "
+            "kinds (minmax, log_scaled) and forbidden on the rest. `None` is not a default: "
+            "the validator rejects it wherever the parameter applies (No-Defaults Principle)."
+        ),
+    )
+
     @model_validator(mode="after")
     def validate_normalization_params(self) -> "NormalizationSpec":
         """Validate that required parameters are present for each kind."""
+        range_based = self.kind in {"minmax", "log_scaled"}
+        if range_based and self.clip is None:
+            raise ValueError(
+                f"{self.kind} normalization requires an explicit 'clip' parameter (true or false).\n"
+                "  Rule: clamping is a declared choice, never inferred. Declare clip: false for pure\n"
+                "  scaling, or clip: true to clamp into [min, max] first."
+            )
+        if not range_based and self.clip is not None:
+            raise ValueError(
+                f"{self.kind} normalization does not accept a 'clip' parameter — it has no range to clamp against.\n"
+                "  Rule: clip applies only to minmax and log_scaled."
+            )
+
         if self.kind == "minmax":
             if self.min is None:
                 raise ValueError("minmax normalization requires 'min' parameter")
@@ -151,7 +185,7 @@ class NormalizationSpec(BaseModel):
         elif self.kind == "binary":
             if self.threshold is None:
                 raise ValueError("binary normalization requires 'threshold'")
-        elif self.kind in {"log_scaled", "clipped_log_scaled"}:
+        elif self.kind == "log_scaled":
             if self.min is None or self.max is None:
                 raise ValueError(f"{self.kind} normalization requires 'min' and 'max' parameters")
             if not self._bounds_are_ordered():
@@ -306,7 +340,7 @@ class ObservationField(BaseModel):
             source_variable="position",
             exposed_to=["agent"],
             shape=[2],
-            normalization=NormalizationSpec(kind="minmax", min=[0,0], max=[7,7]),
+            normalization=NormalizationSpec(kind="minmax", min=[0,0], max=[7,7], clip=False),
         )
     """
 
@@ -336,13 +370,12 @@ class ObservationField(BaseModel):
         description="Optional normalization to apply before exposing",
     )
 
-    # NEW FIELDS for QUICK-05: Structured Observation Masking
-    semantic_type: Literal["bars", "spatial", "affordance", "temporal", "custom"] = Field(
-        default="custom",
+    semantic_type: SemanticType = Field(
         description=(
-            "Semantic grouping for structured encoders. "
-            "bars: meter values, spatial: position/grid, affordance: affordance state, "
-            "temporal: time/progress, custom: user-defined variables"
+            "Semantic group of this field in the observation vector — one member of the closed "
+            "vocabulary in townlet.vfs.semantic_type (PDR-0047). Required: it is part of the "
+            "field's identity (observation_schema_hash) and names its group slice, so it is never "
+            "defaulted."
         ),
     )
 
@@ -411,11 +444,6 @@ class VariableDef(BaseModel):
     exposed_to: list[str] = Field(
         default_factory=list,
         description="Who can observe this variable (e.g., ['agent', 'engine'])",
-    )
-
-    semantic_type: Literal["bars", "spatial", "affordance", "temporal", "custom"] = Field(
-        default="custom",
-        description="Semantic grouping for structured encoders (bars, spatial, affordance, temporal, custom)",
     )
 
     scope: VariableScope | Literal["global", "agent", "agent_private", "item", "pair", "group", "affordance", "zone", "message"] = Field(

@@ -1,0 +1,14 @@
+experiment:
+  version: "1.0"
+
+  experiment_name: "DIV-003 fixture: cubic topology with partial vision"
+
+  metadata:
+    name: "Complete Reference Example"
+    description: "Comprehensive demonstration of all v2.1 config options"
+    author: "HAMLET Team"
+    created: "2025-11-15"
+    tags: ["reference", "tutorial", "complete"]
+
+  curriculum_levels:
+    - L2_partial_observability

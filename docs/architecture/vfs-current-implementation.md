@@ -3,7 +3,7 @@
 **Document Type**: Implementation Overview
 **Status**: Current
 **Version**: 1.0
-**Last Updated**: 2026-05-16
+**Last Updated**: 2026-08-16 (semantic-type vocabulary, DIV-005 / `PDR-0066`; earlier body verified 2026-05-16)
 **Owner**: Townlet engineering
 **Audience**: Engineers and researchers working on Universe as Code, Brain as Code, environment dynamics, observations, or training reproducibility
 **Technical Level**: Deep Technical
@@ -170,6 +170,7 @@ This gives Townlet a direct way to test whether an agent or configuration family
 |------|------------|
 | Public VFS exports | `src/townlet/vfs/__init__.py` |
 | Core schemas | `src/townlet/vfs/schema.py` |
+| Observation semantic-type vocabulary (the ONE definition) | `src/townlet/vfs/semantic_type.py` |
 | Runtime registry and scoped storage | `src/townlet/vfs/registry.py` |
 | Observation spec and tensor builder | `src/townlet/vfs/observation_builder.py` |
 | Profile compiler and dependency sorting | `src/townlet/vfs/profiles.py` |
@@ -206,6 +207,11 @@ This gives Townlet a direct way to test whether an agent or configuration family
 - `normalization`: observation normalization metadata.
 - `observable`: whether mark-and-sweep observation extraction should include the variable.
 
+`VariableDef` does **not** carry a semantic type. It did until 2026-08-16 (`default="custom"`,
+read by nothing); a state variable has no observation grouping — that is a property of the
+observation field that reads it (`vfs.md` §4.1/§4.3), so the field was removed rather than made
+required-and-inert (`PDR-0066`).
+
 Supported runtime types include scalar values, booleans, fixed and N-dimensional vectors, reference ids, tensor variables, and message tokens. Tensor variables require explicit shape metadata. `message_token` uses `dims`, not `shape`.
 
 `variables_reference.yaml` remains a static registry input. It must define static variables only. Expressions belong in `vfs_profiles.yaml` or effect/action specifications, and item-scoped variables belong in item VFS profiles rather than `variables_reference.yaml`.
@@ -221,11 +227,12 @@ Supported runtime types include scalar values, booleans, fixed and N-dimensional
 - `one_hot`
 - `binary`
 - `log_scaled`
-- `clipped_log_scaled`
 - `rank_scaled`
 - `masked_value`
 
-The schema validates required parameters. For example, `minmax` requires ordered `min` and `max`, `zscore` requires non-zero `std`, `one_hot` requires at least two categories, and `cyclical_sin_cos` requires a positive period.
+Nine, not ten: `clipped_log_scaled` was deleted when clamping became a **parameter** (`hamlet-fba56feca5`, `PDR-0054`). `clip` is required on the two range-based kinds (`minmax`, `log_scaled`) and forbidden on the rest, so `log_scaled` + `clip: true` is exactly what `clipped_log_scaled` did — and a plain linear clamp, which had no member at all, is now `minmax` + `clip: true`.
+
+The schema validates required parameters. For example, `minmax` requires ordered `min` and `max` **and an explicit `clip`**, `zscore` requires non-zero `std`, `one_hot` requires at least two categories, and `cyclical_sin_cos` requires a positive period.
 
 ### `ObservationField`
 
@@ -236,10 +243,33 @@ The schema validates required parameters. For example, `minmax` requires ordered
 - Exposure targets
 - Shape
 - Optional normalization
-- Semantic type: `bars`, `spatial`, `affordance`, `temporal`, or `custom`
+- Semantic type — **required**, one member of the closed vocabulary in
+  `townlet.vfs.semantic_type`: `bars`, `spatial`, `affordance`, `effects`, `temporal`, `custom`
 - `curriculum_active` flag
 
 The active flag lets the compiler preserve stable observation dimensions while masking inactive curriculum features.
+
+**Semantic type is defined once and is load-bearing three ways** (`PDR-0047`, `DIV-005`): it is
+in the compiled field's provenance UUID payload, it is mirrored into this VFS field and so into
+`observation_schema_hash`, and it names the field's slice in `observation_activity.group_slices`
+— how the structured encoders address a group, how the meter encoder is sized, and where the
+runtime publishes meter columns (`bars`). The compiled DTO
+(`universe/dto/observation_spec.py::ObservationField`) is typed and required on the same
+vocabulary, so the compiler is held to the set an author is. Rules:
+
+- The compiler assigns the type for the blocks it emits (`spatial`, `bars`, `affordance`,
+  `effects`, `temporal`), only from this set. `effects` was admitted 2026-08-16 — before that the
+  compiler emitted it while no schema permitted it, and the VFS mirror silently remapped it to
+  `custom`, so one field carried two values.
+- Authored `environment.yaml` variables declare `semantic_type` (required, no default) and the
+  compiler emits exactly that value. Fields are stable-partitioned by the fixed group order
+  `spatial, bars, affordance, effects, custom, temporal` (the identity on every shipped pack), so
+  any member is legal without breaking group contiguity, which the compiler still asserts.
+  `bars` is reserved to meters — an authored variable declaring it is a compile-time error.
+- VFS profile variables (`vfs_profiles.yaml`) do **not** currently carry a semantic type: they
+  are flattened into the single `obs_vfs` field, which carries one value (`custom`). The
+  per-variable declaration returns when that block is split into per-variable fields
+  (`hamlet-f0ed709ecf`; `vfs.md` §8.1 is one exposure per variable).
 
 ### `WriteSpec`
 
@@ -368,6 +398,14 @@ The evaluator builds an expression `ExecutionContext` with bars, VFS state, affo
 - Item slot/profile layout
 
 `build_vfs_observation()` reads tensors from the registry, flattens them into `[batch, dim]` components, applies active masks, resolves item inventory slots against item VFS profile metadata, and concatenates all components.
+
+The runtime assembles the full observation by walking the compiled `ObservationSpec` fields **in
+order** (`environment/observation_encoder.py::_get_observations`), building each from the VFS
+registry — which is why the compiler's group-order layout needs no runtime special case. The one
+exception is `obs_vfs`: the whole profile-variable contribution above is emitted as a single
+compiled field, and the encoder recognises it **by name** (`_build_observation_field_from_vfs`),
+which is a `PDR-0045` name branch. Splitting it per variable, and deleting the branch, is
+`hamlet-f0ed709ecf`.
 
 Item observation handling is deliberately strict. Missing item storage, bad inventory shape, out-of-range item indices, unknown item profiles, or missing exposed variables fail loudly instead of silently returning partial observations.
 

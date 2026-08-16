@@ -138,6 +138,29 @@ kind of gap this project has found in months.
 gaps into three measured ones, and — on this session's evidence — roughly one inferred gap in
 three does not survive contact with the tree.
 
+> ⚠️ **TRIAL 002 RAN, 2026-08-15. The predicted outcomes above are corrected by `PDR-0051`** —
+> by pointer, not overwrite; the original text stands so the error is legible. **The ruling
+> itself is owner-made, was tested by the trial, and survives it** — every failure found was a
+> binding or selection gap, never a missing capability, and the first reversal trigger did not
+> fire. What was wrong was the prediction:
+>
+> - **Money B's predicted failure is falsified.** *"Fails on the absent bar-level expression
+>   binding"* — the binding exists, through `effects.yaml` (`on_tick: modify bar.money`) spawned
+>   from an affordance `interactions.on_start`. Money traces `1000·(2 + sin(2πk/24))` exactly for
+>   27 ticks, in config, zero Python. The most doubted half of the owner's example is the half
+>   that works today.
+> - **Money A's predicted failure is right about the symptom and understated.** `range_type` does
+>   not merely fail to select a scaling — switching *every* meter `normalized` → `integer` moves
+>   **none of the five provenance hashes**, and the runtime holds `33.333` in a bar declared
+>   `integer`.
+> - **"The scalings vocabulary already exists, is complete, and is wired" is true of the runtime
+>   and false of the bar authoring path.** All ten kinds are implemented — but
+>   `_meter_normalization` emits **one** `minmax` spec for the *entire meter block*, so eight of
+>   the ten are unreachable for bars whatever a pack declares. The gap is bigger and more
+>   structural than "no log for money", and it is not a `money` problem at all.
+>
+> Packs: `configs/trial002_money_int_capped/`, `configs/trial002_money_log_gdp/`.
+
 ## Consequences
 
 **1. `default="custom"` goes.** A behavioural parameter that feeds a provenance hash and drives

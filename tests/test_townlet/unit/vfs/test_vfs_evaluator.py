@@ -21,7 +21,6 @@ def test_vfs_evaluator_evaluates_expressions_in_topo_order():
             initial_value=5,
             result_type="int",
             exposed_to=("agent",),
-            semantic_type="custom",
         ),
         CompiledVariable(
             name="b",
@@ -30,7 +29,6 @@ def test_vfs_evaluator_evaluates_expressions_in_topo_order():
             initial_value=None,
             result_type="int",
             exposed_to=("agent",),
-            semantic_type="custom",
         ),
     ]
 
@@ -70,7 +68,6 @@ def test_vfs_evaluator_mark_and_sweep_evaluates_marks_only_when_independent():
             initial_value=None,
             result_type="int",
             exposed_to=("agent",),
-            semantic_type="custom",
         ),
         CompiledVariable(
             name="unobserved",
@@ -79,7 +76,6 @@ def test_vfs_evaluator_mark_and_sweep_evaluates_marks_only_when_independent():
             initial_value=None,
             result_type="int",
             exposed_to=("agent",),
-            semantic_type="custom",
         ),
     ]
 
@@ -115,7 +111,6 @@ def test_vfs_evaluator_mark_and_sweep_recomputes_dependencies():
             initial_value=None,
             result_type="float",
             exposed_to=("agent",),
-            semantic_type="custom",
         ),
         CompiledVariable(
             name="b",
@@ -124,7 +119,6 @@ def test_vfs_evaluator_mark_and_sweep_recomputes_dependencies():
             initial_value=None,
             result_type="float",
             exposed_to=("agent",),
-            semantic_type="custom",
         ),
     ]
 
@@ -160,7 +154,6 @@ def test_vfs_evaluator_mark_and_sweep_requires_explicit_marks():
                 initial_value=1,
                 result_type="int",
                 exposed_to=("agent",),
-                semantic_type="custom",
             )
         ],
         dependencies={"observed": tuple()},
@@ -189,7 +182,6 @@ def test_vfs_evaluator_mark_and_sweep_rejects_unknown_marks():
                 initial_value=1,
                 result_type="int",
                 exposed_to=("agent",),
-                semantic_type="custom",
             )
         ],
         dependencies={"observed": tuple()},
@@ -220,7 +212,6 @@ def test_vfs_evaluator_eager_mode_evaluates_all_vars():
             initial_value=None,
             result_type="int",
             exposed_to=("agent",),
-            semantic_type="custom",
         ),
         CompiledVariable(
             name="var2",
@@ -229,7 +220,6 @@ def test_vfs_evaluator_eager_mode_evaluates_all_vars():
             initial_value=None,
             result_type="int",
             exposed_to=("agent",),
-            semantic_type="custom",
         ),
     ]
 
@@ -265,7 +255,6 @@ def test_vfs_evaluator_handles_reference_path_access():
             initial_value=3.0,
             result_type="float",
             exposed_to=("agent",),
-            semantic_type="custom",
         ),
         CompiledVariable(
             name="use_ref",
@@ -274,7 +263,6 @@ def test_vfs_evaluator_handles_reference_path_access():
             initial_value=None,
             result_type="float",
             exposed_to=("agent",),
-            semantic_type="custom",
         ),
     ]
 
@@ -310,7 +298,6 @@ def test_vfs_evaluator_handles_nested_reference_paths():
             initial_value=1.5,
             result_type="float",
             exposed_to=("agent",),
-            semantic_type="custom",
         ),
         CompiledVariable(
             name="b",
@@ -319,7 +306,6 @@ def test_vfs_evaluator_handles_nested_reference_paths():
             initial_value=None,
             result_type="float",
             exposed_to=("agent",),
-            semantic_type="custom",
         ),
         CompiledVariable(
             name="c",
@@ -328,7 +314,6 @@ def test_vfs_evaluator_handles_nested_reference_paths():
             initial_value=None,
             result_type="float",
             exposed_to=("agent",),
-            semantic_type="custom",
         ),
     ]
 
@@ -362,7 +347,6 @@ def test_vfs_evaluator_threads_affordance_and_temporal_context():
             initial_value=None,
             result_type="bool",
             exposed_to=("agent",),
-            semantic_type="custom",
         ),
     ]
 

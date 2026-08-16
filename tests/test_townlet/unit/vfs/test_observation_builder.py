@@ -151,8 +151,8 @@ def test_apply_discrete_and_mask_normalizations():
 def test_apply_log_and_rank_normalizations():
     """Log and rank normalization scale numeric tensors without hidden Python loops."""
     values = torch.tensor([0.0, 9.0, 99.0])
-    log_scaled = apply_normalization(values, NormalizationSpec(kind="log_scaled", min=0.0, max=99.0))
-    clipped_log = apply_normalization(torch.tensor([-10.0, 999.0]), NormalizationSpec(kind="clipped_log_scaled", min=0.0, max=99.0))
+    log_scaled = apply_normalization(values, NormalizationSpec(kind="log_scaled", min=0.0, max=99.0, clip=False))
+    clipped_log = apply_normalization(torch.tensor([-10.0, 999.0]), NormalizationSpec(kind="log_scaled", min=0.0, max=99.0, clip=True))
     ranked = apply_normalization(torch.tensor([20.0, 10.0, 30.0]), NormalizationSpec(kind="rank_scaled"))
 
     assert torch.allclose(log_scaled, torch.log1p(values) / torch.log1p(torch.tensor(99.0)))

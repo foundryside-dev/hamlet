@@ -11,6 +11,7 @@ variables:
     description: Normalized agent position (4D) in [0, 1]^4 range
     normalization:
       kind: minmax
+      clip: false
       min: [0.0, 0.0, 0.0, 0.0]
       max: [1.0, 1.0, 1.0, 1.0]
 exposed_observations:
@@ -21,5 +22,6 @@ exposed_observations:
     scope: agent
     normalization:
       kind: minmax
+      clip: false
       min: [0.0, 0.0, 0.0, 0.0]
       max: [1.0, 1.0, 1.0, 1.0]

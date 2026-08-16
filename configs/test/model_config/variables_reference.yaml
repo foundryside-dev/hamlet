@@ -16,6 +16,7 @@ variables:
   description: Normalized agent position (2D) in [0, 1]^2 range
   normalization:
     kind: minmax
+    clip: false
     min:
     - 0.0
     - 0.0
@@ -31,6 +32,7 @@ exposed_observations:
   scope: agent
   normalization:
     kind: minmax
+    clip: false
     min:
     - 0.0
     - 0.0

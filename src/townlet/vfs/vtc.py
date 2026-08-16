@@ -8,6 +8,7 @@ from typing import Any, Protocol, cast
 
 import torch
 
+from townlet.config.interaction_type import INTERACTION_TYPES, PROGRESS_INTERACTION_TYPES
 from townlet.vfs import vtc_kernels
 from townlet.vfs.schema import WriteSpec
 from townlet.vfs.transition_graph import TransitionPhaseGraph
@@ -97,7 +98,7 @@ class VTCInteractionProgressSource(Protocol):
     def name(self) -> str: ...
 
     @property
-    def interaction_type(self) -> str | None: ...
+    def interaction_type(self) -> str: ...
 
     @property
     def duration_ticks(self) -> int | None: ...
@@ -2565,7 +2566,7 @@ def compile_vtc_interaction_progress_with_phase_graph(
 
     for raw_affordance in affordances:
         affordance = _coerce_interaction_progress_affordance(raw_affordance)
-        if affordance["interaction_type"] not in {"multi_tick", "dual"}:
+        if affordance["interaction_type"] not in PROGRESS_INTERACTION_TYPES:
             continue
 
         name = affordance["name"]
@@ -2634,16 +2635,19 @@ def _coerce_interaction_progress_affordance(
 ) -> dict[str, Any]:
     if isinstance(affordance, Mapping):
         name = str(affordance["name"])
-        interaction_type = str(affordance.get("interaction_type") or "instant")
+        interaction_type = str(affordance["interaction_type"])
         duration_ticks = affordance.get("duration_ticks")
     else:
         name = affordance.name
-        interaction_type = str(affordance.interaction_type or "instant")
+        interaction_type = str(affordance.interaction_type)
         duration_ticks = affordance.duration_ticks
 
-    if interaction_type not in {"instant", "multi_tick", "dual"}:
-        raise ValueError(f"Unsupported VTC interaction_type '{interaction_type}' for affordance '{name}'")
-    if interaction_type in {"multi_tick", "dual"}:
+    if interaction_type not in INTERACTION_TYPES:
+        raise ValueError(
+            f"Unsupported VTC interaction_type '{interaction_type}' for affordance '{name}' — "
+            f"the closed vocabulary is {sorted(INTERACTION_TYPES)} (townlet.config.interaction_type)"
+        )
+    if interaction_type in PROGRESS_INTERACTION_TYPES:
         if duration_ticks is None:
             raise ValueError(f"Affordance '{name}' interaction_type='{interaction_type}' requires duration_ticks")
         duration = int(duration_ticks)

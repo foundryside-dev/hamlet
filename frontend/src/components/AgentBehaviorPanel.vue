@@ -144,7 +144,8 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { AFFORDANCE_ICONS } from '../utils/constants.js'
+import { affordanceGlyph, nameGlyph } from '../utils/formatting'
+import { useSimulationStore } from '../stores/simulation'
 
 const props = defineProps({
   // Episode performance
@@ -196,35 +197,21 @@ const props = defineProps({
   }
 })
 
-// Action icon mapping (defaults based on common action names)
-const getActionIcon = (actionName) => {
-  const name = actionName.toUpperCase()
-  if (name.includes('UP') || name === 'NORTH' || name === '+Y') return '⬆️'
-  if (name.includes('DOWN') || name === 'SOUTH' || name === '-Y') return '⬇️'
-  if (name.includes('LEFT') || name === 'WEST' || name === '-X') return '⬅️'
-  if (name.includes('RIGHT') || name === 'EAST' || name === '+X') return '➡️'
-  if (name.includes('INTERACT') || name.includes('USE')) return '⚡'
-  if (name.includes('WAIT') || name.includes('IDLE')) return '⏸️'
-  if (name.includes('FORWARD') || name === '+Z') return '⬆️'
-  if (name.includes('BACK') || name === '-Z') return '⬇️'
-  if (name.includes('REST') || name.includes('SLEEP')) return '😴'
-  if (name.includes('MEDITATE')) return '🧘'
-  return '🔘'  // Default icon for unknown actions
-}
-
-// Dynamic action mapping from backend labels
+// Dynamic action mapping from backend labels. The glyph is a deterministic abbreviation of
+// the declared label — nothing here maps an action's name to a picture (PDR-0025).
 const actionMap = computed(() => {
   const map = {}
   Object.entries(props.actionLabels).forEach(([index, label]) => {
     map[parseInt(index)] = {
-      icon: getActionIcon(label),
+      icon: nameGlyph(label),
       name: label
     }
   })
   return map
 })
 
-// Affordance icon mapping - imported from constants.js (supports all v2.1 affordances)
+// Affordance glyphs: declared icon (presentation.yaml) or the name-derived abbreviation.
+const store = useSimulationStore()
 
 // Action history trail (last 5 actions)
 const recentActions = ref([])
@@ -242,7 +229,7 @@ watch(() => props.currentStep, (newStep, oldStep) => {
   // Add action only if this is a new step we haven't processed yet
   if (newStep > lastProcessedStep.value && newStep > 0 && props.lastAction !== null) {
     recentActions.value.unshift({
-      icon: actionMap.value[props.lastAction]?.icon || '❓',
+      icon: actionMap.value[props.lastAction]?.icon ?? '',
       timestamp: Date.now()
     })
 
@@ -256,8 +243,8 @@ watch(() => props.currentStep, (newStep, oldStep) => {
 })
 
 const actionIcon = computed(() => {
-  if (props.lastAction === null) return '⏸️'
-  return actionMap.value[props.lastAction]?.icon || '❓'
+  if (props.lastAction === null) return '⏸️'  // UI state: no action yet
+  return actionMap.value[props.lastAction]?.icon ?? ''
 })
 
 const actionName = computed(() => {
@@ -407,7 +394,7 @@ const mockFavorites = computed(() => {
 
   // Map backend data to display format with icons
   return props.affordanceStats.map(stat => ({
-    icon: AFFORDANCE_ICONS[stat.name] || '❓',
+    icon: affordanceGlyph(stat.name, store.presentation, null),
     name: stat.name,
     count: stat.count
   }))

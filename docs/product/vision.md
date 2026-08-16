@@ -27,6 +27,13 @@
 >   review date, not a vision change. The debt had been carried since 2026-08-14 as "fix at the
 >   next approved touch"; offered and approved at the 2026-08-15 grant re-confirmation, the same
 >   pattern `PDR-0038` set. Provenance PDR recorded at that session's checkpoint.
+> - *2026-08-16* — corrected the authority grant's **`Last reviewed` stamp** from `2026-08-15`
+>   to `2026-08-16`. The owner re-confirmed the grant unchanged at the first 2026-08-16 resume
+>   without a `vision.md` touch being approved (so the stamp was left, per the 2026-08-15 rule:
+>   corrected only at an approved touch); at the second 2026-08-16 resume the owner confirmed
+>   the grant again **and approved this correction**. Scope unchanged — same autonomous list,
+>   same escalation taxonomy, `PDR-0046` still governs the push. Factual correction, not a
+>   vision change. Provenance PDR recorded at this session's checkpoint.
 > - *2026-08-13* — re-tagged the **tech-demo demonstrator claim** as delivery intent: "Low Energy
 >   Delirium" was never implemented (*"the idea outran the codebase and we pivotd a few times"*),
 >   and Townlet Town is **one of several tech demos** to be provided at the end. Escalated by the
@@ -236,11 +243,12 @@ they are already binding project commitments, not new inventions.
 
 ## Authority grant
 
-Granted by: John Morrissey (qacona@gmail.com)     Last reviewed: 2026-08-15
+Granted by: John Morrissey (qacona@gmail.com)     Last reviewed: 2026-08-16
 Review cadence: monthly, or on any vision change
-Status: **CONFIRMED** by the owner on 2026-08-15, unchanged from the 2026-08-11 grant
-(re-confirmed 2026-08-14 and again at the 2026-08-15 `/own-product` resume; scope identical
-each time). Read together with `PDR-0046`: the agent may commit and push `project-recovery`
+Status: **CONFIRMED** by the owner on 2026-08-16, unchanged from the 2026-08-11 grant
+(re-confirmed 2026-08-14, at the 2026-08-15 `/own-product` resume, twice on 2026-08-16 — the
+first re-confirmation that day preceded the stamp correction, per the amendment log — scope
+identical each time). Read together with `PDR-0046`: the agent may commit and push `project-recovery`
 without asking — the merge to `main` is the boundary, and it gates on `PDR-0039`.
 
 Autonomous within strategy — the agent MAY, without asking:

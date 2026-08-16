@@ -16,7 +16,7 @@ LEVEL = "L0_0_minimal"
 
 def test_driver_writes_a_loadable_trace(tmp_path: Path) -> None:
     out = tmp_path / "trace.npz"
-    driver.run_trace(pack=PACK, level=LEVEL, num_agents=4, steps=3, seed=42, device="cpu", out=out)
+    driver.run_trace(pack=PACK, pack_root=".", level=LEVEL, num_agents=4, steps=3, seed=42, device="cpu", out=out)
     trace = load_trace(out)
     assert trace.params.level == LEVEL
     assert trace.params.seed == 42
@@ -38,13 +38,13 @@ def test_driver_writes_a_loadable_trace(tmp_path: Path) -> None:
 def test_driver_format_version_matches_trace_io() -> None:
     """driver.py is self-contained and cannot import trace_io.py, so the two
     modules' TRACE_FORMAT_VERSION constants must be kept in sync by hand."""
-    assert driver.TRACE_FORMAT_VERSION == TRACE_FORMAT_VERSION == 2
+    assert driver.TRACE_FORMAT_VERSION == TRACE_FORMAT_VERSION == 3
 
 
 def test_driver_is_deterministic_for_same_seed(tmp_path: Path) -> None:
     a, b = tmp_path / "a.npz", tmp_path / "b.npz"
     for out in (a, b):
-        driver.run_trace(pack=PACK, level=LEVEL, num_agents=4, steps=3, seed=42, device="cpu", out=out)
+        driver.run_trace(pack=PACK, pack_root=".", level=LEVEL, num_agents=4, steps=3, seed=42, device="cpu", out=out)
     ta, tb = load_trace(a), load_trace(b)
     np.testing.assert_array_equal(ta.obs, tb.obs)
     np.testing.assert_array_equal(ta.rewards, tb.rewards)

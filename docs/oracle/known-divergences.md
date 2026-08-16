@@ -190,6 +190,231 @@ entry — or add DIV-004 — with its cell **before** cutting, per this register
 
 ---
 
+## DIV-004 — The normalization-vocabulary programme: the authoring surface changes, so the compiled provenance moves and behaviour does not
+
+- **Status:** `built` (2026-08-15 — declared before the first cut of the programme, per this
+  register's own record-then-bind rule; W1 is the first cut it covers. Full 16-cell matrix
+  exit 0 with all ten standing cells `DIVERGED_AS_REGISTERED (DIV-004)` and every trace
+  stream byte-identical: runs `20260815-175940` (CPU) / `20260815-180022` (CPU+CUDA).)
+- **Harness shape: hash-only**
+- **Provenance:** `PDR-0054` (the plan this entry serves) · `PDR-0052` / `PDR-0053`
+  (underspecification is a compile error; `range_type` is the complete type declaration) ·
+  `PDR-0037` (record-then-bind order) · `hamlet-fba56feca5`, `hamlet-3d3039f340`,
+  `hamlet-365e996511`
+- **Surface:** the meter/variable normalization authoring surface — `environment.yaml`
+  `variables[].normalization`, `MeterConfig.range_type`, and the `NormalizationSpec`
+  vocabulary they compile into.
+
+**Why one entry and not three.** W1 (the `clip` parameter), W2/W3 (`range_type` as the
+complete type declaration, and per-meter normalizers), and W7 (every pack rewritten) are
+three cuts of ONE continuous divergence: the frozen fixture sits at the pre-programme
+`environment.yaml` schema for the whole duration regardless. Three entries would describe
+three moments of one state.
+
+**Oracle behaviour (verified at `0e875d7a`, 2026-08-15).** The frozen `NormalizationConfig`
+is `ConfigDict(extra="forbid")` and rejects the new key outright — measured by parsing the
+live pack with the oracle worktree's `src` on `PYTHONPATH`:
+
+```
+4 validation errors for EnvironmentConfig
+environment.variables.0.normalization.clip
+  Extra inputs are not permitted [type=extra_forbidden, input_value=False, input_type=bool]
+```
+
+So the frozen fixtures under `oracle_fixtures/` **stay at the old schema deliberately**
+(`oracle_fixtures/README.md`: *"If it is a schema change, leave the fixture at the old
+schema, set `pack_divergence` on the affected cells, and register the entry"*). This is the
+first real use of the input-freeze built at `49bdf28e` for `hamlet-2090c9f16d`.
+
+**Intended new behaviour.** The two sides compile different `environment.yaml` files, so the
+compiled provenance differs; the WORLD does not. Measured across all five
+`default_curriculum` levels by compiling the live tree against a git worktree at the
+pre-change commit — **exactly three hashes move, uniformly, at every level**:
+
+| hash | family | moves | why |
+|---|---|---|---|
+| `environment_hash` | RAW | yes | `_compute_pydantic_hash` over the whole file — moves for any edit, so it is the weakest of the four as evidence |
+| `observation_schema_hash` | DERIVED | yes | the compiled `NormalizationSpec` carries a new field (W1), then one field per meter with its own spec (W3) |
+| `vfs_hash` | DERIVED | yes | same specs, mirrored into the VFS observation fields |
+| `variable_schema_hash` | DERIVED | **added at W2/W3/W4** | the VFS variable SET changed: one N-wide `obs_meters` became N 1-wide `obs_meter_<name>` |
+
+`transition_graph_hash` deliberately does **not** appear. The cut is observation-side only:
+the VTC reads bars through `_current_bar_state`, a name-keyed view of the STATE tensor, and
+never through the observation. Its absence is an assertion, not an omission — if it ever
+moves, the cut reached the transition graph and that is a finding.
+
+`observation_spec.total_dims` is **unchanged at 124** on every level, because every meter in
+`default_curriculum` declares a width-preserving `minmax`. A pack that declares
+`cyclical_sin_cos` or `one_hot` on a meter widens it by design, which is pinned by
+`test_a_widening_meter_kind_grows_the_observation_by_exactly_its_extra_dims`.
+
+**Harness adjudication.** Bound per-cell in `src/townlet/oracle/matrix.py` via
+`RegisteredHashDivergence("DIV-004", hash_fields=(...))` on every STANDING cell. A cell
+passes as `DIVERGED_AS_REGISTERED` only when the observed set of moved hashes equals the
+declared set **exactly** and **every trace stream matches byte-for-byte**. Specifically:
+
+- A **fourth** hash moving → `HASH_MISMATCH`, red. The rebuild changed more than this entry
+  claims.
+- A declared hash **not** moving → `REGISTERED_DIVERGENCE_ABSENT`, red. The entry is stale —
+  reconcile it, do not relax it. (Same treatment DIV-003 gets when the oracle stops crashing.)
+- Any stream difference → `DIVERGE`, red. **This entry suppresses nothing about behaviour.**
+  Before it existed, `compare_traces` returned `HASH_MISMATCH` and short-circuited *before*
+  comparing a single stream — the harness could not express "provenance moved as intended,
+  behaviour did not" at all, which would have made the oracle blind on precisely the surface
+  WS-4 exists to change. That is `hamlet-2090c9f16d` one layer up, and fixing it is the
+  second `RegisteredDivergence` shape.
+
+The six DIV-003 fixture cells declare `pack_divergence="DIV-004"` (their packs are copies of
+`default_curriculum`, so the schema change reaches them) but **no** `hash_divergence`: their
+old side crashes and writes no trace, so there are no hashes to compare.
+
+**Retire this entry** when the oracle is re-tagged past the programme. Until then, expanding
+it is correct — extending the `hash_fields` tuple as later cuts move more derived hashes —
+but each expansion must be re-measured, not predicted, and the measurement recorded here.
+
+**What this entry COSTS — recorded because an adversarial review measured it, not because it
+was designed in.** A six-lens review of the W2/W3 cut (2026-08-15) refuted 21 of 23 findings
+with executed repros and confirmed the suppression cannot pass a stream difference — a
+14-test smuggle suite failed to get one through in any of reset-obs / last-obs / reward /
+done / `-0.0` vs `0.0` / NaN. But it surfaced two real losses of signal that this entry is
+responsible for:
+
+1. **`AGREE` is now unreachable for every cell in the 16-cell matrix.** All ten standing
+   cells necessarily return `DIVERGED_AS_REGISTERED (DIV-004)`, and the six DIV-003 cells
+   return it via the crash shape. Exit 0 therefore no longer means *"old and new agree"*; it
+   means *"everything diverged exactly as registered"*. That is a weaker statement, and it
+   is weaker for the whole remaining life of this entry.
+2. **The pack-drift guard is armed on zero cells.** All 16 now declare
+   `pack_divergence="DIV-004"`, and that field is a BOOLEAN gate — declaring it blesses
+   *arbitrary* drift between the frozen fixture and the live pack, not merely the schema
+   change it was declared for. The machinery built at `49bdf28e` for `hamlet-2090c9f16d` is
+   inert while this entry is open.
+
+**Reversal trigger for both.** Re-tag the oracle. This entry exists because the oracle is
+pinned behind an authoring-surface change it cannot parse, and every cost above dissolves the
+moment the tag moves forward. If a THIRD cut needs to widen `hash_fields` again, that is the
+signal the entry has outlived its usefulness and the tag should move instead — a register
+entry that suppresses more each time is converging on suppressing everything.
+
+**Not a cost, but worth recording where the measurement lives:** the split costs roughly
+**21% on `env.step` and 32% on `_get_observations`** for `default_curriculum` L1 at 32 agents
+on CPU (measured twice, independently, during the same review) — eight per-meter registry
+reads and writes per tick instead of one vectorized pair. Accepted deliberately: this project
+trades throughput for authorability by design, and the alternative was leaving 8 of 9
+normalization kinds unauthorable. Recorded so nobody rediscovers it as a mystery.
+
+**Expansion log.** W1 measured three movers. W2/W3/W4 re-measured and found a fourth,
+`variable_schema_hash`, exactly as the pre-cut recon predicted it would — the prediction was
+recorded first so that a surprise would have been visible as one. Method both times: a git
+worktree at the pre-cut commit, compiled against the live tree, all five levels.
+
+## DIV-005 — `semantic_type`: one closed vocabulary, author-authoritative, `effects` admitted; the compiled provenance moves and behaviour does not
+
+- **Status:** `built` (2026-08-16 — declared `tag-stamped` first, oracle behaviour re-verified
+  at `0e875d7a` through the oracle worktree before any code changed; then cut, then measured
+  and adjudicated: full 16-cell matrix CPU+CUDA exit 0, run `20260816-225750`, all ten standing
+  cells `DIVERGED_AS_REGISTERED (DIV-004)` with exactly the four declared hashes moved and every
+  stream byte-identical; the six DIV-003 cells unchanged.)
+- **Harness shape: hash-only** (the second shape, `RegisteredHashDivergence`)
+- **Provenance:** `PDR-0047` (the compiler is a compiler: closed vocabularies, the declaration
+  is authoritative) · `PDR-0045` (name-blind) · `PDR-0037` (record-then-bind order) ·
+  `hamlet-2fe1c34ebb` (the finding this entry serves) · `hamlet-45b35cfee5` (`interaction_type`,
+  the same shape, resolved in the same unit — no observation surface, so no register entry of
+  its own)
+- **Surface:** the semantic-type vocabulary of compiled observation fields —
+  `ObservationField.semantic_type` on the compiled `ObservationSpec`, the VFS mirror that
+  feeds `observation_schema_hash`, `observation_activity.group_slices`, and the authoring
+  side: `environment.yaml` `variables[].semantic_type` (new, required), plus the removal of
+  the declared-but-unreachable `semantic_type` from `VariableDef` and the three
+  `vfs_profiles.yaml` variable classes.
+
+**Oracle behaviour (verified at `0e875d7a`, 2026-08-16, by compiling with the oracle
+worktree's `src` on `PYTHONPATH` against the oracle worktree's own packs).** The compiler
+assigns every field's `semantic_type` from a **hardcoded per-block literal** and never reads
+an author's declaration; the vocabulary it emits is `spatial / bars / affordance / effects /
+custom / temporal`, while the five declaring schema classes permit only
+`bars / spatial / affordance / temporal / custom` with `default="custom"`. Measured:
+
+- `default_curriculum` L1/L2/L3 at the tag: 11 fields, `obs_grid_encoding, obs_local_window,
+  obs_position, obs_velocity → spatial`; `obs_meters → bars`; `obs_affordance_at_position →
+  affordance`; the four `environment.yaml` variables → `custom` regardless of anything an
+  author could write (the frozen `VariableConfig` is `extra="forbid"` and has no such key);
+  `obs_temporal → temporal`. Group slices `spatial [0,93) bars [93,101) affordance [101,116)
+  custom [116,120) temporal [120,124)`, `total_dims 124`. The VFS mirror carries the same
+  eleven values.
+- `configs/test/effects_smoke` L0_effects at the tag: the compiled field `obs_effects` carries
+  **`effects`** (`compilers/observation.py:235` at the tag) while its VFS mirror carries
+  **`custom`** — `build_vfs_observation_fields` filters through
+  `allowed_semantic = {bars, spatial, affordance, temporal, custom}` (`:381-384` at the tag)
+  and silently remaps anything else. **One field, two values**: `group_slices` says
+  `effects [34,58)`, `observation_schema_hash` was computed over `custom`. This is the
+  oracle's behaviour and it is what the register records as the *old* side.
+
+**Intended new behaviour.** One authoritative closed vocabulary — `SemanticType` in
+`townlet/vfs/semantic_type.py`: `bars, spatial, affordance, effects, temporal, custom` —
+referenced by the compiled DTO (typed and **required**, so the DTO now constrains the compiler,
+which `str | None` did not), by the compiler's own emissions, by the VFS mirror (no remap: the
+mirror carries the field's value), and by the authoring schema. `effects` is **admitted** as a
+deliberate extension (`PDR-0016`): it names a real compiled block with its own group slice,
+and mapping it onto `custom` would have destroyed the grouping the structured encoders exist
+to use. `default="custom"` is gone everywhere. The author's declaration is authoritative
+where an author can make one: `environment.yaml` variables declare `semantic_type` (required),
+the compiler emits exactly that value, and the field list is stable-partitioned by the fixed
+group order `spatial, bars, affordance, effects, custom, temporal` so any member is legal
+without breaking group contiguity — `bars` excepted, which is the meter block and has a
+runtime contract (`_sync_meter_observation_to_vfs`), so an authored variable declaring it is
+a **compile-time** error rather than the runtime raise it would have been. Declarations that
+could reach no compiled field are removed rather than left as inert schema: `VariableDef` (a
+state variable has no observation grouping) and the three profile variable classes (their
+variables are flattened into the single `obs_vfs` block, which carries one value); the
+follow-up that splits `obs_vfs` into per-variable fields is where that declaration returns.
+
+**Diff shape — PREDICTED at `tag-stamped` (recorded first so a surprise would be visible as
+one, DIV-004's discipline), then MEASURED at `built` by DIV-004's method** — a git worktree at
+the pre-cut commit `fb60d581` compiled against the live tree, all five `default_curriculum`
+levels plus `configs/test/effects_smoke`. **The measurement agreed with the prediction on every
+row**, so the table stands as written:
+
+| hash | family | moves for `default_curriculum` | why |
+|---|---|---|---|
+| `environment_hash` | RAW | yes | every variable gains a `semantic_type` key |
+| `observation_schema_hash` | DERIVED | **no** for `default_curriculum` (its four variables declare `custom`, which is what the compiler emitted before; the mirror value is unchanged) — **yes** for any pack with `obs_effects` (mirror `custom → effects`) | the mirror now carries the field's own value |
+| `vfs_hash` | DERIVED | follows `observation_schema_hash` | composite |
+| `variable_schema_hash` | DERIVED | no | the variable set and its canonical entries do not include `semantic_type` |
+| observation field UUIDs | — | no for `default_curriculum` | the ObservationSpec values are unchanged when the author declares what the compiler used to hardcode; `obs_effects` already carried `effects` |
+
+`observation_spec.total_dims` and every group slice are **unchanged for every shipped pack**
+— the stable partition by group order is the identity on today's layout, which is pinned by
+test (`test_default_curriculum_layout_is_unchanged_by_the_cut`) and, at `built`, by every
+trace stream matching byte-for-byte. Measured pre-cut vs live: field list, semantic types,
+group slices, `total_dims` and the VFS mirror are identical on all five levels;
+`default_curriculum` moves **only `environment_hash`**; `effects_smoke` moves
+**`observation_schema_hash` and `vfs_hash`** and nothing else, with its mirror now reading
+`obs_effects → effects`. In the matrix run the new-side `observation_schema_hash` for L1
+(`86a10a2d76…`) is the same value the live tree produced *before* the cut — the register's
+claim that this cut does not touch the derived hashes of the shipped demo is a measured fact.
+
+**Harness adjudication.** The ten standing cells already bind `DIV-004`
+(`RegisteredHashDivergence` over `environment_hash, observation_schema_hash,
+variable_schema_hash, vfs_hash`) and declare `pack_divergence="DIV-004"`, because the frozen
+fixture stays at the pre-programme `environment.yaml` schema. This entry's movers are a
+**subset** of that declared set, so the standing cells adjudicate this cut under the *existing*
+binding: `DIVERGED_AS_REGISTERED (DIV-004)` with every stream byte-exact — and **the
+`hash_fields` tuple is not widened**, which is the signal DIV-004 names as the point at which
+the tag should move instead. Stated plainly, the cost this inherits from DIV-004: the harness
+cannot tell DIV-004's movement of `observation_schema_hash` from this entry's on the same
+frozen fixture; the *behaviour* promise (no stream differs) is adjudicated at full strength,
+the *provenance* promise is adjudicated only as "still exactly the four". The pack edits this
+cut makes (`semantic_type: custom` on every `environment.yaml` variable) are further drift
+blessed by the same boolean `pack_divergence` gate DIV-004 already holds open. The frozen
+fixtures under `oracle_fixtures/` stay at the old schema, per `oracle_fixtures/README.md`.
+
+**Retire this entry** with DIV-004, when the oracle is re-tagged past the authoring-surface
+programme.
+
+
+---
+
 ## Adding an entry
 
 Record the divergence **before** cutting the seam that produces it — at knockdown plan time,

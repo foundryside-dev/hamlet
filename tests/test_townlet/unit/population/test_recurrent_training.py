@@ -541,8 +541,8 @@ class TestSnapshotAndMetrics:
         assert population.is_recurrent is True
         q_net = population.q_network
 
-        # When spec is provided, grid slice and meters slice should be defined.
-        assert getattr(q_net, "_use_observation_spec", False)
+        # The spec is required at construction, so every slice is resolved by
+        # then; there is no longer a flag saying whether one was supplied.
         assert q_net._grid_slice is not None
         assert q_net._meters_slice is not None
         assert q_net._affordance_slice is not None

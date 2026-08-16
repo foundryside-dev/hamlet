@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { formatMeterValue, getMeterFraction, isMeterCritical, meterLabel } from '../utils/formatting'
 
 export const useSimulationStore = defineStore('simulation', () => {
   // WebSocket connection
@@ -64,6 +65,17 @@ export const useSimulationStore = defineStore('simulation', () => {
 
   // Agent meters
   const agentMeters = ref({})
+
+  // Observer metadata (PDR-0025) — static per universe, sent on `connected`.
+  // meterMetadata: declared bounds / lethality / cascades per meter, in compiled index order.
+  // presentation: the pack's opt-in presentation.yaml as JSON, or null (the honest default).
+  const meterMetadata = ref([])
+  const presentation = ref(null)
+  const meterMetaByName = computed(() => {
+    const byName = {}
+    for (const meta of meterMetadata.value) byName[meta.name] = meta
+    return byName
+  })
 
   // Heat map (position visit frequencies)
   const heatMap = ref({})
@@ -270,6 +282,9 @@ export const useSimulationStore = defineStore('simulation', () => {
         if (message.auto_checkpoint_mode !== undefined) {
           autoCheckpointMode.value = message.auto_checkpoint_mode
         }
+        // Observer metadata (PDR-0025). Missing = server predates the contract → render nothing.
+        meterMetadata.value = Array.isArray(message.meters) ? message.meters : []
+        presentation.value = message.presentation ?? null
         break
 
       case 'training_status':
@@ -509,18 +524,30 @@ export const useSimulationStore = defineStore('simulation', () => {
 
     console.log('Agent meters at death (from message.final_meters):', meters)
 
-    // Find meters below thresholds
+    // Meters near a DECLARED lethal bound, judged from the declared metadata (no name, no
+    // hardcoded [0,1]): 'critical' = within 20% of the range of a lethal bound (isMeterCritical),
+    // 'low' = within 30%. Meters without a lethal bound never appear here.
     for (const [name, value] of Object.entries(meters)) {
-      const percentage = Math.round(value * 100)
-      if (percentage <= 10) {
-        criticalMeters.push({ name, value: percentage, severity: 'critical' })
-      } else if (percentage <= 30) {
-        criticalMeters.push({ name, value: percentage, severity: 'low' })
-      }
+      const meta = meterMetaByName.value[name]
+      if (!meta) continue
+      const fraction = getMeterFraction(value, meta.bounds)
+      const distance = Math.min(
+        meta.lethal_min ? fraction : Infinity,
+        meta.lethal_max ? 1 - fraction : Infinity,
+      )
+      if (!(distance <= 0.3)) continue
+      const entry = presentation.value?.meters?.[name] ?? null
+      criticalMeters.push({
+        name,
+        label: meterLabel(name, entry),
+        display: formatMeterValue(value, meta.bounds, entry),
+        distance,
+        severity: isMeterCritical(value, meta) ? 'critical' : 'low',
+      })
     }
 
-    // Sort critical meters by severity
-    criticalMeters.sort((a, b) => a.value - b.value)
+    // Closest to a lethal bound first
+    criticalMeters.sort((a, b) => a.distance - b.distance)
 
     console.log('Critical meters:', criticalMeters)
     console.log('Affordance stats from message:', affordanceStatsFromMessage)
@@ -625,6 +652,10 @@ export const useSimulationStore = defineStore('simulation', () => {
     substratePositionDim,
     substrateMetadata,
     agentMeters,
+    meterMetadata,
+    meterMetaByName,
+    presentation,
+    handleMessage,
     heatMap,
     episodeHistory,
     deathCertificates,

@@ -4,16 +4,24 @@ environment:
   meters:
     - name: energy
       description: "Physical energy for movement and actions"
-      range_type: normalized
+      range_type:
+        kind: minmax
+        clip: false
     - name: health
       description: "Basic well-being; recover at doctor"
-      range_type: normalized
+      range_type:
+        kind: minmax
+        clip: false
     - name: money
       description: "Economic resource for purchasing"
-      range_type: normalized
+      range_type:
+        kind: minmax
+        clip: false
     - name: sustenance
       description: "Food and nutrition for maintaining energy"
-      range_type: normalized
+      range_type:
+        kind: minmax
+        clip: false
 
   cascade_graph: []
 
@@ -39,8 +47,10 @@ environment:
       dims: 1
       scope: agent
       description: "How far below target energy (0.0 = at/above target)"
+      semantic_type: custom
       normalization:
-        method: clip
+        method: normalize
+        clip: false
         range: [0.0, 1.0]
 
     - name: time_since_last_sleep
@@ -48,8 +58,10 @@ environment:
       dims: 1
       scope: agent
       description: "Timesteps since last SLEEP action"
+      semantic_type: custom
       normalization:
         method: normalize
+        clip: false
         range: [0.0, 100.0]
 
     - name: deficit_health
@@ -57,8 +69,10 @@ environment:
       dims: 1
       scope: agent
       description: "How far below max health (0.0 = at/above target)"
+      semantic_type: custom
       normalization:
-        method: clip
+        method: normalize
+        clip: false
         range: [0.0, 1.0]
 
     - name: time_since_last_doctor
@@ -66,8 +80,10 @@ environment:
       dims: 1
       scope: agent
       description: "Timesteps since last DOCTOR action"
+      semantic_type: custom
       normalization:
         method: normalize
+        clip: false
         range: [0.0, 100.0]
 
     - name: deficit_satiation
@@ -75,8 +91,10 @@ environment:
       dims: 1
       scope: agent
       description: "How far below max satiation (0.0 = at/above target)"
+      semantic_type: custom
       normalization:
-        method: clip
+        method: normalize
+        clip: false
         range: [0.0, 1.0]
 
     - name: time_since_last_cook
@@ -84,8 +102,10 @@ environment:
       dims: 1
       scope: agent
       description: "Timesteps since last COOK action"
+      semantic_type: custom
       normalization:
         method: normalize
+        clip: false
         range: [0.0, 100.0]
 
   cues: []

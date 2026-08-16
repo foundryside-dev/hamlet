@@ -43,7 +43,7 @@ def test_canonical_variable_schema_uses_sorted_contract_fields() -> None:
         readable_by=["engine", "agent"],
         writable_by=["engine"],
         default=1.0,
-        normalization=NormalizationSpec(kind="minmax", min=0.0, max=1.0),
+        normalization=NormalizationSpec(kind="minmax", min=0.0, max=1.0, clip=False),
         description="Description is not part of the state ABI hash",
     )
 
@@ -71,7 +71,7 @@ def test_variable_schema_hash_is_order_stable() -> None:
         readable_by=["engine", "agent"],
         writable_by=["engine"],
         default=1.0,
-        normalization=NormalizationSpec(kind="minmax", min=0.0, max=1.0),
+        normalization=NormalizationSpec(kind="minmax", min=0.0, max=1.0, clip=False),
     )
     position = VariableDef(
         id="position",
@@ -82,7 +82,7 @@ def test_variable_schema_hash_is_order_stable() -> None:
         readable_by=["agent", "engine"],
         writable_by=["engine"],
         default=[0.0, 0.0],
-        normalization=NormalizationSpec(kind="minmax", min=[0.0, 0.0], max=[10.0, 10.0]),
+        normalization=NormalizationSpec(kind="minmax", min=[0.0, 0.0], max=[10.0, 10.0], clip=False),
     )
     energy_reordered_permissions = energy.model_copy(update={"readable_by": ["agent", "engine"]})
 
@@ -103,10 +103,10 @@ def test_variable_schema_hash_changes_when_abi_field_changes() -> None:
         readable_by=["agent", "engine"],
         writable_by=["engine"],
         default=1.0,
-        normalization=NormalizationSpec(kind="minmax", min=0.0, max=1.0),
+        normalization=NormalizationSpec(kind="minmax", min=0.0, max=1.0, clip=False),
     )
 
-    changed_range = variable.model_copy(update={"normalization": NormalizationSpec(kind="minmax", min=0.0, max=2.0)})
+    changed_range = variable.model_copy(update={"normalization": NormalizationSpec(kind="minmax", min=0.0, max=2.0, clip=False)})
     changed_permissions = variable.model_copy(update={"writable_by": ["engine", "vtc"]})
 
     assert compute_variable_schema_hash((variable,)) != compute_variable_schema_hash((changed_range,))
@@ -139,7 +139,7 @@ def test_canonical_observation_schema_uses_ordered_abi_fields() -> None:
         source_variable="energy",
         exposed_to=["engine", "agent"],
         shape=[1],
-        normalization=NormalizationSpec(kind="minmax", min=0.0, max=1.0),
+        normalization=NormalizationSpec(kind="minmax", min=0.0, max=1.0, clip=False),
         semantic_type="bars",
         curriculum_active=True,
     )
@@ -149,7 +149,7 @@ def test_canonical_observation_schema_uses_ordered_abi_fields() -> None:
             "id": "obs_energy",
             "source_variable": "energy",
             "shape": [1],
-            "normalization": {"kind": "minmax", "min": 0.0, "max": 1.0},
+            "normalization": {"kind": "minmax", "min": 0.0, "max": 1.0, "clip": False},
             "exposed_to": ["agent", "engine"],
             "curriculum_active": True,
             "dtype": "float32",
@@ -165,17 +165,18 @@ def test_observation_schema_hash_changes_when_order_or_normalization_changes() -
         source_variable="energy",
         exposed_to=["agent"],
         shape=[1],
-        normalization=NormalizationSpec(kind="minmax", min=0.0, max=1.0),
+        normalization=NormalizationSpec(kind="minmax", min=0.0, max=1.0, clip=False),
+        semantic_type="bars",
     )
     position = ObservationField(
         id="obs_position",
         source_variable="position",
         exposed_to=["agent"],
         shape=[2],
-        normalization=NormalizationSpec(kind="minmax", min=[0.0, 0.0], max=[10.0, 10.0]),
+        normalization=NormalizationSpec(kind="minmax", min=[0.0, 0.0], max=[10.0, 10.0], clip=False),
         semantic_type="spatial",
     )
-    changed_normalization = energy.model_copy(update={"normalization": NormalizationSpec(kind="minmax", min=0.0, max=2.0)})
+    changed_normalization = energy.model_copy(update={"normalization": NormalizationSpec(kind="minmax", min=0.0, max=2.0, clip=False)})
 
     assert compute_observation_schema_hash((energy, position)) != compute_observation_schema_hash((position, energy))
     assert compute_observation_schema_hash((energy,)) != compute_observation_schema_hash((changed_normalization,))
@@ -188,7 +189,8 @@ def test_observation_schema_hash_is_stable_for_exposure_ordering() -> None:
         source_variable="energy",
         exposed_to=["engine", "agent"],
         shape=[1],
-        normalization=NormalizationSpec(kind="minmax", min=0.0, max=1.0),
+        normalization=NormalizationSpec(kind="minmax", min=0.0, max=1.0, clip=False),
+        semantic_type="bars",
     )
     reordered = field.model_copy(update={"exposed_to": ["agent", "engine"]})
 

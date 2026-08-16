@@ -58,4 +58,4 @@ def canonical_l5_relational_variables() -> tuple[VariableDef, ...]:
 
 
 def _unit_interval_normalization() -> NormalizationSpec:
-    return NormalizationSpec(kind="minmax", min=0.0, max=1.0)
+    return NormalizationSpec(kind="minmax", min=0.0, max=1.0, clip=False)

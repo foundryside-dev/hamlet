@@ -4,19 +4,24 @@
     <div class="large-meters-panel">
       <h2>Agent Status</h2>
       <div
-        v-for="(value, name) in meters"
-        :key="name"
+        v-for="row in meterRows"
+        :key="row.name"
         class="large-meter"
-        :class="getMeterClass(name, value)"
+        :class="row.stateClass"
+        :data-meter="row.name"
       >
         <div class="meter-header">
-          <span class="meter-name">{{ formatMeterName(name) }}</span>
-          <span class="meter-value">{{ (value * 100).toFixed(0) }}%</span>
+          <span class="meter-name">{{ row.label }}</span>
+          <span class="meter-value">{{ row.display }}</span>
         </div>
         <div class="meter-bar-container">
           <div
             class="meter-bar-fill"
-            :style="{ width: `${value * 100}%` }"
+            role="progressbar"
+            :aria-valuenow="row.percentage"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            :style="row.color ? { width: `${row.percentage}%`, background: row.color } : { width: `${row.percentage}%` }"
           ></div>
         </div>
       </div>
@@ -31,7 +36,7 @@
           :key="affordance.type"
           class="affordance-card"
         >
-          <div class="affordance-icon">{{ getAffordanceIcon(affordance.type) }}</div>
+          <div class="affordance-icon">{{ getAffordanceGlyph(affordance.type, affordance.icon) }}</div>
           <div class="affordance-name">{{ affordance.type }}</div>
           <div class="affordance-status">Ready</div>
         </div>
@@ -50,7 +55,7 @@
           <span class="action-step">Step {{ action.step }}</span>
           <span class="action-type">{{ action.actionName }}</span>
           <span v-if="action.affordance" class="action-affordance">
-            {{ getAffordanceIcon(action.affordance) }} {{ action.affordance }}
+            {{ getAffordanceGlyph(action.affordance) }} {{ action.affordance }}
           </span>
         </div>
       </div>
@@ -60,7 +65,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { AFFORDANCE_ICONS } from '../utils/constants'
+import { affordanceGlyph, formatMeterValue, getMeterPercentage, isMeterCritical, meterLabel } from '../utils/formatting'
 
 const props = defineProps({
   meters: {
@@ -70,6 +75,16 @@ const props = defineProps({
   affordances: {
     type: Array,
     default: () => []
+  },
+  // Declared per-meter facts in compiled index order (from `connected.meters`).
+  meterMetadata: {
+    type: Array,
+    default: () => []
+  },
+  // The pack's opt-in presentation.yaml as JSON, or null — the honest default.
+  presentation: {
+    type: Object,
+    default: null
   },
   currentStep: {
     type: Number,
@@ -111,21 +126,42 @@ watch(() => props.lastAction, (newAction) => {
   }
 })
 
-function getAffordanceIcon(type) {
-  return AFFORDANCE_ICONS[type] || '?'
+// Declared icon (payload, else presentation.yaml) or the name-derived abbreviation —
+// never a lookup table (PDR-0025).
+function getAffordanceGlyph(type, iconFromPayload = null) {
+  return affordanceGlyph(type, props.presentation, iconFromPayload)
 }
 
-function formatMeterName(name) {
-  // Convert "energy" → "Energy", "health" → "Health"
-  return name.charAt(0).toUpperCase() + name.slice(1)
+function presentationEntry(name) {
+  const declared = props.presentation && props.presentation.meters
+  return declared && declared[name] ? declared[name] : null
 }
 
-function getMeterClass(name, value) {
-  // Color-code meters by value
-  if (value < 0.2) return 'meter-critical'
-  if (value < 0.5) return 'meter-warning'
-  return 'meter-healthy'
-}
+// One row per declared meter present in the payload, in compiled order. Everything shown is
+// a declared fact: label, formatted value, percentage of declared range, lethal-bound
+// criticality. No metadata → no rows.
+const meterRows = computed(() => {
+  const values = props.meters && props.meters.agent_0 ? props.meters.agent_0.meters : null
+  if (!values) return []
+  const rows = []
+  for (const meta of props.meterMetadata) {
+    const value = values[meta.name]
+    if (value === undefined) continue
+    const entry = presentationEntry(meta.name)
+    const percentage = getMeterPercentage(value, meta.bounds)
+    rows.push({
+      name: meta.name,
+      label: meterLabel(meta.name, entry),
+      display: formatMeterValue(value, meta.bounds, entry),
+      percentage,
+      color: entry ? entry.color : null,
+      stateClass: isMeterCritical(value, meta)
+        ? 'meter-critical'
+        : (percentage < 50 ? 'meter-warning' : 'meter-healthy')
+    })
+  }
+  return rows
+})
 </script>
 
 <style scoped>

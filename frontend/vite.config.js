@@ -8,5 +8,8 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5173,
     // No proxy needed - WebSocket connects directly to live inference server on port 8766
+  },
+  test: {
+    environment: 'jsdom'
   }
 })

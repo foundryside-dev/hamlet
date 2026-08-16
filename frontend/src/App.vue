@@ -13,6 +13,8 @@
         <aside class="meters-panel" aria-label="Agent status panels">
           <MeterPanel
             :agent-meters="store.agentMeters"
+            :meter-metadata="store.meterMetadata"
+            :presentation="store.presentation"
             :lifetime-progress="store.lifetimeProgress"
             :agent-age="store.agentAge"
           />
@@ -108,6 +110,8 @@
           <AspatialView
             v-else-if="store.substrateType === 'aspatial'"
             :meters="store.agentMeters"
+            :meter-metadata="store.meterMetadata"
+            :presentation="store.presentation"
             :affordances="store.affordances"
             :current-step="store.currentStep"
             :last-action="store.lastAction"
@@ -122,7 +126,6 @@
               :x="store.agents[0].x"
               :y="store.agents[0].y"
               :progress="store.interactionProgress"
-              :affordance-type="currentAffordanceType"
               :cell-size="75"
             />
             <!-- Phase 3: Novelty heatmap overlay -->
@@ -190,6 +193,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { useSimulationStore } from './stores/simulation'
+import { isMeterCritical, meterLabel, formatMeterValue, cascadeText } from './utils/formatting'
 import Grid from './components/Grid.vue'
 import AspatialView from './components/AspatialView.vue'
 import MeterPanel from './components/MeterPanel.vue'
@@ -236,31 +240,6 @@ const survivalTrend = ref([])
 const criticalEvents = ref([])
 let eventIdCounter = 0
 
-// Meter tier classification for cascade detection
-// Updated to match actual game code mechanics (secondary in alphabetical order)
-const meterTiers = {
-  primary: ['energy', 'health', 'money'],
-  secondary: ['fitness', 'mood', 'satiation'],
-  tertiary: ['hygiene', 'social']
-}
-
-// Cascade explanations (matching actual game code)
-const cascadeMessages = {
-  // Tertiary → Secondary (accelerators)
-  hygiene: 'Poor hygiene → depletes satiation, fitness & mood',
-  social: 'Loneliness → accelerates mood decline',
-
-  // Secondary → Primary (direct modifiers)
-  mood: 'Low mood → depletes energy',
-  satiation: 'Hunger → depletes energy & health',
-  fitness: 'Poor fitness → accelerates health decline',
-
-  // Primary (survival-critical)
-  energy: 'CRITICAL: Energy depletion → imminent death risk',
-  health: 'CRITICAL: Health failure → death imminent',
-  money: 'CRITICAL: No money → cannot afford survival needs'
-}
-
 // Watch for RND metrics updates
 watch(() => store.rndMetrics, (newMetrics) => {
   if (newMetrics) {
@@ -294,43 +273,46 @@ watch(() => store.currentEpisode, (newEpisode, oldEpisode) => {
   }
 })
 
-// Watch for critical meter events
+// Watch for critical meter events. "Critical" is a declared fact (a lethal bound within
+// reach — see isMeterCritical); the message is built from the declared cascades. Nothing
+// here knows a meter's name (PDR-0025). With no metadata (server predates the contract),
+// no events fire.
 watch(() => store.agentMeters, (newMeters) => {
   if (!newMeters || !newMeters.agent_0) return
 
   const meters = newMeters.agent_0.meters
   if (!meters) return
 
-  // Check each meter for critical threshold (<20%)
-  Object.entries(meters).forEach(([meterName, value]) => {
-    const percentage = value * 100
+  for (const meta of store.meterMetadata) {
+    const value = meters[meta.name]
+    if (value === undefined || !isMeterCritical(value, meta)) continue
 
-    if (percentage < 20 && percentage > 0) {
-      // Find meter tier
-      let tier = 'tertiary'
-      if (meterTiers.primary.includes(meterName)) tier = 'primary'
-      else if (meterTiers.secondary.includes(meterName)) tier = 'secondary'
+    const entry = store.presentation && store.presentation.meters
+      ? store.presentation.meters[meta.name] ?? null
+      : null
+    const label = meterLabel(meta.name, entry)
+    const cascade = cascadeText(meta, store.meterMetaByName, store.presentation)
 
-      // Create event
-      const event = {
-        id: eventIdCounter++,
-        meterName,
-        value: Math.round(percentage),
-        tier,
-        cascade: cascadeMessages[meterName],
-        timestamp: Date.now()
-      }
-
-      // Avoid duplicate events for same meter in quick succession
-      const recentEvent = criticalEvents.value.find(
-        e => e.meterName === meterName && (Date.now() - e.timestamp) < 5000
-      )
-
-      if (!recentEvent) {
-        criticalEvents.value.push(event)
-      }
+    const event = {
+      id: eventIdCounter++,
+      meterName: meta.name,
+      label,
+      display: formatMeterValue(value, meta.bounds, entry),
+      cascade: cascade
+        ? `${label} critical ${cascade.replace('→', '→ cascades into')}`
+        : `${label} critical (lethal bound)`,
+      timestamp: Date.now()
     }
-  })
+
+    // Avoid duplicate events for same meter in quick succession
+    const recentEvent = criticalEvents.value.find(
+      e => e.meterName === meta.name && (Date.now() - e.timestamp) < 5000
+    )
+
+    if (!recentEvent) {
+      criticalEvents.value.push(event)
+    }
+  }
 }, { deep: true })
 
 // Check which servers are available on mount

@@ -64,7 +64,6 @@ def test_item_manager_assigns_vfs_profile_on_spawn():
                 initial_value=100,
                 result_type="int",
                 exposed_to=("agent",),
-                semantic_type="custom",
             ),
             CompiledVariable(
                 name="freshness",
@@ -73,7 +72,6 @@ def test_item_manager_assigns_vfs_profile_on_spawn():
                 initial_value=1.0,
                 result_type="float",
                 exposed_to=("agent",),
-                semantic_type="custom",
             ),
         ],
     )
@@ -88,7 +86,6 @@ def test_item_manager_assigns_vfs_profile_on_spawn():
                 initial_value=50,
                 result_type="int",
                 exposed_to=("agent",),
-                semantic_type="custom",
             ),
             CompiledVariable(
                 name="durability",
@@ -97,7 +94,6 @@ def test_item_manager_assigns_vfs_profile_on_spawn():
                 initial_value=1.0,
                 result_type="float",
                 exposed_to=("agent",),
-                semantic_type="custom",
             ),
         ],
     )
@@ -177,7 +173,6 @@ def test_item_manager_preserves_vfs_profile_across_operations():
                 initial_value=3,
                 result_type="int",
                 exposed_to=("agent",),
-                semantic_type="custom",
             ),
             CompiledVariable(
                 name="potency",
@@ -186,7 +181,6 @@ def test_item_manager_preserves_vfs_profile_across_operations():
                 initial_value=1.0,
                 result_type="float",
                 exposed_to=("agent",),
-                semantic_type="custom",
             ),
         ],
     )

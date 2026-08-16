@@ -33,7 +33,6 @@ tests/
 │   │   ├── test_training_loop.py
 │   │   ├── test_custom_actions.py
 │   │   └── ...
-│   ├── slow/                     # Opt-in end-to-end (smoke + slow variants)
 │   │   └── test_training_levels.py
 │   └── properties/               # Property-based tests (hypothesis)
 │       ├── test_substrate_properties.py
@@ -46,7 +45,6 @@ tests/
 - **Unit tests**: Test single components in isolation
 - **Integration tests**: Test interactions between components
 - **Property-based tests**: Test invariants across random inputs
-- **End-to-end tests**: Live in `tests/test_townlet/slow/`; smoke variants (≤10 episodes) run by default, while the 200-episode suites are marked with `@pytest.mark.slow`.
 
 ---
 
@@ -386,30 +384,13 @@ uv run pytest tests/test_townlet/unit/substrate/test_grid2d.py::test_grid2d_rela
 # Run only integration tests
 uv run pytest -m integration
 
-# Run only slow tests
-uv run pytest -m slow
-
-# Skip slow tests
-uv run pytest -m "not slow"
-
 # Run only GPU tests (skipped if no CUDA)
 uv run pytest -m gpu
 ```
 
-### Training-Level Pipelines
-- Smoke coverage (≤10 episodes, default marker): `uv run pytest tests/test_townlet/slow/test_training_levels.py -k smoke`
-- Full curriculum (200 episodes, opt-in): `uv run pytest -m slow tests/test_townlet/slow/test_training_levels.py`
-- Smoke configs reside in `configs/test/training_level_{1,2,3}_smoke.yaml`; their slow counterparts keep the longer `training_level_{1,2,3}.yaml` settings.
+### There is no `slow` marker
 
-### Slow Integration Suites
-
-Several integration files (e.g., `test_training_loop.py`, `test_recurrent_networks.py`, `test_temporal_mechanics.py`) are marked `@pytest.mark.slow` because they require dozens of episodes or long sequential replay runs. These suites are skipped by default; opt in with:
-
-```bash
-uv run pytest -m slow tests/test_townlet/integration
-```
-
-CI only runs these periodically, so include the same marker when validating major changes to training/runtime orchestration.
+Every collected test runs in the default `uv run pytest`. The suite used to carry a `slow` marker on four integration files, deselected by `-m "not slow"` in the default addopts; the three "slow" files ran their 31 tests in ~35s, and the marker hid 33 failing tests from every gate reading for weeks (`hamlet-a0832f9004`, `hamlet-6f98e38a36`, `PDR-0062`). A deselect count with no disposition attached is an unread part of the gate — do not reintroduce one.
 
 ### Run with Coverage
 ```bash
@@ -434,7 +415,6 @@ Custom markers are defined in `conftest.py` and can be used to categorize tests:
 
 | Marker | Description | Usage |
 |--------|-------------|-------|
-| `@pytest.mark.slow` | Long-running test (opt-in) | `pytest -m slow` |
 | `@pytest.mark.gpu` | Requires GPU | Skipped automatically if no CUDA |
 | `@pytest.mark.integration` | Integration test | `pytest -m integration` |
 | `@pytest.mark.e2e` | End-to-end test | `pytest -m e2e` |
@@ -443,9 +423,9 @@ Custom markers are defined in `conftest.py` and can be used to categorize tests:
 ```python
 import pytest
 
-@pytest.mark.slow
-def test_full_training_loop():
-    # This test takes 30+ seconds
+@pytest.mark.gpu
+def test_cuda_kernel_parity():
+    # Skipped automatically when CUDA is unavailable
     pass
 
 @pytest.mark.gpu
@@ -464,7 +444,7 @@ def test_gpu_training():
 - ✅ Use assertion helpers to validate invariants
 - ✅ Write descriptive test names (`test_feature_behavior_under_condition`)
 - ✅ Add docstrings explaining what the test validates
-- ✅ Use markers to categorize tests (`@pytest.mark.slow`, `@pytest.mark.gpu`)
+- ✅ Use markers to categorize tests (`@pytest.mark.gpu`, `@pytest.mark.integration`)
 - ✅ Test edge cases (empty inputs, boundary conditions)
 - ✅ Test error handling (invalid inputs should raise errors)
 
@@ -531,9 +511,8 @@ def test_custom_substrate_movement():
     assert new_positions[0, 1] == 0  # Y unchanged
 
 
-@pytest.mark.slow
 def test_full_training_episode(vectorized_population):
-    """Test full training episode converges (slow test)."""
+    """Test full training episode converges."""
     for episode in range(100):
         vectorized_population.run_episode()
 

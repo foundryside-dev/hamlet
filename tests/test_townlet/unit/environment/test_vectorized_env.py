@@ -584,7 +584,6 @@ class TestVectorizedHamletEnvStep:
                     name="context_probe",
                     type="bool",
                     exposed_to=("agent",),
-                    semantic_type="custom",
                     initial_value=True,
                     result_type="bool",
                 )

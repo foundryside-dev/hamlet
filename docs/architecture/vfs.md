@@ -3,7 +3,7 @@
 **Document Type**: Design Specification + Integration Specification  
 **Status**: Phase 1 Complete; Phase 1.5 Shadow Migration; Phase 2+ Roadmap  
 **Version**: 1.1 Draft  
-**Last Updated**: 15 May 2026
+**Last Updated**: 16 August 2026 (§4.1, §4.3, §8.4: the observation semantic-type vocabulary, `PDR-0047` / `PDR-0066`; body otherwise 15 May 2026)
 **Original VFS Guide Date**: 7 November 2025  
 **Audience**: Engineers integrating VFS into Townlet environments; SDA/Brain-as-Code engineers; curriculum designers; researchers building social, temporal, and multi-agent environments
 
@@ -286,6 +286,13 @@ metadata:
   clamp: [0.0, 1.0]
 ```
 
+Note the distinction, because the names are close: `semantic_class` above is *proposed variable
+metadata* — the variable's causal role, for the research/generalisation side, and it must never
+be read by the compiler or runtime to decide behaviour (`PDR-0045`, name-blindness). The
+**semantic group** in §4.3 (`semantic_type` in code) is an *observation-field* property with a
+closed vocabulary that IS consumed — by the group slices. Until 2026-08-16 `VariableDef` also
+carried a `semantic_type` that nothing read; it was removed (`PDR-0066`).
+
 ### 4.2 Features
 
 A **feature** is a derived observation component. It may be computed from stored variables but not stored as authoritative state.
@@ -320,7 +327,20 @@ An **observation field** maps a variable or feature into an agent-facing observa
 - shape,
 - normalisation,
 - exposure conditions,
-- and ordering in the observation ABI.
+- **semantic group** — one member of a closed vocabulary (`bars`, `spatial`, `affordance`,
+  `effects`, `temporal`, `custom`; `townlet.vfs.semantic_type`), which names the field's slice
+  in `observation_activity.group_slices` so structured encoders and the meter block's consumers
+  can address a run of dimensions without knowing any field's name,
+- and ordering in the observation ABI — fields are laid out grouped, in the fixed group order
+  `spatial, bars, affordance, effects, custom, temporal`.
+
+The semantic group is a property of the **observation field**, never of the variable (§4.1): a
+variable is stored state; how it is grouped when observed is part of how it is exposed. Where an
+author declares it (today: `environment.yaml` variables, one compiled field each) the compiler
+obeys; for the blocks the compiler emits itself it assigns a member from the same closed set — a
+value an author may not write is a value the compiler may not emit (`PDR-0047`). `bars` is the
+meter block and is reserved to meters. Vocabulary extension is a decision (`PDR-0016`), not a
+literal at a call site.
 
 Observation fields are not mere convenience. They are the curriculum and checkpoint-compatibility boundary.
 
@@ -744,6 +764,7 @@ Every observation spec should have an `observation_schema_hash` computed over:
 - shapes,
 - normalisation rules,
 - exposure conditions,
+- semantic group,
 - `curriculum_active` masks,
 - dtype information,
 - and version metadata.
@@ -785,7 +806,6 @@ cyclical_sin_cos
 one_hot
 binary
 log_scaled
-clipped_log_scaled
 rank_scaled
 masked_value
 ```
@@ -800,11 +820,20 @@ Examples:
 
 - source_variable: "money"
   normalization:
-    kind: "clipped_log_scaled"
+    kind: "log_scaled"
     min: 0.0
     max: 1000.0
     clip: true
 ```
+
+> **Corrected 2026-08-15** (`PDR-0054`, `hamlet-fba56feca5`). This section listed **ten**
+> kinds including `clipped_log_scaled`, and its own money example then passed `clip: true`
+> to it — a parameter the kind's name already implied. That redundancy was the tell:
+> clamping is a *parameter*, not a member. It is now required on the two range-based kinds
+> (`minmax`, `log_scaled`) and forbidden on the rest, `clipped_log_scaled` is deleted, and
+> the example above is the same declaration with the member folded into the parameter.
+> The gain is that a **plain linear clamp** — which no member offered, so it was
+> unauthorable — is `minmax` + `clip: true`.
 
 Normalisation must be part of the observation schema hash.
 

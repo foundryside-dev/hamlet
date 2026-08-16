@@ -30,6 +30,11 @@ def test_standardize_normalization_maps_to_zscore(tmp_path: Path) -> None:
     for var in env_data["environment"]["variables"]:
         if var["name"] == "time_since_last_eat":
             var["normalization"]["method"] = "standardize"
+            # `clip` belongs to `normalize` and is forbidden on `standardize`,
+            # which has no range to clamp against (hamlet-fba56feca5). Leaving
+            # it behind is rejected rather than ignored — that rejection is the
+            # point, so drop it here as a real author would.
+            var["normalization"].pop("clip", None)
             var["normalization"]["mean"] = mean_value
             var["normalization"]["std"] = std_value
 

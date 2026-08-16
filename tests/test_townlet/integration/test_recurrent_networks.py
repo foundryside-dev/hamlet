@@ -2,28 +2,34 @@
 Integration tests for recurrent networks (LSTM) in Townlet.
 
 Tests LSTM hidden state management, batch training, and POMDP integration.
-Covers both migrated tests from test_lstm_temporal_learning.py and new critical tests.
 
 Test Organization:
 - TestLSTMHiddenStatePersistence: Hidden state lifecycle during episodes (4 tests)
-- TestLSTMBatchTraining: Batch training with sequences (3 tests - 1 new + 2 migrated)
+- TestLSTMBatchTraining: Hidden-state shape across the training boundary (1 test)
 - TestLSTMForwardPass: Forward pass with POMDP (1 test)
+
+Every test here drives a real compiled universe. Two tests migrated from
+test_lstm_temporal_learning.py were DELETED rather than repaired (2026-08-16,
+hamlet-a0832f9004): they hand-rolled a 7-dim observation in the legacy positional
+layout that v2.1 removed, and hand-rolled their own Q-learning update on top of it,
+so they exercised torch rather than townlet. The behaviour they claimed — sequence
+training and hidden-state persistence through training — is pinned properly, from
+YAML, by test_recurrent_bptt_runtime.py.
 """
 
 from pathlib import Path
 
-import pytest
 import torch
-import torch.nn.functional as functional
 
 from tests.test_townlet.helpers.config_builder import mutate_curriculum_yaml, mutate_stratum_yaml
 from townlet.agent.networks import RecurrentSpatialQNetwork
 from townlet.curriculum.static import StaticCurriculum
 from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
 from townlet.population.vectorized import VectorizedPopulation
-from townlet.training.sequential_replay_buffer import SequentialReplayBuffer
 
-pytestmark = pytest.mark.slow
+# NOT `slow`-marked. This file runs in seconds; the marker (with the `-m "not slow"`
+# that pyproject's default addopts USED to carry) is what hid its failures from
+# every gate reading — see hamlet-a0832f9004.
 
 # =============================================================================
 # TEST CLASS 1: LSTM Hidden State Persistence
@@ -75,10 +81,13 @@ class TestLSTMHiddenStatePersistence:
             exploration=exploration,
             agent_ids=["agent_0"],
             device=cpu_device,
-            # action_dim defaults to env.action_dim
+            obs_dim=env.observation_dim,
+            action_dim=env.action_dim,
             brain_config=recurrent_brain_config,
             vision_window_size=5,
             batch_size=8,
+            sequence_length=1,
+            max_grad_norm=10.0,
             train_frequency=10000,  # Disable training (test focuses on hidden state persistence)
         )
 
@@ -155,9 +164,13 @@ class TestLSTMHiddenStatePersistence:
             exploration=exploration,
             agent_ids=["agent_0"],
             device=cpu_device,
-            # action_dim defaults to env.action_dim
+            obs_dim=env.observation_dim,
+            action_dim=env.action_dim,
             brain_config=recurrent_brain_config,
             vision_window_size=5,
+            batch_size=8,
+            sequence_length=1,
+            max_grad_norm=10.0,
             train_frequency=10000,  # Disable training (test focuses on death reset)
         )
 
@@ -218,9 +231,13 @@ class TestLSTMHiddenStatePersistence:
             exploration=exploration,
             agent_ids=["agent_0"],
             device=cpu_device,
-            # action_dim defaults to env.action_dim
+            obs_dim=env.observation_dim,
+            action_dim=env.action_dim,
             brain_config=recurrent_brain_config,
             vision_window_size=5,
+            batch_size=8,
+            sequence_length=1,
+            max_grad_norm=10.0,
             train_frequency=10000,  # Disable training (test focuses on flush behavior)
         )
 
@@ -281,9 +298,13 @@ class TestLSTMHiddenStatePersistence:
             exploration=exploration,
             agent_ids=["agent_0", "agent_1"],
             device=cpu_device,
-            # action_dim defaults to env.action_dim
+            obs_dim=env.observation_dim,
+            action_dim=env.action_dim,
             brain_config=recurrent_brain_config,
             vision_window_size=5,
+            batch_size=8,
+            sequence_length=1,
+            max_grad_norm=10.0,
             train_frequency=10000,  # Disable training (test focuses on shape verification)
         )
 
@@ -354,10 +375,13 @@ class TestLSTMBatchTraining:
             exploration=exploration,
             agent_ids=["agent_0", "agent_1"],
             device=cpu_device,
-            # action_dim defaults to env.action_dim
+            obs_dim=env.observation_dim,
+            action_dim=env.action_dim,
             brain_config=recurrent_brain_config,
             vision_window_size=5,
             batch_size=8,
+            sequence_length=5,
+            max_grad_norm=10.0,
             train_frequency=4,
         )
 
@@ -384,209 +408,6 @@ class TestLSTMBatchTraining:
         h, c = population.rollout_hidden
         assert h.shape == (1, 2, 256), f"After training, hidden state should be (1, 2, 256), got {h.shape}"
 
-    def test_lstm_training_with_sequences(self, cpu_device):
-        """
-        Test that LSTM can learn a simple temporal pattern: A → B → C.
-
-        Migrated from test_lstm_temporal_learning.py::test_lstm_learns_temporal_sequence.
-
-        Task: Learn that action sequences matter
-        - State 0 (start) → State 1: Take action 0
-        - State 1 → State 2 (goal): Take action 1
-        - Reward only given at State 2
-
-        An MLP would struggle (state 1 looks the same whether you came from 0 or elsewhere).
-        An LSTM should learn the temporal dependency.
-        """
-        # Simple network for testing
-        network = RecurrentSpatialQNetwork(
-            action_dim=2,  # Actions: 0 (A→B) or 1 (B→C)
-            window_size=1,  # Minimal spatial observation
-            position_dim=2,
-            num_meters=2,  # Minimal state (just state_id encoded)
-            num_affordance_types=1,
-            enable_temporal_features=False,
-            hidden_dim=32,  # Small for fast training
-        ).to(cpu_device)
-
-        optimizer = torch.optim.Adam(network.parameters(), lr=0.01)
-
-        # Create synthetic episode: State 0 → State 1 → State 2
-        # Observation encoding: [grid (1), pos (2), meters (2), affordance (2)] = 7 dims
-        # State 0: meters = [1.0, 0.0]
-        # State 1: meters = [0.5, 0.5]
-        # State 2: meters = [0.0, 1.0]
-
-        def make_observation(state_id):
-            """Create synthetic observation for a state."""
-            grid = torch.zeros(1)  # Minimal grid
-            pos = torch.tensor([0.0, 0.0])  # Fixed position
-
-            if state_id == 0:
-                meters = torch.tensor([1.0, 0.0])
-            elif state_id == 1:
-                meters = torch.tensor([0.5, 0.5])
-            else:  # state_id == 2
-                meters = torch.tensor([0.0, 1.0])
-
-            affordance = torch.zeros(2)  # No affordance
-
-            return torch.cat([grid, pos, meters, affordance])
-
-        # Create training episode: 0 → 1 → 2
-        episode = {
-            "observations": torch.stack(
-                [
-                    make_observation(0),
-                    make_observation(1),
-                    make_observation(2),
-                ]
-            ),
-            "actions": torch.tensor([0, 1, 0]),  # A→B, B→C, done
-            "rewards": torch.tensor([0.0, 0.0, 1.0]),  # Combined reward only at end
-            "dones": torch.tensor([False, False, True]),
-        }
-
-        # Store episode in replay buffer
-        replay_buffer = SequentialReplayBuffer(capacity=100, device=cpu_device)
-        replay_buffer.store_episode(episode)
-
-        # Store a few more episodes for sampling variety
-        for _ in range(15):
-            replay_buffer.store_episode(episode)
-
-        # Create target network (for stable temporal learning)
-        target_network = RecurrentSpatialQNetwork(
-            action_dim=2,
-            window_size=1,
-            position_dim=2,
-            num_meters=2,
-            num_affordance_types=1,
-            enable_temporal_features=False,
-            hidden_dim=32,
-        ).to(cpu_device)
-        target_network.load_state_dict(network.state_dict())
-        target_network.eval()
-
-        # Train for multiple iterations
-        losses = []
-        for iteration in range(500):  # More iterations for convergence
-            # Sample sequence
-            batch = replay_buffer.sample_sequences(
-                batch_size=8,
-                seq_len=3,
-                intrinsic_weight=0.0,
-            )
-
-            gamma = 0.99
-
-            # PASS 1: Collect Q-predictions from online network, threading hidden state
-            hidden = network.initial_hidden(8, cpu_device)
-            q_pred_list = []
-
-            for t in range(3):
-                q_values, hidden = network(batch["observations"][:, t, :], hidden)
-                q_pred = q_values.gather(1, batch["actions"][:, t].unsqueeze(1)).squeeze()
-                q_pred_list.append(q_pred)
-
-            # PASS 2: Collect Q-targets from target network, threading hidden state
-            with torch.no_grad():
-                target_hidden = target_network.initial_hidden(8, cpu_device)
-                q_target_list = []
-                q_values_list = []
-
-                # First, unroll through entire sequence to get Q-values at each step
-                for t in range(3):
-                    q_values, target_hidden = target_network(batch["observations"][:, t, :], target_hidden)
-                    q_values_list.append(q_values)
-
-                # Now compute targets using the Q-values from next timestep
-                for t in range(3):
-                    if t < 2:
-                        # Use Q-values from t+1 (already computed with hidden state from t)
-                        q_next = q_values_list[t + 1].max(1)[0]
-                        q_target = batch["rewards"][:, t] + gamma * q_next * (~batch["dones"][:, t]).float()
-                    else:
-                        # Terminal state
-                        q_target = batch["rewards"][:, t]
-
-                    q_target_list.append(q_target)
-
-            # Compute loss with masking (P2.2)
-            q_pred_all = torch.stack(q_pred_list, dim=1)
-            q_target_all = torch.stack(q_target_list, dim=1)
-
-            # Apply mask to prevent post-terminal gradients
-            losses_raw = functional.mse_loss(q_pred_all, q_target_all, reduction="none")
-            mask = batch["mask"].float()
-            loss = (losses_raw * mask).sum() / mask.sum().clamp_min(1)
-
-            # Backprop through time
-            optimizer.zero_grad()
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(network.parameters(), max_norm=1.0)
-            optimizer.step()
-
-            # Update target network every 10 steps
-            if iteration % 10 == 0:
-                target_network.load_state_dict(network.state_dict())
-
-            losses.append(loss.item())
-
-        # Verify loss decreased (learning happened)
-        initial_loss = sum(losses[:10]) / 10
-        final_loss = sum(losses[-10:]) / 10
-
-        assert (
-            final_loss < initial_loss * 0.5
-        ), f"Loss should decrease during training. Initial: {initial_loss:.4f}, Final: {final_loss:.4f}"
-
-    def test_lstm_memory_persistence_in_training(self, cpu_device):
-        """
-        Test that LSTM hidden state persists across timesteps during sequence training.
-
-        Migrated from test_lstm_temporal_learning.py::test_lstm_memory_persistence_in_training.
-
-        This validates that the training loop correctly maintains hidden state
-        when unrolling through sequences (as opposed to resetting each timestep).
-        """
-        network = RecurrentSpatialQNetwork(
-            action_dim=2,
-            window_size=1,
-            position_dim=2,
-            num_meters=2,
-            num_affordance_types=1,
-            enable_temporal_features=False,
-            hidden_dim=16,
-        ).to(cpu_device)
-
-        # Create a sequence of 3 observations
-        obs_sequence = torch.randn(4, 3, 7)  # [batch=4, seq_len=3, obs_dim=7]
-
-        # Fresh hidden state once for the batch, threaded through the unroll
-        hidden = network.initial_hidden(4, cpu_device)
-
-        # Unroll through sequence, tracking hidden states
-        hidden_states = []
-
-        for t in range(3):
-            q_values, hidden = network(obs_sequence[:, t, :], hidden)
-            h, c = hidden
-            hidden_states.append((h.clone(), c.clone()))
-
-        # Verify hidden state changed across timesteps
-        h0, c0 = hidden_states[0]
-        h1, c1 = hidden_states[1]
-        h2, c2 = hidden_states[2]
-
-        # Hidden states should be different (memory is evolving)
-        assert not torch.allclose(h0, h1), "Hidden state should change between timesteps"
-        assert not torch.allclose(h1, h2), "Hidden state should change between timesteps"
-
-        # Cell states should also be different
-        assert not torch.allclose(c0, c1), "Cell state should change between timesteps"
-        assert not torch.allclose(c1, c2), "Cell state should change between timesteps"
-
 
 # =============================================================================
 # TEST CLASS 3: LSTM Forward Pass
@@ -609,15 +430,21 @@ class TestLSTMForwardPass:
             level_name="L2_partial_observability",
         )
 
-        # Create recurrent network
+        # Create recurrent network. The spec and activity are REQUIRED for forward():
+        # v2.1 slices the observation by ObservationSpec, and constructing without them
+        # yields a network that builds and then raises on first use.
+        bars_slice = env.observation_activity.group_slices["bars"]
         network = RecurrentSpatialQNetwork(
             action_dim=env.action_dim,
             window_size=5,
             position_dim=2,
-            num_meters=8,
+            # OBSERVED width of the meter block, read from the activity — not the meter count
+            bars_dim=bars_slice.stop - bars_slice.start,
             num_affordance_types=env.num_affordance_types,
             enable_temporal_features=False,
             hidden_dim=256,
+            observation_spec=env.observation_spec,
+            observation_activity=env.observation_activity,
         ).to(cpu_device)
 
         # Reset environment and get observation

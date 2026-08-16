@@ -5,9 +5,14 @@ on:
   # Restored at the merge to `main` (PDR-0043 reversal trigger 2). It was deleted
   # while the recovery lived on a branch: the scheduler reads this file from the
   # DEFAULT branch, so a cron enabled then would have kept running against a `main`
-  # that was 167 commits stale — which is what produced its 15-run failure streak
-  # and GitHub's dormancy disable. `main` now carries the recovery, so the nightly
-  # tests something someone is working on again.
+  # frozen at f0a9ae8a, ~160 commits behind the branch. This workflow had never
+  # passed — every scheduled run since 2025-11-03 was red, the last 64 of them
+  # against that untouched `main` — until GitHub's dormancy rule disabled it, so
+  # re-enabling it from the branch would only have resumed that stream against the
+  # wrong tree. `main` now carries the recovery, so the nightly tests something
+  # someone is working on again. Since a725bf66 this job and the per-push Tests job
+  # are the same bare `uv run pytest` — the `slow` marker is gone — and differ only
+  # in trigger.
   schedule:
     - cron: "0 6 * * *"
 

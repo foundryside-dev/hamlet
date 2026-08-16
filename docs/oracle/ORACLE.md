@@ -59,5 +59,5 @@ All checked at `0e875d7a` exactly — not at a nearby commit:
 |---|---|
 | This tag | The frozen reference — old side of every differential run |
 | `known-divergences.md` | Where new is *allowed* to differ, and how each diff is judged |
-| Differential harness (next, reshapes WS-3) | Runs old and new against the same `CompiledUniverse`, asserts agreement outside the register |
+| Differential harness (`src/townlet/oracle/`, built — `PDR-0032`; it does **not** subsume WS-3, `PDR-0034`) | Runs old and new on the same logical pack, level and seed — each side a (code root, pack root) pair — and asserts agreement outside the register: exit 0 only when every cell is AGREE, SKIPPED, or DIVERGED_AS_REGISTERED |
 | Seam cutting | Per knockdown unit, not global (`PDR-0006` §2b) |

@@ -11,15 +11,23 @@ REGISTERED_DIVERGENCE_ABSENT. Exit 0 iff every cell is AGREE, SKIPPED, or
 DIVERGED_AS_REGISTERED naming the known-divergences entry its matrix cell
 declared (hamlet-56ec575ae2 / PDR-0037).
 
-A cell declares an expected divergence by binding a matrix.RegisteredDivergence
-(currently one shape: oracle side crashes leaving no trace, with the declared
-signature in the FINAL EXCEPTION TEXT of its stderr; rebuild runs and produces
-a valid trace from the declared src root — DIV-003's shape, PDR-0036). The
-match is narrow on purpose: an old-side failure without the signature in its
-final exception, a non-crash failure (exit 0, no trace), a crash that still
-wrote a trace, a new side that also fails (divergence not yet built), and an
-old side that runs (stale register entry — REGISTERED_DIVERGENCE_ABSENT) all
-still fail the run, as does a run in which every cell was SKIPPED.
+A cell declares an expected divergence by binding a register entry, in one of
+two shapes. Shape 1, matrix.RegisteredDivergence (old-side crash — DIV-003,
+PDR-0036): the oracle side crashes leaving no trace, with the declared
+signature in the FINAL EXCEPTION TEXT of its stderr; the rebuild runs and
+produces a valid trace from the declared src root. Shape 2,
+matrix.RegisteredHashDivergence (hash-only — DIV-004, PDR-0056; DIV-005
+adjudicates under the same binding): both sides run, EXACTLY the enumerated
+provenance hashes differ, and every trace stream is byte-identical. The match
+is narrow on purpose: an old-side failure without the signature in its final
+exception, a non-crash failure (exit 0, no trace), a crash that still wrote a
+trace, a new side that also fails (divergence not yet built), an undeclared
+hash that moves (HASH_MISMATCH), a stream that differs at all (DIVERGE), and a
+declared divergence that fails to manifest (stale register entry —
+REGISTERED_DIVERGENCE_ABSENT) all still fail the run, as does a run in which
+every cell was SKIPPED. Each side is a (code root, pack root) pair: the oracle
+side reads its frozen packs under oracle_fixtures/, the rebuild side reads the
+live configs/.
 
 DIV-001/002 are checkpoint-boundary and cannot manifest in an env trace, so a
 DIVERGE or HASH_MISMATCH with empty register_refs is a rebuild defect or a

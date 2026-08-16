@@ -1,0 +1,34 @@
+environment:
+  version: "1.0"
+
+  meters:
+    - name: energy
+      description: "Physical energy"
+      range_type:
+        kind: minmax
+        clip: false
+
+    - name: health
+      description: "Physical health"
+      range_type:
+        kind: minmax
+        clip: false
+
+    - name: money
+      description: "Currency"
+      range_type:
+        kind: minmax
+        clip: false
+
+  cascade_graph: []
+
+  modulation_graph: []
+
+  affordances:
+    - name: energy_station
+      description: "Restore energy"
+      category: sustenance
+
+  variables: []
+
+  cues: []

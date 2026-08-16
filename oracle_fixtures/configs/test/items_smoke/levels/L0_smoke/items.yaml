@@ -1,0 +1,28 @@
+# Items Appearance (Level-Specific Spawn Rules)
+
+version: "1.0"
+
+items:
+  - item_type: apple
+    spawn_count: 3       # Spawn 3 apples at level start
+    placement:
+      mode: random
+    schedule:
+      type: periodic
+      period: 100  # Respawn every 100 ticks
+
+  - item_type: medkit
+    spawn_count: 1
+    placement:
+      mode: random
+    schedule:
+      type: periodic
+      period: 200
+
+  - item_type: coin
+    spawn_count: 0
+    placement:
+      mode: random
+    schedule:
+      type: periodic
+      period: 150

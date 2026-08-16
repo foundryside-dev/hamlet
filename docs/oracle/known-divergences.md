@@ -3,8 +3,21 @@
 **Stream:** WS-7 (`hamlet-e3af412673`) — the strangler's enabling stream (`PDR-0006`).
 **Stood up:** 2026-08-13, as WS-7's first artifact (`PDR-0028` — routed findings need a
 register that exists; routing to a register that doesn't is filing to /dev/null).
-**Oracle tag:** `oracle-2026-08-13` → `0e875d7a` (pinned 2026-08-13; see `ORACLE.md`).
-Entries below were re-verified at the tagged commit and are stamped `tag-stamped`.
+**Oracle tag:** `oracle-2026-08-17` → `4222a917` (moved forward 2026-08-17, `PDR-0074`; see
+`ORACLE.md`). Previous tag `oracle-2026-08-13` → `0e875d7a` (pinned 2026-08-13) stays as
+history. Open entries were re-verified at the new tagged commit and are stamped
+`tag-stamped` there; entries whose divergence dissolved at the new tag are `retired`.
+
+**Re-stamp at `4222a917` (2026-08-17):** the oracle moved forward because the hash-only
+suppression had reached its ceiling (`AGREE` unreachable on 16/16 cells and the pack-drift
+guard armed on zero cells since 2026-08-15, `PDR-0056`) and because no matrix cell could see
+the next cut at all (`PDR-0074`). At the new tag the matrix is **20 cells** (the ten
+default_curriculum cells, the three differential packs, and two profile-variable packs
+`items_smoke` / `effects_smoke`), **every fixture under `oracle_fixtures/` is a byte copy of
+its live pack, and no cell declares anything** — the first time since 2026-08-15 that exit 0
+means "old and new agree" — **acceptance run `20260817-072714`: 20/20 `AGREE` on CPU and CUDA,
+exit 0, zero register refs in any verdict.** Terminal states after the re-stamp: DIV-001 `tag-stamped`, DIV-002
+`tag-stamped`, DIV-003 `retired`, DIV-004 `retired`, DIV-005 `retired`.
 
 ## What this register is
 
@@ -49,8 +62,12 @@ evidence — never copied from a filed issue unchecked), the **intended new beha
 
 ## DIV-001 — Five pack-level provenance hashes: computed, serialized, compared by nobody
 
-- **Status:** `tag-stamped` at `oracle-2026-08-13` (re-verified at `0e875d7a`: the five
-  names still appear only in `universe/compiled.py` and `universe/compiler.py`)
+- **Status:** `tag-stamped` at `oracle-2026-08-17` (re-verified at `4222a917`, 2026-08-17:
+  the five names appear only in `universe/compiled.py`, `universe/compiler.py`, and — as a
+  docstring mention, not a compare site — `oracle/matrix.py`; no stamp/compare site
+  references them; `hamlet-2dde1015fe` open). Previously `tag-stamped` at
+  `oracle-2026-08-13` (re-verified at `0e875d7a`: the five names appeared only in
+  `universe/compiled.py` and `universe/compiler.py`)
 - **Provenance:** `hamlet-2dde1015fe` · `PDR-0021` (filed-not-folded) · `PDR-0022` (the
   `config_hash_warning` deletion's precondition — this entry existing is that condition) ·
   `PDR-0028` (routing rule)
@@ -87,8 +104,11 @@ actually change, is a rebuild defect.
 
 ## DIV-002 — Two checkpoint stamp/compare paths outside the guarded boundary
 
-- **Status:** `tag-stamped` at `oracle-2026-08-13` (re-verified at `0e875d7a`: the
-  string-matched broad `except` sits at `demo/runner.py:202`)
+- **Status:** `tag-stamped` at `oracle-2026-08-17` (re-verified at `4222a917`, 2026-08-17:
+  the string-matched broad `except` sits at `demo/runner.py:199-202`; the population
+  stamp/compare path at `population/vectorized.py:1150` / `:1198`; `hamlet-df2b972c49` open).
+  Previously `tag-stamped` at `oracle-2026-08-13` (re-verified at `0e875d7a`:
+  `demo/runner.py:202`)
 - **Provenance:** `hamlet-df2b972c49` · `PDR-0008` (the breach this outlives) · `PDR-0028`
   (routing rule) · WS-1 tasks 4/5 (`hamlet-ae6601e463`, `hamlet-1029f99f4b`) which guarded
   the DemoRunner and serving paths but not these.
@@ -126,8 +146,11 @@ surface is deliberately open-ended and MUST NOT be treated as "just the two know
 
 ## DIV-003 — Substrate→observation-dim seam: three declared configs compile, then crash before producing a trace
 
-- **Status:** `built` (2026-08-15 — the seam is cut; full 16-cell matrix CPU+CUDA exit 0
-  with all six DIV-003 cells `DIVERGED_AS_REGISTERED`, runs `20260815-055108` /
+- **Status:** `retired` (2026-08-17, `PDR-0074` — the oracle moved forward to `4222a917`,
+  which carries the cut, so the three configs run on BOTH sides and the divergence
+  dissolved; the three packs stay in the matrix as plain standing cells expected to
+  `AGREE`). Previously `built` (2026-08-15 — the seam is cut; full 16-cell matrix CPU+CUDA
+  exit 0 with all six DIV-003 cells `DIVERGED_AS_REGISTERED`, runs `20260815-055108` /
   `20260815-055207`). Previously `tag-stamped` the same day: all three crashes re-executed
   at `0e875d7a` through the harness's own driver under the oracle worktree's `src` with the
   injection probe-verified first — not copied from the 2026-08-11 assessment, which predicted
@@ -192,7 +215,12 @@ entry — or add DIV-004 — with its cell **before** cutting, per this register
 
 ## DIV-004 — The normalization-vocabulary programme: the authoring surface changes, so the compiled provenance moves and behaviour does not
 
-- **Status:** `built` (2026-08-15 — declared before the first cut of the programme, per this
+- **Status:** `retired` (2026-08-17, `PDR-0074` — the oracle moved forward to `4222a917`,
+  which carries the whole normalization programme; the frozen fixtures were re-frozen at the
+  new schema, so old and new compile the same `environment.yaml` and the provenance no longer
+  moves. `PDR-0056`'s two recorded costs — `AGREE` unreachable matrix-wide, pack-drift guard
+  armed on zero cells — dissolve with it, as that PDR said they would.) Previously `built`
+  (2026-08-15 — declared before the first cut of the programme, per this
   register's own record-then-bind rule; W1 is the first cut it covers. Full 16-cell matrix
   exit 0 with all ten standing cells `DIVERGED_AS_REGISTERED (DIV-004)` and every trace
   stream byte-identical: runs `20260815-175940` (CPU) / `20260815-180022` (CPU+CUDA).)
@@ -310,7 +338,10 @@ worktree at the pre-cut commit, compiled against the live tree, all five levels.
 
 ## DIV-005 — `semantic_type`: one closed vocabulary, author-authoritative, `effects` admitted; the compiled provenance moves and behaviour does not
 
-- **Status:** `built` (2026-08-16 — declared `tag-stamped` first, oracle behaviour re-verified
+- **Status:** `retired` (2026-08-17, `PDR-0074` — the oracle moved forward to `4222a917`,
+  which carries the semantic-type cut; both sides now emit the author-declared vocabulary and
+  the provenance no longer moves.) Previously `built` (2026-08-16 — declared `tag-stamped`
+  first, oracle behaviour re-verified
   at `0e875d7a` through the oracle worktree before any code changed; then cut, then measured
   and adjudicated: full 16-cell matrix CPU+CUDA exit 0, run `20260816-225750`, all ten standing
   cells `DIVERGED_AS_REGISTERED (DIV-004)` with exactly the four declared hashes moved and every

@@ -6,8 +6,8 @@ docs/oracle/known-divergences.md does not say otherwise.
 """
 
 # The single machine-readable authority for the current oracle ref. When the
-# oracle moves forward (PDR-0030 reversal path), this constant moves with the
+# oracle moves forward (PDR-0030 reversal path; done once, PDR-0074), this constant moves with the
 # new tag; docs/oracle/ORACLE.md records the history.
-ORACLE_TAG = "oracle-2026-08-13"
+ORACLE_TAG = "oracle-2026-08-17"
 
 __all__ = ["ORACLE_TAG"]

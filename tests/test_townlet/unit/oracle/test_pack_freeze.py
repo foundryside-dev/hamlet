@@ -39,8 +39,11 @@ def test_every_matrix_pack_has_a_frozen_fixture() -> None:
 
 @pytest.mark.parametrize("logical_pack", _matrix_packs())
 def test_every_drifting_pack_is_declared_by_every_cell_that_reads_it(logical_pack: str) -> None:
-    """The freeze was a provable no-op until DIV-004; now it is not, and this
-    test is what stopped that from being absorbed silently.
+    """The freeze was a provable no-op until DIV-004, then was not, and at
+    oracle-2026-08-17 (PDR-0074) it is a provable no-op again — every fixture
+    is a byte copy of its live pack and no cell declares a pack divergence.
+    This test is what stopped the first drift from being absorbed silently,
+    and what will refuse the next one.
 
     It was written as `pack_drift(...) == {}` and it FAILED the moment the
     first schema change landed — which is exactly the job. Rewritten to the

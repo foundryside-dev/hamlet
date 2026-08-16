@@ -17,8 +17,10 @@ PDR-0036): the oracle side crashes leaving no trace, with the declared
 signature in the FINAL EXCEPTION TEXT of its stderr; the rebuild runs and
 produces a valid trace from the declared src root. Shape 2,
 matrix.RegisteredHashDivergence (hash-only — DIV-004, PDR-0056; DIV-005
-adjudicates under the same binding): both sides run, EXACTLY the enumerated
-provenance hashes differ, and every trace stream is byte-identical. The match
+adjudicated under the same binding): both sides run, EXACTLY the enumerated
+provenance hashes differ, and every trace stream is byte-identical. (DIV-003/
+004/005 retired when the oracle moved forward to oracle-2026-08-17, PDR-0074;
+at that tag no cell binds either shape and exit 0 means AGREE.) The match
 is narrow on purpose: an old-side failure without the signature in its final
 exception, a non-crash failure (exit 0, no trace), a crash that still wrote a
 trace, a new side that also fails (divergence not yet built), an undeclared

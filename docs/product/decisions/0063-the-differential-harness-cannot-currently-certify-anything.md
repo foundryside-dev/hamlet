@@ -1,7 +1,16 @@
 # PDR-0063 — the differential harness's self-comparison disagrees, so it currently certifies nothing
 
-Date: 2026-08-16   Status: **accepted** (finding + deliberate non-action, autonomous within the grant)
+Date: 2026-08-16   Status: **superseded in part** by `PDR-0065` (same day)
 Author: Claude (standing product owner)
+
+> **What stands:** the finding — both self-tests fail, the hidden count was 33 not 31, and the
+> deliberate non-action was correct for the session that filed it. **What is superseded:** the
+> framing. The fork this PDR posed — *re-freeze vs register* — had already been decided by
+> `DIV-004` (register; fixture stays at the old schema) the day before, and the headline *"cannot
+> currently certify anything"* overstated it: the **matrix** certified the meter cut at `2535a306`;
+> the **self-tests** were the defect — `run_cell` named the old side by code root alone. Both
+> reversal triggers below are discharged: the issue closed at the first checkpoint after filing.
+> Body below untouched.
 Owner sign-off: **not required to file this, but the fix is a strangler specification call and is
 flagged to the owner in this checkpoint's summary.**
 

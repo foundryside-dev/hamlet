@@ -1,4 +1,4 @@
-# Current State — HAMLET / Townlet        Checkpoint: 2026-08-17 · twenty-fourth checkpoint
+# Current State — HAMLET / Townlet        Checkpoint: 2026-08-17 · twenty-fourth checkpoint (amended the same session: THE SECOND MERGE LANDED, `PDR-0073`)
 
 ## The bet right now
 
@@ -8,14 +8,16 @@ when anything merges. Merging is a publication step *inside* the bet.
 
 The three exit conditions, read rather than asserted:
 
-| # | condition | status 2026-08-17 (`905acd96`) |
+| # | condition | status 2026-08-17 (`main` = `4222a917`) |
 |---|---|---|
 | 1 | every `known-divergences.md` entry terminal | open (DIV-001..005; DIV-003/004/005 `built`, DIV-001/002 `tag-stamped`) — no DIV-006 |
 | 2 | harness verdict vocabulary re-earned or successor recorded (`PDR-0056`) | open — 16/16 `DIVERGED_AS_REGISTERED`, 0 `AGREE`, by construction until DIV-004/005 close |
-| 3 | `Gates green` read on a suite that hides nothing (`PDR-0059`) | **MET ON THE BRANCH** (`PDR-0065`); `main` still carries all 33 behind the marker until the merge below |
+| 3 | `Gates green` read on a suite that hides nothing (`PDR-0059`) | **MET ON `main`** as of `4222a917` (`PDR-0065`, `PDR-0073`) — confirm on the first post-merge nightly (`PDR-0072` trigger 2 if red) |
 
-`project-recovery-2` is **28 commits ahead** of `main` (`07b26ed5`) at `905acd96`, 29 once this
-checkpoint commits. **The branch is MERGE-READY and the merge is the owner's next action.**
+**THE SECOND MERGE LANDED: `main` = `4222a917`** (PR #35, merge commit of `07b26ed5` + `f023b9e7`,
+29 commits; `PDR-0073`). Executed by the agent on the owner's explicit in-session instruction — the
+`PDR-0046` boundary is unchanged, not a precedent. `project-recovery-2` is 0 ahead / 0 behind;
+`main`'s README is byte-identical to the branch's; `main` no longer carries the `slow` marker.
 
 ## What this checkpoint did
 
@@ -41,23 +43,23 @@ checkpoint commits. **The branch is MERGE-READY and the merge is the owner's nex
 ## Reversal triggers — read this session
 
 - **`PDR-0068` trigger: FIRED on both prongs** and answered by `PDR-0071` (merge first).
-- **`PDR-0072` trigger 1 armed:** any commit touching `src/`, `configs/`, `frontend/`, `.github/`,
-  `scripts/` or `tests/` before the owner merges re-owes the sweep. This checkpoint commit is
-  `docs/product/` only.
+- **`PDR-0072` trigger 1: did not fire** — the only commit between the sweep (`905acd96`) and
+  the merge was the `docs/product/` checkpoint. **Trigger 2 now live** on the first post-merge
+  nightly.
 - **`PDR-0058` trigger 2**: unfired, armed at register growth #1 (unit 3 will fire it).
 - **`PDR-0043` trigger 2**: stays discharged — the nightly is `active`, verified this sweep.
 - **`PDR-0025`** (presentation reaching the engine): mechanically watched by test, unchanged.
 
 ## Blocked on the owner (the merge) · flagged, not blocking
 
-- **The merge to `main` is yours (`PDR-0046`).** Both gates stand for `905acd96`: gate 2 executed
-  (`PDR-0072`); gate 1 read on the push — confirm the Tests run `31968042996` finished green
-  before merging (Lint/Config Validation already are). Suggested: `gh pr create --base main
-  --head project-recovery-2` (PR #33) and merge as before; nothing else on the checklist —
-  the nightly is already `active` and its file is now the same invocation as the per-push
-  Tests job, so **the first nightly after the merge is the reading that closes the
-  `main`-is-red thread** (expected green; if still red on the three named files, `PDR-0072`
-  trigger 2 fires).
+- **DONE — the merge landed at `4222a917`** (`PDR-0073`; both gates re-read green at the tip
+  first: `f023b9e7` Tests 3239/24/0-deselected). Newly recorded fact: `main` is governed by
+  ruleset 9453164 — PR required, non-fast-forward, required checks `lint`+`unit` on the PR's own
+  runs, auto-merge disabled — which is why every merge here is a PR merge commit. **The first
+  post-merge nightly (`Full Test Suite`, 06:00 UTC) is the reading that closes the `main`-is-red
+  thread** (expected green; if still red on the three named files, `PDR-0072` trigger 2 fires).
+- GitHub reported **4 Dependabot vulnerabilities on the default branch (2 moderate, 2 low)** at
+  push time — surfaced, not acted on; triage is a candidate for next session if you want it.
 - **`CLAUDE.md:65` still cites the deleted `REVIEW-2026-08-15…` file** (owner's file; DTO list
   also lacks `presentation_config.py`). Third flag.
 - **Nothing escalated.** No vision/grant change, no release beyond the merge you already own,
@@ -78,8 +80,9 @@ checkpoint commits. **The branch is MERGE-READY and the merge is the owner's nex
 
 ## Next session starts here
 
-**Read `main`.** If the owner merged: confirm the merge commit, read the first post-merge nightly
-(`gh run list --workflow full-tests.yml --limit 1`), and record `Gates green` on `main` for the
-first time since the marker went — then open the re-tag question and take unit 3. If the owner
-has not merged: nothing has changed — the branch is merge-ready at `905acd96` and `PDR-0072`
-trigger 1 governs any commit that lands first.
+**Read the first post-merge nightly** (`gh run list --workflow full-tests.yml --limit 1`, the run
+after 2026-08-16T06:33Z) and record `Gates green` on `main` from it — green closes the thread
+`PDR-0059` opened; red fires `PDR-0072` trigger 2. Then open the **re-tag question** (`PDR-0056`)
+and take unit 3 (`hamlet-f0ed709ecf`) with its DIV-006 entry. Work continues on
+`project-recovery-2` (now level with `main`) unless the owner wants a fresh branch name — the CI
+trigger glob covers `project-recovery*` either way.

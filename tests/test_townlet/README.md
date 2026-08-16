@@ -9,8 +9,7 @@ Measured on 2026-05-16 from `/home/john/hamlet`:
 | Measure | Current value | Evidence command |
 |---|---:|---|
 | Tests collected | 2,895 | `uv run pytest --collect-only -q tests/test_townlet --no-cov` |
-| Tests selected by default | 2,862 | same command; default `pyproject.toml` filter deselects `slow` |
-| Tests deselected by default | 33 | same command |
+| Tests selected by default | 2,862 | same command; the `slow` filter that deselected 33 of these **no longer exists** (2026-08-16, `hamlet-a0832f9004`) — today every collected test is selected |
 | Test files | 284 | `find tests/test_townlet -type f -name 'test_*.py' \| wc -l` |
 | Coverage artifact | 19% line coverage | `uv run python -m coverage report --rcfile=pyproject.toml` |
 | Coverage denominator | 18,558 statements, 6,916 branches | same coverage report |
@@ -22,7 +21,7 @@ The 19% coverage number is measured from the existing local `.coverage` artifact
 | Area | Collected | Selected by default | Notes |
 |---|---:|---:|---|
 | `unit/` | 2,420 | 2,420 | Component and DTO tests |
-| `integration/` | 407 | 374 | 33 `slow` tests are deselected by default |
+| `integration/` | 407 | 374 | the 33 `slow`-deselected tests in this 2026-05-16 count now run by default — the marker is gone |
 | `properties/` | 49 | 49 | Hypothesis/property tests |
 | `performance/` | 11 | 11 | Includes benchmark-marked tests; `benchmark` is not registered in `pyproject.toml` |
 | `test_curriculum/` | 8 | 8 | Curriculum-stage tests outside the main `unit/` tree |
@@ -55,7 +54,7 @@ Use the tree above as a navigation aid, not as a fixed taxonomy. New tests shoul
 
 ## Running Tests
 
-The project-level pytest configuration already adds `--cov=townlet`, branch coverage, `term-missing`, and `-m "not slow"`.
+The project-level pytest configuration already adds `--cov=townlet`, branch coverage, and `term-missing`. There is no marker-based deselection: `uv run pytest` is the complete suite.
 
 ```bash
 # Default local suite: selected tests only, with coverage
@@ -72,9 +71,6 @@ uv run pytest tests/test_townlet/integration
 
 # Property tests only
 uv run pytest tests/test_townlet/properties
-
-# Explicitly run slow tests
-uv run pytest -m "slow"
 
 # Collection without coverage
 uv run pytest --collect-only -q tests/test_townlet --no-cov
@@ -146,14 +142,13 @@ def test_universal_property(action):
 - Control agent positions after reset when testing movement or local observations.
 - Use `pytest.approx()` for floating-point comparisons.
 - Add regression tests near the subsystem they protect; use `tests/test_townlet/regressions/` only when a bug needs a dedicated regression fixture set.
-- Keep heavyweight scenarios marked `slow` or `gpu` so the default suite remains intentional.
+- Mark CUDA-only scenarios `gpu` (skipped without CUDA). There is no `slow` marker and no default deselection: if a test is too slow for the default suite, make it faster or delete it — a deselected test is an unread part of the gate (`hamlet-a0832f9004`).
 
 ## Markers
 
 Registered markers live in `pyproject.toml`:
 
 ```python
-@pytest.mark.slow
 @pytest.mark.gpu
 @pytest.mark.integration
 @pytest.mark.e2e
@@ -162,8 +157,6 @@ Registered markers live in `pyproject.toml`:
 Useful marker commands:
 
 ```bash
-uv run pytest -m "not slow"
-uv run pytest -m slow
 uv run pytest -m gpu
 uv run pytest -m integration
 ```

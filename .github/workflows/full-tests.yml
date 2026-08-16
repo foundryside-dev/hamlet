@@ -37,7 +37,8 @@ jobs:
           echo "Running universe compiler validation before pytest to catch invalid configs early"
           uv run python scripts/validate_compiler_cli.py
 
-      - name: Run complete test matrix (including slow markers)
-        env:
-          PYTEST_ADDOPTS: ""
-        run: uv run pytest -m "slow or not slow"
+      # No marker deselection exists any more (hamlet-a0832f9004 / hamlet-6f98e38a36):
+      # the default `uv run pytest` IS the complete suite. This job differs from
+      # tests.yml only in WHEN it runs — nightly against the default branch.
+      - name: Run the complete test suite
+        run: uv run pytest

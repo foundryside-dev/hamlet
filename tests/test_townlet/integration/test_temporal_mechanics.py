@@ -16,9 +16,10 @@ made against a suite that actually runs them.
 
 This block twice read "ALL TESTS PASSING (17/17)" while 15 of the 17 failed. The
 falsehood was invisible rather than careless: the file was `pytest.mark.slow`,
-`pyproject.toml` carries `-m "not slow"` in its default addopts, and so no gate
+`pyproject.toml` carried `-m "not slow"` in its default addopts, and so no gate
 reading ever executed a line of it. The marker is gone (the file runs in ~15s;
-it was never slow) and the honest reading is now the default one.
+it was never slow), the addopts filter is gone with it, and the honest reading is
+now the default one.
 
 WHY THIS FILE CARRIES ITS OWN CONFIG PACK
 -----------------------------------------
@@ -49,8 +50,8 @@ import torch
 from tests.test_townlet.helpers.config_builder import copy_config_pack, mutate_affordances_yaml
 
 # NOT `slow`-marked. The whole file runs in ~15s, and the marker (combined with
-# `-m "not slow"` in pyproject's default addopts) is precisely what hid 15 failing
-# tests here from every gate reading — see hamlet-a0832f9004.
+# the `-m "not slow"` that pyproject's default addopts USED to carry) is precisely
+# what hid 15 failing tests here from every gate reading — see hamlet-a0832f9004.
 
 TEMPORAL_LEVEL = "L3_temporal_mechanics"
 

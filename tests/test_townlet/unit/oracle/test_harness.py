@@ -10,6 +10,7 @@ import numpy as np
 import pytest
 
 from townlet.oracle.harness import (
+    ORACLE_PACK_ROOT,
     SideFailure,
     _collect_run_meta,
     _final_exception_text,
@@ -105,6 +106,7 @@ def test_cuda_cell_without_flag_is_skipped_without_subprocess(tmp_path: Path) ->
     verdict = run_cell(
         repo_root=bogus,
         old_src=bogus,
+        old_pack_root=bogus / ORACLE_PACK_ROOT,
         new_src=bogus,
         cell=cell,
         run_dir=tmp_path,
@@ -191,6 +193,7 @@ def test_run_cell_safely_converts_exception_to_harness_error(monkeypatch: pytest
     verdict = run_cell_safely(
         repo_root=Path("/nonexistent"),
         old_src=Path("/nonexistent/old"),
+        old_pack_root=Path("/nonexistent") / ORACLE_PACK_ROOT,
         new_src=Path("/nonexistent/new"),
         cell=cell,
         run_dir=Path("/nonexistent/run"),
@@ -210,6 +213,7 @@ def test_run_cell_safely_passes_through_normal_verdicts(monkeypatch: pytest.Monk
     verdict = run_cell_safely(
         repo_root=Path("."),
         old_src=Path("."),
+        old_pack_root=Path("."),
         new_src=Path("."),
         cell=cell,
         run_dir=Path("."),
@@ -283,7 +287,8 @@ def test_injection_guard_fires_when_sides_report_same_code_root(monkeypatch: pyt
     cell = Cell(RunParams(pack="p", level="l", num_agents=1, steps=1, seed=1, device="cpu"))
     verdict = run_cell(
         repo_root=tmp_path,
-        old_src=tmp_path / "old",  # old_src != new_src: a genuine differential run
+        old_src=tmp_path / "old",
+        old_pack_root=tmp_path / ORACLE_PACK_ROOT,
         new_src=tmp_path / "new",
         cell=cell,
         run_dir=tmp_path,
@@ -306,6 +311,7 @@ def test_injection_guard_silent_when_code_roots_differ(monkeypatch: pytest.Monke
     verdict = run_cell(
         repo_root=tmp_path,
         old_src=tmp_path / "old",
+        old_pack_root=tmp_path / ORACLE_PACK_ROOT,
         new_src=tmp_path / "new",
         cell=cell,
         run_dir=tmp_path,
@@ -328,6 +334,7 @@ def test_injection_guard_not_applied_to_self_comparison(monkeypatch: pytest.Monk
     verdict = run_cell(
         repo_root=tmp_path,
         old_src=same_src,
+        old_pack_root=tmp_path,  # self-comparison: same code, same inputs
         new_src=same_src,
         cell=cell,
         run_dir=tmp_path,
@@ -398,6 +405,7 @@ def _run_expect_cell(cell: Cell, tmp_path: Path) -> CellVerdict:
     return run_cell(
         repo_root=tmp_path,
         old_src=tmp_path / "old",
+        old_pack_root=tmp_path / ORACLE_PACK_ROOT,
         new_src=tmp_path / "new",
         cell=cell,
         run_dir=tmp_path,
@@ -674,6 +682,7 @@ def test_expectation_cell_cuda_skip_carries_no_refs(tmp_path: Path) -> None:
     verdict = run_cell(
         repo_root=Path("/nonexistent"),
         old_src=Path("/nonexistent/old"),
+        old_pack_root=Path("/nonexistent") / ORACLE_PACK_ROOT,
         new_src=Path("/nonexistent/new"),
         cell=_expect_cell("cuda"),
         run_dir=tmp_path,

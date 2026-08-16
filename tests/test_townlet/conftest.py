@@ -28,7 +28,6 @@ SUBSTRATE_FIXTURES = _SUBSTRATE_FIXTURES
 def pytest_configure(config: pytest.Config) -> None:
     """Register custom markers used across the suite."""
 
-    config.addinivalue_line("markers", "slow: mark test as slow (run with --runslow)")
     config.addinivalue_line("markers", "gpu: mark test as requiring GPU (skipped if no CUDA)")
     config.addinivalue_line("markers", "integration: mark test as integration test")
     config.addinivalue_line("markers", "e2e: mark test as end-to-end test")

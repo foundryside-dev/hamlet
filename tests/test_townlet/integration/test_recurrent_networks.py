@@ -27,9 +27,9 @@ from townlet.curriculum.static import StaticCurriculum
 from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
 from townlet.population.vectorized import VectorizedPopulation
 
-# NOT `slow`-marked. This file runs in seconds; the marker (with `-m "not slow"`
-# in pyproject's default addopts) is what hid its failures from every gate
-# reading — see hamlet-a0832f9004.
+# NOT `slow`-marked. This file runs in seconds; the marker (with the `-m "not slow"`
+# that pyproject's default addopts USED to carry) is what hid its failures from
+# every gate reading — see hamlet-a0832f9004.
 
 # =============================================================================
 # TEST CLASS 1: LSTM Hidden State Persistence

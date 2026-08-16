@@ -166,8 +166,13 @@ def _pack_files(pack_dir: Path) -> dict[str, bytes]:
     return out
 
 
-def pack_drift(repo_root: Path, logical_pack: str) -> dict[str, list[str]]:
-    """Byte-level delta between the frozen oracle pack and the live pack.
+def pack_drift(old_pack_root: Path, new_pack_root: Path, logical_pack: str) -> dict[str, list[str]]:
+    """Byte-level delta between the pack as the OLD side reads it and as the NEW
+    side reads it — the two roots the sides actually resolve, not
+    `oracle_fixtures/` vs the repo root by construction. For an oracle run the
+    old root IS the frozen fixture tree; for a self-comparison both roots are
+    the live tree and the delta is empty for the honest reason
+    (hamlet-6f98e38a36).
 
     Empty dict means the freeze is a provable no-op for this pack. A non-empty
     result is NOT automatically a defect — once a pack-schema divergence is
@@ -176,8 +181,8 @@ def pack_drift(repo_root: Path, logical_pack: str) -> dict[str, list[str]]:
     frozen pack that has rotted into a different universe still compiles, and
     then every cell AGREEs about nothing.
     """
-    frozen = _pack_files(repo_root / ORACLE_PACK_ROOT / logical_pack)
-    live = _pack_files(repo_root / logical_pack)
+    frozen = _pack_files(old_pack_root / logical_pack)
+    live = _pack_files(new_pack_root / logical_pack)
     # No live pack means there is no drift question to answer — the run will
     # fail at compile with a far clearer message than a drift verdict, and
     # synthetic cells (unit tests) legitimately name packs that exist on
@@ -197,7 +202,7 @@ def pack_drift(repo_root: Path, logical_pack: str) -> dict[str, list[str]]:
     if changed:
         delta["differing"] = changed
     if not frozen:
-        delta["missing_frozen_pack"] = [str(Path(ORACLE_PACK_ROOT) / logical_pack)]
+        delta["missing_frozen_pack"] = [str(old_pack_root / logical_pack)]
     return delta
 
 
@@ -277,7 +282,18 @@ def _validate_lone_trace(trace: Trace, cell: Cell) -> None:
         )
 
 
-def run_cell(*, repo_root: Path, old_src: Path, new_src: Path, cell: Cell, run_dir: Path, run_cuda: bool) -> CellVerdict:
+def run_cell(
+    *, repo_root: Path, old_src: Path, old_pack_root: Path, new_src: Path, cell: Cell, run_dir: Path, run_cuda: bool
+) -> CellVerdict:
+    """Adjudicate one cell: old side (old_src, old_pack_root) vs new side (new_src, repo_root).
+
+    A side is a code root AND a pack root (hamlet-2090c9f16d, hamlet-6f98e38a36).
+    The new side always reads the live tree. The old side reads whatever the
+    caller names: `repo_root / ORACLE_PACK_ROOT` for a real oracle run, or
+    `repo_root` for a self-comparison — which has no oracle side and so no
+    frozen inputs. Required, not defaulted, so a self-comparison cannot be
+    written by omission and silently read the frozen fixtures again.
+    """
     if cell.params.device == "cuda":
         if not run_cuda:
             return CellVerdict(kind="SKIPPED", cell_id=cell.cell_id, detail={"reason": "cuda not requested"})
@@ -289,10 +305,9 @@ def run_cell(*, repo_root: Path, old_src: Path, new_src: Path, cell: Cell, run_d
     new_out = run_dir / f"{safe}.new.npz"
     expected = cell.expected
 
-    old_pack_root = repo_root / ORACLE_PACK_ROOT
     new_pack_root = repo_root
 
-    drift = pack_drift(repo_root, cell.params.pack)
+    drift = pack_drift(old_pack_root, new_pack_root, cell.params.pack)
     if drift and not cell.declares_pack_divergence:
         # Undeclared drift: the oracle would be certifying a universe nobody
         # authors. Fail the cell rather than compare two different worlds.
@@ -456,7 +471,9 @@ def run_cell(*, repo_root: Path, old_src: Path, new_src: Path, cell: Cell, run_d
     return verdict
 
 
-def run_cell_safely(*, repo_root: Path, old_src: Path, new_src: Path, cell: Cell, run_dir: Path, run_cuda: bool) -> CellVerdict:
+def run_cell_safely(
+    *, repo_root: Path, old_src: Path, old_pack_root: Path, new_src: Path, cell: Cell, run_dir: Path, run_cuda: bool
+) -> CellVerdict:
     """run_cell, contained (FIX 4).
 
     run_cell is called once per matrix cell in main()'s loop, with
@@ -468,7 +485,15 @@ def run_cell_safely(*, repo_root: Path, old_src: Path, new_src: Path, cell: Cell
     verdict for just this cell instead.
     """
     try:
-        return run_cell(repo_root=repo_root, old_src=old_src, new_src=new_src, cell=cell, run_dir=run_dir, run_cuda=run_cuda)
+        return run_cell(
+            repo_root=repo_root,
+            old_src=old_src,
+            old_pack_root=old_pack_root,
+            new_src=new_src,
+            cell=cell,
+            run_dir=run_dir,
+            run_cuda=run_cuda,
+        )
     except Exception as e:  # noqa: BLE001 — containment boundary, see docstring
         return CellVerdict(
             kind="HARNESS_ERROR",
@@ -571,6 +596,7 @@ def main(argv: list[str] | None = None) -> int:
         verdict = run_cell_safely(
             repo_root=repo_root,
             old_src=worktree / "src",
+            old_pack_root=repo_root / ORACLE_PACK_ROOT,  # the oracle side reads FROZEN inputs
             new_src=repo_root / "src",
             cell=cell,
             run_dir=run_dir,

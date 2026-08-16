@@ -53,8 +53,8 @@
                 class="meter-chip"
                 :class="`meter-${meter.severity}`"
               >
-                <span class="meter-name">{{ meter.name }}</span>
-                <span class="meter-value">{{ meter.value }}%</span>
+                <span class="meter-name">{{ meter.label }}</span>
+                <span class="meter-value">{{ meter.display }}</span>
               </div>
             </div>
           </div>

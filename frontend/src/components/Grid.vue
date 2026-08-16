@@ -55,7 +55,8 @@
         :y="affordance.y * cellSize + cellSize * 0.1"
         :width="cellSize * 0.8"
         :height="cellSize * 0.8"
-        :class="['affordance', `affordance-${affordance.type.toLowerCase()}`]"
+        class="affordance"
+        :data-affordance-type="affordance.type"
         rx="8"
       />
       <text
@@ -65,7 +66,7 @@
         text-anchor="middle"
         dominant-baseline="middle"
       >
-        {{ affordance.icon || getAffordanceIcon(affordance.type) }}
+        {{ getAffordanceGlyph(affordance) }}
       </text>
     </g>
 
@@ -118,7 +119,9 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { CELL_SIZE, AFFORDANCE_ICONS } from '../utils/constants'
+import { CELL_SIZE } from '../utils/constants'
+import { affordanceGlyph } from '../utils/formatting'
+import { useSimulationStore } from '../stores/simulation'
 
 // ✅ Props First: Receive data from parent instead of importing store
 const props = defineProps({
@@ -234,9 +237,11 @@ onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyPress)
 })
 
-// ✅ Use imported constant from utils
-function getAffordanceIcon(type) {
-  return AFFORDANCE_ICONS[type] || '?'
+// Declared icon (payload, else presentation.yaml) or the name-derived abbreviation —
+// never a lookup table (PDR-0025).
+const store = useSimulationStore()
+function getAffordanceGlyph(affordance) {
+  return affordanceGlyph(affordance.type, store.presentation, affordance.icon)
 }
 
 // Heat map helpers
@@ -345,167 +350,11 @@ function getHeatColor(intensity) {
 }
 
 .affordance {
+  /* One generic look for every affordance: colour is not inferred from the name (PDR-0025). */
+  fill: var(--color-bg-tertiary);
+  stroke: var(--color-info);
   stroke-width: 2;
   transition: all var(--transition-base);
-}
-
-/*
- * Affordance colors - SYSTEMATIC by category
- * Each category uses shades of a common color family
- */
-
-/* === V2.1 AFFORDANCES (current all-caps IDs) === */
-
-/* REST/SLEEP (Purple family) */
-.affordance-sleep {
-  fill: #6366f1;  /* Indigo */
-  stroke: #818cf8;
-}
-
-/* FOOD/NUTRITION (Orange/Amber family) */
-.affordance-eat {
-  fill: #f59e0b;  /* Amber */
-  stroke: #fbbf24;
-}
-
-.affordance-cook {
-  fill: #ea580c;  /* Orange */
-  stroke: #fb923c;
-}
-
-.affordance-drink_water {
-  fill: #0ea5e9;  /* Sky blue */
-  stroke: #38bdf8;
-}
-
-/* HYGIENE (Cyan/Teal family) */
-.affordance-shower {
-  fill: #0891b2;  /* Dark cyan */
-  stroke: #06b6d4;
-}
-
-.affordance-brush_teeth {
-  fill: #14b8a6;  /* Teal */
-  stroke: #2dd4bf;
-}
-
-.affordance-laundry {
-  fill: #0d9488;  /* Darker teal */
-  stroke: #14b8a6;
-}
-
-.affordance-clean_house {
-  fill: #0f766e;  /* Even darker teal */
-  stroke: #0d9488;
-}
-
-/* WORK (Professional purple) */
-.affordance-work {
-  fill: #8b5cf6;  /* Purple */
-  stroke: #a78bfa;
-}
-
-/* FITNESS (Green family) */
-.affordance-exercise {
-  fill: #10b981;  /* Emerald */
-  stroke: #34d399;
-}
-
-/* SOCIAL (Pink/Magenta family) */
-.affordance-socialize {
-  fill: #ec4899;  /* Pink */
-  stroke: #f472b6;
-}
-
-/* MOOD/WELLNESS (Blue/Fuchsia family) */
-.affordance-entertainment {
-  fill: #3b82f6;  /* Blue */
-  stroke: #60a5fa;
-}
-
-.affordance-meditate {
-  fill: #c026d3;  /* Fuchsia */
-  stroke: #d946ef;
-}
-
-/* HEALTH/MEDICAL (Dark red/maroon family - dark for light icons) */
-.affordance-doctor {
-  fill: #991b1b;  /* Dark red */
-  stroke: #b91c1c;
-}
-
-/* === LEGACY AFFORDANCES (camelCase ids for backwards compatibility) === */
-
-/* REST/SLEEP (Purple family) */
-.affordance-bed {
-  fill: #6366f1;  /* Indigo - standard rest */
-  stroke: #818cf8;
-}
-
-.affordance-luxurybed {
-  fill: #6b21a8;  /* Deep purple - premium rest */
-  stroke: #7e22ce;
-}
-
-/* FOOD (Orange/Amber family) */
-.affordance-homemeal {
-  fill: #f59e0b;  /* Amber - home cooking */
-  stroke: #fbbf24;
-}
-
-.affordance-fastfood {
-  fill: #ef4444;  /* Red - unhealthy fast food */
-  stroke: #f87171;
-}
-
-.affordance-fridge {
-  fill: #f59e0b;  /* Amber - same as homemeal */
-  stroke: #fbbf24;
-}
-
-/* WORK/INCOME (Professional colors) */
-.affordance-job {
-  fill: #8b5cf6;  /* Purple - office/professional */
-  stroke: #a78bfa;
-}
-
-.affordance-labor {
-  fill: #f97316;  /* Orange - physical labor */
-  stroke: #fb923c;
-}
-
-/* SOCIAL (Pink/Magenta family) */
-.affordance-bar {
-  fill: #ec4899;  /* Pink - social venue */
-  stroke: #f472b6;
-}
-
-/* FITNESS (Green family) */
-.affordance-gym {
-  fill: #10b981;  /* Emerald - active fitness */
-  stroke: #34d399;
-}
-
-.affordance-park {
-  fill: #059669;  /* Darker emerald - outdoor fitness */
-  stroke: #10b981;
-}
-
-/* MOOD (Blue/Fuchsia family) */
-.affordance-recreation {
-  fill: #3b82f6;  /* Blue - casual entertainment */
-  stroke: #60a5fa;
-}
-
-.affordance-therapist {
-  fill: #c026d3;  /* Fuchsia - professional mental health */
-  stroke: #d946ef;
-}
-
-/* HEALTH/MEDICAL (Dark red/maroon family) */
-.affordance-hospital {
-  fill: #7f1d1d;  /* Darker maroon - medical tier 2 (emergency) */
-  stroke: #991b1b;
 }
 
 .affordance-label {

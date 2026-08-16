@@ -42,26 +42,8 @@ export const tokens = {
     chartSecondary: '#8b5cf6',         // Secondary chart color (purple)
     chartGrid: '#3a3a4e',              // Chart grid lines
 
-    // Meter-specific colors (from MeterPanel)
-    meterEnergy: '#10b981',            // Green
-    meterHygiene: '#06b6d4',           // Cyan
-    meterSatiation: '#f59e0b',         // Orange
-    meterMoney: '#8b5cf6',             // Purple
-    meterMood: {
-      high: '#3b82f6',                 // Positive mood = blue
-      mid: '#f59e0b',                  // Mid mood = amber
-      low: '#ef4444',                  // Low mood = red
-    },
-    meterSocial: '#ec4899',            // Pink
-
-    // Affordance stroke colors (for Grid.vue affordances)
-    affordanceBedStroke: '#818cf8',    // Light indigo
-    affordanceShowerStroke: '#22d3ee', // Cyan
-    affordanceHomeMealStroke: '#fbbf24', // Amber
-    affordanceFastFoodStroke: '#f87171', // Light red
-    affordanceJobStroke: '#a78bfa',    // Light purple
-    affordanceBarStroke: '#f472b6',    // Pink
-    affordanceGymStroke: '#34d399',    // Emerald
+    // No per-meter or per-affordance colours: presentation is declared in the pack's
+    // presentation.yaml, never keyed on a variable's name (PDR-0025).
 
     // Mode-specific colors
     modeInference: '#3b82f6',          // Blue
@@ -173,7 +155,7 @@ export function tokensToCSS() {
   // Process colors
   Object.entries(tokens.colors).forEach(([key, value]) => {
     if (typeof value === 'object' && !Array.isArray(value)) {
-      // Handle nested objects like meterMood
+      // Handle nested objects
       Object.entries(value).forEach(([subKey, subValue]) => {
         cssVars.push(`  --color-${toKebab(key)}-${toKebab(subKey)}: ${subValue};`)
       })

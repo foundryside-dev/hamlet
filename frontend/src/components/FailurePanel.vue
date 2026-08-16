@@ -192,7 +192,7 @@ function formatTimestamp() {
 .refresh-button {
   padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--border-radius-sm);
-  background: var(--color-meter-mood-high);
+  background: var(--color-info);
   color: var(--color-text-inverse, #fff);
   border: none;
   font-size: var(--font-size-sm);

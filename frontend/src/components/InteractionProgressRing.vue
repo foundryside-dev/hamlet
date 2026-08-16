@@ -29,13 +29,13 @@
       :cy="ringSize / 2"
       :r="radius"
       fill="none"
-      :stroke="progressColor"
       :stroke-width="strokeWidth"
       :stroke-dasharray="circumference"
       :stroke-dashoffset="dashOffset"
       stroke-linecap="round"
       class="progress-arc"
       :style="{
+        stroke: progressColor,
         filter: `drop-shadow(0 0 ${glowIntensity}px ${progressColor})`,
       }"
     />
@@ -45,7 +45,7 @@
       :cx="ringSize / 2"
       :cy="ringSize / 2"
       :r="radius * 0.4"
-      :fill="progressColor"
+      :style="{ fill: progressColor }"
       opacity="0.2"
       class="center-pulse"
     />
@@ -58,7 +58,7 @@
       text-anchor="middle"
       dominant-baseline="middle"
       :font-size="ringSize * 0.2"
-      :fill="progressColor"
+      :style="{ fill: progressColor }"
       font-weight="bold"
       font-family="Monaco, monospace"
       class="progress-text"
@@ -86,11 +86,6 @@ const props = defineProps({
     type: Number,
     required: true,
     validator: (value) => value >= 0 && value <= 1
-  },
-  // Current affordance type (for color coding)
-  affordanceType: {
-    type: String,
-    default: null
   },
   // Grid cell size
   cellSize: {
@@ -121,30 +116,9 @@ const glowIntensity = computed(() => {
   return 4 + props.progress * 8
 })
 
-// Color based on affordance type
-const progressColor = computed(() => {
-  const type = props.affordanceType?.toLowerCase()
-
-  // Affordance color mapping
-  const colorMap = {
-    bed: '#9c27b0',           // Purple (rest/sleep)
-    shower: '#2196f3',        // Blue (water)
-    fridge: '#4caf50',        // Green (food)
-    job: '#ff9800',           // Orange (work)
-    gym: '#f44336',           // Red (exercise)
-    bar: '#e91e63',           // Pink (social/fun)
-    coffeeshop: '#795548',    // Brown (coffee)
-    clinic: '#00bcd4',        // Cyan (health)
-    park: '#8bc34a',          // Light green (nature)
-    library: '#673ab7',       // Deep purple (learning)
-    restaurant: '#ff5722',    // Deep orange (dining)
-    mall: '#9e9e9e',          // Grey (shopping)
-    therapist: '#3f51b5',     // Indigo (mental health)
-    home: '#607d8b',          // Blue grey (comfort)
-  }
-
-  return colorMap[type] || '#ffeb3b' // Default to yellow
-})
+// One generic ring colour for every affordance: presentation is never inferred from an
+// affordance's name (PDR-0025).
+const progressColor = 'var(--color-warning)'
 </script>
 
 <style scoped>

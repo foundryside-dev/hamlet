@@ -36,23 +36,6 @@
   --color-chart-secondary: #8b5cf6;
   --color-chart-grid: #4a4a5e;          /* Increased from #3a3a4e for better visibility */
 
-  --color-meter-energy: #10b981;
-  --color-meter-hygiene: #06b6d4;
-  --color-meter-satiation: #f59e0b;
-  --color-meter-money: #8b5cf6;
-  --color-meter-mood-high: #3b82f6;
-  --color-meter-mood-mid: #f59e0b;
-  --color-meter-mood-low: #ef4444;
-  --color-meter-social: #ec4899;
-
-  --color-affordance-bed-stroke: #818cf8;
-  --color-affordance-shower-stroke: #22d3ee;
-  --color-affordance-homemeal-stroke: #fbbf24;
-  --color-affordance-fastfood-stroke: #f87171;
-  --color-affordance-job-stroke: #a78bfa;
-  --color-affordance-bar-stroke: #f472b6;
-  --color-affordance-gym-stroke: #34d399;
-
   --color-mode-inference: #3b82f6;
   --color-mode-training: #3b82f6;
 

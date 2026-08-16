@@ -825,7 +825,6 @@ def _serialize_vfs_profiles(profiles: CompiledVFSProfiles) -> dict[str, Any]:
                     "initial_value": var.initial_value,
                     "result_type": var.result_type,
                     "exposed_to": list(var.exposed_to),
-                    "semantic_type": getattr(var, "semantic_type", "custom"),
                 }
                 for var in profiles.global_profile.variables
             ],
@@ -853,7 +852,6 @@ def _serialize_vfs_profiles(profiles: CompiledVFSProfiles) -> dict[str, Any]:
                         "initial_value_params": var.initial_value_params,
                         "dims": var.dims,
                         "exposed_to": list(var.exposed_to),
-                        "semantic_type": getattr(var, "semantic_type", "custom"),
                     }
                     for var in profile.variables
                 ],
@@ -883,7 +881,6 @@ def _deserialize_vfs_profiles(payload: dict[str, Any]) -> CompiledVFSProfiles:
                     initial_value=var["initial_value"],
                     result_type=var.get("result_type"),
                     exposed_to=tuple(var.get("exposed_to", ["agent"])),
-                    semantic_type=var.get("semantic_type", "custom"),
                 )
             )
         dependencies = payload["global_profile"].get("dependencies", {})
@@ -908,7 +905,6 @@ def _deserialize_vfs_profiles(payload: dict[str, Any]) -> CompiledVFSProfiles:
                     initial_value_params=var.get("initial_value_params"),
                     dims=var.get("dims"),
                     exposed_to=tuple(var.get("exposed_to", ["agent"])),
-                    semantic_type=var.get("semantic_type", "custom"),
                 )
                 for var in profile.get("variables", [])
             ]

@@ -468,20 +468,26 @@ The engine loads this file at runtime to construct the action surface. Modifying
 
 ### Interaction types
 
-The engine supports four interaction types:
+The engine supports **three** interaction types, drawn from one closed vocabulary
+(`townlet.config.interaction_type.InteractionType`, PDR-0047):
 
 - `instant` — single-tick actions completed immediately (e.g., shower, eat).
 - `multi_tick` — activities requiring sustained commitment for a specified number of ticks (e.g., sleep, work, gym). Leaving early forfeits progress and completion bonuses.
-- `continuous` — actions that remain active while the agent stays in place. Few baseline affordances use this mode today, but it remains available for future designs.
 - `dual` — hybrid actions that perform an instant step followed by multi-tick continuation (e.g., hospital check-in followed by observation).
+
+> **Corrected 2026-08-16.** This section used to list a fourth type, `continuous`. It was never
+> real: the VTC rejected it, nothing implemented it, and the only module that named it had zero
+> importers and is deleted (`hamlet-45b35cfee5`). `interaction_type` is **required** on every
+> affordance — there is no runtime default to `instant` any more (the No-Defaults Principle).
+> `multi_tick` and `dual` require `duration_ticks`; `instant` forbids it.
 
 The environment maintains per-agent `interaction_progress` for multi_tick and dual interactions and clears it if the agent disengages.
 
 ### Key fields
 
 - `id` and `name` — link the affordance definition to map placement. Renaming an affordance requires corresponding map updates.
-- `interaction_type` — determines progress handling and reward timing.
-- `required_ticks` — defines commitment duration for `multi_tick` and `dual` actions.
+- `interaction_type` — determines progress handling and reward timing. Required; one of `instant`, `multi_tick`, `dual`.
+- `duration_ticks` — defines commitment duration for `multi_tick` and `dual` actions.
 - `operating_hours` — specifies availability using hour pairs. `[9, 18]` denotes 09:00–18:00; `[18, 28]` denotes 18:00–04:00 the following day. The environment evaluates this every tick.
 - `costs` / `costs_per_tick` — represent expenditures (money, energy, hygiene, etc.). `costs` apply upfront; `costs_per_tick` apply during sustained interactions. Values are normalised (e.g., 0.10 money ≈ $10).
 - `effects` / `effects_per_tick` — represent benefits or penalties. `effects` apply instantly; `effects_per_tick` apply during sustained interactions.
@@ -503,7 +509,7 @@ affordances:
     name: "Bed"
     category: "energy_restoration"
     interaction_type: "multi_tick"
-    required_ticks: 4
+    duration_ticks: 4
     costs: []                       # instant costs (not used here)
     costs_per_tick: []              # free to sleep
     effects: []                     # not used for multi_tick
@@ -518,7 +524,7 @@ affordances:
     name: "LuxuryBed"
     category: "energy_restoration"
     interaction_type: "multi_tick"
-    required_ticks: 3
+    duration_ticks: 3
     costs_per_tick:
       - { meter: "money", amount: 0.05 }    # 5 dollars per tick
     effects_per_tick:
@@ -563,7 +569,7 @@ affordances:
     name: "Job"
     category: "income"
     interaction_type: "multi_tick"
-    required_ticks: 8
+    duration_ticks: 8
     costs_per_tick:
       - { meter: "energy", amount: 0.05 }   # see env movement costs too
     effects_per_tick:
@@ -577,7 +583,7 @@ affordances:
     name: "Labor"
     category: "income"
     interaction_type: "multi_tick"
-    required_ticks: 4
+    duration_ticks: 4
     costs_per_tick:
       - { meter: "energy", amount: 0.08 }
       - { meter: "hygiene", amount: 0.03 }
@@ -591,7 +597,7 @@ affordances:
     name: "Gym"
     category: "fitness_builder"
     interaction_type: "multi_tick"
-    required_ticks: 3
+    duration_ticks: 3
     costs_per_tick:
       - { meter: "energy", amount: 0.06 }
       - { meter: "money", amount: 0.05 }
@@ -626,7 +632,7 @@ affordances:
     name: "Recreation"
     category: "mood_tier1"
     interaction_type: "multi_tick"
-    required_ticks: 2
+    duration_ticks: 2
     costs_per_tick:
       - { meter: "money", amount: 0.05 }
     effects_per_tick:
@@ -638,7 +644,7 @@ affordances:
     name: "Therapist"
     category: "mood_tier2"
     interaction_type: "multi_tick"
-    required_ticks: 3
+    duration_ticks: 3
     costs_per_tick:
       - { meter: "money", amount: 0.15 }
     effects_per_tick:
@@ -650,7 +656,7 @@ affordances:
     name: "Doctor"
     category: "health_tier1"
     interaction_type: "multi_tick"
-    required_ticks: 2
+    duration_ticks: 2
     costs_per_tick:
       - { meter: "money", amount: 0.15 }
     effects_per_tick:
@@ -662,7 +668,7 @@ affordances:
     name: "Hospital"
     category: "health_tier2"
     interaction_type: "multi_tick"
-    required_ticks: 2
+    duration_ticks: 2
     costs_per_tick:
       - { meter: "money", amount: 0.30 }
     effects_per_tick:
@@ -805,7 +811,7 @@ For affordances with `interaction_type` of `multi_tick` or `dual`:
 - Remaining on the tile and continuing the interaction increments progress each tick.
 - Leaving the tile, switching affordances, or encountering closing hours resets progress and forfeits completion bonuses.
 
-When `interaction_progress` reaches `required_ticks`:
+When `interaction_progress` reaches `duration_ticks`:
 
 - The final `effects_per_tick` are applied.
 - The `completion_bonus` is granted.
@@ -886,20 +892,20 @@ This is what keeps health decay, hunger crash, hygiene rot and so on all mathema
 
 ### affordances.yaml
 
-- `interaction_type` has to be one of the supported literals:
+- `interaction_type` is required and has to be one of the three supported literals
+  (`townlet.config.interaction_type`):
 
   - `instant`
   - `multi_tick`
-  - `continuous`
   - `dual`
 
   Introducing a new literal without engine support—for example `"sustained_brooding"`—will be rejected for ABI stability.
 
-- `required_ticks`:
+- `duration_ticks`:
 
   - Must exist for `multi_tick` and `dual`.
   - Must not exist for `instant`.
-    Providing `required_ticks` on an instant affordance is invalid because no progress counter exists to advance.
+    Providing `duration_ticks` on an instant affordance is invalid because no progress counter exists to advance.
 
 - `operating_hours` must be a two-integer list and must make temporal sense:
 

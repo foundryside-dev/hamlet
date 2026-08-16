@@ -26,7 +26,6 @@ class GlobalVFSVariableConfig(BaseModel):
     # Metadata
     id: str | None = None
     exposed_to: list[str] = Field(default_factory=list)
-    semantic_type: Literal["bars", "spatial", "affordance", "temporal", "custom"] = "custom"
 
     name: str
     type: Literal[
@@ -134,7 +133,6 @@ class AgentVFSVariableConfig(BaseModel):
     # Metadata
     id: str | None = None
     exposed_to: list[str] = Field(default_factory=list)
-    semantic_type: Literal["bars", "spatial", "affordance", "temporal", "custom"] = "custom"
 
     name: str
     type: Literal[
@@ -244,7 +242,6 @@ class ItemVFSVariableConfig(BaseModel):
     # Metadata
     id: str | None = None
     exposed_to: list[str] = Field(default_factory=list)
-    semantic_type: Literal["bars", "spatial", "affordance", "temporal", "custom"] = "custom"
 
     name: str
     type: Literal[

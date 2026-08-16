@@ -15,6 +15,8 @@ from typing import Any, Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
+from townlet.vfs.semantic_type import SemanticType
+
 __all__ = [
     "NormalizationSpec",
     "WriteSpec",
@@ -368,13 +370,12 @@ class ObservationField(BaseModel):
         description="Optional normalization to apply before exposing",
     )
 
-    # NEW FIELDS for QUICK-05: Structured Observation Masking
-    semantic_type: Literal["bars", "spatial", "affordance", "temporal", "custom"] = Field(
-        default="custom",
+    semantic_type: SemanticType = Field(
         description=(
-            "Semantic grouping for structured encoders. "
-            "bars: meter values, spatial: position/grid, affordance: affordance state, "
-            "temporal: time/progress, custom: user-defined variables"
+            "Semantic group of this field in the observation vector — one member of the closed "
+            "vocabulary in townlet.vfs.semantic_type (PDR-0047). Required: it is part of the "
+            "field's identity (observation_schema_hash) and names its group slice, so it is never "
+            "defaulted."
         ),
     )
 
@@ -443,11 +444,6 @@ class VariableDef(BaseModel):
     exposed_to: list[str] = Field(
         default_factory=list,
         description="Who can observe this variable (e.g., ['agent', 'engine'])",
-    )
-
-    semantic_type: Literal["bars", "spatial", "affordance", "temporal", "custom"] = Field(
-        default="custom",
-        description="Semantic grouping for structured encoders (bars, spatial, affordance, temporal, custom)",
     )
 
     scope: VariableScope | Literal["global", "agent", "agent_private", "item", "pair", "group", "affordance", "zone", "message"] = Field(

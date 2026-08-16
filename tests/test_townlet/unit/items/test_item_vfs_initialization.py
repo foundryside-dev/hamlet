@@ -21,7 +21,6 @@ def test_spawn_item_initializes_vfs_state():
                 initial_value=100.0,
                 result_type="scalar",
                 exposed_to=("agent",),
-                semantic_type="custom",
             ),
         ],
     )
@@ -74,7 +73,6 @@ def test_despawn_item_does_not_clear_vfs_state():
                 initial_value=100.0,
                 result_type="scalar",
                 exposed_to=("agent",),
-                semantic_type="custom",
             ),
         ],
     )

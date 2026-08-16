@@ -7,6 +7,8 @@ from dataclasses import dataclass, field
 from hashlib import sha256
 from typing import Literal
 
+from townlet.vfs.semantic_type import SemanticType, require_semantic_type
+
 
 def compute_observation_field_uuid(
     *,
@@ -14,9 +16,13 @@ def compute_observation_field_uuid(
     scope: str,
     description: str | None,
     dims: int,
-    semantic_type: str | None,
+    semantic_type: str,
 ) -> str:
-    """Return a deterministic UUID for an observation field."""
+    """Return a deterministic UUID for an observation field.
+
+    `semantic_type` is part of the payload, so it is REQUIRED and vocabulary-checked at the
+    field boundary (PDR-0047): a field cannot be identified without knowing its group.
+    """
 
     payload = "|".join(
         (
@@ -24,7 +30,7 @@ def compute_observation_field_uuid(
             name,
             description or "",
             str(dims),
-            semantic_type or "",
+            require_semantic_type(semantic_type, where=f"observation field '{name}'"),
         )
     )
     return sha256(payload.encode("utf-8")).hexdigest()[:16]
@@ -32,7 +38,13 @@ def compute_observation_field_uuid(
 
 @dataclass(frozen=True)
 class ObservationField:
-    """Single field in the flattened observation vector."""
+    """Single field in the flattened observation vector.
+
+    `semantic_type` is required and drawn from the ONE closed vocabulary in
+    `townlet.vfs.semantic_type` — this DTO is where the compiler is held to the same set an
+    author is (PDR-0047 rule 3). It used to be `str | None`, which is how `"effects"` was
+    emitted for months without any schema permitting it (DIV-005).
+    """
 
     uuid: str | None
     name: str
@@ -42,11 +54,12 @@ class ObservationField:
     end_index: int
     scope: Literal["global", "agent", "agent_private"]
     description: str
-    semantic_type: str | None = None
+    semantic_type: SemanticType
     categorical_labels: tuple[str, ...] | None = None
     curriculum_active: bool = True
 
     def __post_init__(self) -> None:
+        require_semantic_type(self.semantic_type, where=f"observation field '{self.name}'")
         if not self.uuid:
             generated = compute_observation_field_uuid(
                 name=self.name,
@@ -90,7 +103,7 @@ class ObservationSpec:
         raise KeyError(f"Field '{name}' not found in observation spec")
 
     def get_fields_by_semantic_type(self, semantic: str) -> list[ObservationField]:
-        """Return fields that share a semantic type (e.g., 'meter')."""
+        """Return fields that share a semantic type (e.g., 'bars')."""
         return [obs_field for obs_field in self.fields if obs_field.semantic_type == semantic]
 
     @classmethod

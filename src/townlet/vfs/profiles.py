@@ -33,7 +33,6 @@ class CompiledVariable:
     name: str
     type: str
     exposed_to: tuple[str, ...]
-    semantic_type: str
     expression: str | None = None
     ast: ASTNode | None = None  # None if initial_value
     initial_value: int | float | bool | list | None = None
@@ -232,7 +231,6 @@ class VFSProfileCompiler:
             return CompiledVariable(
                 name=var.name,
                 exposed_to=tuple(var.exposed_to),
-                semantic_type=getattr(var, "semantic_type", "custom"),
                 type=var.type,
                 expression=None,
                 ast=None,
@@ -259,7 +257,6 @@ class VFSProfileCompiler:
         return CompiledVariable(
             name=var.name,
             exposed_to=tuple(var.exposed_to),
-            semantic_type=getattr(var, "semantic_type", "custom"),
             type=var.type,
             expression=var.expression,
             ast=ast,

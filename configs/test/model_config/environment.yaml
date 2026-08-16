@@ -143,6 +143,7 @@ environment:
       dims: 1
       scope: agent
       description: "How far below target energy (0.0 = at/above target)"
+      semantic_type: custom
       normalization:
         method: normalize
         clip: false
@@ -153,6 +154,7 @@ environment:
       dims: 1
       scope: agent
       description: "How far below target satiation"
+      semantic_type: custom
       normalization:
         method: normalize
         clip: false
@@ -163,6 +165,7 @@ environment:
       dims: 1
       scope: agent
       description: "Timesteps since last EAT action"
+      semantic_type: custom
       normalization:
         method: normalize
         clip: false
@@ -173,6 +176,7 @@ environment:
       dims: 1
       scope: agent
       description: "Timesteps since last SLEEP action"
+      semantic_type: custom
       normalization:
         method: normalize
         clip: false

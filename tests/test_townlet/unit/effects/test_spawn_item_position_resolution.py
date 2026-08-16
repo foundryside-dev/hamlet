@@ -236,7 +236,6 @@ def test_spawn_item_with_initial_state():
                     initial_value=100.0,
                     result_type="float",
                     exposed_to=("agent",),
-                    semantic_type="custom",
                 )
             ],
         )

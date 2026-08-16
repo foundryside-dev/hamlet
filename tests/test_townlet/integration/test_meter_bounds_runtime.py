@@ -497,6 +497,7 @@ def test_a_meter_observation_id_that_collides_is_a_compile_error(tmp_path: Path)
             "dims": 1,
             "scope": "agent",
             "description": "A variable that shadows a meter's observation id",
+            "semantic_type": "custom",
             "normalization": {"method": "normalize", "range": [0.0, 1.0], "clip": False},
         }
     )

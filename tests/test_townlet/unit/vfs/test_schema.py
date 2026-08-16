@@ -346,6 +346,7 @@ class TestObservationField:
             source_variable="energy",
             exposed_to=["agent"],
             shape=[],
+            semantic_type="custom",
         )
 
         assert obs.id == "obs_energy"
@@ -362,6 +363,7 @@ class TestObservationField:
             source_variable="position",
             exposed_to=["agent"],
             shape=[2],
+            semantic_type="custom",
         )
 
         assert obs.shape == [2]
@@ -375,6 +377,7 @@ class TestObservationField:
             source_variable="energy",
             exposed_to=["agent"],
             shape=[],
+            semantic_type="custom",
             normalization=NormalizationSpec(
                 kind="minmax",
                 min=0.0,
@@ -395,6 +398,7 @@ class TestObservationField:
             source_variable="money",
             exposed_to=["agent"],
             shape=[],
+            semantic_type="custom",
             normalization=None,
         )
 

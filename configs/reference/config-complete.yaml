@@ -1111,7 +1111,6 @@ vfs_profiles:
       expression: "time_of_day >= 20 || time_of_day < 6"
       observation:
         exposed_to: [agent]  # Adds 1 dim to observation
-        semantic_type: temporal
 
   # AGENT SCOPE (Per-agent state)
   agent:

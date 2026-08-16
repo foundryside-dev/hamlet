@@ -12,7 +12,6 @@ def _profile(expr: str, name: str = "var", type_: str = "float") -> CompiledGlob
         name=name,
         type=type_,
         exposed_to=("agent",),
-        semantic_type="custom",
         expression=expr,
         ast=ast,
     )

@@ -18,6 +18,8 @@ from typing import Annotated, Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, Discriminator, Field, model_validator
 
+from townlet.vfs.semantic_type import SemanticType
+
 
 class _MeterRangeBase(BaseModel):
     """Shared base for the `range_type` members. Each member forbids extras, so a
@@ -244,7 +246,12 @@ class NormalizationConfig(BaseModel):
 
 
 class VariableConfig(BaseModel):
-    """VFS variable definition."""
+    """An environment variable — and, today, its exposure declaration.
+
+    Each of these becomes exactly ONE compiled observation field, so the observation-side
+    properties (`normalization`, `semantic_type`) are declared here beside the state. When a
+    per-variable exposure surface exists (vfs.md §4.3 / §8.1) both move to it together.
+    """
 
     name: str = Field(..., description="Variable name")
     type: Literal["scalar", "vector"] = Field(..., description="Variable data type")
@@ -252,6 +259,15 @@ class VariableConfig(BaseModel):
     scope: Literal["global", "agent", "agent_private"] = Field(..., description="Variable visibility scope")
     description: str = Field(..., description="Human-readable description")
     normalization: NormalizationConfig = Field(..., description="Normalization configuration")
+    semantic_type: SemanticType = Field(
+        ...,
+        description=(
+            "Semantic group of this variable's observation field — one member of the closed vocabulary "
+            "in townlet.vfs.semantic_type (PDR-0047). The declaration is authoritative: the compiler emits "
+            "exactly this value and lays the field out with its group. `bars` is the meter block and is "
+            "not declarable here. Required, no default: it is part of the field's provenance."
+        ),
+    )
 
     model_config = ConfigDict(extra="forbid")
 

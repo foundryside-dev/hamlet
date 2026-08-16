@@ -31,6 +31,7 @@ from townlet.universe.validation.limits import EFFECT_OBSERVATION_SLOTS
 from townlet.vfs.observation_builder import VFSObservationSpec
 from townlet.vfs.schema import NormalizationSpec, VariableDef
 from townlet.vfs.schema import ObservationField as VFSObservationField
+from townlet.vfs.semantic_type import METER_BLOCK_SEMANTIC, SEMANTIC_GROUP_ORDER
 
 # Per-meter observation identifiers are NAMESPACED, and the prefix is load-bearing rather
 # than cosmetic. Two in-tree mechanisms make a bare meter name unusable as a variable id:
@@ -305,8 +306,24 @@ class ObservationCompiler:
             )
             offset += effect_dims
 
+        # Authored variables carry the AUTHOR'S semantic type (PDR-0047 rule 2: where an
+        # author has declared, the compiler obeys — this used to hardcode "custom" and
+        # ignore the declaration). `bars` is the one member an authored variable may not
+        # take: it is the meter block, the runtime publishes meter columns into every
+        # bars-group field, and the meter encoder is sized from the group — so the failure
+        # belongs here, at compile time, not at the first observation.
         for var in environment.environment.variables:
             dims = getattr(var, "dims", 1)
+            if var.semantic_type == METER_BLOCK_SEMANTIC:
+                raise ValueError(
+                    "An authored variable may not declare the meter block's semantic type.\n"
+                    f"  Variable: {var.name}\n"
+                    f"  Declared semantic_type: {var.semantic_type!r}\n"
+                    f"  Rule: {METER_BLOCK_SEMANTIC!r} is the meter block — the compiler assigns it to "
+                    "meter observation fields only, the runtime publishes meter state into every "
+                    "field in that group, and the meter encoder is sized from it. Choose another "
+                    "member of the vocabulary (townlet.vfs.semantic_type) for this variable."
+                )
             fields.append(
                 ObservationField(
                     uuid=None,
@@ -317,7 +334,7 @@ class ObservationCompiler:
                     end_index=offset + dims,
                     scope=var.scope,
                     description=var.description,
-                    semantic_type="custom",
+                    semantic_type=var.semantic_type,
                 )
             )
             offset += dims
@@ -369,6 +386,15 @@ class ObservationCompiler:
             )
             offset += temporal_dims
 
+        # Lay the fields out by SEMANTIC GROUP, in the fixed order the vocabulary defines. This
+        # is a stable partition: within a group, emission order is kept. It is the identity on
+        # every shipped pack (the compiler already emits its own blocks in this order — pinned
+        # by test against default_curriculum's measured layout), and it is what lets an author
+        # declare ANY member for a variable without breaking group contiguity, which
+        # `_assert_semantic_groups_are_contiguous` still enforces below. The runtime assembles
+        # the observation by walking these fields in order, so no runtime special case follows.
+        fields.sort(key=lambda f: SEMANTIC_GROUP_ORDER.index(f.semantic_type))
+
         mode_cfg: ObservationModeConfig = stratum.stratum.observation_mode
         filtered_fields = self._apply_observation_mode(fields, mode_cfg)
 
@@ -409,7 +435,7 @@ class ObservationCompiler:
         for field in obs_spec.fields:
             is_masked = not field.curriculum_active
             dims = field.dims
-            group_name = field.semantic_type or "custom"
+            group_name = field.semantic_type
             if group_name not in group_boundaries:
                 group_boundaries[group_name] = current_idx
 
@@ -480,7 +506,6 @@ class ObservationCompiler:
         env_norm_by_name.update(self._meter_normalizations(environment, bars))
 
         fields: list[VFSObservationField] = []
-        allowed_semantic = {"bars", "spatial", "affordance", "temporal", "custom"}
         # SOURCE width, not observed width. Every meter's source is one scalar; the field's
         # `dims` may be wider (cyclical_sin_cos -> 2, one_hot -> categories). Conflating the
         # two is what made the widening kinds unusable — the runtime read the registry at
@@ -488,7 +513,9 @@ class ObservationCompiler:
         source_width_by_name = {meter_observation_field_name(m.name): 1 for m in environment.environment.meters}
         for field in obs_spec.fields:
             norm = env_norm_by_name.get(field.name)
-            semantic = field.semantic_type if field.semantic_type in allowed_semantic else "custom"
+            # The mirror carries the FIELD'S value. It used to filter through a private
+            # allow-list and remap anything else to "custom", so `obs_effects` was `effects`
+            # on the spec and `custom` in the hash — one field, two values (DIV-005).
             fields.append(
                 VFSObservationField(
                     id=field.name,
@@ -496,7 +523,7 @@ class ObservationCompiler:
                     exposed_to=["agent"],
                     shape=[source_width_by_name.get(field.name, field.dims)],
                     normalization=norm,
-                    semantic_type=semantic,  # type: ignore[arg-type]
+                    semantic_type=field.semantic_type,
                     curriculum_active=field.curriculum_active,
                 )
             )

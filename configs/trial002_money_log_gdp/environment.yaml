@@ -53,6 +53,7 @@ environment:
       dims: 1
       scope: agent
       description: "How far below target energy (0.0 = at/above target)"
+      semantic_type: custom
       normalization:
         method: normalize
         clip: false
@@ -63,6 +64,7 @@ environment:
       dims: 1
       scope: agent
       description: "Timesteps since last SLEEP action"
+      semantic_type: custom
       normalization:
         method: normalize
         clip: false
@@ -73,6 +75,7 @@ environment:
       dims: 1
       scope: agent
       description: "How far below max health (0.0 = at/above target)"
+      semantic_type: custom
       normalization:
         method: normalize
         clip: false
@@ -83,6 +86,7 @@ environment:
       dims: 1
       scope: agent
       description: "Timesteps since last DOCTOR action"
+      semantic_type: custom
       normalization:
         method: normalize
         clip: false
@@ -93,6 +97,7 @@ environment:
       dims: 1
       scope: agent
       description: "How far below max satiation (0.0 = at/above target)"
+      semantic_type: custom
       normalization:
         method: normalize
         clip: false
@@ -103,6 +108,7 @@ environment:
       dims: 1
       scope: agent
       description: "Timesteps since last COOK action"
+      semantic_type: custom
       normalization:
         method: normalize
         clip: false

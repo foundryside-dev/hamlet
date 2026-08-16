@@ -166,6 +166,7 @@ def test_observation_schema_hash_changes_when_order_or_normalization_changes() -
         exposed_to=["agent"],
         shape=[1],
         normalization=NormalizationSpec(kind="minmax", min=0.0, max=1.0, clip=False),
+        semantic_type="bars",
     )
     position = ObservationField(
         id="obs_position",
@@ -189,6 +190,7 @@ def test_observation_schema_hash_is_stable_for_exposure_ordering() -> None:
         exposed_to=["engine", "agent"],
         shape=[1],
         normalization=NormalizationSpec(kind="minmax", min=0.0, max=1.0, clip=False),
+        semantic_type="bars",
     )
     reordered = field.model_copy(update={"exposed_to": ["agent", "engine"]})
 

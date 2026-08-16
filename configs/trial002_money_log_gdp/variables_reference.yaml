@@ -8,7 +8,6 @@ variables:
     writable_by: [engine, vtc]
     default: 1000.0
     observable: true
-    semantic_type: bars
     description: "Aggregate economic output, observed log-scaled."
     normalization:
       kind: log_scaled

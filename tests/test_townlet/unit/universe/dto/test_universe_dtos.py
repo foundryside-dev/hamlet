@@ -30,7 +30,7 @@ class TestObservationSpec:
                 end_index=1,
                 scope="agent",
                 description="Energy meter",
-                semantic_type="meter",
+                semantic_type="bars",
             ),
             ObservationField(
                 uuid=None,
@@ -41,13 +41,13 @@ class TestObservationSpec:
                 end_index=3,
                 scope="agent",
                 description="Grid position",
-                semantic_type="position",
+                semantic_type="spatial",
             ),
         ]
         spec = ObservationSpec.from_fields(fields)
 
         assert spec.get_field_by_name("energy").name == "energy"
-        assert spec.get_fields_by_semantic_type("meter")[0].name == "energy"
+        assert spec.get_fields_by_semantic_type("bars")[0].name == "energy"
         assert spec.fields[0].uuid is not None
         assert spec.fields[0].uuid != spec.fields[1].uuid
 
@@ -64,6 +64,7 @@ class TestObservationSpec:
             end_index=1,
             scope="agent",
             description="Energy",
+            semantic_type="bars",
         )
         field_b = ObservationField(
             uuid="deadbeefdeadbeef",
@@ -74,6 +75,7 @@ class TestObservationSpec:
             end_index=2,
             scope="agent",
             description="Energy",
+            semantic_type="bars",
         )
 
         with pytest.raises(ValueError, match="duplicate observation field UUIDs"):

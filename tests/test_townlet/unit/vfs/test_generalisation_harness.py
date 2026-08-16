@@ -10,7 +10,6 @@ def _variable(name: str, source_bar: str) -> dict[str, object]:
         "name": name,
         "scope": "agent",
         "type": "float",
-        "semantic_type": "custom",
         "expression": f"bar.{source_bar} + 0.1",
     }
 

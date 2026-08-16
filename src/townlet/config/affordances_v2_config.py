@@ -1,9 +1,6 @@
 """Affordances configuration DTO for Config v2.1 (curriculum-level).
 
 PARSE-TIME DTO: This module validates affordances.yaml structure during compilation.
-For runtime affordance objects used by the environment, see:
-    townlet.environment.affordance_config
-
 Philosophy: All behavioral parameters must be explicitly specified.
 No implicit defaults. Operator accountability.
 
@@ -24,6 +21,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_valida
 
 from townlet.config.base import format_validation_error, load_yaml_section
 from townlet.config.effects_config import CommandConfig
+from townlet.config.interaction_type import PROGRESS_INTERACTION_TYPES, InteractionType
 
 __all__ = [
     "TimeWindowConfig",
@@ -135,9 +133,12 @@ class AffordanceParamConfig(BaseModel):
     )
 
     # Temporal semantics -----------------------------------------------------
-    interaction_type: Literal["instant", "multi_tick", "dual"] | None = Field(
-        default=None,
-        description="Interaction type. When omitted, defaults to 'instant' at runtime.",
+    interaction_type: InteractionType = Field(
+        description=(
+            "How an INTERACT resolves: instant (one tick), multi_tick (accumulates over duration_ticks), "
+            "or dual (both). One member of the closed vocabulary in townlet.config.interaction_type; "
+            "required, no default — it is a behavioural parameter (PDR-0047)."
+        ),
     )
     duration_ticks: int | None = Field(
         default=None,
@@ -152,9 +153,9 @@ class AffordanceParamConfig(BaseModel):
     def validate_interaction_semantics(self) -> "AffordanceParamConfig":
         """Lightweight validation of interaction_type/duration_ticks compatibility."""
 
-        interaction = self.interaction_type or "instant"
+        interaction = self.interaction_type
 
-        if interaction in {"multi_tick", "dual"} and self.duration_ticks is None:
+        if interaction in PROGRESS_INTERACTION_TYPES and self.duration_ticks is None:
             raise ValueError(f"Affordance '{self.name}': interaction_type='{interaction}' requires an explicit duration_ticks value.")
 
         if interaction == "instant" and self.duration_ticks is not None:
@@ -173,7 +174,7 @@ class AffordanceParamConfig(BaseModel):
         if invalid:
             raise ValueError(f"Affordance '{self.name}': Invalid interaction stages: {invalid}. Valid stages: {valid_stages}")
 
-        interaction_type = self.interaction_type or "instant"
+        interaction_type = self.interaction_type
 
         # Instant affordances shouldn't have per_tick effects
         if interaction_type == "instant" and self.interactions.get("per_tick"):

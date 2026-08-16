@@ -19,7 +19,6 @@ def test_registry_initializes_item_storage_from_profiles():
                 initial_value=100,
                 result_type="int",
                 exposed_to=("agent",),
-                semantic_type="custom",
             ),
             CompiledVariable(
                 name="freshness",
@@ -28,7 +27,6 @@ def test_registry_initializes_item_storage_from_profiles():
                 initial_value=1.0,
                 result_type="float",
                 exposed_to=("agent",),
-                semantic_type="custom",
             ),
         ],
     )
@@ -43,7 +41,6 @@ def test_registry_initializes_item_storage_from_profiles():
                 initial_value=50,
                 result_type="int",
                 exposed_to=("agent",),
-                semantic_type="custom",
             ),
             CompiledVariable(
                 name="durability",
@@ -52,7 +49,6 @@ def test_registry_initializes_item_storage_from_profiles():
                 initial_value=1.0,
                 result_type="float",
                 exposed_to=("agent",),
-                semantic_type="custom",
             ),
         ],
     )
@@ -93,7 +89,6 @@ def test_registry_item_storage_has_correct_shape():
                 initial_value=0,
                 result_type="int",
                 exposed_to=("agent",),
-                semantic_type="custom",
             ),
             CompiledVariable(
                 name="var2",
@@ -102,7 +97,6 @@ def test_registry_item_storage_has_correct_shape():
                 initial_value=0,
                 result_type="int",
                 exposed_to=("agent",),
-                semantic_type="custom",
             ),
         ],
     )
@@ -117,7 +111,6 @@ def test_registry_item_storage_has_correct_shape():
                 initial_value=0,
                 result_type="int",
                 exposed_to=("agent",),
-                semantic_type="custom",
             ),
         ],
     )

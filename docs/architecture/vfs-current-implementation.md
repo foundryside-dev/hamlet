@@ -3,7 +3,7 @@
 **Document Type**: Implementation Overview
 **Status**: Current
 **Version**: 1.0
-**Last Updated**: 2026-08-16 (semantic-type vocabulary, DIV-005 / `PDR-0066`; earlier body verified 2026-05-16)
+**Last Updated**: 2026-08-17 (profile variables as fields, `PDR-0075`; feature discriminator, WS-4 unit 4 `hamlet-39e1fe3c6d`; semantic-type vocabulary 2026-08-16, `PDR-0066`; earlier body verified 2026-05-16)
 **Owner**: Townlet engineering
 **Audience**: Engineers and researchers working on Universe as Code, Brain as Code, environment dynamics, observations, or training reproducibility
 **Technical Level**: Deep Technical
@@ -266,10 +266,26 @@ vocabulary, so the compiler is held to the set an author is. Rules:
   `spatial, bars, affordance, effects, custom, temporal` (the identity on every shipped pack), so
   any member is legal without breaking group contiguity, which the compiler still asserts.
   `bars` is reserved to meters — an authored variable declaring it is a compile-time error.
-- VFS profile variables (`vfs_profiles.yaml`) do **not** currently carry a semantic type: they
-  are flattened into the single `obs_vfs` field, which carries one value (`custom`). The
-  per-variable declaration returns when that block is split into per-variable fields
-  (`hamlet-f0ed709ecf`; `vfs.md` §8.1 is one exposure per variable).
+- Exposed global and agent VFS profile variables (`vfs_profiles.yaml`) each compile to their
+  own observation field, named after the variable, in the declared scope, and **must** declare
+  `semantic_type` (`PDR-0075`, 2026-08-17; `bars` reserved, collisions a compile error). Item
+  profile variables carry none: they are observed through the one compiler-emitted feature
+  `obs_item_slots` (slot × profile-position layout; the layout question is `hamlet-1ad6383186`).
+
+**The compiled DTO also carries a `feature` — who fills the field — and it is what the runtime
+dispatches on** (WS-4 unit 4, `hamlet-39e1fe3c6d`, 2026-08-17). One closed vocabulary,
+`townlet.universe.dto.observation_feature`: `variable` (registry-owned — an `environment.yaml`
+variable or an exposed profile variable, read by declared scope), and the engine-published
+features `grid_encoding`, `local_window`, `position`, `velocity`, `meter` (whose `feature_ref`
+names the meter), `affordance_at_position`, `effects`, `temporal`, `item_slots`. Required, no
+default. It lives on the compiled DTO **only**, not on this VFS mirror field: it says nothing
+about how the field is exposed (id, source, shape, normalization, group, activity — all
+unchanged), so it is in no provenance hash and no field UUID, and the differential harness reads
+the cut as invisible. Before it, `environment/observation_encoder.py` found each feature's field
+by a hardcoded `obs_<x>` string, the meter step parsed the meter's name back out of the field
+name, `RecurrentSpatialQNetwork` located its slices by literal name, and two demo entry points
+sized the vision window from a field literally called `obs_local_window` — the `PDR-0045` name
+branch, in nine places. A field's name is now a label the compiler chose; nothing branches on it.
 
 ### `WriteSpec`
 
@@ -400,12 +416,16 @@ The evaluator builds an expression `ExecutionContext` with bars, VFS state, affo
 `build_vfs_observation()` reads tensors from the registry, flattens them into `[batch, dim]` components, applies active masks, resolves item inventory slots against item VFS profile metadata, and concatenates all components.
 
 The runtime assembles the full observation by walking the compiled `ObservationSpec` fields **in
-order** (`environment/observation_encoder.py::_get_observations`), building each from the VFS
-registry — which is why the compiler's group-order layout needs no runtime special case. The one
-exception is `obs_vfs`: the whole profile-variable contribution above is emitted as a single
-compiled field, and the encoder recognises it **by name** (`_build_observation_field_from_vfs`),
-which is a `PDR-0045` name branch. Splitting it per variable, and deleting the branch, is
-`hamlet-f0ed709ecf`.
+order** (`environment/observation_encoder.py::_get_observations`), building every field the same
+way — compiled VFS mirror field → its source variable → read from the registry by the variable's
+**declared scope** → declared normalization — which is why the compiler's group-order layout
+needs no runtime special case (`PDR-0075`). Before assembly, one dispatch
+(`_sync_observation_primitives_to_vfs`) publishes each engine-filled feature into its
+engine-written registry variable, keyed by the compiled field's declared **`feature`**
+(`_FEATURE_PUBLISHERS`, one publisher per engine-published member of the vocabulary; `variable`
+fields are registry-owned and skipped; an unknown feature raises). No sync step, network slice
+lookup or demo entry point compares a field's name to a literal any more (unit 4,
+`hamlet-39e1fe3c6d`); `obs_vfs` no longer exists (unit 3, `hamlet-f0ed709ecf`).
 
 Item observation handling is deliberately strict. Missing item storage, bad inventory shape, out-of-range item indices, unknown item profiles, or missing exposed variables fail loudly instead of silently returning partial observations.
 

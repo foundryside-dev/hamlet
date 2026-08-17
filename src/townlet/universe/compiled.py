@@ -58,7 +58,12 @@ from townlet.vfs.transition_schedule import (
 # the `obs_item_slots` feature (PDR-0075). A pack whose only profile variables are item-scoped
 # does not touch vfs_profiles.yaml for this cut, so its config fingerprint would NOT change and
 # a pre-cut cache would serve the old field list silently — the bump is what refuses it.
-COMPILED_SCHEMA_VERSION = "1.16"
+# 1.17: every compiled `ObservationField` carries a required `feature` (and `feature_ref` for
+# meters) from `townlet.universe.dto.observation_feature`; the runtime dispatches on it instead
+# of on field names (WS-4 unit 4). No pack changes for this cut, so no config fingerprint moves;
+# a pre-cut cache would deserialize into a DTO that now requires `feature` and fail obscurely —
+# the bump makes it the "recompile" error instead.
+COMPILED_SCHEMA_VERSION = "1.17"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",

@@ -27,7 +27,7 @@ from townlet.config.effects_config import EffectScope
 from townlet.effects.manager import ActiveEffect
 
 # Removed: calculate_expected_observation_dim (now using env.observation_dim directly)
-from townlet.universe.compilers.observation import meter_name_from_observation_field, meter_observation_field_name
+from townlet.universe.compilers.observation import meter_observation_field_name
 from townlet.universe.errors import CompilationError
 from townlet.vfs.observation_builder import apply_normalization
 
@@ -164,7 +164,8 @@ class TestFullObservability:
 
         specs = {f.id: f.normalization for f in env.universe.vfs_observation_fields}
         for field in bars_fields:
-            meter_name = meter_name_from_observation_field(field.name)
+            meter_name = field.feature_ref  # the compiled field NAMES its meter; nothing parses it (unit 4)
+            assert meter_name is not None and field.feature == "meter"
             column = env.meter_name_to_index[meter_name]
             meter_vfs = env.vfs_registry.get(field.name, reader="engine")
 

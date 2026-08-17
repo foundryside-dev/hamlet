@@ -6,7 +6,6 @@ Provides step-by-step visualization at human-watchable speed.
 
 import asyncio
 import logging
-import math
 from pathlib import Path
 from typing import Any, cast
 
@@ -14,7 +13,7 @@ import torch
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
-from townlet.agent.networks import RecurrentSpatialQNetwork
+from townlet.agent.networks import RecurrentSpatialQNetwork, recurrent_vision_window_side
 from townlet.config.presentation_config import PresentationConfig
 from townlet.curriculum.adversarial import AdversarialCurriculum
 from townlet.curriculum.factory import build_curriculum
@@ -379,17 +378,7 @@ class LiveInferenceServer:
         agent_ids = [f"agent_{i}" for i in range(num_agents)]
         logger.info("Network architecture: %s (num_agents=%s)", base_brain_config.architecture.type, num_agents)
         # Derive vision window size for recurrent networks from observation spec.
-        vision_window_size = 1
-        for field in obs_spec.fields:
-            if field.name == "obs_local_window" and field.dims > 0:
-                root = int(math.sqrt(field.dims))
-                if root * root != field.dims:
-                    raise ValueError(
-                        f"obs_local_window dims={field.dims} is not a perfect square; "
-                        "cannot derive window_size for recurrent vision encoder."
-                    )
-                vision_window_size = root
-                break
+        vision_window_size = recurrent_vision_window_side(obs_spec)
 
         # observation_spec is now read directly from env (POP-005 simplification)
         self.population = VectorizedPopulation(

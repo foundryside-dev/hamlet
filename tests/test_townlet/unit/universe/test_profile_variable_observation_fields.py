@@ -145,12 +145,15 @@ class TestTheItemSlotsFeature:
         by_id = {v.id: v for v in universe.vfs_variables}
         assert by_id[ITEM_SLOTS_OBSERVATION_FIELD].writable_by == ["engine"]
 
-    def test_the_feature_name_is_one_shared_symbol_not_two_literals(self) -> None:
-        # The encoder imports the compiler's constant; a second literal would be the drift
-        # the sibling primitives already suffer from.
+    def test_the_encoder_does_not_know_the_feature_by_name_at_all(self) -> None:
+        # At PDR-0075 the encoder imported the compiler's constant (one symbol, not two
+        # literals). Unit 4 (hamlet-39e1fe3c6d) removed even that: the item feature, like every
+        # engine-published feature, is located by the compiled field's declared `feature`, so
+        # neither the constant nor the literal appears in the encoder.
         src = inspect.getsource(encoder_module)
-        assert "ITEM_SLOTS_OBSERVATION_FIELD" in src
+        assert "ITEM_SLOTS_OBSERVATION_FIELD" not in src
         assert '"obs_item_slots"' not in src
+        assert '"item_slots"' in src
 
 
 # ------------------------------------------------------------------ 3. compile errors, with the rule

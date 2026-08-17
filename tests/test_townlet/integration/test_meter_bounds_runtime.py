@@ -43,7 +43,7 @@ from townlet.environment.action_executor import ActionExecutor
 from townlet.environment.affordance_engine import AffordanceEngine
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.universe.compiler import UniverseCompiler
-from townlet.universe.compilers.observation import meter_name_from_observation_field, meter_observation_field_name
+from townlet.universe.compilers.observation import meter_observation_field_name
 from townlet.vfs import vtc
 from townlet.vfs.observation_builder import apply_normalization
 
@@ -278,7 +278,8 @@ def test_each_meter_declares_its_own_normalization_sourced_from_its_own_bounds()
     assert len(bars_fields) == len(declared), "one observation field per declared meter"
 
     for field in bars_fields:
-        meter_name = meter_name_from_observation_field(field.name)
+        meter_name = field.feature_ref  # the compiled field NAMES its meter; nothing parses it (unit 4)
+        assert meter_name is not None and field.feature == "meter"
         spec = specs[field.name]
         assert spec is not None, f"{field.name} must declare a normalization"
         assert spec.kind == "minmax", "default_curriculum declares minmax for every meter"
@@ -546,6 +547,8 @@ def test_semantic_groups_must_be_contiguous() -> None:
             scope="agent",
             description=name,
             semantic_type=semantic,
+            feature="meter" if semantic == "bars" else "variable",
+            feature_ref=name if semantic == "bars" else None,
         )
 
     interleaved = ObservationSpec.from_fields([_field("a", 0, "bars"), _field("b", 1, "spatial"), _field("c", 2, "bars")])

@@ -32,7 +32,9 @@ def _make_observation_spec(
     fields.append(
         ObservationField(
             uuid=None,
-            name="obs_local_window",
+            # Named unlike anything the compiler emits ON PURPOSE: the recurrent network
+            # must find the window by its declared FEATURE, never by its name (PDR-0045).
+            name="a_window_by_any_other_name",
             type="spatial_grid",
             dims=grid_dims,
             start_index=start,
@@ -40,6 +42,7 @@ def _make_observation_spec(
             scope="agent",
             description="Local vision window grid encoding",
             semantic_type="spatial",
+            feature="local_window",
         )
     )
     start += grid_dims
@@ -48,7 +51,7 @@ def _make_observation_spec(
         fields.append(
             ObservationField(
                 uuid=None,
-                name="obs_position",
+                name="where_am_i",
                 type="vector",
                 dims=position_dim,
                 start_index=start,
@@ -56,6 +59,7 @@ def _make_observation_spec(
                 scope="agent",
                 description="Agent position",
                 semantic_type="spatial",
+                feature="position",
             )
         )
         start += position_dim
@@ -76,6 +80,8 @@ def _make_observation_spec(
                 scope="agent",
                 description=f"Meter m{meter_index} observed as minmax",
                 semantic_type="bars",
+                feature="meter",
+                feature_ref=f"m{meter_index}",
             )
         )
         start += 1
@@ -84,7 +90,7 @@ def _make_observation_spec(
     fields.append(
         ObservationField(
             uuid=None,
-            name="obs_affordances",
+            name="what_is_under_me",
             type="vector",
             dims=affordance_dims,
             start_index=start,
@@ -92,6 +98,7 @@ def _make_observation_spec(
             scope="agent",
             description="Affordance activations",
             semantic_type="affordance",
+            feature="affordance_at_position",
         )
     )
     start += affordance_dims

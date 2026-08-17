@@ -334,9 +334,19 @@ An **observation field** maps a variable or feature into an agent-facing observa
 - and ordering in the observation ABI — fields are laid out grouped, in the fixed group order
   `spatial, bars, affordance, effects, custom, temporal`.
 
+The compiled field additionally records **which feature fills it** — `variable` for a
+registry-owned source, or one of the engine's own encoders (`grid_encoding`, `local_window`,
+`position`, `velocity`, `meter` with the meter named, `affordance_at_position`, `effects`,
+`temporal`, `item_slots`; one closed vocabulary, `townlet.universe.dto.observation_feature`).
+That is the runtime's dispatch key: the environment publishes engine features, the structured
+encoders locate their blocks, and the demo sizes the vision window by the field's feature, never
+by its name (`PDR-0045`). It is not part of the ABI above — it says who fills the source, not how
+the field is exposed — so it lives on the compiled DTO only and moves no hash.
+
 The semantic group is a property of the **observation field**, never of the variable (§4.1): a
 variable is stored state; how it is grouped when observed is part of how it is exposed. Where an
-author declares it (today: `environment.yaml` variables, one compiled field each) the compiler
+author declares it (today: `environment.yaml` variables and exposed global/agent profile
+variables, one compiled field each) the compiler
 obeys; for the blocks the compiler emits itself it assigns a member from the same closed set — a
 value an author may not write is a value the compiler may not emit (`PDR-0047`). `bars` is the
 meter block and is reserved to meters. Vocabulary extension is a decision (`PDR-0016`), not a

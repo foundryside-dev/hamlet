@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-import math
 import signal
 import time
 from collections import defaultdict
@@ -12,6 +11,7 @@ from typing import Any
 
 import torch
 
+from townlet.agent.networks import recurrent_vision_window_side
 from townlet.curriculum.factory import build_curriculum
 from townlet.demo.database import DemoDatabase
 from townlet.determinism import seed_all
@@ -437,18 +437,7 @@ class DemoRunner:
         # Get population parameters from config (all required per PDR-002)
         # Derive local vision window size from compiled observation spec to keep
         # network expectations aligned with the compiler/environment.
-        vision_window_size = 1
-        for field in obs_spec.fields:
-            if field.name == "obs_local_window" and field.dims > 0:
-                # For grid substrates, dims = window_size² (v2.1 spec)
-                root = int(math.sqrt(field.dims))
-                if root * root != field.dims:
-                    raise ValueError(
-                        f"obs_local_window dims={field.dims} is not a perfect square; "
-                        "cannot derive window_size for recurrent vision encoder."
-                    )
-                vision_window_size = root
-                break
+        vision_window_size = recurrent_vision_window_side(obs_spec)
 
         # Get training hyperparameters from config (all required per PDR-002)
         train_frequency = loop_cfg.train_frequency

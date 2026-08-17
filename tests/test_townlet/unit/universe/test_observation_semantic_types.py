@@ -81,6 +81,7 @@ class TestOneClosedVocabulary:
                 scope="agent",
                 description="pos",
                 semantic_type="position",  # type: ignore[arg-type]
+                feature="position",
             )
 
     def test_the_compiled_dto_requires_semantic_type(self) -> None:

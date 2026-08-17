@@ -213,7 +213,9 @@ class ObservationEncoder:
             max_item_profiles=full.max_item_profiles,
             max_tensor_elements=full.max_tensor_elements,
         )
-        agent_item_inventory = env.item_inventory.slots if env.item_inventory is not None else None
+        agent_item_inventory = None
+        if env.item_inventory is not None:
+            agent_item_inventory = env.item_inventory.slots
         item_obs = build_vfs_observation(
             registry=env.vfs_registry,
             spec=item_spec,

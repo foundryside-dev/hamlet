@@ -100,3 +100,12 @@ offset. The sixteen non-profile cells must stay `AGREE` with no declaration.
   declaration to fit — find out why first (`PDR-0056`'s standing rule).
 - If any non-profile cell stops reading `AGREE`, the cut leaked past its declared surface;
   stop and diagnose before the register entry goes `built`.
+
+## Executed (2026-08-17)
+
+- Cut landed at `8c5fa2c8` (full suite 3260/16/0; ruff, black, mypy, config validation green).
+- **Adjudicated: matrix run `20260817-091351` (owner-executed), 20 cells CPU+CUDA, exit 0** —
+  16 `AGREE`, 4 `DIVERGED_AS_REGISTERED (DIV-006)` with exactly the three predicted DERIVED
+  hashes moved on each and `environment_hash` unmoved. No trigger fired. DIV-006 → `built`.
+- Exit condition 2 (`PDR-0058`) reads: re-earned at `72144e7c`, and DIV-006 narrows it to four
+  cells only — the shape `PDR-0074` intended.

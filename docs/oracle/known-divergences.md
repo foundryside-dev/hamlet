@@ -448,8 +448,13 @@ programme.
 
 ## DIV-006 — The `obs_vfs` block: global and agent profile variables become one field each with a declared semantic type; the item-slot sub-block becomes a named feature; the compiled provenance moves and behaviour does not
 
-- **Status:** `tag-stamped` (2026-08-17 — oracle behaviour re-verified at `4222a917` by
-  compiling `configs/test/items_smoke` and `configs/test/effects_smoke` with the
+- **Status:** `built` (2026-08-17 — cut at `8c5fa2c8`; full 20-cell matrix CPU+CUDA exit 0,
+  run `20260817-091351` (executed by the owner): sixteen cells `AGREE`, the four
+  profile-variable cells `DIVERGED_AS_REGISTERED (DIV-006)` with **exactly**
+  `observation_schema_hash`, `variable_schema_hash`, `vfs_hash` moved on each — the predicted
+  set, no more, no fewer — and every stream byte-identical; `environment_hash` did not move,
+  as predicted.) Previously `tag-stamped` (2026-08-17 — oracle behaviour re-verified at
+  `4222a917` by compiling `configs/test/items_smoke` and `configs/test/effects_smoke` with the
   `.oracle/oracle-2026-08-17` worktree's `src` on `PYTHONPATH`, before any code changed)
 - **Harness shape: hash-only** (`RegisteredHashDivergence`), bound on the **four
   profile-variable cells only** (`items_smoke:L0_smoke`, `effects_smoke:L0_effects` × cpu/cuda).
@@ -489,7 +494,7 @@ its primitive are gone. The runtime reads every field by the compiled mirror's
 synced each tick like the other primitives. `total_dims` unchanged by construction; every
 value at the same offset.
 
-**Diff shape — PREDICTED at `tag-stamped`, to be MEASURED at `built`** against a git worktree
+**Diff shape — PREDICTED at `tag-stamped`, MEASURED at `built` (matrix run `20260817-091351` agreed with every row)** against a git worktree
 at the pre-cut commit compiled beside the live tree, on both profile packs and all five
 `default_curriculum` levels:
 

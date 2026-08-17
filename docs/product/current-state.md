@@ -1,72 +1,65 @@
-# Current State — HAMLET / Townlet        Checkpoint: 2026-08-17 · twenty-fifth checkpoint (`PDR-0074` the oracle moved forward; `PDR-0075` unit 3 landed, DIV-006 built)
+# Current State — HAMLET / Townlet        Checkpoint: 2026-08-17 · twenty-sixth checkpoint (`PDR-0076` unit 4 landed: the compiled field says who fills it; no observation-field name branch survives)
 
 ## The bet right now
 
 **Strangler rewrite behind the compiled-universe contract** (`PDR-0006`). Unchanged, in flight, no
 horizon change. It exits when the **pinned oracle can be RETIRED** (`PDR-0058`).
 
-| # | condition | status 2026-08-17 (`main` = `4222a917`, branch = `8c5fa2c8`+) |
+| # | condition | status 2026-08-17 (`main` = `4222a917`, branch = `ebd16fce`+) |
 |---|---|---|
-| 1 | every `known-divergences.md` entry terminal | open — DIV-001/002 `tag-stamped` at `oracle-2026-08-17` (checkpoint-boundary, own rebuilds pending); DIV-003/004/005 **`retired`**; DIV-006 `built` |
-| 2 | harness verdict vocabulary re-earned (`PDR-0056`) | **MET at `72144e7c`** — 20/20 `AGREE`, zero suppressions (`PDR-0074`, run `20260817-072714`); now narrowed by DIV-006 to the four profile-variable cells only (run `20260817-091351`: 16 `AGREE` + 4 `DIVERGED_AS_REGISTERED`, exactly three DERIVED hashes moved) |
-| 3 | `Gates green` on a suite that hides nothing (`PDR-0059`) | **MET on `main` at `4222a917`** — the Full Test Suite workflow (bare `uv run pytest`, the nightly's own job) is green for the first time: run `31981122221`, owner-dispatched 00:08 UTC 08-17, **3239 / 24 / 0**. `PDR-0072` trigger 2 did not fire. The scheduled 06:00 UTC run should read the same tree; a red there is a new fact, not the owed one |
+| 1 | every `known-divergences.md` entry terminal | open — DIV-001/002 `tag-stamped` at `oracle-2026-08-17` (checkpoint-boundary, own rebuilds pending); DIV-003/004/005 `retired`; DIV-006 `built` |
+| 2 | harness verdict vocabulary re-earned (`PDR-0056`) | **MET** (`PDR-0074`), narrowed by DIV-006 to the four profile-variable cells — re-read at unit 4, run `20260817-111409`: 16 `AGREE` + 4 `DIVERGED_AS_REGISTERED`, the same three hashes at the same values as at unit 3; unit 4 moved nothing |
+| 3 | `Gates green` on a suite that hides nothing (`PDR-0059`) | **MET on `main`** (run `31981122221`, 3239/24/0). Branch at unit 4: suite 3281/16/0 locally; CI on `ebd16fce`: **all three green** (`31984884149` / `31984884176` / `31984884156`). The scheduled 06:00 UTC nightly on `main` had **not yet fired** at this checkpoint |
 
 ## What this session did
 
 - **RESUME/ORIENT**: workspace loaded, tracker reconciled (no drift), grant re-confirmed **unchanged**
-  (stamp left at 2026-08-16 per the standing rule). Owner sequenced: *re-tag question, then unit 3*.
-- **Branch rebased onto `main`** (`4222a917` is an ancestor), force-pushed with lease, tree identical.
-- **`PDR-0074` — the oracle moved forward to `oracle-2026-08-17` → `4222a917`** (`72144e7c`, tag pushed):
-  the hash-only suppression was at its ceiling and no matrix cell could see unit 3 (no matrix pack declared
-  a profile variable). Evidence re-earned at the commit (CI run ids; determinism CPU+CUDA re-run);
-  DIV-001/002 re-stamped, DIV-003/004/005 retired; fixtures re-frozen; matrix 20 cells (+ `items_smoke`,
-  `effects_smoke`); **acceptance 20/20 `AGREE`**. `hamlet-7e5e15d993` closed.
-- **`PDR-0075` — unit 3 landed** (`8c5fa2c8`; `hamlet-f0ed709ecf` closed): the `obs_vfs` block → one field per
-  exposed global/agent profile variable with a **required declared `semantic_type`** + one `obs_item_slots`
-  feature; the runtime reads every field by declared scope; the name branch is deleted;
-  `COMPILED_SCHEMA_VERSION` 1.16; 8 packs + `docs/config-schemas/vfs-profiles.md` updated. Full suite
-  **3260/16/0**. **DIV-006 `built`** — matrix run `20260817-091351` (owner-executed) matched the prediction row
-  for row. Design fork on item layout recorded and filed (`hamlet-1ad6383186`), not folded.
-- Filed `hamlet-7cd887c9e5` (`configs/reference/model_pack` does not compile — `spawn_effect` schema rot).
-- One CI red on the push to `8c5fa2c8`: the repo's `no_defaults_lint` gate caught a ternary-as-default in the
-  new sync step; fixed in this checkpoint's commit — all three workflows green on `c69bd2ff`. Lesson kept: run
-  all five Lint-workflow checks locally, not four.
-- **After the checkpoint commit the owner ran the Full Test Suite on `main` by hand rather than wait for the
-  schedule** (run `31981122221`, 3239 / 24 / 0) — exit condition 3 closes; the `PDR-0059` thread is done.
+  (stamp left at 2026-08-16 per the standing rule). Found `5e5a60e8` (the previous checkpoint's
+  follow-up commit) unpushed — pushed under `PDR-0046`. Owner chose the session's unit from four
+  options: **WS-4 unit 4, the name-sync discriminator**.
+- **`PDR-0076` — unit 4 landed** (`ebd16fce`; `hamlet-39e1fe3c6d` filed, claimed, closed): one closed
+  vocabulary `townlet.universe.dto.observation_feature`; `ObservationField.feature` required
+  (`meter` fields carry `feature_ref`); the encoder's nine name-keyed sync steps → one loop + one
+  publisher table; `RecurrentSpatialQNetwork` slices by feature; one `recurrent_vision_window_side`
+  helper for both demo sites; `build_vfs_variables` decides by feature, not name sets;
+  `meter_name_from_observation_field` and the dead `obs_affordances` alias deleted;
+  `COMPILED_SCHEMA_VERSION` 1.17. **Placement: DTO only, not the hash-bearing mirror** — measured
+  invisible to the harness (20 cells, CPU + CUDA, exit 0), so **no register entry** (`PDR-0069`
+  precedent). 21 new tests; suite 3281/16/0; all five Lint checks + Config Validation green locally.
+- Docs brought current: `vfs.md` §4.3, `vfs-current-implementation.md` (also caught up to `PDR-0075`).
 
 ## Reversal triggers — read this session
 
-- `PDR-0074` triggers 1 (determinism at the tag) and 2 (any non-AGREE at the new tag): **did not fire**.
-- `PDR-0075` triggers (movers ≠ prediction; a non-profile cell leaves AGREE): **did not fire**.
-- `PDR-0058` trigger 2 (register only grows): **reset** — three entries went terminal this checkpoint.
-- `PDR-0072` trigger 2 (first post-merge full-suite run red on the three named files): **did not fire** —
-  run `31981122221` green. `PDR-0043` trigger 2: discharged.
+- `PDR-0076` triggers (any of the sixteen leaves `AGREE`; the four DIV-006 cells move any hash
+  other than the three registered): **did not fire** — measured exactly as predicted.
+- `PDR-0058` trigger 2 (register only grows): **not touched** — the register did not grow.
+- `PDR-0072` trigger 2: discharged last checkpoint; the first *scheduled* post-merge nightly is
+  still owed a look (below).
 
 ## Blocked on / flagged for the owner (not blocking)
 
-- **Nothing escalated.** No vision/grant change, no release, no deprecation-with-users, no pricing, no data
-  deletion, no external party.
-- **Dependabot on `main`**: PRs `#33` (torch 2.11→2.13, low, an oracle-behaviour risk to the JIT kernels)
-  and `#34` (pytest 8.4.2→9.0.3, moderate); setuptools <83 (moderate) had a failed update run. Not acted
-  on; any merge to `main` is yours. Triage is a candidate next unit if you want it.
-- **`CLAUDE.md:65` still cites the deleted `REVIEW-2026-08-15…` file**; the DTO list lacks
-  `presentation_config.py`. Fourth flag.
-- Next merge to `main` will owe `PDR-0039` gate 2 (README re-verification by method) again — 3+ commits ahead.
+- **Nothing escalated.** No vision/grant change, no release, no deprecation-with-users, no pricing, no
+  data deletion, no external party.
+- **Dependabot on `main`**: PRs `#33` (torch 2.11→2.13) and `#34` (pytest 8.4.2→9.0.3) still open;
+  any merge to `main` is yours. Offered a risk read; not chosen this session.
+- **`CLAUDE.md:63-65` still cites the deleted `REVIEW-2026-08-15…` file**; the DTO list lacks
+  `presentation_config.py`. Fifth flag.
+- Next merge to `main` owes `PDR-0039` gate 2 (README re-verification by method) — 6 commits ahead.
 
 ## Open questions
 
-- Sibling primitive name-syncs (`obs_grid_encoding`, `obs_local_window`, `obs_position`, `obs_velocity`,
-  meters, `obs_affordance_*`, `obs_effects`, `obs_temporal`, now `obs_item_slots`) — the general fix is a
-  typed feature discriminator on the compiled field; a candidate next unit in WS-4's queue.
-- `exposed_to` defaults to `["agent"]` when empty in the three profile validators (hidden default) — noted
-  in `PDR-0075`, unfiled.
-- Unchanged: `tests/README.md` staleness → WS-5; no schema-doc index lists `presentation.md`; no shipped
-  pack declares `multi_tick` (`PDR-0061` armed); `hamlet-266a0a41f0` in triage; `cues` inert.
+- `exposed_to` defaults to `["agent"]` when empty in the three profile validators (hidden default) —
+  noted in `PDR-0075`, still unfiled; a small WS-4 unit.
+- `recurrent_vision_window_side` raises on a non-square window (a cubic partial-vision pack with the
+  recurrent architecture) — the *network's* 2D assumption, noted in `PDR-0076`, unfiled.
+- Unchanged: `hamlet-1ad6383186` (item layout), `hamlet-7cd887c9e5` (reference pack does not compile,
+  triage), `hamlet-266a0a41f0` (triage), `tests/README.md` staleness → WS-5, `cues` inert.
 
 ## Next session starts here
 
-**Glance at the scheduled nightly** (`gh run list --workflow full-tests.yml --limit 1`, the 06:00 UTC 08-17
-run) — it should match the owner-dispatched green on the same tree; a red is a new fact to explain, not the
-`PDR-0059` thread reopening. Then pick the next WS-4 unit on `PDR-0019`'s criterion (*where does the runtime still know what the game is?*): the sibling
-primitive name-syncs are the same shape unit 3 just killed. Dependabot triage is the owner's call.
-Work continues on `project-recovery-2` (ahead of `main` by this session's commits).
+**Two readings first**: (1) the scheduled nightly on `main` (`gh run list --workflow full-tests.yml
+--limit 1`, the 06:00 UTC 08-17 run) — should match the owner-dispatched green on the same tree; a
+red is a new fact to explain; (2) nothing else owed on the branch — CI on `ebd16fce` is green.
+Then the next WS-4 unit on `PDR-0019`'s criterion (*where does the runtime still know what the game
+is?*): the `exposed_to` hidden default is the cheapest honest one; `hamlet-7cd887c9e5` moves failure
+loudness. Dependabot triage remains the owner's call. Work continues on `project-recovery-2`.

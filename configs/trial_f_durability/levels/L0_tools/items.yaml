@@ -1,0 +1,11 @@
+# Trial F appearance: one hammer at a known fixed cell so the runtime probe can
+# walk the agent onto it deterministically. No respawn — one instance, worn to zero.
+version: '1.0'
+items:
+  - item_type: hammer
+    spawn_count: 1
+    spawn_interval: null
+    spawn_position: fixed
+    placement:
+      mode: fixed
+      fixed_positions: [[2, 2]]

@@ -1,0 +1,27 @@
+environment:
+  version: "1.0"
+
+  meters:
+    - name: energy
+      description: Energy
+      range_type:
+        kind: minmax
+        clip: false
+    - name: health
+      description: Health
+      range_type:
+        kind: minmax
+        clip: false
+
+  cascade_graph: []
+  modulation_graph: []
+  # One inert affordance: a pack with ZERO affordances validates and compiles but
+  # crashes at the first observation (obs_affordance_at_position publishes
+  # (N, num_types+1) against a scalar registry slot) — filed as by-catch, not fixed here.
+  affordances:
+    - name: BENCH
+      description: A bench; does nothing (present only because zero affordances crashes)
+      category: rest
+
+  variables: []
+  cues: []

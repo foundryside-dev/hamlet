@@ -1,0 +1,12 @@
+experiment:
+  version: "1.0"
+  experiment_name: "trial_b_organism"
+  metadata:
+    name: "Trial B — The spreading organism (B2 headline: 5-D landscape)"
+    description: "PRD-0001 trial pack: an organism rooted at point A grows outward across a 5-D discrete landscape toward a food warehouse"
+    author: "PRD-0001 trial executor"
+    created: "2026-08-19"
+    tags: ["trial", "prd-0001"]
+  curriculum_levels:
+    - L0_organism
+    - L1_contested

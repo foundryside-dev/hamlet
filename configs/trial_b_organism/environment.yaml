@@ -1,0 +1,40 @@
+environment:
+  version: "1.0"
+
+  meters:
+    - name: energy
+      description: Energy
+      range_type:
+        kind: minmax
+        clip: false
+    - name: health
+      description: Health
+      range_type:
+        kind: minmax
+        clip: false
+    - name: rooted
+      description: "Organism membership: 0 = free-floating, 1 = organism 1 (root A), 2 = organism 2 (contested level). Joining is exclusive and permanent."
+      range_type:
+        kind: minmax
+        clip: false
+    - name: biomass
+      description: "Food absorbed from the warehouse by this growth tip"
+      range_type:
+        kind: minmax
+        clip: false
+
+  cascade_graph: []
+  modulation_graph: []
+  affordances:
+    - name: ROOT
+      description: "The organism's root at declared point A; touching it joins the agent to the organism"
+      category: organism
+    - name: ROOT2
+      description: "The second organism's root (contested level only); joining is exclusive with ROOT"
+      category: organism
+    - name: WAREHOUSE
+      description: "The food warehouse the organism must spread toward"
+      category: organism
+
+  variables: []
+  cues: []

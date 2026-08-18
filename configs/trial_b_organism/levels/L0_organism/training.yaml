@@ -1,0 +1,56 @@
+training:
+  version: "1.0"
+  seed: 42
+  population:
+    size: 4
+  enabled_affordances: [ROOT, WAREHOUSE]
+  randomize_affordances: false
+  enabled_actions:
+    custom: []
+  q_learning:
+    use_double_dqn: false
+    gamma: 0.99
+    learning_rate: 0.001
+    target_update_frequency: 100
+  replay_buffer:
+    capacity: 1000
+    batch_size: 10
+    min_size: 10
+  exploration:
+    epsilon_start: 1.0
+    epsilon_end: 0.01
+    epsilon_decay: 0.995
+  intrinsic:
+    rnd:
+      feature_dim: 64
+      learning_rate: 0.0001
+    annealing:
+      threshold: 100.0
+      decay_rate: 0.995
+      min_weight: 0.01
+    initial_weight: 0.0
+    min_survival_fraction: 0.4
+    survival_window: 100
+  training_loop:
+    max_episodes: 10
+    max_steps_per_episode: 100
+    train_frequency: 4
+    sequence_length: 8
+    max_grad_norm: 10.0
+    evaluation:
+      interval: 5
+      num_episodes: 1
+    checkpointing:
+      interval: 5
+      keep_last: 1
+  curriculum:
+    strategy: static
+    adversarial:
+      difficulty_metric: survival_rate
+      adaptation_rate: 0.1
+      min_difficulty: 0.2
+      max_difficulty: 1.0
+      survival_advance_threshold: 0.7
+      survival_retreat_threshold: 0.3
+      entropy_gate: 0.5
+      min_steps_at_stage: 100

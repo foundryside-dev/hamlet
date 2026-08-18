@@ -1,4 +1,4 @@
-# PRD-0001 — Trial protocol            Status: DRAFT until the mechanics dry-run passes
+# PRD-0001 — Trial protocol            Status: ACTIVE — mechanics dry-run passed 2026-08-18 (every §3/§6 command executed once against the live tree at `2c1275d6`; all outputs matched this document)
 
 Instrument half 2 of 2. Governs every trial of the frozen corpus
 (`0001-corpus-FROZEN.md`, SHA256

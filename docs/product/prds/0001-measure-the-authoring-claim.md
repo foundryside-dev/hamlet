@@ -8,6 +8,8 @@ strangler bet, not instead of it.
 Target metric (`metrics.md`): north-star — **Zero-Python authoring rate (world)**
 Corpus: **`0001-corpus-FROZEN.md`, frozen 2026-08-17**
 SHA256: `48840cc3ae62e381e0a96a6e850e3cc2fd309081b00bcbd8974cd9d58de935d9`
+Protocol: **`0001-trial-protocol.md`, ACTIVE 2026-08-18** — criterion 3's blind re-runs run
+against this document and the corpus, nothing else.
 Tracker: `hamlet-5fa1f7bfc0`
 
 > **Amended 2026-08-17, before any trial ran** — the only legitimate window to move a

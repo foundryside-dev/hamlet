@@ -1,0 +1,51 @@
+affordances:
+  version: '1.0'
+  affordances:
+  # Place a high bid. Sets this agent's standing bid and (re)starts the auction
+  # house — the clearing process is an effect the first bid brings into being
+  # and later bids renew. `target: "0"` pins the effect instance to one slot so
+  # both affordances renew ONE clearing process rather than spawning one each.
+  - name: BID_HIGH
+    interaction_type: instant
+    costs: {}
+    opening_hours:
+      enabled: false
+    deployment:
+      type: fixed
+      positions:
+      - - 1
+        - 1
+    interactions:
+      on_start:
+      - modify: target.bar.bid
+        value: "0.3"
+      - spawn_effect: auction_house
+        target: "0"
+        intensity: 1.0
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
+  # Place a low bid — identical shape, smaller amount.
+  - name: BID_LOW
+    interaction_type: instant
+    costs: {}
+    opening_hours:
+      enabled: false
+    deployment:
+      type: fixed
+      positions:
+      - - 2
+        - 2
+    interactions:
+      on_start:
+      - modify: target.bar.bid
+        value: "0.1"
+      - spawn_effect: auction_house
+        target: "0"
+        intensity: 1.0
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
+  modulations: []

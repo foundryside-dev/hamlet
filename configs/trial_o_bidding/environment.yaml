@@ -1,0 +1,42 @@
+environment:
+  version: "1.0"
+
+  meters:
+    - name: energy
+      description: Energy
+      range_type:
+        kind: minmax
+        clip: false
+    - name: health
+      description: Health
+      range_type:
+        kind: minmax
+        clip: false
+    - name: bid
+      description: "The agent's standing bid in the current auction round (0 = no bid)"
+      range_type:
+        kind: minmax
+        clip: false
+    - name: wins
+      description: "Count of auction rounds this agent has won"
+      range_type:
+        kind: minmax
+        clip: false
+    - name: credits
+      description: "Currency: the winning bidder pays their bid from this"
+      range_type:
+        kind: minmax
+        clip: false
+
+  cascade_graph: []
+  modulation_graph: []
+  affordances:
+    - name: BID_HIGH
+      description: "Place a high bid (0.3) in the standing auction"
+      category: auction
+    - name: BID_LOW
+      description: "Place a low bid (0.1) in the standing auction"
+      category: auction
+
+  variables: []
+  cues: []

@@ -1,0 +1,37 @@
+environment:
+  version: "1.0"
+
+  meters:
+    - name: energy
+      description: Energy
+      range_type:
+        kind: minmax
+        clip: false
+    - name: health
+      description: Health
+      range_type:
+        kind: minmax
+        clip: false
+    - name: since_bed
+      description: "Ticks since BED was last used (cooldown timer, advances 1/tick, reset on use)"
+      range_type:
+        kind: minmax
+        clip: false
+    - name: since_food
+      description: "Ticks since FOOD was last used (cooldown timer, advances 1/tick, reset on use)"
+      range_type:
+        kind: minmax
+        clip: false
+
+  cascade_graph: []
+  modulation_graph: []
+  affordances:
+    - name: BED
+      description: Rest to recover energy (cooldown-gated, 10 ticks)
+      category: rest
+    - name: FOOD
+      description: Eat food (cooldown-gated, 4 ticks)
+      category: sustenance
+
+  variables: []
+  cues: []

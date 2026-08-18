@@ -72,7 +72,10 @@ print(f"  after USE #1    durability={durability()} energy={energy()} obs_item_s
 
 for _ in range(5):
     obs, *_ = env.step(WAIT)
-print(f"  after 5 WAITs   durability={durability()} energy={energy()} obs_item_slots={item_obs(obs)}   <- expect durability UNCHANGED (per-use, not per-tick)")
+print(
+    f"  after 5 WAITs   durability={durability()} energy={energy()} "
+    f"obs_item_slots={item_obs(obs)}   <- expect durability UNCHANGED (per-use, not per-tick)"
+)
 
 obs, *_ = env.step(USE)
 print(f"  after USE #2    durability={durability()} energy={energy()} obs_item_slots={item_obs(obs)}   <- expect 1.0, +0.1 energy")
@@ -81,6 +84,9 @@ print(f"  after USE #3    durability={durability()} energy={energy()} obs_item_s
 
 print("\n== Facet 3: at zero wear the tool stops working ==")
 obs, *_ = env.step(USE)
-print(f"  after USE #4    durability={durability()} energy={energy()} obs_item_slots={item_obs(obs)}   <- expect NO energy change, durability stays 0.0")
+print(
+    f"  after USE #4    durability={durability()} energy={energy()} "
+    f"obs_item_slots={item_obs(obs)}   <- expect NO energy change, durability stays 0.0"
+)
 obs, *_ = env.step(USE)
 print(f"  after USE #5    durability={durability()} energy={energy()} obs_item_slots={item_obs(obs)}   <- same")

@@ -1,47 +1,53 @@
-# Current State — HAMLET / Townlet        Checkpoint: 2026-08-18 · twenty-eighth checkpoint (`PDR-0081`: the trial protocol is ACTIVE — the instrument is whole, and the first trial can run)
+# Current State — HAMLET / Townlet        Checkpoint: 2026-08-18 · twenty-ninth checkpoint (`PDR-0082`: Trial L, the first of nine, is RUN — PASS, prediction falsified, the north-star has its first reading)
 
 ## The bets right now — there are two
 
 **1. Strangler rewrite behind the compiled-universe contract** (`PDR-0006`). Unchanged, in flight,
 no horizon change. Exits when the **pinned oracle can be RETIRED** (`PDR-0058`).
 
-| # | condition | status 2026-08-18 (`main` = `4222a917`, branch = `99b69540`) |
+| # | condition | status 2026-08-18 (`main` = `4222a917`, branch = `484976d3`) |
 |---|---|---|
 | 1 | every `known-divergences.md` entry terminal | open — DIV-001/002 `tag-stamped` (checkpoint-boundary, own rebuilds pending); DIV-003/004/005 `retired`; DIV-006 `built` |
 | 2 | harness verdict vocabulary re-earned (`PDR-0056`) | **MET** (`PDR-0074`), narrowed by DIV-006 to the four profile-variable cells |
-| 3 | `Gates green` on a suite that hides nothing (`PDR-0059`) | **MET on `main` and now schedule-confirmed** — the first scheduled post-merge nightly is GREEN (run `32003077539`, 06:47Z 08-17); `PDR-0072` trigger 2 discharged without firing |
+| 3 | `Gates green` on a suite that hides nothing (`PDR-0059`) | **MET on `main`, schedule-confirmed** (first scheduled nightly GREEN 08-17; `PDR-0072` trigger 2 discharged) — but note `main` does not carry units 3/4 (below) |
 
-**2. Measure the authoring claim — the INSTRUMENT** (`PDR-0077`) · tracker `hamlet-5fa1f7bfc0`
-(claimed, `in_progress`) · spec **PRD-0001** · metric: north-star **Zero-Python authoring rate
-(world)**, standing bar ≥8 of 9 by 2026-10-06. **The instrument is now WHOLE**: corpus frozen
-(`PDR-0080`) + protocol ACTIVE (`PDR-0081`, `docs/product/prds/0001-trial-protocol.md`, record
-template `docs/product/trials/0001/TEMPLATE.md`). What remains is its **use**: nine trials at one
-per working session, then 2 blind re-runs (criterion 3) before any reading publishes.
+**2. Measure the authoring claim — the INSTRUMENT IS IN USE** (`PDR-0077`) · tracker
+`hamlet-5fa1f7bfc0` (`in_progress`) · spec PRD-0001 · metric: north-star **Zero-Python authoring
+rate (world)**, standing bar ≥8 of 9 by 2026-10-06. **First reading exists: 1 of 1 trials run,
+split 0 ABSENT / 0 INERT / 0 BLOCKED** (`PDR-0082`). Remaining: 8 trials at one per session, then
+2 blind re-runs (criterion 3) before any reading publishes.
 
 ## What this session did
 
-- **RESUME/ORIENT**: workspace loaded, tracker reconciled (zero substantive drift), grant
-  re-confirmed **unchanged** (stamp stays 2026-08-16 per the standing rule; no `vision.md`
-  touch). Corpus hash re-verified byte-identical. The brief's named first reading resolved
-  **green**: the scheduled nightly on `main` succeeded, so `PDR-0072` trigger 2 is discharged.
-- **DECIDE**: owner chose proposal 1 — write the trial protocol (PRD-0001's top item).
-- **DISPATCH/ACCEPT — `PDR-0081`**: protocol written via `/axiom-planning`
-  (plan: `docs/plans/2026-08-18-trial-protocol.md`), four design calls recorded (pinned-commit
-  blind re-runs; leg (a) counts untracked files; one-session budget with stopping rule; BLOCKED
-  = the idea refused, not the pack), verified by executing every documented command against the
-  live tree at `2c1275d6` before the Status flipped ACTIVE. Commits `7cd19f17`→`99b69540`, pushed.
-- **Housekeeping**: prior checkpoint commit pushed; tracker description reconciled to the amended
-  N=9 shape (it had still carried the pre-amendment 5-idea text).
+- **RESUME/ORIENT**: workspace loaded, tracker reconciled, grant re-confirmed **unchanged**
+  (stamp stays 2026-08-16 per the standing rule; no `vision.md` touch). **One drift item found
+  and corrected here**: the prior brief said "5 commits ahead of `main`, all docs/workspace-only"
+  — measured reality was 13 (now 14) including **two `src/townlet/` strangler units (unit 3
+  `8c5fa2c8`, unit 4 `ebd16fce`) and the oracle move (`72144e7c`)**, +628/−305 under
+  `src/townlet/`. `main`'s green nightly does not cover those units; branch CI does.
+- **DECIDE**: owner chose "Run Trial L" (option 1 of the resume brief's proposals).
+- **DISPATCH/ACCEPT — `PDR-0082`**: Trial L executed per the ACTIVE protocol at pin `fb8c6148`.
+  **Headline PASS on all four pre-committed facets, both legs** — cooldown management authors
+  zero-Python (timers as meters via declared negative passive drain, `if`-gated interactions,
+  reset-on-use, observation at compiled offsets 31/32). **The pre-registered prediction
+  (PARTIAL/INERT) is FALSIFIED and stated.** Record `docs/product/trials/0001/L-20260818.md`;
+  pack `configs/trial_l_cooldown/`; suite 3281/16/0 before commit; commit `484976d3`, pushed.
+- **By-catch filed, not fixed** (protocol §8): `hamlet-d45331a367` (`recovery.natural` required
+  in every pack, consumed by zero runtime sites — live INERT) and `hamlet-6b24c0bd83`
+  (`CapabilityConfig` incl. a purpose-built `CooldownCapability` reachable from no YAML — dead
+  vocabulary). Both routed WS-4, label `prd-0001-trial`.
 
 ## Reversal triggers — state as of this session
 
-- `PDR-0072` trigger 2: **discharged without firing** (scheduled nightly green, above).
-- `PDR-0068` trigger (bank the merge before the next unit): **not lit** — 5 commits ahead of
-  `main`, all docs/workspace-only, against a ~30 threshold.
-- `PDR-0081` triggers now **armed**: blind-run disagreement (kills the instrument's acceptance);
-  two budget-limited records in the first three trials (budget mis-sized); an ambiguous
-  BLOCKED-vs-pack-mistake call (taxonomy returns to design).
-- `PDR-0058` trigger 2 (register only grows): **not touched**.
+- `PDR-0081` triggers: **armed, none fired** — 0 budget-limited records in 1 trial; no blind
+  re-run yet; the one loud error (stale copied `.compiled` cache) was unambiguously a pack
+  mistake, so the BLOCKED-vs-pack-mistake line was not stressed.
+- `PDR-0068` trigger (bank the merge before the next unit): **not lit** — 14 commits ahead of
+  `main` against a ~30 threshold, but see the drift correction above: the "docs-only"
+  characterization was false, and the next merge owes `PDR-0039` gate 2 over that full span.
+- `PDR-0058` trigger 2 (register only grows): not touched.
+- Pack-disposition clock (`PDR-0082`): `configs/trial_l_cooldown/` must be promoted to a fixture
+  or deleted by **2026-10-06** or PRD-0001 criterion 7 rejects the bet.
 
 ## Blocked on / flagged for the owner (not blocking)
 
@@ -49,19 +55,18 @@ per working session, then 2 blind re-runs (criterion 3) before any reading publi
   pricing, no data deletion, no external party. `vision.md` untouched.
 - **Dependabot on `main`**: PRs `#33` (torch 2.11→2.13) and `#34` (pytest 8.4.2→9.0.3) still
   open; any merge to `main` is yours.
-- **`CLAUDE.md:63-65` still cites the deleted `REVIEW-2026-08-15…` file** (re-verified absent
-  this session; seventh sighting). A deferred decision, not an oversight — it was proposed as a
-  bet on 08-17 and not chosen.
-- Next merge to `main` owes `PDR-0039` gate 2 (README re-verification by method).
-- Cosmetic: filigree CLI warns `ACTOR_MISMATCH claimed='claude' verified='john'` on updates —
-  audit-trail noise, updates land.
+- **`CLAUDE.md:63-65` still cites the deleted `REVIEW-2026-08-15…` file** (eighth sighting; a
+  deferred decision, not an oversight — proposed as a bet 08-17 and not chosen).
+- Next merge to `main` owes `PDR-0039` gate 2 (README re-verification by method) over 14 commits
+  including two src units and the oracle move.
+- Cosmetic: filigree CLI needs `--actor claude` on updates to `claude`-assigned issues.
 
 ## Open questions
 
-- **Trial L's facet enumeration is the first act of the first trial** — per protocol §4 it is
-  pre-committed before authoring, and it will test the protocol as much as the substrate.
-  Prediction on record: L lands **INERT** against `hamlet-dc8f887cd5`'s zero-writer fields;
-  aggregate 1–2 of 9 pass, INERT count 1–2 (threshold 3).
+- **Prediction calibration**: Trial L falsified its own prediction *optimistically for the
+  substrate* — the predictions were made against the first surface an author would reach, not
+  the space of declared surfaces. The aggregate prediction (1–2 of 9 pass) is already 1-for-1
+  against itself; the remaining eight will test it properly.
 - Unchanged: `exposed_to` hidden default in the three profile validators (unfiled);
   `recurrent_vision_window_side` raises on a non-square window (unfiled); `hamlet-1ad6383186`
   (item layout), `hamlet-7cd887c9e5` (reference pack does not compile), `hamlet-266a0a41f0`
@@ -69,8 +74,8 @@ per working session, then 2 blind re-runs (criterion 3) before any reading publi
 
 ## Next session starts here
 
-**Run Trial L** (cooldown management — the highest-information draw). Protocol:
-`docs/product/prds/0001-trial-protocol.md`, start at §3 preflight (P1 corpus hash first — a
-mismatch voids the trial). One trial is one session's work; the WS-4 queue
-(`exposed_to` default, `hamlet-1ad6383186`, `hamlet-7cd887c9e5`) continues alongside in strangler
-sessions. Work continues on `project-recovery-2`.
+**Run trial two** — pick from B, D, E, F, J, K, M, O (protocol
+`docs/product/prds/0001-trial-protocol.md`, §3 preflight first: P1 corpus hash, a mismatch voids
+the trial). One trial is one session's work; the WS-4 queue (`exposed_to` default,
+`hamlet-1ad6383186`, `hamlet-7cd887c9e5`, and now `hamlet-d45331a367` / `hamlet-6b24c0bd83`)
+continues alongside in strangler sessions. Work continues on `project-recovery-2`.

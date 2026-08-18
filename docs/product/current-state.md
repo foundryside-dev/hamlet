@@ -1,108 +1,104 @@
-# Current State — HAMLET / Townlet        Checkpoint: 2026-08-18 · thirty-second checkpoint (`PDR-0085`: Trial O, the fourth of nine, is RUN — PASS, the corpus's first STRUCTURAL prediction falsified, north-star 4 of 4; a three-lens methodology review of the instrument is IN FLIGHT)
+# Current State — HAMLET / Townlet        Checkpoint: 2026-08-18 · thirty-third checkpoint (`PDR-0086`: the three-lens methodology review is ADJUDICATED — instrument relabeled expert-ceiling, Appendix A pre-registered, all four verdicts stand; earlier today: `PDR-0085` Trial O PASS, 4 of 9 settled)
 
 ## The bets right now — there are two
 
-**1. Strangler rewrite behind the compiled-universe contract** (`PDR-0006`). Unchanged, in flight,
-no horizon change, untouched this session. Exits when the **pinned oracle can be RETIRED**
-(`PDR-0058`): (1) every `known-divergences.md` entry terminal — open (DIV-001/002
-`tag-stamped`; DIV-003/004/005 `retired`; DIV-006 `built`); (2) harness verdict vocabulary
-re-earned — **MET** (`PDR-0074`), narrowed to the four profile-variable cells; (3) `Gates
-green` on a suite that hides nothing — **MET on `main`**, nightly now **3-for-3 GREEN**
-(latest run `32107696959`, 08-18).
+**1. Strangler rewrite behind the compiled-universe contract** (`PDR-0006`). Unchanged, in
+flight, untouched today. Exits when the **pinned oracle can be RETIRED** (`PDR-0058`):
+(1) register entries terminal — open (DIV-001/002 `tag-stamped`; 003/004/005 `retired`;
+006 `built`); (2) harness verdict vocabulary — **MET** (`PDR-0074`); (3) `Gates green` on a
+suite that hides nothing — **MET on `main`**, nightly 3-for-3 GREEN.
 
-**2. Measure the authoring claim — the INSTRUMENT IS IN USE** (`PDR-0077`) · tracker
-`hamlet-5fa1f7bfc0` (`in_progress`) · spec PRD-0001 · metric: north-star **Zero-Python
-authoring rate (world)**, standing bar ≥8 of 9 by 2026-10-06. **Fourth reading: 4 of 4 trials
-run, split 0 ABSENT / 0 INERT / 0 BLOCKED — all four PASS** (`PDR-0085`). Trial O falsified
-the corpus's first *structural* prediction (the clearing phase was predicted ABSENT and is
-declarable). Remaining: 5 trials at one per session (B, D, E, J, K — D/E/J multi-agent with
-the heaviest structural predictions), then 2 blind re-runs before any reading publishes.
-**GATE ON PUBLICATION (`PDR-0085` reversal trigger): a three-lens methodology review is in
-flight — no north-star reading publishes over an open confirmed validity defect.**
+**2. Measure the authoring claim — instrument in use, now honestly labeled** (`PDR-0077`,
+`PDR-0086`) · tracker `hamlet-5fa1f7bfc0` (`in_progress`) · spec PRD-0001 + protocol
+Appendix A · metric: north-star **Zero-Python authoring rate (world)** — **relabeled an
+EXPERT-CEILING EXPRESSIBILITY reading with a mandatory construct preamble**; standing bar
+≥8 of 9 by 2026-10-06 unchanged. **State: 4 of 9 SETTLED (L, F, M, O — all PASS), 5 pending
+(B, D, E, J, K; D/E/J multi-agent), split 0/0/0; INERT surfaces encountered: 2 in 4 trials.**
+Then 2 blind re-runs (owner picks the pair, ≥1 of {L, M, O}) before any reading publishes.
+Two prospective rows opened, both UNREAD: novice-facing discovery-path (retro-derivation for
+L/F/M/O owed from authoring logs) and trains-without-incident (leg c).
 
-## What this session did
+## What this session did (three commits: `a3318624`, `2dcc2273`, `0c2f9e53`, + this one)
 
-- **RESUME/ORIENT**: workspace loaded, grant re-confirmed **unchanged** by the owner (stamp
-  stays 2026-08-16 per the standing rule). ORIENT found real drift: **branch Lint had been
-  RED for four pushes** since the Trial F commit (two E501s in `probe_trial_f.py`) — the last
-  two checkpoints never read the remote gate. Fixed at `a3318624`, CI green on the fix.
-- **DECIDE**: owner chose **"trial four: multi-agent"**. Executor selected **O (adversarial
-  bidding)** from D/E/J/O — untouched clearing-phase axis, structural prediction, best
-  one-session fit (`PDR-0085`).
-- **DISPATCH/ACCEPT — `PDR-0085`**: Trial O executed per the ACTIVE protocol at pin
-  `a3318624`. **Headline PASS on all six facets, both legs** — simultaneous bids, declared
-  3-tick collection window, `for_each: all_agents` clearing (swap-tested), exact award/charge,
-  no-bid guard, full observation encoding. Pack compiled and probe passed on the first attempt
-  of each. Suite 3281/16/0 before commit `2dcc2273`, pushed.
-- **By-catch filed, not fixed** (protocol §8): `hamlet-4cd664a955` — effect `scope: global`
-  validates but every spawn path hardcodes agent scope (INERT); `hamlet-77e4f8b3e3` — no
-  declarative path to a standing world process from reset (ABSENT). Both routed WS-4.
-- **Owner raised two post-freeze corpus candidates** mid-session — Q (sin/cos day-night
-  forcing; recon: no trig in the expression vocabulary) and R (heliotropism; recon: no
-  orientation state in the continuous substrate) — captured in
-  `docs/product/prds/0001-corpus-candidates.md`, **outside** the frozen corpus, predictions
-  deferred to a future re-freeze.
-- **Owner directed a methodology review of the trial instrument**: three Fable reviewers
-  dispatched (construct-validity critic; RL-practitioner lens; statistical-inference lens on
-  a full-context fork). Results land after this checkpoint; findings route to the next
-  session's DECIDE and may become `proposed` PDRs.
+- **ORIENT** found branch Lint RED four pushes (probe E501s) — fixed, CI-confirmed green.
+- **Trial O run and accepted** (`PDR-0085`): PASS on all six facets, both legs; the corpus's
+  first *structural* prediction falsified; by-catch `hamlet-4cd664a955` (scope: global INERT),
+  `hamlet-77e4f8b3e3` (no ambient world-process spawn). Suite 3281/16/0 pre-commit.
+- **Post-freeze corpus candidates Q/R captured** (owner-raised: sin/cos forcing;
+  heliotropism) in `0001-corpus-candidates.md`, outside the frozen corpus.
+- **Methodology review dispatched, delivered, and ADJUDICATED same-day (`PDR-0086`)** — three
+  Fable lenses, archived verbatim under
+  `docs/product/assessments/2026-08-18-trial-methodology-review/`. Owner's three calls:
+  (1) adopt Appendix A (prospective, pre-registered before trial five: countersigned facets,
+  search pre-registration, discovery-path annotation, non-gating leg-(c) probe additions —
+  reward assertion, double-reset, obs-bounds, boundary cases, N≥3, random-policy smoke —
+  record-integrity rule, mixed-classification rule, blind-re-run governance) + metric hygiene
+  (construct preamble, settled/pending reporting, INERT surface count published, Trend arrow
+  withheld); (2) **Trial F PASS stands** — *"not a fail if it doesn't meet the lower
+  standard, but a gap that needs to be captured"* → `hamlet-83806979f7` (no declarative item
+  destruction, ABSENT); (3) the expert construct was a default — novice-facing row opens
+  prospectively. **No verdict re-scored; corpus untouched; escalation threshold unmoved;
+  §7's reject branch unweakened.**
+- **RL-lens empirical by-catch filed**: O pack leaks across `env.reset()` (evidence to
+  `hamlet-d76684f549`, comment 167 — effects survive reset + persistent-lifetime globals,
+  stale auction state in episode-2 observations); raw item-slot observation emit
+  (`hamlet-bf42ac60b5` — Trial F's 3.0 in a [0,1] vector). Post-verdict notes appended to the
+  F and O records (tie case unexercised; degenerate-game caveat).
 
 ## Reversal triggers — state as of this session
 
-- `PDR-0081` triggers: **armed, none fired** — 0 budget-limited records in 4 trials (O was
-  the first multi-agent-adjacent trial and fit the budget); no blind re-run yet.
-- **`PDR-0085` NEW trigger: publication gates on the methodology review** — a CONFIRMED
-  validity defect re-scopes the readings by a new PDR before anything publishes.
-- `PDR-0068` trigger (bank the merge before the next unit): **not lit** — 21 commits ahead of
-  `origin/main` (`a3318624`, `2dcc2273`, plus the prior 19) against the ~30 threshold; the
-  span includes two `src/townlet/` units and the oracle move, so the next merge owes
+- `PDR-0086` new triggers: docs-first retro-derivation may correct the "0 of 4 docs-first"
+  prior; three consecutive countersign-reconciliation notes graduate countersigning to a PRD
+  criterion at the next corpus revision; **a reading published without the construct preamble
+  is a defect**. `PDR-0085`'s publication gate: discharged as to the review's existence (no
+  verdict voided); persists as the preamble requirement.
+- `PDR-0081` triggers: armed, none fired — 0 budget-limited records in 4 trials.
+- `PDR-0068` (merge banking): not lit — 22 commits ahead of `origin/main` vs ~30 threshold;
+  the span includes two `src/townlet/` units and the oracle move, so the next merge owes
   `PDR-0039` gate 2 in full.
-- Pack-disposition clock (`PDR-0082`–`PDR-0085`): **FOUR packs** — `trial_l_cooldown`,
-  `trial_f_durability`, `trial_m_combo`, `trial_o_bidding` — each promoted to a fixture or
-  deleted by **2026-10-06**, else PRD-0001 criterion 7 rejects the bet. One
-  fixture-promotion session would clear all four.
-- `PDR-0058` trigger 2 (register only grows): not touched.
+- Pack-disposition clock: **FOUR packs** (L, F, M, O) promoted-or-deleted by **2026-10-06**,
+  else PRD criterion 7 rejects the bet. Note O's disposition should reflect its post-verdict
+  caveats (tie case, reset leak) if promoted to a fixture.
+- `PDR-0079` trigger 3 watch (flagged by the review): the ABSENT by-catch list is now 7+
+  items across four trials; unactioned ABSENTs quietly becoming debt is the failure mode it
+  names.
 
 ## Blocked on / flagged for the owner (not blocking)
 
-- **Nothing escalated this session.** No vision/grant change, no release, no deprecation, no
-  pricing, no data deletion, no external party. `vision.md` untouched.
-- **Dependabot on `main`**: PRs `#33` (torch) and `#34` (pytest) still open; any merge to
-  `main` is yours.
-- **`CLAUDE.md:65` still cites the deleted `REVIEW-2026-08-15…` file** (eleventh sighting;
-  owner's file, deferred by choice).
-- CI Tests on `2dcc2273` was in progress at checkpoint (Lint and Config Validation green);
-  read it before citing the branch fully green at that commit.
-- Cosmetic: `black --check .` repo-wide flags three archival files under
-  `docs/plans/2026-08-11-ws1-pinning-test-sources/` — outside the CI gate, left as
-  point-in-time records on purpose.
+- **Blind re-run pair selection is YOURS** (Appendix A.8): pick two of {L, F, M, O}, at least
+  one from {L, M, O}; comparer is you or an owner-appointed fresh agent. If O: comparer gets
+  pre-briefed on the tie case.
+- Dependabot `#33`/`#34` on `main` still open; merges to `main` are yours.
+- `CLAUDE.md:65` stale citation (twelfth sighting; owner's file, deferred by choice).
+- CI on the checkpoint-commit pushes not re-read at this writing; Lint/Config green on
+  `2dcc2273`, Tests was in progress.
 
 ## Open questions
 
-- **The methodology review's verdict** — the biggest open input. All four predictions have
-  fallen, three surface-choice and now one structural; the review asks whether the instrument
-  measures the vision's claim (novice-trivial authoring) or something easier (expert finds
-  any declared surface). Its findings are the next session's first read.
-- **Blind re-runs** (criterion 3): four records on file; the standing agent has read them all,
-  so a blind executor must be a dispatched fresh agent at the trial's pinned commit. Worth
-  scheduling before the backlog grows further.
-- Prediction calibration: the miscalibration mechanism looks consistent (predictions score
-  the first-reached surface; trials score any declared surface) — D/E/J are where the
-  structural predictions get their hardest test.
+- Retro-derivation of the discovery-path annotation for L/F/M/O (cheap, owed — feeds the
+  novice-facing row and tests `PDR-0086`'s "0 of 4 docs-first" prior).
+- Whether persistent-lifetime globals + effects surviving reset is intent or defect — the
+  design question comment 167 poses on `hamlet-d76684f549`; per the review, persistence
+  should arguably be *declarable*, which is a WS-4-shaped answer.
+- Next corpus revision (after the nine + blind re-runs): candidates Q/R waiting, plus the
+  statistician's substrate-naive stratum proposal (ideas drawn verbatim from a published
+  game-mechanics taxonomy).
 - Unchanged: `exposed_to` hidden default (unfiled); `recurrent_vision_window_side` non-square
   raise (unfiled); `hamlet-1ad6383186`, `hamlet-7cd887c9e5`, `hamlet-266a0a41f0`,
   `tests/README.md` staleness → WS-5, `cues` inert.
 
 ## Next session starts here
 
-**Read the methodology review results first** — three reports (construct validity, RL
-practice, statistical inference); adjudicate findings into filed issues, `proposed` PDRs, or
-protocol amendments, remembering the corpus is frozen and the four completed trials stand
-unless a confirmed defect re-scopes them (`PDR-0085`). Then choose: **run trial five** (B, D,
-E, J, K — protocol §3 preflight first; D/E/J are the structural tests) — **or dispatch a
-blind re-run** of L, F, M, or O (criterion 3; fresh-context executor barred from
-`docs/product/trials/`) — **or clear the pack-disposition clock** (promote four packs to
-fixtures in one session, discharging the 2026-10-06 risk). The WS-4 queue
-(`hamlet-4cd664a955`, `hamlet-77e4f8b3e3`, `hamlet-f1dec55b9d`, `hamlet-d45331a367`,
-`hamlet-6b24c0bd83`, `hamlet-fba3d5aa3c`, plus the older items) continues alongside in
-strangler sessions. Work continues on `project-recovery-2`.
+**Run trial five under Appendix A** — preflight §3, then the NEW steps: dispatch a fresh
+agent to countersign the facet list from the corpus Spec alone (A.1), pre-register the
+search order (A.2), and carry the leg-(c) probe additions (A.4). Pick from B, D, E, J, K —
+D/E/J are the remaining structural tests, but note O already falsified several of their
+shared sub-premises (cross-agent writes, simultaneous collection, durable shared state), so
+the statistician's discount applies; B is the one true ontology-breaker
+(entity-as-set-of-cells) and K the world-acts-on-agent axis. **Alternatively**: the
+retro-derivation of discovery paths for L/F/M/O (one short session, no trial), a blind
+re-run (needs the owner's pair selection first), or clearing the four-pack disposition
+clock. WS-4 queue continues alongside (`hamlet-4cd664a955`, `hamlet-77e4f8b3e3`,
+`hamlet-83806979f7`, `hamlet-bf42ac60b5`, `hamlet-f1dec55b9d`, `hamlet-d45331a367`,
+`hamlet-6b24c0bd83`, `hamlet-fba3d5aa3c`, plus older items). Work continues on
+`project-recovery-2`.

@@ -143,10 +143,110 @@ commit that adds or edits a trial pack: run the validate command on the pack (§
 runs the full gate set on push. A red gate stops the commit, not the trial — the trial's
 verdict stands independently of when its record lands.
 
-## 11. What updates when
+## 11. What updates when (§12 appendix follows)
 
 The trial record is committed in the same session as the trial. `metrics.md`'s north-star row
 is updated only at checkpoint, and only with: the rate so far, the stated denominator (9, minus
 any voids, which are named), the ABSENT/INERT/BLOCKED split, and the per-trial commit pins.
 The INERT escalation threshold is 3 (PRD criterion 5): at 3 or more INERT ideas, escalate to
 the owner as a `vision.md` question — do not write the vision conclusion yourself.
+
+## 12. Appendix A — 2026-08-18 amendments (`PDR-0086`, owner-approved, PRE-REGISTERED before trial five)
+
+Adopted from the three-lens methodology review
+(`docs/product/assessments/2026-08-18-trial-methodology-review/`). **Scope rule:** everything
+here applies prospectively to trials five onward. Nothing here re-scores L, F, M, or O; their
+verdicts stand as recorded. Additions marked *(non-gating)* are recorded columns/annotations
+that do NOT enter the headline PASS/FAIL for this corpus — they may gate only from a future
+corpus revision. Blind re-runs of the four completed trials use the protocol text **as of the
+first run's pinned commit** (i.e. without this appendix); blind re-runs of trials five onward
+use the text as of their own first run's pin.
+
+### A.1 Facet countersigning (gating, procedural)
+
+Before authoring begins, the facet list and its leg-(b) accepted evidence are enumerated by a
+party that will NOT execute the trial — the owner, or a dispatched fresh agent given only the
+frozen corpus entry and this protocol (no executor input, no engine-source access required of
+it). The executor adopts the countersigned list, or reconciles differences in a dated note
+BEFORE authoring starts. Rationale: pre-commitment previously bound evidence but not
+interpretation, and interpretation was executor-owned at maximum-knowledge time.
+
+### A.2 Search pre-registration (gating, procedural)
+
+Before authoring, the executor writes into the record the surfaces it intends to try, in
+order. A PASS on a listed surface confirms the search plan; a PASS on an unlisted surface is
+annotated **"found by search"**. This separates the two records the first four trials
+conflated: first-reach predictions (running ~4-for-4 correct) and any-surface verdicts.
+
+### A.3 Discovery-path annotation *(non-gating)*
+
+Every PASS records, per winning surface: **docs-reachable / error-message-guided /
+source-reading-required**, plus whether the first-reached surface worked. To be derived
+retroactively for L/F/M/O from their authoring logs (no re-execution). This is the data for
+the prospective novice-authorability row in `metrics.md` (`PDR-0086` construct decision).
+
+### A.4 Probe additions — the leg-(c) column *(non-gating for this corpus)*
+
+Each trial's probe additionally records a **"trains-without-incident"** column from:
+- **Reward assertion**: capture the reward vector from `env.step()` at one tick where a
+  declared `drive.yaml` component must move it, and assert the delta. (No trial had ever
+  leg-(b)-checked the reward surface; by the protocol's own INERT logic that was an open
+  false-pass class.)
+- **Double-reset facet**: after `env.reset()`, re-run the probe's first assertion block —
+  every mechanic state must be back at its declared initial unless the pack declares
+  persistence. (Trial O's auction effect and global VFS scratch survive reset —
+  `hamlet-d76684f549`, comment 167.)
+- **Obs-bounds loop**: every observation component within its declared normalization range
+  across the probe run.
+- **Boundary-case rule**: any comparison/branch facet pre-commits and probes its boundary
+  case (equality, zero, saturation).
+- **N≥3 rule**: any mechanic with cross-agent resolution carries at least one probe case
+  with three or more agents (N=2 hides ordering and aggregation bugs).
+- **Random-policy smoke**: ~5 episodes under a random policy (or one `DemoRunner` run with
+  the pack's own `training.yaml` at reduced `max_episodes`): no exception, rewards finite
+  and non-constant, episodes terminate.
+- **Reward-relevance note** *(recorded, never gating)*: do the mechanic's state variables
+  appear in any reward component? ("No" is a legitimate authoring choice and a fact the
+  record states.)
+
+### A.5 Record integrity (gating, procedural)
+
+No verdict-section text may exist in a record before the corresponding command output does.
+(Converts the Trial M near-miss self-catch into a protocol property.)
+
+### A.6 Mixed-classification rule (clarification, previously unspecified)
+
+An idea failing on multiple facets with mixed classes reports every facet's class; for the
+idea-level split and the INERT escalation counter, the idea counts as INERT if ANY failing
+facet is INERT (conservative in the direction the escalation clause exists to protect).
+
+### A.7 Reporting discipline (immediate, also applies to the current corpus)
+
+Interim state is reported as **"k of 9 settled, 9−k pending"**, never "k of k"; the
+`metrics.md` Trend arrow is withheld until the denominator is exhausted; the running rate
+stays out of commit subjects. Every reading publishes the **INERT surface count** (by-catch
+INERT/dead surfaces encountered during trials) beside the idea-level INERT counter, because
+the idea-level counter is structurally suppressed by executor workaround skill. Every
+published reading carries the construct preamble (`metrics.md` north-star row).
+
+### A.8 Blind re-run governance (amends §7's silence, not its reject branch)
+
+The OWNER selects the two re-run trials (not the standing agent), including at least one
+second-surface-dependent PASS (L, M, or O); the comparer is the owner or an owner-appointed
+fresh agent, never the original executor. The comparison records the **surface path** taken,
+not only the verdict — same headline via a different surface is recorded as a
+search-dependence finding even when verdicts agree. §7's reject branch is UNCHANGED: verdict
+or classification disagreement still rejects the instrument; the recorded diagnosis
+(protocol ambiguity vs search variance) informs what is rebuilt, not whether the branch
+fires. If O is chosen, the comparer is pre-briefed that the first run's facet 4 never
+exercised the tie case.
+
+### A.9 Acknowledged, deliberately not edited
+
+The PRD's aggregate-prediction paragraph contains a garbled mid-edit sentence (an editing
+artifact in pre-registration text — acknowledged here rather than edited, since the
+falsification it pre-registered has already resolved against it). The Trial F "breaks →
+stops-working" facet reading was adjudicated by the owner 2026-08-18: **PASS stands against
+the declarable standard; the un-declarable higher standard (item destruction at zero wear)
+is a captured ABSENT gap** (`hamlet-83806979f7`), per the owner's rule: *"it's not a fail if
+it doesn't meet the lower standard, but it's a gap that needs to be captured."*

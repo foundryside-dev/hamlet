@@ -8,11 +8,13 @@ debug_logging: false
 global_profile:
   variables:
     - name: day_count
+      semantic_type: temporal
       type: int
       initial_value: 0
       description: "Number of days elapsed"
 
     - name: is_night
+      semantic_type: temporal
       type: bool
       expression: "temporal.tick % 24 >= 18"
       description: "True during night hours (18:00-6:00)"
@@ -20,16 +22,19 @@ global_profile:
 agent_profile:
   variables:
     - name: motivation
+      semantic_type: custom
       type: float
       initial_value: 1.0
       description: "Agent's intrinsic motivation multiplier"
 
     - name: is_crisis
+      semantic_type: custom
       type: bool
       expression: "bar.energy < 0.2 or bar.health < 0.2"
       description: "True when agent is in resource crisis"
 
     - name: crisis_duration
+      semantic_type: custom
       type: int
       initial_value: 0
       description: "Ticks spent in crisis state"

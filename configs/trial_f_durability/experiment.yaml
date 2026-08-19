@@ -1,0 +1,11 @@
+experiment:
+  version: "1.0"
+  experiment_name: "trial_f_durability"
+  metadata:
+    name: "Trial F — Tool durability"
+    description: "PRD-0001 trial: an item degrades per use and eventually breaks"
+    author: "PRD-0001 trial executor"
+    created: "2026-08-18"
+    tags: ["trial", "prd-0001", "items"]
+  curriculum_levels:
+    - L0_tools

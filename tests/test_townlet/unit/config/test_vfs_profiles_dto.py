@@ -17,6 +17,7 @@ from townlet.config.vfs_profiles_config import (
 def test_global_vfs_variable_with_initial_value():
     """Global VFS variable with static initial value."""
     config = GlobalVFSVariableConfig(
+        semantic_type="custom",
         name="day_count",
         type="int",
         initial_value=0,
@@ -32,6 +33,7 @@ def test_global_vfs_variable_with_initial_value():
 def test_global_vfs_variable_with_expression():
     """Global VFS variable with computed expression."""
     config = GlobalVFSVariableConfig(
+        semantic_type="custom",
         name="is_night",
         type="bool",
         expression="temporal.tick % 24 >= 18",
@@ -48,6 +50,7 @@ def test_global_vfs_variable_requires_value_or_expression():
     """Must have either initial_value or expression."""
     with pytest.raises(ValidationError, match="exactly one"):
         GlobalVFSVariableConfig(
+            semantic_type="custom",
             name="invalid",
             type="int",
             # Missing both initial_value and expression
@@ -58,6 +61,7 @@ def test_global_vfs_variable_rejects_both():
     """Cannot have both initial_value and expression."""
     with pytest.raises(ValidationError, match="exactly one"):
         GlobalVFSVariableConfig(
+            semantic_type="custom",
             name="invalid",
             type="int",
             initial_value=5,
@@ -68,6 +72,7 @@ def test_global_vfs_variable_rejects_both():
 def test_agent_vfs_variable_with_initial_value():
     """Agent VFS variable with static initial value."""
     config = AgentVFSVariableConfig(
+        semantic_type="custom",
         name="motivation",
         type="float",
         initial_value=1.0,
@@ -82,6 +87,7 @@ def test_agent_vfs_variable_with_initial_value():
 def test_agent_vfs_variable_with_expression():
     """Agent VFS variable with computed expression."""
     config = AgentVFSVariableConfig(
+        semantic_type="custom",
         name="is_crisis",
         type="bool",
         expression="bar.energy < 0.2 or bar.health < 0.2",
@@ -95,6 +101,7 @@ def test_agent_vfs_variable_with_expression():
 def test_agent_vfs_variable_with_reference_type():
     """Agent VFS can reference other entities."""
     config = AgentVFSVariableConfig(
+        semantic_type="custom",
         name="nearest_food",
         type="item_ref",
         expression="nearest(items, self.position, type='food')",
@@ -109,8 +116,8 @@ def test_agent_vfs_profile_unique_names():
     with pytest.raises(ValidationError, match="Duplicate"):
         AgentVFSProfileConfig(
             variables=[
-                AgentVFSVariableConfig(name="x", type="int", initial_value=0),
-                AgentVFSVariableConfig(name="x", type="int", initial_value=1),
+                AgentVFSVariableConfig(semantic_type="custom", name="x", type="int", initial_value=0),
+                AgentVFSVariableConfig(semantic_type="custom", name="x", type="int", initial_value=1),
             ]
         )
 
@@ -176,12 +183,12 @@ def test_vfs_profiles_config_complete():
         debug_logging=False,
         global_profile=GlobalVFSProfileConfig(
             variables=[
-                GlobalVFSVariableConfig(name="day_count", type="int", initial_value=0),
+                GlobalVFSVariableConfig(semantic_type="custom", name="day_count", type="int", initial_value=0),
             ]
         ),
         agent_profile=AgentVFSProfileConfig(
             variables=[
-                AgentVFSVariableConfig(name="motivation", type="float", initial_value=1.0),
+                AgentVFSVariableConfig(semantic_type="custom", name="motivation", type="float", initial_value=1.0),
             ]
         ),
         item_profiles=[

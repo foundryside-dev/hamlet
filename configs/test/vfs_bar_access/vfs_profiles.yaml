@@ -5,6 +5,7 @@ debug_logging: false
 global_profile:
   variables:
     - name: low_energy_flag
+      semantic_type: custom
       type: bool
       expression: "bar.energy < 0.3"
 

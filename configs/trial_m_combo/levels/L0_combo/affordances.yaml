@@ -1,0 +1,74 @@
+affordances:
+  version: '1.0'
+  affordances:
+  # A — the opener: always available, sets the A-trace.
+  - name: COMBO_A
+    interaction_type: instant
+    costs: {}
+    opening_hours:
+      enabled: false
+    deployment:
+      type: fixed
+      positions:
+      - - 1
+        - 1
+    interactions:
+      on_start:
+      - modify: target.bar.energy
+        value: target.bar.energy + 0.05
+      - modify: target.bar.did_a
+        value: "1.0"
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
+  # B — unlocked by A: the ENTIRE effect (payoff AND the B-trace write) sits
+  # inside the gate on the A-trace, so before A this interaction does nothing
+  # and cannot leak did_b. The gate tests an event trace, not a spendable stock.
+  - name: COMBO_B
+    interaction_type: instant
+    costs: {}
+    opening_hours:
+      enabled: false
+    deployment:
+      type: fixed
+      positions:
+      - - 2
+        - 2
+    interactions:
+      on_start:
+      - if: target.bar.did_a >= 1.0
+        then:
+        - modify: target.bar.energy
+          value: target.bar.energy + 0.07
+        - modify: target.bar.did_b
+          value: "1.0"
+        else: []
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
+  # C — unlocked by B: gated on the B-trace, which itself is only reachable
+  # through B's gate on A, so the dependency composes A -> B -> C.
+  - name: COMBO_C
+    interaction_type: instant
+    costs: {}
+    opening_hours:
+      enabled: false
+    deployment:
+      type: fixed
+      positions:
+      - - 3
+        - 3
+    interactions:
+      on_start:
+      - if: target.bar.did_b >= 1.0
+        then:
+        - modify: target.bar.energy
+          value: target.bar.energy + 0.11
+        else: []
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
+  modulations: []

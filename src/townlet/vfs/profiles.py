@@ -41,6 +41,10 @@ class CompiledVariable:
     initial_value_mode: str | None = None
     initial_value_params: dict | None = None
     dims: int | None = None
+    # The author's declared observation group. Set for global and agent profile variables
+    # (each compiles to its own observation field); None for item variables, which are
+    # observed through the `obs_item_slots` feature and carry no declaration (PDR-0075).
+    semantic_type: str | None = None
 
 
 @dataclass
@@ -240,6 +244,7 @@ class VFSProfileCompiler:
                 initial_value_mode=getattr(var, "initial_value_mode", None),
                 initial_value_params=getattr(var, "initial_value_params", None),
                 dims=getattr(var, "dims", None),
+                semantic_type=getattr(var, "semantic_type", None),
             )
 
         # Variable with expression
@@ -266,6 +271,7 @@ class VFSProfileCompiler:
             initial_value_mode=getattr(var, "initial_value_mode", None),
             initial_value_params=getattr(var, "initial_value_params", None),
             dims=getattr(var, "dims", None),
+            semantic_type=getattr(var, "semantic_type", None),
         )
 
     def compile_global_profile(self, profile: GlobalVFSProfileConfig, bar_schema: dict[str, str] | None = None) -> CompiledGlobalProfile:

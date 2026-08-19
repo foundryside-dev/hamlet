@@ -25,6 +25,7 @@ def _field(
         scope="agent",
         description=description,
         semantic_type="custom",
+        feature="variable",
         curriculum_active=curriculum_active,
     )
 

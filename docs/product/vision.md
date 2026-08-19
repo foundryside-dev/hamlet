@@ -34,6 +34,45 @@
 >   the grant again **and approved this correction**. Scope unchanged — same autonomous list,
 >   same escalation taxonomy, `PDR-0046` still governs the push. Factual correction, not a
 >   vision change. Provenance PDR recorded at this session's checkpoint.
+> - *2026-08-19* — corrected the authority grant's **`Last reviewed` stamp** from `2026-08-16`
+>   to `2026-08-19`, and restated the intervening re-confirmations. The owner re-confirmed the
+>   grant unchanged at each `/own-product` resume between those dates without a `vision.md` touch
+>   being approved (so the stamp was left, per the 2026-08-15 rule: corrected only at an approved
+>   touch); at the 2026-08-19 resume the owner confirmed the grant again **and approved this
+>   correction**, choosing it explicitly over carrying the debt a third time. Scope unchanged —
+>   same autonomous list, same escalation taxonomy, `PDR-0046` still governs the push. Factual
+>   correction, not a vision change. Provenance PDR recorded at this session's checkpoint.
+> - *2026-08-20* — **the authority grant is WIDENED, the first scope change since it was granted
+>   on 2026-08-11.** The autonomous list gains *"commit and push `project-recovery*` branches —
+>   checkpoint commits included"*, superseding `/product-checkpoint`'s blanket no-push rule for this
+>   product. Owner-approved in-session, verbatim: *"you can extend the grant to include pushing, I
+>   don't actually have an opinion on this."* Because that consent is explicitly indifferent rather
+>   than considered, the widening was taken at its **narrowest defensible reading** — it covers the
+>   `project-recovery*` branches only, and does **not** touch pushes to `main`, tags, releases, or
+>   anything outward-facing. The merge to `main` remains the boundary and still gates on
+>   `PDR-0039`. Recorded as `PDR-0099`, which also states what would make this widening wrong.
+>   Every earlier amendment-log entry was a factual correction; this one changes scope, so it is
+>   marked as such. The `Last reviewed` stamp was corrected from `2026-08-19` to `2026-08-20` at
+>   the same approved touch, discharging the debt `PDR-0093` carried — the pattern `PDR-0038` set.
+> - *2026-08-20* (third entry that day) — **the merge to `main` is no longer the boundary; it is
+>   AUTONOMOUS.** Follows directly from `PDR-0100`: once publication means declaring 1.0, the ground
+>   on which the merge escalated disappeared, and the owner ruled the merge autonomous rather than
+>   leaving it gated on an unstated reason (*"Autonomous — run gate 2 and merge now"*). `PDR-0039`
+>   gate 2 survives unchanged in substance but changes in KIND — from an escalation the agent waits
+>   on to a quality gate the agent executes. This is a **scope change**, the second of the day.
+>   Recorded as `PDR-0101`. Still escalated: declaring 1.0, announcement, tags/releases,
+>   vision/strategy/grant changes, data deletion.
+> - *2026-08-20* (second entry that day) — **"public release" is owner-DEFINED, and the definition
+>   is narrower than this document had assumed.** Publication means *publishing a product* —
+>   a coherent product offering, i.e. **declaring 1.0** — not code being visible on the internet.
+>   Owner's words: *"I call publication declaring 1.0 - not makinmg content availabile on the
+>   internet"* and *"publication => publishing a product and right now we don't have a coherent
+>   product offering, just code"*. The grant's specifics note had cited the repo's public status as
+>   what gave the release clause teeth; that was the standing agent's inference, never the owner's,
+>   and it is **corrected, not annotated**, because it had been shaping how conservatively the agent
+>   behaved — including the rationale written into `PDR-0099` an hour earlier. *Announcement*
+>   remains a separate limb and still escalates. Recorded as `PDR-0100`. Scope of the autonomous
+>   list is unchanged by this entry; what changed is the **meaning** of one escalation term.
 > - *2026-08-13* — re-tagged the **tech-demo demonstrator claim** as delivery intent: "Low Energy
 >   Delirium" was never implemented (*"the idea outran the codebase and we pivotd a few times"*),
 >   and Townlet Town is **one of several tech demos** to be provided at the end. Escalated by the
@@ -243,17 +282,29 @@ they are already binding project commitments, not new inventions.
 
 ## Authority grant
 
-Granted by: John Morrissey (qacona@gmail.com)     Last reviewed: 2026-08-16
+Granted by: John Morrissey (qacona@gmail.com)     Last reviewed: 2026-08-20
 Review cadence: monthly, or on any vision change
-Status: **CONFIRMED** by the owner on 2026-08-16, unchanged from the 2026-08-11 grant
+Status: **CONFIRMED** by the owner on 2026-08-19, unchanged from the 2026-08-11 grant
 (re-confirmed 2026-08-14, at the 2026-08-15 `/own-product` resume, twice on 2026-08-16 — the
-first re-confirmation that day preceded the stamp correction, per the amendment log — scope
-identical each time). Read together with `PDR-0046`: the agent may commit and push `project-recovery`
-without asking — the merge to `main` is the boundary, and it gates on `PDR-0039`.
+first re-confirmation that day preceded the stamp correction, per the amendment log — and at
+each `/own-product` resume since, most recently at the 2026-08-19 resume that approved this
+stamp correction; scope identical every time). Read together with `PDR-0046`, `PDR-0099`, `PDR-0100` and `PDR-0101`: the agent may commit and
+push `project-recovery*` **including checkpoint commits**, and **merge to `main`**, without
+asking. `PDR-0039` gate 2 (the unconditional README re-verification, by method — sweep, draft from
+verified facts, adversarial pass — never a re-read) is owed at **every** merge and is executed by
+the agent, not waited on. **The merge is no longer the boundary.** What remains escalated:
+declaring **1.0** / publishing a product offering (`PDR-0100`), *announcement* — telling people —
+tags and releases, vision/strategy/grant changes, and data deletion.
 
 Autonomous within strategy — the agent MAY, without asking:
   prioritize the backlog, write PRDs, dispatch delivery, accept against
-  criteria, reprioritize, kill a failing bet per metrics.md.
+  criteria, reprioritize, kill a failing bet per metrics.md,
+  commit AND PUSH `project-recovery*` branches — checkpoint commits
+  included (`PDR-0099`; supersedes `/product-checkpoint`'s blanket no-push
+  rule for this product only),
+  and **MERGE `project-recovery*` into `main`** (`PDR-0101`) — which still
+  owes `PDR-0039` gate 2 unconditionally, now read as a QUALITY gate the
+  agent executes rather than an escalation the agent waits on.
 
 Escalate BEFORE acting — the agent MUST get owner sign-off for:
   changing this vision/strategy/grant, public release or announcement,
@@ -264,6 +315,26 @@ Escalate BEFORE acting — the agent MUST get owner sign-off for:
 **Note on this product's specifics:** because Townlet is pre-release with zero users, the
 "deprecating a feature users depend on" clause is currently near-vacuous — deleting code is
 explicitly encouraged by `CLAUDE.md`. The clauses with real teeth here are *vision/strategy
-change*, *public release or announcement* (the GitHub repo is public at
-`github.com/foundryside-dev/hamlet`), and *data deletion* — which for this product includes
-deleting `runs/`, checkpoints, or recorded episodes that are experimental evidence.
+change*, *announcement*, and *data deletion* — which for this product includes deleting `runs/`,
+checkpoints, or recorded episodes that are experimental evidence.
+
+**What "public release" means here — owner-defined 2026-08-20 (`PDR-0100`), and it is NARROWER
+than this document previously assumed.** Publication means **publishing a product**: putting out a
+coherent product offering for someone to adopt, which for this project means **declaring 1.0**.
+The owner's words: *"I call publication declaring 1.0 — not making content available on the
+internet"*, and *"publication => publishing a product and right now we don't have a coherent
+product offering, just code."*
+
+It follows that **code being visible on the internet is not publication.** The repository being
+public at `github.com/foundryside-dev/hamlet`, pushing branches, and merging to `main` are not
+release events under this grant — there is no product offering yet to release, only code. This
+paragraph previously cited the repo's public status as what gave the release clause "real teeth";
+that reading was the standing agent's, not the owner's, and it was **wrong**. It is corrected here
+rather than left as a footnote, because it had been actively shaping how conservatively the agent
+behaved.
+
+*Announcement* is a separate limb and still escalates on its own: it covers **telling people** —
+a blog post, a social post, a forum or mailing-list message, a submission to an aggregator — and
+is about outward communication to external parties, not about whether code is readable. The
+tech-debt anti-goal above is already scoped *"until 1.0 is declared"*, so this definition puts the
+release clause on the same milestone the rest of the vision already turns on.

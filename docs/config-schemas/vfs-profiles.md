@@ -98,11 +98,13 @@ VFS Profiles organize variables into three scopes:
 global_profile:
   variables:
     - name: day_count
+      semantic_type: temporal     # REQUIRED for global/agent variables — see Observation Integration
       type: int
       initial_value: 0
       description: "Number of days elapsed"
 
     - name: is_night
+      semantic_type: temporal
       type: bool
       expression: "temporal.tick % 24 >= 18"
       description: "True during night hours (18:00-6:00)"
@@ -123,16 +125,19 @@ global_profile:
 agent_profile:
   variables:
     - name: motivation
+      semantic_type: custom       # REQUIRED for global/agent variables
       type: float
       initial_value: 1.0
       description: "Agent's intrinsic motivation multiplier"
 
     - name: is_crisis
+      semantic_type: custom
       type: bool
       expression: "bar.energy < 0.2 or bar.health < 0.2"
       description: "True when agent is in resource crisis"
 
     - name: crisis_duration
+      semantic_type: custom
       type: int
       initial_value: 0
       description: "Ticks spent in crisis state"
@@ -220,8 +225,9 @@ item_profiles:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `name` | string | Unique variable name (within profile) |
-| `type` | enum | Variable type (int, float, bool, vec2i, vec3i) |
+| `name` | string | Unique variable name — and, when exposed, the name of its observation field, so it must not collide with an `environment.yaml` variable, a meter field, a compiler block, or another exposed profile variable (compile error) |
+| `type` | enum | Variable type (int, float, bool, vec2i, vec3i, …) |
+| `semantic_type` | enum | **Global and agent variables only. Required.** The observation group the variable's field is laid out in when exposed: one of `spatial`, `affordance`, `effects`, `temporal`, `custom` (`bars` is reserved to meters — compile error). Item variables do **not** take it: they are observed through the single `obs_item_slots` feature, so a per-variable group could reach nothing (`PDR-0075`). |
 
 ### Mutually Exclusive Fields (XOR Constraint)
 
@@ -423,53 +429,62 @@ agent_profile:
 
 ## Observation Integration
 
-Variables can appear in agent observations by configuring access control in `variables_reference.yaml`.
+A profile variable appears in the agent's observation when its `exposed_to` list contains
+`agent`. (Note the hidden default: an empty `exposed_to` is currently rewritten to `["agent"]`
+by the profile validators — a No-Defaults violation tracked for WS-4; declare it explicitly.)
 
-### Making Variables Observable
+### What the compiler emits (`PDR-0075`)
 
-**Step 1**: Define variable in `vfs_profiles.yaml`:
+- **Every exposed global or agent profile variable compiles to its OWN observation field**,
+  named after the variable, `scope` `global` or `agent`, width from the variable's type
+  (`int`/`float`/`bool` → 1; `vec2i` → 2; `vec3i` → 3; `vecNi`/`vecNf` → `dims`;
+  tensors → product of `shape`), and **`semantic_type` = the author's declaration**. The field
+  is laid out with its group in the fixed group order `spatial, bars, affordance, effects,
+  custom, temporal`. Values are observed raw (no normalization surface on profile variables
+  yet).
+- **Exposed item-profile variables** are observed through ONE compiler-emitted feature field,
+  `obs_item_slots` (`semantic_type: custom`): for each of the agent's item slots, the exposed
+  variables of the item occupying it, positional within the slot (`max_items_per_agent` ×
+  the widest profile's exposed width). Empty slots read zero. Whether this should instead be
+  name-stable per variable is an open design question (`hamlet-1ad6383186`).
+- The runtime reads every field the same way — by the field's source variable and that
+  variable's declared scope — there is no per-field special case for profile variables.
+
 ```yaml
+global_profile:
+  variables:
+    - name: day_count
+      semantic_type: temporal   # → field `day_count`, scope global, 1 dim, temporal group
+      type: int
+      initial_value: 0
+      exposed_to: [agent]
 agent_profile:
   variables:
     - name: motivation
+      semantic_type: custom     # → field `motivation`, scope agent, 1 dim, custom group
       type: float
       initial_value: 1.0
+      exposed_to: [agent]
+item_profiles:
+  - profile_name: food
+    variables:
+      - name: freshness         # → observed inside `obs_item_slots` (no semantic_type)
+        type: float
+        initial_value: 1.0
+        exposed_to: [agent]
 ```
-
-**Step 2**: Configure access control in `variables_reference.yaml`:
-```yaml
-variables:
-  - id: motivation
-    scope: agent
-    type: scalar
-    lifetime: episode
-    readable_by: ["agent", "engine"]  # Agent can observe
-    writable_by: ["engine"]
-    default: 1.0
-```
-
-**Step 3**: Variable automatically appears in observations.
 
 ### Observation Dimensions
 
-Each observable variable contributes to `obs_dim`:
-
 | Type | Contribution |
 |------|--------------|
-| `int`, `float`, `bool` | +1 dim |
+| `int`, `float`, `bool`, `*_ref` | +1 dim |
 | `vec2i` | +2 dims |
 | `vec3i` | +3 dims |
+| `vecNi`, `vecNf` | +`dims` |
+| tensors | +product of `shape` |
 
-**Example**:
-```yaml
-agent_profile:
-  variables:
-    - name: motivation        # +1 dim
-    - name: is_crisis         # +1 dim (bool converted to float)
-    - name: crisis_duration   # +1 dim
-```
-
-**Total Agent VFS**: 3 dims
+Ask the compiled artifact for the truth (`observation_spec.fields`); do not sum by hand.
 
 ### Access Control
 

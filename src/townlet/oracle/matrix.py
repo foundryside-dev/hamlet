@@ -28,32 +28,35 @@ _DEFAULT_LEVELS = (
     "L3_temporal_mechanics",
 )
 
-# DIV-003 fixture cells (docs/oracle/known-divergences.md — the
-# substrate→observation-dim seam, PDR-0035/PDR-0036). Each pack is
-# default_curriculum with exactly one stratum axis moved (pinned by
-# test_div003_fixture_packs_vary_only_the_declared_axis); each signature is
-# the verbatim final-exception line re-verified at oracle-2026-08-13
-# (0e875d7a) on 2026-08-15. The shape-mismatch messages embed num_agents in
-# their first dim, so these signatures are stable only at num_agents=4 —
-# change the cell params and the signatures must be re-verified at the tag.
-_DIV003_FIXTURES = (
-    # (pack dir under configs/differential, level, registered signature)
-    (
-        "div003_scaled",
-        "L1_full_observability",
-        "ValueError: Observation field 'obs_position' produced shape (4, 4), expected (4, 2).",
-    ),
-    (
-        "div003_cubic_partial",
-        "L2_partial_observability",
-        "ValueError: Observation field 'obs_local_window' produced shape (4, 125), expected (4, 25).",
-    ),
-    (
-        "div003_rect",
-        "L1_full_observability",
-        "ValueError: Non-square grids not yet supported: 8×6",
-    ),
+# Differential packs (configs/differential/): default_curriculum with exactly
+# one stratum axis moved (pinned by
+# test_differential_packs_vary_only_the_declared_axis). They entered the matrix
+# as the DIV-003 crash cells — at oracle-2026-08-13 (0e875d7a) each crashed on
+# the old side with a signature re-verified at that tag. DIV-003 was cut and
+# adjudicated (PDR-0041), and at oracle-2026-08-17 (4222a917, PDR-0074) the
+# oracle itself runs them, so the entry is `retired` and these are plain
+# standing cells expected to AGREE. They stay because they exercise the
+# substrate axes the default pack does not.
+_DIFFERENTIAL_PACKS = (
+    # (pack dir under configs/differential, level)
+    ("div003_scaled", "L1_full_observability"),
+    ("div003_cubic_partial", "L2_partial_observability"),
+    ("div003_rect", "L1_full_observability"),
 )
+
+# Profile-variable packs: the only runnable packs whose `vfs_profiles.yaml`
+# declares variables, so the only cells in which the compiled `obs_vfs` block
+# has any width (items_smoke: 3 dims, item scope; effects_smoke: 1 dim, global
+# scope). Added at oracle-2026-08-17 (PDR-0074) because unit 3
+# (hamlet-f0ed709ecf) splits that block, and default_curriculum + the
+# differential packs declare `variables: []` — without these cells the matrix
+# would read green about that cut while measuring nothing (PDR-0052's shape).
+# Their AGREE at the new tag is what proves they can see, before the cut asks.
+_PROFILE_VARIABLE_PACKS = (
+    ("configs/test/items_smoke", "L0_smoke"),
+    ("configs/test/effects_smoke", "L0_effects"),
+)
+
 
 # ASCII: \d alone also matches Unicode decimal digits ('DIV-٠٠٣'), which would
 # construct a ref no register heading can ever carry.
@@ -138,7 +141,10 @@ class RegisteredHashDivergence:
     the harness stops answering at the moment of use.
 
     Added because a register entry needs it (DIV-004), which is the bar the
-    sibling class sets for new shapes — not speculatively.
+    sibling class sets for new shapes — not speculatively. DIV-004 and DIV-005
+    retired when the oracle moved forward to oracle-2026-08-17 (PDR-0074); the
+    shape stays because the next authoring cut (DIV-006, unit 3) binds it, and
+    the harness's compare path and its tests exercise it regardless.
 
     Narrowness (PDR-0033 — a suppression mechanism is a machine for
     manufacturing false AGREEs if it is loose):
@@ -188,29 +194,28 @@ class RegisteredHashDivergence:
         return frozenset(self.hash_fields)
 
 
-# DIV-004 — the normalization-vocabulary programme (WS-4, PDR-0054). MEASURED on all
-# five default_curriculum levels at each cut by compiling the live tree against a git
-# worktree at the pre-cut commit — never predicted, and re-measured when the set grew.
-#
-# W1 (the `clip` parameter) moved three. W2/W3/W4 (`range_type` as the complete type
-# declaration, one observation field per meter, source width split from observed width)
-# added `variable_schema_hash`, because the VFS variable SET changed: one N-wide
-# `obs_meters` variable became N 1-wide `obs_meter_<name>` variables.
-#
-# `environment_hash` is RAW (`_compute_pydantic_hash` over the whole file) so it would
-# move for any edit to environment.yaml; the three DERIVED hashes are what this entry
-# actually asserts. `transition_graph_hash` deliberately does NOT appear: the cut is
-# observation-side only, and the VTC bridge reads bars through `_current_bar_state`, not
-# through the observation.
-_DIV004 = RegisteredHashDivergence(
-    register_ref="DIV-004",
+# DIV-006 — unit 3 (hamlet-f0ed709ecf, PDR-0075): the `obs_vfs` block became one field per
+# exposed global/agent profile variable plus the `obs_item_slots` feature. MEASURED on both
+# profile packs by compiling the pre-cut tree (the oracle worktree at 4222a917) beside the
+# live tree: exactly these three DERIVED hashes move; `environment_hash` does not
+# (environment.yaml is untouched), and neither does anything else. `default_curriculum` and
+# the differential packs declare no profile variables, so nothing moves there and their
+# sixteen cells stay undeclared.
+_DIV006 = RegisteredHashDivergence(
+    register_ref="DIV-006",
     hash_fields=(
-        "environment_hash",
         "observation_schema_hash",
         "variable_schema_hash",
         "vfs_hash",
     ),
 )
+# Which profile packs' FROZEN fixture is held at the pre-cut vfs_profiles.yaml schema. The
+# cut requires `semantic_type` on global/agent profile variables, so effects_smoke (one global
+# variable) drifts from its fixture by exactly that key; items_smoke declares only item
+# variables, which take no semantic_type, so its live pack is still a byte copy of its
+# fixture and it must NOT declare a pack divergence (a declaration with nothing to declare is
+# a stale entry — test_pack_freeze pins this).
+_DIV006_PACK_DRIFT = frozenset({"configs/test/effects_smoke"})
 
 
 @dataclass(frozen=True)
@@ -247,9 +252,11 @@ class Cell:
 
 
 def default_cells() -> tuple[Cell, ...]:
-    """The full declared matrix: the standing block (all 5 default_curriculum
-    levels on cpu, then all 5 on cuda), followed by the DIV-003 block (each
-    fixture pack on cpu, then each on cuda).
+    """The full declared matrix, in three blocks, each cpu-then-cuda:
+
+    1. standing — all 5 default_curriculum levels (10 cells);
+    2. differential — the three one-axis-moved packs (6 cells);
+    3. profile-variable — items_smoke and effects_smoke (4 cells).
 
     CUDA cells are always declared, never conditionally omitted — per spec,
     the RUN decision (whether to actually execute them) belongs to the
@@ -257,18 +264,13 @@ def default_cells() -> tuple[Cell, ...]:
     that drops CUDA cells entirely without the flag would make that skip
     silent instead of reported.
 
-    No STANDING cell declares an expected CRASH divergence (pinned by test) —
-    only the DIV-003 fixture cells do, each binding the register entry with its
-    tag-verified signature. Pre-cut they land NEW_SIDE_ERROR (both sides
-    crash — the divergence is not yet built); they flip to
-    DIVERGED_AS_REGISTERED when the seam is cut.
-
-    Every standing cell DOES declare DIV-004, the hash-only shape: WS-4 changes
-    the authoring surface, so the frozen pack stays at the old schema, the two
-    sides compile different `environment.yaml` files, and the compiled
-    provenance moves by construction. The three fields are enumerated because
-    they were MEASURED across all five levels, not predicted — and the cells
-    still fail on any fourth mover or on any stream difference.
+    At oracle-2026-08-17 the sixteen standing + differential cells declare
+    nothing — no `expected`, no `pack_divergence`, no `hash_divergence` — and
+    their fixtures under oracle_fixtures/ are byte copies of the live packs, so
+    for them exit 0 means what it says: old and new AGREE (PDR-0074). The four
+    profile-variable cells bind DIV-006 (hash-only, PDR-0075), the first entry
+    written against the new tag; declarations return only when a register
+    entry needs them (PDR-0037 record-then-bind).
     """
     standing = tuple(
         Cell(
@@ -279,14 +281,12 @@ def default_cells() -> tuple[Cell, ...]:
                 steps=100,
                 seed=42,
                 device=device,
-            ),
-            pack_divergence="DIV-004",
-            hash_divergence=_DIV004,
+            )
         )
         for device in ("cpu", "cuda")
         for level in _DEFAULT_LEVELS
     )
-    div003 = tuple(
+    differential = tuple(
         Cell(
             RunParams(
                 pack=f"configs/differential/{pack_dir}",
@@ -295,15 +295,25 @@ def default_cells() -> tuple[Cell, ...]:
                 steps=100,
                 seed=42,
                 device=device,
-            ),
-            expected=RegisteredDivergence(register_ref="DIV-003", old_stderr_substring=signature),
-            # These packs are copies of default_curriculum, so DIV-004's schema
-            # change reaches them too and the frozen fixtures stay behind. No
-            # hash_divergence: the old side crashes and writes no trace, so
-            # there is nothing to compare hashes against.
-            pack_divergence="DIV-004",
+            )
         )
         for device in ("cpu", "cuda")
-        for pack_dir, level, signature in _DIV003_FIXTURES
+        for pack_dir, level in _DIFFERENTIAL_PACKS
     )
-    return standing + div003
+    profile = tuple(
+        Cell(
+            RunParams(
+                pack=pack,
+                level=level,
+                num_agents=4,
+                steps=100,
+                seed=42,
+                device=device,
+            ),
+            pack_divergence="DIV-006" if pack in _DIV006_PACK_DRIFT else None,
+            hash_divergence=_DIV006,
+        )
+        for device in ("cpu", "cuda")
+        for pack, level in _PROFILE_VARIABLE_PACKS
+    )
+    return standing + differential + profile

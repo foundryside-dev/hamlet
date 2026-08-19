@@ -1,0 +1,11 @@
+experiment:
+  version: "1.0"
+  experiment_name: "trial_o_bidding"
+  metadata:
+    name: "Trial O — Adversarial bidding (highest bid wins and pays)"
+    description: "PRD-0001 trial pack: global clearing phase over simultaneous bids"
+    author: "PRD-0001 trial executor"
+    created: "2026-08-18"
+    tags: ["trial", "prd-0001"]
+  curriculum_levels:
+    - L0_auction

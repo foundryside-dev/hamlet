@@ -27,7 +27,7 @@ from townlet.config.effects_config import EffectScope
 from townlet.effects.manager import ActiveEffect
 
 # Removed: calculate_expected_observation_dim (now using env.observation_dim directly)
-from townlet.universe.compilers.observation import meter_name_from_observation_field, meter_observation_field_name
+from townlet.universe.compilers.observation import meter_observation_field_name
 from townlet.universe.errors import CompilationError
 from townlet.vfs.observation_builder import apply_normalization
 
@@ -71,8 +71,9 @@ class TestFullObservability:
         obs = basic_env.reset()
         assert obs.shape[1] == basic_env.observation_dim
 
-    def test_obs_vfs_field_requires_compiled_vfs_observation_spec(self, cpu_device: torch.device, env_factory):
-        """obs_vfs fields fail loudly when the compiled VFS observation spec is missing."""
+    def test_item_slots_field_requires_compiled_vfs_observation_spec(self, cpu_device: torch.device, env_factory):
+        """The item-slot feature fails loudly when the compiled VFS observation spec is missing
+        (PDR-0075: `obs_item_slots` replaced the `obs_vfs` block; the sync step is what needs the spec)."""
         env = env_factory(
             config_dir=Path("configs/test/items_smoke"),
             level_name="L0_smoke",
@@ -81,11 +82,12 @@ class TestFullObservability:
         )
 
         env.reset()
-        assert any(field.name == "obs_vfs" for field in env.observation_spec.fields)
+        assert any(field.name == "obs_item_slots" for field in env.observation_spec.fields)
+        assert not any(field.name == "obs_vfs" for field in env.observation_spec.fields)
 
         env.vfs_observation_spec = None
 
-        with pytest.raises(ValueError, match="obs_vfs.*compiled VFS observation spec"):
+        with pytest.raises(ValueError, match="obs_item_slots.*compiled VFS observation spec"):
             env._get_observations()
 
     @pytest.mark.parametrize(
@@ -162,7 +164,8 @@ class TestFullObservability:
 
         specs = {f.id: f.normalization for f in env.universe.vfs_observation_fields}
         for field in bars_fields:
-            meter_name = meter_name_from_observation_field(field.name)
+            meter_name = field.feature_ref  # the compiled field NAMES its meter; nothing parses it (unit 4)
+            assert meter_name is not None and field.feature == "meter"
             column = env.meter_name_to_index[meter_name]
             meter_vfs = env.vfs_registry.get(field.name, reader="engine")
 

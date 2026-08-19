@@ -31,6 +31,8 @@ class TestObservationSpec:
                 scope="agent",
                 description="Energy meter",
                 semantic_type="bars",
+                feature="meter",
+                feature_ref="energy",
             ),
             ObservationField(
                 uuid=None,
@@ -42,12 +44,18 @@ class TestObservationSpec:
                 scope="agent",
                 description="Grid position",
                 semantic_type="spatial",
+                feature="position",
             ),
         ]
         spec = ObservationSpec.from_fields(fields)
 
         assert spec.get_field_by_name("energy").name == "energy"
         assert spec.get_fields_by_semantic_type("bars")[0].name == "energy"
+        assert [f.name for f in spec.get_fields_by_feature("meter")] == ["energy"]
+        assert spec.get_single_field_by_feature("position").name == "position"
+        assert spec.get_single_field_by_feature("temporal") is None
+        with pytest.raises(ValueError, match="closed vocabulary"):
+            spec.get_fields_by_feature("obs_position")
         assert spec.fields[0].uuid is not None
         assert spec.fields[0].uuid != spec.fields[1].uuid
 
@@ -65,6 +73,8 @@ class TestObservationSpec:
             scope="agent",
             description="Energy",
             semantic_type="bars",
+            feature="meter",
+            feature_ref="energy",
         )
         field_b = ObservationField(
             uuid="deadbeefdeadbeef",
@@ -76,6 +86,8 @@ class TestObservationSpec:
             scope="agent",
             description="Energy",
             semantic_type="bars",
+            feature="meter",
+            feature_ref="energy",
         )
 
         with pytest.raises(ValueError, match="duplicate observation field UUIDs"):

@@ -92,6 +92,7 @@ def test_resolve_references_allows_profile_vfs_variables_in_dac(tmp_path: Path) 
                 "global_profile": {
                     "variables": [
                         {
+                            "semantic_type": "custom",
                             "name": "hunger_pressure",
                             "type": "float",
                             "initial_value": 0.0,

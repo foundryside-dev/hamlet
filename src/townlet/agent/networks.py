@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from typing import TYPE_CHECKING, cast
 
 import torch
@@ -48,6 +49,31 @@ class SimpleQNetwork(nn.Module):
             q_values: [batch, action_dim]
         """
         return cast(torch.Tensor, self.net(x))
+
+
+def recurrent_vision_window_side(observation_spec: ObservationSpec) -> int:
+    """The side length of the square local-vision window the recurrent encoder convolves over.
+
+    Read from the compiled field whose FEATURE is `local_window` — whatever the compiler named
+    it — never from a field literally called `obs_local_window` (PDR-0045). Returns 1 when the
+    spec has no window (a full-observability universe): the recurrent network is then not the
+    architecture in use, and 1 is the value the population API has always taken for "none".
+
+    The square-root is the recurrent encoder's own assumption — `RecurrentSpatialQNetwork`
+    reshapes the window to `[1, side, side]` for `Conv2d` — so it lives beside that encoder.
+    A window that is not a perfect square (a cubic partial-vision substrate) is a defect
+    against THIS encoder, and it says so rather than truncating.
+    """
+    window = observation_spec.get_single_field_by_feature("local_window")
+    if window is None or window.dims <= 0:
+        return 1
+    side = int(math.sqrt(window.dims))
+    if side * side != window.dims:
+        raise ValueError(
+            f"Local-window observation field '{window.name}' has dims={window.dims}, which is not a "
+            "perfect square; RecurrentSpatialQNetwork's Conv2d vision encoder needs a square window."
+        )
+    return side
 
 
 class RecurrentSpatialQNetwork(nn.Module):
@@ -202,26 +228,29 @@ class RecurrentSpatialQNetwork(nn.Module):
         self._affordance_slice: slice | None = None
         self._temporal_slice: slice | None = None
 
-        for field in observation_spec.fields:
-            if field.name == "obs_local_window":
-                self._grid_slice = slice(field.start_index, field.end_index)
-            elif field.name == "obs_position":
-                self._position_slice = slice(field.start_index, field.end_index)
-            elif field.name in {"obs_affordance_at_position", "obs_affordances"}:
-                self._affordance_slice = slice(field.start_index, field.end_index)
-            elif field.name == "obs_temporal":
-                self._temporal_slice = slice(field.start_index, field.end_index)
+        # The other blocks are located by the compiled field's declared FEATURE — what
+        # fills it — never by its name (PDR-0045; WS-4 unit 4). A field of feature
+        # `local_window` is the window whatever the compiler called it.
+        def _slice_of(feature: str) -> slice | None:
+            found = observation_spec.get_single_field_by_feature(feature)
+            return slice(found.start_index, found.end_index) if found is not None else None
+
+        self._grid_slice = _slice_of("local_window")
+        self._position_slice = _slice_of("position")
+        self._affordance_slice = _slice_of("affordance_at_position")
+        self._temporal_slice = _slice_of("temporal")
 
         self._meters_slice = observation_activity.group_slices.get("bars")
 
         if self._grid_slice is None or self._meters_slice is None or self._affordance_slice is None:
             raise ValueError(
-                "RecurrentSpatialQNetwork requires the grid, bars and affordance blocks to be "
+                "RecurrentSpatialQNetwork requires the local-window, bars and affordance blocks to be "
                 "locatable in the compiled observation.\n"
-                f"  obs_local_window: {'found' if self._grid_slice else 'MISSING'}\n"
+                f"  local_window feature: {'found' if self._grid_slice else 'MISSING'}\n"
                 f"  bars group slice: {'found' if self._meters_slice else 'MISSING'}\n"
-                f"  affordance field: {'found' if self._affordance_slice else 'MISSING'}\n"
-                "  Rule: the bars block comes from observation_activity.group_slices['bars']."
+                f"  affordance_at_position feature: {'found' if self._affordance_slice else 'MISSING'}\n"
+                "  Rule: the bars block comes from observation_activity.group_slices['bars']; the "
+                "others from the fields' declared feature (townlet.universe.dto.observation_feature)."
             )
 
     def forward(

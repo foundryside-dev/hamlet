@@ -18,7 +18,7 @@ def test_compiler_loads_vfs_profiles_if_present(tmp_path: Path):
         "version": "1.0",
         "evaluation_mode": "mark_and_sweep",
         "debug_logging": False,
-        "global_profile": {"variables": [{"name": "day_count", "type": "int", "initial_value": 0}]},
+        "global_profile": {"variables": [{"semantic_type": "custom", "name": "day_count", "type": "int", "initial_value": 0}]},
     }
     (experiment_dir / "vfs_profiles.yaml").write_text(yaml.dump(profiles))
 
@@ -41,8 +41,8 @@ def test_compiler_emits_runtime_vfs_variables_from_profiles(tmp_path: Path):
         "version": "1.0",
         "evaluation_mode": "mark_and_sweep",
         "debug_logging": False,
-        "global_profile": {"variables": [{"name": "day_count", "type": "int", "initial_value": 0}]},
-        "agent_profile": {"variables": [{"name": "motivation", "type": "float", "initial_value": 0.5}]},
+        "global_profile": {"variables": [{"semantic_type": "custom", "name": "day_count", "type": "int", "initial_value": 0}]},
+        "agent_profile": {"variables": [{"semantic_type": "custom", "name": "motivation", "type": "float", "initial_value": 0.5}]},
     }
     (experiment_dir / "vfs_profiles.yaml").write_text(yaml.dump(profiles))
 

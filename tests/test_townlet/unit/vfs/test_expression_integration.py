@@ -13,8 +13,8 @@ def test_build_dependency_graph_no_deps():
     """Variables with no dependencies have no edges."""
     profile = GlobalVFSProfileConfig(
         variables=[
-            GlobalVFSVariableConfig(name="day_count", type="int", initial_value=0),
-            GlobalVFSVariableConfig(name="tick", type="int", initial_value=0),
+            GlobalVFSVariableConfig(semantic_type="custom", name="day_count", type="int", initial_value=0),
+            GlobalVFSVariableConfig(semantic_type="custom", name="tick", type="int", initial_value=0),
         ]
     )
 
@@ -30,8 +30,8 @@ def test_build_dependency_graph_with_deps():
     """Variables with expression dependencies have edges."""
     profile = GlobalVFSProfileConfig(
         variables=[
-            GlobalVFSVariableConfig(name="tick", type="int", initial_value=0),
-            GlobalVFSVariableConfig(name="is_night", type="bool", expression="tick % 24 >= 18"),
+            GlobalVFSVariableConfig(semantic_type="custom", name="tick", type="int", initial_value=0),
+            GlobalVFSVariableConfig(semantic_type="custom", name="is_night", type="bool", expression="tick % 24 >= 18"),
         ]
     )
 
@@ -46,9 +46,9 @@ def test_build_dependency_graph_nested_deps():
     """Nested dependencies create transitive edges."""
     profile = GlobalVFSProfileConfig(
         variables=[
-            GlobalVFSVariableConfig(name="a", type="int", initial_value=1),
-            GlobalVFSVariableConfig(name="b", type="int", expression="a + 1"),
-            GlobalVFSVariableConfig(name="c", type="int", expression="b + 1"),
+            GlobalVFSVariableConfig(semantic_type="custom", name="a", type="int", initial_value=1),
+            GlobalVFSVariableConfig(semantic_type="custom", name="b", type="int", expression="a + 1"),
+            GlobalVFSVariableConfig(semantic_type="custom", name="c", type="int", expression="b + 1"),
         ]
     )
 
@@ -65,9 +65,9 @@ def test_build_dependency_graph_with_path_deps():
     profile = GlobalVFSProfileConfig(
         variables=[
             # Simulate a variable named "target" that would be accessed via PathAccess
-            GlobalVFSVariableConfig(name="target", type="agent_ref", initial_value=0),
+            GlobalVFSVariableConfig(semantic_type="custom", name="target", type="agent_ref", initial_value=0),
             # Expression uses PathAccess: target.bar.energy (should extract "target" as dependency)
-            GlobalVFSVariableConfig(name="is_low", type="bool", expression="target.bar.energy < 0.2"),
+            GlobalVFSVariableConfig(semantic_type="custom", name="is_low", type="bool", expression="target.bar.energy < 0.2"),
         ]
     )
 
@@ -83,8 +83,8 @@ def test_detect_circular_dependency_simple():
     """Detect simple circular dependency (a -> b -> a)."""
     profile = GlobalVFSProfileConfig(
         variables=[
-            GlobalVFSVariableConfig(name="a", type="int", expression="b + 1"),
-            GlobalVFSVariableConfig(name="b", type="int", expression="a + 1"),
+            GlobalVFSVariableConfig(semantic_type="custom", name="a", type="int", expression="b + 1"),
+            GlobalVFSVariableConfig(semantic_type="custom", name="b", type="int", expression="a + 1"),
         ]
     )
 
@@ -98,9 +98,9 @@ def test_detect_circular_dependency_complex():
     """Detect complex circular dependency (a -> b -> c -> a)."""
     profile = GlobalVFSProfileConfig(
         variables=[
-            GlobalVFSVariableConfig(name="a", type="int", expression="c + 1"),
-            GlobalVFSVariableConfig(name="b", type="int", expression="a + 1"),
-            GlobalVFSVariableConfig(name="c", type="int", expression="b + 1"),
+            GlobalVFSVariableConfig(semantic_type="custom", name="a", type="int", expression="c + 1"),
+            GlobalVFSVariableConfig(semantic_type="custom", name="b", type="int", expression="a + 1"),
+            GlobalVFSVariableConfig(semantic_type="custom", name="c", type="int", expression="b + 1"),
         ]
     )
 
@@ -114,8 +114,8 @@ def test_topological_sort_no_deps():
     """Topological sort with no dependencies."""
     profile = GlobalVFSProfileConfig(
         variables=[
-            GlobalVFSVariableConfig(name="a", type="int", initial_value=1),
-            GlobalVFSVariableConfig(name="b", type="int", initial_value=2),
+            GlobalVFSVariableConfig(semantic_type="custom", name="a", type="int", initial_value=1),
+            GlobalVFSVariableConfig(semantic_type="custom", name="b", type="int", initial_value=2),
         ]
     )
 
@@ -130,9 +130,9 @@ def test_topological_sort_linear_deps():
     """Topological sort with linear dependencies (a -> b -> c)."""
     profile = GlobalVFSProfileConfig(
         variables=[
-            GlobalVFSVariableConfig(name="c", type="int", expression="b + 1"),
-            GlobalVFSVariableConfig(name="a", type="int", initial_value=1),
-            GlobalVFSVariableConfig(name="b", type="int", expression="a + 1"),
+            GlobalVFSVariableConfig(semantic_type="custom", name="c", type="int", expression="b + 1"),
+            GlobalVFSVariableConfig(semantic_type="custom", name="a", type="int", initial_value=1),
+            GlobalVFSVariableConfig(semantic_type="custom", name="b", type="int", expression="a + 1"),
         ]
     )
 
@@ -146,7 +146,7 @@ def test_topological_sort_linear_deps():
 
 def test_compile_variable_with_expression():
     """Compiler parses and type-checks expressions."""
-    var = GlobalVFSVariableConfig(name="is_night", type="bool", expression="tick % 24 >= 18")
+    var = GlobalVFSVariableConfig(semantic_type="custom", name="is_night", type="bool", expression="tick % 24 >= 18")
 
     compiler = VFSProfileCompiler()
     schema = {"tick": "int"}  # Available variables
@@ -160,7 +160,7 @@ def test_compile_variable_with_expression():
 
 def test_compile_variable_with_initial_value():
     """Compiler handles static initial values (no expression)."""
-    var = GlobalVFSVariableConfig(name="day_count", type="int", initial_value=0)
+    var = GlobalVFSVariableConfig(semantic_type="custom", name="day_count", type="int", initial_value=0)
 
     compiler = VFSProfileCompiler()
     schema = {}
@@ -176,7 +176,7 @@ def test_compile_variable_type_mismatch():
     """Compiler catches type mismatches."""
     from townlet.world.expression.type_checker import TypeCheckError
 
-    var = GlobalVFSVariableConfig(name="invalid", type="bool", expression="tick + 1")  # Returns int, not bool
+    var = GlobalVFSVariableConfig(semantic_type="custom", name="invalid", type="bool", expression="tick + 1")  # Returns int, not bool
 
     compiler = VFSProfileCompiler()
     schema = {"tick": "int"}
@@ -189,9 +189,9 @@ def test_compile_global_profile():
     """Compiler compiles global profile with dependency ordering."""
     profile = GlobalVFSProfileConfig(
         variables=[
-            GlobalVFSVariableConfig(name="c", type="int", expression="b + 1"),
-            GlobalVFSVariableConfig(name="a", type="int", initial_value=1),
-            GlobalVFSVariableConfig(name="b", type="int", expression="a + 1"),
+            GlobalVFSVariableConfig(semantic_type="custom", name="c", type="int", expression="b + 1"),
+            GlobalVFSVariableConfig(semantic_type="custom", name="a", type="int", initial_value=1),
+            GlobalVFSVariableConfig(semantic_type="custom", name="b", type="int", expression="a + 1"),
         ]
     )
 
@@ -210,6 +210,7 @@ def test_compile_global_profile_with_bars():
     profile = GlobalVFSProfileConfig(
         variables=[
             GlobalVFSVariableConfig(
+                semantic_type="custom",
                 name="avg_energy",
                 type="float",
                 expression="bar.energy",  # Reference to bar

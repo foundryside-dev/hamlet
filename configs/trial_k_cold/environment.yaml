@@ -1,0 +1,51 @@
+environment:
+  version: "1.0"
+
+  meters:
+    - name: energy
+      description: Energy
+      range_type:
+        kind: minmax
+        clip: false
+    - name: health
+      description: Health
+      range_type:
+        kind: minmax
+        clip: false
+    # The meter the cold attacks. "comfort/health" in the corpus Spec is a
+    # slash, not a conjunction (countersigner ruling) — comfort carries F3/F8
+    # and cascades into health so that eating the cost has a real consequence.
+    - name: comfort
+      description: "Thermal comfort; the world drives this down while it is cold"
+      range_type:
+        kind: minmax
+        clip: false
+    # Set from the coat's item-scoped `insulation` when the coat is worn.
+    # Declared so the effect can read a per-agent view of an item-declared value.
+    - name: insulation_worn
+      description: "Insulation currently worn by this agent (sourced from the garment's item VFS)"
+      range_type:
+        kind: minmax
+        clip: false
+    # Probe witness: how much cold actually landed on this agent last tick.
+    - name: cold_bite
+      description: "Magnitude of cold that landed on this agent on the last world tick"
+      range_type:
+        kind: minmax
+        clip: false
+
+  cascade_graph: []
+  modulation_graph: []
+  affordances:
+    # The coat is equipped through the ITEM action verbs (GET / USE_SLOT_0),
+    # not through an affordance — F6 wants a runtime verb, and the item surface
+    # already provides one.
+    - name: WINTER_ONSET
+      description: "The only found route to bringing the winter process into existence"
+      category: shelter
+    - name: HEARTH
+      description: "A landmark inside the indoor region"
+      category: shelter
+
+  variables: []
+  cues: []

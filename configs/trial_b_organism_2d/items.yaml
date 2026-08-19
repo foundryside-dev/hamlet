@@ -1,0 +1,27 @@
+# Trial B (PRD-0001): the organism's footprint. A `creep` item on a cell IS
+# that cell being part of the organism — permanent (duration: null), never
+# carried (max_items_per_agent: 0 means no agent can pick one up), spawned only
+# by the ROOT affordance (first cell, at declared point A) and by the standing
+# `organism` effect (under every rooted agent, each tick).
+items:
+  version: '1.0'
+  item_types:
+    - id: creep
+      name: Creep
+      icon: "c"
+      tags: [organism]
+      exclusive: false
+      vfs_profile: default_item
+      duration: null
+      cooldown: null
+      description: "One occupied cell of the spreading organism"
+      interactions:
+        on_pickup: []
+        on_use: []
+        on_drop: []
+  # NOTE: 1, not the 0 this pack wants (creep should be un-carryable): a
+  # max_items_per_agent of 0 silently nullifies the WHOLE items catalog at load
+  # (raw_configs_v21.py:152) — no error, the items system just vanishes. Filed
+  # as by-catch in the trial record.
+  max_items_per_agent: 1
+  max_items_in_world: 1000

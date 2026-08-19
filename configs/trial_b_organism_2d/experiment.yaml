@@ -1,0 +1,11 @@
+experiment:
+  version: "1.0"
+  experiment_name: "trial_b_organism_2d"
+  metadata:
+    name: "Trial B — The spreading organism (B1 diagnostic: 2-D baseline)"
+    description: "PRD-0001 trial pack: an organism rooted at point A grows outward on a 2-D grid toward a food warehouse"
+    author: "PRD-0001 trial executor"
+    created: "2026-08-19"
+    tags: ["trial", "prd-0001"]
+  curriculum_levels:
+    - L0_organism_2d

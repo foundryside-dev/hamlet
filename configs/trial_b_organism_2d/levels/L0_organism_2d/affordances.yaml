@@ -1,0 +1,59 @@
+affordances:
+  version: '1.0'
+  affordances:
+  # The organism's root, at declared point A = [0,0]. Touching it joins
+  # the agent to the organism (bar.rooted = 1), plants the first creep cell AT
+  # A by explicit coordinate, and (re)starts the standing `organism` effect —
+  # Trial O's pattern: the first join brings the engine-ticked process into
+  # being, later joins renew the same pinned instance (target: "0").
+  - name: ROOT
+    interaction_type: instant
+    costs: {}
+    opening_hours:
+      enabled: false
+    deployment:
+      type: fixed
+      positions:
+      - - 0
+        - 0
+    interactions:
+      on_start:
+      - modify: target.bar.rooted
+        value: "1.0"
+      # No explicit creep plant here: spawn_item with a position is unreachable
+      # from an affordance pipeline (the interaction context carries no agent
+      # positions — refused loudly at runtime; filed as by-catch). The
+      # `organism` effect attaches to THIS agent (target: "target") and its
+      # first tick deposits while the agent still stands at A, planting the
+      # root cell.
+      - spawn_effect: organism
+        target: "target"
+        intensity: 1.0
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
+  # The food warehouse, at declared point W = [7,7] — maximally far from A. Only a rooted agent (an organism growth tip that
+  # has physically spread here) absorbs food.
+  - name: WAREHOUSE
+    interaction_type: instant
+    costs: {}
+    opening_hours:
+      enabled: false
+    deployment:
+      type: fixed
+      positions:
+      - - 7
+        - 7
+    interactions:
+      on_start:
+      - if: "target.bar.rooted >= 1.0"
+        then:
+        - modify: target.bar.biomass
+          value: "target.bar.biomass + 0.2"
+        else: []
+      per_tick: []
+      on_completion: []
+      on_early_exit: []
+      on_failure: []
+  modulations: []

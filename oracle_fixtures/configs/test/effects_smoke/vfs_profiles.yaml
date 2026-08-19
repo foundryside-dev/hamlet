@@ -1,0 +1,15 @@
+version: "1.0"
+evaluation_mode: mark_and_sweep
+debug_logging: false
+
+global_profile:
+  variables:
+    - name: day_count
+      type: int
+      initial_value: 0
+
+agent_profile: null
+
+item_profiles:
+  - profile_name: default_item
+    variables: []

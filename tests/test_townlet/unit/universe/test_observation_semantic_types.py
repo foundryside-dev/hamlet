@@ -81,6 +81,7 @@ class TestOneClosedVocabulary:
                 scope="agent",
                 description="pos",
                 semantic_type="position",  # type: ignore[arg-type]
+                feature="position",
             )
 
     def test_the_compiled_dto_requires_semantic_type(self) -> None:
@@ -138,16 +139,30 @@ class TestNoDefaultAndNoOrphanedDeclaration:
         with pytest.raises(ValidationError, match="semantic_type"):
             VariableDef.model_validate(payload)
 
-    @pytest.mark.parametrize("cls_name", ["GlobalVFSVariableConfig", "AgentVFSVariableConfig", "ItemVFSVariableConfig"])
-    def test_profile_variables_no_longer_carry_a_semantic_type(self, cls_name: str) -> None:
-        # Profile variables are flattened into ONE `obs_vfs` field carrying one value, so a
-        # per-variable declaration here could reach nothing. It returns when obs_vfs is split.
+    @pytest.mark.parametrize("cls_name", ["GlobalVFSVariableConfig", "AgentVFSVariableConfig"])
+    def test_global_and_agent_profile_variables_require_a_semantic_type(self, cls_name: str) -> None:
+        # PDR-0075: each exposed global/agent profile variable compiles to its OWN observation
+        # field, so the declaration reaches the tensor and is REQUIRED — no default, no None.
         import townlet.config.vfs_profiles_config as m
 
         cls = getattr(m, cls_name)
-        payload = {"name": "day_count", "type": "int", "initial_value": 0, "semantic_type": "custom"}
+        payload = {"name": "day_count", "type": "int", "initial_value": 0}
         with pytest.raises(ValidationError, match="semantic_type"):
             cls.model_validate(payload)
+        with pytest.raises(ValidationError, match="semantic_type"):
+            cls.model_validate({**payload, "semantic_type": "not-a-member"})
+        assert cls.model_validate({**payload, "semantic_type": "temporal"}).semantic_type == "temporal"
+
+    def test_item_profile_variables_still_carry_no_semantic_type(self) -> None:
+        # Item variables are observed through the single `obs_item_slots` feature (slot ×
+        # profile-position), so a per-variable group could reach nothing — and a declaration
+        # that can reach nothing is removed, not defaulted (PDR-0066, PDR-0075;
+        # hamlet-1ad6383186 holds the layout question).
+        from townlet.config.vfs_profiles_config import ItemVFSVariableConfig
+
+        payload = {"name": "freshness", "type": "float", "initial_value": 1.0, "semantic_type": "custom"}
+        with pytest.raises(ValidationError, match="semantic_type"):
+            ItemVFSVariableConfig.model_validate(payload)
 
 
 # --------------------------------------------------------------- rules 2 + 3 in the compiler

@@ -21,6 +21,7 @@ def _dynamic_need_observation_spec() -> ObservationSpec:
                 scope="agent",
                 description="Base non-token features",
                 semantic_type="custom",
+                feature="variable",
             ),
             ObservationField(
                 uuid=None,
@@ -32,6 +33,7 @@ def _dynamic_need_observation_spec() -> ObservationSpec:
                 scope="agent",
                 description="Flattened dynamic-need token set",
                 semantic_type="custom",
+                feature="variable",
             ),
         ]
     )

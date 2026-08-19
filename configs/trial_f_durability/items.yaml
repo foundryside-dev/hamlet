@@ -1,0 +1,29 @@
+# Trial F (PRD-0001): tool durability — an item degrades per use and eventually breaks.
+# The wear state is a declared item-scoped VFS variable (vfs_profiles.yaml: tool_stats).
+# on_use gates the tool's effect on remaining durability and decrements it per use;
+# at zero the guarded branch stops firing — the tool stops working.
+items:
+  version: '1.0'
+  item_types:
+    - id: hammer
+      name: Hammer
+      icon: "H"
+      tags: [tool]
+      exclusive: true
+      vfs_profile: tool_stats
+      duration: null
+      cooldown: null
+      description: "A tool with 3 uses; each use produces energy and wears it down; at 0 it is broken"
+      interactions:
+        on_pickup: []
+        on_use:
+          - if: self.vfs.durability > 0.0
+            then:
+              - modify: target.bar.energy
+                value: target.bar.energy + 0.1
+              - modify: self.vfs.durability
+                value: self.vfs.durability - 1.0
+            else: []
+        on_drop: []
+  max_items_per_agent: 1
+  max_items_in_world: 1

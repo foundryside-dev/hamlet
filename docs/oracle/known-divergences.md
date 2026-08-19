@@ -3,8 +3,21 @@
 **Stream:** WS-7 (`hamlet-e3af412673`) — the strangler's enabling stream (`PDR-0006`).
 **Stood up:** 2026-08-13, as WS-7's first artifact (`PDR-0028` — routed findings need a
 register that exists; routing to a register that doesn't is filing to /dev/null).
-**Oracle tag:** `oracle-2026-08-13` → `0e875d7a` (pinned 2026-08-13; see `ORACLE.md`).
-Entries below were re-verified at the tagged commit and are stamped `tag-stamped`.
+**Oracle tag:** `oracle-2026-08-17` → `4222a917` (moved forward 2026-08-17, `PDR-0074`; see
+`ORACLE.md`). Previous tag `oracle-2026-08-13` → `0e875d7a` (pinned 2026-08-13) stays as
+history. Open entries were re-verified at the new tagged commit and are stamped
+`tag-stamped` there; entries whose divergence dissolved at the new tag are `retired`.
+
+**Re-stamp at `4222a917` (2026-08-17):** the oracle moved forward because the hash-only
+suppression had reached its ceiling (`AGREE` unreachable on 16/16 cells and the pack-drift
+guard armed on zero cells since 2026-08-15, `PDR-0056`) and because no matrix cell could see
+the next cut at all (`PDR-0074`). At the new tag the matrix is **20 cells** (the ten
+default_curriculum cells, the three differential packs, and two profile-variable packs
+`items_smoke` / `effects_smoke`), **every fixture under `oracle_fixtures/` is a byte copy of
+its live pack, and no cell declares anything** — the first time since 2026-08-15 that exit 0
+means "old and new agree" — **acceptance run `20260817-072714`: 20/20 `AGREE` on CPU and CUDA,
+exit 0, zero register refs in any verdict.** Terminal states after the re-stamp: DIV-001 `tag-stamped`, DIV-002
+`tag-stamped`, DIV-003 `retired`, DIV-004 `retired`, DIV-005 `retired`.
 
 ## What this register is
 
@@ -49,8 +62,12 @@ evidence — never copied from a filed issue unchecked), the **intended new beha
 
 ## DIV-001 — Five pack-level provenance hashes: computed, serialized, compared by nobody
 
-- **Status:** `tag-stamped` at `oracle-2026-08-13` (re-verified at `0e875d7a`: the five
-  names still appear only in `universe/compiled.py` and `universe/compiler.py`)
+- **Status:** `tag-stamped` at `oracle-2026-08-17` (re-verified at `4222a917`, 2026-08-17:
+  the five names appear only in `universe/compiled.py`, `universe/compiler.py`, and — as a
+  docstring mention, not a compare site — `oracle/matrix.py`; no stamp/compare site
+  references them; `hamlet-2dde1015fe` open). Previously `tag-stamped` at
+  `oracle-2026-08-13` (re-verified at `0e875d7a`: the five names appeared only in
+  `universe/compiled.py` and `universe/compiler.py`)
 - **Provenance:** `hamlet-2dde1015fe` · `PDR-0021` (filed-not-folded) · `PDR-0022` (the
   `config_hash_warning` deletion's precondition — this entry existing is that condition) ·
   `PDR-0028` (routing rule)
@@ -87,8 +104,11 @@ actually change, is a rebuild defect.
 
 ## DIV-002 — Two checkpoint stamp/compare paths outside the guarded boundary
 
-- **Status:** `tag-stamped` at `oracle-2026-08-13` (re-verified at `0e875d7a`: the
-  string-matched broad `except` sits at `demo/runner.py:202`)
+- **Status:** `tag-stamped` at `oracle-2026-08-17` (re-verified at `4222a917`, 2026-08-17:
+  the string-matched broad `except` sits at `demo/runner.py:199-202`; the population
+  stamp/compare path at `population/vectorized.py:1150` / `:1198`; `hamlet-df2b972c49` open).
+  Previously `tag-stamped` at `oracle-2026-08-13` (re-verified at `0e875d7a`:
+  `demo/runner.py:202`)
 - **Provenance:** `hamlet-df2b972c49` · `PDR-0008` (the breach this outlives) · `PDR-0028`
   (routing rule) · WS-1 tasks 4/5 (`hamlet-ae6601e463`, `hamlet-1029f99f4b`) which guarded
   the DemoRunner and serving paths but not these.
@@ -126,8 +146,11 @@ surface is deliberately open-ended and MUST NOT be treated as "just the two know
 
 ## DIV-003 — Substrate→observation-dim seam: three declared configs compile, then crash before producing a trace
 
-- **Status:** `built` (2026-08-15 — the seam is cut; full 16-cell matrix CPU+CUDA exit 0
-  with all six DIV-003 cells `DIVERGED_AS_REGISTERED`, runs `20260815-055108` /
+- **Status:** `retired` (2026-08-17, `PDR-0074` — the oracle moved forward to `4222a917`,
+  which carries the cut, so the three configs run on BOTH sides and the divergence
+  dissolved; the three packs stay in the matrix as plain standing cells expected to
+  `AGREE`). Previously `built` (2026-08-15 — the seam is cut; full 16-cell matrix CPU+CUDA
+  exit 0 with all six DIV-003 cells `DIVERGED_AS_REGISTERED`, runs `20260815-055108` /
   `20260815-055207`). Previously `tag-stamped` the same day: all three crashes re-executed
   at `0e875d7a` through the harness's own driver under the oracle worktree's `src` with the
   injection probe-verified first — not copied from the 2026-08-11 assessment, which predicted
@@ -192,7 +215,12 @@ entry — or add DIV-004 — with its cell **before** cutting, per this register
 
 ## DIV-004 — The normalization-vocabulary programme: the authoring surface changes, so the compiled provenance moves and behaviour does not
 
-- **Status:** `built` (2026-08-15 — declared before the first cut of the programme, per this
+- **Status:** `retired` (2026-08-17, `PDR-0074` — the oracle moved forward to `4222a917`,
+  which carries the whole normalization programme; the frozen fixtures were re-frozen at the
+  new schema, so old and new compile the same `environment.yaml` and the provenance no longer
+  moves. `PDR-0056`'s two recorded costs — `AGREE` unreachable matrix-wide, pack-drift guard
+  armed on zero cells — dissolve with it, as that PDR said they would.) Previously `built`
+  (2026-08-15 — declared before the first cut of the programme, per this
   register's own record-then-bind rule; W1 is the first cut it covers. Full 16-cell matrix
   exit 0 with all ten standing cells `DIVERGED_AS_REGISTERED (DIV-004)` and every trace
   stream byte-identical: runs `20260815-175940` (CPU) / `20260815-180022` (CPU+CUDA).)
@@ -310,7 +338,10 @@ worktree at the pre-cut commit, compiled against the live tree, all five levels.
 
 ## DIV-005 — `semantic_type`: one closed vocabulary, author-authoritative, `effects` admitted; the compiled provenance moves and behaviour does not
 
-- **Status:** `built` (2026-08-16 — declared `tag-stamped` first, oracle behaviour re-verified
+- **Status:** `retired` (2026-08-17, `PDR-0074` — the oracle moved forward to `4222a917`,
+  which carries the semantic-type cut; both sides now emit the author-declared vocabulary and
+  the provenance no longer moves.) Previously `built` (2026-08-16 — declared `tag-stamped`
+  first, oracle behaviour re-verified
   at `0e875d7a` through the oracle worktree before any code changed; then cut, then measured
   and adjudicated: full 16-cell matrix CPU+CUDA exit 0, run `20260816-225750`, all ten standing
   cells `DIVERGED_AS_REGISTERED (DIV-004)` with exactly the four declared hashes moved and every
@@ -412,6 +443,81 @@ fixtures under `oracle_fixtures/` stay at the old schema, per `oracle_fixtures/R
 **Retire this entry** with DIV-004, when the oracle is re-tagged past the authoring-surface
 programme.
 
+
+---
+
+## DIV-006 — The `obs_vfs` block: global and agent profile variables become one field each with a declared semantic type; the item-slot sub-block becomes a named feature; the compiled provenance moves and behaviour does not
+
+- **Status:** `built` (2026-08-17 — cut at `8c5fa2c8`; full 20-cell matrix CPU+CUDA exit 0,
+  run `20260817-091351` (executed by the owner): sixteen cells `AGREE`, the four
+  profile-variable cells `DIVERGED_AS_REGISTERED (DIV-006)` with **exactly**
+  `observation_schema_hash`, `variable_schema_hash`, `vfs_hash` moved on each — the predicted
+  set, no more, no fewer — and every stream byte-identical; `environment_hash` did not move,
+  as predicted.) Previously `tag-stamped` (2026-08-17 — oracle behaviour re-verified at
+  `4222a917` by compiling `configs/test/items_smoke` and `configs/test/effects_smoke` with the
+  `.oracle/oracle-2026-08-17` worktree's `src` on `PYTHONPATH`, before any code changed)
+- **Harness shape: hash-only** (`RegisteredHashDivergence`), bound on the **four
+  profile-variable cells only** (`items_smoke:L0_smoke`, `effects_smoke:L0_effects` × cpu/cuda).
+  The sixteen other cells declare nothing and must stay `AGREE`: no matrix pack outside these
+  two declares a profile variable, which is why the cells exist (`PDR-0074`).
+- **Provenance:** `PDR-0075` (the design call, incl. the item-layout fork it filed as
+  `hamlet-1ad6383186`) · `PDR-0066` (the declaration returns where it can reach a field) ·
+  `PDR-0047` / `PDR-0045` · `PDR-0037` (record-then-bind) · `hamlet-f0ed709ecf` (unit 3)
+- **Surface:** the compiled observation fields for VFS **profile** variables
+  (`vfs_profiles.yaml` `global_profile` / `agent_profile` / `item_profiles`), the runtime path
+  that assembles them, and the authoring side: `semantic_type` (required, closed vocabulary,
+  `bars` reserved) on global and agent profile variables.
+
+**Oracle behaviour (verified at `4222a917`, 2026-08-17, through the oracle worktree).** Every
+exposed profile variable is flattened into ONE compiled field `obs_vfs` (`scope="agent"`,
+`semantic_type="custom"`, width = global + agent + slots × max-profile-width), and one
+engine-written registry primitive of the same name is minted for it (`build_vfs_variables`),
+which the runtime then bypasses: `_build_observation_field_from_vfs` branches on
+`field_name != "obs_vfs"` and, for that name, calls `build_vfs_observation` directly against
+the compiled `VFSObservationSpec`. Measured: `items_smoke` L0_smoke — 9 fields, `total_dims`
+61, `obs_vfs` width 3 (two item profiles × one exposed variable each, 3 slots), registry
+primitives include `obs_vfs`; `effects_smoke` L0_effects — 8 fields, `total_dims` 59,
+`obs_vfs` width 1 (global `day_count`), registry variables include both `obs_vfs` and
+`day_count`. Hashes at the tag: items_smoke `observation_schema_hash 7f18e4477f25…`,
+`variable_schema_hash 966d7310298a…`, `vfs_hash 38e5f3407672…`, `environment_hash
+e36047b5ff6c…`; effects_smoke `3f2e8c5d01c7…` / `fa1dbe44459a…` / `aac239a3f749…` /
+`4fd25f6ff6de…`. The three profile variable classes carry **no** `semantic_type` (removed by
+DIV-005 because the block carried one value).
+
+**Intended new behaviour (`PDR-0075`).** One `ObservationField` per exposed global profile
+variable (`scope="global"`) and per exposed agent profile variable (`scope="agent"`), each
+named after its variable and carrying the **author's declared** `semantic_type`; where any
+item profile exposes variables, ONE compiler-emitted feature field `obs_item_slots`
+(`semantic_type="custom"`, same slot × max-width layout as the old sub-block). `obs_vfs` and
+its primitive are gone. The runtime reads every field by the compiled mirror's
+`source_variable` and the variable's **declared scope** — no name branch; `obs_item_slots` is
+synced each tick like the other primitives. `total_dims` unchanged by construction; every
+value at the same offset.
+
+**Diff shape — PREDICTED at `tag-stamped`, MEASURED at `built` (matrix run `20260817-091351` agreed with every row)** against a git worktree
+at the pre-cut commit compiled beside the live tree, on both profile packs and all five
+`default_curriculum` levels:
+
+| hash | family | moves (profile packs) | why |
+|---|---|---|---|
+| `observation_schema_hash` | DERIVED | yes | the field list changes: `obs_vfs` → per-variable fields (+ `obs_item_slots`) |
+| `variable_schema_hash` | DERIVED | yes | the `obs_vfs` primitive disappears; `obs_item_slots` appears where items are exposed |
+| `vfs_hash` | DERIVED | yes | composite of the two above |
+| `environment_hash` | RAW | **no** | `environment.yaml` is untouched by this cut |
+
+`default_curriculum` and the differential packs: **nothing moves** (they declare no profile
+variables), so their sixteen cells must read `AGREE` with no declaration.
+
+**Harness adjudication.** The four profile-variable cells bind
+`RegisteredHashDivergence(register_ref="DIV-006", hash_fields=(observation_schema_hash,
+variable_schema_hash, vfs_hash))` — the measured set, exactly — with every stream byte-exact.
+The frozen fixtures for the two packs stay at the pre-cut `vfs_profiles.yaml` (no
+`semantic_type` key on global/agent variables), so those four cells also declare
+`pack_divergence="DIV-006"`; every other fixture stays a byte copy and declares nothing. Any
+fourth mover is `HASH_MISMATCH`; a declared field that does not move is
+`REGISTERED_DIVERGENCE_ABSENT`; any stream difference is `DIVERGE` — all red.
+
+**Retire this entry** at the next forward move of the tag.
 
 ---
 

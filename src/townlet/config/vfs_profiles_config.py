@@ -6,6 +6,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from townlet.vfs.semantic_type import SemanticType
+
 __all__ = [
     "GlobalVFSVariableConfig",
     "GlobalVFSProfileConfig",
@@ -28,6 +30,11 @@ class GlobalVFSVariableConfig(BaseModel):
     exposed_to: list[str] = Field(default_factory=list)
 
     name: str
+    # The observation group this variable's field is laid out in when exposed — REQUIRED,
+    # one member of the closed vocabulary (PDR-0047, PDR-0075). A global profile variable
+    # compiles to its OWN observation field, so the declaration reaches the tensor.
+    # `bars` is reserved to meters and rejected at compile time.
+    semantic_type: SemanticType
     type: Literal[
         "int",
         "float",
@@ -135,6 +142,8 @@ class AgentVFSVariableConfig(BaseModel):
     exposed_to: list[str] = Field(default_factory=list)
 
     name: str
+    # See GlobalVFSVariableConfig.semantic_type — same rule, same vocabulary (PDR-0075).
+    semantic_type: SemanticType
     type: Literal[
         "int",
         "float",
@@ -237,6 +246,11 @@ class ItemVFSVariableConfig(BaseModel):
     """Configuration for a single item VFS variable.
 
     Item variables are per-item-instance state (e.g., nutrition, age, is_spoiled).
+
+    Deliberately carries NO `semantic_type`: exposed item variables are observed through the
+    single compiler-emitted `obs_item_slots` feature (slot × profile-position layout), so a
+    per-variable group could reach nothing, and a declaration that can reach nothing is removed
+    rather than defaulted (PDR-0066, PDR-0075; the layout question is hamlet-1ad6383186).
     """
 
     # Metadata

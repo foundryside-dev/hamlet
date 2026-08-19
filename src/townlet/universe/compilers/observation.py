@@ -27,8 +27,9 @@ from townlet.effects.catalog import EffectCatalog
 from townlet.substrate.factory import SubstrateFactory
 from townlet.universe.compiled import CompiledVFSProfiles
 from townlet.universe.dto import ObservationActivity, ObservationField, ObservationSpec
+from townlet.universe.dto.observation_feature import METER_FEATURE, VARIABLE_FEATURE
 from townlet.universe.validation.limits import EFFECT_OBSERVATION_SLOTS
-from townlet.vfs.observation_builder import VFSObservationSpec
+from townlet.vfs.observation_builder import VFSObservationSpec, agent_can_observe, profile_variable_observation_dim
 from townlet.vfs.schema import NormalizationSpec, VariableDef
 from townlet.vfs.schema import ObservationField as VFSObservationField
 from townlet.vfs.semantic_type import METER_BLOCK_SEMANTIC, SEMANTIC_GROUP_ORDER
@@ -47,6 +48,14 @@ from townlet.vfs.semantic_type import METER_BLOCK_SEMANTIC, SEMANTIC_GROUP_ORDER
 # prefix to be lucky.
 METER_OBSERVATION_PREFIX = "obs_meter_"
 
+# The ONE compiler-emitted feature over an agent's item slots: the exposed variables of the
+# item in each slot, slot-major, positional within a slot (PDR-0075; layout question filed as
+# hamlet-1ad6383186). Defined once here and imported by the runtime's sync step — a shared
+# symbol, not two literals — so the encoder publishes the feature under the name the compiler
+# declared for it. Global and agent profile variables are NOT routed through this field: each
+# compiles to its own observation field named after the variable.
+ITEM_SLOTS_OBSERVATION_FIELD = "obs_item_slots"
+
 # Widths the VFS normalization kinds produce from a 1-wide source
 # (`vfs/observation_builder.py::apply_normalization`): `cyclical_sin_cos` concatenates sin
 # and cos, `one_hot` expands to its category count, and every other kind is width-preserving.
@@ -57,21 +66,6 @@ def meter_observation_field_name(meter_name: str) -> str:
     """The observation field / VFS variable id for a meter. One definition, no f-strings at
     call sites — this string is baked into `observation_field_uuids` in every checkpoint."""
     return f"{METER_OBSERVATION_PREFIX}{meter_name}"
-
-
-def meter_name_from_observation_field(field_name: str) -> str:
-    """Inverse of `meter_observation_field_name`. Raises rather than guessing.
-
-    Only ever called on fields the compiler emitted with `semantic_type="bars"`, so a name
-    without the prefix means something else got into the bars group — which is a defect
-    worth a loud failure, not a silently skipped meter.
-    """
-    if not field_name.startswith(METER_OBSERVATION_PREFIX):
-        raise ValueError(
-            f"Observation field '{field_name}' carries semantic_type 'bars' but is not a meter "
-            f"observation (expected the '{METER_OBSERVATION_PREFIX}' prefix)."
-        )
-    return field_name[len(METER_OBSERVATION_PREFIX) :]
 
 
 def meter_observed_width(range_type: Any) -> int:
@@ -176,6 +170,7 @@ class ObservationCompiler:
                     scope="agent",
                     description=desc,
                     semantic_type="spatial",
+                    feature="grid_encoding",
                     curriculum_active=is_active,
                 )
             )
@@ -199,6 +194,7 @@ class ObservationCompiler:
                         scope="agent",
                         description=desc,
                         semantic_type="spatial",
+                        feature="local_window",
                         curriculum_active=is_active,
                     )
                 )
@@ -224,6 +220,7 @@ class ObservationCompiler:
                     scope="agent",
                     description=f"Agent position ({position_dim}D)",
                     semantic_type="spatial",
+                    feature="position",
                 )
             )
             offset += position_dim
@@ -240,6 +237,7 @@ class ObservationCompiler:
                     scope="agent",
                     description=f"Agent velocity ({velocity_dim}D)",
                     semantic_type="spatial",
+                    feature="velocity",
                 )
             )
             offset += velocity_dim
@@ -267,6 +265,8 @@ class ObservationCompiler:
                     scope="agent",
                     description=f"Meter '{meter.name}' observed as {meter.range_type.kind}",
                     semantic_type="bars",
+                    feature="meter",
+                    feature_ref=meter.name,
                 )
             )
             offset += observed_dims
@@ -284,6 +284,7 @@ class ObservationCompiler:
                 scope="agent",
                 description=f"{affordance_dim}-way one-hot affordance_at_position (including 'none')",
                 semantic_type="affordance",
+                feature="affordance_at_position",
             )
         )
         offset += affordance_dim
@@ -302,6 +303,7 @@ class ObservationCompiler:
                     scope="agent",
                     description=f"Observable effects (up to {effect_slots} slots)",
                     semantic_type="effects",
+                    feature="effects",
                 )
             )
             offset += effect_dims
@@ -335,37 +337,106 @@ class ObservationCompiler:
                     scope=var.scope,
                     description=var.description,
                     semantic_type=var.semantic_type,
+                    feature="variable",
                 )
             )
             offset += dims
 
+        # VFS PROFILE variables: one observation field per exposed global/agent variable, each
+        # carrying the AUTHOR'S declared semantic type (PDR-0075). This used to be one opaque
+        # `obs_vfs` block (global + agent + item, one value, `custom`) that the runtime then knew
+        # by NAME — the branch PDR-0045 forbids. The item sub-block stays ONE compiler-emitted
+        # feature (`obs_item_slots`): its layout is slot × profile-position, so a per-variable
+        # group could reach nothing there (hamlet-1ad6383186 holds the layout question).
         max_items_per_agent = items_catalog.max_items_per_agent if items_catalog is not None else VFSObservationSpec.max_items_per_agent
         vfs_observation_spec = VFSObservationSpec.from_compiled_profiles(
             compiled_vfs_profiles,
             max_items_per_agent=max_items_per_agent,
         )
-        vfs_dim = vfs_observation_spec.total_vfs_dim if vfs_observation_spec is not None else 0
         if vfs_observation_spec is not None and vfs_observation_spec.item_vfs_dim > 0 and items_catalog is None:
             raise ValueError(
                 "Observation spec includes item VFS dimensions, but items are disabled (no items catalog). "
                 "Enable items or remove item VFS profiles."
             )
 
-        if vfs_dim > 0:
+        taken_names: dict[str, str] = {f.name: f"compiler block ({f.semantic_type})" for f in fields}
+        for var in environment.environment.variables:
+            taken_names[var.name] = "environment.yaml variable"
+        for scope, profile in self._exposed_profile_scopes(compiled_vfs_profiles):
+            for var in profile.variables:
+                if not agent_can_observe(var):
+                    continue
+                if var.name in taken_names:
+                    raise ValueError(
+                        "Observation field name collision.\n"
+                        f"  Field: {var.name}\n"
+                        f"  Declared by: vfs_profiles.yaml {scope}_profile variable\n"
+                        f"  Already taken by: {taken_names[var.name]}\n"
+                        "  Rule: every exposed profile variable compiles to its own observation field named "
+                        "after the variable (PDR-0075), so the name must be unique across environment.yaml "
+                        "variables, meter fields, compiler blocks, and every exposed profile variable."
+                    )
+                if var.semantic_type is None:
+                    raise ValueError(
+                        "Exposed profile variable has no declared semantic_type.\n"
+                        f"  Variable: {var.name} ({scope}_profile)\n"
+                        "  Rule: global and agent profile variables compile to their own observation field "
+                        "and MUST declare semantic_type from townlet.vfs.semantic_type (PDR-0075)."
+                    )
+                if var.semantic_type == METER_BLOCK_SEMANTIC:
+                    raise ValueError(
+                        "A profile variable may not declare the meter block's semantic type.\n"
+                        f"  Variable: {var.name} ({scope}_profile)\n"
+                        f"  Declared semantic_type: {var.semantic_type!r}\n"
+                        f"  Rule: {METER_BLOCK_SEMANTIC!r} is the meter block — reserved to meter observation "
+                        "fields (DIV-005). Choose another member of the vocabulary (townlet.vfs.semantic_type)."
+                    )
+                dims = profile_variable_observation_dim(var)
+                fields.append(
+                    ObservationField(
+                        uuid=None,
+                        name=var.name,
+                        type="vector" if dims > 1 else "scalar",
+                        dims=dims,
+                        start_index=offset,
+                        end_index=offset + dims,
+                        scope=cast(Literal["global", "agent"], scope),
+                        description=var.description if getattr(var, "description", None) else f"VFS {scope} profile variable: {var.name}",
+                        semantic_type=cast(Any, var.semantic_type),
+                        feature="variable",
+                    )
+                )
+                taken_names[var.name] = f"vfs_profiles.yaml {scope}_profile variable"
+                offset += dims
+
+        item_dim = vfs_observation_spec.item_vfs_dim if vfs_observation_spec is not None else 0
+        if vfs_observation_spec is not None and item_dim > 0:
+            if ITEM_SLOTS_OBSERVATION_FIELD in taken_names:
+                raise ValueError(
+                    "Observation field name collision.\n"
+                    f"  Field: {ITEM_SLOTS_OBSERVATION_FIELD}\n"
+                    "  Declared by: the compiler (item-slot feature)\n"
+                    f"  Already taken by: {taken_names[ITEM_SLOTS_OBSERVATION_FIELD]}\n"
+                    "  Rule: the item-slot feature's name is reserved to the compiler."
+                )
             fields.append(
                 ObservationField(
                     uuid=None,
-                    name="obs_vfs",
+                    name=ITEM_SLOTS_OBSERVATION_FIELD,
                     type="vector",
-                    dims=vfs_dim,
+                    dims=item_dim,
                     start_index=offset,
-                    end_index=offset + vfs_dim,
+                    end_index=offset + item_dim,
                     scope="agent",
-                    description=f"VFS observations (global + agent + item, {vfs_dim} dims)",
+                    description=(
+                        f"Item slots: exposed item-profile variables of the item in each of "
+                        f"{max_items_per_agent} slots, {vfs_observation_spec.item_vars_per_slot} per slot"
+                    ),
                     semantic_type="custom",
+                    feature="item_slots",
                 )
             )
-            offset += vfs_dim
+            offset += item_dim
 
         if temporal_support == "enabled":
             temporal_dims = 4
@@ -381,6 +452,7 @@ class ObservationCompiler:
                     scope="agent",
                     description=desc,
                     semantic_type="temporal",
+                    feature="temporal",
                     curriculum_active=active_temporal,
                 )
             )
@@ -412,6 +484,8 @@ class ObservationCompiler:
                     scope=field.scope,
                     description=field.description,
                     semantic_type=field.semantic_type,
+                    feature=field.feature,
+                    feature_ref=field.feature_ref,
                     categorical_labels=field.categorical_labels,
                     curriculum_active=field.curriculum_active,
                 )
@@ -419,6 +493,19 @@ class ObservationCompiler:
             offset += field.dims
 
         return ObservationSpec.from_fields(fields=reindexed)
+
+    @staticmethod
+    def _exposed_profile_scopes(compiled_vfs_profiles: CompiledVFSProfiles | None):
+        """(scope, compiled profile) pairs for the profile scopes that compile to per-variable
+        fields — global then agent, the order the old block laid them out in (PDR-0075)."""
+        if compiled_vfs_profiles is None:
+            return ()
+        pairs = []
+        if compiled_vfs_profiles.global_profile is not None:
+            pairs.append(("global", compiled_vfs_profiles.global_profile))
+        if compiled_vfs_profiles.agent_profile is not None:
+            pairs.append(("agent", compiled_vfs_profiles.agent_profile))
+        return tuple(pairs)
 
     def build_activity(self, obs_spec: ObservationSpec) -> ObservationActivity:
         """Build ObservationActivity grouping dims by semantic_type and honoring masking."""
@@ -506,13 +593,14 @@ class ObservationCompiler:
         env_norm_by_name.update(self._meter_normalizations(environment, bars))
 
         fields: list[VFSObservationField] = []
-        # SOURCE width, not observed width. Every meter's source is one scalar; the field's
-        # `dims` may be wider (cyclical_sin_cos -> 2, one_hot -> categories). Conflating the
-        # two is what made the widening kinds unusable — the runtime read the registry at
-        # the OBSERVED width and tripped its own shape guard before normalization ever ran.
-        source_width_by_name = {meter_observation_field_name(m.name): 1 for m in environment.environment.meters}
         for field in obs_spec.fields:
             norm = env_norm_by_name.get(field.name)
+            # SOURCE width, not observed width. Every meter's source is one scalar; the field's
+            # `dims` may be wider (cyclical_sin_cos -> 2, one_hot -> categories). Conflating the
+            # two is what made the widening kinds unusable — the runtime read the registry at
+            # the OBSERVED width and tripped its own shape guard before normalization ever ran.
+            # "Is this a meter" is the field's declared FEATURE, not a name-prefix test.
+            source_width = 1 if field.feature == METER_FEATURE else field.dims
             # The mirror carries the FIELD'S value. It used to filter through a private
             # allow-list and remap anything else to "custom", so `obs_effects` was `effects`
             # on the spec and `custom` in the hash — one field, two values (DIV-005).
@@ -521,7 +609,7 @@ class ObservationCompiler:
                     id=field.name,
                     source_variable=field.name,
                     exposed_to=["agent"],
-                    shape=[source_width_by_name.get(field.name, field.dims)],
+                    shape=[source_width],
                     normalization=norm,
                     semantic_type=field.semantic_type,
                     curriculum_active=field.curriculum_active,
@@ -680,24 +768,37 @@ class ObservationCompiler:
                     "so this would raise at runtime on the first bar write."
                 )
 
-    def build_vfs_variables(self, obs_spec: ObservationSpec, environment: EnvConfigV21) -> tuple[VariableDef, ...]:
-        """Build VFS variables from observation fields + environment variables."""
+    def build_vfs_variables(
+        self,
+        obs_spec: ObservationSpec,
+        environment: EnvConfigV21,
+    ) -> tuple[VariableDef, ...]:
+        """Build VFS variables from observation fields + environment variables.
+
+        A field whose feature is `variable` — an `environment.yaml` variable, or (PDR-0075) a
+        global/agent profile variable, which `build_runtime_variables` adds under its own
+        scope — is state the registry already holds and gets no engine-written primitive
+        minted here. Every other feature (grid, window, position, velocity, meters,
+        affordance, effects, temporal, item slots) is engine-published each tick and gets one.
+        The decision reads the field's declared feature; it used to test the field's name
+        against the authored-variable name sets, which is the same fact by a worse route.
+        """
         vars_out: list[VariableDef] = []
         user_var_names = {var.name for var in environment.environment.variables}
         self._assert_meter_ids_are_disjoint(environment, user_var_names)
 
-        # SOURCE widths. A meter's backing variable is always one scalar, whatever its
-        # observed width — the widening kinds produce their extra dimensions at
-        # normalization time, downstream of the registry. Deriving this from `field.dims`
-        # (as it did) makes the variable 2-wide for a cyclical_sin_cos meter, and the
-        # encoder's own shape guard then fires before `apply_normalization` ever runs.
-        meter_source_widths = {meter_observation_field_name(m.name): 1 for m in environment.environment.meters}
-
         for field in obs_spec.fields:
-            if field.name in user_var_names:
+            # The field's own declared FEATURE says whether the registry already owns its
+            # source (an authored variable) or the engine publishes it. This used to be decided
+            # by whether the field's NAME appeared in the authored-variable name sets.
+            if field.feature == VARIABLE_FEATURE:
                 continue
-
-            source_dims = meter_source_widths.get(field.name, field.dims)
+            # SOURCE widths. A meter's backing variable is always one scalar, whatever its
+            # observed width — the widening kinds produce their extra dimensions at
+            # normalization time, downstream of the registry. Deriving this from `field.dims`
+            # (as it did) makes the variable 2-wide for a cyclical_sin_cos meter, and the
+            # encoder's own shape guard then fires before `apply_normalization` ever runs.
+            source_dims = 1 if field.feature == METER_FEATURE else field.dims
             is_vector = source_dims > 1
             default = [0.0] * source_dims if is_vector else 0.0
             vars_out.append(

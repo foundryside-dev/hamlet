@@ -5,6 +5,7 @@ debug_logging: false
 global_profile:
   variables:
     - name: my_int_var
+      semantic_type: custom
       type: int
       expression: "10 < 5"
 

@@ -68,4 +68,4 @@ def test_load_rejects_unknown_format_version(tmp_path: Path) -> None:
 def test_oracle_tag_constant() -> None:
     from townlet.oracle import ORACLE_TAG
 
-    assert ORACLE_TAG == "oracle-2026-08-13"
+    assert ORACLE_TAG == "oracle-2026-08-17"

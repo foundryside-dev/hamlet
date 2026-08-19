@@ -17,36 +17,40 @@ LEVELS = (
     "L3_temporal_mechanics",
 )
 
-# Deliberately DUPLICATED from matrix.py, not imported: these are pins. The
-# signatures are the verbatim final-exception lines re-verified at
-# oracle-2026-08-13 (0e875d7a) on 2026-08-15 — see DIV-003 in
-# docs/oracle/known-divergences.md. A matrix edit that moves a signature must
-# consciously move the pin too.
-_DIV003_SIGNATURES = {
-    "div003_scaled": ("ValueError: Observation field 'obs_position' produced shape (4, 4), expected (4, 2)."),
-    "div003_cubic_partial": ("ValueError: Observation field 'obs_local_window' produced shape (4, 125), expected (4, 25)."),
-    "div003_rect": "ValueError: Non-square grids not yet supported: 8×6",
-}
-_DIV003_LEVELS = {
+# Deliberately DUPLICATED from matrix.py, not imported: these are pins. A
+# matrix edit that changes a block must consciously move the pin too.
+# The differential packs entered as the DIV-003 crash cells (signatures
+# re-verified at oracle-2026-08-13); DIV-003 retired when the oracle moved
+# forward to oracle-2026-08-17 (4222a917, PDR-0074), so they are now plain
+# standing cells and carry no signature.
+_DIFFERENTIAL_LEVELS = {
     "div003_scaled": "L1_full_observability",
     "div003_cubic_partial": "L2_partial_observability",
     "div003_rect": "L1_full_observability",
 }
+# The only runnable packs whose vfs_profiles.yaml declares variables — the
+# cells that can see unit 3 (hamlet-f0ed709ecf) split the obs_vfs block.
+_PROFILE_VARIABLE_CELLS = {
+    "configs/test/items_smoke": "L0_smoke",
+    "configs/test/effects_smoke": "L0_effects",
+}
 
 
-def test_matrix_declares_sixteen_cells() -> None:
+def test_matrix_declares_twenty_cells() -> None:
     """CUDA duplicates of each cell are always declared — never absent from
     the matrix — so the harness can report them SKIPPED instead of silently
-    omitting them when --cuda is not passed (spec: 'never silent'). 16 =
-    the 10 standing default_curriculum cells + 3 DIV-003 fixture packs x 2
-    devices (content 5 step 3)."""
+    omitting them when --cuda is not passed (spec: 'never silent'). 20 =
+    the 10 standing default_curriculum cells + 3 differential packs x 2
+    devices + 2 profile-variable packs x 2 devices (PDR-0074)."""
     cells: tuple[Cell, ...] = default_cells()
-    assert len(cells) == 16
+    assert len(cells) == 20
     standing = [c for c in cells if c.params.pack == "configs/default_curriculum"]
-    div003 = [c for c in cells if c.params.pack.startswith("configs/differential/")]
+    differential = [c for c in cells if c.params.pack.startswith("configs/differential/")]
+    profile = [c for c in cells if c.params.pack in _PROFILE_VARIABLE_CELLS]
     assert len(standing) == 10
-    assert len(div003) == 6
-    assert len(standing) + len(div003) == len(cells)
+    assert len(differential) == 6
+    assert len(profile) == 4
+    assert len(standing) + len(differential) + len(profile) == len(cells)
     assert all(c.params.num_agents == 4 for c in cells)
     assert all(c.params.steps == 100 for c in cells)
     assert all(c.params.seed == 42 for c in cells)
@@ -58,9 +62,12 @@ def test_cpu_block_precedes_cuda_block() -> None:
     assert tuple(c.params.device for c in cells[5:10]) == ("cuda",) * 5
     assert tuple(c.params.level for c in cells[:5]) == LEVELS
     assert tuple(c.params.level for c in cells[5:10]) == LEVELS
-    # DIV-003 block appended after the standing matrix, same cpu-then-cuda rule
+    # differential block appended after the standing matrix, same cpu-then-cuda rule
     assert tuple(c.params.device for c in cells[10:13]) == ("cpu",) * 3
     assert tuple(c.params.device for c in cells[13:16]) == ("cuda",) * 3
+    # profile-variable block last, same rule
+    assert tuple(c.params.device for c in cells[16:18]) == ("cpu",) * 2
+    assert tuple(c.params.device for c in cells[18:20]) == ("cuda",) * 2
 
 
 def test_cell_id_is_unique_and_readable() -> None:
@@ -138,43 +145,82 @@ def test_registered_divergence_rejects_unicode_digit_refs() -> None:
         RegisteredDivergence(register_ref="DIV-٠٠٣", old_stderr_substring=_GOOD_SIGNATURE)
 
 
-def test_standing_cells_declare_no_expectations() -> None:
-    """Pin: the standing default_curriculum cells still certify bare
-    agreement. Expectations live ONLY on the DIV-003 fixture cells — a
-    standing cell sprouting one silently would change what exit 0 certifies
-    for the whole standing matrix."""
+def test_standing_and_differential_cells_declare_nothing_at_this_tag() -> None:
+    """Pin (PDR-0074): the sixteen non-profile cells certify bare agreement —
+    no `expected`, no `pack_divergence`, no `hash_divergence` — so for them
+    exit 0 means AGREE, not "diverged exactly as registered". A declaration
+    sprouting on one of them silently changes what exit 0 certifies; it
+    returns only with a register entry that needs it (PDR-0037)."""
     for c in default_cells():
-        if c.params.pack == "configs/default_curriculum":
-            assert c.expected is None, f"standing cell {c.cell_id} declares an expectation"
+        if c.params.pack in _PROFILE_VARIABLE_CELLS:
+            continue
+        assert c.expected is None, f"{c.cell_id} declares an old-side-crash expectation"
+        assert c.pack_divergence is None, f"{c.cell_id} declares a pack divergence"
+        assert c.hash_divergence is None, f"{c.cell_id} declares a hash divergence"
 
 
-def test_div003_cells_bind_the_registered_signatures() -> None:
-    """Every DIV-003 cell binds DIV-003 with the verbatim final-exception
-    line re-verified at the oracle tag, on the level whose crash it is. A
-    drifted signature would quietly turn DIVERGED_AS_REGISTERED into
-    OLD_SIDE_ERROR (fail-closed, but for the wrong stated reason) — or, if
-    loosened, widen what the suppression can match (PDR-0040: loosen nothing
-    without a new adversarial pass)."""
-    div003 = [c for c in default_cells() if c.params.pack.startswith("configs/differential/")]
-    assert {Path(c.params.pack).name for c in div003} == set(_DIV003_SIGNATURES)
-    for c in div003:
-        name = Path(c.params.pack).name
-        assert c.expected is not None, f"{c.cell_id} declares no expectation"
-        assert c.expected.register_ref == "DIV-003"
-        assert c.expected.old_stderr_substring == _DIV003_SIGNATURES[name]
-        assert c.params.level == _DIV003_LEVELS[name]
+def test_profile_variable_cells_bind_div006_narrowly() -> None:
+    """DIV-006 (PDR-0075) is hash-only on the four profile-variable cells: exactly the
+    three DERIVED hashes measured to move, no RAW hash, and a pack divergence only where
+    the frozen fixture actually differs (effects_smoke gained `semantic_type`; items_smoke
+    declares only item variables and is still a byte copy of its fixture)."""
+    profile = [c for c in default_cells() if c.params.pack in _PROFILE_VARIABLE_CELLS]
+    assert len(profile) == 4
+    for c in profile:
+        assert c.expected is None
+        assert c.hash_divergence is not None and c.hash_divergence.register_ref == "DIV-006"
+        assert c.hash_divergence.declared == {"observation_schema_hash", "variable_schema_hash", "vfs_hash"}
+        if c.params.pack == "configs/test/effects_smoke":
+            assert c.pack_divergence == "DIV-006"
+        else:
+            assert c.pack_divergence is None, f"{c.cell_id}: items_smoke's fixture is a byte copy; nothing to declare"
 
 
-def test_div003_fixture_packs_vary_only_the_declared_axis() -> None:
+def test_differential_cells_run_their_declared_levels() -> None:
+    differential = [c for c in default_cells() if c.params.pack.startswith("configs/differential/")]
+    assert {Path(c.params.pack).name for c in differential} == set(_DIFFERENTIAL_LEVELS)
+    for c in differential:
+        assert c.params.level == _DIFFERENTIAL_LEVELS[Path(c.params.pack).name]
+
+
+def test_profile_variable_cells_are_the_packs_with_a_populated_obs_vfs_block() -> None:
+    """The profile-variable cells exist to see unit 3 (hamlet-f0ed709ecf). A
+    pack in this block whose vfs_profiles.yaml declares no variables would be
+    a cell that reads green about that cut while measuring nothing — the
+    silent-and-green failure PDR-0052 names. So each declared pack must
+    actually declare at least one profile variable, at the level the cell
+    runs."""
+    import yaml
+
+    root = Path(__file__).resolve().parents[4]
+    profile = [c for c in default_cells() if c.params.pack in _PROFILE_VARIABLE_CELLS]
+    assert {c.params.pack for c in profile} == set(_PROFILE_VARIABLE_CELLS)
+    for c in profile:
+        assert c.params.level == _PROFILE_VARIABLE_CELLS[c.params.pack]
+        doc = yaml.safe_load((root / c.params.pack / "vfs_profiles.yaml").read_text())
+
+        def count(node: object) -> int:
+            if isinstance(node, dict):
+                own = len(node["variables"]) if isinstance(node.get("variables"), list) else 0
+                return own + sum(count(v) for v in node.values())
+            if isinstance(node, list):
+                return sum(count(v) for v in node)
+            return 0
+
+        assert count(doc) > 0, f"{c.params.pack} declares no profile variables — it cannot see the obs_vfs split"
+
+
+def test_differential_packs_vary_only_the_declared_axis() -> None:
     """Trial-001 discipline: a fixture pack is default_curriculum with ONE
     axis moved. Every yaml except stratum.yaml (the moved axis) and
     experiment.yaml (name + single-level list) must be byte-identical to its
     default_curriculum counterpart, and the pack carries exactly its declared
     level. A fixture that drifted measures something other than the
-    registered crash."""
+    registered crash (DIV-003, retired) and now something other than the
+    substrate axis the cell exists to exercise."""
     root = Path(__file__).resolve().parents[4]
     base = root / "configs" / "default_curriculum"
-    for pack_name, level in _DIV003_LEVELS.items():
+    for pack_name, level in _DIFFERENTIAL_LEVELS.items():
         pack = root / "configs" / "differential" / pack_name
         yamls = sorted(p.relative_to(pack) for p in pack.rglob("*.yaml"))
         assert yamls, f"{pack_name}: pack missing or empty"
@@ -212,7 +258,7 @@ def test_declared_register_refs_exist_in_the_register() -> None:
     """Every RegisteredDivergence declared in the matrix must point at a real
     `## DIV-NNN` entry in docs/oracle/known-divergences.md — a ref to a
     nonexistent entry is filing to /dev/null (PDR-0028). Vacuous while no cell
-    declares one; arms itself the moment DIV-003 cells land."""
+    declares one (as at oracle-2026-08-17); armed the moment a cell binds."""
     entries = set(_register_sections())
     declared = {c.expected.register_ref for c in default_cells() if c.expected is not None}
     declared |= {c.hash_divergence.register_ref for c in default_cells() if c.hash_divergence is not None}
@@ -226,7 +272,7 @@ def test_declared_register_refs_bind_entries_with_the_matching_harness_shape() -
     machine-readable `Harness shape: old-side-crash` line. Prevents the
     typo-bind: certifying 'DIVERGED_AS_REGISTERED (DIV-001)' where DIV-001's
     registered shape is checkpoint-boundary and cannot manifest in a trace.
-    Vacuous while no cell declares an expectation; arms with DIV-003."""
+    Vacuous while no cell declares an expectation; arms the moment one does."""
     sections = _register_sections()
     for cell in default_cells():
         if cell.expected is None:

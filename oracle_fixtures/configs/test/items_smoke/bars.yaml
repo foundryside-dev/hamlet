@@ -1,0 +1,27 @@
+bars:
+  version: "1.0"
+
+  meters:
+    - id: energy
+      min_value: 0.0
+      max_value: 1.0
+      initial_value: 0.5
+      decay_rate: -0.01
+      critical_threshold: 0.2
+      death_threshold: 0.0
+
+    - id: health
+      min_value: 0.0
+      max_value: 1.0
+      initial_value: 1.0
+      decay_rate: 0.0
+      critical_threshold: 0.3
+      death_threshold: 0.0
+
+    - id: money
+      min_value: 0.0
+      max_value: 100.0
+      initial_value: 0.0
+      decay_rate: 0.0
+      critical_threshold: null
+      death_threshold: null

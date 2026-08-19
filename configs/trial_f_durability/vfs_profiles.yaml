@@ -1,0 +1,23 @@
+version: "1.0"
+evaluation_mode: mark_and_sweep
+debug_logging: false
+
+global_profile:
+  variables:
+    - name: day_count
+      semantic_type: custom
+      type: int
+      initial_value: 0
+
+agent_profile: null
+
+item_profiles:
+  - profile_name: tool_stats
+    variables:
+      # The wear state (facet 1). Exposed to the agent so it lands in the
+      # obs_item_slots observation block (facet 4).
+      - name: durability
+        type: float
+        initial_value: 3.0
+        exposed_to: [agent]
+        description: "Uses remaining (3.0 = new, 0.0 = broken)"

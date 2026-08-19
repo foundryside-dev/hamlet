@@ -85,9 +85,12 @@ def test_compile_rejects_level_directory_input(tmp_path: Path) -> None:
         UniverseCompiler().compile(level_dir, primary_level="L0_test", use_cache=False)
 
 
-def test_obs_vfs_dims_come_from_compiled_vfs_observation_spec(monkeypatch: pytest.MonkeyPatch) -> None:
-    config_dir = Path("configs/test/effects_smoke")
-    forced_spec = VFSObservationSpec(global_vfs_dim=7, agent_vfs_dim=0, item_vfs_dim=0)
+def test_item_slots_dims_come_from_compiled_vfs_observation_spec(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The item-slot feature's width is the compiled VFS observation spec's item width — the
+    compiler does not re-derive it (PDR-0075: `obs_vfs` is gone; only the item sub-block
+    remains a single feature field, and it is sized from the spec)."""
+    config_dir = Path("configs/test/items_smoke")
+    forced_spec = VFSObservationSpec(global_vfs_dim=0, agent_vfs_dim=0, item_vfs_dim=6, item_vars_per_slot=2)
 
     monkeypatch.setattr(
         compiler_module.VFSObservationSpec,
@@ -95,11 +98,12 @@ def test_obs_vfs_dims_come_from_compiled_vfs_observation_spec(monkeypatch: pytes
         classmethod(lambda cls, compiled_profiles, *, max_items_per_agent: forced_spec),
     )
 
-    compiled = UniverseCompiler().compile(config_dir, primary_level="L0_effects", use_cache=False)
-    obs_vfs = next(field for field in compiled.observation_spec.fields if field.name == "obs_vfs")
+    compiled = UniverseCompiler().compile(config_dir, primary_level="L0_smoke", use_cache=False)
+    item_slots = next(field for field in compiled.observation_spec.fields if field.name == "obs_item_slots")
 
     assert compiled.vfs_observation_spec is forced_spec
-    assert obs_vfs.dims == forced_spec.total_vfs_dim
+    assert item_slots.dims == forced_spec.item_vfs_dim
+    assert not any(field.name == "obs_vfs" for field in compiled.observation_spec.fields)
 
 
 @pytest.mark.parametrize(

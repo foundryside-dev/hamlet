@@ -20,8 +20,8 @@ def test_compiler_marks_vfs_variables_used_in_observations(tmp_path: Path):
         "debug_logging": False,
         "global_profile": {
             "variables": [
-                {"name": "day_count", "type": "int", "initial_value": 0},
-                {"name": "unused_var", "type": "int", "initial_value": 0},
+                {"semantic_type": "custom", "name": "day_count", "type": "int", "initial_value": 0},
+                {"semantic_type": "custom", "name": "unused_var", "type": "int", "initial_value": 0},
             ]
         },
     }
@@ -77,7 +77,7 @@ def test_compiler_marks_empty_when_no_vfs_observations(tmp_path: Path):
         "debug_logging": False,
         "global_profile": {
             "variables": [
-                {"name": "some_var", "type": "int", "initial_value": 0},
+                {"semantic_type": "custom", "name": "some_var", "type": "int", "initial_value": 0},
             ]
         },
     }

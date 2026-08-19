@@ -1,0 +1,41 @@
+drive:
+  version: '1.0'
+  modifiers:
+    neutral:
+      bar: energy
+      ranges:
+      - name: range_0
+        min: 0.0
+        max: 1.0
+        multiplier: 1.0
+  extrinsic:
+    type: constant_base_with_shaped_bonus
+    base_reward: 0.01
+    bar_bonuses:
+    # Absorbing food at the warehouse is the point of spreading toward it.
+    - bar: biomass
+      center: 0.0
+      scale: 0.5
+    # Joining the organism at the root is the first thing to learn.
+    - bar: rooted
+      center: 0.0
+      scale: 0.1
+    variable_bonuses: []
+    apply_modifiers: []
+  intrinsic:
+    strategy: none
+    base_weight: 0.0
+    apply_modifiers: []
+    adaptive_config: null
+  shaping:
+  # "Must LEARN to spread toward food": dense gradient toward the warehouse.
+  # Max manhattan distance on 8x8 is 14.
+  - type: approach_reward
+    weight: 0.05
+    target_affordance: WAREHOUSE
+    max_distance: 14.0
+  composition:
+    normalize: false
+    clip: null
+    log_components: false
+    log_modifiers: false

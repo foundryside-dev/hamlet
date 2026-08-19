@@ -1,0 +1,9 @@
+# Items Smoke Test - Level L0_smoke Curriculum Configuration
+# Static curriculum (no progression, single level)
+
+curriculum:
+  version: "1.0"
+  active_vision: global
+  vision_range: 0.5
+  active_temporal: false
+  day_length: null

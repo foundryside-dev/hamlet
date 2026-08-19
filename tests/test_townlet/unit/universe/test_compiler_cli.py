@@ -80,9 +80,11 @@ debug_logging: false
 global_profile:
   variables:
     - name: first
+      semantic_type: custom
       type: int
       expression: second + 1
     - name: second
+      semantic_type: custom
       type: int
       expression: first + 1
 """.lstrip())

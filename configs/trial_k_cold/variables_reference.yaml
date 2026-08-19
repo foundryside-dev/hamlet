@@ -1,0 +1,54 @@
+version: "1.0"
+variables:
+  - id: position
+    scope: agent
+    type: vec2f
+    dims: 2
+    default: [0.0, 0.0]
+    lifetime: tick
+    readable_by: [agent, engine]
+    writable_by: [engine]
+    description: Normalized agent position in [0, 1]^2 range
+    normalization:
+      kind: minmax
+      clip: false
+      min: [0.0, 0.0]
+      max: [1.0, 1.0]
+
+  # ── F7, FIRST SURFACE: the one the corpus names — REMOVED, and why ───────
+  # The corpus names `zone` scope for "change location (zone scope carrying
+  # different environmental properties)". It was declared here first, exactly as
+  # the A.2 search plan pre-registered:
+  #
+  #   - id: zone_temp_offset
+  #     scope: zone
+  #     type: scalar
+  #     default: 0.0
+  #     lifetime: persistent
+  #     readable_by: [agent, engine]
+  #     writable_by: [engine]
+  #
+  # It VALIDATES and COMPILES (exit 0, hashes emitted) and then hard-crashes at
+  # env construction:
+  #
+  #   ValueError: Variable 'zone_temp_offset' uses zone scope but num_zones
+  #   must be positive
+  #
+  # `num_zones` is a VariableRegistry.__init__ parameter defaulting to 0;
+  # vectorized_env.py:621 never passes it, and no YAML anywhere in the repo sets
+  # it. The declaration is therefore refused loudly with no authoring route —
+  # BLOCKED, not INERT. Removed so the remaining facets stay probeable; the
+  # crash is reproduced in probe_trial_k.py's F7 section rather than left as a
+  # pack that cannot start. See the trial record for the full verdict.
+
+exposed_observations:
+  - id: obs_position
+    shape: [2]
+    type: vec2f
+    source: position
+    scope: agent
+    normalization:
+      kind: minmax
+      clip: false
+      min: [0.0, 0.0]
+      max: [1.0, 1.0]

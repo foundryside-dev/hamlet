@@ -76,8 +76,12 @@ gaps both runs found.
 - `PDR-0090` (substrate freeze): armed. Lifts at trial nine + both re-runs.
 - `PDR-0094`: reopens if a bucket ever misrepresents a finding (BLOCKED on an incidental refusal
   while the substantive failure is broad ABSENT).
-- `PDR-0068` (merge banking): **LIT — 35 commits ahead of `origin/main`** vs a ~30 threshold. The
-  next merge owes `PDR-0039` gate 2. **Owner's call.**
+- `PDR-0068` (merge banking): **DISCHARGED** — the third merge landed at `04062872` with gate 2
+  executed first. Branch level with `main`.
+- `PDR-0101` trigger 2 (a merge landing a red gate on `main`): **not fired, but not cleared** —
+  no gate ran on `main` at all (`hamlet-83c8e3b50e`). The nightly is the reading that settles it.
+- `PDR-0102` trigger 2: if the next gate-2 run finds fewer than five stale claims across a
+  comparable range, treat the method as degenerated into a re-read and re-run it.
 - `PDR-0079` trigger 3: ABSENT/unactioned by-catch now **19+** across six trials and two audits. A
   WS-4 triage session is overdue and is now the largest unscheduled item.
 - Pack-disposition clock: **EIGHT packs** (was seven — `trial_o_bidding_blind` added) promoted-or
@@ -85,17 +89,25 @@ gaps both runs found.
 
 ## Blocked on / flagged for the owner
 
-1. ~~The merge to `main`~~ — **RESOLVED: the merge is AUTONOMOUS** (`PDR-0101`, owner-ruled).
-   `PDR-0039` gate 2 survives as a **quality gate the agent executes**, by method, at every merge.
-   Gate 2 is running now for the 37-commit delta; the merge follows it.
+1. ~~The merge to `main`~~ — **DONE. The third merge LANDED at `04062872` (PR #36)**, gate 2
+   discharged first (`PDR-0102`: 18 stale claims + 4 omissions in 43 commits; the adversarial pass
+   found 10 defects in the sweep's own corrections). `PDR-0068`'s banking trigger is discharged;
+   the branch is level with `main`. **But see the new flag below — no CI fired on `main`.**
 2. ~~`vision.md` stamp debt~~ — **CLEARED** (`PDR-0099`). The grant widening was an owner-approved
    `vision.md` touch, so the stamp was corrected to 2026-08-20 at the same time, discharging what
    `PDR-0093` carried.
 3. **WS-7 (`hamlet-e3af412673`, P0) — park it or schedule it.** Untouched since ~2026-08-17 because
    every session has run bet 2. Neither re-claimed nor reset; comment 176 records why.
-4. Dependabot `#33`/`#34` still open on `main`, plus **4 vulnerability alerts** (2 moderate, 2 low)
+4. **`hamlet-83c8e3b50e` (P1, NEW) — the merge triggered NO per-push CI on `main`.** Its tip has
+   **zero check-runs**, while both prior merges fired Lint/Tests/Config Validation within seconds.
+   Workflows are `active`, `main` is in the trigger list, Actions is enabled and unrestricted,
+   nothing is queued. The merged code *was* validated (PR #36's own checks all passed against the
+   merge preview; full suite 3281/16/0 locally) — but `main` has no gate reading of its own.
+   Diagnosing further needs account-level billing/usage visibility the standing agent does not
+   have and did not request. **First thing to check: the 06:00 UTC nightly on `main`.**
+5. Dependabot `#33`/`#34` still open on `main`, plus **4 vulnerability alerts** (2 moderate, 2 low)
    reported on every push. Merges to `main` are yours.
-5. `CLAUDE.md:65` stale citation (fifteenth sighting; owner's file, deferred by choice).
+6. `CLAUDE.md:65` stale citation (fifteenth sighting; owner's file, deferred by choice).
 
 ## Open questions
 

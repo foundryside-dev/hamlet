@@ -54,6 +54,14 @@
 >   Every earlier amendment-log entry was a factual correction; this one changes scope, so it is
 >   marked as such. The `Last reviewed` stamp was corrected from `2026-08-19` to `2026-08-20` at
 >   the same approved touch, discharging the debt `PDR-0093` carried — the pattern `PDR-0038` set.
+> - *2026-08-20* (third entry that day) — **the merge to `main` is no longer the boundary; it is
+>   AUTONOMOUS.** Follows directly from `PDR-0100`: once publication means declaring 1.0, the ground
+>   on which the merge escalated disappeared, and the owner ruled the merge autonomous rather than
+>   leaving it gated on an unstated reason (*"Autonomous — run gate 2 and merge now"*). `PDR-0039`
+>   gate 2 survives unchanged in substance but changes in KIND — from an escalation the agent waits
+>   on to a quality gate the agent executes. This is a **scope change**, the second of the day.
+>   Recorded as `PDR-0101`. Still escalated: declaring 1.0, announcement, tags/releases,
+>   vision/strategy/grant changes, data deletion.
 > - *2026-08-20* (second entry that day) — **"public release" is owner-DEFINED, and the definition
 >   is narrower than this document had assumed.** Publication means *publishing a product* —
 >   a coherent product offering, i.e. **declaring 1.0** — not code being visible on the internet.
@@ -280,16 +288,23 @@ Status: **CONFIRMED** by the owner on 2026-08-19, unchanged from the 2026-08-11 
 (re-confirmed 2026-08-14, at the 2026-08-15 `/own-product` resume, twice on 2026-08-16 — the
 first re-confirmation that day preceded the stamp correction, per the amendment log — and at
 each `/own-product` resume since, most recently at the 2026-08-19 resume that approved this
-stamp correction; scope identical every time). Read together with `PDR-0046` and `PDR-0099`: the agent may commit and push
-`project-recovery*` **including checkpoint commits**, without asking — the merge to `main` is the
-boundary, and it gates on `PDR-0039`. Pushes to `main`, tags and releases are NOT covered.
+stamp correction; scope identical every time). Read together with `PDR-0046`, `PDR-0099`, `PDR-0100` and `PDR-0101`: the agent may commit and
+push `project-recovery*` **including checkpoint commits**, and **merge to `main`**, without
+asking. `PDR-0039` gate 2 (the unconditional README re-verification, by method — sweep, draft from
+verified facts, adversarial pass — never a re-read) is owed at **every** merge and is executed by
+the agent, not waited on. **The merge is no longer the boundary.** What remains escalated:
+declaring **1.0** / publishing a product offering (`PDR-0100`), *announcement* — telling people —
+tags and releases, vision/strategy/grant changes, and data deletion.
 
 Autonomous within strategy — the agent MAY, without asking:
   prioritize the backlog, write PRDs, dispatch delivery, accept against
   criteria, reprioritize, kill a failing bet per metrics.md,
-  and **commit AND PUSH `project-recovery*` branches — checkpoint commits
-  included** (`PDR-0099`; supersedes `/product-checkpoint`'s blanket no-push
-  rule for this product only).
+  commit AND PUSH `project-recovery*` branches — checkpoint commits
+  included (`PDR-0099`; supersedes `/product-checkpoint`'s blanket no-push
+  rule for this product only),
+  and **MERGE `project-recovery*` into `main`** (`PDR-0101`) — which still
+  owes `PDR-0039` gate 2 unconditionally, now read as a QUALITY gate the
+  agent executes rather than an escalation the agent waits on.
 
 Escalate BEFORE acting — the agent MUST get owner sign-off for:
   changing this vision/strategy/grant, public release or announcement,

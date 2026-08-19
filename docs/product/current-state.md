@@ -85,13 +85,9 @@ gaps both runs found.
 
 ## Blocked on / flagged for the owner
 
-1. **The merge to `main` — `PDR-0068`'s trigger is LIT (37+ commits), and its GROUND has shifted.**
-   `PDR-0100` removes the reason the agent treated the merge as escalating (it is not a publication
-   event; there is no product offering, only code). The boundary is still written into the grant
-   note, `PDR-0046` and `PDR-0058` — but now on unstated grounds. **Open question for the owner: is
-   the merge to `main` autonomous, or does that boundary stand for a different reason?** Either way
-   it owes `PDR-0039` gate 2 (unconditional README re-sweep) first; say the word and I'll execute
-   the gate.
+1. ~~The merge to `main`~~ — **RESOLVED: the merge is AUTONOMOUS** (`PDR-0101`, owner-ruled).
+   `PDR-0039` gate 2 survives as a **quality gate the agent executes**, by method, at every merge.
+   Gate 2 is running now for the 37-commit delta; the merge follows it.
 2. ~~`vision.md` stamp debt~~ — **CLEARED** (`PDR-0099`). The grant widening was an owner-approved
    `vision.md` touch, so the stamp was corrected to 2026-08-20 at the same time, discharging what
    `PDR-0093` carried.

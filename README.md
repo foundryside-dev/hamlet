@@ -22,17 +22,18 @@ itself.
 ## Status: pre-release, mid-rewrite
 
 - Version 0.1.0, classified `Development Status :: 3 - Alpha`. There are no release tags; the
-  repository's only tag, locally and on `origin`, is the oracle tag below.
-- **`main` carries the recovery as of 2026-08-15.** The 168 commits of the `project-recovery`
-  rewrite were merged through PR #32 (merge commit `07b26ed5`) after both of the merge gates it
-  was held behind were satisfied — CI restoration, and a claim-by-claim re-verification of this
-  file. Before that merge, `main`'s tip was dated 2025-11-28 and described a system that no
-  longer existed. Repair work continues on `project-recovery-2`, and this file is stamped on
-  that branch at `54132aaf`, the last commit before the one that carries it to `main` in the
-  second merge. `main` is no longer frozen, but between merges it trails: at this stamp it still
-  sat at `07b26ed5`, 27 commits behind, without the `slow`-marker deletion its nightly was red
-  behind — the merge that carries this file closes that gap (see
-  [Continuous integration](#continuous-integration)).
+  repository's only tags, locally and on `origin`, are the two oracle tags below —
+  `oracle-2026-08-13` (`0e875d7a`) and `oracle-2026-08-17` (`4222a917`).
+- **`main` carries the recovery.** The 168 commits of the `project-recovery` rewrite were merged
+  through PR #32 (merge commit `07b26ed5`) on 2026-08-15, after both of the merge gates it was
+  held behind were satisfied — CI restoration, and a claim-by-claim re-verification of this file.
+  Before that merge, `main`'s tip was dated 2025-11-28 and described a system that no longer
+  existed. A second merge landed through PR #35 at `4222a917` on 2026-08-16, carrying the
+  `slow`-marker deletion and the integration-test repairs; the nightly on `main` has been green
+  ever since (see [Continuous integration](#continuous-integration)). Repair continues on a
+  `project-recovery*` branch and reaches `main` only through the same gates, so between merges
+  `main` trails the branch by design — it is the last state that passed both gates, not the newest
+  state.
 - The project is mid **strangler rewrite behind a pinned oracle**. Tag `oracle-2026-08-17`
   (commit `4222a917`, the tip of `main` after the second merge) freezes the previous system as
   the specification for preserved behaviour; it superseded `oracle-2026-08-13` (`0e875d7a`) on
@@ -40,14 +41,17 @@ itself.
   mutates" — it moves *forward* to a new tag, never edits the old one — and "a diff against the
   oracle is a defect in the rebuild unless the register says otherwise." Accepted differences
   are recorded in `docs/oracle/known-divergences.md`.
-- **CI runs and is green at this commit** — as of 2026-08-15, and not before. Lint, Config
-  Validation and Tests fire on every push; across the nineteen pushes on the two recovery
-  branches, 59 of 60 runs passed — the one red was a wall-clock ratio flake, not a product
-  regression. Since `a725bf66` the default suite deselects nothing: the `slow` marker that had
-  kept 31 red integration tests out of every per-push gate is deleted, 29 of them are repaired and
-  2 deleted as dead, and the Tests job runs the whole suite.
+- **CI runs, and all three per-push gates are green at `da7d3f7e`** — the last commit CI had
+  reported on when this file was stamped, read at 2026-08-19T18:05Z. A commit cannot report on itself:
+  the commit carrying this file is pushed after it is written, so its own runs land afterwards.
+  Lint, Config Validation and Tests fire on every push, and that has been true since 2026-08-15
+  and not before; across the recovery branches, 162 of 177 completed runs passed.
+  Since `a725bf66` the default suite deselects nothing: the `slow` marker that had kept 31 red
+  integration tests out of every per-push gate is deleted, 29 of them are repaired and 2 deleted
+  as dead, and the Tests job runs the whole suite.
   Read this as young rather than settled: before 2026-08-15 nothing had run on the recovery at
-  all, and nothing had passed anywhere since 2025-11-28. See
+  all, nothing had passed anywhere since 2025-11-28, and the Lint gate has since spent seven
+  consecutive pushes red without being noticed. See
   [Continuous integration](#continuous-integration).
 - Where this file calls something shipped, it means *present and wired*, not mature. The project
   came out of a long stretch of intermittent attention and is unfinished in places; the specific
@@ -56,19 +60,24 @@ itself.
   changes land directly.
 
 *Every command, file path, count and quotation below was executed or read against the working tree
-at commit `54132aaf`; the repository-state facts under [Continuous integration](#continuous-integration)
-were read from the GitHub API the same day. Both on 2026-08-17, ahead of the second merge to
-`main`, in the third full claim-by-claim re-verification. The first (`1b25c99d`) found **ten
-claims stale in a single day**, every one because the recovery had fixed the thing being
-described; the second (`33bfff51`, at the first merge) found five more in four commits; this one
-found twenty-one stale or misleading in 27 commits (itemised in the `docs/product/` decision
-record that accompanies this commit) — the frontend now builds and has a test gate,
-the `slow` marker is gone, the differential harness adjudicates two divergence shapes, and the
-nightly on `main` has run and is red — again mostly because the thing described was fixed. There are
-deliberately no test counts, coverage percentages, observation widths or training-performance
-figures here — see [Numbers](#numbers). **This file decays fast because the project moves fast**:
-it is a status report stamped at a commit, not a standing description, and it is re-verified by
-sweep — not by re-reading — whenever it is published.*
+at commit `da7d3f7e`; the repository-state facts under [Continuous integration](#continuous-integration)
+were read from the GitHub API at 2026-08-19T18:05Z. Dates here are UTC, which is why the second merge is
+dated 2026-08-16 although its commit carries 2026-08-17 in local time. This is the **fourth** full
+claim-by-claim re-verification of this file. The first (`1b25c99d`) found **ten claims stale in a
+single day**, every one because the recovery had fixed the thing being described; the second
+(`33bfff51`, at the first merge) found five more in four commits; the third (`905acd96`, at the
+second merge) found twenty-one in 27; this one found **eighteen stale or misleading claims and
+four material omissions in 43 commits**, itemised in the `docs/product/` decision record
+that accompanies this commit. Two of those came from the gate finding its own blind spots: the CI
+gate had been red for seven consecutive pushes while this file called it green, and a defect
+described here as afflicting one pack turned out to be a class affecting any pack that declares an
+agent-profile variable. **The adversarial half of the method also found ten factual defects in the
+sweep's own corrections before they were applied** — which is the argument for the method over a
+re-read, and the reason a sweep that finds nothing is treated here as a sweep that was not run.
+There are deliberately no test counts, coverage percentages, observation widths or
+training-performance figures here — see [Numbers](#numbers). **This file decays fast because the
+project moves fast**: it is a status report stamped at a commit, not a standing description, and
+it is re-verified by sweep — not by re-reading — whenever it is published.*
 
 ## A universe is YAML
 
@@ -237,9 +246,9 @@ cd hamlet
 uv sync --all-extras
 ```
 
-No branch checkout is needed as of 2026-08-15: `main` carries the recovery. Ongoing repair lands
-on `project-recovery-2` first, so `main` trails active work by design — it is the last state that
-passed both merge gates, not the newest state.
+No branch checkout is needed: `main` carries the recovery. Ongoing repair lands on a
+`project-recovery*` branch first and reaches `main` only through the merge gates, so `main` trails
+active work by design — it is the last state that passed both gates, not the newest state.
 
 Use `--all-extras`: it is what all four CI workflows specify, and a bare `uv sync` installs runtime
 dependencies only — pytest, black, ruff and mypy live in the `dev` extra. No `PYTHONPATH` export is
@@ -326,11 +335,15 @@ divergence and their frozen fixtures under `oracle_fixtures/` are byte copies of
 so for them a green run means *old and new agree* — the first time since 2026-08-15 that exit 0 has
 meant that. (Between 2026-08-15 and the re-tag, all ten standing cells bound the hash-only entry
 `DIV-004` and AGREE was unreachable; the register records that as a cost, and its dissolution as
-the reason the tag moved.) The four profile-variable cells bind `DIV-006` — hash-only, exactly
-`observation_schema_hash`, `variable_schema_hash`, `vfs_hash` — the first entry written against the
-new tag. The register holds six entries: `DIV-001` and `DIV-002` are checkpoint-boundary, open, and
-cannot appear in an env-step trace; `DIV-003`, `DIV-004` and `DIV-005` are retired at the new tag;
-`DIV-006` is live. The harness treats any DIVERGE or HASH_MISMATCH with no matched entry as a
+the reason the tag moved.) The four profile-variable cells bind `DIV-006`, the first entry written against the
+new tag. All four declare the hash-only shape, permitting and requiring exactly
+`observation_schema_hash`, `variable_schema_hash` and `vfs_hash` to move. The two
+`configs/test/effects_smoke` cells additionally declare an *input* divergence under the same entry:
+the cut requires `semantic_type` on global and agent profile variables, their frozen fixture is
+held at the pre-cut schema, and the live pack differs from it by exactly that one key. A declared
+input delta and a declared output delta are two separate decisions, and neither blesses the other. The register holds six entries, in its own lifecycle vocabulary: `DIV-001` and `DIV-002` are
+checkpoint-boundary, `tag-stamped` at the new tag, and cannot appear in an env-step trace;
+`DIV-003`, `DIV-004` and `DIV-005` are `retired` at it; `DIV-006` is `built`. The harness treats any DIVERGE or HASH_MISMATCH with no matched entry as a
 rebuild defect or a missing register entry — both findings.
 
 ### Checks, run locally
@@ -354,20 +367,29 @@ cd frontend && npm test          # vitest; local only — no workflow runs it
 Four GitHub Actions workflows exist, all specifying `uv sync --all-extras` on Python 3.13: Lint,
 Config Validation, Tests, and Full Test Suite.
 
-**Three of the four run on every push, and 59 of their 60 runs on the recovery branches have
-passed.** That became true on 2026-08-15 and had never been true before: between 2025-11-28 and
-that date no workflow had run against the recovery at all — its first 160 commits landed with no
-CI, and only the seven shas pushed on 2026-08-15 were checked before the first merge. Nineteen
-pushes have been checked in all across `project-recovery` and `project-recovery-2` — treat the
-gates as restored, not as seasoned.
+**Three of the four run on every push, and 162 of the 177 completed runs on the
+recovery branches have passed** (read from the GitHub API at 2026-08-19T18:05Z). That became true on
+2026-08-15 and had never been true before: between 2025-11-28 and that date no workflow had run
+against the recovery at all — the 168 commits it merged in PR #32 landed across only seven pushed
+shas, all on 2026-08-15, and nothing before them was checked. 57 shas have been checked in
+all across `project-recovery` and `project-recovery-2` — treat the gates as restored, not as
+seasoned.
 
 - Lint, Config Validation and Tests trigger on `push` to `main` and to `project-recovery*` (and
   on `pull_request`). The glob is deliberate: the original defect was that the recovery branch
   simply was not named in the trigger list, so naming the *next* branch individually would have
   rebuilt the same trap on the next rename. The first runs in the recovery's history were green —
-  Lint 1m11s, Config Validation 1m14s, Tests 24m21s — and every run since has passed except one:
-  the Tests job at `bf0f2fe4` (run 31870278368) failed a wall-clock ratio assertion that passed
-  on the same code at the neighbouring commits — the flake described below, not a regression.
+  Lint 1m11s, Config Validation 1m14s, Tests 24m21s. Of the 177 completed runs since,
+  15 have failed: thirteen Lint and two Tests. Twelve of the Lint reds were `ruff`
+  line-length violations in trial probe scripts under `configs/` — one of which stood red for
+  seven consecutive pushes before a merge gate caught it, having twice been reported green in the
+  meantime; the thirteenth was the no-defaults linter at `8c5fa2c8`, on product source
+  (`environment/observation_encoder.py`), not on an experiment artefact. The two Tests reds were
+  the wall-clock ratio flake at `bf0f2fe4` (run 31870278368), which passed on the same code at the
+  neighbouring commits, and a hosted-runner communication loss at `e65f59e1` (run 32269773738).
+  **No red has been a product regression** — but do not read that as "only lint and
+  infrastructure": one was a real gate catching real product source, and one hid in plain sight
+  for seven pushes.
 - **The Tests job now runs the whole suite.** Until `a725bf66` the default `pytest` invocation
   carried `-m "not slow"`, and the `slow` marker covered four files — three of them holding 31
   tests that had been failing unseen (`test_temporal_mechanics.py`, `test_training_loop.py`,
@@ -376,8 +398,8 @@ gates as restored, not as seasoned.
   against a pack that named `SLEEP`/`WORK` at `f0a9ae8a`). No per-push gate had ever run them;
   the first post-merge nightly was what surfaced the red. Of the 31, 29 were repaired and 2
   deleted as dead (`2ba1f530`, `e62a5e4a`), the marker was deleted, and the per-push Tests job
-  now executes the rest: its run at `54132aaf` deselected nothing.
-- Full Test Suite — the full matrix — had its nightly 06:00 UTC cron **deleted during the
+  now executes the rest — every Tests run since `a725bf66` has deselected nothing.
+- Full Test Suite — the same suite on a nightly trigger — had its nightly 06:00 UTC cron **deleted during the
   recovery and restored at the 2026-08-15 merge**. The reason is worth knowing, because it is a
   property of GitHub rather than of this repo: the scheduler reads the workflow file from the
   **default** branch, so while the recovery lived on a branch, an enabled cron would have kept
@@ -385,14 +407,22 @@ gates as restored, not as seasoned.
   passed — every scheduled run since 2025-11-03 was red, the last 64 of them (2025-11-28 to
   2026-01-30) against an untouched `main` — until GitHub's dormancy rule disabled it; re-enabling
   it from the branch would only have resumed that stream against the wrong tree. The workflow is
-  `active` again. As of this stamp it had fired twice since the first merge, **both red with the
-  same 31 failures: the tests above, which `main` at `07b26ed5` still deselected from every other
-  gate and had not yet repaired.** The merge that carries this file removes both the marker and
-  the failures; the first nightly after it is the reading to check. Since `a725bf66` the nightly
-  and the per-push Tests job are the same bare `uv run pytest` and differ only in trigger.
+  `active` again, and it now passes. It fired twice against `main` at `07b26ed5` and was red both
+  times, with the same 31 failures — the tests above, which that `main` still deselected from every
+  other gate and had not yet repaired. Since the second merge carried the marker deletion and the
+  repairs to `main` at `4222a917`, every run has been green: a `workflow_dispatch` on 2026-08-17
+  (run 31981122221) and the three scheduled runs since (runs 32003077539, 32107696959 and
+  32224227011, on 2026-08-17, -08-18 and -08-19). Those readings are all against `4222a917`; the
+  merge that carries this file puts commits on `main` that the nightly has never run against, so
+  the first nightly after it is the next reading to check. Since `a725bf66` the nightly and the
+  per-push Tests job are the same bare `uv run pytest` and differ only in trigger.
 - Three of the four — every one except Lint — run `scripts/validate_compiler_cli.py` before their
   other steps, and no step sets `continue-on-error`, so that script gates the rest. It exits 0,
-  sweeping every pack it does not explicitly exclude.
+  sweeping every pack it does not explicitly exclude. Read the exclusions, because one of them
+  matters: `EXCLUDED_DIRS` names `templates`, `aspatial_test` and `reference_config`, and only
+  `aspatial_test` exists — the other two are dead names. So `configs/aspatial_test`, one of the
+  packs this file names as a working non-Town universe, is **never validated by CI**. It does
+  validate by hand (exit 0), which is how the claim below is supported; it is simply not gated.
 
 What CI does not cover, stated so the green is not read as wider than it is: the harness that
 adjudicates the rewrite (`townlet.oracle.harness`) is run locally by the operator, not in CI; the
@@ -447,7 +477,7 @@ Delivered and wired at this commit: a YAML pack compiles to a frozen, hash-carry
 (`configs/default_curriculum` and `configs/L5_multi_agent` both validate clean); that artifact
 drives the vectorized torch environment; reward functions are specified in config, with no Python
 reward classes left to subclass; VFS access control is enforced at runtime; and the training entry
-point runs end to end, writing a run directory whose `training.log` ends *Training loop completed
+point runs end to end, writing a run directory whose `training.log` records *Training loop completed
 normally* beside a `config_snapshot/` of the pack that produced it.
 
 Intent, not yet built — stated plainly because older docs blur the line:
@@ -477,28 +507,39 @@ Intent, not yet built — stated plainly because older docs blur the line:
   Now `npm run build` succeeds and `npm test` runs the vitest suite (three files under
   `frontend/src/`); no CI workflow installs Node or runs either. One component is dead code: `AffordanceGraph.vue` is
   mounted behind an `affordance_graph` message that no server emits (`hamlet-102db4c2e0`).
-- **A compiled pack can fail to cache without failing the command.** `configs/reference/model_pack`
-  compiles, prints `Compilation succeeded`, and exits 0 — while its cache artifact is *not*
-  written: serialization raises `can not serialize 'CompiledGlobalProfile' object`, the failure is
-  reported as a message, and nothing propagates it to the exit code. Every other pack writes its
-  `.msgpack`. CI cannot see this, because the gate runs `validate`, which writes no cache. This is
-  the project's recurring shape — a failure that is not loud — and it is tracked as a defect rather
-  than left as folklore. (`configs/` holds 25 directories carrying an `experiment.yaml`; 15 are
-  fixtures under `configs/test/`, three of which the script declares expected-to-fail; the other
-  ten are `default_curriculum`, `L5_multi_agent`, `aspatial_test`, `simple`,
-  `reference/model_pack`, three `differential/div003_*` harness packs, and two `trial002_*` packs
-  from an authoring trial recorded in `docs/product/metrics.md`. The two packs that used to fail
-  at parse on schema drift, `configs/simple` and `configs/reference/model_pack`, were repaired on
-  2026-08-15 and both validate clean.)
+- **A compiled pack can fail to cache without failing the command, and it is a class of failure
+  rather than one pack.** `configs/reference/model_pack` compiles, prints `Compilation succeeded`,
+  and exits 0 — while its cache artifact is *not* written: serialization raises `can not serialize
+  'CompiledGlobalProfile' object`, the failure is downgraded to a log warning the CLI never
+  displays, and nothing propagates it to the exit code. `inspect` then fails with `Artifact not
+  found`. The trigger is a **non-empty `agent_profile.variables`** in a pack's `vfs_profiles.yaml`:
+  packs declaring zero agent-profile variables cache normally, packs declaring one or more do not,
+  and adding a single agent-profile variable to a pack that caches is enough to reproduce it. The
+  error names the *global* class because `universe/compiled.py:123` types the field as
+  `agent_profile: Any | None = None  # TODO: Add CompiledAgentProfile type` — the untyped field is
+  the root cause, and the message points at the wrong half of the config. Compiling every pack in
+  `configs/` from a cleared cache, exactly two fail this way today. CI cannot see any of it,
+  because the gate runs `validate`, which writes no cache. This is the project's recurring shape —
+  a failure that is not loud — and it is tracked as a defect rather than left as folklore.
+  (`configs/` holds 33 directories carrying an `experiment.yaml`; 15 are fixtures under
+  `configs/test/`, three of which the script declares expected-to-fail; the other 18 are
+  `default_curriculum`, `L5_multi_agent`, `aspatial_test`, `simple`, `reference/model_pack`, three
+  `differential/div003_*` harness packs, and ten authoring-trial packs — two `trial002_*` and eight
+  `trial_*` — written for the trials recorded in `docs/product/metrics.md` and
+  `docs/product/trials/`. The two packs that used to fail at parse on schema drift,
+  `configs/simple` and `configs/reference/model_pack`, were repaired on 2026-08-15 and both
+  validate clean.)
 - **The declarable surface exceeds the exercised surface.** Measured at this commit by compiling
-  every pack that compiles and counting rules in-process:
+  all 30 packs in `configs/` that compile — every pack except the three negative fixtures — and
+  counting rules in-process:
   - Two of the nine compiled transition-program families — `action_write` and `social_residue` —
     carry zero rules in every one of them. `action_write` is worse than unexercised: no YAML can
     produce one, because `universe/compilers/actions.py` hardcodes `writes=()` for every action.
     (A third, `interaction_progress`, was also empty everywhere until 2026-08-15; repairing
     `configs/reference/model_pack` brought the only pack that exercises it back into the measured
-    set, where it carries two progress rules and two completion-bonus rules. The surface did not
-    change — the sample did.)
+    set, where it carries two progress rules and two completion-bonus rules — still the only pack
+    in `configs/` that produces any, after ten trial packs were added to the sample. The surface
+    did not change — the sample did.)
   - `drive.yaml`'s `intrinsic.strategy` accepts `icm` and `count_based`, which have no
     implementation anywhere — those tokens occur only inside `config/drive_as_code.py`, in the
     `Literal`, its docstring and an unread `icm_config` field. `composition.normalize` and
@@ -507,6 +548,15 @@ Intent, not yet built — stated plainly because older docs blur the line:
   - `type: grid3d` was deleted from the substrate schema (it never had a
     `SubstrateFactory.build` branch, so it could only compile toward a guaranteed crash); 3-D
     grids are `type: grid` with `topology: cubic`.
+  - Three of the nine declared variable scopes — `zone`, `group` and `message` — validate and
+    compile clean and then hard-crash at environment construction. `VariableRegistry` sizes them
+    from `num_zones` / `num_groups` / `num_message_slots`, constructor parameters that default to 0
+    and that `environment/vectorized_env.py` never passes, so `_positive_extent` raises for any
+    pack that declares one; no YAML or DTO can set them either. Unit tests *do* cover the registry
+    in isolation — they pass the extents directly, and pin both the working path and the raise —
+    so the suite is green while the scopes remain unreachable from every real pack. (`affordance`
+    scope works, because `num_affordances` *is* passed.) Measured in the authoring trials recorded
+    under `docs/product/trials/`.
   - All four VFS variables declared in `configs/default_curriculum/environment.yaml` —
     `deficit_energy`, `deficit_satiation`, `time_since_last_eat`, `time_since_last_sleep` — are
     observed but written by nothing: those names appear nowhere under `src/townlet/`, and in no
@@ -543,13 +593,18 @@ Current and maintained as part of the recovery:
 - `docs/product/current-state.md` — where the rewrite stands.
 - `docs/product/roadmap.md` — the current bet list, stated as intent rather than dates.
 - `docs/product/metrics.md` — dated measurements and the documentation-truth guardrail.
+- `docs/product/decisions/` — every product decision as a numbered record with its reversal
+  trigger; `docs/product/prds/` and `docs/product/trials/` hold the authoring-trial instrument and
+  the per-trial records this file cites for measured authorability claims.
 - `docs/oracle/ORACLE.md` and `docs/oracle/known-divergences.md` — the rewrite's rules and its
   accepted divergences.
 
 Subsystem detail lives in `docs/architecture/` and `docs/config-schemas/`. Those are only partly
 reconciled against the tree: `docs/config-schemas/presentation.md` is new and source-verified, and
-`docs/architecture/vfs.md`, `vfs-current-implementation.md` and `UNIVERSE_AS_CODE.md` were
-corrected on 2026-08-16 where the semantic-type and interaction-type surfaces changed under them —
+`docs/architecture/UNIVERSE_AS_CODE.md` was corrected on 2026-08-16 where the semantic-type and
+interaction-type surfaces changed under it, and `docs/architecture/vfs.md` and
+`vfs-current-implementation.md` were corrected then and again on 2026-08-17, when the compiled
+observation field gained a typed `feature` —
 but the rest has not been swept (`hamlet-7a52a63e0b`), so treat specific filenames, paths and
 numbers there as unverified until you check them.
 

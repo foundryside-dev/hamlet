@@ -83,7 +83,6 @@ r_int = env.step(torch.tensor([INTERACT, WAIT, WAIT, WAIT], dtype=torch.long))[1
 print(f"  biomass after rooted absorb: {round(env.meters[0, i_biomass].item(), 3)}; reward pre={r_pre:.6f} interact={r_int:.6f}")
 assert abs(env.meters[0, i_biomass].item() - 0.2) < 1e-6
 assert abs((r_int - r_pre) - 0.1) < 1e-6
-r_away = env.step(torch.tensor([label_to_action["UP" if "UP" in label_to_action else "NORTH"], WAIT, WAIT, WAIT], dtype=torch.long))[1][0].item() if False else None
 # gradient: step off W then back
 moves = [m for m in ("LEFT", "WEST") if m in label_to_action]
 back = [m for m in ("RIGHT", "EAST") if m in label_to_action]

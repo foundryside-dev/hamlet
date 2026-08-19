@@ -1,0 +1,14 @@
+# Trial K appearance: one coat at a known fixed cell so the probe can walk the
+# agent onto it deterministically and equip it as a runtime verb (F6).
+# Placed at (1, 0) — one step EAST of the WINTER_ONSET cell (0, 0), so a single
+# episode can start the world, walk to the coat, GET it and USE it while the
+# cold is already biting.
+version: '1.0'
+items:
+  - item_type: coat
+    spawn_count: 1
+    spawn_interval: null
+    spawn_position: fixed
+    placement:
+      mode: fixed
+      fixed_positions: [[1, 0]]

@@ -1,0 +1,38 @@
+version: "1.0"
+evaluation_mode: mark_and_sweep
+debug_logging: false
+
+global_profile:
+  variables:
+    # F1 — the exogenous world state. The cold is a property of the WORLD, not
+    # of any agent. Declared global so that "it is cold" is one fact, not N
+    # per-agent facts that happen to agree.
+    - name: world_temp
+      semantic_type: custom
+      type: float
+      initial_value: 1.0
+    # The declared evolution rule's clock. world_temp falls while this rises.
+    - name: season_clock
+      semantic_type: custom
+      type: float
+      initial_value: 0.0
+    # Probe scratch: how many ticks the winter process has actually executed.
+    # If this is still 0 after an all-WAIT run, the world never acted (F1).
+    - name: winter_ticks
+      semantic_type: custom
+      type: float
+      initial_value: 0.0
+
+agent_profile: null
+
+item_profiles:
+  # F5 — the modulation is declared ON THE ITEM, in item-scoped state, not as
+  # an agent flag. `insulation` is how much of the incoming cold this garment
+  # turns away.
+  - profile_name: garment_stats
+    variables:
+      - name: insulation
+        type: float
+        initial_value: 0.6
+  - profile_name: default_item
+    variables: []

@@ -392,6 +392,32 @@ reading both packs' YAML directly, because neither record tabulates surfaces per
 - **Blind pack naming.** Both O runs authored at `configs/trial_o_bidding/` and the collision was
   resolved on landing. A blind run authors its pack at `configs/trial_<x>_blind_<slug>/`.
 
+### B.7 Trial packs are linted before the trial commit (agent-initiated, THIRD occurrence)
+
+§10 already requires `validate` on the pack and the full `pytest` suite before any commit that
+adds or edits a trial pack. It does **not** require `ruff`, and trial packs live under `configs/`,
+which `ruff check .` sweeps. That omission has now turned branch Lint red **three times in five
+sessions**, every time on an over-length `print` line in a trial probe script:
+
+| # | commit that went red | fix |
+|---|---|---|
+| 1 | Trial F probe | `a3318624` — wrapped two over-length output lines |
+| 2 | Trial B probe | `3434b2fa` — deleted a dead probe line |
+| 3 | `configs/trial_o_bidding_blind/probe_trial_o.py` (landed `80eed80b`) | wrapped at gate 2, output re-verified byte-identical |
+
+The third was caught only because a merge gate swept for it, after seven pushes had gone red.
+
+> **§10, added to the pre-commit list:** "and `UV_CACHE_DIR=.uv-cache uv run ruff check .` (exit 0).
+> Trial packs are under `configs/` and are swept by it; a probe script's `print` lines are the
+> repeat offender. Where a line must be wrapped, re-run the probe and confirm the pasted evidence
+> in the trial record is byte-identical — a lint fix must never silently change recorded output."
+
+**This is a guardrail change, not a measurement change.** It touches no facet, no verdict, no
+classification and no scoring rule, so it was taken by the standing agent rather than escalated.
+Recorded here so the owner can reverse it in one line if they disagree; the standing proposal it
+resolves ("a protocol lint step for trial packs — proposed, not decided") has been carried in
+`current-state.md` since the thirty-second checkpoint.
+
 ### B.6 The discovery-path construct is caveated, not dropped (owner-ruled 2026-08-20)
 
 The O comparison's SD-7 established that **discovery path is a property of the (executor,

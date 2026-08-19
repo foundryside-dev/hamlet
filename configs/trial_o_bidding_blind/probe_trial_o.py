@@ -88,7 +88,10 @@ def run_round(high_agent: int, low_agent: int, label: str):
     print(f"  vfs.last_bid       : {read(env, 'last_bid').tolist()}      <- O3 (agent-chosen amounts)")
     print(f"  vfs.clearing_price : {read(env, 'clearing_price').tolist()}          <- O5 (max over agents)")
     print(f"  vfs.prize_available: {read(env, 'prize_available').tolist()}          <- O2 (good consumed)")
-    print(f"  vfs.prize_holder   : {read(env, 'prize_holder').tolist()}         <- O2/O6 (single agent index holding the good; -1 = unowned)")
+    print(
+        f"  vfs.prize_holder   : {read(env, 'prize_holder').tolist()}         "
+        "<- O2/O6 (single agent index holding the good; -1 = unowned)"
+    )
     print(f"  vfs.auction_awarded: {read(env, 'auction_awarded').tolist()}")
     print(f"  vfs.won_auction    : {read(env, 'won_auction').tolist()}      <- O6 (unique winner)")
     print(f"  money before       : {before.tolist()}")

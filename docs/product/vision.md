@@ -54,6 +54,17 @@
 >   Every earlier amendment-log entry was a factual correction; this one changes scope, so it is
 >   marked as such. The `Last reviewed` stamp was corrected from `2026-08-19` to `2026-08-20` at
 >   the same approved touch, discharging the debt `PDR-0093` carried — the pattern `PDR-0038` set.
+> - *2026-08-20* (second entry that day) — **"public release" is owner-DEFINED, and the definition
+>   is narrower than this document had assumed.** Publication means *publishing a product* —
+>   a coherent product offering, i.e. **declaring 1.0** — not code being visible on the internet.
+>   Owner's words: *"I call publication declaring 1.0 - not makinmg content availabile on the
+>   internet"* and *"publication => publishing a product and right now we don't have a coherent
+>   product offering, just code"*. The grant's specifics note had cited the repo's public status as
+>   what gave the release clause teeth; that was the standing agent's inference, never the owner's,
+>   and it is **corrected, not annotated**, because it had been shaping how conservatively the agent
+>   behaved — including the rationale written into `PDR-0099` an hour earlier. *Announcement*
+>   remains a separate limb and still escalates. Recorded as `PDR-0100`. Scope of the autonomous
+>   list is unchanged by this entry; what changed is the **meaning** of one escalation term.
 > - *2026-08-13* — re-tagged the **tech-demo demonstrator claim** as delivery intent: "Low Energy
 >   Delirium" was never implemented (*"the idea outran the codebase and we pivotd a few times"*),
 >   and Townlet Town is **one of several tech demos** to be provided at the end. Escalated by the
@@ -289,6 +300,26 @@ Escalate BEFORE acting — the agent MUST get owner sign-off for:
 **Note on this product's specifics:** because Townlet is pre-release with zero users, the
 "deprecating a feature users depend on" clause is currently near-vacuous — deleting code is
 explicitly encouraged by `CLAUDE.md`. The clauses with real teeth here are *vision/strategy
-change*, *public release or announcement* (the GitHub repo is public at
-`github.com/foundryside-dev/hamlet`), and *data deletion* — which for this product includes
-deleting `runs/`, checkpoints, or recorded episodes that are experimental evidence.
+change*, *announcement*, and *data deletion* — which for this product includes deleting `runs/`,
+checkpoints, or recorded episodes that are experimental evidence.
+
+**What "public release" means here — owner-defined 2026-08-20 (`PDR-0100`), and it is NARROWER
+than this document previously assumed.** Publication means **publishing a product**: putting out a
+coherent product offering for someone to adopt, which for this project means **declaring 1.0**.
+The owner's words: *"I call publication declaring 1.0 — not making content available on the
+internet"*, and *"publication => publishing a product and right now we don't have a coherent
+product offering, just code."*
+
+It follows that **code being visible on the internet is not publication.** The repository being
+public at `github.com/foundryside-dev/hamlet`, pushing branches, and merging to `main` are not
+release events under this grant — there is no product offering yet to release, only code. This
+paragraph previously cited the repo's public status as what gave the release clause "real teeth";
+that reading was the standing agent's, not the owner's, and it was **wrong**. It is corrected here
+rather than left as a footnote, because it had been actively shaping how conservatively the agent
+behaved.
+
+*Announcement* is a separate limb and still escalates on its own: it covers **telling people** —
+a blog post, a social post, a forum or mailing-list message, a submission to an aggregator — and
+is about outward communication to external parties, not about whether code is readable. The
+tech-debt anti-goal above is already scoped *"until 1.0 is declared"*, so this definition puts the
+release clause on the same milestone the rest of the vision already turns on.

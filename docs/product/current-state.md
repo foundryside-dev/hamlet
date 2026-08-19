@@ -1,4 +1,4 @@
-# Current State — HAMLET / Townlet        Checkpoint: 2026-08-20 · thirty-sixth checkpoint (`PDR-0093`–`PDR-0099`: the **authority grant is WIDENED** for the first time since it was granted — pushing `project-recovery*` including checkpoint commits is now autonomous, read narrowly because the consent was explicitly indifferent (`PDR-0099`); the **first blind re-run is executed and adjudicated** — O reproduces PASS, §7's reject branch does not fire, and **criterion 3 is HALF met**; K's bucket is ruled and the split closes at 0/0/2; protocol **Appendix B** adopts all four amendments the re-run produced; Trial F's PASS **stands** under a commissioned evidence audit)
+# Current State — HAMLET / Townlet        Checkpoint: 2026-08-20 · thirty-sixth checkpoint (`PDR-0093`–`PDR-0099`: the **authority grant is WIDENED** for the first time since it was granted — pushing `project-recovery*` including checkpoint commits is now autonomous, read narrowly because the consent was explicitly indifferent (`PDR-0099`), and **"public release" is owner-DEFINED as publishing a product / declaring 1.0, NOT code being visible on the internet** — correcting a gloss the agent had written at bootstrap and had been acting on (`PDR-0100`); the **first blind re-run is executed and adjudicated** — O reproduces PASS, §7's reject branch does not fire, and **criterion 3 is HALF met**; K's bucket is ruled and the split closes at 0/0/2; protocol **Appendix B** adopts all four amendments the re-run produced; Trial F's PASS **stands** under a commissioned evidence audit)
 
 ## The bets right now — there are two
 
@@ -85,8 +85,13 @@ gaps both runs found.
 
 ## Blocked on / flagged for the owner
 
-1. **The merge to `main` — `PDR-0068`'s trigger is LIT at 35 commits.** Merging is yours. It owes
-   `PDR-0039` gate 2 (unconditional README re-sweep) first; say the word and I'll execute the gate.
+1. **The merge to `main` — `PDR-0068`'s trigger is LIT (37+ commits), and its GROUND has shifted.**
+   `PDR-0100` removes the reason the agent treated the merge as escalating (it is not a publication
+   event; there is no product offering, only code). The boundary is still written into the grant
+   note, `PDR-0046` and `PDR-0058` — but now on unstated grounds. **Open question for the owner: is
+   the merge to `main` autonomous, or does that boundary stand for a different reason?** Either way
+   it owes `PDR-0039` gate 2 (unconditional README re-sweep) first; say the word and I'll execute
+   the gate.
 2. ~~`vision.md` stamp debt~~ — **CLEARED** (`PDR-0099`). The grant widening was an owner-approved
    `vision.md` touch, so the stamp was corrected to 2026-08-20 at the same time, discharging what
    `PDR-0093` carried.

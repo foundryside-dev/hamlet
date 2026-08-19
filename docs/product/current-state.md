@@ -1,4 +1,4 @@
-# Current State — HAMLET / Townlet        Checkpoint: 2026-08-19 · thirty-fourth checkpoint (`PDR-0087`: Trial B — the fifth of nine, the first under Appendix A — is run: **FAIL, prediction CONFIRMED**, the corpus's first failed idea and first BLOCKED classification; north-star 5 of 9 settled, 4 PASS / 1 FAIL, split 0/0/1)
+# Current State — HAMLET / Townlet        Checkpoint: 2026-08-19 · thirty-fifth checkpoint (`PDR-0088`–`PDR-0092`: Trial K — the sixth of nine — is run and **FAILS**, and the **≥80% target is now arithmetically unreachable for this corpus**; the substrate is frozen for the measurement; the blind re-run pair is O + B; two countersign conflicts were escalated and owner-ruled *before* authoring)
 
 ## The bets right now — there are two
 
@@ -6,98 +6,117 @@
 flight, untouched this session. Exits when the **pinned oracle can be RETIRED** (`PDR-0058`):
 (1) register entries terminal — open (DIV-001/002 `tag-stamped`; 003/004/005 `retired`;
 006 `built`); (2) harness verdict vocabulary — **MET** (`PDR-0074`); (3) `Gates green` on a
-suite that hides nothing — **MET on `main`**, nightly green again 2026-08-18.
+suite that hides nothing — **MET on `main`**. ⚠️ Trial K put a dent in condition 3's *reading*:
+the suite is 3281/16/0 green over a hole — three declared VFS scopes hard-crash any pack using
+them, possible only because no test instantiates them (`PDR-0092`).
 
-**2. Measure the authoring claim — instrument in use under Appendix A** (`PDR-0077`,
-`PDR-0086`, `PDR-0087`) · tracker `hamlet-5fa1f7bfc0` (`in_progress`) · spec PRD-0001 +
-protocol incl. Appendix A · metric: north-star **Zero-Python authoring rate (world)** —
-expert-ceiling expressibility reading, construct preamble mandatory. **State: 5 of 9
-SETTLED (L, F, M, O PASS; B FAIL), 4 pending (D, E, J, K; D/E/J multi-agent), split
-0 ABSENT / 0 INERT / 1 BLOCKED; INERT surfaces encountered: 3 in 5 trials.** Then 2 blind
-re-runs (owner picks the pair, ≥1 of {L, M, O}) before any reading publishes. Prospective
-rows now have first readings: novice-facing (B: all passing facets docs-reachable — first
-counter-evidence to the 0-of-4-docs-first prior; L/F/M/O retro-derivation still owed) and
-trains-without-incident (B: 6 of 7 clean; double-reset FAIL — reset leak reproduced).
+**2. Measure the authoring claim** (`PDR-0077`, `PDR-0086`) · tracker `hamlet-5fa1f7bfc0`
+(`in_progress`) · spec PRD-0001 + protocol incl. Appendix A · metric: north-star **Zero-Python
+authoring rate (world)** — expert-ceiling expressibility reading, construct preamble mandatory.
+**State: 6 of 9 SETTLED (L, F, M, O PASS; B, K FAIL), 3 pending (D, E, J — all multi-agent).**
+Idea split `0 ABSENT / 0 INERT / 1 BLOCKED` **+ K unbucketed (open protocol gap, below)**.
+INERT surfaces encountered: **4 in 6 trials**. Then blind re-runs **O + B** (`PDR-0089`) before
+any reading publishes.
+
+⚠️ **The ≥80% bar (8 of 9) cannot now be met**: 2 FAILs cap the reading at 7 of 9 = 77.8%. Per
+`PDR-0078` this is a **finding about the substrate, not a failed bet** — acceptance sits on the
+instrument precisely so a low number can't be gamed by an easy corpus. The remaining three
+trials still run; they establish *how far* below and *which axes*, which is the product signal.
 
 ## What this session did
 
-- **RESUME → ORIENT clean**: CI green on all checkpoint pushes (the brief's open loose end),
-  nightly on `main` green, no drift; grant re-confirmed unchanged by the owner; owner chose
-  **trial five = B** (the ontology-breaker).
-- **Trial B run end-to-end under Appendix A** — the appendix's first outing, every step
-  executed: A.1 countersign by a fresh agent (7 facets adopted verbatim + one vocabulary
-  reconciliation note — countersign-reconciliation note 1 of the 3 that graduate
-  countersigning to a PRD criterion), A.2 search pre-registration (CONFIRMED — all winning
-  surfaces pre-listed), A.3 discovery paths, A.4 leg-(c) column, A.5 record integrity held
-  (probe outputs before verdict text throughout).
-- **Headline FAIL, prediction CONFIRMED** (`PDR-0087`, record
-  `docs/product/trials/0001/B-20260819.md`, pin `1ef1d950`): facets 1/4/5 PASS; facets 2/3
-  BLOCKED — an entity that is a set of occupied cells is not expressible. The sharpest
-  finding: **`spawn_item` is unreachable end-to-end from config** (`hamlet-1b9af9088c`, P1)
-  — coordinates refused at parse by both DTOs, string strategies refused at runtime because
-  the one production call site (`vectorized_env.py:1036`) never passes `agent_positions`
-  through a fully-threaded parameter; docs claim "fully implemented and production-ready";
-  tests hand-supply what the runtime never does. Also filed: `hamlet-3f97369711` (no
-  per-cell scope, ABSENT), `hamlet-4857e6824b` (agent spawn positions undeclarable,
-  ABSENT), `hamlet-6c49488b22` (N-D static item placement refused at parse),
-  `hamlet-45f501e15b` (`max_items_per_agent: 0` silently nullifies the items catalog —
-  INERT surface, counted), `hamlet-02bd5a3eaa` (zone scope dead vocabulary). Comment 169
-  on `hamlet-d76684f549` (reset leak reproduced in a second pack). **Nothing fixed —
-  file-never-fix held, even at P1.**
-- Packs `configs/trial_b_organism/` (L0_organism + L1_contested for B3) and
-  `configs/trial_b_organism_2d/` (B1) — disposition OUTSTANDING, **six** packs now on the
-  2026-10-06 clock.
+- **RESUME → ORIENT**: six drift items found. Branch Lint had been **red since the last
+  checkpoint push** (dead probe line, second occurrence of that shape) — fixed, B1 probe re-run
+  byte-identical, pushed. Grant re-confirmed and its stamp corrected at an approved touch
+  (`PDR-0088`).
+- **Measured that `src/townlet/` has not moved once across all six trials** — the readings share
+  one engine *de facto*. That reframed the `spawn_item` P1 from a sequencing question into a
+  construct question; owner ruled **fix after the corpus** (`PDR-0090`).
+- **Trial K run end-to-end under Appendix A** — nine countersigned facets, all settled, not
+  budget-limited. **Headline FAIL** (`PDR-0092`, record `docs/product/trials/0001/K-20260819.md`,
+  pin `3434b2fa`). Two P1s filed, **nothing fixed**: `hamlet-9e1ae3b7a2` (zone/group/message
+  scopes validate and compile, then hard-crash at env construction — registry kwargs defaulting
+  to 0 that nothing passes and no YAML sets) and `hamlet-a737e444c0` (effects are blind to
+  position and time — the second instance of the `hamlet-1b9af9088c` pattern). Plus
+  `hamlet-628e202bf7` (item `on_drop` INERT) and five reproduction comments.
+- **Two countersign conflicts escalated, not adjudicated** (`PDR-0091`). The agent had drafted a
+  reconciliation that adopted the strict bar while claiming not to resolve it — that *was*
+  resolving it, at maximum-knowledge time, with the outcome already predictable. Owner ruled
+  before authoring: F7 is a capability bar; F9 left unruled and reported honestly.
+
+## The finding, in one line
+
+> **An author can express two of the three answers, and cannot make the problem happen on its
+> own.** The winter rule is declarative and exact; its *ignition* is not. This inverts the
+> corpus's own summary ("can express the problem but not the answers to it").
 
 ## Reversal triggers — state as of this session
 
-- `PDR-0086` triggers: countersign-reconciliation notes at 1 of 3; the "0 of 4 docs-first"
-  prior has its first counter-instance (B, live-annotated); construct preamble intact —
-  no reading published without it.
-- `PDR-0087` new trigger: if the `spawn_item` wiring lands and a re-run turns B's facets
-  2–3, the FAIL stands for THIS reading (pinned substrate) — the flip is Trend content,
-  not a re-scoring.
-- `PDR-0081` budget triggers: armed, none fired — 0 budget-limited records in 5 trials.
-- `PDR-0068` (merge banking): ~24 commits ahead of `origin/main` after this session's
-  commits vs ~30 threshold — not lit, creeping; the next merge owes `PDR-0039` gate 2.
-- Pack-disposition clock: **SIX packs** (L, F, M, O, B×2) promoted-or-deleted by
-  **2026-10-06**, else PRD criterion 7 rejects the bet.
-- `PDR-0079` trigger 3 watch: the ABSENT/unactioned by-catch list keeps growing (now 10+
-  items across five trials) — the review's named failure mode; a WS-4 triage session is
-  becoming due.
+- `PDR-0090` (substrate freeze): armed. Lifts at trial nine + both re-runs; re-litigated if
+  2026-10-06 arrives with trials outstanding, or if a defect makes the protocol unrunnable.
+- `PDR-0092`: if the two new P1s land and a re-run turns F7/F1, **the FAIL stands for this
+  reading** — the flip is Trend content, not a re-scoring. Boundary cases 6/7/8/9 are
+  **deferred, not waived**.
+- `PDR-0089`: any verdict or classification disagreement in the O or B re-run fires criterion
+  3's reject branch — the instrument is not accepted and **no reading publishes**.
+- `PDR-0091`: countersign-reconciliation notes now **2 of 3**; at 3 the practice graduates to a
+  PRD criterion.
+- `PDR-0086`: construct preamble intact — no reading published without it.
+- `PDR-0068` (merge banking): **27 commits** ahead of `origin/main` vs ~30 threshold — close,
+  not lit. The next merge owes `PDR-0039` gate 2.
+- Pack-disposition clock: **SEVEN packs** promoted-or-deleted by **2026-10-06**.
+- `PDR-0079` trigger 3: the ABSENT/unactioned by-catch list keeps growing (13+ across six
+  trials). A WS-4 triage session is overdue.
 
-## Blocked on / flagged for the owner (not blocking)
+## Blocked on / flagged for the owner
 
-- **Blind re-run pair selection is YOURS** (Appendix A.8): two of {L, F, M, O, B}, at least
-  one from {L, M, O}; comparer is you or an owner-appointed fresh agent. If O: pre-brief on
-  the tie case. (B is now also a candidate — a FAIL re-run would test the reject branch
-  from the other side.)
-- Dependabot `#33`/`#34` on `main` still open; merges to `main` are yours.
-- `CLAUDE.md:65` stale citation (thirteenth sighting; owner's file, deferred by choice).
+1. **K's idea-level bucket — BLOCKS the published split.** Appendix A.6 rules only the INERT
+   tiebreak and is silent on an idea whose failing facets are **ABSENT and BLOCKED with no
+   INERT** — exactly K. `metrics.md` carries the gap explicitly rather than resolving it. Not
+   self-adjudicated.
+2. **WS-7 (`hamlet-e3af412673`, P0) — park it or schedule it.** Flagged stale; the flag is right
+   about the *lease*, not the status. Genuinely mid-flight but untouched since ~2026-08-17
+   because every session has run bet 2. Deliberately neither re-claimed (would recreate the
+   staleness) nor reset to open (it is not un-started) — comment 176 records why.
+3. **This checkpoint commit is NOT pushed.** `/product-checkpoint` forbids pushing; `PDR-0046`
+   grants it freely for this branch and every prior checkpoint pushed. Flagged rather than
+   resolved unilaterally — say the word, or push it yourself.
+4. **O's blind-re-run comparer is owed a pre-brief** that the first run's facet 4 never
+   exercised the tie case (A.8).
+5. Dependabot `#33`/`#34` on `main` still open; merges to `main` are yours.
+6. `CLAUDE.md:65` stale citation (fourteenth sighting; owner's file, deferred by choice).
 
 ## Open questions
 
-- Whether `hamlet-1b9af9088c` (spawn_item wiring — a one-argument call-site omission plus
-  two DTO typings) is a WS-4 unit worth sequencing soon: it unblocks B's re-run story, J's
-  durable-posting facet, and the items-as-world-state authoring family all at once.
-- Retro-derivation of discovery paths for L/F/M/O (cheap, still owed — B's live annotation
-  set the format).
-- Whether persistent-lifetime globals + effects surviving reset is intent or defect
-  (comment 167/169 on `hamlet-d76684f549`) — B makes the second reproduction; per the
-  methodology review, persistence should arguably be *declarable*.
-- Next corpus revision (after the nine + blind re-runs): candidates Q/R waiting, plus the
+- Whether the two new P1s change WS-4's shape: `hamlet-a737e444c0` (effects blind to position
+  and time) plus `hamlet-1b9af9088c` (spawn_item) are now **two confirmed instances of one
+  pattern** — the grammar declares capability the execution path never threads data for. That
+  may be a single unit rather than three tickets.
+- Whether persistent-lifetime globals + effects surviving reset is intent or defect — **third**
+  reproduction now (comment 172), and the first to isolate that global VFS variables do not
+  reset while meters do. Per the methodology review, persistence should arguably be *declarable*.
+- Retro-derivation of discovery paths for L/F/M/O (cheap, still owed; B and K set the format).
+- A protocol lint step for trial packs — two branch-Lint reds in four sessions, both probe
+  E501s. Proposed, not decided.
+- Next corpus revision (after the nine + re-runs): candidates Q/R waiting, plus the
   statistician's substrate-naive stratum proposal.
-- Unchanged: `exposed_to` hidden default (unfiled); `recurrent_vision_window_side`
-  non-square raise (unfiled); `hamlet-1ad6383186`, `hamlet-7cd887c9e5`,
-  `hamlet-266a0a41f0`, `tests/README.md` staleness → WS-5, `cues` inert.
+- Unchanged: `exposed_to` hidden default (unfiled); `recurrent_vision_window_side` non-square
+  raise (unfiled); `hamlet-1ad6383186`, `hamlet-7cd887c9e5`, `hamlet-266a0a41f0`,
+  `tests/README.md` staleness → WS-5, `cues` inert.
 
 ## Next session starts here
 
-**Run trial six under Appendix A** — preflight §3, countersign (A.1), search
-pre-registration (A.2), leg-(c) (A.4). Pick from D, E, J, K: **K** (world-acts-on-agent,
-the only untouched axis; its doubted surfaces — zone scope, equipped-item modifier chains —
-now have direct evidence: zone is confirmed dead, `hamlet-02bd5a3eaa`) or **D/E/J**
-(multi-agent; note J's durable-posting facet is discounted twice over by O's and B's
-findings). **Alternatively**: the L/F/M/O discovery-path retro-derivation (one short
-session), a blind re-run (needs the owner's pair pick), clearing the six-pack disposition
-queue, or a WS-4 triage of the trial by-catch backlog (`PDR-0079` trigger 3 watch). Work
-continues on `project-recovery-2`.
+**Answer question 1 above** (K's bucket) — it is the only thing blocking `metrics.md`'s split
+from being complete. Then pick one:
+
+- **Trial seven** under Appendix A — D, E or J, all multi-agent, where the corpus's pessimistic
+  priors get their real test. Note J's durable-posting facet is now discounted three times over
+  (O's, B's and K's findings all bear on it).
+- **A blind re-run** (O or B) — the pair is chosen, so this is now unblocked and is the only
+  work that moves *publication* rather than the numerator.
+- **WS-4 triage of the trial by-catch** — 13+ items, `PDR-0079` trigger 3 overdue, and the
+  two-instances-of-one-pattern question above would shape it.
+- Cheap cleanup: L/F/M/O discovery-path retro-derivation, the protocol lint amendment, the
+  seven-pack disposition queue.
+
+Work continues on `project-recovery-2`.

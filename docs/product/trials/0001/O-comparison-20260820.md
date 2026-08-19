@@ -511,3 +511,88 @@ classification of both defects that both runs found.
 | A.7 by-catch INERT surface count | 1 in each record — the same surface |
 | **§7 reject branch** | **does NOT fire** |
 | Instrument status for idea O, criterion 3 | **ACCEPTED** |
+
+---
+
+## 9. Addendum by the standing product agent, 2026-08-20 (NOT the comparer)
+
+Added after the comparer's document was accepted and after the owner adopted its four amendments
+as protocol **Appendix B**. Everything above this line is the comparer's and is unedited. This
+section exists so the trial-record corpus is self-contained for an auditor working without git
+history — four facts below currently live only in commit messages and tracker tickets.
+
+### 9.1 Does O's own verdict survive B.1? — YES, and the check is not circular
+
+The comparison passed under the old §7 and the amendment was adopted immediately afterwards. A
+skeptical reader should ask whether the amended rule, applied to this very comparison, would still
+return "does not fire". Checked explicitly rather than assumed:
+
+B.1's new trigger is *"an unmapped facet that **neither** run demonstrated declarable at the pin
+IS a disagreement and fires it."* The two unmapped facets are both blind-only:
+
+- **O1** (multi-agent contention) — run 1's pack satisfies it implicitly (`population.size: 2`).
+  Demonstrated by run 1. Does not fire.
+- **O2** (a contested item, indivisible, single holder) — run 1's pack does **not** satisfy it;
+  run 1 modelled the award as a per-agent `wins` counter, which is the per-agent copy O2 excludes.
+  But run 2 **PASSed O2 at the identical pin**. So it is not the case that *neither* run
+  demonstrated it declarable. Does not fire.
+
+**O's verdict stands unchanged under B.1.** Had run 2 found O2 ABSENT, B.1 would fire where the old
+§7 did not — which is the point of the amendment, and evidence it was written to catch a real case
+rather than to ratify this one.
+
+### 9.2 Provenance of the two killed suite runs (the blind record cannot be edited)
+
+The blind record reports two full-suite re-runs *"killed by the machine (exit 144 / 143) ...
+unrelated pytest running concurrently"*. That was not the machine, and the concurrent pytest was
+not unrelated: **the standing agent killed those runs from the parent session**, deliberately,
+because the blind executor had finished and its orphaned run in the scratch worktree was competing
+for the GPU with the main-tree suite required for the §10 commit guardrail. The blind executor
+could not have known this and its caution was correct on the evidence it had.
+
+Superseding measurement, main tree, blind pack present:
+**3281 passed, 16 skipped, 0 failed, exit 0** (1210.02s), plus `validate` exit 0 on the pack.
+
+### 9.3 Two blind-record claims NOT adopted into tracker filings
+
+Both were checked at HEAD and did not reproduce as stated. The blind record is not edited; the
+filings simply exclude them, and say so.
+
+1. **"`CustomActionConfig` forbids a `writes` key."** There is no `CustomActionConfig` in
+   `src/townlet/environment/action_config.py` (the classes are `ActionConfig` and
+   `ActionSpaceConfig`), and `writes: list[WriteSpec]` is **present** at `action_config.py:84`
+   rather than forbidden. The substantive finding survives and is what `hamlet-3381043d2e` carries:
+   `compilers/actions.py:205` hardcodes `writes=()`, and no `WriteSpec` is constructed anywhere
+   under `src/townlet/` outside its own class definition and two docstrings.
+2. **"`effects.md` teaches `global.vfs.*`, which raises `Invalid path`."**
+   `world/expression/context.py:65-68` **does** resolve a `global` root and dispatches to
+   `_resolve_vfs_chain(..., scope="global")`, so the path form is not categorically invalid. The
+   omission half of that gap is verified and filed (`hamlet-7eadeb214c`); the raise half is not.
+
+### 9.4 B.3's mandated replacement probe was verified executable before adoption
+
+B.3 removes an unexecutable probe from §6 and mandates three `CompiledUniverse` attributes in its
+place. Adopting those names on the comparer's word would have reintroduced the exact defect B.3
+exists to remove, one paragraph later. Measured at HEAD against
+`configs/default_curriculum` / `L1_full_observability`:
+
+| mandated by B.3 | resolves |
+|---|---|
+| `u.observation_spec` | yes |
+| `u.observation_spec.fields` | yes |
+| `u.observation_activity` | yes |
+| `u.observation_activity.active_mask` | yes |
+| `u.compiled_effect_catalog` | yes |
+
+`observation_spec` also carries `total_dims`, `get_field_by_name`, `get_fields_by_feature` and
+`get_fields_by_semantic_type`. B.3 stands as written; no correction needed.
+
+### 9.5 Criterion 3 is HALF met — the discriminating re-run has not run
+
+Stated here because §8's row *"Instrument status for idea O, criterion 3: ACCEPTED"* is easy to
+read as "criterion 3 is met". It is not. Criterion 3 requires **2 of 9** re-run blind. One has run.
+And by this document's own §8 caveat, the one that ran was the **cheap** one: two all-PASS records
+make the classification comparison vacuous by construction. **Idea B is the discriminating re-run**
+— a FAIL carrying BLOCKED facets, so it is the first re-run that will actually exercise the
+ABSENT/INERT/BLOCKED comparison the reject branch turns on. No north-star reading publishes until
+it has run and agreed.

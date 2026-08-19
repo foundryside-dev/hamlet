@@ -274,3 +274,135 @@ stops-working" facet reading was adjudicated by the owner 2026-08-18: **PASS sta
 the declarable standard; the un-declarable higher standard (item destruction at zero wear)
 is a captured ABSENT gap** (`hamlet-83806979f7`), per the owner's rule: *"it's not a fail if
 it doesn't meet the lower standard, but it's a gap that needs to be captured."*
+
+## 13. Appendix B — 2026-08-20 amendments (owner-approved, PRE-REGISTERED before the second blind re-run)
+
+Adopted from `docs/product/trials/0001/O-comparison-20260820.md`, the adjudication of the first
+blind re-run (idea O). The comparer proposed four amendments with text; the owner approved all
+four at the 2026-08-20 `/own-product` resume. Text below is the comparer's, adopted verbatim
+except where marked.
+
+**Scope rule, and the one place it overrides Appendix A.** Appendix A applies prospectively and
+pin-scopes blind re-runs to the protocol text as of their first run's pin. That rule exists to
+stop a later protocol change from re-scoring a *completed* trial, and it stands. It does **not**
+sensibly govern a re-run that **has not been executed yet**: applying current governance text to a
+future execution is not retroactive re-scoring. So —
+
+- **B.1–B.4 bind the remaining trials (D, E, J) and the SECOND BLIND RE-RUN (idea B).**
+- Nothing here re-scores L, F, M, O, B or K. Their verdicts stand as recorded.
+- The first blind re-run (idea O, 2026-08-20) executed under the pre-Appendix-A text, correctly,
+  and is **not** re-adjudicated under B.
+
+Without this override B.1 would be inert for the very run it was written for, since idea B's first
+run pinned at `1ef1d950` — which carries Appendix A but not Appendix B.
+
+### B.1 (sharpest) §7 × A.1 precedence, and how a comparison handles unmapped facets
+
+The most dangerous finding of the O comparison is in neither record: **A.1 and §7 give
+contradictory instructions for a blind re-run of trials five onward.** A.1 requires the facet list
+to be enumerated by a non-executing party and adopted. §7 requires the blind executor never to open
+a prior record. If a blind re-run *inherits* the first run's countersigned list, the pre-commitment
+step — the step where the O comparison found its largest divergence — is no longer independently
+reproduced, and the re-run tests only authoring, not enumeration. If it gets its own independently
+countersigned list, cardinality diverges again. A.1 does not fix that; it *suppresses* it by
+single-sourcing the list, which is not the same thing. A.8 is silent. **This is the only finding to
+date that could produce a false REJECT** — two independently countersigned lists diverging on
+cardinality would fire a branch no engine defect earned.
+
+> **§7, new bullet:**
+> "A blind re-run enumerates its own facet list under §4, independently. It never inherits the
+> first run's facet list, and its A.1 countersigner must not have seen that list. Where §7's
+> blinding requirement and A.1's single-list requirement conflict, blinding wins: the point of the
+> re-run is to test whether the protocol reproduces the *enumeration* as well as the authoring."
+>
+> **§7, replacing "then a third step compares headline verdict and per-facet classifications":**
+> "then a third step (a) establishes an explicit mapping between the two facet lists, naming every
+> mapped pair, every blind-only facet and every first-run-only facet; (b) compares headline verdict
+> and per-facet classification on the mapped pairs; and (c) for each unmapped facet, states whether
+> the other run's pack satisfies it and whether the capability was demonstrated declarable at the
+> same pin by either run. **Facet cardinality alone never fires the reject branch.** An unmapped
+> facet that neither run demonstrated declarable at the pin *is* a disagreement and fires it."
+
+### B.2 §4 — a facet-granularity rule, so independent enumeration converges
+
+Without this, B.1's independent enumeration reproduces the 6-vs-8 split every time.
+
+> **§4, inserted before the numbered list:**
+> "Facet granularity is not at the executor's discretion. Enumerate, at minimum:
+> (i) one facet per **entity noun** in the Spec that the mechanic must instantiate in world state
+> (idea O's 'a contested item' is one facet, distinct from awarding it);
+> (ii) one facet per **verb** in the Stresses' decomposition;
+> (iii) one facet for the **environment premise** the idea presupposes (agent count, substrate,
+> temporal mode) — and the trial pack must satisfy that premise, not merely tolerate it;
+> (iv) one facet for **observability** of the state the agent must perceive to act on the mechanic.
+> Write a derivation note mapping each facet to the Spec/Stresses text it came from. Two executors
+> enumerating the same idea should produce the same count; a differing count is a defect in this
+> section, reported by the comparer."
+
+### B.3 §6 — correct the standard artifact probe, which cannot do what §4's own example claims
+
+Verified against source and by execution, twice independently (the comparer, and the standing agent
+at HEAD 2026-08-20): `inspect --format json` emits `UniverseMetadata` plus five hashes. It reports
+`meter_names`, `affordance_ids`, `action_count` and a **scalar** `observation_dim`. It reports
+**no** observation-field enumeration, **no** offsets, **no** scopes, **no** effect catalog and
+**no** population count. §4's worked example — *"`inspect --format json` shows an observation field
+for the wear variable"* — describes an output the command cannot produce. Both O executors
+pre-committed evidence against it, both abandoned it, both substituted the in-process
+`CompiledUniverse`.
+
+> **§6 "Standard probes", replacing the artifact bullet:**
+> "artifact: `... inspect ... --format json` reports **only** `UniverseMetadata` (universe/level
+> names, substrate, `meter_names`, `affordance_ids`, `action_count`, a scalar `observation_dim`,
+> provenance) plus five schema hashes. It does **not** enumerate observation fields, offsets,
+> variable scopes, effects, VFS profiles or population size. Evidence naming any of those must be
+> pre-committed against the in-process `CompiledUniverse` — `u.observation_spec.fields`,
+> `u.observation_activity.active_mask`, `u.compiled_effect_catalog` — which is the same object
+> `inspect` serialises. §4's worked example is corrected to name the compiled artifact directly.
+> Note also that `compile` reports 'Compilation succeeded' and exits 0 when the cache write fails,
+> and the CLI's 'Cache artifact written to' line is gated on the path existing rather than on the
+> write — so a green `compile` is not evidence that `inspect` will work, or that an artifact on
+> disk is fresh."
+
+The product half of B.3 is filed as `hamlet-53bce4af41`; the silent-cache-write defect as
+`hamlet-a141ab5db3` (P1, reproduced on the shipped `configs/reference/model_pack`).
+
+**Consequence for Trial F, which is the worked example's own shape:** an evidence audit was
+commissioned at the 2026-08-20 resume rather than assumed either way
+(`docs/product/trials/0001/F-evidence-audit-20260820.md`). Its finding is recorded there; F's
+verdict is not re-scored by this appendix.
+
+### B.4 §7 — record the surface path in the trial record, not only in the comparison
+
+A.8 requires the *comparison* to record surface paths, but a comparer can only recover them from
+whatever the authoring log happened to mention. Recovering the O comparison's SD-1…SD-7 required
+reading both packs' YAML directly, because neither record tabulates surfaces per facet.
+
+> **§4, added as item 4:**
+> "4. A per-facet **surface column**, filled in at verdict time: the config file and construct the
+> facet's verdict resolved through (e.g. `effects.yaml` / `for_each: all_agents`;
+> `vfs_profiles.yaml` / `agent_profile`; `bars.yaml` / meter). One line per facet. This is what a
+> blind-re-run comparison diffs under A.8, and it cannot be reconstructed reliably from an
+> authoring log."
+
+### B.5 Two minor items adopted with the four
+
+- **A.4's boundary-case rule is empirically confirmed necessary** — two packs with materially
+  different tie semantics both scored PASS on the same facet at the same commit. No change; recorded
+  because the amendment already made was the right one.
+- **Blind pack naming.** Both O runs authored at `configs/trial_o_bidding/` and the collision was
+  resolved on landing. A blind run authors its pack at `configs/trial_<x>_blind_<slug>/`.
+
+### B.6 The discovery-path construct is caveated, not dropped (owner-ruled 2026-08-20)
+
+The O comparison's SD-7 established that **discovery path is a property of the (executor,
+pack-design) pair, not of the facet**: the same observability facet reads "docs-reachable, first
+reach worked" for run 1 and "source-reading-required" for run 2 — same capability, same engine,
+same commit — because a pack-design choice three facets earlier (bars vs VFS variables) decided
+which pipeline carried the observation.
+
+A.3 directs that annotation to be derived retroactively for L/F/M/O as the data for the prospective
+novice-authorability row in `metrics.md`. The owner ruled: **keep collecting, add a construct
+caveat to the row before any reading publishes** — the same move `PDR-0086` made for the north-star.
+The caveat is carried in `metrics.md` on that row. The retroactive L/F/M/O derivation is **not**
+dropped, but it is read as a lower bound on discoverability for the route the executor took, never
+as a property of the facet or of the substrate.

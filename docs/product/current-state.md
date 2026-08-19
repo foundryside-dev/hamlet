@@ -1,4 +1,4 @@
-# Current State — HAMLET / Townlet        Checkpoint: 2026-08-20 · thirty-sixth checkpoint (`PDR-0093`–`PDR-0098`: the **first blind re-run is executed and adjudicated** — O reproduces PASS, §7's reject branch does not fire, and **criterion 3 is HALF met**; K's bucket is ruled and the split closes at 0/0/2; protocol **Appendix B** adopts all four amendments the re-run produced; Trial F's PASS **stands** under a commissioned evidence audit)
+# Current State — HAMLET / Townlet        Checkpoint: 2026-08-20 · thirty-sixth checkpoint (`PDR-0093`–`PDR-0099`: the **authority grant is WIDENED** for the first time since it was granted — pushing `project-recovery*` including checkpoint commits is now autonomous, read narrowly because the consent was explicitly indifferent (`PDR-0099`); the **first blind re-run is executed and adjudicated** — O reproduces PASS, §7's reject branch does not fire, and **criterion 3 is HALF met**; K's bucket is ruled and the split closes at 0/0/2; protocol **Appendix B** adopts all four amendments the re-run produced; Trial F's PASS **stands** under a commissioned evidence audit)
 
 ## The bets right now — there are two
 
@@ -56,6 +56,9 @@ gaps both runs found.
   1's pre-committed evidence is a *disjunction*) verified independently at the trial commit
   (`PDR-0098`).
 - **Six gaps filed, three reproductions commented, nothing fixed.**
+- **Widened the grant** at the owner's word — the `/product-checkpoint` no-push rule had produced a
+  flagged deviation two checkpoints running. Taken at its narrowest reading: `project-recovery*`
+  only, `main`/tags/releases untouched (`PDR-0099`).
 
 ## The finding, in one line
 
@@ -84,9 +87,9 @@ gaps both runs found.
 
 1. **The merge to `main` — `PDR-0068`'s trigger is LIT at 35 commits.** Merging is yours. It owes
    `PDR-0039` gate 2 (unconditional README re-sweep) first; say the word and I'll execute the gate.
-2. **`vision.md`'s `Last reviewed` stamp reads 2026-08-19; it is now 2026-08-20.** Deliberately not
-   corrected — the stamp moves only at an owner-approved `vision.md` touch (`PDR-0093`). Second
-   consecutive session carrying it; at three, it escalates as its own question.
+2. ~~`vision.md` stamp debt~~ — **CLEARED** (`PDR-0099`). The grant widening was an owner-approved
+   `vision.md` touch, so the stamp was corrected to 2026-08-20 at the same time, discharging what
+   `PDR-0093` carried.
 3. **WS-7 (`hamlet-e3af412673`, P0) — park it or schedule it.** Untouched since ~2026-08-17 because
    every session has run bet 2. Neither re-claimed nor reset; comment 176 records why.
 4. Dependabot `#33`/`#34` still open on `main`, plus **4 vulnerability alerts** (2 moderate, 2 low)

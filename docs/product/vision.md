@@ -42,6 +42,18 @@
 >   correction**, choosing it explicitly over carrying the debt a third time. Scope unchanged —
 >   same autonomous list, same escalation taxonomy, `PDR-0046` still governs the push. Factual
 >   correction, not a vision change. Provenance PDR recorded at this session's checkpoint.
+> - *2026-08-20* — **the authority grant is WIDENED, the first scope change since it was granted
+>   on 2026-08-11.** The autonomous list gains *"commit and push `project-recovery*` branches —
+>   checkpoint commits included"*, superseding `/product-checkpoint`'s blanket no-push rule for this
+>   product. Owner-approved in-session, verbatim: *"you can extend the grant to include pushing, I
+>   don't actually have an opinion on this."* Because that consent is explicitly indifferent rather
+>   than considered, the widening was taken at its **narrowest defensible reading** — it covers the
+>   `project-recovery*` branches only, and does **not** touch pushes to `main`, tags, releases, or
+>   anything outward-facing. The merge to `main` remains the boundary and still gates on
+>   `PDR-0039`. Recorded as `PDR-0099`, which also states what would make this widening wrong.
+>   Every earlier amendment-log entry was a factual correction; this one changes scope, so it is
+>   marked as such. The `Last reviewed` stamp was corrected from `2026-08-19` to `2026-08-20` at
+>   the same approved touch, discharging the debt `PDR-0093` carried — the pattern `PDR-0038` set.
 > - *2026-08-13* — re-tagged the **tech-demo demonstrator claim** as delivery intent: "Low Energy
 >   Delirium" was never implemented (*"the idea outran the codebase and we pivotd a few times"*),
 >   and Townlet Town is **one of several tech demos** to be provided at the end. Escalated by the
@@ -251,18 +263,22 @@ they are already binding project commitments, not new inventions.
 
 ## Authority grant
 
-Granted by: John Morrissey (qacona@gmail.com)     Last reviewed: 2026-08-19
+Granted by: John Morrissey (qacona@gmail.com)     Last reviewed: 2026-08-20
 Review cadence: monthly, or on any vision change
 Status: **CONFIRMED** by the owner on 2026-08-19, unchanged from the 2026-08-11 grant
 (re-confirmed 2026-08-14, at the 2026-08-15 `/own-product` resume, twice on 2026-08-16 — the
 first re-confirmation that day preceded the stamp correction, per the amendment log — and at
 each `/own-product` resume since, most recently at the 2026-08-19 resume that approved this
-stamp correction; scope identical every time). Read together with `PDR-0046`: the agent may commit and push `project-recovery`
-without asking — the merge to `main` is the boundary, and it gates on `PDR-0039`.
+stamp correction; scope identical every time). Read together with `PDR-0046` and `PDR-0099`: the agent may commit and push
+`project-recovery*` **including checkpoint commits**, without asking — the merge to `main` is the
+boundary, and it gates on `PDR-0039`. Pushes to `main`, tags and releases are NOT covered.
 
 Autonomous within strategy — the agent MAY, without asking:
   prioritize the backlog, write PRDs, dispatch delivery, accept against
-  criteria, reprioritize, kill a failing bet per metrics.md.
+  criteria, reprioritize, kill a failing bet per metrics.md,
+  and **commit AND PUSH `project-recovery*` branches — checkpoint commits
+  included** (`PDR-0099`; supersedes `/product-checkpoint`'s blanket no-push
+  rule for this product only).
 
 Escalate BEFORE acting — the agent MUST get owner sign-off for:
   changing this vision/strategy/grant, public release or announcement,

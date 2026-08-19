@@ -220,6 +220,30 @@ An idea failing on multiple facets with mixed classes reports every facet's clas
 idea-level split and the INERT escalation counter, the idea counts as INERT if ANY failing
 facet is INERT (conservative in the direction the escalation clause exists to protect).
 
+#### A.6.1 Precedence completion (owner-ruled 2026-08-20, pre-registered before the first blind re-run)
+
+A.6 as written rules only the INERT tiebreak and is silent on an idea whose failing facets carry
+no INERT — exactly Trial K (F1 ABSENT, F7 BLOCKED on the named surface and ABSENT for the
+capability). The gap was escalated rather than self-adjudicated at the thirty-fifth checkpoint
+(`PDR-0092`) and the owner ruled the full ordering:
+
+> **INERT > BLOCKED > ABSENT.** The idea's bucket is the most severe class among its failing
+> facets. A facet carrying two classes contributes its most severe one.
+
+Rationale, in the same direction A.6 already argued: INERT is the worst because the substrate
+lies to the author; BLOCKED is next because a declared surface refuses; ABSENT is least because
+an unbuilt surface is a build list, not a lie. The rule is deliberately **mechanical** — it is
+applied by reading the facet table, never by judging which failure was "decisive" — so a blind
+re-run derives the same bucket from the same facet classifications. The counter-argument was
+heard and rejected on that ground: a decisive-facet rule would have bucketed K ABSENT and would
+have made bucketing an executor judgment call.
+
+**Effect on the current corpus: Trial K counts BLOCKED** (F7's most severe class), and the
+idea-level split reads **0 ABSENT / 0 INERT / 2 BLOCKED** over six settled. The INERT escalation
+counter is unaffected — it stays at 0 either way, which is why this ruling could be taken without
+touching the escalation clause. Trial B's existing BLOCKED bucket is unchanged and consistent
+with the rule.
+
 ### A.7 Reporting discipline (immediate, also applies to the current corpus)
 
 Interim state is reported as **"k of 9 settled, 9−k pending"**, never "k of k"; the

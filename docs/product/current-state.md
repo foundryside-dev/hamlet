@@ -1,4 +1,4 @@
-# Current State — HAMLET / Townlet        Checkpoint: 2026-08-20 · thirty-seventh checkpoint (`PDR-0099`–`PDR-0103`: **the third merge LANDED at `04062872`**, gate 2 discharged first; the grant gained pushing AND merging; "public release" is owner-defined as declaring 1.0, not code on the internet; and the merge fired **no CI on `main`** — filed P1, escalated. Prior, same day, thirty-sixth: `PDR-0093`–`PDR-0098`: the **authority grant is WIDENED** for the first time since it was granted — pushing `project-recovery*` including checkpoint commits is now autonomous, read narrowly because the consent was explicitly indifferent (`PDR-0099`), and **"public release" is owner-DEFINED as publishing a product / declaring 1.0, NOT code being visible on the internet** — correcting a gloss the agent had written at bootstrap and had been acting on (`PDR-0100`); the **first blind re-run is executed and adjudicated** — O reproduces PASS, §7's reject branch does not fire, and **criterion 3 is HALF met**; K's bucket is ruled and the split closes at 0/0/2; protocol **Appendix B** adopts all four amendments the re-run produced; Trial F's PASS **stands** under a commissioned evidence audit)
+# Current State — HAMLET / Townlet        Checkpoint: 2026-08-20 · thirty-eighth checkpoint (`PDR-0104`–`PDR-0106`: **the second blind re-run REJECTS the instrument — §7's reject branch FIRES, criterion 3 is NOT met, and no north-star reading publishes.** Both runs say FAIL and that is not agreement: three of five mapped core pairs disagree, two invert. `PDR-0096`'s trigger does NOT fire — B.1 absorbed a 5-vs-8 cardinality divergence exactly as designed. Also: WS-4 by-catch triage executed and `PDR-0079` trigger 3 discharged, the four-instances question answered **no — two shapes, six sites, a greppable signature**; the grant's Status paragraph corrected to record its own widenings; and the nightly on `main` at `04062872` is **GREEN**)
 
 ## The bets right now — there are two
 
@@ -6,153 +6,140 @@
 flight, untouched this session. Exits when the **pinned oracle can be RETIRED** (`PDR-0058`):
 (1) register entries terminal — open (DIV-001/002 `tag-stamped`; 003/004/005 `retired`;
 006 `built`); (2) harness verdict vocabulary — **MET** (`PDR-0074`); (3) `Gates green` on a suite
-that hides nothing — **MET on `main`**. ⚠️ The dent Trial K put in condition 3's *reading* is now
-deeper: `hamlet-a141ab5db3` is a second green-gate-over-a-hole finding, and it reproduces on a
-**shipped** pack.
+that hides nothing — **MET on `main`**, and now genuinely read there: the nightly at `04062872` is
+green. ⚠️ `hamlet-a141ab5db3` still dents condition 3's *reading* — a green compile over no
+artifact, on a **shipped** pack.
 
 **2. Measure the authoring claim** (`PDR-0077`, `PDR-0086`) · tracker `hamlet-5fa1f7bfc0`
-(`in_progress`) · spec PRD-0001 + protocol incl. Appendices A **and B** · metric: north-star
-**Zero-Python authoring rate (world)** — expert-ceiling expressibility reading, construct preamble
-mandatory. **State: 6 of 9 SETTLED (L, F, M, O PASS; B, K FAIL), 3 pending (D, E, J — all
-multi-agent).** Idea split **0 ABSENT / 0 INERT / 2 BLOCKED (B, K)** — complete for the first time
-(`PDR-0094`). INERT surfaces: **4 in 6 trials**.
+(`in_progress`) · spec PRD-0001 + protocol incl. Appendices A **and B**.
+**⛔ THE INSTRUMENT IS NOT ACCEPTED AND NOTHING PUBLISHES — see below.** State of the corpus,
+retained as record only: 6 of 9 settled (L, F, M, O PASS; B, K FAIL), split 0/0/2, INERT surfaces
+4 in 6 trials, 3 pending (D, E, J — all multi-agent).
 
-⚠️ **The ≥80% bar (8 of 9) cannot be met**: 2 FAILs cap the reading at 7 of 9 = 77.8%. Per
-`PDR-0078` a **finding about the substrate, not a failed bet**. The remaining three trials
-establish *how far* below and *which axes* — that is the product signal.
+## Criterion 3 has FAILED — read this before quoting any number from the north-star
 
-## Criterion 3 is HALF met — read this before quoting the instrument as accepted
+**Both blind re-runs are now done, and they split.** Idea O reproduced PASS (`PDR-0095`) — and its
+own comparison called it **the cheap one**, because two all-PASS records make §7's classification
+comparison vacuous by construction. **Idea B, the discriminating one, does not reproduce**
+(`PDR-0106`).
 
-**1 of 2 blind re-runs done.** Idea O: blind PASS, run 1 PASS, 6 mapped pairs 6/6, **reject branch
-does not fire**, instrument **ACCEPTED for idea O** (`PDR-0095`).
+**The headline verdicts agree — FAIL and FAIL — and that agreement is not sufficient.** §7 rejects
+on *verdict OR classification*. Three of five mapped core pairs disagree; two invert:
 
-**It was the cheap one.** Two all-PASS records make §7's classification comparison vacuous by
-construction — the comparison says so itself and the admission is adopted, not softened. **Idea B
-is the discriminating re-run**: a FAIL carrying BLOCKED facets, so the first to actually exercise
-the ABSENT/INERT/BLOCKED comparison the reject branch turns on. **No reading publishes until it
-runs and agrees.**
+- **Entity as a set of cells.** Run 1: **BLOCKED**, *"every declarative route to a durable organism
+  cell is refused loudly"* — the corpus's deep stress, and the source of four filed tickets. Run 2:
+  **PASS on the first reach**, via a global-profile **`tensorNd`** VFS variable, one agent, no
+  workaround. `tensorNd` verified real at the pin by the comparer.
+- **Trainable signal.** Run 1 **PASS**; run 2 **BLOCKED** — after run 2 *initially* made run 1's
+  exact error (measuring an *agent* on the warehouse, not the *extent* reaching it), caught its
+  invalid control tick, and corrected itself.
+- **`B-F6` (directable)** fires the branch independently: neither run demonstrated it declarable.
 
-What the "no" actually rests on: two non-communicating executors **converging on the same
-load-bearing surface** (`for_each: all_agents` + global VFS scratch + running max — reached
-*second*, source-reading-required for both), and **exact agreement on the classification** of both
-gaps both runs found.
+**What did NOT go wrong, and it matters:** `PDR-0096`'s trigger does **not** fire. Cardinality
+diverged 5 vs 8 — the precise false-REJECT scenario B.1 named — and **B.1's mapping step absorbed
+it**. B.1 prevented a false reject and permitted a true one, on its first real test. Appendix B
+stays as adopted.
 
 ## What this session did
 
-- **RESUME → ORIENT**: workspace unusually clean; four drift items, all small. Grant re-confirmed
-  unchanged; the thirty-fifth checkpoint commit pushed.
-- **Closed `PDR-0092`'s open gap**: owner ruled bucketing precedence **INERT > BLOCKED > ABSENT**
-  (protocol **A.6.1**), committed *before* the re-run returned because a bucketing rule timestamped
-  after the run it governs is worth nothing (`PDR-0094`).
-- **Ran and adjudicated the first blind re-run** with two separate fresh agents. A blinding hazard
-  was caught by the protocol, not by the agent: today's Appendix A names O's verdict in two places,
-  and A's own scope rule already routed the re-run to the pre-appendix text (`PDR-0095`).
-- **Amended the instrument from its own re-run** — Appendix B, all four proposals, pre-registered
-  before idea B's re-run. B.1 closes a §7×A.1 contradiction that was **the only live path to a
-  false REJECT**. B.3's *replacement* probe was verified executable before adoption, so the fix did
-  not reintroduce the defect it removes (`PDR-0096`).
-- **Caveated the novice-facing discovery-path row** rather than dropping it (`PDR-0097`).
-- **Commissioned and accepted Trial F's evidence audit** — PASS stands; the discriminator (facet
-  1's pre-committed evidence is a *disjunction*) verified independently at the trial commit
-  (`PDR-0098`).
-- **Six gaps filed, three reproductions commented, nothing fixed.**
-- **Then: three grant changes, gate 2, and the third merge.** Pushing and merging became
-  autonomous (`PDR-0099`, `PDR-0101`) after the owner defined publication as *declaring 1.0*, not
-  code on the internet (`PDR-0100`) — correcting a gloss the *agent* had written at bootstrap and
-  been acting on. Gate 2 ran by method and found 18 stale claims, 4 omissions, and a `ruff` red
-  that had stood seven pushes while the README called CI green (`PDR-0102`). **The merge landed at
-  `04062872` and fired no CI on `main`** — filed P1, escalated (`PDR-0103`).
-- **Widened the grant** at the owner's word — the `/product-checkpoint` no-push rule had produced a
-  flagged deviation two checkpoints running. Taken at its narrowest reading: `project-recovery*`
-  only, `main`/tags/releases untouched (`PDR-0099`).
-
-## The finding, in one line
-
-> **The instrument survived being turned on itself, and the surviving is worth less than it looks
-> — the run that could have broken it has not been run.**
+- **`/own-product` RESUME → ORIENT**; five drift items, the grant re-confirmed, three owner
+  decisions taken (fix the grant prose, authorize dispatch, top bet = WS-4 triage).
+- **Corrected the grant's Status paragraph** (`PDR-0104`) — it still claimed *"scope identical
+  every time"* one day after two owner-ruled widenings. Owner-approved; the enumerated provenance
+  trail was deliberately preserved rather than compressed.
+- **Ran WS-4 by-catch triage** (`PDR-0105`) — the top bet. `PDR-0079` trigger 3 **discharged**, all
+  24 accounted for (13 → WS-4, 2 → docs, 1 held). The standing question answered from source:
+  **not four instances of one shape — two shapes, the first with six sites**, signature
+  *"the hardcoded literal is always the empty/zero/default member of its type"*.
+- **Dispatched and adjudicated idea B's blind re-run** (`PDR-0106`) — countersigner and executor
+  both fresh agents, comparer A.8-eligible. **Blinding held at three checkpoints**, including that
+  HEAD's protocol leaks B's bucket at line 244 (added by A.6.1 the day before) while the pin's does
+  not. Second consecutive re-run where the protocol's own scope rule caught the hazard.
+- **Read the nightly**: `main` at `04062872` **GREEN**, ~28 min. `PDR-0101` trigger 2 **cleared**.
 
 ## Reversal triggers — state as of this session
 
-- `PDR-0095`: **no north-star reading publishes until idea B's blind re-run agrees.** A
-  disagreeing discriminating comparison outvotes an agreeing cheap one.
-- `PDR-0096`: if B's re-run fires the reject branch on a mapping/cardinality ground B.1 was written
-  to prevent, B.1 failed and Appendix B reopens.
-- `PDR-0098`: if facet 1's disjunction is ever shown to post-date the trial commit, F reopens. The
-  check was run (`git show fb56fbbd:`).
-- `PDR-0090` (substrate freeze): armed. Lifts at trial nine + both re-runs.
-- `PDR-0094`: reopens if a bucket ever misrepresents a finding (BLOCKED on an incidental refusal
-  while the substantive failure is broad ABSENT).
-- `PDR-0068` (merge banking): **DISCHARGED** — the third merge landed at `04062872` with gate 2
-  executed first. Branch level with `main`.
-- `PDR-0101` trigger 2 (a merge landing a red gate on `main`): **not fired, but not cleared** —
-  no gate ran on `main` at all (`hamlet-83c8e3b50e`). The nightly is the reading that settles it.
-- `PDR-0102` trigger 2: if the next gate-2 run finds fewer than five stale claims across a
-  comparable range, treat the method as degenerated into a re-read and re-run it.
-- `PDR-0079` trigger 3: ABSENT/unactioned by-catch now **19+** across six trials and two audits. A
-  WS-4 triage session is overdue and is now the largest unscheduled item.
-- Pack-disposition clock: **EIGHT packs** (was seven — `trial_o_bidding_blind` added) promoted-or
-  -deleted by **2026-10-06**.
+- `PDR-0095`: **FIRED.** No north-star reading publishes. This is the governing constraint now.
+- `PDR-0096`: **does NOT fire** — B.1 worked. Appendix B does not reopen.
+- `PDR-0106`: if the `tensorNd` audit finds run 2's B-F2 PASS **unsound**, the largest disagreement
+  collapses to executor error and the rejection is re-adjudicated on the remaining two. If
+  **sound**, the rejection stands and a new question opens — whether run 1's four filed tickets
+  misdescribe the substrate.
+- `PDR-0105`: reopens if a Shape 1 site turns out to need its consumer built too, or if the grep
+  signature returns fewer than the six known sites.
+- `PDR-0101` trigger 2: **CLEARED** — `main` has a green reading at its own tip, not an inference.
+- `PDR-0102` trigger 2: unchanged — if the next gate-2 run finds fewer than five stale claims
+  across a comparable range, treat the method as degenerated and re-run it.
+- `PDR-0079` trigger 3: **DISCHARGED** this session. Henceforth read on the **24** (the
+  `prd-0001-trial` label query) — the only one of the three circulating counts that is mechanically
+  reproducible.
+- `PDR-0090` (substrate freeze): armed. Its lift condition (trial nine + both re-runs) is now
+  entangled with the instrument decision.
+- Pack-disposition clock: **NINE packs** (`trial_b_blind_*` added) promoted-or-deleted by
+  **2026-10-06**.
 
 ## Blocked on / flagged for the owner
 
-1. ~~The merge to `main`~~ — **DONE. The third merge LANDED at `04062872` (PR #36)**, gate 2
-   discharged first (`PDR-0102`: 18 stale claims + 4 omissions in 43 commits; the adversarial pass
-   found 10 defects in the sweep's own corrections). `PDR-0068`'s banking trigger is discharged;
-   the branch is level with `main`. **But see the new flag below — no CI fired on `main`.**
-2. ~~`vision.md` stamp debt~~ — **CLEARED** (`PDR-0099`). The grant widening was an owner-approved
-   `vision.md` touch, so the stamp was corrected to 2026-08-20 at the same time, discharging what
-   `PDR-0093` carried.
-3. **WS-7 (`hamlet-e3af412673`, P0) — park it or schedule it.** Untouched since ~2026-08-17 because
-   every session has run bet 2. Neither re-claimed nor reset; comment 176 records why.
-4. **`hamlet-83c8e3b50e` (P1, NEW) — the merge triggered NO per-push CI on `main`.** Its tip has
-   **zero check-runs**, while both prior merges fired Lint/Tests/Config Validation within seconds.
-   Workflows are `active`, `main` is in the trigger list, Actions is enabled and unrestricted,
-   nothing is queued. The merged code *was* validated (PR #36's own checks all passed against the
-   merge preview; full suite 3281/16/0 locally) — but `main` has no gate reading of its own.
-   Diagnosing further needs account-level billing/usage visibility the standing agent does not
-   have and did not request. **First thing to check: the 06:00 UTC nightly on `main`.**
-5. Dependabot `#33`/`#34` still open on `main`, plus **4 vulnerability alerts** (2 moderate, 2 low)
-   reported on every push. Merges to `main` are yours.
-6. `CLAUDE.md:65` stale citation (fifteenth sighting; owner's file, deferred by choice).
+1. **What happens to the instrument** (`PDR-0106`) — the live escalation. Firing the branch was
+   mechanical; deciding what follows is yours. **Recommendation: commission an evidence audit of
+   run 2's `tensorNd` result first**, on the `PDR-0098` pattern. It forks everything and should
+   precede any decision. **Do not rebuild the protocol yet** — the diagnosis is *search variance*,
+   not protocol ambiguity, and A.8 says the diagnosis informs what gets rebuilt.
+2. **`hamlet-a141ab5db3` — place it by decision, not by sweep.** Deliberately not routed in triage:
+   it is provenance-integrity, not authorability, and it carries the open question *does it change
+   the strangler bet's exit condition 3?* Candidate homes WS-7 or WS-4.
+3. **WS-7 (`hamlet-e3af412673`, P0) — park it or schedule it.** Untouched since ~2026-08-17;
+   every session has run bet 2. Neither re-claimed nor reset.
+4. **`hamlet-83c8e3b50e` (P1) — open, narrowed, do not close on the green nightly.** Scheduled runs
+   fire on `main`; push fires on `project-recovery*`; push on `main` fired nothing. Ruled out:
+   Actions disablement, spending limit, bad cron, transient incident. Still live: the merge
+   identity/token, or a ruleset. **The deciding test is the next merge** — and note PR #35 was also
+   agent-executed and *did* trigger, so the token hypothesis needs the #35/#36 difference found.
+   Change no workflow config before that reading exists.
+5. Dependabot `#33`/`#34` still open on `main`, plus **4 vulnerability alerts**.
+6. `CLAUDE.md:65` stale citation (sixteenth sighting; owner's file, deferred by choice).
 
 ## Open questions
 
-- **Does `hamlet-a141ab5db3` change the strangler bet's exit condition 3?** `compile` prints
-  success and exits 0 while writing **no artifact** — on a shipped pack. That is a provenance
-  -integrity defect, not only an authoring one, and it is the second instance of "the gate is green
-  over a hole".
-- **Are the four "declared capability, unthreaded execution path" tickets one unit?**
-  `hamlet-1b9af9088c` (spawn_item), `hamlet-a737e444c0` (effects blind to position/time),
-  `hamlet-3381043d2e` (action `writes`), and arguably `hamlet-f2a37a8c8a` (item vars unreachable
-  through `registry.get()`). Four instances of one shape now, not two.
+- **Does run 2's `tensorNd` finding invalidate run 1's four tickets?** `hamlet-1b9af9088c`,
+  `hamlet-3f97369711`, `hamlet-4857e6824b`, `hamlet-6c49488b22` were all filed on the premise that
+  an entity-as-set-of-cells is not expressible. Run 2 expressed one. This is WS-4 re-reading work,
+  gated on the audit above.
+- **Protocol defect G-P1**, second of B.1's shape: §3/P6 orders the blind executor to copy
+  `TEMPLATE.md` from the exact directory §7 forbids it to open. Needs the B.1 treatment — blinding
+  wins, dispatcher supplies the template.
+- **A.6.1 is load-bearing beyond its scope.** Ruled to settle K's bucket, it is the mechanism by
+  which two runs of the *same* idea land in different buckets, because bucket follows which facets
+  fail and enumeration is what a blind re-run varies.
 - Whether persistent-lifetime globals + effects surviving reset is intent or defect — **third**
   reproduction stands; persistence should arguably be *declarable*.
-- Retro-derivation of discovery paths for L/F/M/O — still owed, now to be read under `PDR-0097`'s
-  caveat.
-- A protocol lint step for trial packs — proposed, not decided (no branch-Lint red this session).
+- **The blind pack is NOT yet in tree and this is owed.** `configs/trial_b_blind_organism` lives
+  only in the worktree at
+  `…/scratchpad/trial-B-blind`. Precedent (`trial_o_bidding_blind`) is to land it, but §10 forbids
+  committing a trial pack without running validate **and** the full suite first (~28 min), which
+  this checkpoint did not do. Land it with its guardrails, or delete it deliberately — it is on the
+  2026-10-06 disposition clock either way. **Leg (a) was independently re-verified by the comparer
+  at checkpoint** (`git status --porcelain src/townlet/` empty in the worktree), so the pack's
+  central claim does not depend on the executor's own report.
+- Retro-derivation of discovery paths for L/F/M/O — still owed, under `PDR-0097`'s caveat.
 - Next corpus revision: candidates Q/R waiting, plus the statistician's substrate-naive stratum.
 
 ## Next session starts here
 
-**First: read the 06:00 UTC nightly on `main` at `04062872`.** It is the only reading that settles
-whether the merge landed clean, because no per-push gate ran on `main` (`hamlet-83c8e3b50e`,
-`PDR-0103`). Red → `PDR-0101`'s trigger 2 has effectively fired and merge autonomy reopens.
-
-**Then: run idea B's blind re-run.** It is the only work that moves *publication*, it is the run that
-actually tests the instrument, and Appendix B was pre-registered specifically so it executes under
-a protocol that cannot fire a false reject. Under B.1 the blind executor **enumerates its own facet
-list** and its A.1 countersigner must not have seen run 1's; under B.5 it authors at
-`configs/trial_b_blind_<slug>/`. The comparer must be fresh — the standing agent executed neither B
-run, so it may adjudicate this one.
+**The instrument decision is the only thing that moves anything.** Everything downstream of the
+north-star is frozen until it is made, and the recommended first move is the **`tensorNd` evidence
+audit** — commissioned, fresh agent, on the `PDR-0098` pattern, adjudicating one question: *does a
+global-profile `tensorNd` VFS variable express an entity as a set of occupied cells at pin
+`1ef1d950`?*
 
 Then, in rough order of value:
 
-- **Trial seven** — D, E or J, all multi-agent.
-- **WS-4 triage of the by-catch** — 19+ items, `PDR-0079` trigger 3 overdue, and the
-  four-instances-of-one-pattern question above would shape it.
-- **`hamlet-83c8e3b50e`** — if the nightly is green but the *next* merge also fires no CI, the
-  README's claim that three gates trigger on `main` is false and the repo's Actions configuration
-  becomes a prerequisite of merge autonomy, not a detail.
-- Cheap cleanup: the eight-pack disposition queue, the L/F/M/O discovery-path retro-derivation.
+- **The four tickets that answer turns on** — re-read `hamlet-1b9af9088c` and its three siblings
+  against the audit's result.
+- **WS-4 Shape 1 as one unit** — six sites, one greppable signature, consumers already built and
+  tested. `PDR-0105` argues this is the largest single win available, and it is now scoped.
+- **Trial seven** (D, E or J) — but note it adds to a corpus whose instrument is unaccepted, so it
+  produces record, not reading.
+- Cheap cleanup: the nine-pack disposition queue, the L/F/M/O discovery-path retro-derivation.
 
 Work continues on `project-recovery-2`.

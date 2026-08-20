@@ -79,6 +79,17 @@
 >   2026-08-12 checkpoint, resolved by the owner, recorded as `PDR-0026`. The ambition, the
 >   dogfooding rule, and both demo claims are unchanged.
 >
+> - *2026-08-20* (fourth entry that day) — corrected the
+>   authority grant's **Status paragraph**, which still claimed the scope was *"unchanged from the
+>   2026-08-11 grant"* and *"scope identical every time"*. Both clauses were falsified the previous
+>   day by `PDR-0099` and `PDR-0101`, the first two scope changes the grant has ever taken. The
+>   `Last reviewed` stamp had been corrected at that touch; the prose had not, so the Status line
+>   contradicted both the amendment log above it and the autonomous list immediately below it —
+>   which already granted push and merge. Found at `/own-product` ORIENT, offered at the grant
+>   re-confirmation, and **approved by the owner in the same exchange**, chosen over carrying it as
+>   stamp-style debt. Factual correction only: **no scope moves**, the autonomous list and the
+>   escalation taxonomy are untouched. Provenance PDR recorded at this session's checkpoint.
+>
 > Drafted 2026-08-11 from observed repo, git history, and tracker state. Tags are retained as
 > provenance of how each claim was established: **[stated]** = given directly by the owner;
 > **[verified-from-source]** = established by reading the tree; **[assumption]** = inferred. The
@@ -284,11 +295,20 @@ they are already binding project commitments, not new inventions.
 
 Granted by: John Morrissey (qacona@gmail.com)     Last reviewed: 2026-08-20
 Review cadence: monthly, or on any vision change
-Status: **CONFIRMED** by the owner on 2026-08-19, unchanged from the 2026-08-11 grant
-(re-confirmed 2026-08-14, at the 2026-08-15 `/own-product` resume, twice on 2026-08-16 — the
-first re-confirmation that day preceded the stamp correction, per the amendment log — and at
-each `/own-product` resume since, most recently at the 2026-08-19 resume that approved this
-stamp correction; scope identical every time). Read together with `PDR-0046`, `PDR-0099`, `PDR-0100` and `PDR-0101`: the agent may commit and
+Status: **CONFIRMED** by the owner on 2026-08-20, at the `/own-product` resume that also approved
+this correction. **The scope is NO LONGER identical to the 2026-08-11 grant** — it was widened
+twice on 2026-08-20, by `PDR-0099` (push `project-recovery*`) and `PDR-0101` (merge to `main`).
+This paragraph previously read *"unchanged from the 2026-08-11 grant … scope identical every
+time"*, which those two amendments had made false: the `Last reviewed` stamp was corrected at the
+2026-08-20 touch but this prose was not, leaving the Status line contradicting both the amendment
+log above it and the autonomous list directly below it. Corrected at the next approved touch, the
+pattern `PDR-0038` and `PDR-0088` set. Re-confirmations before the widening (2026-08-14, the
+2026-08-15 resume, twice on 2026-08-16 — the first that day preceding the stamp correction, per
+the amendment log — and at each `/own-product` resume since, most recently at the 2026-08-19
+resume that approved that stamp correction) were all scope-identical, and that enumeration is
+preserved here deliberately — only the two false clauses were removed, not the provenance trail
+the amendment log exists to carry. The 2026-08-20 confirmations are the first that are not
+scope-identical. Read together with `PDR-0046`, `PDR-0099`, `PDR-0100` and `PDR-0101`: the agent may commit and
 push `project-recovery*` **including checkpoint commits**, and **merge to `main`**, without
 asking. `PDR-0039` gate 2 (the unconditional README re-verification, by method — sweep, draft from
 verified facts, adversarial pass — never a re-read) is owed at **every** merge and is executed by

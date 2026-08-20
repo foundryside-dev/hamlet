@@ -1,4 +1,4 @@
-# Current State — HAMLET / Townlet        Checkpoint: 2026-08-20 · thirty-sixth checkpoint (`PDR-0093`–`PDR-0099`: the **authority grant is WIDENED** for the first time since it was granted — pushing `project-recovery*` including checkpoint commits is now autonomous, read narrowly because the consent was explicitly indifferent (`PDR-0099`), and **"public release" is owner-DEFINED as publishing a product / declaring 1.0, NOT code being visible on the internet** — correcting a gloss the agent had written at bootstrap and had been acting on (`PDR-0100`); the **first blind re-run is executed and adjudicated** — O reproduces PASS, §7's reject branch does not fire, and **criterion 3 is HALF met**; K's bucket is ruled and the split closes at 0/0/2; protocol **Appendix B** adopts all four amendments the re-run produced; Trial F's PASS **stands** under a commissioned evidence audit)
+# Current State — HAMLET / Townlet        Checkpoint: 2026-08-20 · thirty-seventh checkpoint (`PDR-0099`–`PDR-0103`: **the third merge LANDED at `04062872`**, gate 2 discharged first; the grant gained pushing AND merging; "public release" is owner-defined as declaring 1.0, not code on the internet; and the merge fired **no CI on `main`** — filed P1, escalated. Prior, same day, thirty-sixth: `PDR-0093`–`PDR-0098`: the **authority grant is WIDENED** for the first time since it was granted — pushing `project-recovery*` including checkpoint commits is now autonomous, read narrowly because the consent was explicitly indifferent (`PDR-0099`), and **"public release" is owner-DEFINED as publishing a product / declaring 1.0, NOT code being visible on the internet** — correcting a gloss the agent had written at bootstrap and had been acting on (`PDR-0100`); the **first blind re-run is executed and adjudicated** — O reproduces PASS, §7's reject branch does not fire, and **criterion 3 is HALF met**; K's bucket is ruled and the split closes at 0/0/2; protocol **Appendix B** adopts all four amendments the re-run produced; Trial F's PASS **stands** under a commissioned evidence audit)
 
 ## The bets right now — there are two
 
@@ -56,6 +56,12 @@ gaps both runs found.
   1's pre-committed evidence is a *disjunction*) verified independently at the trial commit
   (`PDR-0098`).
 - **Six gaps filed, three reproductions commented, nothing fixed.**
+- **Then: three grant changes, gate 2, and the third merge.** Pushing and merging became
+  autonomous (`PDR-0099`, `PDR-0101`) after the owner defined publication as *declaring 1.0*, not
+  code on the internet (`PDR-0100`) — correcting a gloss the *agent* had written at bootstrap and
+  been acting on. Gate 2 ran by method and found 18 stale claims, 4 omissions, and a `ruff` red
+  that had stood seven pushes while the README called CI green (`PDR-0102`). **The merge landed at
+  `04062872` and fired no CI on `main`** — filed P1, escalated (`PDR-0103`).
 - **Widened the grant** at the owner's word — the `/product-checkpoint` no-push rule had produced a
   flagged deviation two checkpoints running. Taken at its narrowest reading: `project-recovery*`
   only, `main`/tags/releases untouched (`PDR-0099`).
@@ -128,7 +134,11 @@ gaps both runs found.
 
 ## Next session starts here
 
-**Run idea B's blind re-run.** It is the only work that moves *publication*, it is the run that
+**First: read the 06:00 UTC nightly on `main` at `04062872`.** It is the only reading that settles
+whether the merge landed clean, because no per-push gate ran on `main` (`hamlet-83c8e3b50e`,
+`PDR-0103`). Red → `PDR-0101`'s trigger 2 has effectively fired and merge autonomy reopens.
+
+**Then: run idea B's blind re-run.** It is the only work that moves *publication*, it is the run that
 actually tests the instrument, and Appendix B was pre-registered specifically so it executes under
 a protocol that cannot fire a false reject. Under B.1 the blind executor **enumerates its own facet
 list** and its A.1 countersigner must not have seen run 1's; under B.5 it authors at
@@ -140,7 +150,9 @@ Then, in rough order of value:
 - **Trial seven** — D, E or J, all multi-agent.
 - **WS-4 triage of the by-catch** — 19+ items, `PDR-0079` trigger 3 overdue, and the
   four-instances-of-one-pattern question above would shape it.
-- **`PDR-0039` gate 2 + the merge**, if the owner wants the 35 commits banked.
+- **`hamlet-83c8e3b50e`** — if the nightly is green but the *next* merge also fires no CI, the
+  README's claim that three gates trigger on `main` is false and the repo's Actions configuration
+  becomes a prerequisite of merge autonomy, not a detail.
 - Cheap cleanup: the eight-pack disposition queue, the L/F/M/O discovery-path retro-derivation.
 
 Work continues on `project-recovery-2`.

@@ -383,6 +383,13 @@ class ExecutionContext:
         """Write an agent-scoped VFS variable for a specific agent."""
         if self.vfs_registry is None:
             raise RuntimeError("VFS registry is not configured; cannot write VFS variable")
+        var_def = self.vfs_registry.variables.get(var_name)
+        if var_def is not None and str(getattr(var_def, "scope", "")) == "global":
+            # A global variable has no per-agent axis; indexing it here would write
+            # a slab of its first spatial axis (hamlet-cf16cdb6c4 / hamlet-57a5126baa).
+            raise ValueError(
+                f"VFS variable '{var_name}' is global-scoped; it has no per-agent value. Write it as 'vfs.{var_name}' (one shared value)."
+            )
         batch = self.vfs_registry.get(var_name, reader="engine")
         if batch.dim() == 0:
             raise ValueError(f"VFS variable '{var_name}' is not agent-scoped; cannot index by agent.")

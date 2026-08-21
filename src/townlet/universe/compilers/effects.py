@@ -33,12 +33,17 @@ class EffectsCompiler:
             schema[f"target.bar.{bar_name}"] = "float"
 
         for var in environment_variables:
-            self._add_target_vfs_paths(schema, str(var.name), getattr(var, "type", None))
+            if str(getattr(var, "scope", "")) == "global":
+                self._add_global_vfs_paths(schema, str(var.name), getattr(var, "type", None))
+            else:
+                self._add_target_vfs_paths(schema, str(var.name), getattr(var, "type", None))
 
         if compiled_vfs_profiles is not None:
             if compiled_vfs_profiles.global_profile is not None:
+                # Global-profile variables are global by construction: no per-agent
+                # axis exists, so no target.vfs path is registered (hamlet-cf16cdb6c4).
                 for var in compiled_vfs_profiles.global_profile.variables:
-                    self._add_target_vfs_paths(schema, str(var.name), getattr(var, "type", None))
+                    self._add_global_vfs_paths(schema, str(var.name), getattr(var, "type", None))
             if compiled_vfs_profiles.agent_profile is not None:
                 for var in compiled_vfs_profiles.agent_profile.variables:
                     self._add_target_vfs_paths(schema, str(var.name), getattr(var, "type", None))
@@ -67,6 +72,13 @@ class EffectsCompiler:
         schema_type = EffectsCompiler._normalize_effect_schema_type(raw_type)
         schema[f"vfs.{name}"] = schema_type
         schema[f"target.vfs.{name}"] = schema_type
+
+    @staticmethod
+    def _add_global_vfs_paths(schema: dict[str, str], name: str, raw_type: Any) -> None:
+        """Register a global-scoped variable: plain and explicit-global roots, no target path."""
+        schema_type = EffectsCompiler._normalize_effect_schema_type(raw_type)
+        schema[f"vfs.{name}"] = schema_type
+        schema[f"global.vfs.{name}"] = schema_type
 
     @staticmethod
     def _normalize_effect_schema_type(raw_type: Any) -> str:

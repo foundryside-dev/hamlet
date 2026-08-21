@@ -23,6 +23,35 @@ custom_actions:
 
 Total actions: 6 substrate (Grid2D) + 4 custom = **10 actions**
 
+### Occupancy writes (affordance contention)
+
+A custom action in the pack's `actions.yaml` may bind an affordance and declare
+VFS transition writes. Claim compositions (`claim_if_free`, `capacity_claim`)
+target the bound affordance's registry row and resolve contention
+deterministically in `resolve_affordance_access_and_occupancy` during
+`env.step`:
+
+```yaml
+custom_actions:
+  - name: "CLAIM_BED"
+    description: "Claim the bed if it is free"
+    enabled_by_default: true
+    source_affordance: "SLEEP"        # must name a declared affordance
+    writes:
+      - variable_id: "occupied_by"    # affordance-scoped VFS variable
+        expression: "agent_id"
+        condition: null
+        composition: "claim_if_free"
+        phase: "resolve_affordance_access_and_occupancy"
+        priority: 0
+        clamp: null
+        telemetry_label: "claim_bed_occupancy"
+```
+
+Compile-time guarantees: a claim write without `source_affordance` is rejected
+at parse; an unknown affordance name or unknown write target is rejected at
+compile. See `docs/architecture/vfs.md` §13.2 for the contention semantics.
+
 ### L0_0_minimal/training.yaml (excerpt)
 
 ```yaml

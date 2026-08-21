@@ -1,9 +1,9 @@
 # Townlet Variable & Feature System (VFS) — Updated Design and Integration Specification
 
 **Document Type**: Design Specification + Integration Specification  
-**Status**: Phase 1 Complete; Phase 1.5 Shadow Migration; Phase 2+ Roadmap  
+**Status**: Phase 1 Complete; observation path fully VFS-driven in production (shadow migration finished, old path deleted); VTC partially unified (Phase 2.x)  
 **Version**: 1.1 Draft  
-**Last Updated**: 16 August 2026 (§4.1, §4.3, §8.4: the observation semantic-type vocabulary, `PDR-0047` / `PDR-0066`; body otherwise 15 May 2026)
+**Last Updated**: 21 August 2026 (source audit against `src/townlet/`: status header, §4.3, §5.1, §6.3, §7.4, §8.1, §8.4, §11.1, §11.4, §13.2, §16.3, §17, §19, §21.1, §23, §24.2; 16 August 2026: §4.1, §4.3, §8.4 semantic-type vocabulary, `PDR-0047` / `PDR-0066`; body otherwise 15 May 2026)
 **Original VFS Guide Date**: 7 November 2025  
 **Audience**: Engineers integrating VFS into Townlet environments; SDA/Brain-as-Code engineers; curriculum designers; researchers building social, temporal, and multi-agent environments
 
@@ -332,7 +332,9 @@ An **observation field** maps a variable or feature into an agent-facing observa
   in `observation_activity.group_slices` so structured encoders and the meter block's consumers
   can address a run of dimensions without knowing any field's name,
 - and ordering in the observation ABI — fields are laid out grouped, in the fixed group order
-  `spatial, bars, affordance, effects, custom, temporal`.
+  `spatial, bars, affordance, effects, custom, temporal`. (The order is guaranteed in the
+  `full_auto` / `max_compact` observation modes; the `full_manual` mode reorders fields to the
+  author's `include_fields` list, and only per-group contiguity is enforced after it.)
 
 The compiled field additionally records **which feature fills it** — `variable` for a
 registry-owned source, or one of the engine's own encoders (`grid_encoding`, `local_window`,
@@ -412,7 +414,8 @@ In VFS terms, actions and affordances should declare:
 
 ### 5.1 Current scopes
 
-The current repo defines eight canonical scope classes:
+The current repo defines **nine** canonical scope classes (`VariableScope` in `vfs/schema.py`)
+— the eight below plus `message`, described at the end of this section:
 
 | Scope | Use case | Example |
 |---|---|---|
@@ -439,6 +442,15 @@ view; dense-shaped writes to sparse pair variables fail loudly instead of being 
 `message` scope is a dense L6 seed for recent communication buffers. It prefixes payload values with
 `[num_agents, num_message_slots]`, requires an explicit positive `num_message_slots` registry extent, and is used by
 `message_token` variables such as `recent_message_tokens`.
+
+**Runtime wiring (2026-08-21, `hamlet-9e1ae3b7a2` — closed).** All nine scopes are reachable
+end-to-end from config. `zone`, `group` and `message` size their storage from the optional
+top-level `extents:` block of `variables_reference.yaml` (`num_zones` / `num_groups` /
+`num_message_slots`, each ≥ 1); the extents flow through `UniverseMetadata` into
+`_initialize_vfs_subsystem`. Declaring a variable of one of those scopes without its extent is
+a compile error at config load — never a green compile that crashes at env construction. See
+`docs/config-schemas/variables.md`. Note the extents allocate storage only: there is still no
+agent→zone / agent→group membership mapping surface.
 
 ### 5.2 Recommended future scopes
 
@@ -553,7 +565,8 @@ Key points:
 
 - `writer` enforces write permissions.
 - Tensors are automatically moved to the registry device.
-- Shape validation is currently caller responsibility.
+- `registry.set()` validates shape and dtype against the declaration and raises on mismatch.
+  The unvalidated path is `set_engine_value()` (§7.2), which the engine/VTC writeback uses.
 - Future compiler stages should perform shape validation at compile time.
 
 ### 6.4 Principle of least privilege
@@ -648,16 +661,21 @@ The registry should guarantee:
 
 ### 7.4 Shape validation
 
-Phase 1 currently notes that callers are responsible for shape validation. Phase 2+ should move shape checks into the compiler and registry boundary.
+Current state (audited 2026-08-21): manual `registry.set()` is already strict — shape and
+dtype are validated against the declaration. The gap is on the other two paths:
+`set_engine_value()` deliberately bypasses declaration-shape checks (so derived globals can
+hold batched per-agent results), and compiler-generated writes validate candidates against the
+phase-snapshot tensor's shape rather than the declared schema. Phase 2+ should move
+declared-schema checks into the compiler and the engine-writeback boundary.
 
 Suggested rule:
 
 ```text
 Manual registry.set() in engine code:
-    shape check optional in hot path, strict in debug/test mode
+    already strict (shape + dtype against the declaration)
 
-Compiler-generated writes:
-    shape checked at compile time and assertable at runtime
+Engine/VTC writeback (set_engine_value) and compiler-generated writes:
+    validate against the declared schema at compile time; assertable at runtime
 
 External tooling / tests:
     always strict
@@ -669,31 +687,31 @@ External tooling / tests:
 
 ### 8.1 Building observation specs
 
+> **Corrected 2026-08-21.** An earlier draft of this section showed a
+> `VFSObservationSpecBuilder` class; no such class exists in the tree and it never shipped.
+> Observation specs are built by the universe compiler, not by hand.
+
 ```python
-from townlet.vfs import VFSObservationSpecBuilder
+from pathlib import Path
 
-# Build exposures from config or programmatically
-exposures = []
-for var in variables:
-    if "agent" in var.readable_by:
-        entry = {"source_variable": var.id}
-        if var.type == "scalar":
-            entry["normalization"] = {"kind": "minmax", "min": 0.0, "max": 1.0}
-        else:
-            entry["normalization"] = None
-        exposures.append(entry)
+from townlet.universe.compiler import UniverseCompiler
 
-# Build observation spec
-builder = VFSObservationSpecBuilder()
-obs_spec = builder.build_observation_spec(variables, exposures)
+# ObservationCompiler (townlet.universe.compilers.observation) lays out the
+# engine feature blocks and every exposed global/agent profile variable into
+# one grouped, fixed-width spec at compile time.
+u = UniverseCompiler().compile(
+    Path("configs/default_curriculum"),
+    primary_level="L1_full_observability",
+)
 
-# Calculate total observation dimension
-obs_dim = sum(field.shape[0] if field.shape else 1 for field in obs_spec)
-print(f"Observation dimension: {obs_dim}")
-
-# Validate against expected dimension (for checkpoint compatibility)
-assert obs_dim == EXPECTED_DIM, f"Dimension mismatch! Expected {EXPECTED_DIM}, got {obs_dim}"
+obs_spec = u.observation_spec            # ObservationSpec: ordered .fields + .total_dims
+obs_dim = u.observation_spec.total_dims  # allocated width, known before runtime
+activity = u.observation_activity        # per-level active_mask + group_slices
 ```
+
+At runtime, `townlet.vfs.observation_builder.build_vfs_observation` materialises each
+VFS-sourced field and `ObservationEncoder` (`src/townlet/environment/observation_encoder.py`)
+drives the full per-field loop.
 
 Key points:
 
@@ -733,6 +751,8 @@ Key points:
 - Each field is read with access control.
 - Normalisation is applied as specified.
 - Outputs concatenate into `[num_agents, obs_dim]`.
+- The sketch above is illustrative; the production implementation of this loop is
+  `ObservationEncoder._get_observations` (`src/townlet/environment/observation_encoder.py`).
 - Future versions may cache derived features or precompile observation generation.
 
 ### 8.3 Observation exposure as curriculum
@@ -780,6 +800,13 @@ Every observation spec should have an `observation_schema_hash` computed over:
 - and version metadata.
 
 The checkpoint should store this hash. Resume must refuse to attach a checkpoint to an incompatible observation ABI; changed VFS schemas create a new run fork.
+
+Current state (2026-08-21): `compute_observation_schema_hash` (`townlet/vfs/schema_hashes.py`)
+covers everything above **except version metadata**, which is not yet in the payload.
+Checkpoints stamp both `observation_schema_hash` and the combined `vfs_hash`
+(`training/checkpoint_utils.py`); resume compares `vfs_hash` plus the per-field UUIDs and the
+other config hashes rather than `observation_schema_hash` directly — enforcement is real but
+indirect.
 
 ---
 
@@ -949,7 +976,7 @@ Current implementation is partial but real:
 - `VFSProfileCompiler` compiles profile expressions on the read/derived-variable path: AST parsing, dependency graph construction, topological sorting, cycle detection, and expression type checking.
 - `VFSEvaluator` evaluates compiled profile variables in dependency order, with mark-and-sweep evaluation for observed variables plus dependencies and eager mode when all variables are needed.
 - `VTCActionWriteProgram` executes the first write-path slice for `ActionConfig.writes`: parsed expressions, phase ordering, composition modes, clamps, conditions, active-agent masks, and atomic per-phase commit batches.
-- Generated VTC programs own passive depletion, threshold cascades, affordance modulation, operating-hour gates, interaction progress, terminal checks, and the reward-component contract.
+- Generated VTC programs own passive depletion, threshold cascades, affordance modulation, operating-hour gates, interaction progress, terminal checks, and the reward-component contract. (The reward slice is a *contract*: `VTCRewardProgram` validates the tensors and components the DAC engine returns against the declared contract; the reward math itself still lives in `DACEngine`.)
 - `vtc_kernels.py` contains TorchScript kernels for generated hot transition paths: masked action-write commits, passive depletion, threshold cascades, linear affordance modulation, and terminal-condition checks. Arbitrary action-write expressions still evaluate through the typed expression AST before entering scripted tensor composition.
 - Generated transition programs have no interpreter fallback helpers. Unsupported generated-rule forms fail loudly instead of silently routing through an old imperative executor.
 
@@ -1043,6 +1070,12 @@ A full tick should eventually compile into an ordered phase graph:
 ```
 
 The exact sequence can be tuned, but it must be explicit, configured, validated, and hashable. Execution order materially changes the world.
+
+⚠️ **`clamp_and_validate` is currently declared but empty** (`hamlet-f46e2b381a`): the phase
+name appears exactly once in `src/townlet/` — its declaration in `transition_graph.py` — and
+is never dispatched. Bounds enforcement instead happens at ~6 imperative call sites
+(`action_executor`, `affordance_engine`, `dac_engine`), now sourcing bounds from
+`bar.bounds` rather than literals. The phase stays in the list as the unification target.
 
 ### 11.5 Remaining Phase 2 capabilities
 
@@ -1351,6 +1384,18 @@ as an action-batch payload expression, and applies writes scheduled in
 - `capacity_claim` targets `[affordances, slots, ...]` storage, requires an
   integer `clamp` high value declaring capacity, and fills the first free slots
   with active claimants in action-batch order without over-allocation.
+
+**Wiring status (2026-08-21, second pass).** Wired end-to-end (hamlet-ef6699ab2a).
+`build_vtc_transition_schedule` compiles ALL action writes through
+`compile_vtc_affordance_occupancy_with_phase_graph`, so any action carrying a
+`source_affordance` gets its claim writes bound to that affordance's registry row.
+The authoring surface is `actions.yaml`: a custom action declares `source_affordance`
+plus `writes` (WriteSpec entries); claim compositions without a `source_affordance`
+are rejected at parse, unknown affordances and unknown write targets are rejected at
+compile. `env.step` executes the writes in `resolve_affordance_access_and_occupancy`
+through the generic VTC runner. Config-in/behaviour-out coverage:
+`tests/test_townlet/unit/vfs/test_occupancy_wiring.py` (two agents contending for a
+capacity-1 affordance resolve deterministically through a real `env.step`).
 
 ### 13.3 Example
 
@@ -1727,11 +1772,20 @@ and group extents remain explicit: callers allocate storage with the relevant
 The VTC social-residue compiler accepts `visibility_effect`, `social_residue`,
 and `institutional_rule` relationship rules in the canonical
 `apply_social_residue_effects` phase. Rule-level conditions and write-level
-conditions are combined before commit. Pair-scope masks are directed
-`[observer, actor]` or `[recipient, actor]` tensors; agent-scope writes use
-agent vectors such as `chosen_action` or derived visibility vectors such as
-`was_observed`. As with other VTC writes, `additive_delta` expressions are
-deltas, not post-update values.
+conditions are combined before commit. Pair-scope writes are masked by the
+symmetric active-agent mask (`active[i] & active[j]`); the rule's declared
+`target` (e.g. `observer -> actor`) is recorded on the compiled rule but not yet
+consumed, so any observer→actor directionality must currently be encoded by the
+author inside `condition` / `expression`. Deriving the directed
+`[observer, actor]` / `[recipient, actor]` mask from `target` is open work.
+Agent-scope writes use agent vectors such as `chosen_action` or derived
+visibility vectors such as `was_observed`. As with other VTC writes,
+`additive_delta` expressions are deltas, not post-update values.
+
+The compiler and the `apply_social_residue_effects` phase are wired into
+`env.step`'s executed phase range, but no shipped config declares social-residue
+rules yet, so every current scenario compiles an empty rule set (see §21.1,
+item 7).
 
 | Effect | Description |
 |---|---|
@@ -1778,9 +1832,13 @@ rules:
 
 ## 17. Migration path: hardcoded to VFS-driven environment
 
-### 17.1 Current hardcoded observation generation
+> **Corrected 2026-08-21.** This migration is complete. The environment is fully VFS-driven;
+> the hardcoded path in §17.1 and the shadow system of Phase 1.5 were deleted. The section is
+> kept as the record of what was replaced and why; per-phase status is marked below.
 
-The current `VectorizedHamletEnv` pattern uses hardcoded concatenation:
+### 17.1 Pre-migration hardcoded observation generation (historical)
+
+Before the cutover, `VectorizedHamletEnv` used hardcoded concatenation:
 
 ```python
 def _get_observations(self):
@@ -1817,7 +1875,7 @@ Problems:
 - Dependency tracking is unclear.
 - Observability curriculum is harder to configure.
 
-### 17.2 Target VFS-driven observation generation
+### 17.2 Shipped VFS-driven observation generation
 
 ```python
 def _initialize_vfs(self):
@@ -1870,9 +1928,17 @@ Benefits:
 - Checkpoint compatibility is regression-tested.
 - Curriculum can alter observability without changing Python.
 
+This is now the only path. In the shipped implementation
+(`src/townlet/environment/observation_encoder.py`), `ObservationEncoder._get_observations`
+iterates `observation_spec.fields`; engine-computed features (grid, local window, position,
+velocity, meters, affordance-at-position, effects, temporal, item slots) are published into
+the VFS registry through a dispatch table keyed on each field's `feature` — never its name
+(`PDR-0045`) — before the per-field loop reads them back. The code above is illustrative; no
+hardcoded concatenation or shadow path remains in the tree.
+
 ### 17.3 Migration strategy
 
-#### Phase 1.5: Parallel/shadow systems
+#### Phase 1.5: Parallel/shadow systems — completed, then dismantled
 
 1. Keep current hardcoded observations in production.
 2. Add VFS observation generation as a shadow system.
@@ -1881,21 +1947,21 @@ Benefits:
 5. Run training experiments with both systems.
 6. Store observation schema hash in telemetry.
 
-#### Phase 2.0: Initial compiler integration
+#### Phase 2.0: Initial compiler integration — completed
 
 1. Replace hardcoded observation generation with VFS.
 2. Compile simple action writes.
 3. Keep old meter update logic for non-action world physics.
 4. Run equivalence tests.
 
-#### Phase 2.1–2.3: Transition unification
+#### Phase 2.1–2.3: Transition unification — completed (rewards run through the VTC contract; the math stays in `DACEngine`, §11.1)
 
 1. Move passive depletion into VTC.
 2. Move cascades and modulations into VTC.
 3. Move temporal gates and multi-tick progress into VTC.
 4. Move terminal conditions and reward components into VTC.
 
-#### Phase 2.5: Optimisation and cutover
+#### Phase 2.5: Optimisation and cutover — largely completed (kernels scripted, fallbacks deleted, benchmark guardrail in place)
 
 1. Profile registry get/set overhead.
 2. Cache static observation fields.
@@ -1903,7 +1969,7 @@ Benefits:
 4. Benchmark against hardcoded baseline.
 5. Delete old imperative paths after equivalence is proven. Generated transition interpreter fallbacks are removed; equivalence evidence remains as tests.
 
-#### Phase 3+: Social/relational expansion
+#### Phase 3+: Social/relational expansion — storage landed, wiring open (§5.1, §16.3)
 
 1. Add pair/group/affordance/zone scopes. Dense and sparse runtime storage now exists; VTC relational rule coverage follows separately.
 2. Add social residue rules.
@@ -2043,48 +2109,53 @@ Integration tests:
 
 ```bash
 # End-to-end pipeline
-uv run pytest tests/test_townlet/integration/test_vfs_integration.py -v
+uv run pytest tests/test_townlet/integration/vfs/test_variable_to_observation_flow.py -v
+
+# Runtime evaluation
+uv run pytest tests/test_townlet/integration/test_vfs_runtime_evaluation.py -v
 
 # Full VFS suite
-uv run pytest tests/test_townlet/unit/vfs/ tests/test_townlet/integration/test_vfs_integration.py -v
+uv run pytest tests/test_townlet/unit/vfs/ tests/test_townlet/integration/vfs/ -v
 ```
 
-### 19.2 Additional tests for VTC
+### 19.2 VTC tests
 
-Compiler tests:
+> **Corrected 2026-08-21.** The file names previously listed here were the planned names;
+> the suites landed under different names. The commands below are the ones that exist.
+
+Compiler and expression tests:
 
 ```bash
-uv run pytest tests/test_townlet/unit/vfs/test_expression_parser.py -v
-uv run pytest tests/test_townlet/unit/vfs/test_type_inference.py -v
-uv run pytest tests/test_townlet/unit/vfs/test_dependency_graph.py -v
-uv run pytest tests/test_townlet/unit/vfs/test_effect_composition.py -v
-uv run pytest tests/test_townlet/unit/vfs/test_transition_compiler.py -v
+uv run pytest tests/test_townlet/unit/vfs/test_expression_integration.py -v
+uv run pytest tests/test_townlet/unit/vfs/test_expression_spatial.py tests/test_townlet/unit/vfs/test_expression_temporal.py tests/test_townlet/unit/vfs/test_expression_noise.py -v
+uv run pytest tests/test_townlet/unit/vfs/test_vfs_evaluator.py -v
+uv run pytest tests/test_townlet/unit/vfs/test_transition_graph.py -v
+uv run pytest tests/test_townlet/unit/vfs/test_vtc_action_writes.py -v
 ```
 
-Equivalence tests:
+Per-domain VTC rule tests (these carry the equivalence coverage):
 
 ```bash
-uv run pytest tests/test_townlet/integration/test_vfs_observation_equivalence.py -v
-uv run pytest tests/test_townlet/integration/test_vtc_cascade_equivalence.py -v
-uv run pytest tests/test_townlet/integration/test_vtc_affordance_equivalence.py -v
-uv run pytest tests/test_townlet/integration/test_vtc_terminal_equivalence.py -v
+uv run pytest tests/test_townlet/unit/vfs/test_vtc_passive_depletions.py tests/test_townlet/unit/vfs/test_vtc_threshold_cascades.py tests/test_townlet/unit/vfs/test_vtc_modulations.py -v
+uv run pytest tests/test_townlet/unit/vfs/test_vtc_affordance_gates.py tests/test_townlet/unit/vfs/test_vtc_interaction_progress.py -v
+uv run pytest tests/test_townlet/unit/vfs/test_vtc_terminal_conditions.py tests/test_townlet/unit/vfs/test_vtc_reward_components.py -v
+uv run pytest tests/test_townlet/unit/vfs/test_vtc_passive_dynamics_equivalence.py -v
 ```
 
 Provenance tests:
 
 ```bash
 uv run pytest tests/test_townlet/unit/vfs/test_schema_hashes.py -v
-uv run pytest tests/test_townlet/integration/test_vfs_snapshot_resume.py -v
-uv run pytest tests/test_townlet/integration/test_vfs_checkpoint_compatibility.py -v
+uv run pytest tests/test_townlet/integration/test_checkpointing.py tests/test_townlet/integration/test_content_hash_checkpoint_guard.py -v
 ```
 
 Multi-agent tests:
 
 ```bash
-uv run pytest tests/test_townlet/unit/vfs/test_pair_scope.py -v
-uv run pytest tests/test_townlet/unit/vfs/test_affordance_scope.py -v
-uv run pytest tests/test_townlet/integration/test_vfs_occupancy_claims.py -v
-uv run pytest tests/test_townlet/integration/test_social_residue_rules.py -v
+uv run pytest tests/test_townlet/unit/vfs/test_relational_variables.py tests/test_townlet/unit/vfs/test_message_variables.py -v
+uv run pytest tests/test_townlet/unit/vfs/test_vtc_affordance_occupancy.py -v
+uv run pytest tests/test_townlet/unit/vfs/test_vtc_social_residue.py -v
+uv run pytest tests/test_townlet/integration/test_l5_multi_agent_config.py -v
 ```
 
 ### 19.3 Behavioural equivalence tests
@@ -2306,9 +2377,9 @@ Store state when it must persist or be authoritative. Derive features when they 
 1. **Remaining VTC coverage gaps.** Profile reads, action writes, passive dynamics, cascades, temporal gates, interaction progress, rewards, terminal checks, occupancy/contention, and social residue rules now run through VFS/VTC components. Remaining gaps are action-write type/shape validation depth, telemetry side-effect compilation, relational observation exposure, environment-level social-rule wiring, message observation/runtime communication wiring, and dynamic variables.
 2. **Manual observation generation.** Observation construction still requires explicit registry reads and concatenation.
 3. **Partial write validation.** `WriteSpec` expressions are parsed and executed for action writes, but full write-path type/shape validation is still incomplete.
-4. **Limited normalisation.** Current normalisation is mostly minmax/zscore.
+4. **Engine writeback bypasses declared shapes.** `set_engine_value()` deliberately skips declaration shape/dtype checks, so VTC/evaluator writes are validated only against phase-snapshot shapes, never the declared schema. (The previous item here — "normalisation is mostly minmax/zscore" — was stale: all nine §9 kinds are implemented and reachable.)
 5. **Limited social-scope integration.** Dense and sparse `pair` storage exists alongside `group`, `affordance`, and `zone` storage, canonical relational `VariableDef` surfaces exist, and social-residue rules compile as VTC programs. Relational observation exposure and scenario-level environment wiring remain incomplete.
-6. **No dynamic variables.** Variables are fixed at initialisation.
+6. **Dynamic variables are registry-level only.** The gated `dynamic_variable_mode` (§7.2, §15.3) exists and is audited, but it is off by default and no config surface or runtime scenario drives it; for every shipped pack, variables are fixed at initialisation.
 7. **Relationship rules are not end-to-end yet.** Social rule kinds compile and execute as VTC programs, but configs and environment setup still need scenario-level wiring for pair/group updates.
 
 ### 21.2 Design risks
@@ -2421,7 +2492,6 @@ This would make VFS teachable and debuggable.
 - `docs/config-schemas/variables.md` — optional static variable and observation metadata overlay
 - `docs/plans/archive/vfs_uplift/2025-11-18-items-and-vfs-profiles.md`
 - `docs/plans/archive/vfs_uplift/master_requirements.md`
-- `docs/tasks/TASK-002-variables-and-features-system.md`
 - `CLAUDE.md` VFS section
 - `Townlet v2.5: Universe as Code`
 - `Townlet v2.5: Brain as Code`
@@ -2475,7 +2545,7 @@ This would make VFS teachable and debuggable.
 - VFS regression tests cover schema definitions, runtime storage, observation generation, action write compilation, checkpoint dimensions, and integration flows.
 - All five current curriculum configs dimension-validated.
 
-### 24.2 Phase 1.5 success
+### 24.2 Phase 1.5 success: achieved (shadow system since deleted)
 
 - VFS observations run in shadow mode.
 - VFS and hardcoded observations match for equivalent configs.

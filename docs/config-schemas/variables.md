@@ -112,6 +112,39 @@ exposed_observations:
   description: "Internal motivation level (not exposed to agent)"
 ```
 
+### Zone, Group and Message Scopes (extents required)
+
+**Storage**: `zone` → `[num_zones, ...]`, `group` → `[num_groups, ...]`,
+`message` → `[num_agents, num_message_slots, ...]`
+
+These scopes size their storage by an **extent** that must be declared in a
+top-level `extents:` block of `variables_reference.yaml`. Declaring a variable
+with one of these scopes and no matching extent is a compile error (the loader
+rejects the pack — it never validates green and then crashes at env
+construction).
+
+```yaml
+extents:
+  num_zones: 4          # required by any zone-scoped variable, >= 1
+  num_groups: 2         # required by any group-scoped variable, >= 1
+  num_message_slots: 8  # required by any message-scoped variable, >= 1
+
+variables:
+  - id: "zone_temp_offset"
+    scope: "zone"
+    type: "scalar"
+    lifetime: "persistent"
+    readable_by: ["agent", "engine"]
+    writable_by: ["engine"]
+    default: 0.0
+    description: "Per-zone temperature offset"
+```
+
+Extents declared without any matching-scope variable are harmless sizing
+metadata. Note: extents allocate storage only — there is no agent→zone or
+agent→group membership mapping yet, so "which zone is this agent in" is not
+resolvable from the extent alone.
+
 ## Type System
 
 ### Scalar Types

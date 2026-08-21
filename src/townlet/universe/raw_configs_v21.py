@@ -22,7 +22,7 @@ from townlet.config.stratum_config import StratumConfig
 from townlet.config.training_v2_config import TrainingV2Config, load_training_v2_config
 from townlet.config.vfs_profiles_config import VFSProfilesConfig
 from townlet.universe.errors import CompilationErrorCollector
-from townlet.vfs.schema import VariableDef, load_variables_reference_config
+from townlet.vfs.schema import VariableDef, VFSScopeExtents, load_variables_reference_config
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +68,7 @@ class RawConfigsV21:
     effects: EffectsConfig | None = None
     action_label_overrides: dict[int, str] | None = None
     variables_reference: tuple[VariableDef, ...] | None = None
+    vfs_extents: VFSScopeExtents | None = None
     social_residue_rules: tuple[dict[str, object], ...] = ()
 
     def __post_init__(self) -> None:
@@ -103,6 +104,7 @@ class RawConfigsV21:
         experiment = stratum = environment = actions = brain = items = vfs_profiles = effects = None
         action_label_overrides: dict[int, str] | None = None
         variables_reference: tuple[VariableDef, ...] | None = None
+        vfs_extents: VFSScopeExtents | None = None
         social_residue_rules: tuple[dict[str, object], ...] = ()
         shared_specs = [
             ("experiment.yaml", ExperimentConfig, "experiment"),
@@ -206,7 +208,9 @@ class RawConfigsV21:
         variables_reference_path = experiment_dir / "variables_reference.yaml"
         if variables_reference_path.exists():
             try:
-                variables_reference = tuple(load_variables_reference_config(experiment_dir))
+                reference_data = load_variables_reference_config(experiment_dir)
+                variables_reference = reference_data.variables
+                vfs_extents = reference_data.extents
             except Exception as exc:  # noqa: BLE001
                 errors.add(
                     f"Failed to load variables reference from variables_reference.yaml: {exc}",
@@ -307,6 +311,7 @@ class RawConfigsV21:
             effects=effects,
             action_label_overrides=action_label_overrides,
             variables_reference=variables_reference,
+            vfs_extents=vfs_extents,
             social_residue_rules=social_residue_rules,
             levels=levels,
             experiment_dir=experiment_dir,

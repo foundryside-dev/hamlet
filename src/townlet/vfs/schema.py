@@ -23,6 +23,8 @@ __all__ = [
     "ObservationField",
     "VariableDef",
     "VariableScope",
+    "VFSScopeExtents",
+    "VariablesReferenceData",
     "load_variables_reference_config",
 ]
 
@@ -561,7 +563,41 @@ class VariableDef(BaseModel):
         return self
 
 
-def load_variables_reference_config(config_dir: Path) -> list[VariableDef]:
+class VFSScopeExtents(BaseModel):
+    """Storage extents for the zone/group/message variable scopes.
+
+    Declared in the optional top-level ``extents:`` block of
+    variables_reference.yaml — the only file that can declare variables with
+    these scopes. An extent is required exactly when a variable of the matching
+    scope is declared; the loader rejects the pack otherwise, so the failure is
+    a compile error and never a green compile that crashes at env construction
+    (hamlet-9e1ae3b7a2).
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    num_zones: int | None = Field(default=None, ge=1, description="Number of zone-scope storage rows")
+    num_groups: int | None = Field(default=None, ge=1, description="Number of group-scope storage rows")
+    num_message_slots: int | None = Field(default=None, ge=1, description="Recent-message buffer slots per agent")
+
+
+class VariablesReferenceData(BaseModel):
+    """Parsed contents of variables_reference.yaml the compiler consumes."""
+
+    model_config = ConfigDict(frozen=True)
+
+    variables: tuple[VariableDef, ...]
+    extents: VFSScopeExtents | None
+
+
+_SCOPE_EXTENT_FIELD: dict[VariableScope, str] = {
+    VariableScope.ZONE: "num_zones",
+    VariableScope.GROUP: "num_groups",
+    VariableScope.MESSAGE: "num_message_slots",
+}
+
+
+def load_variables_reference_config(config_dir: Path) -> VariablesReferenceData:
     """Load and validate variables_reference.yaml."""
 
     config_dir = Path(config_dir)
@@ -593,6 +629,32 @@ def load_variables_reference_config(config_dir: Path) -> list[VariableDef]:
             raise ValueError("variables_reference.yaml cannot define item-scoped variables; use vfs_profiles.yaml item_profiles.")
 
     try:
-        return [VariableDef(**raw_var) for raw_var in variables_block]
+        variables = tuple(VariableDef(**raw_var) for raw_var in variables_block)
     except ValidationError as exc:
         raise ValueError(f"Invalid variables_reference.yaml: {exc}") from exc
+
+    extents_block = data.get("extents")
+    try:
+        extents = VFSScopeExtents(**extents_block) if extents_block is not None else None
+    except ValidationError as exc:
+        raise ValueError(f"Invalid extents block in {yaml_path}: {exc}") from exc
+
+    # A zone/group/message-scoped variable sizes its storage by the matching
+    # extent; without one the registry cannot allocate. Reject HERE, so the
+    # author gets a compile error, not a crash at env construction.
+    for variable in variables:
+        extent_field = _SCOPE_EXTENT_FIELD.get(VariableScope(variable.scope))
+        if extent_field is None:
+            continue
+        declared = getattr(extents, extent_field) if extents is not None else None
+        if declared is None:
+            raise ValueError(
+                f"Variable '{variable.id}' uses {VariableScope(variable.scope).value} scope "
+                f"but the pack declares no '{extent_field}' extent.\n"
+                f"  File: {yaml_path}\n"
+                f"  Action: add a top-level extents block:\n"
+                f"    extents:\n"
+                f"      {extent_field}: <positive int>"
+            )
+
+    return VariablesReferenceData(variables=variables, extents=extents)

@@ -625,6 +625,9 @@ class VectorizedHamletEnv:
             max_items=max_items_in_world,
             num_affordances=self.metadata.affordance_count,
             item_profiles=item_profiles,
+            num_zones=self.metadata.num_zones,
+            num_groups=self.metadata.num_groups,
+            num_message_slots=self.metadata.num_message_slots,
         )
 
         self.vfs_observation_spec: VFSObservationSpec | None = None

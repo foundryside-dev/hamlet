@@ -557,10 +557,13 @@ Intent, not yet built — stated plainly because older docs blur the line:
     so the suite is green while the scopes remain unreachable from every real pack. (`affordance`
     scope works, because `num_affordances` *is* passed.) Measured in the authoring trials recorded
     under `docs/product/trials/`.
-  - All four VFS variables declared in `configs/default_curriculum/environment.yaml` —
-    `deficit_energy`, `deficit_satiation`, `time_since_last_eat`, `time_since_last_sleep` — are
-    observed but written by nothing: those names appear nowhere under `src/townlet/`, and in no
-    config anywhere beyond their own declaration.
+  - The four VFS variables `configs/default_curriculum/environment.yaml` used to declare —
+    `deficit_energy`, `deficit_satiation`, `time_since_last_eat`, `time_since_last_sleep` — were
+    observed but written by nothing, so agents saw frozen zeros in slots the ABI claimed were
+    live. Deleted 2026-08-22 (`hamlet-dc8f887cd5`); the shipped pack now declares no custom
+    variables. Trial L (`docs/product/trials/0001/L-20260818.md`) demonstrated the counter
+    mechanic is authorable without them: a bar with a negative passive rate advances per tick,
+    an `on_start` `modify` resets it on use.
 - **Documentation outside `docs/product/` and `docs/oracle/` is being reconciled.** `CLAUDE.md`,
   `scripts/README.md` and older architecture docs still name config paths, filenames and scripts
   that do not exist in the tree — `scripts/README.md`, for one, documents

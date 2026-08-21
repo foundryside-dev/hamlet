@@ -42,24 +42,25 @@ class TestEnvironmentConfigLoading:
         modulation = next(m for m in root.modulation_graph if m.bar == "energy")
         assert "WORK" in {a.upper() for a in modulation.affordances}
 
-    def test_environment_config_bars_and_variables_are_consistent(self):
-        """Meters in environment.yaml should align with VFS variables."""
+    def test_default_curriculum_declares_no_writerless_variables(self):
+        """The shipped pack must not declare observation variables nothing writes.
+
+        deficit_energy / deficit_satiation / time_since_last_eat /
+        time_since_last_sleep were declared with no runtime writer, so agents
+        observed frozen zeros in slots the ABI claimed were live
+        (hamlet-dc8f887cd5). Deleted per zero-backwards-compat; a declaration
+        may return only together with the authoring surface that drives it.
+        """
         env_path = Path("configs/default_curriculum/environment.yaml")
         assert env_path.exists(), f"environment.yaml not found at {env_path}"
 
         config = EnvironmentConfig.from_yaml(env_path)
         root = config.environment
 
-        meter_names = {m.name for m in root.meters}
         variable_names = {v.name for v in root.variables}
+        assert variable_names == set(), f"writerless variables declared: {variable_names}"
 
-        # All meter-backed variables should have corresponding meters
-        assert "deficit_energy" in variable_names
-        assert "deficit_satiation" in variable_names
-        assert "time_since_last_eat" in variable_names
-        assert "time_since_last_sleep" in variable_names
-
-        # Simple consistency check: variables must reference valid meter concepts
+        meter_names = {m.name for m in root.meters}
         assert "energy" in meter_names
         assert "satiation" in meter_names
 

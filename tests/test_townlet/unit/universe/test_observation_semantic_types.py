@@ -178,15 +178,26 @@ def _copy_pack(src: Path, tmp_path: Path) -> Path:
     return dest
 
 
-def _set_variable_semantic(pack: Path, variable_name: str, semantic: str) -> None:
+def _declare_variable(pack: Path, name: str, semantic: str | None, norm_range: tuple[float, float]) -> None:
+    """Append a scalar agent variable declaration to the pack's environment.yaml.
+
+    default_curriculum ships with `variables: []` (its old custom variables had
+    no writers and were deleted — hamlet-dc8f887cd5), so tests of the author's
+    declaration declare their own subject. `semantic=None` omits the key.
+    """
     env_path = pack / "environment.yaml"
     data = yaml.safe_load(env_path.read_text())
-    for var in data["environment"]["variables"]:
-        if var["name"] == variable_name:
-            var["semantic_type"] = semantic
-            break
-    else:
-        raise AssertionError(f"{variable_name} not in {env_path}")
+    var: dict = {
+        "name": name,
+        "type": "scalar",
+        "dims": 1,
+        "scope": "agent",
+        "description": "test subject variable",
+        "normalization": {"method": "normalize", "clip": False, "range": list(norm_range)},
+    }
+    if semantic is not None:
+        var["semantic_type"] = semantic
+    data["environment"]["variables"].append(var)
     env_path.write_text(yaml.safe_dump(data, sort_keys=False))
 
 
@@ -209,7 +220,9 @@ class TestCompilerEmitsOnlyFromTheVocabularyAndMirrorsFaithfully:
     def test_default_curriculum_layout_is_unchanged_by_the_cut(self) -> None:
         # The stable partition by group order is the IDENTITY on today's layout: every shipped
         # pack already emits its blocks in group order. Pinning the L1 field order and slices
-        # exactly as measured at the pre-cut tree (fb60d581) is what makes that a fact.
+        # exactly as measured is what makes that a fact. (Originally measured at the pre-cut
+        # tree fb60d581 at 124 dims; the four writerless `custom` variables were then deleted
+        # — hamlet-dc8f887cd5 — so the custom group is empty and absent from the slices.)
         universe = _compile(DEFAULT_PACK, "L1_full_observability")
         assert [f.name for f in universe.observation_spec.fields] == [
             "obs_grid_encoding",
@@ -225,51 +238,46 @@ class TestCompilerEmitsOnlyFromTheVocabularyAndMirrorsFaithfully:
             "obs_meter_mood",
             "obs_meter_social",
             "obs_affordance_at_position",
-            "deficit_energy",
-            "deficit_satiation",
-            "time_since_last_eat",
-            "time_since_last_sleep",
             "obs_temporal",
         ]
         groups = {k: (v.start, v.stop) for k, v in universe.observation_activity.group_slices.items()}
-        assert groups == {"spatial": (0, 93), "bars": (93, 101), "affordance": (101, 116), "custom": (116, 120), "temporal": (120, 124)}
-        assert universe.observation_spec.total_dims == 124
+        assert groups == {"spatial": (0, 93), "bars": (93, 101), "affordance": (101, 116), "temporal": (116, 120)}
+        assert universe.observation_spec.total_dims == 120
 
 
 class TestTheAuthorDeclarationIsAuthoritative:
     def test_a_declared_temporal_variable_lands_in_the_temporal_group(self, tmp_path: Path) -> None:
-        # Rule 2. `time_since_last_eat` is an agent clock; an author may say so. The compiler
-        # emits the declared value and lays the field out with its group, so the groups stay
+        # Rule 2. An agent clock is temporal; an author may say so. The compiler emits the
+        # declared value and lays the field out with its group, so the groups stay
         # contiguous and the runtime (which assembles by field order) needs no special case.
         pack = _copy_pack(DEFAULT_PACK, tmp_path)
-        _set_variable_semantic(pack, "time_since_last_eat", "temporal")
+        _declare_variable(pack, "ticks_since_dawn", "temporal", (0.0, 100.0))
         universe = _compile(pack, "L1_full_observability")
         by_name = {f.name: f for f in universe.observation_spec.fields}
-        assert by_name["time_since_last_eat"].semantic_type == "temporal"
+        assert by_name["ticks_since_dawn"].semantic_type == "temporal"
         temporal = universe.observation_activity.group_slices["temporal"]
-        assert temporal.start <= by_name["time_since_last_eat"].start_index < temporal.stop
-        # Group order held: custom then temporal, and the temporal group grew by exactly one dim.
-        custom = universe.observation_activity.group_slices["custom"]
-        assert custom.stop == temporal.start
+        assert temporal.start <= by_name["ticks_since_dawn"].start_index < temporal.stop
+        # Group order held: the temporal group grew by exactly one dim, and no `custom`
+        # group appeared (the declared variable joined temporal instead).
+        assert "custom" not in universe.observation_activity.group_slices
         assert temporal.stop - temporal.start == 4 + 1
-        assert universe.observation_spec.total_dims == 124
+        assert universe.observation_spec.total_dims == 121
 
         # And the RUNTIME agrees: the encoder assembles by walking the compiled fields in
-        # order and resolves each by its source variable, so the moved field's value lands
+        # order and resolves each by its source variable, so the declared field's value lands
         # at the compiled offset. Drive the variable to a known value and read it back at
-        # `start_index` — a wrong offset would read a neighbour (a temporal feature, or a
-        # `custom` variable) instead.
+        # `start_index` — a wrong offset would read a neighbour instead.
         import torch
 
         from townlet.environment.vectorized_env import VectorizedHamletEnv
 
         env = VectorizedHamletEnv(universe=universe, level_name="L1_full_observability", num_agents=2, device=torch.device("cpu"))
         env.reset()
-        moved = by_name["time_since_last_eat"]
-        env.vfs_registry.set("time_since_last_eat", torch.tensor([37.0, 61.0]), writer="engine")
+        moved = by_name["ticks_since_dawn"]
+        env.vfs_registry.set("ticks_since_dawn", torch.tensor([37.0, 61.0]), writer="engine")
         obs = env._get_observations()
-        assert obs.shape == (2, 124)
-        # The pack declares `normalize` over [0, 100] for this variable.
+        assert obs.shape == (2, 121)
+        # The declaration carries `normalize` over [0, 100].
         assert torch.allclose(obs[:, moved.start_index], torch.tensor([0.37, 0.61]), atol=1e-6)
 
     def test_a_declared_bars_variable_is_a_compile_error(self, tmp_path: Path) -> None:
@@ -277,16 +285,13 @@ class TestTheAuthorDeclarationIsAuthoritative:
         # into every bars-group field and would raise at the first observation. That failure
         # belongs at compile time, with the rule in the message.
         pack = _copy_pack(DEFAULT_PACK, tmp_path)
-        _set_variable_semantic(pack, "deficit_energy", "bars")
+        _declare_variable(pack, "deficit_energy", "bars", (0.0, 1.0))
         with pytest.raises(Exception, match="bars"):
             _compile(pack, "L1_full_observability")
 
     def test_a_pack_omitting_semantic_type_fails_to_compile(self, tmp_path: Path) -> None:
         pack = _copy_pack(DEFAULT_PACK, tmp_path)
-        env_path = pack / "environment.yaml"
-        data = yaml.safe_load(env_path.read_text())
-        del data["environment"]["variables"][0]["semantic_type"]
-        env_path.write_text(yaml.safe_dump(data, sort_keys=False))
+        _declare_variable(pack, "undeclared_semantic", None, (0.0, 1.0))
         with pytest.raises(Exception, match="semantic_type"):
             _compile(pack, "L1_full_observability")
 

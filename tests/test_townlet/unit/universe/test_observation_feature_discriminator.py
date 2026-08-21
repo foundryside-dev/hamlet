@@ -123,17 +123,19 @@ class TestTheCompilerStampsEveryField:
     @pytest.mark.parametrize(
         ("pack", "level", "expected"),
         [
-            # default_curriculum ships no effect catalog, so no `effects` block; its
-            # environment.yaml variables are the `variable` fields.
+            # default_curriculum ships no effect catalog, so no `effects` block — and no
+            # `variable` fields: its environment.yaml declares no custom variables since the
+            # four writerless ones were deleted (hamlet-dc8f887cd5). The `variable` feature
+            # is exercised by effects_smoke below.
             (
                 CURRICULUM,
                 "L1_full_observability",
-                {"grid_encoding", "local_window", "position", "velocity", "meter", "affordance_at_position", "temporal", "variable"},
+                {"grid_encoding", "local_window", "position", "velocity", "meter", "affordance_at_position", "temporal"},
             ),
             (
                 CURRICULUM,
                 "L2_partial_observability",
-                {"grid_encoding", "local_window", "position", "velocity", "meter", "affordance_at_position", "temporal", "variable"},
+                {"grid_encoding", "local_window", "position", "velocity", "meter", "affordance_at_position", "temporal"},
             ),
             # effects_smoke: an effect catalog AND an exposed global profile variable.
             (EFFECTS_PACK, "L0_effects", {"effects", "variable"}),

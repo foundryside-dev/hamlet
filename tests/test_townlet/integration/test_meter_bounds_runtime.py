@@ -322,12 +322,31 @@ def test_every_declared_normalization_reaches_the_observation(tmp_path: Path) ->
 
     Every field is first driven OFF its identity point, without which this test cannot
     cash that promise. At reset every declared spec happens to be an identity map —
-    `minmax` over [0, 1] is the identity for the seven unit-interval meters, money is
-    0.0, and the four environment-declared variables are permanently 0.0 because nothing
-    writes them (`hamlet-dc8f887cd5`). A version of this test that observed the reset
-    state passed with the whole normalization half reverted.
+    `minmax` over [0, 1] is the identity for the seven unit-interval meters and money is
+    0.0. A version of this test that observed the reset state passed with the whole
+    normalization half reverted.
+
+    The shipped pack's only non-unit ceiling is money, so the test declares a second
+    subject itself: a variable with a `normalize` range of [0, 100]. (The four
+    environment-declared variables that used to play this role were writerless and
+    deleted — `hamlet-dc8f887cd5`.)
     """
-    env = _env(_pack(tmp_path, L1), L1)
+    pack = _pack(tmp_path, L1)
+    env_yaml = pack / "environment.yaml"
+    env_data = yaml.safe_load(env_yaml.read_text())
+    env_data["environment"]["variables"].append(
+        {
+            "name": "normalization_probe",
+            "type": "scalar",
+            "dims": 1,
+            "scope": "agent",
+            "description": "test-declared field with a non-unit normalization ceiling",
+            "semantic_type": "custom",
+            "normalization": {"method": "normalize", "clip": False, "range": [0.0, 100.0]},
+        }
+    )
+    env_yaml.write_text(yaml.safe_dump(env_data, sort_keys=False))
+    env = _env(pack, L1)
 
     declared = {f.id: f.normalization for f in env.universe.vfs_observation_fields if f.normalization is not None}
     money_field_name = meter_observation_field_name("money")

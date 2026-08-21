@@ -1,5 +1,6 @@
 """Tests for VTC social residue rule compilation and execution."""
 
+import pytest
 import torch
 
 from townlet.vfs import compile_vtc_social_residue_rules
@@ -64,6 +65,75 @@ def test_vtc_social_residue_compiles_visibility_social_and_institutional_kinds()
     assert [rule.effect for rule in program.rules] == ["trust_delta", "obligation_create", "reputation_delta"]
     assert {rule.phase for rule in program.rules} == {"apply_social_residue_effects"}
     assert program.rules[0].reads == ("chosen_action", "observer_mask", "trust")
+
+
+def test_vtc_social_residue_rejects_removed_target_field() -> None:
+    with pytest.raises(ValueError, match="'target' was removed"):
+        compile_vtc_social_residue_rules(
+            [
+                {
+                    "id": "seen_stealing_damages_trust",
+                    "phase": "apply_social_residue_effects",
+                    "kind": "visibility_effect",
+                    "reads": ["chosen_action", "observer_mask", "trust"],
+                    "condition": "observer_mask and chosen_action == 7",
+                    "writes": [
+                        {
+                            "variable_id": "trust",
+                            "effect": "trust_delta",
+                            "scope": "pair",
+                            "target": "observer -> actor",
+                            "expression": "-0.15",
+                            "composition": "additive_delta",
+                            "clamp": (0.0, 1.0),
+                        }
+                    ],
+                }
+            ]
+        )
+
+
+def test_vtc_directed_pair_write_moves_trust_ij_without_trust_ji() -> None:
+    """Directionality is carried by condition data: trust[i, j] moves while trust[j, i] does not."""
+    program = compile_vtc_social_residue_rules(
+        [
+            {
+                "id": "seen_stealing_damages_trust",
+                "phase": "apply_social_residue_effects",
+                "kind": "visibility_effect",
+                "reads": ["chosen_action", "observer_mask", "trust"],
+                "condition": "observer_mask and chosen_action == 7",
+                "writes": [
+                    {
+                        "variable_id": "trust",
+                        "effect": "trust_delta",
+                        "scope": "pair",
+                        "expression": "-0.15",
+                        "composition": "additive_delta",
+                        "clamp": (0.0, 1.0),
+                    }
+                ],
+            }
+        ]
+    )
+
+    updated = program.apply(
+        vfs_state={
+            "trust": torch.full((2, 2), 0.8),
+            "observer_mask": torch.tensor(
+                [
+                    [False, True],
+                    [False, False],
+                ]
+            ),
+            "chosen_action": torch.tensor([0, 7]),
+        },
+        active_mask=torch.tensor([True, True]),
+        device=torch.device("cpu"),
+    )
+
+    assert updated["trust"][0, 1].item() == pytest.approx(0.65)
+    assert updated["trust"][1, 0].item() == pytest.approx(0.8)
 
 
 def test_vtc_visibility_effect_updates_directed_pair_state_for_observed_actor_actions() -> None:

@@ -357,7 +357,6 @@ def _social_rule_to_source(rule: Any) -> dict[str, Any]:
                 "clamp": None if rule.clamp is None else list(rule.clamp),
                 "telemetry_label": rule.telemetry_label,
                 "scope": rule.scope,
-                "target": rule.target,
             }
         ],
     }

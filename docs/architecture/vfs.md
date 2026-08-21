@@ -3,7 +3,7 @@
 **Document Type**: Design Specification + Integration Specification  
 **Status**: Phase 1 Complete; observation path fully VFS-driven in production (shadow migration finished, old path deleted); VTC partially unified (Phase 2.x)  
 **Version**: 1.1 Draft  
-**Last Updated**: 21 August 2026 (source audit against `src/townlet/`: status header, §4.3, §5.1, §6.3, §7.4, §8.1, §8.4, §11.1, §11.4, §13.2, §16.3, §17, §19, §21.1, §23, §24.2; 16 August 2026: §4.1, §4.3, §8.4 semantic-type vocabulary, `PDR-0047` / `PDR-0066`; body otherwise 15 May 2026)
+**Last Updated**: 22 August 2026 (§14.3, §16.3, §16.4: write-level `target` removed, hamlet-175bff4ed5; 21 August 2026 source audit against `src/townlet/`: status header, §4.3, §5.1, §6.3, §7.4, §8.1, §8.4, §11.1, §11.4, §13.2, §16.3, §17, §19, §21.1, §23, §24.2; 16 August 2026: §4.1, §4.3, §8.4 semantic-type vocabulary, `PDR-0047` / `PDR-0066`; body otherwise 15 May 2026)
 **Original VFS Guide Date**: 7 November 2025  
 **Audience**: Engineers integrating VFS into Townlet environments; SDA/Brain-as-Code engineers; curriculum designers; researchers building social, temporal, and multi-agent environments
 
@@ -1517,7 +1517,6 @@ rules:
       - variable_id: "trust"
         effect: "trust_delta"
         scope: "pair"
-        target: "observer -> actor"
         expression: "-0.15"
         composition: "additive_delta"
         clamp: [0.0, 1.0]
@@ -1778,11 +1777,17 @@ The VTC social-residue compiler accepts `visibility_effect`, `social_residue`,
 and `institutional_rule` relationship rules in the canonical
 `apply_social_residue_effects` phase. Rule-level conditions and write-level
 conditions are combined before commit. Pair-scope writes are masked by the
-symmetric active-agent mask (`active[i] & active[j]`); the rule's declared
-`target` (e.g. `observer -> actor`) is recorded on the compiled rule but not yet
-consumed, so any observer→actor directionality must currently be encoded by the
-author inside `condition` / `expression`. Deriving the directed
-`[observer, actor]` / `[recipient, actor]` mask from `target` is open work.
+symmetric active-agent mask (`active[i] & active[j]`); observer→actor
+directionality is encoded by the author inside `condition` / `expression`
+via pair-scope data (e.g. an `[observer, actor]` observer mask), and a
+pair write conditioned on such a mask moves `trust[i, j]` without touching
+`trust[j, i]`. The former write-level `target` role annotation
+(e.g. `observer -> actor`) was removed 2026-08-22 (hamlet-175bff4ed5): it was
+stored but never consumed, and a role string carries no data a directed mask
+could be derived from — direction lives in the declared reads. Configs that
+set `target` are rejected at compile time. If a first-class directional
+grammar returns, it belongs to the authoring-surface DTO design
+(hamlet-84cf93a1b9), with roles bound to declared reads.
 Agent-scope writes use agent vectors such as `chosen_action` or derived
 visibility vectors such as `was_observed`. As with other VTC writes,
 `additive_delta` expressions are deltas, not post-update values.
@@ -1819,14 +1824,12 @@ rules:
       - variable_id: "obligation"
         effect: "obligation_create"
         scope: "pair"
-        target: "recipient -> actor"
         condition: "recipient_actor_mask"
         expression: "0.20"
         composition: "additive_delta"
         clamp: [0.0, 1.0]
       - variable_id: "public_reputation"
         effect: "reputation_delta"
-        target: "actor"
         condition: "was_observed"
         expression: "0.05"
         composition: "additive_delta"

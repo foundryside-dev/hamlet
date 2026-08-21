@@ -385,7 +385,6 @@ class CompiledVTCSocialResidueRule:
     telemetry_label: str
     reads: tuple[str, ...]
     scope: str | None
-    target: str | None
 
 
 @dataclass(frozen=True)
@@ -1898,7 +1897,6 @@ def compile_vtc_social_residue_rules_with_phase_graph(
                     telemetry_label=write["telemetry_label"],
                     reads=rule["reads"],
                     scope=write["scope"],
-                    target=write["target"],
                 )
             )
 
@@ -1964,7 +1962,6 @@ def _coerce_social_residue_write(raw_write: Mapping[str, Any] | WriteSpec, rule:
     composition: str
     effect: str | None
     scope: str | None
-    target: str | None
 
     if isinstance(raw_write, WriteSpec):
         variable_id = raw_write.variable_id
@@ -1977,8 +1974,13 @@ def _coerce_social_residue_write(raw_write: Mapping[str, Any] | WriteSpec, rule:
         telemetry_label = raw_write.telemetry_label
         effect = None
         scope = None
-        target = None
     elif isinstance(raw_write, Mapping):
+        if "target" in raw_write:
+            raise ValueError(
+                f"VTC social residue rule '{rule_id}' write field 'target' was removed: directed masks are "
+                "expressed through condition/expression data (e.g. a pair-scope observer mask), not a role "
+                "annotation. Delete the 'target' key. See docs/architecture/vfs.md §16.3."
+            )
         variable_id = str(raw_write.get("variable_id", "")).strip()
         expression = str(raw_write.get("expression", "")).strip()
         condition_raw = raw_write.get("condition")
@@ -1993,8 +1995,6 @@ def _coerce_social_residue_write(raw_write: Mapping[str, Any] | WriteSpec, rule:
         effect = None if effect_raw is None else str(effect_raw).strip()
         scope_raw = raw_write.get("scope")
         scope = None if scope_raw is None else str(scope_raw).strip()
-        target_raw = raw_write.get("target")
-        target = None if target_raw is None else str(target_raw).strip()
     else:
         raise TypeError(f"VTC social residue rule '{rule_id}' write entry must be a WriteSpec or mapping")
 
@@ -2016,8 +2016,6 @@ def _coerce_social_residue_write(raw_write: Mapping[str, Any] | WriteSpec, rule:
         raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' effect must be non-empty when provided")
     if scope == "":
         raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' scope must be non-empty when provided")
-    if target == "":
-        raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' target must be non-empty when provided")
 
     return {
         "variable_id": variable_id,
@@ -2030,7 +2028,6 @@ def _coerce_social_residue_write(raw_write: Mapping[str, Any] | WriteSpec, rule:
         "telemetry_label": telemetry_label,
         "effect": effect,
         "scope": scope,
-        "target": target,
     }
 
 

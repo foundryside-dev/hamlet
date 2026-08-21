@@ -136,3 +136,39 @@ def test_target_vfs_write_to_agent_var_still_works():
     mood = registry.get("mood", reader="engine")
     assert mood[1].item() == pytest.approx(0.7)
     assert mood[0].item() == pytest.approx(0.0)
+
+
+@pytest.mark.parametrize("path", ["target.vfs.sealed", "self.vfs.sealed", "vfs.sealed"])
+def test_effect_writes_enforce_writable_by(path: str):
+    """Every effects write route commits through registry.set: writable_by is
+    enforced and a refused write leaves storage untouched (hamlet-57a5126baa).
+
+    The route mutates a clone from registry.get, never registry storage, so an
+    authorization refusal cannot leave a partial write behind.
+    """
+    variables = [
+        VariableDef(
+            id="sealed",
+            scope="agent",
+            type="scalar",
+            lifetime="episode",
+            readable_by=["agent", "engine"],
+            writable_by=["vtc"],  # engine is not an authorized writer
+            default=0.0,
+        ),
+    ]
+    registry = VariableRegistry(variables=variables, num_agents=2, device=torch.device("cpu"))
+    context = ExecutionContext(
+        bars={"energy": torch.tensor([0.5, 0.8])},
+        vfs_registry=registry,
+        self_index=0,
+        target_index=1,
+    )
+
+    command = CommandNode(type=CommandType.MODIFY, path=path, value_expr="0.7")
+    CommandCompiler(schema={path: "float"}).compile_command(command)
+
+    with pytest.raises(PermissionError, match="not allowed to write"):
+        CommandExecutor().execute(command, context)
+
+    assert torch.equal(registry.get("sealed", reader="engine"), torch.zeros(2))

@@ -98,9 +98,10 @@ def _cmd_compile(args: argparse.Namespace) -> int:
     print(f"Compilation succeeded in {elapsed_ms:.1f} ms")
 
     if not args.no_cache:
+        # compile() either reused a fingerprint-validated artifact or wrote a fresh
+        # one; a failed write raises CompilationError, so this path always exists here.
         cache_path = config_dir / ".compiled" / f"universe-{args.primary_level}.msgpack"
-        if cache_path.exists():
-            print(f"Cache artifact written to: {cache_path}")
+        print(f"Cache artifact: {cache_path}")
 
     return 0
 

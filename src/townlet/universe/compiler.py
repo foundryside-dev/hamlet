@@ -543,13 +543,20 @@ class UniverseCompiler:
         )
 
         if use_cache:
+            # A failed cache write fails the compile. The user asked for an artifact;
+            # reporting success while writing nothing is how hamlet-a141ab5db3 stayed
+            # invisible (a downgraded logger.warning the CLI never displayed).
             try:
                 cache_dir = self._cache_directory_for(experiment_dir)
                 self._prepare_cache_directory(cache_dir)
                 compiled.save_to_cache(cache_path)
-                logger.info("Saved compiled universe cache to %s", cache_path)
-            except Exception as exc:  # pragma: no cover - defensive
-                logger.warning("Failed to write cache artifact to %s: %s", cache_path, exc)
+            except Exception as exc:
+                raise CompilationError(
+                    stage="Cache Write",
+                    errors=[f"Failed to write cache artifact to {cache_path}: {exc}"],
+                    hints=["Pass --no-cache to compile without persisting an artifact."],
+                ) from exc
+            logger.info("Saved compiled universe cache to %s", cache_path)
 
         return compiled
 

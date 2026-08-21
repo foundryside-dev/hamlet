@@ -63,7 +63,7 @@ from townlet.vfs.transition_schedule import (
 # of on field names (WS-4 unit 4). No pack changes for this cut, so no config fingerprint moves;
 # a pre-cut cache would deserialize into a DTO that now requires `feature` and fail obscurely —
 # the bump makes it the "recompile" error instead.
-COMPILED_SCHEMA_VERSION = "1.17"
+COMPILED_SCHEMA_VERSION = "1.18"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",
@@ -120,7 +120,9 @@ class CompiledVFSProfiles:
     evaluation_mode: str
     debug_logging: bool
     global_profile: CompiledGlobalProfile | None = None
-    agent_profile: Any | None = None  # TODO: Add CompiledAgentProfile type
+    # A compiled agent profile is a CompiledGlobalProfile: both compile through
+    # VFSProfileCompiler.compile_global_profile (townlet/universe/compilers/vfs.py).
+    agent_profile: CompiledGlobalProfile | None = None
     item_profiles: dict[str, Any] | None = None  # TODO: Add CompiledItemProfile type
 
     def __post_init__(self):
@@ -815,55 +817,49 @@ def _vfs_observation_spec_from_plain(payload: Mapping[str, Any] | None) -> VFSOb
     )
 
 
+def _serialize_compiled_variable(var: Any) -> dict[str, Any]:
+    """Serialize one CompiledVariable to a msgpack-safe dict (AST reconstructed on load)."""
+    return {
+        "name": var.name,
+        "type": var.type,
+        "expression": var.expression,
+        "initial_value": var.initial_value,
+        "result_type": var.result_type,
+        "exposed_to": list(var.exposed_to),
+        "shape": var.shape,
+        "initial_value_mode": var.initial_value_mode,
+        "initial_value_params": var.initial_value_params,
+        "dims": var.dims,
+        "semantic_type": var.semantic_type,
+    }
+
+
+def _serialize_profile(profile: Any) -> dict[str, Any] | None:
+    """Serialize a CompiledGlobalProfile (used for both global and agent profiles)."""
+    if profile is None:
+        return None
+    return {
+        "variables": [_serialize_compiled_variable(var) for var in profile.variables],
+        "dependencies": {name: list(deps) for name, deps in profile.dependencies.items()},
+    }
+
+
 def _serialize_vfs_profiles(profiles: CompiledVFSProfiles) -> dict[str, Any]:
     """Serialize CompiledVFSProfiles to dict."""
 
     result: dict[str, Any] = {
         "evaluation_mode": profiles.evaluation_mode,
         "debug_logging": profiles.debug_logging,
+        "global_profile": _serialize_profile(profiles.global_profile),
+        "agent_profile": _serialize_profile(profiles.agent_profile),
     }
-
-    if profiles.global_profile is not None:
-        result["global_profile"] = {
-            "variables": [
-                {
-                    "name": var.name,
-                    "type": var.type,
-                    "expression": getattr(var, "expression", None),
-                    "ast": None,  # AST not serialized (reconstruct on load)
-                    "initial_value": var.initial_value,
-                    "result_type": var.result_type,
-                    "exposed_to": list(var.exposed_to),
-                }
-                for var in profiles.global_profile.variables
-            ],
-            "dependencies": {name: list(deps) for name, deps in profiles.global_profile.dependencies.items()},
-        }
-    else:
-        result["global_profile"] = None
-
-    result["agent_profile"] = profiles.agent_profile
 
     if profiles.item_profiles:
         item_profiles_serialized: dict[str, Any] = {}
         for name, profile in profiles.item_profiles.items():
             item_profiles_serialized[name] = {
                 "profile_name": profile.profile_name,
-                "variables": [
-                    {
-                        "name": var.name,
-                        "type": var.type,
-                        "expression": getattr(var, "expression", None),
-                        "initial_value": var.initial_value,
-                        "result_type": var.result_type,
-                        "shape": var.shape,
-                        "initial_value_mode": var.initial_value_mode,
-                        "initial_value_params": var.initial_value_params,
-                        "dims": var.dims,
-                        "exposed_to": list(var.exposed_to),
-                    }
-                    for var in profile.variables
-                ],
+                "variables": [_serialize_compiled_variable(var) for var in profile.variables],
             }
         result["item_profiles"] = item_profiles_serialized
     else:
@@ -872,58 +868,55 @@ def _serialize_vfs_profiles(profiles: CompiledVFSProfiles) -> dict[str, Any]:
     return result
 
 
-def _deserialize_vfs_profiles(payload: dict[str, Any]) -> CompiledVFSProfiles:
-    """Deserialize CompiledVFSProfiles from dict."""
-    from townlet.vfs.profiles import CompiledGlobalProfile, CompiledItemProfile, CompiledVariable
+def _deserialize_compiled_variable(var: dict[str, Any]) -> Any:
+    """Rebuild one CompiledVariable, reconstructing its expression AST."""
+    from townlet.vfs.profiles import CompiledVariable
     from townlet.world.expression import ExpressionParser
 
-    global_profile = None
-    if payload.get("global_profile") is not None:
-        variables = []
-        for var in payload["global_profile"]["variables"]:
-            variables.append(
-                CompiledVariable(
-                    name=var["name"],
-                    type=var["type"],
-                    expression=var.get("expression"),
-                    ast=ExpressionParser().parse(var["expression"]) if var.get("expression") else None,
-                    initial_value=var["initial_value"],
-                    result_type=var.get("result_type"),
-                    exposed_to=tuple(var.get("exposed_to", ["agent"])),
-                )
-            )
-        dependencies = payload["global_profile"].get("dependencies", {})
-        dependencies = {name: tuple(deps) for name, deps in dependencies.items()}
-        global_profile = CompiledGlobalProfile(variables=variables, dependencies=dependencies)
+    return CompiledVariable(
+        name=var["name"],
+        type=var["type"],
+        expression=var.get("expression"),
+        ast=ExpressionParser().parse(var["expression"]) if var.get("expression") else None,
+        initial_value=var.get("initial_value"),
+        result_type=var.get("result_type"),
+        exposed_to=tuple(var.get("exposed_to", ["agent"])),
+        shape=var.get("shape"),
+        initial_value_mode=var.get("initial_value_mode"),
+        initial_value_params=var.get("initial_value_params"),
+        dims=var.get("dims"),
+        semantic_type=var.get("semantic_type"),
+    )
+
+
+def _deserialize_profile(payload: dict[str, Any] | None) -> Any | None:
+    """Rebuild a CompiledGlobalProfile (used for both global and agent profiles)."""
+    from townlet.vfs.profiles import CompiledGlobalProfile
+
+    if payload is None:
+        return None
+    variables = [_deserialize_compiled_variable(var) for var in payload["variables"]]
+    dependencies = {name: tuple(deps) for name, deps in payload.get("dependencies", {}).items()}
+    return CompiledGlobalProfile(variables=variables, dependencies=dependencies)
+
+
+def _deserialize_vfs_profiles(payload: dict[str, Any]) -> CompiledVFSProfiles:
+    """Deserialize CompiledVFSProfiles from dict."""
+    from townlet.vfs.profiles import CompiledItemProfile
 
     item_profiles = None
     raw_items = payload.get("item_profiles")
     if raw_items:
         item_profiles = {}
         for name, profile in raw_items.items():
-            variables = [
-                CompiledVariable(
-                    name=var["name"],
-                    type=var["type"],
-                    expression=var.get("expression"),
-                    ast=ExpressionParser().parse(var["expression"]) if var.get("expression") else None,
-                    initial_value=var.get("initial_value"),
-                    result_type=var.get("result_type"),
-                    shape=var.get("shape"),
-                    initial_value_mode=var.get("initial_value_mode"),
-                    initial_value_params=var.get("initial_value_params"),
-                    dims=var.get("dims"),
-                    exposed_to=tuple(var.get("exposed_to", ["agent"])),
-                )
-                for var in profile.get("variables", [])
-            ]
+            variables = [_deserialize_compiled_variable(var) for var in profile.get("variables", [])]
             item_profiles[name] = CompiledItemProfile(profile_name=profile["profile_name"], variables=variables)
 
     return CompiledVFSProfiles(
         evaluation_mode=payload["evaluation_mode"],
         debug_logging=payload["debug_logging"],
-        global_profile=global_profile,
-        agent_profile=payload.get("agent_profile"),
+        global_profile=_deserialize_profile(payload.get("global_profile")),
+        agent_profile=_deserialize_profile(payload.get("agent_profile")),
         item_profiles=item_profiles,
     )
 

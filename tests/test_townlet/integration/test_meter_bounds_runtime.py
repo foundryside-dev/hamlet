@@ -623,3 +623,54 @@ def test_a_normalizer_failure_at_runtime_names_the_field(tmp_path: Path) -> None
             NormalizationSpec(kind="one_hot", categories=4),
             4,
         )
+
+
+# --------------------------------------------------------------------------------------
+# The clamp_and_validate phase (hamlet-f46e2b381a — the architecture half)
+# --------------------------------------------------------------------------------------
+
+
+def test_clamp_and_validate_carries_compiled_bounds_rules(tmp_path: Path) -> None:
+    """The declared-but-empty phase is real: one bounds rule per declared meter.
+
+    Red before this unit: `clamp_and_validate` appeared exactly once in the codebase, as
+    a string in DEFAULT_TRANSITION_PHASES, with no rule family ever assigned to it.
+    """
+    universe = UniverseCompiler().compile(_pack(tmp_path, L1), primary_level=L1, use_cache=False)
+    schedule = universe.transition_schedule
+
+    bounds_rules = {rule.variable_id: rule for rule in schedule.bounds_clamp_program.rules}
+    passive_rules = {rule.variable_id: rule for rule in schedule.passive_depletion_program.rules}
+
+    # Same source of truth: every declared meter gets a bounds rule, with the same
+    # declared bounds the passive-depletion per-write clamp already carries.
+    assert set(bounds_rules) == set(passive_rules)
+    for name, rule in bounds_rules.items():
+        assert rule.phase == "clamp_and_validate"
+        assert rule.clamp == passive_rules[name].clamp
+
+    # The bound that made this a P1: money's declared ceiling, not a hardcoded 1.0.
+    assert bounds_rules["money"].clamp == (0.0, 999999.0)
+
+
+def test_meter_pushed_out_of_bounds_after_cascades_is_clamped_before_terminal_reads(tmp_path: Path) -> None:
+    """Closes the live hole: the effect-manager tick runs AFTER passive depletion and
+    cascades, and its `bar.*` writes are raw — nothing between it and terminal
+    conditions, rewards, or the observation enforced declared bounds. The
+    clamp_and_validate phase runs exactly in that slot (see the step loop's
+    `phases_between("apply_threshold_cascades", "evaluate_terminal_conditions")`).
+
+    Red before this unit: the meter stays at 5.0 through the phase range.
+    """
+    env = _env(_pack(tmp_path, L0), L0)
+    energy_idx = env.meter_name_to_index["energy"]
+
+    # Simulate a post-cascade write (e.g. a ticking effect's `modify: bar.energy`).
+    env.meters[0, energy_idx] = 5.0
+
+    env._run_vtc_transition_phases(
+        env.vtc_transition_runner.phases_between("apply_threshold_cascades", "evaluate_terminal_conditions"),
+        active_mask=torch.logical_not(env.dones),
+    )
+
+    assert env.meters[0, energy_idx].item() == pytest.approx(1.0)

@@ -452,6 +452,9 @@ This matters because two writes in the same phase see the same input state. Orde
 - `VTCThresholdCascadeProgram`
 - `VTCSocialResidueProgram`
 - `VTCRewardProgram`
+- `VTCBoundsClampProgram` — the `clamp_and_validate` phase: one bounds-invariant rule per
+  declared meter, compiled from `bars.*.bounds`, applied to every agent (no active mask —
+  bounds are declarations about the state, not about a write)
 
 Hot path operations use TorchScript kernels for masked candidates, passive depletion, threshold cascades, modulation multipliers, and terminal conditions.
 

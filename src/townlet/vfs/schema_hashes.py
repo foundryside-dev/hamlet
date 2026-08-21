@@ -65,6 +65,7 @@ def canonical_transition_graph_schema(
     passive_depletion_program: Any | None = None,
     social_residue_program: Any | None = None,
     reward_component_program: Any | None = None,
+    bounds_clamp_program: Any | None = None,
 ) -> dict[str, Any]:
     """Return the transition-graph payload used for world-physics provenance."""
     rules = [_canonical_transition_rule(write) for write in action_write_program.writes]
@@ -85,6 +86,8 @@ def canonical_transition_graph_schema(
         rules.extend(_canonical_transition_rule(rule) for rule in social_residue_program.rules)
     if reward_component_program is not None:
         rules.extend(_canonical_transition_rule(rule) for rule in reward_component_program.rules)
+    if bounds_clamp_program is not None:
+        rules.extend(_canonical_transition_rule(rule) for rule in bounds_clamp_program.rules)
     return {
         "phase_graph": phase_graph.to_canonical_payload(),
         "rules": rules,
@@ -103,6 +106,7 @@ def compute_transition_graph_hash(
     passive_depletion_program: Any | None = None,
     social_residue_program: Any | None = None,
     reward_component_program: Any | None = None,
+    bounds_clamp_program: Any | None = None,
 ) -> str:
     """Return the SHA-256 digest of the compiled transition graph and rules."""
     return _hash_payload(
@@ -117,6 +121,7 @@ def compute_transition_graph_hash(
             passive_depletion_program=passive_depletion_program,
             social_residue_program=social_residue_program,
             reward_component_program=reward_component_program,
+            bounds_clamp_program=bounds_clamp_program,
         )
     )
 

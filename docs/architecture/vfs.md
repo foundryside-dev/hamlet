@@ -1071,11 +1071,16 @@ A full tick should eventually compile into an ordered phase graph:
 
 The exact sequence can be tuned, but it must be explicit, configured, validated, and hashable. Execution order materially changes the world.
 
-⚠️ **`clamp_and_validate` is currently declared but empty** (`hamlet-f46e2b381a`): the phase
-name appears exactly once in `src/townlet/` — its declaration in `transition_graph.py` — and
-is never dispatched. Bounds enforcement instead happens at ~6 imperative call sites
-(`action_executor`, `affordance_engine`, `dac_engine`), now sourcing bounds from
-`bar.bounds` rather than literals. The phase stays in the list as the unification target.
+`clamp_and_validate` carries compiled bounds rules (`hamlet-f46e2b381a`): one
+`bounds_clamp:<meter>` rule per declared meter, sourced from `bars.*.bounds`, compiled into
+`VTCBoundsClampProgram`, hashed into `transition_graph_hash`, and dispatched by
+`VTCTransitionRunner` at the already-scheduled slot after the effect-manager tick. It is the
+end-of-transition invariant net — before it, an effect's `bar.*` write could carry a meter
+past its declared bounds into terminal/reward/observation reads. The per-write clamps
+(`action_executor`, `affordance_engine`, and the per-rule VTC clamps) are retained
+deliberately (PDR-0014 B3 / PDR-0015): a mid-tick ceiling is semantic — a 0.5 ceiling with
+`passive: 0.01` reads back 0.49, not 0.5 — and those sites die only when their write paths
+migrate into VTC action writes, not before.
 
 ### 11.5 Remaining Phase 2 capabilities
 

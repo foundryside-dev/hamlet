@@ -406,6 +406,7 @@ class UniverseCompiler:
                 passive_depletion_program=transition_schedule.passive_depletion_program,
                 social_residue_program=transition_schedule.social_residue_program,
                 reward_component_program=transition_schedule.reward_component_program,
+                bounds_clamp_program=transition_schedule.bounds_clamp_program,
             )
             vfs_hash = compute_vfs_hash(variable_schema_hash, observation_schema_hash, action_schema_hash, transition_graph_hash)
 

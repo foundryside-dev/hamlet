@@ -791,6 +791,10 @@ def test_compiler_surfaces_vfs_hash(tmp_path: Path) -> None:
             compiled.get_level(PRIMARY_LEVEL_NAME).drive,
             phase_graph,
         ),
+        bounds_clamp_program=vtc.compile_vtc_bounds_clamps_with_phase_graph(
+            compiled.get_level(PRIMARY_LEVEL_NAME).bars.meters,
+            phase_graph,
+        ),
     )
     assert compiled.vfs_hash == expected
     assert compiled.all_levels is not None

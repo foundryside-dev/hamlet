@@ -3,7 +3,7 @@
 **Document Type**: Design Specification + Integration Specification  
 **Status**: Phase 1 Complete; observation path fully VFS-driven in production (shadow migration finished, old path deleted); VTC partially unified (Phase 2.x)  
 **Version**: 1.1 Draft  
-**Last Updated**: 22 August 2026 (§14.3, §16.3, §16.4: write-level `target` removed, hamlet-175bff4ed5; 21 August 2026 source audit against `src/townlet/`: status header, §4.3, §5.1, §6.3, §7.4, §8.1, §8.4, §11.1, §11.4, §13.2, §16.3, §17, §19, §21.1, §23, §24.2; 16 August 2026: §4.1, §4.3, §8.4 semantic-type vocabulary, `PDR-0047` / `PDR-0066`; body otherwise 15 May 2026)
+**Last Updated**: 22 August 2026 (§14.3, §16.3, §16.4, §17 Phase 3+, §20.7, §21.1: social-residue authoring surface shipped as `transition_rules.yaml` with a no-defaults DTO, examples corrected to the shipped grammar and pinned by `tests/test_townlet/unit/config/test_vfs_doc_social_residue_examples.py`, hamlet-84cf93a1b9; §14.3, §16.3, §16.4: write-level `target` removed, hamlet-175bff4ed5; 21 August 2026 source audit against `src/townlet/`: status header, §4.3, §5.1, §6.3, §7.4, §8.1, §8.4, §11.1, §11.4, §13.2, §16.3, §17, §19, §21.1, §23, §24.2; 16 August 2026: §4.1, §4.3, §8.4 semantic-type vocabulary, `PDR-0047` / `PDR-0066`; body otherwise 15 May 2026)
 **Original VFS Guide Date**: 7 November 2025  
 **Audience**: Engineers integrating VFS into Townlet environments; SDA/Brain-as-Code engineers; curriculum designers; researchers building social, temporal, and multi-agent environments
 
@@ -1504,10 +1504,14 @@ rules:
         clamp: [0.0, 1.0]
 ```
 
-Social residue example:
+Social residue example, in the shipped `transition_rules.yaml` grammar
+(pack root; schema `townlet.config.transition_rules_config.TransitionRulesConfig`,
+`extra="forbid"` — `condition`, `clamp`, `effect`, `scope` are required-nullable
+per the No-Defaults Principle):
 
 ```yaml
-rules:
+version: "1.0"
+social_residue:
   - id: "seen_stealing_damages_trust"
     phase: "apply_social_residue_effects"
     kind: "visibility_effect"
@@ -1519,13 +1523,15 @@ rules:
         scope: "pair"
         expression: "-0.15"
         composition: "additive_delta"
+        condition: null
         clamp: [0.0, 1.0]
 ```
 
 Institutional rule example:
 
 ```yaml
-rules:
+version: "1.0"
+social_residue:
   - id: "ambulance_abuse_social_penalty"
     phase: "apply_social_residue_effects"
     kind: "institutional_rule"
@@ -1534,8 +1540,10 @@ rules:
     writes:
       - variable_id: "public_reputation"
         effect: "reputation_delta"
+        scope: "agent"
         expression: "-0.10"
         composition: "additive_delta"
+        condition: null
         clamp: [0.0, 1.0]
 ```
 
@@ -1792,10 +1800,18 @@ Agent-scope writes use agent vectors such as `chosen_action` or derived
 visibility vectors such as `was_observed`. As with other VTC writes,
 `additive_delta` expressions are deltas, not post-update values.
 
-The compiler and the `apply_social_residue_effects` phase are wired into
-`env.step`'s executed phase range, but no shipped config declares social-residue
-rules yet, so every current scenario compiles an empty rule set (see §21.1,
-item 7).
+The authoring surface is a pack-root `transition_rules.yaml` with a
+`social_residue:` list, validated at load by the no-defaults DTO
+`townlet.config.transition_rules_config.TransitionRulesConfig`
+(`extra="forbid"`: a stray or typo'd key fails at parse; `condition`, `clamp`,
+`effect`, and `scope` must be set explicitly, `null` included) and compiled by
+the universe compiler through `compile_vtc_social_residue_rules` into the
+transition schedule. The compiler and the `apply_social_residue_effects` phase
+are wired into `env.step`'s executed phase range;
+`tests/test_townlet/integration/test_vtc_transition_schedule_runtime.py`
+proves a declared rule mutates a pair-scope variable during `env.step`. No
+shipped pack declares rules yet, so current scenarios still compile an empty
+rule set (see §21.1, item 7).
 
 | Effect | Description |
 |---|---|
@@ -1814,7 +1830,8 @@ item 7).
 ### 16.4 Example: helping another agent
 
 ```yaml
-rules:
+version: "1.0"
+social_residue:
   - id: "help_creates_obligation_and_reputation"
     phase: "apply_social_residue_effects"
     kind: "social_residue"
@@ -1830,6 +1847,7 @@ rules:
         clamp: [0.0, 1.0]
       - variable_id: "public_reputation"
         effect: "reputation_delta"
+        scope: "agent"
         condition: "was_observed"
         expression: "0.05"
         composition: "additive_delta"
@@ -1980,7 +1998,7 @@ hardcoded concatenation or shadow path remains in the tree.
 #### Phase 3+: Social/relational expansion — storage landed, wiring open (§5.1, §16.3)
 
 1. Add pair/group/affordance/zone scopes. Dense and sparse runtime storage now exists; VTC relational rule coverage follows separately.
-2. Add social residue rules.
+2. Add social residue rules. **Done 2026-08-22**: authorable via pack-root `transition_rules.yaml` (§16.3).
 3. Add communication variables.
 4. Add dynamic needs or variable-token observations.
 
@@ -2359,13 +2377,24 @@ Any change to field count, order, shape, or normalisation must be considered che
 
 Social effects should not be hidden inside action handlers.
 
-Prefer explicit rules:
+Prefer explicit rules (`transition_rules.yaml`):
 
 ```yaml
-rules:
+version: "1.0"
+social_residue:
   - id: "public_help_increases_reputation"
-    phase: "social_residue_effects"
-    ...
+    phase: "apply_social_residue_effects"
+    kind: "social_residue"
+    reads: ["was_observed", "public_reputation"]
+    condition: "was_observed"
+    writes:
+      - variable_id: "public_reputation"
+        effect: "reputation_delta"
+        scope: "agent"
+        expression: "0.05"
+        composition: "additive_delta"
+        condition: null
+        clamp: [0.0, 1.0]
 ```
 
 This keeps social meaning inspectable and teachable.
@@ -2388,7 +2417,7 @@ Store state when it must persist or be authoritative. Derive features when they 
 4. **Engine writeback bypasses declared shapes.** `set_engine_value()` deliberately skips declaration shape/dtype checks, so VTC/evaluator writes are validated only against phase-snapshot shapes, never the declared schema. (The previous item here — "normalisation is mostly minmax/zscore" — was stale: all nine §9 kinds are implemented and reachable.)
 5. **Limited social-scope integration.** Dense and sparse `pair` storage exists alongside `group`, `affordance`, and `zone` storage, canonical relational `VariableDef` surfaces exist, and social-residue rules compile as VTC programs. Relational observation exposure and scenario-level environment wiring remain incomplete.
 6. **Dynamic variables are registry-level only.** The gated `dynamic_variable_mode` (§7.2, §15.3) exists and is audited, but it is off by default and no config surface or runtime scenario drives it; for every shipped pack, variables are fixed at initialisation.
-7. **Relationship rules are not end-to-end yet.** Social rule kinds compile and execute as VTC programs, but configs and environment setup still need scenario-level wiring for pair/group updates.
+7. **Relationship rules are authorable but not yet authored.** Social rule kinds are declarable in a pack-root `transition_rules.yaml` (no-defaults DTO, 2026-08-22, hamlet-84cf93a1b9), compile into the transition schedule, and mutate pair-scope variables during `env.step` (proven config-in/behaviour-out). No shipped pack declares rules yet, and group-scope rules remain gated on relational observation exposure and the group-extents runtime wiring.
 
 ### 21.2 Design risks
 

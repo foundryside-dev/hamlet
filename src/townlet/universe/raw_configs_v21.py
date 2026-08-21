@@ -20,6 +20,7 @@ from townlet.config.experiment_config import ExperimentConfig
 from townlet.config.items_config import ItemsAppearanceConfig, ItemsCatalogConfig
 from townlet.config.stratum_config import StratumConfig
 from townlet.config.training_v2_config import TrainingV2Config, load_training_v2_config
+from townlet.config.transition_rules_config import TransitionRulesConfig
 from townlet.config.vfs_profiles_config import VFSProfilesConfig
 from townlet.universe.errors import CompilationErrorCollector
 from townlet.vfs.schema import VariableDef, VFSScopeExtents, load_variables_reference_config
@@ -223,12 +224,8 @@ class RawConfigsV21:
         if transition_rules_path.exists():
             try:
                 transition_rules_data = yaml.safe_load(transition_rules_path.read_text()) or {}
-                raw_rules = transition_rules_data.get("social_residue", ())
-                if raw_rules is None:
-                    raw_rules = ()
-                if not isinstance(raw_rules, list):
-                    raise ValueError("transition_rules.yaml social_residue field must be a list")
-                social_residue_rules = tuple(dict(rule) for rule in raw_rules)
+                transition_rules = TransitionRulesConfig(**transition_rules_data)
+                social_residue_rules = transition_rules.social_residue_sources()
             except Exception as exc:  # noqa: BLE001
                 errors.add(
                     f"Failed to load transition rules from transition_rules.yaml: {exc}",

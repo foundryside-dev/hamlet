@@ -79,6 +79,15 @@
 >   2026-08-12 checkpoint, resolved by the owner, recorded as `PDR-0026`. The ambition, the
 >   dogfooding rule, and both demo claims are unchanged.
 >
+> - *2026-08-22* — corrected the authority grant's **`Last reviewed` stamp** from `2026-08-20`
+>   to `2026-08-22`, and stated the intervening re-confirmations explicitly: the owner
+>   re-confirmed the grant unchanged twice on 2026-08-22 before this touch (at the fortieth- and
+>   forty-first-checkpoint resumes, each time choosing to carry the stamp debt — the `PDR-0093`
+>   shape), and at this session's `/own-product` resume confirmed the grant again **and approved
+>   this correction**, choosing it explicitly over carrying the debt a third time. Scope
+>   unchanged — same autonomous list (including the `PDR-0099` push and `PDR-0101` merge
+>   widenings), same escalation taxonomy. Factual correction, not a vision change. Provenance
+>   PDR recorded at this session's checkpoint.
 > - *2026-08-20* (fourth entry that day) — corrected the
 >   authority grant's **Status paragraph**, which still claimed the scope was *"unchanged from the
 >   2026-08-11 grant"* and *"scope identical every time"*. Both clauses were falsified the previous
@@ -293,7 +302,7 @@ they are already binding project commitments, not new inventions.
 
 ## Authority grant
 
-Granted by: John Morrissey (qacona@gmail.com)     Last reviewed: 2026-08-20
+Granted by: John Morrissey (qacona@gmail.com)     Last reviewed: 2026-08-22
 Review cadence: monthly, or on any vision change
 Status: **CONFIRMED** by the owner on 2026-08-20, at the `/own-product` resume that also approved
 this correction. **The scope is NO LONGER identical to the 2026-08-11 grant** — it was widened

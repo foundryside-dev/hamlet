@@ -6,11 +6,11 @@ not exist. It may import stdlib, numpy, torch, and townlet modules present at
 the oracle tag ONLY. It must never reference the oracle module (pinned by
 test_driver_source_is_self_contained).
 
-The trace file it writes is format_version 3, matching
-trace_io.py exactly (keys: obs, rewards, dones, meta; meta carries params,
-hashes, code_root, and pack_root). trace_io.py cannot be imported here (same
-rule), so the two modules' TRACE_FORMAT_VERSION constants and meta shape are
-kept in sync by hand — see FIX 5, WS-7 fix wave 2. The pairing is pinned by
+The trace file it writes is format_version 4, matching trace_io.py exactly
+(keys: obs, rewards, dones, actions, meta; meta carries params, hashes,
+code_root, pack_root, and action_source). trace_io.py cannot be imported here
+(same rule), so the two modules' TRACE_FORMAT_VERSION constants and meta shape
+are kept in sync by hand — see FIX 5, WS-7 fix wave 2. The pairing is pinned by
 the Task 5 integration test.
 
 --pack-root exists because the oracle pins CODE and must also pin its INPUTS
@@ -43,7 +43,7 @@ from townlet.determinism import seed_all
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.universe.compiler import UniverseCompiler
 
-TRACE_FORMAT_VERSION = 3
+TRACE_FORMAT_VERSION = 4
 
 
 def collect_provenance_hashes(universe: object) -> dict[str, str | None]:
@@ -67,10 +67,12 @@ def run_trace(*, pack: str, pack_root: str, level: str, num_agents: int, steps: 
     obs_frames = [obs.cpu().numpy().copy()]
     reward_frames: list[np.ndarray] = []
     done_frames: list[np.ndarray] = []
+    action_frames: list[np.ndarray] = []
     for _ in range(steps):
         # Actions drawn on CPU so the stream is device-independent, then moved
         # to the env device — same as the verified determinism recipe.
         actions = torch.randint(0, env.action_dim, (env.num_agents,)).to(env.device)
+        action_frames.append(actions.cpu().numpy().astype(np.int64).copy())
         obs, rewards, dones, _ = env.step(actions)
         obs_frames.append(obs.cpu().numpy().copy())
         reward_frames.append(rewards.cpu().numpy().copy())
@@ -100,12 +102,14 @@ def run_trace(*, pack: str, pack_root: str, level: str, num_agents: int, steps: 
         # resolve different roots BY DESIGN once a pack-schema divergence is
         # declared. Recorded so the choice is never silent.
         "pack_root": str(Path(pack_root).resolve()),
+        "action_source": "seeded-random",
     }
     np.savez_compressed(
         out,
         obs=np.stack(obs_frames).astype(np.float32),
         rewards=np.stack(reward_frames).astype(np.float32),
         dones=np.stack(done_frames).astype(bool),
+        actions=np.stack(action_frames).astype(np.int64),
         meta=np.array(json.dumps(meta)),
     )
 

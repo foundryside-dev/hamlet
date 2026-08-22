@@ -14,7 +14,7 @@ from typing import Any
 
 import numpy as np
 
-TRACE_FORMAT_VERSION = 3
+TRACE_FORMAT_VERSION = 4
 
 # Sentinel distinguishing an ABSENT hash key from a key PRESENT with value
 # None — dict.get(name) alone conflates the two, which would let a field
@@ -43,12 +43,18 @@ class Trace:
     obs: np.ndarray  # (steps + 1, num_agents, obs_dim) float32; index 0 is reset
     rewards: np.ndarray  # (steps, num_agents) float32
     dones: np.ndarray  # (steps, num_agents) bool
+    actions: np.ndarray  # (steps, num_agents) int64 — the actions actually stepped
     code_root: str  # resolved src root this side actually imported townlet from (FIX 5)
     # Resolved config root this side read its pack from (hamlet-2090c9f16d).
     # Like code_root it is REPORTED, never compared: once a pack-schema
     # divergence is declared the two sides read different roots by design.
     # RunParams.pack stays logical so compare_traces' params equality holds.
     pack_root: str
+    # "seeded-random" (drawn from the run seed) or "scripted:<sha256-16>" (replayed
+    # from a file). REPORTED, never compared — the compared truth is the actions
+    # STREAM itself: equal bytes mean equal actions regardless of how each side
+    # obtained them, which is exactly what the scripted replay flow relies on.
+    action_source: str
 
 
 def save_trace(path: Path, trace: Trace) -> None:
@@ -58,12 +64,14 @@ def save_trace(path: Path, trace: Trace) -> None:
         "hashes": trace.hashes,
         "code_root": trace.code_root,
         "pack_root": trace.pack_root,
+        "action_source": trace.action_source,
     }
     np.savez_compressed(
         path,
         obs=trace.obs,
         rewards=trace.rewards,
         dones=trace.dones,
+        actions=trace.actions,
         meta=np.array(json.dumps(meta)),
     )
 
@@ -72,15 +80,19 @@ def load_trace(path: Path) -> Trace:
     with np.load(path, allow_pickle=False) as data:
         meta = json.loads(str(data["meta"]))
         if meta["format_version"] != TRACE_FORMAT_VERSION:
-            raise ValueError(f"trace {path} has format_version {meta['format_version']}; " f"this harness reads {TRACE_FORMAT_VERSION}")
+            raise ValueError(
+                f"trace {path} has format_version {meta['format_version']}; " f"this harness reads format_version {TRACE_FORMAT_VERSION}"
+            )
         return Trace(
             params=RunParams(**meta["params"]),
             hashes=dict(meta["hashes"]),
             obs=data["obs"],
             rewards=data["rewards"],
             dones=data["dones"],
+            actions=data["actions"],
             code_root=meta["code_root"],
             pack_root=meta["pack_root"],
+            action_source=meta["action_source"],
         )
 
 
@@ -115,12 +127,15 @@ _MAX_REPORTED_INDICES = 10
 def _stream_steps(trace: Trace) -> list[tuple[int, str, np.ndarray]]:
     """Trace arrays flattened into adjudication order: reset obs, then per-step.
 
-    Within each step, dones and rewards precede obs[t+1] to mirror env.step's causal
-    order: a divergent done at step t reflects the agent's actual termination at that
+    Within each step, actions precede dones and rewards, which precede obs[t+1] —
+    mirroring env.step's causal order: the action taken at step t causes the
+    termination and reward observed at step t, which cause obs[t+1]. A divergent
+    done or reward at step t reflects the agent's actual termination/reward at that
     step and must be attributed to step t, not misattributed as an obs[t+1] echo.
     """
     entries: list[tuple[int, str, np.ndarray]] = [(0, "obs", trace.obs[0])]
     for t in range(trace.params.steps):
+        entries.append((t, "actions", trace.actions[t]))
         entries.append((t, "dones", trace.dones[t]))
         entries.append((t, "rewards", trace.rewards[t]))
         entries.append((t + 1, "obs", trace.obs[t + 1]))

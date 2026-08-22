@@ -33,8 +33,10 @@ def _mk_trace() -> Trace:
         obs=rng.random((4, 4, 7), dtype=np.float32),
         rewards=rng.random((3, 4), dtype=np.float32),
         dones=np.zeros((3, 4), dtype=bool),
+        actions=np.zeros((3, 4), dtype=np.int64),
         code_root="/fake/src",
         pack_root="/fake/pack-root",
+        action_source="seeded-random",
     )
 
 
@@ -54,6 +56,15 @@ def test_reward_perturbation_locates_first_divergence() -> None:
     assert verdict.detail["stream"] == "rewards"
     assert [2] == [idx[0] for idx in verdict.detail["indices"]]
     assert verdict.detail["max_abs_diff"] == pytest.approx(0.5)
+
+
+def test_action_divergence_locates_the_actions_stream() -> None:
+    old, new = _mk_trace(), _mk_trace()
+    new.actions[0, 1] += 1
+    verdict = compare_traces(old, new, cell_id="c1")
+    assert verdict.kind == "DIVERGE"
+    assert verdict.detail["step"] == 0
+    assert verdict.detail["stream"] == "actions"
 
 
 def test_reset_obs_divergence_reports_step_zero() -> None:

@@ -269,8 +269,10 @@ def _fake_trace(code_root: str) -> Trace:
         obs=np.zeros((2, 1, 1), dtype=np.float32),
         rewards=np.zeros((1, 1), dtype=np.float32),
         dones=np.zeros((1, 1), dtype=bool),
+        actions=np.zeros((1, 1), dtype=np.int64),
         code_root=code_root,
         pack_root="/fake/pack-root",
+        action_source="seeded-random",
     )
 
 
@@ -375,8 +377,10 @@ def _trace_for(params: RunParams, code_root: str, obs_fill: float = 0.0) -> Trac
         obs=np.full((params.steps + 1, params.num_agents, 3), obs_fill, dtype=np.float32),
         rewards=np.zeros((params.steps, params.num_agents), dtype=np.float32),
         dones=np.zeros((params.steps, params.num_agents), dtype=bool),
+        actions=np.zeros((params.steps, params.num_agents), dtype=np.int64),
         code_root=code_root,
         pack_root="/fake/pack-root",
+        action_source="seeded-random",
     )
 
 
@@ -655,8 +659,10 @@ def test_matched_path_rejects_a_new_trace_with_inconsistent_shapes(monkeypatch: 
         obs=good.obs[:-1],  # one frame short of steps+1
         rewards=good.rewards,
         dones=good.dones,
+        actions=good.actions,
         code_root=good.code_root,
         pack_root="/fake/pack-root",
+        action_source="seeded-random",
     )
     monkeypatch.setattr(harness_mod, "load_trace", lambda path: truncated)
 

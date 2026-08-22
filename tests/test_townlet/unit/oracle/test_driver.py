@@ -25,6 +25,9 @@ def test_driver_writes_a_loadable_trace(tmp_path: Path) -> None:
     assert trace.rewards.shape == (3, 4)
     assert trace.dones.shape == (3, 4)
     assert trace.dones.dtype == np.bool_
+    assert trace.actions.shape == (3, 4)
+    assert trace.actions.dtype == np.int64
+    assert trace.action_source == "seeded-random"
     # Provenance hashes: every *_hash field on CompiledUniverse, required ones set.
     assert trace.hashes["vfs_hash"]
     assert trace.hashes["observation_schema_hash"]
@@ -38,7 +41,7 @@ def test_driver_writes_a_loadable_trace(tmp_path: Path) -> None:
 def test_driver_format_version_matches_trace_io() -> None:
     """driver.py is self-contained and cannot import trace_io.py, so the two
     modules' TRACE_FORMAT_VERSION constants must be kept in sync by hand."""
-    assert driver.TRACE_FORMAT_VERSION == TRACE_FORMAT_VERSION == 3
+    assert driver.TRACE_FORMAT_VERSION == TRACE_FORMAT_VERSION == 4
 
 
 def test_driver_is_deterministic_for_same_seed(tmp_path: Path) -> None:
@@ -48,6 +51,7 @@ def test_driver_is_deterministic_for_same_seed(tmp_path: Path) -> None:
     ta, tb = load_trace(a), load_trace(b)
     np.testing.assert_array_equal(ta.obs, tb.obs)
     np.testing.assert_array_equal(ta.rewards, tb.rewards)
+    np.testing.assert_array_equal(ta.actions, tb.actions)
 
 
 def test_driver_source_is_self_contained() -> None:

@@ -271,7 +271,7 @@ def _declare(*fields: str, ref: str = "DIV-004") -> RegisteredHashDivergence:
 def test_declared_hash_move_with_identical_streams_passes_as_registered() -> None:
     old, new = _trace(), _trace()
     new.hashes["vfs_hash"] = "moved"
-    verdict = compare_traces(old, new, cell_id="c1", hash_divergence=_declare("vfs_hash"))
+    verdict = compare_traces(old, new, cell_id="c1", hash_divergences=(_declare("vfs_hash"),))
     assert verdict.kind == "DIVERGED_AS_REGISTERED"
     assert verdict.register_refs == ("DIV-004",)
     assert verdict.detail["shape"] == "hash-only"
@@ -283,7 +283,7 @@ def test_an_undeclared_hash_moving_alongside_a_declared_one_still_fails() -> Non
     old, new = _trace(), _trace()
     new.hashes["vfs_hash"] = "moved"
     new.hashes["action_schema_hash"] = "also moved"
-    verdict = compare_traces(old, new, cell_id="c1", hash_divergence=_declare("vfs_hash"))
+    verdict = compare_traces(old, new, cell_id="c1", hash_divergences=(_declare("vfs_hash"),))
     assert verdict.kind == "HASH_MISMATCH"
     assert verdict.register_refs == ()
     assert verdict.detail["undeclared_movers"] == ["action_schema_hash"]
@@ -295,7 +295,7 @@ def test_a_declared_hash_that_does_not_move_is_a_stale_entry() -> None:
     nothing to suppress (PDR-0037 reversal trigger 3)."""
     old, new = _trace(), _trace()
     new.hashes["vfs_hash"] = "moved"
-    verdict = compare_traces(old, new, cell_id="c1", hash_divergence=_declare("vfs_hash", "items_hash"))
+    verdict = compare_traces(old, new, cell_id="c1", hash_divergences=(_declare("vfs_hash", "items_hash"),))
     assert verdict.kind == "REGISTERED_DIVERGENCE_ABSENT"
     assert verdict.register_refs == ()
     assert verdict.detail["declared_but_unmoved"] == ["items_hash"]
@@ -307,7 +307,7 @@ def test_a_declaration_never_suppresses_a_stream_divergence() -> None:
     old, new = _trace(), _trace()
     new.hashes["vfs_hash"] = "moved"
     new.rewards[1, 2] += 0.5
-    verdict = compare_traces(old, new, cell_id="c1", hash_divergence=_declare("vfs_hash"))
+    verdict = compare_traces(old, new, cell_id="c1", hash_divergences=(_declare("vfs_hash"),))
     assert verdict.kind == "DIVERGE"
     assert verdict.register_refs == ()
     assert verdict.detail["streams"]["rewards"]["step"] == 1
@@ -324,7 +324,7 @@ def test_no_declaration_leaves_the_original_hash_behaviour_untouched() -> None:
 def test_a_declaration_with_nothing_to_declare_does_not_launder_an_agree() -> None:
     """Streams agree and no hash moved, but the cell declared one would: that is
     a stale entry, and reporting AGREE would hide it."""
-    verdict = compare_traces(_trace(), _trace(), cell_id="c1", hash_divergence=_declare("vfs_hash"))
+    verdict = compare_traces(_trace(), _trace(), cell_id="c1", hash_divergences=(_declare("vfs_hash"),))
     assert verdict.kind == "REGISTERED_DIVERGENCE_ABSENT"
 
 
@@ -396,7 +396,7 @@ def test_hash_and_stream_declarations_compose_under_one_ref():
     hd = RegisteredHashDivergence(register_ref="DIV-008", hash_fields=("observation_schema_hash",))
     old = _trace(hashes={"observation_schema_hash": "a", "config_hash": "z"})
     new = _trace(hashes={"observation_schema_hash": "b", "config_hash": "z"}, obs_shift=1.0)
-    v = compare_traces(old, new, "cell", hash_divergence=hd, stream_divergence=DIV8_STREAMS)
+    v = compare_traces(old, new, "cell", hash_divergences=(hd,), stream_divergence=DIV8_STREAMS)
     assert v.kind == "DIVERGED_AS_REGISTERED"
     assert v.register_refs == ("DIV-008",)  # deduped, one entry binding both shapes
 
@@ -408,3 +408,40 @@ def test_actions_stream_divergence_is_adjudicated():
     v = compare_traces(old, new, "cell")
     assert v.kind == "DIVERGE"
     assert "actions" in v.detail["streams"]
+
+
+# --- composed hash declarations (hamlet-fa6bb6da4a, unit 2 task 1) -----------
+#
+# A cell must be able to bind TWO RegisteredHashDivergence entries (DIV-006 +
+# DIV-009) to the same cells. `hash_divergences` is a tuple: the union of all
+# entries' declared fields must match the observed movers exactly; each
+# entry's own fields must all move, or that entry is stale.
+
+
+def test_two_hash_entries_compose_with_overlap():
+    a = RegisteredHashDivergence(register_ref="DIV-006", hash_fields=("observation_schema_hash", "vfs_hash"))
+    b = RegisteredHashDivergence(register_ref="DIV-009", hash_fields=("actions_hash", "vfs_hash"))
+    old = _trace(hashes={"observation_schema_hash": "1", "actions_hash": "1", "vfs_hash": "1", "config_hash": "z"})
+    new = _trace(hashes={"observation_schema_hash": "2", "actions_hash": "2", "vfs_hash": "2", "config_hash": "z"})
+    v = compare_traces(old, new, "cell", hash_divergences=(a, b))
+    assert v.kind == "DIVERGED_AS_REGISTERED"
+    assert v.register_refs == ("DIV-006", "DIV-009")
+
+
+def test_one_stale_entry_among_two_fails_naming_it():
+    a = RegisteredHashDivergence(register_ref="DIV-006", hash_fields=("observation_schema_hash",))
+    b = RegisteredHashDivergence(register_ref="DIV-009", hash_fields=("actions_hash",))
+    old = _trace(hashes={"observation_schema_hash": "1", "actions_hash": "1"})
+    new = _trace(hashes={"observation_schema_hash": "2", "actions_hash": "1"})  # DIV-009 never moves
+    v = compare_traces(old, new, "cell", hash_divergences=(a, b))
+    assert v.kind == "REGISTERED_DIVERGENCE_ABSENT"
+    assert v.detail["register_ref"] == "DIV-009"
+    assert v.detail["declared_but_unmoved"] == ["actions_hash"]
+
+
+def test_undeclared_mover_still_red_under_composition():
+    a = RegisteredHashDivergence(register_ref="DIV-006", hash_fields=("observation_schema_hash",))
+    old = _trace(hashes={"observation_schema_hash": "1", "actions_hash": "1"})
+    new = _trace(hashes={"observation_schema_hash": "2", "actions_hash": "2"})
+    v = compare_traces(old, new, "cell", hash_divergences=(a,))
+    assert v.kind == "HASH_MISMATCH"

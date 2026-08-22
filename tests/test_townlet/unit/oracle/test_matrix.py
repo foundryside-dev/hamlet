@@ -147,7 +147,7 @@ def test_registered_divergence_rejects_unicode_digit_refs() -> None:
 
 def test_standing_and_differential_cells_declare_nothing_at_this_tag() -> None:
     """Pin (PDR-0074): the sixteen non-profile cells certify bare agreement —
-    no `expected`, no `pack_divergence`, no `hash_divergence` — so for them
+    no `expected`, no `pack_divergence`, no `hash_divergences` — so for them
     exit 0 means AGREE, not "diverged exactly as registered". A declaration
     sprouting on one of them silently changes what exit 0 certifies; it
     returns only with a register entry that needs it (PDR-0037)."""
@@ -156,7 +156,7 @@ def test_standing_and_differential_cells_declare_nothing_at_this_tag() -> None:
             continue
         assert c.expected is None, f"{c.cell_id} declares an old-side-crash expectation"
         assert c.pack_divergence is None, f"{c.cell_id} declares a pack divergence"
-        assert c.hash_divergence is None, f"{c.cell_id} declares a hash divergence"
+        assert c.hash_divergences == (), f"{c.cell_id} declares a hash divergence"
 
 
 def test_profile_variable_cells_bind_div006_narrowly() -> None:
@@ -170,8 +170,8 @@ def test_profile_variable_cells_bind_div006_narrowly() -> None:
     assert len(profile) == 4
     for c in profile:
         assert c.expected is None
-        assert c.hash_divergence is not None and c.hash_divergence.register_ref == "DIV-006"
-        assert c.hash_divergence.declared == {"observation_schema_hash", "variable_schema_hash", "vfs_hash"}
+        assert len(c.hash_divergences) == 1 and c.hash_divergences[0].register_ref == "DIV-006"
+        assert c.hash_divergences[0].declared == {"observation_schema_hash", "variable_schema_hash", "vfs_hash"}
         if c.params.pack == "configs/test/effects_smoke":
             assert c.pack_divergence == "DIV-006"
         else:
@@ -263,7 +263,7 @@ def test_declared_register_refs_exist_in_the_register() -> None:
     declares one (as at oracle-2026-08-17); armed the moment a cell binds."""
     entries = set(_register_sections())
     declared = {c.expected.register_ref for c in default_cells() if c.expected is not None}
-    declared |= {c.hash_divergence.register_ref for c in default_cells() if c.hash_divergence is not None}
+    declared |= {hd.register_ref for c in default_cells() for hd in c.hash_divergences}
     declared |= {c.pack_divergence for c in default_cells() if c.pack_divergence is not None}
     assert declared <= entries, f"matrix declares refs with no register entry: {sorted(declared - entries)}"
 
@@ -299,13 +299,12 @@ def test_hash_divergence_bindings_bind_entries_with_the_hash_only_shape() -> Non
     """
     sections = _register_sections()
     for cell in default_cells():
-        if cell.hash_divergence is None:
-            continue
-        ref = cell.hash_divergence.register_ref
-        assert ref in sections, f"{ref} has no register entry"
-        assert "Harness shape: hash-only" in sections[ref], (
-            f"cell {cell.cell_id} binds {ref} as a hash-only divergence, but that entry " f"does not declare `Harness shape: hash-only`"
-        )
+        for hd in cell.hash_divergences:
+            ref = hd.register_ref
+            assert ref in sections, f"{ref} has no register entry"
+            assert "Harness shape: hash-only" in sections[ref], (
+                f"cell {cell.cell_id} binds {ref} as a hash-only divergence, but that entry " f"does not declare `Harness shape: hash-only`"
+            )
 
 
 def test_a_cell_never_declares_both_divergence_shapes() -> None:
@@ -317,7 +316,7 @@ def test_a_cell_never_declares_both_divergence_shapes() -> None:
     """
     for cell in default_cells():
         assert not (
-            cell.expected is not None and cell.hash_divergence is not None
+            cell.expected is not None and cell.hash_divergences
         ), f"cell {cell.cell_id} declares both an old-side-crash divergence and a hash-only one"
 
 
@@ -335,6 +334,12 @@ def test_hash_divergence_declarations_are_enumerated_not_wildcards() -> None:
         RegisteredHashDivergence(register_ref="DIV-004", hash_fields=("vfs_hash", "observation_schema"))
     with pytest.raises(ValueError, match="DIV-004"):
         RegisteredHashDivergence(register_ref="div-4", hash_fields=("vfs_hash",))
+
+
+def test_profile_cells_bind_hash_divergences_tuple() -> None:
+    for cell in default_cells():
+        assert isinstance(cell.hash_divergences, tuple)
+        assert not hasattr(cell, "hash_divergence")  # old field is gone, not dual-carried
 
 
 # --- RegisteredStreamDivergence: the third declared shape, built for DIV-008 ---

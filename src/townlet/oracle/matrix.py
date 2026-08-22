@@ -282,15 +282,19 @@ class Cell:
     # that the two packs still describe the SAME universe in two schemas; it is
     # never inferred from the fact that they differ.
     pack_divergence: str | None = None
-    # Names the entry under which this cell's compiled provenance hashes are
+    # Names the entries under which this cell's compiled provenance hashes are
     # allowed — and required — to differ, with behaviour unchanged. Distinct
     # from pack_divergence on purpose: a declared INPUT delta and a declared
     # OUTPUT delta are two decisions (oracle_fixtures/README.md), and one does
-    # not bless the other.
-    hash_divergence: RegisteredHashDivergence | None = None
+    # not bless the other. A TUPLE, not one entry: two register entries can
+    # bind the same cells (DIV-006 + DIV-009 on the profile cells) when two
+    # distinct causes move the same hash. The union of every entry's declared
+    # fields must match the observed movers exactly; each entry's own fields
+    # must all move, or that entry alone is stale (hamlet-fa6bb6da4a).
+    hash_divergences: tuple[RegisteredHashDivergence, ...] = ()
     # Names the entry under which named trace STREAMS are allowed — and
     # required — to diverge, everything else byte-exact. The third declaration
-    # axis, orthogonal to pack_divergence (inputs) and hash_divergence
+    # axis, orthogonal to pack_divergence (inputs) and hash_divergences
     # (provenance): DIV-008 binds stream + hash together at the token cut.
     stream_divergence: RegisteredStreamDivergence | None = None
     # Run this cell's trace with harness-scripted actions (old side records,
@@ -322,7 +326,7 @@ def default_cells() -> tuple[Cell, ...]:
     silent instead of reported.
 
     At oracle-2026-08-17 the sixteen standing + differential cells declare
-    nothing — no `expected`, no `pack_divergence`, no `hash_divergence` — and
+    nothing — no `expected`, no `pack_divergence`, no `hash_divergences` — and
     their fixtures under oracle_fixtures/ are byte copies of the live packs, so
     for them exit 0 means what it says: old and new AGREE (PDR-0074). The four
     profile-variable cells bind DIV-006 (hash-only, PDR-0075), the first entry
@@ -368,7 +372,7 @@ def default_cells() -> tuple[Cell, ...]:
                 device=device,
             ),
             pack_divergence=_PACK_DIVERGENCE.get(pack),
-            hash_divergence=_DIV006,
+            hash_divergences=(_DIV006,),
         )
         for device in ("cpu", "cuda")
         for pack, level in _PROFILE_VARIABLE_PACKS

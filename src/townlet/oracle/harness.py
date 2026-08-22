@@ -503,7 +503,7 @@ def run_cell(
         )
 
     verdict = compare_traces(
-        old_trace, new_trace, cell_id=cell.cell_id, hash_divergence=cell.hash_divergence, stream_divergence=cell.stream_divergence
+        old_trace, new_trace, cell_id=cell.cell_id, hash_divergences=cell.hash_divergences, stream_divergence=cell.stream_divergence
     )
     if expected is not None:
         # The old side RAN on a cell registered to crash: the registered

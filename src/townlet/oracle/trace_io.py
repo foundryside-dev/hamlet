@@ -165,24 +165,36 @@ def _divergence_mask(old_arr: np.ndarray, new_arr: np.ndarray) -> np.ndarray:
 
 
 def compare_traces(
-    old: Trace, new: Trace, cell_id: str, *, hash_divergence: Any = None, stream_divergence: Any = None
+    old: Trace, new: Trace, cell_id: str, *, hash_divergences: Any = (), stream_divergence: Any = None
 ) -> CellVerdict:
     """Adjudicate one cell from both sides' traces.
 
-    `hash_divergence` (matrix.RegisteredHashDivergence) permits — and requires —
-    exactly the named provenance hashes to differ. `stream_divergence`
-    (matrix.RegisteredStreamDivergence) permits — and requires — exactly the
-    named trace STREAMS to diverge, shape changes included, while every other
-    stream stays byte-exact. Both are typed loosely to keep this module free of
-    a matrix import. Adjudication no longer stops at the first mismatching
-    stream: every stream is compared in full, so a registered obs divergence
-    can never mask the rewards/dones verdict (SA-C1, token-obs design §5/§6
-    unit 1).
+    `hash_divergences` (a sequence of matrix.RegisteredHashDivergence) permits
+    — and requires — exactly the UNION of their declared fields to differ.
+    Two entries may bind the same cells (DIV-006 + DIV-009, hamlet-fa6bb6da4a):
+    overlapping fields between entries are legal (two causes may move one
+    hash), but each entry's OWN fields must all move, or that entry alone is
+    stale. `stream_divergence` (matrix.RegisteredStreamDivergence) permits —
+    and requires — exactly the named trace STREAMS to diverge, shape changes
+    included, while every other stream stays byte-exact. Both are typed
+    loosely to keep this module free of a matrix import. Adjudication no
+    longer stops at the first mismatching stream: every stream is compared in
+    full, so a registered obs divergence can never mask the rewards/dones
+    verdict (SA-C1, token-obs design §5/§6 unit 1).
     """
     if old.params != new.params:
         raise HarnessError(
             f"trace params differ between sides for cell {cell_id}: " f"{old.params} vs {new.params} — harness bug, not a finding"
         )
+
+    entries = tuple(hash_divergences)
+    # Union, not one entry's set: two register entries may bind the same
+    # cells (DIV-006 + DIV-009), and overlapping fields between them are
+    # legal (two causes may move one hash). The union must match the
+    # OBSERVED movers exactly; a mover outside it is undeclared (HASH_MISMATCH
+    # below), and once that is ruled out, any entry whose OWN fields didn't
+    # all move is that entry alone being stale (the per-entry loop below).
+    union_declared: frozenset[str] = frozenset().union(*(e.declared for e in entries)) if entries else frozenset()
 
     mismatched: dict[str, dict[str, object]] = {}
     for name in sorted(set(old.hashes) | set(new.hashes)):
@@ -197,30 +209,37 @@ def compare_traces(
                 "old": "<absent>" if old_val is _ABSENT else old_val,
                 "new": "<absent>" if new_val is _ABSENT else new_val,
             }
-    declared: frozenset[str] = hash_divergence.declared if hash_divergence is not None else frozenset()
     observed = frozenset(mismatched)
 
-    if declared and observed != declared:
-        # Either shape is a finding, and they are reported apart because they
-        # mean opposite things: an undeclared mover is a rebuild changing more
-        # than the entry claims; a declared field that did NOT move is a stale
-        # entry, the same condition REGISTERED_DIVERGENCE_ABSENT names for the
-        # crash shape. Neither may pass.
-        undeclared = sorted(observed - declared)
-        absent = sorted(declared - observed)
-        hash_detail: dict[str, object] = {
-            "mismatched": mismatched,
-            "declared": sorted(declared),
-            "register_ref": hash_divergence.register_ref,
-        }
+    if union_declared and observed != union_declared:
+        undeclared = sorted(observed - union_declared)
         if undeclared:
-            hash_detail["undeclared_movers"] = undeclared
-        if absent:
-            hash_detail["declared_but_unmoved"] = absent
-        kind = "HASH_MISMATCH" if undeclared else "REGISTERED_DIVERGENCE_ABSENT"
-        return CellVerdict(kind=kind, cell_id=cell_id, detail=hash_detail)
+            # A rebuild moving more than the union of every entry claims —
+            # this is a finding regardless of which entry (if any) is also
+            # stale, so it is reported and adjudicated first.
+            return CellVerdict(
+                kind="HASH_MISMATCH",
+                cell_id=cell_id,
+                detail={
+                    "mismatched": mismatched,
+                    "declared": sorted(union_declared),
+                    "undeclared_movers": undeclared,
+                },
+            )
+        # No undeclared movers, but the union didn't match exactly — so some
+        # entry's own fields didn't all move. Refs accumulate in declaration
+        # order: the first stale entry found names the ref, same treatment
+        # REGISTERED_DIVERGENCE_ABSENT gets for the crash shape.
+        for hd in entries:
+            unmoved = hd.declared - observed
+            if unmoved:
+                return CellVerdict(
+                    kind="REGISTERED_DIVERGENCE_ABSENT",
+                    cell_id=cell_id,
+                    detail={"register_ref": hd.register_ref, "declared_but_unmoved": sorted(unmoved)},
+                )
 
-    if mismatched and not declared:
+    if mismatched and not union_declared:
         return CellVerdict(kind="HASH_MISMATCH", cell_id=cell_id, detail={"mismatched": mismatched})
 
     declared_streams: frozenset[str] = stream_divergence.declared if stream_divergence is not None else frozenset()
@@ -304,8 +323,8 @@ def compare_traces(
         )
 
     refs: tuple[str, ...] = ()
-    if declared:  # the hash declaration manifested exactly (checked above)
-        refs = refs + (hash_divergence.register_ref,)
+    if union_declared:  # every entry's declared fields manifested exactly (checked above)
+        refs = tuple(dict.fromkeys(e.register_ref for e in entries))
     if declared_streams:
         if stream_divergence.register_ref not in refs:
             refs = refs + (stream_divergence.register_ref,)
@@ -314,8 +333,10 @@ def compare_traces(
             kind="DIVERGED_AS_REGISTERED",
             cell_id=cell_id,
             detail={
-                "shape": ("hash+stream" if declared and declared_streams else "hash-only" if declared else "stream-only"),
-                **({"mismatched": mismatched} if declared else {}),
+                "shape": (
+                    "hash+stream" if union_declared and declared_streams else "hash-only" if union_declared else "stream-only"
+                ),
+                **({"mismatched": mismatched} if union_declared else {}),
                 **({"streams": {name: findings[name] for name in sorted(diverged)}} if declared_streams else {}),
             },
             register_refs=refs,

@@ -145,18 +145,38 @@ def test_registered_divergence_rejects_unicode_digit_refs() -> None:
         RegisteredDivergence(register_ref="DIV-٠٠٣", old_stderr_substring=_GOOD_SIGNATURE)
 
 
-def test_standing_and_differential_cells_declare_nothing_at_this_tag() -> None:
-    """Pin (PDR-0074): the sixteen non-profile cells certify bare agreement —
-    no `expected`, no `pack_divergence`, no `hash_divergences` — so for them
-    exit 0 means AGREE, not "diverged exactly as registered". A declaration
-    sprouting on one of them silently changes what exit 0 certifies; it
-    returns only with a register entry that needs it (PDR-0037)."""
+def test_standing_and_differential_cells_bind_div009_narrowly() -> None:
+    """Pin (hamlet-5cc071f4b6, DIV-009): the sixteen non-profile cells no longer
+    certify bare agreement. Six Phase B landings after the oracle tag moved
+    provenance with no register entry (measured 2026-08-23); every standing and
+    differential cell now binds exactly one hash-only entry, DIV-009, over
+    exactly the four measured fields — no crash expectation, no pack
+    divergence (none of the six landings left the fixture behind a live pack
+    edit), and no wider or narrower hash_fields set than measurement showed."""
     for c in default_cells():
         if c.params.pack in _PROFILE_VARIABLE_CELLS:
             continue
         assert c.expected is None, f"{c.cell_id} declares an old-side-crash expectation"
         assert c.pack_divergence is None, f"{c.cell_id} declares a pack divergence"
-        assert c.hash_divergences == (), f"{c.cell_id} declares a hash divergence"
+        assert len(c.hash_divergences) == 1 and c.hash_divergences[0].register_ref == "DIV-009", (
+            f"{c.cell_id} does not bind exactly DIV-009"
+        )
+        assert c.hash_divergences[0].declared == {
+            "actions_hash",
+            "pack_brain_hash",
+            "transition_graph_hash",
+            "vfs_hash",
+        }, f"{c.cell_id}: DIV-009 hash_fields do not match measurement"
+
+
+def test_all_cells_bind_div009() -> None:
+    """Pin (hamlet-5cc071f4b6): every one of the twenty cells names DIV-009 in
+    its hash_divergences, with no duplicate register refs on a cell — the
+    matrix-wide binding that brings the matrix back to exit 0."""
+    for cell in default_cells():
+        refs = [d.register_ref for d in cell.hash_divergences]
+        assert "DIV-009" in refs
+        assert refs == sorted(set(refs), key=refs.index)  # no duplicate entries
 
 
 def test_profile_variable_cells_bind_div006_narrowly() -> None:
@@ -165,17 +185,34 @@ def test_profile_variable_cells_bind_div006_narrowly() -> None:
     the frozen fixture actually differs — effects_smoke under DIV-006 (its fixture is held
     at the pre-`semantic_type` schema), items_smoke under DIV-007 (its fixture keeps the
     stale, never-loaded levels/L0_smoke/brain.yaml stub the PDR-0027 cut deleted from the
-    live pack)."""
+    live pack). DIV-009 (hamlet-5cc071f4b6) adds a second, disjoint entry alongside DIV-006
+    on these same four cells — checked here as "DIV-006 is present and still narrow",
+    leaving DIV-009's own field set to test_profile_variable_cells_bind_div009_narrowly."""
     profile = [c for c in default_cells() if c.params.pack in _PROFILE_VARIABLE_CELLS]
     assert len(profile) == 4
     for c in profile:
         assert c.expected is None
-        assert len(c.hash_divergences) == 1 and c.hash_divergences[0].register_ref == "DIV-006"
-        assert c.hash_divergences[0].declared == {"observation_schema_hash", "variable_schema_hash", "vfs_hash"}
+        div006 = [d for d in c.hash_divergences if d.register_ref == "DIV-006"]
+        assert len(div006) == 1, f"{c.cell_id} does not bind exactly one DIV-006 entry"
+        assert div006[0].declared == {"observation_schema_hash", "variable_schema_hash", "vfs_hash"}
         if c.params.pack == "configs/test/effects_smoke":
             assert c.pack_divergence == "DIV-006"
         else:
             assert c.pack_divergence == "DIV-007", f"{c.cell_id}: items_smoke's fixture keeps the deleted brain.yaml stub (DIV-007)"
+
+
+def test_profile_variable_cells_bind_div009_narrowly() -> None:
+    """DIV-009's own field set on the four profile cells is disjoint from DIV-006's —
+    exactly the three fields measurement showed DIV-006 does not already account for
+    (`actions_hash`, `pack_brain_hash`, `transition_graph_hash`); `vfs_hash` moves on these
+    cells for both causes but is declared once, under DIV-006, per the register entry."""
+    profile = [c for c in default_cells() if c.params.pack in _PROFILE_VARIABLE_CELLS]
+    assert len(profile) == 4
+    for c in profile:
+        div009 = [d for d in c.hash_divergences if d.register_ref == "DIV-009"]
+        assert len(div009) == 1, f"{c.cell_id} does not bind exactly one DIV-009 entry"
+        assert div009[0].declared == {"actions_hash", "pack_brain_hash", "transition_graph_hash"}
+        assert len(c.hash_divergences) == 2, f"{c.cell_id} should bind exactly DIV-006 + DIV-009"
 
 
 def test_differential_cells_run_their_declared_levels() -> None:

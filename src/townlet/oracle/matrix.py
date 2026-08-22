@@ -265,6 +265,31 @@ _PACK_DIVERGENCE = {
     "configs/test/items_smoke": "DIV-007",
 }
 
+# DIV-009 (2026-08-23, hamlet-5cc071f4b6): six Phase B landings after the oracle tag moved
+# provenance hashes with no register entry — measured per-commit with the DIV-004 worktree
+# method (old code + oracle_fixtures vs each commit's code + live pack, matching what the
+# harness itself compares). Only three of the six commits actually move a hash on any of
+# the three probed packs (default_curriculum L1, div003_rect L1, items_smoke L0_smoke);
+# the other three (8868f237, 03764c6b, and the first half of the brain-fork landing,
+# d60104f0) add no mover. See docs/oracle/known-divergences.md#div-009 for the full table
+# and the composite-hash reasoning (`vfs_hash` picks up `transition_graph_hash` via
+# `compute_vfs_hash`, not directly).
+_DIV009_STANDING = RegisteredHashDivergence(
+    register_ref="DIV-009",
+    hash_fields=("actions_hash", "pack_brain_hash", "transition_graph_hash", "vfs_hash"),
+)
+# The profile packs' obs-side derived hashes (`observation_schema_hash`,
+# `variable_schema_hash`, `vfs_hash`) are already accounted for exactly by `_DIV006` —
+# measured to confirm DIV-006 alone covers them, so DIV-009's own field set here stays
+# disjoint from DIV-006's rather than re-declaring `vfs_hash` a second time. `vfs_hash`
+# itself moves on these cells for both causes (DIV-006's obs-side inputs AND DIV-009's
+# transition_graph_hash input to `compute_vfs_hash`), but the union of the two entries'
+# fields already equals the observed set without duplicating it.
+_DIV009_PROFILE = RegisteredHashDivergence(
+    register_ref="DIV-009",
+    hash_fields=("actions_hash", "pack_brain_hash", "transition_graph_hash"),
+)
+
 
 @dataclass(frozen=True)
 class Cell:
@@ -325,13 +350,18 @@ def default_cells() -> tuple[Cell, ...]:
     that drops CUDA cells entirely without the flag would make that skip
     silent instead of reported.
 
-    At oracle-2026-08-17 the sixteen standing + differential cells declare
-    nothing — no `expected`, no `pack_divergence`, no `hash_divergences` — and
-    their fixtures under oracle_fixtures/ are byte copies of the live packs, so
-    for them exit 0 means what it says: old and new AGREE (PDR-0074). The four
-    profile-variable cells bind DIV-006 (hash-only, PDR-0075), the first entry
-    written against the new tag; declarations return only when a register
-    entry needs them (PDR-0037 record-then-bind).
+    At oracle-2026-08-17 the fixtures under oracle_fixtures/ were byte copies
+    of the live packs and no cell declared anything, so exit 0 meant old and
+    new AGREE (PDR-0074). That is no longer true: six Phase B landings after
+    the tag moved provenance with no register entry, so as of DIV-009
+    (hamlet-5cc071f4b6) all sixteen standing + differential cells bind
+    `_DIV009_STANDING` (hash-only: `actions_hash`, `pack_brain_hash`,
+    `transition_graph_hash`, `vfs_hash`) and the four profile-variable cells
+    bind `(_DIV006, _DIV009_PROFILE)` — DIV-006's obs-side split (PDR-0075)
+    plus DIV-009's disjoint field set. Exit 0 now means "everything diverged
+    exactly as registered", DIV-004's cost restated at the new tag; see
+    docs/oracle/known-divergences.md#div-009. Declarations return only when a
+    register entry needs them (PDR-0037 record-then-bind).
     """
     standing = tuple(
         Cell(
@@ -342,7 +372,8 @@ def default_cells() -> tuple[Cell, ...]:
                 steps=100,
                 seed=42,
                 device=device,
-            )
+            ),
+            hash_divergences=(_DIV009_STANDING,),
         )
         for device in ("cpu", "cuda")
         for level in _DEFAULT_LEVELS
@@ -356,7 +387,8 @@ def default_cells() -> tuple[Cell, ...]:
                 steps=100,
                 seed=42,
                 device=device,
-            )
+            ),
+            hash_divergences=(_DIV009_STANDING,),
         )
         for device in ("cpu", "cuda")
         for pack_dir, level in _DIFFERENTIAL_PACKS
@@ -372,7 +404,7 @@ def default_cells() -> tuple[Cell, ...]:
                 device=device,
             ),
             pack_divergence=_PACK_DIVERGENCE.get(pack),
-            hash_divergences=(_DIV006,),
+            hash_divergences=(_DIV006, _DIV009_PROFILE),
         )
         for device in ("cpu", "cuda")
         for pack, level in _PROFILE_VARIABLE_PACKS

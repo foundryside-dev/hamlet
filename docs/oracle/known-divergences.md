@@ -19,6 +19,12 @@ means "old and new agree" — **acceptance run `20260817-072714`: 20/20 `AGREE` 
 exit 0, zero register refs in any verdict.** Terminal states after the re-stamp: DIV-001 `tag-stamped`, DIV-002
 `tag-stamped`, DIV-003 `retired`, DIV-004 `retired`, DIV-005 `retired`.
 
+**Superseded 2026-08-23 (DIV-009):** the "no cell declares anything" / "20/20 `AGREE`" claim
+above was true of that one acceptance run, not of the tag going forward — six Phase B
+landings after `4222a917` moved provenance hashes with no register entry, and DIV-009 now
+binds all twenty cells. Left as written because it is a historical record of what that run
+showed; do not read it as the current state of the matrix.
+
 ## What this register is
 
 The strangler freezes the current system as an **oracle** and rebuilds one design-space unit
@@ -517,6 +523,11 @@ The frozen fixtures for the two packs stay at the pre-cut `vfs_profiles.yaml` (n
 fourth mover is `HASH_MISMATCH`; a declared field that does not move is
 `REGISTERED_DIVERGENCE_ABSENT`; any stream difference is `DIVERGE` — all red.
 
+**Superseded 2026-08-23 (DIV-009):** "every other fixture stays a byte copy and declares
+nothing" no longer holds — the sixteen standing/differential cells now bind DIV-009. This
+entry's own field set and binding on the four profile cells are unchanged; DIV-009 adds a
+second, disjoint entry (`_DIV009_PROFILE`) alongside this one on those same four cells.
+
 **Retire this entry** at the next forward move of the tag.
 
 ---
@@ -558,8 +569,161 @@ bind `pack_divergence="DIV-007"` alongside their existing DIV-006 hash declarati
 stream difference is `DIVERGE`; any hash mover outside DIV-006's set is `HASH_MISMATCH` —
 all red.
 
+**Superseded 2026-08-23 (DIV-009):** "any hash mover outside DIV-006's set is `HASH_MISMATCH`"
+no longer holds on its own — these two cells also bind `_DIV009_PROFILE`, so the set a mover
+must fall inside is DIV-006's ∪ DIV-009's, not DIV-006's alone. This entry's own field set and
+`pack_divergence="DIV-007"` binding are unchanged.
+
 **Retire this entry** at the next forward move of the tag (re-freezing the fixture as a byte
 copy dissolves the drift).
+
+---
+
+## DIV-008 — RESERVED: the token-observation cut
+
+Reserved by the approved token-observation design
+(`docs/superpowers/specs/2026-08-22-token-observation-representation-design.md` §5);
+registered at migration unit 3. Unit-1 code (`RegisteredStreamDivergence`) already names
+it. Listed here so the numbering gap is visible, never silent.
+
+---
+
+## DIV-009 — Pre-token-cut compiler-surface hash drift: six Phase B landings moved provenance, behaviour did not
+
+- **Status:** `built` (2026-08-23 — measured and bound; full 20-cell CPU+CUDA matrix run
+  `20260823-024115`, **exit 0**: ten standing/differential CPU cells
+  `DIVERGED_AS_REGISTERED` naming `["DIV-009"]`, the four profile CPU cells
+  `DIVERGED_AS_REGISTERED` naming `["DIV-006", "DIV-009"]` (`pack_divergence="DIV-007"` on
+  the two `items_smoke` cells adjudicates separately and does not appear in
+  `register_refs`, which names only hash/stream declarations), every stream byte-identical;
+  all ten CUDA cells `SKIPPED`. Superseded the unit-1 diagnostic runs `20260823-000034`
+  (plain mode) and `20260823-000700` (scripted mode), both `HASH_MISMATCH` on all 10 CPU
+  cells with zero register refs — those runs found the drift this entry now names, but
+  short-circuited before any stream comparison because nothing was registered yet.)
+- **Harness shape: hash-only** (`RegisteredHashDivergence`)
+- **Provenance:** `hamlet-5cc071f4b6` (this ticket) · `PDR-0037` (record-then-bind order,
+  observed here in the breach — the six landings shipped before this entry existed, which is
+  exactly the process failure `PDR-0028`'s "Adding an entry" section warns is a finding, not
+  normal) · `hamlet-ef6699ab2a` (`7cbfbff8`) · `hamlet-f46e2b381a` (`cd3557b6`) ·
+  `hamlet-175bff4ed5` (`8868f237`) · `hamlet-39e1fe3c6d` / `PDR-0076` (`ebd16fce`) ·
+  `hamlet-0d0115383e` / `PDR-0027` (`d60104f0`, `390769af`) · `hamlet-a141ab5db3` /
+  `hamlet-cbb747a51e` (`03764c6b`)
+- **Surface:** the compiler-internal surfaces the six landings touched — VTC occupancy/bounds
+  compilation, the actions schema DTO, the compiled-universe schema (a new hash field), and
+  the universe cache write path. None of the six edits a `default_curriculum`,
+  `configs/differential/div003_rect`, or `configs/test/items_smoke` YAML file directly (the
+  one exception, `0b659130`, is investigated below and found NOT to be a mover).
+
+**Why one entry and not six.** All six commits landed as accepted Phase B work between the
+`oracle-2026-08-17` tag and this ticket, each a genuine behavioural fix or a genuine new
+lineage field — DIV-004's shape exactly: the authoring/compiler surface moved, the register
+entry did not follow it. Three cuts of one continuous gap, not three findings.
+
+**Measurement method.** DIV-004's worktree method, extended in two ways this entry needed:
+
+1. **What the harness actually compares is not "commit N vs commit N-1".** The harness
+   compiles the OLD side with `old_src` = the code frozen in the `.oracle/oracle-2026-08-17`
+   worktree (pinned at `4222a917`, never moves) against `old_pack_root` =
+   `oracle_fixtures/<pack>` **as currently committed** (`harness.py`
+   `ORACLE_PACK_ROOT`/`old_pack_root=repo_root / ORACLE_PACK_ROOT`); the NEW side compiles the
+   live tree's own code against `configs/<pack>`. A naive commit-to-commit bisection that
+   recompiles both the fixture and the live pack with the SAME (that commit's) code measures
+   something else — cumulative code+config drift over time — and can misattribute a mover.
+   That happened once here (next point), so the register records it rather than silently
+   discarding the false lead.
+2. **`0b659130` ("delete the four writerless observation variables") looked like an
+   unlisted seventh mover, and is not one.** A same-code bisection (compile `configs/` and
+   `oracle_fixtures/` at each commit with THAT commit's code) shows `0b659130` moving
+   `environment_hash`, `observation_schema_hash`, `variable_schema_hash`, `vfs_hash` on
+   `default_curriculum`/`div003_rect` — because the commit deletes `deficit_energy` /
+   `deficit_satiation` / `time_since_last_eat` / `time_since_last_sleep` from
+   `configs/default_curriculum/environment.yaml`. But the SAME commit re-freezes
+   `oracle_fixtures/configs/default_curriculum/environment.yaml` identically (verified:
+   `git show --stat 0b659130` touches both paths). Compiled with the ACTUAL old
+   code+fixture vs new code+live pair, the two sides move together and the mismatch this
+   produces is empty — confirmed by rerunning the real comparison at `0b659130`'s worktree:
+   no field newly mismatches. `0b659130` is investigated and cleared, not silently dropped.
+
+For each of the three representative packs (`configs/default_curriculum` at
+`L1_full_observability` for the ten standing cells, `configs/differential/div003_rect` at
+`L1_full_observability` for the six differential cells, `configs/test/items_smoke` at
+`L0_smoke` for the profile cells), the entry was measured by running the real comparison
+(old code + `oracle_fixtures/<pack>`, new code + `configs/<pack>`, both taken from a git
+worktree at each commit boundary in `4222a917..HEAD`) at every commit that touches
+`src/townlet` or the three probed packs, in chronological order, and recording which
+`*_hash` field newly entered the mismatch set. `effects_smoke` was not independently
+bisected — `runs/differential/20260823-000034`'s per-cell report shows its mismatched set is
+byte-identical to `items_smoke`'s (`actions_hash, observation_schema_hash, pack_brain_hash,
+transition_graph_hash, variable_schema_hash, vfs_hash`), and all five `default_curriculum`
+levels plus all three differential packs show the identical four-field standing set in that
+same report — bisecting one representative per block plus confirming uniformity at HEAD from
+the real, already-executed run is DIV-004's own discipline, not a shortcut around it.
+
+**Per-commit table (chronological, `4222a917..HEAD`, real old-code+fixture vs new-code+live comparison):**
+
+| commit | subject | hash field(s) first mismatched | why |
+|---|---|---|---|
+| `ebd16fce` | feat(obs): the compiled observation field says who fills it — a typed `feature` on the DTO | *(none)* | its own product checkpoint (`62b5424d`) already recorded this: "measured hash-invisible, no register entry" |
+| `03764c6b` | fix(universe): agent profiles serialize to cache, and a failed cache write fails compile | *(none)* | cache round-trip / failure-mode fix touches no compiled hash input |
+| `7cbfbff8` | fix(vtc): wire affordance occupancy into the transition schedule — contention is authorable from actions.yaml | `actions_hash` | `src/townlet/config/actions_config.py` gains a new field for occupancy/contention; `actions_hash` is a RAW `_compute_pydantic_hash` over the whole `ActionsConfig` (DIV-001's weak-evidence group) and moves for a DTO schema change even though no `actions.yaml` in the three probed packs was edited |
+| `cd3557b6` | fix(vtc): clamp_and_validate carries compiled bounds rules — the phase graph stops lying | `transition_graph_hash`, `vfs_hash` | `src/townlet/vfs/schema_hashes.py` and `vtc.py` change what feeds the compiled transition-graph hash directly; `vfs_hash = compute_vfs_hash(variable_schema_hash, observation_schema_hash, action_schema_hash, transition_graph_hash)` (`compiler.py:419`) is a composite over four DERIVED hashes and moves whenever any one of its four inputs does — here, `transition_graph_hash` |
+| `8868f237` | fix(vtc): delete the inert social-residue write 'target' field — configs that set it now fail loudly | *(none — measured both ways)* | a same-code consecutive-live bisection reads `moved=[]` at this commit too: none of the three probed packs' compiled output ever carried the deleted `target` field (the generic hasattr canonicalizer this commit touches has nothing to drop for them), so there is no second change to a field `cd3557b6` already moved for these packs to detect |
+| `d60104f0` | feat(bac): brain.yaml is level-overridable as a complete file | *(none)* | implements the loading/override mechanism only; the hash field that will carry it does not exist yet |
+| `390769af` | feat(bac): a brain fork is stated at load, not discovered at runtime | `pack_brain_hash` | introduces the field itself — `universe/compiled.py` adds `pack_brain_hash` and bumps `COMPILED_SCHEMA_VERSION` to `"1.19"` (comment: *"`pack_brain_hash` is required (PDR-0027 lineage legibility)"*), `compiler.py` stamps it. The OLD side's code (fixed at `4222a917`, pre-dating this commit) has no such attribute at all, so its mere introduction is a mismatch (`old: "<absent>"`) |
+
+Also investigated and cleared as non-movers on the three probed packs (all measured, none
+listed in the ticket's six): `0b659130` (above), `6b752b3c`, `7e989e8c`, `9956e95b`,
+`883d5472`, `ba2766e6`, and the oracle-internal commits `9e7197e6` / `9a3b1446` / `afa09b81`
+/ `922e9bea` / `4fe9a580` (these touch `src/townlet/oracle/`, not the compiler). No commit in
+`4222a917..HEAD` outside this table moves a hash on any of the three probed packs.
+
+**Why the profile packs additionally mismatch on `observation_schema_hash` and
+`variable_schema_hash`.** Not this entry's doing — `_DIV006` already declares exactly those
+two plus `vfs_hash` on the four profile cells (unit 3, PDR-0075), and the measured full
+mismatch on `items_smoke` (`actions_hash, observation_schema_hash, pack_brain_hash,
+transition_graph_hash, variable_schema_hash, vfs_hash` — six fields, `runs/differential/
+20260823-000034`) is exactly DIV-006's three-field set unioned with this table's
+`actions_hash` / `pack_brain_hash` / `transition_graph_hash`. `vfs_hash` moves on these cells
+for BOTH causes at once (DIV-006's observation-side inputs and DIV-009's
+`transition_graph_hash` input, both feeding `compute_vfs_hash`) but is declared once, under
+DIV-006, since DIV-006 alone already accounts for it exactly — declaring it a second time
+under DIV-009 would widen this entry's field set past what measurement requires it to cover.
+
+**Diff shape.**
+
+| block | cells | hash_fields |
+|---|---|---|
+| standing (10 cells) | all 5 `default_curriculum` levels × cpu/cuda | `actions_hash, pack_brain_hash, transition_graph_hash, vfs_hash` |
+| differential (6 cells) | `div003_scaled, div003_cubic_partial, div003_rect` × cpu/cuda | `actions_hash, pack_brain_hash, transition_graph_hash, vfs_hash` (identical to standing — verified per-cell in `runs/differential/20260823-000034`) |
+| profile (4 cells) | `items_smoke, effects_smoke` × cpu/cuda | `actions_hash, pack_brain_hash, transition_graph_hash` (DIV-009's own set; `observation_schema_hash, variable_schema_hash, vfs_hash` already covered by `_DIV006`) |
+
+Every stream (`obs`, `actions`, `dones`, `rewards`) is unaffected by these six landings —
+none touches an observation, action, done, or reward computation path a scripted or seeded
+trace would see; all six are provenance-only (a schema DTO field, a compiled hash input, a
+new lineage-stamp field, a cache-serialization fix). The unit-1 diagnostic runs
+(`20260823-000034`, `20260823-000700`) short-circuited on `HASH_MISMATCH` before reaching
+stream comparison, so "streams unaffected" is a design inference from reading each commit's
+diff, not yet a harness-adjudicated fact — Step 4 of this ticket's task (the full matrix run
+with these bindings live) is the first run where the harness actually compares streams on
+these ten cells, and its result is recorded in the Status line above.
+
+**Harness adjudication.** `_DIV009_STANDING = RegisteredHashDivergence(register_ref="DIV-009",
+hash_fields=("actions_hash", "pack_brain_hash", "transition_graph_hash", "vfs_hash"))` binds
+the ten standing and six differential cells alone (`hash_divergences=(_DIV009_STANDING,)`).
+`_DIV009_PROFILE = RegisteredHashDivergence(register_ref="DIV-009", hash_fields=("actions_hash",
+"pack_brain_hash", "transition_graph_hash"))` binds the four profile cells alongside `_DIV006`
+(`hash_divergences=(_DIV006, _DIV009_PROFILE)`, composed per `hamlet-fa6bb6da4a`'s union-exact
+rule: the union of every entry's declared fields must equal the observed movers exactly, and
+each entry's own fields must all move or that entry alone is stale). No cell declares
+`pack_divergence="DIV-009"` — none of the six landings edits a probed pack's YAML in a way
+that survives to the live pack while the fixture stays behind (the one that tried,
+`0b659130`, re-froze the fixture in the same commit, so there is no pack-drift to declare).
+Any hash mover outside a cell's declared union is `HASH_MISMATCH`; a declared field that does
+not move is `REGISTERED_DIVERGENCE_ABSENT`; any stream difference is `DIVERGE` — all red,
+same as every other hash-only entry.
+
+**Retire this entry** when the oracle is re-tagged past these six landings (or is re-frozen
+to absorb them, the way `0b659130`'s companion fixture edit already absorbed its own change).
 
 ---
 

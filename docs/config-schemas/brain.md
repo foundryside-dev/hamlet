@@ -4,17 +4,33 @@ Brain configuration defines agent architecture, optimizer, loss function, Q-lear
 
 ## File Location
 
-Each config pack requires `brain.yaml`:
+Each config pack requires a pack-root `brain.yaml`, and any level MAY override it with a
+complete `brain.yaml` of its own:
 
 ```
-configs/<level>/
-├── brain.yaml              # Agent architecture and learning (REQUIRED)
-├── substrate.yaml
-├── bars.yaml
-├── drive_as_code.yaml
-├── training.yaml
-└── variables_reference.yaml
+configs/<pack>/
+├── brain.yaml              # Pack brain: architecture and learning (REQUIRED)
+├── stratum.yaml
+├── actions.yaml
+└── levels/<level>/
+    ├── brain.yaml          # OPTIONAL complete override for this level (PDR-0027)
+    ├── bars.yaml
+    ├── drive.yaml
+    └── training.yaml
 ```
+
+**Per-level override semantics (PDR-0027):**
+
+- A level's `brain.yaml` is a **complete file**, not a patch. If present it replaces the
+  pack brain as that level's effective base; if absent the level inherits the pack brain
+  unchanged. There is no partial merge — partial merges need default semantics, which the
+  No-Defaults Principle forbids.
+- **Overriding a brain forks the lineage.** `brain_hash` covers the effective config for
+  the compiled level, so the override moves it; the compiled artifact also carries
+  `pack_brain_hash` (the pack baseline under the same training overrides), and every
+  checkpoint stamps both. A checkpoint whose two hashes differ is stated as a fork at load
+  time — you never discover it by observing wrong behaviour. Forked artifacts are NOT
+  interchangeable with unforked artifacts of the same pack.
 
 ## Schema Version
 

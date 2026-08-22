@@ -38,6 +38,10 @@ class CurriculumLevel:
     affordances: AffordancesV2Config
     drive: DriveAsCodeConfig
     training: TrainingV2Config
+    # Optional COMPLETE per-level brain.yaml (PDR-0027). None = inherit the pack brain
+    # unchanged. Never a partial patch: partial merges need default semantics, which the
+    # No-Defaults Principle forbids.
+    brain: BrainConfig | None = None
     items_appearance: ItemsAppearanceConfig | None = None
 
     @property
@@ -258,6 +262,7 @@ class RawConfigsV21:
                 bars = load_bars_v2_config(level_dir)
                 affordances = load_affordances_v2_config(level_dir)
                 training = load_training_v2_config(level_dir)
+                level_brain = load_brain_config(level_dir) if (level_dir / "brain.yaml").exists() else None
 
                 drive_path = level_dir / "drive.yaml"
                 with drive_path.open() as f:
@@ -279,6 +284,7 @@ class RawConfigsV21:
                     affordances=affordances,
                     drive=drive,
                     training=training,
+                    brain=level_brain,
                     items_appearance=items_appearance,
                 )
             except Exception as exc:  # noqa: BLE001

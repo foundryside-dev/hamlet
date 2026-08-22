@@ -646,22 +646,6 @@ class CompiledUniverse:
         """Return per-level metadata (raises if missing)."""
         return self.get_level(level_name)
 
-    def as_single_level(self, level_name: str) -> dict[str, Any]:
-        """Return a dict of shared + level-specific configs for callers expecting a flat bundle."""
-        level = self.get_level(level_name)
-        return {
-            "experiment": self.experiment,
-            "stratum": self.stratum,
-            "environment": self.environment,
-            "actions": self.actions,
-            "brain": self.brain,
-            "curriculum": level.curriculum,
-            "bars": level.bars,
-            "affordances": level.affordances,
-            "drive": level.drive,
-            "training": level.training,
-        }
-
     # === Runtime adapters ===
 
     def create_environment(

@@ -206,7 +206,10 @@ class UniverseCompiler:
         #      producer uses. Do NOT "match local style" and revert this to
         #      _compute_pydantic_hash; that silently diverges from every other producer.
         # This makes brain_hash level-scoped, exactly as drive_hash already is.
-        brain_hash = compute_brain_hash(apply_training_overrides(raw.brain, raw.levels[primary_level].training))
+        # PDR-0027: a level's complete brain.yaml replaces the pack brain as the effective
+        # base. brain_hash stays what it was: the EFFECTIVE config for the primary level.
+        base_brain = raw.levels[primary_level].brain or raw.brain
+        brain_hash = compute_brain_hash(apply_training_overrides(base_brain, raw.levels[primary_level].training))
         experiment_hash = self._compute_pydantic_hash(raw.experiment)
         stratum_hash = self._compute_pydantic_hash(raw.stratum)
         environment_hash = self._compute_pydantic_hash(raw.environment)
@@ -518,7 +521,10 @@ class UniverseCompiler:
             stratum=raw.stratum,
             environment=raw.environment,
             actions=raw.actions,
-            brain=raw.brain,  # Changed from agent to brain
+            # PDR-0027: the EFFECTIVE base brain for the compiled level — a level's own
+            # complete brain.yaml replaces the pack brain. brain_hash above is computed
+            # from the same selection; the two must never diverge.
+            brain=raw.levels[universe_metadata.primary_level].brain or raw.brain,
             items_catalog=raw.items,
             compiled_vfs_profiles=compiled_vfs_profiles,
             compiled_effect_catalog=compiled_effect_catalog,

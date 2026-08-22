@@ -283,6 +283,26 @@
   · runs **alongside** the strangler bet, not instead of it. The falsification window lives in
   PRD-0001; sequencing and any dated forecast are `/axiom-program-management`'s, not this file's.
 
+- **Token-based observation encoding — IN SCOPE, owner-directed, to finish the VFS refresh**
+  (moved Later → Now 2026-08-22, `PDR-0108`; direction owner-authoritative since 2026-08-11 per
+  `PDR-0044` — the old "captured rather than started" framing is dead). The fixed-width
+  superset+mask observation with its fixed 14-affordance vocabulary is a hardcoded statement
+  about one universe; tokens kill the fixed vocabulary (**structure**), while magnitude stays
+  with the declared normalization surface (**scale**, `PDR-0016`) — do not conflate them. The
+  VFS refresh's remaining tail (relational observation exposure, message wiring, dynamic
+  variables — vfs.md §21.1 items 1/5/6) all land via this path per `PDR-0107`.
+  · **Phase A plan written and committed**
+  (`docs/superpowers/plans/2026-08-22-token-observation-pivot-phase-a.md`): brain
+  level-override + lineage legibility (`PDR-0027`), then the `set_encoder`
+  config-in/behaviour-out proof — the token encoder ALREADY EXISTS (`SetEncoderQNetwork`,
+  authorable as `architecture.type: set_encoder`, driven by zero packs), so the first unit is
+  proving it works, not adding attention (`PDR-0017`). A design-level proof failure escalates
+  (`PDR-0017` trigger 2); Phase B (attention aggregator, full token representation, relational
+  /message exposure, dynamic variables) is scheduled on the proof's outcome.
+  · tracker: `hamlet-0d0115383e` → `hamlet-fa6bb6da4a` → `hamlet-424adcb84f`
+  · metric: Config-surface coverage, Declared-but-inert config surfaces
+  · Updated: 2026-08-22 (`PDR-0108`)
+
 ## Next (shaped, decreasing certainty)
 
 - **Close the "you must write Python" gaps — WS-4, the actual product work.** The assessment's
@@ -406,19 +426,6 @@
   the compiled-universe contract rather than restoring. `PDR-0007` reading: an option not yet
   enabled.
   · tracker: `hamlet-16ae192d42` (capture) · metric: none yet
-
-- **Token-based observation encoding, and whether the observation shape is a game-engine fact**
-  — the fixed 124-dim vector with its fixed 14-affordance vocabulary is a hardcoded statement
-  about one universe. Owner-raised (*"move to embedded transformers"*), captured rather than
-  started. Notable: the token encoder ALREADY EXISTS (`SetEncoderQNetwork`, authorable as
-  `architecture.type: set_encoder`) and is used by zero of 21 packs — so the first unit is
-  proving it works, not adding attention. Separates cleanly into **structure** (tokens kill the
-  fixed vocabulary — real strangling) and **scale** (magnitude belongs to the declared
-  normalization surface, which `PDR-0016` wires now). Sequenced after the oracle freeze and
-  after the HLD-vs-implementation divergence map, because it is a "what should a well-implemented
-  version look like" question and that map is what answers those.
-  · tracker: `hamlet-fa6bb6da4a` (blocked by `hamlet-0d0115383e`) · `PDR-0017` · metric:
-  Config-surface coverage, Declared-but-inert config surfaces
 
 - **Adopt wardline as a hygiene activity** — declare real trust boundaries in `src/townlet/`
   so a taint gate can actually fail, then re-instate the agent instruction. Owner-stated

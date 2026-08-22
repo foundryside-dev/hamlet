@@ -110,6 +110,15 @@ class VFSCompiler:
 
             existing_ids = {variable.id for variable in variables}
             for variable in static_variables or ():
+                # Refuse explicitly BEFORE the dedup skip below: existing_ids already
+                # contains the engine's own prepended 'tick' (index 0), so an authored
+                # static variable (variables_reference.yaml) named 'tick' would otherwise
+                # match that dedup check and be silently dropped instead of refused.
+                if variable.id == _ENGINE_TICK_ID:
+                    raise ValueError(
+                        "Variable id 'tick' is reserved for the engine-written step counter "
+                        "(token-obs design ruling 6). Rename the authored variable."
+                    )
                 if variable.id in existing_ids:
                     continue
                 variables.append(variable)

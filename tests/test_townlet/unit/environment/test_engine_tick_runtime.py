@@ -37,10 +37,22 @@ def test_tick_counts_steps_and_resets(tmp_path):
 
 
 def test_tick_matches_value_seen_within_step(tmp_path, monkeypatch):
-    """Pinned write point: every consumer of THIS step sees the same tick value."""
-    env = _make_env(tmp_path)
-    seen: dict[str, float] = {}
+    """Pinned write point: every consumer of THIS step sees the same tick value.
 
+    Fix round 1, Finding 2: a fresh reset() already writes tick=0, so capturing on the
+    FIRST step() call doesn't discriminate — seen["tick"] would read 0 from reset's
+    write and seen["current_step"] would read 0 (pre-increment global_tick) even if the
+    step()-level write were deleted entirely or moved after action execution. Stepping
+    once, unmonitored, first advances global_tick past 0; capturing on the SECOND step
+    means only a write correctly placed at the top of step() (before the action
+    executor consumes current_step=self.global_tick) can match — a deleted or
+    misplaced write would leave the registry holding step 1's stale value (0) against
+    step 2's current_step (1).
+    """
+    env = _make_env(tmp_path)
+    env.step(torch.zeros(env.num_agents, dtype=torch.long, device=env.device))
+
+    seen: dict[str, float] = {}
     original_execute = env._action_executor._execute_actions
 
     def _record_and_execute(actions):
@@ -50,7 +62,7 @@ def test_tick_matches_value_seen_within_step(tmp_path, monkeypatch):
 
     monkeypatch.setattr(env._action_executor, "_execute_actions", _record_and_execute)
     env.step(torch.zeros(env.num_agents, dtype=torch.long, device=env.device))
-    assert seen["tick"] == seen["current_step"]
+    assert seen["tick"] == seen["current_step"] == 1.0
 
 
 def test_tick_is_engine_writable_only(tmp_path):

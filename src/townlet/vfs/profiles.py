@@ -336,6 +336,15 @@ class VFSProfileCompiler:
         Raises:
             ValueError: If circular dependencies detected
         """
+        for item_var in profile.variables:
+            if item_var.expression is not None:
+                raise ValueError(
+                    f"Item-profile variable '{item_var.name}' declares an expression, but item-profile "
+                    "expressions have no evaluator (hamlet-bc0a5deeff) — nothing would ever run it. "
+                    "Declare initial_value and drive the variable via effects, or wait for the "
+                    "evaluation build. Refusing loudly beats silent inertness."
+                )
+
         # Sort variables in dependency order
         sorted_vars, _ = self.topological_sort_with_dependencies(profile.variables)
 

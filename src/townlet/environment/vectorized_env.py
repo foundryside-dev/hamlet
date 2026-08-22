@@ -1096,6 +1096,46 @@ class VectorizedHamletEnv:
                     if var_name in expression_var_names and var_name in self.vfs_registry.variables:
                         self.vfs_registry.set_engine_value(var_name, value)
 
+            # Evaluate agent profile (hamlet-5d74335111). Compiled agent profiles are
+            # CompiledGlobalProfile — the same machinery, the same MARK_AND_SWEEP
+            # static-skip in evaluate_global_profile, and the same expression-only
+            # write-back filter (statics are storage, never re-written from a
+            # dependency-chased initial — hamlet-df3a96bbac applies here too), but
+            # expressions here already produce [num_agents]-shaped tensors from
+            # `bar.*` references, so write-back is checked against that exact shape.
+            agent_profile = self.universe.compiled_vfs_profiles.agent_profile
+            if agent_profile is not None:
+                agent_marks = self.vfs_evaluation_marks.get("agent", set()) if self.vfs_evaluation_marks else set()
+                updated_agent_vfs = self.vfs_evaluator.evaluate_global_profile(
+                    profile=agent_profile,
+                    bars=bars_dict_vfs,
+                    vfs_state=current_vfs_state,
+                    marks=agent_marks,
+                    device=self.device,
+                    step=self.global_tick,
+                    affordances=self._build_vfs_affordance_context(),
+                    temporal=self._build_vfs_temporal_context(),
+                    agent_positions=self.positions.to(dtype=torch.float32, device=self.device),
+                    affordance_positions={k: v.to(dtype=torch.float32, device=self.device) for k, v in self.affordances.items()},
+                    vfs_types={name: var.type for name, var in self.vfs_registry.variables.items()},
+                    num_agents=self.num_agents,
+                    item_vfs=self.vfs_registry.item_vfs,
+                    item_profile_map=self.vfs_registry.item_profile_map,
+                    item_index_to_profile=self.vfs_registry.item_vfs_index_to_profile,
+                )
+                agent_expression_var_names = {var.name for var in agent_profile.variables if var.ast is not None}
+                for var_name, value in updated_agent_vfs.items():
+                    if var_name not in agent_expression_var_names:
+                        continue  # static: storage, never written back (hamlet-df3a96bbac)
+                    if var_name not in self.vfs_registry.variables:
+                        continue  # unknown-id policy unchanged this unit (hamlet-0ddc83e377 → unit 3)
+                    if value.shape != (self.num_agents,):
+                        raise ValueError(
+                            f"Agent-profile variable '{var_name}' evaluated to shape {tuple(value.shape)}, "
+                            f"expected ({self.num_agents},). A constant belongs in initial_value, not an expression."
+                        )
+                    self.vfs_registry.set_engine_value(var_name, value)
+
         self._run_vtc_transition_phases(
             self.vtc_transition_runner.phases_between("apply_threshold_cascades", "evaluate_terminal_conditions"),
             active_mask=torch.logical_not(prev_dones),

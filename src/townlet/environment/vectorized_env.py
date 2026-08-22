@@ -1085,8 +1085,15 @@ class VectorizedHamletEnv:
                     item_index_to_profile=self.vfs_registry.item_vfs_index_to_profile,
                 )
 
+                # The evaluator chases in-profile dependencies of marked variables, so
+                # updated_vfs can contain a STATIC dependency re-emitted at its initial
+                # value (evaluator.py's add_with_deps). Statics are storage, not
+                # evaluation output: write back only expression variables, or a
+                # dependency chase silently clobbers an engine-written static every
+                # step (hamlet-df3a96bbac).
+                expression_var_names = {var.name for var in global_profile.variables if var.ast is not None}
                 for var_name, value in updated_vfs.items():
-                    if var_name in self.vfs_registry.variables:
+                    if var_name in expression_var_names and var_name in self.vfs_registry.variables:
                         self.vfs_registry.set_engine_value(var_name, value)
 
         self._run_vtc_transition_phases(

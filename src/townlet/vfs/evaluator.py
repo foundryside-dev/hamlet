@@ -179,16 +179,28 @@ class VFSEvaluator:
             if var.name not in vars_to_eval:
                 continue
 
-            # Static initial value (no expression)
+            # Static (no expression): storage, not computation. Always report its
+            # declared initial value in `result`.
             if var.ast is None:
                 value = torch.tensor(var.initial_value, device=device)
-            else:
-                # Evaluate expression using current context
-                value = evaluator.evaluate(var.ast)
+                result[var.name] = value
+                # EAGER mode's contract is to reinitialize every variable — including
+                # statics — from its declared default on every evaluation pass; that
+                # behavior is unchanged. In MARK_AND_SWEEP mode a static reaches
+                # vars_to_eval ONLY via the dependency chase (statics are never marked
+                # directly — derive_evaluation_marks excludes them), so context.vfs
+                # already carries its CURRENT runtime value from vfs_state; overwriting
+                # it with the compile-time default would silently feed a stale value
+                # into every dependent expression (hamlet-df3a96bbac).
+                if self.mode != EvaluationMode.MARK_AND_SWEEP:
+                    context.vfs[var.name] = value
+                continue
 
-            # Store result
+            # Evaluate expression using current context
+            value = evaluator.evaluate(var.ast)
+
+            # Store result and update context so later variables can reference this one
             result[var.name] = value
-            # Update context so later variables can reference this one
             context.vfs[var.name] = value
 
         # Push history after evaluating current step

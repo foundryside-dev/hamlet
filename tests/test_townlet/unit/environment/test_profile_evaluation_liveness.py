@@ -51,3 +51,28 @@ def test_static_survives_engine_write_unclobbered(tmp_path):
     env.vfs_registry.set_engine_value("stash", torch.tensor(7.0))
     env.step(torch.zeros(env.num_agents, dtype=torch.long, device=env.device))
     assert _global_value(env, "stash") == 7.0  # statics are storage, never re-evaluated
+
+
+_DEPENDENCY_PROFILES = {
+    "version": "1.0", "evaluation_mode": "mark_and_sweep", "debug_logging": False,
+    "global_profile": {"variables": [
+        {"semantic_type": "custom", "name": "base", "type": "float", "initial_value": 1.0},
+        {"semantic_type": "custom", "name": "derived", "type": "float", "expression": "base + 1.0"},
+    ]},
+    "agent_profile": None,
+    "item_profiles": [{"profile_name": "default_item", "variables": []}],
+}
+
+
+def test_static_dependency_of_marked_expression_is_not_clobbered_by_write_back(tmp_path):
+    """hamlet-df3a96bbac regression: only `derived` is marked (expression, exposed_to
+    defaults to ["agent"]); `base` is a static dependency the evaluator chases via
+    add_with_deps and re-emits at its INITIAL value. The write-back loop must skip
+    that re-emitted static rather than clobber an engine write with it — while still
+    letting the dependency chase feed the evaluation of `derived` itself.
+    """
+    env = _make_env(tmp_path, _DEPENDENCY_PROFILES)
+    env.vfs_registry.set_engine_value("base", torch.tensor(99.0))
+    env.step(torch.zeros(env.num_agents, dtype=torch.long, device=env.device))
+    assert _global_value(env, "base") == 99.0  # static write-back skipped, not clobbered to 1.0
+    assert _global_value(env, "derived") == 100.0  # evaluated FROM the engine-written base

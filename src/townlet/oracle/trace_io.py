@@ -164,15 +164,20 @@ def _divergence_mask(old_arr: np.ndarray, new_arr: np.ndarray) -> np.ndarray:
     return np.asarray(value_diff | nan_mismatch | sign_diff)
 
 
-def compare_traces(old: Trace, new: Trace, cell_id: str, *, hash_divergence: Any = None) -> CellVerdict:
+def compare_traces(
+    old: Trace, new: Trace, cell_id: str, *, hash_divergence: Any = None, stream_divergence: Any = None
+) -> CellVerdict:
     """Adjudicate one cell from both sides' traces.
 
-    `hash_divergence` is an optional `matrix.RegisteredHashDivergence` (typed
-    loosely to keep this module free of a matrix import, the same way the crash
-    shape is matched in harness.py). When present it permits — and REQUIRES —
-    exactly the named provenance hashes to differ, and then continues to the
-    full byte-exact stream comparison instead of short-circuiting. Behaviour is
-    never suppressed: a stream divergence still returns DIVERGE.
+    `hash_divergence` (matrix.RegisteredHashDivergence) permits — and requires —
+    exactly the named provenance hashes to differ. `stream_divergence`
+    (matrix.RegisteredStreamDivergence) permits — and requires — exactly the
+    named trace STREAMS to diverge, shape changes included, while every other
+    stream stays byte-exact. Both are typed loosely to keep this module free of
+    a matrix import. Adjudication no longer stops at the first mismatching
+    stream: every stream is compared in full, so a registered obs divergence
+    can never mask the rewards/dones verdict (SA-C1, token-obs design §5/§6
+    unit 1).
     """
     if old.params != new.params:
         raise HarnessError(
@@ -218,59 +223,101 @@ def compare_traces(old: Trace, new: Trace, cell_id: str, *, hash_divergence: Any
     if mismatched and not declared:
         return CellVerdict(kind="HASH_MISMATCH", cell_id=cell_id, detail={"mismatched": mismatched})
 
-    for (old_step, old_stream, old_arr), (_, _, new_arr) in zip(_stream_steps(old), _stream_steps(new), strict=True):
-        # Shape/dtype preflight (FIX 1): tobytes() serializes the C-order
-        # buffer only — it is shape-blind. np.zeros((4,)) and np.zeros((4,1))
-        # produce identical bytes despite differing rank, which would let a
-        # rebuild returning e.g. rewards as [num_agents,1] instead of
-        # [num_agents] report a false AGREE. This must run BEFORE the byte
-        # comparison and before _divergence_mask, which raises ValueError on
-        # broadcast-incompatible shapes rather than yielding a verdict.
+    declared_streams: frozenset[str] = stream_divergence.declared if stream_divergence is not None else frozenset()
+
+    # Collect findings for EVERY stream; never return mid-scan (SA-C1).
+    findings: dict[str, dict[str, object]] = {}
+
+    def _record(stream: str, entry: dict[str, object]) -> None:
+        if stream not in findings:
+            entry["diff_entries"] = 1
+            findings[stream] = entry
+        else:
+            findings[stream]["diff_entries"] = int(findings[stream]["diff_entries"]) + 1  # type: ignore[call-overload]
+
+    for (old_step, stream, old_arr), (_, _, new_arr) in zip(_stream_steps(old), _stream_steps(new), strict=True):
         if old_arr.shape != new_arr.shape or old_arr.dtype != new_arr.dtype:
-            return CellVerdict(
-                kind="DIVERGE",
-                cell_id=cell_id,
-                detail={
+            # Shape/dtype preflight (FIX 1) — still BEFORE byte comparison, but it
+            # RECORDS rather than returns: for a declared stream this IS the
+            # expected divergence (the token cut changes obs width, and bytes of
+            # different shapes cannot be compared); for an undeclared stream it is
+            # adjudicated red below with everything else.
+            _record(
+                stream,
+                {
                     "step": old_step,
-                    "stream": old_stream,
+                    "shape_changed": True,
                     "old_shape": list(old_arr.shape),
                     "new_shape": list(new_arr.shape),
                     "old_dtype": str(old_arr.dtype),
                     "new_dtype": str(new_arr.dtype),
                 },
             )
-        # Comparison is exact bytes, per spec: value equality is wrong for
-        # -0.0 vs 0.0 (equal value, different bytes) and NaN vs NaN (equal
-        # bytes, "unequal" value).
+            continue
         if old_arr.tobytes() == new_arr.tobytes():
+            continue
+        if stream in declared_streams:
+            # Expected to diverge — record cheaply, skip localization.
+            _record(stream, {"step": old_step, "shape_changed": False})
             continue
         mask = _divergence_mask(old_arr, new_arr)
         if not mask.any():
-            # Bytes differ but nothing trips value/NaN/sign localization
-            # (e.g. two distinct NaN bit-payloads) — flag every position
-            # rather than silently reporting an empty divergence.
             mask = np.ones_like(mask)
         diff_indices = np.argwhere(mask)
-        detail: dict[str, object] = {
+        entry: dict[str, object] = {
             "step": old_step,
-            "stream": old_stream,
+            "shape_changed": False,
             "indices": [list(map(int, idx)) for idx in diff_indices[:_MAX_REPORTED_INDICES]],
             "diff_count": int(len(diff_indices)),
         }
         if old_arr.dtype != np.bool_:
             diffs = np.abs(old_arr[mask].astype(np.float64) - new_arr[mask].astype(np.float64))
             max_abs_diff = float(np.max(diffs)) if diffs.size else 0.0
-            detail["max_abs_diff"] = max_abs_diff if np.isfinite(max_abs_diff) else "non-finite"
-        return CellVerdict(kind="DIVERGE", cell_id=cell_id, detail=detail)
+            entry["max_abs_diff"] = max_abs_diff if np.isfinite(max_abs_diff) else "non-finite"
+        _record(stream, entry)
 
-    if declared:
-        # Every stream matched byte-for-byte and exactly the declared hashes
-        # moved: provenance changed as registered, behaviour did not.
+    diverged = frozenset(findings)
+    undeclared_streams = diverged - declared_streams
+    unmoved_streams = declared_streams - diverged
+
+    if undeclared_streams:
+        return CellVerdict(
+            kind="DIVERGE",
+            cell_id=cell_id,
+            detail={
+                "streams": {name: findings[name] for name in sorted(diverged)},
+                "undeclared_streams": sorted(undeclared_streams),
+                **({"declared_streams": sorted(declared_streams)} if declared_streams else {}),
+            },
+        )
+    if unmoved_streams:
+        # A declared stream that never diverged is a stale entry — the exact
+        # condition REGISTERED_DIVERGENCE_ABSENT names for the other two shapes.
+        return CellVerdict(
+            kind="REGISTERED_DIVERGENCE_ABSENT",
+            cell_id=cell_id,
+            detail={
+                "register_ref": stream_divergence.register_ref,
+                "declared_but_unmoved_streams": sorted(unmoved_streams),
+                "streams": {name: findings[name] for name in sorted(diverged)},
+            },
+        )
+
+    refs: tuple[str, ...] = ()
+    if declared:  # the hash declaration manifested exactly (checked above)
+        refs = refs + (hash_divergence.register_ref,)
+    if declared_streams:
+        if stream_divergence.register_ref not in refs:
+            refs = refs + (stream_divergence.register_ref,)
+    if refs:
         return CellVerdict(
             kind="DIVERGED_AS_REGISTERED",
             cell_id=cell_id,
-            detail={"shape": "hash-only", "mismatched": mismatched},
-            register_refs=(hash_divergence.register_ref,),
+            detail={
+                "shape": ("hash+stream" if declared and declared_streams else "hash-only" if declared else "stream-only"),
+                **({"mismatched": mismatched} if declared else {}),
+                **({"streams": {name: findings[name] for name in sorted(diverged)}} if declared_streams else {}),
+            },
+            register_refs=refs,
         )
-
     return CellVerdict(kind="AGREE", cell_id=cell_id, detail={})

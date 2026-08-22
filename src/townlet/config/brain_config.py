@@ -203,6 +203,27 @@ class DuelingConfig(BaseModel):
     layer_norm: bool = Field(description="Apply LayerNorm after shared layers")
 
 
+class SetAggregatorConfig(BaseModel):
+    """Declared aggregation over the embedded token set (PDR-0109 Phase B unit 1).
+
+    `mean`: masked mean-pool (DeepSets). `attention`: self-attention over the embedded
+    token rows, then the same masked mean-pool — permutation-invariant either way.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    type: Literal["mean", "attention"] = Field(description="Token-set aggregation strategy")
+    num_heads: int | None = Field(default=None, gt=0, description="Attention heads (required for type=attention)")
+
+    @model_validator(mode="after")
+    def validate_aggregator_params(self) -> "SetAggregatorConfig":
+        if self.type == "attention" and self.num_heads is None:
+            raise ValueError("type='attention' requires num_heads")
+        if self.type == "mean" and self.num_heads is not None:
+            raise ValueError("type='mean' takes no num_heads")
+        return self
+
+
 class SetEncoderConfig(BaseModel):
     """Set-aware architecture configuration for variable-token observations."""
 
@@ -214,6 +235,18 @@ class SetEncoderConfig(BaseModel):
     token_embed_dim: int = Field(gt=0, description="Embedding size produced for the pooled token set")
     base_hidden_dim: int = Field(gt=0, description="Embedding size for non-token observation features")
     q_head_hidden_dim: int = Field(gt=0, description="Hidden size for the final Q-value head")
+    aggregator: SetAggregatorConfig = Field(description="Declared token-set aggregation (no default)")
+
+    @model_validator(mode="after")
+    def validate_attention_geometry(self) -> "SetEncoderConfig":
+        if self.aggregator.type == "attention":
+            assert self.aggregator.num_heads is not None  # guaranteed by SetAggregatorConfig
+            if self.token_embed_dim % self.aggregator.num_heads != 0:
+                raise ValueError(
+                    f"token_embed_dim ({self.token_embed_dim}) must be divisible by "
+                    f"aggregator.num_heads ({self.aggregator.num_heads})"
+                )
+        return self
 
 
 class ScheduleConfig(BaseModel):

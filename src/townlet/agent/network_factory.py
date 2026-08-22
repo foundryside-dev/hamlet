@@ -211,6 +211,8 @@ class NetworkFactory:
             token_embed_dim=config.token_embed_dim,
             base_hidden_dim=config.base_hidden_dim,
             q_head_hidden_dim=config.q_head_hidden_dim,
+            aggregator_type=config.aggregator.type,
+            num_heads=config.aggregator.num_heads,
         )
 
     @staticmethod

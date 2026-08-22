@@ -108,3 +108,67 @@ def test_gradients_flow_into_the_token_encoder(setup) -> None:
     net(obs).sum().backward()
     grad = net.token_encoder[0].weight.grad
     assert grad is not None and torch.any(grad != 0.0), "loss must reach the token encoder"
+
+
+@pytest.fixture
+def attention_setup():
+    universe = UniverseCompiler().compile(PACK, primary_level="L1_attention", use_cache=False)
+    device = torch.device("cpu")
+    env = VectorizedHamletEnv(universe=universe, level_name="L1_attention", num_agents=NUM_AGENTS, device=device)
+    population = VectorizedPopulation(
+        env=env,
+        curriculum=StaticCurriculum(difficulty_level=0.5),
+        exploration=EpsilonGreedyExploration(epsilon=0.1, epsilon_min=0.1, epsilon_decay=1.0),
+        agent_ids=[f"agent_{i}" for i in range(NUM_AGENTS)],
+        device=device,
+        obs_dim=env.observation_dim,
+        brain_config=universe.brain,
+        action_dim=env.action_dim,
+        train_frequency=1,
+        batch_size=16,
+        sequence_length=1,
+        max_grad_norm=1.0,
+        vision_window_size=5,
+    )
+    population.reset()
+    return universe, env, population
+
+
+def test_declared_attention_reaches_the_built_network(attention_setup) -> None:
+    """The aggregator declaration is config-in/behaviour-out, not declared-but-inert."""
+    universe, env, population = attention_setup
+    net = population.q_network
+    assert isinstance(net, SetEncoderQNetwork)
+    assert isinstance(net.aggregator, torch.nn.MultiheadAttention)
+    assert net.aggregator.num_heads == 4
+
+
+def test_attention_level_stays_permutation_invariant_end_to_end(attention_setup) -> None:
+    universe, env, population = attention_setup
+    net = population.q_network
+    sl = _token_slice(universe)
+
+    tokens = torch.rand(NUM_AGENTS, 4, 3) + 0.1
+    env.vfs_registry.set("need_tokens", tokens, writer="engine")
+    obs = env._get_observations()
+
+    permuted = obs.clone()
+    rows = permuted[:, sl].reshape(NUM_AGENTS, 4, 3)
+    permuted[:, sl] = rows[:, [2, 0, 3, 1], :].reshape(NUM_AGENTS, 12)
+
+    assert torch.allclose(net(obs), net(permuted), atol=1e-6), (
+        "self-attention without positional encoding plus masked mean-pool must stay "
+        "permutation-invariant; a failure here means the aggregator sees row order"
+    )
+
+
+def test_attention_level_gradients_reach_the_attention_weights(attention_setup) -> None:
+    universe, env, population = attention_setup
+    net = population.q_network
+    env.vfs_registry.set("need_tokens", torch.rand(NUM_AGENTS, 4, 3) + 0.1, writer="engine")
+    obs = env._get_observations()
+
+    net.zero_grad()
+    net(obs).sum().backward()
+    grad = net.aggregator.in_proj_weight.grad
+    assert grad is not None and torch.any(grad != 0.0), "loss must reach the attention weights"

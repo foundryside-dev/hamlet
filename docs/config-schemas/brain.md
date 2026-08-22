@@ -190,6 +190,9 @@ architecture:
     token_embed_dim: 64
     base_hidden_dim: 128
     q_head_hidden_dim: 256
+    aggregator:
+      type: attention   # or: mean
+      num_heads: 4      # attention only; token_embed_dim must divide by it
 ```
 
 **Parameters:**
@@ -199,6 +202,13 @@ architecture:
 - `token_embed_dim` (int, required): Embedding size for the pooled token set.
 - `base_hidden_dim` (int, required): Embedding size for non-token observation features.
 - `q_head_hidden_dim` (int, required): Hidden size for Q-value prediction.
+- `aggregator` (block, required): How the embedded token set is aggregated. No default —
+  the choice is declared, never an engine fact.
+  - `type: mean` — masked mean-pool over embedded rows (DeepSets). Takes no other keys.
+  - `type: attention` — self-attention over the embedded rows (empty rows excluded via
+    key-padding mask), then the same masked mean-pool. Requires `num_heads` (int > 0);
+    `token_embed_dim` must be divisible by it. Both aggregators are permutation-invariant:
+    token rows are a set, not a sequence.
 
 **Example Use Cases:**
 - Dynamic needs represented by `dynamic_need_tokens`.

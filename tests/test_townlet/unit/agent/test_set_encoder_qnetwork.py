@@ -4,7 +4,7 @@ import torch
 
 from townlet.agent.network_factory import NetworkFactory
 from townlet.agent.networks import SetEncoderQNetwork
-from townlet.config.brain_config import SetEncoderConfig
+from townlet.config.brain_config import SetAggregatorConfig, SetEncoderConfig
 from townlet.universe.dto import ObservationField, ObservationSpec
 
 
@@ -48,6 +48,8 @@ def test_set_encoder_qnetwork_outputs_q_values_for_flattened_token_observations(
         token_embed_dim=8,
         base_hidden_dim=6,
         q_head_hidden_dim=10,
+        aggregator_type="mean",
+        num_heads=None,
     )
 
     q_values = network(torch.randn(7, 14))
@@ -65,6 +67,8 @@ def test_set_encoder_qnetwork_is_permutation_invariant_over_non_empty_tokens() -
         token_embed_dim=8,
         base_hidden_dim=6,
         q_head_hidden_dim=10,
+        aggregator_type="mean",
+        num_heads=None,
     )
 
     base = torch.tensor([[0.25, 0.75]])
@@ -86,6 +90,7 @@ def test_network_factory_builds_set_encoder_from_observation_spec() -> None:
         token_embed_dim=8,
         base_hidden_dim=6,
         q_head_hidden_dim=10,
+        aggregator=SetAggregatorConfig(type="mean"),
     )
 
     network = NetworkFactory.build_set_encoder(

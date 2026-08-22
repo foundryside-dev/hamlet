@@ -11,3 +11,4 @@ experiment:
 
   curriculum_levels:
     - L0_test
+    - L1_attention

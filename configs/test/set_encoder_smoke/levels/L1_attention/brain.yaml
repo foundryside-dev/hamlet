@@ -1,5 +1,5 @@
 version: '1.0'
-description: set_encoder smoke pack — the first pack that DRIVES architecture.type set_encoder (hamlet-fa6bb6da4a)
+description: L1_attention level override — the attention aggregator authored in config (PDR-0109 Phase B unit 1)
 architecture:
   type: set_encoder
   set_encoder:
@@ -10,7 +10,8 @@ architecture:
     base_hidden_dim: 32
     q_head_hidden_dim: 64
     aggregator:
-      type: mean
+      type: attention
+      num_heads: 4
 optimizer:
   type: adam
   learning_rate: 0.0001

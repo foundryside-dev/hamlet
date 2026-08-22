@@ -470,7 +470,14 @@ class DuelingQNetwork(nn.Module):
 
 
 class SetEncoderQNetwork(nn.Module):
-    """Q-network that pools a fixed-capacity token set with permutation-invariant mean aggregation."""
+    """Q-network over a fixed-capacity token set with a DECLARED permutation-invariant aggregator.
+
+    ``aggregator_type="mean"``: masked mean-pool of embedded token rows (DeepSets).
+    ``aggregator_type="attention"``: self-attention over the embedded rows (empty rows
+    excluded via key-padding mask), then the same masked mean-pool. Self-attention
+    without positional encoding is permutation-equivariant, so the pooled output stays
+    permutation-invariant.
+    """
 
     def __init__(
         self,
@@ -481,6 +488,8 @@ class SetEncoderQNetwork(nn.Module):
         token_embed_dim: int,
         base_hidden_dim: int,
         q_head_hidden_dim: int,
+        aggregator_type: str,
+        num_heads: int | None,
     ):
         """Initialize a set-aware Q-network.
 
@@ -492,6 +501,8 @@ class SetEncoderQNetwork(nn.Module):
             token_embed_dim: Embedding size for pooled token features.
             base_hidden_dim: Embedding size for non-token observation features.
             q_head_hidden_dim: Hidden size for the Q-value head.
+            aggregator_type: ``"mean"`` or ``"attention"`` — declared, never defaulted.
+            num_heads: Attention heads; required for ``"attention"``, must be None for ``"mean"``.
         """
         super().__init__()
         self.obs_dim = obs_dim
@@ -523,6 +534,24 @@ class SetEncoderQNetwork(nn.Module):
             nn.LayerNorm(token_embed_dim),
             nn.ReLU(),
         )
+        self.aggregator: nn.MultiheadAttention | None
+        if aggregator_type == "attention":
+            if num_heads is None:
+                raise ValueError("aggregator_type='attention' requires num_heads")
+            if token_embed_dim % num_heads != 0:
+                raise ValueError(f"token_embed_dim ({token_embed_dim}) must be divisible by num_heads ({num_heads})")
+            self.aggregator = nn.MultiheadAttention(
+                embed_dim=token_embed_dim,
+                num_heads=num_heads,
+                dropout=0.0,
+                batch_first=True,
+            )
+        elif aggregator_type == "mean":
+            if num_heads is not None:
+                raise ValueError("aggregator_type='mean' takes no num_heads")
+            self.aggregator = None
+        else:
+            raise ValueError(f"Unknown aggregator_type: {aggregator_type!r}. Supported: mean, attention")
         self.base_encoder: nn.Sequential | None
         if self.base_dim > 0:
             self.base_encoder = nn.Sequential(
@@ -552,6 +581,19 @@ class SetEncoderQNetwork(nn.Module):
         non_empty_mask = tokens.abs().sum(dim=-1, keepdim=True) > 0
 
         token_embeddings = self.token_encoder(tokens)
+        if self.aggregator is not None:
+            key_padding_mask = ~non_empty_mask.squeeze(-1)
+            # A fully-masked row makes softmax NaN; unmask it and rely on the output-side
+            # zeroing below, which already forces all-empty sets to a zero pooled vector.
+            all_empty = key_padding_mask.all(dim=1, keepdim=True)
+            key_padding_mask = key_padding_mask & ~all_empty
+            token_embeddings, _ = self.aggregator(
+                token_embeddings,
+                token_embeddings,
+                token_embeddings,
+                key_padding_mask=key_padding_mask,
+                need_weights=False,
+            )
         token_embeddings = token_embeddings * non_empty_mask.to(dtype=token_embeddings.dtype)
         token_counts = non_empty_mask.sum(dim=1).clamp(min=1).to(dtype=token_embeddings.dtype)
         pooled_tokens = token_embeddings.sum(dim=1) / token_counts

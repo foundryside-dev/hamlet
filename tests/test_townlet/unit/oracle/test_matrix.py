@@ -162,8 +162,10 @@ def test_standing_and_differential_cells_declare_nothing_at_this_tag() -> None:
 def test_profile_variable_cells_bind_div006_narrowly() -> None:
     """DIV-006 (PDR-0075) is hash-only on the four profile-variable cells: exactly the
     three DERIVED hashes measured to move, no RAW hash, and a pack divergence only where
-    the frozen fixture actually differs (effects_smoke gained `semantic_type`; items_smoke
-    declares only item variables and is still a byte copy of its fixture)."""
+    the frozen fixture actually differs — effects_smoke under DIV-006 (its fixture is held
+    at the pre-`semantic_type` schema), items_smoke under DIV-007 (its fixture keeps the
+    stale, never-loaded levels/L0_smoke/brain.yaml stub the PDR-0027 cut deleted from the
+    live pack)."""
     profile = [c for c in default_cells() if c.params.pack in _PROFILE_VARIABLE_CELLS]
     assert len(profile) == 4
     for c in profile:
@@ -173,7 +175,7 @@ def test_profile_variable_cells_bind_div006_narrowly() -> None:
         if c.params.pack == "configs/test/effects_smoke":
             assert c.pack_divergence == "DIV-006"
         else:
-            assert c.pack_divergence is None, f"{c.cell_id}: items_smoke's fixture is a byte copy; nothing to declare"
+            assert c.pack_divergence == "DIV-007", f"{c.cell_id}: items_smoke's fixture keeps the deleted brain.yaml stub (DIV-007)"
 
 
 def test_differential_cells_run_their_declared_levels() -> None:

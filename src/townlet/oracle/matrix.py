@@ -209,13 +209,17 @@ _DIV006 = RegisteredHashDivergence(
         "vfs_hash",
     ),
 )
-# Which profile packs' FROZEN fixture is held at the pre-cut vfs_profiles.yaml schema. The
-# cut requires `semantic_type` on global/agent profile variables, so effects_smoke (one global
-# variable) drifts from its fixture by exactly that key; items_smoke declares only item
-# variables, which take no semantic_type, so its live pack is still a byte copy of its
-# fixture and it must NOT declare a pack divergence (a declaration with nothing to declare is
-# a stale entry — test_pack_freeze pins this).
-_DIV006_PACK_DRIFT = frozenset({"configs/test/effects_smoke"})
+# Which profile packs' FROZEN fixture drifts from its live pack, and under which register
+# entry. effects_smoke: the DIV-006 cut requires `semantic_type` on global/agent profile
+# variables, so its fixture is held at the pre-cut vfs_profiles.yaml schema. items_smoke:
+# DIV-007 — levels/*/brain.yaml became a loaded surface (PDR-0027) and the live pack's
+# stale, never-loaded L0_smoke stub was deleted; the fixture keeps it and the old loader
+# ignores it. A pack absent here must be a byte copy of its fixture (a declaration with
+# nothing to declare is a stale entry — test_pack_freeze pins both directions).
+_PACK_DIVERGENCE = {
+    "configs/test/effects_smoke": "DIV-006",
+    "configs/test/items_smoke": "DIV-007",
+}
 
 
 @dataclass(frozen=True)
@@ -310,7 +314,7 @@ def default_cells() -> tuple[Cell, ...]:
                 seed=42,
                 device=device,
             ),
-            pack_divergence="DIV-006" if pack in _DIV006_PACK_DRIFT else None,
+            pack_divergence=_PACK_DIVERGENCE.get(pack),
             hash_divergence=_DIV006,
         )
         for device in ("cpu", "cuda")

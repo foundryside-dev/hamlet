@@ -521,6 +521,48 @@ fourth mover is `HASH_MISMATCH`; a declared field that does not move is
 
 ---
 
+## DIV-007 — `levels/*/brain.yaml` becomes a loaded surface; items_smoke's stale, never-loaded stub is deleted from the live pack and survives in the frozen fixture
+
+- **Status:** `built` (2026-08-22 — cut with the PDR-0027 level-override; entry written at the
+  cut, not before, because the drift was DISCOVERED by the pack-freeze test rather than
+  predicted: the stub predates the register and nothing documented its existence)
+- **Harness shape: pack-drift-only.** No hash divergence, no stream divergence — the two
+  `items_smoke` cells declare `pack_divergence="DIV-007"` and must still read `AGREE` on
+  every hash DIV-006 does not already cover and on every stream.
+- **Provenance:** `hamlet-0d0115383e` (the level-override unit) · `PDR-0027` (the design call)
+  · `PDR-0108` (the scope decision that scheduled it) · `hamlet-2090c9f16d` (the pack-freeze
+  mechanism this entry feeds)
+- **Surface:** the loader's file set for `levels/<level>/` — `brain.yaml` joins it as an
+  OPTIONAL complete per-level brain (PDR-0027).
+
+**Oracle behaviour (verified against the tag's loader source).** At `oracle-2026-08-17` the
+level loader reads exactly `curriculum.yaml`, `bars.yaml`, `affordances.yaml`,
+`training.yaml`, `drive.yaml`, and optional `items.yaml` — a `levels/*/brain.yaml` is
+**never opened**. `configs/test/items_smoke/levels/L0_smoke/brain.yaml` was a stale stub from
+an older layout (q-learning scalars duplicated in `training.yaml`, its own header calling
+brain.yaml the "single source of truth" it was not), inert on the oracle side by
+construction.
+
+**Intended new behaviour (`PDR-0027`).** A present `levels/<level>/brain.yaml` is loaded as a
+COMPLETE `BrainConfig` and replaces the pack brain for that level; a malformed one fails
+Stage 1 loudly. The stale stub is therefore deleted from the live pack — zero-backcompat:
+old configs fail loudly, they are not accommodated.
+
+**Diff shape.** Input-only: `pack_drift` reports `only_in_frozen: [levels/L0_smoke/brain.yaml]`
+for `configs/test/items_smoke`. The old side reads the frozen pack (stub present, ignored by
+the old loader); the new side reads the live pack (stub gone). Same universe on both sides;
+every hash outside DIV-006's declared set identical, every stream byte-exact.
+
+**Harness adjudication.** The two `items_smoke` cells (`items_smoke:L0_smoke:{cpu,cuda}:seed42`)
+bind `pack_divergence="DIV-007"` alongside their existing DIV-006 hash declaration. Any
+stream difference is `DIVERGE`; any hash mover outside DIV-006's set is `HASH_MISMATCH` —
+all red.
+
+**Retire this entry** at the next forward move of the tag (re-freezing the fixture as a byte
+copy dissolves the drift).
+
+---
+
 ## Adding an entry
 
 Record the divergence **before** cutting the seam that produces it — at knockdown plan time,

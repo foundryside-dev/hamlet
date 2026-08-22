@@ -1,10 +1,16 @@
 # Token Observation Representation — Design
 
 **Status:** Design approved in-session by the owner, 2026-08-22, section by section; revised
-same day after a four-lens design review (round 1), and **revised again after a four-lens
-VFS-pairing review (round 2)** — both synthesized under "Review amendments". Awaiting owner
-review of this second revision before implementation planning. Three items are explicitly
-**owner calls**, marked ⚖ below.
+same day after a four-lens design review (round 1), and revised again after a four-lens
+VFS-pairing review (round 2) — both synthesized under "Review amendments". **The second
+revision is APPROVED by the owner (2026-08-22), with one binding rider: the no-tech-debt
+policy (`PDR-0012`/`PDR-0013`) applies across the board.** Concretely: every review finding
+— in this design and in the 13 filed VFS tickets — carries a **named discharge vehicle**
+(the migration unit that wires-or-deletes it, or explicit standalone scheduling); nothing
+surfaced here is carried as parked debt. Each unit's implementation plan inherits this: a
+unit that touches a surface with a filed defect discharges it, never codes around it. The
+trial-pack recommendation in unit 5 is adopted (⚖ resolved). Next step: writing-plans for
+unit 1.
 **Unit:** Phase B unit 2 of the token-observation pivot — "the migration proper and the big
 design document" (`PDR-0109`, `PDR-0112`).
 **Tracker:** `hamlet-fa6bb6da4a` (this unit) · `hamlet-c586d520b2` (deferred approach A) ·
@@ -111,11 +117,30 @@ in this revision:
    independently: ≈10× from 249 variable elements alone; ≈25× with its 250-item pool).
    ⚖ owner call — see Section 6 unit 5.
 
-VFS-standalone findings from the widened mandate (access-control bypass on the observation
-read path, `rank_scaled` ranking across independent worlds, `set_engine_value` shape
-bypass, per-step clone traffic, effects DTOs without `extra="forbid"`, engine-embedded
-`max_items_per_agent = 3` fallback, and more) are filed as tracker issues, not absorbed
-here — this design depends on only the ones named in its sections.
+VFS-standalone findings from the widened mandate are filed as tracker issues — and, per
+the owner's no-tech-debt rider, **filed with a named discharge vehicle each, never
+parked**:
+
+| Ticket | Finding | Discharge vehicle |
+|---|---|---|
+| `hamlet-b8ad2ffcd6` | exposed profile variables ship raw (no normalization surface) | **unit 3** — Normalization authority (required at exposure) |
+| `hamlet-d97b4d6b4a` | `exposed_to` fails open to `["agent"]` | **unit 3** — explicit exposure at the cut |
+| `hamlet-d970ef83f0` | `set_engine_value` shape bypass | **unit 3** — named prerequisite (capacity/coordinate derivation) |
+| `hamlet-88578e629e` | effects DTOs lack `extra="forbid"` + behavioral defaults | **unit 3** — prerequisite of `max_active_effects` |
+| `hamlet-81942565ff` | `VFSObservationSpec` live fallbacks (`max_items_per_agent=3` in-engine) | **unit 3/6** — dies with the mirror; capacity table replaces the fallback |
+| `hamlet-0ddc83e377` | VTC/evaluator write-backs silently drop unknown ids | **unit 3** — made loud as part of the cut (publisher-variable renames make it live) |
+| `hamlet-6a6e104523` | `rank_scaled` ranks across independent worlds / constant-zero | **unit 3** — same surface as the boundedness/kind rules; restricted or refused there |
+| `hamlet-bc0a5deeff` | item-profile expressions never evaluate (3rd inertness instance) | **unit 2** — the evaluation scope decision covers all three profile kinds: evaluate or refuse-at-compile, never silently inert |
+| `hamlet-0ba58fd9dc` | `ScopedVariableRegistry` + `dynamic_needs.py` production-dead | **unit 6** — deletion sweep (added to its list explicitly) |
+| `hamlet-c7084169f7` | per-step VFS clone traffic (5× full-state/step) | **unit 3/4** — the trigger-3 step-time baseline is clone-audited before that trigger is read |
+| `hamlet-702ae15f82` | stale zone-scope conclusion in trial_k record + extents preflight gap | record half: **pack-disposition/record-keeping queue** (measure-bet residual scope); preflight two-liner rides **unit 3** |
+| `hamlet-5f99e89865` | `environment.yaml` lifetime hardcoded to tick (counters silently reset) | **WS-4 queue** — authoring-surface work, routed per the standing rule; not this migration's scope |
+| `hamlet-955900540e` | hygiene batch (vocab mismatch, misleading errors, docstring, host-syncs, one_hot guard, masked_value) | standalone, schedulable now — cheap fixes, several in files unit 3 rewrites anyway |
+
+Existing tickets `hamlet-83a043a9b9` (agent_private) and `hamlet-bf42ac60b5` (raw values in
+observation) received mechanism-evidence comments; their observation-path halves are
+discharged by the Section 2 scope table's publisher filter and the normalization authority
+respectively, and the tickets close when those land.
 
 ---
 
@@ -514,16 +539,18 @@ Implementation units, in dependency order — each lands green, each gets its ow
    regression). Acceptance keeps the inert-guard — every live token type N > 0 in at least
    one committed pack that compiles AND runs in the suite — **extended to scopes**: every
    scope row in Section 2's table demonstrably behaves as the table says (lands, or
-   refuses loudly). ⚖ **Trial-pack interaction (owner call):** `trial_b_blind_organism`
-   breaches trigger 3 immediately if exposed/migrated (≈10–25× — round 2, two lenses).
-   Recommendation: the retired corpus's trial packs resolve on their existing 2026-10-06
-   disposition clock *before* this unit; the inert-guard is satisfied by purpose-built or
-   promoted packs, and trigger 3 is evaluated only on packs that survive disposition. A
-   retired-corpus artifact should not be what force-promotes approach A.
+   refuses loudly). **Trial-pack interaction (owner-adopted 2026-08-22):**
+   `trial_b_blind_organism` breaches trigger 3 immediately if exposed/migrated (≈10–25× —
+   round 2, two lenses). Ruling: the retired corpus's trial packs resolve on their
+   existing 2026-10-06 disposition clock *before* this unit; the inert-guard is satisfied
+   by purpose-built or promoted packs, and trigger 3 is evaluated only on packs that
+   survive disposition. A retired-corpus artifact does not force-promote approach A.
 6. **Deletion sweep** — activity mask + `curriculum_active` + `ObservationActivity` (and
    RND's dead constructor contract), raster/window encoders, temporal block, the VFS
    mirror + `VFSObservationSpec`, the two inert normalization paths, `StructuredQNetwork`,
-   `SetEncoderQNetwork`, `RecurrentSpatialQNetwork`; docs and README at gate-2 standard.
+   `SetEncoderQNetwork`, `RecurrentSpatialQNetwork`, and the production-dead
+   `ScopedVariableRegistry` + `vfs/dynamic_needs.py` (`hamlet-0ba58fd9dc`); docs and
+   README at gate-2 standard.
    **Prerequisite: the token-table inspector exists** (dump one step's token set per
    agent, presence and payload labeled) — the raster was also the debugging view.
 

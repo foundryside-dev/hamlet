@@ -230,8 +230,10 @@ class VFSProfileCompiler:
         Raises:
             TypeCheckError: If expression has type error
         """
-        # Variable with static initial value
-        if var.initial_value is not None:
+        # Variable with a static init source. The DTO enforces exactly one of
+        # {initial_value, initial_value_mode, expression}; the first two are both static —
+        # initial_value_mode is how tensor variables initialize (zeros/ones/eye/random_*).
+        if var.initial_value is not None or getattr(var, "initial_value_mode", None) is not None:
             return CompiledVariable(
                 name=var.name,
                 exposed_to=tuple(var.exposed_to),

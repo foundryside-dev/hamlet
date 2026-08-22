@@ -1,0 +1,29 @@
+version: '1.0'
+description: set_encoder smoke pack — the first pack that DRIVES architecture.type set_encoder (hamlet-fa6bb6da4a)
+architecture:
+  type: set_encoder
+  set_encoder:
+    token_field_name: need_tokens
+    max_tokens: 4
+    token_dim: 3
+    token_embed_dim: 16
+    base_hidden_dim: 32
+    q_head_hidden_dim: 64
+optimizer:
+  type: adam
+  learning_rate: 0.0001
+  weight_decay: 0.0
+  schedule:
+    type: constant
+  adam_beta1: 0.9
+  adam_beta2: 0.999
+  adam_eps: 1.0e-08
+loss:
+  type: smooth_l1
+q_learning:
+  gamma: 0.99
+  target_update_frequency: 1000
+  use_double_dqn: true
+replay:
+  capacity: 100000
+  prioritized: false

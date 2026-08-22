@@ -1,0 +1,15 @@
+version: '1.0'
+evaluation_mode: mark_and_sweep
+debug_logging: false
+
+agent_profile:
+  variables:
+    - name: need_tokens
+      semantic_type: custom
+      type: tensor2d
+      shape: [4, 3]
+      initial_value_mode: zeros
+      exposed_to: [agent]
+      description: "Flattened token rows for the set-encoder proof: 4 tokens x 3 features."
+
+item_profiles: []

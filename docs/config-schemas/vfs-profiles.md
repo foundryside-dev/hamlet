@@ -154,6 +154,12 @@ agent_profile:
 **Shape**: `[max_items, num_vars]` per profile
 **When to use**: Item attributes (nutrition, durability, age)
 
+> ⚠️ **Item-profile `expression:` refuses at compile.** `VFSProfileCompiler.compile_item_profile`
+> has no expression evaluator for item scope and raises `ValueError` (`hamlet-bc0a5deeff`) for
+> any item-profile variable that declares `expression`. Every item-profile variable below must
+> declare `initial_value` instead; drive changing item state (e.g. spoilage, breakage) via
+> effects, not a compiled expression.
+
 **Example**:
 ```yaml
 item_profiles:
@@ -169,9 +175,11 @@ item_profiles:
         initial_value: 0
         description: "Ticks since item creation"
 
+      # Item-profile expressions refuse at compile (hamlet-bc0a5deeff) — static default,
+      # flip it via an effect when the item actually spoils.
       - name: is_spoiled
         type: bool
-        expression: "self.age > 100"
+        initial_value: false
         description: "True when food has spoiled"
 
   - profile_name: weapon_stats
@@ -321,7 +329,9 @@ expression: "bar.energy + bar.health * 0.5"
 expression: "temporal.tick % 24 >= 18"
 ```
 
-**Self-reference (item scope)**:
+**Self-reference (item scope)** — valid `self.<field>` syntax in item spawn-condition
+(`items.yaml` appearance `when:`) and effect expressions; as an item-profile **variable**'s
+own `expression:` field it refuses at compile (`hamlet-bc0a5deeff`, see Item Scope above):
 ```yaml
 expression: "self.age > 100"
 ```
@@ -587,6 +597,9 @@ agent_profile:
 
 ### Example 5: Item Durability
 
+> Item-profile `expression:` refuses at compile (`hamlet-bc0a5deeff`) — `is_broken` is a static
+> default, flipped by an effect when `durability` reaches zero, not a compiled expression.
+
 ```yaml
 item_profiles:
   - profile_name: weapon_stats
@@ -598,7 +611,7 @@ item_profiles:
 
       - name: is_broken
         type: bool
-        expression: "self.durability <= 0"
+        initial_value: false
         description: "True when weapon is broken"
 
       - name: damage
@@ -609,10 +622,14 @@ item_profiles:
 
 **Usage**:
 - `durability` decremented by engine on item use
-- `is_broken` recomputed automatically
+- `is_broken` set by an effect that watches `durability` (no item-scope expression evaluator)
 - `damage` used in combat calculations
 
 ### Example 6: Food Spoilage
+
+> Item-profile `expression:` refuses at compile (`hamlet-bc0a5deeff`) — `is_spoiled` and
+> `effective_nutrition` are static defaults here; drive them via effects instead of a
+> compiled dependency chain.
 
 ```yaml
 item_profiles:
@@ -630,16 +647,18 @@ item_profiles:
 
       - name: is_spoiled
         type: bool
-        expression: "self.age > 100"
+        initial_value: false
         description: "True when food has spoiled"
 
       - name: effective_nutrition
         type: float
-        expression: "0.0 if self.age > 100 else nutrition"
-        description: "Nutrition value (0 if spoiled)"
+        initial_value: 0.5
+        description: "Nutrition value (0 if spoiled; set by an effect, not a compiled expression)"
 ```
 
-**Dependency Order**: `age` → `is_spoiled` → `effective_nutrition`
+**Usage**: `age` accumulates via the engine; an effect flips `is_spoiled` and
+`effective_nutrition` when `age` crosses the spoilage threshold — item scope has no compiled
+dependency resolution to do this automatically.
 
 ### Example 7: Multi-Profile Items System
 

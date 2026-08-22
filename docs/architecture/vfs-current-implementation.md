@@ -360,7 +360,11 @@ At initialization, the environment:
 2. Creates `VariableRegistry` with the compiled variables, agent count, device, item capacity, affordance count, and compiled item profiles.
 3. Reads `universe.vfs_observation_spec`.
 4. Creates `VFSEvaluator` if compiled VFS profiles are present.
-5. Stores `vfs_observation_marks` for mark-and-sweep evaluation.
+5. Stores `vfs_evaluation_marks` for mark-and-sweep evaluation. Marks derive from exposure, per
+   scope (`global`/`agent`): an expression variable is marked if its `exposed_to` names an
+   observer, unioned with any expression variable named by an overlay `variables_reference.yaml`
+   entry with `observable: true`. Statics are never marked — they are storage in every mode and
+   are never written back.
 6. Compiles runtime VTC programs from the level's actions, bars, affordances, and drive config.
 
 ### Variable Storage

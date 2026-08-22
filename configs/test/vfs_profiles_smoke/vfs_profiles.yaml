@@ -47,9 +47,11 @@ item_profiles:
         initial_value: 0.5
         description: "Energy restored when consumed"
 
+      # Item-profile expressions refuse at compile (no evaluator; hamlet-bc0a5deeff) —
+      # state is driven via effects, not a compiled expression.
       - name: is_spoiled
         type: bool
-        expression: "self.age > 100"
+        initial_value: false
         description: "True when food has spoiled"
 
   - profile_name: weapon_stats

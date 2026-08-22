@@ -173,7 +173,7 @@ def _with_runtime_action_surface(
         all_levels=all_levels,
         compiled_vfs_profiles=None if disable_vfs_profiles else universe.compiled_vfs_profiles,
         vfs_observation_spec=None if disable_vfs_profiles else universe.vfs_observation_spec,
-        vfs_observation_marks=None if disable_vfs_profiles else universe.vfs_observation_marks,
+        vfs_evaluation_marks=None if disable_vfs_profiles else universe.vfs_evaluation_marks,
     )
 
 
@@ -603,7 +603,7 @@ class TestVectorizedHamletEnvStep:
                 item_profiles={},
             ),
         )
-        env.vfs_observation_marks = {"global": {"context_probe"}}
+        env.vfs_evaluation_marks = {"global": {"context_probe"}}
 
         captured_context: dict[str, object] = {}
 

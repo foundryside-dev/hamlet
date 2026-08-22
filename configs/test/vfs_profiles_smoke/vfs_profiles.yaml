@@ -16,7 +16,7 @@ global_profile:
     - name: is_night
       semantic_type: temporal
       type: bool
-      expression: "temporal.tick % 24 >= 18"
+      expression: "tick % 24 >= 18"
       description: "True during night hours (18:00-6:00)"
 
 agent_profile:

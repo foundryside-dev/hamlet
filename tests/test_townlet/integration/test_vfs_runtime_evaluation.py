@@ -85,8 +85,8 @@ def test_mark_and_sweep_only_evaluates_observed_vars():
 
     # Verify: Only variables marked as observed should be evaluated
     # In effects_smoke, we need to check the observation marks
-    if compiled.vfs_observation_marks is not None:
-        expected_vars = compiled.vfs_observation_marks.get("global", set())
+    if compiled.vfs_evaluation_marks is not None:
+        expected_vars = compiled.vfs_evaluation_marks.get("global", set())
         # In mark-and-sweep mode, only marked variables should be evaluated
         # If there are no marks, no variables should be evaluated
         if len(expected_vars) > 0:

@@ -256,7 +256,7 @@ class UniverseCompiler:
             shared_artifacts.compiled_effect_catalog,
             shared_artifacts.effects_schema,
             level_bundle.vfs_expression_schema,
-            level_bundle.vfs_observation_marks,
+            level_bundle.vfs_evaluation_marks,
             effect_observation_slots,
             shared_artifacts.vfs_history_spec,
             shared_artifacts.vfs_observation_spec,
@@ -468,16 +468,14 @@ class UniverseCompiler:
 
         vfs_expression_schema = self._vfs_compiler.build_expression_schema(primary_level_config.bars, compiled_vfs_profiles)
 
-        vfs_observation_marks: dict[str, set[str]] | None = None
-        if raw.variables_reference is not None:
-            vfs_observation_marks = self._vfs_compiler.extract_observation_marks(raw.variables_reference)
+        vfs_evaluation_marks = self._vfs_compiler.derive_evaluation_marks(raw.vfs_profiles, raw.variables_reference)
 
         return CompiledLevelBundle(
             all_levels=all_levels,
             primary_meta=primary_meta,
             universe_metadata=universe_metadata,
             vfs_expression_schema=vfs_expression_schema,
-            vfs_observation_marks=vfs_observation_marks,
+            vfs_evaluation_marks=vfs_evaluation_marks,
         )
 
     def _stage_7_emit_artifact(
@@ -493,7 +491,7 @@ class UniverseCompiler:
         compiled_effect_catalog: EffectCatalog | None,
         effects_schema: dict[str, str],
         vfs_expression_schema: dict[str, str],
-        vfs_observation_marks: dict[str, set[str]] | None,
+        vfs_evaluation_marks: dict[str, set[str]] | None,
         effect_observation_slots: int,
         vfs_history_spec: dict[str, int],
         vfs_observation_spec: VFSObservationSpec | None,
@@ -538,7 +536,7 @@ class UniverseCompiler:
             effect_observation_slots=effect_observation_slots,
             vfs_expression_schema=vfs_expression_schema,
             vfs_history_spec=vfs_history_spec or None,
-            vfs_observation_marks=vfs_observation_marks,
+            vfs_evaluation_marks=vfs_evaluation_marks,
             vfs_observation_spec=vfs_observation_spec,
             experiment_dir=experiment_dir,
             drive_hash=primary_meta.drive_hash,

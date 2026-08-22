@@ -99,7 +99,7 @@ REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "effect_observation_slots",
     "vfs_expression_schema",
     "vfs_history_spec",
-    "vfs_observation_marks",
+    "vfs_evaluation_marks",
     "vfs_observation_spec",
     "experiment_dir",
     "drive_hash",
@@ -180,9 +180,11 @@ class CompiledUniverse:
     # Temporal history requirements for VFS expressions
     vfs_history_spec: dict[str, int] | None = None
 
-    # Marks for which VFS variables are observed (for mark-and-sweep evaluation)
-    vfs_observation_marks: dict[str, set[str]] | None = None
-    # Format: {"global": {"day_count", "is_night"}, "agent": {"motivation"}, "item": {...}}
+    # Marks for which VFS expression variables are evaluated (for mark-and-sweep evaluation).
+    # Derived from exposure (profile exposed_to, plus overlay observable), not observation
+    # directly — the field is named for what it does (hamlet-df3a96bbac).
+    vfs_evaluation_marks: dict[str, set[str]] | None = None
+    # Format: {"global": {"day_count", "is_night"}, "agent": {"motivation"}}
 
     # Runtime-ready VFS observation dimensions and variable order.
     vfs_observation_spec: VFSObservationSpec | None = None
@@ -336,7 +338,7 @@ class CompiledUniverse:
             effect_observation_slots=self.effect_observation_slots,
             vfs_expression_schema=deepcopy(self.vfs_expression_schema) if self.vfs_expression_schema is not None else None,
             vfs_history_spec=deepcopy(self.vfs_history_spec) if self.vfs_history_spec is not None else None,
-            vfs_observation_marks=deepcopy(self.vfs_observation_marks) if self.vfs_observation_marks is not None else None,
+            vfs_evaluation_marks=deepcopy(self.vfs_evaluation_marks) if self.vfs_evaluation_marks is not None else None,
             vfs_observation_spec=deepcopy(self.vfs_observation_spec) if self.vfs_observation_spec is not None else None,
             experiment_dir=self.experiment_dir,
             drive_hash=self.drive_hash,
@@ -394,8 +396,8 @@ class CompiledUniverse:
             "effect_observation_slots": self.effect_observation_slots,
             "vfs_expression_schema": self.vfs_expression_schema,
             "vfs_history_spec": self.vfs_history_spec,
-            "vfs_observation_marks": (
-                {k: list(v) for k, v in self.vfs_observation_marks.items()} if self.vfs_observation_marks is not None else None
+            "vfs_evaluation_marks": (
+                {k: list(v) for k, v in self.vfs_evaluation_marks.items()} if self.vfs_evaluation_marks is not None else None
             ),  # Convert sets to lists for JSON serialization
             "vfs_observation_spec": (_dataclass_to_plain(self.vfs_observation_spec) if self.vfs_observation_spec is not None else None),
             "experiment_dir": None if self.experiment_dir is None else str(self.experiment_dir),
@@ -615,9 +617,9 @@ class CompiledUniverse:
             effect_observation_slots=_required_field(payload, "effect_observation_slots"),
             vfs_expression_schema=_required_field(payload, "vfs_expression_schema"),
             vfs_history_spec=_required_field(payload, "vfs_history_spec"),
-            vfs_observation_marks=(
-                {k: set(v) for k, v in _required_field(payload, "vfs_observation_marks").items()}
-                if _required_field(payload, "vfs_observation_marks") is not None
+            vfs_evaluation_marks=(
+                {k: set(v) for k, v in _required_field(payload, "vfs_evaluation_marks").items()}
+                if _required_field(payload, "vfs_evaluation_marks") is not None
                 else None
             ),  # Convert lists back to sets
             vfs_observation_spec=_vfs_observation_spec_from_plain(_required_field(payload, "vfs_observation_spec")),

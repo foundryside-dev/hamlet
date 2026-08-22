@@ -606,7 +606,7 @@ class VectorizedHamletEnv:
 
         Phase method of __init__ (hamlet-2559b98232). Writes:
         ``vfs_variables``, ``vfs_registry``, ``vfs_observation_spec``,
-        ``vfs_evaluator``, ``vfs_observation_marks``, ``meter_name_to_index``,
+        ``vfs_evaluator``, ``vfs_evaluation_marks``, ``meter_name_to_index``,
         Depends on ``self.metadata``, ``self.num_agents``,
         ``self.device``, ``self.universe``.
         """
@@ -644,9 +644,9 @@ class VectorizedHamletEnv:
                 history_spec=universe.vfs_history_spec,
                 debug_logging=universe.compiled_vfs_profiles.debug_logging,
             )
-            self.vfs_observation_marks = universe.vfs_observation_marks
+            self.vfs_evaluation_marks = universe.vfs_evaluation_marks
         else:
-            self.vfs_observation_marks = None
+            self.vfs_evaluation_marks = None
 
         meter_name_to_index = dict(self.metadata.meter_name_to_index)
         self.meter_name_to_index = meter_name_to_index
@@ -1065,7 +1065,7 @@ class VectorizedHamletEnv:
             # Evaluate global profile
             global_profile = self.universe.compiled_vfs_profiles.global_profile
             if global_profile is not None:
-                marks = self.vfs_observation_marks.get("global", set()) if self.vfs_observation_marks else set()
+                marks = self.vfs_evaluation_marks.get("global", set()) if self.vfs_evaluation_marks else set()
 
                 updated_vfs = self.vfs_evaluator.evaluate_global_profile(
                     profile=global_profile,

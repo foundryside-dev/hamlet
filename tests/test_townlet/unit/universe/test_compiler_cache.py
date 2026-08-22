@@ -207,7 +207,7 @@ def test_direct_cache_load_rejects_missing_required_top_level_fields(tmp_path: P
         "effect_observation_slots",
         "vfs_expression_schema",
         "vfs_history_spec",
-        "vfs_observation_marks",
+        "vfs_evaluation_marks",
         "all_levels",
     ],
 )

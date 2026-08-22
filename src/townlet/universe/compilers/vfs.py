@@ -12,7 +12,7 @@ from townlet.config.vfs_profiles_config import GlobalVFSProfileConfig, VFSProfil
 from townlet.universe.compiled import CompiledVFSProfiles
 from townlet.universe.validation.limits import MAX_VFS_PROFILES
 from townlet.vfs.profiles import CompiledItemProfile, VFSProfileCompiler
-from townlet.vfs.schema import VariableDef, VariableScope
+from townlet.vfs.schema import VariableDef
 from townlet.world.expression import ExpressionParser
 from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
 
@@ -152,27 +152,32 @@ class VFSCompiler:
 
         return schema
 
-    def extract_observation_marks(self, variables: tuple[VariableDef, ...]) -> dict[str, set[str]]:
-        """Extract which VFS variables are marked for observation."""
-        marks: dict[str, set[str]] = {
-            "global": set(),
-            "agent": set(),
-            "item": set(),
-        }
+    def derive_evaluation_marks(
+        self,
+        profiles_config: VFSProfilesConfig | None,
+        overlay_variables: tuple[VariableDef, ...] | None,
+    ) -> dict[str, set[str]] | None:
+        """Marks = the expression variables observation can see.
 
-        for var in variables:
-            if var.observable:
-                if isinstance(var.scope, VariableScope):
-                    scope_key = var.scope.value
-                else:
-                    scope_key = str(var.scope)
-
-                if scope_key == "global":
-                    marks["global"].add(var.id)
-                elif scope_key in ("agent", "agent_private"):
-                    marks["agent"].add(var.id)
-
-        return {k: v for k, v in marks.items() if v}
+        Mark-and-sweep means "only evaluate observed variables". A profile EXPRESSION
+        variable whose exposed_to names an observer is observed, so it is marked; the
+        optional variables_reference.yaml overlay may mark additional profile expression
+        variables via `observable`. Statics are NEVER marked: they are storage, and
+        re-emitting their initial value would clobber runtime writes. (hamlet-df3a96bbac)
+        """
+        if profiles_config is None:
+            return None
+        overlay_observable = {v.id for v in (overlay_variables or ()) if getattr(v, "observable", False)}
+        marks: dict[str, set[str]] = {}
+        for scope_key, profile in (("global", profiles_config.global_profile), ("agent", profiles_config.agent_profile)):
+            if profile is None:
+                continue
+            expression_vars = {v.name for v in profile.variables if v.expression is not None}
+            exposed = {v.name for v in profile.variables if v.expression is not None and v.exposed_to}
+            scoped = exposed | (overlay_observable & expression_vars)
+            if scoped:
+                marks[scope_key] = scoped
+        return marks or {}
 
     def validate_item_profile_bindings(
         self,

@@ -48,7 +48,7 @@ class CompiledLevelBundle:
     primary_meta: CompiledUniverse.LevelMetadata
     universe_metadata: UniverseMetadata
     vfs_expression_schema: dict[str, str]
-    vfs_observation_marks: dict[str, set[str]] | None
+    vfs_evaluation_marks: dict[str, set[str]] | None
 
 
 @dataclass(frozen=True)

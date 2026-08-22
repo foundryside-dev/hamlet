@@ -350,6 +350,12 @@ def test_stream_divergence_validates_ref_and_streams() -> None:
     d = RegisteredStreamDivergence(register_ref="DIV-008", streams=("obs",))
     assert d.declared == frozenset({"obs"})
 
+    # Pin the full trace-stream vocabulary: all four members must be constructible
+    # (not just "obs"). A typo like "reward" in _TRACE_STREAMS would pass if only
+    # "obs" is tested, breaking Tasks 4/5.
+    d_all = RegisteredStreamDivergence(register_ref="DIV-008", streams=("obs", "actions", "dones", "rewards"))
+    assert d_all.declared == frozenset({"obs", "actions", "dones", "rewards"})
+
     with pytest.raises(ValueError, match="register_ref"):
         RegisteredStreamDivergence(register_ref="div8", streams=("obs",))
     with pytest.raises(ValueError, match="at least one"):

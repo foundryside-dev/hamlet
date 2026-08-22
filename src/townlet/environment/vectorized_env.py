@@ -1128,11 +1128,11 @@ class VectorizedHamletEnv:
                 for idx in torch.nonzero(newly_done, as_tuple=False).flatten():
                     self.effect_manager.cancel_scheduled_for_entity(scope="agent", entity_id=int(idx))
 
-        # 6. Increment time of day only when temporal mechanics are active.
-        if self.enable_temporal_mechanics:
-            self.time_of_day = (self.time_of_day + 1) % int(self.day_length)
-        else:
-            self.time_of_day = 0
+        # 6. time_of_day is DERIVED from global_tick at this same point in the step —
+        # one temporal pipeline (token-obs unit 2c). The update point is load-bearing:
+        # the reward calculator reads time_of_day between the global_tick increment and
+        # here, and moving this line changes reward timing against the pinned oracle.
+        self.time_of_day = (self.global_tick % int(self.day_length)) if self.enable_temporal_mechanics else 0
 
         observations = self._observation_encoder._get_observations()
 

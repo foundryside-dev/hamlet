@@ -507,8 +507,12 @@ class TestVectorizedHamletEnvStep:
         env.step(actions)
         assert env.time_of_day == 1
 
-        env.time_of_day = 23
-        env.step(actions)
+        # time_of_day is derived from global_tick (token-obs unit 2c) — there is no
+        # second counter left to seed independently, so wraparound is driven by
+        # stepping global_tick to a full day, not by assigning time_of_day directly.
+        for _ in range(23):
+            env.step(actions)
+        assert env.global_tick == 24
         assert env.time_of_day == 0
 
     def test_step_retirement_bonus(self, custom_env_builder):

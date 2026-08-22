@@ -20,6 +20,23 @@ _RUNTIME_VFS_TYPES = frozenset(
     {"scalar", "bool", "tensor1d", "tensor2d", "tensor3d", "tensorNd", "agent_ref", "item_ref", "affordance_ref", "effect_ref"}
 )
 
+_ENGINE_TICK_ID = "tick"
+
+
+def _engine_tick_variable_def() -> VariableDef:
+    return VariableDef(
+        id=_ENGINE_TICK_ID,
+        scope="global",
+        type="scalar",
+        default=0.0,
+        lifetime="episode",
+        readable_by=["agent", "engine"],
+        writable_by=["engine"],
+        # float32 storage is integer-exact to 2^24; persistent-lifetime counters are
+        # hamlet-0268336cd1's question, not this variable's contract.
+        description="Engine-written step counter — the one temporal primitive (token-obs design ruling 6).",
+    )
+
 
 class VFSCompiler:
     """Compile VFS profiles, schemas, and spawn predicates."""
@@ -80,25 +97,30 @@ class VFSCompiler:
         static_variables: tuple[VariableDef, ...] | None = None,
     ) -> tuple[VariableDef, ...]:
         """Emit registry-ready VFS variables from observation/environment variables and profiles."""
-        variables: list[VariableDef] = list(base_variables)
+        variables: list[VariableDef] = [_engine_tick_variable_def(), *base_variables]
 
-        if compiled_vfs_profiles is None:
-            return tuple(variables)
+        if compiled_vfs_profiles is not None:
+            if compiled_vfs_profiles.global_profile is not None:
+                for compiled_var in compiled_vfs_profiles.global_profile.variables:
+                    variables.append(self._compiled_profile_var_to_variable_def(compiled_var, scope="global", lifetime="persistent"))
 
-        if compiled_vfs_profiles.global_profile is not None:
-            for compiled_var in compiled_vfs_profiles.global_profile.variables:
-                variables.append(self._compiled_profile_var_to_variable_def(compiled_var, scope="global", lifetime="persistent"))
+            if compiled_vfs_profiles.agent_profile is not None:
+                for compiled_var in compiled_vfs_profiles.agent_profile.variables:
+                    variables.append(self._compiled_profile_var_to_variable_def(compiled_var, scope="agent", lifetime="episode"))
 
-        if compiled_vfs_profiles.agent_profile is not None:
-            for compiled_var in compiled_vfs_profiles.agent_profile.variables:
-                variables.append(self._compiled_profile_var_to_variable_def(compiled_var, scope="agent", lifetime="episode"))
+            existing_ids = {variable.id for variable in variables}
+            for variable in static_variables or ():
+                if variable.id in existing_ids:
+                    continue
+                variables.append(variable)
+                existing_ids.add(variable.id)
 
-        existing_ids = {variable.id for variable in variables}
-        for variable in static_variables or ():
-            if variable.id in existing_ids:
-                continue
-            variables.append(variable)
-            existing_ids.add(variable.id)
+        clashes = [v.id for v in variables[1:] if v.id == _ENGINE_TICK_ID]
+        if clashes:
+            raise ValueError(
+                "Variable id 'tick' is reserved for the engine-written step counter "
+                "(token-obs design ruling 6). Rename the authored variable."
+            )
 
         return tuple(variables)
 

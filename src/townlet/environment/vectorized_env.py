@@ -822,6 +822,8 @@ class VectorizedHamletEnv:
         self.dones = torch.zeros(self.num_agents, dtype=torch.bool, device=self.device)
         self.step_counts = torch.zeros(self.num_agents, dtype=torch.long, device=self.device)
         self.global_tick = 0  # HIGH-01: Reset global time counter
+        # Pinned tick write point (token-obs unit 2): same registry cell as step()'s.
+        self.vfs_registry.set_engine_value("tick", torch.tensor(float(self.global_tick), device=self.device))
         self.intrinsic_weights = torch.ones(self.num_agents, dtype=torch.float32, device=self.device)  # Reset to 1.0
         self.vfs_registry.reset_episode_scoped()
 
@@ -1013,6 +1015,10 @@ class VectorizedHamletEnv:
             dones: [num_agents] bool
             info: dict with metadata
         """
+        # Pinned tick write point (token-obs unit 2): every consumer of THIS step —
+        # action executor, effects (current_step), evaluator — sees this one value,
+        # and any read of the registry's tick returns the same.
+        self.vfs_registry.set_engine_value("tick", torch.tensor(float(self.global_tick), device=self.device))
         prev_dones = self.dones.clone()
         self.vfs_registry.reset_tick_scoped()
         # 1. Execute actions and track successful interactions

@@ -23,7 +23,16 @@ __all__ = [
     "CompiledVariable",
     "CompiledGlobalProfile",
     "CompiledItemProfile",
+    "AMBIENT_ENGINE_NAMES",
 ]
+
+# Names the engine publishes as VFS globals that global/agent profile expressions may
+# reference by bare name without declaring them as profile variables (token-obs design
+# ruling 6: the engine publishes ONE temporal primitive — tick). Ambient names are
+# admitted into the expression type schema but never become an in-profile dependency
+# edge — they aren't sorted, they're just always there. Item profiles do not get this
+# admission (item expressions refuse entirely — Task 6).
+AMBIENT_ENGINE_NAMES: dict[str, str] = {"tick": "float"}
 
 
 @dataclass
@@ -112,7 +121,7 @@ class VFSProfileCompiler:
         for var in variables:
             if var.expression is not None:
                 # Extract variable references from expression
-                deps = self._extract_variable_refs(var.expression)
+                deps = self._extract_variable_refs(var.expression) - AMBIENT_ENGINE_NAMES.keys()
                 for dep in deps:
                     # Only add edge if dependency is in same profile
                     if dep in variable_names:
@@ -289,8 +298,10 @@ class VFSProfileCompiler:
         # Sort variables in dependency order
         sorted_vars, dependencies = self.topological_sort_with_dependencies(profile.variables)
 
-        # Build type schema for expression type checking
-        schema: dict[str, str] = {}
+        # Build type schema for expression type checking. Ambient engine names (tick)
+        # come first so an authored variable of the same name still fails loudly at the
+        # collision check in universe/compilers/vfs.py rather than shadowing silently here.
+        schema: dict[str, str] = dict(AMBIENT_ENGINE_NAMES)
 
         # Add bar paths to schema
         if bar_schema:

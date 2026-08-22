@@ -27,19 +27,25 @@ def test_build_dependency_graph_no_deps():
 
 
 def test_build_dependency_graph_with_deps():
-    """Variables with expression dependencies have edges."""
+    """Variables with expression dependencies have edges.
+
+    Uses ``hour`` rather than ``tick`` as the dependency: ``tick`` is now the reserved
+    engine-written VFS global (token-obs design ruling 6) and is ambient in profile
+    expressions — it never becomes an in-profile dependency edge, which would defeat the
+    point of this test. See test_engine_tick_variable.py for tick-specific coverage.
+    """
     profile = GlobalVFSProfileConfig(
         variables=[
-            GlobalVFSVariableConfig(semantic_type="custom", name="tick", type="int", initial_value=0),
-            GlobalVFSVariableConfig(semantic_type="custom", name="is_night", type="bool", expression="tick % 24 >= 18"),
+            GlobalVFSVariableConfig(semantic_type="custom", name="hour", type="int", initial_value=0),
+            GlobalVFSVariableConfig(semantic_type="custom", name="is_night", type="bool", expression="hour % 24 >= 18"),
         ]
     )
 
     compiler = VFSProfileCompiler()
     graph = compiler.build_dependency_graph(profile.variables)
 
-    # is_night depends on tick
-    assert ("tick", "is_night") in graph.edges
+    # is_night depends on hour
+    assert ("hour", "is_night") in graph.edges
 
 
 def test_build_dependency_graph_nested_deps():

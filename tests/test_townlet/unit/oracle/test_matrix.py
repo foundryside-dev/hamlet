@@ -335,3 +335,34 @@ def test_hash_divergence_declarations_are_enumerated_not_wildcards() -> None:
         RegisteredHashDivergence(register_ref="DIV-004", hash_fields=("vfs_hash", "observation_schema"))
     with pytest.raises(ValueError, match="DIV-004"):
         RegisteredHashDivergence(register_ref="div-4", hash_fields=("vfs_hash",))
+
+
+# --- RegisteredStreamDivergence: the third declared shape, built for DIV-008 ---
+#
+# DIV-008 (the token-observation cut) changes the obs stream while keeping
+# actions/dones/rewards byte-exact under scripted actions. This declares WHICH
+# streams are permitted to diverge; undeclared streams diverging keeps the cell red.
+
+
+def test_stream_divergence_validates_ref_and_streams() -> None:
+    from townlet.oracle.matrix import RegisteredStreamDivergence
+
+    d = RegisteredStreamDivergence(register_ref="DIV-008", streams=("obs",))
+    assert d.declared == frozenset({"obs"})
+
+    with pytest.raises(ValueError, match="register_ref"):
+        RegisteredStreamDivergence(register_ref="div8", streams=("obs",))
+    with pytest.raises(ValueError, match="at least one"):
+        RegisteredStreamDivergence(register_ref="DIV-008", streams=())
+    with pytest.raises(ValueError, match="duplicates"):
+        RegisteredStreamDivergence(register_ref="DIV-008", streams=("obs", "obs"))
+    with pytest.raises(ValueError, match="not a trace stream"):
+        RegisteredStreamDivergence(register_ref="DIV-008", streams=("observations",))
+
+
+def test_cell_defaults_declare_nothing_new() -> None:
+    from townlet.oracle.matrix import default_cells
+
+    for cell in default_cells():
+        assert cell.stream_divergence is None
+        assert cell.scripted_actions is False

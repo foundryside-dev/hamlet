@@ -194,6 +194,50 @@ class RegisteredHashDivergence:
         return frozenset(self.hash_fields)
 
 
+_TRACE_STREAMS = ("obs", "actions", "dones", "rewards")
+
+
+@dataclass(frozen=True)
+class RegisteredStreamDivergence:
+    """One cell's declared binding for the THIRD divergence shape: a named trace
+    stream diverges as intended, everything else does not.
+
+    Built for DIV-008 (the token-observation cut, spec
+    docs/superpowers/specs/2026-08-22-token-observation-representation-design.md §5):
+    the observation representation changes, so the `obs` stream diverges on every
+    cell, while world dynamics under scripted actions — `actions`, `dones`,
+    `rewards` — must stay byte-exact. Added because that register entry needs it,
+    the bar the sibling classes set.
+
+    Narrowness (PDR-0033, both directions, enforced in compare_traces):
+    - `streams` is an ENUMERATED set from the closed trace-stream vocabulary,
+      never a wildcard. An undeclared stream diverging keeps the cell red.
+    - Every declared stream must ACTUALLY diverge somewhere in the trace; one
+      that does not is a stale entry and lands REGISTERED_DIVERGENCE_ABSENT.
+    - Hash movement is a separate declaration (`RegisteredHashDivergence`) —
+      a declared OUTPUT-stream delta does not bless provenance movement, and
+      vice versa. DIV-008 binds both, under one register_ref.
+    """
+
+    register_ref: str
+    streams: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        if not _REGISTER_REF_RE.fullmatch(self.register_ref):
+            raise ValueError(f"register_ref must look like 'DIV-008', got {self.register_ref!r}")
+        if not self.streams:
+            raise ValueError("streams must enumerate at least one trace stream — an empty set is a wildcard by another name")
+        if len(set(self.streams)) != len(self.streams):
+            raise ValueError(f"streams contains duplicates: {self.streams!r}")
+        for name in self.streams:
+            if name not in _TRACE_STREAMS:
+                raise ValueError(f"streams entry {name!r} is not a trace stream (one of {_TRACE_STREAMS})")
+
+    @property
+    def declared(self) -> frozenset[str]:
+        return frozenset(self.streams)
+
+
 # DIV-006 — unit 3 (hamlet-f0ed709ecf, PDR-0075): the `obs_vfs` block became one field per
 # exposed global/agent profile variable plus the `obs_item_slots` feature. MEASURED on both
 # profile packs by compiling the pre-cut tree (the oracle worktree at 4222a917) beside the
@@ -244,6 +288,15 @@ class Cell:
     # OUTPUT delta are two decisions (oracle_fixtures/README.md), and one does
     # not bless the other.
     hash_divergence: RegisteredHashDivergence | None = None
+    # Names the entry under which named trace STREAMS are allowed — and
+    # required — to diverge, everything else byte-exact. The third declaration
+    # axis, orthogonal to pack_divergence (inputs) and hash_divergence
+    # (provenance): DIV-008 binds stream + hash together at the token cut.
+    stream_divergence: RegisteredStreamDivergence | None = None
+    # Run this cell's trace with harness-scripted actions (old side records,
+    # new side replays) instead of per-side seeded draws. DIV-008 cells declare
+    # it; --scripted forces it matrix-wide for verification runs.
+    scripted_actions: bool = False
 
     @property
     def declares_pack_divergence(self) -> bool:

@@ -50,6 +50,9 @@ def attach_universe_metadata(checkpoint: dict[str, Any], universe: CompiledUnive
     checkpoint["affordances_hash"] = universe.affordances_hash
     checkpoint["training_hash"] = universe.training_hash
     checkpoint["brain_hash"] = universe.brain_hash
+    # PDR-0027: the pack baseline beside the effective hash, so a lineage fork (a per-level
+    # brain.yaml override) is stated at load time instead of discovered at runtime.
+    checkpoint["pack_brain_hash"] = universe.pack_brain_hash
     checkpoint["vfs_hash"] = universe.vfs_hash
 
 
@@ -164,6 +167,33 @@ def assert_checkpoint_dimensions(checkpoint: Mapping[str, Any], universe: Compil
         )
 
 
+def surface_brain_lineage(checkpoint: Mapping[str, Any]) -> None:
+    """State a brain-lineage fork BEFORE the artifact is used (PDR-0027).
+
+    Legibility, not validation: assert_checkpoint_dimensions still enforces effective
+    brain_hash equality for resume. This makes the fork visible to a human loading an
+    artifact whose brain diverges from its pack baseline.
+
+    A checkpoint missing pack_brain_hash predates this stamp and RAISES — same rule as
+    every other hash here (see the WS-1 task 4 comment in assert_checkpoint_dimensions:
+    no `is not None` escapes). Pre-release, zero users: old checkpoints are regenerated,
+    not accommodated.
+    """
+    pack_hash = checkpoint.get("pack_brain_hash")
+    effective_hash = checkpoint.get("brain_hash")
+    if pack_hash is None:
+        raise ValueError("Checkpoint missing pack_brain_hash; regenerate the checkpoint with the latest compiler.")
+    if pack_hash != effective_hash:
+        logger.warning(
+            "brain lineage fork: this checkpoint's effective brain (%s...) diverges from its "
+            "pack baseline (%s...) at level %s — a per-level brain.yaml override. It is NOT "
+            "interchangeable with unforked artifacts of the same pack (PDR-0027).",
+            str(effective_hash)[:16],
+            str(pack_hash)[:16],
+            checkpoint.get("primary_level"),
+        )
+
+
 def assert_checkpoint_vfs_hash(checkpoint: Mapping[str, Any], universe: CompiledUniverse, *, force_new_vfs: bool) -> bool:
     """Validate checkpoint VFS identity before resume.
 
@@ -201,6 +231,8 @@ def assert_checkpoint_identity(checkpoint: Mapping[str, Any], universe: Compiled
     Composes, in order:
       1. format version — first, because a wrong-format checkpoint may lack
          ``vfs_hash`` entirely;
+      1b. ``surface_brain_lineage`` (PDR-0027) — states a brain fork before any
+         hash leg can raise; requires the ``pack_brain_hash`` stamp;
       2. ``assert_checkpoint_vfs_hash`` — the only leg that can return ``False``
          (the explicit force-new-VFS branch: start fresh, skip state load);
       3. ``assert_checkpoint_dimensions`` — dims, field UUIDs, ``drive_hash``,
@@ -225,6 +257,11 @@ def assert_checkpoint_identity(checkpoint: Mapping[str, Any], universe: Compiled
         raise ValueError(
             f"Unsupported checkpoint version: {version}\nExpected version {CHECKPOINT_FORMAT_VERSION}. Please retrain from scratch."
         )
+
+    # PDR-0027: state a lineage fork before any hash leg can raise about it. Placed after
+    # the format gate on purpose — a wrong-format checkpoint lacks the stamp entirely, and
+    # "unsupported version" is the honest first error there.
+    surface_brain_lineage(checkpoint)
 
     if not assert_checkpoint_vfs_hash(checkpoint, universe, force_new_vfs=force_new_vfs):
         return False

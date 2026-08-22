@@ -63,7 +63,11 @@ from townlet.vfs.transition_schedule import (
 # of on field names (WS-4 unit 4). No pack changes for this cut, so no config fingerprint moves;
 # a pre-cut cache would deserialize into a DTO that now requires `feature` and fail obscurely —
 # the bump makes it the "recompile" error instead.
-COMPILED_SCHEMA_VERSION = "1.18"
+# 1.19: `pack_brain_hash` is required (PDR-0027 lineage legibility) and `brain` is the
+# EFFECTIVE base brain for the compiled level (a level's own brain.yaml replaces the pack
+# brain). A pre-cut cache lacks the field and would carry the wrong brain semantics — the
+# bump makes it a clean "recompile" instead.
+COMPILED_SCHEMA_VERSION = "1.19"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",
@@ -104,6 +108,7 @@ REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "affordances_hash",
     "training_hash",
     "brain_hash",
+    "pack_brain_hash",
     "experiment_hash",
     "stratum_hash",
     "environment_hash",
@@ -193,6 +198,9 @@ class CompiledUniverse:
     # brain.yaml merged with that level's training.yaml overrides via
     # apply_training_overrides — not of brain.yaml. It is level-scoped, like drive_hash.
     brain_hash: str | None = None
+    # Hash of the PACK-ROOT brain under the primary level's training overrides (PDR-0027).
+    # pack_brain_hash != brain_hash means: this level declared its own brain.yaml.
+    pack_brain_hash: str | None = None
     experiment_hash: str | None = None
     stratum_hash: str | None = None
     environment_hash: str | None = None
@@ -201,6 +209,11 @@ class CompiledUniverse:
 
     # Multi-level support
     all_levels: dict[str, CompiledUniverse.LevelMetadata] | None = None
+
+    @property
+    def brain_forked(self) -> bool:
+        """True when the compiled level's effective brain diverges from the pack baseline."""
+        return self.pack_brain_hash is not None and self.pack_brain_hash != self.brain_hash
 
     @dataclass(frozen=True)
     class LevelMetadata:
@@ -332,6 +345,7 @@ class CompiledUniverse:
             affordances_hash=self.affordances_hash,
             training_hash=self.training_hash,
             brain_hash=self.brain_hash,
+            pack_brain_hash=self.pack_brain_hash,
             experiment_hash=self.experiment_hash,
             stratum_hash=self.stratum_hash,
             environment_hash=self.environment_hash,
@@ -391,6 +405,7 @@ class CompiledUniverse:
             "affordances_hash": self.affordances_hash,
             "training_hash": self.training_hash,
             "brain_hash": self.brain_hash,
+            "pack_brain_hash": self.pack_brain_hash,
             "experiment_hash": self.experiment_hash,
             "stratum_hash": self.stratum_hash,
             "environment_hash": self.environment_hash,
@@ -613,6 +628,7 @@ class CompiledUniverse:
             affordances_hash=_required_field(payload, "affordances_hash"),
             training_hash=_required_field(payload, "training_hash"),
             brain_hash=_required_field(payload, "brain_hash"),
+            pack_brain_hash=_required_field(payload, "pack_brain_hash"),
             experiment_hash=_required_field(payload, "experiment_hash"),
             stratum_hash=_required_field(payload, "stratum_hash"),
             environment_hash=_required_field(payload, "environment_hash"),

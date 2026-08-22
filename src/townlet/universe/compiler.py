@@ -210,6 +210,10 @@ class UniverseCompiler:
         # base. brain_hash stays what it was: the EFFECTIVE config for the primary level.
         base_brain = raw.levels[primary_level].brain or raw.brain
         brain_hash = compute_brain_hash(apply_training_overrides(base_brain, raw.levels[primary_level].training))
+        # PDR-0027 half 2: the pack baseline under the SAME level training overrides, so a
+        # pack_brain_hash != brain_hash difference isolates exactly one cause — the level
+        # declared its own brain.
+        pack_brain_hash = compute_brain_hash(apply_training_overrides(raw.brain, raw.levels[primary_level].training))
         experiment_hash = self._compute_pydantic_hash(raw.experiment)
         stratum_hash = self._compute_pydantic_hash(raw.stratum)
         environment_hash = self._compute_pydantic_hash(raw.environment)
@@ -257,6 +261,7 @@ class UniverseCompiler:
             shared_artifacts.vfs_history_spec,
             shared_artifacts.vfs_observation_spec,
             brain_hash=brain_hash,
+            pack_brain_hash=pack_brain_hash,
             experiment_hash=experiment_hash,
             stratum_hash=stratum_hash,
             environment_hash=environment_hash,
@@ -493,6 +498,7 @@ class UniverseCompiler:
         vfs_history_spec: dict[str, int],
         vfs_observation_spec: VFSObservationSpec | None,
         brain_hash: str | None,
+        pack_brain_hash: str | None,
         experiment_hash: str,
         stratum_hash: str,
         environment_hash: str,
@@ -541,6 +547,7 @@ class UniverseCompiler:
             affordances_hash=primary_meta.affordances_hash,
             training_hash=primary_meta.training_hash,
             brain_hash=brain_hash,
+            pack_brain_hash=pack_brain_hash,
             experiment_hash=experiment_hash,
             stratum_hash=stratum_hash,
             environment_hash=environment_hash,

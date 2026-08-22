@@ -19,6 +19,10 @@ def _write_mismatched_checkpoint(checkpoint_dir: Path, *, write_digest: bool = T
             "timestamp": 1.0,
             "substrate_metadata": {"position_dim": 2, "substrate_type": "Grid2DSubstrate"},
             "vfs_hash": "deadbeef" * 8,
+            # PDR-0027: surface_brain_lineage runs before the vfs leg and requires the
+            # lineage stamp; equal hashes = unforked, so the vfs mismatch stays the error.
+            "brain_hash": "cafef00d" * 8,
+            "pack_brain_hash": "cafef00d" * 8,
         },
         checkpoint_path,
     )

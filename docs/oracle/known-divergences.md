@@ -727,6 +727,144 @@ to absorb them, the way `0b659130`'s companion fixture edit already absorbed its
 
 ---
 
+## DIV-010 — Authored temporality (token-obs unit 2): the engine tick variable and derived evaluation marks move compiled provenance, behaviour does not
+
+- **Status:** `built` (2026-08-23 — measured and bound; full 20-cell CPU+CUDA matrix run
+  plain-mode and `--scripted` both recorded in the Task 7 report, both **exit 0**: every CPU
+  cell `DIVERGED_AS_REGISTERED` naming exactly its composed refs, every stream byte-identical
+  across both modes; all ten CUDA cells `SKIPPED`.)
+- **Harness shape: hash-only** (`RegisteredHashDivergence`)
+- **Provenance:** `hamlet-fa6bb6da4a` (unit 2, parent) · `hamlet-df3a96bbac` (`08a9a122`,
+  `c0ffb214` — evaluation marks derive from exposure, write-back skips statics) ·
+  `hamlet-5d74335111` (`22caa926` — agent-profile expressions evaluate) · `hamlet-bc0a5deeff`
+  (`22caa926` — item-profile expressions refuse at compile) · commits `2d14d5f7`, `f4bdf19c`,
+  `15ec46bd`, `08a9a122`, `c0ffb214`, `22caa926` (`11dee204..HEAD`, unit 2 Tasks 3-6)
+- **Surface:** `src/townlet/universe/compilers/vfs.py` (the injected `_engine_tick_variable_def`,
+  always-on global-scope `VariableDef` id `"tick"`); `src/townlet/universe/compiler.py` /
+  `pipeline.py` / `compiled.py` (the `vfs_observation_marks` field renamed and re-derived as
+  `vfs_evaluation_marks`); `src/townlet/vfs/evaluator.py` / `profiles.py`
+  (agent-profile expression evaluation, item-profile expression refusal, write-back statics
+  skip); `src/townlet/environment/vectorized_env.py` (`time_of_day` derives from `global_tick`
+  instead of a second counter).
+
+**What changed.** Unit 2 (authored temporality) landed four compiler/runtime surfaces: (1) an
+engine-written tick `VariableDef` is now injected into every compiled universe's variable list
+— always-on, global scope, `readable_by=["agent","engine"]`, `writable_by=["engine"]`,
+ambient in profile expressions as bare `tick`; (2) `vfs_observation_marks` is renamed to
+`vfs_evaluation_marks` and its content changes from an observation-derived set to one derived
+from `exposed_to` (evaluation-exposure, not observation-exposure); (3) agent-profile
+expressions evaluate live (previously dead code — `evaluate_global_profile` reused for agent
+profiles per `compiled.py:128-130`), and item-profile expressions now refuse at compile
+(scope decision, unit 2 Task 6); (4) `time_of_day` is derived from `global_tick` rather than a
+second, independently-advanced counter. Only the first of these — the tick `VariableDef`
+injection — feeds a provenance hash: `variable_schema_hash = compute_variable_schema_hash
+(vfs_variables)` (`schema_hashes.py:31`) hashes the canonical `VariableDef` list directly, and
+a new always-on entry in that list moves it on every compiled universe, with no config
+authored anywhere. `vfs_hash = compute_vfs_hash(variable_schema_hash, observation_schema_hash,
+action_schema_hash, transition_graph_hash)` (`compiler.py:419`) is a composite over four
+derived hashes and moves whenever any one of its inputs does — here, `variable_schema_hash`.
+`vfs_evaluation_marks` is stored as its own field on `CompiledUniverse`
+(`compiled.py:186`, `pipeline.py:51`) and is never an input to any `*_hash` computation
+(verified: zero references to it in `src/townlet/vfs/schema_hashes.py`) — its rename and
+content change move **no** hash at all, confirmed by measurement below. Same for (3) and (4):
+neither touches a compiled schema or hash input; they change what the runtime *evaluates* and
+*derives*, not what the compiler *declares*.
+
+**Measurement method.** Two-worktree probe (baseline = `11dee204`, Task 2's end commit; head =
+`HEAD` = `22caa926`), reusing Task 2's `probe.py` (`UniverseCompiler().compile(...)`, dump
+every `*_hash` attribute) against the same three representative packs: `configs/
+default_curriculum` at `L1_full_observability` (standing), `configs/differential/div003_rect`
+at `L1_full_observability` (differential), `configs/test/items_smoke` at `L0_smoke` (profile).
+Confirmed first that none of the three probed packs' YAML changed between `11dee204` and
+`HEAD` (`git diff --stat 11dee204..HEAD -- configs/default_curriculum configs/test/items_smoke
+configs/differential/div003_rect` — empty), so the two-commit compile diff isolates code-only
+movement exactly, no oracle-fixture indirection needed (unlike DIV-009, both sides here compile
+the SAME live pack content with different code). Then re-ran the probe at each of the six
+intermediate commits (`2d14d5f7`, `f4bdf19c`, `15ec46bd`, `08a9a122`, `c0ffb214`, `22caa926`)
+against `configs/default_curriculum L1_full_observability` to attribute the movement to its
+first mover.
+
+**Per-commit table (chronological, `11dee204..HEAD`, default_curriculum L1_full_observability):**
+
+| commit | subject | hash field(s) first mismatched | why |
+|---|---|---|---|
+| `2d14d5f7` | feat(vfs): the engine tick variable — always-on, engine-written, ambient in profile expressions | `variable_schema_hash`, `vfs_hash` | injects `_engine_tick_variable_def()` into every universe's `vfs_variables` list; `variable_schema_hash` hashes that list directly, `vfs_hash` moves as a consequence (composite) |
+| `f4bdf19c` | fix(vfs): refuse authored tick on the overlay path; pin the in-step tick write discriminately | *(none)* | write-path/validation fix, no schema-input change |
+| `15ec46bd` | feat(env): time_of_day derives from global_tick — the second temporal bookkeeping dies | *(none)* | runtime derivation only; no compiled-hash input touched |
+| `08a9a122` | feat(vfs): evaluation marks derive from exposure — expressions evaluate on the shipped default | *(none)* | `vfs_evaluation_marks` is not a hash input (see above) |
+| `c0ffb214` | fix(vfs): write-back skips statics — dependency-chased initials no longer clobber engine writes | *(none)* | runtime write-back fix, no schema-input change |
+| `22caa926` | feat(vfs): agent-profile expressions evaluate; item-profile expressions refuse at compile | *(none)* | evaluation/refusal behaviour only; the profile *schema* (what's declared) is unchanged, only what's *done with it* at runtime/compile-refusal |
+
+Two-worktree confirmation (`11dee204` vs `HEAD`, all three probed packs, matching the
+per-commit table exactly): `default_curriculum L1_full_observability` — moved
+`variable_schema_hash`, `vfs_hash`; `configs/differential/div003_rect L1_full_observability` —
+identical two-field move; `configs/test/items_smoke L0_smoke` — identical two-field move.
+`observation_schema_hash` does **not** move on any of the three packs — checked explicitly
+(the STOP condition this ticket's task named did not fire). All other `*_hash` fields
+(`actions_hash`, `bars_hash`, `brain_hash`/`pack_brain_hash`, `curriculum_hash`, `drive_hash`,
+`environment_hash`, `experiment_hash`, `items_hash`, `stratum_hash`, `training_hash`,
+`transition_graph_hash`, `action_schema_hash`, `affordances_hash`) are unchanged at `HEAD`
+relative to `11dee204` on all three packs.
+
+**Why one entry and not four.** All four surfaces landed as one unit's accepted work
+(unit 2, authored temporality) between two adjudicated matrix states (`11dee204`'s DIV-009
+exit-0 and this ticket). Only one of the four — the tick `VariableDef` — moves any hash; the
+entry names all four because the "what changed" story is the unit's, and because a future
+reader diffing `11dee204..HEAD` needs the full surface list to understand why only two fields
+moved despite four landings touching the compiler/runtime.
+
+**Why streams cannot move.** The tick variable is not observed: `observation_schema_hash` is
+unchanged (measured above), and the `VariableDef`'s own `readable_by=["agent","engine"]` marks
+it evaluation-readable, not observation-exposed — a variable enters `observation_schema_hash`
+only via an explicit `ObservationField`/exposure declaration, which nothing in unit 2 adds for
+`tick`. No fixture pack among the three probed declares a global or agent profile with an
+*expression* referencing `tick` (or anything else): `configs/default_curriculum/vfs_profiles.yaml`
+and `configs/differential/div003_rect/vfs_profiles.yaml` declare no `global_profile` or
+`agent_profile` at all (only an empty `default_item` item profile); `configs/test/
+items_smoke/vfs_profiles.yaml` explicitly sets `global_profile: null` and `agent_profile:
+null` (its three item profiles' `initial_value`s are literal floats, not expressions). So
+Task 5's marks-derivation fix and Task 6's agent-profile-evaluation/item-profile-refusal
+changes fire on **zero** fixture cells — there is nothing for them to evaluate differently.
+`configs/test/effects_smoke` (the fourth profile-block pack, not independently bisected here —
+Task 2's precedent for treating `effects_smoke` as mirroring `items_smoke`'s movement applies
+identically) declares a `global_profile` with one variable, `day_count`, but its
+`initial_value: 0` is also a literal, not an expression, so the same "nothing to evaluate
+differently" argument holds. `time_of_day` deriving from `global_tick` (`15ec46bd`) changes an
+internal computation path but not its observed *value* — the existing `time_of_day` observation
+tests (`test_temporal_pipeline.py`) pin behavioural equivalence, and no probed pack's
+`observation_schema_hash` moved. Step 4 (the full matrix run, both modes) is the harness-level
+confirmation that this reasoning holds under actual scripted/seeded traces, not just static
+analysis of the fixture YAML.
+
+**Diff shape.**
+
+| block | cells | hash_fields |
+|---|---|---|
+| standing (10 cells) | all 5 `default_curriculum` levels × cpu/cuda | `variable_schema_hash, vfs_hash` |
+| differential (6 cells) | `div003_scaled, div003_cubic_partial, div003_rect` × cpu/cuda | `variable_schema_hash, vfs_hash` (identical to standing — verified per-cell) |
+| profile (4 cells) | `items_smoke, effects_smoke` × cpu/cuda | `variable_schema_hash, vfs_hash` (identical to standing/differential — the tick variable is injected uniformly, independent of any authored profile) |
+
+Every stream (`obs`, `actions`, `dones`, `rewards`) is unaffected — the reasoning above, and
+the full plain-mode and `--scripted` matrix runs recorded in the Task 7 report are the
+harness-adjudicated confirmation.
+
+**Harness adjudication.** `_DIV010 = RegisteredHashDivergence(register_ref="DIV-010",
+hash_fields=("variable_schema_hash", "vfs_hash"))` binds every one of the twenty cells,
+appended to each cell's existing tuple: standing/differential cells carry
+`(_DIV009_STANDING, _DIV010)`; profile cells carry `(_DIV006, _DIV009_PROFILE, _DIV010)`.
+`_DIV010`'s field set is identical across all three blocks, unlike `_DIV009_PROFILE`'s
+disjoint-from-`_DIV006` narrowing — the tick variable's injection is unconditional and adds
+exactly the same two derived-hash movements everywhere, so there is no overlap to resolve.
+Any hash mover outside a cell's declared union is `HASH_MISMATCH`; a declared field that does
+not move is `REGISTERED_DIVERGENCE_ABSENT`; any stream difference is `DIVERGE` — all red, same
+as every other hash-only entry.
+
+**Retire this entry** when the token cut lands and DIV-008 supersedes it (the tick variable's
+provenance footprint becomes part of the token-observation surface DIV-008 covers), or when
+the oracle is re-tagged past unit 2's landings, whichever comes first.
+
+---
+
 ## Adding an entry
 
 Record the divergence **before** cutting the seam that produces it — at knockdown plan time,

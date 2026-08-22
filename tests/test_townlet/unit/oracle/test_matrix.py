@@ -149,19 +149,21 @@ def test_standing_and_differential_cells_bind_div009_narrowly() -> None:
     """Pin (hamlet-5cc071f4b6, DIV-009): the sixteen non-profile cells no longer
     certify bare agreement. Six Phase B landings after the oracle tag moved
     provenance with no register entry (measured 2026-08-23); every standing and
-    differential cell now binds exactly one hash-only entry, DIV-009, over
-    exactly the four measured fields — no crash expectation, no pack
-    divergence (none of the six landings left the fixture behind a live pack
-    edit), and no wider or narrower hash_fields set than measurement showed."""
+    differential cell binds a hash-only DIV-009 entry over exactly the four
+    measured fields — no crash expectation, no pack divergence (none of the six
+    landings left the fixture behind a live pack edit), and no wider or
+    narrower hash_fields set than measurement showed. DIV-010
+    (hamlet-fa6bb6da4a, unit 2) composes alongside it on these same cells —
+    checked here as "DIV-009 is present and still narrow", leaving DIV-010's
+    own field set to test_standing_and_differential_cells_bind_div010_narrowly."""
     for c in default_cells():
         if c.params.pack in _PROFILE_VARIABLE_CELLS:
             continue
         assert c.expected is None, f"{c.cell_id} declares an old-side-crash expectation"
         assert c.pack_divergence is None, f"{c.cell_id} declares a pack divergence"
-        assert len(c.hash_divergences) == 1 and c.hash_divergences[0].register_ref == "DIV-009", (
-            f"{c.cell_id} does not bind exactly DIV-009"
-        )
-        assert c.hash_divergences[0].declared == {
+        div009 = [d for d in c.hash_divergences if d.register_ref == "DIV-009"]
+        assert len(div009) == 1, f"{c.cell_id} does not bind exactly one DIV-009 entry"
+        assert div009[0].declared == {
             "actions_hash",
             "pack_brain_hash",
             "transition_graph_hash",
@@ -169,13 +171,33 @@ def test_standing_and_differential_cells_bind_div009_narrowly() -> None:
         }, f"{c.cell_id}: DIV-009 hash_fields do not match measurement"
 
 
-def test_all_cells_bind_div009() -> None:
-    """Pin (hamlet-5cc071f4b6): every one of the twenty cells names DIV-009 in
-    its hash_divergences, with no duplicate register refs on a cell — the
-    matrix-wide binding that brings the matrix back to exit 0."""
+def test_standing_and_differential_cells_bind_div010_narrowly() -> None:
+    """Pin (hamlet-fa6bb6da4a, DIV-010, unit 2 "authored temporality"): the engine tick
+    VariableDef injected into every compiled universe moves exactly `variable_schema_hash`
+    and `vfs_hash` — measured by two-worktree probe (11dee204 vs HEAD) and confirmed
+    per-commit as the tick-injection commit's own movement. Every standing and differential
+    cell binds this as a second, composing entry alongside DIV-009 (exactly two entries
+    total on these sixteen cells)."""
+    for c in default_cells():
+        if c.params.pack in _PROFILE_VARIABLE_CELLS:
+            continue
+        div010 = [d for d in c.hash_divergences if d.register_ref == "DIV-010"]
+        assert len(div010) == 1, f"{c.cell_id} does not bind exactly one DIV-010 entry"
+        assert div010[0].declared == {"variable_schema_hash", "vfs_hash"}, (
+            f"{c.cell_id}: DIV-010 hash_fields do not match measurement"
+        )
+        assert len(c.hash_divergences) == 2, f"{c.cell_id} should bind exactly DIV-009 + DIV-010"
+
+
+def test_all_cells_bind_the_drift_and_unit2_entries() -> None:
+    """Pin (hamlet-5cc071f4b6, hamlet-fa6bb6da4a): every one of the twenty cells names both
+    DIV-009 (the pre-unit-2 drift) and DIV-010 (unit 2's own compiler-surface movement) in
+    its hash_divergences, with no duplicate register refs on a cell — the matrix-wide
+    binding that brings the matrix back to exit 0."""
     for cell in default_cells():
         refs = [d.register_ref for d in cell.hash_divergences]
         assert "DIV-009" in refs
+        assert "DIV-010" in refs
         assert refs == sorted(set(refs), key=refs.index)  # no duplicate entries
 
 
@@ -185,9 +207,11 @@ def test_profile_variable_cells_bind_div006_narrowly() -> None:
     the frozen fixture actually differs — effects_smoke under DIV-006 (its fixture is held
     at the pre-`semantic_type` schema), items_smoke under DIV-007 (its fixture keeps the
     stale, never-loaded levels/L0_smoke/brain.yaml stub the PDR-0027 cut deleted from the
-    live pack). DIV-009 (hamlet-5cc071f4b6) adds a second, disjoint entry alongside DIV-006
-    on these same four cells — checked here as "DIV-006 is present and still narrow",
-    leaving DIV-009's own field set to test_profile_variable_cells_bind_div009_narrowly."""
+    live pack). DIV-009 (hamlet-5cc071f4b6) and DIV-010 (hamlet-fa6bb6da4a) add further
+    composing entries alongside DIV-006 on these same four cells — checked here as
+    "DIV-006 is present and still narrow", leaving DIV-009's and DIV-010's own field sets
+    to test_profile_variable_cells_bind_div009_narrowly and
+    test_profile_variable_cells_bind_div010_narrowly."""
     profile = [c for c in default_cells() if c.params.pack in _PROFILE_VARIABLE_CELLS]
     assert len(profile) == 4
     for c in profile:
@@ -212,7 +236,23 @@ def test_profile_variable_cells_bind_div009_narrowly() -> None:
         div009 = [d for d in c.hash_divergences if d.register_ref == "DIV-009"]
         assert len(div009) == 1, f"{c.cell_id} does not bind exactly one DIV-009 entry"
         assert div009[0].declared == {"actions_hash", "pack_brain_hash", "transition_graph_hash"}
-        assert len(c.hash_divergences) == 2, f"{c.cell_id} should bind exactly DIV-006 + DIV-009"
+
+
+def test_profile_variable_cells_bind_div010_narrowly() -> None:
+    """DIV-010's field set on the four profile cells overlaps DIV-006's on
+    `variable_schema_hash` and `vfs_hash` (both move for both causes — DIV-006's obs-side
+    split and DIV-010's tick-variable injection — declared under both entries, legal per
+    the union-exact composing rule since each entry's own fields still all move). The tick
+    variable's injection is unconditional, so DIV-010's set here is identical to its set on
+    the standing/differential cells, unlike DIV-009's profile-narrowed set. Each profile
+    cell binds exactly three entries total: DIV-006, DIV-009, DIV-010."""
+    profile = [c for c in default_cells() if c.params.pack in _PROFILE_VARIABLE_CELLS]
+    assert len(profile) == 4
+    for c in profile:
+        div010 = [d for d in c.hash_divergences if d.register_ref == "DIV-010"]
+        assert len(div010) == 1, f"{c.cell_id} does not bind exactly one DIV-010 entry"
+        assert div010[0].declared == {"variable_schema_hash", "vfs_hash"}
+        assert len(c.hash_divergences) == 3, f"{c.cell_id} should bind exactly DIV-006 + DIV-009 + DIV-010"
 
 
 def test_differential_cells_run_their_declared_levels() -> None:

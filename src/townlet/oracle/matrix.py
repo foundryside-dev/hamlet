@@ -290,6 +290,20 @@ _DIV009_PROFILE = RegisteredHashDivergence(
     hash_fields=("actions_hash", "pack_brain_hash", "transition_graph_hash"),
 )
 
+# DIV-010 (2026-08-23, unit 2 "authored temporality", hamlet-fa6bb6da4a): the engine tick
+# VariableDef injected into every compiled universe (always-on, global scope) moves
+# `variable_schema_hash` directly and `vfs_hash` as a consequence — measured by two-worktree
+# probe (baseline 11dee204, head HEAD) and confirmed per-commit: only the tick-injection
+# commit (2d14d5f7) moves anything; the other five unit-2 landings (marks rename+content,
+# agent-profile evaluation, item-profile refusal, time_of_day derivation, write-back statics
+# fix) move no hash. Identical two-field set on all three blocks — the injection is
+# unconditional, unlike DIV-009's profile-block narrowing. See
+# docs/oracle/known-divergences.md#div-010 for the full table and why streams cannot move.
+_DIV010 = RegisteredHashDivergence(
+    register_ref="DIV-010",
+    hash_fields=("variable_schema_hash", "vfs_hash"),
+)
+
 
 @dataclass(frozen=True)
 class Cell:
@@ -353,15 +367,21 @@ def default_cells() -> tuple[Cell, ...]:
     At oracle-2026-08-17 the fixtures under oracle_fixtures/ were byte copies
     of the live packs and no cell declared anything, so exit 0 meant old and
     new AGREE (PDR-0074). That is no longer true: six Phase B landings after
-    the tag moved provenance with no register entry, so as of DIV-009
-    (hamlet-5cc071f4b6) all sixteen standing + differential cells bind
-    `_DIV009_STANDING` (hash-only: `actions_hash`, `pack_brain_hash`,
-    `transition_graph_hash`, `vfs_hash`) and the four profile-variable cells
-    bind `(_DIV006, _DIV009_PROFILE)` — DIV-006's obs-side split (PDR-0075)
-    plus DIV-009's disjoint field set. Exit 0 now means "everything diverged
-    exactly as registered", DIV-004's cost restated at the new tag; see
-    docs/oracle/known-divergences.md#div-009. Declarations return only when a
-    register entry needs them (PDR-0037 record-then-bind).
+    the tag moved provenance with no register entry (DIV-009, hamlet-5cc071f4b6),
+    and unit 2 ("authored temporality") then added its own compiler-surface
+    movement (DIV-010, hamlet-fa6bb6da4a) — the engine tick VariableDef
+    injected into every compiled universe. All sixteen standing + differential
+    cells now bind `(_DIV009_STANDING, _DIV010)` (hash-only: `actions_hash`,
+    `pack_brain_hash`, `transition_graph_hash`, `vfs_hash` from DIV-009, plus
+    `variable_schema_hash`, `vfs_hash` from DIV-010 — `vfs_hash` moves for both
+    causes but is declared once per composing entry, per hamlet-fa6bb6da4a's
+    union-exact rule) and the four profile-variable cells bind
+    `(_DIV006, _DIV009_PROFILE, _DIV010)` — DIV-006's obs-side split
+    (PDR-0075), DIV-009's disjoint field set, and DIV-010's uniform two-field
+    set. Exit 0 now means "everything diverged exactly as registered", DIV-004's
+    cost restated twice at this tag; see
+    docs/oracle/known-divergences.md#div-009 and #div-010. Declarations return
+    only when a register entry needs them (PDR-0037 record-then-bind).
     """
     standing = tuple(
         Cell(
@@ -373,7 +393,7 @@ def default_cells() -> tuple[Cell, ...]:
                 seed=42,
                 device=device,
             ),
-            hash_divergences=(_DIV009_STANDING,),
+            hash_divergences=(_DIV009_STANDING, _DIV010),
         )
         for device in ("cpu", "cuda")
         for level in _DEFAULT_LEVELS
@@ -388,7 +408,7 @@ def default_cells() -> tuple[Cell, ...]:
                 seed=42,
                 device=device,
             ),
-            hash_divergences=(_DIV009_STANDING,),
+            hash_divergences=(_DIV009_STANDING, _DIV010),
         )
         for device in ("cpu", "cuda")
         for pack_dir, level in _DIFFERENTIAL_PACKS
@@ -404,7 +424,7 @@ def default_cells() -> tuple[Cell, ...]:
                 device=device,
             ),
             pack_divergence=_PACK_DIVERGENCE.get(pack),
-            hash_divergences=(_DIV006, _DIV009_PROFILE),
+            hash_divergences=(_DIV006, _DIV009_PROFILE, _DIV010),
         )
         for device in ("cpu", "cuda")
         for pack, level in _PROFILE_VARIABLE_PACKS

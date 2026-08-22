@@ -331,7 +331,22 @@ def test_checkpoint_stamps_lineage_and_loader_states_the_fork(tmp_path: Path, ca
     with caplog.at_level(logging.WARNING):
         surface_brain_lineage(checkpoint)
     assert any("brain lineage fork" in record.message for record in caplog.records)
+
+
+def test_checkpoint_without_lineage_stamp_is_refused(tmp_path: Path) -> None:
+    """Zero-backcompat: a pre-stamp checkpoint raises, same as every other missing hash."""
+    universe = UniverseCompiler().compile(_forked_pack(tmp_path), primary_level=LEVEL, use_cache=False)
+    checkpoint: dict = {}
+    attach_universe_metadata(checkpoint, universe)
+    del checkpoint["pack_brain_hash"]
+
+    from townlet.training.checkpoint_utils import surface_brain_lineage
+
+    with pytest.raises(ValueError, match="pack_brain_hash"):
+        surface_brain_lineage(checkpoint)
 ```
+
+(add `import pytest` to the test file's imports)
 
 - [ ] **Step 2: Run tests to verify they fail**
 
@@ -386,10 +401,16 @@ def surface_brain_lineage(checkpoint: Mapping[str, Any]) -> None:
     Legibility, not validation: assert_checkpoint_dimensions still enforces effective
     brain_hash equality for resume. This makes the fork visible to a human loading an
     artifact whose brain diverges from its pack baseline.
+
+    A checkpoint missing pack_brain_hash predates this stamp and RAISES — same rule as
+    every other hash here (see the WS-1 task 4 comment below: no `is not None` escapes).
+    Pre-release, zero users: old checkpoints are regenerated, not accommodated.
     """
     pack_hash = checkpoint.get("pack_brain_hash")
     effective_hash = checkpoint.get("brain_hash")
-    if pack_hash is not None and effective_hash is not None and pack_hash != effective_hash:
+    if pack_hash is None:
+        raise ValueError("Checkpoint missing pack_brain_hash; regenerate the checkpoint with the latest compiler.")
+    if pack_hash != effective_hash:
         logger.warning(
             "brain lineage fork: this checkpoint's effective brain (%s...) diverges from its "
             "pack baseline (%s...) at level %s — a per-level brain.yaml override. It is NOT "
@@ -402,10 +423,9 @@ def surface_brain_lineage(checkpoint: Mapping[str, Any]) -> None:
 
 Call `surface_brain_lineage(checkpoint)` at the TOP of
 `assert_checkpoint_identity` (~line 194) so every load path states the fork before any
-validation can raise. Note the deliberate asymmetry with the strict-hash guards above:
-a checkpoint WITHOUT `pack_brain_hash` (pre-fork era) passes silently here — this is
-legibility metadata, and the strict `brain_hash` equality check already refuses genuinely
-incompatible artifacts.
+validation can raise. No pre-stamp escape hatch: a checkpoint without `pack_brain_hash`
+raises, exactly like the drive/curriculum/bars/affordances/training hashes above it
+(zero-backcompat — old checkpoints are regenerated, not accommodated).
 
 - [ ] **Step 5: Run tests to verify they pass**
 

@@ -1,87 +1,84 @@
-# Current State — HAMLET / Townlet        Checkpoint: 2026-08-22 · forty-first checkpoint (`PDR-0111`: **the instrument fork is RULED (c) — the corpus reading is RETIRED AS RECORD**, owner-ruled at the resume; `PDR-0112`: **Phase B unit 1 landed — the set-encoder aggregator is a declared choice**, `ba2766e6`)
+# Current State — HAMLET / Townlet        Checkpoint: 2026-08-23 · forty-second checkpoint (`PDR-0113`–`PDR-0116`: **the token design is APPROVED, migration units 1–2 are BANKED**, the oracle register is caught up, and three VFS-inertness bugs are dead)
 
 ## The bets right now — two live, one substantially complete
 
-**1. Strangler rewrite behind the compiled-universe contract** (`PDR-0006`). In flight. Exits
-when the **pinned oracle can be RETIRED** (`PDR-0058`): (1) register entries terminal — open
-(DIV-001/002 `tag-stamped`; 003/004/005 `retired`; 006 `built`; DIV-007 registered at
-`9956e95b`); (2) harness verdict vocabulary — **MET** (`PDR-0074`); (3) `Gates green` — **MET
-on `main`** (2026-08-20 nightly at `04062872`). Untouched this session.
+**1. Strangler rewrite behind the compiled-universe contract** (`PDR-0006`). In flight and
+**materially advanced this session**: the register grew DIV-009 (six-commit drift measured
+per-commit, adjudicated, bound) and DIV-010 (unit-2 provenance), cells compose multiple
+hash declarations, DIV-008 is visibly reserved for the token cut, and the matrix is
+**exit 0 in BOTH plain and scripted modes with all streams byte-identical**
+(runs `20260823-043109` / `20260823-043209`). Exit condition unchanged (`PDR-0058`).
 
-**2. Measure the authoring claim** (`PDR-0077`) · tracker `hamlet-5fa1f7bfc0` (comment 216).
-**SUBSTANTIALLY COMPLETE — the fork is ruled (c), `PDR-0111`:** the corpus reading is
-**retired as record**, terminal for this corpus. No rate/denominator/split ever publishes;
-the six trial records, both blind re-runs, the audit, and 30+ by-catch tickets are the banked
-product signal; `PDR-0095`'s fired trigger discharged by retirement. Remaining scope is
-record-keeping only: optional D/E/J as record, L/F/M/O discovery-path retro-derivation,
-the **2026-10-06 pack-disposition clock** (nine packs). **Instrument redesign
-(search-variance control + revised corpus, candidates Q/R) is a separate future bet awaiting
-the owner's promotion.**
+**2. Measure the authoring claim** (`PDR-0077`) — SUBSTANTIALLY COMPLETE, retired as
+record (`PDR-0111`). Untouched. Remaining: record-keeping + the **2026-10-06
+pack-disposition clock** (now ALSO a gate before token migration unit 5, per `PDR-0114`'s
+trial-pack ruling). Instrument redesign still awaits owner promotion.
 
-**3. Token-observation encoding** (`PDR-0108`) · tracker `hamlet-fa6bb6da4a` (comment 215).
-**Phase B unit 1 LANDED (`PDR-0112`, `ba2766e6`): the set-encoder aggregator is a DECLARED,
-required config choice** — `{type: mean}` | `{type: attention, num_heads: N}` — with
-attention authored in `set_encoder_smoke` via an `L1_attention` level-override `brain.yaml`
-(first real use of the `PDR-0027` fork mechanism; `brain_forked` asserted). Permutation
-invariance pinned on both paths; 607 affected unit + 7 integration tests green; `PDR-0109`'s
-reversal trigger did **not** fire (attention needed no new plumbing). **Next unit: token
-representation of the full observation — the migration proper, and the big design document**
-(then relational/message exposure as tokens discharging `PDR-0107`, then dynamic variables
-`hamlet-424adcb84f`).
+**3. Token-observation encoding** (`PDR-0108`) · tracker `hamlet-fa6bb6da4a`.
+**The design is APPROVED (`PDR-0114`)** — six owner rulings, two four-lens review rounds,
+no-tech-debt rider, spec at `docs/superpowers/specs/2026-08-22-token-observation-representation-design.md`.
+**Migration unit 1 (harness adjudicability) accepted** (`PDR-0115`, `9e7197e6..1960dee6`):
+trace v4 actions stream, driver `--actions`, `RegisteredStreamDivergence`, per-stream
+adjudication. **Unit 2 (authored temporality) banked** (`PDR-0116`, `3b72c4c4..30f94f93`):
+engine `tick` VFS variable (pre-increment semantics, pinned write), exposure-derived
+evaluation marks (expressions evaluate on shipped defaults at last), agent profiles BUILD
+/ item profiles REFUSE, `time_of_day` derived, statics-are-storage enforced at three
+layers. **Next: unit 3 — freeze L2 baselines (≥5 seeds), register DIV-008, then the token
+cut as one atomic knockdown.** Unit-3 carry-forwards are on the tracker (comment 242).
 
 ## What this checkpoint did
 
-- **Recorded the owner's instrument ruling** as `PDR-0111` (fork (c), retire as record) and
-  propagated it: north-star row marked RETIRED AS RECORD in `metrics.md`, roadmap bullet
-  updated, ticket comment 216.
-- **Recorded and accepted Phase B unit 1** as `PDR-0112` (declared aggregator; the
-  declared-vs-replace fork was put to the owner, who chose declared). Committed and pushed
-  at `ba2766e6` before this checkpoint.
-- Grant re-confirmed unchanged at the resume; the owner chose carrying the `vision.md` stamp
-  debt (reads 2026-08-20) over an approved touch — the `PDR-0093` shape, again. No horizon
-  change.
+- Recorded the design approval + owner rulings + no-tech-debt rider + trial-pack ruling
+  as `PDR-0114`; the vision-stamp provenance as `PDR-0113`.
+- Recorded unit-1 acceptance with the drift adjudication and discharge as `PDR-0115`, and
+  unit-2's landing (including the spec-delegated build/refuse scope decision and the DIV-009
+  catch-up executing that discharge) as `PDR-0116`.
+- Tracker reconciled live during execution: closed `hamlet-5cc071f4b6` (drift catch-up),
+  `hamlet-df3a96bbac`, `hamlet-5d74335111`, `hamlet-bc0a5deeff` (the three expression-
+  inertness bugs); opened `hamlet-f7631a4672` (P4 unit-1 cosmetics), `hamlet-5628884d7d`
+  (P2 pre-existing test flakiness, controlled at `11dee204`), `hamlet-c586d520b2` (P4
+  approach A capture); 13 VFS round-2 findings filed earlier in-session, each with a
+  discharge vehicle.
 
 ## Reversal triggers — state
 
-- `PDR-0111` (new): **armed.** Breached if any artifact quotes a rate/split from the retired
-  corpus as a published reading; reopens only by owner commissioning a successor instrument.
-- `PDR-0112` (new): **armed.** Reopens if training fails on the attention path; if the
-  full-token design can't use the aggregator block's shape; if a declared `attention` proves
-  behaviourally inert.
-- `PDR-0109`: first trigger checked this session — did **not** fire. Training-loop trigger
-  still armed.
-- `PDR-0107`: armed, being serviced — exits when the token migration lands.
-- `PDR-0095`: **discharged by retirement** (`PDR-0111`).
-- Pack-disposition clock: nine packs promoted-or-deleted by **2026-10-06**.
+- `PDR-0114` (new): **armed** — the spec's four (≥80% of frozen L2 baseline; a surface
+  with no natural token form; 8×width / 25% step-time / batch-size caps;
+  payload-identical entities despite the descriptor block).
+- `PDR-0115` (new): **discharged unfired** — drift measured to three pre-unit movers.
+- `PDR-0116` (new): **armed** — constant-expression/item-expression demand reopens the
+  refuse rulings; unit-5 authoring pain reopens the tick write-point pin; an EAGER debug
+  dependency reopens the statics ruling as a declared flag.
+- `PDR-0109` training-loop trigger: still armed (unit 4 checks it). `PDR-0107`: armed,
+  serviced by the migration. Pack-disposition clock: **2026-10-06**, now double-load-bearing
+  (`PDR-0111` record-keeping + `PDR-0114` gate before unit 5).
 
-## Blocked on / flagged for the owner
+## Blocked on / flagged for the owner (unchanged this session, still open)
 
-1. **Instrument redesign as a future bet** — promote or park: a successor north-star
-   instrument (search-variance control, revised corpus with Q/R + substrate-naive stratum).
-   Until promoted, the north-star reads `UNREAD` and that is the honest state.
-2. **WS-7 (`hamlet-e3af412673`, P0)** — park it or schedule it; untouched since ~2026-08-17.
+1. **Instrument redesign as a future bet** — promote or park (north-star reads `UNREAD`).
+2. **WS-7 (`hamlet-e3af412673`, P0)** — park or schedule; untouched since ~2026-08-17.
 3. **`hamlet-83c8e3b50e` (P1)** — CI silent on `main`'s third merge; deciding test is the
-   next merge (29 commits ahead now). Change no workflow config before that reading.
+   next merge (project-recovery-2 is now ~34 commits ahead). No workflow changes before it.
 4. Dependabot `#33`/`#34` + **4 vulnerability alerts** on `main`.
-5. `vision.md` stamp debt (reads 2026-08-20; re-confirmed unchanged 2026-08-22 twice) —
-   corrected at the next approved touch, per the standing rule.
+
+Nothing NEW escalated this session — all pushes to `project-recovery-2` within grant; the
+vision stamp fix was owner-directed (`PDR-0113`); no releases, deprecations, or external
+touches.
 
 ## Open questions
 
-- The 2026-08-21 VFS gap analysis (129 cells) still untriaged into the WS-4 queue — cheap,
-  high-signal input for Shape-1 sequencing.
-- `SetEncoderConfig.token_field_name` still resolves only at network-build time (PDR-0052
-  shape; filed).
-- Persistent-lifetime globals (`hamlet-0268336cd1`); L/F/M/O discovery-path retro-derivation
-  (record-keeping under `PDR-0111`).
+- The 2026-08-21 VFS gap analysis (129 cells) still untriaged into WS-4 — several of its
+  worst rows just closed via unit 2; a re-triage may be much cheaper now.
+- `SetEncoderConfig.token_field_name` resolves only at network-build time (PDR-0052 shape).
+- Persistent-lifetime globals (`hamlet-0268336cd1`) — the tick's float32 note points here.
 
 ## Next session starts here
 
-**The token migration's unit 2 — the full-observation token representation design** — is the
-main line (`hamlet-fa6bb6da4a`, pre-scoped by `PDR-0109`/`PDR-0112`). It is the big design
-document: how meters/spatial/affordance blocks become tokens, superseding the superset+mask
-fixed-width ABI. `PDR-0044` trigger 3 (a compiled block with no natural token form) is the
-live escalation risk inside it. Independent alternatives: WS-4 Shape 1 (six sites,
-`PDR-0105`) after triaging the VFS gap analysis; the cheap record-keeping queue.
+**Token migration unit 3 — baselines, then DIV-008, then the cut** (`hamlet-fa6bb6da4a`,
+spec §6 unit 3): freeze the shipped-L2 feedforward baseline (≥5 seeds, unrepeatable after
+the raster dies), register DIV-008 binding stream+hash under one ref, then TokenSpec
+replaces ObservationSpec as one atomic knockdown. Unit-3 carry-forwards: tracker comment
+242 (six one-liners) + `PDR-0116`'s notes. The brief for its plan should re-read spec §§1–5
+in full — unit 3 is the largest and most irreversible unit of the migration.
 
-Work continues on `project-recovery-2`.
+Work continues on `project-recovery-2` (tip `30f94f93`, pushed).

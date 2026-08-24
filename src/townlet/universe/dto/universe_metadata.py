@@ -52,11 +52,6 @@ class UniverseMetadata:
     grid_size: int | None = None
     grid_cells: int | None = None
 
-    # Economic metadata
-    max_sustainable_income: float = 0.0
-    total_affordance_costs: float = 0.0
-    economic_balance: float = 0.0
-
     # Versioning + provenance
     config_version: str = "1.0"
     compiler_version: str = "0.0.0"

@@ -578,3 +578,179 @@ composition unchanged.
   (oracle move-forward per `PDR-0074` if any fixture cell NEW_SIDE_ERRORs on
   required fields — expected: `effects_smoke` only), and re-verifying the DIV-008
   entry's fixture-exposure note against what actually happened.
+
+## Tasks 6–9 draft expansions (2026-08-24, written against tree a766ee3d/976632bf)
+
+> **Delta-check gate:** these drafts were authored while Phase 0 trains, before Task 5
+> lands. Before executing each, diff it against Task 5's actual landed diff and the
+> then-current tree; amend here and commit the amendment with the task. Full recon
+> dossiers behind every file:line claim live in the SDD workspace.
+
+### Task 6 (expanded): TokenSpec — the artifact and its math
+
+**Files:** create `src/townlet/universe/dto/token_spec.py`; tests
+`tests/test_townlet/unit/universe/test_token_spec.py`. No compiler wiring yet (Task 7);
+this task is the pure artifact + derivations, buildable and testable standalone.
+
+- Frozen dataclasses: `SlotBinding` (slot_index, filler_kind
+  `Literal["static","dynamic"]`, filler_ref (declaration-derived id), and for
+  `variable_element` slots the static payload signature used by the
+  indistinguishability check); `TokenTypeSchema` (type name from the closed 7-member
+  roster, payload feature names in order, payload_width, capacity, slot_bindings,
+  census count); `TokenSpec` (type schemas in engine-canonical roster order,
+  `total_dims` property = Σ N_t × (1 + W_t), `encoding_version`).
+- Engine constants in this module, single definitions: `MAX_POSITION_RANK = 8`,
+  `VALUE_BLOCK_WIDTH = 2`, `EFFECT_SUMMARY_K = 4`, `MEAN_CENSUS_ADVISORY = 64`,
+  `TOKEN_TYPE_ROSTER` (7 live + 3 reserved names that REFUSE instantiation).
+- **Descriptor-block layout is fixed by derivation, not by literal:** scope one-hot =
+  `len(VariableScope)` = 9; semantic-type one-hot = the size of the closed
+  `semantic_type` vocabulary READ FROM ITS ENUM at implementation (spec sketch said 6
+  — the enum is authoritative; it is an engine constant so cross-universe width
+  holds); normalization kind one-hot = 9 (`vfs/schema.py:85-95` vocabulary) + a
+  canonical parameter vector (fixed slots for min, max, clip-flag, scale — absent
+  marked) + one param-absent flag; dtype flag 3; lifetime one-hot 3; normalized
+  declared initial 1; log-scaled element count 1; owner/slot coordinate 2
+  (value + applicable-flag). The exact widths are asserted by a single
+  `DESCRIPTOR_BLOCK_WIDTH` constant test so drift is loud.
+- Payload schemas per type (spec §1 invariants verbatim): position padded to
+  `MAX_POSITION_RANK` + rank feature; affordance payload = interaction_type one-hot
+  (vocabulary size read from its enum) + absolute + egocentric position + effect
+  summary K=4 of (magnitude, sign, target-signature) with recursion into the target
+  meter's declared parameters + count feature; presence leads every row.
+- Capacity derivation pure functions per the §2 table, incl. the `agent`-capacity-0
+  rule (Global Constraints) and the effect per-scope budget × denominator arithmetic.
+- Compile-time checks as pure functions consumed by Task 7: indistinguishability
+  (identical static payload signature + coordinate space → error naming both
+  declarations), rank>8 refusal, one_hot/unbounded/rank_scaled exposure refusals
+  (shared vocabulary with Task 5f's rule), mean-aggregator census advisory.
+- **Tests (from spec §6 test strategy):** width rules (`cyclical_sin_cos` one token
+  both lanes via `VALUE_BLOCK_WIDTH`; `one_hot` refusal), indistinguishability
+  refuse/compile pair, capacity arithmetic per type against a synthetic declaration
+  set, serialization width equals the sum formula, rank-9 refusal, roster order
+  stability, reserved-name refusal.
+
+### Task 7 (expanded): compiler emission, hashes, `.compiled`
+
+**Files:** `universe/compilers/observation.py` (emit TokenSpec),
+`universe/compilers/vfs.py`, `vfs/schema_hashes.py`, `universe/compiled.py`,
+`universe/compilers/metadata.py:166`, `universe/__main__.py` (inspect census); tests
+beside each.
+
+- The pipeline's product becomes the TokenSpec.
+  **`observation_schema_hash` today hashes the VFS-schema `ObservationField` mirror**
+  (`schema_hashes.py:41-43` over `_canonical_observation_entry` :153-163, called from
+  `compiler.py:398`) — exactly the "one hop downstream" the spec says dies. Redefine:
+  `compute_observation_schema_hash(token_spec)` hashes TokenSpec type-schema +
+  slot-binding content (payload feature names, widths, capacities, binding order,
+  `MAX_POSITION_RANK`, `VALUE_BLOCK_WIDTH`). `compute_vfs_hash` (`:129-137`, called
+  `compiler.py:419`) is untouched — slot 2 (verified: second positional term) just
+  receives the new value, so `vfs_hash` moves everywhere as a consequence, exactly as
+  DIV-008's entry predicts.
+- Two hashes for checkpoint gates (Task 9 consumes): `token_type_schema_hash`
+  (schema contents only — transfer contract) and `layout_hash` (serialization layout
+  — flat-net contract). Both computed here, carried on the artifact.
+- `.compiled`: `COMPILED_SCHEMA_VERSION` `"1.19"` → `"1.20"` (`compiled.py:70`);
+  `observation_spec` / `observation_activity` / `vfs_observation_spec` /
+  `vfs_observation_fields` blocks (to_dict :364-367, :402, :432-433; deserializers
+  :756-819) are REPLACED by the `token_spec` block; stale-version refusal text
+  (:652-658) already handles the rest. The VFS mirror and `VFSObservationSpec` lose
+  their producer here; deletion of the types completes in Task 10
+  (`hamlet-81942565ff` discharges: the in-engine `max_items_per_agent=3` fallback
+  dies with the mirror — capacity table replaces it).
+- `metadata.py:166` (`observation_dim` birthplace) reads `token_spec.total_dims`.
+- Engine-minted publisher variables enumerated in the task report (spec §5 inventory).
+- Comment-242 item 4 (evaluator marks: statics also enter `vars_to_eval` via
+  `history_spec` — name the second path) lands with the vfs.py touch.
+- **Tests:** hash moves exactly when schema content moves (mutation tests both
+  directions — PDR-0033 narrowness at the unit level); serializer round-trip on a
+  compiled pack; stale 1.19 artifact refuses; census in `inspect` output.
+
+### Task 8 (expanded): publishers, arenas, visibility
+
+**Files:** create `src/townlet/environment/token_publishers.py`; modify
+`vfs/registry.py` (per-scope arenas beside the existing `item_vfs` template,
+:702-743 arena + `item_profile_map` :736-743), `environment/observation_encoder.py`
+(new token encoder built alongside; swap is Task 10), `substrate/base.py` + the five
+substrate implementations (the visibility/egocentric contract), tests under
+`unit/environment/`.
+
+- **Substrate contract addition** (the PDR-0041 five-member-contract precedent):
+  `visible(self_pos, entity_pos, vision_range) -> BoolTensor` under the declared
+  metric + boundary mode (wrap-aware), and
+  `egocentric_delta(self_pos, entity_pos) -> Tensor` (shortest-path under wrap,
+  normalized per declared encoding mode). Implemented on grid2d/grid3d/gridnd/
+  continuous*/aspatial (aspatial: visible=all, delta=zeros); parity-pinned by a
+  per-substrate boundary-mode test table. GridND thereby gains partial observability
+  (≤ rank 8 — the §1 trade).
+- Registry gains per-scope arenas for global/agent expression+static exposed
+  variables: `[capacity, elements]` float32 arena + compiled index map (exact
+  item_vfs shape); publisher fills are batched slab writes via `.view()` (raises on
+  copy); the per-variable Python loop + clone-per-read dies at the swap
+  (`hamlet-c7084169f7`: record before/after step-time + clone count on
+  `set_encoder_smoke` in this task's report — the ticket's audit half).
+- One publisher per token type dispatching on type (`PDR-0076`): self, meter,
+  affordance, agent (capacity-0 no-op everywhere today), item (item-arena),
+  effect, variable_element (registry-arena + item-arena, owner/slot coords).
+  **`agent_private` filter lives in the registry publisher** — scope-driven
+  enumeration excludes it before slot binding, pinned by test (the
+  `hamlet-83a043a9b9` boundary by mechanism; note the raw accessors
+  `get_global`/`get_agent` (:749-791) check nothing — the publisher is the
+  enforcement point, stated in its docstring).
+- Presence ownership (static 1 / dynamic toggle, unique-slot writes); overflow
+  raises at publish naming type/capacity/source; publishers run at the existing
+  end-of-step observation point; float32 cast-policy comment on the tick publisher.
+- Comment-242 items 2 (hoist static-merge/refusal out of the
+  `compiled_vfs_profiles is not None` gate) and 3 (reset-path tick write clobbered
+  value-identically by `reset_episode_scoped` — reorder or comment) land with the
+  step-path rewrite.
+- **Tests:** per-type wiring (declare → that row moves); presence
+  legitimately-zero ≠ absent; overflow at capacity+1; visibility per substrate ×
+  boundary mode incl. wrap egocentric; agent_private absent from every row; replay
+  aliasing (two consecutive stored ticks differ).
+
+### Task 9 (expanded): token_set network, gates, transfer
+
+**Files:** `agent/networks.py` (new `TokenSetQNetwork`; `SetEncoderQNetwork`
+:472-627 stays until unit 6), `agent/network_factory.py` (new `build_token_set`;
+NOTE: the `architecture.type` dispatch switch is NOT in this file — locate the
+caller (population/training setup) at execution and re-point it there),
+`config/brain_config.py` (architecture Literal :401 gains `"token_set"`; new
+`TokenSetConfig` — `token_embed_dim`, aggregator block reusing `SetAggregatorConfig`
+:206-224 verbatim, Q-head sizes; No-Defaults), `training/checkpoint_utils.py`,
+`exploration/rnd.py`, tests beside each.
+
+- `TokenSetQNetwork`: per-type projection `Linear(W_t → token_embed_dim)` in an
+  **`nn.ModuleDict` keyed by token type name**; learned per-type embedding added
+  post-projection; one mixed pooled set; the aggregator block verbatim
+  (mean | attention with explicit QKV + `F.scaled_dot_product_attention` per the
+  Global Constraints — NOT `nn.MultiheadAttention`, deviating deliberately from
+  `SetEncoderQNetwork`'s :537-554 for byte-exact-replay pinning); Q-head.
+  Masking: output-side masking → **exact-zero contribution AND exact-zero
+  gradient** for absent tokens, per aggregator type, pinned by test (grad-through
+  test asserting zero grads on absent rows); all-empty unmask guard survives
+  (:584-596 shape).
+- **Checkpoint gates replaced** (`checkpoint_utils.py`): `attach_universe_metadata`
+  (:26-56) writes `token_type_schema_hash` + `layout_hash`; drops
+  `observation_field_uuids` (:45) and `observation_dim` (:42) with their producers.
+  `assert_checkpoint_dimensions` (:59-100): the obs-dim gate (:69-71) and the
+  order-sensitive uuid gate (:77-87) are REPLACED — token nets compare
+  `token_type_schema_hash`; flat nets compare `layout_hash`.
+  `CHECKPOINT_FORMAT_VERSION` bumps; old checkpoints refuse loudly (zero-backcompat).
+  Roster mismatch at cross-universe load: intersection load, both directions
+  reported, payload-schema mismatch refuses; cross-universe load resets optimizer,
+  re-copies target net, resets RND state.
+- **RND** (`exploration/rnd.py`): the `active_mask` constructor param, buffer
+  (:85-91) and forward multiply (:104-105) are DELETED (not defaulted);
+  `RNDExploration` call sites (:153, :158) updated; RND consumes the flat
+  serialization.
+- **Transfer-contract test:** two disjoint-vocabulary minimal fixture universes
+  (committed test packs); train-step a token net on one; load by ModuleDict type
+  keys on the other; forward cleanly; assert the loud roster-mismatch report on a
+  third with a payload-schema mismatch. Permutation invariance re-pinned on the
+  mixed-type set. Flat-view forward + layout-hash gate tests for
+  feedforward/dueling.
+- Training-dynamical instrumentation landing here as recorded metrics: per-type
+  encoder grad norms, cold-token injection hook, TD-error vs presence-flip count,
+  pooled-embedding norm + online-vs-target cosine drift, intrinsic reward vs
+  presence-flip count (§3b). The probe *experiments* (flat-vs-token A/B,
+  mean-vs-attention learning probe, slot-swap decode) are units 4/5.

@@ -3,7 +3,11 @@
 **Document Type**: Design Specification + Integration Specification  
 **Status**: Phase 1 Complete; observation path fully VFS-driven in production (shadow migration finished, old path deleted); VTC partially unified (Phase 2.x)  
 **Version**: 1.1 Draft  
-**Last Updated**: 25 August 2026, pass 2 (adversarial re-audit of the pass-1 sweep against `src/townlet/` at HEAD — every pass-1
+**Last Updated**: 25 August 2026, pass 3 (convergence check: pass-2 corrections re-derived from source — 4 confirmed, 1
+sharpened; §7.2 `check_access` is dead in `src/`; §11.4 gains per-phase coverage and the phase-name compile gate the
+examples in §10.2/§12.3/§13.3/§14.3 fail; §6.2 load-time item-scope gate; §20.9 item-profile DTO fields; §21.1 item 2
+discharged; §4.3 field-UUID role restored from the archive); 25 August 2026, pass 2 (adversarial
+re-audit of the pass-1 sweep against `src/townlet/` at HEAD — every pass-1
 correction and caveat line reference independently re-derived; §6.2 item-scope mechanism corrected, §9.3 normalization citation
 corrected, §7.2 `ScopedVariableRegistry` access-model caveat added, §11.4 phase list marked shipped; lint sweep); 25 August 2026,
 pass 1 (re-verified against `src/townlet/` at HEAD after token-obs unit 3 / Task 5 landed: §5.1, §6, §6.2, §6.3, §7.2, §7.4, §9.3,
@@ -366,6 +370,12 @@ value an author may not write is a value the compiler may not emit (`PDR-0047`).
 meter block and is reserved to meters. Vocabulary extension is a decision (`PDR-0016`), not a
 literal at a call site.
 
+The semantic group is also **checkpoint-relevant** (restored from the archived implementation
+overview, 2026-08-25): it is part of the payload of each compiled field's provenance UUID
+(`universe/dto/observation_spec.py:26-46`, `compute_observation_field_uuid`), and those UUIDs
+are what resume compares (§8.4, §18.4). Changing a field's group — with no other change —
+re-keys the field and makes existing checkpoints refuse to attach.
+
 Observation fields are not mere convenience. They are the curriculum and checkpoint-compatibility boundary.
 
 Changing which fields are exposed can create a new observation ABI and may break existing checkpoints.
@@ -632,8 +642,10 @@ Key points:
 - Access policies should be part of run provenance.
 - **`item`-scoped variables never enter this surface at all** (2026-08-25 note; mechanism
   corrected same day): item state is never a registry `VariableDef` — an item-scoped
-  variable arriving as one (e.g. from `variables_reference.yaml`) is refused outright at
-  registry construction (`registry.py:467-471,717-721`), and compiled item-profile state
+  variable arriving as one is refused first at config load
+  (`config/vfs_config.py:15-19`, the `variables_reference.yaml` wrapper's validator) and
+  again, belt-and-braces, at registry construction (`registry.py:467-471,717-721`);
+  compiled item-profile state
   lives in the separate `item_vfs` tensor instead. `registry.get()` on an item variable id
   therefore raises `KeyError`. Item state is reached only through the separate
   `write_item` / `read_item` / `register_item_instance` API (`registry.py:798-866`), which
@@ -727,12 +739,15 @@ The current repo has two registry surfaces:
 - `VariableRegistry` is the compiled runtime registry used by `VectorizedHamletEnv`. It owns declared VFS variables, permission checks, lifetime resets, item-profile tensor storage, and engine writeback.
 - `ScopedVariableRegistry` is a simpler global/agent/item utility registry that implements
   the same protocol shape for observation-builder tests, item-observation tests, and
-  component benchmarks. It is not the environment hot path, but it is still an intentional
-  adapter/test surface rather than dead code. ⚠ Its `check_access` (`registry.py:1018+`)
-  implements a **different access-control philosophy** from the declared
+  component benchmarks. It is not the environment hot path, but the class itself is still an
+  intentional adapter/test surface rather than dead code. ⚠ Its `check_access`
+  (`registry.py:1018+`) implements a **different access-control philosophy** from the declared
   `readable_by`/`writable_by` role lists this chapter documents: fixed scope-based rules
-  (globals read-only, agent variables writable only by agent scope). Do not read its
-  behaviour as the VFS access model — that lives in `VariableRegistry` (2026-08-24 audit,
+  (globals read-only, agent variables writable only by agent scope). It is also **dead in
+  `src/`** (sharpened 2026-08-25, pass 3): none of the class's own `get_*`/`set_*` accessors
+  call it and nothing outside `registry.py` does — its only callers are
+  `tests/test_townlet/unit/vfs/test_scoped_registry.py`. It enforces nothing anywhere. Do
+  not read it as the VFS access model — that lives in `VariableRegistry` (2026-08-24 audit,
   noted here 2026-08-25).
 
 Runtime VFS evaluation uses `VariableRegistry.set_engine_value()` for evaluator writeback. This
@@ -1217,6 +1232,33 @@ Execution order materially changes the world.
 `DEFAULT_TRANSITION_PHASES` (`vfs/transition_graph.py:7-26`), the canonical order
 `TransitionPhaseGraph` sorts compiled rules by. What remains aspirational is *coverage* —
 not every phase has compiled rules flowing through it yet (§11.5, §21.1).
+
+**Per-phase coverage at HEAD** (measured 2026-08-25, pass 3, from the `phase=` literals in
+`vfs/vtc.py` and the runner calls in `environment/vectorized_env.py:1026-1036,1150-1156`).
+Eleven of the eighteen phases carry compiler-emitted rules: `compute_action_legality_masks`
+(affordance gates), `resolve_affordance_access_and_occupancy` (occupancy claims),
+`advance_interaction_progress`, `apply_completion_bonuses`, `apply_passive_depletion`,
+`apply_modulations`, `apply_threshold_cascades`, `apply_social_residue_effects`,
+`clamp_and_validate`, `evaluate_terminal_conditions`, and `compute_rewards` (the DAC
+contract). The other seven — `ingest_actions`, `advance_global_time`,
+`apply_movement_and_wait_costs`, `apply_action_costs`, `apply_action_effects`,
+`emit_observation_features`, `emit_telemetry` — have **no compiler emitting into them**; the
+engine still does that work imperatively (`_action_executor`, `global_tick`, the encoder).
+Author-scheduled action writes (`actions.yaml` `writes[].phase`) are the one way content
+reaches the middle three, and they must land in a phase **no later than
+`apply_completion_bonuses`**: `env.step` runs phases 0–8 with the action batch, and the later
+runner calls carry `actions=None`, so an action write scheduled after that boundary raises
+`ValueError` at the first step (`vfs/transition_schedule.py:123-127`) — another
+compile-green/runtime-fail seam of the §21.1 item 8 kind.
+
+**Phase names are validated at compile.** `WriteSpec.phase` and every rule's `phase` are
+resolved through `TransitionPhaseGraph.sort_key`, which raises `ValueError` for any name not in
+the list above (`vfs/transition_graph.py:57-63`; the action-write sort at `vfs/vtc.py:2282`).
+The shorthand names in this document's *design* examples — `action_costs`, `action_effects`,
+`emergency_relocation` (§10.2, §13.3), `passive_depletion`, `threshold_cascades` (§12.3,
+§14.3) — are illustrative and would be refused; author the canonical `apply_*` names. (The
+`WriteSpec` docstring in `vfs/schema.py:238,250` carries the same shorthand — a source nit,
+noted 2026-08-25.)
 
 `clamp_and_validate` carries compiled bounds rules (`hamlet-f46e2b381a`): one
 `bounds_clamp:<meter>` rule per declared meter, sourced from `bars.*.bounds`, compiled into
@@ -2616,9 +2658,12 @@ affordance, action write, or `drive.yaml` can reference them (§5.1 caveat,
 
 **Add a derived profile variable** (`vfs_profiles.yaml`): choose global/agent/item profile
 scope; provide exactly one initialization source (`initial_value` / `initial_value_mode` /
-`expression` — item profiles refuse `expression` at compile); the profile compiler parses,
-type-checks, and topologically sorts dependencies. If it should be observed, declare
-`exposed_to` and `semantic_type` — and remember `exposed_to: []` currently fails open to
+`expression` for global and agent profiles — the item-profile DTO has no
+`initial_value_mode` at all and refuses `expression` at compile, so an item variable is
+`initial_value` only; `config/vfs_profiles_config.py:22-60,245-275`); the profile compiler
+parses, type-checks, and topologically sorts dependencies. If it should be observed, declare
+`exposed_to` and — on global/agent variables only; item variables carry no `semantic_type`
+(`PDR-0066`) — `semantic_type`; and remember `exposed_to: []` currently fails open to
 `["agent"]` (§5.3 caveat).
 
 **Add a new transition rule family** (`vtc.py`): compile source config into immutable
@@ -2645,8 +2690,10 @@ hash/generation as a new ABI identity.
    type/shape validation depth, telemetry side-effect compilation, relational observation
    exposure, environment-level social-rule wiring, message observation/runtime communication
    wiring, and dynamic variables.
-2. **Manual observation generation.** Observation construction still requires explicit registry
-   reads and concatenation.
+2. **Manual observation generation — discharged** (struck 2026-08-25, pass 3). This item
+   predated the cutover in §17: observation construction is driven entirely by the compiled
+   `observation_spec` through `ObservationEncoder._get_observations` (§8.1, §17.2); no
+   hand-written registry read/concatenate path remains.
 3. **Partial write validation.** `WriteSpec` expressions are parsed and executed for action
    writes, but full write-path type/shape validation is still incomplete.
 4. **Compile-time write-shape validation is still missing** (narrowed 2026-08-25). The runtime

@@ -28,13 +28,13 @@ Widths that are DERIVED from closed vocabularies, never written as literals:
 from __future__ import annotations
 
 import math
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Iterable, Iterator, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Final, Literal, get_args
 
-from townlet.config.effects_config import EffectScope
+from townlet.config.effects_config import EffectScope, ReapplyPolicy
 from townlet.config.interaction_type import InteractionType
-from townlet.vfs.schema import NormalizationSpec, VariableScope
+from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope
 from townlet.vfs.semantic_type import SemanticType
 
 # --------------------------------------------------------------------------- engine constants
@@ -63,8 +63,10 @@ TOKEN_TYPE_ROSTER: Final[tuple[TokenType, ...]] = get_args(TokenType)
 #: Reserved names (spec §1): intent only, NOT settled shapes. They refuse instantiation.
 RESERVED_TOKEN_TYPE_NAMES: Final[frozenset[str]] = frozenset({"relation", "message", "group"})
 
-#: Which filler kind each live type takes: compile-time-static entities publish presence 1;
-#: runtime-dynamic entities toggle presence (spec §3 "presence ownership").
+#: Which filler kind each live type takes (spec §3 "presence ownership"): a `static` slot is
+#: bound to its filler at compile time; a `dynamic` slot is assigned at runtime and toggles
+#: presence. `static` does NOT mean "always present": the §3 visibility filter still zeroes
+#: presence (and payload) of any spatial token out of range under partial observability.
 FillerKind = Literal["static", "dynamic"]
 TOKEN_TYPE_FILLER_KIND: Final[Mapping[str, FillerKind]] = {
     "self": "static",
@@ -85,10 +87,13 @@ SEMANTIC_TYPE_VOCABULARY: Final[tuple[str, ...]] = get_args(SemanticType)
 NORMALIZATION_KIND_VOCABULARY: Final[tuple[str, ...]] = get_args(NormalizationSpec.model_fields["kind"].annotation)
 INTERACTION_TYPE_VOCABULARY: Final[tuple[str, ...]] = get_args(InteractionType)
 EFFECT_SCOPE_VOCABULARY: Final[tuple[str, ...]] = tuple(member.value for member in EffectScope)
-LIFETIME_VOCABULARY: Final[tuple[str, ...]] = ("tick", "episode", "persistent")
+REAPPLY_POLICY_VOCABULARY: Final[tuple[str, ...]] = tuple(member.value for member in ReapplyPolicy)
+LIFETIME_VOCABULARY: Final[tuple[str, ...]] = get_args(VariableDef.model_fields["lifetime"].annotation)
+VARIABLE_TYPE_VOCABULARY: Final[tuple[str, ...]] = get_args(VariableDef.model_fields["type"].annotation)
 DTYPE_VOCABULARY: Final[tuple[str, ...]] = ("float", "int", "bool")
 
-#: VariableDef.type -> dtype flag. References and message tokens are integer ids.
+#: VariableDef.type -> dtype flag. References and message tokens are integer ids. Pinned by
+#: test to cover exactly VARIABLE_TYPE_VOCABULARY, so a new VariableDef type is loud here.
 _VARIABLE_TYPE_DTYPE: Final[Mapping[str, str]] = {
     "scalar": "float",
     "vec2f": "float",
@@ -143,7 +148,10 @@ DESCRIPTOR_BLOCK_WIDTH: Final[int] = len(DESCRIPTOR_BLOCK_FEATURES)
 
 #: Meter declared-parameter signature (spec §1 "identity = declared payload, applied
 #: recursively"): what an affordance effect entry carries for its TARGET, and what the meter
-#: token carries for itself. Built from bars.yaml's declared parameters, no names.
+#: token carries for itself. Built from bars.yaml's declared parameters, no names. Every
+#: feature is bounded into [0, 1] (spec §1 boundedness, applied to anything entering a
+#: payload): initial as position within the declared range, rates as range-relative
+#: fractions per tick saturated by x/(1+x), the range itself as a saturated log.
 METER_SIGNATURE_FEATURES: Final[tuple[str, ...]] = (
     "initial",
     "lethal_min",
@@ -152,9 +160,30 @@ METER_SIGNATURE_FEATURES: Final[tuple[str, ...]] = (
     "move_depletion",
     "interact_depletion",
     "natural_recovery",
-    "log_range",
+    "range",
 )
 METER_SIGNATURE_WIDTH: Final[int] = len(METER_SIGNATURE_FEATURES)
+
+#: Effect static payload (declared identity of an `EffectDefinitionConfig`): scope one-hot,
+#: declared intensity (signed, saturated), declared duration (saturated log), reapply-policy
+#: one-hot. Two declared effects differing in any declared parameter are distinguishable.
+EFFECT_STATIC_FEATURES: Final[tuple[str, ...]] = (
+    tuple(f"scope_{s}" for s in EFFECT_SCOPE_VOCABULARY)
+    + ("intensity", "duration")
+    + tuple(f"reapply_{p}" for p in REAPPLY_POLICY_VOCABULARY)
+)
+
+
+def saturate(x: float) -> float:
+    """Bounded, monotone, scale-free map of a non-negative magnitude into [0, 1): x / (1 + x)."""
+    if x < 0:
+        raise ValueError(f"saturate expects a non-negative magnitude, got {x}")
+    return x / (1.0 + x)
+
+
+def saturate_signed(x: float) -> float:
+    """Signed saturation into (−1, 1): sign(x) · |x| / (1 + |x|)."""
+    return math.copysign(saturate(abs(x)), x) if x != 0 else 0.0
 
 
 def position_features(prefix: str, *, with_rank: bool) -> tuple[str, ...]:
@@ -195,9 +224,7 @@ PAYLOAD_SCHEMAS: Final[Mapping[str, tuple[str, ...]]] = {
         + position_features("egocentric", with_rank=False)
         + ("carried", "owner_slot", "owner_slot_applicable")
     ),
-    "effect": (
-        tuple(f"scope_{s}" for s in EFFECT_SCOPE_VOCABULARY) + ("intensity", "remaining_fraction", "owner_slot", "owner_slot_applicable")
-    ),
+    "effect": EFFECT_STATIC_FEATURES + ("remaining_fraction", "owner_slot", "owner_slot_applicable"),
     "variable_element": position_features("position", with_rank=True) + VALUE_BLOCK_FEATURES + DESCRIPTOR_BLOCK_FEATURES,
 }
 
@@ -258,6 +285,25 @@ class MeterDeclaration:
     move_depletion: float
     interact_depletion: float
     natural_recovery: float
+
+
+@dataclass(frozen=True)
+class EffectDeclaration:
+    """An effects.yaml effect's declared parameters — the inputs to `effect_static_payload`."""
+
+    id: str
+    scope: str
+    duration: int
+    intensity: float
+    reapply_policy: str
+
+    def __post_init__(self) -> None:
+        if self.scope not in EFFECT_SCOPE_VOCABULARY:
+            raise ValueError(f"Effect '{self.id}': scope {self.scope!r} is not an EffectScope member {EFFECT_SCOPE_VOCABULARY}")
+        if self.reapply_policy not in REAPPLY_POLICY_VOCABULARY:
+            raise ValueError(f"Effect '{self.id}': reapply_policy {self.reapply_policy!r} is not in {REAPPLY_POLICY_VOCABULARY}")
+        if self.duration <= 0:
+            raise ValueError(f"Effect '{self.id}': duration must be > 0 ticks")
 
 
 # --------------------------------------------------------------------------- artifact
@@ -343,11 +389,13 @@ class TokenTypeSchema:
 
 def build_token_type(type_name: str, slot_bindings: Sequence[SlotBinding]) -> TokenTypeSchema:
     """Construct a type schema from its bindings; the payload schema is the engine constant."""
-    if type_name in RESERVED_TOKEN_TYPE_NAMES or type_name not in PAYLOAD_SCHEMAS:
-        # Let the dataclass produce the canonical refusal.
-        return TokenTypeSchema(
-            type_name=type_name, payload_features=("_",), capacity=len(slot_bindings), slot_bindings=tuple(slot_bindings)
+    if type_name in RESERVED_TOKEN_TYPE_NAMES:
+        raise ValueError(
+            f"Token type {type_name!r} is a reserved name (spec §1): intent only, not a settled shape. "
+            "It refuses instantiation until its own unit lands it."
         )
+    if type_name not in PAYLOAD_SCHEMAS:
+        raise ValueError(f"Token type {type_name!r} is not in the closed roster {TOKEN_TYPE_ROSTER}")
     return TokenTypeSchema(
         type_name=type_name,
         payload_features=PAYLOAD_SCHEMAS[type_name],
@@ -414,8 +462,8 @@ def require_exposure_normalization(var_id: str, spec: NormalizationSpec | None) 
     """The exposure refusals, in one place (spec §1 width + boundedness rules; Task 5f ruling).
 
     - normalization is REQUIRED at exposure (spec §2 "normalization authority");
-    - ``one_hot`` is refused on tokenized variables (width-changing; the categorical fact is
-      carried as normalized index + categories count in the descriptor block);
+    - ``one_hot`` is refused on tokenized variables (width-changing; author a clipped minmax
+      index instead — its declared range rides in the descriptor block);
     - ``rank_scaled`` is refused at exposure (hamlet-6a6e104523: it ranks across dim 0 = the
       batch = causally independent worlds — non-Markov, constant-zero on globals);
     - ``none`` / ``zscore`` / bare ``masked_value`` / unclipped range kinds are unbounded.
@@ -432,7 +480,8 @@ def require_exposure_normalization(var_id: str, spec: NormalizationSpec | None) 
             f"Variable '{var_id}' exposes with normalization kind 'one_hot'.\n"
             f"  Rule: one_hot is refused on tokenized variables — it widens 1→C and cannot fit the "
             f"fixed {VALUE_BLOCK_WIDTH}-wide value block (spec §1 width rule). Expose the category as a "
-            "clipped minmax index; the categories count rides in the descriptor block."
+            "clipped minmax index over [0, C-1]; the declared range then rides in the descriptor "
+            "block's min/max slots (there is no separate categories-count feature)."
         )
     if kind == "rank_scaled":
         raise ValueError(
@@ -480,45 +529,57 @@ def _one_hot(vocabulary: Sequence[str], member: str) -> tuple[float, ...]:
     return tuple(1.0 if v == member else 0.0 for v in vocabulary)
 
 
-def _element_param(value: float | list[float] | None, element_index: int) -> float | None:
+def _element_param(
+    value: float | list[float] | None, element_index: int, *, element_count: int = 1, where: str = "normalization parameter"
+) -> float | None:
+    """One element's normalization parameter: scalars broadcast; a list must have exactly one
+    entry per element (a per-axis list against a multi-axis shape is a named refusal)."""
     if value is None:
         return None
     if isinstance(value, list):
-        return float(value[element_index]) if len(value) > 1 else float(value[0])
+        if len(value) == 1:
+            return float(value[0])
+        if len(value) != element_count:
+            raise ValueError(
+                f"{where} lists {len(value)} values but the variable has {element_count} elements; "
+                "declare one value per element (row-major over the shape) or a single scalar"
+            )
+        return float(value[element_index])
     return float(value)
+
+
+def _flatten(value: object) -> Iterator[float]:
+    if isinstance(value, bool):
+        yield 1.0 if value else 0.0
+    elif isinstance(value, int | float):
+        yield float(value)
+    elif isinstance(value, list | tuple):
+        for item in value:
+            yield from _flatten(item)
+    else:
+        raise ValueError(f"Declared default contains a non-numeric entry {value!r}")
 
 
 def _element_default(default: object, element_index: int, element_count: int) -> float:
     """The declared initial of one element, flattened row-major; scalars broadcast."""
-    if isinstance(default, bool):
-        return 1.0 if default else 0.0
-    if isinstance(default, int | float):
-        return float(default)
-    if isinstance(default, list | tuple):
-        flat: list[float] = []
-        stack: list[object] = list(default)
-        while stack:
-            item = stack.pop(0)
-            if isinstance(item, list | tuple):
-                stack[0:0] = list(item)
-            else:
-                flat.append(float(item))  # type: ignore[arg-type]
-        if len(flat) == element_count:
-            return flat[element_index]
-        if len(flat) == 1:
-            return flat[0]
-        raise ValueError(f"Declared default has {len(flat)} elements but the variable has {element_count}")
-    return 0.0
+    if default is None:
+        return 0.0
+    flat = list(_flatten(default))
+    if len(flat) == element_count:
+        return flat[element_index]
+    if len(flat) == 1:
+        return flat[0]
+    raise ValueError(f"Declared default has {len(flat)} elements but the variable has {element_count}")
 
 
-def normalize_declared_scalar(value: float, spec: NormalizationSpec, element_index: int = 0) -> float:
+def normalize_declared_scalar(value: float, spec: NormalizationSpec, element_index: int = 0, *, element_count: int = 1) -> float:
     """Apply a bounded normalization kind to one declared scalar (the descriptor's 'normalized
     declared initial'). For cyclical_sin_cos the descriptor carries the phase fraction, not the
     sin/cos pair — the pair is the value block's job."""
     kind = spec.kind
     if kind == "minmax" or kind == "log_scaled":
-        lo = _element_param(spec.min, element_index)
-        hi = _element_param(spec.max, element_index)
+        lo = _element_param(spec.min, element_index, element_count=element_count, where="normalization.min")
+        hi = _element_param(spec.max, element_index, element_count=element_count, where="normalization.max")
         assert lo is not None and hi is not None
         v = min(max(value, lo), hi) if spec.clip else value
         if kind == "minmax":
@@ -533,10 +594,10 @@ def normalize_declared_scalar(value: float, spec: NormalizationSpec, element_ind
     raise ValueError(f"normalize_declared_scalar: kind {kind!r} is not an exposure-admitted kind")
 
 
-def normalization_param_vector(spec: NormalizationSpec, element_index: int = 0) -> tuple[float, ...]:
+def normalization_param_vector(spec: NormalizationSpec, element_index: int = 0, *, element_count: int = 1) -> tuple[float, ...]:
     """Canonical (min, max, clip, scale, params_absent) for the descriptor block."""
-    lo = _element_param(spec.min, element_index)
-    hi = _element_param(spec.max, element_index)
+    lo = _element_param(spec.min, element_index, element_count=element_count, where="normalization.min")
+    hi = _element_param(spec.max, element_index, element_count=element_count, where="normalization.max")
     clip = None if spec.clip is None else (1.0 if spec.clip else 0.0)
     scale: float | None
     if spec.kind == "cyclical_sin_cos":
@@ -546,7 +607,7 @@ def normalization_param_vector(spec: NormalizationSpec, element_index: int = 0) 
     elif spec.kind == "one_hot":
         scale = None if spec.categories is None else float(spec.categories)
     elif spec.kind == "zscore":
-        scale = _element_param(spec.std, element_index)
+        scale = _element_param(spec.std, element_index, element_count=element_count, where="normalization.std")
     elif spec.kind == "masked_value":
         scale = spec.fill_value
     else:
@@ -566,12 +627,13 @@ def describe_variable(var: ExposedVariable, *, element_index: int, owner_capacit
         owner = (var.owner_slot / owner_capacity, 1.0)
     else:
         owner = (0.0, 0.0)
-    initial = normalize_declared_scalar(_element_default(var.default, element_index, var.element_count), spec, element_index)
+    count = var.element_count
+    initial = normalize_declared_scalar(_element_default(var.default, element_index, count), spec, element_index, element_count=count)
     block = (
         _one_hot(SCOPE_VOCABULARY, var.scope)
         + _one_hot(SEMANTIC_TYPE_VOCABULARY, var.semantic_type)
         + _one_hot(NORMALIZATION_KIND_VOCABULARY, spec.kind)
-        + normalization_param_vector(spec, element_index)
+        + normalization_param_vector(spec, element_index, element_count=count)
         + _one_hot(DTYPE_VOCABULARY, _VARIABLE_TYPE_DTYPE[var.type])
         + _one_hot(LIFETIME_VOCABULARY, var.lifetime)
         + (initial, math.log1p(var.element_count))
@@ -611,34 +673,51 @@ def check_indistinguishability(variables: Iterable[ExposedVariable], *, owner_ca
 
 
 def meter_signature(meter: MeterDeclaration) -> tuple[float, ...]:
-    """A meter's declared-parameter features (METER_SIGNATURE_WIDTH wide). Depletion/recovery
-    rates are declared in meter units per tick; the initial is normalized into [min, max]."""
+    """A meter's declared-parameter features (METER_SIGNATURE_WIDTH wide), every one bounded
+    into [0, 1]: the initial as its position within [min, max]; each declared rate (meter units
+    per tick) as a fraction of the declared range, saturated by x/(1+x) so a money-scale rate
+    cannot blow up the token; the range itself as a saturated log1p. Scale-free by construction:
+    a meter re-declared in different units gives the same signature."""
     span = meter.max - meter.min
     if span <= 0:
         raise ValueError(f"Meter '{meter.name}': bounds must satisfy min < max")
+    initial = min(max((meter.initial - meter.min) / span, 0.0), 1.0)
     return (
-        (meter.initial - meter.min) / span,
+        initial,
         1.0 if meter.lethal_min else 0.0,
         1.0 if meter.lethal_max else 0.0,
-        meter.passive_depletion,
-        meter.move_depletion,
-        meter.interact_depletion,
-        meter.natural_recovery,
-        math.log1p(span),
+        saturate(abs(meter.passive_depletion) / span),
+        saturate(abs(meter.move_depletion) / span),
+        saturate(abs(meter.interact_depletion) / span),
+        saturate(abs(meter.natural_recovery) / span),
+        saturate(math.log1p(span)),
+    )
+
+
+def effect_static_payload(effect: EffectDeclaration) -> tuple[float, ...]:
+    """An effect's declared-identity features (len(EFFECT_STATIC_FEATURES) wide, all bounded):
+    scope one-hot, signed-saturated intensity, saturated log1p(duration), reapply-policy one-hot.
+    The runtime appends remaining_fraction and the owner coordinate at publish time."""
+    return (
+        _one_hot(EFFECT_SCOPE_VOCABULARY, effect.scope)
+        + (saturate_signed(effect.intensity), saturate(math.log1p(effect.duration)))
+        + _one_hot(REAPPLY_POLICY_VOCABULARY, effect.reapply_policy)
     )
 
 
 def effect_summary(deltas: Mapping[str, float], meters: Mapping[str, MeterDeclaration]) -> tuple[float, ...]:
-    """The affordance effect summary (spec §1): the K largest declared deltas by normalized
-    magnitude, each (present, magnitude, sign, target signature); fewer than K → absent-marked.
-    Returns the EFFECT_SUMMARY_K × (3 + METER_SIGNATURE_WIDTH) block; the count feature is
-    appended by the caller from `len(deltas)`."""
+    """The affordance effect summary (spec §1): the K largest declared deltas by NORMALIZED
+    magnitude — |delta| relative to the TARGET meter's declared range, so a +22.5 delta on a
+    0–999999 meter and a +0.3 delta on a 0–1 meter rank on comparable footing (2.25e-5 vs 0.3) —
+    each (present, magnitude, sign, target signature); fewer than K → absent-marked. Returns the
+    EFFECT_SUMMARY_K × (3 + METER_SIGNATURE_WIDTH) block; the count feature is appended by the
+    caller from `len(deltas)`."""
     ranked: list[tuple[float, float, MeterDeclaration]] = []
     for target, delta in deltas.items():
         meter = meters.get(target)
         if meter is None:
             raise ValueError(f"Effect targets meter '{target}' which is not declared")
-        magnitude = abs(delta) / (meter.max - meter.min)
+        magnitude = min(abs(delta) / (meter.max - meter.min), 1.0)
         ranked.append((magnitude, math.copysign(1.0, delta) if delta != 0 else 0.0, meter))
     ranked.sort(key=lambda r: r[0], reverse=True)
     out: list[float] = []
@@ -740,7 +819,10 @@ def effect_capacity(
 
 def variable_element_capacity(variables: Iterable[ExposedVariable]) -> int:
     """Σ element counts of explicitly exposed variables. Each variable is checked against the
-    exposure rules so a refused kind never sizes a capacity."""
+    exposure rules so a refused kind never sizes a capacity.
+
+    `agent_private` is NOT refused here by ruling (Task 6 review M1): the spec §2 table places
+    that exclusion in the publisher's filter before slot binding — Task 8 pins it there."""
     total = 0
     for var in variables:
         require_exposure_normalization(var.id, var.normalization)
@@ -771,6 +853,7 @@ __all__ = [
     "DESCRIPTOR_BLOCK_FEATURES",
     "DESCRIPTOR_BLOCK_WIDTH",
     "DTYPE_FLAG_WIDTH",
+    "EFFECT_STATIC_FEATURES",
     "EFFECT_SUMMARY_K",
     "ENCODING_VERSION",
     "LIFETIME_ONE_HOT_WIDTH",
@@ -782,12 +865,15 @@ __all__ = [
     "NORMALIZATION_PARAM_VECTOR_WIDTH",
     "OWNER_SLOT_COORDINATE_WIDTH",
     "PAYLOAD_SCHEMAS",
+    "REAPPLY_POLICY_VOCABULARY",
     "RESERVED_TOKEN_TYPE_NAMES",
     "SCOPE_ONE_HOT_WIDTH",
     "SEMANTIC_TYPE_ONE_HOT_WIDTH",
     "TOKEN_TYPE_FILLER_KIND",
     "TOKEN_TYPE_ROSTER",
     "VALUE_BLOCK_WIDTH",
+    "VARIABLE_TYPE_VOCABULARY",
+    "EffectDeclaration",
     "ExposedVariable",
     "MeterDeclaration",
     "SlotBinding",
@@ -800,6 +886,7 @@ __all__ = [
     "check_indistinguishability",
     "describe_variable",
     "effect_capacity",
+    "effect_static_payload",
     "effect_summary",
     "item_capacity",
     "mean_census_advisory",
@@ -810,6 +897,8 @@ __all__ = [
     "position_features",
     "require_exposure_normalization",
     "require_position_rank",
+    "saturate",
+    "saturate_signed",
     "self_capacity",
     "static_payload_signature",
     "value_block_width_used",

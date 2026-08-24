@@ -11,17 +11,22 @@ from typing import get_args
 
 import pytest
 
-from townlet.config.effects_config import EffectScope
+from townlet.config.effects_config import EffectScope, ReapplyPolicy
 from townlet.config.interaction_type import InteractionType
 from townlet.universe.dto.token_spec import (
+    _VARIABLE_TYPE_DTYPE,
     DESCRIPTOR_BLOCK_WIDTH,
     DTYPE_FLAG_WIDTH,
+    DTYPE_VOCABULARY,
+    EFFECT_STATIC_FEATURES,
     EFFECT_SUMMARY_K,
     LIFETIME_ONE_HOT_WIDTH,
+    LIFETIME_VOCABULARY,
     MAX_POSITION_RANK,
     MEAN_CENSUS_ADVISORY,
     METER_SIGNATURE_WIDTH,
     NORMALIZATION_KIND_ONE_HOT_WIDTH,
+    NORMALIZATION_PARAM_SLOTS,
     NORMALIZATION_PARAM_VECTOR_WIDTH,
     OWNER_SLOT_COORDINATE_WIDTH,
     PAYLOAD_SCHEMAS,
@@ -30,6 +35,8 @@ from townlet.universe.dto.token_spec import (
     SEMANTIC_TYPE_ONE_HOT_WIDTH,
     TOKEN_TYPE_ROSTER,
     VALUE_BLOCK_WIDTH,
+    VARIABLE_TYPE_VOCABULARY,
+    EffectDeclaration,
     ExposedVariable,
     MeterDeclaration,
     SlotBinding,
@@ -41,6 +48,8 @@ from townlet.universe.dto.token_spec import (
     check_indistinguishability,
     describe_variable,
     effect_capacity,
+    effect_static_payload,
+    effect_summary,
     item_capacity,
     mean_census_advisory,
     meter_capacity,
@@ -52,7 +61,7 @@ from townlet.universe.dto.token_spec import (
     value_block_width_used,
     variable_element_capacity,
 )
-from townlet.vfs.schema import NormalizationSpec, VariableScope
+from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope
 from townlet.vfs.semantic_type import SEMANTIC_TYPES
 
 # --------------------------------------------------------------------------- fixtures
@@ -143,13 +152,33 @@ class TestRoster:
 
 class TestDescriptorBlock:
     def test_widths_derive_from_enums(self):
-        assert SCOPE_ONE_HOT_WIDTH == len(VariableScope) == 9
-        assert SEMANTIC_TYPE_ONE_HOT_WIDTH == len(SEMANTIC_TYPES) == 6
-        assert NORMALIZATION_KIND_ONE_HOT_WIDTH == len(get_args(NormalizationSpec.model_fields["kind"].annotation)) == 9
-        assert NORMALIZATION_PARAM_VECTOR_WIDTH == 5  # min, max, clip, scale + params-absent flag
-        assert DTYPE_FLAG_WIDTH == 3
-        assert LIFETIME_ONE_HOT_WIDTH == 3
+        # Per-component sizes come from the enums, never from literals; the one literal pin is
+        # DESCRIPTOR_BLOCK_WIDTH below.
+        assert SCOPE_ONE_HOT_WIDTH == len(VariableScope)
+        assert SEMANTIC_TYPE_ONE_HOT_WIDTH == len(SEMANTIC_TYPES)
+        assert NORMALIZATION_KIND_ONE_HOT_WIDTH == len(get_args(NormalizationSpec.model_fields["kind"].annotation))
+        assert NORMALIZATION_PARAM_VECTOR_WIDTH == len(NORMALIZATION_PARAM_SLOTS) + 1  # + params-absent flag
+        assert DTYPE_FLAG_WIDTH == len(DTYPE_VOCABULARY)
+        assert LIFETIME_ONE_HOT_WIDTH == len(get_args(VariableDef.model_fields["lifetime"].annotation))
         assert OWNER_SLOT_COORDINATE_WIDTH == 2
+
+    def test_lifetime_and_type_vocabularies_derive_from_variable_def(self):
+        assert LIFETIME_VOCABULARY == get_args(VariableDef.model_fields["lifetime"].annotation)
+        assert VARIABLE_TYPE_VOCABULARY == get_args(VariableDef.model_fields["type"].annotation)
+        # dtype map covers exactly VariableDef's type vocabulary and lands in DTYPE_VOCABULARY.
+        assert set(_VARIABLE_TYPE_DTYPE) == set(VARIABLE_TYPE_VOCABULARY)
+        assert set(_VARIABLE_TYPE_DTYPE.values()) <= set(DTYPE_VOCABULARY)
+
+    def test_per_axis_param_list_against_multi_axis_shape_is_named_refusal(self):
+        var = _var(
+            "grid",
+            var_type="tensor2d",
+            shape=(2, 3),
+            default=[[0.0] * 3] * 2,
+            normalization=NormalizationSpec(kind="minmax", min=[0.0, 0.0], max=[1.0, 1.0], clip=True),
+        )
+        with pytest.raises(ValueError, match="normalization.min lists 2 values but the variable has 6 elements"):
+            describe_variable(var, element_index=0)
 
     def test_descriptor_block_width_is_pinned(self):
         # Single pin so drift is loud: 9 + 6 + 9 + 5 + 3 + 3 + 1 (initial) + 1 (log count) + 2.
@@ -381,6 +410,75 @@ class TestPayloadSchemas:
         sig = meter_signature(_meter("energy", initial=0.5, lo=0.0, hi=1.0))
         assert len(sig) == METER_SIGNATURE_WIDTH
         assert sig[0] == pytest.approx(0.5)
+
+    def test_meter_signature_is_bounded_and_scale_free(self):
+        money = MeterDeclaration(
+            name="money",
+            initial=0.0,
+            min=0.0,
+            max=999999.0,
+            lethal_min=False,
+            lethal_max=False,
+            passive_depletion=100.0,
+            move_depletion=0.0,
+            interact_depletion=0.0,
+            natural_recovery=5000.0,
+        )
+        sig = meter_signature(money)
+        assert all(0.0 <= f <= 1.0 for f in sig)
+        # Same meter declared in other units → same signature (rates are range-relative).
+        scaled = MeterDeclaration(
+            name="money_k",
+            initial=0.0,
+            min=0.0,
+            max=999.999,
+            lethal_min=False,
+            lethal_max=False,
+            passive_depletion=0.1,
+            move_depletion=0.0,
+            interact_depletion=0.0,
+            natural_recovery=5.0,
+        )
+        assert meter_signature(scaled)[:-1] == pytest.approx(sig[:-1])
+
+    def test_effect_summary_ranks_by_target_relative_magnitude(self):
+        meters = {
+            "energy": _meter("energy", lo=0.0, hi=1.0),
+            "money": MeterDeclaration(
+                name="money",
+                initial=0.0,
+                min=0.0,
+                max=1000.0,
+                lethal_min=False,
+                lethal_max=False,
+                passive_depletion=0.0,
+                move_depletion=0.0,
+                interact_depletion=0.0,
+                natural_recovery=0.0,
+            ),
+        }
+        # +800 on a 0–1000 meter (0.8 of range) outranks +0.3 on a 0–1 meter, despite the ranges.
+        block = effect_summary({"energy": 0.3, "money": 800.0}, meters)
+        entry = 3 + METER_SIGNATURE_WIDTH
+        first, second = block[:entry], block[entry : 2 * entry]
+        assert first[:3] == (1.0, pytest.approx(0.8), 1.0)
+        assert second[:3] == (1.0, pytest.approx(0.3), 1.0)
+        assert first[3:] == pytest.approx(meter_signature(meters["money"]))
+        # Absent entries are zero-marked; every feature stays bounded.
+        assert block[2 * entry :] == (0.0,) * (2 * entry)
+        assert all(-1.0 <= f <= 1.0 for f in block)
+
+    def test_effect_payload_carries_declared_duration_and_reapply_policy(self):
+        features = PAYLOAD_SCHEMAS["effect"]
+        assert features[: len(EFFECT_STATIC_FEATURES)] == EFFECT_STATIC_FEATURES
+        assert [f for f in features if f.startswith("reapply_")] == [f"reapply_{p.value}" for p in ReapplyPolicy]
+        a = EffectDeclaration(id="a", scope="agent", duration=5, intensity=1.0, reapply_policy="renew")
+        b = EffectDeclaration(id="b", scope="agent", duration=50, intensity=1.0, reapply_policy="renew")
+        c = EffectDeclaration(id="c", scope="agent", duration=5, intensity=1.0, reapply_policy="stack")
+        pa, pb, pc = (effect_static_payload(e) for e in (a, b, c))
+        assert len(pa) == len(EFFECT_STATIC_FEATURES)
+        assert pa != pb and pa != pc
+        assert all(-1.0 <= f <= 1.0 for f in pa + pb + pc)
 
     def test_variable_element_payload_is_position_value_descriptor(self):
         features = PAYLOAD_SCHEMAS["variable_element"]

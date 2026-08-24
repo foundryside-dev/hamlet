@@ -591,11 +591,14 @@ copy dissolves the drift).
   TokenSpec artifact itself) land. The hash movers named below are the approved design's
   **prediction** (spec §5, ruled by the owner), not a measurement — measurement, exact hash
   values, and the per-cell binding are Task 11's job, following DIV-004's own
-  predict-then-measure discipline. Unit-1's Task 3 (`hamlet-fa6bb6da4a`, landed immediately
-  before this entry) already built the machinery this entry names —
-  `RegisteredStreamDivergence` in `src/townlet/oracle/matrix.py`, whose own docstring names
+  predict-then-measure discipline. Two things landed before this entry, from two different
+  units: **unit 1** (migration sequencing step 1, spec §6) built the class this entry names
+  — `RegisteredStreamDivergence` in `src/townlet/oracle/matrix.py`, whose own docstring names
   DIV-008 as the entry it was built for and states "DIV-008 binds both, under one
-  register_ref" — but built-and-unbound is exactly the gap `registered` names.)
+  register_ref"; **this unit's own Task 3** (`hamlet-fa6bb6da4a`, the comment-234/242 harness
+  carry-forward batch, landed immediately before this entry within unit 3) then wired the
+  small fixes those reviews named. Machinery built-and-unbound is exactly the gap
+  `registered` names.)
 - **Harness shape: hash-only** (`RegisteredHashDivergence` — the provenance-hash movers)
 - **Harness shape: stream-scoped** (`RegisteredStreamDivergence` — the `obs` stream; unit 1's
   third divergence shape, built for exactly this entry). This entry carries **two**
@@ -691,19 +694,33 @@ randomized effect, anything reading the shared RNG stream mid-step), old and new
 **env-internally**, even under byte-identical scripted actions. The failure direction this
 produces is red — a `DIVERGE` on `actions`/`rewards`/`dones` — never a false green; but a
 future env change of that shape must be diagnosed as an RNG-coupling regression, not
-misread as a defect in the token cut itself. The scripted driver's RNG-call-order
-spot-check (Task 3 / unit 1) is the check that would catch such a change landing.
+misread as a defect in the token cut itself. **This entry's binding is therefore adjudicated
+in `--scripted` mode** — it is the mode under which `actions`/`rewards`/`dones` byte-exactness
+is a meaningful bar in the first place. What plain (seeded-random) mode is expected to do
+post-cut is **not asserted here**: if plain mode's action draw shifts position relative to
+the old side's RNG stream for any reason connected to the cut, a plain-mode `DIVERGE` on
+`actions`/`rewards`/`dones` would need the same care this caveat asks for generally, and
+Task 11 is where that gets established, not this entry. The scripted driver's RNG-call-order
+spot-check (unit 1, spec §6 step 1) is the check that would catch such a change landing.
 
-**Fixture-exposure note.** Every fixture pack under `oracle_fixtures/` declares no
-`exposed_to` key at all (verified: zero hits, `grep -rn exposed_to oracle_fixtures/`).
-Post-cut, once the default-injection validators are deleted and an empty `exposed_to` means
-unexposed rather than fails-open-to-`["agent"]`, every profile variable in every fixture
-pack becomes unexposed by construction — not because any fixture pack drifted from its live
-counterpart, but because the explicit-exposure rule (spec §2, "Exposure is explicit at the
-cut") changes what an *absent* declaration means. This is part of the registered observation
-divergence above (it manifests as part of the `obs` stream's — and `variable_element`
-token census's — content changing), not a separate pack-drift finding: no `pack_divergence`
-declaration is implied or needed by this note on its own account.
+**Fixture-exposure note.** The explicit-exposure rule is a **new-side** rule only: the old
+side runs frozen `4222a917` code, which fails `exposed_to` open to `["agent"]` regardless of
+what a pack declares, so the note's force comes entirely from what the **live** matrix packs
+declare, not the frozen `oracle_fixtures/` copies. Verified both sides, 2026-08-24: zero
+`exposed_to` hits under `oracle_fixtures/` (`grep -rn exposed_to oracle_fixtures/`); under
+`configs/`, `exposed_to` appears only in `configs/trial_f_durability`,
+`configs/test/set_encoder_smoke`, and `configs/reference/config-complete.yaml` — **none of
+them a matrix pack** (the twenty cells run `default_curriculum`, the three `differential/
+div003_*` packs, `test/items_smoke`, `test/effects_smoke`). So every matrix pack's live
+`vfs_profiles.yaml` declares no `exposed_to` today, on both sides of the cut. Post-cut, once
+the default-injection validators are deleted and an empty `exposed_to` means unexposed rather
+than fails-open-to-`["agent"]`, every profile variable in every one of these twenty cells'
+live packs becomes unexposed by construction — not because any pack drifted from its fixture,
+but because the explicit-exposure rule (spec §2, "Exposure is explicit at the cut") changes
+what an *absent* declaration means, on the new side only. This is part of the registered
+observation divergence above (it manifests as part of the `obs` stream's — and
+`variable_element` token census's — content changing), not a separate pack-drift finding: no
+`pack_divergence` declaration is implied or needed by this note on its own account.
 
 **Harness adjudication (mechanics, matched to code as it stands after Task 3).** Per
 `compare_traces` (`src/townlet/oracle/trace_io.py`): hash and stream adjudication are

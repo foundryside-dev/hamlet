@@ -50,7 +50,7 @@ custom_actions:
 
 Compile-time guarantees: a claim write without `source_affordance` is rejected
 at parse; an unknown affordance name or unknown write target is rejected at
-compile. See `docs/architecture/vfs.md` §13.2 for the contention semantics.
+compile. See `docs/architecture/VFS.md` §13.2 for the contention semantics.
 
 ### L0_0_minimal/training.yaml (excerpt)
 

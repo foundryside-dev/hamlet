@@ -231,7 +231,7 @@ The current repo convention is split deliberately:
 |---|---:|---|
 | Schema Definitions (`VariableDef`, `ObservationField`) | Complete | `tests/test_townlet/unit/vfs/test_schema.py`, `tests/test_townlet/unit/vfs/test_observation_field_schema.py` |
 | Variable Registry runtime storage + access control | Complete | `tests/test_townlet/unit/vfs/test_registry.py`, `tests/test_townlet/unit/vfs/test_scoped_registry.py`, `tests/test_townlet/unit/vfs/test_variable_registry_tensor.py` |
-| Observation Spec Builder compile-time spec generation | Complete | `tests/test_townlet/unit/vfs/test_observation_builder.py`, `tests/test_townlet/unit/universe/test_vfs_observation_marking.py` |
+| Observation Spec Builder compile-time spec generation | Complete | `tests/test_townlet/unit/vfs/test_observation_builder.py`, `tests/test_townlet/unit/universe/test_evaluation_marks.py` |
 | `ActionConfig` extension with `reads` / `writes` fields | Complete | `tests/test_townlet/unit/vfs/test_vtc_action_writes.py`, `tests/test_townlet/unit/vfs/test_schema_hashes.py` |
 | Dimension regression coverage for checkpoint compatibility | Complete | `tests/test_townlet/unit/vfs/test_observation_dimension_regression.py` |
 | Integration coverage for end-to-end VFS flows | Complete | `tests/test_townlet/integration/vfs/`, `tests/test_townlet/integration/test_vfs_runtime_evaluation.py` |
@@ -452,6 +452,19 @@ a compile error at config load — never a green compile that crashes at env con
 `docs/config-schemas/variables.md`. Note the extents allocate storage only: there is still no
 agent→zone / agent→group membership mapping surface.
 
+> ⚠ **Caveat (2026-08-24 audit,
+> `archive/REVIEW-2026-08-24-vfs-implementation-vs-spec.md`):** "reachable end-to-end from
+> config" holds for *storage allocation*, but not for *referenceability*.
+> `variables_reference.yaml` variables never enter the compiler symbol table
+> (`universe/validation/references.py:14-58` registers only `environment.yaml` and
+> `vfs_profiles.yaml` variables — `hamlet-33e520cebd`), so no effect, affordance, action write
+> or `drive.yaml` can reference a `pair` / `affordance` / `zone` / `group` / `message` variable
+> by name. Sparse pair storage (`pair_storage_mode` / `pair_edges`) is likewise real, tested
+> registry code with **no wiring from any config pack** — every environment is dense-pair.
+> And the `agent_private` scope-table row above ("hidden state") describes the declared intent,
+> not current behaviour: the runtime observation path bypasses the access check and treats
+> `agent_private` identically to `agent` (`hamlet-83a043a9b9`; see the §6 caveat).
+
 ### 5.2 Recommended future scopes
 
 For serious multi-agent and small-society modelling, VFS should still add richer institutional and communication scopes:
@@ -468,6 +481,19 @@ message-token payloads. Relational visibility, sender metadata, message age, and
 remain separate follow-on work.
 
 ### 5.3 Social observability and privacy
+
+> ⚠ **Caveat (2026-08-24 audit): this section is design intent with no working authoring door
+> today.** The examples below cannot be authored on either required surface —
+> `vfs_profiles.yaml` and `environment.yaml` have **no `readable_by`/`writable_by` fields at
+> all**, and the compiler hardcodes `["agent","engine"]` / `["engine"]` for every variable
+> regardless of declared scope (`universe/compilers/vfs.py:313-320`,
+> `universe/compilers/observation.py:811-812,866-867`). `exposed_to` fails open (omitted *and*
+> explicitly `[]` both rewrite to `["agent"]`), and the one file that does accept these fields,
+> `variables_reference.yaml`, is invisible to the compiler symbol table (§5.1 caveat). Every
+> privacy / hidden-state / social-inference mechanic this section describes is currently
+> **unauthorable while appearing authorable**. Full story:
+> `archive/REVIEW-2026-08-24-vfs-implementation-vs-spec.md` (Headline and Top gaps);
+> tickets `hamlet-1a520475f4`, `hamlet-83a043a9b9`, `hamlet-d97b4d6b4a`, `hamlet-33e520cebd`.
 
 Read access should represent what an actor may know, not merely what code may inspect.
 
@@ -508,6 +534,20 @@ That divergence is the basis for partial observability, role-based knowledge, mi
 ---
 
 ## 6. Access control
+
+> ⚠ **Caveat (2026-08-24 audit): the enforcement machinery below is real in `registry.py` but
+> is not currently a live policy layer.** Three qualifications, each verified at line level:
+> (1) the checked `get()`/`set()` path this chapter documents is **bypassed on the observation
+> path** — observations are built through `get_agent()`/`get_global()`, which perform no access
+> check and treat `agent_private` identically to `agent` (`registry.py:774-791`;
+> `hamlet-83a043a9b9`), so the `PermissionError` examples below never fire for observation
+> reads; (2) no runtime call site anywhere passes a reader/writer role other than `"engine"`
+> (`hamlet-1a520475f4`), so the role vocabulary is binary in practice; (3) there is **no
+> authoring surface** for `readable_by`/`writable_by` on either required config file (§5.3
+> caveat). The enforcement code is correct where it runs; it is not yet wired to an author's
+> intent. Fix vehicle: the token-observation migration's explicit-exposure work plus a
+> registry-read-path/role-wiring unit. Source of truth:
+> `archive/REVIEW-2026-08-24-vfs-implementation-vs-spec.md`.
 
 ### 6.1 Purpose
 
@@ -2524,7 +2564,7 @@ This would make VFS teachable and debuggable.
 
 ### Documentation
 
-- `docs/architecture/vfs.md`
+- `docs/architecture/VFS.md` (this document — formerly `vfs.md`, promoted 2026-08-24 per PDR-0118)
 - `docs/config-schemas/vfs-profiles.md`
 - `docs/config-schemas/variables.md` — optional static variable and observation metadata overlay
 - `docs/plans/archive/vfs_uplift/2025-11-18-items-and-vfs-profiles.md`
@@ -2553,7 +2593,7 @@ This would make VFS teachable and debuggable.
 - `tests/test_townlet/unit/vfs/`
 - `tests/test_townlet/unit/config/test_vfs_profiles_dto.py`
 - `tests/test_townlet/unit/universe/test_vfs_profile_compilation.py`
-- `tests/test_townlet/unit/universe/test_vfs_observation_marking.py`
+- `tests/test_townlet/unit/universe/test_evaluation_marks.py`
 - `tests/test_townlet/unit/vfs/test_observation_dimension_regression.py`
 - `tests/test_townlet/integration/test_vfs_runtime_evaluation.py`
 - `tests/test_townlet/integration/test_item_vfs_observations.py`

@@ -439,7 +439,8 @@ load-bearing ones:
 
 - **`universe/` — the universe compiler (UAC).** Parses and cross-validates a pack, resolves its
   references and shared schemas, compiles every level, and emits one `CompiledUniverse`: a frozen
-  dataclass carrying 16 declared `*_hash` fields plus per-level metadata. Not all sixteen are
+  dataclass carrying 16 declared `*_hash` fields plus per-level metadata *(update 2026-08-24:
+  now 17 — `pack_brain_hash` landed 2026-08-22, PDR-0027)*. Not all of them are
   enforced — see checkpoint identity below. The cache is keyed on a config hash and a provenance id
   (compiler version, git sha, python, torch and pydantic versions), and is discarded when any
   config file's mtime is newer than the artifact's.
@@ -454,8 +455,10 @@ load-bearing ones:
   explicit parameter: `VectorizedHamletEnv` requires one and raises rather than picking a default.
 - **`training/checkpoint_utils.py` — checkpoint identity.** One shared gate,
   `assert_checkpoint_identity`, called by both the training-resume path (`demo/runner.py`) and the
-  serving path (`demo/live_inference.py`). Eight of the sixteen `*_hash` fields are stamped into a
-  checkpoint, and seven of those are hard-compared on load — `vfs_hash`, `drive_hash`, the
+  serving path (`demo/live_inference.py`). Eight of the `*_hash` fields are stamped into a
+  checkpoint *(update 2026-08-24: nine, with `pack_brain_hash` — stamped and required present,
+  compared only to state a brain-lineage fork, PDR-0027)*, and seven of those are hard-compared
+  on load — `vfs_hash`, `drive_hash`, the
   effective `brain_hash`, and the four per-level content hashes — alongside observation dim, action
   count, observation-field UUIDs and `primary_level`, so a checkpoint refuses to load into a
   universe it does not match, including a different level of the same pack. What is *not* enforced
@@ -484,7 +487,8 @@ Intent, not yet built — stated plainly because older docs blur the line:
 
 - **Brain-as-code layers 1 and 3.** The behaviour contract (panic thresholds, forbidden actions,
   personality dials, allowed goals) and the declarative think-loop graph are specified in
-  `docs/architecture/hld/02-brain-as-code.md` and have no implementation: their identifiers appear
+  `docs/architecture/archive/hld/02-brain-as-code.md` (archived 2026-08-24; the current honest
+  treatment is `docs/architecture/BAC.md`) and have no implementation: their identifiers appear
   in zero files under `src/` and `configs/`. Layer 2, the network/optimizer/loss surface, is real.
 - **One standard compiler for both halves of an experiment.** The universe compiles to an artifact;
   the brain rides inside it as a validated `BrainConfig` plus a `brain_hash`, rather than compiling
@@ -508,7 +512,11 @@ Intent, not yet built — stated plainly because older docs blur the line:
   `frontend/src/`); no CI workflow installs Node or runs either. One component is dead code: `AffordanceGraph.vue` is
   mounted behind an `affordance_graph` message that no server emits (`hamlet-102db4c2e0`).
 - **A compiled pack can fail to cache without failing the command, and it is a class of failure
-  rather than one pack.** `configs/reference/model_pack` compiles, prints `Compilation succeeded`,
+  rather than one pack.** *(Fixed 2026-08-21, commit `03764c6b` — agent profiles now serialize,
+  the field is typed `CompiledGlobalProfile | None`, and a failed cache write fails the compile.
+  Re-verified 2026-08-24: a pack with a non-null `agent_profile` compiles and writes its cache
+  artifact. The record below is kept as stamped at 2026-08-20.)*
+  `configs/reference/model_pack` compiles, prints `Compilation succeeded`,
   and exits 0 — while its cache artifact is *not* written: serialization raises `can not serialize
   'CompiledGlobalProfile' object`, the failure is downgraded to a log warning the CLI never
   displays, and nothing propagates it to the exit code. `inspect` then fails with `Artifact not
@@ -602,14 +610,16 @@ Current and maintained as part of the recovery:
 - `docs/oracle/ORACLE.md` and `docs/oracle/known-divergences.md` — the rewrite's rules and its
   accepted divergences.
 
-Subsystem detail lives in `docs/architecture/` and `docs/config-schemas/`. Those are only partly
-reconciled against the tree: `docs/config-schemas/presentation.md` is new and source-verified, and
-`docs/architecture/UNIVERSE_AS_CODE.md` was corrected on 2026-08-16 where the semantic-type and
-interaction-type surfaces changed under it, and `docs/architecture/vfs.md` and
-`vfs-current-implementation.md` were corrected then and again on 2026-08-17, when the compiled
-observation field gained a typed `feature` —
-but the rest has not been swept (`hamlet-7a52a63e0b`), so treat specific filenames, paths and
-numbers there as unverified until you check them.
+Subsystem detail lives in `docs/architecture/` and `docs/config-schemas/`. *(Updated
+2026-08-24, PDR-0118:)* the old architecture corpus — including
+`docs/architecture/archive/UNIVERSE_AS_CODE.md` (corrected 2026-08-16) and
+`docs/architecture/archive/vfs-current-implementation.md` (corrected then and again on
+2026-08-17, when the compiled observation field gained a typed `feature`) — was archived
+wholesale to `docs/architecture/archive/` and replaced by a six-document HLD set reviewed
+against source on 2026-08-24: `HLD.md`, `STRATA.md`, `UAC.md`, `BAC.md`, `COMPILER.md`, and
+`VFS.md` (the former `vfs.md`, promoted). Treat the archive as history, never as a record of
+what shipped; `docs/config-schemas/presentation.md` is source-verified, and the rest of
+`docs/config-schemas/` is per-surface reference (its `variables.md` is stale, 2025-11).
 
 ## License
 

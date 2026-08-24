@@ -12,10 +12,10 @@
 
 **Reading Strategy**:
 - **Quick Reference**: "Field Reference" below
-- **Examples**: `docs/architecture/vfs.md` §14.3, §16.4 (pinned to the shipped grammar by `tests/test_townlet/unit/config/test_vfs_doc_social_residue_examples.py`)
+- **Examples**: `docs/architecture/VFS.md` §14.3, §16.4 (pinned to the shipped grammar by `tests/test_townlet/unit/config/test_vfs_doc_social_residue_examples.py`)
 
 **Related Documents**:
-- `docs/architecture/vfs.md` §16.3 (semantics, effect vocabulary, directionality)
+- `docs/architecture/VFS.md` §16.3 (semantics, effect vocabulary, directionality)
 - `docs/config-schemas/variables.md` - VFS variable scopes (`pair`, `agent`, ...)
 - `docs/config-schemas/expressions.md` - expression language used by `condition` / `expression`
 

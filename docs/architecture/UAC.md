@@ -1,8 +1,7 @@
 # Universe as Code (UAC)
 
 Document date: 2026-08-24
-Status: **Current** — first draft of the six-document HLD (PDR-0118, owner-amended to six);
-pending review pass.
+Status: **Current** (reviewed 2026-08-24) — part of the six-document HLD set (PDR-0118).
 
 Supersedes the archived UAC v2.5 document (2025-11-03) wholesale — the old text described
 `cascade_engine`, `affordance_engine`, `reward_model`, ageing/retirement and a money convention
@@ -20,7 +19,7 @@ document and a reference doc disagree, the reference doc — and above it, the s
 The compiled target has three major declarative subsystems:
 
 | subsystem | question it answers | authored in | authoritative doc |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **Strata** | *Where can things be?* — substrate type, topology, boundaries, distance metric, position encoding | `stratum.yaml` | `STRATA.md`; `src/townlet/config/stratum_config.py` |
 | **UAC — Universe as Code** | *What exists, and how does it change?* — variables, observations, items, effects, affordances, actions, transitions, rewards, terminal conditions | everything else in the pack (§3) | this doc as router; `VFS.md`; `docs/config-schemas/` |
 | **BAC — Brain as Code** | *How do agents think?* — network architecture, optimizer, loss; and as target state, behaviour contract and think-loop graph | `brain.yaml` | `BAC.md` |
@@ -45,10 +44,10 @@ recipe book over VFS than to an independent specification. See `VFS.md`.
 ## 2. The contract: why "compiled" matters
 
 A pack compiles to a `CompiledUniverse` carrying provenance hashes. The full declared-vs-enforced
-picture is in `HLD.md` §5.2 — sixteen declared `*_hash` fields, eight stamped into a checkpoint,
-seven hard-compared by `assert_checkpoint_identity`. From UAC's side, the two that matter most
-are `vfs_hash` (variables + observation + actions + transition graph) and `drive_hash` (DAC);
-both are enforced.
+picture is in `HLD.md` §5.2 — seventeen declared `*_hash` fields, ten hash stamps entering a
+checkpoint, seven hard-compared by `assert_checkpoint_identity`. From UAC's side, the two that
+matter most are `vfs_hash` (variables + observation + actions + transition graph) and
+`drive_hash` (DAC); both are enforced.
 
 What that buys:
 
@@ -157,7 +156,7 @@ The compiler-side implications are noted in `COMPILER.md` §Forward.
 ## 5. Concept map: v2.5 vocabulary → current subsystem
 
 | v2.5 chapter said | where it actually lives now | reference |
-|---|---|---|
+| --- | --- | --- |
 | meters/bars, depletion, "physics are data" | VFS variables + VTC programs (`VTCPassiveDepletionProgram`, `VTCBoundsClampProgram`) | `docs/config-schemas/bars.md`, `VFS.md` §11–13 |
 | `cascades.yaml`, cross-meter dynamics, modulations | VTC (`VTCThresholdCascadeProgram`, `VTCModulationProgram`) | `VFS.md` §14 |
 | terminal conditions, end-of-life | `VTCTerminalConditionProgram`; scoring → DAC | `VFS.md`, `docs/config-schemas/drive_as_code.md` |
@@ -222,14 +221,27 @@ names — which is why the audit and PDR-0117 point at the same compiler front e
 shipped engine.** A recipe that demonstrates an open gap belongs in the audit doc or the tracker,
 not here.
 
+### Future direction: declared propagation (proposed 2026-08-24 — not designed, not built)
+
+**Everything in this sub-section is proposal — zero implementation exists.** The owner proposes
+making observability itself a UAC/VFS declaration: **observation gates** — a declared
+per-(observer, source) predicate that masks what reaches an agent's observation. Example shape:
+vision range defined as an expression over a `brightness` variable on a continuous plane,
+latched to zero everywhere except the observer's current floor. Under that model, today's fixed
+`vision_range` / POMDP window becomes one special case of a declared propagation function.
+Honestly placed: this is the *dynamic* counterpart of the static epistemic-access surface
+(`exposed_to` / `readable_by`), which today has its own open gaps (§6 above — the 2026-08-24
+VFS audit's systemic finding). Token observations, with their per-token presence bits, are the
+natural carrier, so any design here follows the token migration rather than preceding it.
+
 ---
 
 ## 7. Reference index
 
 - **Compiler**: `COMPILER.md`; CLI `python -m townlet.universe {compile,inspect,validate}`
 - **VFS (the ABI)**: `VFS.md`; implementation map in
-  `archive/vfs-current-implementation.md` (current as of 2026-08-23 on everything checked
-  **except** its access-control and `agent_private` claims — see §6)
+  `archive/vfs-current-implementation.md` (accurate per the 2026-08-24 audit on everything
+  checked **except** its access-control and `agent_private` claims — see §6)
 - **Strata**: `STRATA.md`; history in `archive/substrate-system.md`
 - **Brain**: `BAC.md`, `docs/config-schemas/brain.md`
 - **Schemas** (one per authoring surface): `docs/config-schemas/` — affordances, bars, brain,

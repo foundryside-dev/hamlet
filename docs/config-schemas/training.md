@@ -172,7 +172,8 @@ Selects the Q-learning algorithm variant:
 
 **Performance Impact**:
 - Feedforward networks: Negligible (<1% overhead)
-- Recurrent networks: ~50% overhead (3 forward passes vs 2 for LSTM)
+- Recurrent networks: one extra boundary forward pass per batch (corrected 2026-08-24 —
+  the earlier "3 forward passes vs 2", implying a third full unroll, was wrong)
 
 **Implementation Notes**:
 - Supported for both `SimpleQNetwork` (feedforward) and `RecurrentSpatialQNetwork` (LSTM)

@@ -148,7 +148,7 @@ maturity assessment that is now the Now bet.
    effects, items, substrate topology, terminal conditions, rewards. *Largely shipped* (compiler,
    VFS, VTC transition schedule, DAC). **[verified-from-source]**
 2. **Brain as Code (BAC)** — the *agent's mind* is config: a behaviour contract, module
-   architecture, and a think-loop execution graph, per `docs/architecture/hld/02-brain-as-code.md`.
+   architecture, and a think-loop execution graph, per `docs/architecture/archive/hld/02-brain-as-code.md` (archived 2026-08-24; current treatment: `docs/architecture/BAC.md`).
    *Partially shipped* — Layer 2 (network architecture, optimizer, loss, replay, Q-learning
    variants) is live and rich in `brain.yaml` + `brain_config.py` + the factory modules. Layer 1
    (cognitive topology: behaviour contract, ethics, panic, personality) and Layer 3 (think-loop

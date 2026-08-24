@@ -1,8 +1,7 @@
 # Brain as Code (BAC)
 
 Document date: 2026-08-24
-Status: **Current** — first draft of the six-document HLD (PDR-0118, owner-amended to six);
-pending review pass.
+Status: **Current** (reviewed 2026-08-24) — part of the six-document HLD set (PDR-0118).
 
 > **Status discipline, stated up front because this document's predecessors failed it.**
 > The archived `BRAIN_AS_CODE.md` and `hld/02-brain-as-code.md` both carry
@@ -47,7 +46,7 @@ parameters carry no hidden defaults.
 Declared sub-configs, in source order:
 
 | block | DTO | declares |
-|---|---|---|
+| --- | --- | --- |
 | `architecture` | `ArchitectureConfig` (+ `FeedforwardConfig`, `RecurrentConfig`/`LSTMConfig`/`CNNEncoderConfig`/`MLPEncoderConfig`, `DuelingConfig`/`DuelingStreamConfig`, `SetEncoderConfig`/`SetAggregatorConfig`) | network family and its shape |
 | `optimizer` | `OptimizerConfig`, `ScheduleConfig` | optimizer type, learning rate, betas/eps, weight decay, LR schedule |
 | `loss` | `LossConfig` | loss function |
@@ -69,7 +68,7 @@ dispatches on `arch.type` into `NetworkFactory` (`src/townlet/agent/network_fact
 same helper builds both the online and the target network.
 
 | `type` | built by | produces |
-|---|---|---|
+| --- | --- | --- |
 | `feedforward` | `NetworkFactory.build_feedforward` | an `nn.Sequential` MLP assembled from `hidden_layers` / `activation` / `dropout` / `layer_norm` |
 | `recurrent` | `NetworkFactory.build_recurrent` | `RecurrentSpatialQNetwork` (CNN vision encoder + LSTM) |
 | `dueling` | `NetworkFactory.build_dueling` | `DuelingQNetwork` |
@@ -84,7 +83,7 @@ width, and the factory refuses to disagree with it.
 `src/townlet/agent/networks.py` declares **five** classes:
 
 | class | line | selectable from `brain.yaml`? |
-|---|---|---|
+| --- | --- | --- |
 | `SimpleQNetwork` | 15 | **No.** `type: feedforward` builds an equivalent `nn.Sequential` inline; this class is not instantiated anywhere in `src/`. Referenced only by a docstring in `exploration/rnd.py:72` ("Matches SimpleQNetwork architecture for consistency") and by tests. |
 | `RecurrentSpatialQNetwork` | 79 | Yes — `type: recurrent`. |
 | `DuelingQNetwork` | 350 | Yes — `type: dueling`. |
@@ -123,10 +122,15 @@ checkpoint refuses to load into a universe whose effective brain differs. See `H
   **declared training hyperparameter**, `max_grad_norm` in `training.yaml`
   (`config/training_v2_config.py:229`) — not a hardcoded engine constant. CLAUDE.md's "10.0"
   is a pack value, not a framework fact.
-- Recurrent Double DQN reportedly needs three forward passes per update against vanilla's two —
-  a non-obvious cost of `use_double_dqn: true` on a recurrent architecture. Source for the
-  claim: `docs/config-schemas/training.md`. **TODO-VERIFY** against
-  `population/vectorized.py`'s update path.
+- On a recurrent architecture, `use_double_dqn: true` costs **one extra single-step forward
+  pass** per update, not a third unroll. Verified 2026-08-24 against
+  `population/vectorized.py:845-905`: both variants run two full sequence unrolls (online for
+  Q-predictions, target for Q-targets) plus a target boundary forward; Double DQN adds one
+  online boundary forward under the online net's final hidden state (`:862-869`), and action
+  selection deliberately **reuses PASS 1's online unroll** — the code comments "a third unroll
+  would recompute the same trajectory" (`:876-880`). `docs/config-schemas/training.md`'s "~50%
+  overhead (3 forward passes vs 2)" and CLAUDE.md's "3 vs 2" restatement do not match the
+  current update path and overstate today's cost.
 
 ---
 

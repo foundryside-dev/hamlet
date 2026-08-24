@@ -1404,7 +1404,7 @@ extrinsic:
 - **Training Config**: `docs/config-schemas/training.md`
 - **Bar Config**: `docs/config-schemas/bars.md`
 - **VFS Config**: `docs/config-schemas/variables.md`
-- **Compiler Architecture**: `docs/architecture/COMPILER_ARCHITECTURE.md`
+- **Compiler**: `docs/architecture/COMPILER.md` (design history: `docs/architecture/archive/COMPILER_ARCHITECTURE.md`)
 
 ---
 

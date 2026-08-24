@@ -1,8 +1,7 @@
 # Strata — the space subsystem
 
 Document date: 2026-08-24
-Status: **Current** — first draft of the six-document HLD (PDR-0118, owner-amended to six);
-pending review pass.
+Status: **Current** (reviewed 2026-08-24) — part of the six-document HLD set (PDR-0118).
 
 Strata declares **space**: what kind of it exists, how it connects, what happens at its edges,
 how far apart two things are, and how position enters the observation tensor. It is the smallest
@@ -17,7 +16,7 @@ disagree, README wins; where either disagrees with `src/townlet/`, the source wi
 ## 1. Strata's place in the trio
 
 | subsystem | question | authored in | doc |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **Strata** | *Where can things be?* — space itself | `stratum.yaml` | this document |
 | **UAC** — Universe as Code | *What exists, and how does it change?* | the rest of the pack | `UAC.md` |
 | **BAC** — Brain as Code | *How do agents think?* | `brain.yaml` | `BAC.md` |
@@ -56,7 +55,7 @@ Principle.
 directory — that path is dead.
 
 | pack | shows |
-|---|---|
+| --- | --- |
 | `configs/default_curriculum/stratum.yaml` | the reference grid: `square`, 8×8, `clamp`, `manhattan`, `relative`, `diagonals: true`, `vision_support: both` |
 | `configs/test/action_space/grid2d/stratum.yaml` | grid action-space contribution in isolation |
 | `configs/test/action_space/aspatial/stratum.yaml` | the no-space case |
@@ -89,7 +88,7 @@ rather than by a gate. (Earlier drafts marked this TODO-VERIFY; it is now verifi
 (`stratum_config.py:179-203`).
 
 | type | sub-block | implementation | position |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `grid` | `GridConfig` | `Grid2DSubstrate` (`topology: square`) / `Grid3DSubstrate` (`topology: cubic`) | discrete, `torch.long` |
 | `gridnd` | `GridNDConfig` | `GridNDSubstrate` | discrete, `torch.long` |
 | `continuous` | `ContinuousConfig` | `Continuous1D/2D/3DSubstrate` by `dimensions` | float, `torch.float32` |
@@ -119,7 +118,7 @@ surface is the whole of what the rest of the engine may know about space: `posit
 **Topology** is the connectivity pattern — how a cell reaches its neighbours.
 
 | topology | connectivity | declared by |
-|---|---|---|
+| --- | --- | --- |
 | `square` | 4-connected 2D Cartesian grid (±X, ±Y) | `GridConfig.topology` |
 | `cubic` | 6-connected 3D Cartesian grid (±X, ±Y, ±Z) | `GridConfig.topology` |
 | `hypercube` | 2N-connected N-dimensional grid, dimension-agnostic | `GridNDConfig.topology` (only legal value, stated explicitly to avoid a hidden default) |
@@ -193,7 +192,7 @@ documented at `base.py:195-255`. Deriving these numbers anywhere else is the def
 ### 6.1 The three spatial fields
 
 | field | width from | emitted when |
-|---|---|---|
+| --- | --- | --- |
 | `obs_grid_encoding` | `get_grid_encoding_dim()` | `vision_support` in `{both, global}` and the substrate has a grid |
 | `obs_local_window` | `get_partial_window_dim(get_vision_radius(vision_range))` | `vision_support` in `{both, partial}` and `supports_partial_vision` |
 | `obs_position` | `get_position_feature_dim()` | non-zero position features |
@@ -274,7 +273,40 @@ continuous-substrate exclusion is correct, and is now source-verified rather tha
 
 ---
 
-## 8. Where to read next
+## 8. Future direction: hybrid / dimension-declarative substrates (proposed 2026-08-24 — not designed, not built)
+
+**Everything in this section is proposal. Nothing here is implemented, scheduled, or designed
+beyond the sketch below.** Tracker: `hamlet-157deba962` (status: proposed).
+
+The owner proposes a **hybrid substrate**: N-dimensional space that is continuous in some
+dimensions and discrete in others. Motivating example — a building: continuous `x, y` within a
+floor, a discrete floor index as the third dimension.
+
+Today's taxonomy cannot express that: `SubstrateConfig.type` is a closed enum (`grid` / `gridnd`
+/ `continuous` / `continuousnd` / `aspatial`) in which every spatial dimension of a substrate is
+the same kind. The generalization the proposal implies is a **per-dimension declaration model**
+— each dimension declares its kind (`discrete` | `continuous`), extent or range, and boundary
+mode — under which the current types become special cases (a grid is all-discrete, a continuous
+space all-continuous, aspatial zero dimensions). That is consistent with the
+declare-don't-hardcode ethos and the spirit of PDR-0117: the *shape* of space becomes a
+declaration, not a menu entry.
+
+The multi-floor mechanic needs **no new topology concept** — it composes from existing
+declarative primitives. The developer masks the regular move-up / move-down substrate actions on
+the discrete floor dimension, and an **elevator affordance** writes the floor coordinate — one
+interaction per destination floor, like elevator buttons (`teleport_to` already exists in the
+action schema). Hybrid substrates would compose with action masking and position-writing
+affordances rather than requiring a graph-topology concept.
+
+Open design questions, noted rather than resolved: per-dimension boundary modes (e.g. `wrap` on
+an angular dimension beside `clamp` on a linear one); how a distance metric composes across
+mixed dimension kinds; action-space composition (discrete ±1 movement actions for discrete
+dimensions alongside discretized continuous displacement for continuous ones, under §5's
+ordering contract); and POMDP window semantics across mixed dimensions.
+
+---
+
+## 9. Where to read next
 
 - `docs/config-schemas/` — authoring schemas; **schemas live there, not here**. Action surface:
   `enabled_actions.md`.
@@ -282,10 +314,12 @@ continuous-substrate exclusion is correct, and is now source-verified rather tha
 - `UAC.md` — everything Strata is *not*: variables, items, effects, affordances, rewards.
 - `COMPILER.md` — the seven-stage pipeline and the error codes cited above.
 - `archive/substrate-system.md` — history: the WebSocket substrate-metadata contract consumed by
-  the frontend (`live_inference._build_substrate_metadata`), and the topology-extension sketch.
-  Cite for history, never as evidence of what is implemented.
+  the frontend, and the topology-extension sketch. Its §WebSocket Metadata Contract JSON blocks
+  were re-checked against the current builder on 2026-08-24 and **match field-for-field**:
+  `live_inference._build_substrate_metadata` (`src/townlet/demo/live_inference.py:191-250`)
+  emits `type` (class name lowercased, minus "Substrate") + `position_dim` always; grids add
+  `topology`, `width`/`height` (+`depth` for Grid3D; `dimension_sizes` for GridND), `boundary`,
+  `distance_metric`; continuous substrates add `bounds`, `boundary`, `movement_delta`,
+  `interaction_radius`, `distance_metric` and no `topology`; aspatial adds nothing. Everything
+  *else* in the archived doc: cite for history, never as evidence of what is implemented.
 - `scripts/validate_substrate_runtime.py` — smoke-tests packs end to end.
-
-**TODO-VERIFY**: the archived WebSocket metadata contract (§Topology Metadata JSON blocks) has
-not been re-checked against the current `live_inference` builder in this pass; the *shape* is
-plausible but the field list may have drifted.

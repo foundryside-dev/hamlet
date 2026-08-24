@@ -1,8 +1,7 @@
 # Townlet — High-Level Design
 
 Document date: 2026-08-24
-Status: **Current** — first draft of the six-document HLD (PDR-0118, owner-amended to six);
-pending review pass.
+Status: **Current** (reviewed 2026-08-24) — part of the six-document HLD set (PDR-0118).
 
 This is the top of the architecture tree. It is the reset artifact after the 2026 recovery:
 the prior `docs/architecture/` corpus (~16 top-level documents plus an `hld/` tree, most of it
@@ -45,7 +44,7 @@ The compiled target has three major declarative subsystems, distinguished by the
 answers. All three compile through one pipeline into one artifact.
 
 | subsystem | question | authored in (current convention) | doc |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **Strata** | *Where can things be?* — space itself | `stratum.yaml` | `STRATA.md` |
 | **UAC** — Universe as Code | *What exists, and how does it change?* | the rest of the pack | `UAC.md` |
 | **BAC** — Brain as Code | *How do agents think?* | `brain.yaml` | `BAC.md` |
@@ -79,8 +78,8 @@ parameters such as `diagonals`) plus custom actions from `actions.yaml`, under a
 contract — movement, then `INTERACT` at `[-2]`, then `WAIT` at `[-1]`. The **observation
 seam** is the five-member shape contract on `SpatialSubstrate` (`src/townlet/substrate/base.py`):
 the compiler asks the substrate instance for every spatial width and derives none itself.
-`STRATA.md` carries the substrate family table, the three POMDP gates, the corrections to
-CLAUDE.md's action-count and POMDP-support tables, and the one live TODO-VERIFY.
+`STRATA.md` carries the substrate family table, the three POMDP gates, and the corrections to
+CLAUDE.md's action-count and POMDP-support tables.
 
 ---
 
@@ -121,29 +120,38 @@ per level (`.compiled/universe-<level>.msgpack`).
 
 ### 5.2 Declared hashes vs. enforced hashes
 
-The artifact carries **sixteen declared `*_hash` fields** (`src/townlet/universe/compiled.py`).
-That is not the same as sixteen enforced ones, and the distinction is the architectural content:
+The artifact carries **seventeen declared `*_hash` fields** (`src/townlet/universe/compiled.py`,
+counted 2026-08-24), plus `metadata.config_hash`. Declared is not the same as enforced, and the
+distinction is the architectural content:
 
 - **Enforced.** One shared gate, `assert_checkpoint_identity`
   (`src/townlet/training/checkpoint_utils.py`), is called by both the training-resume path
-  (`demo/runner.py`) and the serving path (`demo/live_inference.py`). Eight hash fields are
-  stamped into a checkpoint; **seven are hard-compared** — `vfs_hash`, `drive_hash`, the
-  effective `brain_hash`, and the four per-level content hashes — alongside observation dim,
-  action count, observation-field UUIDs and `primary_level`. A checkpoint therefore refuses to
-  load into a universe it does not match, *including a different level of the same pack*.
+  (`demo/runner.py`) and the serving path (`demo/live_inference.py`). Ten hash stamps enter a
+  checkpoint — nine of the artifact's seventeen fields plus `metadata.config_hash`; **seven are
+  hard-compared** — `vfs_hash`, `drive_hash`, the effective `brain_hash`, and the four
+  per-level content hashes (`curriculum`, `bars`, `affordances`, `training`) — alongside
+  observation dim, action count, observation-field UUIDs and `primary_level`. A checkpoint
+  therefore refuses to load into a universe it does not match, *including a different level of
+  the same pack*.
 - **Computed but not enforced, recorded rather than hidden.** `observation_schema_hash` is
-  stamped and never compared. The five pack-level hashes (`experiment`, `stratum`,
-  `environment`, `actions`, `items`) are computed and serialized and read by no checkpoint
-  consumer — only the differential harness reads them, as a provenance diff between two
-  compiles. This is `DIV-001` in `docs/oracle/known-divergences.md`.
+  stamped and never compared. `pack_brain_hash` is stamped and required present, but compared
+  only to *state* a brain-lineage fork at load (a logged warning, PDR-0027), never to refuse.
+  The five pack-level hashes (`experiment`, `stratum`, `environment`, `actions`, `items`) are
+  computed and serialized and read by no checkpoint consumer — only the differential harness
+  reads them, as a provenance diff between two compiles. This is `DIV-001` in
+  `docs/oracle/known-divergences.md`.
 - `config_hash` (with `provenance_id`: compiler version, git sha, python/torch/pydantic
-  versions) is the **cache** fingerprint, not the checkpoint gate. `brain_hash` is the SHA256 of
-  the primary level's *effective* brain config after overrides — level-scoped, like
-  `drive_hash`; `pack_brain_hash` differing from it means the level declared its own brain.
+  versions) is the **cache** fingerprint, not the checkpoint gate — it is stamped into
+  checkpoints but never compared (the comparison warning was deleted per PDR-0022).
+  `brain_hash` is the SHA256 of the primary level's *effective* brain config after overrides —
+  level-scoped, like `drive_hash`; `pack_brain_hash` differing from it means the level declared
+  its own brain.
 
 ⚠️ Several summaries (including CLAUDE.md's) present the contract as the tidy triple
 `config_hash` / `vfs_hash` / `drive_hash`. That is a useful shorthand and a false inventory.
-Quote the enforced set, or point here.
+Quote the enforced set, or point here. README's "16 declared / 8 stamped" accounting was
+correct at its 2026-08-20 stamp but predates `pack_brain_hash` (landed 2026-08-22, PDR-0027);
+the counts above are from source at HEAD.
 
 ### 5.3 Why the contract matters
 
@@ -165,12 +173,14 @@ Quote the enforced set, or point here.
 > **No dimension literals.** "Observation dim" is two quantities (allocated vs. active), and
 > conflating them is what corrupted every dimension table in the old corpus. Never write either
 > number in a document — ask the compiled artifact:
+>
 > ```python
 > u = UniverseCompiler().compile(Path("configs/default_curriculum"),
 >                                primary_level="L1_full_observability")
 > u.observation_spec.total_dims            # allocated
 > sum(u.observation_activity.active_mask)  # active
 > ```
+>
 > `ObservationActivity` (`src/townlet/universe/dto/observation_activity.py`) also carries
 > `group_slices` (bars / spatial / affordance / temporal / custom) and `active_field_uuids`.
 
@@ -199,7 +209,7 @@ compiler expects, and `COMPILER.md` marks the front end as the surface slated to
 ## 7. Document map
 
 | document | covers |
-|---|---|
+| --- | --- |
 | `HLD.md` (this) | product framing, the trio, the compiler-and-provenance contract |
 | `STRATA.md` | space: substrate families, topology, boundaries, distance, the action and observation seams |
 | `UAC.md` | world rules: the authoring layer over VFS, pack anatomy, concept map, gaps |

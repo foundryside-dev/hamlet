@@ -40,25 +40,29 @@ Fuller framing: root [`README.md`](../README.md) and [`product/vision.md`](produ
 |---|---|
 | [`product/`](product/) | Vision, roadmap, metrics, current state, and **42 numbered PDRs**. The live decision record. |
 | [`oracle/`](oracle/) | The pinned oracle and its divergence register. Governs the strangler rewrite. |
-| [`config-schemas/`](config-schemas/) | Config reference per file type. Closest thing to an authoring manual. |
-| [`UNIVERSE-COMPILER.md`](UNIVERSE-COMPILER.md) | The seven-stage UAC pipeline. |
-| [`architecture/vfs-current-implementation.md`](architecture/vfs-current-implementation.md) | VFS as built, with a source map. The model other docs should follow. |
+| [`config-schemas/`](config-schemas/) | Config reference per file type. Closest thing to an authoring manual. (`variables.md` is stale, 2025-11.) |
+| [`architecture/`](architecture/) | **The six-document HLD set (PDR-0118, reviewed against source 2026-08-24)**: [`HLD.md`](architecture/HLD.md), [`STRATA.md`](architecture/STRATA.md), [`UAC.md`](architecture/UAC.md), [`BAC.md`](architecture/BAC.md), [`COMPILER.md`](architecture/COMPILER.md), [`VFS.md`](architecture/VFS.md). Replaces the archived corpus below. |
+| [`architecture/archive/vfs-current-implementation.md`](architecture/archive/vfs-current-implementation.md) | VFS as built, with a source map. Accurate per the 2026-08-24 audit **except** its access-control and `agent_private` claims. |
 
 ### 🎯 Design intent — the target, not the present
 
-These describe where the project is going. The designs are live; their **status lines are
-false**. Read them for direction, never as evidence of code.
+On 2026-08-24 the old architecture corpus was **archived wholesale to
+[`architecture/archive/`](architecture/archive/)** and replaced by the six-document HLD set
+above (PDR-0118). The archived designs remain the fullest statement of some targets; their
+**status lines are false**. Read them for direction, never as evidence of code. Archive-internal
+links may dangle, by design.
 
 | path | reality check |
 |---|---|
-| [`architecture/BRAIN_AS_CODE.md`](architecture/BRAIN_AS_CODE.md), [`architecture/hld/02-brain-as-code.md`](architecture/hld/02-brain-as-code.md) | Both say "Approved for Implementation". `execution_graph` / `cognitive_topology` / `agent_architecture` return **zero grep hits** in `src/` and `configs/`. |
-| [`architecture/UNIVERSE_AS_CODE.md`](architecture/UNIVERSE_AS_CODE.md) | Core idea shipped. Specifics did not: `cascades.yaml`, `reward_model`, `VectorizedTownletEnv`, and the all-values-in-`[0,1]` invariant are gone or never existed. |
-| [`architecture/COMPILER_ARCHITECTURE.md`](architecture/COMPILER_ARCHITECTURE.md) | Design-era. Describes sub-compilers never wired (notably `CuesCompiler`), and sets a backwards-compatibility success criterion this project rejects. |
-| [`architecture/hld/`](architecture/hld/) | 12-part HLD. The most complete statement of the target. See the review below before acting on it. |
-| [`architecture/vfs.md`](architecture/vfs.md) | Design-era VFS spec, largely sound. Its §2.3 dimension table was false and is now corrected in place. |
+| [`architecture/archive/BRAIN_AS_CODE.md`](architecture/archive/BRAIN_AS_CODE.md), [`architecture/archive/hld/02-brain-as-code.md`](architecture/archive/hld/02-brain-as-code.md) | Both say "Approved for Implementation". `execution_graph` / `cognitive_topology` / `agent_architecture` return **zero grep hits** in `src/` and `configs/`. Current honest treatment: [`architecture/BAC.md`](architecture/BAC.md). |
+| [`architecture/archive/UNIVERSE_AS_CODE.md`](architecture/archive/UNIVERSE_AS_CODE.md) | Core idea shipped. Specifics did not: `cascades.yaml`, `reward_model`, `VectorizedTownletEnv`, and the all-values-in-`[0,1]` invariant are gone or never existed. Superseded by [`architecture/UAC.md`](architecture/UAC.md). |
+| [`architecture/archive/COMPILER_ARCHITECTURE.md`](architecture/archive/COMPILER_ARCHITECTURE.md) | Design-era. Describes sub-compilers never wired (notably `CuesCompiler`), and sets a backwards-compatibility success criterion this project rejects. Superseded by [`architecture/COMPILER.md`](architecture/COMPILER.md). |
+| [`architecture/archive/hld/`](architecture/archive/hld/) | 12-part HLD. See the 2026-08-24 reviews below before acting on it. |
 
-Start here: [`architecture/REVIEW-2026-08-15-architecture-docs-and-hld.md`](architecture/REVIEW-2026-08-15-architecture-docs-and-hld.md)
-— a verified doc-vs-code and doc-vs-doc audit of this whole tier.
+Start here: [`architecture/archive/REVIEW-2026-08-24-vfs-implementation-vs-spec.md`](architecture/archive/REVIEW-2026-08-24-vfs-implementation-vs-spec.md)
+and [`architecture/archive/REVIEW-2026-08-24-compiler-architecture-assessment.md`](architecture/archive/REVIEW-2026-08-24-compiler-architecture-assessment.md)
+— line-level doc-vs-code audits. (The earlier `REVIEW-2026-08-15-…` audit was deleted at
+`0da08142`; git history preserves it.)
 
 ### 📦 Historical record — dated, do not follow
 
@@ -89,8 +93,9 @@ Root [`README.md`](../README.md), then [`manual/`](manual/) for the operational 
 `configs/default_curriculum/levels/` — there are no flat `configs/<level>/` packs.
 
 **Authoring a universe**
-[`config-schemas/`](config-schemas/) is the reference. [`UNIVERSE-COMPILER.md`](UNIVERSE-COMPILER.md)
-explains what happens to it. [`guides/`](guides/) has migration notes of varying vintage.
+[`config-schemas/`](config-schemas/) is the reference.
+[`architecture/COMPILER.md`](architecture/COMPILER.md) explains what happens to it.
+[`guides/`](guides/) has migration notes of varying vintage.
 
 **Understanding the direction**
 [`product/vision.md`](product/vision.md) → [`product/roadmap.md`](product/roadmap.md) →
@@ -108,13 +113,15 @@ allowed to change without registering a divergence.
   (`PDR-0042`) and is the live series. [`decisions/`](decisions/) uses three (`PDR-002`), is
   from 2025-11, and is unrelated. A reference to "PDR-002" is ambiguous; "PDR-0002" is not.
 - **Observation dimensions — the question is ambiguous, which is why every table disagrees.**
-  The observation is a fixed **124-slot superset** with a per-level activity mask. *Allocated*
-  width is 124 at every level (this is what makes obs width constant across grid sizes, enabling
-  transfer learning). *Active* width has three values — 95 / 56 / 99 — matching the three real
-  universes. Tables in this corpus quote one number without saying which, and several assume
-  grid sizes no level can express. Read `observation_spec.total_dims` and
-  `observation_activity.active_mask` off the compiled artifact. Both are also on their way out:
-  the fixed-width scheme is being replaced by token observations.
+  The observation is a fixed-width **superset** with a per-level activity mask. *Allocated*
+  width is identical at every level of a pack (all levels share one pack-root `stratum.yaml` —
+  the mechanism behind cross-level transfer; it is **not** constant across grid sizes, since the
+  grid encoding is one slot per cell). *Active* width varies per level. Tables in this corpus
+  quote one number without saying which, and several assume grid sizes no level can express.
+  Never copy a literal from a doc (dated ones here decayed twice already) — read
+  `observation_spec.total_dims` and `observation_activity.active_mask` off the compiled
+  artifact. Both are also on their way out: the fixed-width scheme is being replaced by token
+  observations.
 - **`drive_as_code.yaml` does not exist.** The file is `drive.yaml`, per level. Grepping the
   wrong name returns zero hits and will falsely "confirm" whatever you were checking.
 - **`configs/global_actions.yaml` and `configs/templates/` do not exist.** Both paths are cited
@@ -129,8 +136,8 @@ allowed to change without registering a divergence.
 
 - **State status honestly, and date it.** "Approved for Implementation" with no date is how
   this corpus became untrustworthy.
-- **Cite source paths, not claims.** `vfs-current-implementation.md` is the model: a source-map
-  table and no dimension literals.
+- **Cite source paths, not claims.** `architecture/archive/vfs-current-implementation.md` is
+  the model: a source-map table and no dimension literals.
 - **Never write a dimension, hash, or coverage number** you have not just measured — and say
   when you measured it.
 - **Decisions go in [`product/decisions/`](product/decisions/)** as the next numbered PDR.

@@ -134,6 +134,6 @@ affordances:
 
 ## See Also
 
-- [Universe Compiler Architecture](../architecture/COMPILER_ARCHITECTURE.md) - Full compiler pipeline documentation
+- [The Universe Compiler](../architecture/COMPILER.md) - Full compiler pipeline documentation (design history: `../architecture/archive/COMPILER_ARCHITECTURE.md`)
 - [Training Configuration](./training.md) - Training hyperparameters and reward strategies
 - [Variables Reference](./variables.md) - VFS configuration guide

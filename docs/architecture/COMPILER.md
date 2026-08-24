@@ -1,8 +1,7 @@
 # The Universe Compiler
 
 Document date: 2026-08-24
-Status: **Current** — first draft of the six-document HLD (PDR-0118, owner-amended to six);
-pending review pass.
+Status: **Current** (reviewed 2026-08-24) — part of the six-document HLD set (PDR-0118).
 
 The compiler is the thing that turns a YAML pack into one frozen, hash-carrying
 `CompiledUniverse`. It is where "compile once, execute many" is enforced: **no YAML is read
@@ -41,16 +40,15 @@ is single-level by construction — `get_level` / `to_level` / `all_levels` navi
 
 ## 2. The seven-stage pipeline
 
-The canonical framing is seven stages:
-
-**parse → symbol table → resolve → cross-validate → metadata → optimization → emit/cache**
+The canonical framing is seven stages: parse → symbol table → resolve → cross-validate →
+metadata → optimization → emit/cache.
 
 | stage | what it does | where |
-|---|---|---|
-| 1. **Parse** | Load every file via shared loaders, attach `SourceMap` entries, enforce no-defaults validation at the DTO layer | `loaders/preflight.py` (scoping + YAML-syntax preflight), `loaders/v21.py`, `raw_configs_v21.py` |
+| --- | --- | --- |
+| 1. **Parse** | Load every file via shared loaders, enforce no-defaults validation at the DTO layer | `loaders/preflight.py` (scoping + YAML-syntax preflight), `loaders/v21.py`, `raw_configs_v21.py` |
 | 2. **Symbol table** | Register meters, variables, actions, affordances, items, effects; fail fast on duplicates | `symbol_table.py` |
 | 3. **Resolve** | Walk every cross-file reference (affordance effects, action costs, training overrides) emitting UAC error codes | `validation/references.py` |
-| 4. **Cross-validate** | Safety limits, semantic checks, spatial feasibility, economic balance, cascade cycles, temporal rules, substrate/action alignment, capability semantics | `validation/limits.py`, `validation/semantics.py`, `validation/feasibility.py` |
+| 4. **Cross-validate** | Safety limits, semantic checks, spatial feasibility (grid capacity), cascade cycles, temporal rules, substrate/action alignment, capability semantics | `validation/limits.py`, `validation/semantics.py`, `validation/feasibility.py` |
 | 5. **Metadata & observation spec** | Build shared schemas (bars/VFS) and the effects catalog; compute the observation spec, activity mask, per-field UUIDs, counts and hashes | `compilers/vfs.py`, `compilers/observation.py`, `compilers/metadata.py`, `compilers/effects.py`, `compilers/actions.py` |
 | 6. **Optimization** | Pre-compute tensors in deterministic order — base depletions, cascade/modulation tables, hourly action masks, position maps | `optimization.py`, `compilers/optimization.py` |
 | 7. **Emit / cache** | Construct the frozen `CompiledUniverse`, serialize and cache via MessagePack, expose runtime DTOs | `compiler.py:_stage_7_emit_artifact` |
@@ -77,11 +75,11 @@ identity checking.
 ## 3. Key data structures
 
 - **`RawConfigs`** (`raw_configs_v21.py`) — staged DTO bundle exposing convenient properties
-  while preserving source-map metadata. Its `shared_specs` table is one of the places the
-  16-filename mandate is hardcoded (§7).
+  over the parsed configs. Its `shared_specs` table is one of the places the 16-filename
+  mandate is hardcoded (§7).
 - **`UniverseSymbolTable`** (`symbol_table.py`) — the central registry for stages 2→4.
 - **`CompiledUniverse`** (`compiled.py`) — frozen dataclass with DTO copies, observation spec,
-  `ObservationActivity`, rich metadata, optimization tensors, and the sixteen declared `*_hash`
+  `ObservationActivity`, rich metadata, optimization tensors, and the seventeen declared `*_hash`
   fields. Navigation: `all_levels` (a dict field, not a method), `get_level`, `to_level`.
   Instantiation: `create_environment(num_agents=…, level_name=…, device=…)` — all three
   keyword-only and all three required, delegating to `VectorizedHamletEnv.from_universe`.
@@ -99,10 +97,16 @@ identity checking.
 
 ## 4. Validation, errors, and warnings
 
-**Error catalog.** Validation stages emit structured `CompilationMessage`s carrying a code,
-`file:line` information via `SourceMap`, and an actionable hint. Any collector with accumulated
-issues calls `CompilationErrorCollector.check_and_raise()`, so contributors see **all** failures
-at once rather than one per run.
+**Error catalog.** Validation stages emit structured `CompilationMessage`s carrying a code, a
+location, and an actionable hint. Any collector with accumulated issues calls
+`CompilationErrorCollector.check_and_raise()`, so contributors see **all** failures at once
+rather than one per run.
+
+⚠ **Locations are file-level only today.** `SourceMap` (`source_map.py`) is fully implemented —
+including a line-number-annotating YAML loader — and referenced **nowhere outside its own file**
+(verified 2026-08-24), so no diagnostic currently carries a line number. Wiring it is part of
+the in-flight cleanup (§7), and per-declaration `file:line` provenance is a hard requirement of
+PDR-0117.
 
 ⚠ **The code vocabulary is not the one the archived guide documents.** That guide describes a
 `UAC-RES-*` / `UAC-VAL-*` / `UAC-ACT-*` numeric catalog (`UAC-RES-001`, `UAC-VAL-002`, …).
@@ -114,7 +118,7 @@ drive reference resolution and three `UAC-RES-*` symbolic (not numbered) codes.
 Representative, grouped by what they catch:
 
 | area | codes |
-|---|---|
+| --- | --- |
 | pack scoping / loading | `SCOPING_MISSING_EXPERIMENT_FILE`, `SCOPING_LEVEL_DIRECTORY`, `SCOPING_FORBIDDEN_LEVEL_FILE`, `MISSING_FILE`, `MISSING_LEVELS_DIR`, `NO_CURRICULUM_LEVELS`, `YAML_SYNTAX_ERROR`, `LOAD_ERROR`, `LEVEL_LOAD_ERROR` |
 | reference resolution | `UAC-RES-VFS`, `UAC-RES-CASCADE`, `UAC-RES-ITEM`, `DAC-REF-001` … `DAC-REF-015` |
 | vocabulary agreement | `METER_VOCAB_MISMATCH`, `AFFORDANCE_VOCAB_MISMATCH`, `ENABLED_AFFORDANCES_INVALID` |
@@ -123,25 +127,33 @@ Representative, grouped by what they catch:
 | substrate / temporal / vision | `SUBSTRATE_ACTION_INCOMPATIBLE`, `SUBSTRATE_ACTION_WARNING_AS_ERROR`, `INTERACTION_RADIUS_MISSING`, `TEMPORAL_DAY_LENGTH_MISSING`, `MULTI_TICK_REQUIRES_TEMPORAL`, `VISION_INCOMPATIBLE` |
 | safety limits | `CONFIG_LIMIT_EXCEEDED`, `GRID_SIZE_LIMIT_EXCEEDED`, `GRID_CAPACITY_EXCEEDED`, `ITEM_TYPES_LIMIT_EXCEEDED`, `SPAWN_RULE_LIMIT_EXCEEDED` |
 
+⚠ **Ghost filename in DAC diagnostics.** Every `DAC-REF-*` message cites `drive_as_code.yaml`
+as its location (`validation/references.py:77-224`) — a file that exists in no pack; the real
+file is `levels/<level>/drive.yaml`. The compiler's own diagnostics point authors at a
+nonexistent filename. Slated for fix in the in-flight cleanup (§7).
+
 **Security limits.** Hard caps guard against accidental or malicious config explosion — meter
 and affordance counts, item types, spawn rules, and grid cells (a grid that would exceed the
 cell ceiling raises `GRID_SIZE_LIMIT_EXCEEDED`; a grid too small to hold its affordances plus
 agents raises `GRID_CAPACITY_EXCEEDED`).
 
-**Warnings, and the pedagogical stance.** Some configurations are semantically valid but likely
-to behave surprisingly — most notably economic imbalance, where total affordance costs exceed
-total income. On the early curriculum levels that is *by design*: scarcity is what teaches
-resource prioritization, and the project deliberately preserves "interesting failures" as
-teaching material rather than fixing them on sight.
+**There is no warning channel in practice — every finding is a hard error.** Verified
+2026-08-24: `CompilationErrorCollector.add_warning` exists but has **zero callers**; the one
+producer of soft findings, `SubstrateActionValidator`, has its warnings escalated to errors
+(`SUBSTRATE_ACTION_WARNING_AS_ERROR`, `validation/semantics.py:151-156`). The archived guide's
+economic-imbalance *warning* has no current counterpart at all: economic-balance analysis is not
+computed — `UniverseMetadata`'s `max_sustainable_income` / `total_affordance_costs` /
+`economic_balance` are hardcoded to `0.0` (`compilers/metadata.py:172-174`), and
+`validation/feasibility.py` contains only the grid-capacity helper, whose consumers raise hard
+errors. The pedagogical *stance* stands — economically imbalanced early levels are by design,
+and scarcity is teaching material — but nothing in the current compiler warns about it.
 
 ⚠ **The `allow_unfeasible_universe` escape hatch documented in the archived guide no longer
 exists.** Verified 2026-08-24: zero hits in `src/` and `configs/`, and
 `tests/test_townlet/_fixtures/variable_meters.py:405` records why — "v2.1 `TrainingV2Config`
 forbids extra fields, so we no longer patch `allow_unfeasible_universe` into `training.yaml`;
 feasibility checks should be satisfied by the constructed packs." Per-code suppression does not
-exist either. **TODO-VERIFY**: which feasibility findings are warnings versus hard errors under
-the current `validation/feasibility.py` — the archived guide's warning/error split predates the
-flag's removal and should not be trusted.
+exist either — consistent with the fact that nothing is emitted as a warning in the first place.
 
 ### The `CuesCompiler` caveat
 
@@ -151,7 +163,8 @@ called anywhere else in the file** (verified 2026-08-24). The archived
 `COMPILER_ARCHITECTURE.md` (design-era, 2025-11) lists it as an active Stage-4 participant
 validating `cues.yaml`; that is design intent, not a record of what runs. Treat cue validation
 as unwired. The same archived document asserts a backwards-compatibility success criterion this
-project explicitly rejects.
+project explicitly rejects. `CuesCompiler` heads the dead-seam inventory in the 2026-08-24
+compiler assessment and is slated for deletion by the in-flight cleanup (§7).
 
 ---
 
@@ -172,15 +185,16 @@ project explicitly rejects.
 **Checkpoint identity is a separate contract from the cache.** `config_hash` is the cache
 fingerprint; the checkpoint gate is `assert_checkpoint_identity`
 (`src/townlet/training/checkpoint_utils.py`), which hard-compares seven of the artifact's
-sixteen declared `*_hash` fields. Full declared-vs-enforced breakdown: `HLD.md` §5.2.
+seventeen declared `*_hash` fields. Full declared-vs-enforced breakdown: `HLD.md` §5.2.
 
-⚠ **Known rough edge** (README §Known rough edges): a pack whose `vfs_profiles.yaml` declares
-one or more **agent-profile variables** can compile, print `Compilation succeeded`, exit 0 — and
-fail to write its cache artifact. Serialization raises `can not serialize
-'CompiledGlobalProfile' object`, the failure is downgraded to a log warning the CLI never
-displays, and nothing reaches the exit code; a subsequent `inspect` then fails with
-`Artifact not found`. Root cause is the untyped `agent_profile: Any | None` field at
-`universe/compiled.py:123`; the error message names the wrong half of the config.
+A rough edge README records here is **fixed**: README §Known rough edges (stamped 2026-08-20)
+describes agent-profile packs compiling green while their cache artifact silently fails to
+serialize. That was repaired the next day — commit `03764c6b` (2026-08-21,
+`hamlet-a141ab5db3` / `hamlet-cbb747a51e`): agent profiles now serialize
+(`compiled.py:_serialize_profile`), the field is typed `CompiledGlobalProfile | None`, and a
+failed cache write **fails the compile** instead of downgrading to a hidden log warning.
+Re-verified empirically 2026-08-24: `configs/trial_o_bidding_blind` (non-null `agent_profile`)
+compiles and writes `.compiled/universe-L5_multi_agent.msgpack`.
 
 ---
 
@@ -256,7 +270,26 @@ observation spec). Runtime integration is covered by
 
 ---
 
-## 7. Forward: the front end becomes discovery + merge
+## 7. Forward
+
+### In flight: the cleanup unit (hamlet-af929afa06)
+
+The 2026-08-24 compiler assessment
+(`archive/REVIEW-2026-08-24-compiler-architecture-assessment.md`) inventoried the trunk's debt:
+dead seams with grep-verified zero callers (`CuesCompiler` + `config/cues.py`, the unwired
+`SourceMap`, `pipeline.py`'s discarded typed bundles, `OptimizationCompiler.resolve_day_length`,
+six unused `__init__` result fields, the hardcoded-`0.0` economics metadata), the
+self-disagreeing stage numbering, and the fragmented error-code namespaces. Its first buys —
+dead-seam deletion, one authoritative stage enum, an error-code registry (including the
+`drive_as_code.yaml` ghost-filename fix), and SourceMap wiring for line-level diagnostics — are
+being executed as `hamlet-af929afa06` in an isolated worktree at the time of writing. **This
+document describes the tree at HEAD; that unit has not landed.** The assessment's target shape,
+which PDR-0117 shares: a *declaration-store* compiler — a discovery/merge front end producing
+one provenance-carrying declaration store, a middle compiling typed declaration families
+against one symbol table, and an emission layer serializing the artifact and hash tree
+mechanically.
+
+### Decided: the front end becomes discovery + merge
 
 **PDR-0117 — decided, not yet implemented.** The pack layout today mandates 16 distinct
 filenames, hardcoded across roughly nine compiler modules — chiefly `loaders/preflight.py`
@@ -294,6 +327,9 @@ unit, after the token-observation migration. Full text: `UAC.md` §4 and
 - `VFS.md` — the ABI the compiler targets
 - `BAC.md` — how the brain rides inside the artifact
 - `docs/config-schemas/` — per-surface field references
+- `archive/REVIEW-2026-08-24-compiler-architecture-assessment.md` — the line-level assessment of
+  the as-built pipeline: clean seams, dead architecture, load-bearing tangles, and the ranked
+  effort/opportunity table behind §7
 - `archive/UNIVERSE-COMPILER.md` — the fuller troubleshooting narrative this document condenses.
   Accurate on caching, provenance and CLI; **stale** on the input-file list, the stage method
   names, the `UAC-RES-001`-style error catalog, `allow_unfeasible_universe`, and `total_dim`

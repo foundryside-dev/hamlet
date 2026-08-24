@@ -60,29 +60,32 @@ specification to diff against, never a code path to keep alive.
 
 ## Reading `docs/` — intent vs record
 
-⚠️ **`docs/` is 573 markdown files, ~90% of them last touched 2026-05, before the current
-recovery work. Treat it as design intent, never as a record of what shipped.** Verified
-2026-08-15 (`docs/architecture/REVIEW-2026-08-15-architecture-docs-and-hld.md`).
+⚠️ **Most of `docs/` predates the current recovery work. Treat it as design intent, never as a
+record of what shipped.** On 2026-08-24 the old architecture corpus was archived wholesale to
+`docs/architecture/archive/` and replaced by a six-document HLD set (PDR-0118); archive-internal
+links may dangle, by design.
 
-The sharpest case: `docs/architecture/BRAIN_AS_CODE.md` and
-`docs/architecture/hld/02-brain-as-code.md` both say
+The sharpest case: `docs/architecture/archive/BRAIN_AS_CODE.md` and
+`docs/architecture/archive/hld/02-brain-as-code.md` both say
 *"Status: Approved for Implementation"*, while `execution_graph` / `cognitive_topology` /
 `agent_architecture` return **zero grep hits** in `src/` and `configs/`. The design is the
-target; the status line is false. That pattern repeats across the architecture corpus.
+target; the status line is false. That pattern repeats across the archived corpus.
 
 **Rules:**
 
 1. **Never cite a doc as evidence something is implemented.** Check `src/townlet/` first.
 2. **Where a doc disagrees with `README.md`, README is right.** It is current, honest about
    status, and carries the correct product framing.
-3. `docs/architecture/` does not know about `src/townlet/oracle/`, the strangler rewrite,
-   `items/`, or `effects/`. Absence there means nothing.
+3. `docs/architecture/archive/` does not know about `src/townlet/oracle/`, the strangler
+   rewrite, `items/`, or `effects/`. Absence there means nothing.
 4. Many (not all) files carry frontmatter with an "AI-Friendly Summary" and "Reading Strategy".
    Where present, read it first to decide relevance before opening a 2000-line file.
 
-**Current-and-trustworthy:** `README.md`, `docs/product/`, `docs/oracle/`,
-`docs/architecture/vfs.md`, `docs/architecture/vfs-current-implementation.md`,
-`docs/config-schemas/`.
+**Current-and-trustworthy:** `README.md`, `docs/product/`, `docs/oracle/`, the six-document HLD
+set in `docs/architecture/` — `HLD.md`, `STRATA.md`, `UAC.md`, `BAC.md`, `COMPILER.md`,
+`VFS.md` (all reviewed against source 2026-08-24) — and `docs/config-schemas/`.
+`docs/architecture/archive/vfs-current-implementation.md` also remains accurate per the
+2026-08-24 audit **except** its access-control and `agent_private` claims.
 
 ### The oracle (strangler discipline)
 
@@ -95,8 +98,8 @@ the register says otherwise."* Accepted differences are registered in
 ### Universe Compiler (UAC) Quick Reference
 
 - **Source**: `src/townlet/universe/compiler.py` - seven-stage pipeline (parse → symbol table → resolve → cross-validate → metadata → optimization → emit/cache)
-- **Docs**: `docs/UNIVERSE-COMPILER.md`. `docs/architecture/COMPILER_ARCHITECTURE.md` is
-  design-era (2025-11): useful for intent, but it describes sub-compilers that were never wired
+- **Docs**: `docs/architecture/COMPILER.md`. `docs/architecture/archive/COMPILER_ARCHITECTURE.md`
+  is design-era (2025-11): useful for intent, but it describes sub-compilers that were never wired
   (notably `CuesCompiler`, instantiated at `compiler.py:69` and never called) and asserts a
   backwards-compatibility success criterion this project rejects.
 - **Tests**: `uv run pytest tests/test_townlet/unit/universe/` (use `UV_CACHE_DIR=.uv-cache` in sandboxed environments)
@@ -202,25 +205,32 @@ is single-level by construction (`get_level` / `to_level` / `all_levels` navigat
 POMDP does **not** shrink the tensor: it zeroes the grid-encoding block and activates the local
 -window block instead. Quote which quantity you mean, or don't quote a number.
 
-**Key insight**: allocated observation width is **constant** across all Grid2D grid sizes —
-that is what enables true transfer learning, and it is a consequence of the superset+mask
-design, not a coincidence.
+**Key insight** (corrected 2026-08-24 — the previous "constant across all grid sizes" claim was
+too strong): allocated observation width is constant **across the levels of one pack**, because
+all levels share one pack-root `stratum.yaml` — that is what enables cross-level transfer. It is
+**not** constant across grid sizes: the grid encoding is one slot per cell
+(`get_grid_encoding_dim() = width * height`). See `docs/architecture/STRATA.md` §6.3.
 
-**Action Space** (global vocabulary enables checkpoint transfer):
-
-- Grid2D: 8 actions (6 substrate + INTERACT + WAIT)
-- Grid3D: 10 actions
-- GridND (7D): 16 actions
-- Aspatial: 4 actions
+**Action Space** (corrected 2026-08-24 — the per-substrate count table previously here, "Grid2D
+8 / Grid3D 10 / GridND(7D) 16 / Aspatial 4", disagreed with source): the action space is
+**composed** — substrate movement actions (a function of substrate type *and* declared
+parameters such as `diagonals`) plus custom actions from `actions.yaml` — under the canonical
+ordering contract of `substrate/base.py`: movement, then `INTERACT` at `[-2]`, then `WAIT` at
+`[-1]`; aspatial has no movement actions. Never quote a per-substrate action-count literal; ask
+the compiled artifact. See `docs/architecture/STRATA.md` §5.
 
 **POMDP Support**:
 
-- ✅ **Supported**: Grid2D, Grid3D (vision_range ≤ 2)
+- ✅ **Supported**: Grid2D, Grid3D — subject to the window-size gate. `vision_range` is a
+  **normalized fraction** of the longest axis, not a cell radius (the old "vision_range ≤ 2"
+  phrasing here predated that encoding; corrected 2026-08-24): validation refuses when the
+  implied window is too large (e.g. Grid3D on 8³ accepts 0.5 → window 5, rejects 0.75 → window 7).
 - ❌ **Not Supported**: Aspatial (`supports_partial_vision` returns False and the
   window/radius methods raise — the "special case" previously listed here was false,
   corrected 2026-08-24), Continuous substrates, GridND (N≥4) - window too large
 
-See `tests/test_townlet/unit/environment/test_pomdp_validation.py` for validation logic.
+See `tests/test_townlet/unit/environment/test_pomdp_validation.py` for validation logic and
+`docs/architecture/STRATA.md` §7 for the three independent gates.
 
 ### Variable & Feature System (VFS)
 
@@ -245,7 +255,11 @@ dependencies, and (via VTC) compiled transitions.
 
 **Access Control**: `readable_by` / `writable_by` role lists per variable, enforced at
 `registry.get()` / `set()`. Roles are open strings, not a closed enum — `agent`, `engine`,
-`actions`, `vtc`, `social_model` are the common ones.
+`actions`, `vtc`, `social_model` are the common ones. ⚠ Caveat (2026-08-24 audit): the
+enforcement is real where it runs, but it currently has **no authoring surface** (the compiler
+hardcodes the role lists on both required config files) and the observation path bypasses the
+checked accessor entirely — see `docs/architecture/VFS.md` §6 caveat and
+`docs/architecture/archive/REVIEW-2026-08-24-vfs-implementation-vs-spec.md`.
 
 **Which files a pack needs** (corrected 2026-08-15 — the previous "all packs MUST include
 `variables_reference.yaml`" was **false**):
@@ -256,8 +270,10 @@ dependencies, and (via VTC) compiled transitions.
   marks. Static only: no expressions, no item-scoped variables. `configs/default_curriculum`
   does not have one; `configs/L5_multi_agent` does.
 
-**Documentation**: `docs/config-schemas/variables.md`, `docs/config-schemas/vfs-profiles.md`,
-and `docs/architecture/vfs-current-implementation.md` (current, source-mapped).
+**Documentation**: `docs/architecture/VFS.md` (the authoritative VFS document, reviewed
+2026-08-24), `docs/config-schemas/vfs-profiles.md`, `docs/config-schemas/variables.md`
+(⚠ stale, 2025-11), and `docs/architecture/archive/vfs-current-implementation.md` (accurate per
+the 2026-08-24 audit except its access-control and `agent_private` claims).
 
 ### Action Space (Composable)
 
@@ -355,8 +371,11 @@ The intended design, for whoever authors it:
 ### Q-Learning Algorithm Variants
 
 `training.yaml: use_double_dqn` selects vanilla vs Double DQN; checkpoints persist the flag.
-Non-obvious cost: recurrent Double DQN needs 3 forward passes vs 2 for vanilla.
-Details: `docs/config-schemas/training.md`.
+Non-obvious cost on a recurrent architecture (corrected 2026-08-24 — the "3 forward passes vs 2"
+previously stated here does not match the current update path): one extra single-step boundary
+forward per update; action selection reuses the online unroll (`population/vectorized.py:862-880`).
+Details: `docs/architecture/BAC.md` §2.5; `docs/config-schemas/training.md` still carries the
+stale 3-vs-2 figure.
 
 ## Configuration System
 
@@ -428,7 +447,10 @@ DTOs live in `src/townlet/config/` — `training_v2_config.py`, `environment_con
 
 **Training Details**:
 
-- Gradient clipping: `max_norm=10.0` (prevents exploding gradients)
+- Gradient clipping: `clip_grad_norm_(..., max_norm=self.max_grad_norm)` — the threshold is the
+  **declared training hyperparameter** `max_grad_norm` in `training.yaml`
+  (`config/training_v2_config.py`), not an engine constant (corrected 2026-08-24; the
+  `default_curriculum` packs declare `10.0`)
 - Economic balance: WORK pays $22.5. **This became true at runtime only in WS-1(e)**
   (2026-08-12) — before that, six hardcoded `[0.0, 1.0]` clamps crushed every payout to
   `1.0` despite `money.bounds.max: 999999.0`, so six of seven priced affordances were

@@ -166,7 +166,11 @@ they are wrong, this one is the shipped pack.
 - **scaled**: Coordinates scaled to grid dimensions [0, grid_size] - value range conveys grid size implicitly
 - **absolute**: Raw unnormalized coordinates - for physical simulation
 
-**Note**: All encoding modes produce **identical obs_dim** (2 dims for position). Only the value range changes, not the number of dimensions.
+**Note** (corrected 2026-08-24 — the previous "all modes identical obs_dim" claim was
+false): `relative` and `absolute` emit 2 position dims in Grid2D; **`scaled` emits 4**
+(x, y, width, height — it packs the extents into the position block; 6 in Grid3D).
+Source: `substrate/grid2d.py:get_position_feature_dim`. Encoding mode is part of the
+observation ABI, not just a value-range choice.
 
 **Observation Dimensions** (Grid2D with "relative" encoding):
 
@@ -211,8 +215,10 @@ design, not a coincidence.
 
 **POMDP Support**:
 
-- ✅ **Supported**: Grid2D, Grid3D (vision_range ≤ 2), Aspatial (special case)
-- ❌ **Not Supported**: Continuous substrates, GridND (N≥4) - window too large
+- ✅ **Supported**: Grid2D, Grid3D (vision_range ≤ 2)
+- ❌ **Not Supported**: Aspatial (`supports_partial_vision` returns False and the
+  window/radius methods raise — the "special case" previously listed here was false,
+  corrected 2026-08-24), Continuous substrates, GridND (N≥4) - window too large
 
 See `tests/test_townlet/unit/environment/test_pomdp_validation.py` for validation logic.
 

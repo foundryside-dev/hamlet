@@ -25,8 +25,9 @@ with UAC promoted from its old "strata + world config" meaning.
    tree, reviews, and `docs/UNIVERSE-COMPILER.md`) moves to
    `docs/architecture/archive/`. Archived docs are historical record; internal relative
    links may dangle — accepted.
-2. **Five documents replace it**: `HLD.md` (over the top; carries the Strata section —
-   Strata gets no standalone doc, per the owner's five-doc count), `VFS.md` (the
+2. **Six documents replace it** (owner amended same-day: "split off strata to its own
+   document"): `HLD.md` (over the top), `STRATA.md` (space — promoted to a standalone
+   doc, superseding the earlier carry-it-in-HLD call), `VFS.md` (the
    existing `vfs.md` promoted as-is — "it's pretty good", audit-verified), `UAC.md`,
    `BAC.md` (honest: design target, zero code footprint, `brain.yaml` is the realized
    slice), `COMPILER.md`.

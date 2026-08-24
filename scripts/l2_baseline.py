@@ -107,16 +107,21 @@ def cmd_train(args: argparse.Namespace) -> None:
     if dirty:
         raise SystemExit(f"src/townlet is dirty — the baseline must run on committed code:\n{dirty}")
     head = _git("rev-parse", "HEAD")
+    # The invariant is the ENGINE tree, not the commit: docs/test/plan commits
+    # between seed launches are harmless; a moved src/townlet is not.
+    src_tree = _git("rev-parse", "HEAD:src/townlet")
 
     run_root = Path(args.run_root)
     run_root.mkdir(parents=True, exist_ok=True)
     pin_file = run_root / "PIN"
     if pin_file.exists():
-        pinned = pin_file.read_text().strip()
-        if pinned != head:
-            raise SystemExit(f"run-root pinned to {pinned[:12]} but HEAD is {head[:12]} — all seeds must share one tree")
+        pinned = pin_file.read_text().split()[0]
+        if pinned != src_tree:
+            raise SystemExit(
+                f"run-root pinned to src/townlet tree {pinned[:12]} but HEAD carries {src_tree[:12]} — all seeds must share one engine tree"
+            )
     else:
-        pin_file.write_text(head + "\n")
+        pin_file.write_text(f"{src_tree} src-tree (head-at-first-seed {head})\n")
 
     run_dir = run_root / f"seed_{args.seed}"
     if run_dir.exists():

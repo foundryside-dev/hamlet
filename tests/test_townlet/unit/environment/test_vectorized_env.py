@@ -43,6 +43,7 @@ from townlet.vfs.profiles import CompiledGlobalProfile, CompiledVariable
 from townlet.vfs.schema import WriteSpec
 from townlet.vfs.schema_hashes import compute_transition_graph_hash, compute_vfs_hash
 from townlet.vfs.transition_schedule import (
+    VTCTransitionState,
     build_vtc_transition_schedule,
     serialize_vtc_transition_schedule,
     social_rules_from_transition_payload,
@@ -626,6 +627,99 @@ class TestVectorizedHamletEnvStep:
         assert torch.equal(temporal["time_of_day"], torch.tensor(10.0, device=env.device))
         assert torch.equal(temporal["day_progress"], torch.tensor(10.0 / float(env.day_length), device=env.device))
         assert torch.equal(temporal["is_night"], torch.tensor(False, device=env.device))
+
+
+class TestVFSWriteBackLoudness:
+    """Unknown-id VFS write-backs raise instead of silently dropping (hamlet-0ddc83e377).
+
+    vtc.py and evaluator.py are already loud; these three sites in vectorized_env.py were
+    the last silent-drop paths (global-profile write-back, agent-profile write-back,
+    _commit_vtc_transition_state)."""
+
+    def test_commit_vtc_transition_state_raises_on_unknown_id(self, cpu_env_factory):
+        env = cpu_env_factory()
+        env.reset()
+
+        state = VTCTransitionState(
+            vfs_state={"__definitely_not_a_registered_variable__": torch.zeros(env.num_agents)},
+            bars_state={},
+            dones=None,
+        )
+
+        with pytest.raises(KeyError, match="__definitely_not_a_registered_variable__"):
+            env._commit_vtc_transition_state(state)
+
+    def test_global_profile_write_back_raises_on_unknown_id(self, custom_env_builder, monkeypatch):
+        env = custom_env_builder()
+        env.reset()
+
+        profile = CompiledGlobalProfile(
+            variables=[
+                CompiledVariable(
+                    name="__unknown_global_expr__",
+                    type="bool",
+                    exposed_to=("agent",),
+                    ast=object(),  # any non-None marks it as an expression var
+                )
+            ],
+            dependencies={"__unknown_global_expr__": tuple()},
+        )
+        env.universe = replace(
+            env.universe,
+            compiled_vfs_profiles=CompiledVFSProfiles(
+                evaluation_mode="mark_and_sweep",
+                debug_logging=False,
+                global_profile=profile,
+                item_profiles={},
+            ),
+        )
+        env.vfs_evaluation_marks = {"global": {"__unknown_global_expr__"}}
+
+        assert env.vfs_evaluator is not None
+        monkeypatch.setattr(
+            env.vfs_evaluator,
+            "evaluate_global_profile",
+            lambda **kwargs: {"__unknown_global_expr__": torch.tensor(True)},
+        )
+
+        with pytest.raises(KeyError, match="__unknown_global_expr__"):
+            env.step(torch.zeros(env.num_agents, dtype=torch.long))
+
+    def test_agent_profile_write_back_raises_on_unknown_id(self, custom_env_builder, monkeypatch):
+        env = custom_env_builder()
+        env.reset()
+
+        agent_profile = CompiledGlobalProfile(
+            variables=[
+                CompiledVariable(
+                    name="__unknown_agent_expr__",
+                    type="bool",
+                    exposed_to=("agent",),
+                    ast=object(),
+                )
+            ],
+            dependencies={"__unknown_agent_expr__": tuple()},
+        )
+        env.universe = replace(
+            env.universe,
+            compiled_vfs_profiles=CompiledVFSProfiles(
+                evaluation_mode="mark_and_sweep",
+                debug_logging=False,
+                agent_profile=agent_profile,
+                item_profiles={},
+            ),
+        )
+        env.vfs_evaluation_marks = {"agent": {"__unknown_agent_expr__"}}
+
+        assert env.vfs_evaluator is not None
+        monkeypatch.setattr(
+            env.vfs_evaluator,
+            "evaluate_global_profile",
+            lambda **kwargs: {"__unknown_agent_expr__": torch.zeros(env.num_agents, dtype=torch.bool)},
+        )
+
+        with pytest.raises(KeyError, match="__unknown_agent_expr__"):
+            env.step(torch.zeros(env.num_agents, dtype=torch.long))
 
 
 class TestVectorizedHamletEnvGoldenTick:

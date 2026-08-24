@@ -1093,8 +1093,15 @@ class VectorizedHamletEnv:
                 # step (hamlet-df3a96bbac).
                 expression_var_names = {var.name for var in global_profile.variables if var.ast is not None}
                 for var_name, value in updated_vfs.items():
-                    if var_name in expression_var_names and var_name in self.vfs_registry.variables:
-                        self.vfs_registry.set_engine_value(var_name, value)
+                    if var_name not in expression_var_names:
+                        continue  # static: storage, never written back (hamlet-df3a96bbac)
+                    if var_name not in self.vfs_registry.variables:
+                        raise KeyError(
+                            f"Global-profile VFS write-back produced unknown variable id '{var_name}'.\n"
+                            "  Write source: global_profile expression evaluation "
+                            "(vfs_evaluator.evaluate_global_profile) (hamlet-0ddc83e377)."
+                        )
+                    self.vfs_registry.set_engine_value(var_name, value)
 
             # Evaluate agent profile (hamlet-5d74335111). Compiled agent profiles are
             # CompiledGlobalProfile — the same machinery, the same MARK_AND_SWEEP
@@ -1128,7 +1135,11 @@ class VectorizedHamletEnv:
                     if var_name not in agent_expression_var_names:
                         continue  # static: storage, never written back (hamlet-df3a96bbac)
                     if var_name not in self.vfs_registry.variables:
-                        continue  # unknown-id policy unchanged this unit (hamlet-0ddc83e377 → unit 3)
+                        raise KeyError(
+                            f"Agent-profile VFS write-back produced unknown variable id '{var_name}'.\n"
+                            "  Write source: agent_profile expression evaluation "
+                            "(vfs_evaluator.evaluate_global_profile) (hamlet-0ddc83e377)."
+                        )
                     if value.shape != (self.num_agents,):
                         raise ValueError(
                             f"Agent-profile variable '{var_name}' evaluated to shape {tuple(value.shape)}, "
@@ -1256,8 +1267,13 @@ class VectorizedHamletEnv:
         for bar_name, value in state.bars_state.items():
             self._set_vtc_bar_value(bar_name, value)
         for variable_id, value in state.vfs_state.items():
-            if variable_id in self.vfs_registry.variables:
-                self.vfs_registry.set_engine_value(variable_id, value)
+            if variable_id not in self.vfs_registry.variables:
+                raise KeyError(
+                    f"VTC transition write-back produced unknown variable id '{variable_id}'.\n"
+                    "  Write source: VTC transition state commit (_commit_vtc_transition_state) "
+                    "(hamlet-0ddc83e377)."
+                )
+            self.vfs_registry.set_engine_value(variable_id, value)
         if state.dones is not None:
             self.dones = state.dones
 

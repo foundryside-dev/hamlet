@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from townlet.config.cues import CompoundCueConfig, SimpleCueConfig
 from townlet.environment.action_config import ActionConfig
 from townlet.vfs.schema import VariableDef
 
@@ -23,7 +22,6 @@ class UniverseSymbolTable:
     variables: dict[str, VariableDef] = field(default_factory=dict)
     profile_vfs_variables: dict[str, Any] = field(default_factory=dict)
     actions: dict[int, ActionConfig] = field(default_factory=dict)
-    cues: dict[str, SimpleCueConfig | CompoundCueConfig] = field(default_factory=dict)
     items: dict[str, Any] = field(default_factory=dict)
 
     def register_meter(self, config: Any) -> None:
@@ -76,11 +74,6 @@ class UniverseSymbolTable:
             raise CompilationError("Stage 2: Symbol Table", [f"Duplicate affordance name '{aff_name}' detected."])
         self.affordances[aff_id] = config
         self.affordances_by_name[aff_name] = config
-
-    def register_cue(self, cue: SimpleCueConfig | CompoundCueConfig) -> None:
-        if cue.cue_id in self.cues:
-            raise CompilationError("Stage 2: Symbol Table", [f"Duplicate cue '{cue.cue_id}' detected."])
-        self.cues[cue.cue_id] = cue
 
     def register_item(self, item: Any) -> None:
         """Register items by id (preferred) or name to validate references."""

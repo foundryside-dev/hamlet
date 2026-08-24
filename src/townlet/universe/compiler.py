@@ -15,14 +15,7 @@ import yaml
 from townlet.config.brain_config import apply_training_overrides, compute_brain_hash
 from townlet.effects.catalog import EffectCatalog
 from townlet.universe.compiled import CompiledUniverse
-from townlet.universe.dto import (
-    ActionSpaceMetadata,
-    AffordanceMetadata,
-    MeterMetadata,
-    ObservationSpec,
-    UniverseMetadata,
-)
-from townlet.universe.optimization import OptimizationData
+from townlet.universe.dto import UniverseMetadata
 from townlet.universe.raw_configs_v21 import RawConfigsV21
 from townlet.vfs.observation_builder import VFSObservationSpec
 from townlet.vfs.profiles import CircularDependencyError
@@ -43,7 +36,6 @@ from .compilers.metadata import MetadataCompiler
 from .compilers.observation import ObservationCompiler
 from .compilers.optimization import OptimizationCompiler
 from .compilers.vfs import VFSCompiler
-from .cues_compiler import CuesCompiler
 from .errors import CompilationError, CompilationMessage
 from .loaders.preflight import validate_config_dir, validate_scoping, validate_yaml_syntax
 from .loaders.v21 import load_v21_configs
@@ -66,13 +58,6 @@ class UniverseCompiler:
     """Entry point for compiling config packs into CompiledUniverse artifacts."""
 
     def __init__(self) -> None:
-        self._cues_compiler = CuesCompiler()
-        self._metadata: UniverseMetadata | None = None
-        self._observation_spec: ObservationSpec | None = None
-        self._action_metadata: ActionSpaceMetadata | None = None
-        self._meter_metadata: MeterMetadata | None = None
-        self._affordance_metadata: AffordanceMetadata | None = None
-        self._optimization_data: OptimizationData | None = None
         self._observation_compiler = ObservationCompiler()
         self._action_compiler = ActionCompiler()
         self._effects_compiler = EffectsCompiler()

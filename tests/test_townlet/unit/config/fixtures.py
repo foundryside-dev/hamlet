@@ -95,22 +95,6 @@ VALID_AFFORDANCE_PARAMS = {
     "effects": [{"meter": "energy", "amount": 0.50}],
 }
 
-VALID_CUES_CONFIG = {
-    "version": "1.0",
-    "description": "Test cues",
-    "status": "TEMPLATE",
-    "simple_cues": [
-        {
-            "cue_id": "looks_tired",
-            "name": "Looks Tired",
-            "category": "energy",
-            "visibility": "public",
-            "condition": {"meter": "energy", "operator": "<", "threshold": 0.2},
-        }
-    ],
-    "compound_cues": [],
-}
-
 # ==============================================================================
 # UTILITY FUNCTIONS
 # ==============================================================================
@@ -157,72 +141,3 @@ def make_temp_yaml(tmp_path: Path, section: str, data: dict[str, Any]) -> Path:
     with open(yaml_path, "w") as f:
         yaml.dump({section: data}, f)
     return yaml_path
-
-
-def make_temp_config_pack(tmp_path: Path) -> Path:
-    """Create temporary config pack with v2.1 directory structure.
-
-    Args:
-        tmp_path: pytest tmp_path fixture
-
-    Returns:
-        Path to config pack directory
-
-    Example:
-        >>> config_dir = make_temp_config_pack(tmp_path)
-        >>> # Creates tmp_path/config_pack/ with v2.1 structure:
-        >>> # training/default.yaml, bars/default.yaml, etc.
-    """
-    import yaml
-
-    config_dir = tmp_path / "config_pack"
-    config_dir.mkdir()
-
-    # Create v2.1 directory structure
-    (config_dir / "training").mkdir()
-    (config_dir / "bars").mkdir()
-    (config_dir / "cascades").mkdir()
-    (config_dir / "affordances").mkdir()
-    (config_dir / "cues").mkdir()
-    (config_dir / "variables").mkdir()
-
-    # Create training/default.yaml with all sections
-    training_yaml = config_dir / "training" / "default.yaml"
-    with open(training_yaml, "w") as f:
-        yaml.dump(
-            {
-                "training": VALID_TRAINING_PARAMS,
-                "environment": VALID_ENVIRONMENT_PARAMS,
-                "population": VALID_POPULATION_PARAMS,
-                "curriculum": VALID_CURRICULUM_PARAMS,
-                "exploration": VALID_EXPLORATION_PARAMS,
-            },
-            f,
-        )
-
-    # Create bars/default.yaml
-    bars_yaml = config_dir / "bars" / "default.yaml"
-    with open(bars_yaml, "w") as f:
-        yaml.dump({"bars": [VALID_BAR_PARAMS]}, f)
-
-    # Create cascades/default.yaml
-    cascades_yaml = config_dir / "cascades" / "default.yaml"
-    with open(cascades_yaml, "w") as f:
-        yaml.dump({"cascades": [VALID_CASCADE_PARAMS]}, f)
-
-    # Create affordances/default.yaml
-    affordances_yaml = config_dir / "affordances" / "default.yaml"
-    with open(affordances_yaml, "w") as f:
-        yaml.dump({"affordances": [VALID_AFFORDANCE_PARAMS]}, f)
-
-    # Create cues/default.yaml
-    cues_yaml = config_dir / "cues" / "default.yaml"
-    with open(cues_yaml, "w") as f:
-        yaml.dump(VALID_CUES_CONFIG, f)
-
-    # Create variables/default.yaml (required in v2.1)
-    variables_yaml = config_dir / "variables" / "default.yaml"
-    with open(variables_yaml, "w") as f:
-        yaml.dump({"variables": []}, f)
-
-    return config_dir

@@ -3,7 +3,18 @@
 **Document Type**: Design Specification + Integration Specification  
 **Status**: Phase 1 Complete; observation path fully VFS-driven in production (shadow migration finished, old path deleted); VTC partially unified (Phase 2.x)  
 **Version**: 1.1 Draft  
-**Last Updated**: 25 August 2026 (re-verified against `src/townlet/` at HEAD after token-obs unit 3 / Task 5 landed: §5.1, §6, §6.2, §6.3, §7.2, §7.4, §9.3, §12.4, §14.4, §16.3, §18.2, §18.4, §20.9, §21.1, §23 — `set_engine_value` now enforces declared shapes, write-backs raise on unknown ids, relational-scope exposure refuses at compile, affordance extents joined the preflight; archived-doc path sweep after the 2026-08-24 docs recut; 22 August 2026: §14.3, §16.3, §16.4, §17 Phase 3+, §20.7, §21.1: social-residue authoring surface shipped as `transition_rules.yaml` with a no-defaults DTO, examples corrected to the shipped grammar and pinned by `tests/test_townlet/unit/config/test_vfs_doc_social_residue_examples.py`, hamlet-84cf93a1b9; §14.3, §16.3, §16.4: write-level `target` removed, hamlet-175bff4ed5; 21 August 2026 source audit against `src/townlet/`: status header, §4.3, §5.1, §6.3, §7.4, §8.1, §8.4, §11.1, §11.4, §13.2, §16.3, §17, §19, §21.1, §23, §24.2; 16 August 2026: §4.1, §4.3, §8.4 semantic-type vocabulary, `PDR-0047` / `PDR-0066`; body otherwise 15 May 2026)
+**Last Updated**: 25 August 2026, pass 2 (adversarial re-audit of the pass-1 sweep against `src/townlet/` at HEAD — every pass-1
+correction and caveat line reference independently re-derived; §6.2 item-scope mechanism corrected, §9.3 normalization citation
+corrected, §7.2 `ScopedVariableRegistry` access-model caveat added, §11.4 phase list marked shipped; lint sweep); 25 August 2026,
+pass 1 (re-verified against `src/townlet/` at HEAD after token-obs unit 3 / Task 5 landed: §5.1, §6, §6.2, §6.3, §7.2, §7.4, §9.3,
+§12.4, §14.4, §16.3, §18.2, §18.4, §20.9, §21.1, §23 — `set_engine_value` now enforces declared shapes, write-backs raise on
+unknown ids, relational-scope exposure refuses at compile, affordance extents joined the preflight; archived-doc path sweep after
+the 2026-08-24 docs recut; 22 August 2026: §14.3, §16.3, §16.4, §17 Phase 3+, §20.7, §21.1: social-residue authoring surface
+shipped as `transition_rules.yaml` with a no-defaults DTO, examples corrected to the shipped grammar and pinned by
+`tests/test_townlet/unit/config/test_vfs_doc_social_residue_examples.py`, hamlet-84cf93a1b9; §14.3, §16.3, §16.4: write-level
+`target` removed, hamlet-175bff4ed5; 21 August 2026 source audit against `src/townlet/`: status header, §4.3, §5.1, §6.3, §7.4,
+§8.1, §8.4, §11.1, §11.4, §13.2, §16.3, §17, §19, §21.1, §23, §24.2; 16 August 2026: §4.1, §4.3, §8.4 semantic-type vocabulary,
+`PDR-0047` / `PDR-0066`; body otherwise 15 May 2026)
 **Original VFS Guide Date**: 7 November 2025  
 **Audience**: Engineers integrating VFS into Townlet environments; SDA/Brain-as-Code engineers; curriculum designers; researchers building social, temporal, and multi-agent environments
 
@@ -158,7 +169,7 @@ The cognitive hash should eventually include the VFS observation schema and acti
 VFS supports the Hamlet progression:
 
 | Level | VFS contribution |
-|---|---|
+| --- | --- |
 | L0 / L1 | Fixed observation ABI, full visibility, baseline meters |
 | L2 | Partial observability through exposure config rather than hardcoded observation branches |
 | L3 | Time variables, operating-hour masks, interaction progress variables |
@@ -178,7 +189,7 @@ zero. So "observation dim" has two answers, and only stating both is honest.
 Measured by compiling `configs/default_curriculum` at each level on `project-recovery`:
 
 | Config | Allocated (`total_dims`) | Active | Zeroed fields |
-|---|---:|---:|---|
+| --- | ---: | ---: | --- |
 | `L0_0_minimal` | 124 | 95 | `obs_local_window` (25), `obs_temporal` (4) |
 | `L0_5_dual_resource` | 124 | 95 | `obs_local_window` (25), `obs_temporal` (4) |
 | `L1_full_observability` | 124 | 95 | `obs_local_window` (25), `obs_temporal` (4) |
@@ -229,7 +240,7 @@ The current repo convention is split deliberately:
 - Level directories must not contain `vfs_profiles.yaml`; profile definitions are shared across curriculum levels, while level-specific activity and masking come from the compiled level metadata.
 
 | Component | Status | Primary verification source |
-|---|---:|---|
+| --- | ---: | --- |
 | Schema Definitions (`VariableDef`, `ObservationField`) | Complete | `tests/test_townlet/unit/vfs/test_schema.py`, `tests/test_townlet/unit/vfs/test_observation_field_schema.py` |
 | Variable Registry runtime storage + access control | Complete | `tests/test_townlet/unit/vfs/test_registry.py`, `tests/test_townlet/unit/vfs/test_scoped_registry.py`, `tests/test_townlet/unit/vfs/test_variable_registry_tensor.py` |
 | Observation Spec Builder compile-time spec generation | Complete | `tests/test_townlet/unit/vfs/test_observation_builder.py`, `tests/test_townlet/unit/universe/test_evaluation_marks.py` |
@@ -419,7 +430,7 @@ The current repo defines **nine** canonical scope classes (`VariableScope` in `v
 — the eight below plus `message`, described at the end of this section:
 
 | Scope | Use case | Example |
-|---|---|---|
+| --- | --- | --- |
 | `global` | Shared state | `time_sin`, `day_of_week`, `weather_state` |
 | `agent` | Per-agent observable state | `energy`, `position`, `health` |
 | `agent_private` | Per-agent hidden state | `internal_motivation`, `hidden_reward` |
@@ -483,7 +494,7 @@ there is still no agent→zone / agent→group membership mapping surface.
 For serious multi-agent and small-society modelling, VFS should still add richer institutional and communication scopes:
 
 | Scope | Shape intuition | Use case | Example |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `household` | `[household]` | Shared domestic resources | `shared_food`, `rent_due`, `household_mood` |
 | `faction` | `[faction]` | Political or social blocs | `legitimacy`, `territory_claim` |
 | `institution` | `[institution]` | Rules and enforcement | `sanction_probability`, `rule_legitimacy` |
@@ -619,11 +630,14 @@ Key points:
 - `PermissionError` is raised if access is denied.
 - Runtime cost is dictionary lookup plus permission check.
 - Access policies should be part of run provenance.
-- **`item`-scoped variables never enter this surface at all** (2026-08-25 note): the registry
-  actively excludes them from `_definitions` (`registry.py:717-721`), so `registry.get()` on an
-  item variable id raises `KeyError`. Item state is reached only through the separate
-  `read_item` / `write_item` / `register_item_instance` API (`registry.py:821+`), which takes
-  no reader/writer role and is not checked against `readable_by`/`writable_by`
+- **`item`-scoped variables never enter this surface at all** (2026-08-25 note; mechanism
+  corrected same day): item state is never a registry `VariableDef` — an item-scoped
+  variable arriving as one (e.g. from `variables_reference.yaml`) is refused outright at
+  registry construction (`registry.py:467-471,717-721`), and compiled item-profile state
+  lives in the separate `item_vfs` tensor instead. `registry.get()` on an item variable id
+  therefore raises `KeyError`. Item state is reached only through the separate
+  `write_item` / `read_item` / `register_item_instance` API (`registry.py:798-866`), which
+  takes no reader/writer role and is not checked against `readable_by`/`writable_by`
   (`hamlet-f2a37a8c8a`).
 
 ### 6.3 Writing variables
@@ -711,9 +725,20 @@ Key points:
 The current repo has two registry surfaces:
 
 - `VariableRegistry` is the compiled runtime registry used by `VectorizedHamletEnv`. It owns declared VFS variables, permission checks, lifetime resets, item-profile tensor storage, and engine writeback.
-- `ScopedVariableRegistry` is a simpler global/agent/item utility registry that implements the same protocol shape for observation-builder tests, item-observation tests, and component benchmarks. It is not the environment hot path, but it is still an intentional adapter/test surface rather than dead code.
+- `ScopedVariableRegistry` is a simpler global/agent/item utility registry that implements
+  the same protocol shape for observation-builder tests, item-observation tests, and
+  component benchmarks. It is not the environment hot path, but it is still an intentional
+  adapter/test surface rather than dead code. ⚠ Its `check_access` (`registry.py:1018+`)
+  implements a **different access-control philosophy** from the declared
+  `readable_by`/`writable_by` role lists this chapter documents: fixed scope-based rules
+  (globals read-only, agent variables writable only by agent scope). Do not read its
+  behaviour as the VFS access model — that lives in `VariableRegistry` (2026-08-24 audit,
+  noted here 2026-08-25).
 
-Runtime VFS evaluation uses `VariableRegistry.set_engine_value()` for evaluator writeback. This method is deliberately narrower than direct storage mutation: it requires the variable to exist and requires `engine` write permission, with dtype coerced to the declaration rather than rejected.
+Runtime VFS evaluation uses `VariableRegistry.set_engine_value()` for evaluator writeback. This
+method is deliberately narrower than direct storage mutation: it requires the variable to exist
+and requires `engine` write permission, with dtype coerced to the declaration rather than
+rejected.
 
 > **Corrected 2026-08-25** (`hamlet-d970ef83f0`, token-obs unit 3 Task 5b). This paragraph
 > previously said `set_engine_value()` "bypasses declaration-shape checks so derived global VFS
@@ -978,8 +1003,11 @@ Normalisation must be part of the observation schema hash.
 
 ### 9.3 Where normalisation lives (2026-08-25 note)
 
-Only **`ObservationField.normalization`** is applied at runtime
-(`observation_encoder.py:109-148` — all nine §9.2 kinds implemented and reachable).
+Only **`ObservationField.normalization`** is applied at runtime — the encoder applies each
+field's declared spec through `ObservationEncoder._apply_declared_normalization`
+(`observation_encoder.py:109+`), which calls `apply_normalization`
+(`observation_builder.py:106-166` — all nine §9.2 kinds implemented and reachable there;
+citation corrected 2026-08-25: the kinds live in the builder, not the encoder).
 `VariableDef.normalization` is a separate object that validates at parse time and contributes
 its min/max range to `variable_schema_hash` (`schema_hashes.py:149`) but is **read by nothing
 at runtime** — declaring it on a `variables_reference.yaml` variable normalises nothing
@@ -1057,7 +1085,7 @@ writes:
 Recommended fields:
 
 | Field | Purpose |
-|---|---|
+| --- | --- |
 | `variable_id` | Target variable |
 | `expression` | Safe DSL expression |
 | `condition` | Optional mask or predicate |
@@ -1182,7 +1210,13 @@ A full tick should eventually compile into an ordered phase graph:
 17. emit_telemetry
 ```
 
-The exact sequence can be tuned, but it must be explicit, configured, validated, and hashable. Execution order materially changes the world.
+The exact sequence can be tuned, but it must be explicit, configured, validated, and hashable.
+Execution order materially changes the world.
+
+**This list is no longer only a recommendation** (noted 2026-08-25): it ships verbatim as
+`DEFAULT_TRANSITION_PHASES` (`vfs/transition_graph.py:7-26`), the canonical order
+`TransitionPhaseGraph` sorts compiled rules by. What remains aspirational is *coverage* —
+not every phase has compiled rules flowing through it yet (§11.5, §21.1).
 
 `clamp_and_validate` carries compiled bounds rules (`hamlet-f46e2b381a`): one
 `bounds_clamp:<meter>` rule per declared meter, sourced from `bars.*.bounds`, compiled into
@@ -1275,7 +1309,7 @@ def execute_INTERACT_BED(registry: VariableRegistry, agent_mask: Tensor):
 ### 11.7 Phase 2 milestone plan
 
 | Milestone | Description | Estimated Effort |
-|---|---|---:|
+| --- | --- | ---: |
 | M1: Expression Parser | Parse arithmetic expressions and variable references | 2–3 days |
 | M2: Type System | Static type checking and shape inference | 2–3 days |
 | M3: Dependency Graph | Topological sort and circular dependency detection | 1–2 days |
@@ -1289,7 +1323,7 @@ Original estimated effort: 14–21 days. With the broadened transition-compiler 
 ### 11.8 Revised implementation phases
 
 | Phase | Goal |
-|---|---|
+| --- | --- |
 | 1.0 | VFS state and observation ABI, already complete |
 | 1.5 | Shadow-mode equivalence against hardcoded observations |
 | 2.0 | Compile action writes and simple masks |
@@ -1470,7 +1504,7 @@ Conflict semantics must be explicit.
 ### 13.2 Recommended composition modes
 
 | Composition mode | Meaning | Example |
-|---|---|---|
+| --- | --- | --- |
 | `overwrite` | Set target to expression result | `position = new_position` |
 | `additive_delta` | Add expression as delta | `money += wage - cost` |
 | `multiplicative_modifier` | Multiply current value | `health_decay *= fitness_factor` |
@@ -1594,7 +1628,7 @@ A changes B only if a norm applies
 ### 14.2 Core relationship types
 
 | Type | Description | Example |
-|---|---|---|
+| --- | --- | --- |
 | `depletion` | Passive reduction over time | hygiene decays per tick |
 | `modulation` | Source changes target rate | fitness modifies health decay |
 | `threshold_delta` | Penalty/bonus once source crosses threshold | low satiation hits health |
@@ -1733,7 +1767,7 @@ norms may judge it
 Dynamic needs should be describable by causal dimensions rather than human labels:
 
 | Dimension | Meaning |
-|---|---|
+| --- | --- |
 | `intensity` | Current pressure |
 | `growth_rate` | How fast pressure increases |
 | `urgency` | How soon action is required |
@@ -1754,37 +1788,37 @@ There are two approaches:
 
 1. **Fixed dynamic slots**
 
-```yaml
-dynamic_needs:
-  max_slots: 16
-  representation: "fixed_slots"
-  fields:
-    - intensity
-    - growth_rate
-    - urgency
-    - recurrence
-    - substitutability
-    - visibility
-    - status_value
-    - social_mediation
-    - contagion
-    - catastrophe_curve
-```
+   ```yaml
+   dynamic_needs:
+     max_slots: 16
+     representation: "fixed_slots"
+     fields:
+       - intensity
+       - growth_rate
+       - urgency
+       - recurrence
+       - substitutability
+       - visibility
+       - status_value
+       - social_mediation
+       - contagion
+       - catastrophe_curve
+   ```
 
 2. **Variable-token / set-encoder representation**
 
-```yaml
-dynamic_needs:
-  max_slots: 32
-  representation: "set_encoder"
-  token_fields:
-    - id_embedding
-    - intensity
-    - growth_rate
-    - urgency
-    - tag_embedding
-    - satisfaction_embedding
-```
+   ```yaml
+   dynamic_needs:
+     max_slots: 32
+     representation: "set_encoder"
+     token_fields:
+       - id_embedding
+       - intensity
+       - growth_rate
+       - urgency
+       - tag_embedding
+       - satisfaction_embedding
+   ```
 
 Fixed slots are easier for checkpoint compatibility. Token/set representations are more flexible and better for arbitrary software-defined needs.
 The repo exposes option 1 as `canonical_fixed_slot_dynamic_need_variables(max_slots)`.
@@ -1955,7 +1989,7 @@ witnessed-event social rule cannot currently use claim-style composition; nothin
 author until the first `env.step`.
 
 | Effect | Description |
-|---|---|
+| --- | --- |
 | `trust_delta` | Increase/decrease directed trust |
 | `fear_delta` | Increase/decrease directed fear |
 | `obligation_create` | Create debt/favour relation |
@@ -2132,9 +2166,12 @@ hardcoded concatenation or shadow path remains in the tree.
 
 1. Profile registry get/set overhead.
 2. Cache static observation fields.
-3. JIT compile hot transition paths. Current scripted kernels cover generated passive depletions, threshold cascades, linear modulations, terminal checks, and masked action-write commits.
+3. JIT compile hot transition paths. Current scripted kernels cover generated passive
+   depletions, threshold cascades, linear modulations, terminal checks, and masked
+   action-write commits.
 4. Benchmark against hardcoded baseline.
-5. Delete old imperative paths after equivalence is proven. Generated transition interpreter fallbacks are removed; equivalence evidence remains as tests.
+5. Delete old imperative paths after equivalence is proven. Generated transition interpreter
+   fallbacks are removed; equivalence evidence remains as tests.
 
 #### Phase 3+: Social/relational expansion — storage landed, wiring open (§5.1, §16.3)
 
@@ -2179,7 +2216,7 @@ same weights + money hidden
 ### 18.2 Recommended hashes
 
 | Hash | Contents | Purpose |
-|---|---|---|
+| --- | --- | --- |
 | `variable_schema_hash` | Variable definitions, scopes, types, permissions | State ABI identity |
 | `observation_schema_hash` | Ordered observation fields and normalisation | Checkpoint compatibility |
 | `action_schema_hash` | Action IDs, names, masks, dependencies | Policy/action-space compatibility |
@@ -2426,7 +2463,9 @@ Implemented guardrail:
 uv run pytest tests/test_townlet/performance/test_vtc_jit_kernels.py -q
 ```
 
-This compares the scripted threshold-cascade kernel against the equivalent hardcoded tensor equation and fails if scripted execution exceeds the configured tolerance (`SCRIPTED_KERNEL_TOLERANCE = 1.50`).
+This compares the scripted threshold-cascade kernel against the equivalent hardcoded tensor
+equation and fails if scripted execution exceeds the configured tolerance
+(`SCRIPTED_KERNEL_TOLERANCE = 1.50`).
 
 ---
 
@@ -2600,19 +2639,45 @@ hash/generation as a new ABI identity.
 
 ### 21.1 Phase 1 limitations
 
-1. **Remaining VTC coverage gaps.** Profile reads, action writes, passive dynamics, cascades, temporal gates, interaction progress, rewards, terminal checks, occupancy/contention, and social residue rules now run through VFS/VTC components. Remaining gaps are action-write type/shape validation depth, telemetry side-effect compilation, relational observation exposure, environment-level social-rule wiring, message observation/runtime communication wiring, and dynamic variables.
-2. **Manual observation generation.** Observation construction still requires explicit registry reads and concatenation.
-3. **Partial write validation.** `WriteSpec` expressions are parsed and executed for action writes, but full write-path type/shape validation is still incomplete.
-4. **Compile-time write-shape validation is still missing** (narrowed 2026-08-25). The runtime half of this item is discharged: `set_engine_value()` now enforces the declared element shape for every variable (`hamlet-d970ef83f0`, §7.2), so storage can no longer drift from the declared schema. What remains is that VTC write expressions are validated mid-phase against phase-snapshot shapes only (`vtc.py:504-513`); a mis-shaped candidate now fails loudly at the commit boundary rather than at compile (§7.4).
-5. **Limited social-scope integration.** Dense and sparse `pair` storage exists alongside `group`, `affordance`, and `zone` storage, canonical relational `VariableDef` surfaces exist, and social-residue rules compile as VTC programs. Relational observation exposure and scenario-level environment wiring remain incomplete.
-6. **Dynamic variables are registry-level only.** The gated `dynamic_variable_mode` (§7.2, §15.3) exists and is audited, but it is off by default and no config surface or runtime scenario drives it; for every shipped pack, variables are fixed at initialisation.
-7. **Relationship rules are authorable but not yet authored.** Social rule kinds are declarable in a pack-root `transition_rules.yaml` (no-defaults DTO, 2026-08-22, hamlet-84cf93a1b9), compile into the transition schedule, and mutate pair-scope variables during `env.step` (proven config-in/behaviour-out). No shipped pack declares rules yet, and group-scope rules remain gated on relational observation exposure and the group-extents runtime wiring.
-8. **Two VTC families refuse unsupported rule shapes at runtime, not compile time** (2026-08-24 audit): modulation rules with `condition:` or non-`multiplicative_modifier` composition (§14.4), and social-residue writes using the three claim-style compositions (§16.3). Both compile green and raise `NotImplementedError` at the first `env.step` — each costs a designer a training run to discover.
+1. **Remaining VTC coverage gaps.** Profile reads, action writes, passive dynamics, cascades,
+   temporal gates, interaction progress, rewards, terminal checks, occupancy/contention, and
+   social residue rules now run through VFS/VTC components. Remaining gaps are action-write
+   type/shape validation depth, telemetry side-effect compilation, relational observation
+   exposure, environment-level social-rule wiring, message observation/runtime communication
+   wiring, and dynamic variables.
+2. **Manual observation generation.** Observation construction still requires explicit registry
+   reads and concatenation.
+3. **Partial write validation.** `WriteSpec` expressions are parsed and executed for action
+   writes, but full write-path type/shape validation is still incomplete.
+4. **Compile-time write-shape validation is still missing** (narrowed 2026-08-25). The runtime
+   half of this item is discharged: `set_engine_value()` now enforces the declared element
+   shape for every variable (`hamlet-d970ef83f0`, §7.2), so storage can no longer drift from
+   the declared schema. What remains is that VTC write expressions are validated mid-phase
+   against phase-snapshot shapes only (`vtc.py:504-513`); a mis-shaped candidate now fails
+   loudly at the commit boundary rather than at compile (§7.4).
+5. **Limited social-scope integration.** Dense and sparse `pair` storage exists alongside
+   `group`, `affordance`, and `zone` storage, canonical relational `VariableDef` surfaces
+   exist, and social-residue rules compile as VTC programs. Relational observation exposure
+   and scenario-level environment wiring remain incomplete.
+6. **Dynamic variables are registry-level only.** The gated `dynamic_variable_mode` (§7.2,
+   §15.3) exists and is audited, but it is off by default and no config surface or runtime
+   scenario drives it; for every shipped pack, variables are fixed at initialisation.
+7. **Relationship rules are authorable but not yet authored.** Social rule kinds are
+   declarable in a pack-root `transition_rules.yaml` (no-defaults DTO, 2026-08-22,
+   hamlet-84cf93a1b9), compile into the transition schedule, and mutate pair-scope variables
+   during `env.step` (proven config-in/behaviour-out). No shipped pack declares rules yet, and
+   group-scope rules remain gated on relational observation exposure and the group-extents
+   runtime wiring.
+8. **Two VTC families refuse unsupported rule shapes at runtime, not compile time**
+   (2026-08-24 audit): modulation rules with `condition:` or non-`multiplicative_modifier`
+   composition (§14.4), and social-residue writes using the three claim-style compositions
+   (§16.3). Both compile green and raise `NotImplementedError` at the first `env.step` — each
+   costs a designer a training run to discover.
 
 ### 21.2 Design risks
 
 | Risk | Mitigation |
-|---|---|
+| --- | --- |
 | Compiler becomes too permissive | Small closed DSL, no arbitrary Python |
 | Observation ABI churn breaks checkpoints | Schema hashes and dimension regression tests |
 | VFS overhead slows training | JIT, caching, batched reads, compiled transition graph |

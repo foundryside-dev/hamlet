@@ -1,4 +1,4 @@
-"""UniverseCompiler implementation (Stage 1 scaffolding)."""
+"""UniverseCompiler implementation (see stages.CompilationStage for the pipeline order)."""
 
 from __future__ import annotations
 
@@ -15,14 +15,8 @@ import yaml
 from townlet.config.brain_config import apply_training_overrides, compute_brain_hash
 from townlet.effects.catalog import EffectCatalog
 from townlet.universe.compiled import CompiledUniverse
-from townlet.universe.dto import (
-    ActionSpaceMetadata,
-    AffordanceMetadata,
-    MeterMetadata,
-    ObservationSpec,
-    UniverseMetadata,
-)
-from townlet.universe.optimization import OptimizationData
+from townlet.universe.dto import UniverseMetadata
+from townlet.universe.error_codes import ErrorCode
 from townlet.universe.raw_configs_v21 import RawConfigsV21
 from townlet.vfs.observation_builder import VFSObservationSpec
 from townlet.vfs.profiles import CircularDependencyError
@@ -43,11 +37,12 @@ from .compilers.metadata import MetadataCompiler
 from .compilers.observation import ObservationCompiler
 from .compilers.optimization import OptimizationCompiler
 from .compilers.vfs import VFSCompiler
-from .cues_compiler import CuesCompiler
 from .errors import CompilationError, CompilationMessage
 from .loaders.preflight import validate_config_dir, validate_scoping, validate_yaml_syntax
 from .loaders.v21 import load_v21_configs
 from .pipeline import CompiledLevelBundle, SharedCompilerArtifacts
+from .source_map import build_pack_source_map
+from .stages import CompilationStage
 from .validation.limits import (
     EFFECT_OBSERVATION_SLOTS,
     MAX_CACHE_FILE_SIZE,
@@ -66,13 +61,6 @@ class UniverseCompiler:
     """Entry point for compiling config packs into CompiledUniverse artifacts."""
 
     def __init__(self) -> None:
-        self._cues_compiler = CuesCompiler()
-        self._metadata: UniverseMetadata | None = None
-        self._observation_spec: ObservationSpec | None = None
-        self._action_metadata: ActionSpaceMetadata | None = None
-        self._meter_metadata: MeterMetadata | None = None
-        self._affordance_metadata: AffordanceMetadata | None = None
-        self._optimization_data: OptimizationData | None = None
         self._observation_compiler = ObservationCompiler()
         self._action_compiler = ActionCompiler()
         self._effects_compiler = EffectsCompiler()
@@ -86,9 +74,9 @@ class UniverseCompiler:
         self._optimization_compiler = OptimizationCompiler()
         self._vfs_compiler = VFSCompiler()
 
-    def _log_stage(self, number: int, description: str) -> None:
+    def _log_stage(self, stage: CompilationStage) -> None:
         """Emit a concise stage marker for pipeline tracing."""
-        logger.info("Stage %d: %s", number, description)
+        logger.info("%s", stage.label)
 
     def compile(self, experiment_dir: Path, primary_level: str | None = None, use_cache: bool = True) -> CompiledUniverse:
         """Compile v2.1 hierarchical configs into a multi-level CompiledUniverse."""
@@ -99,7 +87,7 @@ class UniverseCompiler:
 
         validate_config_dir(experiment_dir)
 
-        # Stage 0: scoping preflight (no YAML parsing yet)
+        # Stage 0 preflight: scoping (no YAML parsing yet)
         validate_scoping(experiment_dir)
 
         # The cache path is derived from primary_level, so an unknown level must be
@@ -146,39 +134,35 @@ class UniverseCompiler:
                 else:
                     logger.info("Cached universe at %s missing fingerprint/provenance fields; recompiling.", cache_path)
 
-        # Stage 0: YAML syntax validation (lightweight)
+        # Stage 0 preflight: YAML syntax validation (lightweight)
         validate_yaml_syntax(experiment_dir)
 
-        # Stage 1: load v2.1 configs
-        self._log_stage(1, "Parse v2.1 configs")
-        loaded = load_v21_configs(experiment_dir)
-        raw = loaded.raw
+        self._log_stage(CompilationStage.PARSE)
+        raw = load_v21_configs(experiment_dir)
+        # Parallel line-annotating parse for file:line diagnostics; the DTOs
+        # never see it (its __line__ keys would violate extra="forbid").
+        source_map = build_pack_source_map(experiment_dir)
 
-        # Stage 1b: enforce safety limits over loaded DTOs
-        self._log_stage(2, "Enforce safety limits")
+        self._log_stage(CompilationStage.LIMITS)
         validate_v21_limits(raw, experiment_dir)
 
-        # Stage 1c: cross-validate semantics over loaded DTOs
-        self._log_stage(3, "Cross-validate semantics")
-        validate_v21_semantics(raw, experiment_dir)
+        self._log_stage(CompilationStage.SEMANTICS)
+        validate_v21_semantics(raw, experiment_dir, source_map)
 
-        # Stage 2: symbol table
-        self._log_stage(4, "Build symbol table")
-        symbol_table = build_symbol_table(raw)
+        self._log_stage(CompilationStage.SYMBOLS)
+        symbol_table = build_symbol_table(raw, source_map)
 
-        # Stage 3: resolve references
-        self._log_stage(5, "Resolve references")
-        resolve_references(raw, symbol_table, experiment_dir)
+        self._log_stage(CompilationStage.RESOLVE)
+        resolve_references(raw, symbol_table, experiment_dir, source_map)
 
         temporal_supported = raw.stratum.stratum.temporal_support == "enabled"
 
         # Select primary level
         primary_level = select_primary_level(raw.levels, primary_level)
 
-        # Stage 5: shared artifact enrichment
-        self._log_stage(6, "Enrich shared schemas and effects")
+        self._log_stage(CompilationStage.SHARED)
         try:
-            shared_artifacts = self._stage_5_prepare_shared_artifacts(
+            shared_artifacts = self._stage_6_prepare_shared_artifacts(
                 raw,
                 experiment_dir,
                 primary_level=primary_level,
@@ -186,15 +170,13 @@ class UniverseCompiler:
             )
         except (CircularDependencyError, TypeCheckError) as exc:
             raise self._vfs_domain_compilation_error(
-                "Stage 6: Enrich shared schemas and effects",
-                "VFS-PROFILE-COMPILE",
+                CompilationStage.SHARED.label,
+                ErrorCode.VFS_PROFILE_COMPILE,
                 experiment_dir / "vfs_profiles.yaml",
                 exc,
             ) from exc
 
-        # Stage 6: level compilation + optimization
-        self._log_stage(7, "Compile levels and optimization data")
-        # Stage 6: Compile levels (per-level artifacts)
+        self._log_stage(CompilationStage.LEVELS)
         # Compute config hashes for provenance
         # brain_hash covers the EFFECTIVE brain config: brain.yaml merged with the primary
         # level's training.yaml overrides. Two deliberate changes from the sibling lines
@@ -221,7 +203,7 @@ class UniverseCompiler:
         items_hash = self._compute_pydantic_hash(raw.items) if raw.items else None
 
         try:
-            level_bundle = self._stage_6_compile_levels(
+            level_bundle = self._stage_7_compile_levels(
                 raw,
                 experiment_dir,
                 primary_level=primary_level,
@@ -233,18 +215,17 @@ class UniverseCompiler:
             )
         except (CircularDependencyError, TypeCheckError) as exc:
             raise self._vfs_domain_compilation_error(
-                "Stage 7: Compile levels and optimization data",
-                "VFS-LEVEL-COMPILE",
+                CompilationStage.LEVELS.label,
+                ErrorCode.VFS_LEVEL_COMPILE,
                 experiment_dir / "levels",
                 exc,
             ) from exc
 
-        # Stage 7: emit artifact + cache
-        self._log_stage(8, "Emit compiled universe")
+        self._log_stage(CompilationStage.EMIT)
         effect_observation_slots = (
             EFFECT_OBSERVATION_SLOTS if shared_artifacts.compiled_effect_catalog and shared_artifacts.compiled_effect_catalog.effects else 0
         )
-        compiled = self._stage_7_emit_artifact(
+        compiled = self._stage_8_emit_artifact(
             raw,
             experiment_dir,
             cache_path,
@@ -273,7 +254,7 @@ class UniverseCompiler:
     def _vfs_domain_compilation_error(
         self,
         stage: str,
-        code: str,
+        code: ErrorCode,
         location: Path,
         exc: Exception,
     ) -> CompilationError:
@@ -289,7 +270,7 @@ class UniverseCompiler:
             ],
         )
 
-    def _stage_5_prepare_shared_artifacts(
+    def _stage_6_prepare_shared_artifacts(
         self,
         raw: RawConfigsV21,
         experiment_dir: Path,
@@ -297,7 +278,7 @@ class UniverseCompiler:
         primary_level: str,
         temporal_supported: bool,
     ) -> SharedCompilerArtifacts:
-        """Stage 5 – build shared schemas (bars/VFS) and compile effects catalog."""
+        """Stage 6 – build shared schemas (bars/VFS) and compile effects catalog."""
         primary_level_config = raw.levels[primary_level]
         bar_schema: dict[str, str] = {meter.name: "float" for meter in primary_level_config.bars.meters}
 
@@ -334,7 +315,7 @@ class UniverseCompiler:
             vfs_observation_spec=vfs_observation_spec,
         )
 
-    def _stage_6_compile_levels(
+    def _stage_7_compile_levels(
         self,
         raw: RawConfigsV21,
         experiment_dir: Path,
@@ -346,7 +327,7 @@ class UniverseCompiler:
         config_mtime: float | None,
         temporal_supported: bool,
     ) -> CompiledLevelBundle:
-        """Stage 6 – compile level metadata, optimization data, and derived schemas."""
+        """Stage 7 – compile level metadata, optimization data, and derived schemas."""
         all_levels: dict[str, CompiledUniverse.LevelMetadata] = {}
         for level_name, level in raw.levels.items():
             logger.info("Compiling level: %s", level_name)
@@ -478,7 +459,7 @@ class UniverseCompiler:
             vfs_evaluation_marks=vfs_evaluation_marks,
         )
 
-    def _stage_7_emit_artifact(
+    def _stage_8_emit_artifact(
         self,
         raw: RawConfigsV21,
         experiment_dir: Path,
@@ -503,7 +484,7 @@ class UniverseCompiler:
         actions_hash: str,
         items_hash: str | None,
     ) -> CompiledUniverse:
-        """Stage 7 – emit the compiled artifact and persist cache."""
+        """Stage 8 – emit the compiled artifact and persist cache."""
         compiled = CompiledUniverse(
             metadata=universe_metadata,
             observation_spec=primary_meta.observation_spec,
@@ -595,10 +576,10 @@ class UniverseCompiler:
                     error_msg = f"{exc.context}\n  {error_msg}"
 
             raise CompilationError(
-                stage="Config Validation",
+                stage=CompilationStage.PREFLIGHT.label,
                 errors=[
                     CompilationMessage(
-                        code="YAML_SYNTAX_ERROR",
+                        code=ErrorCode.YAML_SYNTAX_ERROR,
                         message=error_msg,
                         location=str(file_path),
                     )

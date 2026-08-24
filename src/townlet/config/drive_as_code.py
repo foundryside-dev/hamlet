@@ -9,13 +9,12 @@ Task 1.2: ModifierConfig DTO - Range-based multipliers for contextual reward adj
 Task 1.3: Extrinsic Strategy DTOs - BarBonusConfig, VariableBonusConfig, ExtrinsicStrategyConfig.
 Task 1.4: IntrinsicStrategyConfig DTO - Configuration for intrinsic curiosity strategies.
 Task 1.5: Shaping Bonus DTOs - TriggerCondition, ApproachRewardConfig, CompletionBonusConfig, VFSVariableBonusConfig.
-Task 1.6: Top-level DAC Config - CompositionConfig, DriveAsCodeConfig, load_drive_as_code_config.
+Task 1.6: Top-level DAC Config - CompositionConfig, DriveAsCodeConfig.
 """
 
-from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class RangeConfig(BaseModel):
@@ -654,28 +653,3 @@ class DriveAsCodeConfig(BaseModel):
                 raise ValueError(f"Intrinsic references undefined modifier: {mod}")
 
         return self
-
-
-def load_drive_as_code_config(config_dir: Path) -> DriveAsCodeConfig:
-    """Load and validate DAC configuration.
-
-    Args:
-        config_dir: Config pack directory (e.g., configs/L0_0_minimal)
-
-    Returns:
-        Validated DriveAsCodeConfig
-
-    Raises:
-        FileNotFoundError: If drive_as_code.yaml not found
-        ValueError: If validation fails
-
-    Example:
-        >>> dac = load_drive_as_code_config(Path("configs/L0_5_dual_resource"))
-    """
-    from townlet.config.base import format_validation_error, load_yaml_section
-
-    try:
-        data = load_yaml_section(config_dir, "drive_as_code.yaml", "drive_as_code")
-        return DriveAsCodeConfig(**data)
-    except ValidationError as e:
-        raise ValueError(format_validation_error(e, "drive_as_code.yaml")) from e

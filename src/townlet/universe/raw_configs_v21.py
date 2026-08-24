@@ -22,7 +22,9 @@ from townlet.config.stratum_config import StratumConfig
 from townlet.config.training_v2_config import TrainingV2Config, load_training_v2_config
 from townlet.config.transition_rules_config import TransitionRulesConfig
 from townlet.config.vfs_profiles_config import VFSProfilesConfig
+from townlet.universe.error_codes import ErrorCode
 from townlet.universe.errors import CompilationErrorCollector
+from townlet.universe.stages import CompilationStage
 from townlet.vfs.schema import VariableDef, VFSScopeExtents, load_variables_reference_config
 
 logger = logging.getLogger(__name__)
@@ -103,7 +105,7 @@ class RawConfigsV21:
         """
 
         experiment_dir = Path(experiment_dir).resolve()
-        errors = CompilationErrorCollector(stage="Stage 1: Load v2.1 Configs")
+        errors = CompilationErrorCollector(stage=CompilationStage.PARSE.label)
 
         # Shared experiment-level configs
         experiment = stratum = environment = actions = brain = items = vfs_profiles = effects = None
@@ -125,7 +127,7 @@ class RawConfigsV21:
             except Exception as exc:  # noqa: BLE001 - we want to aggregate anything
                 errors.add(
                     f"Failed to load {label} from {filename}: {exc}",
-                    code="LOAD_ERROR",
+                    code=ErrorCode.LOAD_ERROR,
                     location=str(path),
                 )
                 continue
@@ -146,7 +148,7 @@ class RawConfigsV21:
         except Exception as exc:
             errors.add(
                 f"Failed to load brain from brain.yaml: {exc}",
-                code="LOAD_ERROR",
+                code=ErrorCode.LOAD_ERROR,
                 location=str(brain_path),
             )
 
@@ -163,7 +165,7 @@ class RawConfigsV21:
             except Exception as exc:  # noqa: BLE001
                 errors.add(
                     f"Failed to load items from items.yaml: {exc}",
-                    code="LOAD_ERROR",
+                    code=ErrorCode.LOAD_ERROR,
                     location=str(items_path),
                 )
 
@@ -175,7 +177,7 @@ class RawConfigsV21:
         except Exception as exc:  # noqa: BLE001
             errors.add(
                 f"Failed to load VFS profiles from vfs_profiles.yaml: {exc}",
-                code="LOAD_ERROR",
+                code=ErrorCode.LOAD_ERROR,
                 location=str(vfs_profiles_path),
             )
 
@@ -188,7 +190,7 @@ class RawConfigsV21:
             except Exception as exc:  # noqa: BLE001
                 errors.add(
                     f"Failed to load effects from effects.yaml: {exc}",
-                    code="LOAD_ERROR",
+                    code=ErrorCode.LOAD_ERROR,
                     location=str(effects_path),
                 )
 
@@ -205,7 +207,7 @@ class RawConfigsV21:
             except Exception as exc:  # noqa: BLE001
                 errors.add(
                     f"Failed to load action labels from action_labels.yaml: {exc}",
-                    code="LOAD_ERROR",
+                    code=ErrorCode.LOAD_ERROR,
                     location=str(action_labels_path),
                 )
 
@@ -219,7 +221,7 @@ class RawConfigsV21:
             except Exception as exc:  # noqa: BLE001
                 errors.add(
                     f"Failed to load variables reference from variables_reference.yaml: {exc}",
-                    code="LOAD_ERROR",
+                    code=ErrorCode.LOAD_ERROR,
                     location=str(variables_reference_path),
                 )
 
@@ -233,7 +235,7 @@ class RawConfigsV21:
             except Exception as exc:  # noqa: BLE001
                 errors.add(
                     f"Failed to load transition rules from transition_rules.yaml: {exc}",
-                    code="LOAD_ERROR",
+                    code=ErrorCode.LOAD_ERROR,
                     location=str(transition_rules_path),
                 )
 
@@ -246,7 +248,7 @@ class RawConfigsV21:
         if not levels_dir.exists():
             errors.add(
                 f"Missing levels/ directory under {experiment_dir}",
-                code="MISSING_LEVELS_DIR",
+                code=ErrorCode.MISSING_LEVELS_DIR,
                 location=str(levels_dir),
             )
             errors.check_and_raise()
@@ -290,14 +292,14 @@ class RawConfigsV21:
             except Exception as exc:  # noqa: BLE001
                 errors.add(
                     f"Failed to load level '{level_name}': {exc}",
-                    code="LEVEL_LOAD_ERROR",
+                    code=ErrorCode.LEVEL_LOAD_ERROR,
                     location=str(level_dir),
                 )
 
         if not levels:
             errors.add(
                 f"No curriculum levels found in {levels_dir}",
-                code="NO_CURRICULUM_LEVELS",
+                code=ErrorCode.NO_CURRICULUM_LEVELS,
                 location=str(levels_dir),
             )
 

@@ -67,7 +67,11 @@ from townlet.vfs.transition_schedule import (
 # EFFECTIVE base brain for the compiled level (a level's own brain.yaml replaces the pack
 # brain). A pre-cut cache lacks the field and would carry the wrong brain semantics — the
 # bump makes it a clean "recompile" instead.
-COMPILED_SCHEMA_VERSION = "1.19"
+# 1.20: UniverseMetadata dropped the never-computed economics fields
+# (max_sustainable_income, total_affordance_costs, economic_balance — hardcoded 0.0 since
+# introduction). A 1.19 cache's metadata payload carries the extra keys and would fail
+# UniverseMetadata(**payload) obscurely; the bump makes it the "recompile" error instead.
+COMPILED_SCHEMA_VERSION = "1.20"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",

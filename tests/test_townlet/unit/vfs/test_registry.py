@@ -43,8 +43,10 @@ class TestRegistryInitialization:
         assert isinstance(registry, VFSRegistryProtocol)
         assert isinstance(scoped_registry, VFSRegistryProtocol)
 
-    def test_engine_write_path_allows_batched_global_values_but_checks_permissions(self):
-        """Engine writeback has a public registry method and still enforces writable_by."""
+    def test_engine_write_path_enforces_declared_shape_and_permissions(self):
+        """Engine writeback has a public registry method; it enforces the declared element
+        shape (hamlet-d970ef83f0 — a global scalar can no longer legally hold a per-agent
+        batch) and still enforces writable_by."""
         from townlet.vfs.registry import VariableRegistry
         from townlet.vfs.schema import VariableDef
 
@@ -72,12 +74,18 @@ class TestRegistryInitialization:
             device=torch.device("cpu"),
         )
 
-        registry.set_engine_value("low_energy_flag", torch.tensor([True, False, True, False]))
+        # A batched write to a declared-global scalar now raises instead of silently
+        # corrupting storage shape.
+        with pytest.raises(ValueError, match="shape"):
+            registry.set_engine_value("low_energy_flag", torch.tensor([True, False, True, False]))
 
+        # A correctly (declared-)shaped write still succeeds.
+        registry.set_engine_value("low_energy_flag", torch.tensor(True))
         value = registry.get_global("low_energy_flag")
-        assert value.shape == (4,)
+        assert value.shape == ()
         assert value.dtype == torch.bool
-        assert torch.equal(value, torch.tensor([True, False, True, False]))
+        assert bool(value.item()) is True
+
         with pytest.raises(PermissionError, match="engine"):
             registry.set_engine_value("action_owned", torch.tensor([1.0, 2.0]))
 
@@ -116,7 +124,9 @@ class TestRegistryInitialization:
             ),
         ]
         registry = VariableRegistry(variables=variables, num_agents=2, device=torch.device("cpu"))
-        registry.set_engine_value("tick_flag", torch.tensor([True, True]))
+        # tick_flag is global-scoped: a scalar write, not a per-agent batch
+        # (hamlet-d970ef83f0 — set_engine_value enforces the declared shape).
+        registry.set_engine_value("tick_flag", torch.tensor(True))
         registry.set("episode_score", torch.tensor([7.0, 8.0]), writer="engine")
         registry.set("persistent_counter", torch.tensor(9.0), writer="engine")
 

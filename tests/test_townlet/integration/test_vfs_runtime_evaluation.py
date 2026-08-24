@@ -212,7 +212,9 @@ def test_vfs_expressions_access_bars():
     # Verify: low_energy_flag should be False (energy > 0.3)
     low_energy_flag = env.vfs_registry._storage["low_energy_flag"]
     assert low_energy_flag.dtype == torch.bool, f"Expected bool type, got {low_energy_flag.dtype}"
-    # Global VFS variables with bar access return per-agent results (shape [num_agents])
+    # low_energy_flag is agent-scoped (hamlet-d970ef83f0 / token-obs unit 3 Task 5b — a
+    # bar.energy-derived expression is inherently per-agent, so the variable is declared
+    # agent scope, not global). [num_agents] is the DECLARED shape here, not a bypass.
     # low_energy_flag = bar.energy < 0.3 -> [0.8, 0.8, 0.8, 0.8] < 0.3 -> [False, False, False, False]
     assert low_energy_flag.shape == (4,), f"Expected shape [4], got {low_energy_flag.shape}"
     assert torch.all(~low_energy_flag), f"Expected all False when energy=0.8, got {low_energy_flag}"

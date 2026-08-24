@@ -2,14 +2,20 @@ version: "1.0"
 evaluation_mode: eager
 debug_logging: false
 
-global_profile:
+# low_energy_flag was declared global scope but its expression (bar.energy) is inherently
+# per-agent — a global scalar holding a [num_agents]-shaped write is exactly the type
+# corruption hamlet-d970ef83f0 names (and hamlet-f54b887148 crashes on from the observation
+# side). Re-scoped to agent per the controller ruling on hamlet-d970ef83f0 / token-obs unit 3
+# Task 5b: zero-backcompat, old configs fail loudly and get corrected, never accommodated.
+global_profile: null
+
+agent_profile:
   variables:
     - name: low_energy_flag
       semantic_type: custom
       type: bool
       expression: "bar.energy < 0.3"
 
-agent_profile: null
 item_profiles:
   - profile_name: default_item
     variables: []

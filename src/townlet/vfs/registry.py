@@ -258,10 +258,6 @@ class VariableRegistry:
             raise ValueError("Sparse pair edge metadata requires pair_storage_mode='sparse'")
         return self._pair_edges
 
-    def _is_sparse_pair_variable(self, var_def: VariableDef) -> bool:
-        """Return whether a variable is pair-scoped under sparse storage."""
-        return self.pair_storage_mode == "sparse" and VariableScope(var_def.scope) == VariableScope.PAIR
-
     def get_pair_edges(self) -> torch.Tensor:
         """Return directed sparse pair edges as [num_pair_edges, 2]."""
         return self._require_sparse_pair_edges().clone()
@@ -565,12 +561,16 @@ class VariableRegistry:
         self._storage[variable_id] = value.to(self.device).clone()
 
     def set_engine_value(self, variable_id: str, value: torch.Tensor) -> None:
-        """Write evaluator output as the engine while bypassing declaration-shape checks.
+        """Write evaluator output as the engine, enforcing the declared element shape.
 
-        VFS expressions can legitimately produce per-agent batches for variables declared
-        as global scalars when the expression references batched bar state. This method
-        keeps that writeback explicit and permission-checked instead of mutating storage
-        directly from the environment hot path.
+        Public, permission-checked writeback path for VTC/evaluator write-backs, kept
+        separate from the environment hot path's direct storage mutation. Prior to
+        hamlet-d970ef83f0 this bypassed the declared-shape check for non-sparse-pair
+        variables (docstring used to bless "per-agent batches for variables declared as
+        global scalars"); that bypass let storage drift permanently from
+        `_expected_shapes`, corrupting state whose shape then depended on writer identity.
+        A variable whose expression is genuinely per-agent must be declared agent-scoped,
+        not written through a global declaration.
         """
         if variable_id not in self._definitions:
             raise KeyError(f"Variable '{variable_id}' not found in registry")
@@ -580,10 +580,15 @@ class VariableRegistry:
             raise PermissionError(f"'engine' is not allowed to write variable '{variable_id}'. Writable by: {var_def.writable_by}")
 
         expected_dtype = self._expected_dtypes[variable_id]
-        if self._is_sparse_pair_variable(var_def):
-            expected_shape = self._expected_shapes[variable_id]
-            if value.shape != expected_shape:
-                raise ValueError(f"Value for '{variable_id}' has shape {tuple(value.shape)}, expected {tuple(expected_shape)}")
+        expected_shape = self._expected_shapes[variable_id]
+        if value.shape != expected_shape:
+            raise ValueError(
+                f"Engine write for '{variable_id}' has shape {tuple(value.shape)}, expected {tuple(expected_shape)}.\n"
+                "  Rule: set_engine_value no longer bypasses the declared element shape "
+                "(hamlet-d970ef83f0) — a global scalar can no longer legally hold a per-agent "
+                "batch. If the expression is genuinely per-agent, declare the variable "
+                "agent-scoped instead of global."
+            )
         self._storage[variable_id] = value.to(device=self.device, dtype=expected_dtype).clone()
 
     def reset_tick_scoped(self) -> None:

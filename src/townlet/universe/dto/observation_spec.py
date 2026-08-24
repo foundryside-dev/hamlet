@@ -14,6 +14,14 @@ from townlet.universe.dto.observation_feature import (
 )
 from townlet.vfs.semantic_type import SemanticType, require_semantic_type
 
+# Scope -> token-type table (spec §2, docs/superpowers/specs/2026-08-22-token-observation-
+# representation-design.md): global/agent/agent_private/item land under this design; the
+# remaining five VariableScope members (pair/group/affordance/zone/message) are exposure-
+# refused at compile time until their publisher/owner-coordinate landing exists. A variable
+# of one of these scopes may still be DECLARED and left unexposed (no ObservationField is
+# ever constructed for it) — the refusal fires only when something tries to expose one.
+_SCOPE_EXPOSURE_REFUSED = frozenset({"pair", "group", "affordance", "zone", "message"})
+
 
 def compute_observation_field_uuid(
     *,
@@ -63,7 +71,7 @@ class ObservationField:
     dims: int
     start_index: int
     end_index: int
-    scope: Literal["global", "agent", "agent_private"]
+    scope: Literal["global", "agent", "agent_private", "item", "pair", "group", "affordance", "zone", "message"]
     description: str
     semantic_type: SemanticType
     feature: ObservationFeature
@@ -74,6 +82,16 @@ class ObservationField:
     def __post_init__(self) -> None:
         require_semantic_type(self.semantic_type, where=f"observation field '{self.name}'")
         require_observation_feature(self.feature, where=f"observation field '{self.name}'")
+        if self.scope in _SCOPE_EXPOSURE_REFUSED:
+            raise ValueError(
+                f"Observation field '{self.name}' exposes a '{self.scope}'-scope variable.\n"
+                "  Rule: the scope -> token-type table (spec §2, "
+                "docs/superpowers/specs/2026-08-22-token-observation-representation-design.md) "
+                "refuses exposure for pair/group/affordance/zone/message scopes at compile "
+                "time — none of them has a publisher/owner-coordinate landing yet. "
+                "Leave the variable unexposed (no exposed_to / observable entry) until its "
+                "landing exists."
+            )
         if self.feature == METER_FEATURE:
             if not self.feature_ref:
                 raise ValueError(

@@ -94,6 +94,55 @@ class TestObservationSpec:
             ObservationSpec.from_fields([field_a, field_b])
 
 
+class TestObservationFieldScopeTable:
+    """The scope -> token-type table (spec §2): global/agent/agent_private/item land,
+    pair/group/affordance/zone/message are exposure-refused at compile time (hamlet-d970ef83f0
+    unit-3 plan, Task 5d). One row per VariableScope member, all nine covered."""
+
+    LANDING_SCOPES = ("global", "agent", "agent_private", "item")
+    REFUSED_SCOPES = ("pair", "group", "affordance", "zone", "message")
+
+    @pytest.mark.parametrize("scope", LANDING_SCOPES)
+    def test_landing_scope_constructs(self, scope: str):
+        field = ObservationField(
+            uuid=None,
+            name=f"{scope}_var",
+            type="scalar",
+            dims=1,
+            start_index=0,
+            end_index=1,
+            scope=scope,
+            description="",
+            semantic_type="bars",
+            feature="variable",
+        )
+        assert field.scope == scope
+
+    @pytest.mark.parametrize("scope", REFUSED_SCOPES)
+    def test_refused_scope_raises_naming_the_table(self, scope: str):
+        with pytest.raises(ValueError, match="scope -> token-type table"):
+            ObservationField(
+                uuid=None,
+                name=f"{scope}_var",
+                type="scalar",
+                dims=1,
+                start_index=0,
+                end_index=1,
+                scope=scope,
+                description="",
+                semantic_type="bars",
+                feature="variable",
+            )
+
+    def test_all_nine_variable_scope_members_covered(self):
+        """Every VariableScope member is exactly one row: landing or refused, never both."""
+        from townlet.vfs.schema import VariableScope
+
+        covered = set(self.LANDING_SCOPES) | set(self.REFUSED_SCOPES)
+        all_scopes = {member.value for member in VariableScope}
+        assert covered == all_scopes
+
+
 class TestActionSpaceMetadata:
     """Action space helpers."""
 

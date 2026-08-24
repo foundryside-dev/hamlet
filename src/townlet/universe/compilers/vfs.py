@@ -283,7 +283,7 @@ class VFSCompiler:
         self,
         compiled_var: Any,
         *,
-        scope: Literal["global", "agent"],
+        scope: Literal["global", "agent", "agent_private", "item", "pair", "group", "affordance", "zone", "message"],
         lifetime: Literal["persistent", "episode"],
     ) -> VariableDef:
         raw_type = str(compiled_var.type)

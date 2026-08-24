@@ -400,7 +400,10 @@ class ObservationCompiler:
                         dims=dims,
                         start_index=offset,
                         end_index=offset + dims,
-                        scope=cast(Literal["global", "agent"], scope),
+                        scope=cast(
+                            Literal["global", "agent", "agent_private", "item", "pair", "group", "affordance", "zone", "message"],
+                            scope,
+                        ),
                         description=var.description if getattr(var, "description", None) else f"VFS {scope} profile variable: {var.name}",
                         semantic_type=cast(Any, var.semantic_type),
                         feature="variable",

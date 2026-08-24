@@ -217,6 +217,8 @@ class EffectDefinitionConfig(BaseModel):
     Effects are reusable simulation behaviors with lifecycle hooks.
     """
 
+    model_config = ConfigDict(extra="forbid")
+
     id: str = Field(..., description="Unique effect identifier")
     scope: EffectScope = Field(..., description="Where effect can attach")
 
@@ -229,6 +231,10 @@ class EffectDefinitionConfig(BaseModel):
 
     # Visibility
     observable: bool = Field(default=True, description="Visible in agent observations")
+
+    # Authoring metadata only — never read at runtime. Same pattern as
+    # ItemTypeConfig.description (items_config.py) — a sibling per-definition DTO.
+    description: str | None = Field(default=None, description="Human-readable description (metadata only)")
 
     # Lifecycle command pipelines
     on_spawn: list[CommandConfig] = Field(default=[], description="Commands on spawn")
@@ -249,6 +255,8 @@ class EffectDefinitionConfig(BaseModel):
 
 class EffectsConfig(BaseModel):
     """Top-level Effects configuration from effects.yaml."""
+
+    model_config = ConfigDict(extra="forbid")
 
     version: Literal["1.0"] = Field(default="1.0", description="Config schema version")
     effect_definitions: list[EffectDefinitionConfig] = Field(default=[], description="Catalog of reusable effect definitions")

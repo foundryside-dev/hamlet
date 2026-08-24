@@ -1,19 +1,18 @@
-effects:
-  version: "1.0"
+version: "1.0"
 
-  effect_definitions:
-    - id: ate_food
-      scope: agent
-      duration: 10
-      intensity: 1.0
-      reapply_policy: stack
-      observable: true
-      on_spawn:
-        - modify: target.vfs.is_digesting
-          value: true
-      on_tick:
-        - modify: target.bar.energy
-          value: target.bar.energy + (0.05 * intensity)
-      on_despawn:
-        - modify: target.vfs.is_digesting
-          value: false
+effect_definitions:
+  - id: ate_food
+    scope: agent
+    duration: 10
+    intensity: 1.0
+    reapply_policy: stack
+    observable: true
+    on_spawn:
+      - modify: target.vfs.is_digesting
+        value: "true"
+    on_tick:
+      - modify: target.bar.energy
+        value: target.bar.energy + (0.05 * intensity)
+    on_despawn:
+      - modify: target.vfs.is_digesting
+        value: "false"

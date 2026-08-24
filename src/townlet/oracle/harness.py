@@ -59,8 +59,8 @@ from townlet.oracle.trace_io import CellVerdict, HarnessError, RunParams, Trace,
 
 _ADJUDICATION_NOTE = (
     "A cell passes only as AGREE, SKIPPED, or DIVERGED_AS_REGISTERED naming its "
-    "known-divergences entry in register_refs. DIVERGED_AS_REGISTERED requires ALL "
-    "EITHER shape's conditions. Shape 1 (old-side-crash): old side crashed "
+    "known-divergences entry in register_refs. DIVERGED_AS_REGISTERED requires meeting "
+    "every condition of exactly one of the three shapes below. Shape 1 (old-side-crash): old side crashed "
     "(nonzero exit) leaving no trace, with the registered signature inside the "
     "final exception text of its stderr; new side ran and produced a trace valid "
     "for the cell's own params from the declared src root. Shape 2 (hash-only): "

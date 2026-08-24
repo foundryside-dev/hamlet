@@ -873,6 +873,12 @@ the evidence), intended new behaviour, the expected diff shape and its adjudicat
 and tracker + PDR provenance. A diff the harness finds that matches no entry is either a
 rebuild defect or a failure of this process; both are findings, neither is normal.
 
+When a new entry's declared hash fields would overlap an existing bound entry's fields on
+the same cells, prefer narrowing to a disjoint field set when the two causes are separable
+(the DIV-009 shape — declare only what this entry alone accounts for, leaving the shared
+field under the entry that already covers it) over an overlapping declaration, which is
+correct only when two causes genuinely move the same hash (the DIV-010 shape).
+
 **Binding a trace-visible entry to the harness** (`hamlet-56ec575ae2` / `PDR-0037`): a cell
 expected to produce a registered divergence declares it in `src/townlet/oracle/matrix.py` via
 `RegisteredDivergence(register_ref="DIV-NNN", old_stderr_substring=...)`. The harness passes

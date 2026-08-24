@@ -123,6 +123,11 @@ class CellVerdict:
 
 _MAX_REPORTED_INDICES = 10
 
+# The closed trace-stream vocabulary. Single-sourced here (the module that
+# owns Trace and _stream_steps) so matrix.py's RegisteredStreamDivergence
+# validates against one definition rather than a hand-synced copy.
+_TRACE_STREAMS = ("obs", "actions", "dones", "rewards")
+
 
 def _stream_steps(trace: Trace) -> list[tuple[int, str, np.ndarray]]:
     """Trace arrays flattened into adjudication order: reset obs, then per-step.
@@ -236,7 +241,16 @@ def compare_traces(
                 return CellVerdict(
                     kind="REGISTERED_DIVERGENCE_ABSENT",
                     cell_id=cell_id,
-                    detail={"register_ref": hd.register_ref, "declared_but_unmoved": sorted(unmoved)},
+                    detail={
+                        "register_ref": hd.register_ref,
+                        "declared_but_unmoved": sorted(unmoved),
+                        # Restored (comment-242 item 1): the entries that DID
+                        # move, with their old/new values — dropped when
+                        # hash_divergences became a tuple, but a reader
+                        # diagnosing a stale entry needs to see what actually
+                        # moved, not only what didn't.
+                        "mismatched": mismatched,
+                    },
                 )
 
     if mismatched and not union_declared:

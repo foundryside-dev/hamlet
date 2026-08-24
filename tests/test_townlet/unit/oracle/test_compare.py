@@ -71,6 +71,7 @@ def test_reward_perturbation_locates_first_divergence() -> None:
     assert entry["step"] == 1
     assert [2] == [idx[0] for idx in entry["indices"]]
     assert entry["max_abs_diff"] == pytest.approx(0.5)
+    assert entry["diff_entries"] == 1
 
 
 def test_action_divergence_locates_the_actions_stream() -> None:
@@ -299,6 +300,11 @@ def test_a_declared_hash_that_does_not_move_is_a_stale_entry() -> None:
     assert verdict.kind == "REGISTERED_DIVERGENCE_ABSENT"
     assert verdict.register_refs == ()
     assert verdict.detail["declared_but_unmoved"] == ["items_hash"]
+    # comment-242 item 1: the REGISTERED_DIVERGENCE_ABSENT hash detail must also
+    # carry the actual mismatched dict (what DID move, with old/new values) — a
+    # prior edit dropped this when hash_divergences became a tuple, checked
+    # against its VALUE content, not merely its presence.
+    assert verdict.detail["mismatched"] == {"vfs_hash": {"old": "abc", "new": "moved"}}
 
 
 def test_a_declaration_never_suppresses_a_stream_divergence() -> None:
@@ -347,6 +353,13 @@ def test_undeclared_divergence_reports_every_stream_not_just_the_first():
     v = compare_traces(old, new, "cell")
     assert v.kind == "DIVERGE"
     assert set(v.detail["streams"]) == {"obs", "rewards"}
+    # comment-242 item... (c): diff_entries asserted by VALUE, exercising the
+    # accumulator branch (multiple mismatching (step, stream) pairs for the
+    # SAME stream), not just the single-mismatch case elsewhere in this file.
+    # steps=3: obs has 4 recorded frames (reset + 3 post-step), all diverge;
+    # rewards has 3 recorded steps, all diverge.
+    assert v.detail["streams"]["obs"]["diff_entries"] == 4
+    assert v.detail["streams"]["rewards"]["diff_entries"] == 3
 
 
 def test_registered_obs_divergence_with_clean_dynamics_passes():
@@ -389,6 +402,10 @@ def test_declared_stream_that_never_diverges_is_a_stale_entry():
     v = compare_traces(old, new, "cell", stream_divergence=DIV8_STREAMS)
     assert v.kind == "REGISTERED_DIVERGENCE_ABSENT"
     assert v.detail["declared_but_unmoved_streams"] == ["obs"]
+    # comment-234: a stale entry is not a success — register_refs must stay
+    # empty, the same rule REGISTERED_DIVERGENCE_ABSENT enforces for the hash
+    # shape (test_a_declared_hash_that_does_not_move_is_a_stale_entry above).
+    assert v.register_refs == ()
 
 
 def test_hash_and_stream_declarations_compose_under_one_ref():
@@ -399,6 +416,23 @@ def test_hash_and_stream_declarations_compose_under_one_ref():
     v = compare_traces(old, new, "cell", hash_divergences=(hd,), stream_divergence=DIV8_STREAMS)
     assert v.kind == "DIVERGED_AS_REGISTERED"
     assert v.register_refs == ("DIV-008",)  # deduped, one entry binding both shapes
+
+
+def test_hash_and_stream_declarations_compose_with_distinct_refs():
+    """comment-234 item 2: unlike test_hash_and_stream_declarations_compose_under_one_ref
+    (same register_ref for both shapes, deduped to one), a hash divergence bound
+    under ONE ref and a stream divergence bound under a DIFFERENT ref must both
+    fire on the same comparison and the success verdict must carry BOTH refs,
+    distinct, in order (hash entries first, then the stream ref) — this branch
+    was untested before this batch."""
+    hd = RegisteredHashDivergence(register_ref="DIV-006", hash_fields=("observation_schema_hash",))
+    sd = RegisteredStreamDivergence(register_ref="DIV-008", streams=("obs",))
+    old = _trace(hashes={"observation_schema_hash": "a", "config_hash": "z"})
+    new = _trace(hashes={"observation_schema_hash": "b", "config_hash": "z"}, obs_shift=1.0)
+    v = compare_traces(old, new, "cell", hash_divergences=(hd,), stream_divergence=sd)
+    assert v.kind == "DIVERGED_AS_REGISTERED"
+    assert v.register_refs == ("DIV-006", "DIV-008")
+    assert v.detail["shape"] == "hash+stream"
 
 
 def test_actions_stream_divergence_is_adjudicated():

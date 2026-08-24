@@ -17,7 +17,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from townlet.oracle.trace_io import RunParams
+from townlet.oracle.trace_io import _TRACE_STREAMS, RunParams
 
 _DEFAULT_PACK = "configs/default_curriculum"
 _DEFAULT_LEVELS = (
@@ -192,9 +192,6 @@ class RegisteredHashDivergence:
     @property
     def declared(self) -> frozenset[str]:
         return frozenset(self.hash_fields)
-
-
-_TRACE_STREAMS = ("obs", "actions", "dones", "rewards")
 
 
 @dataclass(frozen=True)

@@ -8,6 +8,7 @@ from pathlib import Path
 import yaml
 
 from townlet.universe.errors import CompilationError, CompilationErrorCollector
+from townlet.universe.stages import CompilationStage
 
 logger = logging.getLogger(__name__)
 
@@ -16,13 +17,13 @@ def validate_config_dir(config_dir: Path) -> None:
     """Validate config_dir for security and sanity before parsing configs."""
     if not config_dir.exists():
         raise CompilationError(
-            stage="Config Directory Validation",
+            stage=CompilationStage.PREFLIGHT.label,
             errors=[f"Config directory does not exist: {config_dir}"],
         )
 
     if not config_dir.is_dir():
         raise CompilationError(
-            stage="Config Directory Validation",
+            stage=CompilationStage.PREFLIGHT.label,
             errors=[f"Config path is not a directory: {config_dir}"],
         )
 
@@ -36,7 +37,7 @@ def validate_config_dir(config_dir: Path) -> None:
 
 def validate_scoping(experiment_dir: Path) -> None:
     """Enforce experiment-vs-level scoping for shared catalogs."""
-    errors = CompilationErrorCollector(stage="Stage 0: Scoping Validation")
+    errors = CompilationErrorCollector(stage=CompilationStage.PREFLIGHT.label)
 
     has_curriculum = (experiment_dir / "curriculum.yaml").exists()
     has_experiment = (experiment_dir / "experiment.yaml").exists()
@@ -101,7 +102,7 @@ def validate_scoping(experiment_dir: Path) -> None:
 
 def validate_yaml_syntax(config_dir: Path) -> None:
     """Validate all config YAML files can be parsed before compilation begins."""
-    errors = CompilationErrorCollector(stage="Phase 0: YAML Syntax Validation")
+    errors = CompilationErrorCollector(stage=CompilationStage.PREFLIGHT.label)
 
     shared_files = [
         "experiment.yaml",

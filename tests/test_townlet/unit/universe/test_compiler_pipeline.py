@@ -66,7 +66,7 @@ def test_stage3_resolves_invalid_affordance_reference(tmp_path: Path) -> None:
     with pytest.raises(CompilationError) as excinfo:
         compiler.compile(config_dir, primary_level="L0_test", use_cache=False)
 
-    assert "Stage 3: Reference Resolution" in str(excinfo.value)
+    assert "Stage 5: Resolve references" in str(excinfo.value)
     assert "ghost_item" in str(excinfo.value)
 
 

@@ -23,6 +23,7 @@ from townlet.config.training_v2_config import TrainingV2Config, load_training_v2
 from townlet.config.transition_rules_config import TransitionRulesConfig
 from townlet.config.vfs_profiles_config import VFSProfilesConfig
 from townlet.universe.errors import CompilationErrorCollector
+from townlet.universe.stages import CompilationStage
 from townlet.vfs.schema import VariableDef, VFSScopeExtents, load_variables_reference_config
 
 logger = logging.getLogger(__name__)
@@ -103,7 +104,7 @@ class RawConfigsV21:
         """
 
         experiment_dir = Path(experiment_dir).resolve()
-        errors = CompilationErrorCollector(stage="Stage 1: Load v2.1 Configs")
+        errors = CompilationErrorCollector(stage=CompilationStage.PARSE.label)
 
         # Shared experiment-level configs
         experiment = stratum = environment = actions = brain = items = vfs_profiles = effects = None

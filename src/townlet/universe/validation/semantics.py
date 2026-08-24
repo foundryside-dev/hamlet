@@ -9,6 +9,7 @@ from typing import Any
 from townlet.environment.substrate_action_validator import SubstrateActionValidator
 from townlet.universe.errors import CompilationErrorCollector
 from townlet.universe.raw_configs_v21 import RawConfigsV21
+from townlet.universe.stages import CompilationStage
 from townlet.universe.validation.feasibility import grid_capacity_for_substrate
 
 
@@ -54,7 +55,7 @@ def _detect_cycles(graph: Mapping[str, Iterable[str]]) -> list[list[str]]:
 
 def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
     """Validate v2.1 semantic constraints after typed config loading."""
-    errors = CompilationErrorCollector(stage="Stage 1b: v2.1 Semantic Validation")
+    errors = CompilationErrorCollector(stage=CompilationStage.SEMANTICS.label)
 
     # Scoping preflight checks files before YAML parsing; this catches the same
     # invariant when callers validate a loaded RawConfigsV21 directly.

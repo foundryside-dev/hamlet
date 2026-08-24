@@ -49,7 +49,7 @@ def test_validate_yaml_syntax_checks_optional_root_yaml(tmp_path: Path) -> None:
     config_dir = _copy_experiment(tmp_path)
     (config_dir / "action_labels.yaml").write_text("custom: [broken: yaml")
 
-    with pytest.raises(CompilationError, match="YAML Syntax Validation"):
+    with pytest.raises(CompilationError, match="Stage 0: Preflight validation"):
         validate_yaml_syntax(config_dir)
 
 

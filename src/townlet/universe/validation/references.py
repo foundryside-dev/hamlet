@@ -7,12 +7,13 @@ from pathlib import Path
 from townlet.config.drive_as_code import DriveAsCodeConfig
 from townlet.universe.errors import CompilationError, CompilationErrorCollector, CompilationMessage
 from townlet.universe.raw_configs_v21 import RawConfigsV21
+from townlet.universe.stages import CompilationStage
 from townlet.universe.symbol_table import UniverseSymbolTable
 
 
 def build_symbol_table(raw: RawConfigsV21) -> UniverseSymbolTable:
     """Collect all named v2.1 entities into a symbol table."""
-    errors = CompilationErrorCollector(stage="Stage 2: Symbol Table")
+    errors = CompilationErrorCollector(stage=CompilationStage.SYMBOLS.label)
     table = UniverseSymbolTable()
 
     def _register(register_fn, payload) -> None:
@@ -53,7 +54,7 @@ def build_symbol_table(raw: RawConfigsV21) -> UniverseSymbolTable:
         for item in getattr(raw.items, "item_types", []) or []:
             _register(table.register_item, item)
 
-    errors.check_and_raise(stage_label="Stage 2: Symbol Table")
+    errors.check_and_raise()
     return table
 
 
@@ -230,7 +231,7 @@ def resolve_references(
     experiment_dir: Path,
 ) -> None:
     """Resolve and validate symbolic references between loaded config DTOs."""
-    errors = CompilationErrorCollector(stage="Stage 3: Reference Resolution")
+    errors = CompilationErrorCollector(stage=CompilationStage.RESOLVE.label)
 
     meter_names = set(symbol_table.meters.keys())
     vfs_variable_ids = set(symbol_table.vfs_variables.keys())
@@ -289,4 +290,4 @@ def resolve_references(
         if getattr(level, "drive", None):
             validate_dac_references(level.drive, symbol_table, errors)
 
-    errors.check_and_raise(stage_label="Stage 3: Reference Resolution")
+    errors.check_and_raise()

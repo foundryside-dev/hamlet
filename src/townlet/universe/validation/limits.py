@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from townlet.universe.errors import CompilationErrorCollector
+from townlet.universe.stages import CompilationStage
 from townlet.universe.validation.feasibility import grid_capacity_for_substrate
 
 if TYPE_CHECKING:
@@ -26,7 +27,7 @@ MAX_SPAWN_RULES_PER_ITEM = 200
 
 def validate_v21_limits(raw: RawConfigsV21, experiment_dir: Path) -> None:
     """Validate hard config-pack size and resource limits over loaded DTOs."""
-    errors = CompilationErrorCollector(stage="Stage 1b: v2.1 Safety Limit Validation")
+    errors = CompilationErrorCollector(stage=CompilationStage.LIMITS.label)
     experiment_dir = Path(experiment_dir)
 
     env_meter_names = {meter.name for meter in raw.environment.environment.meters}

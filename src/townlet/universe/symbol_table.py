@@ -9,6 +9,7 @@ from townlet.environment.action_config import ActionConfig
 from townlet.vfs.schema import VariableDef
 
 from .errors import CompilationError
+from .stages import CompilationStage
 
 
 @dataclass
@@ -26,21 +27,21 @@ class UniverseSymbolTable:
 
     def register_meter(self, config: Any) -> None:
         if config.name in self.meters:
-            raise CompilationError("Stage 2: Symbol Table", [f"Duplicate meter '{config.name}' detected."])
+            raise CompilationError(CompilationStage.SYMBOLS.label, [f"Duplicate meter '{config.name}' detected."])
         self.meters[config.name] = config
 
     def register_variable(self, config: VariableDef) -> None:
         var_id = getattr(config, "id", None) or getattr(config, "name", None)
         if var_id is None:
-            raise CompilationError("Stage 2: Symbol Table", ["Variable missing identifier during registration."])
+            raise CompilationError(CompilationStage.SYMBOLS.label, ["Variable missing identifier during registration."])
         if var_id in self.variables:
-            raise CompilationError("Stage 2: Symbol Table", [f"Duplicate variable '{var_id}' detected."])
+            raise CompilationError(CompilationStage.SYMBOLS.label, [f"Duplicate variable '{var_id}' detected."])
         self.variables[var_id] = config
 
     def register_profile_vfs_variable(self, config: Any) -> None:
         var_id = getattr(config, "id", None) or getattr(config, "name", None)
         if var_id is None:
-            raise CompilationError("Stage 2: Symbol Table", ["VFS profile variable missing identifier during registration."])
+            raise CompilationError(CompilationStage.SYMBOLS.label, ["VFS profile variable missing identifier during registration."])
         self.profile_vfs_variables.setdefault(var_id, config)
 
     def register_action(self, config: ActionConfig) -> None:
@@ -48,9 +49,9 @@ class UniverseSymbolTable:
         if action_id is None:
             action_id = getattr(config, "name", None)
         if action_id is None:
-            raise CompilationError("Stage 2: Symbol Table", ["Action missing identifier during registration."])
+            raise CompilationError(CompilationStage.SYMBOLS.label, ["Action missing identifier during registration."])
         if action_id in self.actions:
-            raise CompilationError("Stage 2: Symbol Table", [f"Duplicate action id '{action_id}' detected."])
+            raise CompilationError(CompilationStage.SYMBOLS.label, [f"Duplicate action id '{action_id}' detected."])
         self.actions[action_id] = config
 
     def register_cascade(self, config: Any) -> None:
@@ -60,18 +61,18 @@ class UniverseSymbolTable:
             target = getattr(config, "target", None)
             cascade_name = f"{source}->{target}"
         if cascade_name in self.cascades:
-            raise CompilationError("Stage 2: Symbol Table", [f"Duplicate cascade '{cascade_name}' detected."])
+            raise CompilationError(CompilationStage.SYMBOLS.label, [f"Duplicate cascade '{cascade_name}' detected."])
         self.cascades[cascade_name] = config
 
     def register_affordance(self, config: Any) -> None:
         aff_id = getattr(config, "id", None) or getattr(config, "name", None)
         aff_name = getattr(config, "name", aff_id)
         if aff_id is None or aff_name is None:
-            raise CompilationError("Stage 2: Symbol Table", ["Affordance missing identifier during registration."])
+            raise CompilationError(CompilationStage.SYMBOLS.label, ["Affordance missing identifier during registration."])
         if aff_id in self.affordances:
-            raise CompilationError("Stage 2: Symbol Table", [f"Duplicate affordance '{aff_id}' detected."])
+            raise CompilationError(CompilationStage.SYMBOLS.label, [f"Duplicate affordance '{aff_id}' detected."])
         if aff_name in self.affordances_by_name:
-            raise CompilationError("Stage 2: Symbol Table", [f"Duplicate affordance name '{aff_name}' detected."])
+            raise CompilationError(CompilationStage.SYMBOLS.label, [f"Duplicate affordance name '{aff_name}' detected."])
         self.affordances[aff_id] = config
         self.affordances_by_name[aff_name] = config
 
@@ -79,9 +80,9 @@ class UniverseSymbolTable:
         """Register items by id (preferred) or name to validate references."""
         identifier = getattr(item, "id", None) or getattr(item, "name", None)
         if identifier is None:
-            raise CompilationError("Stage 2: Symbol Table", ["Item missing required identifier during registration."])
+            raise CompilationError(CompilationStage.SYMBOLS.label, ["Item missing required identifier during registration."])
         if identifier in self.items:
-            raise CompilationError("Stage 2: Symbol Table", [f"Duplicate item '{identifier}' detected."])
+            raise CompilationError(CompilationStage.SYMBOLS.label, [f"Duplicate item '{identifier}' detected."])
         self.items[identifier] = item
 
     def get_meter(self, name: str) -> Any:

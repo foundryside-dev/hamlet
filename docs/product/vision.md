@@ -88,6 +88,14 @@
 >   unchanged — same autonomous list (including the `PDR-0099` push and `PDR-0101` merge
 >   widenings), same escalation taxonomy. Factual correction, not a vision change. Provenance
 >   PDR recorded at this session's checkpoint.
+> - *2026-08-24* — sharpened **the prototyping modeller** in *Who it serves* with the owner's
+>   train-here-deploy-there articulation: the interface is the **declared telemetry manifest +
+>   action vocabulary**, fidelity lives below it (the naval example, quoted verbatim); engine
+>   bindings named as acknowledged future scope; the export path (`hamlet-0cdb8a6d1a`) named
+>   vision-load-bearing and sequenced after the token migration. Content is the owner's own
+>   in-session statements, recorded as `PDR-0119`; incorporation **approved by the owner
+>   explicitly** at the forty-third checkpoint ("yes that's approved"). The authority grant is
+>   untouched.
 > - *2026-08-20* (fourth entry that day) — corrected the
 >   authority grant's **Status paragraph**, which still claimed the scope was *"unchanged from the
 >   2026-08-11 grant"* and *"scope identical every time"*. Both clauses were falsified the previous
@@ -249,13 +257,24 @@ pedagogical value is undiminished by the promotion of everything around it.
   as a universe and watch agents attack it. Every authoring barrier that requires Python is a
   defect against this user. They are not a current user; they are the standard the substrate is
   judged by. **[stated]**
-- **The prototyping modeller (core use case; served at release, `PDR-0024`):** anyone interested
-  in game development, simulation, or modelling the real world in an abstract way, who wants a
-  trained agent for a system of their own. They author a *simplified* version of their scenario
-  here, train against it, and **leave with a model and an interface contract** they can code
-  against in their own engine or pipeline. Where the novice author's journey ends inside HAMLET,
-  this one ends outside it: HAMLET is the harness, not the destination. Every barrier between
-  "it trains here" and "it runs in my system" is a defect against this user. **[stated]**
+- **The prototyping modeller (core use case; served at release, `PDR-0024`, sharpened
+  `PDR-0119`):** anyone interested in game development, simulation, or modelling the real world
+  in an abstract way, who wants a trained agent for a system of their own. They author a
+  *simplified* version of their scenario here, train against it, and **leave with a model and an
+  interface contract** they can code against in their own engine or pipeline. Where the novice
+  author's journey ends inside HAMLET, this one ends outside it: HAMLET is the harness, not the
+  destination. Every barrier between "it trains here" and "it runs in my system" is a defect
+  against this user. **[stated]**
+  **The contract is the declared telemetry, and fidelity lives below it (`PDR-0119`, owner,
+  2026-08-24):** the interface a trained policy carries is the declared variable manifest
+  (bounds and normalization included) plus the declared action vocabulary at its cadence — never
+  the substrate. Train an agent to sail a ship on a coarse 2D surface and drop it into a
+  high-fidelity naval simulation: *"the agent is seeing the same telemetry so it works
+  seamlessly."* The compiled hashes are what make "same interfaces" checkable rather than
+  hopeful. Engine bindings (Unreal, Unity, Godot) are acknowledged future scope, provided "when
+  we're in a position where it's needed"; the export path (`hamlet-0cdb8a6d1a`) is
+  vision-load-bearing and sequenced after the token migration, so it exports against the token
+  ABI rather than the raster being retired. **[stated]**
 - **Also served (downstream, not driving):** students and instructors using the pedagogical
   curriculum levels as a teaching artefact — now as *authors* rather than as players. Townlet Town
   serves them as the **first-class tech demo** (see Purpose): maintained to demonstrator standard,

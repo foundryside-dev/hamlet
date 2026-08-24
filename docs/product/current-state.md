@@ -1,84 +1,97 @@
-# Current State — HAMLET / Townlet        Checkpoint: 2026-08-23 · forty-second checkpoint (`PDR-0113`–`PDR-0116`: **the token design is APPROVED, migration units 1–2 are BANKED**, the oracle register is caught up, and three VFS-inertness bugs are dead)
+# Current State — HAMLET / Townlet        Checkpoint: 2026-08-24 · forty-third checkpoint (`PDR-0117`–`PDR-0121`: **unit 3 mid-flight — baselines training, DIV-008 recorded unbound, the cut fully planned — and the architecture reset in one session**: corpus archived, six-doc HLD source-verified Current, filenames ruled convention, VFS audit adjudicated, compiler cleanup executed in a worktree)
 
-## The bets right now — two live, one substantially complete
+## The bets right now
 
-**1. Strangler rewrite behind the compiled-universe contract** (`PDR-0006`). In flight and
-**materially advanced this session**: the register grew DIV-009 (six-commit drift measured
-per-commit, adjudicated, bound) and DIV-010 (unit-2 provenance), cells compose multiple
-hash declarations, DIV-008 is visibly reserved for the token cut, and the matrix is
-**exit 0 in BOTH plain and scripted modes with all streams byte-identical**
-(runs `20260823-043109` / `20260823-043209`). Exit condition unchanged (`PDR-0058`).
+**1. Strangler rewrite behind the compiled-universe contract** (`PDR-0006`). Steady state
+this session; the compiler cleanup (`PDR-0121`, `hamlet-af929afa06`) is hygiene inside
+it — parked on an UNMERGED worktree branch (`worktree-agent-afe91c72ba726babd`, 8
+commits, hash-identical verified) awaiting the landing gate below.
 
-**2. Measure the authoring claim** (`PDR-0077`) — SUBSTANTIALLY COMPLETE, retired as
-record (`PDR-0111`). Untouched. Remaining: record-keeping + the **2026-10-06
-pack-disposition clock** (now ALSO a gate before token migration unit 5, per `PDR-0114`'s
-trial-pack ruling). Instrument redesign still awaits owner promotion.
+**2. Token-observation encoding** (`PDR-0108`/`PDR-0114`) · tracker `hamlet-fa6bb6da4a`.
+**UNIT 3 IS MID-FLIGHT.** Plan:
+`docs/superpowers/plans/2026-08-24-token-obs-unit3-baselines-div008-cut.md`; SDD ledger:
+`.superpowers/sdd/2026-08-24-token-obs-unit3-baselines-div008-cut/progress.md`.
+- Tasks 1/3/4 landed + reviewed: `scripts/l2_baseline.py` (train/eval/curves, greedy
+  eval built from scratch — `EvaluationConfig` is inert, `hamlet-ea959ab97c`); the
+  comment-234/242 oracle carry-forward batch; **DIV-008 recorded, NOT bound**
+  (record-then-bind — binding by measurement at Task 11).
+- Task 2 in flight: **five seeds (42–46) training at E=5000** (floor rule + plateau
+  calibration ~ep 400 + the runner's ep-5000 randomization event as hard cap; src-tree
+  PIN `1a3b0e7c…`, tree-hash form). Operator killed their llama-server mid-session →
+  all five run concurrently. Per-seed on completion: `eval --episodes 100 --eval-seed
+  12345` + `curves`; then the frozen record at
+  `docs/product/baselines/2026-08-l2-preraster/record.md` (IQM = trigger-1 denominator).
+- Phase 2 (Tasks 5–11, the atomic cut) fully expanded, delta-check gated, with the
+  re-sequencing addendum (exposure/normalization/max_active_effects INTO the cut; Task
+  11 carries an oracle move-forward decision point).
+- **FREEZE: no src/townlet or configs/ edits on the main tree until all 5 seeds are
+  trained AND greedy-evaled.** All session src work went to the worktree; all main-tree
+  commits were docs/CLAUDE.md/README only.
 
-**3. Token-observation encoding** (`PDR-0108`) · tracker `hamlet-fa6bb6da4a`.
-**The design is APPROVED (`PDR-0114`)** — six owner rulings, two four-lens review rounds,
-no-tech-debt rider, spec at `docs/superpowers/specs/2026-08-22-token-observation-representation-design.md`.
-**Migration unit 1 (harness adjudicability) accepted** (`PDR-0115`, `9e7197e6..1960dee6`):
-trace v4 actions stream, driver `--actions`, `RegisteredStreamDivergence`, per-stream
-adjudication. **Unit 2 (authored temporality) banked** (`PDR-0116`, `3b72c4c4..30f94f93`):
-engine `tick` VFS variable (pre-increment semantics, pinned write), exposure-derived
-evaluation marks (expressions evaluate on shipped defaults at last), agent profiles BUILD
-/ item profiles REFUSE, `time_of_day` derived, statics-are-storage enforced at three
-layers. **Next: unit 3 — freeze L2 baselines (≥5 seeds), register DIV-008, then the token
-cut as one atomic knockdown.** Unit-3 carry-forwards are on the tracker (comment 242).
+**3. Measure the authoring claim** — retired as record (`PDR-0111`), unchanged.
+Instrument redesign still awaits owner promotion; 2026-10-06 pack-disposition clock.
 
 ## What this checkpoint did
 
-- Recorded the design approval + owner rulings + no-tech-debt rider + trial-pack ruling
-  as `PDR-0114`; the vision-stamp provenance as `PDR-0113`.
-- Recorded unit-1 acceptance with the drift adjudication and discharge as `PDR-0115`, and
-  unit-2's landing (including the spec-delegated build/refuse scope decision and the DIV-009
-  catch-up executing that discharge) as `PDR-0116`.
-- Tracker reconciled live during execution: closed `hamlet-5cc071f4b6` (drift catch-up),
-  `hamlet-df3a96bbac`, `hamlet-5d74335111`, `hamlet-bc0a5deeff` (the three expression-
-  inertness bugs); opened `hamlet-f7631a4672` (P4 unit-1 cosmetics), `hamlet-5628884d7d`
-  (P2 pre-existing test flakiness, controlled at `11dee204`), `hamlet-c586d520b2` (P4
-  approach A capture); 13 VFS round-2 findings filed earlier in-session, each with a
-  discharge vehicle.
+- Recorded `PDR-0119` (owner's train-here-deploy-there vision articulation; export
+  `hamlet-0cdb8a6d1a` now vision-load-bearing; extends `PDR-0024`), `PDR-0120` (VFS
+  audit adjudicated — epistemic-access unit shaped into Next), `PDR-0121` (compiler
+  two-era assessment + owner-directed cleanup, landing gate defined). `PDR-0117`
+  (files-are-transport) and `PDR-0118` (six-doc HLD; owner-amended five→six) were
+  recorded mid-session at the owner's direction.
+- Roadmap: two shaped units added to Next (declaration-store compiler; epistemic
+  access); token bullet stamped with unit-3 state. Metrics: documentation-truth
+  movement + the in-flight baseline reading noted.
+- Tracker: 9 tickets filed this session (6 audit, compiler cleanup task, hybrid
+  substrate `hamlet-157deba962`, declared propagation); comments 243–248 on the
+  respective threads. Owner separately archived the wider docs/ legacy tree
+  (`c4e8bd58`, "zzz. archive").
+
+## Standing gates & in-flight state (read before acting)
+
+1. **Baseline completion drives everything**: on each seed's completion notification →
+   verify exit 0 + 5000 episodes → eval + curves → last one → assemble + commit the
+   record → Task 2 complete → **freeze lifts**.
+2. **Then land the compiler cleanup**: rebase `worktree-agent-afe91c72ba726babd` onto
+   tip, re-run FULL gate set (hashes byte-identical, suite, mypy, matrix both modes),
+   merge — `PDR-0121`'s reversal trigger governs (any hash movement → do not land).
+3. **Then Phase 2 of the cut** (Tasks 5–11 per the expanded plan).
 
 ## Reversal triggers — state
 
-- `PDR-0114` (new): **armed** — the spec's four (≥80% of frozen L2 baseline; a surface
-  with no natural token form; 8×width / 25% step-time / batch-size caps;
-  payload-identical entities despite the descriptor block).
-- `PDR-0115` (new): **discharged unfired** — drift measured to three pre-unit movers.
-- `PDR-0116` (new): **armed** — constant-expression/item-expression demand reopens the
-  refuse rulings; unit-5 authoring pain reopens the tick write-point pin; an EAGER debug
-  dependency reopens the statics ruling as a declared flag.
-- `PDR-0109` training-loop trigger: still armed (unit 4 checks it). `PDR-0107`: armed,
-  serviced by the migration. Pack-disposition clock: **2026-10-06**, now double-load-bearing
-  (`PDR-0111` record-keeping + `PDR-0114` gate before unit 5).
+- `PDR-0114` armed (≥80% of the frozen baseline at equal env-steps — the baseline being
+  minted IS this trigger's denominator; 8×width / 25% step-time caps; no-natural-token
+  surface; payload-identical entities).
+- `PDR-0120` armed (if token exposure work doesn't compose with per-token access
+  gating, the epistemic unit moves UP the sequence).
+- `PDR-0121` armed (post-rebase gate re-run must be clean or the branch doesn't land).
+- `PDR-0117` armed (if discovery-merge degrades error provenance beyond repair, fall
+  back to a thin pack.yaml index — never the filename mandate).
+- Pack-disposition clock **2026-10-06** (`PDR-0111` + `PDR-0114` gate before unit 5).
 
-## Blocked on / flagged for the owner (unchanged this session, still open)
+## Blocked on / flagged for the owner
 
-1. **Instrument redesign as a future bet** — promote or park (north-star reads `UNREAD`).
-2. **WS-7 (`hamlet-e3af412673`, P0)** — park or schedule; untouched since ~2026-08-17.
-3. **`hamlet-83c8e3b50e` (P1)** — CI silent on `main`'s third merge; deciding test is the
-   next merge (project-recovery-2 is now ~34 commits ahead). No workflow changes before it.
-4. Dependabot `#33`/`#34` + **4 vulnerability alerts** on `main`.
-
-Nothing NEW escalated this session — all pushes to `project-recovery-2` within grant; the
-vision stamp fix was owner-directed (`PDR-0113`); no releases, deprecations, or external
-touches.
+1. **`vision.md` wording for `PDR-0119`** — the train-here-deploy-there articulation is
+   PDR-recorded; incorporating it into `vision.md` §use-cases awaits your sign-off on
+   wording (vision-change gate; the content is your own words).
+2. Instrument redesign — promote or park (unchanged).
+3. WS-7 (`hamlet-e3af412673`, P0) — park or schedule (unchanged).
+4. `hamlet-83c8e3b50e` — CI silent on `main`'s third merge; deciding test = next merge.
+5. Dependabot #33/#34 + 4 vulnerability alerts on `main` (unchanged).
 
 ## Open questions
 
-- The 2026-08-21 VFS gap analysis (129 cells) still untriaged into WS-4 — several of its
-  worst rows just closed via unit 2; a re-triage may be much cheaper now.
-- `SetEncoderConfig.token_field_name` resolves only at network-build time (PDR-0052 shape).
-- Persistent-lifetime globals (`hamlet-0268336cd1`) — the tick's float32 note points here.
+- Whether the six-doc HLD needs a maintenance rule (e.g., gate-2-style re-verification
+  at each merge) or decays like its predecessor — candidate for the next merge's gate.
+- `docs/config-schemas/variables.md` is stale (2025-11) and now the weakest doc on the
+  trusted path — replace or archive when the declaration-store unit fixes what it
+  describes.
+- Seed-level greedy eval is deterministic within seed (all agents identical survival) —
+  recorded in the protocol; the 5-seed distribution carries the comparison.
 
 ## Next session starts here
 
-**Token migration unit 3 — baselines, then DIV-008, then the cut** (`hamlet-fa6bb6da4a`,
-spec §6 unit 3): freeze the shipped-L2 feedforward baseline (≥5 seeds, unrepeatable after
-the raster dies), register DIV-008 binding stream+hash under one ref, then TokenSpec
-replaces ObservationSpec as one atomic knockdown. Unit-3 carry-forwards: tracker comment
-242 (six one-liners) + `PDR-0116`'s notes. The brief for its plan should re-read spec §§1–5
-in full — unit 3 is the largest and most irreversible unit of the migration.
-
-Work continues on `project-recovery-2` (tip `30f94f93`, pushed).
+**If baselines are done**: assemble/commit the frozen record (Task 2), lift the freeze,
+land the compiler cleanup branch (gate re-run first), then dispatch Phase 2 Task 5. **If
+still training**: the completion notifications drive; nothing else is blocked — all
+docs/planning work is exhausted. Branch `project-recovery-2`, all pushed.

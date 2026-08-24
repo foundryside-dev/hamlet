@@ -579,12 +579,162 @@ copy dissolves the drift).
 
 ---
 
-## DIV-008 — RESERVED: the token-observation cut
+## DIV-008 — Token observations replace the superset+mask ABI: the `obs` stream diverges on every cell, world dynamics under scripted actions do not
 
-Reserved by the approved token-observation design
-(`docs/superpowers/specs/2026-08-22-token-observation-representation-design.md` §5);
-registered at migration unit 3. Unit-1 code (`RegisteredStreamDivergence`) already names
-it. Listed here so the numbering gap is visible, never silent.
+- **Status:** `registered` (2026-08-24 — entry recorded now, per `PDR-0037`'s record-then-bind
+  order, at unit 3's Task 4 (`hamlet-fa6bb6da4a`). **No matrix cell binds it yet**: every
+  cell's `hash_divergences` and `stream_divergence` stay as they are today; this entry adds
+  no cell declaration and flips no verdict. This is deliberately earlier than DIV-006's
+  pre-built `tag-stamped` state — DIV-006 verified oracle behaviour against the tagged commit
+  before its own code changed. Here there is not yet a new side to verify against at all:
+  this entry is written before Task 5 (authoring-surface prerequisites) or Task 6 (the
+  TokenSpec artifact itself) land. The hash movers named below are the approved design's
+  **prediction** (spec §5, ruled by the owner), not a measurement — measurement, exact hash
+  values, and the per-cell binding are Task 11's job, following DIV-004's own
+  predict-then-measure discipline. Unit-1's Task 3 (`hamlet-fa6bb6da4a`, landed immediately
+  before this entry) already built the machinery this entry names —
+  `RegisteredStreamDivergence` in `src/townlet/oracle/matrix.py`, whose own docstring names
+  DIV-008 as the entry it was built for and states "DIV-008 binds both, under one
+  register_ref" — but built-and-unbound is exactly the gap `registered` names.)
+- **Harness shape: hash-only** (`RegisteredHashDivergence` — the provenance-hash movers)
+- **Harness shape: stream-scoped** (`RegisteredStreamDivergence` — the `obs` stream; unit 1's
+  third divergence shape, built for exactly this entry). This entry carries **two**
+  machine-readable `Harness shape:` lines, not one — the first register entry to bind both
+  constructs under a single `register_ref`, which `compare_traces` itself labels the
+  `"hash+stream"` shape (`trace_io.py`, the `shape` field of a `DIVERGED_AS_REGISTERED`
+  detail).
+- **Provenance:** `hamlet-fa6bb6da4a` (unit 3, this entry's ticket) ·
+  `docs/superpowers/specs/2026-08-22-token-observation-representation-design.md` §§1-6 (the
+  approved design; §5 "Transfer, provenance, and the oracle" is this entry's direct source)
+  · `PDR-0037` (record-then-bind order) · `PDR-0033` (narrowness of a registered divergence
+  declaration, enforced both directions in `compare_traces`) · `hamlet-56ec575ae2` (the
+  binding mechanism DIV-NNN entries attach to) · `hamlet-d97b4d6b4a` (`exposed_to` fails open
+  to `["agent"]`; discharged at this unit as explicit exposure) · `hamlet-bf42ac60b5` (every
+  exposed profile variable ships raw today; the structural root the required-normalization-
+  at-exposure rule fixes) · comment-234/comment-242 (the unit-1/unit-2 review items this
+  ticket's Task 3 landed immediately before this entry, including the env-internal-RNG
+  caveat below, item 3)
+- **Surface:** the entire observation ABI: `ObservationSpec` (compiled artifact),
+  `ObservationField` (compiled DTO), the VFS `ObservationField` mirror and
+  `VFSObservationSpec`, the fixed-width superset + per-level activity mask mechanism
+  (`ObservationActivity`, `curriculum_active`), the raster/window/temporal encoders, and the
+  authoring surface `exposed_to` (currently fails open to `["agent"]` in every
+  `vfs_profiles.yaml` block) and profile-variable normalization (currently absent —
+  `VariableDef.normalization` is declared but consumed by nothing at runtime).
+
+**Oracle behaviour (verified against the tagged commit's source and this repo's own
+teaching docs, 2026-08-24).** The current system is the fixed-width superset with a
+per-level activity mask that `CLAUDE.md`'s "State Representation" section documents as
+current: `ObservationSpec.total_dims` is identical across every level in a pack (the
+mechanism behind cross-level transfer), inactive slots are held at zero rather than
+removed, and `observation_schema_hash`/`vfs_hash` are computed over that fixed-vocabulary
+spec (14 affordances, engine-published raster blocks `grid_encoding`/`local_window`/
+`temporal`/`affordance_at_position`). Two authoring gaps ride along, both named in the
+design's §2 and both dying at this cut: (1) `exposed_to` fails OPEN to `["agent"]` in all
+three `vfs_profiles.yaml` blocks today — a No-Defaults violation on exactly the field that
+will size the observation (`hamlet-d97b4d6b4a`); (2) `VariableDef.normalization` is declared
+authoring surface consumed by nothing at runtime, and exposed profile variables have no
+normalization field at all, so every exposed profile variable ships raw
+(`hamlet-bf42ac60b5`). Both gaps are inert today precisely because nothing downstream reads
+them — which is also why removing/repurposing them is a provenance-hash question, not a
+behaviour one.
+
+**Intended new behaviour (spec §§1-2, ruled).** `TokenSpec` replaces `ObservationSpec` as
+the compiler's product: a type roster (7 live engine types, canonical order), per-type
+payload schema, and per-type compiled capacity with deterministic slot bindings — content
+becomes per-universe, the type system stays fixed. The activity mask and its whole
+mechanism die (`curriculum_active` on both DTOs, `ObservationActivity`, the
+allocated-vs-active framing `CLAUDE.md` currently teaches); `exposed_to` becomes explicit
+(the default-injection validators are deleted — empty means unexposed, every exposure is
+authored); exposed `vfs_profiles.yaml` variables gain a **required** `normalization` field;
+`VariableDef.normalization` — consumed by nothing — is deleted with the cut. The VFS
+`ObservationField` mirror and `VFSObservationSpec` die entirely: the mirror was always
+derived *from* `ObservationSpec` one hop downstream, and with `TokenSpec` hashed directly
+there is nothing left for it to mirror.
+
+**What diverges — predicted, not yet measured (Task 11 measures it):**
+
+- **The `obs` trace stream, on every cell**, bound via `RegisteredStreamDivergence`
+  (`streams=("obs",)`). Tokens change the observation's shape and content on every pack —
+  this is not a hash-only provenance move, the stream's actual bytes (and very likely its
+  shape) change, which is exactly the shape the shape/dtype preflight in `compare_traces`
+  exists to tolerate for a *declared* stream rather than crash on.
+- **`observation_schema_hash`** — redefined over the TokenSpec type-schema + slot-binding
+  content (spec §5) rather than over `ObservationSpec`; moves on every pack, once, by
+  construction (the artifact it is computed over no longer exists in its old form).
+- **`vfs_hash`** — a slot-2 composition consequence (spec §5): `vfs_hash` keeps its name and
+  four-term composition (`compute_vfs_hash(variable_schema_hash, observation_schema_hash,
+  action_schema_hash, transition_graph_hash)`, `compiler.py:419`), but the TokenSpec-derived
+  `observation_schema_hash` now occupies slot 2 of that same composition, so `vfs_hash`
+  moves on every pack as a direct consequence — the same "composite moves because an input
+  moves" reasoning DIV-004 and DIV-010 already established for this hash.
+- **`variable_schema_hash`** — whether it moves is **measured at binding, not asserted
+  here**. The candidate mover is `VariableDef` losing its inert `normalization` field
+  (consumed by nothing at runtime today); `variable_schema_hash` hashes the canonical
+  `VariableDef` list directly (`schema_hashes.py:31`), so removing a field from every
+  `VariableDef` is a plausible mover, but plausible is not measured — Task 11 runs the
+  two-worktree probe DIV-009/DIV-010 used and records the answer either way.
+
+**What must NOT diverge (the criterion).** Under scripted actions, `actions`/`rewards`/
+`dones` stay byte-exact on every cell — none of the three is declared in the
+`RegisteredStreamDivergence`, so `compare_traces` holds them to the same byte-exact bar
+every undeclared stream gets. **Tokens change what agents see, never what the world does.**
+This is the adjudication criterion spec §5 states directly: "the oracle cut needs the
+harness unit 1 builds... tokens change what agents see, never what the world does."
+
+**Env-internal-RNG caveat (comment-234 item 3, verbatim requirement).** Scripted mode
+removes the action-draw RNG coupling — actions are replayed from a file rather than drawn
+from the run's RNG stream, which is what makes an `actions`/`rewards`/`dones` byte-exact
+comparison meaningful under identical actions in the first place. If `env.step` ever starts
+consuming global RNG for something other than the action draw (a stochastic transition, a
+randomized effect, anything reading the shared RNG stream mid-step), old and new decorrelate
+**env-internally**, even under byte-identical scripted actions. The failure direction this
+produces is red — a `DIVERGE` on `actions`/`rewards`/`dones` — never a false green; but a
+future env change of that shape must be diagnosed as an RNG-coupling regression, not
+misread as a defect in the token cut itself. The scripted driver's RNG-call-order
+spot-check (Task 3 / unit 1) is the check that would catch such a change landing.
+
+**Fixture-exposure note.** Every fixture pack under `oracle_fixtures/` declares no
+`exposed_to` key at all (verified: zero hits, `grep -rn exposed_to oracle_fixtures/`).
+Post-cut, once the default-injection validators are deleted and an empty `exposed_to` means
+unexposed rather than fails-open-to-`["agent"]`, every profile variable in every fixture
+pack becomes unexposed by construction — not because any fixture pack drifted from its live
+counterpart, but because the explicit-exposure rule (spec §2, "Exposure is explicit at the
+cut") changes what an *absent* declaration means. This is part of the registered observation
+divergence above (it manifests as part of the `obs` stream's — and `variable_element`
+token census's — content changing), not a separate pack-drift finding: no `pack_divergence`
+declaration is implied or needed by this note on its own account.
+
+**Harness adjudication (mechanics, matched to code as it stands after Task 3).** Per
+`compare_traces` (`src/townlet/oracle/trace_io.py`): hash and stream adjudication are
+**per-stream, non-short-circuiting** — every one of the four trace streams (`obs`,
+`actions`, `dones`, `rewards`) is compared in full before a verdict is returned, so a
+registered `obs` divergence can never mask an `actions`/`rewards`/`dones` verdict (SA-C1).
+A shape/dtype mismatch on a stream is recorded by a **preflight** before any byte
+comparison is attempted (`_stream_steps` byte-diff cannot run across differing shapes);
+that preflight records the same way whether or not the stream is declared, but only a
+*declared* stream's shape-changed finding is tolerated downstream — an undeclared stream
+whose shape changed still lands in `undeclared_streams` and fails the cell exactly like any
+other undeclared divergence. Once bound: any stream diverging outside `{"obs"}` is
+`DIVERGE`; `obs` failing to diverge anywhere in the trace is `REGISTERED_DIVERGENCE_ABSENT`
+(a stale entry); on the hash side, any hash mover outside this entry's declared set (unioned
+with whatever else binds the same cell) is `HASH_MISMATCH`, and a declared hash field that
+does not move is `REGISTERED_DIVERGENCE_ABSENT` — all red, the same treatment every other
+hash-only and stream-scoped declaration gets.
+
+**Relationship to DIV-009/DIV-010.** DIV-010 names its own retirement condition as "when the
+token cut lands and DIV-008 supersedes it (the tick variable's provenance footprint becomes
+part of the token-observation surface DIV-008 covers)" — the tick `VariableDef`'s
+contribution to `variable_schema_hash`/`vfs_hash` folds into whatever this entry's binding
+measures at Task 11, rather than continuing to be adjudicated separately. DIV-009's
+`transition_graph_hash`/`actions_hash`/`pack_brain_hash` movers are on a disjoint surface
+(VTC/actions/brain-fork, not observation) and are not expected to interact with this entry.
+Both reconciliations are Task 11's job, not asserted here.
+
+**Retire this entry** — not expected soon: this is the new observation ABI, not a
+transitional one. Retirement follows the same rule as every other entry: when the oracle is
+re-tagged past the token cut (folding TokenSpec's provenance behaviour into the frozen
+spec itself), or if the divergence otherwise dissolves.
 
 ---
 

@@ -353,7 +353,7 @@ def test_undeclared_divergence_reports_every_stream_not_just_the_first():
     v = compare_traces(old, new, "cell")
     assert v.kind == "DIVERGE"
     assert set(v.detail["streams"]) == {"obs", "rewards"}
-    # comment-242 item... (c): diff_entries asserted by VALUE, exercising the
+    # comment-234 item (c): diff_entries asserted by VALUE, exercising the
     # accumulator branch (multiple mismatching (step, stream) pairs for the
     # SAME stream), not just the single-mismatch case elsewhere in this file.
     # steps=3: obs has 4 recorded frames (reset + 3 post-step), all diverge;

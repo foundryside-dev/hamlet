@@ -41,6 +41,7 @@ from .errors import CompilationError, CompilationMessage
 from .loaders.preflight import validate_config_dir, validate_scoping, validate_yaml_syntax
 from .loaders.v21 import load_v21_configs
 from .pipeline import CompiledLevelBundle, SharedCompilerArtifacts
+from .source_map import build_pack_source_map
 from .stages import CompilationStage
 from .validation.limits import (
     EFFECT_OBSERVATION_SLOTS,
@@ -138,18 +139,21 @@ class UniverseCompiler:
 
         self._log_stage(CompilationStage.PARSE)
         raw = load_v21_configs(experiment_dir)
+        # Parallel line-annotating parse for file:line diagnostics; the DTOs
+        # never see it (its __line__ keys would violate extra="forbid").
+        source_map = build_pack_source_map(experiment_dir)
 
         self._log_stage(CompilationStage.LIMITS)
         validate_v21_limits(raw, experiment_dir)
 
         self._log_stage(CompilationStage.SEMANTICS)
-        validate_v21_semantics(raw, experiment_dir)
+        validate_v21_semantics(raw, experiment_dir, source_map)
 
         self._log_stage(CompilationStage.SYMBOLS)
-        symbol_table = build_symbol_table(raw)
+        symbol_table = build_symbol_table(raw, source_map)
 
         self._log_stage(CompilationStage.RESOLVE)
-        resolve_references(raw, symbol_table, experiment_dir)
+        resolve_references(raw, symbol_table, experiment_dir, source_map)
 
         temporal_supported = raw.stratum.stratum.temporal_support == "enabled"
 

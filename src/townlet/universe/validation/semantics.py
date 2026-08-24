@@ -10,6 +10,7 @@ from townlet.environment.substrate_action_validator import SubstrateActionValida
 from townlet.universe.error_codes import ErrorCode
 from townlet.universe.errors import CompilationErrorCollector
 from townlet.universe.raw_configs_v21 import RawConfigsV21
+from townlet.universe.source_map import SourceMap, locate
 from townlet.universe.stages import CompilationStage
 from townlet.universe.validation.feasibility import grid_capacity_for_substrate
 
@@ -54,8 +55,12 @@ def _detect_cycles(graph: Mapping[str, Iterable[str]]) -> list[list[str]]:
     return cycles
 
 
-def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
-    """Validate v2.1 semantic constraints after typed config loading."""
+def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path, source_map: SourceMap | None = None) -> None:
+    """Validate v2.1 semantic constraints after typed config loading.
+
+    ``source_map`` (optional) upgrades per-entry diagnostics to file:line
+    locations; without it, locations stay file-level.
+    """
     errors = CompilationErrorCollector(stage=CompilationStage.SEMANTICS.label)
 
     # Scoping preflight checks files before YAML parsing; this catches the same
@@ -114,7 +119,11 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
                         "A multi-tick interaction cannot progress without a tick schedule."
                     ),
                     code=ErrorCode.MULTI_TICK_REQUIRES_TEMPORAL,
-                    location=str(experiment_dir / "levels" / level_name / "affordances.yaml"),
+                    location=locate(
+                        source_map,
+                        f"levels/{level_name}/affordances.yaml:{affordance.name}",
+                        str(experiment_dir / "levels" / level_name / "affordances.yaml"),
+                    ),
                 )
 
     vision_support = raw.stratum.stratum.vision_support
@@ -275,14 +284,14 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
                 errors.add(
                     f"Affordance '{aff.name}' missing opening_hours.",
                     code=ErrorCode.AFFORDANCE_OPENING_HOURS_MISSING,
-                    location=str(level_dir / "affordances.yaml"),
+                    location=locate(source_map, f"levels/{level_name}/affordances.yaml:{aff.name}", str(level_dir / "affordances.yaml")),
                 )
             deployment = getattr(aff, "deployment", None)
             if deployment is not None and getattr(deployment, "type", None) == "fixed" and not deployment.positions:
                 errors.add(
                     f"Affordance '{aff.name}' has deployment.type='fixed' but no positions specified.",
                     code=ErrorCode.AFFORDANCE_DEPLOYMENT_POSITIONS_MISSING,
-                    location=str(level_dir / "affordances.yaml"),
+                    location=locate(source_map, f"levels/{level_name}/affordances.yaml:{aff.name}", str(level_dir / "affordances.yaml")),
                 )
             invalid_cost_meters = [name for name in aff.costs.keys() if name not in env_meter_names]
 
@@ -299,7 +308,7 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
                 errors.add(
                     f"Affordance '{aff.name}' references unknown meters in costs/interactions.",
                     code=ErrorCode.AFFORDANCE_INVALID_METER,
-                    location=str(level_dir / "affordances.yaml"),
+                    location=locate(source_map, f"levels/{level_name}/affordances.yaml:{aff.name}", str(level_dir / "affordances.yaml")),
                 )
 
         enabled_affordances = getattr(level.training, "enabled_affordances", None)

@@ -136,8 +136,7 @@ class UniverseCompiler:
 
         # Stage 1: load v2.1 configs
         self._log_stage(1, "Parse v2.1 configs")
-        loaded = load_v21_configs(experiment_dir)
-        raw = loaded.raw
+        raw = load_v21_configs(experiment_dir)
 
         # Stage 1b: enforce safety limits over loaded DTOs
         self._log_stage(2, "Enforce safety limits")

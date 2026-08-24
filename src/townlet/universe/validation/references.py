@@ -6,7 +6,6 @@ from pathlib import Path
 
 from townlet.config.drive_as_code import DriveAsCodeConfig
 from townlet.universe.errors import CompilationError, CompilationErrorCollector, CompilationMessage
-from townlet.universe.pipeline import ResolvedConfigBundle
 from townlet.universe.raw_configs_v21 import RawConfigsV21
 from townlet.universe.symbol_table import UniverseSymbolTable
 
@@ -229,7 +228,7 @@ def resolve_references(
     raw: RawConfigsV21,
     symbol_table: UniverseSymbolTable,
     experiment_dir: Path,
-) -> ResolvedConfigBundle:
+) -> None:
     """Resolve and validate symbolic references between loaded config DTOs."""
     errors = CompilationErrorCollector(stage="Stage 3: Reference Resolution")
 
@@ -291,4 +290,3 @@ def resolve_references(
             validate_dac_references(level.drive, symbol_table, errors)
 
     errors.check_and_raise(stage_label="Stage 3: Reference Resolution")
-    return ResolvedConfigBundle(raw=raw, symbol_table=symbol_table)

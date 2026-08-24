@@ -86,7 +86,7 @@ def test_item_catalog_limit_is_enforced_by_limits_validation_after_dto_load(tmp_
     _write_vfs_profiles(config_dir, profile_count=1)
     _write_items_catalog(config_dir, item_types=_make_item_types(MAX_ITEM_TYPES + 1))
 
-    raw = load_v21_configs(config_dir).raw
+    raw = load_v21_configs(config_dir)
 
     with pytest.raises(CompilationError, match="item_types exceeds safety limit"):
         limits.validate_v21_limits(raw, config_dir)

@@ -3,29 +3,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
 
 from townlet.effects.catalog import EffectCatalog
 from townlet.universe.compiled import CompiledUniverse, CompiledVFSProfiles
 from townlet.universe.dto import UniverseMetadata
-from townlet.universe.raw_configs_v21 import RawConfigsV21
-from townlet.universe.symbol_table import UniverseSymbolTable
 from townlet.vfs.observation_builder import VFSObservationSpec
-
-
-@dataclass(frozen=True)
-class LoadedConfigBundle:
-    """Configs loaded from a v2.1 experiment pack."""
-
-    raw: RawConfigsV21
-
-
-@dataclass(frozen=True)
-class ResolvedConfigBundle:
-    """Loaded configs after symbol registration and reference validation."""
-
-    raw: RawConfigsV21
-    symbol_table: UniverseSymbolTable
 
 
 @dataclass(frozen=True)
@@ -49,11 +31,3 @@ class CompiledLevelBundle:
     universe_metadata: UniverseMetadata
     vfs_expression_schema: dict[str, str]
     vfs_evaluation_marks: dict[str, set[str]] | None
-
-
-@dataclass(frozen=True)
-class CompiledArtifactBundle:
-    """Final compiled artifact and its cache target."""
-
-    compiled: CompiledUniverse
-    cache_path: Path

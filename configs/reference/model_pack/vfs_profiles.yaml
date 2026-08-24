@@ -19,6 +19,10 @@ agent_profile:
       semantic_type: custom
       type: bool
       expression: "inventory_weight > 1.0"
+    - name: is_digesting
+      semantic_type: custom
+      type: bool
+      initial_value: false
 
 item_profiles:
   - profile_name: default_item

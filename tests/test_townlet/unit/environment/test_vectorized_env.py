@@ -646,7 +646,7 @@ class TestVFSWriteBackLoudness:
             dones=None,
         )
 
-        with pytest.raises(KeyError, match="__definitely_not_a_registered_variable__"):
+        with pytest.raises(KeyError, match=r"__definitely_not_a_registered_variable__.*Write source: VTC transition state commit"):
             env._commit_vtc_transition_state(state)
 
     def test_global_profile_write_back_raises_on_unknown_id(self, custom_env_builder, monkeypatch):
@@ -682,7 +682,7 @@ class TestVFSWriteBackLoudness:
             lambda **kwargs: {"__unknown_global_expr__": torch.tensor(True)},
         )
 
-        with pytest.raises(KeyError, match="__unknown_global_expr__"):
+        with pytest.raises(KeyError, match=r"__unknown_global_expr__.*Write source: global_profile expression evaluation"):
             env.step(torch.zeros(env.num_agents, dtype=torch.long))
 
     def test_agent_profile_write_back_raises_on_unknown_id(self, custom_env_builder, monkeypatch):
@@ -718,7 +718,7 @@ class TestVFSWriteBackLoudness:
             lambda **kwargs: {"__unknown_agent_expr__": torch.zeros(env.num_agents, dtype=torch.bool)},
         )
 
-        with pytest.raises(KeyError, match="__unknown_agent_expr__"):
+        with pytest.raises(KeyError, match=r"__unknown_agent_expr__.*Write source: agent_profile expression evaluation"):
             env.step(torch.zeros(env.num_agents, dtype=torch.long))
 
 

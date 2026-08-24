@@ -249,7 +249,11 @@ def cmd_curves(args: argparse.Namespace) -> None:
             EventAccumulator,
         )
 
-        tb_dir = run_dir / "checkpoints" / "tensorboard"
+        # DemoRunner's layout rule: <run>/checkpoints under a runs/-rooted tree puts
+        # TensorBoard at the checkpoint dir's SIBLING, <run>/tensorboard.
+        tb_dir = run_dir / "tensorboard"
+        if not tb_dir.exists():
+            tb_dir = run_dir / "checkpoints" / "tensorboard"
         acc = EventAccumulator(str(tb_dir), size_guidance={"scalars": 0})
         acc.Reload()
         survival_tags = [t for t in acc.Tags().get("scalars", []) if t.endswith("Survival_Time")]

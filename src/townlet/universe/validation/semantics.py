@@ -324,12 +324,6 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
                     location=str(level_dir / "training.yaml"),
                 )
 
-    meters = env_meter_names
-    if hasattr(raw.environment.environment, "variables"):
-        variables_set = set(var.name for var in raw.environment.environment.variables)
-    else:
-        variables_set = set()
-
     for level_name, level in raw.levels.items():
         level_path = experiment_dir / "levels" / level_name / "drive.yaml"
         drive = getattr(level, "drive", None)
@@ -337,14 +331,6 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
         if drive is None:
             errors.add(f"drive.yaml is required for level {level_name}.", code="LEVEL_DRIVE_MISSING", location=str(level_path))
             continue
-
-        modifiers = getattr(drive, "modifiers", None)
-        if modifiers is None:
-            modifiers = {}
-        for _mod_name, mod_cfg in modifiers.items():
-            source = getattr(mod_cfg, "source", None)
-            if source and source not in meters and source not in variables_set:
-                pass
 
         if getattr(drive, "extrinsic", None) is None:
             errors.add(

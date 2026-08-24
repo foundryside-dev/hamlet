@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import Any
 
 from townlet.config.affordances_v2_config import AffordancesV2Config
@@ -13,20 +12,6 @@ from townlet.universe.optimization import OptimizationData
 
 class OptimizationCompiler:
     """Compile tensors and validation data used by optimized runtime paths."""
-
-    def resolve_day_length(self, curriculum: Any, *, temporal_supported: bool, experiment_dir: Path, level_name: str) -> int:
-        """Return the optimization day length for a level, failing if required temporal data is missing."""
-        day_length = curriculum.curriculum.day_length
-        if temporal_supported and curriculum.curriculum.active_temporal:
-            if day_length is None or day_length <= 0:
-                raise ValueError(
-                    "curriculum.day_length is required when temporal mechanics are declared in stratum.temporal_support.\n"
-                    f"  Experiment: {experiment_dir}\n"
-                    f"  Level: {level_name}\n"
-                    "Provide an explicit positive day_length; no defaults are applied."
-                )
-            return int(day_length)
-        return 0
 
     def build_optimization_data(
         self,

@@ -9,7 +9,6 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
-from townlet.universe.compilers.optimization import OptimizationCompiler
 from townlet.universe.errors import CompilationError
 from townlet.universe.loaders.preflight import validate_scoping, validate_yaml_syntax
 from townlet.universe.loaders.v21 import load_v21_configs
@@ -292,15 +291,3 @@ def test_grid_capacity_for_gridnd_substrate() -> None:
     assert grid_capacity_for_substrate(substrate) == 30
 
 
-def test_optimization_compiler_normalizes_inactive_temporal_day_length() -> None:
-    curriculum = SimpleNamespace(curriculum=SimpleNamespace(active_temporal=False, day_length=24))
-
-    assert (
-        OptimizationCompiler().resolve_day_length(
-            curriculum,
-            temporal_supported=True,
-            experiment_dir=Path("configs/test/model_config"),
-            level_name="L0_test",
-        )
-        == 0
-    )

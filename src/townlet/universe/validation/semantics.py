@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from townlet.environment.substrate_action_validator import SubstrateActionValidator
+from townlet.universe.error_codes import ErrorCode
 from townlet.universe.errors import CompilationErrorCollector
 from townlet.universe.raw_configs_v21 import RawConfigsV21
 from townlet.universe.stages import CompilationStage
@@ -65,7 +66,7 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
         if not path.exists():
             errors.add(
                 f"Missing required experiment-level file: {filename}",
-                code="SCOPING_MISSING_EXPERIMENT_FILE",
+                code=ErrorCode.SCOPING_MISSING_EXPERIMENT_FILE,
                 location=str(path),
             )
 
@@ -79,7 +80,7 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
                 if forbidden_path.exists():
                     errors.add(
                         f"Found {forbidden} at level scope ({forbidden_path}). This file must live at the experiment root only.",
-                        code="SCOPING_FORBIDDEN_LEVEL_FILE",
+                        code=ErrorCode.SCOPING_FORBIDDEN_LEVEL_FILE,
                         location=str(forbidden_path),
                     )
 
@@ -90,7 +91,7 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
             if day_length is None or day_length <= 0:
                 errors.add(
                     "curriculum.day_length must be >0 when temporal_support is enabled and active_temporal=true.",
-                    code="TEMPORAL_DAY_LENGTH_MISSING",
+                    code=ErrorCode.TEMPORAL_DAY_LENGTH_MISSING,
                     location=str(experiment_dir / "levels" / level_name / "curriculum.yaml"),
                 )
 
@@ -112,7 +113,7 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
                         "(stratum.temporal_support='enabled' and curriculum.active_temporal=true). "
                         "A multi-tick interaction cannot progress without a tick schedule."
                     ),
-                    code="MULTI_TICK_REQUIRES_TEMPORAL",
+                    code=ErrorCode.MULTI_TICK_REQUIRES_TEMPORAL,
                     location=str(experiment_dir / "levels" / level_name / "affordances.yaml"),
                 )
 
@@ -126,7 +127,7 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
         if active_canon == "global" and vision_support not in {"global", "both"}:
             errors.add(
                 "Invalid vision configuration: curriculum.active_vision='global' requires stratum.vision_support in ['global','both'].",
-                code="VISION_INCOMPATIBLE",
+                code=ErrorCode.VISION_INCOMPATIBLE,
                 location=str(experiment_dir / "levels" / level_name / "curriculum.yaml"),
             )
         if active_canon == "partial" and vision_support not in {"partial", "both"}:
@@ -135,7 +136,7 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
                     "Invalid vision configuration: curriculum.active_vision=partial/local "
                     "requires stratum.vision_support in ['partial','both']."
                 ),
-                code="VISION_INCOMPATIBLE",
+                code=ErrorCode.VISION_INCOMPATIBLE,
                 location=str(experiment_dir / "levels" / level_name / "curriculum.yaml"),
             )
 
@@ -146,13 +147,13 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
     for err in validation_result.errors:
         errors.add(
             err,
-            code="SUBSTRATE_ACTION_INCOMPATIBLE",
+            code=ErrorCode.SUBSTRATE_ACTION_INCOMPATIBLE,
             location=str(experiment_dir / "actions.yaml"),
         )
     for warn in validation_result.warnings:
         errors.add(
             warn,
-            code="SUBSTRATE_ACTION_WARNING_AS_ERROR",
+            code=ErrorCode.SUBSTRATE_ACTION_WARNING_AS_ERROR,
             location=str(experiment_dir / "actions.yaml"),
         )
 
@@ -161,7 +162,7 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
         if continuous_cfg is None or getattr(continuous_cfg, "interaction_radius", None) is None:
             errors.add(
                 "Continuous substrates require an explicit interaction_radius; no defaults are applied.",
-                code="INTERACTION_RADIUS_MISSING",
+                code=ErrorCode.INTERACTION_RADIUS_MISSING,
                 location=str(experiment_dir / "stratum.yaml"),
             )
 
@@ -178,7 +179,7 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
                     "environment.yaml modulation_graph references unknown bars or affordances: "
                     f"bar={mod.bar}, affordances={sorted(mod.affordances)}"
                 ),
-                code="MODULATION_INVALID_REFERENCE",
+                code=ErrorCode.MODULATION_INVALID_REFERENCE,
                 location=str(experiment_dir / "environment.yaml"),
             )
 
@@ -186,7 +187,7 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
         if edge[0] not in env_meter_names or edge[1] not in env_meter_names:
             errors.add(
                 f"environment.yaml cascade_graph references unknown meters: {edge}",
-                code="CASCADE_INVALID_METER",
+                code=ErrorCode.CASCADE_INVALID_METER,
                 location=str(experiment_dir / "environment.yaml"),
             )
 
@@ -199,7 +200,7 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
         formatted = " -> ".join(cycle + [cycle[0]])
         errors.add(
             f"environment.yaml cascade_graph contains circular cascade: {formatted}",
-            code="CASCADE_CYCLE",
+            code=ErrorCode.CASCADE_CYCLE,
             location=str(experiment_dir / "environment.yaml"),
         )
 
@@ -216,7 +217,7 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
             extra = level_meter_names - env_meter_names
             errors.add(
                 "Meter vocabulary mismatch between environment.yaml and levels/bars.yaml.",
-                code="METER_VOCAB_MISMATCH",
+                code=ErrorCode.METER_VOCAB_MISMATCH,
                 location=str(level_dir / "bars.yaml"),
             )
             if missing:
@@ -229,7 +230,7 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
             extra = level_affordance_names - env_affordance_names
             errors.add(
                 "Affordance vocabulary mismatch between environment.yaml and levels/affordances.yaml.",
-                code="AFFORDANCE_VOCAB_MISMATCH",
+                code=ErrorCode.AFFORDANCE_VOCAB_MISMATCH,
                 location=str(level_dir / "affordances.yaml"),
             )
             if missing:
@@ -243,13 +244,13 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
         if missing_edges:
             errors.add(
                 f"Missing cascades (must match environment.yaml cascade_graph): {sorted(missing_edges)}",
-                code="CASCADE_MISSING",
+                code=ErrorCode.CASCADE_MISSING,
                 location=str(level_dir / "bars.yaml"),
             )
         if extra_edges:
             errors.add(
                 f"Extra cascades not declared in environment.yaml cascade_graph: {sorted(extra_edges)}",
-                code="CASCADE_EXTRA",
+                code=ErrorCode.CASCADE_EXTRA,
                 location=str(level_dir / "bars.yaml"),
             )
 
@@ -259,13 +260,13 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
         if missing_mods:
             errors.add(
                 f"Missing modulations (must match environment.yaml modulation_graph): {sorted(missing_mods)}",
-                code="MODULATION_MISSING",
+                code=ErrorCode.MODULATION_MISSING,
                 location=str(level_dir / "affordances.yaml"),
             )
         if extra_mods:
             errors.add(
                 f"Extra modulations not declared in environment.yaml modulation_graph: {sorted(extra_mods)}",
-                code="MODULATION_EXTRA",
+                code=ErrorCode.MODULATION_EXTRA,
                 location=str(level_dir / "affordances.yaml"),
             )
 
@@ -273,14 +274,14 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
             if getattr(aff, "opening_hours", None) is None:
                 errors.add(
                     f"Affordance '{aff.name}' missing opening_hours.",
-                    code="AFFORDANCE_OPENING_HOURS_MISSING",
+                    code=ErrorCode.AFFORDANCE_OPENING_HOURS_MISSING,
                     location=str(level_dir / "affordances.yaml"),
                 )
             deployment = getattr(aff, "deployment", None)
             if deployment is not None and getattr(deployment, "type", None) == "fixed" and not deployment.positions:
                 errors.add(
                     f"Affordance '{aff.name}' has deployment.type='fixed' but no positions specified.",
-                    code="AFFORDANCE_DEPLOYMENT_POSITIONS_MISSING",
+                    code=ErrorCode.AFFORDANCE_DEPLOYMENT_POSITIONS_MISSING,
                     location=str(level_dir / "affordances.yaml"),
                 )
             invalid_cost_meters = [name for name in aff.costs.keys() if name not in env_meter_names]
@@ -297,7 +298,7 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
             if invalid_cost_meters or invalid_interaction_meters:
                 errors.add(
                     f"Affordance '{aff.name}' references unknown meters in costs/interactions.",
-                    code="AFFORDANCE_INVALID_METER",
+                    code=ErrorCode.AFFORDANCE_INVALID_METER,
                     location=str(level_dir / "affordances.yaml"),
                 )
 
@@ -310,7 +311,7 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
         if invalid_enabled:
             errors.add(
                 f"Invalid enabled_affordances in training.yaml: unknown entries {sorted(invalid_enabled)}",
-                code="ENABLED_AFFORDANCES_INVALID",
+                code=ErrorCode.ENABLED_AFFORDANCES_INVALID,
                 location=str(level_dir / "training.yaml"),
             )
 
@@ -321,7 +322,7 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
             if required_slots > grid_capacity:
                 errors.add(
                     f"Grid capacity exceeded: {required_slots} entities (agents + affordances) vs grid capacity {grid_capacity}.",
-                    code="GRID_CAPACITY_EXCEEDED",
+                    code=ErrorCode.GRID_CAPACITY_EXCEEDED,
                     location=str(level_dir / "training.yaml"),
                 )
 
@@ -330,20 +331,20 @@ def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path) -> None:
         drive = getattr(level, "drive", None)
 
         if drive is None:
-            errors.add(f"drive.yaml is required for level {level_name}.", code="LEVEL_DRIVE_MISSING", location=str(level_path))
+            errors.add(f"drive.yaml is required for level {level_name}.", code=ErrorCode.LEVEL_DRIVE_MISSING, location=str(level_path))
             continue
 
         if getattr(drive, "extrinsic", None) is None:
             errors.add(
                 f"drive.extrinsic is required for level {level_name}.",
-                code="LEVEL_DRIVE_EXTRINSIC_MISSING",
+                code=ErrorCode.LEVEL_DRIVE_EXTRINSIC_MISSING,
                 location=str(level_path),
             )
 
         if getattr(drive, "intrinsic", None) is None:
             errors.add(
                 f"drive.intrinsic is required for level {level_name}.",
-                code="LEVEL_DRIVE_INTRINSIC_MISSING",
+                code=ErrorCode.LEVEL_DRIVE_INTRINSIC_MISSING,
                 location=str(level_path),
             )
 

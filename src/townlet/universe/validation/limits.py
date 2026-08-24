@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from townlet.universe.error_codes import ErrorCode
 from townlet.universe.errors import CompilationErrorCollector
 from townlet.universe.stages import CompilationStage
 from townlet.universe.validation.feasibility import grid_capacity_for_substrate
@@ -50,7 +51,7 @@ def validate_v21_limits(raw: RawConfigsV21, experiment_dir: Path) -> None:
                     f"Too many {label}: found {count} (max {limit}). "
                     "This may indicate config injection, duplication, or an unsafe configuration size."
                 ),
-                code="CONFIG_LIMIT_EXCEEDED",
+                code=ErrorCode.CONFIG_LIMIT_EXCEEDED,
                 location=str(experiment_dir / filename),
             )
 
@@ -59,7 +60,7 @@ def validate_v21_limits(raw: RawConfigsV21, experiment_dir: Path) -> None:
         if item_count > MAX_ITEM_TYPES:
             errors.add(
                 f"items.yaml item_types exceeds safety limit for v2.1 configs: found {item_count} (max {MAX_ITEM_TYPES}).",
-                code="ITEM_TYPES_LIMIT_EXCEEDED",
+                code=ErrorCode.ITEM_TYPES_LIMIT_EXCEEDED,
                 location=str(experiment_dir / "items.yaml"),
             )
 
@@ -67,7 +68,7 @@ def validate_v21_limits(raw: RawConfigsV21, experiment_dir: Path) -> None:
     if grid_capacity is not None and grid_capacity > MAX_GRID_CELLS:
         errors.add(
             f"Substrate grid size exceeds safety limit for v2.1 configs: {grid_capacity} cells (max {MAX_GRID_CELLS}).",
-            code="GRID_SIZE_LIMIT_EXCEEDED",
+            code=ErrorCode.GRID_SIZE_LIMIT_EXCEEDED,
             location=str(experiment_dir / "stratum.yaml"),
         )
 
@@ -85,7 +86,7 @@ def validate_v21_limits(raw: RawConfigsV21, experiment_dir: Path) -> None:
                         f"{rule.item_type} has {per_item_rule_counts[rule.item_type]} rules "
                         f"(max {MAX_SPAWN_RULES_PER_ITEM})."
                     ),
-                    code="SPAWN_RULE_LIMIT_EXCEEDED",
+                    code=ErrorCode.SPAWN_RULE_LIMIT_EXCEEDED,
                     location=str(experiment_dir / "levels" / level_name / "items.yaml"),
                 )
 

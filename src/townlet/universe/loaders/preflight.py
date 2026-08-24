@@ -7,6 +7,7 @@ from pathlib import Path
 
 import yaml
 
+from townlet.universe.error_codes import ErrorCode
 from townlet.universe.errors import CompilationError, CompilationErrorCollector
 from townlet.universe.stages import CompilationStage
 
@@ -47,7 +48,7 @@ def validate_scoping(experiment_dir: Path) -> None:
         parent_experiment = experiment_dir.parent.parent
         errors.add(
             f"Cannot validate level directory directly. Please validate from the experiment root: {parent_experiment}",
-            code="SCOPING_LEVEL_DIRECTORY",
+            code=ErrorCode.SCOPING_LEVEL_DIRECTORY,
             location=str(experiment_dir),
         )
         errors.check_and_raise()
@@ -60,7 +61,7 @@ def validate_scoping(experiment_dir: Path) -> None:
         if not root_path.exists():
             errors.add(
                 f"Missing required experiment-level file: {filename}",
-                code="SCOPING_MISSING_EXPERIMENT_FILE",
+                code=ErrorCode.SCOPING_MISSING_EXPERIMENT_FILE,
                 location=str(root_path),
             )
 
@@ -74,7 +75,7 @@ def validate_scoping(experiment_dir: Path) -> None:
                 if forbidden_path.exists():
                     errors.add(
                         f"Found {forbidden} at level scope ({forbidden_path}). This file must live at the experiment root only.",
-                        code="SCOPING_FORBIDDEN_LEVEL_FILE",
+                        code=ErrorCode.SCOPING_FORBIDDEN_LEVEL_FILE,
                         location=str(forbidden_path),
                     )
             level_items = level_dir / "items.yaml"
@@ -93,7 +94,7 @@ def validate_scoping(experiment_dir: Path) -> None:
                         f"Found items.yaml at level scope ({level_items}). "
                         "Level item spawns must use the v1.0 ItemsAppearance schema; "
                         "shared item catalogs belong at the experiment root.",
-                        code="SCOPING_FORBIDDEN_LEVEL_FILE",
+                        code=ErrorCode.SCOPING_FORBIDDEN_LEVEL_FILE,
                         location=str(level_items),
                     )
 
@@ -124,13 +125,13 @@ def validate_yaml_syntax(config_dir: Path) -> None:
         if not file_path.exists():
             if file_name == "items.yaml":
                 continue
-            errors.add(f"{file_name}: File not found", code="MISSING_FILE", location=str(file_path))
+            errors.add(f"{file_name}: File not found", code=ErrorCode.MISSING_FILE, location=str(file_path))
             continue
         try:
             with file_path.open() as handle:
                 yaml.safe_load(handle)
         except yaml.YAMLError as exc:
-            errors.add(str(exc), code="YAML_SYNTAX_ERROR", location=str(file_path))
+            errors.add(str(exc), code=ErrorCode.YAML_SYNTAX_ERROR, location=str(file_path))
 
     for file_name in optional_shared_files:
         file_path = config_dir / file_name
@@ -140,11 +141,11 @@ def validate_yaml_syntax(config_dir: Path) -> None:
             with file_path.open() as handle:
                 yaml.safe_load(handle)
         except yaml.YAMLError as exc:
-            errors.add(str(exc), code="YAML_SYNTAX_ERROR", location=str(file_path))
+            errors.add(str(exc), code=ErrorCode.YAML_SYNTAX_ERROR, location=str(file_path))
 
     levels_dir = config_dir / "levels"
     if not levels_dir.exists():
-        errors.add("levels/ directory missing", code="MISSING_LEVELS_DIR", location=str(levels_dir))
+        errors.add("levels/ directory missing", code=ErrorCode.MISSING_LEVELS_DIR, location=str(levels_dir))
     else:
         for level_dir in sorted(p for p in levels_dir.iterdir() if p.is_dir()):
             for file_name in ("curriculum.yaml", "bars.yaml", "affordances.yaml", "training.yaml", "drive.yaml"):
@@ -152,7 +153,7 @@ def validate_yaml_syntax(config_dir: Path) -> None:
                 if not file_path.exists():
                     errors.add(
                         f"{file_name}: File not found",
-                        code="MISSING_FILE",
+                        code=ErrorCode.MISSING_FILE,
                         location=str(file_path),
                     )
                     continue
@@ -160,7 +161,7 @@ def validate_yaml_syntax(config_dir: Path) -> None:
                     with file_path.open() as handle:
                         yaml.safe_load(handle)
                 except yaml.YAMLError as exc:
-                    errors.add(str(exc), code="YAML_SYNTAX_ERROR", location=str(file_path))
+                    errors.add(str(exc), code=ErrorCode.YAML_SYNTAX_ERROR, location=str(file_path))
 
     if errors.errors:
         errors.add_hint("Check YAML indentation (use spaces, not tabs)")

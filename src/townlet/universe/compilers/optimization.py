@@ -7,7 +7,10 @@ from typing import Any
 from townlet.config.affordances_v2_config import AffordancesV2Config
 from townlet.config.bars_v2_config import BarsV2Config
 from townlet.universe.dto import ActionSpaceMetadata, AffordanceMetadata, MeterMetadata
+from townlet.universe.error_codes import ErrorCode
+from townlet.universe.errors import CompilationError, CompilationMessage
 from townlet.universe.optimization import OptimizationData
+from townlet.universe.stages import CompilationStage
 
 
 class OptimizationCompiler:
@@ -39,7 +42,10 @@ class OptimizationCompiler:
                 if missing_target:
                     parts.append(f"  Unknown target meter: {cascade.target!r}")
                 parts.append("  Valid meters: " + ", ".join(sorted(meter_lookup.keys())))
-                raise ValueError("\n".join(parts))
+                raise CompilationError(
+                    CompilationStage.LEVELS.label,
+                    [CompilationMessage(code=ErrorCode.UAC_OPT_CASCADE, message="\n".join(parts), location="bars.yaml")],
+                )
             entry = {
                 "source_idx": source_idx,
                 "target_idx": target_idx,
@@ -54,19 +60,37 @@ class OptimizationCompiler:
         for modulation in affordances.modulations:
             bar_idx = meter_lookup.get(modulation.bar)
             if bar_idx is None:
-                raise ValueError(
-                    "Invalid modulation entry in affordances.yaml.\n"
-                    f"  Unknown bar: {modulation.bar!r}\n"
-                    "  Valid meters: " + ", ".join(sorted(meter_lookup.keys()))
+                raise CompilationError(
+                    CompilationStage.LEVELS.label,
+                    [
+                        CompilationMessage(
+                            code=ErrorCode.UAC_OPT_MODULATION,
+                            message=(
+                                "Invalid modulation entry in affordances.yaml.\n"
+                                f"  Unknown bar: {modulation.bar!r}\n"
+                                "  Valid meters: " + ", ".join(sorted(meter_lookup.keys()))
+                            ),
+                            location="affordances.yaml",
+                        )
+                    ],
                 )
             for aff_name in modulation.affordances:
                 target_idx = next((i for i, a in enumerate(affordance_metadata.affordances) if a.name == aff_name), None)
                 if target_idx is None:
                     valid_affordances = [a.name for a in affordance_metadata.affordances]
-                    raise ValueError(
-                        "Invalid modulation entry in affordances.yaml.\n"
-                        f"  Unknown affordance in modulation.affordances: {aff_name!r}\n"
-                        "  Valid affordances: " + ", ".join(sorted(valid_affordances))
+                    raise CompilationError(
+                        CompilationStage.LEVELS.label,
+                        [
+                            CompilationMessage(
+                                code=ErrorCode.UAC_OPT_MODULATION,
+                                message=(
+                                    "Invalid modulation entry in affordances.yaml.\n"
+                                    f"  Unknown affordance in modulation.affordances: {aff_name!r}\n"
+                                    "  Valid affordances: " + ", ".join(sorted(valid_affordances))
+                                ),
+                                location="affordances.yaml",
+                            )
+                        ],
                     )
                 modulation_entries.append(
                     {

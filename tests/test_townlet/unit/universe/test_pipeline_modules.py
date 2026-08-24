@@ -289,5 +289,3 @@ def test_grid_capacity_for_gridnd_substrate() -> None:
     substrate = SimpleNamespace(type="gridnd", gridnd=SimpleNamespace(dimension_sizes=[2, 3, 5]))
 
     assert grid_capacity_for_substrate(substrate) == 30
-
-

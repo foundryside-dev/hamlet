@@ -16,6 +16,7 @@ from townlet.config.brain_config import apply_training_overrides, compute_brain_
 from townlet.effects.catalog import EffectCatalog
 from townlet.universe.compiled import CompiledUniverse
 from townlet.universe.dto import UniverseMetadata
+from townlet.universe.error_codes import ErrorCode
 from townlet.universe.raw_configs_v21 import RawConfigsV21
 from townlet.vfs.observation_builder import VFSObservationSpec
 from townlet.vfs.profiles import CircularDependencyError
@@ -166,7 +167,7 @@ class UniverseCompiler:
         except (CircularDependencyError, TypeCheckError) as exc:
             raise self._vfs_domain_compilation_error(
                 CompilationStage.SHARED.label,
-                "VFS-PROFILE-COMPILE",
+                ErrorCode.VFS_PROFILE_COMPILE,
                 experiment_dir / "vfs_profiles.yaml",
                 exc,
             ) from exc
@@ -211,7 +212,7 @@ class UniverseCompiler:
         except (CircularDependencyError, TypeCheckError) as exc:
             raise self._vfs_domain_compilation_error(
                 CompilationStage.LEVELS.label,
-                "VFS-LEVEL-COMPILE",
+                ErrorCode.VFS_LEVEL_COMPILE,
                 experiment_dir / "levels",
                 exc,
             ) from exc
@@ -249,7 +250,7 @@ class UniverseCompiler:
     def _vfs_domain_compilation_error(
         self,
         stage: str,
-        code: str,
+        code: ErrorCode,
         location: Path,
         exc: Exception,
     ) -> CompilationError:
@@ -574,7 +575,7 @@ class UniverseCompiler:
                 stage=CompilationStage.PREFLIGHT.label,
                 errors=[
                     CompilationMessage(
-                        code="YAML_SYNTAX_ERROR",
+                        code=ErrorCode.YAML_SYNTAX_ERROR,
                         message=error_msg,
                         location=str(file_path),
                     )

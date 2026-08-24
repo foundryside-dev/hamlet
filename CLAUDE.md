@@ -83,9 +83,15 @@ target; the status line is false. That pattern repeats across the archived corpu
 
 **Current-and-trustworthy:** `README.md`, `docs/product/`, `docs/oracle/`, the six-document HLD
 set in `docs/architecture/` — `HLD.md`, `STRATA.md`, `UAC.md`, `BAC.md`, `COMPILER.md`,
-`VFS.md` (all reviewed against source 2026-08-24) — and `docs/config-schemas/`.
+`VFS.md` (all reviewed against source 2026-08-24).
 `docs/architecture/archive/vfs-current-implementation.md` also remains accurate per the
 2026-08-24 audit **except** its access-control and `agent_private` claims.
+
+⚠️ **`docs/config-schemas/` no longer belongs on that trustworthy list.** A separate same-day
+recut (commit `c4e8bd58`, "zzz. archive") moved the whole per-surface schema set to
+`docs/zzz. archive/config-schemas/` (archived 2026-08-24; content may be stale beyond what each
+file already flags) — it is history now, not a maintained reference. Citations below are
+repointed to that archive path because nothing has replaced it yet.
 
 ### The oracle (strangler discipline)
 
@@ -271,9 +277,10 @@ checked accessor entirely — see `docs/architecture/VFS.md` §6 caveat and
   does not have one; `configs/L5_multi_agent` does.
 
 **Documentation**: `docs/architecture/VFS.md` (the authoritative VFS document, reviewed
-2026-08-24), `docs/config-schemas/vfs-profiles.md`, `docs/config-schemas/variables.md`
-(⚠ stale, 2025-11), and `docs/architecture/archive/vfs-current-implementation.md` (accurate per
-the 2026-08-24 audit except its access-control and `agent_private` claims).
+2026-08-24), `docs/zzz. archive/config-schemas/vfs-profiles.md`,
+`docs/zzz. archive/config-schemas/variables.md` (⚠ stale, 2025-11, and archived 2026-08-24 —
+content may be further stale), and `docs/architecture/archive/vfs-current-implementation.md`
+(accurate per the 2026-08-24 audit except its access-control and `agent_private` claims).
 
 ### Action Space (Composable)
 
@@ -285,7 +292,8 @@ the 2026-08-24 audit except its access-control and `agent_private` claims).
 - **Custom Actions**: REST (energy recovery), MEDITATE (mood boost)
 - **Action Labels**: Configurable terminology (gaming, 6dof, cardinal, math presets)
 
-See `docs/config-schemas/enabled_actions.md` for details.
+See `docs/zzz. archive/config-schemas/enabled_actions.md` for details (archived 2026-08-24;
+content may be stale).
 
 ## Drive As Code (DAC)
 
@@ -330,7 +338,8 @@ where:
 ### Components
 
 Modifier, extrinsic (9 types), intrinsic (5 types), and shaping (11 types) vocabularies:
-see `docs/config-schemas/drive_as_code.md`.
+see `docs/zzz. archive/config-schemas/drive_as_code.md` (archived 2026-08-24; content may be
+stale).
 
 ### Pedagogical Pattern: "Low Energy Delirium" Bug
 
@@ -361,12 +370,15 @@ The intended design, for whoever authors it:
 - Checkpoint provenance via `drive_hash` (SHA256 of DAC config)
 - All checkpoints must have matching `drive_hash`
 
-**Migration**: See `docs/guides/dac-migration.md`
+**Migration**: See `docs/zzz. archive/guides/dac-migration.md` (archived 2026-08-24; content may
+be stale)
 
 ### Documentation
 
-- **Config Reference**: `docs/config-schemas/drive_as_code.md`
-- **Migration Guide**: `docs/guides/dac-migration.md`
+- **Config Reference**: `docs/zzz. archive/config-schemas/drive_as_code.md` (archived
+  2026-08-24; content may be stale)
+- **Migration Guide**: `docs/zzz. archive/guides/dac-migration.md` (archived 2026-08-24;
+  content may be stale)
 
 ### Q-Learning Algorithm Variants
 
@@ -374,8 +386,8 @@ The intended design, for whoever authors it:
 Non-obvious cost on a recurrent architecture (corrected 2026-08-24 — the "3 forward passes vs 2"
 previously stated here does not match the current update path): one extra single-step boundary
 forward per update; action selection reuses the online unroll (`population/vectorized.py:862-880`).
-Details: `docs/architecture/BAC.md` §2.5; `docs/config-schemas/training.md` still carries the
-stale 3-vs-2 figure.
+Details: `docs/architecture/BAC.md` §2.5; `docs/zzz. archive/config-schemas/training.md`
+(archived 2026-08-24) still carries the stale 3-vs-2 figure.
 
 ## Configuration System
 
@@ -418,7 +430,8 @@ files differ only in comments. Five documented levels are **three distinct unive
 
 Substrate config examples: the shipped packs (`configs/default_curriculum/stratum.yaml`,
 `configs/aspatial_test/`, `configs/test/action_space/*/`). There is no `configs/templates/`
-directory — that path is dead. Schemas: `docs/config-schemas/`.
+directory — that path is dead. Schemas: `docs/zzz. archive/config-schemas/` (archived
+2026-08-24; content may be stale).
 
 ### No-Defaults Principle
 

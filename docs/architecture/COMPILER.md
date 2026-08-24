@@ -326,7 +326,8 @@ unit, after the token-observation migration. Full text: `UAC.md` §4 and
 - `STRATA.md` — the substrate the observation and action compilers interrogate
 - `VFS.md` — the ABI the compiler targets
 - `BAC.md` — how the brain rides inside the artifact
-- `docs/config-schemas/` — per-surface field references
+- `docs/zzz. archive/config-schemas/` — per-surface field references (archived 2026-08-24;
+  content may be stale)
 - `archive/REVIEW-2026-08-24-compiler-architecture-assessment.md` — the line-level assessment of
   the as-built pipeline: clean seams, dead architecture, load-bearing tangles, and the ranked
   effort/opportunity table behind §7

@@ -53,7 +53,8 @@ Declared sub-configs, in source order:
 | `q_learning` | `QLearningConfig` | gamma, target-update frequency, `use_double_dqn` |
 | `replay` | `ReplayConfig` | capacity, prioritized (PER) vs uniform |
 
-Field-level reference: `docs/config-schemas/brain.md`. Do not restate it here.
+Field-level reference: `docs/zzz. archive/config-schemas/brain.md` (archived 2026-08-24;
+content may be stale). Do not restate it here.
 
 ### 2.2 Architecture selection
 
@@ -111,7 +112,8 @@ lineage-fork predicate (`compiled.py:218`, PDR-0027).
 
 `brain_hash` is one of the seven hashes `assert_checkpoint_identity` hard-compares, so a
 checkpoint refuses to load into a universe whose effective brain differs. See `HLD.md` §5.2 and
-`docs/config-schemas/brain.md` §"Checkpoint Provenance: brain_hash".
+`docs/zzz. archive/config-schemas/brain.md` (archived 2026-08-24) §"Checkpoint Provenance:
+brain_hash".
 
 ### 2.5 Runtime notes
 
@@ -128,9 +130,9 @@ checkpoint refuses to load into a universe whose effective brain differs. See `H
   Q-predictions, target for Q-targets) plus a target boundary forward; Double DQN adds one
   online boundary forward under the online net's final hidden state (`:862-869`), and action
   selection deliberately **reuses PASS 1's online unroll** — the code comments "a third unroll
-  would recompute the same trajectory" (`:876-880`). `docs/config-schemas/training.md`'s "~50%
-  overhead (3 forward passes vs 2)" and CLAUDE.md's "3 vs 2" restatement do not match the
-  current update path and overstate today's cost.
+  would recompute the same trajectory" (`:876-880`). `docs/zzz. archive/config-schemas/training.md`
+  (archived 2026-08-24)'s "~50% overhead (3 forward passes vs 2)" and CLAUDE.md's "3 vs 2"
+  restatement do not match the current update path and overstate today's cost.
 
 ---
 
@@ -229,7 +231,8 @@ merged by declared id rather than found at a mandated filename. See `UAC.md` §4
 
 ## 5. References
 
-- **Schema**: `docs/config-schemas/brain.md` — the field-level reference for `brain.yaml`
+- **Schema**: `docs/zzz. archive/config-schemas/brain.md` (archived 2026-08-24; content may be
+  stale) — the field-level reference for `brain.yaml`
 - **Source**: `src/townlet/config/brain_config.py` (DTOs), `src/townlet/agent/networks.py`
   (network classes), `src/townlet/agent/network_factory.py` (construction),
   `src/townlet/population/vectorized.py:366` (selection)

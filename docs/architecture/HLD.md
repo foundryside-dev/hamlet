@@ -92,7 +92,8 @@ vocabulary, compiled transitions (VTC), terminal conditions, and rewards. It com
 executed by `DACEngine` (`src/townlet/environment/dac_engine.py`) — is a UAC surface, not a
 fourth subsystem: it reads VFS variables, compiles to GPU computation graphs, and carries its
 own `drive_hash`. Full treatment: `UAC.md`; reward vocabulary:
-`docs/config-schemas/drive_as_code.md`.
+`docs/zzz. archive/config-schemas/drive_as_code.md` (archived 2026-08-24; content may be
+stale).
 
 **BAC** is the brain layer: network architecture, optimizer, loss, replay, and — as target state
 — the behaviour contract and the declarative think-loop graph. Only the network/optimizer/loss
@@ -219,10 +220,13 @@ compiler expects, and `COMPILER.md` marks the front end as the surface slated to
 
 Supporting, and authoritative in their lanes:
 
-- `docs/config-schemas/` — one reference per authoring surface (affordances, bars, brain,
-  drive_as_code, effects, enabled_actions, expressions, items, presentation, training,
-  transition_rules, variables ⚠ stale 2025-11, vfs-profiles). **Schemas live here, not in the
-  HLD set.**
+- `docs/zzz. archive/config-schemas/` — one reference per authoring surface (affordances, bars,
+  brain, drive_as_code, effects, enabled_actions, expressions, items, presentation, training,
+  transition_rules, variables ⚠ stale 2025-11, vfs-profiles). ⚠ **Archived 2026-08-24** (commit
+  `c4e8bd58`, a separate same-day recut) — no longer authoritative-by-maintenance like the other
+  items in this list, just the last schema reference that exists. Schemas still live outside the
+  HLD set, but that "outside" is now an archive; treat content as possibly stale beyond what
+  each file already flags.
 - `docs/oracle/ORACLE.md`, `docs/oracle/known-divergences.md` — what behaviour is frozen, and
   every accepted difference. The oracle never mutates; a diff against it is a defect in the
   rebuild unless the register says otherwise. Never edit anything under `.oracle/`.

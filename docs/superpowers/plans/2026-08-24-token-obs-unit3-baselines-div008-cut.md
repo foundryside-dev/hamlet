@@ -464,3 +464,117 @@ unit 4 (they run feedforward today — census). No `grid_encoding`, `local_windo
 - **Type consistency:** `TokenSpec` (T6) consumed by T7/T8/T9 under that name;
   `token_publishers.py` (T8) consumed by T10's encoder swap; `iqm` (T1) consumed by
   T2 and unit 4.
+
+---
+
+## Phase 2 re-sequencing addendum + Task 5 expansion (2026-08-24, pre-execution pass)
+
+Recon (full dossier in the SDD workspace) settled the verify-at-implementation items
+and **falsified one boundary in the original Task 5**: three of its items change
+compiled output or refuse frozen fixture packs, so they cannot land pre-cut without
+turning the matrix red on divergences DIV-008 does not yet bind. They move INTO the
+cut. The others are verified behavior-neutral for every shipped and fixture pack and
+stay in Task 5.
+
+### What moves out of Task 5, and where
+
+1. **Explicit exposure (delete the `["agent"]` default-injection)** → the cut
+   (Task 10's adjudicated batch). Deleting the injection changes which variables are
+   observed the moment it lands: 31 shipped profile variables, exactly ONE explicit
+   `exposed_to` in the fleet (`trial_f_durability/vfs_profiles.yaml:22`), and the
+   fixture packs (`items_smoke`, `effects_smoke`) rely on the injection for their
+   observed profile variables — pre-cut deletion diverges the obs stream un-registered.
+   Shipped-pack edits (adding the explicit `exposed_to` each author meant, or dropping
+   exposure) land in the same cut window.
+2. **Required `normalization` at exposure (+ boundedness/one_hot refusals on that
+   surface)** → the cut. The requirement is exposure-keyed, so it is vacuous for
+   fixtures only AFTER the injection dies — the two must land together.
+3. **Required `max_active_effects` in effects.yaml** → the cut, with a Task 11
+   consequence: `effects_smoke` is a FROZEN fixture that declares effects and cannot
+   gain the block, so its new-side compile refuses — an honest `NEW_SIDE_ERROR`, not
+   adjudicable by DIV-008 (which binds stream/hash divergence, not refusal).
+   **Task 11 therefore includes the decision point: if any fixture cell refuses on
+   required-field grounds, execute an oracle move-forward (the `PDR-0074` precedent —
+   evidence re-earned at the new commit, fixtures re-frozen from the updated test
+   packs, register entries re-stamped, matrix returned to AGREE).** This is recorded
+   here so Task 11 walks into it deliberately, not surprised.
+
+### Task 5 (re-scoped): behavior-neutral compile hardening — verified against the fleet
+
+Everything below is verified neutral: zero shipped/fixture pack exercises the refused
+or newly-guarded path (dossier, 2026-08-24). The matrix in both modes is the proof
+obligation and runs at task end; ANY non-baseline verdict is a stop-and-report.
+
+**5a. Effects DTOs get `extra="forbid"`** (`hamlet-88578e629e`):
+`EffectDefinitionConfig` (effects_config.py:214) and `EffectsConfig` (:250) gain
+`model_config = ConfigDict(extra="forbid")` (matching `CommandConfig:84`). Preflight:
+grep every shipped AND fixture effects.yaml for keys outside the DTO fields before
+landing; a stray key found is a pack bug fixed in the same commit (configs/ only —
+a fixture stray key is a stop-and-report). The `observable=True` behavioral default
+and `default=[]` idioms are recorded in the ticket but NOT changed here — removing a
+default changes pack requirements, which is cut-scoped. The ticket stays open until
+the cut finishes it; comment the partial discharge.
+
+**5b. `set_engine_value` shape guard** (`hamlet-d970ef83f0`): registry.py:567-587
+gains `value.shape != self._expected_shapes[variable_id] → ValueError` for ALL
+variables (today only sparse-pair is checked; :583-586). Risk pre-checked at
+implementation: run the full suite + matrix — any caller relying on the bypass is a
+latent corruption this guard exposes; fix the caller in the same task if it is
+engine code, stop-and-report if a fixture pack's runtime exercises it. Related
+standing bug `hamlet-f54b887148` (global [B]-shaped tensor hard-fails) — read it
+before implementing; if the guard's landing resolves or reshapes that ticket,
+comment it.
+
+**5c. Write-back unknown-id loudness** (`hamlet-0ddc83e377`): the three silent-drop
+sites are all in vectorized_env.py (`_commit_vtc_transition_state` :1258-1260;
+global-profile write-back :1094-1097; agent-profile write-back :1129-1131, whose
+comment already defers to this unit). Unknown id → raise KeyError naming the id and
+the write source. vtc.py and evaluator.py are already loud (dossier) — no change
+there. Neutral because nothing currently hits the drop paths (the suite+matrix
+prove it).
+
+**5d. Widened scope DTO + scope-table refusals** (spec §2 table): the universe-layer
+closed set lives at exactly three sites — `universe/dto/observation_spec.py:66`
+(`Literal["global","agent","agent_private"]`), `universe/compilers/vfs.py:286`
+(2-member), `universe/compilers/observation.py:403` (cast). Widen the DTO field to
+the nine `VariableScope` members; implement the §2 table refusals so a variable of
+scope affordance/pair/group/zone/message DECLARING EXPOSURE fails compile naming the
+table (currently unreachable from any pack — vfs_profiles has only global/agent/item
+blocks and variables_reference marks are half-dead per `hamlet-33e520cebd` — hence
+neutral). `agent_private` stays representable in the DTO; its publisher filter is
+Task 8. Table-test all nine rows.
+
+**5e. Extents preflight two-liner** (`hamlet-702ae15f82` preflight half): add
+`VariableScope.AFFORDANCE: "num_affordances"` to `_SCOPE_EXTENT_FIELD`
+(vfs/schema.py:593-597). Crash window today: zero-affordance packs only.
+
+**5f. `rank_scaled` ruling** (`hamlet-6a6e104523`): REFUSED at profile-variable
+exposure (joins the §1 boundedness/one_hot refusal list — it is [0,1]-bounded but
+ranks `dim=0` across causally-independent worlds and silently degenerates to
+constant zero at batch 1; observation_builder.py:93-103). Zero shipped usages, so
+refusal is neutral. Meter/`range_type` usage is NOT touched — a different surface
+with its own record (`PDR-0057` executed it); the ticket gets the split ruling as a
+comment. The kind is not deleted from the vocabulary while the meter surface
+legitimately carries it.
+
+**Task 5 sequencing gate (from the session ledger, binding):** no `src/townlet/` or
+`configs/` edit until every baseline seed is TRAINED and GREEDY-EVALED (train copies
+the pack at launch; eval runs on the current engine tree). The baseline record's
+commit is the gate that opens this task.
+
+**Tests:** one refusal test per rule naming the error text (5a stray key, 5b shape,
+5c unknown id, 5d each refused scope row, 5f rank_scaled exposure); the nine-row
+scope table test; full suite green; matrix exit 0 both modes with baseline verdict
+composition unchanged.
+
+### Consequential edits to later task contracts (supersede the original text where they conflict)
+
+- **Task 10 (the swap)** additionally lands: the exposure-injection deletion + fleet
+  `exposed_to` edits; required normalization at exposure + its refusal set (incl.
+  one_hot, unbounded kinds, rank_scaled from 5f); required `max_active_effects` +
+  the capacity denominators consuming it. These adjudicate under DIV-008 with
+  everything else in the atomic knockdown.
+- **Task 11 (adjudication)** additionally owns: the fixture-refusal decision point
+  (oracle move-forward per `PDR-0074` if any fixture cell NEW_SIDE_ERRORs on
+  required fields — expected: `effects_smoke` only), and re-verifying the DIV-008
+  entry's fixture-exposure note against what actually happened.

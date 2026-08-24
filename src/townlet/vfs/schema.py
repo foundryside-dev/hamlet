@@ -579,6 +579,7 @@ class VFSScopeExtents(BaseModel):
     num_zones: int | None = Field(default=None, ge=1, description="Number of zone-scope storage rows")
     num_groups: int | None = Field(default=None, ge=1, description="Number of group-scope storage rows")
     num_message_slots: int | None = Field(default=None, ge=1, description="Recent-message buffer slots per agent")
+    num_affordances: int | None = Field(default=None, ge=1, description="Number of affordance-scope storage rows")
 
 
 class VariablesReferenceData(BaseModel):
@@ -594,6 +595,7 @@ _SCOPE_EXTENT_FIELD: dict[VariableScope, str] = {
     VariableScope.ZONE: "num_zones",
     VariableScope.GROUP: "num_groups",
     VariableScope.MESSAGE: "num_message_slots",
+    VariableScope.AFFORDANCE: "num_affordances",
 }
 
 

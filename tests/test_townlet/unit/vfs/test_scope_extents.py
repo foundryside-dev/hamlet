@@ -57,12 +57,24 @@ SCOPED_VARIABLE = {
         "writable_by": ["engine"],
         "description": "Recent message buffer payload",
     },
+    "affordance": {
+        "id": "occupied_by_test",
+        "scope": "affordance",
+        "type": "agent_ref",
+        "lifetime": "tick",
+        "readable_by": ["engine", "vtc"],
+        "writable_by": ["engine", "vtc"],
+        "default": None,
+        "observable": False,
+        "description": "Current claimant for each affordance row",
+    },
 }
 
 EXTENT_NAME = {
     "zone": "num_zones",
     "group": "num_groups",
     "message": "num_message_slots",
+    "affordance": "num_affordances",
 }
 
 
@@ -76,7 +88,7 @@ def _add_scoped_variable(pack: Path, scope: str, extents: dict[str, int] | None)
     ref_path.write_text(yaml.safe_dump(data))
 
 
-@pytest.mark.parametrize("scope", ["zone", "group", "message"])
+@pytest.mark.parametrize("scope", ["zone", "group", "message", "affordance"])
 def test_scoped_variable_without_extent_fails_at_compile(temp_config_pack: Path, scope: str) -> None:
     """A zone/group/message-scoped variable with no declared extent must be rejected
     at compile time, naming both the variable and the missing extent — never a green

@@ -39,6 +39,10 @@ def _declare_claim_action(pack: Path, *, source_affordance: str | None = "SLEEP"
     ref_path = pack / "variables_reference.yaml"
     ref = yaml.safe_load(ref_path.read_text())
     ref["variables"].append(OCCUPIED_BY_VARIABLE)
+    # affordance-scope extent required at compile time since hamlet-702ae15f82's preflight
+    # half landed (token-obs unit 3, Task 5e) — matches the 14-affordance fixed vocabulary
+    # test_config_pack_path (configs/test/model_config) declares.
+    ref.setdefault("extents", {})["num_affordances"] = 14
     ref_path.write_text(yaml.safe_dump(ref))
 
     actions_path = pack / "actions.yaml"

@@ -681,8 +681,13 @@ class ObservationCompiler:
         )
 
         architecture = brain.architecture
+        aggregator_type: str | None = None
         if architecture.type == "set_encoder" and architecture.set_encoder is not None:
-            census_note = mean_census_advisory(spec, aggregator=architecture.set_encoder.aggregator.type)
+            aggregator_type = architecture.set_encoder.aggregator.type
+        elif architecture.type == "token_set" and architecture.token_set is not None:
+            aggregator_type = architecture.token_set.aggregator.type
+        if aggregator_type is not None:
+            census_note = mean_census_advisory(spec, aggregator=aggregator_type)
             if census_note is not None:
                 advisories.append(census_note)
 

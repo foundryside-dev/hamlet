@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Literal
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_serializer, model_validator
 
 from townlet.config.training_v2_config import TrainingV2Config
 
@@ -452,6 +452,22 @@ class ArchitectureConfig(BaseModel):
         if self.type == "token_set" and self.token_set is None:
             raise ValueError("type='token_set' requires token_set config")
         return self
+
+    @model_serializer(mode="wrap")
+    def _serialize_without_absent_token_set(self, handler):  # type: ignore[no-untyped-def]
+        """Omit ``token_set`` from the dump when absent (token-obs unit 3 Task 9).
+
+        ``brain_hash`` = SHA256 of ``model_dump()``: including a new always-``None``
+        key would move every shipped pack's brain_hash for a feature it does not use
+        — an undeclared hash mover inside an ALONGSIDE task. Declaring token_set
+        stamps the key (and moves the hash, correctly); every other dump stays
+        byte-identical to pre-Task-9. Task 10's registered hash movement (DIV-008)
+        may retire this by folding the key in permanently.
+        """
+        data = handler(self)
+        if isinstance(data, dict) and data.get("token_set") is None:
+            data.pop("token_set", None)
+        return data
 
 
 class ReplayConfig(BaseModel):

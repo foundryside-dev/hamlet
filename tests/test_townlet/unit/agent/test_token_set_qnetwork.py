@@ -271,6 +271,31 @@ class TestTokenSetConfig:
         with pytest.raises(ValueError, match="requires token_set config"):
             ArchitectureConfig(type="token_set")
 
+    def test_absent_token_set_is_omitted_from_the_dump(self):
+        """brain_hash stability pin (alongside constraint): a pack that does not
+        declare token_set dumps EXACTLY the pre-Task-9 shape — the new key must not
+        move every shipped brain_hash. A declaring pack stamps the key (and its hash
+        moves, correctly)."""
+        from townlet.config.brain_config import ArchitectureConfig, FeedforwardConfig
+
+        flat = ArchitectureConfig(
+            type="feedforward",
+            feedforward=FeedforwardConfig(hidden_layers=[8], activation="relu", dropout=0.0, layer_norm=False),
+        )
+        dump = flat.model_dump()
+        assert "token_set" not in dump
+        assert set(dump) == {"type", "feedforward", "recurrent", "dueling", "set_encoder"}
+
+        token = ArchitectureConfig(
+            type="token_set",
+            token_set=TokenSetConfig(
+                token_embed_dim=16,
+                q_head_hidden_dim=32,
+                aggregator=SetAggregatorConfig(type="mean"),
+            ),
+        )
+        assert token.model_dump()["token_set"]["token_embed_dim"] == 16
+
 
 class TestFactory:
     def test_build_token_set(self):

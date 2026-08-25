@@ -142,6 +142,39 @@ class TestTransferContract:
         with pytest.raises(ValueError, match="layout_hash mismatch"):
             assert_checkpoint_layout_hash(checkpoint, universes["b"])
 
+    def test_flat_view_forward_feedforward_and_dueling(self, universes) -> None:
+        """The flat view is a supported second, universe-bound ABI (spec §4): the same
+        serialization reads as a flat vector for the vector networks, guarded by the
+        layout-hash gate (tested above/in the unit gates), not by the type schema."""
+        from townlet.config.brain_config import DuelingConfig, DuelingStreamConfig, FeedforwardConfig
+
+        universe = universes["a"]
+        flat_dim = universe.token_spec.total_dims
+        obs = make_obs(universe, batch_size=3, seed=9)
+
+        feedforward = NetworkFactory.build_feedforward(
+            config=FeedforwardConfig(hidden_layers=[32, 16], activation="relu", dropout=0.0, layer_norm=True),
+            obs_dim=flat_dim,
+            action_dim=universe.metadata.action_count,
+        )
+        assert feedforward(obs).shape == (3, universe.metadata.action_count)
+
+        dueling = NetworkFactory.build_dueling(
+            config=DuelingConfig(
+                shared_layers=[32],
+                value_stream=DuelingStreamConfig(hidden_layers=[16], activation="relu"),
+                advantage_stream=DuelingStreamConfig(hidden_layers=[16], activation="relu"),
+                activation="relu",
+                dropout=0.0,
+                layer_norm=True,
+            ),
+            obs_dim=flat_dim,
+            action_dim=universe.metadata.action_count,
+        )
+        q_values = dueling(obs)
+        assert q_values.shape == (3, universe.metadata.action_count)
+        assert torch.isfinite(q_values).all()
+
     def test_payload_schema_mismatch_on_pack_c_refuses_loudly(self, universes) -> None:
         """Pack C's checkpoint, doctored to a different meter payload width, must
         REFUSE on load — payload widths are engine constants (spec §1), so a width

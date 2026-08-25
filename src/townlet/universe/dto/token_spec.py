@@ -530,7 +530,7 @@ def _one_hot(vocabulary: Sequence[str], member: str) -> tuple[float, ...]:
 
 
 def _element_param(
-    value: float | list[float] | None, element_index: int, *, element_count: int = 1, where: str = "normalization parameter"
+    value: float | list[float] | None, element_index: int, *, element_count: int, where: str
 ) -> float | None:
     """One element's normalization parameter: scalars broadcast; a list must have exactly one
     entry per element (a per-axis list against a multi-axis shape is a named refusal)."""
@@ -572,7 +572,7 @@ def _element_default(default: object, element_index: int, element_count: int) ->
     raise ValueError(f"Declared default has {len(flat)} elements but the variable has {element_count}")
 
 
-def normalize_declared_scalar(value: float, spec: NormalizationSpec, element_index: int = 0, *, element_count: int = 1) -> float:
+def normalize_declared_scalar(value: float, spec: NormalizationSpec, *, element_index: int, element_count: int) -> float:
     """Apply a bounded normalization kind to one declared scalar (the descriptor's 'normalized
     declared initial'). For cyclical_sin_cos the descriptor carries the phase fraction, not the
     sin/cos pair — the pair is the value block's job."""
@@ -594,7 +594,7 @@ def normalize_declared_scalar(value: float, spec: NormalizationSpec, element_ind
     raise ValueError(f"normalize_declared_scalar: kind {kind!r} is not an exposure-admitted kind")
 
 
-def normalization_param_vector(spec: NormalizationSpec, element_index: int = 0, *, element_count: int = 1) -> tuple[float, ...]:
+def normalization_param_vector(spec: NormalizationSpec, *, element_index: int, element_count: int) -> tuple[float, ...]:
     """Canonical (min, max, clip, scale, params_absent) for the descriptor block."""
     lo = _element_param(spec.min, element_index, element_count=element_count, where="normalization.min")
     hi = _element_param(spec.max, element_index, element_count=element_count, where="normalization.max")
@@ -628,12 +628,13 @@ def describe_variable(var: ExposedVariable, *, element_index: int, owner_capacit
     else:
         owner = (0.0, 0.0)
     count = var.element_count
-    initial = normalize_declared_scalar(_element_default(var.default, element_index, count), spec, element_index, element_count=count)
+    declared = _element_default(var.default, element_index, count)
+    initial = normalize_declared_scalar(declared, spec, element_index=element_index, element_count=count)
     block = (
         _one_hot(SCOPE_VOCABULARY, var.scope)
         + _one_hot(SEMANTIC_TYPE_VOCABULARY, var.semantic_type)
         + _one_hot(NORMALIZATION_KIND_VOCABULARY, spec.kind)
-        + normalization_param_vector(spec, element_index, element_count=count)
+        + normalization_param_vector(spec, element_index=element_index, element_count=count)
         + _one_hot(DTYPE_VOCABULARY, _VARIABLE_TYPE_DTYPE[var.type])
         + _one_hot(LIFETIME_VOCABULARY, var.lifetime)
         + (initial, math.log1p(var.element_count))
@@ -676,8 +677,10 @@ def meter_signature(meter: MeterDeclaration) -> tuple[float, ...]:
     """A meter's declared-parameter features (METER_SIGNATURE_WIDTH wide), every one bounded
     into [0, 1]: the initial as its position within [min, max]; each declared rate (meter units
     per tick) as a fraction of the declared range, saturated by x/(1+x) so a money-scale rate
-    cannot blow up the token; the range itself as a saturated log1p. Scale-free by construction:
-    a meter re-declared in different units gives the same signature."""
+    cannot blow up the token; the range itself as a saturated log1p. Every feature but `range`
+    is scale-free: a meter re-declared in different units gives the same signature except for
+    `range`, which deliberately carries the declared span (it is what tells a 0–1 meter from a
+    0–999999 one)."""
     span = meter.max - meter.min
     if span <= 0:
         raise ValueError(f"Meter '{meter.name}': bounds must satisfy min < max")

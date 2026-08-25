@@ -10,11 +10,12 @@ from typing import TYPE_CHECKING
 
 import torch.nn as nn
 
-from townlet.agent.networks import DuelingQNetwork, RecurrentSpatialQNetwork, SetEncoderQNetwork
-from townlet.config.brain_config import DuelingConfig, FeedforwardConfig, RecurrentConfig, SetEncoderConfig
+from townlet.agent.networks import DuelingQNetwork, RecurrentSpatialQNetwork, SetEncoderQNetwork, TokenSetQNetwork
+from townlet.config.brain_config import DuelingConfig, FeedforwardConfig, RecurrentConfig, SetEncoderConfig, TokenSetConfig
 
 if TYPE_CHECKING:
     from townlet.universe.dto import ObservationActivity, ObservationSpec
+    from townlet.universe.dto.token_spec import TokenSpec
 
 
 class NetworkFactory:
@@ -210,6 +211,27 @@ class NetworkFactory:
             token_shape=(config.max_tokens, config.token_dim),
             token_embed_dim=config.token_embed_dim,
             base_hidden_dim=config.base_hidden_dim,
+            q_head_hidden_dim=config.q_head_hidden_dim,
+            aggregator_type=config.aggregator.type,
+            num_heads=config.aggregator.num_heads,
+        )
+
+    @staticmethod
+    def build_token_set(
+        config: TokenSetConfig,
+        action_dim: int,
+        token_spec: TokenSpec,
+    ) -> TokenSetQNetwork:
+        """Build a token-native Q-network over a compiled TokenSpec (token-obs spec §4).
+
+        The roster is compiled, never authored: capacities, payload widths and the
+        serialization layout come from the TokenSpec; ``config`` declares only the
+        embedding width, aggregator (PDR-0112 block verbatim), and Q-head size.
+        """
+        return TokenSetQNetwork(
+            token_spec=token_spec,
+            action_dim=action_dim,
+            token_embed_dim=config.token_embed_dim,
             q_head_hidden_dim=config.q_head_hidden_dim,
             aggregator_type=config.aggregator.type,
             num_heads=config.aggregator.num_heads,

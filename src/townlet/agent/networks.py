@@ -3,13 +3,15 @@
 from __future__ import annotations
 
 import math
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, NamedTuple, cast
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F  # noqa: N812
 
 if TYPE_CHECKING:
     from townlet.universe.dto import ObservationActivity, ObservationSpec
+    from townlet.universe.dto.token_spec import TokenSpec
 
 
 class SimpleQNetwork(nn.Module):
@@ -624,6 +626,202 @@ class SetEncoderQNetwork(nn.Module):
         if token_dim <= 0:
             raise ValueError("token_shape token_dim must be positive")
         return max_tokens, token_dim
+
+
+class _TokenTypeLayout(NamedTuple):
+    """One live token type's slice of the flat serialization (derived from the TokenSpec)."""
+
+    type_name: str
+    capacity: int
+    payload_width: int
+    offset: int  # start of this type's block in the flat vector
+
+
+class TokenSetQNetwork(nn.Module):
+    """Q-network over the TokenSpec serialization (token-obs spec §4; unit 3 Task 9).
+
+    Consumes the flat token observation (`[batch, total_dims]`, rows in canonical
+    type-then-slot order, presence leading each row) and reads it as a token set:
+
+    1. per-type projection encoders — ``Linear(W_t → token_embed_dim)`` in an
+       ``nn.ModuleDict`` keyed by token type NAME (a list indexed by roster position
+       would re-bind weights silently on roster differences — spec §4);
+    2. a learned per-type embedding added post-projection (type-keyed, transfers);
+    3. all tokens pooled into ONE mixed set;
+    4. the declared aggregator — ``mean`` (masked mean-pool) or ``attention``
+       (explicit QKV + ``F.scaled_dot_product_attention`` per the unit-3 Global
+       Constraints — deliberately NOT ``nn.MultiheadAttention``, whose fused path
+       cannot be pinned for byte-exact training replay), then the same masked
+       mean-pool;
+    5. Q-head over the pooled embedding.
+
+    Masking is OUTPUT-SIDE (spec §4, load-bearing): an absent token's zero row still
+    embeds to the projection bias + type embedding, so its embedded row is multiplied
+    by the bool presence mask AFTER encoding — exact-zero contribution AND exact-zero
+    gradient for absent tokens, per aggregator type, pinned by test. Absent tokens are
+    additionally excluded as attention KEYS; the all-empty unmask guard keeps softmax
+    finite for a row with no present token (its pooled vector is forced to exact zero
+    by the output-side mask + count clamp).
+
+    Only types with capacity > 0 get an encoder: a structurally-absent type (capacity
+    0 — e.g. `agent` in every shipped pack) contributes no parameters, so the
+    ModuleDict key set IS the universe's live roster, which is what the cross-universe
+    intersection load keys on. No LayerNorm/Linear ever sees the concatenated set
+    width (Global Constraints); the token path is per-token-row only.
+    """
+
+    def __init__(
+        self,
+        token_spec: TokenSpec,
+        action_dim: int,
+        token_embed_dim: int,
+        q_head_hidden_dim: int,
+        aggregator_type: str,
+        num_heads: int | None,
+    ):
+        """Initialize a token-native Q-network from a compiled TokenSpec.
+
+        Args:
+            token_spec: The compiled token artifact. The roster is compiled, never
+                authored — capacities, payload widths and the serialization layout
+                all come from here.
+            action_dim: Number of actions.
+            token_embed_dim: Embedding width every live type projects into.
+            q_head_hidden_dim: Hidden size of the Q-value head.
+            aggregator_type: ``"mean"`` or ``"attention"`` — declared, never defaulted.
+            num_heads: Attention heads; required for ``"attention"``, must be None
+                for ``"mean"`` (the PDR-0112 aggregator contract).
+        """
+        super().__init__()
+        if action_dim <= 0:
+            raise ValueError("action_dim must be positive")
+        if token_embed_dim <= 0:
+            raise ValueError("token_embed_dim must be positive")
+        if q_head_hidden_dim <= 0:
+            raise ValueError("q_head_hidden_dim must be positive")
+
+        layouts: list[_TokenTypeLayout] = []
+        offset = 0
+        for token_type in token_spec.types:
+            if token_type.capacity > 0:
+                layouts.append(
+                    _TokenTypeLayout(
+                        type_name=token_type.type_name,
+                        capacity=token_type.capacity,
+                        payload_width=token_type.payload_width,
+                        offset=offset,
+                    )
+                )
+            offset += token_type.capacity * token_type.row_width
+        if not layouts:
+            raise ValueError(
+                "TokenSpec has no token type with capacity > 0; a token-set network over an "
+                "empty roster cannot observe anything."
+            )
+        self._layouts: tuple[_TokenTypeLayout, ...] = tuple(layouts)
+        self.obs_dim = token_spec.total_dims
+        self.action_dim = action_dim
+        self.token_embed_dim = token_embed_dim
+
+        # Per-type projection encoders, keyed by type NAME (the transfer contract).
+        self.encoders = nn.ModuleDict(
+            {layout.type_name: nn.Linear(layout.payload_width, token_embed_dim) for layout in self._layouts}
+        )
+        # Learned per-type embedding, added post-projection. Zero-init: deterministic,
+        # and the per-type projection weights already break type symmetry at step 0.
+        self.type_embeddings = nn.ParameterDict(
+            {layout.type_name: nn.Parameter(torch.zeros(token_embed_dim)) for layout in self._layouts}
+        )
+
+        self.aggregator_type = aggregator_type
+        if aggregator_type == "attention":
+            if num_heads is None:
+                raise ValueError("aggregator_type='attention' requires num_heads")
+            if token_embed_dim % num_heads != 0:
+                raise ValueError(f"token_embed_dim ({token_embed_dim}) must be divisible by num_heads ({num_heads})")
+            self.num_heads: int | None = num_heads
+            # Explicit QKV + output projection (Global Constraints: never nn.MultiheadAttention).
+            self.q_proj: nn.Linear | None = nn.Linear(token_embed_dim, token_embed_dim)
+            self.k_proj: nn.Linear | None = nn.Linear(token_embed_dim, token_embed_dim)
+            self.v_proj: nn.Linear | None = nn.Linear(token_embed_dim, token_embed_dim)
+            self.out_proj: nn.Linear | None = nn.Linear(token_embed_dim, token_embed_dim)
+        elif aggregator_type == "mean":
+            if num_heads is not None:
+                raise ValueError("aggregator_type='mean' takes no num_heads")
+            self.num_heads = None
+            self.q_proj = None
+            self.k_proj = None
+            self.v_proj = None
+            self.out_proj = None
+        else:
+            raise ValueError(f"Unknown aggregator_type: {aggregator_type!r}. Supported: mean, attention")
+
+        self.q_head = nn.Sequential(
+            nn.Linear(token_embed_dim, q_head_hidden_dim),
+            nn.LayerNorm(q_head_hidden_dim),
+            nn.ReLU(),
+            nn.Linear(q_head_hidden_dim, action_dim),
+        )
+
+    @property
+    def token_type_names(self) -> tuple[str, ...]:
+        """The live roster this network was built for, in engine-canonical order."""
+        return tuple(layout.type_name for layout in self._layouts)
+
+    def _embed_tokens(self, obs: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        """Slice the flat vector per type, embed, and concatenate the mixed set.
+
+        Returns:
+            tokens: [batch, N_total, token_embed_dim] embedded rows (unmasked)
+            presence: [batch, N_total] bool presence mask (spec §6: masks are bool)
+        """
+        if obs.dim() != 2 or obs.shape[1] != self.obs_dim:
+            raise ValueError(f"Expected observations with shape [batch, {self.obs_dim}], got {tuple(obs.shape)}")
+        batch_size = obs.shape[0]
+        embedded_parts: list[torch.Tensor] = []
+        presence_parts: list[torch.Tensor] = []
+        for layout in self._layouts:
+            width = layout.capacity * (1 + layout.payload_width)
+            # `.view()` raises on copy (Global Constraints) — the flat slice of a
+            # contiguous [batch, obs_dim] tensor reshapes without one.
+            rows = obs[:, layout.offset : layout.offset + width].view(batch_size, layout.capacity, 1 + layout.payload_width)
+            presence_parts.append(rows[:, :, 0] > 0.5)
+            embedded = self.encoders[layout.type_name](rows[:, :, 1:]) + self.type_embeddings[layout.type_name]
+            embedded_parts.append(embedded)
+        return torch.cat(embedded_parts, dim=1), torch.cat(presence_parts, dim=1)
+
+    def pooled_embedding(self, obs: torch.Tensor) -> torch.Tensor:
+        """The permutation-invariant pooled set embedding, [batch, token_embed_dim].
+
+        Exposed separately from :meth:`forward` for the §3b training-dynamical
+        diagnostics (pooled-embedding norm, online-vs-target cosine drift).
+        """
+        tokens, presence = self._embed_tokens(obs)
+        if self.aggregator_type == "attention":
+            assert self.q_proj is not None and self.k_proj is not None and self.v_proj is not None and self.out_proj is not None
+            assert self.num_heads is not None
+            batch_size, n_tokens, _ = tokens.shape
+            head_dim = self.token_embed_dim // self.num_heads
+            # A row with no present token would mask every key and make softmax NaN;
+            # unmask its keys and rely on the output-side zeroing below, which already
+            # forces all-empty sets to an exact-zero pooled vector.
+            all_empty = ~presence.any(dim=1, keepdim=True)
+            key_mask = presence | all_empty
+            query = self.q_proj(tokens).view(batch_size, n_tokens, self.num_heads, head_dim).transpose(1, 2)
+            key = self.k_proj(tokens).view(batch_size, n_tokens, self.num_heads, head_dim).transpose(1, 2)
+            value = self.v_proj(tokens).view(batch_size, n_tokens, self.num_heads, head_dim).transpose(1, 2)
+            # Bool attn_mask: True = may attend. Broadcasts over heads and queries.
+            attended = F.scaled_dot_product_attention(query, key, value, attn_mask=key_mask[:, None, None, :])
+            tokens = self.out_proj(attended.transpose(1, 2).reshape(batch_size, n_tokens, self.token_embed_dim))
+        # Output-side masking: exact-zero contribution AND exact-zero gradient for
+        # absent tokens (spec §4) — the multiply-by-zero cuts the autograd path.
+        tokens = tokens * presence.unsqueeze(-1).to(dtype=tokens.dtype)
+        counts = presence.sum(dim=1).clamp(min=1).to(dtype=tokens.dtype)
+        return tokens.sum(dim=1) / counts.unsqueeze(-1)
+
+    def forward(self, obs: torch.Tensor) -> torch.Tensor:
+        """Encode the token set into Q-values, [batch, action_dim]."""
+        return cast(torch.Tensor, self.q_head(self.pooled_embedding(obs)))
 
 
 class StructuredQNetwork(nn.Module):

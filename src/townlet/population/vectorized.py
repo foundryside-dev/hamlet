@@ -175,6 +175,9 @@ class VectorizedPopulation(PopulationManager):
         # Set is_set_encoder flag from brain_config
         self.is_set_encoder = brain_config.architecture.type == "set_encoder"
 
+        # Set is_token_set flag from brain_config (token-obs unit 3 Task 9)
+        self.is_token_set = brain_config.architecture.type == "token_set"
+
         # Target network (stabilises training for both feed-forward and recurrent agents)
         # Build using DRY helper (POP-001)
         self.target_network: nn.Module = self._build_network(brain_config, obs_dim, action_dim, env, vision_window_size).to(device)
@@ -424,8 +427,30 @@ class VectorizedPopulation(PopulationManager):
                 action_dim=action_dim,
                 observation_spec=self.observation_spec,
             )
+        elif arch.type == "token_set":
+            assert arch.token_set is not None, "token_set config must be present"
+            token_spec = env.universe.token_spec
+            if token_spec is None:
+                raise ValueError(
+                    "architecture.type='token_set' requires a compiled TokenSpec on the universe; "
+                    "recompile the config pack with the current compiler (COMPILED_SCHEMA_VERSION 1.21+)."
+                )
+            if obs_dim != token_spec.total_dims:
+                raise ValueError(
+                    f"architecture.type='token_set' consumes the TokenSpec serialization "
+                    f"({token_spec.total_dims} dims) but the environment produces {obs_dim} dims. "
+                    "The token observation path is not the live step path until the unit-3 Task-10 cut; "
+                    "until then a token_set brain cannot ride this environment."
+                )
+            return NetworkFactory.build_token_set(
+                config=arch.token_set,
+                action_dim=action_dim,
+                token_spec=token_spec,
+            )
         else:
-            raise ValueError(f"Unsupported architecture type: {arch.type}. Supported: feedforward, recurrent, dueling, set_encoder")
+            raise ValueError(
+                f"Unsupported architecture type: {arch.type}. Supported: feedforward, recurrent, dueling, set_encoder, token_set"
+            )
 
     def _store_episode_and_reset(self, agent_idx: int) -> bool:
         """Store accumulated episode for agent and reset buffers."""

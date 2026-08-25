@@ -249,6 +249,37 @@ class SetEncoderConfig(BaseModel):
         return self
 
 
+class TokenSetConfig(BaseModel):
+    """Token-native architecture configuration (token-obs spec §4; unit 3 Task 9).
+
+    Consumes the TokenSpec serialization: per-type projection encoders keyed by token
+    type NAME (an ``nn.ModuleDict`` — never a list indexed by roster position, which
+    re-binds weights silently on roster differences), a learned per-type embedding
+    added post-projection, one mixed pooled set under the declared aggregator
+    (``SetAggregatorConfig`` verbatim — the PDR-0112 block), then the Q-head.
+
+    The roster is compiled (the TokenSpec), never authored: nothing here names a
+    token type or a capacity. No-Defaults: every field is required.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    token_embed_dim: int = Field(gt=0, description="Embedding width every token type projects into")
+    q_head_hidden_dim: int = Field(gt=0, description="Hidden size for the final Q-value head")
+    aggregator: SetAggregatorConfig = Field(description="Declared token-set aggregation (no default)")
+
+    @model_validator(mode="after")
+    def validate_attention_geometry(self) -> "TokenSetConfig":
+        if self.aggregator.type == "attention":
+            assert self.aggregator.num_heads is not None  # guaranteed by SetAggregatorConfig
+            if self.token_embed_dim % self.aggregator.num_heads != 0:
+                raise ValueError(
+                    f"token_embed_dim ({self.token_embed_dim}) must be divisible by "
+                    f"aggregator.num_heads ({self.aggregator.num_heads})"
+                )
+        return self
+
+
 class ScheduleConfig(BaseModel):
     """Learning rate schedule configuration.
 
@@ -398,13 +429,14 @@ class ArchitectureConfig(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    type: Literal["feedforward", "recurrent", "dueling", "set_encoder"] = Field(description="Architecture type")
+    type: Literal["feedforward", "recurrent", "dueling", "set_encoder", "token_set"] = Field(description="Architecture type")
 
     # Architecture-specific configs (exactly one required based on type)
     feedforward: FeedforwardConfig | None = Field(default=None, description="Feedforward MLP config (required when type=feedforward)")
     recurrent: RecurrentConfig | None = Field(default=None, description="Recurrent LSTM config (required when type=recurrent)")
     dueling: DuelingConfig | None = Field(default=None, description="Dueling DQN config (required when type=dueling)")
     set_encoder: SetEncoderConfig | None = Field(default=None, description="Set encoder config (required when type=set_encoder)")
+    token_set: TokenSetConfig | None = Field(default=None, description="Token-native config (required when type=token_set)")
 
     @model_validator(mode="after")
     def validate_architecture_match(self) -> "ArchitectureConfig":
@@ -417,6 +449,8 @@ class ArchitectureConfig(BaseModel):
             raise ValueError("type='dueling' requires dueling config")
         if self.type == "set_encoder" and self.set_encoder is None:
             raise ValueError("type='set_encoder' requires set_encoder config")
+        if self.type == "token_set" and self.token_set is None:
+            raise ValueError("type='token_set' requires token_set config")
         return self
 
 

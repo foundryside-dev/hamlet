@@ -7,6 +7,8 @@ import json
 from collections.abc import Iterable, Mapping
 from typing import Any
 
+# Layering inversion (vfs -> universe), acyclic; ruled "revisit at Task 10 with the swap" —
+# when these become the primary observation hashes their natural home may be beside token_spec.py.
 from townlet.universe.dto.token_spec import TOKEN_TYPE_FILLER_KIND, TokenSpec
 from townlet.vfs.schema import NormalizationSpec, ObservationField, VariableDef, VariableScope
 from townlet.vfs.transition_graph import TransitionPhaseGraph

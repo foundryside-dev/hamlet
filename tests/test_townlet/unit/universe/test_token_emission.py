@@ -14,7 +14,10 @@ import pytest
 
 from townlet.universe.compiled import COMPILED_SCHEMA_VERSION, CompiledUniverse
 from townlet.universe.compiler import UniverseCompiler
+from townlet.universe.compilers.observation import ObservationCompiler
+from townlet.universe.dto import ObservationField, ObservationSpec
 from townlet.universe.dto.token_spec import (
+    DESCRIPTOR_BLOCK_WIDTH,
     PAYLOAD_SCHEMAS,
     TOKEN_TYPE_ROSTER,
     SlotBinding,
@@ -22,6 +25,8 @@ from townlet.universe.dto.token_spec import (
     TokenTypeSchema,
     build_token_type,
 )
+from townlet.vfs.schema import NormalizationSpec, VariableDef
+from townlet.vfs.schema import ObservationField as VFSObservationField
 from townlet.vfs.schema_hashes import (
     compute_token_layout_hash,
     compute_token_type_schema_hash,
@@ -244,6 +249,209 @@ class TestSerialization:
         payload["token_spec"]["types"][1]["payload_features"] = ["not_the_engine_schema"]
         with pytest.raises(ValueError, match="does not match the engine constant"):
             CompiledUniverse.from_dict(payload)
+
+
+def _variable_obs_field(name: str, dims: int, *, semantic_type: str = "custom") -> ObservationField:
+    return ObservationField(
+        uuid=None,
+        name=name,
+        type="vector" if dims > 1 else "scalar",
+        dims=dims,
+        start_index=0,
+        end_index=dims,
+        scope="global",
+        description=f"test variable {name}",
+        semantic_type=semantic_type,  # type: ignore[arg-type]
+        feature="variable",
+    )
+
+
+def _mirror_field(name: str, dims: int, *, semantic_type: str = "custom") -> VFSObservationField:
+    return VFSObservationField(
+        id=name,
+        source_variable=name,
+        exposed_to=["agent"],
+        shape=[dims],
+        normalization=None,
+        semantic_type=semantic_type,
+        curriculum_active=True,
+    )
+
+
+def _variable_def(name: str, *, dims: int | None = None, normalization: NormalizationSpec | None) -> VariableDef:
+    is_vector = dims is not None and dims > 1
+    return VariableDef(
+        id=name,
+        scope="global",
+        type="vecNf" if is_vector else "scalar",
+        dims=dims if is_vector else None,
+        lifetime="tick",
+        readable_by=["agent", "engine"],
+        writable_by=["engine"],
+        default=[0.0] * dims if is_vector else 0.0,  # type: ignore[operator]
+        description=f"test variable {name}",
+        normalization=normalization,
+    )
+
+
+_BOUNDED = NormalizationSpec(kind="minmax", min=0.0, max=1.0, clip=True)
+
+
+class TestVariableElementBindings:
+    """Direct-call coverage of `_variable_element_bindings` (review I1): the positive
+    slot-binding branch, both advisory branches, and the mirror-drift advisory (M2)."""
+
+    def test_passing_declarations_bind_slots_in_field_order(self):
+        obs_spec = ObservationSpec.from_fields(fields=(_variable_obs_field("temp", 1), _variable_obs_field("wind", 3)))
+        mirrors = (_mirror_field("temp", 1), _mirror_field("wind", 3))
+        defs = (
+            _variable_def("temp", normalization=_BOUNDED),
+            _variable_def("wind", dims=3, normalization=NormalizationSpec(kind="minmax", min=0.0, max=10.0, clip=True)),
+        )
+        bindings, advisories = ObservationCompiler._variable_element_bindings(obs_spec, mirrors, defs)
+        assert advisories == ()
+        assert [b.filler_ref for b in bindings] == ["temp", "wind[0]", "wind[1]", "wind[2]"]
+        assert [b.slot_index for b in bindings] == [0, 1, 2, 3]
+        assert all(b.filler_kind == "static" for b in bindings)
+        for binding in bindings:
+            assert binding.static_signature is not None
+            assert len(binding.static_signature) == DESCRIPTOR_BLOCK_WIDTH
+        # The bound set constructs a live variable_element type at the derived capacity.
+        token_type = build_token_type("variable_element", bindings)
+        assert token_type.capacity == 4
+
+    def test_unnormalized_variable_advises_and_does_not_bind(self):
+        obs_spec = ObservationSpec.from_fields(fields=(_variable_obs_field("raw_var", 1),))
+        mirrors = (_mirror_field("raw_var", 1),)
+        defs = (_variable_def("raw_var", normalization=None),)
+        bindings, advisories = ObservationCompiler._variable_element_bindings(obs_spec, mirrors, defs)
+        assert bindings == ()
+        assert len(advisories) == 1
+        # The advisory carries the exposure rule's own refusal text (I2: actionable reason)
+        # and names the Task-10 disposition.
+        assert "Token exposure advisory: variable 'raw_var'" in advisories[0]
+        assert "declares no normalization" in advisories[0]
+        assert "unit 3 Task 10" in advisories[0]
+
+    def test_unbounded_kind_advises_with_the_boundedness_rule(self):
+        obs_spec = ObservationSpec.from_fields(fields=(_variable_obs_field("z", 1),))
+        mirrors = (_mirror_field("z", 1),)
+        defs = (_variable_def("z", normalization=NormalizationSpec(kind="zscore", mean=0.0, std=1.0)),)
+        bindings, advisories = ObservationCompiler._variable_element_bindings(obs_spec, mirrors, defs)
+        assert bindings == ()
+        assert len(advisories) == 1
+        assert "bounded normalization kind" in advisories[0]
+
+    def test_indistinguishable_pair_advises_and_still_binds_both(self):
+        # Identical declarations apart from the id: identical static signatures.
+        obs_spec = ObservationSpec.from_fields(fields=(_variable_obs_field("twin_a", 1), _variable_obs_field("twin_b", 1)))
+        mirrors = (_mirror_field("twin_a", 1), _mirror_field("twin_b", 1))
+        defs = (_variable_def("twin_a", normalization=_BOUNDED), _variable_def("twin_b", normalization=_BOUNDED))
+        bindings, advisories = ObservationCompiler._variable_element_bindings(obs_spec, mirrors, defs)
+        assert [b.filler_ref for b in bindings] == ["twin_a", "twin_b"]  # advisory, not refusal — alongside
+        assert len(advisories) == 1
+        assert "indistinguishable" in advisories[0]
+        assert "twin_a" in advisories[0] and "twin_b" in advisories[0]
+        assert "Task 10" in advisories[0]
+
+    def test_missing_mirror_entry_advises_and_falls_back_loudly(self):
+        # M2: the mirror is the ruled semantic_type source; a variable field absent from
+        # the mirror is upstream drift and must be loud, never a silent fallback.
+        obs_spec = ObservationSpec.from_fields(fields=(_variable_obs_field("orphan", 1),))
+        defs = (_variable_def("orphan", normalization=_BOUNDED),)
+        bindings, advisories = ObservationCompiler._variable_element_bindings(obs_spec, (), defs)
+        assert [b.filler_ref for b in bindings] == ["orphan"]  # still binds, from the field's own declaration
+        assert len(advisories) == 1
+        assert "no VFS ObservationField mirror entry" in advisories[0]
+        assert "orphan" in advisories[0]
+
+    def test_assertion_error_propagates_as_engine_invariant_failure(self, monkeypatch):
+        # I2: only ValueError is an author-facing refusal; an AssertionError is an engine
+        # invariant failure and must crash the compile, never become an advisory.
+        import townlet.universe.compilers.observation as obs_module
+
+        def _broken(*args, **kwargs):
+            raise AssertionError
+
+        monkeypatch.setattr(obs_module, "static_payload_signature", _broken)
+        obs_spec = ObservationSpec.from_fields(fields=(_variable_obs_field("v", 1),))
+        mirrors = (_mirror_field("v", 1),)
+        defs = (_variable_def("v", normalization=_BOUNDED),)
+        with pytest.raises(AssertionError):
+            ObservationCompiler._variable_element_bindings(obs_spec, mirrors, defs)
+
+
+class TestMeanCensusAdvisoryWiring:
+    """build_token_spec's census branch (review I1d): a set_encoder brain declaring
+    `{type: mean}` against a census with a type over the threshold advises; other
+    architectures do not."""
+
+    @staticmethod
+    def _wide_bars(count: int):
+        from townlet.config.bars_v2_config import (
+            BarsV2Config,
+            MeterBoundsConfig,
+            MeterConfig,
+            MeterDepletionConfig,
+            MeterRecoveryConfig,
+        )
+
+        return BarsV2Config(
+            version="1.0",
+            meters=[
+                MeterConfig(
+                    name=f"m{i}",
+                    initial=1.0,
+                    depletion=MeterDepletionConfig(passive=0.0, move=0.0, interact=0.0),
+                    recovery=MeterRecoveryConfig(natural=0.0),
+                    bounds=MeterBoundsConfig(min=0.0, max=1.0, lethal_min=False, lethal_max=False),
+                )
+                for i in range(count)
+            ],
+            cascades=[],
+        )
+
+    @staticmethod
+    def _set_encoder_mean_brain():
+        import yaml
+
+        from townlet.config.brain_config import BrainConfig
+
+        payload = yaml.safe_load(Path("configs/test/set_encoder_smoke/brain.yaml").read_text())
+        assert payload["architecture"]["set_encoder"]["aggregator"]["type"] == "mean"
+        return BrainConfig.model_validate(payload)
+
+    def _build(self, l1_universe, bars, brain):
+        from townlet.universe.dto import AffordanceMetadata
+
+        return ObservationCompiler().build_token_spec(
+            l1_universe.stratum,
+            bars,
+            AffordanceMetadata(affordances=()),
+            None,
+            None,
+            ObservationSpec.from_fields(fields=()),
+            (),
+            (),
+            brain,
+        )
+
+    def test_mean_aggregator_over_threshold_advises(self, l1_universe):
+        spec, advisories = self._build(l1_universe, self._wide_bars(65), self._set_encoder_mean_brain())
+        assert spec.census["meter"] == 65
+        census_notes = [a for a in advisories if "aggregator 'mean'" in a]
+        assert len(census_notes) == 1
+        assert "meter=65" in census_notes[0]
+
+    def test_mean_aggregator_under_threshold_advises_nothing(self, l1_universe):
+        _spec, advisories = self._build(l1_universe, self._wide_bars(8), self._set_encoder_mean_brain())
+        assert not any("aggregator 'mean'" in a for a in advisories)
+
+    def test_non_set_encoder_brain_never_census_advises(self, l1_universe):
+        # L1's own brain is feedforward; even a 65-meter census must not advise.
+        spec, advisories = self._build(l1_universe, self._wide_bars(65), l1_universe.brain)
+        assert spec.census["meter"] == 65
+        assert advisories == ()
 
 
 class TestInspectCensus:

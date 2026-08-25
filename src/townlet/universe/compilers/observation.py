@@ -34,7 +34,6 @@ from townlet.universe.dto.token_spec import (
     ExposedVariable,
     SlotBinding,
     TokenSpec,
-    affordance_capacity,
     build_token_type,
     check_indistinguishability,
     item_capacity,
@@ -635,9 +634,11 @@ class ObservationCompiler:
             "meter",
             tuple(SlotBinding(slot_index=i, filler_kind="static", filler_ref=meter.name) for i, meter in enumerate(bars.meters)),
         )
-        # Capacity is the metadata affordance COUNT (ruling 3): `deployment.positions` are
-        # per-instance payload inputs, not extra capacity — absent instances are padding.
-        affordance_capacity(affordance_count=len(affordance_metadata.affordances))
+        # Capacity is the metadata affordance COUNT (ruling 3, `affordance_capacity`'s
+        # derivation — here it IS the binding count, one slot per declared affordance, so
+        # `build_token_type`'s capacity==len(bindings) invariant computes it directly):
+        # `deployment.positions` are per-instance payload inputs, not extra capacity —
+        # absent instances are padding.
         affordance_type = build_token_type(
             "affordance",
             tuple(
@@ -728,6 +729,15 @@ class ObservationCompiler:
                 _advise(obs_field.name, "no runtime VariableDef was compiled for it")
                 continue
             mirror = mirror_by_id.get(obs_field.name)
+            if mirror is None:
+                # The mirror is the ruled source for semantic_type; a variable field the
+                # mirror does not carry indicates upstream drift between the two emitters.
+                # Fall back to the obs field's own declaration, but LOUDLY (review M2).
+                advisories.append(
+                    f"Token exposure advisory: variable '{obs_field.name}' has no VFS ObservationField "
+                    "mirror entry — semantic_type was taken from the observation field itself. The mirror "
+                    "is the ruled source; this indicates drift between the spec and mirror emitters."
+                )
             semantic_type = mirror.semantic_type if mirror is not None else obs_field.semantic_type
             scope = var_def.scope.value if isinstance(var_def.scope, VariableScope) else str(var_def.scope)
             if var_def.shape:
@@ -748,7 +758,11 @@ class ObservationCompiler:
                     normalization=var_def.normalization,
                 )
                 signature = static_payload_signature(exposed)
-            except (ValueError, AssertionError) as exc:
+            except ValueError as exc:
+                # ValueError only (review I2): every author-facing exposure refusal in
+                # token_spec.py raises ValueError with an actionable message, which the
+                # advisory carries verbatim. An AssertionError is an engine invariant
+                # failure and must crash the compile, never become an advisory.
                 _advise(obs_field.name, str(exc))
                 continue
             bound.append(exposed)

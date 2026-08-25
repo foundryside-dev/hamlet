@@ -168,6 +168,9 @@ def token_diagnostic_metrics(
     metrics["TokenNet/PresenceFlips_Mean"] = float(flips.to(dtype=torch.float32).mean())
     metrics["TokenNet/PooledNorm"] = pooled_embedding_norm(online, obs)
     metrics["TokenNet/OnlineTargetCosine"] = online_target_cosine(online, target, obs)
+    # Task 10 (wiring): bucket flip counts before minting tags — unbounded per-count
+    # tag cardinality is fine for a dead-until-swap path, not for a live logger
+    # (task-9 review M4).
     if td_errors is not None:
         for flip_count, mean_value in condition_on_presence_flips(td_errors, flips).items():
             metrics[f"TokenNet/TDError_At{flip_count}Flips"] = mean_value

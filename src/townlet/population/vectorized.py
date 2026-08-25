@@ -436,6 +436,9 @@ class VectorizedPopulation(PopulationManager):
                     "architecture.type='token_set' requires a compiled TokenSpec on the universe; "
                     "recompile the config pack with the current compiler (COMPILED_SCHEMA_VERSION 1.21+)."
                 )
+            # Task 10: replace this width-equality heuristic with an identity check
+            # (the encoder swap makes the serialization the env's own product; compare
+            # layout_hash, not dims — task-9 review M3).
             if obs_dim != token_spec.total_dims:
                 raise ValueError(
                     f"architecture.type='token_set' consumes the TokenSpec serialization "
@@ -1378,3 +1381,8 @@ class VectorizedPopulation(PopulationManager):
             self.env.set_exploration_module(fresh)
         elif isinstance(exploration, AdaptiveIntrinsicExploration):
             exploration.rnd = _fresh(exploration.rnd)
+            # Cross-universe load: the wrapper's annealing/survival statistics are
+            # source-universe data and must not steer the target universe (task-9
+            # review I1) — reset them alongside the inner RND.
+            exploration.current_intrinsic_weight = exploration.initial_intrinsic_weight
+            exploration.survival_history.clear()

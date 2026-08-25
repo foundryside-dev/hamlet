@@ -16,6 +16,7 @@ path — that severing is Task 10):
 
 from __future__ import annotations
 
+import dataclasses
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -35,6 +36,7 @@ from townlet.config.brain_config import (
     SetAggregatorConfig,
     TokenSetConfig,
 )
+from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
 from townlet.exploration.rnd import RNDExploration
 from townlet.population.vectorized import VectorizedPopulation
 from townlet.training.checkpoint_utils import (
@@ -319,3 +321,54 @@ class TestCrossUniverseLoadResets:
         population.brain_config = _token_brain_config()
         with pytest.raises(ValueError, match="token_set"):
             population.load_token_network_cross_universe({})
+
+
+class TestReviewRound1Pins:
+    """Task-9 review fix round: M2 (two-way module loudness), M5 (attach guard),
+    I1 (adaptive wrapper reset)."""
+
+    def test_target_only_modules_are_reported_cold(self) -> None:
+        """Non-per-type parameters the TARGET has but the checkpoint lacks (attention
+        projections loading from a mean checkpoint) keep fresh init and must be
+        reported, not silent (task-9 review M2)."""
+        source_net = make_net(spec_with_items())
+        target_net = TokenSetQNetwork(
+            token_spec=spec_with_items(),
+            action_dim=5,
+            token_embed_dim=16,
+            q_head_hidden_dim=32,
+            aggregator_type="attention",
+            num_heads=2,
+        )
+        report = load_token_network_state_by_type(target_net, source_net.state_dict())
+        assert any("q_proj" in key for key in report.cold_started_modules)
+        assert not report.is_clean
+
+    def test_attach_refuses_universe_without_token_hashes(self, compiled_universe) -> None:
+        """Declared guard (task-9 review M5): a universe missing the token hashes must
+        refuse at save — a checkpoint no gate can check must not exist."""
+        crippled = dataclasses.replace(compiled_universe, token_type_schema_hash=None)
+        with pytest.raises(ValueError, match="token_type_schema_hash"):
+            attach_universe_metadata({}, crippled)
+
+    def test_adaptive_wrapper_annealing_state_resets(self) -> None:
+        """Cross-universe load resets the AdaptiveIntrinsicExploration WRAPPER's
+        annealing/survival statistics, not just the inner RND (task-9 review I1)."""
+        torch.manual_seed(13)
+        target_universe_net = make_net(spec_with_items())
+        population = TestCrossUniverseLoadResets()._bare_population(target_universe_net)
+        adaptive = AdaptiveIntrinsicExploration(
+            obs_dim=target_universe_net.obs_dim, embed_dim=8, device=torch.device("cpu")
+        )
+        adaptive.current_intrinsic_weight = 0.25
+        adaptive.survival_history.extend([10.0, 20.0, 30.0])
+        stale_inner = adaptive.rnd
+        population.exploration = adaptive
+
+        source_net = make_net(spec_with_affordances())
+        population.load_token_network_cross_universe(source_net.state_dict())
+
+        assert population.exploration is adaptive
+        assert adaptive.rnd is not stale_inner
+        assert adaptive.current_intrinsic_weight == adaptive.initial_intrinsic_weight
+        assert adaptive.survival_history == []

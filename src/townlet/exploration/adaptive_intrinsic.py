@@ -71,6 +71,7 @@ class AdaptiveIntrinsicExploration(ExplorationStrategy):
         )
 
         # Annealing parameters
+        self.initial_intrinsic_weight = initial_intrinsic_weight
         self.current_intrinsic_weight = initial_intrinsic_weight
         self.min_intrinsic_weight = min_intrinsic_weight
         self.variance_threshold = variance_threshold

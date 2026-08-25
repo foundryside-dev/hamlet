@@ -310,3 +310,30 @@ class TestFactory:
         assert net.token_type_names == ("self", "meter", "affordance", "item")
         obs = make_obs(spec, 2, present=present_rows(spec))
         assert net(obs).shape == (2, 6)
+
+
+class TestReviewRound1Pins:
+    """Task-9 review fix round: M1 (present-count denominator) and I2 (bitwise replay)."""
+
+    def test_mean_divides_by_present_count_not_capacity(self):
+        """One present token ⇒ pooled mean IS that token's embedding. A capacity
+        denominator would scale it by 1/n_tokens (task-9 review M1)."""
+        spec = make_spec()
+        net = make_network(spec)
+        obs = make_obs(spec, 1, present={("meter", 0)}, seed=5)
+        start, end = row_layout_slices(spec)[("meter", 0)]
+        payload = obs[:, start + 1 : end]
+        with torch.no_grad():
+            expected = net.encoders["meter"](payload) + net.type_embeddings["meter"]
+            pooled = net.pooled_embedding(obs)
+        assert torch.allclose(pooled, expected, atol=1e-6)
+
+    def test_attention_forward_is_bitwise_replayable(self):
+        """Spec §6 byte-exact replay: the SDPA MATH backend is pinned at the call site
+        (task-9 review I2); two identical forwards are bitwise-identical."""
+        net = make_network(make_spec(), aggregator="attention", num_heads=2)
+        obs = make_obs(make_spec(), 3, present=present_rows(make_spec()), seed=9)
+        with torch.no_grad():
+            first = net(obs)
+            second = net(obs)
+        assert torch.equal(first, second)

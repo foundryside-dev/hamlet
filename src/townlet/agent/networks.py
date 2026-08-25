@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, NamedTuple, cast
 import torch
 import torch.nn as nn
 import torch.nn.functional as F  # noqa: N812
+from torch.nn.attention import SDPBackend, sdpa_kernel
 
 if TYPE_CHECKING:
     from townlet.universe.dto import ObservationActivity, ObservationSpec
@@ -811,7 +812,11 @@ class TokenSetQNetwork(nn.Module):
             key = self.k_proj(tokens).view(batch_size, n_tokens, self.num_heads, head_dim).transpose(1, 2)
             value = self.v_proj(tokens).view(batch_size, n_tokens, self.num_heads, head_dim).transpose(1, 2)
             # Bool attn_mask: True = may attend. Broadcasts over heads and queries.
-            attended = F.scaled_dot_product_attention(query, key, value, attn_mask=key_mask[:, None, None, :])
+            # MATH backend pinned: spec §6 demands byte-exact replay from the token
+            # path (the reason for explicit QKV over nn.MultiheadAttention); fused
+            # backends may vary bitwise across runs/devices (task-9 review I2).
+            with sdpa_kernel([SDPBackend.MATH]):
+                attended = F.scaled_dot_product_attention(query, key, value, attn_mask=key_mask[:, None, None, :])
             tokens = self.out_proj(attended.transpose(1, 2).reshape(batch_size, n_tokens, self.token_embed_dim))
         # Output-side masking: exact-zero contribution AND exact-zero gradient for
         # absent tokens (spec §4) — the multiply-by-zero cuts the autograd path.

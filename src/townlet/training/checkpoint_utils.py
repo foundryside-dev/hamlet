@@ -60,6 +60,10 @@ def attach_universe_metadata(checkpoint: dict[str, Any], universe: CompiledUnive
     # transfer contract (payload-schema contents, MAX_POSITION_RANK, VALUE_BLOCK_WIDTH
     # via the feature names); `layout_hash` is the flat-net contract (capacities, slot
     # bindings, total_dims). Gated by `assert_checkpoint_dimensions`'s new paths.
+    # Declared guard (task-9 review M5): unreachable from a 1.21+ compile-or-load path
+    # (both always carry the hashes; pre-1.21 artifacts refuse at deserialization) —
+    # it can fire only on a hand-built CompiledUniverse, and must refuse rather than
+    # write a checkpoint that no gate could ever check. Direct unit test pins it.
     if universe.token_type_schema_hash is None or universe.layout_hash is None:
         raise ValueError(
             "Universe missing token_type_schema_hash/layout_hash; recompile the config pack "
@@ -444,6 +448,16 @@ def load_token_network_state_by_type(
                 cold_started_modules.append(key)
                 continue
             merged[key] = source_tensor
+
+    # Two-way module loudness (task-9 review M2): a non-per-type parameter the TARGET
+    # has but the checkpoint does not (e.g. attention projections loading from a mean
+    # checkpoint) keeps its fresh init — that is a cold start and must be reported,
+    # not silent.
+    source_keys = set(source_state)
+    for key in target_state:
+        if _type_of(key) is None and key not in source_keys:
+            cold_started_modules.append(key)
+    cold_started_modules.sort()
 
     network.load_state_dict(merged)
     report = TokenRosterReport(

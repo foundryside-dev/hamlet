@@ -27,6 +27,7 @@ from townlet.exploration.base import ExplorationStrategy
 from townlet.exploration.rnd import RNDExploration
 from townlet.population.base import PopulationManager
 from townlet.population.runtime_registry import AgentRuntimeRegistry
+from townlet.training.checkpoint_utils import TokenRosterReport, load_token_network_state_by_type
 from townlet.training.replay_buffer import ReplayBuffer
 from townlet.training.sequential_replay_buffer import SequentialReplayBuffer
 from townlet.training.state import BatchedAgentState, CurriculumDecision, PopulationCheckpoint, RewardTensor
@@ -1303,3 +1304,77 @@ class VectorizedPopulation(PopulationManager):
         # Restore exploration state
         if "exploration_state" in checkpoint:
             self.exploration.load_state(checkpoint["exploration_state"])
+
+    # ------------------------------------------------------------------ #
+    # Cross-universe token-net load (token-obs unit 3 Task 9)
+    # ------------------------------------------------------------------ #
+    def load_token_network_cross_universe(self, source_q_network_state: dict[str, torch.Tensor]) -> TokenRosterReport:
+        """Load a token net trained on ANOTHER universe into this population (spec §4).
+
+        Per-type encoders and the aggregator transfer as feature extractors by
+        ModuleDict type key (intersection load, both directions reported loudly;
+        payload-schema mismatch refuses — `load_token_network_state_by_type`).
+        Because the source universe's rewards, optimizer moments and novelty
+        statistics do not describe THIS universe, a cross-universe load then:
+
+        - re-copies the target network from the freshly-loaded online network;
+        - resets the optimizer and LR schedule (fresh moments — stale Adam state
+          against re-initialized or re-purposed weights is silent corruption);
+        - resets RND state through its existing construction surface (a fresh
+          fixed/predictor pair and reward statistics; the epsilon schedule carries
+          over — it is exploration pacing, not novelty state).
+
+        This is the seam the Task-10 cut wires into the checkpoint-consumer paths;
+        nothing calls it in the live step path this task.
+        """
+        if not self.is_token_set:
+            raise ValueError(
+                "load_token_network_cross_universe requires architecture.type='token_set'; "
+                f"this population runs {self.brain_config.architecture.type!r}."
+            )
+        report = load_token_network_state_by_type(self.q_network, source_q_network_state)
+
+        # Re-copy target from the loaded online net (never load the source's target).
+        self.target_network.load_state_dict(self.q_network.state_dict())
+        self.target_network.eval()
+        self.training_step_counter = 0
+
+        # Fresh optimizer + schedule over the loaded parameters.
+        self.optimizer, self.scheduler = OptimizerFactory.build(
+            config=self.brain_config.optimizer,
+            parameters=self.q_network.parameters(),
+        )
+
+        self._reset_rnd_state()
+        return report
+
+    def _reset_rnd_state(self) -> None:
+        """Reset RND novelty state via its existing construction surface.
+
+        `RNDExploration` exposes no in-place reset; a fresh instance built from the
+        live instance's own constructor parameters IS the reset surface (rnd.py is
+        deliberately untouched this task — its active_mask contract is a live-behavior
+        mover that dies at the Task-10 cut, not before).
+        """
+
+        def _fresh(rnd: RNDExploration) -> RNDExploration:
+            active_mask_tensor = cast(torch.Tensor, rnd.fixed_network.active_mask)
+            return RNDExploration(
+                obs_dim=rnd.obs_dim,
+                embed_dim=rnd.embed_dim,
+                learning_rate=float(rnd.optimizer.param_groups[0]["lr"]),
+                training_batch_size=rnd.training_batch_size,
+                epsilon_start=rnd.epsilon,
+                epsilon_min=rnd.epsilon_min,
+                epsilon_decay=rnd.epsilon_decay,
+                device=rnd.device,
+                active_mask=tuple(bool(v) for v in active_mask_tensor.tolist()),
+            )
+
+        exploration = self.exploration
+        if isinstance(exploration, RNDExploration):
+            fresh = _fresh(exploration)
+            self.exploration = fresh
+            self.env.set_exploration_module(fresh)
+        elif isinstance(exploration, AdaptiveIntrinsicExploration):
+            exploration.rnd = _fresh(exploration.rnd)

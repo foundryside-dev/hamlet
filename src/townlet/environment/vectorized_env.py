@@ -28,6 +28,7 @@ from townlet.substrate.continuous import ContinuousSubstrate
 from townlet.universe.dto import RuntimeActionSpace
 from townlet.vfs.evaluator import EvaluationMode, VFSEvaluator
 from townlet.vfs.observation_builder import VFSObservationSpec
+from townlet.vfs.profiles import CompiledGlobalProfile
 from townlet.vfs.registry import VariableRegistry
 from townlet.vfs.transition_schedule import VTCTransitionContext, VTCTransitionRunner, VTCTransitionState
 from townlet.vfs.vtc import (
@@ -1258,7 +1259,7 @@ class VectorizedHamletEnv:
         self,
         profile_label: str,
         write_source: str,
-        profile: Any,
+        profile: CompiledGlobalProfile,
         updated_vfs: dict[str, torch.Tensor],
         *,
         require_agent_shape: bool,

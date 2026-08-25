@@ -227,13 +227,29 @@ class TestContinuousBoundaryModeTable:
         delta = substrate.egocentric_delta(torch.tensor([[0.0, 0.0]]), torch.tensor([[9.0, 3.0]]))
         assert delta[0, 0].tolist() == pytest.approx([0.9, 0.3])
 
-    @pytest.mark.parametrize("boundary", ("clamp", "wrap"))
+    @pytest.mark.parametrize("boundary", BOUNDARIES)
     def test_continuousnd_table(self, boundary):
+        # ContinuousND's visible/egocentric bodies are DUPLICATED from Continuous, not
+        # inherited, so all four boundary modes get their own rows here (review
+        # Important-1): only wrap changes semantics; clamp/bounce/sticky are plain
+        # metric distance.
         substrate = _continuousnd(boundary)
         self_pos = torch.zeros((1, 4))
         entity = torch.tensor([[9.0, 0.0, 0.0, 0.0]])
         vis = substrate.visible(self_pos, entity, 0.5)
         assert vis.tolist() == [[boundary == "wrap"]]
+
+    @pytest.mark.parametrize("boundary", ("clamp", "bounce", "sticky"))
+    def test_continuousnd_non_wrap_egocentric_is_plain_difference(self, boundary):
+        substrate = _continuousnd(boundary)
+        delta = substrate.egocentric_delta(torch.zeros((1, 4)), torch.tensor([[9.0, 3.0, 0.0, 0.0]]))
+        # relative encoding normalizes by extent (10.0) with no wrap folding.
+        assert delta[0, 0].tolist() == pytest.approx([0.9, 0.3, 0.0, 0.0])
+
+    def test_continuousnd_wrap_egocentric_shortest_path(self):
+        substrate = _continuousnd("wrap")
+        delta = substrate.egocentric_delta(torch.zeros((1, 4)), torch.tensor([[9.0, 3.0, 0.0, 0.0]]))
+        assert delta[0, 0].tolist() == pytest.approx([-0.1, 0.3, 0.0, 0.0])
 
 
 class TestAspatial:

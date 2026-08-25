@@ -458,6 +458,32 @@ class TokenObservationEncoder:
                     "  Rule: one publisher per token type (PDR-0076) — a type with slots and no filler is a "
                     "lying observation, not a skip."
                 )
+        # Cross-publisher slot disjointness (review Minor-6): where one type carries
+        # several publishers (variable_element), their slot sets must be disjoint —
+        # an overlapping compiled artifact is a bug that must refuse loudly, never
+        # resolve as silent last-writer-wins.
+        for type_name, type_publishers in self._publishers.items():
+            if len(type_publishers) < 2:
+                continue
+            claimed_by: dict[int, str] = {}
+            overlaps: dict[int, tuple[str, str]] = {}
+            for publisher in type_publishers:
+                claimed = getattr(publisher, "claimed_slots", None)
+                if claimed is None:
+                    continue
+                name = type(publisher).__name__
+                for slot in claimed:
+                    if slot in claimed_by:
+                        overlaps[slot] = (claimed_by[slot], name)
+                    else:
+                        claimed_by[slot] = name
+            if overlaps:
+                detail = "; ".join(f"slot {slot}: {a} and {b}" for slot, (a, b) in sorted(overlaps.items()))
+                raise ValueError(
+                    f"Token type {type_name!r}: overlapping slot claims across publishers — {detail}.\n"
+                    "  Rule: cross-publisher slot sets must be disjoint; an overlapping compiled binding is "
+                    "an artifact bug and must be loud, never last-writer-wins."
+                )
 
     def encode(self, batch_size: int, ctx: TokenPublishContext) -> torch.Tensor:
         """Build one tick's token observation, `[batch_size, total_dims]` float32.

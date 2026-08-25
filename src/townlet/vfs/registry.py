@@ -371,8 +371,10 @@ class VariableRegistry:
         del self._initial_storage[variable_id]
         scope_key = self._arena_backed.pop(variable_id, None)
         if scope_key is not None:
-            # The arena column is orphaned, not reallocated: compiled token slot
-            # bindings are static, so nothing can read it again this run.
+            # The arena column is orphaned, not reallocated. It stays readable through
+            # already-compiled publisher bindings (their column indices are frozen at
+            # construction and would serve the stale value) — which is exactly what the
+            # observation_schema_changed acknowledgment on this removal covers.
             del self._scope_arenas[scope_key].index[variable_id]
         self._record_dynamic_variable_mutation("remove", var_def, network_shape_effect, tensor)
 

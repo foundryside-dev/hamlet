@@ -713,6 +713,22 @@ class TestTokenObservationEncoder:
         with pytest.raises(ValueError, match="no type in the compiled TokenSpec"):
             TokenObservationEncoder(spec, [FakePublisher()], DEVICE)
 
+    def test_overlapping_variable_element_slot_claims_refuse(self):
+        # Minor-6: the two variable_element publishers must claim DISJOINT slot sets;
+        # an overlapping compiled artifact refuses loudly at encoder construction,
+        # naming the slot and both claimants — never silent last-writer-wins.
+        registry = _registry()
+        bindings = _registry_bindings(["temp", "mood"])
+        schema = build_token_type("variable_element", bindings)
+        spec = TokenSpec(types=(schema,))
+        publisher_a = RegistryVariableElementPublisher(schema, registry, bindings, DEVICE)
+        publisher_b = RegistryVariableElementPublisher(schema, registry, bindings[:1], DEVICE)
+        with pytest.raises(ValueError, match="overlapping slot claims") as excinfo:
+            TokenObservationEncoder(spec, [publisher_a, publisher_b], DEVICE)
+        message = str(excinfo.value)
+        assert "slot 0" in message
+        assert message.count("RegistryVariableElementPublisher") == 2  # both claimants named
+
     def test_replay_aliasing_two_ticks_never_share_storage(self):
         registry = _registry()
         spec = _full_spec(registry, ["temp", "mood"])

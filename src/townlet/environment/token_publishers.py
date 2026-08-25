@@ -60,7 +60,7 @@ from townlet.universe.dto.token_spec import (
     value_block_width_used,
 )
 from townlet.vfs.registry import VariableRegistry
-from townlet.vfs.schema import NormalizationSpec, VariableScope
+from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope
 
 __all__ = [
     "AffordanceTokenDeclaration",
@@ -115,6 +115,9 @@ def bind_dynamic_slots(type_name: str, capacity: int, slot_indices: torch.Tensor
     if requested > capacity:
         raise TokenCapacityError(type_name, capacity, requested, source)
     slots = slot_indices.to(dtype=torch.long)
+    # Task 10: the .item()/torch.unique checks below force a device sync per dynamic
+    # type per publish — revisit (device-side check or amortization) when live item
+    # batches start flowing through this path (review Minor-5).
     if requested:
         if int(slots.min().item()) < 0 or int(slots.max().item()) >= capacity:
             raise ValueError(
@@ -489,6 +492,9 @@ class AffordanceTokenPublisher:
     def publish(self, rows: torch.Tensor, ctx: TokenPublishContext) -> None:
         if self._schema.capacity == 0:
             return
+        # Task 10: the aspatial wiring (position_dim == 0) must still pass the
+        # position-less affordance mapping or this refusal fires — decide there
+        # whether the requirement relaxes for dim 0 (review Minor-8, second half).
         _require_input(ctx.affordance_positions, "AffordanceTokenPublisher", "affordance_positions")
         assert ctx.affordance_positions is not None
         dim = self._substrate.position_dim
@@ -505,6 +511,9 @@ class AffordanceTokenPublisher:
         rows[:, :, self._count_lane] = self._counts
         if dim > 0:
             assert ctx.positions is not None
+            # Task 10: precompile this position tensor at wiring — affordance layouts
+            # are static per compiled universe; the per-tick rebuild is acceptable only
+            # while nothing live calls this path (review Minor-4).
             entity_pos = torch.stack([torch.as_tensor(ctx.affordance_positions[ref]) for ref in self._slot_refs]).to(
                 device=rows.device
             )
@@ -771,14 +780,17 @@ class RegistryVariableElementPublisher:
         self._value_width = _lane(schema, "value_width_used")
         self._descriptor0 = _lane(schema, f"scope_{SCOPE_VOCABULARY[0]}")
 
+    @property
+    def claimed_slots(self) -> tuple[int, ...]:
+        """Token slots this publisher fills; the encoder refuses cross-publisher overlap."""
+        return tuple(int(slot) for slot in self._slots.tolist())
+
     @staticmethod
-    def _element_shape(var_def: object) -> tuple[int, ...]:
-        shape = getattr(var_def, "shape", None)
-        if shape:
-            return tuple(shape)
-        dims = getattr(var_def, "dims", None)
-        if dims is not None and dims > 1:
-            return (int(dims),)
+    def _element_shape(var_def: VariableDef) -> tuple[int, ...]:
+        if var_def.shape:
+            return tuple(var_def.shape)
+        if var_def.dims is not None and var_def.dims > 1:
+            return (int(var_def.dims),)
         return ()
 
     def publish(self, rows: torch.Tensor, ctx: TokenPublishContext) -> None:
@@ -841,9 +853,11 @@ class ItemArenaVariableElementPublisher:
     ) -> None:
         self._schema = _require_type(schema, "variable_element")
         self._registry = registry
-        if owner_capacity < 1 and declarations:
+        if declarations and owner_capacity < 1:
             raise ValueError("ItemArenaVariableElementPublisher requires owner_capacity >= 1 when slots are declared")
-        self._owner_capacity = max(owner_capacity, 1)
+        # Stored raw: capacity 0 is a real state, legal only with zero declarations,
+        # where publish() no-ops before reading it (review Minor-8 — no silent 0→1).
+        self._owner_capacity = owner_capacity
         slot_positions: list[int] = []
         columns: list[int] = []
         owner_slots: list[int] = []
@@ -888,6 +902,11 @@ class ItemArenaVariableElementPublisher:
         self._value_width = _lane(schema, "value_width_used")
         self._descriptor0 = _lane(schema, f"scope_{SCOPE_VOCABULARY[0]}")
 
+    @property
+    def claimed_slots(self) -> tuple[int, ...]:
+        """Token slots this publisher fills; the encoder refuses cross-publisher overlap."""
+        return tuple(int(slot) for slot in self._slots.tolist())
+
     def publish(self, rows: torch.Tensor, ctx: TokenPublishContext) -> None:
         n = self._slots.shape[0]
         if n == 0:
@@ -912,8 +931,10 @@ class ItemArenaVariableElementPublisher:
         # Item state is world-shared (one item arena, like affordance layout): rows
         # broadcast over the world batch. Presence 0 zeroes the payload of dead slots.
         rows[:, slots, 0] = live_f
-        coords = torch.zeros((n, MAX_POSITION_RANK + 1), dtype=rows.dtype, device=rows.device)
-        rows[:, slots, self._pos0 : self._pos0 + MAX_POSITION_RANK + 1] = coords * live_f.unsqueeze(-1)
+        # Element-coordinate block: item-profile variables are scalars, the rank-0
+        # case — the block is all-zero by definition (spec §1), so it is written as
+        # zeros directly; the owner/slot coordinate rides the descriptor block.
+        rows[:, slots, self._pos0 : self._pos0 + MAX_POSITION_RANK + 1] = 0.0
         rows[:, slots, self._value0 : self._value0 + VALUE_BLOCK_WIDTH] = lanes * live_f.unsqueeze(-1)
         rows[:, slots, self._value_width] = (self._normalizer.width_used / VALUE_BLOCK_WIDTH) * live_f
         rows[:, slots, self._descriptor0 : self._descriptor0 + DESCRIPTOR_BLOCK_WIDTH] = self._descriptors * live_f.unsqueeze(-1)

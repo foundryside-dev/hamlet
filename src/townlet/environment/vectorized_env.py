@@ -822,10 +822,14 @@ class VectorizedHamletEnv:
         self.dones = torch.zeros(self.num_agents, dtype=torch.bool, device=self.device)
         self.step_counts = torch.zeros(self.num_agents, dtype=torch.long, device=self.device)
         self.global_tick = 0  # HIGH-01: Reset global time counter
-        # Pinned tick write point (token-obs unit 2): same registry cell as step()'s.
-        self.vfs_registry.set_engine_value("tick", torch.tensor(float(self.global_tick), device=self.device))
         self.intrinsic_weights = torch.ones(self.num_agents, dtype=torch.float32, device=self.device)  # Reset to 1.0
         self.vfs_registry.reset_episode_scoped()
+        # Pinned tick write point (token-obs unit 2): same registry cell as step()'s.
+        # Ordered AFTER reset_episode_scoped: the tick variable is episode-lifetime, so
+        # a write before the reset would be clobbered back to its declared initial —
+        # value-identically today (both are 0.0), but the pinned write must be the
+        # authoritative one, not a coincidence (comment-242 item 3, reorder chosen).
+        self.vfs_registry.set_engine_value("tick", torch.tensor(float(self.global_tick), device=self.device))
 
         # Reset temporal mechanics state
         if self.enable_temporal_mechanics:
@@ -1085,23 +1089,9 @@ class VectorizedHamletEnv:
                     item_index_to_profile=self.vfs_registry.item_vfs_index_to_profile,
                 )
 
-                # The evaluator chases in-profile dependencies of marked variables, so
-                # updated_vfs can contain a STATIC dependency re-emitted at its initial
-                # value (evaluator.py's add_with_deps). Statics are storage, not
-                # evaluation output: write back only expression variables, or a
-                # dependency chase silently clobbers an engine-written static every
-                # step (hamlet-df3a96bbac).
-                expression_var_names = {var.name for var in global_profile.variables if var.ast is not None}
-                for var_name, value in updated_vfs.items():
-                    if var_name not in expression_var_names:
-                        continue  # static: storage, never written back (hamlet-df3a96bbac)
-                    if var_name not in self.vfs_registry.variables:
-                        raise KeyError(
-                            f"Global-profile VFS write-back produced unknown variable id '{var_name}'.\n"
-                            "  Write source: global_profile expression evaluation "
-                            "(vfs_evaluator.evaluate_global_profile) (hamlet-0ddc83e377)."
-                        )
-                    self.vfs_registry.set_engine_value(var_name, value)
+                self._write_back_profile_expressions(
+                    "Global-profile", "global_profile", global_profile, updated_vfs, require_agent_shape=False
+                )
 
             # Evaluate agent profile (hamlet-5d74335111). Compiled agent profiles are
             # CompiledGlobalProfile — the same machinery, the same MARK_AND_SWEEP
@@ -1130,22 +1120,9 @@ class VectorizedHamletEnv:
                     item_profile_map=self.vfs_registry.item_profile_map,
                     item_index_to_profile=self.vfs_registry.item_vfs_index_to_profile,
                 )
-                agent_expression_var_names = {var.name for var in agent_profile.variables if var.ast is not None}
-                for var_name, value in updated_agent_vfs.items():
-                    if var_name not in agent_expression_var_names:
-                        continue  # static: storage, never written back (hamlet-df3a96bbac)
-                    if var_name not in self.vfs_registry.variables:
-                        raise KeyError(
-                            f"Agent-profile VFS write-back produced unknown variable id '{var_name}'.\n"
-                            "  Write source: agent_profile expression evaluation "
-                            "(vfs_evaluator.evaluate_global_profile) (hamlet-0ddc83e377)."
-                        )
-                    if value.shape != (self.num_agents,):
-                        raise ValueError(
-                            f"Agent-profile variable '{var_name}' evaluated to shape {tuple(value.shape)}, "
-                            f"expected ({self.num_agents},). A constant belongs in initial_value, not an expression."
-                        )
-                    self.vfs_registry.set_engine_value(var_name, value)
+                self._write_back_profile_expressions(
+                    "Agent-profile", "agent_profile", agent_profile, updated_agent_vfs, require_agent_shape=True
+                )
 
         self._run_vtc_transition_phases(
             self.vtc_transition_runner.phases_between("apply_threshold_cascades", "evaluate_terminal_conditions"),
@@ -1276,6 +1253,44 @@ class VectorizedHamletEnv:
             self.vfs_registry.set_engine_value(variable_id, value)
         if state.dones is not None:
             self.dones = state.dones
+
+    def _write_back_profile_expressions(
+        self,
+        profile_label: str,
+        write_source: str,
+        profile: Any,
+        updated_vfs: dict[str, torch.Tensor],
+        *,
+        require_agent_shape: bool,
+    ) -> None:
+        """Commit profile expression outputs to the registry — the static-merge/refusal
+        block, hoisted out of step()'s `compiled_vfs_profiles is not None` gate
+        (comment-242 item 2) so the global and agent branches share one implementation.
+
+        The evaluator chases in-profile dependencies of marked variables, so
+        `updated_vfs` can contain a STATIC dependency re-emitted at its initial value
+        (evaluator.py's add_with_deps; statics also enter vars_to_eval via
+        history_spec). Statics are storage, not evaluation output: write back only
+        expression variables, or a dependency chase silently clobbers an engine-written
+        static every step (hamlet-df3a96bbac). An unknown variable id is a refusal
+        (hamlet-0ddc83e377); agent-profile expressions must land [num_agents]-shaped.
+        """
+        expression_var_names = {var.name for var in profile.variables if var.ast is not None}
+        for var_name, value in updated_vfs.items():
+            if var_name not in expression_var_names:
+                continue  # static: storage, never written back (hamlet-df3a96bbac)
+            if var_name not in self.vfs_registry.variables:
+                raise KeyError(
+                    f"{profile_label} VFS write-back produced unknown variable id '{var_name}'.\n"
+                    f"  Write source: {write_source} expression evaluation "
+                    "(vfs_evaluator.evaluate_global_profile) (hamlet-0ddc83e377)."
+                )
+            if require_agent_shape and value.shape != (self.num_agents,):
+                raise ValueError(
+                    f"Agent-profile variable '{var_name}' evaluated to shape {tuple(value.shape)}, "
+                    f"expected ({self.num_agents},). A constant belongs in initial_value, not an expression."
+                )
+            self.vfs_registry.set_engine_value(var_name, value)
 
     def _current_vfs_state(self) -> dict[str, torch.Tensor]:
         """Return the engine-readable VFS registry snapshot."""

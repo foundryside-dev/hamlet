@@ -7,9 +7,9 @@ from pathlib import Path
 
 import torch
 
+import townlet.environment.vectorized_env as vec_mod
 from tests.test_townlet.helpers.config_builder import PRIMARY_LEVEL_NAME, prepare_config_dir
 from townlet.universe.compiler import UniverseCompiler
-import townlet.environment.vectorized_env as vec_mod
 
 
 def test_no_independent_time_of_day_increment_remains():

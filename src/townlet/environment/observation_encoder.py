@@ -3,13 +3,15 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING, cast
 
 import torch
 
+from townlet.environment.token_publishers import TokenPublishContext, TokenTypePublisher
 from townlet.universe.dto import ObservationField
 from townlet.universe.dto.observation_feature import VARIABLE_FEATURE
+from townlet.universe.dto.token_spec import TokenSpec
 from townlet.vfs.observation_builder import VFSObservationSpec, apply_normalization, build_vfs_observation
 from townlet.vfs.schema import NormalizationSpec
 
@@ -423,3 +425,55 @@ class ObservationEncoder:
             return typed_normalizer(env.positions)
 
         return None
+
+
+class TokenObservationEncoder:
+    """Token-observation assembly (token-obs unit 3, Task 8 — ALONGSIDE the old path).
+
+    Dispatches one publisher per token type (PDR-0076: dispatch on type, never a name
+    to match) over the compiled TokenSpec's serialization layout. `variable_element`
+    carries TWO publishers — registry-arena and item-arena (spec §3).
+
+    NOT wired into the live step path: `ObservationEncoder._get_observations` above
+    remains the environment's observation until the Task-10 swap, which calls
+    :meth:`encode` at the existing end-of-step observation point (the one sync point
+    after all VTC/effects/evaluator writes of the tick).
+    """
+
+    def __init__(self, spec: TokenSpec, publishers: Sequence[TokenTypePublisher], device: torch.device) -> None:
+        self._spec = spec
+        self._device = device
+        self._publishers: dict[str, list[TokenTypePublisher]] = {}
+        for publisher in publishers:
+            if spec.get_type(publisher.type_name) is None:
+                raise ValueError(
+                    f"Publisher for token type {publisher.type_name!r} has no type in the compiled TokenSpec "
+                    f"(types: {[t.type_name for t in spec.types]})"
+                )
+            self._publishers.setdefault(publisher.type_name, []).append(publisher)
+        for token_type in spec.types:
+            if token_type.capacity > 0 and token_type.type_name not in self._publishers:
+                raise ValueError(
+                    f"Token type {token_type.type_name!r} has capacity {token_type.capacity} but no publisher.\n"
+                    "  Rule: one publisher per token type (PDR-0076) — a type with slots and no filler is a "
+                    "lying observation, not a skip."
+                )
+
+    def encode(self, batch_size: int, ctx: TokenPublishContext) -> torch.Tensor:
+        """Build one tick's token observation, `[batch_size, total_dims]` float32.
+
+        The output tensor is allocated PER TICK (spec §6: stored observations are
+        cloned or per-tick allocated — nothing here can alias a previous tick, pinned
+        by the replay-aliasing test). Each type's rows are addressed through a
+        `.view()` of the flat slice — raises on copy, never `.reshape()`.
+        """
+        observation = torch.zeros((batch_size, self._spec.total_dims), dtype=torch.float32, device=self._device)
+        offset = 0
+        for token_type in self._spec.types:
+            width = token_type.capacity * token_type.row_width
+            if token_type.capacity > 0:
+                rows = observation[:, offset : offset + width].view(batch_size, token_type.capacity, token_type.row_width)
+                for publisher in self._publishers.get(token_type.type_name, []):
+                    publisher.publish(rows, ctx)
+            offset += width
+        return observation

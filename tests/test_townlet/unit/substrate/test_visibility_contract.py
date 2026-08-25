@@ -22,7 +22,6 @@ Semantics pinned:
   Aspatial: visible = all, delta = zeros (width 0).
 """
 
-import math
 
 import pytest
 import torch

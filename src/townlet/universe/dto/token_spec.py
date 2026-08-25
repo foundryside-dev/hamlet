@@ -825,7 +825,11 @@ def variable_element_capacity(variables: Iterable[ExposedVariable]) -> int:
     exposure rules so a refused kind never sizes a capacity.
 
     `agent_private` is NOT refused here by ruling (Task 6 review M1): the spec §2 table places
-    that exclusion in the publisher's filter before slot binding — Task 8 pins it there."""
+    that exclusion in the publisher's filter before slot binding. LANDED (Task 8):
+    `environment/token_publishers.py::RegistryVariableElementPublisher` refuses an
+    agent_private-bound slot at construction, and the registry's scope arenas exclude
+    agent_private by construction — pinned by test (agent_private never lands in any
+    agent's rows; the hamlet-83a043a9b9 boundary by mechanism)."""
     total = 0
     for var in variables:
         require_exposure_normalization(var.id, var.normalization)

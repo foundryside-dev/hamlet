@@ -187,11 +187,15 @@ class VFSEvaluator:
                 # EAGER mode's contract is to reinitialize every variable — including
                 # statics — from its declared default on every evaluation pass; that
                 # behavior is unchanged. In MARK_AND_SWEEP mode a static reaches
-                # vars_to_eval ONLY via the dependency chase (statics are never marked
-                # directly — derive_evaluation_marks excludes them), so context.vfs
-                # already carries its CURRENT runtime value from vfs_state; overwriting
-                # it with the compile-time default would silently feed a stale value
-                # into every dependent expression (hamlet-df3a96bbac).
+                # vars_to_eval by TWO paths, neither of which is a direct mark
+                # (derive_evaluation_marks excludes statics): the dependency chase of a
+                # marked expression, and the history_spec union above — a `vfs.*` key in
+                # the compiled history spec forces its variable into vars_to_eval so the
+                # temporal buffer records it each tick, statics included (comment-242
+                # item 4). Either way context.vfs already carries the static's CURRENT
+                # runtime value from vfs_state; overwriting it with the compile-time
+                # default would silently feed a stale value into every dependent
+                # expression (hamlet-df3a96bbac).
                 if self.mode != EvaluationMode.MARK_AND_SWEEP:
                     context.vfs[var.name] = value
                 continue

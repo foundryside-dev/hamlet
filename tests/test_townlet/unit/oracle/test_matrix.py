@@ -176,8 +176,9 @@ def test_standing_and_differential_cells_bind_div010_narrowly() -> None:
     VariableDef injected into every compiled universe moves exactly `variable_schema_hash`
     and `vfs_hash` — measured by two-worktree probe (11dee204 vs HEAD) and confirmed
     per-commit as the tick-injection commit's own movement. Every standing and differential
-    cell binds this as a second, composing entry alongside DIV-009 (exactly two entries
-    total on these sixteen cells)."""
+    cell binds this as a second, composing entry alongside DIV-009, and unit 3 Task 7's
+    DIV-011 (the alongside TokenSpec hashes, absent on the oracle side) composes third
+    (exactly three entries total on these sixteen cells)."""
     for c in default_cells():
         if c.params.pack in _PROFILE_VARIABLE_CELLS:
             continue
@@ -186,7 +187,12 @@ def test_standing_and_differential_cells_bind_div010_narrowly() -> None:
         assert div010[0].declared == {"variable_schema_hash", "vfs_hash"}, (
             f"{c.cell_id}: DIV-010 hash_fields do not match measurement"
         )
-        assert len(c.hash_divergences) == 2, f"{c.cell_id} should bind exactly DIV-009 + DIV-010"
+        div011 = [d for d in c.hash_divergences if d.register_ref == "DIV-011"]
+        assert len(div011) == 1, f"{c.cell_id} does not bind exactly one DIV-011 entry"
+        assert div011[0].declared == {"token_type_schema_hash", "layout_hash"}, (
+            f"{c.cell_id}: DIV-011 hash_fields do not match the Task-7 alongside emission"
+        )
+        assert len(c.hash_divergences) == 3, f"{c.cell_id} should bind exactly DIV-009 + DIV-010 + DIV-011"
 
 
 def test_all_cells_bind_the_drift_and_unit2_entries() -> None:
@@ -198,6 +204,7 @@ def test_all_cells_bind_the_drift_and_unit2_entries() -> None:
         refs = [d.register_ref for d in cell.hash_divergences]
         assert "DIV-009" in refs
         assert "DIV-010" in refs
+        assert "DIV-011" in refs  # unit 3 Task 7: the alongside TokenSpec hashes
         assert refs == sorted(set(refs), key=refs.index)  # no duplicate entries
 
 
@@ -244,15 +251,19 @@ def test_profile_variable_cells_bind_div010_narrowly() -> None:
     split and DIV-010's tick-variable injection — declared under both entries, legal per
     the union-exact composing rule since each entry's own fields still all move). The tick
     variable's injection is unconditional, so DIV-010's set here is identical to its set on
-    the standing/differential cells, unlike DIV-009's profile-narrowed set. Each profile
-    cell binds exactly three entries total: DIV-006, DIV-009, DIV-010."""
+    the standing/differential cells, unlike DIV-009's profile-narrowed set; so is
+    DIV-011's (unit 3 Task 7's alongside TokenSpec hashes). Each profile cell binds
+    exactly four entries total: DIV-006, DIV-009, DIV-010, DIV-011."""
     profile = [c for c in default_cells() if c.params.pack in _PROFILE_VARIABLE_CELLS]
     assert len(profile) == 4
     for c in profile:
         div010 = [d for d in c.hash_divergences if d.register_ref == "DIV-010"]
         assert len(div010) == 1, f"{c.cell_id} does not bind exactly one DIV-010 entry"
         assert div010[0].declared == {"variable_schema_hash", "vfs_hash"}
-        assert len(c.hash_divergences) == 3, f"{c.cell_id} should bind exactly DIV-006 + DIV-009 + DIV-010"
+        div011 = [d for d in c.hash_divergences if d.register_ref == "DIV-011"]
+        assert len(div011) == 1, f"{c.cell_id} does not bind exactly one DIV-011 entry"
+        assert div011[0].declared == {"token_type_schema_hash", "layout_hash"}
+        assert len(c.hash_divergences) == 4, f"{c.cell_id} should bind exactly DIV-006 + DIV-009 + DIV-010 + DIV-011"
 
 
 def test_differential_cells_run_their_declared_levels() -> None:

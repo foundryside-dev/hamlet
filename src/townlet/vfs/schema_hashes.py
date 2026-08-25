@@ -7,16 +7,21 @@ import json
 from collections.abc import Iterable, Mapping
 from typing import Any
 
+from townlet.universe.dto.token_spec import TOKEN_TYPE_FILLER_KIND, TokenSpec
 from townlet.vfs.schema import NormalizationSpec, ObservationField, VariableDef, VariableScope
 from townlet.vfs.transition_graph import TransitionPhaseGraph
 
 __all__ = [
     "canonical_action_schema",
     "canonical_observation_schema",
+    "canonical_token_layout",
+    "canonical_token_type_schema",
     "canonical_transition_graph_schema",
     "canonical_variable_schema",
     "compute_action_schema_hash",
     "compute_observation_schema_hash",
+    "compute_token_layout_hash",
+    "compute_token_type_schema_hash",
     "compute_transition_graph_hash",
     "compute_variable_schema_hash",
     "compute_vfs_hash",
@@ -124,6 +129,72 @@ def compute_transition_graph_hash(
             bounds_clamp_program=bounds_clamp_program,
         )
     )
+
+
+def canonical_token_type_schema(spec: TokenSpec) -> dict[str, Any]:
+    """The type-schema payload of a TokenSpec — the TRANSFER contract (token-obs spec §5).
+
+    Two universes whose type schemas hash equal can exchange per-type encoder weights
+    (ModuleDict keys). Deliberately EXCLUDES capacities and slot bindings: entity variation
+    goes into token count, never payload width (spec §1 first invariant), so a pack with 8
+    meters and a pack with 3 share this hash. The engine constants that shape payloads
+    (MAX_POSITION_RANK, VALUE_BLOCK_WIDTH, EFFECT_SUMMARY_K, every vocabulary one-hot) are
+    covered through the payload FEATURE NAMES, which spell them out member by member —
+    an enum member added anywhere in the descriptor block moves this hash.
+    """
+    return {
+        "encoding_version": spec.encoding_version,
+        "types": [
+            {
+                "type_name": t.type_name,
+                "filler_kind": TOKEN_TYPE_FILLER_KIND[t.type_name],
+                "payload_features": list(t.payload_features),
+            }
+            for t in spec.types
+        ],
+    }
+
+
+def compute_token_type_schema_hash(spec: TokenSpec) -> str:
+    """SHA-256 of the canonical token type-schema payload (transfer contract)."""
+    return _hash_payload(canonical_token_type_schema(spec))
+
+
+def canonical_token_layout(spec: TokenSpec) -> dict[str, Any]:
+    """The serialization-layout payload of a TokenSpec — the FLAT-NET contract (spec §5).
+
+    Strictly stronger than the type-schema payload: it adds capacities, slot-binding order
+    and identity (which filler owns which slot — a flat reader's dims are positional, so a
+    re-bound slot changes what a dim MEANS even at equal width), and `total_dims`.
+    Deliberately EXCLUDES `SlotBinding.static_signature`: that is slot CONTENT (what the
+    descriptor block will publish), not layout — a re-declared initial value moves what the
+    net sees, not where (PDR-0033 narrowness; pinned by test).
+    """
+    return {
+        "encoding_version": spec.encoding_version,
+        "total_dims": spec.total_dims,
+        "types": [
+            {
+                "type_name": t.type_name,
+                "payload_features": list(t.payload_features),
+                "capacity": t.capacity,
+                "slot_bindings": [
+                    {
+                        "slot_index": binding.slot_index,
+                        "filler_kind": binding.filler_kind,
+                        "filler_ref": binding.filler_ref,
+                    }
+                    for binding in t.slot_bindings
+                ],
+            }
+            for t in spec.types
+        ],
+    }
+
+
+def compute_token_layout_hash(spec: TokenSpec) -> str:
+    """SHA-256 of the canonical token layout payload (flat-net contract)."""
+    return _hash_payload(canonical_token_layout(spec))
 
 
 def compute_vfs_hash(

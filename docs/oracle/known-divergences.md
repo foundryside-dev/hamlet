@@ -1032,6 +1032,66 @@ the oracle is re-tagged past unit 2's landings, whichever comes first.
 
 ---
 
+## DIV-011 — TokenSpec alongside emission (token-obs unit 3 Task 7): two new artifact hashes appear on the new side, everything pre-existing is byte-identical
+
+- **Status:** `built` (2026-08-25 — bound with the landing commit; plain-mode and
+  `--scripted` matrix runs recorded in the unit-3 Task 7 report, both exit 0.)
+- **Harness shape: hash-only** (`RegisteredHashDivergence`)
+- **Provenance:** `hamlet-fa6bb6da4a` (unit 3, token observations) · token-obs spec §5
+  (docs/superpowers/specs/2026-08-22-token-observation-representation-design.md) · unit-3
+  plan Task 7 under the controller's ALONGSIDE ruling (the brief's severing edits are
+  deferred to Task 10).
+- **Surface:** `src/townlet/universe/compilers/observation.py` (`build_token_spec`),
+  `src/townlet/universe/compiler.py` (stage-7 emission), `src/townlet/universe/compiled.py`
+  (the `token_spec` block, `COMPILED_SCHEMA_VERSION` 1.20 → 1.21),
+  `src/townlet/vfs/schema_hashes.py` (`compute_token_type_schema_hash`,
+  `compute_token_layout_hash`).
+
+**What changed.** Unit 3 Task 7 compiles the `TokenSpec` artifact (spec §§1–2) per level,
+ALONGSIDE the unchanged `ObservationSpec` family, and stamps two NEW provenance hashes on
+the compiled artifact: `token_type_schema_hash` (the transfer contract — per-type payload
+feature names, filler kinds, encoding version) and `layout_hash` (the flat-net contract —
+type order, capacities, slot bindings, `total_dims`). Neither enters `config_hash` nor the
+four-term `compute_vfs_hash` composition — that movement is Task 10's, already registered
+as DIV-008. The old side (oracle at `oracle-2026-08-17`) predates the fields entirely, so
+on every cell both fields read `<absent>` on the old side and a value on the new side —
+the harness's dynamic hash-field enumeration correctly reports that as a mover, and this
+entry is the declaration that makes it a registered one.
+
+**Measurement.** Compile-probe over all five `configs/default_curriculum` levels at the
+Task-7 BASE commit (`4da3054c`) vs the Task-7 tree (probe script: dump every `*_hash`
+attribute plus `observation_spec.total_dims`): all 95 pre-existing hash lines are
+byte-identical; exactly 10 lines are new — the two token hashes × five levels. That
+zero-movement of everything pre-existing is the Task's alongside proof; the harness
+run then confirms it per cell against the oracle side (every pre-existing mismatch
+remains exactly the DIV-006/DIV-009/DIV-010 sets already registered).
+
+**Diff shape.**
+
+| block | cells | hash_fields added by this entry |
+|---|---|---|
+| standing (10 cells) | all 5 `default_curriculum` levels × cpu/cuda | `token_type_schema_hash, layout_hash` (old side `<absent>`) |
+| differential (6 cells) | `div003_scaled, div003_cubic_partial, div003_rect` × cpu/cuda | identical — the fields are stamped on every compiled universe unconditionally |
+| profile (4 cells) | `items_smoke, effects_smoke` × cpu/cuda | identical |
+
+Every stream (`obs`, `actions`, `dones`, `rewards`) is unaffected: the TokenSpec feeds no
+runtime path yet — no publisher exists until Task 8 and no observation consumer until the
+Task-10 cut — so nothing an agent sees or does can move.
+
+**Harness adjudication.** `_DIV011 = RegisteredHashDivergence(register_ref="DIV-011",
+hash_fields=("token_type_schema_hash", "layout_hash"))` binds all twenty cells, appended
+to each cell's existing tuple (DIV-010's uniform pattern — the emission is unconditional,
+so the field set is identical across blocks and disjoint from every bound entry's fields;
+no overlap to resolve). A mover outside a cell's declared union stays `HASH_MISMATCH`; a
+declared field that does not move lands `REGISTERED_DIVERGENCE_ABSENT`; any stream
+difference is `DIVERGE` — all red, as for every hash-only entry.
+
+**Retire this entry** when DIV-008 lands (Task 10 redefines `observation_schema_hash`
+over the TokenSpec and the token hashes become part of that registered surface), or when
+the oracle is re-tagged past unit 3's landings, whichever comes first.
+
+---
+
 ## Adding an entry
 
 Record the divergence **before** cutting the seam that produces it — at knockdown plan time,

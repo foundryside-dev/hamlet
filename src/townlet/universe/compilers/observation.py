@@ -6,6 +6,8 @@ from typing import Any, Literal, cast
 
 import torch
 
+from townlet.config.bars_v2_config import BarsV2Config
+from townlet.config.brain_config import BrainConfig
 from townlet.config.curriculum_config import CurriculumConfig
 from townlet.config.environment_config import (
     EnvironmentConfig as EnvConfigV21,
@@ -26,11 +28,23 @@ from townlet.config.stratum_config import ObservationModeConfig, StratumConfig
 from townlet.effects.catalog import EffectCatalog
 from townlet.substrate.factory import SubstrateFactory
 from townlet.universe.compiled import CompiledVFSProfiles
-from townlet.universe.dto import ObservationActivity, ObservationField, ObservationSpec
+from townlet.universe.dto import AffordanceMetadata, ObservationActivity, ObservationField, ObservationSpec
 from townlet.universe.dto.observation_feature import METER_FEATURE, VARIABLE_FEATURE
+from townlet.universe.dto.token_spec import (
+    ExposedVariable,
+    SlotBinding,
+    TokenSpec,
+    affordance_capacity,
+    build_token_type,
+    check_indistinguishability,
+    item_capacity,
+    mean_census_advisory,
+    require_position_rank,
+    static_payload_signature,
+)
 from townlet.universe.validation.limits import EFFECT_OBSERVATION_SLOTS
 from townlet.vfs.observation_builder import VFSObservationSpec, agent_can_observe, profile_variable_observation_dim
-from townlet.vfs.schema import NormalizationSpec, VariableDef
+from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope
 from townlet.vfs.schema import ObservationField as VFSObservationField
 from townlet.vfs.semantic_type import METER_BLOCK_SEMANTIC, SEMANTIC_GROUP_ORDER
 
@@ -576,6 +590,191 @@ class ObservationCompiler:
                     "dimensions silently. If this came from observation_mode: full_manual, list a "
                     "group's fields together."
                 )
+
+    def build_token_spec(
+        self,
+        stratum: StratumConfig,
+        bars: BarsV2Config,
+        affordance_metadata: AffordanceMetadata,
+        items_catalog: ItemsCatalogConfig | None,
+        compiled_effect_catalog: EffectCatalog | None,
+        obs_spec: ObservationSpec,
+        vfs_observation_fields: tuple[VFSObservationField, ...],
+        vfs_variables: tuple[VariableDef, ...],
+        brain: BrainConfig,
+    ) -> tuple[TokenSpec, tuple[str, ...]]:
+        """Compile the TokenSpec for one level (token-obs spec §§1–2), ALONGSIDE the
+        ObservationSpec family — nothing here feeds the current observation path, its
+        hashes, or `config_hash`; the swap that makes TokenSpec the pipeline's product is
+        the unit-3 Task-10 cut.
+
+        Capacities follow the spec §2 table through `token_spec.py`'s derivations, with the
+        two alongside rulings applied where the declaring surface does not exist yet (it
+        lands with the cut) — an ADVISORY recorded on the artifact instead of a refusal:
+
+        - `effect`: no pack can declare `max_active_effects` yet, so a non-empty effect
+          catalog compiles to capacity 0 plus an advisory (the cut makes it a refusal).
+        - `variable_element`: exposure is still defaulted-open (`exposed_to` fails open to
+          `["agent"]`; explicit exposure + required normalization land at the cut). A
+          variable the CURRENT observation path exposes binds a slot only when its
+          declarations already satisfy the exposure rules; one that fails them is recorded
+          as an advisory and left unbound, never silently sized in.
+        - `agent`: 0 — no shared-world declaration exists anywhere; `num_agents` is a
+          batch of independent worlds and must never size this (plan Global Constraints).
+
+        Returns (spec, advisories).
+        """
+        advisories: list[str] = []
+
+        substrate_cfg = stratum.stratum.substrate
+        substrate_instance = SubstrateFactory.build(substrate_cfg, torch.device("cpu"))
+        require_position_rank(substrate_instance.position_dim, substrate_type=substrate_cfg.type)
+
+        self_type = build_token_type("self", (SlotBinding(slot_index=0, filler_kind="static", filler_ref="self"),))
+        meter_type = build_token_type(
+            "meter",
+            tuple(SlotBinding(slot_index=i, filler_kind="static", filler_ref=meter.name) for i, meter in enumerate(bars.meters)),
+        )
+        # Capacity is the metadata affordance COUNT (ruling 3): `deployment.positions` are
+        # per-instance payload inputs, not extra capacity — absent instances are padding.
+        affordance_capacity(affordance_count=len(affordance_metadata.affordances))
+        affordance_type = build_token_type(
+            "affordance",
+            tuple(
+                SlotBinding(slot_index=i, filler_kind="static", filler_ref=affordance.id)
+                for i, affordance in enumerate(affordance_metadata.affordances)
+            ),
+        )
+        agent_type = build_token_type("agent", ())
+
+        if items_catalog is not None:
+            item_cap = item_capacity(
+                max_items_in_world=items_catalog.max_items_in_world,
+                max_items_per_agent=items_catalog.max_items_per_agent,
+                declared_agents_per_world=None,
+            )
+        else:
+            item_cap = 0
+        item_type = build_token_type(
+            "item",
+            tuple(SlotBinding(slot_index=i, filler_kind="dynamic", filler_ref=f"item:{i}") for i in range(item_cap)),
+        )
+
+        declared_effects = len(compiled_effect_catalog.effects) if compiled_effect_catalog is not None else 0
+        if declared_effects:
+            advisories.append(
+                f"Token capacity advisory: the effect catalog declares {declared_effects} effect(s) but no "
+                "`max_active_effects` per-scope budget surface exists yet, so the `effect` token type is "
+                "compiled at capacity 0 — no effect token can ever be published from this artifact. The budget "
+                "declaration lands with the observation cut (unit 3 Task 10), where this advisory becomes the "
+                "spec §2 compile refusal (No-Defaults)."
+            )
+        effect_type = build_token_type("effect", ())
+
+        element_bindings, element_advisories = self._variable_element_bindings(obs_spec, vfs_observation_fields, vfs_variables)
+        advisories.extend(element_advisories)
+        variable_element_type = build_token_type("variable_element", element_bindings)
+
+        spec = TokenSpec(
+            types=(self_type, meter_type, affordance_type, agent_type, item_type, effect_type, variable_element_type),
+        )
+
+        architecture = brain.architecture
+        if architecture.type == "set_encoder" and architecture.set_encoder is not None:
+            census_note = mean_census_advisory(spec, aggregator=architecture.set_encoder.aggregator.type)
+            if census_note is not None:
+                advisories.append(census_note)
+
+        return spec, tuple(advisories)
+
+    @staticmethod
+    def _variable_element_bindings(
+        obs_spec: ObservationSpec,
+        vfs_observation_fields: tuple[VFSObservationField, ...],
+        vfs_variables: tuple[VariableDef, ...],
+    ) -> tuple[tuple[SlotBinding, ...], tuple[str, ...]]:
+        """Slot bindings for the `variable_element` type: one slot per element of each
+        variable the observation path exposes (feature == `variable`), in field order.
+
+        `semantic_type` is sourced from the VFS `ObservationField` mirror by ruling —
+        `VariableDef` does not carry it and is not widened here. A candidate whose
+        declarations fail the exposure rules (`require_exposure_normalization` — no
+        normalization, unbounded kind, `one_hot`, `rank_scaled`) is recorded as an advisory
+        and left unbound: the refusal becomes real at the explicit-exposure cut (Task 10),
+        where a defaulted exposure instead becomes unexposed. Bound slots carry the
+        per-element descriptor block as `static_signature`; the compile-time
+        indistinguishability check runs over the bound set and advises (never refuses)
+        alongside the old path for the same reason.
+        """
+        mirror_by_id = {mirror_field.id: mirror_field for mirror_field in vfs_observation_fields}
+        defs_by_id = {var.id: var for var in vfs_variables}
+        bindings: list[SlotBinding] = []
+        advisories: list[str] = []
+        bound: list[ExposedVariable] = []
+
+        def _advise(name: str, reason: str) -> None:
+            advisories.append(
+                f"Token exposure advisory: variable '{name}' is observed by the current observation path "
+                f"but cannot bind a variable_element slot: {reason}\n"
+                "  At the explicit-exposure cut (unit 3 Task 10) this becomes a compile refusal for an "
+                "explicitly exposed variable; a defaulted exposure becomes unexposed instead."
+            )
+
+        for obs_field in obs_spec.fields:
+            if obs_field.feature != VARIABLE_FEATURE:
+                continue
+            var_def = defs_by_id.get(obs_field.name)
+            if var_def is None:
+                _advise(obs_field.name, "no runtime VariableDef was compiled for it")
+                continue
+            mirror = mirror_by_id.get(obs_field.name)
+            semantic_type = mirror.semantic_type if mirror is not None else obs_field.semantic_type
+            scope = var_def.scope.value if isinstance(var_def.scope, VariableScope) else str(var_def.scope)
+            if var_def.shape:
+                shape = tuple(var_def.shape)
+            elif var_def.dims is not None and var_def.dims > 1:
+                shape = (var_def.dims,)
+            else:
+                shape = ()
+            try:
+                exposed = ExposedVariable(
+                    id=var_def.id,
+                    scope=scope,
+                    semantic_type=str(semantic_type),
+                    type=var_def.type,
+                    lifetime=var_def.lifetime,
+                    default=var_def.default,
+                    shape=shape,
+                    normalization=var_def.normalization,
+                )
+                signature = static_payload_signature(exposed)
+            except (ValueError, AssertionError) as exc:
+                _advise(obs_field.name, str(exc))
+                continue
+            bound.append(exposed)
+            # static_payload_signature returns (scope, shape, per-element descriptor blocks).
+            descriptor_blocks = cast(tuple[tuple[float, ...], ...], signature[2])
+            for element_index, descriptor_block in enumerate(descriptor_blocks):
+                filler_ref = exposed.id if exposed.element_count == 1 else f"{exposed.id}[{element_index}]"
+                bindings.append(
+                    SlotBinding(
+                        slot_index=len(bindings),
+                        filler_kind="static",
+                        filler_ref=filler_ref,
+                        static_signature=tuple(descriptor_block),
+                    )
+                )
+
+        try:
+            check_indistinguishability(bound)
+        except ValueError as exc:
+            advisories.append(
+                f"Token exposure advisory: {exc}\n"
+                "  Recorded as an advisory while the token path runs alongside the old observation path; "
+                "the explicit-exposure cut (unit 3 Task 10) makes it the spec §1 compile refusal."
+            )
+
+        return tuple(bindings), tuple(advisories)
 
     def build_vfs_observation_fields(
         self,

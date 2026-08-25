@@ -164,6 +164,14 @@ class VFSCompiler:
         optional variables_reference.yaml overlay may mark additional profile expression
         variables via `observable`. Statics are NEVER marked: they are storage, and
         re-emitting their initial value would clobber runtime writes. (hamlet-df3a96bbac)
+
+        Marks are not the only door into evaluation, and statics still pass through the
+        other two: the evaluator widens its `vars_to_eval` with (1) the dependency chase
+        (a marked expression's in-profile dependencies) and (2) every variable named in
+        the compiled `history_spec`'s `vfs.*` keys — a temporal operator's source must be
+        recorded each tick even when nothing marks it. A static reached by either path is
+        REPORTED at its current value, never re-initialized into the context; the guard
+        lives at the evaluator's static branch (vfs/evaluator.py). (comment-242 item 4)
         """
         if profiles_config is None:
             return None

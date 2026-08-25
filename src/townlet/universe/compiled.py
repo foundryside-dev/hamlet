@@ -38,6 +38,7 @@ from townlet.universe.dto import (
     RuntimeActionSpace,
     UniverseMetadata,
 )
+from townlet.universe.dto.token_spec import SlotBinding, TokenSpec, TokenTypeSchema
 from townlet.universe.optimization import OptimizationData
 from townlet.vfs.observation_builder import VFSObservationSpec
 from townlet.vfs.profiles import CompiledGlobalProfile
@@ -71,7 +72,12 @@ from townlet.vfs.transition_schedule import (
 # (max_sustainable_income, total_affordance_costs, economic_balance — hardcoded 0.0 since
 # introduction). A 1.19 cache's metadata payload carries the extra keys and would fail
 # UniverseMetadata(**payload) obscurely; the bump makes it the "recompile" error instead.
-COMPILED_SCHEMA_VERSION = "1.20"
+# 1.21: the artifact gains the `token_spec` block (unit 3 Task 7) with its two hashes —
+# `token_type_schema_hash` (transfer contract) and `layout_hash` (flat-net contract) — and
+# `token_advisories`, ALONGSIDE the unchanged observation_spec family (the swap is Task 10).
+# The new fields are required in the payload, so a 1.20 cache would fail from_dict on a
+# missing-field error naming one key; the bump makes it the "recompile" error instead.
+COMPILED_SCHEMA_VERSION = "1.21"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",
@@ -105,6 +111,10 @@ REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "vfs_history_spec",
     "vfs_evaluation_marks",
     "vfs_observation_spec",
+    "token_spec",
+    "token_type_schema_hash",
+    "layout_hash",
+    "token_advisories",
     "experiment_dir",
     "drive_hash",
     "curriculum_hash",
@@ -193,6 +203,23 @@ class CompiledUniverse:
     # Runtime-ready VFS observation dimensions and variable order.
     vfs_observation_spec: VFSObservationSpec | None = None
 
+    # Token observation artifact (unit 3 Task 7) — carried ALONGSIDE the observation_spec
+    # family until the Task-10 swap makes it the pipeline's product. Its two hashes join
+    # the hash inventory but deliberately do NOT enter config_hash or the four-term
+    # vfs_hash composition (that movement is Task 10's, registered as DIV-008).
+    token_spec: TokenSpec | None = None
+    # Transfer contract: hash of the TokenSpec type schemas (per-type payload feature
+    # names + filler kinds + encoding version); equal hashes mean per-type encoder
+    # weights are exchangeable.
+    token_type_schema_hash: str | None = None
+    # Flat-net contract: hash of the serialization layout (type order, capacities, slot
+    # bindings, total_dims); equal hashes mean a flat reader sees identical dim meanings.
+    layout_hash: str | None = None
+    # Compile-time token advisories (effect-budget surface missing, exposure-rule
+    # failures, mean-aggregator census) — loud, recorded, and Task 10 turns the first
+    # two kinds into refusals.
+    token_advisories: tuple[str, ...] = ()
+
     # Provenance
     experiment_dir: Path | None = None
     drive_hash: str | None = None
@@ -252,9 +279,16 @@ class CompiledUniverse:
         affordances_hash: str | None = None
         training_hash: str | None = None
         items_appearance: ItemsAppearanceConfig | None = None
+        # Token observation artifact (unit 3 Task 7) — see the CompiledUniverse fields of
+        # the same names for the contracts.
+        token_spec: TokenSpec | None = None
+        token_type_schema_hash: str | None = None
+        layout_hash: str | None = None
+        token_advisories: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "vfs_observation_fields", tuple(self.vfs_observation_fields))
+        object.__setattr__(self, "token_advisories", tuple(self.token_advisories))
         if self.all_levels is not None and len(self.all_levels) == 0:
             raise ValueError("all_levels must be None or a non-empty dict of LevelMetadata")
 
@@ -344,6 +378,11 @@ class CompiledUniverse:
             vfs_history_spec=deepcopy(self.vfs_history_spec) if self.vfs_history_spec is not None else None,
             vfs_evaluation_marks=deepcopy(self.vfs_evaluation_marks) if self.vfs_evaluation_marks is not None else None,
             vfs_observation_spec=deepcopy(self.vfs_observation_spec) if self.vfs_observation_spec is not None else None,
+            # Frozen, tuple-carrying dataclasses: safe to share.
+            token_spec=self.token_spec,
+            token_type_schema_hash=self.token_type_schema_hash,
+            layout_hash=self.layout_hash,
+            token_advisories=self.token_advisories,
             experiment_dir=self.experiment_dir,
             drive_hash=self.drive_hash,
             curriculum_hash=self.curriculum_hash,
@@ -404,6 +443,10 @@ class CompiledUniverse:
                 {k: list(v) for k, v in self.vfs_evaluation_marks.items()} if self.vfs_evaluation_marks is not None else None
             ),  # Convert sets to lists for JSON serialization
             "vfs_observation_spec": (_dataclass_to_plain(self.vfs_observation_spec) if self.vfs_observation_spec is not None else None),
+            "token_spec": _serialize_token_spec(self.token_spec),
+            "token_type_schema_hash": self.token_type_schema_hash,
+            "layout_hash": self.layout_hash,
+            "token_advisories": list(self.token_advisories),
             "experiment_dir": None if self.experiment_dir is None else str(self.experiment_dir),
             "drive_hash": self.drive_hash,
             "curriculum_hash": self.curriculum_hash,
@@ -452,6 +495,10 @@ class CompiledUniverse:
                         "observation_schema_hash": meta.observation_schema_hash,
                         "vfs_variables": [var.model_dump() for var in meta.vfs_variables],
                         "variable_schema_hash": meta.variable_schema_hash,
+                        "token_spec": _serialize_token_spec(meta.token_spec),
+                        "token_type_schema_hash": meta.token_type_schema_hash,
+                        "layout_hash": meta.layout_hash,
+                        "token_advisories": list(meta.token_advisories),
                     }
                     for name, meta in self.all_levels.items()
                 }
@@ -539,6 +586,10 @@ class CompiledUniverse:
                     observation_schema_hash=_required_field(meta, f"all_levels.{name}.observation_schema_hash"),
                     vfs_variables=level_vfs_variables,
                     variable_schema_hash=_required_field(meta, f"all_levels.{name}.variable_schema_hash"),
+                    token_spec=_token_spec_from_plain(_required_field(meta, f"all_levels.{name}.token_spec")),
+                    token_type_schema_hash=_required_field(meta, f"all_levels.{name}.token_type_schema_hash"),
+                    layout_hash=_required_field(meta, f"all_levels.{name}.layout_hash"),
+                    token_advisories=tuple(_required_field(meta, f"all_levels.{name}.token_advisories")),
                 )
 
         top_runtime_action_space = _runtime_action_space_from_plain(_required_mapping(payload, "runtime_action_space"))
@@ -627,6 +678,10 @@ class CompiledUniverse:
                 else None
             ),  # Convert lists back to sets
             vfs_observation_spec=_vfs_observation_spec_from_plain(_required_field(payload, "vfs_observation_spec")),
+            token_spec=_token_spec_from_plain(_required_field(payload, "token_spec")),
+            token_type_schema_hash=_required_field(payload, "token_type_schema_hash"),
+            layout_hash=_required_field(payload, "layout_hash"),
+            token_advisories=tuple(_required_field(payload, "token_advisories")),
             experiment_dir=None if _required_field(payload, "experiment_dir") is None else Path(payload["experiment_dir"]),
             drive_hash=_required_field(payload, "drive_hash"),
             curriculum_hash=_required_field(payload, "curriculum_hash"),
@@ -821,6 +876,61 @@ def _vfs_observation_spec_from_plain(payload: Mapping[str, Any] | None) -> VFSOb
         max_item_profiles=_required_field(payload, "vfs_observation_spec.max_item_profiles"),
         max_tensor_elements=_required_field(payload, "vfs_observation_spec.max_tensor_elements"),
     )
+
+
+def _serialize_token_spec(spec: TokenSpec | None) -> dict[str, Any] | None:
+    """Serialize a TokenSpec to a msgpack-safe dict.
+
+    `payload_features` are serialized even though they are engine constants: the artifact
+    is self-describing (token-obs spec §2), and `TokenTypeSchema.__post_init__` compares
+    them against the running engine's schema on load — a cache whose payload schema
+    disagrees with the engine refuses loudly instead of deserializing a lie.
+    """
+    if spec is None:
+        return None
+    return {
+        "encoding_version": spec.encoding_version,
+        "types": [
+            {
+                "type_name": t.type_name,
+                "payload_features": list(t.payload_features),
+                "capacity": t.capacity,
+                "slot_bindings": [
+                    {
+                        "slot_index": binding.slot_index,
+                        "filler_kind": binding.filler_kind,
+                        "filler_ref": binding.filler_ref,
+                        "static_signature": None if binding.static_signature is None else list(binding.static_signature),
+                    }
+                    for binding in t.slot_bindings
+                ],
+            }
+            for t in spec.types
+        ],
+    }
+
+
+def _token_spec_from_plain(payload: Mapping[str, Any] | None) -> TokenSpec | None:
+    if payload is None:
+        return None
+    types = tuple(
+        TokenTypeSchema(
+            type_name=entry["type_name"],
+            payload_features=tuple(entry["payload_features"]),
+            capacity=entry["capacity"],
+            slot_bindings=tuple(
+                SlotBinding(
+                    slot_index=binding["slot_index"],
+                    filler_kind=binding["filler_kind"],
+                    filler_ref=binding["filler_ref"],
+                    static_signature=None if binding["static_signature"] is None else tuple(binding["static_signature"]),
+                )
+                for binding in entry["slot_bindings"]
+            ),
+        )
+        for entry in payload["types"]
+    )
+    return TokenSpec(types=types, encoding_version=payload["encoding_version"])
 
 
 def _serialize_compiled_variable(var: Any) -> dict[str, Any]:

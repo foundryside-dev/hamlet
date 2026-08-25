@@ -23,6 +23,8 @@ from townlet.vfs.profiles import CircularDependencyError
 from townlet.vfs.schema_hashes import (
     compute_action_schema_hash,
     compute_observation_schema_hash,
+    compute_token_layout_hash,
+    compute_token_type_schema_hash,
     compute_transition_graph_hash,
     compute_variable_schema_hash,
     compute_vfs_hash,
@@ -399,6 +401,26 @@ class UniverseCompiler:
             )
             vfs_hash = compute_vfs_hash(variable_schema_hash, observation_schema_hash, action_schema_hash, transition_graph_hash)
 
+            # Token observation artifact (unit 3 Task 7) — compiled ALONGSIDE the
+            # observation_spec family. Its two hashes join the inventory but do NOT
+            # enter config_hash or the vfs_hash composition (that swap is Task 10).
+            token_spec, token_advisories = self._observation_compiler.build_token_spec(
+                raw.stratum,
+                level.bars,
+                affordance_metadata,
+                raw.items,
+                compiled_effect_catalog,
+                obs_spec,
+                vfs_fields,
+                vfs_variables,
+                # The EFFECTIVE brain for this level (PDR-0027 selection, same as stage 8).
+                level.brain or raw.brain,
+            )
+            token_type_schema_hash = compute_token_type_schema_hash(token_spec)
+            layout_hash = compute_token_layout_hash(token_spec)
+            for advisory in token_advisories:
+                logger.warning("[%s] %s", level_name, advisory)
+
             # Compute hashes for level-specific configs
             drive_hash = self._compute_pydantic_hash(level.drive)
             curriculum_hash = self._compute_pydantic_hash(level.curriculum)
@@ -434,6 +456,10 @@ class UniverseCompiler:
                 variable_schema_hash=variable_schema_hash,
                 transition_schedule=transition_schedule,
                 items_appearance=level.items_appearance,
+                token_spec=token_spec,
+                token_type_schema_hash=token_type_schema_hash,
+                layout_hash=layout_hash,
+                token_advisories=token_advisories,
             )
 
         primary_meta = all_levels[primary_level]
@@ -519,6 +545,10 @@ class UniverseCompiler:
             vfs_history_spec=vfs_history_spec or None,
             vfs_evaluation_marks=vfs_evaluation_marks,
             vfs_observation_spec=vfs_observation_spec,
+            token_spec=primary_meta.token_spec,
+            token_type_schema_hash=primary_meta.token_type_schema_hash,
+            layout_hash=primary_meta.layout_hash,
+            token_advisories=primary_meta.token_advisories,
             experiment_dir=experiment_dir,
             drive_hash=primary_meta.drive_hash,
             curriculum_hash=primary_meta.curriculum_hash,

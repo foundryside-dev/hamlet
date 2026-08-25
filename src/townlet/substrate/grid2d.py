@@ -7,7 +7,12 @@ import torch
 
 from townlet.environment.action_config import ActionConfig
 from townlet.environment.affordance_layout import iter_affordance_positions
-from townlet.substrate.base import SpatialSubstrate
+from townlet.substrate.base import (
+    SpatialSubstrate,
+    combine_metric,
+    pairwise_axis_deltas,
+    require_position_batch,
+)
 
 
 class Grid2DSubstrate(SpatialSubstrate):
@@ -500,6 +505,37 @@ class Grid2DSubstrate(SpatialSubstrate):
     def get_partial_window_dim(self, vision_radius: int) -> int:
         """Width of encode_partial_observation's output: a (2r+1)² window."""
         return (2 * vision_radius + 1) ** 2
+
+    # --- Token visibility / egocentric contract (token-obs unit 3, Task 8) -----
+
+    def _token_axis_sizes(self, device: torch.device) -> torch.Tensor:
+        return torch.tensor([float(self.width), float(self.height)], dtype=torch.float32, device=device)
+
+    def visible(self, self_pos: torch.Tensor, entity_pos: torch.Tensor, vision_range: float | None) -> torch.Tensor:
+        """Declared-metric visibility; wrap-aware (toroidal shortest path under `wrap`)."""
+        require_position_batch(self_pos, self.position_dim, argument="self_pos")
+        require_position_batch(entity_pos, self.position_dim, argument="entity_pos")
+        if vision_range is None:
+            return torch.ones((self_pos.shape[0], entity_pos.shape[0]), dtype=torch.bool, device=self_pos.device)
+        radius = float(self.get_vision_radius(vision_range))
+        wrap = self._token_axis_sizes(self_pos.device) if self.boundary == "wrap" else None
+        deltas = pairwise_axis_deltas(self_pos, entity_pos, wrap)
+        return combine_metric(deltas.abs(), self.distance_metric) <= radius
+
+    def egocentric_delta(self, self_pos: torch.Tensor, entity_pos: torch.Tensor) -> torch.Tensor:
+        """entity − self per axis, shortest path under wrap, normalized per encoding mode."""
+        require_position_batch(self_pos, self.position_dim, argument="self_pos")
+        require_position_batch(entity_pos, self.position_dim, argument="entity_pos")
+        wrap = self._token_axis_sizes(self_pos.device) if self.boundary == "wrap" else None
+        deltas = pairwise_axis_deltas(self_pos, entity_pos, wrap)
+        if self.observation_encoding == "relative":
+            denominators = torch.tensor(
+                [float(max(self.width - 1, 1)), float(max(self.height - 1, 1))],
+                dtype=torch.float32,
+                device=deltas.device,
+            )
+            deltas = deltas / denominators
+        return deltas
 
     def normalize_positions(self, positions: torch.Tensor) -> torch.Tensor:
         """Normalize positions to [0, 1] range (always relative encoding).

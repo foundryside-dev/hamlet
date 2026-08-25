@@ -9,6 +9,47 @@ if TYPE_CHECKING:
     from townlet.environment.action_config import ActionConfig
 
 
+def pairwise_axis_deltas(
+    self_pos: torch.Tensor,
+    entity_pos: torch.Tensor,
+    wrap_extents: torch.Tensor | None,
+) -> torch.Tensor:
+    """Signed per-axis deltas ``entity − self`` as ``[N, M, D]`` float32.
+
+    Shared helper for the token visibility/egocentric contract (token-obs unit 3 Task 8).
+    Under wrap (``wrap_extents`` = per-axis extent tensor ``[D]``) each axis delta is the
+    toroidal shortest signed path: ``((d + e/2) mod e) − e/2``. The half-extent tie on an
+    even extent maps deterministically to the NEGATIVE half (remainder arithmetic) —
+    pinned by test, part of the contract.
+    """
+    deltas = entity_pos.to(dtype=torch.float32).unsqueeze(0) - self_pos.to(dtype=torch.float32).unsqueeze(1)
+    if wrap_extents is not None:
+        extents = wrap_extents.to(dtype=torch.float32, device=deltas.device)
+        deltas = torch.remainder(deltas + extents / 2.0, extents) - extents / 2.0
+    return deltas
+
+
+def combine_metric(abs_deltas: torch.Tensor, distance_metric: str) -> torch.Tensor:
+    """Reduce ``[N, M, D]`` absolute per-axis deltas to ``[N, M]`` declared-metric distance."""
+    if distance_metric == "manhattan":
+        return abs_deltas.sum(dim=-1)
+    if distance_metric == "euclidean":
+        return torch.sqrt((abs_deltas**2).sum(dim=-1))
+    if distance_metric == "chebyshev":
+        if abs_deltas.shape[-1] == 0:
+            return abs_deltas.sum(dim=-1)
+        return abs_deltas.max(dim=-1)[0]
+    raise ValueError(f"Unknown distance metric: {distance_metric}")
+
+
+def require_position_batch(positions: torch.Tensor, position_dim: int, *, argument: str) -> None:
+    """Refuse a position batch whose trailing width is not the substrate's position_dim."""
+    if positions.dim() != 2 or positions.shape[1] != position_dim:
+        raise ValueError(
+            f"{argument} must have shape [batch, position_dim={position_dim}], got {tuple(positions.shape)}"
+        )
+
+
 class SpatialSubstrate(ABC):
     """Abstract interface for spatial substrates.
 
@@ -351,6 +392,52 @@ class SpatialSubstrate(ABC):
         Used for capacity validation in affordance placement.
         """
         pass
+
+    # --- Token visibility / egocentric contract (token-obs unit 3, Task 8) -----
+    #
+    # The PDR-0041 shape again: the runtime learns spatial-token visibility by asking
+    # the substrate instance. These two members are the token path's ONLY spatial
+    # gate — `supports_partial_vision` and the window encoders above remain the OLD
+    # raster contract, untouched until the unit-3 Task-10 swap retires them.
+
+    @abstractmethod
+    def visible(
+        self,
+        self_pos: torch.Tensor,
+        entity_pos: torch.Tensor,
+        vision_range: float | None,
+    ) -> torch.Tensor:
+        """Which entities each agent can see under the declared metric + boundary mode.
+
+        Args:
+            self_pos: [N, position_dim] observer positions
+            entity_pos: [M, position_dim] entity positions
+            vision_range: normalized fraction of the longest axis (the POMDP meaning),
+                or None for full observability (pass-all)
+
+        Returns:
+            [N, M] bool — True where the entity is within the vision radius of the
+            observer. Distance is the DECLARED metric; only `wrap` boundary mode changes
+            it (toroidal shortest path) — clamp/bounce/sticky are in-bounds position
+            regimes with plain metric distance. Aspatial substrates return all-True
+            (no positions, nothing to hide).
+        """
+
+    @abstractmethod
+    def egocentric_delta(self, self_pos: torch.Tensor, entity_pos: torch.Tensor) -> torch.Tensor:
+        """Per-axis ``entity − self`` deltas, shortest-path under wrap.
+
+        Args:
+            self_pos: [N, position_dim] observer positions
+            entity_pos: [M, position_dim] entity positions
+
+        Returns:
+            [N, M, position_dim] float32, normalized per the declared observation
+            encoding mode: `relative` divides by the same denominator as
+            normalize_positions (span − 1 for grids, extent for continuous), so deltas
+            land in [−1, 1]; `scaled` and `absolute` return raw axis units. Aspatial:
+            zeros of width 0.
+        """
 
     @abstractmethod
     def encode_partial_observation(

@@ -7,7 +7,7 @@ import torch
 
 from townlet.environment.action_config import ActionConfig
 
-from .base import SpatialSubstrate
+from .base import SpatialSubstrate, combine_metric, pairwise_axis_deltas, require_position_batch
 
 
 class ContinuousSubstrate(SpatialSubstrate):
@@ -359,6 +359,43 @@ class ContinuousSubstrate(SpatialSubstrate):
             [num_agents, position_dim] normalized to [0, 1]
         """
         return self._encode_relative(positions, {})
+
+    # --- Token visibility / egocentric contract (token-obs unit 3, Task 8) -----
+
+    def _token_axis_extents(self, device: torch.device) -> torch.Tensor:
+        return torch.tensor(
+            [float(max_val - min_val) for min_val, max_val in self.bounds], dtype=torch.float32, device=device
+        )
+
+    def _token_vision_radius(self, vision_range: float) -> float:
+        """Radius in world units from the declared fraction of the longest axis extent.
+
+        The continuous analogue of the grids' `ceil(vision_range * span/2)` — no cell
+        quantization, so no ceil and no minimum-1.
+        """
+        longest = max(max_val - min_val for min_val, max_val in self.bounds)
+        return vision_range * (longest / 2.0)
+
+    def visible(self, self_pos: torch.Tensor, entity_pos: torch.Tensor, vision_range: float | None) -> torch.Tensor:
+        """Declared-metric visibility; wrap-aware (toroidal shortest path under `wrap`)."""
+        require_position_batch(self_pos, self.position_dim, argument="self_pos")
+        require_position_batch(entity_pos, self.position_dim, argument="entity_pos")
+        if vision_range is None:
+            return torch.ones((self_pos.shape[0], entity_pos.shape[0]), dtype=torch.bool, device=self_pos.device)
+        radius = self._token_vision_radius(vision_range)
+        wrap = self._token_axis_extents(self_pos.device) if self.boundary == "wrap" else None
+        deltas = pairwise_axis_deltas(self_pos, entity_pos, wrap)
+        return combine_metric(deltas.abs(), self.distance_metric) <= radius
+
+    def egocentric_delta(self, self_pos: torch.Tensor, entity_pos: torch.Tensor) -> torch.Tensor:
+        """entity − self per axis, shortest path under wrap, normalized per encoding mode."""
+        require_position_batch(self_pos, self.position_dim, argument="self_pos")
+        require_position_batch(entity_pos, self.position_dim, argument="entity_pos")
+        wrap = self._token_axis_extents(self_pos.device) if self.boundary == "wrap" else None
+        deltas = pairwise_axis_deltas(self_pos, entity_pos, wrap)
+        if self.observation_encoding == "relative":
+            deltas = deltas / self._token_axis_extents(deltas.device)
+        return deltas
 
     def encode_partial_observation(self, positions: torch.Tensor, affordances: dict[str, torch.Tensor], vision_range: int) -> torch.Tensor:
         """Partial observability not supported for continuous substrates.

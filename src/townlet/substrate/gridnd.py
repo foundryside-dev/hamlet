@@ -1,12 +1,18 @@
 """N-dimensional grid substrate (N≥4 dimensions)."""
 
+import math
 import warnings
 from typing import Literal
 
 import torch
 
 from townlet.environment.action_config import ActionConfig
-from townlet.substrate.base import SpatialSubstrate
+from townlet.substrate.base import (
+    SpatialSubstrate,
+    combine_metric,
+    pairwise_axis_deltas,
+    require_position_batch,
+)
 
 
 class GridNDSubstrate(SpatialSubstrate):
@@ -405,6 +411,47 @@ class GridNDSubstrate(SpatialSubstrate):
             [num_agents, position_dim] normalized to [0, 1]
         """
         return self._encode_relative(positions, {})
+
+    # --- Token visibility / egocentric contract (token-obs unit 3, Task 8) -----
+    #
+    # GridND GAINS partial observability through this contract (the token-obs spec §1
+    # trade, rank ≤ MAX_POSITION_RANK): the OLD raster window path never supported it
+    # (`supports_partial_vision` stays False and `get_vision_radius` still raises —
+    # that contract is untouched), so the radius formula is stated here, identical to
+    # grid2d/grid3d's longest-axis form.
+
+    def _token_axis_sizes(self, device: torch.device) -> torch.Tensor:
+        return torch.tensor([float(size) for size in self.dimension_sizes], dtype=torch.float32, device=device)
+
+    def _token_vision_radius(self, vision_range: float) -> int:
+        span = max(self.dimension_sizes)
+        return max(1, int(math.ceil(vision_range * (span / 2.0))))
+
+    def visible(self, self_pos: torch.Tensor, entity_pos: torch.Tensor, vision_range: float | None) -> torch.Tensor:
+        """Declared-metric visibility; wrap-aware (toroidal shortest path under `wrap`)."""
+        require_position_batch(self_pos, self.position_dim, argument="self_pos")
+        require_position_batch(entity_pos, self.position_dim, argument="entity_pos")
+        if vision_range is None:
+            return torch.ones((self_pos.shape[0], entity_pos.shape[0]), dtype=torch.bool, device=self_pos.device)
+        radius = float(self._token_vision_radius(vision_range))
+        wrap = self._token_axis_sizes(self_pos.device) if self.boundary == "wrap" else None
+        deltas = pairwise_axis_deltas(self_pos, entity_pos, wrap)
+        return combine_metric(deltas.abs(), self.distance_metric) <= radius
+
+    def egocentric_delta(self, self_pos: torch.Tensor, entity_pos: torch.Tensor) -> torch.Tensor:
+        """entity − self per axis, shortest path under wrap, normalized per encoding mode."""
+        require_position_batch(self_pos, self.position_dim, argument="self_pos")
+        require_position_batch(entity_pos, self.position_dim, argument="entity_pos")
+        wrap = self._token_axis_sizes(self_pos.device) if self.boundary == "wrap" else None
+        deltas = pairwise_axis_deltas(self_pos, entity_pos, wrap)
+        if self.observation_encoding == "relative":
+            denominators = torch.tensor(
+                [float(max(size - 1, 1)) for size in self.dimension_sizes],
+                dtype=torch.float32,
+                device=deltas.device,
+            )
+            deltas = deltas / denominators
+        return deltas
 
     def get_valid_neighbors(self, position: torch.Tensor) -> list[torch.Tensor]:
         """Get cardinal neighbors in N dimensions (2N neighbors).

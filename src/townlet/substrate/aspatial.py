@@ -92,6 +92,16 @@ class AspatialSubstrate(SpatialSubstrate):
     def get_partial_window_dim(self, vision_radius: int) -> int:
         raise ValueError("Aspatial substrates do not support partial vision; no local window exists.")
 
+    # --- Token visibility / egocentric contract (token-obs unit 3, Task 8) -----
+
+    def visible(self, self_pos: torch.Tensor, entity_pos: torch.Tensor, vision_range: float | None) -> torch.Tensor:
+        """No positions, nothing to hide: every entity is visible to every agent."""
+        return torch.ones((self_pos.shape[0], entity_pos.shape[0]), dtype=torch.bool, device=self_pos.device)
+
+    def egocentric_delta(self, self_pos: torch.Tensor, entity_pos: torch.Tensor) -> torch.Tensor:
+        """No positions: zero-width deltas."""
+        return torch.zeros((self_pos.shape[0], entity_pos.shape[0], 0), dtype=torch.float32, device=self_pos.device)
+
     def normalize_positions(self, positions: torch.Tensor) -> torch.Tensor:
         """Normalize positions to [0, 1] range (always relative encoding).
 

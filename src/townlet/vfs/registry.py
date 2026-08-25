@@ -30,11 +30,32 @@ if TYPE_CHECKING:
 
 __all__ = [
     "VariableRegistry",
+    "ScopeArena",
     "ScopedVariableRegistry",
     "VFSRegistryProtocol",
     "AccessDeniedError",
     "DynamicVariableMutation",
 ]
+
+
+@dataclass(frozen=True)
+class ScopeArena:
+    """One per-scope storage arena (token-obs unit 3, Task 8 — the item_vfs shape).
+
+    ``tensor`` is ``[rows, elements]`` float32 — rows 1 for the global scope,
+    ``num_agents`` for the agent scope; ``index`` maps each backed variable id to its
+    ``(offset, element_count)`` column span. Backed variables' registry storage tensors
+    are VIEWS into this arena, so every write path (set / set_engine_value / lifetime
+    reset) lands here with no sync step, and the token registry publisher reads one slab
+    per scope — batched fills, never per-variable Python loops (hamlet-c7084169f7).
+
+    `agent_private` is excluded by construction: the arenas exist to feed observation,
+    and the publisher (`environment/token_publishers.py`) is the enforcement point for
+    the hamlet-83a043a9b9 boundary.
+    """
+
+    tensor: torch.Tensor
+    index: dict[str, tuple[int, int]]
 
 NetworkShapeEffect = Literal["shape_stable_internal", "observation_schema_changed"]
 _NETWORK_SHAPE_EFFECTS = {"shape_stable_internal", "observation_schema_changed"}
@@ -154,10 +175,15 @@ class VariableRegistry:
         self._pair_edge_to_index: dict[tuple[int, int], int] = {}
         self._initialize_pair_storage_index(pair_edges)
 
-        # Initialize storage tensors
+        # Initialize storage tensors. Per-scope arenas are allocated FIRST so that
+        # float32-typed global/agent variables can be stored as views into them
+        # (token-obs unit 3, Task 8 — see ScopeArena).
         self._storage: dict[str, torch.Tensor] = {}
         self._expected_shapes: dict[str, torch.Size] = {}
         self._expected_dtypes: dict[str, torch.dtype] = {}
+        self._scope_arenas: dict[str, ScopeArena] = {}
+        self._arena_backed: dict[str, str] = {}  # variable id -> arena scope key
+        self._initialize_scope_arenas()
         self._initialize_storage()
         self._initial_storage: dict[str, torch.Tensor] = {name: value.clone() for name, value in self._storage.items()}
 
@@ -343,6 +369,11 @@ class VariableRegistry:
         del self._expected_shapes[variable_id]
         del self._expected_dtypes[variable_id]
         del self._initial_storage[variable_id]
+        scope_key = self._arena_backed.pop(variable_id, None)
+        if scope_key is not None:
+            # The arena column is orphaned, not reallocated: compiled token slot
+            # bindings are static, so nothing can read it again this run.
+            del self._scope_arenas[scope_key].index[variable_id]
         self._record_dynamic_variable_mutation("remove", var_def, network_shape_effect, tensor)
 
     def _require_dynamic_variable_mode(self) -> None:
@@ -380,10 +411,107 @@ class VariableRegistry:
             )
         )
 
+    @property
+    def scope_arenas(self) -> dict[str, ScopeArena]:
+        """The per-scope storage arenas (always both keys, `global` and `agent`).
+
+        Consumed by the token registry publisher for batched per-scope fills. The agent
+        arena never contains `agent_private` variables — excluded by construction, with
+        the publisher as the loud enforcement point (hamlet-83a043a9b9).
+        """
+        return self._scope_arenas
+
+    def _arena_scope_key(self, var_def: VariableDef) -> str | None:
+        """Arena membership rule: float32-typed `global`/`agent` variables, nothing else.
+
+        `agent_private` deliberately returns None — see ScopeArena. Integer/bool-typed
+        variables keep standalone storage (the arena is float32, the value-token dtype);
+        no shipped pack exposes one, and a compiled binding against one is refused by the
+        publisher at construction.
+        """
+        scope = VariableScope(var_def.scope)
+        if scope == VariableScope.GLOBAL:
+            key = "global"
+        elif scope == VariableScope.AGENT:
+            key = "agent"
+        else:
+            return None
+        return key if self._storage_dtype(var_def) == torch.float32 else None
+
+    @staticmethod
+    def _storage_dtype(var_def: VariableDef) -> torch.dtype:
+        """The dtype _build_storage_tensor will allocate, decided without building it."""
+        if var_def.type in ("agent_ref", "item_ref", "affordance_ref", "effect_ref", "vecNi", "vec2i", "vec3i"):
+            return torch.long
+        if var_def.type == "bool":
+            return torch.bool
+        return torch.float32
+
+    def _arena_element_count(self, var_def: VariableDef) -> int:
+        """Per-row element count: the declared shape with the scope prefix stripped."""
+        full_shape = self._compute_shape(var_def)
+        prefix_len = len(self._scope_prefix_shape(var_def))
+        count = 1
+        for dim in full_shape[prefix_len:]:
+            count *= dim
+        return count
+
+    def _initialize_scope_arenas(self) -> None:
+        """Allocate the global/agent arenas from construction-time declarations.
+
+        Variables added later through dynamic_variable_mode are never arena-backed —
+        compiled token slot bindings are static, so nothing can observe them through the
+        arena path.
+        """
+        layouts: dict[str, dict[str, tuple[int, int]]] = {"global": {}, "agent": {}}
+        offsets = {"global": 0, "agent": 0}
+        for var_id, var_def in self._definitions.items():
+            scope_key = self._arena_scope_key(var_def)
+            if scope_key is None:
+                continue
+            count = self._arena_element_count(var_def)
+            layouts[scope_key][var_id] = (offsets[scope_key], count)
+            offsets[scope_key] += count
+            self._arena_backed[var_id] = scope_key
+        rows = {"global": 1, "agent": self.num_agents}
+        for scope_key in ("global", "agent"):
+            self._scope_arenas[scope_key] = ScopeArena(
+                tensor=torch.zeros((rows[scope_key], offsets[scope_key]), dtype=torch.float32, device=self.device),
+                index=layouts[scope_key],
+            )
+
+    def _arena_storage_view(self, var_id: str, shape: torch.Size) -> torch.Tensor:
+        """The arena-backed storage tensor for one variable: a VIEW, never a copy.
+
+        `.view()` raises on copy by contract (spec §6 implementation constraint) — a
+        silent `.reshape()` here would detach storage from the arena.
+        """
+        scope_key = self._arena_backed[var_id]
+        arena = self._scope_arenas[scope_key]
+        offset, count = arena.index[var_id]
+        if scope_key == "global":
+            return arena.tensor[0, offset : offset + count].view(tuple(shape))
+        sliced = arena.tensor[:, offset : offset + count]
+        if len(shape) == 1:
+            return sliced.squeeze(1)
+        return sliced.view(tuple(shape))
+
+    def _write_storage(self, variable_id: str, value: torch.Tensor) -> None:
+        """Commit a validated write: in place for arena-backed variables (the storage IS
+        the arena view), defensive rebind-with-clone for everything else."""
+        if variable_id in self._arena_backed:
+            self._storage[variable_id].copy_(value)
+        else:
+            self._storage[variable_id] = value.clone()
+
     def _initialize_storage(self) -> None:
         """Initialize storage tensors with default values for all variables."""
         for var_id, var_def in self._definitions.items():
             tensor = self._build_storage_tensor(var_def)
+            if var_id in self._arena_backed:
+                view = self._arena_storage_view(var_id, tensor.shape)
+                view.copy_(tensor)
+                tensor = view
             self._storage[var_id] = tensor
             self._expected_shapes[var_id] = tensor.shape
             self._expected_dtypes[var_id] = tensor.dtype
@@ -557,8 +685,8 @@ class VariableRegistry:
         if value.dtype != expected_dtype:
             raise ValueError(f"Value for '{variable_id}' has dtype {value.dtype}, expected {expected_dtype}")
 
-        # Update storage (defensive copy to avoid aliasing)
-        self._storage[variable_id] = value.to(self.device).clone()
+        # Update storage (in place for arena-backed variables; defensive copy otherwise)
+        self._write_storage(variable_id, value.to(self.device))
 
     def set_engine_value(self, variable_id: str, value: torch.Tensor) -> None:
         """Write evaluator output as the engine, enforcing the declared element shape.
@@ -589,7 +717,7 @@ class VariableRegistry:
                 "batch. If the expression is genuinely per-agent, declare the variable "
                 "agent-scoped instead of global."
             )
-        self._storage[variable_id] = value.to(device=self.device, dtype=expected_dtype).clone()
+        self._write_storage(variable_id, value.to(device=self.device, dtype=expected_dtype))
 
     def reset_tick_scoped(self) -> None:
         """Restore tick-lifetime variables to their configured defaults."""
@@ -602,7 +730,7 @@ class VariableRegistry:
     def _reset_lifetimes(self, lifetimes: AbstractSet[str]) -> None:
         for var_id, var_def in self._definitions.items():
             if str(var_def.lifetime) in lifetimes:
-                self._storage[var_id] = self._initial_storage[var_id].clone()
+                self._write_storage(var_id, self._initial_storage[var_id])
 
     def _get_vector_dims(self, var_def: VariableDef) -> int:
         """Return expected dimensionality for vector variables."""

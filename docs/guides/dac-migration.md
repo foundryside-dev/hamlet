@@ -882,7 +882,7 @@ composition:
 - **Implementation Plan**: `docs/plans/2025-11-12-drive-as-code-implementation.md`
 - **Training Config**: `docs/config-schemas/training.md`
 - **VFS Config**: `docs/config-schemas/variables.md`
-- **Compiler Docs**: `docs/UNIVERSE-COMPILER.md`
+- **Compiler Docs**: `docs/architecture/archive/UNIVERSE-COMPILER.md`
 
 ---
 

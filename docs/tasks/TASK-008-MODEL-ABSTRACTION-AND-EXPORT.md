@@ -1412,7 +1412,7 @@ q_values, new_h, new_c = outputs
 - **Research**: `docs/zzz. archive/research/RESEARCH-INFERENCE-ARCHITECTURE.md`
 - **Research**: `docs/zzz. archive/research/RESEARCH-EXTENDED-USE-CASES.md`
 - **Synthesis**: `docs/zzz. archive/research/RESEARCH-INFERENCE-ARCHITECTURE-SYNTHESIS.md`
-- **Architecture**: `docs/architecture/BRAIN_AS_CODE.md`
+- **Architecture**: `docs/architecture/archive/BRAIN_AS_CODE.md`
 
 ### Related Tasks
 

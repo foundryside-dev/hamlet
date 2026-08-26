@@ -27,7 +27,7 @@ artifact this analysis produced carries
 measured against the fix-applied tree**. Cells that plausibly depend on that fix are flagged
 `[dep: cf16cdb6c4]`.
 
-`docs/architecture/vfs.md` is modified in the working tree by another session; untouched here.
+`docs/architecture/VFS.md` is modified in the working tree by another session; untouched here.
 
 **A second concurrent edit landed while §6 was being written**: `src/townlet/universe/__main__.py`,
 `compiled.py`, `compiler.py` plus a new

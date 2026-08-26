@@ -84,7 +84,7 @@ expression over other state and over time. `semantic_type` is one narrow instanc
 that happened to be measured first; it is not the subject.
 
 **Measured against this example, 2026-08-15 (`423b24d5`), after the owner pointed at
-`docs/architecture/vfs-current-implementation.md` and `docs/architecture/vfs.md` — and the
+`docs/architecture/archive/vfs-current-implementation.md` and `docs/architecture/VFS.md` — and the
 result overturned my first reading, which had the palette much poorer than it is:**
 
 - **The scalings vocabulary already exists, is complete, and is wired.** `vfs.md` §9.2 specifies

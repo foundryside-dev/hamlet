@@ -50,7 +50,7 @@ counting rule that produced the wrong number.
   enumeration was a static sweep, and a metric created to police false claims had inflated itself
   by exactly the mechanism it exists to catch.
 - **Four artifacts that had propagated the false claim were corrected in the same commit**:
-  `metrics.md`, `current-state.md`, `PDR-0045`, and `docs/UNIVERSE-COMPILER.md:36` (which claimed
+  `metrics.md`, `current-state.md`, `PDR-0045`, and `docs/architecture/archive/UNIVERSE-COMPILER.md:36` (which claimed
   compiler stage 5 uses the now-deleted adapter).
 
 ## Rationale, and the lesson worth keeping

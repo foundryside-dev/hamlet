@@ -273,7 +273,7 @@ Track these to validate milestone rewards work:
 
 ## Related Documents
 
-- [Episode 1: Hospital Bankruptcy](./episode_1_hospital_bankruptcy.md)
+- [Episode 1: Hospital Bankruptcy](../zzz. archive/teachable_moments/episode_1_hospital_bankruptcy.md)
 - [Reward Hacking: Interact Spam](./reward_hacking_interact_spam.md)
 - [Three Stages of Learning](./three_stages_of_learning.md)
 

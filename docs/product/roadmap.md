@@ -12,7 +12,7 @@
 
 > **Bootstrap seed.** Now is derived from observed tracker + git state. Next/Later are derived
 > from the three-pivot arc in `vision.md` and the HLD, and are **proposals awaiting the owner's
-> DECIDE** — nothing below Now is committed. `docs/architecture/ROADMAP.md` is a *different,
+> DECIDE** — nothing below Now is committed. `docs/architecture/archive/ROADMAP.md` is a *different,
 > stale* file (last updated 2025-10-30, "Phase 3 Complete") describing an engineering phase plan
 > that predates the VFS/VTC/DAC era. This file does not supersede or edit it; retiring it is part
 > of the Now bet.

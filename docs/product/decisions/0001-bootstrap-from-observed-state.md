@@ -12,7 +12,7 @@ Supersedes: —   Related: vision.md, roadmap.md (Now), metrics.md (north-star)
 
 No product workspace existed. Nine months of commits (VFS, VTC, DAC, compiler, perf, security)
 had accumulated against a strategy recorded nowhere durable, and the canonical narrative artefacts
-had rotted: `docs/architecture/ROADMAP.md` is dated 2025-10-30 and says "Phase 3 Complete";
+had rotted: `docs/architecture/archive/ROADMAP.md` is dated 2025-10-30 and says "Phase 3 Complete";
 `README.md` and `CLAUDE.md` document config packs (`configs/L0_0_minimal` … `L3_temporal_mechanics`)
 that **do not exist** on disk; `README.md` advertises 70% coverage against an audit that measured
 19% and rated its own number unreliable. A stateless owner resuming cold would have inherited

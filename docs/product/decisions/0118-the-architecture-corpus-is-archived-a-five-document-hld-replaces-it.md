@@ -22,7 +22,7 @@ with UAC promoted from its old "strata + world config" meaning.
 ## The calls
 
 1. **Archive everything**: all prior `docs/architecture/` content (including the hld/
-   tree, reviews, and `docs/UNIVERSE-COMPILER.md`) moves to
+   tree, reviews, and `docs/architecture/archive/UNIVERSE-COMPILER.md`) moves to
    `docs/architecture/archive/`. Archived docs are historical record; internal relative
    links may dangle — accepted.
 2. **Six documents replace it** (owner amended same-day: "split off strata to its own

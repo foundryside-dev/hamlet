@@ -272,4 +272,4 @@ Potential extensions (not planned for immediate implementation):
 - **Configuration schema**: `docs/config-schemas/training.md`
 - **Architecture overview**: `CLAUDE.md` (Q-Learning Algorithm Variants section)
 - **User guide**: `README.md` (Training section)
-- **Roadmap**: `docs/architecture/ROADMAP.md` (Phase 2 Tasks)
+- **Roadmap**: `docs/architecture/archive/ROADMAP.md` (Phase 2 Tasks)

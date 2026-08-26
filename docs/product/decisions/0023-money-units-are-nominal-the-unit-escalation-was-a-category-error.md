@@ -9,7 +9,7 @@ Tracker: `hamlet-365e996511` (unblocked by this), `hamlet-0dd4ac24d9` (do-not-mo
 ## Context
 
 `PDR-0020` escalated a question to the owner: *is `money` denominated in dollars or in fractions
-where `1.0 ≈ $100`?* It rested on a real contradiction — `docs/architecture/vfs.md:739` and
+where `1.0 ≈ $100`?* It rested on a real contradiction — `docs/architecture/VFS.md:739` and
 `frontend/src/utils/formatting.js:26` assume the fraction convention, the shipped configs
 denominate in whole units (EAT 5.0, DOCTOR 20.0, WORK +22.5).
 

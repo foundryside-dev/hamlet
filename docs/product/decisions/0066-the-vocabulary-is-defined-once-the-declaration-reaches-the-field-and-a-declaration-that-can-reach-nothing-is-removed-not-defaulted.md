@@ -5,7 +5,7 @@ Date: 2026-08-16   Status: **accepted** (autonomous within the grant; executes t
 below and flagged for the owner's review at this checkpoint)
 Author: Claude (standing product owner)
 Owner sign-off: `PDR-0047` is owner-made and this PDR does not widen it. The owner chose this unit
-at the 2026-08-16 resume (*"lets do 1 now"*) and pointed at `docs/architecture/vfs.md` as the
+at the 2026-08-16 resume (*"lets do 1 now"*) and pointed at `docs/architecture/VFS.md` as the
 VFS north star mid-unit; that pointer is what settled the profile-variable call (§Rationale).
 
 Related: `PDR-0047` (closed vocabularies, the declaration is authoritative, the compiler emits from

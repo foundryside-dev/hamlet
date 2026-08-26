@@ -392,6 +392,9 @@ training:
 ## Related Documentation
 
 - **Action Space**: `docs/config-schemas/enabled_actions.md`
-- **Substrate Configuration**: `docs/config-schemas/substrate.md`
+- **Substrate Configuration**: there is no `substrate.md` schema doc (and no `substrate.yaml`
+  file — the real pack-root file is `stratum.yaml`). Use `docs/architecture/STRATA.md`, the
+  `SubstrateConfig` / `StratumConfig` DTOs in `src/townlet/config/stratum_config.py`, and the
+  worked examples in `docs/examples/`.
 - **Training System**: `docs/manual/TRAINING_SYSTEM.md`
 - **TensorBoard Integration**: `docs/manual/TENSORBOARD_INTEGRATION.md`

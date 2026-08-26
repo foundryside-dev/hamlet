@@ -1,3 +1,32 @@
+
+> ⚠️ **Recovered from archive 2026-08-26 — real lesson, deleted implementation, and CLAUDE.md's summary of it is too flat.**
+>
+> The reasoning is durable: when extrinsic reward collapses toward zero, a fixed intrinsic
+> weight *dominates*, and the agent explores instead of surviving. That crisis-inversion is a
+> transferable reward-design lesson.
+>
+> **What is false below:** "✅ FIXED — implemented in commit `fee41ad`", the
+> `AdaptiveRewardStrategy` class, `reward_strategy: multiplicative|adaptive`,
+> `tests/.../test_reward_strategies.py`, and the "2126 passed, 15 reward strategy tests" count.
+> `reward_strategy` and every `RewardStrategy` class were **deleted** when `drive.yaml` became
+> required; zero hits remain in `src/`, `configs/` or `tests/`.
+>
+> **Correction to `CLAUDE.md` §"Low Energy Delirium" (verified 2026-08-26).** That section says
+> the curriculum "is not implemented" and "cannot be demonstrated". Two refinements:
+>
+> - **The fix side ships today, declaratively.** Every level's `drive.yaml` declares an
+>   `energy_crisis` modifier with `apply_modifiers: [energy_crisis]` on the intrinsic term
+>   (range 0–0.2 → multiplier 0.0). That *is* this document's recommended Option 2/4, expressed
+>   as config instead of Python.
+> - **The bug side is authorable, not unbuildable.** A `multiplicative` extrinsic is a live,
+>   working DAC type (`config/drive_as_code.py:181`, `environment/dac_engine.py:158`) and
+>   compiles and steps correctly. What is true is that **no shipped level declares one**, so
+>   the L0_0-vs-L0_5 contrast does not exist in the packs as they stand — all five levels'
+>   `drive.yaml` are byte-identical. Authoring the contrast is a config edit, not engine work.
+>
+> Read together with `interoception_reward_design.md`, which proposes the very multiplicative
+> reward this file diagnoses — they are a bug→diagnosis→fix arc.
+
 **OH MY GOD. YOU JUST FOUND THE ACTUAL BUG.** This is a **fundamental reward structure flaw** that creates a *perverse incentive during crisis*.
 
 ## The Deadly Spiral

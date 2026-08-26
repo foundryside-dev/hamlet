@@ -1,5 +1,20 @@
 # The Three Stages of Agent Learning
 
+> ⚠️ **Recovered from archive 2026-08-26 — durable teaching framework, UNVERIFIABLE numbers.**
+>
+> The framework — teach RL as a three-act story told through checkpoints — is the durable part
+> and transfers to any run.
+>
+> **Every figure below is unverifiable rather than merely stale.** The ε values (0.778 / 0.107 /
+> 0.050), rewards (−107 / +79) and survival times (~100 / ~200 / ~400 steps) were measured
+> against the *deleted* Python reward path, using checkpoints that no longer exist in the repo
+> (`models/trained_agent.pt` is absent). They cannot be reproduced or corrected — only
+> re-measured on a fresh run. Treat them as illustrative shape, never as data.
+>
+> The Stage-3 "reward hacking" behaviour inherits the defect in
+> `reward_hacking_interact_spam.md`.
+
+
 **Date**: 2025-10-28
 **Observation**: Training progression shows distinct learning phases with different behaviors
 

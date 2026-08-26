@@ -1,5 +1,24 @@
 # Types of Complexity: Why Hamlet is Harder Than It Looks
 
+> ⚠️ **Recovered from archive 2026-08-26 — strong RL lesson, wrong-universe examples.**
+>
+> The thesis — that *non-stationarity and context-dependence*, not raw dimensionality, drive
+> sample complexity — is a genuine and well-argued lesson, and it is why this file is out of
+> the archive.
+>
+> **The worked examples describe a universe that was never shipped.** `Hospital`, `Bed`,
+> `health += 0.4 / money -= 15`, `money -= 5` — none of these exist. The shipped pack has
+> DOCTOR (20.0), SHOWER (1.0), EAT (5.0), COOK (3.0), LAUNDRY (2.0), ENTERTAINMENT (5.0), and
+> WORK (+22.5). Only `money += 22.5` survives contact with reality.
+>
+> **"Observation: 64 + 8 + 15 = 87 dimensions" is wrong** — see the observation-width note in
+> this directory's `README.md`. And the "896 distinct rules" figure is a rhetorical construction
+> (64 cells × 14 affordances), not a property of the engine: affordances occupy a handful of
+> specific cells, not all 64.
+>
+> Read the argument; substitute your own examples.
+
+
 **Date**: October 31, 2025
 **Insight**: Discrete non-stationary dynamics vs continuous stationary dynamics
 **Status**: Core Pedagogical Concept ✅

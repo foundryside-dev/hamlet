@@ -1,5 +1,24 @@
 # Emergent Reward Hacking: The "Interact Spam" Strategy
 
+> ⛔ **Recovered from archive 2026-08-26 — the LESSON is durable, the MECHANISM is contradicted by shipped config.**
+>
+> Keep reading for the lesson ("agents optimize what you measure"). Do **not** trust the
+> mechanics. Verified against source 2026-08-26:
+>
+> - **"INTERACT when nothing nearby / Cost: ZERO (no-op)" is false.** INTERACT is *masked off
+>   entirely* unless the agent stands on an open affordance
+>   (`src/townlet/environment/action_mask_builder.py:190-202`).
+> - **The movement costs below are inverted.** This file uses
+>   `{"energy": -0.5, "hygiene": -0.3, "satiation": -0.4}`. Shipped `bars.yaml`: a move costs
+>   **0.02** energy and an interact costs **0.05** — interacting is the *more* expensive action.
+>
+> So the exploit as described **cannot occur in the current engine**. It is preserved because
+> the reasoning — a reward signal that pays for a proxy gets the proxy, not the goal — is the
+> transferable part, and because it is the failure this project deliberately keeps as teaching
+> material. Note it also contradicts `action_masking_wall_evidence.md` in this directory, which
+> says the masking *prevents* interact spam; that file is the accurate one.
+
+
 **Date**: 2025-10-28
 **Discovery**: Agent learned to spam INTERACT action while standing still instead of navigating
 

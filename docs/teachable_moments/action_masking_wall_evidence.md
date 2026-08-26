@@ -1,5 +1,20 @@
 # Action Masking: Positive Evidence from Wall-Hitting Behavior
 
+> ✅ **Recovered from archive 2026-08-26 — the most accurate file in this directory.**
+>
+> Its central mechanism claim — INTERACT is valid only when standing on an affordance — matches
+> `src/townlet/environment/action_mask_builder.py:190-202` exactly, as re-verified 2026-08-26.
+>
+> **File:line drift only:** the masking logic moved. `environment/vectorized_env.py:194-233` is
+> now `environment/action_mask_builder.py:190-202`. The `population/vectorized.py:202-206`
+> anchor was not re-verified. The illustrative code also uses a hardcoded `action_masks[:, 4]`
+> index and a single `grid_size`; live code derives per-axis extents from the substrate, so
+> read those lines as pseudocode.
+>
+> Where this file and `reward_hacking_interact_spam.md` disagree about interact spam, **this
+> file is right**.
+
+
 **Date**: 2025-10-31
 **Context**: Observing episode 1 behavior in HAMLET with action masking enabled
 

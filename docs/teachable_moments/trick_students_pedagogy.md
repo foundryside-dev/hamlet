@@ -1,5 +1,16 @@
 # The "Trick Students Into Learning" Pedagogical Framework
 
+> ✅ **Recovered from archive 2026-08-26 — pure pedagogy, near-zero code claims.**
+>
+> **Two incidental numbers are wrong:** "the agent has 70 inputs and 5 outputs". Observation
+> width is far larger and is not a literal anyone should quote — see this directory's
+> `README.md`. Action count is *composed* (substrate movement actions + custom actions) and
+> likewise must never be quoted as a literal; see `CLAUDE.md` §"Action Space".
+>
+> The Phase-4 "interact-spam" narrative inherits the defect described in
+> `reward_hacking_interact_spam.md` — that exploit cannot occur in the current engine.
+
+
 **Date**: 2025-10-28
 **Mission**: "Trick students into thinking AI is about games and not math"
 

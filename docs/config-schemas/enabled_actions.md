@@ -1,5 +1,21 @@
 # enabled_actions Configuration
 
+> ⚠️ **Restored to the live tree 2026-08-26 — correct on action composition, wrong about WHERE the vocabulary lives.**
+>
+> Cited by `CLAUDE.md` §"Action Space" and `docs/architecture/STRATA.md` §5 as the reference for
+> enabled actions and action labels.
+>
+> **Known wrong:** `configs/global_actions.yaml` **does not exist and never will** — that path
+> is dead (`CLAUDE.md` says so explicitly). The global action vocabulary is a **pack-level**
+> file: `configs/default_curriculum/actions.yaml`. All levels in a pack share it. Read every
+> `configs/global_actions.yaml` below as `<pack>/actions.yaml`.
+>
+> **Do not quote a per-substrate action count from this file.** The action space is *composed* —
+> substrate movement actions (a function of substrate type *and* declared parameters such as
+> `diagonals`) plus custom actions — under the ordering contract in `substrate/base.py`:
+> movement, then `INTERACT` at `[-2]`, then `WAIT` at `[-1]`. Ask the compiled artifact.
+
+
 **Purpose**: Control which actions from global vocabulary are available in this config.
 
 **Location**: `training.yaml` → `training.enabled_actions`

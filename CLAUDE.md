@@ -387,8 +387,9 @@ The intended design, for whoever authors it:
 Non-obvious cost on a recurrent architecture (corrected 2026-08-24 — the "3 forward passes vs 2"
 previously stated here does not match the current update path): one extra single-step boundary
 forward per update; action selection reuses the online unroll (`population/vectorized.py:862-880`).
-Details: `docs/architecture/BAC.md` §2.5; `docs/config-schemas/training.md`
-still carries the stale 3-vs-2 figure (flagged in its staleness banner).
+Details: `docs/architecture/BAC.md` §2.5 and `docs/config-schemas/training.md` — **both now
+agree** (verified 2026-08-26; `training.md` was corrected in place on 2026-08-24, so the
+warning previously here that it "still carries the stale 3-vs-2 figure" is itself obsolete).
 
 ## Configuration System
 

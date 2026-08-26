@@ -41,7 +41,7 @@ The CI gates to preserve are:
 - `.github/workflows/lint.yml`: `uv run ruff check .`, `uv run black --check src tests`, `uv run mypy src/townlet --show-error-codes`, and `python scripts/no_defaults_lint.py src/townlet/ --whitelist .defaults-whitelist.txt`.
 - `.github/workflows/config-validation.yml`: `uv run python scripts/validate_compiler_cli.py`.
 
-The docs/task surface is not implementation-ready as a unit. It contains active future work (`docs/plans/task-002a-phase9-hex-1d-topologies.md`, `docs/plans/task-002a-phase10-graph-substrate.md`, `docs/tasks/TASK-005B-VFS2.md`, `docs/tasks/TASK-006-SUBSTRATE-AGNOSTIC-VISUALIZATION.md`, `docs/tasks/TASK-007-LIVE-TRAINING-VISUALIZATION.md`, `docs/tasks/TASK-008-MODEL-ABSTRACTION-AND-EXPORT.md`, `docs/tasks/TASK-009-ND-POMDP.md`) plus a concrete cleanup plan in `docs/plans/2025-11-25-test-suite-dead-code-cleanup.md` identifying backwards-compatibility tests and fallbacks that violate current repo policy.
+The docs/task surface is not implementation-ready as a unit. It contains active future work (`docs/zzz. archive/plans/task-002a-phase9-hex-1d-topologies.md`, `docs/zzz. archive/plans/task-002a-phase10-graph-substrate.md`, `docs/zzz. archive/tasks/TASK-005B-VFS2.md`, `docs/zzz. archive/tasks/TASK-006-SUBSTRATE-AGNOSTIC-VISUALIZATION.md`, `docs/zzz. archive/tasks/TASK-007-LIVE-TRAINING-VISUALIZATION.md`, `docs/tasks/TASK-008-MODEL-ABSTRACTION-AND-EXPORT.md`, `docs/tasks/TASK-009-ND-POMDP.md`) plus a concrete cleanup plan in `docs/zzz. archive/plans/2025-11-25-test-suite-dead-code-cleanup.md` identifying backwards-compatibility tests and fallbacks that violate current repo policy.
 
 ## Validation Run
 
@@ -86,13 +86,13 @@ Decision: implement one Hamlet golden path first, then build a Murk adapter spik
 Core blockers:
 - Establish one golden vertical path: config compile -> env instantiate -> reset -> short step/training loop -> checkpoint/inspection.
 - Complete dependency setup and run the CI-equivalent gates locally.
-- Remove policy-violating backwards-compatibility tests/fallbacks called out by `docs/plans/2025-11-25-test-suite-dead-code-cleanup.md`.
+- Remove policy-violating backwards-compatibility tests/fallbacks called out by `docs/zzz. archive/plans/2025-11-25-test-suite-dead-code-cleanup.md`.
 - Reduce default curriculum golden path to a tiny deterministic rescue level or add a dedicated rescue config pack.
 
 Delete or archive as stale:
 - Native Hamlet topology expansion plans for 1D, Hex, Graph, and frontend topology visualization until Murk replacement is adjudicated.
 - Backwards-compatibility tests, migration prose, and fallback code paths when encountered.
-- Template bug/task files that are not real work items (`docs/bugs/JANK-00-TEMPLATE.md`, `docs/bugs/BUG-XX-TEMPLATE.md`) after confirming no local process depends on them.
+- Template bug/task files that are not real work items (`docs/zzz. archive/bugs/JANK-00-TEMPLATE.md`, `docs/zzz. archive/bugs/BUG-XX-TEMPLATE.md`) after confirming no local process depends on them.
 
 Defer:
 - Frontend visualization and live training UI.
@@ -200,9 +200,9 @@ uv run python scripts/validate_compiler_cli.py
 ### Tranche 4: Docs And Task Cleanup
 
 **Files:**
-- `docs/plans/2025-11-25-test-suite-dead-code-cleanup.md`
-- `docs/plans/task-002a-phase9-hex-1d-topologies.md`
-- `docs/plans/task-002a-phase10-graph-substrate.md`
+- `docs/zzz. archive/plans/2025-11-25-test-suite-dead-code-cleanup.md`
+- `docs/zzz. archive/plans/task-002a-phase9-hex-1d-topologies.md`
+- `docs/zzz. archive/plans/task-002a-phase10-graph-substrate.md`
 - `docs/tasks/*.md`
 - `docs/bugs/*.md`
 - `README.md`, `docs/README.md`, `CHANGELOG.md` as needed.

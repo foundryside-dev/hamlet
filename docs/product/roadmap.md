@@ -443,7 +443,8 @@
   not built; it is what makes the *mind* authorable rather than just tunable.
   · tracker: `docs/tasks/TASK-005-BRAIN-AS-CODE.md` (spec, unfiled) · metric: input
   **Config-surface coverage** extended to cognition
-  · known debt: `docs/bugs/JANK-08` — declared brain flags unused by training logic (declared-but-
+  · known debt: `docs/bugs/JANK-08-population-structured-and-dueling-flags-unused-in-training-logic.md`
+  — declared brain flags unused by training logic (declared-but-
   inert config is the worst failure mode for a declarative product)
 
 ## Later (directional bets, no order, no dates)

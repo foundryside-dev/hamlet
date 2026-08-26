@@ -1,5 +1,18 @@
 # TASK-008: Model Abstraction and Export
 
+> 🎯 **Recovered from archive 2026-08-26 — INTENT, NOT A RECORD. `Status: Planned`, `Completed: TBD`.**
+>
+> Recovered because `docs/product/decisions/0024-game-devs-taking-a-model-out-is-a-core-use-case.md`
+> cites this path while establishing model export as a **core product use case** — the loop is
+> meant to end with a trained model leaving HAMLET and entering the designer's real game. This
+> spec is the only decomposition of that gap, and a live decision record must not point at
+> nothing.
+>
+> **Nothing here is built.** No inference subsystem, no ONNX export path. Treat the effort
+> estimate and the dependency notes below as 2025-11 planning assumptions, not commitments;
+> the project has since gone through a strangler rewrite that this document predates.
+
+
 **Status**: Planned
 **Priority**: MEDIUM (enables external model usage)
 **Estimated Effort**: 36 hours (includes ONNX export)
@@ -1396,9 +1409,9 @@ q_values, new_h, new_c = outputs
 
 ### Related Documentation
 
-- **Research**: `docs/research/RESEARCH-INFERENCE-ARCHITECTURE.md`
-- **Research**: `docs/research/RESEARCH-EXTENDED-USE-CASES.md`
-- **Synthesis**: `docs/research/RESEARCH-INFERENCE-ARCHITECTURE-SYNTHESIS.md`
+- **Research**: `docs/zzz. archive/research/RESEARCH-INFERENCE-ARCHITECTURE.md`
+- **Research**: `docs/zzz. archive/research/RESEARCH-EXTENDED-USE-CASES.md`
+- **Synthesis**: `docs/zzz. archive/research/RESEARCH-INFERENCE-ARCHITECTURE-SYNTHESIS.md`
 - **Architecture**: `docs/architecture/BRAIN_AS_CODE.md`
 
 ### Related Tasks
@@ -1421,7 +1434,7 @@ q_values, new_h, new_c = outputs
 
 ### Before Starting
 
-- [ ] Read `docs/research/RESEARCH-INFERENCE-ARCHITECTURE.md` for design rationale
+- [ ] Read `docs/zzz. archive/research/RESEARCH-INFERENCE-ARCHITECTURE.md` for design rationale
 - [ ] Coordinate with TASK-004 (BRAIN_AS_CODE) for checkpoint format
 - [ ] Review both network types (SimpleQNetwork, RecurrentSpatialQNetwork)
 - [ ] Can be implemented in same PR as TASK-007 (both touch LiveInferenceServer)

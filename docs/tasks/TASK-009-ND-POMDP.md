@@ -1,5 +1,16 @@
 # TASK-009: N-Dimensional Partial Observability (POMDP)
 
+> 🎯 **Recovered from archive 2026-08-26 — INTENT, NOT A RECORD. `Status: Planned`, `Completed: [Not started]`.**
+>
+> Recovered because `docs/product/decisions/0005-lumpiness-is-unfinished-plans-not-decisions.md`
+> cites this path as an example of exactly that: an unfinished plan, not a decision.
+>
+> **Not started.** Current POMDP support is Grid2D and Grid3D only, subject to a window-size
+> gate; GridND (N≥4) is explicitly unsupported because the implied window is too large. For what
+> actually ships, see `docs/architecture/STRATA.md` §7 and
+> `docs/manual/pomdp_compatibility_matrix.md` (which carries corrections of its own).
+
+
 **Status**: Planned
 **Priority**: Medium
 **Estimated Effort**: TBD (multi-phase, research required)
@@ -235,7 +246,7 @@ Likely affected:
 ### Related Documentation
 
 - **Phase X Design**: `docs/plans/task-002a-phase-X-ndimensional-substrates.md`
-- **Phase 5B Implementation**: `docs/plans/task-002a-phase5b-3d-continuous-substrates.md` (2D POMDP reference)
+- **Phase 5B Implementation**: `docs/zzz. archive/plans/archive/task-002a-phase5b-3d-continuous-substrates.md` (2D POMDP reference)
 - **TASK-002A**: Parent task for configurable spatial substrates
 
 ### Related Tasks

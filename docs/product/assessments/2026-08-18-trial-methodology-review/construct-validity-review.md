@@ -141,7 +141,7 @@ Re-run this critique when: (a) the metric row is reframed (or the owner declines
 
 - **The owner's intended construct.** Whether "expert ceiling with source access" was the owner's deliberate operationalization or a default is the pivot for finding 6 and the framing of finding 1 — no document records it either way. Highest-value gap; one question to the owner closes it.
 - **Who will comparer/blind-run duty fall to.** Finding 4's severity drops if an independent comparer was always intended and simply not yet written down.
-- **The `PDR-0081` plan document** (`docs/plans/2026-08-18-trial-protocol.md`) was not read; it could contain the source-access reasoning finding 6 says is missing. If it does, finding 6 downgrades to "provenance exists but is not in the PDR chain."
+- **The `PDR-0081` plan document** (`docs/zzz. archive/plans/2026-08-18-trial-protocol.md`) was not read; it could contain the source-access reasoning finding 6 says is missing. If it does, finding 6 downgrades to "provenance exists but is not in the PDR chain."
 - **Tracker state** for the seven by-catch items was not queried; PDR-0079's third reversal trigger cannot be scored without it.
 
 ## Caveats

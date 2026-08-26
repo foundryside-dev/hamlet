@@ -268,7 +268,7 @@ Potential extensions (not planned for immediate implementation):
 
 ## Related Documents
 
-- **Implementation plan**: `docs/plans/2025-11-11-double-dqn-configurable.md`
+- **Implementation plan**: `docs/zzz. archive/plans/archive/2025-11-11-double-dqn-configurable.md`
 - **Configuration schema**: `docs/config-schemas/training.md`
 - **Architecture overview**: `CLAUDE.md` (Q-Learning Algorithm Variants section)
 - **User guide**: `README.md` (Training section)

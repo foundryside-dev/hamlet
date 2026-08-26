@@ -1,3 +1,25 @@
+
+> 🟡 **Recovered from archive 2026-08-26 — STILL PRESENT verbatim, but LATENT. Low priority.**
+>
+> Re-verified 2026-08-26. The defect is exactly as described:
+> `recording/criteria.py:46` `self.transition_episodes: set[int] = set()`; `:224` adds with **no
+> eviction anywhere**; `:136` scans the whole set per episode evaluation. The bounded pattern
+> this ticket asks for already exists one line below at `:50`
+> (`episode_history: deque[..., maxlen=window_size]`) — unapplied.
+>
+> ⚠️ **It is not causing live memory growth, and the ticket's precondition is still unmet.**
+> `RecordingCriteria` has **zero production callers** — `grep -rn "RecordingCriteria" src/`
+> matches only its own definition; every other hit is its unit test. `recorder.py:243-257`
+> still uses an inline `_evaluate_criteria` that checks only the periodic criterion. So the
+> BUG-31 integration this ticket names as the trigger has not happened. **Treat this as
+> deferred debt coupled to BUG-31, not as a live leak.**
+>
+> Note also that the recording subsystem is slated for removal (filigree `hamlet-16ae192d42`);
+> if that lands, this ticket dies with it.
+>
+> **Line drift:** `:44` → **:46**. Its cited doc links (`docs/WORK-PACKAGES.md:324`, an
+> `arch-analysis-2025-11-13-1532/` path) are pre-recovery and unverified.
+
 Title: RecordingCriteria transition_episodes set grows unbounded
 
 Severity: medium

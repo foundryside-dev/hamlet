@@ -59,8 +59,8 @@ deferral*. The record then read as though the direction carried less weight than
    memory" among recurrent state types. The HLD specifies **no** observation encoding, fixed or
    token-based. The trigger does not fire; the design authority is silent, not opposed.
 
-6. **The doc disposition was retroactively correct.** `docs/vfs/observation-dimension-formulas.md`,
-   `observation-dimension-manual-validation.md` and `docs/vfs-integration-guide.md` were marked
+6. **The doc disposition was retroactively correct.** `docs/zzz. archive/vfs/observation-dimension-formulas.md`,
+   `observation-dimension-manual-validation.md` and `docs/zzz. archive/vfs-integration-guide.md` were marked
    *superseded in full, do not correct* rather than having their arithmetic fixed. That is the
    right call under "authoritative" and would have been wrong under "captured musing" — the
    **method** is obsolete, not the numbers: a token observation has no total width to validate.

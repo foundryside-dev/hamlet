@@ -314,7 +314,7 @@ compiled = compiler.compile(config_dir)
 
 - `docs/architecture/COMPILER_ARCHITECTURE.md` – canonical design rationale and diagrams.
 - `docs/tasks/TASK-004A-COMPILER-IMPLEMENTATION.md` – task checklist and acceptance criteria for this workstream.
-- `docs/tasks/STREAM-001-UAC-BAC-FOUNDATION.md` – broader roadmap covering downstream compilers (Brain/BAC).
+- `docs/zzz. archive/tasks/STREAM-001-UAC-BAC-FOUNDATION.md` – broader roadmap covering downstream compilers (Brain/BAC).
 - `docs/vfs/vfs-integration-guide.md` – explains how VFS variables map into observation specs.
 
 ## 12. Future Enhancements

@@ -14,7 +14,7 @@ Tracker: `hamlet-5fa1f7bfc0` (claimed `in_progress` this session; description re
 amended N=9 shape)
 Artifacts: `docs/product/prds/0001-trial-protocol.md` (**ACTIVE** — mechanics dry-run passed
 2026-08-18 at `2c1275d6`, every documented command executed once, all outputs matched),
-`docs/product/trials/0001/TEMPLATE.md`, plan at `docs/plans/2026-08-18-trial-protocol.md`.
+`docs/product/trials/0001/TEMPLATE.md`, plan at `docs/zzz. archive/plans/2026-08-18-trial-protocol.md`.
 Commits `7cd19f17` → `99b69540`, pushed.
 
 ## Context — the corpus without a protocol is half an instrument

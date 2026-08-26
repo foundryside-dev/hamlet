@@ -11,7 +11,7 @@
 
 
 **Date**: 2025-11-28
-**Design Document**: `docs/plans/2025-11-28-reward-tensor-wiring-design.md`
+**Design Document**: `docs/zzz. archive/plans/2025-11-28-reward-tensor-wiring-design.md`
 **Status**: Ready for implementation
 **Estimated Tasks**: 9
 

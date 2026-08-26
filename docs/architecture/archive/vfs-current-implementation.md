@@ -632,5 +632,5 @@ These constraints are part of the design. They keep the ABI visible and force sc
 - `docs/config-schemas/vfs-profiles.md`: VFS profile config reference. Some status text is older, but the schema concepts remain relevant.
 - `docs/config-schemas/variables.md`: static VFS variable config reference. Some status text is older, but the variable concepts remain relevant.
 - `docs/config-schemas/brain.md`: includes the set-encoder architecture used by dynamic need token observations.
-- `docs/vfs/observation-dimension-formulas.md`: observation dimension formulas.
-- `docs/vfs/observation-dimension-manual-validation.md`: manual observation-dimension validation notes.
+- `docs/zzz. archive/vfs/observation-dimension-formulas.md`: observation dimension formulas.
+- `docs/zzz. archive/vfs/observation-dimension-manual-validation.md`: manual observation-dimension validation notes.

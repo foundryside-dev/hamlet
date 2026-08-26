@@ -17,7 +17,7 @@ The Effects System is HAMLET's foundational command pipeline language for all si
 - **First-Time Users**: Read "Overview" → "File Structure" → "Reapply Policies" → "Command Language" → "Examples"
 
 **Related Documents**:
-- `docs/plans/vfs_uplift/2025-11-19-effects-system-design.md` - Complete design document
+- `docs/zzz. archive/plans/archive/vfs_uplift/2025-11-19-effects-system-design.md` - Complete design document
 - `docs/plans/vfs_uplift/2025-11-19-task-3-1-effects-dtos.md` - Implementation plan
 - `docs/config-schemas/variables.md` - VFS variable definitions
 - `docs/config-schemas/affordances.md` - Affordance configuration (uses effects)
@@ -1686,7 +1686,7 @@ value: "target.bar.energy + (0.1 if intensity > 2.0 else 0.05)"
 
 ## See Also
 
-- **Design Document**: `docs/plans/vfs_uplift/2025-11-19-effects-system-design.md` - Complete architecture
+- **Design Document**: `docs/zzz. archive/plans/archive/vfs_uplift/2025-11-19-effects-system-design.md` - Complete architecture
 - **Implementation Plan**: `docs/plans/vfs_uplift/2025-11-19-task-3-1-effects-dtos.md` - DTOs and catalog
 - **VFS Variables**: `docs/config-schemas/variables.md` - Variable system that effects modify
 - **Affordances**: `docs/config-schemas/affordances.md` - How affordances spawn effects

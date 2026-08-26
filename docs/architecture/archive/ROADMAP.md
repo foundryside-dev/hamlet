@@ -362,8 +362,8 @@ After completing Phase 3 (Intrinsic Exploration), we've adopted a strategic sequ
 
 ## References
 
-- Phase 3 Implementation: `docs/plans/2025-10-30-townlet-phase3-implementation.md`
-- Phase 3 Design: `docs/plans/2025-10-30-townlet-phase3-intrinsic-exploration.md`
-- Phase 2 Design: `docs/plans/2025-10-30-townlet-phase2-adversarial-curriculum.md`
+- Phase 3 Implementation: `docs/zzz. archive/plans/archive/2025-10-30-townlet-phase3-implementation.md`
+- Phase 3 Design: `docs/zzz. archive/plans/archive/2025-10-30-townlet-phase3-intrinsic-exploration.md`
+- Phase 2 Design: `docs/zzz. archive/plans/archive/2025-10-30-townlet-phase2-adversarial-curriculum.md`
 - Verification: `docs/townlet/PHASE3_VERIFICATION.md`
 - Architecture: `docs/ARCHITECTURE_DESIGN.md`

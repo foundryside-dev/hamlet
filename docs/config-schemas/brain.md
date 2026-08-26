@@ -631,5 +631,13 @@ resume. A change to any of those four files rejects the checkpoint with a
 
 ## See Also
 
-- Curriculum configs: `configs/L0_0_minimal/` through `configs/L3_temporal_mechanics/`
-- Experimental configs: `configs/experiments/dueling_network/`, `configs/experiments/prioritized_replay/`
+- Curriculum configs: `configs/default_curriculum/levels/L0_0_minimal/` through
+  `.../levels/L3_temporal_mechanics/`
+  (⚠ corrected 2026-08-26 — the flat `configs/L0_0_minimal/` paths previously listed here are
+  dead; levels live under a pack root, and `brain.yaml` is a **pack-level shared file** with no
+  per-level override)
+- ⚠ There is no `configs/experiments/` directory (the `dueling_network` and
+  `prioritized_replay` example packs listed here previously do not exist). For a pack that
+  actually declares `type: dueling`, see `configs/simple/brain.yaml` or
+  `configs/L5_multi_agent/brain.yaml` — but note `docs/bugs/JANK-08-...md`: the `dueling` flag
+  reaches the network builder and is then **ignored by the training path**.

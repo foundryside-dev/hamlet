@@ -17,6 +17,7 @@ from __future__ import annotations
 import pytest
 import torch
 import torch.nn as nn
+from torch.nn.attention import SDPBackend
 
 from townlet.agent.network_factory import NetworkFactory
 from townlet.agent.networks import TokenSetQNetwork
@@ -328,12 +329,49 @@ class TestReviewRound1Pins:
             pooled = net.pooled_embedding(obs)
         assert torch.allclose(pooled, expected, atol=1e-6)
 
-    def test_attention_forward_is_bitwise_replayable(self):
-        """Spec §6 byte-exact replay: the SDPA MATH backend is pinned at the call site
-        (task-9 review I2); two identical forwards are bitwise-identical."""
-        net = make_network(make_spec(), aggregator="attention", num_heads=2)
-        obs = make_obs(make_spec(), 3, present=present_rows(make_spec()), seed=9)
+    def test_attention_runs_under_the_pinned_math_backend(self, monkeypatch):
+        """Spec §6 byte-exact replay: the SDPA call runs under the MATH backend
+        (task-9 review I2).
+
+        The MECHANISM is pinned, not the outcome: on this platform default dispatch
+        happens to agree with MATH bitwise, so an output-equality test would pass with
+        the pin deleted (re-review M8). Deleting the ``sdpa_kernel`` wrapper fails
+        this test.
+        """
+        import townlet.agent.networks as networks_module
+
+        entered: list[list[SDPBackend]] = []
+        real_sdpa_kernel = networks_module.sdpa_kernel
+
+        def recording_sdpa_kernel(backends, *args, **kwargs):
+            entered.append(list(backends))
+            return real_sdpa_kernel(backends, *args, **kwargs)
+
+        monkeypatch.setattr(networks_module, "sdpa_kernel", recording_sdpa_kernel)
+
+        spec = make_spec()
+        net = make_network(spec, aggregator="attention", num_heads=2)
         with torch.no_grad():
-            first = net(obs)
-            second = net(obs)
-        assert torch.equal(first, second)
+            net(make_obs(spec, 3, present=present_rows(spec), seed=9))
+
+        assert entered == [[SDPBackend.MATH]]
+
+    def test_mean_aggregator_takes_no_sdpa_backend(self, monkeypatch):
+        """The pin belongs to the attention path only — the mean path never enters it."""
+        import townlet.agent.networks as networks_module
+
+        entered: list[object] = []
+        real_sdpa_kernel = networks_module.sdpa_kernel
+
+        def recording_sdpa_kernel(backends, *args, **kwargs):
+            entered.append(backends)
+            return real_sdpa_kernel(backends, *args, **kwargs)
+
+        monkeypatch.setattr(networks_module, "sdpa_kernel", recording_sdpa_kernel)
+
+        spec = make_spec()
+        net = make_network(spec)
+        with torch.no_grad():
+            net(make_obs(spec, 3, present=present_rows(spec), seed=9))
+
+        assert entered == []

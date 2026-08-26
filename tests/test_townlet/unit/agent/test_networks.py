@@ -21,7 +21,30 @@ import pytest
 import torch
 import torch.nn as nn
 
-from townlet.agent.networks import DuelingQNetwork, RecurrentSpatialQNetwork, SimpleQNetwork
+from townlet.agent.network_factory import NetworkFactory
+from townlet.agent.networks import DuelingQNetwork, SimpleQNetwork
+
+
+def _recurrent_config(*, hidden_size: int):
+    """A minimal valid RecurrentConfig — the factory reads only `lstm.hidden_size`."""
+    from townlet.config.brain_config import RecurrentConfig
+
+    return RecurrentConfig.model_validate(
+        {
+            "vision_encoder": {
+                "channels": [16, 32],
+                "kernel_sizes": [3, 3],
+                "strides": [1, 1],
+                "padding": [1, 1],
+                "activation": "relu",
+            },
+            "position_encoder": {"hidden_sizes": [32], "activation": "relu"},
+            "meter_encoder": {"hidden_sizes": [32], "activation": "relu"},
+            "affordance_encoder": {"hidden_sizes": [32], "activation": "relu"},
+            "lstm": {"hidden_size": hidden_size, "num_layers": 1, "dropout": 0.0},
+            "q_head": {"hidden_sizes": [128], "activation": "relu"},
+        }
+    )
 
 
 class TestSimpleQNetwork:
@@ -122,17 +145,12 @@ class TestRecurrentSpatialQNetwork:
         num_affordance_types = getattr(pomdp_env, "num_affordance_types", 15)
         # The OBSERVED bars width, read off the compiled artifact rather than from
         # meter_count — the two are equal only while every meter observes one dim.
-        bars = pomdp_env.observation_activity.group_slices["bars"]
-        return RecurrentSpatialQNetwork(
+        del window_size, position_dim, num_affordance_types  # derived from the artifact below
+        return NetworkFactory.build_recurrent(
+            config=_recurrent_config(hidden_size=256),
             action_dim=pomdp_env.action_dim,
-            window_size=window_size,
-            position_dim=position_dim,
-            bars_dim=bars.stop - bars.start,
-            num_affordance_types=num_affordance_types,
-            enable_temporal_features=True,
-            hidden_dim=256,
-            observation_spec=pomdp_env.observation_spec,
-            observation_activity=pomdp_env.observation_activity,
+            substrate_position_dim=pomdp_env.substrate.position_dim,
+            token_spec=pomdp_env.token_spec,
         ).to(pomdp_env.device)
 
     def test_initialization(self, network):
@@ -258,16 +276,11 @@ class TestRecurrentSpatialQNetwork:
 
     def test_different_observation_dimensions(self, pomdp_env):
         """Network should work with spec-defined observation layout (including temporal)."""
-        net = RecurrentSpatialQNetwork(
+        net = NetworkFactory.build_recurrent(
+            config=_recurrent_config(hidden_size=256),
             action_dim=pomdp_env.action_dim,
-            window_size=getattr(pomdp_env, "local_window_size", 5) or 5,
-            position_dim=getattr(pomdp_env.substrate, "position_dim", 2),
-            bars_dim=pomdp_env.observation_activity.group_slices["bars"].stop - pomdp_env.observation_activity.group_slices["bars"].start,
-            num_affordance_types=getattr(pomdp_env, "num_affordance_types", 15),
-            enable_temporal_features=True,
-            hidden_dim=256,
-            observation_spec=pomdp_env.observation_spec,
-            observation_activity=pomdp_env.observation_activity,
+            substrate_position_dim=pomdp_env.substrate.position_dim,
+            token_spec=pomdp_env.token_spec,
         ).to(pomdp_env.device)
 
         obs = pomdp_env.reset()
@@ -310,16 +323,11 @@ class TestNetworkComparison:
     def test_parameter_counts(self, basic_env, pomdp_env):
         """RecurrentSpatialQNetwork should have more parameters (LSTM)."""
         simple_net = SimpleQNetwork(obs_dim=basic_env.observation_dim, action_dim=basic_env.action_dim, hidden_dim=128)
-        recurrent_net = RecurrentSpatialQNetwork(
+        recurrent_net = NetworkFactory.build_recurrent(
+            config=_recurrent_config(hidden_size=256),
             action_dim=pomdp_env.action_dim,
-            window_size=getattr(pomdp_env, "local_window_size", 5) or 5,
-            position_dim=getattr(pomdp_env.substrate, "position_dim", 2),
-            bars_dim=pomdp_env.observation_activity.group_slices["bars"].stop - pomdp_env.observation_activity.group_slices["bars"].start,
-            num_affordance_types=getattr(pomdp_env, "num_affordance_types", 15),
-            enable_temporal_features=True,
-            hidden_dim=256,
-            observation_spec=pomdp_env.observation_spec,
-            observation_activity=pomdp_env.observation_activity,
+            substrate_position_dim=pomdp_env.substrate.position_dim,
+            token_spec=pomdp_env.token_spec,
         ).to(pomdp_env.device)
 
         simple_params = sum(p.numel() for p in simple_net.parameters())
@@ -348,16 +356,11 @@ class TestNetworkComparison:
                 torch.cuda.synchronize(device)
 
         simple_net = SimpleQNetwork(obs_dim=basic_env.observation_dim, action_dim=basic_env.action_dim, hidden_dim=128).to(device)
-        recurrent_net = RecurrentSpatialQNetwork(
+        recurrent_net = NetworkFactory.build_recurrent(
+            config=_recurrent_config(hidden_size=256),
             action_dim=pomdp_env.action_dim,
-            window_size=getattr(pomdp_env, "local_window_size", 5) or 5,
-            position_dim=getattr(pomdp_env.substrate, "position_dim", 2),
-            bars_dim=pomdp_env.observation_activity.group_slices["bars"].stop - pomdp_env.observation_activity.group_slices["bars"].start,
-            num_affordance_types=getattr(pomdp_env, "num_affordance_types", 15),
-            enable_temporal_features=True,
-            hidden_dim=256,
-            observation_spec=pomdp_env.observation_spec,
-            observation_activity=pomdp_env.observation_activity,
+            substrate_position_dim=pomdp_env.substrate.position_dim,
+            token_spec=pomdp_env.token_spec,
         ).to(pomdp_env.device)
 
         batch_size = 32

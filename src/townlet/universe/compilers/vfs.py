@@ -157,34 +157,38 @@ class VFSCompiler:
         profiles_config: VFSProfilesConfig | None,
         overlay_variables: tuple[VariableDef, ...] | None,
     ) -> dict[str, set[str]] | None:
-        """Marks = the expression variables observation can see.
+        """Marks = every profile EXPRESSION variable. Statics are never marked.
 
-        Mark-and-sweep means "only evaluate observed variables". A profile EXPRESSION
-        variable whose exposed_to names an observer is observed, so it is marked; the
-        optional variables_reference.yaml overlay may mark additional profile expression
-        variables via `observable`. Statics are NEVER marked: they are storage, and
-        re-emitting their initial value would clobber runtime writes. (hamlet-df3a96bbac)
+        An expression variable's value is WORLD STATE: a VTC rule, a DAC reward
+        component, another expression or a terminal condition may read it, and none of
+        those care whether anyone observes it. So evaluation is marked by declaration —
+        having an expression — never by exposure.
 
-        Marks are not the only door into evaluation, and statics still pass through the
-        other two: the evaluator widens its `vars_to_eval` with (1) the dependency chase
-        (a marked expression's in-profile dependencies) and (2) every variable named in
-        the compiled `history_spec`'s `vfs.*` keys — a temporal operator's source must be
-        recorded each tick even when nothing marks it. A static reached by either path is
-        REPORTED at its current value, never re-initialized into the context; the guard
-        lives at the evaluator's static branch (vfs/evaluator.py). (comment-242 item 4)
+        It used to be marked by exposure ("only evaluate observed variables"), which
+        looked harmless only because `exposed_to` failed open to `["agent"]`: every
+        profile expression variable was exposed, so every one was evaluated. Deleting
+        that fail-open at the unit-3 cut (hamlet-d97b4d6b4a) turned an OBSERVATION
+        decision into a STATE decision — unexposed expression variables silently stopped
+        being computed and sat at their defaults, which is a world-evolution change, not
+        an observation change, and would have broken the cut's own adjudication criterion
+        (spec §5: only `obs` may diverge). Marking every expression reproduces the
+        pre-cut evaluation set exactly on every pack.
+
+        Statics stay unmarked: they are storage, and re-emitting their initial value
+        would clobber runtime writes (hamlet-df3a96bbac). They still reach the evaluator
+        by its other two doors — the dependency chase and the compiled `history_spec` —
+        and are REPORTED at their current value there, never re-initialized
+        (vfs/evaluator.py's static branch, comment-242 item 4).
         """
         if profiles_config is None:
             return None
-        overlay_observable = {v.id for v in (overlay_variables or ()) if getattr(v, "observable", False)}
         marks: dict[str, set[str]] = {}
         for scope_key, profile in (("global", profiles_config.global_profile), ("agent", profiles_config.agent_profile)):
             if profile is None:
                 continue
             expression_vars = {v.name for v in profile.variables if v.expression is not None}
-            exposed = {v.name for v in profile.variables if v.expression is not None and v.exposed_to}
-            scoped = exposed | (overlay_observable & expression_vars)
-            if scoped:
-                marks[scope_key] = scoped
+            if expression_vars:
+                marks[scope_key] = expression_vars
         return marks or {}
 
     def validate_item_profile_bindings(

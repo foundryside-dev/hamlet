@@ -6,7 +6,7 @@ import pytest
 import torch
 
 from townlet.demo.runner import DemoRunner
-from townlet.training.checkpoint_utils import persist_checkpoint_digest
+from townlet.training.checkpoint_utils import CHECKPOINT_FORMAT_VERSION, persist_checkpoint_digest
 
 
 def _write_mismatched_checkpoint(checkpoint_dir: Path, *, write_digest: bool = True) -> Path:
@@ -14,7 +14,7 @@ def _write_mismatched_checkpoint(checkpoint_dir: Path, *, write_digest: bool = T
     checkpoint_path = checkpoint_dir / "checkpoint_ep00012.pt"
     torch.save(
         {
-            "version": 3,
+            "version": CHECKPOINT_FORMAT_VERSION,
             "episode": 12,
             "timestamp": 1.0,
             "substrate_metadata": {"position_dim": 2, "substrate_type": "Grid2DSubstrate"},

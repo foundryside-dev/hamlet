@@ -1,4 +1,4 @@
-"""Evaluation marks derive from exposure: expression vars only, statics never."""
+"""Evaluation marks derive from DECLARATION (having an expression), never from exposure."""
 
 from __future__ import annotations
 
@@ -70,32 +70,27 @@ def _overlay_var(name: str, *, observable: bool) -> VariableDef:
     )
 
 
-def test_overlay_observable_marks_an_expression_variable_with_no_exposure():
-    """The overlay-additive union is the compiler's own path (not the pydantic default):
-    GlobalVFSProfileConfig.default_metadata forces exposed_to=["agent"] whenever it is
-    empty at construction, so exposed_to is truthy for every profile variable declared
-    through YAML. To exercise the overlay branch specifically — not exposed_to's default —
-    force a genuinely empty exposed_to on the variable object AFTER construction (pydantic
-    does not re-validate on plain attribute assignment)."""
+def test_evaluation_is_marked_by_declaration_not_by_exposure():
+    """An expression variable's value is world STATE, so evaluation cannot key on
+    exposure. Marking used to be `exposed_to`-driven, which looked harmless only because
+    `exposed_to` failed open to ["agent"]; deleting that fail-open at the unit-3 cut
+    would otherwise have silently stopped evaluating every unexposed expression variable
+    — a world-evolution change, not an observation one.
+    """
     profile = GlobalVFSProfileConfig(
         variables=[GlobalVFSVariableConfig(semantic_type="custom", name="derived", type="float", expression="1.0 + 1.0")]
     )
     profiles_config = VFSProfilesConfig(
         version="1.0", evaluation_mode="mark_and_sweep", debug_logging=False, global_profile=profile
     )
-    # Nesting `profile` inside VFSProfilesConfig() re-validates it (pydantic re-runs
-    # nested-model validators on construction), which would re-fill exposed_to via
-    # default_metadata — so the override must happen AFTER this point, on the config
-    # object we actually pass to derive_evaluation_marks.
-    profiles_config.global_profile.variables[0].exposed_to = []  # bypass the exposed_to default for this test only
+    # Explicitly UNEXPOSED, which is what an authored pack now means by an empty list.
+    profiles_config.global_profile.variables[0].exposed_to = []
 
-    marks_without_overlay = VFSCompiler().derive_evaluation_marks(profiles_config, overlay_variables=None)
-    assert not (marks_without_overlay or {}).get("global")
-
-    marks_with_overlay = VFSCompiler().derive_evaluation_marks(
+    assert VFSCompiler().derive_evaluation_marks(profiles_config, overlay_variables=None) == {"global": {"derived"}}
+    # The overlay cannot subtract it either, and does not need to add it.
+    assert VFSCompiler().derive_evaluation_marks(
         profiles_config, overlay_variables=(_overlay_var("derived", observable=True),)
-    )
-    assert marks_with_overlay == {"global": {"derived"}}
+    ) == {"global": {"derived"}}
 
 
 def test_overlay_observable_on_a_static_never_marks_it():

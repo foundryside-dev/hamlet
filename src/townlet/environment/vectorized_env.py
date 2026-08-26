@@ -614,23 +614,16 @@ class VectorizedHamletEnv:
                 "Use partial_observability=False with 'relative' or 'scaled' observation_encoding instead."
             )
         if self.substrate.position_dim >= 4:
-            window_size = self.local_window_size or 0
-            cell_count = window_size**self.substrate.position_dim if window_size > 0 else 0
             raise ValueError(
-                f"Partial observability (POMDP) is not supported for {self.substrate.position_dim}D substrates. "
-                f"\n\nProblem: Local window size grows EXPONENTIALLY with dimensionality:"
-                f"\n  - 2D: {window_size}×{window_size} = {window_size**2} cells (practical)"
-                f"\n  - 3D: {window_size}×{window_size}×{window_size} = {window_size**3} cells (supported up to vision_range=2)"
-                f"\n  - {self.substrate.position_dim}D: {window_size}^{self.substrate.position_dim} = {cell_count:,} cells (IMPRACTICAL)"
-                f"\n\nThis creates:"
-                f"\n  - Network input explosion ({cell_count:,} vision features + position + meters)"
-                f"\n  - Memory explosion (each agent's observation is massive)"
-                f"\n  - Training slowdown (gradient computation over huge inputs)"
-                f"\n\nSolution: Use full observability (partial_observability=False) with normalized position encoding:"
-                f"\n  - observation_encoding='relative': Just {self.substrate.position_dim} dims (normalized coordinates)"
-                f"\n  - observation_encoding='scaled': {self.substrate.position_dim * 2} dims (coordinates + grid sizes)"
-                f"\n  - Enables dimension-independent learning WITHOUT exponential curse"
-                f"\n\nSee docs/manual/pomdp_compatibility_matrix.md for details."
+                f"Partial observability (POMDP) is not supported for {self.substrate.position_dim}D "
+                f"substrates (substrate type '{type(self.substrate).__name__}').\n"
+                "  Reason: the visibility filter needs a distance metric whose neighbourhood is a "
+                "usable fraction of the space, and in 4D+ the reachable neighbourhood at any radius "
+                "is a vanishing fraction of the volume — every entity reads as out of range or all of "
+                "them read as in range.\n"
+                "  Fix: use full observability (active_vision: global) with normalized position "
+                "encoding, which is dimension-independent.\n"
+                "  See docs/manual/pomdp_compatibility_matrix.md."
             )
         if self.substrate.position_dim == 3:
             window_size = self.local_window_size or 0

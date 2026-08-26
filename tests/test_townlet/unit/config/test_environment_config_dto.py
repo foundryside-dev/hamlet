@@ -125,6 +125,16 @@ environment:
 # be distinct and must do what their names say.
 
 
+
+def _normalizer(spec):
+    """One-element `CompiledValueNormalizer` — the live normalization ABI since the cut."""
+    import torch
+
+    from townlet.environment.token_publishers import CompiledValueNormalizer
+
+    return CompiledValueNormalizer([("v", spec, 0, 1)], torch.device("cpu"))
+
+
 def test_removed_vocabulary_members_are_rejected() -> None:
     """`clip` and `none` are gone from the authoring vocabulary, and the error
     names what IS allowed — an author who wrote either must be told, not
@@ -166,15 +176,19 @@ def test_normalize_rescales_and_clamps_only_when_the_author_says_so() -> None:
 
     from townlet.config.environment_config import NormalizationConfig
     from townlet.universe.compilers.observation import ObservationCompiler
-    from townlet.vfs.observation_builder import apply_normalization
 
-    values = torch.tensor([-5.0, 0.0, 0.5, 1.0, 7.0])
-
+    # The compiler's job is to carry the author's `clip` through into the VFS spec
+    # UNCHANGED. What clamps is the live normalizer (`CompiledValueNormalizer`), and
+    # since the unit-3 cut it only ever sees clip: true — boundedness is certified at
+    # exposure, so an unclipped minmax refuses before it can reach a token.
     loose = ObservationCompiler._convert_normalization("v", NormalizationConfig(method="normalize", range=[0.0, 1.0], clip=False))
-    assert apply_normalization(values, loose).tolist() == [-5.0, 0.0, 0.5, 1.0, 7.0]
-
+    assert loose.kind == "minmax" and loose.clip is False
     clamped = ObservationCompiler._convert_normalization("v", NormalizationConfig(method="normalize", range=[0.0, 1.0], clip=True))
-    assert apply_normalization(values, clamped).tolist() == [0.0, 0.0, 0.5, 1.0, 1.0]
+    assert clamped.kind == "minmax" and clamped.clip is True
+
+    normalizer = _normalizer(clamped)
+    values = torch.tensor([[-5.0], [0.0], [0.5], [1.0], [7.0]])
+    assert normalizer.apply(values)[:, 0, 0].tolist() == [0.0, 0.0, 0.5, 1.0, 1.0]
 
 
 def test_clip_must_be_declared_and_only_where_it_applies() -> None:
@@ -200,14 +214,11 @@ def test_the_deleted_clamping_member_stays_deleted() -> None:
     """
     import torch
 
-    from townlet.vfs.observation_builder import apply_normalization
     from townlet.vfs.schema import NormalizationSpec
 
     with pytest.raises(ValidationError):
         NormalizationSpec(kind="clipped_log_scaled", min=0.0, max=99.0, clip=True)
 
-    out = apply_normalization(
-        torch.tensor([-10.0, 999.0]),
-        NormalizationSpec(kind="log_scaled", min=0.0, max=99.0, clip=True),
-    )
+    normalizer = _normalizer(NormalizationSpec(kind="log_scaled", min=0.0, max=99.0, clip=True))
+    out = normalizer.apply(torch.tensor([[-10.0], [999.0]]))[:, 0, 0]
     assert out.tolist() == [0.0, 1.0]

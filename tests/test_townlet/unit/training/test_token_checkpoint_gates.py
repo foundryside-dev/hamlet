@@ -16,7 +16,6 @@ path — that severing is Task 10):
 
 from __future__ import annotations
 
-import dataclasses
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -106,15 +105,13 @@ class TestAttachStampsTokenHashes:
         assert checkpoint["token_type_schema_hash"] == compiled_universe.token_type_schema_hash
         assert checkpoint["layout_hash"] == compiled_universe.layout_hash
 
-    def test_existing_fields_all_stay(self, checkpoint, compiled_universe) -> None:
-        """ADDITIVE: nothing the pre-Task-9 stamp wrote is dropped (Task 10 owns that)."""
+    def test_the_provenance_fields_all_stay(self, checkpoint, compiled_universe) -> None:
+        """Everything but the two ObservationSpec-derived fields survives the cut."""
         for field in (
             "config_hash",
             "primary_level",
-            "observation_dim",
             "action_dim",
             "meter_count",
-            "observation_field_uuids",
             "observation_schema_hash",
             "drive_hash",
             "curriculum_hash",
@@ -126,14 +123,16 @@ class TestAttachStampsTokenHashes:
             "vfs_hash",
         ):
             assert field in checkpoint, f"pre-existing checkpoint field {field!r} went missing"
+        # Dropped with their producer at the unit-3 cut.
+        assert "observation_dim" not in checkpoint
+        assert "observation_field_uuids" not in checkpoint
 
 
 class TestTokenNetGate:
-    def test_matching_hash_passes_without_uuid_or_obs_dim(self, checkpoint, compiled_universe) -> None:
-        """The token path replaces the obs-dim/uuid legs: a checkpoint with neither
-        still passes when the type-schema hash matches."""
-        del checkpoint["observation_field_uuids"]
-        del checkpoint["observation_dim"]
+    def test_matching_type_schema_hash_passes(self, checkpoint, compiled_universe) -> None:
+        """The token path gates on the TYPE-SCHEMA hash alone; a moved LAYOUT (capacities,
+        slot bindings) is entity variation a token net absorbs by design."""
+        checkpoint["layout_hash"] = "deadbeef" * 8
         assert_checkpoint_dimensions(checkpoint, compiled_universe, architecture_type="token_set")
 
     def test_mismatch_produces_the_banner(self, checkpoint, compiled_universe) -> None:
@@ -166,16 +165,13 @@ class TestFlatNetLayoutGate:
         with pytest.raises(ValueError, match="missing layout_hash"):
             assert_checkpoint_layout_hash(checkpoint, compiled_universe)
 
-    def test_default_path_is_untouched(self, checkpoint, compiled_universe) -> None:
-        """Every live caller passes no architecture_type; a moved layout_hash must NOT
-        gate there this task (the promotion is Task 10)."""
+    def test_the_default_path_is_the_flat_path(self, checkpoint, compiled_universe) -> None:
+        """`architecture_type=None` is a flat reader, so the layout gate runs there too —
+        the promotion this task owns. The obs-dim / field-uuid legs it replaces are gone
+        with their producer."""
         checkpoint["layout_hash"] = "deadbeef" * 8
-        assert_checkpoint_dimensions(checkpoint, compiled_universe)
-
-    def test_uuid_gate_still_runs_alongside(self, checkpoint, compiled_universe) -> None:
-        checkpoint["observation_field_uuids"] = list(reversed(checkpoint["observation_field_uuids"]))
-        with pytest.raises(ValueError, match="order-sensitive"):
-            assert_checkpoint_dimensions(checkpoint, compiled_universe, architecture_type="feedforward")
+        with pytest.raises(ValueError, match="layout_hash mismatch"):
+            assert_checkpoint_dimensions(checkpoint, compiled_universe)
 
 
 class TestLoadByTypeKey:
@@ -343,13 +339,6 @@ class TestReviewRound1Pins:
         report = load_token_network_state_by_type(target_net, source_net.state_dict())
         assert any("q_proj" in key for key in report.cold_started_modules)
         assert not report.is_clean
-
-    def test_attach_refuses_universe_without_token_hashes(self, compiled_universe) -> None:
-        """Declared guard (task-9 review M5): a universe missing the token hashes must
-        refuse at save — a checkpoint no gate can check must not exist."""
-        crippled = dataclasses.replace(compiled_universe, token_type_schema_hash=None)
-        with pytest.raises(ValueError, match="token_type_schema_hash"):
-            attach_universe_metadata({}, crippled)
 
     def test_adaptive_wrapper_annealing_state_resets(self) -> None:
         """Cross-universe load resets the AdaptiveIntrinsicExploration WRAPPER's

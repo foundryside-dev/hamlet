@@ -268,7 +268,8 @@ class TestAffordanceTokenPublisher:
     def _ctx(self, positions, vision_range=None):
         return TokenPublishContext(
             positions=positions,
-            affordance_positions={"EAT": torch.tensor([2, 3]), "SLEEP": torch.tensor([7, 7])},
+            affordance_positions=torch.tensor([[2, 3], [7, 7]]),
+            affordance_deployed=torch.tensor([True, True]),
             vision_range=vision_range,
         )
 
@@ -320,11 +321,31 @@ class TestAffordanceTokenPublisher:
         # SLEEP at (7,7) from (0,0) on a wrap 8x8: shortest path is (-1,-1)/7.
         assert rows[0, 1, ego0 : ego0 + 2].tolist() == pytest.approx([-1 / 7, -1 / 7])
 
-    def test_missing_runtime_position_refuses(self):
+    def test_wrong_shaped_position_matrix_refuses(self):
+        # The matrix is COMPILED SLOT ORDER at the compiled capacity; a short one is an
+        # engine bug and must be loud, never silently padded.
         publisher = self._publisher()
-        ctx = TokenPublishContext(positions=torch.tensor([[0, 0]]), affordance_positions={"EAT": torch.tensor([2, 3])})
-        with pytest.raises(ValueError, match="SLEEP"):
+        ctx = TokenPublishContext(
+            positions=torch.tensor([[0, 0]]),
+            affordance_positions=torch.tensor([[2, 3]]),
+            affordance_deployed=torch.tensor([True, True]),
+        )
+        with pytest.raises(ValueError, match=r"affordance_positions must be \[2, 2\]"):
             publisher.publish(_rows(2, "affordance", batch=1), ctx)
+
+    def test_an_undeployed_declaration_is_absent_for_every_observer(self):
+        # Capacity is the DECLARED affordance count; an undeployed instance is padding.
+        publisher = self._publisher()
+        rows = _rows(2, "affordance", batch=1)
+        ctx = TokenPublishContext(
+            positions=torch.tensor([[2, 3]]),
+            affordance_positions=torch.tensor([[2, 3], [7, 7]]),
+            affordance_deployed=torch.tensor([True, False]),
+        )
+        publisher.publish(rows, ctx)
+        assert rows[0, 0, 0] == 1.0
+        assert rows[0, 1, 0] == 0.0
+        assert torch.all(rows[0, 1] == 0.0)
 
 
 class TestAgentTokenPublisher:
@@ -416,8 +437,9 @@ class TestEffectTokenPublisher:
         rows = _rows(2, "effect", batch=1)
         batch = EffectSlotBatch(
             slot_indices=torch.tensor([0]),
-            effect_indices=torch.tensor([1]),
+            effect_indices=torch.tensor([[1]]),
             remaining_fraction=torch.tensor([[0.6]]),
+            active=torch.tensor([[True]]),
             owner_slot=torch.tensor([2]),
         )
         publisher.publish(rows, TokenPublishContext(effect_slots=batch))
@@ -432,8 +454,9 @@ class TestEffectTokenPublisher:
         publisher = self._publisher(capacity=1)
         batch = EffectSlotBatch(
             slot_indices=torch.tensor([0, 1]),
-            effect_indices=torch.tensor([0, 1]),
+            effect_indices=torch.tensor([[0, 1]]),
             remaining_fraction=torch.ones((1, 2)),
+            active=torch.ones((1, 2), dtype=torch.bool),
             owner_slot=torch.tensor([-1, -1]),
         )
         with pytest.raises(TokenCapacityError, match="effect_manager"):
@@ -675,7 +698,8 @@ def _full_ctx(registry_positions=None) -> TokenPublishContext:
         positions=registry_positions if registry_positions is not None else torch.tensor([[0, 0], [4, 4]]),
         velocities=torch.zeros((2, 2)),
         meters=torch.tensor([[0.8, 25.0], [0.2, 100.0]]),
-        affordance_positions={"EAT": torch.tensor([2, 3]), "SLEEP": torch.tensor([7, 7])},
+        affordance_positions=torch.tensor([[2, 3], [7, 7]]),
+        affordance_deployed=torch.tensor([True, True]),
     )
 
 

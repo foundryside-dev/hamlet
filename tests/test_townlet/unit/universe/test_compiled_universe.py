@@ -16,7 +16,7 @@ def test_compiler_returns_compiled_universe() -> None:
     assert isinstance(compiled, CompiledUniverse)
     # v2.1: universe_name comes from experiment.yaml metadata.name
     assert compiled.metadata.universe_name == "Complete Reference Example"
-    assert compiled.observation_spec.total_dims == compiled.metadata.observation_dim
+    assert compiled.token_spec.total_dims == compiled.metadata.observation_dim
 
 
 def test_compiled_universe_is_frozen() -> None:

@@ -11,6 +11,7 @@ from townlet.effects.manager import EffectManager
 def catalog_with_policies():
     """Create a catalog with effects having different reapply policies."""
     config = EffectsConfig(
+        max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
         version="1.0",
         effect_definitions=[
             EffectDefinitionConfig(

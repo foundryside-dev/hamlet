@@ -12,6 +12,7 @@ from townlet.effects.catalog import EffectCatalog
 def test_catalog_from_config():
     """EffectCatalog compiles from EffectsConfig."""
     config = EffectsConfig(
+        max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
         version="1.0",
         effect_definitions=[
             {
@@ -52,6 +53,7 @@ def test_catalog_load_smoke_config():
 def test_catalog_get_effect():
     """EffectCatalog.get() retrieves effect by ID."""
     config = EffectsConfig(
+        max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
         version="1.0",
         effect_definitions=[{"id": "ate_food", "scope": "agent", "duration": 10, "intensity": 1.0, "reapply_policy": "stack"}],
     )
@@ -74,6 +76,7 @@ def test_catalog_get_missing_effect_raises():
 def test_catalog_contains():
     """EffectCatalog.__contains__() checks effect existence."""
     config = EffectsConfig(
+        max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
         version="1.0",
         effect_definitions=[{"id": "ate_food", "scope": "agent", "duration": 10, "intensity": 1.0, "reapply_policy": "stack"}],
     )
@@ -87,6 +90,7 @@ def test_catalog_contains():
 def test_catalog_len():
     """EffectCatalog.__len__() returns number of effects."""
     config = EffectsConfig(
+        max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
         version="1.0",
         effect_definitions=[
             {"id": "effect1", "scope": "agent", "duration": 10, "intensity": 1.0, "reapply_policy": "stack"},

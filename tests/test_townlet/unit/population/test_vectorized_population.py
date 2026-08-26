@@ -1058,22 +1058,22 @@ def test_brain_config_none_raises_valueerror(basic_env, adversarial_curriculum, 
         )
 
 
-def test_observation_spec_none_raises_valueerror(
+def test_token_spec_none_raises_valueerror(
     basic_env, adversarial_curriculum, epsilon_greedy_exploration, cpu_device, minimal_brain_config
 ):
-    """VectorizedPopulation raises ValueError when env.observation_spec is None (POP-005).
+    """VectorizedPopulation raises ValueError when env.token_spec is None.
 
-    Per CLAUDE.md "no implicit defaults" philosophy, we require env.observation_spec
+    Per CLAUDE.md "no implicit defaults" philosophy, we require env.token_spec
     to be explicitly set rather than silently falling back.
     """
     import pytest
 
     from townlet.population.vectorized import VectorizedPopulation
 
-    # Mock env without observation_spec
-    basic_env.observation_spec = None
+    # Mock env without token_spec
+    basic_env.token_spec = None
 
-    with pytest.raises(ValueError, match="observation_spec is required"):
+    with pytest.raises(ValueError, match="token_spec is required"):
         VectorizedPopulation(
             env=basic_env,
             curriculum=adversarial_curriculum,
@@ -1091,10 +1091,10 @@ def test_observation_spec_none_raises_valueerror(
         )
 
 
-def test_observation_spec_missing_attribute_raises_valueerror(
+def test_token_spec_missing_attribute_raises_valueerror(
     basic_env, adversarial_curriculum, epsilon_greedy_exploration, cpu_device, minimal_brain_config
 ):
-    """VectorizedPopulation raises ValueError when env has no observation_spec attribute (POP-005).
+    """VectorizedPopulation raises ValueError when env has no token_spec attribute.
 
     Covers the case where the env object doesn't have the attribute at all
     (not just when it's set to None).
@@ -1103,11 +1103,11 @@ def test_observation_spec_missing_attribute_raises_valueerror(
 
     from townlet.population.vectorized import VectorizedPopulation
 
-    # Delete the observation_spec attribute entirely
-    if hasattr(basic_env, "observation_spec"):
-        delattr(basic_env, "observation_spec")
+    # Delete the token_spec attribute entirely
+    if hasattr(basic_env, "token_spec"):
+        delattr(basic_env, "token_spec")
 
-    with pytest.raises(ValueError, match="observation_spec is required"):
+    with pytest.raises(ValueError, match="token_spec is required"):
         VectorizedPopulation(
             env=basic_env,
             curriculum=adversarial_curriculum,

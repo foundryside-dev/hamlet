@@ -516,8 +516,8 @@ class TestSnapshotAndMetrics:
         # Verify tracker exists and was initialized
         assert curriculum.tracker is not None, "Tracker should be initialized"
 
-    def test_recurrent_network_uses_observation_spec_and_temporal(self, temporal_env, recurrent_brain_config, cpu_device):
-        """VectorizedPopulation should wire ObservationSpec (including temporal) into recurrent network."""
+    def test_recurrent_network_reads_the_compiled_token_blocks(self, temporal_env, recurrent_brain_config, cpu_device):
+        """VectorizedPopulation wires the compiled TokenSpec's per-type blocks into the network."""
         from townlet.curriculum.static import StaticCurriculum
         from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
 
@@ -541,11 +541,17 @@ class TestSnapshotAndMetrics:
         assert population.is_recurrent is True
         q_net = population.q_network
 
-        # The spec is required at construction, so every slice is resolved by
-        # then; there is no longer a flag saying whether one was supplied.
-        assert q_net._grid_slice is not None
-        assert q_net._meters_slice is not None
-        assert q_net._affordance_slice is not None
+        # Post-cut the network is a token-BLOCK reader: its meter/affordance/position
+        # slices ARE the compiled per-type serialization blocks, and there is no spatial
+        # window in a token observation (grid_slice is the API's "no window" None, which
+        # is what a full-observability universe produced before the cut too).
+        from townlet.agent.network_factory import NetworkFactory
+
+        blocks = NetworkFactory.token_block_slices(env.token_spec)
+        assert q_net._grid_slice is None
+        assert q_net._meters_slice == blocks["meter"]
+        assert q_net._affordance_slice == blocks["affordance"]
+        assert q_net._position_slice == blocks["self"]
 
         # Temporal mechanics enabled in env should toggle temporal features on.
         assert getattr(env, "enable_temporal_mechanics", False) is True

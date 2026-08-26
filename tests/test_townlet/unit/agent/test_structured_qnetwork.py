@@ -1,180 +1,53 @@
-"""Test StructuredQNetwork with group encoders for semantic observation groups."""
+"""StructuredQNetwork over caller-given semantic group slices.
 
-from pathlib import Path
+The compiled `ObservationActivity` this network used to read its groups from was
+deleted at the unit-3 token cut, and no `architecture.type` names this network, so it
+is unreachable from any config pack — it dies with the unit-6 sweep. What is pinned
+here is the seam that survived the cut: the network takes explicit `group_slices` and
+builds one encoder per non-empty group.
+"""
 
+import pytest
 import torch
 
 from townlet.agent.networks import StructuredQNetwork
-from townlet.universe.compiler import UniverseCompiler
+
+OBS_DIM = 24
+ACTION_DIM = 6
+GROUP_SLICES = {
+    "spatial": slice(0, 8),
+    "bars": slice(8, 16),
+    "custom": slice(16, 24),
+}
 
 
-class TestStructuredQNetworkBasics:
-    def test_structured_qnetwork_accepts_observation_activity(self):
-        """StructuredQNetwork should accept ObservationActivity parameter."""
-        config_dir = Path("configs/default_curriculum")
-
-        compiler = UniverseCompiler()
-        compiled = compiler.compile(config_dir, primary_level="L0_5_dual_resource", use_cache=False)
-        obs_activity = compiled.observation_activity
-
-        network = StructuredQNetwork(
-            obs_dim=compiled.metadata.observation_dim,
-            action_dim=compiled.metadata.action_count,
-            observation_activity=obs_activity,
-        )
-
-        assert network is not None
-        assert hasattr(network, "observation_activity")
-
-    def test_structured_qnetwork_forward_pass(self):
-        """StructuredQNetwork should produce Q-values for batch of observations."""
-        config_dir = Path("configs/default_curriculum")
-
-        compiler = UniverseCompiler()
-        compiled = compiler.compile(config_dir, primary_level="L0_5_dual_resource", use_cache=False)
-        obs_activity = compiled.observation_activity
-
-        network = StructuredQNetwork(
-            obs_dim=compiled.metadata.observation_dim,
-            action_dim=compiled.metadata.action_count,
-            observation_activity=obs_activity,
-        )
-
-        batch_size = 4
-        obs = torch.randn(batch_size, compiled.metadata.observation_dim)
-
-        q_values = network(obs)
-
-        assert q_values.shape == (batch_size, compiled.metadata.action_count)
-
-    def test_structured_qnetwork_has_group_encoders(self):
-        """StructuredQNetwork should create encoders for each semantic group."""
-        config_dir = Path("configs/default_curriculum")
-
-        compiler = UniverseCompiler()
-        compiled = compiler.compile(config_dir, primary_level="L0_5_dual_resource", use_cache=False)
-        obs_activity = compiled.observation_activity
-
-        network = StructuredQNetwork(
-            obs_dim=compiled.metadata.observation_dim,
-            action_dim=compiled.metadata.action_count,
-            observation_activity=obs_activity,
-        )
-
-        # Should have encoders attribute
-        assert hasattr(network, "group_encoders")
-
-        # Should have encoder for each group in observation_activity
-        for group_name in obs_activity.group_slices.keys():
-            assert group_name in network.group_encoders
+def _network(**overrides) -> StructuredQNetwork:
+    kwargs = {"obs_dim": OBS_DIM, "action_dim": ACTION_DIM, "group_slices": GROUP_SLICES}
+    kwargs.update(overrides)
+    return StructuredQNetwork(**kwargs)
 
 
-class TestStructuredQNetworkArchitecture:
-    def test_group_encoders_process_correct_slices(self):
-        """Each group encoder should process only its semantic group dimensions."""
-        config_dir = Path("configs/default_curriculum")
+class TestStructuredQNetwork:
+    def test_builds_one_encoder_per_declared_group(self) -> None:
+        network = _network()
+        assert set(network.group_encoders.keys()) == set(GROUP_SLICES)
 
-        compiler = UniverseCompiler()
-        compiled = compiler.compile(config_dir, primary_level="L0_5_dual_resource", use_cache=False)
-        obs_activity = compiled.observation_activity
+    def test_empty_group_gets_no_encoder(self) -> None:
+        # A zero-width group is not a defect; it simply contributes no encoder.
+        network = _network(group_slices={**GROUP_SLICES, "effects": slice(24, 24)})
+        assert "effects" not in network.group_encoders
 
-        network = StructuredQNetwork(
-            obs_dim=compiled.metadata.observation_dim,
-            action_dim=compiled.metadata.action_count,
-            observation_activity=obs_activity,
-        )
+    def test_forward_produces_q_values_per_action(self) -> None:
+        network = _network()
+        q_values = network(torch.randn(4, OBS_DIM))
+        assert q_values.shape == (4, ACTION_DIM)
 
-        # Create observation
-        obs = torch.randn(1, compiled.metadata.observation_dim)
+    def test_group_embed_dim_is_explicit(self) -> None:
+        network = _network(group_embed_dim=8)
+        assert network.group_embed_dim == 8
+        assert network(torch.randn(2, OBS_DIM)).shape == (2, ACTION_DIM)
 
-        # Manually extract and encode spatial group
-        spatial_slice = obs_activity.get_group_slice("spatial")
-        if spatial_slice is not None:
-            spatial_obs = obs[:, spatial_slice]
-            spatial_encoder = network.group_encoders["spatial"]
-            spatial_embedding = spatial_encoder(spatial_obs)
-
-            # Should produce embedding
-            assert spatial_embedding.shape[0] == 1  # batch size
-            assert spatial_embedding.shape[1] > 0  # embedding dim
-
-    def test_structured_qnetwork_output_matches_simple_qnetwork_shape(self):
-        """StructuredQNetwork output should match SimpleQNetwork for compatibility."""
-        from townlet.agent.networks import SimpleQNetwork
-
-        config_dir = Path("configs/default_curriculum")
-
-        compiler = UniverseCompiler()
-        compiled = compiler.compile(config_dir, primary_level="L0_0_minimal", use_cache=False)
-        obs_activity = compiled.observation_activity
-
-        obs_dim = compiled.metadata.observation_dim
-        action_dim = compiled.metadata.action_count
-
-        simple_net = SimpleQNetwork(obs_dim, action_dim, hidden_dim=128)
-        structured_net = StructuredQNetwork(
-            obs_dim=obs_dim,
-            action_dim=action_dim,
-            observation_activity=obs_activity,
-        )
-
-        batch_size = 8
-        obs = torch.randn(batch_size, obs_dim)
-
-        simple_q = simple_net(obs)
-        structured_q = structured_net(obs)
-
-        # Same shape
-        assert simple_q.shape == structured_q.shape
-        assert structured_q.shape == (batch_size, action_dim)
-
-
-class TestStructuredQNetworkIntegration:
-    def test_structured_qnetwork_with_gradient_flow(self):
-        """StructuredQNetwork should support gradient backpropagation."""
-        config_dir = Path("configs/default_curriculum")
-
-        compiler = UniverseCompiler()
-        compiled = compiler.compile(config_dir, primary_level="L0_5_dual_resource", use_cache=False)
-        obs_activity = compiled.observation_activity
-
-        network = StructuredQNetwork(
-            obs_dim=compiled.metadata.observation_dim,
-            action_dim=compiled.metadata.action_count,
-            observation_activity=obs_activity,
-        )
-
-        obs = torch.randn(4, compiled.metadata.observation_dim, requires_grad=True)
-        q_values = network(obs)
-
-        # Compute loss and backprop
-        loss = q_values.mean()
-        loss.backward()
-
-        # Gradients should flow to input
-        assert obs.grad is not None
-        assert not torch.all(obs.grad == 0)
-
-    def test_structured_qnetwork_on_gpu(self):
-        """StructuredQNetwork should work on GPU if available."""
-        if not torch.cuda.is_available():
-            return  # Skip if no GPU
-
-        config_dir = Path("configs/default_curriculum")
-
-        compiler = UniverseCompiler()
-        compiled = compiler.compile(config_dir, primary_level="L0_0_minimal", use_cache=False)
-        obs_activity = compiled.observation_activity
-
-        device = torch.device("cuda")
-        network = StructuredQNetwork(
-            obs_dim=compiled.metadata.observation_dim,
-            action_dim=compiled.metadata.action_count,
-            observation_activity=obs_activity,
-        ).to(device)
-
-        obs = torch.randn(4, compiled.metadata.observation_dim, device=device)
-        q_values = network(obs)
-
-        assert q_values.device.type == "cuda"
-        assert q_values.shape == (4, compiled.metadata.action_count)
+    def test_a_slice_past_the_observation_is_loud(self) -> None:
+        network = _network(group_slices={"spatial": slice(0, OBS_DIM + 4)})
+        with pytest.raises(RuntimeError):
+            network(torch.randn(2, OBS_DIM))

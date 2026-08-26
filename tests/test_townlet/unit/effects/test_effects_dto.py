@@ -204,6 +204,7 @@ def test_effects_config_minimal():
     from townlet.config.effects_config import EffectsConfig
 
     config = EffectsConfig(
+        max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
         version="1.0",
         effect_definitions=[
             {
@@ -244,6 +245,7 @@ def test_effects_config_from_yaml():
     yaml_content = """
 version: "1.0"
 
+max_active_effects: {global: 8, agent: 8, item: 8, affordance: 8}
 effect_definitions:
   - id: "ate_food"
     scope: agent

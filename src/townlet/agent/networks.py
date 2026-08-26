@@ -81,9 +81,9 @@ class RecurrentSpatialQNetwork(nn.Module):
         num_affordance_types: int,
         enable_temporal_features: bool,
         hidden_dim: int,
-        grid_slice: slice,
         meters_slice: slice,
         affordance_slice: slice,
+        grid_slice: slice | None = None,
         position_slice: slice | None = None,
         temporal_slice: slice | None = None,
         temporal_embed_dim: int = 16,
@@ -102,12 +102,11 @@ class RecurrentSpatialQNetwork(nn.Module):
             num_affordance_types: Number of affordance types
             enable_temporal_features: Whether to expect temporal features
             hidden_dim: LSTM hidden dimension (typically 256)
-            grid_slice: Local-window block slice. REQUIRED — the network
-                addresses every input block through it. It was previously
-                `= None`, which let the network construct and then raise on the
-                first forward pass; a parameter the object cannot function
-                without is not optional (No-Defaults Principle).
             meters_slice: Meter (bars) block slice. REQUIRED.
+            grid_slice: Local spatial-window block slice, or None when the universe has
+                no spatial window. `None` is the long-standing "no window" case — it was
+                what a full-observability universe produced before the unit-3 cut too —
+                and the vision encoder then reads zeros at `window_size` 1.
             affordance_slice: Affordance block slice. REQUIRED.
             position_slice: Position block slice, or None when the substrate is aspatial.
             temporal_slice: Temporal block slice, or None when temporal is inactive.
@@ -195,13 +194,15 @@ class RecurrentSpatialQNetwork(nn.Module):
 
         # Input-block slicing, given EXPLICITLY by the caller.
         #
-        # These used to be derived from the compiled `ObservationSpec` / `ObservationActivity`,
-        # which the unit-3 token cut deleted: the raster grid, local window, position,
-        # affordance-at-position and temporal blocks no longer exist in any observation. The
-        # network is retained for its BPTT machinery and dies with the unit-6 sweep; the
-        # `recurrent` factory branch refuses, naming unit 4 as the landing for a token-aware
-        # recurrent/attention path.
-        self._grid_slice: slice = grid_slice
+        # These used to be derived from the compiled `ObservationSpec` /
+        # `ObservationActivity`, which the unit-3 token cut deleted. The caller now names
+        # them, and `NetworkFactory.build_recurrent` derives them from the compiled
+        # TokenSpec's contiguous per-type serialization blocks: `self` -> position,
+        # `meter` -> meters, `affordance` -> affordance. There is no spatial window in a
+        # token observation, so `grid_slice` is None and the vision encoder reads zeros —
+        # the same "no window" case every full-observability universe produced before the
+        # cut. A token-aware recurrent/attention brain is unit 4.
+        self._grid_slice: slice | None = grid_slice
         self._position_slice: slice | None = position_slice
         self._meters_slice: slice = meters_slice
         self._affordance_slice: slice = affordance_slice
@@ -233,7 +234,7 @@ class RecurrentSpatialQNetwork(nn.Module):
         """
         batch_size = obs.shape[0]
 
-        grid = obs[:, self._grid_slice]
+        grid = obs[:, self._grid_slice] if self._grid_slice is not None else obs.new_zeros((batch_size, self.window_size**2))
         position = obs[:, self._position_slice] if (self._position_slice is not None and self.position_dim > 0) else None
         meters = obs[:, self._meters_slice]
         affordance = (

@@ -380,14 +380,15 @@ class VectorizedPopulation(PopulationManager):
                 action_dim=action_dim,
             )
         elif arch.type == "recurrent":
-            raise ValueError(
-                "architecture.type='recurrent' has no buildable network after the unit-3 token cut.\n"
-                "  Reason: RecurrentSpatialQNetwork addresses a local-window / position / "
-                "affordance-at-position / temporal RASTER, and the token observation has none of "
-                "those blocks — every one was deleted with the fixed-width superset ABI.\n"
-                "  Landing: a token-aware recurrent/attention brain is unit 4. Until then declare "
-                "`feedforward` or `token_set`. (No shipped pack declares `recurrent`; POMDP levels "
-                "run token-flat, which is the same architecture they ran before the cut.)"
+            assert arch.recurrent is not None, "recurrent config must be present"
+            # Post-cut this is a token-BLOCK reader: its input slices come from the
+            # compiled TokenSpec's contiguous per-type serialization, not from a raster
+            # observation spec. A token-NATIVE recurrent/attention brain is unit 4.
+            return NetworkFactory.build_recurrent(
+                config=arch.recurrent,
+                action_dim=action_dim,
+                substrate_position_dim=env.substrate.position_dim,
+                token_spec=env.token_spec,
             )
         elif arch.type == "dueling":
             assert arch.dueling is not None, "dueling config must be present"

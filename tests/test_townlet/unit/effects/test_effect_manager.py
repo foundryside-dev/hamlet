@@ -64,6 +64,7 @@ def test_active_effect_tracks_multiple_targets():
 def catalog_fixture():
     """Create a catalog with 'regen' effect."""
     config = EffectsConfig(
+        max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
         version="1.0",
         effect_definitions=[
             EffectDefinitionConfig(
@@ -221,6 +222,7 @@ class MockCommandExecutor:
 def catalog_with_commands():
     """Create a catalog with effects that have on_tick and on_despawn commands."""
     config = EffectsConfig(
+        max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
         version="1.0",
         effect_definitions=[
             EffectDefinitionConfig(
@@ -302,6 +304,7 @@ def test_spawn_effect_executes_on_spawn():
 
     # Create catalog with effect that has on_spawn commands
     config = EffectsConfig(
+        max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
         version="1.0",
         effect_definitions=[
             EffectDefinitionConfig(
@@ -355,6 +358,7 @@ def test_spawn_effect_skips_on_spawn_without_bars():
 
     # Create catalog with effect that has on_spawn commands
     config = EffectsConfig(
+        max_active_effects={"global": 8, "agent": 8, "item": 8, "affordance": 8},
         version="1.0",
         effect_definitions=[
             EffectDefinitionConfig(

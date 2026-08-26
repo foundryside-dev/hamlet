@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from townlet.effects.catalog import EffectCatalog
 from townlet.universe.compiled import CompiledUniverse, CompiledVFSProfiles
 from townlet.universe.dto import UniverseMetadata
-from townlet.vfs.observation_builder import VFSObservationSpec
 
 
 @dataclass(frozen=True)
@@ -19,7 +18,6 @@ class SharedCompilerArtifacts:
     effects_schema: dict[str, str]
     compiled_effect_catalog: EffectCatalog | None
     vfs_history_spec: dict[str, int]
-    vfs_observation_spec: VFSObservationSpec | None
 
 
 @dataclass(frozen=True)

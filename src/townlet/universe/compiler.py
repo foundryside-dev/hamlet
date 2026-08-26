@@ -18,13 +18,14 @@ from townlet.universe.compiled import CompiledUniverse
 from townlet.universe.dto import UniverseMetadata
 from townlet.universe.error_codes import ErrorCode
 from townlet.universe.raw_configs_v21 import RawConfigsV21
-from townlet.vfs.observation_builder import VFSObservationSpec
-from townlet.vfs.profiles import CircularDependencyError
-from townlet.vfs.schema_hashes import (
-    compute_action_schema_hash,
+from townlet.universe.token_hashes import (
     compute_observation_schema_hash,
     compute_token_layout_hash,
     compute_token_type_schema_hash,
+)
+from townlet.vfs.profiles import CircularDependencyError
+from townlet.vfs.schema_hashes import (
+    compute_action_schema_hash,
     compute_transition_graph_hash,
     compute_variable_schema_hash,
     compute_vfs_hash,
@@ -46,7 +47,6 @@ from .pipeline import CompiledLevelBundle, SharedCompilerArtifacts
 from .source_map import build_pack_source_map
 from .stages import CompilationStage
 from .validation.limits import (
-    EFFECT_OBSERVATION_SLOTS,
     MAX_CACHE_FILE_SIZE,
     validate_v21_limits,
 )
@@ -224,9 +224,6 @@ class UniverseCompiler:
             ) from exc
 
         self._log_stage(CompilationStage.EMIT)
-        effect_observation_slots = (
-            EFFECT_OBSERVATION_SLOTS if shared_artifacts.compiled_effect_catalog and shared_artifacts.compiled_effect_catalog.effects else 0
-        )
         compiled = self._stage_8_emit_artifact(
             raw,
             experiment_dir,
@@ -240,9 +237,7 @@ class UniverseCompiler:
             shared_artifacts.effects_schema,
             level_bundle.vfs_expression_schema,
             level_bundle.vfs_evaluation_marks,
-            effect_observation_slots,
             shared_artifacts.vfs_history_spec,
-            shared_artifacts.vfs_observation_spec,
             brain_hash=brain_hash,
             pack_brain_hash=pack_brain_hash,
             experiment_hash=experiment_hash,
@@ -302,19 +297,12 @@ class UniverseCompiler:
             effects_schema,
             time_enabled=temporal_supported,
         )
-        max_items_per_agent = raw.items.max_items_per_agent if raw.items is not None else VFSObservationSpec.max_items_per_agent
-        vfs_observation_spec = VFSObservationSpec.from_compiled_profiles(
-            compiled_vfs_profiles,
-            max_items_per_agent=max_items_per_agent,
-        )
-
         return SharedCompilerArtifacts(
             bar_schema=bar_schema,
             compiled_vfs_profiles=compiled_vfs_profiles,
             effects_schema=effects_schema,
             compiled_effect_catalog=compiled_effect_catalog,
             vfs_history_spec=vfs_history_spec,
-            vfs_observation_spec=vfs_observation_spec,
         )
 
     def _stage_7_compile_levels(
@@ -333,15 +321,6 @@ class UniverseCompiler:
         all_levels: dict[str, CompiledUniverse.LevelMetadata] = {}
         for level_name, level in raw.levels.items():
             logger.info("Compiling level: %s", level_name)
-            obs_spec = self._observation_compiler.build_spec(
-                raw.stratum,
-                raw.environment,
-                level.curriculum,
-                compiled_vfs_profiles,
-                raw.items,
-                compiled_effect_catalog,
-            )
-            obs_activity = self._observation_compiler.build_activity(obs_spec)
             bar_schema = {meter.name: "float" for meter in level.bars.meters}
             action_metadata = self._action_compiler.build_action_space_metadata(
                 raw.stratum,
@@ -371,14 +350,36 @@ class UniverseCompiler:
                 affordance_metadata,
                 action_metadata,
             )
-            vfs_fields = self._observation_compiler.build_vfs_observation_fields(obs_spec, raw.environment, level.bars, meter_metadata)
-            base_vfs_variables = self._observation_compiler.build_vfs_variables(obs_spec, raw.environment)
+            base_vfs_variables = self._observation_compiler.build_vfs_variables(raw.environment)
             vfs_variables = self._vfs_compiler.build_runtime_variables(
                 base_vfs_variables,
                 compiled_vfs_profiles,
                 raw.variables_reference,
             )
-            observation_schema_hash = compute_observation_schema_hash(vfs_fields)
+
+            # The token observation artifact IS the compiler's observation product
+            # (unit-3 Task-10 cut). It is built BEFORE `observation_schema_hash`, which
+            # is now computed over it (token-obs spec §5) and enters slot 2 of the
+            # structurally-unchanged four-term `compute_vfs_hash` composition.
+            token_spec, token_advisories = self._observation_compiler.build_token_spec(
+                raw.stratum,
+                level.bars,
+                affordance_metadata,
+                raw.items,
+                compiled_effect_catalog,
+                raw.effects.max_active_effects if raw.effects is not None else None,
+                raw.environment,
+                compiled_vfs_profiles,
+                vfs_variables,
+                # The EFFECTIVE brain for this level (PDR-0027 selection, same as stage 8).
+                level.brain or raw.brain,
+            )
+            token_type_schema_hash = compute_token_type_schema_hash(token_spec)
+            layout_hash = compute_token_layout_hash(token_spec)
+            for advisory in token_advisories:
+                logger.warning("[%s] %s", level_name, advisory)
+
+            observation_schema_hash = compute_observation_schema_hash(token_spec)
             variable_schema_hash = compute_variable_schema_hash(vfs_variables)
             transition_schedule = build_vtc_transition_schedule(
                 runtime_action_space=runtime_action_space,
@@ -401,26 +402,6 @@ class UniverseCompiler:
             )
             vfs_hash = compute_vfs_hash(variable_schema_hash, observation_schema_hash, action_schema_hash, transition_graph_hash)
 
-            # Token observation artifact (unit 3 Task 7) — compiled ALONGSIDE the
-            # observation_spec family. Its two hashes join the inventory but do NOT
-            # enter config_hash or the vfs_hash composition (that swap is Task 10).
-            token_spec, token_advisories = self._observation_compiler.build_token_spec(
-                raw.stratum,
-                level.bars,
-                affordance_metadata,
-                raw.items,
-                compiled_effect_catalog,
-                obs_spec,
-                vfs_fields,
-                vfs_variables,
-                # The EFFECTIVE brain for this level (PDR-0027 selection, same as stage 8).
-                level.brain or raw.brain,
-            )
-            token_type_schema_hash = compute_token_type_schema_hash(token_spec)
-            layout_hash = compute_token_layout_hash(token_spec)
-            for advisory in token_advisories:
-                logger.warning("[%s] %s", level_name, advisory)
-
             # Compute hashes for level-specific configs
             drive_hash = self._compute_pydantic_hash(level.drive)
             curriculum_hash = self._compute_pydantic_hash(level.curriculum)
@@ -435,8 +416,6 @@ class UniverseCompiler:
                 drive=level.drive,
                 curriculum=level.curriculum,
                 training=level.training,
-                observation_spec=obs_spec,
-                observation_activity=obs_activity,
                 action_metadata=action_metadata,
                 runtime_action_space=runtime_action_space,
                 action_schema_hash=action_schema_hash,
@@ -450,7 +429,6 @@ class UniverseCompiler:
                 bars_hash=bars_hash,
                 affordances_hash=affordances_hash,
                 training_hash=training_hash,
-                vfs_observation_fields=vfs_fields,
                 observation_schema_hash=observation_schema_hash,
                 vfs_variables=vfs_variables,
                 variable_schema_hash=variable_schema_hash,
@@ -499,9 +477,7 @@ class UniverseCompiler:
         effects_schema: dict[str, str],
         vfs_expression_schema: dict[str, str],
         vfs_evaluation_marks: dict[str, set[str]] | None,
-        effect_observation_slots: int,
         vfs_history_spec: dict[str, int],
-        vfs_observation_spec: VFSObservationSpec | None,
         brain_hash: str | None,
         pack_brain_hash: str | None,
         experiment_hash: str,
@@ -513,9 +489,6 @@ class UniverseCompiler:
         """Stage 8 – emit the compiled artifact and persist cache."""
         compiled = CompiledUniverse(
             metadata=universe_metadata,
-            observation_spec=primary_meta.observation_spec,
-            observation_activity=primary_meta.observation_activity,
-            vfs_observation_fields=primary_meta.vfs_observation_fields,
             observation_schema_hash=primary_meta.observation_schema_hash,
             vfs_variables=primary_meta.vfs_variables,
             variable_schema_hash=primary_meta.variable_schema_hash,
@@ -540,11 +513,9 @@ class UniverseCompiler:
             compiled_vfs_profiles=compiled_vfs_profiles,
             compiled_effect_catalog=compiled_effect_catalog,
             effects_schema=effects_schema,
-            effect_observation_slots=effect_observation_slots,
             vfs_expression_schema=vfs_expression_schema,
             vfs_history_spec=vfs_history_spec or None,
             vfs_evaluation_marks=vfs_evaluation_marks,
-            vfs_observation_spec=vfs_observation_spec,
             token_spec=primary_meta.token_spec,
             token_type_schema_hash=primary_meta.token_type_schema_hash,
             layout_hash=primary_meta.layout_hash,

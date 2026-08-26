@@ -31,18 +31,13 @@ from townlet.universe.dto import (
     AffordanceMetadata,
     MeterInfo,
     MeterMetadata,
-    ObservationActivity,
-    ObservationField,
-    ObservationSpec,
     RuntimeAction,
     RuntimeActionSpace,
     UniverseMetadata,
 )
 from townlet.universe.dto.token_spec import SlotBinding, TokenSpec, TokenTypeSchema
 from townlet.universe.optimization import OptimizationData
-from townlet.vfs.observation_builder import VFSObservationSpec
 from townlet.vfs.profiles import CompiledGlobalProfile
-from townlet.vfs.schema import ObservationField as VfsObservationField
 from townlet.vfs.schema import VariableDef
 from townlet.vfs.transition_schedule import (
     VTCTransitionSchedule,
@@ -77,14 +72,18 @@ from townlet.vfs.transition_schedule import (
 # `token_advisories`, ALONGSIDE the unchanged observation_spec family (the swap is Task 10).
 # The new fields are required in the payload, so a 1.20 cache would fail from_dict on a
 # missing-field error naming one key; the bump makes it the "recompile" error instead.
-COMPILED_SCHEMA_VERSION = "1.21"
+# 1.22: THE CUT (unit 3 Task 10). The `observation_spec`, `observation_activity`,
+# `vfs_observation_fields`, `vfs_observation_spec` and `effect_observation_slots` blocks are
+# DELETED and the `token_spec` block is the artifact's only observation product;
+# `observation_schema_hash` is REDEFINED over the TokenSpec (token-obs spec §5) and therefore
+# `vfs_hash` moves on every pack (registered as DIV-008). A 1.21 cache describes an entirely
+# different observation ABI whose stored hashes would silently mis-gate a checkpoint; the bump
+# makes it the "recompile the config pack" error.
+COMPILED_SCHEMA_VERSION = "1.22"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",
     "metadata",
-    "observation_spec",
-    "observation_activity",
-    "vfs_observation_fields",
     "observation_schema_hash",
     "vfs_variables",
     "variable_schema_hash",
@@ -106,11 +105,9 @@ REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_vfs_profiles",
     "compiled_effect_catalog",
     "effects_schema",
-    "effect_observation_slots",
     "vfs_expression_schema",
     "vfs_history_spec",
     "vfs_evaluation_marks",
-    "vfs_observation_spec",
     "token_spec",
     "token_type_schema_hash",
     "layout_hash",
@@ -156,9 +153,20 @@ class CompiledUniverse:
 
     # Primary (per-primary-level) metadata
     metadata: UniverseMetadata
-    observation_spec: ObservationSpec
-    observation_activity: ObservationActivity
-    vfs_observation_fields: tuple[VfsObservationField, ...]
+    # The token observation artifact IS the compiler's observation product (unit-3
+    # Task-10 cut). The ObservationSpec / ObservationActivity / VFS-mirror family it
+    # replaced is deleted, not carried.
+    token_spec: TokenSpec
+    # Transfer contract: hash of the TokenSpec type schemas (per-type payload feature
+    # names + filler kinds + encoding version); equal hashes mean per-type encoder
+    # weights are exchangeable.
+    token_type_schema_hash: str
+    # Flat-net contract: hash of the serialization layout (type order, capacities, slot
+    # bindings, total_dims); equal hashes mean a flat reader sees identical dim meanings.
+    layout_hash: str
+    # Type schema + slot-binding CONTENT over the TokenSpec (token-obs spec §5). Slot 2
+    # of the unchanged four-term `compute_vfs_hash` composition — which is why `vfs_hash`
+    # moved on every pack at the cut (DIV-008).
     observation_schema_hash: str
     vfs_variables: tuple[VariableDef, ...]
     variable_schema_hash: str
@@ -186,7 +194,6 @@ class CompiledUniverse:
     # Compiled effects catalog (per-level artifact)
     compiled_effect_catalog: EffectCatalog | None = None
     effects_schema: dict[str, str] | None = None
-    effect_observation_slots: int = 0
 
     # Type schema for runtime VFS expression validation
     vfs_expression_schema: dict[str, str] | None = None
@@ -200,24 +207,9 @@ class CompiledUniverse:
     vfs_evaluation_marks: dict[str, set[str]] | None = None
     # Format: {"global": {"day_count", "is_night"}, "agent": {"motivation"}}
 
-    # Runtime-ready VFS observation dimensions and variable order.
-    vfs_observation_spec: VFSObservationSpec | None = None
-
-    # Token observation artifact (unit 3 Task 7) — carried ALONGSIDE the observation_spec
-    # family until the Task-10 swap makes it the pipeline's product. Its two hashes join
-    # the hash inventory but deliberately do NOT enter config_hash or the four-term
-    # vfs_hash composition (that movement is Task 10's, registered as DIV-008).
-    token_spec: TokenSpec | None = None
-    # Transfer contract: hash of the TokenSpec type schemas (per-type payload feature
-    # names + filler kinds + encoding version); equal hashes mean per-type encoder
-    # weights are exchangeable.
-    token_type_schema_hash: str | None = None
-    # Flat-net contract: hash of the serialization layout (type order, capacities, slot
-    # bindings, total_dims); equal hashes mean a flat reader sees identical dim meanings.
-    layout_hash: str | None = None
-    # Compile-time token advisories (effect-budget surface missing, exposure-rule
-    # failures, mean-aggregator census) — loud, recorded, and Task 10 turns the first
-    # two kinds into refusals.
+    # Compile-time token advisories. Exposure-rule and effect-budget failures are
+    # compile REFUSALS since the unit-3 cut; what remains here is the mean-aggregator
+    # census advisory (an instrument, not a gate).
     token_advisories: tuple[str, ...] = ()
 
     # Provenance
@@ -258,8 +250,11 @@ class CompiledUniverse:
         drive: DriveAsCodeConfig
         curriculum: CurriculumConfig
         training: TrainingV2Config
-        observation_spec: ObservationSpec
-        observation_activity: ObservationActivity
+        # The token observation artifact — see the CompiledUniverse fields of the same
+        # names for the contracts.
+        token_spec: TokenSpec
+        token_type_schema_hash: str
+        layout_hash: str
         action_metadata: ActionSpaceMetadata
         runtime_action_space: RuntimeActionSpace
         action_schema_hash: str
@@ -269,7 +264,6 @@ class CompiledUniverse:
         meter_metadata: MeterMetadata
         affordance_metadata: AffordanceMetadata
         optimization_data: OptimizationData
-        vfs_observation_fields: tuple[VfsObservationField, ...]
         observation_schema_hash: str
         vfs_variables: tuple[VariableDef, ...]
         variable_schema_hash: str
@@ -279,15 +273,9 @@ class CompiledUniverse:
         affordances_hash: str | None = None
         training_hash: str | None = None
         items_appearance: ItemsAppearanceConfig | None = None
-        # Token observation artifact (unit 3 Task 7) — see the CompiledUniverse fields of
-        # the same names for the contracts.
-        token_spec: TokenSpec | None = None
-        token_type_schema_hash: str | None = None
-        layout_hash: str | None = None
         token_advisories: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
-        object.__setattr__(self, "vfs_observation_fields", tuple(self.vfs_observation_fields))
         object.__setattr__(self, "token_advisories", tuple(self.token_advisories))
         if self.all_levels is not None and len(self.all_levels) == 0:
             raise ValueError("all_levels must be None or a non-empty dict of LevelMetadata")
@@ -341,7 +329,7 @@ class CompiledUniverse:
             affordance_ids=affordance_ids,
             affordance_id_to_index=affordance_id_to_index,
             action_count=level.action_metadata.total_actions,
-            observation_dim=level.observation_spec.total_dims,
+            observation_dim=level.token_spec.total_dims,
             ticks_per_day=ticks_per_day,
         )
 
@@ -349,9 +337,10 @@ class CompiledUniverse:
         """Clone the compiled universe."""
         return CompiledUniverse(
             metadata=deepcopy(self.metadata),
-            observation_spec=deepcopy(self.observation_spec),
-            observation_activity=deepcopy(self.observation_activity),
-            vfs_observation_fields=tuple(deepcopy(self.vfs_observation_fields)),
+            # Frozen, tuple-carrying dataclass: safe to share.
+            token_spec=self.token_spec,
+            token_type_schema_hash=self.token_type_schema_hash,
+            layout_hash=self.layout_hash,
             observation_schema_hash=self.observation_schema_hash,
             vfs_variables=tuple(deepcopy(self.vfs_variables)),
             variable_schema_hash=self.variable_schema_hash,
@@ -373,15 +362,9 @@ class CompiledUniverse:
             compiled_vfs_profiles=deepcopy(self.compiled_vfs_profiles) if self.compiled_vfs_profiles is not None else None,
             compiled_effect_catalog=deepcopy(self.compiled_effect_catalog) if self.compiled_effect_catalog is not None else None,
             effects_schema=deepcopy(self.effects_schema) if self.effects_schema is not None else None,
-            effect_observation_slots=self.effect_observation_slots,
             vfs_expression_schema=deepcopy(self.vfs_expression_schema) if self.vfs_expression_schema is not None else None,
             vfs_history_spec=deepcopy(self.vfs_history_spec) if self.vfs_history_spec is not None else None,
             vfs_evaluation_marks=deepcopy(self.vfs_evaluation_marks) if self.vfs_evaluation_marks is not None else None,
-            vfs_observation_spec=deepcopy(self.vfs_observation_spec) if self.vfs_observation_spec is not None else None,
-            # Frozen, tuple-carrying dataclasses: safe to share.
-            token_spec=self.token_spec,
-            token_type_schema_hash=self.token_type_schema_hash,
-            layout_hash=self.layout_hash,
             token_advisories=self.token_advisories,
             experiment_dir=self.experiment_dir,
             drive_hash=self.drive_hash,
@@ -404,9 +387,9 @@ class CompiledUniverse:
         return {
             "compiled_schema_version": COMPILED_SCHEMA_VERSION,
             "metadata": _dataclass_to_plain(self.metadata),
-            "observation_spec": _dataclass_to_plain(self.observation_spec),
-            "observation_activity": _dataclass_to_plain(self.observation_activity),
-            "vfs_observation_fields": [field.model_dump() for field in self.vfs_observation_fields],
+            "token_spec": _serialize_token_spec(self.token_spec),
+            "token_type_schema_hash": self.token_type_schema_hash,
+            "layout_hash": self.layout_hash,
             "observation_schema_hash": self.observation_schema_hash,
             "vfs_variables": [var.model_dump() for var in getattr(self, "vfs_variables", ())],
             "variable_schema_hash": self.variable_schema_hash,
@@ -436,16 +419,11 @@ class CompiledUniverse:
                 _serialize_effect_catalog(self.compiled_effect_catalog) if self.compiled_effect_catalog is not None else None
             ),
             "effects_schema": self.effects_schema,
-            "effect_observation_slots": self.effect_observation_slots,
             "vfs_expression_schema": self.vfs_expression_schema,
             "vfs_history_spec": self.vfs_history_spec,
             "vfs_evaluation_marks": (
                 {k: list(v) for k, v in self.vfs_evaluation_marks.items()} if self.vfs_evaluation_marks is not None else None
             ),  # Convert sets to lists for JSON serialization
-            "vfs_observation_spec": (_dataclass_to_plain(self.vfs_observation_spec) if self.vfs_observation_spec is not None else None),
-            "token_spec": _serialize_token_spec(self.token_spec),
-            "token_type_schema_hash": self.token_type_schema_hash,
-            "layout_hash": self.layout_hash,
             "token_advisories": list(self.token_advisories),
             "experiment_dir": None if self.experiment_dir is None else str(self.experiment_dir),
             "drive_hash": self.drive_hash,
@@ -476,8 +454,9 @@ class CompiledUniverse:
                         "training_hash": meta.training_hash,
                         "curriculum": meta.curriculum.model_dump(),
                         "training": meta.training.model_dump(),
-                        "observation_spec": _dataclass_to_plain(meta.observation_spec),
-                        "observation_activity": _dataclass_to_plain(meta.observation_activity),
+                        "token_spec": _serialize_token_spec(meta.token_spec),
+                        "token_type_schema_hash": meta.token_type_schema_hash,
+                        "layout_hash": meta.layout_hash,
                         "action_metadata": _dataclass_to_plain(meta.action_metadata),
                         "runtime_action_space": _dataclass_to_plain(meta.runtime_action_space),
                         "action_schema_hash": meta.action_schema_hash,
@@ -491,13 +470,9 @@ class CompiledUniverse:
                             "modulation_data": meta.optimization_data.modulation_data,
                             "affordance_position_map": _serialize_affordance_positions(meta.optimization_data.affordance_position_map),
                         },
-                        "vfs_observation_fields": [field.model_dump() for field in meta.vfs_observation_fields],
                         "observation_schema_hash": meta.observation_schema_hash,
                         "vfs_variables": [var.model_dump() for var in meta.vfs_variables],
                         "variable_schema_hash": meta.variable_schema_hash,
-                        "token_spec": _serialize_token_spec(meta.token_spec),
-                        "token_type_schema_hash": meta.token_type_schema_hash,
-                        "layout_hash": meta.layout_hash,
                         "token_advisories": list(meta.token_advisories),
                     }
                     for name, meta in self.all_levels.items()
@@ -561,10 +536,9 @@ class CompiledUniverse:
                     training_hash=_required_field(meta, f"all_levels.{name}.training_hash"),
                     curriculum=level_curriculum,
                     training=level_training,
-                    observation_spec=_observation_spec_from_plain(meta["observation_spec"]),
-                    observation_activity=_observation_activity_from_plain(
-                        _required_mapping(meta, f"all_levels.{name}.observation_activity")
-                    ),
+                    token_spec=_token_spec_from_plain(_required_field(meta, f"all_levels.{name}.token_spec")),
+                    token_type_schema_hash=_required_field(meta, f"all_levels.{name}.token_type_schema_hash"),
+                    layout_hash=_required_field(meta, f"all_levels.{name}.layout_hash"),
                     action_metadata=_action_space_metadata_from_plain(meta["action_metadata"], f"all_levels.{name}.action_metadata"),
                     runtime_action_space=level_runtime_action_space,
                     action_schema_hash=_required_field(meta, f"all_levels.{name}.action_schema_hash"),
@@ -580,15 +554,9 @@ class CompiledUniverse:
                         modulation_data=_required_field(level_opt_payload, f"all_levels.{name}.optimization_data_raw.modulation_data"),
                         affordance_position_map=level_affordance_position_map,
                     ),
-                    vfs_observation_fields=tuple(
-                        VfsObservationField(**field) for field in _required_field(meta, f"all_levels.{name}.vfs_observation_fields")
-                    ),
                     observation_schema_hash=_required_field(meta, f"all_levels.{name}.observation_schema_hash"),
                     vfs_variables=level_vfs_variables,
                     variable_schema_hash=_required_field(meta, f"all_levels.{name}.variable_schema_hash"),
-                    token_spec=_token_spec_from_plain(_required_field(meta, f"all_levels.{name}.token_spec")),
-                    token_type_schema_hash=_required_field(meta, f"all_levels.{name}.token_type_schema_hash"),
-                    layout_hash=_required_field(meta, f"all_levels.{name}.layout_hash"),
                     token_advisories=tuple(_required_field(meta, f"all_levels.{name}.token_advisories")),
                 )
 
@@ -629,9 +597,9 @@ class CompiledUniverse:
 
         return CompiledUniverse(
             metadata=UniverseMetadata(**payload["metadata"]),
-            observation_spec=_observation_spec_from_plain(payload["observation_spec"]),
-            observation_activity=_observation_activity_from_plain(_required_mapping(payload, "observation_activity")),
-            vfs_observation_fields=tuple(VfsObservationField(**field) for field in _required_field(payload, "vfs_observation_fields")),
+            token_spec=_token_spec_from_plain(_required_field(payload, "token_spec")),
+            token_type_schema_hash=_required_field(payload, "token_type_schema_hash"),
+            layout_hash=_required_field(payload, "layout_hash"),
             observation_schema_hash=_required_field(payload, "observation_schema_hash"),
             vfs_variables=top_vfs_variables,
             variable_schema_hash=_required_field(payload, "variable_schema_hash"),
@@ -669,7 +637,6 @@ class CompiledUniverse:
                 else None
             ),
             effects_schema=_required_field(payload, "effects_schema"),
-            effect_observation_slots=_required_field(payload, "effect_observation_slots"),
             vfs_expression_schema=_required_field(payload, "vfs_expression_schema"),
             vfs_history_spec=_required_field(payload, "vfs_history_spec"),
             vfs_evaluation_marks=(
@@ -677,10 +644,6 @@ class CompiledUniverse:
                 if _required_field(payload, "vfs_evaluation_marks") is not None
                 else None
             ),  # Convert lists back to sets
-            vfs_observation_spec=_vfs_observation_spec_from_plain(_required_field(payload, "vfs_observation_spec")),
-            token_spec=_token_spec_from_plain(_required_field(payload, "token_spec")),
-            token_type_schema_hash=_required_field(payload, "token_type_schema_hash"),
-            layout_hash=_required_field(payload, "layout_hash"),
             token_advisories=tuple(_required_field(payload, "token_advisories")),
             experiment_dir=None if _required_field(payload, "experiment_dir") is None else Path(payload["experiment_dir"]),
             drive_hash=_required_field(payload, "drive_hash"),
@@ -812,22 +775,6 @@ def _deserialize_affordance_positions(payload: dict[str, Any]) -> dict[str, torc
     return restored
 
 
-def _observation_spec_from_plain(payload: Mapping[str, Any]) -> ObservationSpec:
-    return ObservationSpec(
-        total_dims=payload["total_dims"],
-        encoding_version=payload["encoding_version"],
-        fields=tuple(ObservationField(**field) for field in payload["fields"]),
-    )
-
-
-def _observation_activity_from_plain(payload: Mapping[str, Any]) -> ObservationActivity:
-    return ObservationActivity(
-        active_mask=tuple(_required_field(payload, "observation_activity.active_mask")),
-        group_slices={k: slice(v[0], v[1]) for k, v in _required_field(payload, "observation_activity.group_slices").items()},
-        active_field_uuids=tuple(_required_field(payload, "observation_activity.active_field_uuids")),
-    )
-
-
 def _action_space_metadata_from_plain(payload: Mapping[str, Any], field_name: str = "action_space_metadata") -> ActionSpaceMetadata:
     return ActionSpaceMetadata(
         total_actions=_required_field(payload, f"{field_name}.total_actions"),
@@ -854,28 +801,6 @@ def _meter_metadata_from_plain(payload: Mapping[str, Any], field_name: str = "me
 
 def _affordance_metadata_from_plain(payload: Mapping[str, Any], field_name: str = "affordance_metadata") -> AffordanceMetadata:
     return AffordanceMetadata(affordances=tuple(AffordanceInfo(**entry) for entry in _required_field(payload, f"{field_name}.affordances")))
-
-
-def _vfs_observation_spec_from_plain(payload: Mapping[str, Any] | None) -> VFSObservationSpec | None:
-    if payload is None:
-        return None
-    return VFSObservationSpec(
-        global_vfs_dim=_required_field(payload, "vfs_observation_spec.global_vfs_dim"),
-        agent_vfs_dim=_required_field(payload, "vfs_observation_spec.agent_vfs_dim"),
-        item_vfs_dim=_required_field(payload, "vfs_observation_spec.item_vfs_dim"),
-        global_vars=tuple(_required_field(payload, "vfs_observation_spec.global_vars")),
-        agent_vars=tuple(_required_field(payload, "vfs_observation_spec.agent_vars")),
-        item_profile_vars={
-            name: tuple(values) for name, values in _required_field(payload, "vfs_observation_spec.item_profile_vars").items()
-        },
-        item_vars_per_slot=_required_field(payload, "vfs_observation_spec.item_vars_per_slot"),
-        global_active_mask=tuple(_required_field(payload, "vfs_observation_spec.global_active_mask")),
-        agent_active_mask=tuple(_required_field(payload, "vfs_observation_spec.agent_active_mask")),
-        item_active_mask=tuple(_required_field(payload, "vfs_observation_spec.item_active_mask")),
-        max_items_per_agent=_required_field(payload, "vfs_observation_spec.max_items_per_agent"),
-        max_item_profiles=_required_field(payload, "vfs_observation_spec.max_item_profiles"),
-        max_tensor_elements=_required_field(payload, "vfs_observation_spec.max_tensor_elements"),
-    )
 
 
 def _serialize_token_spec(spec: TokenSpec | None) -> dict[str, Any] | None:

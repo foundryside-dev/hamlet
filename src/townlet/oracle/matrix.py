@@ -235,30 +235,40 @@ class RegisteredStreamDivergence:
         return frozenset(self.streams)
 
 
-# DIV-006 — unit 3 (hamlet-f0ed709ecf, PDR-0075): the `obs_vfs` block became one field per
-# exposed global/agent profile variable plus the `obs_item_slots` feature. MEASURED on both
-# profile packs by compiling the pre-cut tree (the oracle worktree at 4222a917) beside the
-# live tree: exactly these three DERIVED hashes move; `environment_hash` does not
-# (environment.yaml is untouched), and neither does anything else. `default_curriculum` and
-# the differential packs declare no profile variables, so nothing moves there and their
-# sixteen cells stay undeclared.
-_DIV006 = RegisteredHashDivergence(
-    register_ref="DIV-006",
-    hash_fields=(
-        "observation_schema_hash",
-        "variable_schema_hash",
-        "vfs_hash",
-    ),
-)
-# Which profile packs' FROZEN fixture drifts from its live pack, and under which register
-# entry. effects_smoke: the DIV-006 cut requires `semantic_type` on global/agent profile
-# variables, so its fixture is held at the pre-cut vfs_profiles.yaml schema. items_smoke:
-# DIV-007 — levels/*/brain.yaml became a loaded surface (PDR-0027) and the live pack's
-# stale, never-loaded L0_smoke stub was deleted; the fixture keeps it and the old loader
-# ignores it. A pack absent here must be a byte copy of its fixture (a declaration with
-# nothing to declare is a stale entry — test_pack_freeze pins both directions).
+# DIV-006 is RETIRED at the token cut (2026-08-26, unit 3 Task 11). It declared the
+# `obs_vfs` split into one `ObservationField` per exposed profile variable plus the
+# `obs_item_slots` feature — a NEW-SIDE surface the cut deleted outright (`ObservationSpec`,
+# `ObservationField`, `VFSObservationSpec` are gone). Its three declared hashes still move on
+# the profile cells, but for DIV-008's cause now, and DIV-008 declares them uniformly on all
+# twenty cells. Re-declaring them under a retired entry would certify a surface that no
+# longer exists. See docs/oracle/known-divergences.md#div-006.
+#
+# Which packs' FROZEN fixture drifts from its live pack, and under which register entry.
+# MEASURED at HEAD (`pack_drift`, 2026-08-26):
+#   configs/default_curriculum           differing: vfs_profiles.yaml     -> DIV-008
+#   configs/differential/div003_*  (×3)  differing: vfs_profiles.yaml     -> DIV-008
+#   configs/test/effects_smoke           differing: effects.yaml, vfs_profiles.yaml -> DIV-008
+#   configs/test/items_smoke             only_in_frozen: levels/L0_smoke/brain.yaml (DIV-007)
+#                                        + differing: effects.yaml (DIV-008)
+# items_smoke keeps DIV-007 because that entry survives and still describes the stale
+# never-loaded brain.yaml stub; DIV-008's entry enumerates the complete per-pack delta,
+# including the row DIV-007 owns, so no drift is blessed by a declaration that does not
+# describe it. effects_smoke moves to DIV-008 because DIV-006 (which held its fixture at the
+# pre-`semantic_type` vfs_profiles schema) is retired. A pack absent here must be a byte copy
+# of its fixture (a declaration with nothing to declare is a stale entry — test_pack_freeze
+# pins both directions).
+#
+# COST, recorded not hidden (DIV-004's own): `pack_divergence` is a BOOLEAN gate. Declaring
+# it blesses arbitrary drift between fixture and live pack, not merely the rows above — so
+# the pack-freeze guard built at 49bdf28e is armed on ZERO of the twenty cells for as long
+# as DIV-008 is open. That is the same cost DIV-004 recorded, and it dissolves the same way:
+# a forward move of the oracle tag.
 _PACK_DIVERGENCE = {
-    "configs/test/effects_smoke": "DIV-006",
+    "configs/default_curriculum": "DIV-008",
+    "configs/differential/div003_scaled": "DIV-008",
+    "configs/differential/div003_cubic_partial": "DIV-008",
+    "configs/differential/div003_rect": "DIV-008",
+    "configs/test/effects_smoke": "DIV-008",
     "configs/test/items_smoke": "DIV-007",
 }
 
@@ -301,19 +311,56 @@ _DIV010 = RegisteredHashDivergence(
     hash_fields=("variable_schema_hash", "vfs_hash"),
 )
 
-# DIV-011 (2026-08-25, unit 3 Task 7, hamlet-fa6bb6da4a): the TokenSpec artifact is
-# compiled ALONGSIDE the ObservationSpec family and stamps two NEW hashes on every
-# compiled universe — `token_type_schema_hash` (transfer contract) and `layout_hash`
-# (flat-net contract). The oracle side predates the fields (old reads `<absent>`), so
-# they surface as movers on every cell; everything pre-existing is byte-identical
-# (measured: BASE-vs-tree compile probe over all five default_curriculum levels, 95
-# pre-existing hash lines unchanged). Neither field enters config_hash or the vfs_hash
-# composition — that movement is Task 10's, registered as DIV-008. Uniform two-field set
-# on all blocks, DIV-010's pattern: the emission is unconditional.
-_DIV011 = RegisteredHashDivergence(
-    register_ref="DIV-011",
-    hash_fields=("token_type_schema_hash", "layout_hash"),
+# DIV-011 is RETIRED into DIV-008 at the token cut (2026-08-26, unit 3 Task 11) — its own
+# entry pre-registered exactly that condition ("retire when DIV-008 lands … the token hashes
+# become part of that registered surface"). `token_type_schema_hash` and `layout_hash` are
+# not a fact about an ALONGSIDE emission any more; they are the token observation ABI's own
+# provenance, which is DIV-008's surface. Their declaration moves into `_DIV008_HASH` below,
+# unchanged in content.
+
+# DIV-008 (2026-08-26, unit 3 Task 10's cut, hamlet-fa6bb6da4a): the TokenSpec replaces the
+# fixed-width superset + activity-mask ABI. MEASURED at HEAD by the DIV-009 worktree method
+# — the oracle worktree at 4222a917 reading oracle_fixtures/<pack> versus the live tree
+# reading configs/<pack>, which is exactly what the harness itself compares — on every one
+# of the twenty cells. FIVE fields move, uniformly on all three blocks:
+#
+#   observation_schema_hash  redefined over the TokenSpec (spec §5); the artifact it was
+#                            computed over no longer exists in its old form.
+#   variable_schema_hash     a DIFFERENT deletion from the headline one, and easy to miss:
+#                            `build_vfs_variables` stopped minting the engine-side
+#                            observation primitives, so the canonical VariableDef list loses
+#                            14 entries on default_curriculum (obs_grid_encoding,
+#                            obs_local_window, obs_position, obs_velocity, eight
+#                            obs_meter_*, obs_affordance_at_position, obs_temporal).
+#                            Overlaps DIV-010's declaration, legally: two causes genuinely
+#                            move this hash (DIV-010's tick injection ADDS an entry, this
+#                            cut REMOVES fourteen), which is the DIV-010 composing shape,
+#                            not the DIV-009 narrowing shape.
+#   vfs_hash                 composite: slots 1 and 2 of compute_vfs_hash both move.
+#   token_type_schema_hash   the transfer contract; `<absent>` on the oracle side.
+#   layout_hash              the flat-net contract; `<absent>` on the oracle side.
+#                            (Both inherited from the retired DIV-011.)
+#
+# Uniform across blocks, DIV-010's and DIV-011's pattern rather than DIV-009's: the cut is
+# unconditional — it redefines the observation ABI for every compiled universe, whatever the
+# pack declares.
+_DIV008_HASH = RegisteredHashDivergence(
+    register_ref="DIV-008",
+    hash_fields=(
+        "observation_schema_hash",
+        "variable_schema_hash",
+        "vfs_hash",
+        "token_type_schema_hash",
+        "layout_hash",
+    ),
 )
+# The THIRD declaration axis, and the one this entry exists for: the `obs` stream diverges
+# on every cell (tokens change the observation's shape and content), while `actions`,
+# `dones` and `rewards` stay byte-exact — undeclared, so `compare_traces` holds them to the
+# same byte-exact bar every undeclared stream gets. That is spec §5's adjudication criterion
+# stated as a machine-checked declaration: tokens change what agents see, never what the
+# world does.
+_DIV008_STREAM = RegisteredStreamDivergence(register_ref="DIV-008", streams=("obs",))
 
 
 @dataclass(frozen=True)
@@ -379,23 +426,33 @@ def default_cells() -> tuple[Cell, ...]:
     of the live packs and no cell declared anything, so exit 0 meant old and
     new AGREE (PDR-0074). That is no longer true: six Phase B landings after
     the tag moved provenance with no register entry (DIV-009, hamlet-5cc071f4b6),
-    and unit 2 ("authored temporality") then added its own compiler-surface
-    movement (DIV-010, hamlet-fa6bb6da4a) — the engine tick VariableDef
-    injected into every compiled universe. All sixteen standing + differential
-    cells now bind `(_DIV009_STANDING, _DIV010, _DIV011)` (hash-only:
-    `actions_hash`, `pack_brain_hash`, `transition_graph_hash`, `vfs_hash` from
-    DIV-009, plus `variable_schema_hash`, `vfs_hash` from DIV-010 — `vfs_hash`
-    moves for both causes but is declared once per composing entry, per
-    hamlet-fa6bb6da4a's union-exact rule — plus `token_type_schema_hash`,
-    `layout_hash` from DIV-011: unit 3 Task 7's alongside TokenSpec emission,
-    absent on the oracle side by construction) and the four profile-variable
-    cells bind `(_DIV006, _DIV009_PROFILE, _DIV010, _DIV011)` — DIV-006's
-    obs-side split (PDR-0075), DIV-009's disjoint field set, and DIV-010's /
-    DIV-011's uniform two-field sets. Exit 0 now means "everything diverged
-    exactly as registered", DIV-004's cost restated twice at this tag; see
-    docs/oracle/known-divergences.md#div-009, #div-010 and #div-011.
-    Declarations return only when a register entry needs them (PDR-0037
-    record-then-bind).
+    unit 2 ("authored temporality") added the engine tick VariableDef (DIV-010),
+    and unit 3's token cut replaced the observation ABI outright (DIV-008).
+
+    Every one of the twenty cells now binds DIV-008 twice over — once as a
+    hash declaration (`_DIV008_HASH`, five fields, uniform) and once as a
+    STREAM declaration (`_DIV008_STREAM`, `obs` alone). That pairing is what
+    makes spec §5 machine-checked rather than argued: the obs stream is
+    permitted to diverge and REQUIRED to, while `actions` / `dones` /
+    `rewards` are undeclared and therefore held byte-exact. DIV-008 is the
+    first entry to carry both shapes under one register_ref, which
+    `compare_traces` labels `"hash+stream"`.
+
+    Standing and differential cells bind `(_DIV009_STANDING, _DIV010,
+    _DIV008_HASH)`; profile cells bind `(_DIV009_PROFILE, _DIV010,
+    _DIV008_HASH)`. DIV-006 and DIV-011 are RETIRED into DIV-008 at this cut
+    (see their comments above) — DIV-006 because the new-side surface it
+    described was deleted, DIV-011 by its own pre-registered condition.
+    Overlapping fields between composing entries are legal where two causes
+    genuinely move one hash (`variable_schema_hash` under DIV-010 and DIV-008;
+    `vfs_hash` under DIV-009, DIV-010 and DIV-008); the union of every entry's
+    declared fields must still equal the observed movers EXACTLY, and each
+    entry's own fields must all move.
+
+    Exit 0 now means "everything diverged exactly as registered", DIV-004's
+    cost restated at this tag; see docs/oracle/known-divergences.md#div-008,
+    #div-009 and #div-010. Declarations return only when a register entry
+    needs them (PDR-0037 record-then-bind).
     """
     standing = tuple(
         Cell(
@@ -407,7 +464,9 @@ def default_cells() -> tuple[Cell, ...]:
                 seed=42,
                 device=device,
             ),
-            hash_divergences=(_DIV009_STANDING, _DIV010, _DIV011),
+            pack_divergence=_PACK_DIVERGENCE.get(_DEFAULT_PACK),
+            hash_divergences=(_DIV009_STANDING, _DIV010, _DIV008_HASH),
+            stream_divergence=_DIV008_STREAM,
         )
         for device in ("cpu", "cuda")
         for level in _DEFAULT_LEVELS
@@ -422,7 +481,9 @@ def default_cells() -> tuple[Cell, ...]:
                 seed=42,
                 device=device,
             ),
-            hash_divergences=(_DIV009_STANDING, _DIV010, _DIV011),
+            pack_divergence=_PACK_DIVERGENCE.get(f"configs/differential/{pack_dir}"),
+            hash_divergences=(_DIV009_STANDING, _DIV010, _DIV008_HASH),
+            stream_divergence=_DIV008_STREAM,
         )
         for device in ("cpu", "cuda")
         for pack_dir, level in _DIFFERENTIAL_PACKS
@@ -438,7 +499,8 @@ def default_cells() -> tuple[Cell, ...]:
                 device=device,
             ),
             pack_divergence=_PACK_DIVERGENCE.get(pack),
-            hash_divergences=(_DIV006, _DIV009_PROFILE, _DIV010, _DIV011),
+            hash_divergences=(_DIV009_PROFILE, _DIV010, _DIV008_HASH),
+            stream_divergence=_DIV008_STREAM,
         )
         for device in ("cpu", "cuda")
         for pack, level in _PROFILE_VARIABLE_PACKS

@@ -115,15 +115,23 @@ def bind_dynamic_slots(type_name: str, capacity: int, slot_indices: torch.Tensor
     if requested > capacity:
         raise TokenCapacityError(type_name, capacity, requested, source)
     slots = slot_indices.to(dtype=torch.long)
-    # Task 10: the .item()/torch.unique checks below force a device sync per dynamic
-    # type per publish — revisit (device-side check or amortization) when live item
-    # batches start flowing through this path (review Minor-5).
     if requested:
-        if int(slots.min().item()) < 0 or int(slots.max().item()) >= capacity:
-            raise ValueError(
-                f"Token type '{type_name}': slot index out of range [0, {capacity}) in {slots.tolist()} (source: {source})"
-            )
-        if int(torch.unique(slots).shape[0]) != requested:
+        # ONE device sync per dynamic type per publish (Task 10, review Minor-5): the
+        # range test and the duplicate test are both computed device-side and folded
+        # into a single scalar before the only `bool()`. The previous form paid two-to
+        # -three syncs (`min().item()`, `max().item()`, `torch.unique`) on every tick a
+        # live batch flowed. The `.tolist()` diagnostics are on the failure path only,
+        # where a sync no longer costs anything.
+        in_range = (slots >= 0) & (slots < capacity)
+        safe = slots.clamp(0, capacity - 1)
+        occupancy = torch.zeros(capacity, dtype=torch.long, device=slots.device)
+        occupancy.scatter_add_(0, safe, torch.ones_like(safe))
+        bad = (~in_range).any() | (occupancy > 1).any()
+        if bool(bad):
+            if not bool(in_range.all()):
+                raise ValueError(
+                    f"Token type '{type_name}': slot index out of range [0, {capacity}) in {slots.tolist()} (source: {source})"
+                )
             raise ValueError(
                 f"Token type '{type_name}': duplicate slot assignment in {slots.tolist()} (source: {source}).\n"
                 "  Rule: dynamic slot assignment is unique-slot writes only (spec §3)."
@@ -300,11 +308,19 @@ class ItemSlotBatch:
 
 @dataclass(frozen=True)
 class EffectSlotBatch:
-    """Active effect instances keyed by compiled effect token slot."""
+    """Active effect instances keyed by compiled effect token slot.
 
-    slot_indices: torch.Tensor  # [K] long
-    effect_indices: torch.Tensor  # [K] long — index into the declared effect catalog order
+    Effect content is PER WORLD, unlike items: `num_agents` is a batch of independent
+    worlds and the agent-scope effect store is keyed by world, so which declared effect
+    occupies a given slot differs per world. `effect_indices` and `active` are therefore
+    `[N, K]`; a slot inactive in a world publishes presence 0 with a zeroed payload,
+    exactly as an out-of-range item does.
+    """
+
+    slot_indices: torch.Tensor  # [K] long — compiled slots this batch writes
+    effect_indices: torch.Tensor  # [N, K] long — index into the declared effect catalog order
     remaining_fraction: torch.Tensor  # [N, K] float in [0, 1]
+    active: torch.Tensor  # [N, K] bool — is this slot occupied in this world
     owner_slot: torch.Tensor  # [K] long; -1 = not applicable
     source: str = "effect_manager"
 
@@ -318,7 +334,17 @@ class TokenPublishContext:
     positions: torch.Tensor | None = None  # [N, D] observer positions (substrate dtype)
     velocities: torch.Tensor | None = None  # [N, D] velocity features (bounded, caller's contract)
     meters: torch.Tensor | None = None  # [N, num_meters] meter state
-    affordance_positions: Mapping[str, torch.Tensor] | None = None  # affordance id -> [D]
+    # `[C, D]` in COMPILED SLOT ORDER, precomputed by the caller whenever the affordance
+    # layout changes — never per tick (Task 10, review Minor-4: affordance layouts are
+    # static between resets, and the per-tick Python loop + `torch.stack` this replaced
+    # was the measured cost). `D == 0` is legal and is the aspatial case (review Minor-8):
+    # the publisher then requires no observer positions at all.
+    affordance_positions: torch.Tensor | None = None
+    # `[C]` bool in compiled slot order: which declared affordances are DEPLOYED in this
+    # level. Capacity is the declared affordance count; an undeployed instance is padding
+    # and publishes presence 0 (the compiler's own ruling — `deployment.positions` are
+    # per-instance payload inputs, not extra capacity).
+    affordance_deployed: torch.Tensor | None = None
     vision_range: float | None = None  # None = full observability (pass-all)
     agent_slots: AgentSlotBatch | None = None
     item_slots: ItemSlotBatch | None = None
@@ -492,17 +518,26 @@ class AffordanceTokenPublisher:
     def publish(self, rows: torch.Tensor, ctx: TokenPublishContext) -> None:
         if self._schema.capacity == 0:
             return
-        # Task 10: the aspatial wiring (position_dim == 0) must still pass the
-        # position-less affordance mapping or this refusal fires — decide there
-        # whether the requirement relaxes for dim 0 (review Minor-8, second half).
-        _require_input(ctx.affordance_positions, "AffordanceTokenPublisher", "affordance_positions")
-        assert ctx.affordance_positions is not None
         dim = self._substrate.position_dim
+        capacity = self._schema.capacity
+        _require_input(ctx.affordance_deployed, "AffordanceTokenPublisher", "affordance_deployed")
+        assert ctx.affordance_deployed is not None
+        if tuple(ctx.affordance_deployed.shape) != (capacity,):
+            raise ValueError(
+                f"AffordanceTokenPublisher: affordance_deployed must be [{capacity}] in compiled slot order, "
+                f"got {tuple(ctx.affordance_deployed.shape)}"
+            )
         if dim > 0:
+            # `position_dim == 0` is aspatial: no observer positions and no entity
+            # positions exist, and requiring them would be a lie (review Minor-8).
             _require_input(ctx.positions, "AffordanceTokenPublisher", "positions")
-        missing = [ref for ref in self._slot_refs if ref not in ctx.affordance_positions]
-        if missing:
-            raise ValueError(f"AffordanceTokenPublisher: no runtime position for bound affordance(s) {missing}")
+            _require_input(ctx.affordance_positions, "AffordanceTokenPublisher", "affordance_positions")
+            assert ctx.affordance_positions is not None
+            if tuple(ctx.affordance_positions.shape) != (capacity, dim):
+                raise ValueError(
+                    f"AffordanceTokenPublisher: affordance_positions must be [{capacity}, {dim}] in compiled slot "
+                    f"order, got {tuple(ctx.affordance_positions.shape)}"
+                )
         n_interactions = len(INTERACTION_TYPE_VOCABULARY)
         rows[:, :, self._interaction0 : self._interaction0 + n_interactions] = self._interactions
         rows[:, :, self._pos_rank] = dim / MAX_POSITION_RANK
@@ -511,17 +546,16 @@ class AffordanceTokenPublisher:
         rows[:, :, self._count_lane] = self._counts
         if dim > 0:
             assert ctx.positions is not None
-            # Task 10: precompile this position tensor at wiring — affordance layouts
-            # are static per compiled universe; the per-tick rebuild is acceptable only
-            # while nothing live calls this path (review Minor-4).
-            entity_pos = torch.stack([torch.as_tensor(ctx.affordance_positions[ref]) for ref in self._slot_refs]).to(
-                device=rows.device
-            )
+            assert ctx.affordance_positions is not None
+            entity_pos = ctx.affordance_positions
             rows[:, :, self._pos0 : self._pos0 + dim] = self._substrate.normalize_positions(entity_pos)
             rows[:, :, self._ego0 : self._ego0 + dim] = self._substrate.egocentric_delta(ctx.positions, entity_pos)
             visible = self._substrate.visible(ctx.positions, entity_pos, ctx.vision_range)  # [N, C] bool
         else:
-            visible = torch.ones((rows.shape[0], self._schema.capacity), dtype=torch.bool, device=rows.device)
+            visible = torch.ones((rows.shape[0], capacity), dtype=torch.bool, device=rows.device)
+        # An undeployed declaration is padding, not a hidden entity: it is absent for
+        # every observer, in every world.
+        visible = visible & ctx.affordance_deployed.to(device=rows.device, dtype=torch.bool).unsqueeze(0)
         # Out of range => presence 0 AND payload zeroed (spec §3): an invisible token
         # must not leak its static identity.
         rows *= visible.to(dtype=rows.dtype).unsqueeze(-1)
@@ -663,16 +697,25 @@ class EffectTokenPublisher:
             return
         if self._static.shape[0] == 0:
             raise ValueError("EffectTokenPublisher has no declared effects but was handed live effect instances")
-        static = self._static.index_select(0, batch.effect_indices.to(dtype=torch.long))  # [K, W]
-        payload = torch.zeros((rows.shape[0], slots.shape[0], rows.shape[2]), dtype=rows.dtype, device=rows.device)
-        payload[:, :, self._static0 : self._static0 + static.shape[1]] = static
+        num_worlds, n_slots = rows.shape[0], slots.shape[0]
+        width = self._static.shape[1]
+        indices = batch.effect_indices.to(dtype=torch.long)
+        if tuple(indices.shape) != (num_worlds, n_slots):
+            raise ValueError(f"EffectTokenPublisher: effect_indices must be [{num_worlds}, {n_slots}], got {tuple(indices.shape)}")
+        static = self._static.index_select(0, indices.reshape(-1)).view(num_worlds, n_slots, width)
+        payload = torch.zeros((num_worlds, n_slots, rows.shape[2]), dtype=rows.dtype, device=rows.device)
+        payload[:, :, self._static0 : self._static0 + width] = static
         payload[:, :, self._remaining] = batch.remaining_fraction.to(dtype=rows.dtype).clamp(0.0, 1.0)
         applicable = batch.owner_slot >= 0
         payload[:, :, self._owner_slot] = (batch.owner_slot.clamp(min=0).to(dtype=rows.dtype) / self._owner_slot_capacity) * applicable.to(
             dtype=rows.dtype
         )
         payload[:, :, self._owner_applicable] = applicable.to(dtype=rows.dtype)
-        payload[:, :, 0] = 1.0
+        # A slot inactive in this world must not leak the static identity of whatever
+        # effect last occupied it (spec §3 presence ownership).
+        active = batch.active.to(device=rows.device, dtype=torch.bool)
+        payload *= active.to(dtype=rows.dtype).unsqueeze(-1)
+        payload[:, :, 0] = active.to(dtype=rows.dtype)
         rows[:, slots, :] = payload
 
 

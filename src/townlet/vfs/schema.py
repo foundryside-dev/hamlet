@@ -15,12 +15,9 @@ from typing import Any, Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
-from townlet.vfs.semantic_type import SemanticType
-
 __all__ = [
     "NormalizationSpec",
     "WriteSpec",
-    "ObservationField",
     "VariableDef",
     "VariableScope",
     "VFSScopeExtents",
@@ -319,76 +316,6 @@ class WriteSpec(BaseModel):
             if low > high:
                 raise ValueError("clamp lower bound must be <= upper bound")
         return self
-
-
-class ObservationField(BaseModel):
-    """Observation field specification.
-
-    Maps a variable to an observation field that will be exposed to agents
-    or other systems (like the VTC or brain compiler).
-
-    Examples:
-        # Scalar observation
-        ObservationField(
-            id="obs_energy",
-            source_variable="energy",
-            exposed_to=["agent"],
-            shape=[],
-        )
-
-        # Vector observation with normalization
-        ObservationField(
-            id="obs_position",
-            source_variable="position",
-            exposed_to=["agent"],
-            shape=[2],
-            normalization=NormalizationSpec(kind="minmax", min=[0,0], max=[7,7], clip=False),
-        )
-    """
-
-    model_config = ConfigDict(extra="forbid")
-
-    id: str = Field(
-        min_length=1,
-        description="Unique identifier for this observation field",
-    )
-
-    source_variable: str = Field(
-        min_length=1,
-        description="ID of the variable this observation reads from",
-    )
-
-    exposed_to: list[str] = Field(
-        min_length=1,
-        description="Who can observe this field (e.g., ['agent', 'acs', 'bac'])",
-    )
-
-    shape: list[int] = Field(
-        description="Shape of observation ([] for scalar, [N] for vector)",
-    )
-
-    normalization: NormalizationSpec | None = Field(
-        default=None,
-        description="Optional normalization to apply before exposing",
-    )
-
-    semantic_type: SemanticType = Field(
-        description=(
-            "Semantic group of this field in the observation vector — one member of the closed "
-            "vocabulary in townlet.vfs.semantic_type (PDR-0047). Required: it is part of the "
-            "field's identity (observation_schema_hash) and names its group slice, so it is never "
-            "defaulted."
-        ),
-    )
-
-    curriculum_active: bool = Field(
-        default=True,
-        description=(
-            "Whether this field is active in current curriculum level. "
-            "False indicates padding dimensions that should be masked out during training. "
-            "Used by structured encoders and RND to ignore inactive affordances/meters."
-        ),
-    )
 
 
 class VariableDef(BaseModel):

@@ -19,7 +19,11 @@ _DIGEST_BUFFER_SIZE = 1024 * 1024  # 1 MiB chunks keep memory bounded
 
 # WS-1 task 5: the single source of truth for the checkpoint payload format.
 # Previously hardcoded as a magic `3` at two sites in demo/runner.py.
-CHECKPOINT_FORMAT_VERSION = 3
+# 4: THE TOKEN CUT (unit 3 Task 10). `observation_field_uuids` and `observation_dim`
+# are DROPPED with their producer (the compiled ObservationSpec, deleted); token nets gate
+# on `token_type_schema_hash` and flat nets on `layout_hash`. A version-3 checkpoint
+# describes a different observation ABI entirely and refuses loudly (zero backcompat).
+CHECKPOINT_FORMAT_VERSION = 4
 
 logger = logging.getLogger(__name__)
 
@@ -40,10 +44,8 @@ def attach_universe_metadata(checkpoint: dict[str, Any], universe: CompiledUnive
     # D5. The only field separating two levels that collide on every content hash.
     # Stamped here; compared on resume by assert_checkpoint_identity (task 5).
     checkpoint["primary_level"] = universe.metadata.primary_level
-    checkpoint["observation_dim"] = universe.metadata.observation_dim
     checkpoint["action_dim"] = universe.metadata.action_count
     checkpoint["meter_count"] = universe.metadata.meter_count
-    checkpoint["observation_field_uuids"] = [field.uuid for field in universe.observation_spec.fields]
     checkpoint["observation_schema_hash"] = universe.observation_schema_hash
     checkpoint["drive_hash"] = universe.drive_hash
     checkpoint["curriculum_hash"] = universe.curriculum_hash
@@ -55,20 +57,10 @@ def attach_universe_metadata(checkpoint: dict[str, Any], universe: CompiledUnive
     # brain.yaml override) is stated at load time instead of discovered at runtime.
     checkpoint["pack_brain_hash"] = universe.pack_brain_hash
     checkpoint["vfs_hash"] = universe.vfs_hash
-    # Token-obs unit 3 Task 9 (ADDITIVE — every existing field above stays until the
-    # Task-10 cut): the two TokenSpec hashes. `token_type_schema_hash` is the token-net
-    # transfer contract (payload-schema contents, MAX_POSITION_RANK, VALUE_BLOCK_WIDTH
-    # via the feature names); `layout_hash` is the flat-net contract (capacities, slot
-    # bindings, total_dims). Gated by `assert_checkpoint_dimensions`'s new paths.
-    # Declared guard (task-9 review M5): unreachable from a 1.21+ compile-or-load path
-    # (both always carry the hashes; pre-1.21 artifacts refuse at deserialization) —
-    # it can fire only on a hand-built CompiledUniverse, and must refuse rather than
-    # write a checkpoint that no gate could ever check. Direct unit test pins it.
-    if universe.token_type_schema_hash is None or universe.layout_hash is None:
-        raise ValueError(
-            "Universe missing token_type_schema_hash/layout_hash; recompile the config pack "
-            "with the current compiler (COMPILED_SCHEMA_VERSION 1.21+)."
-        )
+    # The two TokenSpec hashes ARE the observation identity since the unit-3 cut.
+    # `token_type_schema_hash` is the token-net transfer contract (payload-schema
+    # contents, MAX_POSITION_RANK, VALUE_BLOCK_WIDTH via the feature names);
+    # `layout_hash` is the flat-net contract (capacities, slot bindings, total_dims).
     checkpoint["token_type_schema_hash"] = universe.token_type_schema_hash
     checkpoint["layout_hash"] = universe.layout_hash
 
@@ -81,14 +73,11 @@ def assert_checkpoint_token_type_schema_hash(checkpoint: Mapping[str, Any], univ
     ``load_state_dict``. Deliberately NOT the layout hash: capacities and slot
     bindings are entity variation, which a token net absorbs by design.
 
-    Used only by token nets — dead until the unit-3 Task-10 cut wires it into the
-    default identity chain for ``architecture.type='token_set'``.
+    Used by token nets (``architecture.type='token_set'``).
     """
     checkpoint_hash = checkpoint.get("token_type_schema_hash")
     if checkpoint_hash is None:
         raise ValueError("Checkpoint missing token_type_schema_hash; regenerate the checkpoint with the latest compiler.")
-    if universe.token_type_schema_hash is None:
-        raise ValueError("Universe missing token_type_schema_hash; recompile the config pack.")
     if checkpoint_hash != universe.token_type_schema_hash:
         raise ValueError(
             f"Checkpoint token_type_schema_hash mismatch: checkpoint={str(checkpoint_hash)[:16]}..., "
@@ -104,14 +93,12 @@ def assert_checkpoint_layout_hash(checkpoint: Mapping[str, Any], universe: Compi
     TokenSpec serialization-layout hash — type order, capacities, slot-binding
     identity, ``total_dims``. A flat reader's dims are positional, so a re-bound
     slot changes what a dim MEANS even at equal width; this hash is the contract
-    that catches it. Built ALONGSIDE the obs-dim/uuid gates this task; Task 10
-    retires those with their producer and leaves this as the flat contract.
+    that catches it. Since the unit-3 cut this is THE flat-reader observation gate:
+    the obs-dim and field-uuid legs retired with their producer.
     """
     checkpoint_hash = checkpoint.get("layout_hash")
     if checkpoint_hash is None:
         raise ValueError("Checkpoint missing layout_hash; regenerate the checkpoint with the latest compiler.")
-    if universe.layout_hash is None:
-        raise ValueError("Universe missing layout_hash; recompile the config pack.")
     if checkpoint_hash != universe.layout_hash:
         raise ValueError(
             f"Checkpoint layout_hash mismatch: checkpoint={str(checkpoint_hash)[:16]}..., "
@@ -130,16 +117,17 @@ def assert_checkpoint_dimensions(
 ) -> None:
     """Raise ValueError when checkpoint observation/action dims mismatch universe.
 
-    ``architecture_type`` (token-obs unit 3 Task 9, ADDITIVE) selects the gate family:
+    ``architecture_type`` selects the observation gate (unit-3 cut):
 
-    - ``None`` (every live caller today): exactly the pre-Task-9 behavior — obs-dim,
-      order-sensitive field-uuid, and the content-hash legs.
-    - ``"token_set"``: the token-net path — the obs-dim/uuid legs are REPLACED by the
-      TokenSpec type-schema hash gate (the transfer contract; capacities are entity
-      variation a token net absorbs). Dead until Task 10 wires the identity chain.
-    - any other named architecture (a flat reader): the obs-dim/uuid legs run as
-      today, PLUS the layout-hash gate — the capability Task 10 promotes when the
-      uuid producer dies.
+    - ``"token_set"``: the TokenSpec TYPE-SCHEMA hash — the transfer contract.
+      Capacities and slot bindings are entity variation a token net absorbs by design,
+      so they are deliberately excluded.
+    - anything else (a flat reader, ``None`` included): the LAYOUT hash — type order,
+      capacities, slot-binding identity, ``total_dims``. A flat reader's dims are
+      positional, so a re-bound slot changes what a dim MEANS at equal width.
+
+    The obs-dim and order-sensitive field-uuid legs are GONE: their producer (the
+    compiled ``ObservationSpec``) was deleted at the cut.
 
     Raises:
         ValueError: If universe is None or dimensions mismatch
@@ -155,23 +143,7 @@ def assert_checkpoint_dimensions(
     if architecture_type == "token_set":
         assert_checkpoint_token_type_schema_hash(checkpoint, universe)
     else:
-        obs_dim = checkpoint.get("observation_dim")
-        if obs_dim is not None and obs_dim != universe.metadata.observation_dim:
-            raise ValueError(f"Checkpoint observation_dim mismatch: checkpoint={obs_dim}, current={universe.metadata.observation_dim}")
-
-        expected_uuids = [field.uuid for field in universe.observation_spec.fields]
-        checkpoint_uuids = checkpoint.get("observation_field_uuids")
-        if checkpoint_uuids is None:
-            raise ValueError("Checkpoint missing observation_field_uuids; regenerate the checkpoint with the latest compiler.")
-        # MED-18: UUID comparison is order-sensitive by design - field order matters for observation encoding
-        # If UUIDs match but order differs, the checkpoint is incompatible (dimension mapping would be wrong)
-        if list(checkpoint_uuids) != expected_uuids:
-            raise ValueError(
-                "Checkpoint observation field UUIDs mismatch current universe specification. "
-                "This comparison is order-sensitive - field ordering must match exactly."
-            )
-        if architecture_type is not None:
-            assert_checkpoint_layout_hash(checkpoint, universe)
+        assert_checkpoint_layout_hash(checkpoint, universe)
 
     # CRIT-06: Validate drive_hash to ensure reward function consistency
     checkpoint_drive_hash = checkpoint.get("drive_hash")

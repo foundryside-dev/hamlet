@@ -913,9 +913,8 @@ def _serialize_vfs_profiles(profiles: CompiledVFSProfiles) -> dict[str, Any]:
 def _deserialize_compiled_variable(var: dict[str, Any]) -> Any:
     """Rebuild one CompiledVariable, reconstructing its expression AST."""
     from townlet.vfs.profiles import CompiledVariable
-    from townlet.world.expression import ExpressionParser
-
     from townlet.vfs.schema import NormalizationSpec
+    from townlet.world.expression import ExpressionParser
 
     raw_normalization = var.get("normalization")
     return CompiledVariable(

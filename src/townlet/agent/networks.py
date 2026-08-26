@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import math
+from collections.abc import Mapping
 from typing import TYPE_CHECKING, NamedTuple, cast
 
 import torch
@@ -11,7 +11,6 @@ import torch.nn.functional as F  # noqa: N812
 from torch.nn.attention import SDPBackend, sdpa_kernel
 
 if TYPE_CHECKING:
-    from townlet.universe.dto import ObservationActivity, ObservationSpec
     from townlet.universe.dto.token_spec import TokenSpec
 
 
@@ -54,31 +53,6 @@ class SimpleQNetwork(nn.Module):
         return cast(torch.Tensor, self.net(x))
 
 
-def recurrent_vision_window_side(observation_spec: ObservationSpec) -> int:
-    """The side length of the square local-vision window the recurrent encoder convolves over.
-
-    Read from the compiled field whose FEATURE is `local_window` — whatever the compiler named
-    it — never from a field literally called `obs_local_window` (PDR-0045). Returns 1 when the
-    spec has no window (a full-observability universe): the recurrent network is then not the
-    architecture in use, and 1 is the value the population API has always taken for "none".
-
-    The square-root is the recurrent encoder's own assumption — `RecurrentSpatialQNetwork`
-    reshapes the window to `[1, side, side]` for `Conv2d` — so it lives beside that encoder.
-    A window that is not a perfect square (a cubic partial-vision substrate) is a defect
-    against THIS encoder, and it says so rather than truncating.
-    """
-    window = observation_spec.get_single_field_by_feature("local_window")
-    if window is None or window.dims <= 0:
-        return 1
-    side = int(math.sqrt(window.dims))
-    if side * side != window.dims:
-        raise ValueError(
-            f"Local-window observation field '{window.name}' has dims={window.dims}, which is not a "
-            "perfect square; RecurrentSpatialQNetwork's Conv2d vision encoder needs a square window."
-        )
-    return side
-
-
 class RecurrentSpatialQNetwork(nn.Module):
     """
     Recurrent Spatial Q-Network for partial observability (Level 2 POMDP).
@@ -107,8 +81,11 @@ class RecurrentSpatialQNetwork(nn.Module):
         num_affordance_types: int,
         enable_temporal_features: bool,
         hidden_dim: int,
-        observation_spec: ObservationSpec,
-        observation_activity: ObservationActivity,
+        grid_slice: slice,
+        meters_slice: slice,
+        affordance_slice: slice,
+        position_slice: slice | None = None,
+        temporal_slice: slice | None = None,
         temporal_embed_dim: int = 16,
     ):
         """
@@ -121,17 +98,19 @@ class RecurrentSpatialQNetwork(nn.Module):
             bars_dim: OBSERVED width of the meter block. Not the meter COUNT — the two differ
                 whenever a meter declares a widening normalization (cyclical_sin_cos observes 2
                 dims, one_hot observes its category count). Read it from
-                observation_activity.group_slices["bars"], never from a meter count.
+                the caller's bars group slice, never from a meter count.
             num_affordance_types: Number of affordance types
             enable_temporal_features: Whether to expect temporal features
             hidden_dim: LSTM hidden dimension (typically 256)
-            observation_spec: Compiled observation layout. REQUIRED — the network
+            grid_slice: Local-window block slice. REQUIRED — the network
                 addresses every input block through it. It was previously
                 `= None`, which let the network construct and then raise on the
                 first forward pass; a parameter the object cannot function
                 without is not optional (No-Defaults Principle).
-            observation_activity: Compiled per-level activity. REQUIRED — carries
-                `group_slices["bars"]`, the only source for the meter block.
+            meters_slice: Meter (bars) block slice. REQUIRED.
+            affordance_slice: Affordance block slice. REQUIRED.
+            position_slice: Position block slice, or None when the substrate is aspatial.
+            temporal_slice: Temporal block slice, or None when temporal is inactive.
 
         Note (PDR-002):
             All network architecture parameters must be explicitly specified.
@@ -214,47 +193,19 @@ class RecurrentSpatialQNetwork(nn.Module):
             nn.Linear(128, action_dim),
         )
 
-        # Observation-spec-driven slicing (v2.1 pipeline).
+        # Input-block slicing, given EXPLICITLY by the caller.
         #
-        # The meter block is addressed through `observation_activity.group_slices["bars"]`,
-        # NOT by a field literally named `obs_meters` — there is no such field any more, the
-        # bars group is N per-meter fields (PDR-0054 ruling 1). That also removes the
-        # PDR-0045 name-branch this loop used to carry.
-        #
-        # The `except Exception: self._use_observation_spec = False` that wrapped this block
-        # is gone with it. It converted "I cannot find the meter block" into "silently fall
-        # back", and the fallback path then raised in forward() with a message about slicing
-        # rather than about the missing group. A missing bars group is a defect; it fails here.
-        self._grid_slice: slice | None = None
-        self._position_slice: slice | None = None
-        self._meters_slice: slice | None = None
-        self._affordance_slice: slice | None = None
-        self._temporal_slice: slice | None = None
-
-        # The other blocks are located by the compiled field's declared FEATURE — what
-        # fills it — never by its name (PDR-0045; WS-4 unit 4). A field of feature
-        # `local_window` is the window whatever the compiler called it.
-        def _slice_of(feature: str) -> slice | None:
-            found = observation_spec.get_single_field_by_feature(feature)
-            return slice(found.start_index, found.end_index) if found is not None else None
-
-        self._grid_slice = _slice_of("local_window")
-        self._position_slice = _slice_of("position")
-        self._affordance_slice = _slice_of("affordance_at_position")
-        self._temporal_slice = _slice_of("temporal")
-
-        self._meters_slice = observation_activity.group_slices.get("bars")
-
-        if self._grid_slice is None or self._meters_slice is None or self._affordance_slice is None:
-            raise ValueError(
-                "RecurrentSpatialQNetwork requires the local-window, bars and affordance blocks to be "
-                "locatable in the compiled observation.\n"
-                f"  local_window feature: {'found' if self._grid_slice else 'MISSING'}\n"
-                f"  bars group slice: {'found' if self._meters_slice else 'MISSING'}\n"
-                f"  affordance_at_position feature: {'found' if self._affordance_slice else 'MISSING'}\n"
-                "  Rule: the bars block comes from observation_activity.group_slices['bars']; the "
-                "others from the fields' declared feature (townlet.universe.dto.observation_feature)."
-            )
+        # These used to be derived from the compiled `ObservationSpec` / `ObservationActivity`,
+        # which the unit-3 token cut deleted: the raster grid, local window, position,
+        # affordance-at-position and temporal blocks no longer exist in any observation. The
+        # network is retained for its BPTT machinery and dies with the unit-6 sweep; the
+        # `recurrent` factory branch refuses, naming unit 4 as the landing for a token-aware
+        # recurrent/attention path.
+        self._grid_slice: slice = grid_slice
+        self._position_slice: slice | None = position_slice
+        self._meters_slice: slice = meters_slice
+        self._affordance_slice: slice = affordance_slice
+        self._temporal_slice: slice | None = temporal_slice
 
     def forward(
         self,
@@ -833,7 +784,7 @@ class StructuredQNetwork(nn.Module):
     """
     Structured Q-Network with group encoders for semantic observation groups.
 
-    Uses ObservationActivity to identify semantic groups (spatial, bars, affordances, temporal, custom)
+    Uses caller-given group slices for semantic groups (spatial, bars, affordances, temporal, custom)
     and processes each group with its own encoder MLP before combining for Q-value prediction.
 
     Architecture:
@@ -849,7 +800,7 @@ class StructuredQNetwork(nn.Module):
         self,
         obs_dim: int,
         action_dim: int,
-        observation_activity: ObservationActivity,
+        group_slices: Mapping[str, slice],
         group_embed_dim: int = 32,
         q_head_hidden_dim: int = 128,
     ):
@@ -859,7 +810,7 @@ class StructuredQNetwork(nn.Module):
         Args:
             obs_dim: Total observation dimension
             action_dim: Number of actions
-            observation_activity: ObservationActivity with group_slices
+            group_slices: Semantic group name -> slice into the observation
             group_embed_dim: Embedding dimension for each group encoder (default 32)
             q_head_hidden_dim: Hidden dimension for final Q-head MLP (default 128)
 
@@ -869,14 +820,14 @@ class StructuredQNetwork(nn.Module):
         super().__init__()
         self.obs_dim = obs_dim
         self.action_dim = action_dim
-        self.observation_activity = observation_activity
+        self.group_slices = dict(group_slices)
         self.group_embed_dim = group_embed_dim
 
         # Create encoder for each semantic group
         self.group_encoders = nn.ModuleDict()
         total_embed_dim = 0
 
-        for group_name, group_slice in observation_activity.group_slices.items():
+        for group_name, group_slice in self.group_slices.items():
             group_size = group_slice.stop - group_slice.start
 
             # Skip empty groups
@@ -914,7 +865,7 @@ class StructuredQNetwork(nn.Module):
         group_embeddings = []
 
         for group_name, encoder in self.group_encoders.items():
-            group_slice = self.observation_activity.group_slices[group_name]
+            group_slice = self.group_slices[group_name]
             group_obs = obs[:, group_slice]
             group_embed = encoder(group_obs)
             group_embeddings.append(group_embed)

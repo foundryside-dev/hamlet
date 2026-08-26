@@ -1,13 +1,9 @@
 version: '1.0'
-description: set_encoder smoke pack — the first pack that DRIVES architecture.type set_encoder (hamlet-fa6bb6da4a)
+description: token-set smoke pack — the live token_set exerciser over the compiled TokenSpec (token-obs unit 3, hamlet-fa6bb6da4a)
 architecture:
-  type: set_encoder
-  set_encoder:
-    token_field_name: need_tokens
-    max_tokens: 4
-    token_dim: 3
+  type: token_set
+  token_set:
     token_embed_dim: 16
-    base_hidden_dim: 32
     q_head_hidden_dim: 64
     aggregator:
       type: mean

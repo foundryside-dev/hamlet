@@ -27,7 +27,6 @@ from townlet.vfs.registry import DynamicVariableMutation, VariableRegistry, VFSR
 from townlet.vfs.relational import canonical_l5_relational_variables
 from townlet.vfs.schema import (
     NormalizationSpec,
-    ObservationField,
     VariableDef,
     WriteSpec,
 )
@@ -108,7 +107,6 @@ __all__ = [
     "DynamicVariableMutation",
     "DynamicNeedTokenLayout",
     "NormalizationSpec",
-    "ObservationField",
     "VariableDef",
     "VariableRegistry",
     "TransitionPhaseGraph",

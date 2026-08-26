@@ -1,13 +1,9 @@
 version: '1.0'
 description: L1_attention level override — the attention aggregator authored in config (PDR-0109 Phase B unit 1)
 architecture:
-  type: set_encoder
-  set_encoder:
-    token_field_name: need_tokens
-    max_tokens: 4
-    token_dim: 3
+  type: token_set
+  token_set:
     token_embed_dim: 16
-    base_hidden_dim: 32
     q_head_hidden_dim: 64
     aggregator:
       type: attention

@@ -31,32 +31,15 @@ from townlet.training.checkpoint_utils import TokenRosterReport, load_token_netw
 from townlet.training.replay_buffer import ReplayBuffer
 from townlet.training.sequential_replay_buffer import SequentialReplayBuffer
 from townlet.training.state import BatchedAgentState, CurriculumDecision, PopulationCheckpoint, RewardTensor
+from townlet.universe.token_hashes import compute_token_layout_hash
 
 if TYPE_CHECKING:
     from townlet.environment.vectorized_env import VectorizedHamletEnv
-    from townlet.universe.dto import ObservationActivity
 
 _logger = logging.getLogger(__name__)
 
 EpisodeContainer = dict[str, list[torch.Tensor]]
 
-
-def _bars_observation_width(observation_activity: ObservationActivity) -> int:
-    """The compiled width of the meter block, addressed by semantic group rather than name.
-
-    This is the observation-side quantity a meter-encoder layer must be sized by. It equals
-    the meter count only while every meter observes one dimension; a meter declaring
-    `cyclical_sin_cos` observes two and `one_hot` observes its category count.
-    """
-    bars = observation_activity.group_slices.get("bars")
-    if bars is None:
-        raise ValueError(
-            "The compiled observation declares no 'bars' semantic group, so the meter block "
-            "cannot be located.\n"
-            "  Rule: meters are emitted as bars-semantic observation fields; a universe with "
-            "meters must produce a bars group."
-        )
-    return int(bars.stop) - int(bars.start)
 
 
 class VectorizedPopulation(PopulationManager):
@@ -90,7 +73,7 @@ class VectorizedPopulation(PopulationManager):
         Initialize vectorized population.
 
         Args:
-            env: Vectorized environment (must have observation_spec attribute)
+            env: Vectorized environment (must have a compiled `token_spec`)
             curriculum: Curriculum manager
             exploration: Exploration strategy
             agent_ids: List of agent identifiers
@@ -117,13 +100,14 @@ class VectorizedPopulation(PopulationManager):
                 "See docs/config-schemas/brain.md for examples."
             )
 
-        # ✅ POP-005: Validate observation_spec exists on env (no silent fallback)
-        if not hasattr(env, "observation_spec") or env.observation_spec is None:
+        # The compiled token artifact is the observation ABI (unit-3 cut). It is required
+        # and set by VectorizedHamletEnv from the compiled universe; no silent fallback.
+        if getattr(env, "token_spec", None) is None:
             raise ValueError(
-                "env.observation_spec is required. Environment must have a valid observation_spec "
+                "env.token_spec is required. The environment must carry the compiled TokenSpec "
                 "from the compiled universe. This is set automatically by VectorizedHamletEnv."
             )
-        self.observation_spec = env.observation_spec
+        self.token_spec = env.token_spec
 
         self.env = env
         self.curriculum = curriculum
@@ -164,7 +148,6 @@ class VectorizedPopulation(PopulationManager):
         self._obs_dim = obs_dim
 
         # Build network using DRY helper (POP-001)
-        # observation_spec comes from self.observation_spec (validated above)
         self.q_network: nn.Module = self._build_network(brain_config, obs_dim, action_dim, env, vision_window_size).to(device)
 
         # Set is_recurrent flag from brain_config
@@ -387,8 +370,6 @@ class VectorizedPopulation(PopulationManager):
         Returns:
             Constructed network module (not yet moved to device)
 
-        Note:
-            For recurrent networks, uses self.observation_spec (validated in __init__).
         """
         arch = brain_config.architecture
         if arch.type == "feedforward":
@@ -399,19 +380,14 @@ class VectorizedPopulation(PopulationManager):
                 action_dim=action_dim,
             )
         elif arch.type == "recurrent":
-            assert arch.recurrent is not None, "recurrent config must be present"
-            return NetworkFactory.build_recurrent(
-                config=arch.recurrent,
-                action_dim=action_dim,
-                window_size=vision_window_size,
-                position_dim=env.substrate.position_dim,
-                # The OBSERVED bars width, from the compiled artifact. This passed
-                # env.meter_count — a STATE count — which held only while every meter
-                # observed exactly one dimension (PDR-0054 W6).
-                bars_dim=_bars_observation_width(env.observation_activity),
-                num_affordance_types=env.num_affordance_types,
-                observation_spec=self.observation_spec,  # POP-005: Always use validated spec
-                observation_activity=env.observation_activity,
+            raise ValueError(
+                "architecture.type='recurrent' has no buildable network after the unit-3 token cut.\n"
+                "  Reason: RecurrentSpatialQNetwork addresses a local-window / position / "
+                "affordance-at-position / temporal RASTER, and the token observation has none of "
+                "those blocks — every one was deleted with the fixed-width superset ABI.\n"
+                "  Landing: a token-aware recurrent/attention brain is unit 4. Until then declare "
+                "`feedforward` or `token_set`. (No shipped pack declares `recurrent`; POMDP levels "
+                "run token-flat, which is the same architecture they ran before the cut.)"
             )
         elif arch.type == "dueling":
             assert arch.dueling is not None, "dueling config must be present"
@@ -421,30 +397,28 @@ class VectorizedPopulation(PopulationManager):
                 action_dim=action_dim,
             )
         elif arch.type == "set_encoder":
-            assert arch.set_encoder is not None, "set_encoder config must be present"
-            return NetworkFactory.build_set_encoder(
-                config=arch.set_encoder,
-                obs_dim=obs_dim,
-                action_dim=action_dim,
-                observation_spec=self.observation_spec,
+            raise ValueError(
+                "architecture.type='set_encoder' has no buildable network after the unit-3 token cut.\n"
+                "  Reason: it sliced a single flattened token FIELD out of the compiled "
+                "ObservationSpec, and that spec no longer exists — the whole observation is now a "
+                "token set.\n"
+                "  Landing: declare `token_set`, which consumes the compiled TokenSpec directly."
             )
         elif arch.type == "token_set":
             assert arch.token_set is not None, "token_set config must be present"
             token_spec = env.universe.token_spec
-            if token_spec is None:
+            # IDENTITY, not width (task-9 review M3, discharged at the cut): the network
+            # reads the serialization positionally, so equal width with a different slot
+            # binding is a silently wrong net. `layout_hash` IS that identity.
+            env_layout_hash = compute_token_layout_hash(env.token_spec)
+            if env_layout_hash != compute_token_layout_hash(token_spec):
                 raise ValueError(
-                    "architecture.type='token_set' requires a compiled TokenSpec on the universe; "
-                    "recompile the config pack with the current compiler (COMPILED_SCHEMA_VERSION 1.21+)."
-                )
-            # Task 10: replace this width-equality heuristic with an identity check
-            # (the encoder swap makes the serialization the env's own product; compare
-            # layout_hash, not dims — task-9 review M3).
-            if obs_dim != token_spec.total_dims:
-                raise ValueError(
-                    f"architecture.type='token_set' consumes the TokenSpec serialization "
-                    f"({token_spec.total_dims} dims) but the environment produces {obs_dim} dims. "
-                    "The token observation path is not the live step path until the unit-3 Task-10 cut; "
-                    "until then a token_set brain cannot ride this environment."
+                    "architecture.type='token_set' is bound to a different token layout than the "
+                    "environment serializes.\n"
+                    f"  environment layout_hash: {env_layout_hash}\n"
+                    f"  brain layout_hash:       {compute_token_layout_hash(token_spec)}\n"
+                    "  Rule: a flat reader's dims are positional — equal width with a re-bound slot "
+                    "changes what every dim MEANS. Recompile the pack so both come from one artifact."
                 )
             return NetworkFactory.build_token_set(
                 config=arch.token_set,
@@ -1355,13 +1329,10 @@ class VectorizedPopulation(PopulationManager):
         """Reset RND novelty state via its existing construction surface.
 
         `RNDExploration` exposes no in-place reset; a fresh instance built from the
-        live instance's own constructor parameters IS the reset surface (rnd.py is
-        deliberately untouched this task — its active_mask contract is a live-behavior
-        mover that dies at the Task-10 cut, not before).
+        live instance's own constructor parameters IS the reset surface.
         """
 
         def _fresh(rnd: RNDExploration) -> RNDExploration:
-            active_mask_tensor = cast(torch.Tensor, rnd.fixed_network.active_mask)
             return RNDExploration(
                 obs_dim=rnd.obs_dim,
                 embed_dim=rnd.embed_dim,
@@ -1371,7 +1342,6 @@ class VectorizedPopulation(PopulationManager):
                 epsilon_min=rnd.epsilon_min,
                 epsilon_decay=rnd.epsilon_decay,
                 device=rnd.device,
-                active_mask=tuple(bool(v) for v in active_mask_tensor.tolist()),
             )
 
         exploration = self.exploration

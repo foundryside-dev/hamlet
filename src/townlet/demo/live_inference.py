@@ -13,7 +13,7 @@ import torch
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
-from townlet.agent.networks import RecurrentSpatialQNetwork, recurrent_vision_window_side
+from townlet.agent.networks import RecurrentSpatialQNetwork
 from townlet.config.presentation_config import PresentationConfig
 from townlet.curriculum.adversarial import AdversarialCurriculum
 from townlet.curriculum.factory import build_curriculum
@@ -334,8 +334,7 @@ class LiveInferenceServer:
             device=self.device,
         )
 
-        obs_spec = level_meta.observation_spec
-        obs_dim = obs_spec.total_dims
+        obs_dim = level_meta.token_spec.total_dims
 
         # Create curriculum (mirror training pipeline behavior)
         self.curriculum = build_curriculum(
@@ -345,7 +344,6 @@ class LiveInferenceServer:
         )
 
         # Create exploration (for inference, configuration controls intrinsic behavior)
-        active_mask = self.env.observation_activity.active_mask
         self.exploration = AdaptiveIntrinsicExploration(
             obs_dim=obs_dim,
             embed_dim=intrinsic_cfg.rnd.feature_dim,
@@ -362,7 +360,6 @@ class LiveInferenceServer:
             epsilon_decay=exploration_cfg.epsilon_decay,
             epsilon_min=exploration_cfg.epsilon_end,
             device=self.device,
-            active_mask=active_mask,
         )
 
         # Use the BrainConfig already loaded from brain.yaml at compile time.
@@ -378,7 +375,7 @@ class LiveInferenceServer:
         agent_ids = [f"agent_{i}" for i in range(num_agents)]
         logger.info("Network architecture: %s (num_agents=%s)", base_brain_config.architecture.type, num_agents)
         # Derive vision window size for recurrent networks from observation spec.
-        vision_window_size = recurrent_vision_window_side(obs_spec)
+        vision_window_size = 1
 
         # observation_spec is now read directly from env (POP-005 simplification)
         self.population = VectorizedPopulation(

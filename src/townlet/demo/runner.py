@@ -11,7 +11,6 @@ from typing import Any
 
 import torch
 
-from townlet.agent.networks import recurrent_vision_window_side
 from townlet.curriculum.factory import build_curriculum
 from townlet.demo.database import DemoDatabase
 from townlet.determinism import seed_all
@@ -382,8 +381,6 @@ class DemoRunner:
 
         # Per-level metadata
         level_meta = self.compiled.get_level(self.level_name)
-        obs_spec = level_meta.observation_spec
-
         # Extract config parameters from DTOs (all required, validated at load time)
         loop_cfg = self.training_config.training_loop
         num_agents = self.training_config.population.size
@@ -401,7 +398,7 @@ class DemoRunner:
         )
 
         # Dimensions sourced from compiled metadata
-        obs_dim = obs_spec.total_dims
+        obs_dim = level_meta.token_spec.total_dims
         action_dim = level_meta.action_metadata.total_actions
 
         # Create curriculum (all params required per PDR-002)
@@ -412,8 +409,6 @@ class DemoRunner:
         )
 
         # Create exploration (all params required per PDR-002)
-        # Conditionally pass active_mask based on mask_unused_obs config
-        active_mask = self.env.observation_activity.active_mask
         intrinsic_cfg = self.training_config.intrinsic
         self.exploration = AdaptiveIntrinsicExploration(
             obs_dim=obs_dim,
@@ -431,13 +426,13 @@ class DemoRunner:
             epsilon_min=self.training_config.exploration.epsilon_end,
             epsilon_decay=self.training_config.exploration.epsilon_decay,
             device=device,
-            active_mask=active_mask,
         )
 
-        # Get population parameters from config (all required per PDR-002)
-        # Derive local vision window size from compiled observation spec to keep
-        # network expectations aligned with the compiler/environment.
-        vision_window_size = recurrent_vision_window_side(obs_spec)
+        # The raster vision window died with the fixed-width observation ABI (unit-3
+        # cut). It survives only as a `VectorizedPopulation` constructor parameter for
+        # the recurrent path, which now refuses to build; 1 is the value that API has
+        # always taken for "no window".
+        vision_window_size = 1
 
         # Get training hyperparameters from config (all required per PDR-002)
         train_frequency = loop_cfg.train_frequency
@@ -458,7 +453,6 @@ class DemoRunner:
         effective_brain_config = apply_training_overrides(base_brain_config, self.training_config)
 
         # Create population (effective_brain_config provides network/optimizer/Q-learning parameters)
-        # observation_spec is now read directly from env (POP-005 simplification)
         self.population = VectorizedPopulation(
             env=self.env,
             curriculum=self.curriculum,

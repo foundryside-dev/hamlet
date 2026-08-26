@@ -34,7 +34,7 @@ import math
 import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from typing import Protocol, cast
+from typing import Protocol
 
 import torch
 
@@ -806,7 +806,7 @@ class RegistryVariableElementPublisher:
                     f"variable_element slot {slot_index} ({filler_ref!r}) carries no {DESCRIPTOR_BLOCK_WIDTH}-wide "
                     "static_signature descriptor block; the compiled artifact records one per bound slot (Task 7)"
                 )
-            descriptors.append(tuple(float(x) for x in cast("tuple[float, ...]", static_signature)))
+            descriptors.append(tuple(float(x) for x in static_signature))
             shape = self._element_shape(var_def)
             coordinates.append(element_coordinate_block(shape, element_index))
         self._slots = torch.tensor(slot_positions, dtype=torch.long, device=device)

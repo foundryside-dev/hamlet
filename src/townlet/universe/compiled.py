@@ -803,7 +803,7 @@ def _affordance_metadata_from_plain(payload: Mapping[str, Any], field_name: str 
     return AffordanceMetadata(affordances=tuple(AffordanceInfo(**entry) for entry in _required_field(payload, f"{field_name}.affordances")))
 
 
-def _serialize_token_spec(spec: TokenSpec | None) -> dict[str, Any] | None:
+def _serialize_token_spec(spec: TokenSpec) -> dict[str, Any]:
     """Serialize a TokenSpec to a msgpack-safe dict.
 
     `payload_features` are serialized even though they are engine constants: the artifact
@@ -811,8 +811,6 @@ def _serialize_token_spec(spec: TokenSpec | None) -> dict[str, Any] | None:
     them against the running engine's schema on load — a cache whose payload schema
     disagrees with the engine refuses loudly instead of deserializing a lie.
     """
-    if spec is None:
-        return None
     return {
         "encoding_version": spec.encoding_version,
         "types": [
@@ -835,9 +833,12 @@ def _serialize_token_spec(spec: TokenSpec | None) -> dict[str, Any] | None:
     }
 
 
-def _token_spec_from_plain(payload: Mapping[str, Any] | None) -> TokenSpec | None:
+def _token_spec_from_plain(payload: Mapping[str, Any] | None) -> TokenSpec:
     if payload is None:
-        return None
+        raise ValueError(
+            "Compiled universe cache carries a null `token_spec`. The TokenSpec IS the artifact's "
+            "observation product since COMPILED_SCHEMA_VERSION 1.22; recompile the config pack."
+        )
     types = tuple(
         TokenTypeSchema(
             type_name=entry["type_name"],

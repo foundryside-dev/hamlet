@@ -319,7 +319,10 @@ class SlotBinding:
     slot_index: int
     filler_kind: FillerKind
     filler_ref: str
-    static_signature: tuple[object, ...] | None = None
+    # The DESCRIPTOR BLOCK for this slot: DESCRIPTOR_BLOCK_WIDTH floats, or None where the
+    # type has no static content. Typed concretely (it was `tuple[object, ...]`, which
+    # forced a cast at every consumer and hid the width contract).
+    static_signature: tuple[float, ...] | None = None
 
     def __post_init__(self) -> None:
         if self.slot_index < 0:

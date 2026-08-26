@@ -398,7 +398,8 @@ class VectorizedHamletEnv:
         if self._affordance_layout_cache is not None:
             return self._affordance_layout_cache
         dim = self.substrate.position_dim
-        slot_refs = [binding.filler_ref for binding in self.token_spec.get_type("affordance").slot_bindings]
+        affordance_type = self.token_spec.get_type("affordance")
+        slot_refs = [] if affordance_type is None else [binding.filler_ref for binding in affordance_type.slot_bindings]
         deployed = torch.tensor([ref in self.affordances for ref in slot_refs], dtype=torch.bool, device=self.device)
         zero = torch.zeros(dim, dtype=self.substrate.position_dtype, device=self.device)
         positions = torch.stack([self.affordances.get(ref, zero) for ref in slot_refs]) if slot_refs else zero.new_zeros((0, dim))

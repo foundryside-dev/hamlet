@@ -10,7 +10,7 @@ compile refusal the spec names.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 import torch
 
@@ -256,8 +256,8 @@ class ObservationCompiler:
             signature = static_payload_signature(exposed)
             bound.append(exposed)
             # static_payload_signature returns (scope, shape, per-element descriptor blocks).
-            descriptor_blocks = signature[2]
-            for element_index, descriptor_block in enumerate(descriptor_blocks):  # type: ignore[arg-type]
+            descriptor_blocks = cast("tuple[tuple[float, ...], ...]", signature[2])
+            for element_index, descriptor_block in enumerate(descriptor_blocks):
                 filler_ref = exposed.id if exposed.element_count == 1 else f"{exposed.id}[{element_index}]"
                 bindings.append(
                     SlotBinding(

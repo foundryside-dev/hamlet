@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import Any
+from typing import Any, cast
 
 from townlet.universe.dto.token_spec import TOKEN_TYPE_FILLER_KIND, TokenSpec
 
@@ -108,9 +108,11 @@ def canonical_observation_schema(spec: TokenSpec) -> dict[str, Any]:
     parameter moves this hash without moving ``layout_hash``.
     """
     layout = canonical_token_layout(spec)
-    for type_entry, token_type in zip(layout["types"], spec.types, strict=True):
-        for binding_entry, binding in zip(type_entry["slot_bindings"], token_type.slot_bindings, strict=True):
-            binding_entry["static_signature"] = None if binding.static_signature is None else [float(x) for x in binding.static_signature]
+    type_entries = cast("list[dict[str, Any]]", layout["types"])
+    for type_entry, token_type in zip(type_entries, spec.types, strict=True):
+        binding_entries = cast("list[dict[str, Any]]", type_entry["slot_bindings"])
+        for binding_entry, binding in zip(binding_entries, token_type.slot_bindings, strict=True):
+            binding_entry["static_signature"] = None if binding.static_signature is None else list(binding.static_signature)
     return layout
 
 

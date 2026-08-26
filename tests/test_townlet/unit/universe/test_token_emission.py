@@ -56,11 +56,25 @@ class TestL1TokenEmission:
             "agent": 0,  # no shared-world declaration exists; never keyed on num_agents
             "item": 2,  # max_items_in_world 1 + max_items_per_agent 1 x 1 agent/world
             "effect": 0,
-            "variable_element": 0,
+            # 1 since hamlet-02684be106: the pack declares one exposed global,
+            # `time_of_day_phase`, in its root vfs_profiles.yaml. It is a PACK
+            # declaration, so it is allocated at every level of default_curriculum —
+            # that shared allocation is what keeps observation width constant across
+            # levels and lets a checkpoint transfer between them.
+            "variable_element": 1,
         }
 
     def test_total_dims_is_task6_measurement(self, l1_universe):
-        assert l1_universe.token_spec.total_dims == 1080
+        # Task 6's measured value was 1080, taken when the pack exposed no profile
+        # variables. It moved to 1132 at hamlet-02684be106, which declared
+        # `time_of_day_phase` to give L3 back its (deleted) temporal observation.
+        # The delta is stated as ONE variable_element row rather than folded into a
+        # new literal, so the next reader can see what moved the number and why.
+        variable_element_rows = l1_universe.token_spec.census["variable_element"]
+        row_width = l1_universe.token_spec.get_type("variable_element").row_width
+        assert variable_element_rows == 1
+        assert l1_universe.token_spec.total_dims == 1080 + variable_element_rows * row_width
+        assert l1_universe.token_spec.total_dims == 1132
 
     def test_all_roster_types_present_in_engine_order(self, l1_universe):
         assert tuple(t.type_name for t in l1_universe.token_spec.types) == TOKEN_TYPE_ROSTER
@@ -83,7 +97,10 @@ class TestL1TokenEmission:
         assert all(b.filler_kind == "dynamic" for b in item_type.slot_bindings)
 
     def test_no_advisories_for_default_curriculum(self, l1_universe):
-        # Empty effect catalog, zero exposed profile variables: nothing to advise.
+        # Empty effect catalog, and one exposed profile variable (`time_of_day_phase`,
+        # hamlet-02684be106) — was zero, and the count is no longer the reason this is
+        # empty. Advisories fire on a census exceeding MEAN_CENSUS_ADVISORY (64) tokens
+        # of one type; a single variable_element is nowhere near it.
         assert l1_universe.token_advisories == ()
 
     def test_hashes_present_and_hex(self, l1_universe):

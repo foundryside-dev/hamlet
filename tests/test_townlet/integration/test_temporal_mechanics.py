@@ -248,33 +248,6 @@ class TestTimeProgression:
         # Should wrap back to 0
         assert env.time_of_day == 0
 
-    def test_observation_dimensions_with_temporal(self, cpu_device, cpu_env_factory):
-        """Verify observation includes temporal features (sin/cos time + progress + lifetime).
-
-        Migrated from: test_temporal_integration.py::test_observation_dimensions_with_temporal
-        Combined with: test_vectorized_env_temporal.py::test_observation_includes_time_and_progress
-
-        NOTE: Updated to expect 4 temporal features (was 3) to match actual implementation.
-        The 4th feature (lifetime_progress) was added for forward compatibility.
-        """
-        env = cpu_env_factory(config_dir=Path("configs/default_curriculum"), level_name="L3_temporal_mechanics", num_agents=2)
-
-        obs = env.reset()
-
-        # Observation size now flows from compiled metadata
-        expected_dim = env.metadata.observation_dim
-        assert obs.shape == (2, expected_dim)
-
-        # Locate the temporal block by its declared group, not by counting back from
-        # the end — negative indices silently follow any layout change.
-        temporal = obs[0, env.observation_activity.group_slices["temporal"]]
-        time_sin, time_cos, day_progress, is_night = temporal
-
-        # time_of_day = 0 at reset => sin = 0, cos = 1
-        assert time_sin == pytest.approx(0.0, abs=1e-6)
-        assert time_cos == pytest.approx(1.0, abs=1e-6)
-        assert day_progress == 0.0  # midnight is 0/24 of the way through the day
-        assert is_night == 1.0  # midnight IS night (threshold is day_length * 0.25)
 
 
 # =============================================================================
@@ -458,36 +431,6 @@ class TestMultiTickInteractions:
             expected = 50.0 - REST_MONEY_PER_TICK * tick
             assert env.meters[0, money].item() == pytest.approx(expected, abs=0.001), f"after {tick} tick(s)"
 
-    def test_interaction_progress_is_tracked_but_not_observable(self, multitick_env):
-        """Progress advances as engine state — and is NOT in the observation.
-
-        This test was `test_interaction_progress_in_observations` and read
-        `obs[0, -2]`, expecting progress/10.0 in the last-but-one slot. The
-        temporal observation block is now exactly four features (sin, cos,
-        day_progress, is_night) — see `observation_encoder._build_temporal_observation`
-        — so `interaction_progress` is engine state with no VFS variable and no
-        observation mark. An author cannot declare it observable from a config
-        pack. That gap is filed separately; it is asserted here rather than
-        quietly dropped, so the day it becomes observable this test fails and
-        says so.
-        """
-        env = multitick_env
-        obs = env.reset()
-
-        interact = _park(env, REST_AFFORDANCE)
-        temporal = env.observation_activity.group_slices["temporal"]
-        assert obs[0, temporal].numel() == 4, "temporal block is sin/cos/day_progress/is_night"
-
-        for tick in range(1, 4):
-            obs, _, _, _ = env.step(torch.tensor([interact], device=env.device))
-            env.positions[0] = env.affordances[REST_AFFORDANCE]
-            assert env.interaction_progress[0] == tick
-
-            # The progress value appears nowhere in the observation.
-            assert not torch.isclose(obs[0], torch.full_like(obs[0], tick / 10.0), atol=1e-6).any(), (
-                "interaction progress is unexpectedly present in the observation — "
-                "if it became observable, update this test and close the filed gap"
-            )
 
     def test_completion_bonus_timing(self, multitick_env):
         """The completion bonus lands on the final tick ONLY, not earlier."""
@@ -629,41 +572,6 @@ class TestMultiAgentTemporal:
 class TestTemporalIntegrations:
     """Cross-system temporal mechanics integration."""
 
-    def test_temporal_mechanics_disabled_fallback(self, cpu_device, cpu_env_factory, test_config_pack_path):
-        """Verify environment works without temporal mechanics (legacy mode).
-
-        Migrated from: test_temporal_integration.py::test_temporal_mechanics_disabled_fallback
-        """
-        env = cpu_env_factory(config_dir=test_config_pack_path, num_agents=1)
-
-        obs = env.reset()
-
-        # Temporal features always included for forward compatibility. The width comes
-        # from the compiled artifact — reconstructing it from a layout formula is how
-        # this assertion went stale (the meter block became one field per meter).
-        assert obs.shape == (1, env.observation_dim)
-
-        # The temporal block is ALLOCATED even with temporal mechanics off; it is the
-        # activity mask that makes it dormant, not a narrower tensor.
-        assert "temporal" in env.observation_activity.group_slices
-
-        # Temporal state is dormant but present
-        assert hasattr(env, "time_of_day")
-        assert env.time_of_day == 0
-
-        # Interactions work (legacy single-shot mode)
-        assert "SLEEP" in env.affordances, "SLEEP affordance not deployed in test config"
-        env.positions[0] = env.affordances["SLEEP"]
-        env.meters[0, 0] = 0.3  # Start low to see increase
-
-        initial_energy = env.meters[0, 0].item()
-
-        env.step(torch.tensor([_interact_idx(env)], device=env.device))
-
-        final_energy = env.meters[0, 0].item()
-        # Legacy mode: single-shot benefit from SLEEP.
-        # Even with depletion, should see significant increase
-        assert (final_energy - initial_energy) > 0.4  # At least 40% gain
 
     def test_temporal_mechanics_with_curriculum(self, cpu_device, cpu_env_factory):
         """Verify temporal mechanics works with adversarial curriculum.

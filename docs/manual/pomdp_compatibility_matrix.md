@@ -1,5 +1,25 @@
 # POMDP Compatibility Matrix
 
+> ⚠️ **Recovered from archive 2026-08-26 — two rows are known WRONG. Read this first.**
+>
+> Recovered because `src/townlet/environment/vectorized_env.py:626` raises a runtime error
+> that points the operator at this file, so it must resolve. The 2025-11 matrix below has
+> **not** been re-verified in full; two entries were checked and are false:
+>
+> 1. **Aspatial is `⚠️ SPECIAL / EDGE CASE` below — that is wrong. Aspatial does NOT support
+>    partial vision.** `substrate/aspatial.py:66` returns `supports_partial_vision = False`
+>    and `get_vision_radius()` *raises* `ValueError`. It is a flat "not supported", not a
+>    special case (corrected 2026-08-24).
+> 2. **"Grid3D requires `vision_range ≤ 2`" is a stale encoding.** `vision_range` is a
+>    **normalized fraction of the longest axis**, constrained to `0.0–1.0`
+>    (`config/curriculum_config.py:29`), not a cell radius — so "≤ 2" is vacuous. The real
+>    gate is on the *implied window*: Grid3D on 8³ accepts `0.5` (window 5) and rejects
+>    `0.75` (window 7).
+>
+> Authority for POMDP support is `docs/architecture/STRATA.md` §7 (three independent gates)
+> and `tests/test_townlet/unit/environment/test_pomdp_validation.py`.
+
+
 **Document Type**: Reference Manual
 **Version**: 1.0
 **Last Updated**: 2025-11-06

@@ -92,7 +92,7 @@ vocabulary, compiled transitions (VTC), terminal conditions, and rewards. It com
 executed by `DACEngine` (`src/townlet/environment/dac_engine.py`) — is a UAC surface, not a
 fourth subsystem: it reads VFS variables, compiles to GPU computation graphs, and carries its
 own `drive_hash`. Full treatment: `UAC.md`; reward vocabulary:
-`docs/zzz. archive/config-schemas/drive_as_code.md` (archived 2026-08-24; content may be
+`docs/config-schemas/drive_as_code.md` (archived 2026-08-24; content may be
 stale).
 
 **BAC** is the brain layer: network architecture, optimizer, loss, replay, and — as target state
@@ -220,7 +220,7 @@ compiler expects, and `COMPILER.md` marks the front end as the surface slated to
 
 Supporting, and authoritative in their lanes:
 
-- `docs/zzz. archive/config-schemas/` — one reference per authoring surface (affordances, bars,
+- `docs/config-schemas/` — one reference per authoring surface (affordances, bars,
   brain, drive_as_code, effects, enabled_actions, expressions, items, presentation, training,
   transition_rules, variables ⚠ stale 2025-11, vfs-profiles). ⚠ **Archived 2026-08-24** (commit
   `c4e8bd58`, a separate same-day recut) — no longer authoritative-by-maintenance like the other

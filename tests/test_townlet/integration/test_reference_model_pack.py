@@ -23,7 +23,7 @@ def test_reference_model_pack_compiles() -> None:
     """configs/reference/model_pack compiles end-to-end (all seven UAC stages)."""
     compiled = UniverseCompiler().compile(CONFIG_DIR, primary_level=PRIMARY_LEVEL, use_cache=False)
 
-    assert compiled.observation_spec.total_dims > 0
+    assert compiled.token_spec.total_dims > 0
 
     variables = {variable.id: variable for variable in compiled.vfs_variables}
     # ate_food (effects.yaml) writes target.vfs.is_digesting on spawn/despawn — the

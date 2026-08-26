@@ -173,7 +173,7 @@ Continuous substrates synthesize their movement set from `action_discretization`
 CLAUDE.md's table ("Grid2D 8, Grid3D 10, GridND(7D) 16, Aspatial 4") **disagrees with the
 source**: `base.py`'s own docstring enumerates Grid2D as eight movement actions plus `INTERACT`
 and `WAIT`, and that is itself conditional on `diagonals`. Ask the compiled artifact. Schema:
-`docs/zzz. archive/config-schemas/enabled_actions.md` (archived 2026-08-24; content may be
+`docs/config-schemas/enabled_actions.md` (archived 2026-08-24; content may be
 stale).
 
 Compile-time alignment between the two halves is checked by `SubstrateActionValidator`
@@ -309,10 +309,10 @@ ordering contract); and POMDP window semantics across mixed dimensions.
 
 ## 9. Where to read next
 
-- `docs/zzz. archive/config-schemas/` — authoring schemas; **schemas lived there, not here** —
+- `docs/config-schemas/` — authoring schemas; **schemas lived there, not here** —
   but that location was archived 2026-08-24 (commit `c4e8bd58`) and nothing has replaced it, so
   cite it knowing it is no longer maintained. Action surface:
-  `docs/zzz. archive/config-schemas/enabled_actions.md`.
+  `docs/config-schemas/enabled_actions.md`.
 - `HLD.md` — the trio, the compiler-and-provenance contract, honest status.
 - `UAC.md` — everything Strata is *not*: variables, items, effects, affordances, rewards.
 - `COMPILER.md` — the seven-stage pipeline and the error codes cited above.

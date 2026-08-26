@@ -137,7 +137,13 @@ class ObservationCompiler:
                 )
             ),
         )
-        assert effect_type.capacity == effect_cap
+        if effect_type.capacity != effect_cap:
+            raise ValueError(
+                f"Effect token capacity disagrees with its derivation: slot layout produced "
+                f"{effect_type.capacity} slots, `effect_capacity` derived {effect_cap}. "
+                "`effect_slot_refs` and `effect_capacity` must read the same declared budget and the "
+                "same denominators; a divergence here is an engine bug, not an authoring error."
+            )
 
         element_bindings = self._variable_element_bindings(environment, compiled_vfs_profiles, vfs_variables)
         variable_element_type = build_token_type("variable_element", element_bindings)

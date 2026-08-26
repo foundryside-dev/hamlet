@@ -1,5 +1,12 @@
 # Linting and Code Quality
 
+> 🔧 **Recovered from archive 2026-08-26 — developer reference, companion to `LINT_ENFORCEMENT.md`.**
+>
+> Recovered as the practical "how to run the linters" reference; there is no live equivalent.
+> The `ruff` / `mypy` invocations are current in form. Any specific violation counts or
+> error-code lists below are 2025-era and unverified.
+
+
 This project enforces strict linting standards to maintain code quality and consistency.
 
 ## Quick Start

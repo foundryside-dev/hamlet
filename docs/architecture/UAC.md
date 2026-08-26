@@ -13,7 +13,7 @@ routes to the authoritative reference docs. **It does not duplicate schemas.** W
 document and a reference doc disagree, the reference doc — and above it, the source — wins.
 
 ⚠️ One of those reference docs, `docs/config-schemas/`, was archived to
-`docs/zzz. archive/config-schemas/` on 2026-08-24 (commit `c4e8bd58`, a separate same-day recut)
+`docs/config-schemas/` on 2026-08-24 (commit `c4e8bd58`, a separate same-day recut)
 and is no longer maintained. Paths below are repointed to that archive location because nothing
 has replaced it, but treat its content as possibly stale beyond what each file already flags.
 
@@ -26,7 +26,7 @@ The compiled target has three major declarative subsystems:
 | subsystem | question it answers | authored in | authoritative doc |
 | --- | --- | --- | --- |
 | **Strata** | *Where can things be?* — substrate type, topology, boundaries, distance metric, position encoding | `stratum.yaml` | `STRATA.md`; `src/townlet/config/stratum_config.py` |
-| **UAC — Universe as Code** | *What exists, and how does it change?* — variables, observations, items, effects, affordances, actions, transitions, rewards, terminal conditions | everything else in the pack (§3) | this doc as router; `VFS.md`; `docs/zzz. archive/config-schemas/` (archived) |
+| **UAC — Universe as Code** | *What exists, and how does it change?* — variables, observations, items, effects, affordances, actions, transitions, rewards, terminal conditions | everything else in the pack (§3) | this doc as router; `VFS.md`; `docs/config-schemas/` (archived) |
 | **BAC — Brain as Code** | *How do agents think?* — network architecture, optimizer, loss; and as target state, behaviour contract and think-loop graph | `brain.yaml` | `BAC.md` |
 
 Historically (v2.5) "Universe as Code" meant *strata + world config* as one blob. Strata is now
@@ -115,7 +115,7 @@ Two constraints worth stating because they are easy to get wrong:
   shipped pack. Both paths appear in archived docs; a grep for either returns zero hits and will
   falsely "confirm" whatever you were checking.
 
-Schemas for each surface: `docs/zzz. archive/config-schemas/` (archived 2026-08-24; see the
+Schemas for each surface: `docs/config-schemas/` (archived 2026-08-24; see the
 caveat in §1). Do not restate them here.
 
 ---
@@ -163,17 +163,17 @@ The compiler-side implications are noted in `COMPILER.md` §Forward.
 
 | v2.5 chapter said | where it actually lives now | reference |
 | --- | --- | --- |
-| meters/bars, depletion, "physics are data" | VFS variables + VTC programs (`VTCPassiveDepletionProgram`, `VTCBoundsClampProgram`) | `docs/zzz. archive/config-schemas/bars.md` (archived), `VFS.md` §11–13 |
+| meters/bars, depletion, "physics are data" | VFS variables + VTC programs (`VTCPassiveDepletionProgram`, `VTCBoundsClampProgram`) | `docs/config-schemas/bars.md` (archived), `VFS.md` §11–13 |
 | `cascades.yaml`, cross-meter dynamics, modulations | VTC (`VTCThresholdCascadeProgram`, `VTCModulationProgram`) | `VFS.md` §14 |
-| terminal conditions, end-of-life | `VTCTerminalConditionProgram`; scoring → DAC | `VFS.md`, `docs/zzz. archive/config-schemas/drive_as_code.md` (archived) |
-| affordances, costs, effects, multi-tick | `affordances.yaml` + VTC action writes, occupancy, interaction progress | `docs/zzz. archive/config-schemas/affordances.md`, `docs/zzz. archive/config-schemas/effects.md` (both archived) |
-| `reward_model`, episodic scoring | **deleted** → DAC (`drive.yaml`, compiled to GPU graphs, `drive_hash`) | `docs/zzz. archive/config-schemas/drive_as_code.md` (archived) |
-| observability levels | VFS observation spec: exposure + normalization + activity mask | `VFS.md` §8, `docs/zzz. archive/config-schemas/vfs-profiles.md` (archived) |
-| time of day, action masks | `curriculum.yaml` temporal switches + VTC affordance gates | `docs/zzz. archive/config-schemas/enabled_actions.md` (archived) |
+| terminal conditions, end-of-life | `VTCTerminalConditionProgram`; scoring → DAC | `VFS.md`, `docs/config-schemas/drive_as_code.md` (archived) |
+| affordances, costs, effects, multi-tick | `affordances.yaml` + VTC action writes, occupancy, interaction progress | `docs/config-schemas/affordances.md`, `docs/config-schemas/effects.md` (both archived) |
+| `reward_model`, episodic scoring | **deleted** → DAC (`drive.yaml`, compiled to GPU graphs, `drive_hash`) | `docs/config-schemas/drive_as_code.md` (archived) |
+| observability levels | VFS observation spec: exposure + normalization + activity mask | `VFS.md` §8, `docs/config-schemas/vfs-profiles.md` (archived) |
+| time of day, action masks | `curriculum.yaml` temporal switches + VTC affordance gates | `docs/config-schemas/enabled_actions.md` (archived) |
 | grid, positions | **Strata** (promoted out of UAC) | `STRATA.md`; `archive/substrate-system.md` for history |
-| money ≈ $100 at 1.0, clamped | **dead** — the `[0,1]` clamps were removed in WS-1(e); money is a bounded variable like any other | `docs/zzz. archive/config-schemas/bars.md` (archived) |
+| money ≈ $100 at 1.0, clamped | **dead** — the `[0,1]` clamps were removed in WS-1(e); money is a bounded variable like any other | `docs/config-schemas/bars.md` (archived) |
 | ageing, retirement, Bed/Job/Hospital/Bar set | never shipped; the shipped demonstration pack is `configs/default_curriculum` (14 affordances) | `CLAUDE.md` "State Representation" |
-| expression snippets in YAML | the closed, typed expression language | `docs/zzz. archive/config-schemas/expressions.md` (archived) |
+| expression snippets in YAML | the closed, typed expression language | `docs/config-schemas/expressions.md` (archived) |
 
 Two v2.5 principles survive unchanged and remain the point: **physics are data; values are
 data.** The no-defaults principle (`extra="forbid"`, no hidden behavioral defaults) and the
@@ -193,7 +193,7 @@ where effective_intrinsic_weight = base_weight × modifier₁ × modifier₂ × 
 ```
 
 Modifier, extrinsic, intrinsic and shaping vocabularies:
-`docs/zzz. archive/config-schemas/drive_as_code.md` (archived 2026-08-24; content may be
+`docs/config-schemas/drive_as_code.md` (archived 2026-08-24; content may be
 stale).
 
 ---
@@ -251,8 +251,8 @@ natural carrier, so any design here follows the token migration rather than prec
   `archive/vfs-current-implementation.md` (accurate per the 2026-08-24 audit on everything
   checked **except** its access-control and `agent_private` claims — see §6)
 - **Strata**: `STRATA.md`; history in `archive/substrate-system.md`
-- **Brain**: `BAC.md`, `docs/zzz. archive/config-schemas/brain.md` (archived 2026-08-24)
-- **Schemas** (one per authoring surface): `docs/zzz. archive/config-schemas/` — ⚠ **archived
+- **Brain**: `BAC.md`, `docs/config-schemas/brain.md` (archived 2026-08-24)
+- **Schemas** (one per authoring surface): `docs/config-schemas/` — ⚠ **archived
   2026-08-24** (commit `c4e8bd58`); nothing has replaced it, so this is still the reference,
   just no longer maintained — affordances, bars, brain, drive_as_code, effects,
   enabled_actions, expressions, items, presentation, training, transition_rules, variables

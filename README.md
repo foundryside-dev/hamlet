@@ -218,7 +218,7 @@ declares a `semantic_type` from a closed vocabulary, and each affordance declare
 an optional `presentation.yaml` at its root: the live-inference server reads it to render meters and
 affordances (labels, colours, icons, plain/percent/currency formats), the compiler never does, so it enters no hash and
 cannot change behaviour (`src/townlet/demo/presentation.py`,
-`docs/zzz. archive/config-schemas/presentation.md` — archived 2026-08-24; content may be stale).
+`docs/config-schemas/presentation.md` — archived 2026-08-24; content may be stale).
 No shipped pack carries one; without it the viewer renders every meter honestly from its declared
 bounds — a bar as a fraction of the declared range, the plain value, no `%` or `$` inferred from a
 name.
@@ -612,7 +612,7 @@ Current and maintained as part of the recovery:
   accepted divergences.
 
 Subsystem detail lives in `docs/architecture/` and, since a later same-day recut (commit
-`c4e8bd58`, "zzz. archive") moved it, `docs/zzz. archive/config-schemas/`. *(Updated
+`c4e8bd58`, "zzz. archive") moved it, `docs/config-schemas/`. *(Updated
 2026-08-24, PDR-0118:)* the old architecture corpus — including
 `docs/architecture/archive/UNIVERSE_AS_CODE.md` (corrected 2026-08-16) and
 `docs/architecture/archive/vfs-current-implementation.md` (corrected then and again on
@@ -620,9 +620,9 @@ Subsystem detail lives in `docs/architecture/` and, since a later same-day recut
 wholesale to `docs/architecture/archive/` and replaced by a six-document HLD set reviewed
 against source on 2026-08-24: `HLD.md`, `STRATA.md`, `UAC.md`, `BAC.md`, `COMPILER.md`, and
 `VFS.md` (the former `vfs.md`, promoted). Treat the archive as history, never as a record of
-what shipped; `docs/zzz. archive/config-schemas/presentation.md` was source-verified as of
+what shipped; `docs/config-schemas/presentation.md` was source-verified as of
 2026-08-24, before that same day's separate archive move, and the rest of
-`docs/zzz. archive/config-schemas/` is per-surface reference — now archived rather than
+`docs/config-schemas/` is per-surface reference — now archived rather than
 maintained (its `variables.md` was already stale, 2025-11).
 
 ## License

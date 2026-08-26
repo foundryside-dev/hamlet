@@ -1,5 +1,13 @@
 # Lint Enforcement Setup
 
+> 🔧 **Recovered from archive 2026-08-26 — standing developer policy.**
+>
+> Recovered because two live decision records, `docs/decisions/PDR-001-LINT-ENFORCEMENT.md` and
+> `docs/decisions/PDR-002-NO-DEFAULTS-PRINCIPLE.md`, cite this path as the enforcement
+> reference. `.pre-commit-config.yaml` is present in the repo, so the mechanism described is
+> live. Individual tool versions and error counts below are 2025-era and unverified.
+
+
 ## Overview
 
 All lint checks are **required to pass** before code can be merged. Failures will block commits both locally (via pre-commit hooks) and in CI/CD (via GitHub Actions).

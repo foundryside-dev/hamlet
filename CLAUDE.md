@@ -83,15 +83,18 @@ target; the status line is false. That pattern repeats across the archived corpu
 
 **Current-and-trustworthy:** `README.md`, `docs/product/`, `docs/oracle/`, the six-document HLD
 set in `docs/architecture/` — `HLD.md`, `STRATA.md`, `UAC.md`, `BAC.md`, `COMPILER.md`,
-`VFS.md` (all reviewed against source 2026-08-24).
+`VFS.md` (all reviewed against source 2026-08-24) — and `docs/config-schemas/`.
 `docs/architecture/archive/vfs-current-implementation.md` also remains accurate per the
 2026-08-24 audit **except** its access-control and `agent_private` claims.
 
-⚠️ **`docs/config-schemas/` no longer belongs on that trustworthy list.** A separate same-day
-recut (commit `c4e8bd58`, "zzz. archive") moved the whole per-surface schema set to
-`docs/zzz. archive/config-schemas/` (archived 2026-08-24; content may be stale beyond what each
-file already flags) — it is history now, not a maintained reference. Citations below are
-repointed to that archive path because nothing has replaced it yet.
+**On `docs/config-schemas/`** (restored 2026-08-26): the 2026-08-24 recut (commit `c4e8bd58`,
+"zzz. archive") swept it into the archive on a fast visual pass, and a follow-up sweep
+repointed every citation at the archive path. Both were reversed on 2026-08-26 — it is the
+reference tier the HLD set delegates to, and nothing replaced it. It is back at
+`docs/config-schemas/` and back on the trustworthy list, **with four exceptions that carry
+dated staleness banners of their own**: `variables.md` (2025-11, wholesale stale),
+`drive_as_code.md`, `enabled_actions.md`, and `training.md`. Trust a file in that directory
+unless it opens with a banner telling you not to.
 
 ### The oracle (strangler discipline)
 
@@ -277,9 +280,9 @@ checked accessor entirely — see `docs/architecture/VFS.md` §6 caveat and
   does not have one; `configs/L5_multi_agent` does.
 
 **Documentation**: `docs/architecture/VFS.md` (the authoritative VFS document, reviewed
-2026-08-24), `docs/zzz. archive/config-schemas/vfs-profiles.md`,
-`docs/zzz. archive/config-schemas/variables.md` (⚠ stale, 2025-11, and archived 2026-08-24 —
-content may be further stale), and `docs/architecture/archive/vfs-current-implementation.md`
+2026-08-24), `docs/config-schemas/vfs-profiles.md`,
+`docs/config-schemas/variables.md` (⚠ **stale, 2025-11** — restored 2026-08-26 with a
+staleness banner; it is the only variables reference we have, but verify against source), and `docs/architecture/archive/vfs-current-implementation.md`
 (accurate per the 2026-08-24 audit except its access-control and `agent_private` claims).
 
 ### Action Space (Composable)
@@ -292,8 +295,8 @@ content may be further stale), and `docs/architecture/archive/vfs-current-implem
 - **Custom Actions**: REST (energy recovery), MEDITATE (mood boost)
 - **Action Labels**: Configurable terminology (gaming, 6dof, cardinal, math presets)
 
-See `docs/zzz. archive/config-schemas/enabled_actions.md` for details (archived 2026-08-24;
-content may be stale).
+See `docs/config-schemas/enabled_actions.md` for details (⚠ carries a dated staleness
+banner: it still documents the dead `configs/global_actions.yaml` path).
 
 ## Drive As Code (DAC)
 
@@ -338,8 +341,8 @@ where:
 ### Components
 
 Modifier, extrinsic (9 types), intrinsic (5 types), and shaping (11 types) vocabularies:
-see `docs/zzz. archive/config-schemas/drive_as_code.md` (archived 2026-08-24; content may be
-stale).
+see `docs/config-schemas/drive_as_code.md` (⚠ carries a dated staleness banner: it names
+the file `drive_as_code.yaml`, which does not exist — the real file is `drive.yaml`).
 
 ### Pedagogical Pattern: "Low Energy Delirium" Bug
 
@@ -370,15 +373,13 @@ The intended design, for whoever authors it:
 - Checkpoint provenance via `drive_hash` (SHA256 of DAC config)
 - All checkpoints must have matching `drive_hash`
 
-**Migration**: See `docs/zzz. archive/guides/dac-migration.md` (archived 2026-08-24; content may
-be stale)
+**Migration**: See `docs/guides/dac-migration.md`
 
 ### Documentation
 
-- **Config Reference**: `docs/zzz. archive/config-schemas/drive_as_code.md` (archived
-  2026-08-24; content may be stale)
-- **Migration Guide**: `docs/zzz. archive/guides/dac-migration.md` (archived 2026-08-24;
-  content may be stale)
+- **Config Reference**: `docs/config-schemas/drive_as_code.md` (archived
+  ⚠ staleness banner — see above)
+- **Migration Guide**: `docs/guides/dac-migration.md`
 
 ### Q-Learning Algorithm Variants
 
@@ -386,8 +387,8 @@ be stale)
 Non-obvious cost on a recurrent architecture (corrected 2026-08-24 — the "3 forward passes vs 2"
 previously stated here does not match the current update path): one extra single-step boundary
 forward per update; action selection reuses the online unroll (`population/vectorized.py:862-880`).
-Details: `docs/architecture/BAC.md` §2.5; `docs/zzz. archive/config-schemas/training.md`
-(archived 2026-08-24) still carries the stale 3-vs-2 figure.
+Details: `docs/architecture/BAC.md` §2.5; `docs/config-schemas/training.md`
+still carries the stale 3-vs-2 figure (flagged in its staleness banner).
 
 ## Configuration System
 
@@ -430,8 +431,9 @@ files differ only in comments. Five documented levels are **three distinct unive
 
 Substrate config examples: the shipped packs (`configs/default_curriculum/stratum.yaml`,
 `configs/aspatial_test/`, `configs/test/action_space/*/`). There is no `configs/templates/`
-directory — that path is dead. Schemas: `docs/zzz. archive/config-schemas/` (archived
-2026-08-24; content may be stale).
+directory — that path is dead. Schemas: `docs/config-schemas/`. Worked substrate examples
+(aspatial, toroidal grid, euclidean distance) and a side-by-side comparison:
+`docs/examples/`.
 
 ### No-Defaults Principle
 

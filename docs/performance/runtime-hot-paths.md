@@ -1,5 +1,15 @@
 # Runtime hot-path report
 
+> 📊 **Recovered from archive 2026-08-26 — a dated measurement baseline, not a current reading.**
+>
+> Recovered because `tests/test_townlet/performance/test_environment_step_benchmarks.py:4`
+> cites this path as the report its benchmarks compare against.
+>
+> The numbers below were measured **2026-05-16** on CPU against the `project-recovery` branch.
+> They are a pinned historical baseline by design — that is the document's purpose — and have
+> **not** been re-measured since. Do not quote them as current performance.
+
+
 Baseline established 2026-05-16 against the `project-recovery` branch on CPU
 (no CUDA), as part of `hamlet-2b92152ac9`. The baseline pins **measured costs
 per call** for every runtime surface the architecture report named as a

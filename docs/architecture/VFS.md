@@ -472,7 +472,7 @@ end-to-end from config. `zone`, `group`, `message` — and, since 2026-08-25, `a
 `num_affordances`, each ≥ 1; `_SCOPE_EXTENT_FIELD`, `vfs/schema.py:594-599`); the extents flow
 through `UniverseMetadata` into `_initialize_vfs_subsystem`. Declaring a variable of one of
 those scopes without its extent is a compile error at config load — never a green compile that
-crashes at env construction. See `docs/zzz. archive/config-schemas/variables.md` (stale
+crashes at env construction. See `docs/config-schemas/variables.md` (stale
 2025-11, archived 2026-08-24 — schema concepts only). Note the extents allocate storage only:
 there is still no agent→zone / agent→group membership mapping surface.
 
@@ -2831,9 +2831,9 @@ This would make VFS teachable and debuggable.
   per the 2026-08-24 audit except its access-control and `agent_private` claims
 - `docs/architecture/archive/REVIEW-2026-08-24-vfs-implementation-vs-spec.md` — the two-auditor
   claim-by-claim verdict tables behind this document's §5/§6 caveats
-- `docs/zzz. archive/config-schemas/vfs-profiles.md` (archived 2026-08-24; schema concepts
+- `docs/config-schemas/vfs-profiles.md` (archived 2026-08-24; schema concepts
   remain useful)
-- `docs/zzz. archive/config-schemas/variables.md` — optional static variable and observation
+- `docs/config-schemas/variables.md` — optional static variable and observation
   metadata overlay (⚠ broadly stale, 2025-11: three scopes, dead file paths, retracted
   dimension counts)
 - `docs/zzz. archive/plans/archive/vfs_uplift/2025-11-18-items-and-vfs-profiles.md`

@@ -1,5 +1,15 @@
 # Hamlet Rescue Recovery Plan
 
+> 📌 **Recovered from archive 2026-08-26 — a COMPLETED plan, retained only as test provenance.**
+>
+> This is a historical implementation plan, not current intent and not a description of shipped
+> behaviour. It is out of the archive for one reason: live test files cite this exact path to
+> explain which plan task they implement, and those citations must resolve.
+>
+> Read it as provenance for those tests. For what the system actually does now, use
+> `README.md` and the HLD set in `docs/architecture/`.
+
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Recover Hamlet around one verified golden path, while deciding explicitly which simulation/runtime responsibilities should move to Murk.

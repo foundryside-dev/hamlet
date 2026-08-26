@@ -19,6 +19,7 @@ import pytest
 import torch
 import yaml
 
+from townlet.agent.network_factory import NetworkFactory
 from townlet.agent.networks import RecurrentSpatialQNetwork
 from townlet.demo.runner import DemoRunner
 from townlet.population.vectorized import VectorizedPopulation
@@ -165,21 +166,22 @@ def test_initial_hidden_is_zero_and_forward_requires_hidden(pomdp_env) -> None:
     argument binding, so no caller can silently fall back to stale or zero
     memory.
 
-    The compiled spec/activity are passed because they are required parameters:
-    this construction previously omitted both and survived only by never
-    reaching a forward pass.
+    The input-block slices come from the compiled TokenSpec's contiguous per-type
+    serialization; they are required parameters, and this construction previously
+    omitted them and survived only by never reaching a forward pass.
     """
-    bars = pomdp_env.observation_activity.group_slices["bars"]
+    blocks = NetworkFactory.token_block_slices(pomdp_env.token_spec)
     network = RecurrentSpatialQNetwork(
         action_dim=pomdp_env.action_dim,
-        window_size=5,
-        position_dim=2,
-        bars_dim=bars.stop - bars.start,
-        num_affordance_types=pomdp_env.num_affordance_types,
+        window_size=1,
+        position_dim=blocks["self"].stop - blocks["self"].start,
+        bars_dim=blocks["meter"].stop - blocks["meter"].start,
+        num_affordance_types=(blocks["affordance"].stop - blocks["affordance"].start) - 1,
         enable_temporal_features=False,
         hidden_dim=64,
-        observation_spec=pomdp_env.observation_spec,
-        observation_activity=pomdp_env.observation_activity,
+        meters_slice=blocks["meter"],
+        affordance_slice=blocks["affordance"],
+        position_slice=blocks["self"],
     )
 
     hidden = network.initial_hidden(4, torch.device("cpu"))
@@ -189,35 +191,39 @@ def test_initial_hidden_is_zero_and_forward_requires_hidden(pomdp_env) -> None:
     assert not h.any() and not c.any(), "initial hidden state must be all zeros"
 
     with pytest.raises(TypeError):
-        network(torch.zeros(2, 165))  # hidden is required, not optional
+        network(torch.zeros(2, pomdp_env.observation_dim))  # hidden is required, not optional
 
 
-def test_observation_spec_is_required_at_construction(pomdp_env) -> None:
-    """The spec is mandatory at BINDING, not discovered on the first forward pass.
+def test_the_input_block_slices_are_required_at_construction(pomdp_env) -> None:
+    """The slices are mandatory at BINDING, not discovered on the first forward pass.
 
-    It used to default to None, so a network built without one constructed
-    happily, moved to a device, and only then raised inside `forward()` —
-    potentially mid-training. A parameter the object cannot function without is
-    not optional (No-Defaults Principle); the failure now lands at the authoring
-    mistake instead of arbitrarily far downstream.
+    They used to default to None, so a network built without them constructed happily,
+    moved to a device, and only then raised inside `forward()` — potentially
+    mid-training. A parameter the object cannot function without is not optional
+    (No-Defaults Principle); the failure now lands at the authoring mistake instead of
+    arbitrarily far downstream. `grid_slice` is the ONE exception and stays optional:
+    "no spatial window" is a real universe, and a token observation is always one.
     """
-    bars = pomdp_env.observation_activity.group_slices["bars"]
+    blocks = NetworkFactory.token_block_slices(pomdp_env.token_spec)
     kwargs = {
         "action_dim": pomdp_env.action_dim,
-        "window_size": 5,
-        "position_dim": 2,
-        "bars_dim": bars.stop - bars.start,
-        "num_affordance_types": pomdp_env.num_affordance_types,
+        "window_size": 1,
+        "position_dim": blocks["self"].stop - blocks["self"].start,
+        "bars_dim": blocks["meter"].stop - blocks["meter"].start,
+        "num_affordance_types": (blocks["affordance"].stop - blocks["affordance"].start) - 1,
         "enable_temporal_features": False,
         "hidden_dim": 64,
-        "observation_spec": pomdp_env.observation_spec,
-        "observation_activity": pomdp_env.observation_activity,
+        "meters_slice": blocks["meter"],
+        "affordance_slice": blocks["affordance"],
     }
 
-    for omitted in ("observation_spec", "observation_activity"):
+    for omitted in ("meters_slice", "affordance_slice"):
         missing = {k: v for k, v in kwargs.items() if k != omitted}
         with pytest.raises(TypeError):
             RecurrentSpatialQNetwork(**missing)
+
+    # grid_slice omitted: constructs, and the vision encoder reads zeros.
+    RecurrentSpatialQNetwork(**kwargs)
 
 
 def test_training_update_does_not_clobber_rollout_hidden_state(tmp_path: Path, monkeypatch) -> None:

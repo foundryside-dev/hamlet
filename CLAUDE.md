@@ -172,53 +172,64 @@ CLEAN_HOUSE, ENTERTAINMENT, DOCTOR — `affordances.yaml` is byte-identical acro
 (verified 2026-08-15). Several `docs/architecture/` documents list a *different* affordance set;
 they are wrong, this one is the shipped pack.
 
-**Observation Encoding Modes** (configurable via pack-level `stratum.yaml`):
+**Observation Encoding Modes** (`stratum.yaml`): ⚠️ **`observation_mode` and
+`observation_encoding` are INERT since the unit-3 token cut (2026-08-26).** They configured
+the old raster observation spec's field selection and position-block encoding; nothing reads
+them at runtime now. Measured: `scaled` and `relative` compile to a byte-identical `TokenSpec`
+— same `total_dims`, same `observation_schema_hash`, same `layout_hash` — so the declaration
+is a No-Defaults-violating no-op, not a choice. Filed as `hamlet-6a4a6596bd` (P1). A token
+position block is always the substrate's normalized coordinates plus an egocentric delta,
+padded to `MAX_POSITION_RANK`.
 
-- **relative** (default): Normalized [0,1] coordinates - best for transfer learning, required for POMDP
-- **scaled**: Coordinates scaled to grid dimensions [0, grid_size] - value range conveys grid size implicitly
-- **absolute**: Raw unnormalized coordinates - for physical simulation
+**Observation Dimensions** — the observation is **TOKENS**, not a raster:
 
-**Note** (corrected 2026-08-24 — the previous "all modes identical obs_dim" claim was
-false): `relative` and `absolute` emit 2 position dims in Grid2D; **`scaled` emits 4**
-(x, y, width, height — it packs the extents into the position block; 6 in Grid3D).
-Source: `substrate/grid2d.py:get_position_feature_dim`. Encoding mode is part of the
-observation ABI, not just a value-range choice.
+⚠️ **The allocated-vs-active superset-plus-activity-mask framing this section used to teach
+is DEAD** (unit-3 token cut, DIV-008). `ObservationSpec`, `ObservationField`,
+`ObservationActivity`, `curriculum_active` and the per-level activity mask are deleted, not
+renamed. **There is no mask and no inactive slot: every dim is real, and absence is a token's
+own presence feature.** Do not carry an "allocated vs active" reading into any observation
+question.
 
-**Observation Dimensions** (Grid2D with "relative" encoding):
-
-⚠️ **The per-level dimension counts previously listed here (29 / 54) were wrong by roughly 4×,
-and no replacement literal is given on purpose.** Observation width moves whenever the observed
-surface changes, so any number written here starts decaying immediately — that is how the old
-ones got wrong. Ask the compiled artifact — it is the only authority, and correct by
-construction at every commit:
+⚠️ **No dimension literal is given here, on purpose** — the old per-level counts (29 / 54)
+were wrong by roughly 4×, which is how a written-down width decays. Ask the compiled artifact;
+it is the only authority and is correct by construction at every commit:
 
 ```python
 from townlet.universe.compiler import UniverseCompiler
 u = UniverseCompiler().compile(Path("configs/default_curriculum"),
                                primary_level="L1_full_observability")
-u.observation_spec.total_dims
+spec = u.get_level("L1_full_observability").token_spec
+spec.total_dims      # serialization width of the flat view
+spec.census          # {token type: count} — where the width actually goes
+spec.row_layout()    # (type, slot, start, end) per row; presence leads each row
 ```
 
 `compile()` requires an explicit `primary_level` — implicit selection raises. `CompiledUniverse`
 is single-level by construction (`get_level` / `to_level` / `all_levels` navigate; there is no
-`.levels` mapping), and the field is `total_dims`, not `total_dim`.
+`.levels` mapping).
 
-**"Observation dim" is two quantities, and conflating them is what corrupted every table in
-`docs/`.** The observation is a fixed-width **superset with a per-level activity mask**:
+**What a TokenSpec is** (spec
+`docs/superpowers/specs/2026-08-22-token-observation-representation-design.md` §§1-2): seven
+engine token types in a fixed canonical order — `self`, `meter`, `affordance`, `agent`,
+`item`, `effect`, `variable_element` — each with a **fixed payload width across all
+universes**, and a **per-universe compiled capacity** with deterministic slot bindings.
+Content is per-universe; the type system is not. `total_dims = Σ_type capacity × (1 + payload
+width)`. Identity is the declared payload applied recursively (a meter is its declared
+parameters, an affordance carries its targets' meter signatures), never a name or a slot
+index — so two entities identical in every declared parameter are refused at compile time.
 
-- **Allocated** (`observation_spec.total_dims`) — identical at every level. This is the tensor
-  width, and the mechanism behind the transfer-learning property below.
-- **Active** (`sum(observation_activity.active_mask)`) — varies per level. Inactive slots are
-  held at zero, not removed.
+**Two consequences worth holding on to:**
 
-POMDP does **not** shrink the tensor: it zeroes the grid-encoding block and activates the local
--window block instead. Quote which quantity you mean, or don't quote a number.
-
-**Key insight** (corrected 2026-08-24 — the previous "constant across all grid sizes" claim was
-too strong): allocated observation width is constant **across the levels of one pack**, because
-all levels share one pack-root `stratum.yaml` — that is what enables cross-level transfer. It is
-**not** constant across grid sizes: the grid encoding is one slot per cell
-(`get_grid_encoding_dim() = width * height`). See `docs/architecture/STRATA.md` §6.3.
+- **Transfer is a property of the type schema, not of the width.**
+  `token_type_schema_hash` — the transfer contract — is **identical across a 2-D grid, a 3-D
+  cubic grid and an aspatial universe** (measured 2026-08-26: `428982ef5d81dd26` on
+  `default_curriculum`, `differential/div003_cubic_partial`, `aspatial_test` and all three
+  `token_transfer_*` packs, whose `total_dims` range 162–1132). That is what
+  `MAX_POSITION_RANK` padding buys, and why rank-adaptive padding is not a free width saving.
+  `layout_hash` — the flat-net contract — moves per universe, as it must.
+- **POMDP does not shrink or reshape the tensor**: same `TokenSpec`, same width, same
+  `layout_hash`; `vision_range` is handed to `substrate.visible()` and out-of-range spatial
+  tokens have presence (and payload) zeroed.
 
 **Action Space** (corrected 2026-08-24 — the per-substrate count table previously here, "Grid2D
 8 / Grid3D 10 / GridND(7D) 16 / Aspatial 4", disagreed with source): the action space is
@@ -249,13 +260,19 @@ BAC — not just an observation helper.
 **Purpose**: Declarative state space configuration for observation specs, access control, action
 dependencies, and (via VTC) compiled transitions.
 
-**Pipeline**: `YAML Config → Schema Validation → Observation Spec → Runtime Registry → Observations`
+**Pipeline** (corrected 2026-08-26 at the token cut): `YAML Config → Schema Validation →
+TokenSpec → Runtime Registry + token publishers → Observations`
 
 **Key Components**:
 
-- `schema.py`: VariableDef, ObservationField, NormalizationSpec, WriteSpec
+- `schema.py`: VariableDef, NormalizationSpec, WriteSpec (`ObservationField` — the VFS
+  observation mirror — was **deleted** at the token cut, along with `VFSObservationSpec` and
+  `vfs/observation_builder.py`: the mirror was derived one hop downstream of an
+  `ObservationSpec` that no longer exists)
 - `registry.py`: Runtime storage with GPU tensors, access control enforcement
-- `observation_builder.py`: Compile-time spec generation, dimension validation
+- `universe/dto/token_spec.py`: the compiled `TokenSpec` — engine constants, per-type payload
+  schemas, capacity derivations, the exposure refusals and the indistinguishability check
+- `environment/token_publishers.py`: one publisher per token type; fills the flat view
 - `vtc.py`: VFS Transition Compiler — action writes, passive dynamics, cascades, terminal
   conditions, reward components, occupancy claims
 
@@ -454,10 +471,18 @@ DTOs live in `src/townlet/config/` — `training_v2_config.py`, `environment_con
 
 ## Network Architecture Selection
 
-**SimpleQNetwork** (full observability — L0, L0.5, L1) and **RecurrentSpatialQNetwork**
-(POMDP — L2, L3: CNN vision encoder + LSTM). Layer shapes: read
-`src/townlet/agent/networks.py`. Observation width comes only from the compiled artifact
+**SimpleQNetwork** (full observability) and **RecurrentSpatialQNetwork** (LSTM). Layer shapes:
+read `src/townlet/agent/networks.py`. Observation width comes only from the compiled artifact
 (see State Representation above) — do not write dimension literals here.
+
+**Census, not intent** (measured 2026-08-26 — the "L0/L0.5/L1 vs L2/L3" mapping this line used
+to assert was never what the packs declared): **no shipped pack declares `recurrent`.** Every
+`default_curriculum` level runs `feedforward`, including the two POMDP ones; only the three
+`configs/test/token_transfer_*` fixtures and `configs/test/set_encoder_smoke` (`token_set`)
+differ. `RecurrentSpatialQNetwork` survives the token cut as a token-BLOCK reader — it binds
+its three real blocks to `NetworkFactory.token_block_slices(spec)` (self→position,
+meter→meters, affordance→affordance) and reads no spatial window, because a token observation
+has none. `set_encoder` no longer builds; declare `token_set`.
 
 - LSTM hidden state: resets at episode start, persists during rollout, resets per transition in batch training
 

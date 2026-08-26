@@ -110,6 +110,13 @@ stratum:
     mode: full_auto
 ```
 
+⚠️ Two keys in that block are **inert** since the unit-3 token cut (2026-08-26):
+`observation_encoding` and `observation_mode` configured the old raster observation spec and
+nothing reads them now — measured, `scaled` and `relative` compile to a byte-identical
+`TokenSpec`. They still parse, which makes them a No-Defaults violation rather than a choice;
+filed as `hamlet-6a4a6596bd`, not removed here because it would touch every pack's
+`stratum.yaml`.
+
 Nothing else defines the substrate. The grid is 8×8 for every level in the pack: `stratum.yaml`
 exists only at pack root, and the level loader reads no substrate file from a level directory.
 Replacing that `substrate` block re-substrates the same experiment. The measured case is recorded
@@ -212,7 +219,14 @@ frequency, the double-DQN flag, learning rate and replay capacity — and none o
 Three declarations are worth knowing about because older docs predate them. Each meter's
 observation type is declared per meter as `range_type` in `environment.yaml` — a closed,
 parameterized vocabulary of nine normalization kinds (`minmax`, `log_scaled`, `zscore`, …); the
-shipped pack uses `minmax` with `clip: false` for all eight. Each `environment.yaml` variable
+shipped pack uses `minmax` with `clip: false` for all eight. ⚠️ **`range_type` no longer
+reaches the observation** (unit-3 token cut, 2026-08-26): a meter token's value lane is the
+meter's clamped position within its `bars.yaml` `[min, max]`, derived from the bars declaration
+alone, so declaring `cyclical_sin_cos` on a clock meter or `one_hot` on a categorical one now
+changes nothing an agent sees. The declaration still parses and still feeds the compiled
+normalization spec. That is a designer-facing capability that silently stopped working, filed
+as `hamlet-1e335e0363` and not accepted as final — either the meter token carries the declared
+normalization, or the surface is retired with a superseding record. Each `environment.yaml` variable
 declares a `semantic_type` from a closed vocabulary, and each affordance declares its
 `interaction_type` (`instant`, `multi_tick` or `dual`) — required, no default. And a pack may carry
 an optional `presentation.yaml` at its root: the live-inference server reads it to render meters and
@@ -227,9 +241,18 @@ name.
 levels, but `bars.yaml`, `affordances.yaml` and `drive.yaml` are byte-identical across all five,
 and the substrate is pack-level. Only two levels change the world the agent sees:
 `L2_partial_observability` (`active_vision: partial`) and `L3_temporal_mechanics`
-(`active_temporal: true`, `day_length: 24`). Compiling all five and comparing artifacts,
-`observation_schema_hash` takes exactly three distinct values — one shared by L0_0, L0_5 and L1,
-one for L2, one for L3. Five level directories, three distinct observation surfaces. Within the
+(`active_temporal: true`, `day_length: 24`). **Corrected 2026-08-26 at the unit-3 token cut:**
+this paragraph used to say `observation_schema_hash` took three distinct values across the five
+levels — one shared by L0_0/L0_5/L1, one for L2, one for L3 — and read that as "three distinct
+observation surfaces". It now takes **exactly one**: compiling all five gives an identical
+`observation_schema_hash`, `layout_hash`, `token_type_schema_hash` and `total_dims`. The
+compiled observation surface is the same at every level. Partial observability is a **runtime
+visibility filter** over an unchanged TokenSpec (out-of-range spatial tokens have presence and
+payload zeroed), not a compiled difference; and the day/night phase is now an authored global
+in the pack-root `vfs_profiles.yaml`, so every level carries it, `active_temporal` or not. So
+the "five documented levels are three distinct universes" reading — still true of the
+*mechanics* — is no longer visible in the observation artifact at all, and a level's
+distinguishing feature has to be looked for in `curriculum.yaml`, not in a hash. Within the
 first group, `L0_5_dual_resource` and `L1_full_observability` differ, outside comments, in one
 line of one file (`output_subdir`), and `L0_0_minimal` differs from them in training hyperparameters — the
 double-DQN flag, target-update frequency, batch size, intrinsic-annealing floor, episode budget
@@ -592,8 +615,9 @@ badged a test count and a coverage percentage and stated an observation width; `
 records that coverage figure as measured-false, and the width it gave is not what the compiler
 reports for any `default_curriculum` level at this commit. Read them off the tree instead: compile a level and read
 `Observation Dim` from the summary (the field is `metadata.observation_dim`, set from
-`observation_spec.total_dims` — plural — and it is a property of the pack, not a constant of the
-project); run `uv run pytest` for the suite; and read `docs/product/metrics.md` for measurements
+`token_spec.total_dims` — plural — and it is a property of the pack, not a constant of the
+project; the attribute was `observation_spec.total_dims` until the 2026-08-26 token cut deleted
+that artifact); run `uv run pytest` for the suite; and read `docs/product/metrics.md` for measurements
 stamped with the commit and date they were taken at.
 
 ## Documentation

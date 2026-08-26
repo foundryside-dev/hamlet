@@ -38,6 +38,8 @@ status: current as of 2026-08-12 (WS-1(e), PDR-0016)
 > cascades must additionally match `environment.yaml: cascade_graph`, enforced at
 > `universe/validation/semantics.py:181-205`; this file does not mention that constraint.
 >
+> Tracked as `hamlet-2631703087`.
+>
 > ℹ️ Where this document and the code *comment* disagree, **this document is right**:
 > `bars_v2_config.py:89` still says `description="Starting value [0.0, 1.0]"` while the
 > validator only enforces bounds containment.

@@ -600,8 +600,11 @@ copy dissolves the drift).
 - **Status:** `built` (2026-08-26, unit 3 Task 11 — **measured and bound on all twenty
   cells**. The cut landed at Task 10 (`4dde71a2`); the L3 temporal declaration
   (`9563dc45`, `hamlet-02684be106`) landed before the binding so it was measured against a
-  stable tree. Full 20-cell matrix, both modes, **exit 0**: `--scripted` run
-  `20260826-171622` and plain (seeded-random) run `20260826-171731` — all ten CPU cells
+  stable tree. Full 20-cell matrix, both modes, **exit 0** — acceptance runs at the clean
+  tree (`new_dirty: false`): `--scripted` `20260826-172349` and plain (seeded-random)
+  `20260826-172441`; the first-binding runs `20260826-171622` / `20260826-171731` are
+  verdict-for-verdict identical and are the measurement this entry's tables were taken
+  from. All ten CPU cells
   `DIVERGED_AS_REGISTERED` with `shape: "hash+stream"`, naming `["DIV-009", "DIV-010",
   "DIV-008"]`, exactly eight movers each, and **`obs` the only diverging stream on every
   cell in both modes**; all ten CUDA cells `SKIPPED` (`--cuda` not passed). The measured

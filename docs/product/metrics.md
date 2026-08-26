@@ -10,6 +10,32 @@
 > **Scale note:** `src/townlet/` is **45,274 LOC** across 14 packages (assessment §7). Earlier
 > figures in this session said ~37k — a ~20% underestimate. No conclusion depends on it.
 
+> ### 🔴 READING THAT CROSSED A REVERSAL TRIGGER — 2026-08-26, unit-3 Task 11
+>
+> **`PDR-0114` trigger 3 is FIRED.** Measured on the compiled post-cut artifact, which is the
+> measurement `PDR-0123` brought forward to this checkpoint: `configs/default_curriculum` @
+> `L1_full_observability`, **`token_spec.total_dims` = 1132 = 9.43×** the pre-cut allocated
+> 120. (Not the 1080 / 9.0× read at design time — the L3 temporal declaration added one
+> `variable_element` token, 52 dims, uniformly on all five levels.) Census: `self` 1×18,
+> `meter` 8×12, **`affordance` 14×66 = 924, i.e. 82% of the total**, `item` 2×21,
+> `variable_element` 1×52, `agent` and `effect` capacity 0.
+>
+> All three levers `PDR-0123` named were drilled with data and **none is takeable**: the
+> meter signature is refuted as dead width (7 of 8 declared parameters vary; all 8 meters
+> have distinct signatures), rank-adaptive position padding would save 210 dims → 7.68× but
+> breaks spec §1's fixed-per-type width — measured, `token_type_schema_hash` is identical
+> across 2-D grid, 3-D cubic and aspatial universes, which is exactly what the padding buys —
+> and K=4→3 is right-sized by the fleet's declared data (175 affordance declarations, max 3
+> deltas, nothing above) but only reaches 8.15×.
+>
+> **`PDR-0114` is REOPENED and ESCALATED to the human owner** with four costed options
+> (`PDR-0124`). The cap is not edited and no lever was taken.
+>
+> **Adjacent reading, trigger NOT fired:** obs encode is **16.8–19.5% of `env.step`**
+> post-cut (measured CPU, 4 agents, 200 timed steps, at 1132 and 1766 dims), under the 25%
+> line — and measured against a step no longer padded by clone traffic in the observation
+> path (`hamlet-c7084169f7`: clones per `_get_observations` 20 → 0).
+
 ## North-star
 
 The vision says the product is **trivial authoring**: idea → running DRL gym without Python. The

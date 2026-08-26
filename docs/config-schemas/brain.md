@@ -1,5 +1,37 @@
 # brain.yaml Configuration Reference
 
+> ⚠️ **Restored to the live tree 2026-08-26 — THREE OF FOUR "Complete Examples" ARE REJECTED by the DTO, and the architecture it teaches no longer builds.**
+>
+> Verified against `src/townlet/config/brain_config.py` on 2026-08-26.
+>
+> **⚠️ Two reproduced hard rejections:**
+> 1. **`type: mse` combined with `huber_delta`** — this breaks **3 of the 4** Complete Examples.
+> 2. **`T_max` (line 274) is not a field. The real name is `t_max`** (lowercase,
+>    `brain_config.py:301`) — and **`eta_min` is REQUIRED alongside it**: `brain_config.py:311-312`
+>    raises `type='cosine' requires t_max and eta_min`. This document never mentions `eta_min`.
+>    So the cosine example fails twice: once on the unknown key, once on the missing one.
+>
+> **⛔ `set_encoder` is documented here (3×) but NO LONGER BUILDS.**
+> `population/vectorized.py:400-407` raises: *"architecture.type='set_encoder' has no buildable
+> network after the unit-3 token cut … Landing: declare `token_set`, which consumes the compiled
+> TokenSpec directly."* **Zero shipped packs declare it.**
+>
+> **⛔ `token_set` — the architecture that actually works — is mentioned ZERO times here**,
+> despite being in the architecture `Literal` (`brain_config.py:432`:
+> `["feedforward", "recurrent", "dueling", "set_encoder", "token_set"]`) and declared by **five
+> shipped packs** (`configs/test/token_transfer_a|b|c`, `configs/test/set_encoder_smoke` and its
+> `levels/L1_attention`).
+>
+> So this document steers an author into an architecture that raises, and hides the one that
+> works — the same "makes the framework look less capable than it is" failure as
+> `expressions.md`.
+>
+> Tracked as `hamlet-e69e860948`.
+>
+> ⚠️ Also note `docs/bugs/JANK-08-...md`: the `dueling` flag reaches the network builder and is
+> then **ignored by the training path** — a declared-but-inert flag.
+
+
 Brain configuration defines agent architecture, optimizer, loss function, Q-learning parameters, and replay buffer strategy.
 
 ## File Location

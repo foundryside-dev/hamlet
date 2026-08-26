@@ -1,5 +1,14 @@
 # transition_rules.yaml Configuration
 
+> ✅ **Restored to the live tree 2026-08-26 — verified accurate. Its flagship example both parses AND compiles**, which is the bar the other schema docs fail.
+>
+> One caveat, not a defect: the example variables `trust`, `observer_mask` and `chosen_action`
+> are **not declared in `configs/default_curriculum`**. Pair-scoped `trust` ships only in
+> `configs/L5_multi_agent` and `configs/trial_o_bidding_blind`; `observer_mask` and
+> `chosen_action` have no config hits anywhere. Read them as illustrative names, and declare
+> your own before copying an example.
+
+
 ---
 ## AI-Friendly Frontmatter
 

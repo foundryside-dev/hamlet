@@ -1,5 +1,38 @@
 # VFS Profiles Configuration
 
+> ⛔ **Restored to the live tree 2026-08-26 — a pack written from this document WILL NOT PARSE.**
+>
+> Verified against `src/townlet/config/vfs_profiles_config.py` on 2026-08-26.
+>
+> **⚠️ Two REQUIRED top-level fields are never mentioned in this document.**
+> `VFSProfilesConfig` requires `version`, **`evaluation_mode`** and **`debug_logging`**. This
+> file mentions `evaluation_mode` **0 times** and `debug_logging` **0 times**. Omit either and
+> the pack is refused at parse.
+>
+> **⚠️ `readable_by` / `writable_by` are NOT fields of any profile DTO** — this document uses
+> them 12 times combined (8 + 4). No class in `vfs_profiles_config.py` declares them:
+> variables carry **`exposed_to`** instead. Under `extra="forbid"` they are a parse error. (This
+> matches `CLAUDE.md` §VFS: access-control enforcement is real where it runs but currently has
+> **no authoring surface** — the compiler hardcodes the role lists.)
+>
+> **⚠️ The "Optional File" framing is false.** `vfs_profiles.yaml` is **required**, at pack
+> root, and level directories must NOT contain one.
+>
+> **⚠️ `tensorNd` is entirely undocumented here** while `vfs_profiles_config.py:39-52` accepts
+> `tensor1d` / `tensor2d` / `tensor3d` / **`tensorNd`**. It genuinely works, and an
+> undiscoverable working capability is the worst case for a product whose north-star is
+> authorability. Tracked as `hamlet-8b5af63108`.
+>
+> ✅ **Correct as written — do not "fix" it:** the warning that item-scoped *expressions* are
+> refused at compile time is accurate and already present below.
+>
+> Tracked as `hamlet-fd0eb2da2c`.
+>
+> Real field sets, verified: `ItemVFSProfileConfig` = `{profile_name, variables}`;
+> item variables = `{id, name, type, initial_value, expression, normalization, exposed_to,
+> description}`.
+
+
 **Status**: Phase 2 Implementation (Expression Support)
 **Version**: 1.0
 **Last Updated**: 2025-11-21

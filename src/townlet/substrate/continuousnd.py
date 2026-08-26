@@ -290,63 +290,17 @@ class ContinuousNDSubstrate(SpatialSubstrate):
         """Encode positions as raw unnormalized coordinates."""
         return positions
 
-    def encode_observation(self, positions: torch.Tensor, affordances: dict[str, torch.Tensor]) -> torch.Tensor:
-        """Encode agent positions into observation space.
 
-        Args:
-            positions: [num_agents, N] agent positions
-            affordances: {name: [N]} affordance positions (currently unused)
-
-        Returns:
-            Encoded observations:
-            - relative: [num_agents, N]
-            - scaled: [num_agents, 2N]
-            - absolute: [num_agents, N]
-        """
-        if self.observation_encoding == "relative":
-            return self._encode_relative(positions, affordances)
-        elif self.observation_encoding == "scaled":
-            return self._encode_scaled(positions, affordances)
-        elif self.observation_encoding == "absolute":
-            return self._encode_absolute(positions, affordances)
-        else:
-            raise ValueError(f"Invalid observation_encoding: {self.observation_encoding}")
-
-    def get_observation_dim(self) -> int:
-        """Return dimensionality of position encoding.
-
-        Returns:
-            - relative: N (normalized coordinates)
-            - scaled: 2N (normalized + range sizes)
-            - absolute: N (raw coordinates)
-        """
-        if self.observation_encoding == "relative":
-            return len(self.bounds)
-        elif self.observation_encoding == "scaled":
-            return 2 * len(self.bounds)
-        elif self.observation_encoding == "absolute":
-            return len(self.bounds)
-        else:
-            raise ValueError(f"Invalid observation_encoding: {self.observation_encoding}")
 
     @property
     def supports_partial_vision(self) -> bool:
         return False
 
-    def get_grid_encoding_dim(self) -> int:
-        """Continuous spaces have no grid; no obs_grid_encoding field exists."""
-        return 0
 
-    def get_position_feature_dim(self) -> int:
-        """The whole continuous encoding is position features
-        (encode_observation is what the runtime publishes for obs_position)."""
-        return self.get_observation_dim()
 
     def get_vision_radius(self, vision_range: float) -> int:
         raise ValueError("Continuous substrates do not support partial vision; no vision radius exists.")
 
-    def get_partial_window_dim(self, vision_radius: int) -> int:
-        raise ValueError("Continuous substrates do not support partial vision; no local window exists.")
 
     def normalize_positions(self, positions: torch.Tensor) -> torch.Tensor:
         """Normalize positions to [0, 1] range (always relative encoding).
@@ -527,35 +481,3 @@ class ContinuousNDSubstrate(SpatialSubstrate):
 
         return actions
 
-    def encode_partial_observation(
-        self,
-        positions: torch.Tensor,
-        affordances: dict[str, torch.Tensor],
-        vision_range: int,
-    ) -> torch.Tensor:
-        """Encode local window around agents for partial observability (POMDP).
-
-        For N-dimensional continuous spaces, local windows are impractical:
-        - No discrete grid to window into
-        - Infinite positions in any local region
-        - Exponential growth of window volume with dimensions
-
-        Current implementation: Not supported for N≥4. Use full observability
-        with coordinate encoding instead.
-
-        Args:
-            positions: [num_agents, N] agent positions
-            affordances: {name: [N]} affordance positions
-            vision_range: radius of vision window
-
-        Returns:
-            Empty tensor [num_agents, 0] - partial obs not supported for ND
-
-        Raises:
-            NotImplementedError: Partial observability not supported for N≥4
-        """
-        raise NotImplementedError(
-            f"Partial observability (POMDP) is not supported for {self.position_dim}D continuous spaces. "
-            f"Continuous spaces have infinite positions in any local window. "
-            f"Use full observability with 'relative' or 'scaled' observation_encoding instead."
-        )

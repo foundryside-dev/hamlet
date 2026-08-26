@@ -78,6 +78,8 @@ def minimal_compiled_universe_with_effects(tmp_path: Path):
                 "on_despawn": [],
             },
         ],
+        # Required whenever any effect is declared (token-obs spec §2 capacity table).
+        "max_active_effects": {"global": 0, "agent": 2, "item": 0, "affordance": 0},
     }
     (experiment_dir / "effects.yaml").write_text(yaml.dump(effects))
 

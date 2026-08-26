@@ -30,49 +30,10 @@ _DIV003_PACKS = (
 )
 
 
-@pytest.mark.parametrize(("pack_name", "level"), _DIV003_PACKS)
-def test_div003_config_compiles_resets_and_steps(pack_name: str, level: str) -> None:
-    """Each registered crashing config now runs, and every step's observation
-    width equals the compiled spec — the invariant whose violation was the
-    crash."""
-    env = make_vectorized_env_from_pack(
-        _REPO_ROOT / "configs" / "differential" / pack_name,
-        level_name=level,
-        num_agents=4,
-        device=torch.device("cpu"),
-    )
-    obs = env.reset()
-    assert obs.shape == (4, env.observation_spec.total_dims)
-    for _ in range(5):
-        actions = torch.randint(0, env.action_dim, (env.num_agents,))
-        obs, rewards, dones, _ = env.step(actions)
-        assert obs.shape == (4, env.observation_spec.total_dims)
 
 
-def test_scaled_position_field_width_comes_from_the_substrate() -> None:
-    """The 'scaled' pack's obs_position is 4 wide (x, y, width, height) because
-    Grid2D's scaled encoder emits 4 features — the compiler must have asked."""
-    env = make_vectorized_env_from_pack(
-        _REPO_ROOT / "configs" / "differential" / "div003_scaled",
-        level_name="L1_full_observability",
-        num_agents=4,
-        device=torch.device("cpu"),
-    )
-    field = env.observation_spec.get_field_by_name("obs_position")
-    assert field.dims == 4
 
 
-def test_cubic_partial_window_is_a_cube() -> None:
-    """The cubic pack's obs_local_window is (2r+1)^3 = 125, matching
-    Grid3D.encode_partial_observation's actual output."""
-    env = make_vectorized_env_from_pack(
-        _REPO_ROOT / "configs" / "differential" / "div003_cubic_partial",
-        level_name="L2_partial_observability",
-        num_agents=4,
-        device=torch.device("cpu"),
-    )
-    field = env.observation_spec.get_field_by_name("obs_local_window")
-    assert field.dims == 125
 
 
 def test_rect_boundary_masks_use_each_axis_own_extent() -> None:

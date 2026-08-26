@@ -26,10 +26,6 @@ import pytest
 import torch
 import yaml
 
-import townlet.environment.action_executor as action_executor_module
-import townlet.environment.env_factory as env_factory_module
-import townlet.environment.observation_encoder as observation_encoder_module
-import townlet.environment.reward_calculator as reward_calculator_module
 import townlet.environment.vectorized_env as vectorized_env_module
 from townlet.environment.env_factory import (
     _build_bar_index_map,
@@ -62,42 +58,6 @@ DEFAULT_CURRICULUM_LEVELS = (
 # =============================================================================
 
 
-def test_environment_runtime_modules_own_extracted_clusters():
-    """R-1 ownership guard: vectorized_env delegates the extracted method clusters."""
-    env_source = Path(vectorized_env_module.__file__).read_text()
-
-    expected_module_methods = {
-        action_executor_module: [
-            "def _execute_actions",
-            "def _handle_interactions",
-            "def _handle_instant_interactions",
-        ],
-        observation_encoder_module: [
-            "def _get_observations",
-            "def _build_affordance_encoding",
-            "def _encode_position_observation",
-        ],
-        reward_calculator_module: ["def _calculate_shaped_rewards"],
-        env_factory_module: ["def from_universe"],
-    }
-    for module, method_markers in expected_module_methods.items():
-        source = Path(module.__file__).read_text()
-        for marker in method_markers:
-            assert marker in source
-
-    delegated_implementation_markers = [
-        "movement_actions =",
-        "build_vfs_observation(",
-        "dac_engine.calculate_rewards(",
-        "return env_cls(",
-    ]
-    for marker in delegated_implementation_markers:
-        assert marker not in env_source
-
-
-def _with_runtime_action_write(universe, level_name: str, action_name: str, write: WriteSpec):
-    """Return a compiled universe whose named runtime action carries one VFS write."""
-    return _with_runtime_action_surface(universe, level_name, action_name, writes=(write,), disable_vfs_profiles=True)
 
 
 def _with_runtime_action_surface(
@@ -173,9 +133,15 @@ def _with_runtime_action_surface(
         vfs_hash=vfs_hash,
         all_levels=all_levels,
         compiled_vfs_profiles=None if disable_vfs_profiles else universe.compiled_vfs_profiles,
-        vfs_observation_spec=None if disable_vfs_profiles else universe.vfs_observation_spec,
         vfs_evaluation_marks=None if disable_vfs_profiles else universe.vfs_evaluation_marks,
     )
+
+
+def _with_runtime_action_write(universe, level_name: str, action_name: str, write: WriteSpec):
+    """Return a compiled universe whose named runtime action carries one VFS write."""
+    return _with_runtime_action_surface(universe, level_name, action_name, writes=(write,), disable_vfs_profiles=True)
+
+
 
 
 def test_build_bar_index_map():
@@ -884,86 +850,6 @@ class TestExecuteActions:
         assert isinstance(result, dict)
 
 
-class TestGetObservations:
-    """Test VectorizedHamletEnv._get_observations() method."""
-
-    def test_get_observations_returns_tensor(self, cpu_env_factory):
-        env = cpu_env_factory(num_agents=2)
-        env.reset()
-
-        obs = env._get_observations()
-
-        assert obs.shape == (2, env.observation_dim)
-
-    def test_get_observations_full_observability_shape(self, cpu_env_factory):
-        env = cpu_env_factory(num_agents=3)
-        env.reset()
-        obs = env._get_observations()
-        assert obs.shape == (3, env.observation_dim)
-        assert env.partial_observability is False
-
-    def test_get_observations_pomdp_shape(self, custom_env_builder):
-        env = custom_env_builder(
-            num_agents=2,
-            source_pack=Path("configs/default_curriculum"),
-            level_name="L2_partial_observability",
-        )
-        env.reset()
-        obs = env._get_observations()
-        assert env.partial_observability is True
-        assert obs.shape == (2, env.observation_dim)
-
-    def test_get_observations_contains_meters(self, cpu_env_factory):
-        env = cpu_env_factory()
-        env.reset()
-        obs = env._get_observations()
-        assert torch.all(obs[:, -4:] >= -1.0)
-
-    def test_get_observations_uses_substrate_position_encoder(self, cpu_env_factory, monkeypatch):
-        env = cpu_env_factory(num_agents=2)
-        env.reset()
-
-        expected = torch.full((env.num_agents, env.substrate.position_dim), 0.42, device=env.device)
-
-        def fake_encoder(positions, affordances):
-            return expected
-
-        def fail_normalize(_):
-            raise AssertionError("normalize_positions should not be called when encoder exists")
-
-        monkeypatch.setattr(env.substrate, "_encode_position_features", fake_encoder)
-        monkeypatch.setattr(env.substrate, "normalize_positions", fail_normalize, raising=False)
-
-        encoded = env._encode_position_observation()
-        assert torch.allclose(encoded, expected)
-
-    def test_get_observations_falls_back_to_encode_observation(self, cpu_env_factory, monkeypatch):
-        env = cpu_env_factory()
-        env.reset()
-
-        expected = torch.full((env.num_agents, env.substrate.position_dim), 0.25, device=env.device)
-
-        def fake_encode_observation(positions, affordances):
-            return expected
-
-        def fail_normalize(_):
-            raise AssertionError("normalize_positions fallback should not trigger when encode_observation exists")
-
-        monkeypatch.setattr(env.substrate, "_encode_position_features", None, raising=False)
-        monkeypatch.setattr(env.substrate, "encode_position_features", None, raising=False)
-        monkeypatch.setattr(env.substrate, "encode_observation", fake_encode_observation)
-        monkeypatch.setattr(env.substrate, "normalize_positions", fail_normalize, raising=False)
-
-        encoded = env._encode_position_observation()
-        assert torch.allclose(encoded, expected)
-
-    def test_get_observations_handles_agent_private_scope(self, cpu_env_factory):
-        env = cpu_env_factory(num_agents=2)
-        env.reset()
-
-        env.vfs_registry.variables["deficit_energy"].scope = "agent_private"
-        obs = env._get_observations()
-        assert obs.shape[0] == env.num_agents
 
 
 class TestGetActionMasks:

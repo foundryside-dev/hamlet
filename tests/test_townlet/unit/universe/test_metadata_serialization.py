@@ -20,8 +20,6 @@ from townlet.universe.dto import (
     AffordanceMetadata,
     MeterInfo,
     MeterMetadata,
-    ObservationField,
-    ObservationSpec,
     UniverseMetadata,
 )
 
@@ -43,7 +41,6 @@ def test_universe_metadata_round_trip() -> None:
     compiled = compiler.compile(config_dir, primary_level="L0_test", use_cache=False)
 
     metadata = compiled.metadata
-    observation_spec = compiled.observation_spec
     action_meta = compiled.action_space_metadata
     meter_meta = compiled.meter_metadata
     affordance_meta = compiled.affordance_metadata
@@ -58,10 +55,6 @@ def test_universe_metadata_round_trip() -> None:
         payload["affordance_ids"] = tuple(payload["affordance_ids"])
         payload["affordance_id_to_index"] = payload["affordance_id_to_index"]
         return UniverseMetadata(**payload)
-
-    def _obs_spec_factory(payload: dict) -> ObservationSpec:
-        obs_fields = tuple(ObservationField(**field) for field in payload["fields"])
-        return ObservationSpec(total_dims=payload["total_dims"], fields=obs_fields, encoding_version=payload["encoding_version"])
 
     def _action_meta_factory(payload: dict) -> ActionSpaceMetadata:
         actions = tuple(ActionMetadata(**action) for action in payload["actions"])
@@ -84,13 +77,11 @@ def test_universe_metadata_round_trip() -> None:
         return AffordanceMetadata(affordances=affordances)
 
     reconstructed_metadata = _round_trip(metadata, _meta_factory)
-    reconstructed_obs = _round_trip(observation_spec, _obs_spec_factory)
     reconstructed_action_meta = _round_trip(action_meta, _action_meta_factory)
     reconstructed_meter_meta = _round_trip(meter_meta, _meter_meta_factory)
     reconstructed_affordance_meta = _round_trip(affordance_meta, _affordance_meta_factory)
 
     assert reconstructed_metadata == metadata
-    assert reconstructed_obs == observation_spec
     assert reconstructed_action_meta == action_meta
     assert reconstructed_meter_meta == meter_meta
     assert reconstructed_affordance_meta == affordance_meta
@@ -104,10 +95,13 @@ def test_compiled_universe_msgpack_round_trip(tmp_path: Path) -> None:
     compiled.save_to_cache(artifact_path)
     reconstructed = CompiledUniverse.load_from_cache(artifact_path)
 
-    assert reconstructed.observation_activity.active_dim_count > 0
-    assert reconstructed.observation_activity == compiled.observation_activity
     assert reconstructed.metadata == compiled.metadata
-    assert reconstructed.observation_spec == compiled.observation_spec
+    # The TokenSpec is the artifact's observation product since the unit-3 cut, and it
+    # must survive the msgpack round trip identically — hashes and slot bindings both.
+    assert reconstructed.token_spec == compiled.token_spec
+    assert reconstructed.token_type_schema_hash == compiled.token_type_schema_hash
+    assert reconstructed.layout_hash == compiled.layout_hash
+    assert reconstructed.observation_schema_hash == compiled.observation_schema_hash
     assert reconstructed.action_space_metadata == compiled.action_space_metadata
     assert reconstructed.meter_metadata == compiled.meter_metadata
     assert reconstructed.affordance_metadata == compiled.affordance_metadata

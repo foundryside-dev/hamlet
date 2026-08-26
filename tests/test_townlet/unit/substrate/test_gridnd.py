@@ -6,21 +6,6 @@ import torch
 from townlet.substrate.gridnd import GridNDSubstrate
 
 
-def test_gridnd_4d_initialization():
-    """GridND should initialize correctly for 4D hypercube."""
-    substrate = GridNDSubstrate(
-        dimension_sizes=[8, 8, 8, 8],
-        boundary="clamp",
-        distance_metric="manhattan",
-        observation_encoding="relative",
-    )
-
-    assert substrate.position_dim == 4
-    assert substrate.position_dtype == torch.long
-    assert substrate.action_space_size == 10  # 2*4 + 2
-    assert substrate.get_observation_dim() == 4  # Normalized coordinates
-
-
 def test_gridnd_requires_minimum_4_dimensions():
     """GridND should reject dimensions < 4."""
     with pytest.raises(ValueError, match="GridND requires at least 4 dimensions"):
@@ -144,47 +129,8 @@ def test_gridnd_distance_euclidean():
     assert torch.allclose(distance, torch.tensor([5.0]))
 
 
-def test_gridnd_observation_encoding_relative():
-    """Test relative encoding (normalized [0,1])."""
-    substrate = GridNDSubstrate(
-        dimension_sizes=[8, 8, 8, 8],
-        boundary="clamp",
-        distance_metric="manhattan",
-        observation_encoding="relative",
-    )
-
-    # Corner: [0, 0, 0, 0] → [0.0, 0.0, 0.0, 0.0]
-    # Opposite corner: [7, 7, 7, 7] → [1.0, 1.0, 1.0, 1.0]
-    positions = torch.tensor([[0, 0, 0, 0], [7, 7, 7, 7]], dtype=torch.long)
-
-    encoded = substrate.encode_observation(positions, {})
-
-    assert encoded.shape == (2, 4)
-    assert torch.allclose(encoded[0], torch.zeros(4))
-    assert torch.allclose(encoded[1], torch.ones(4))
-    assert substrate.get_observation_dim() == 4
 
 
-def test_gridnd_observation_encoding_scaled():
-    """Test scaled encoding (normalized + sizes)."""
-    substrate = GridNDSubstrate(
-        dimension_sizes=[10, 5, 3, 7],  # Different sizes
-        boundary="clamp",
-        distance_metric="manhattan",
-        observation_encoding="scaled",
-    )
-
-    positions = torch.tensor([[5, 2, 1, 3]], dtype=torch.long)
-
-    encoded = substrate.encode_observation(positions, {})
-
-    # First N dims: normalized positions
-    # Last N dims: dimension sizes
-    assert encoded.shape == (1, 8)  # 2 * 4 dimensions
-
-    # Verify sizes in last N dims
-    assert torch.allclose(encoded[0, 4:], torch.tensor([10.0, 5.0, 3.0, 7.0]))
-    assert substrate.get_observation_dim() == 8
 
 
 def test_gridnd_neighbors_4d_interior():

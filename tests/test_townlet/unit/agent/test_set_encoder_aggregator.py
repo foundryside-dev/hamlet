@@ -12,10 +12,8 @@ import pytest
 import torch
 from pydantic import ValidationError
 
-from townlet.agent.network_factory import NetworkFactory
 from townlet.agent.networks import SetEncoderQNetwork
 from townlet.config.brain_config import SetAggregatorConfig, SetEncoderConfig
-from townlet.universe.dto import ObservationField, ObservationSpec
 
 # --- config surface -------------------------------------------------------
 
@@ -117,47 +115,5 @@ def test_all_empty_token_set_yields_finite_q_values(aggregator_type: str, num_he
 # --- factory wiring -------------------------------------------------------
 
 
-def _observation_spec() -> ObservationSpec:
-    return ObservationSpec.from_fields(
-        [
-            ObservationField(
-                uuid=None,
-                name="obs_base",
-                type="vector",
-                dims=2,
-                start_index=0,
-                end_index=2,
-                scope="agent",
-                description="Base non-token features",
-                semantic_type="custom",
-                feature="variable",
-            ),
-            ObservationField(
-                uuid=None,
-                name="need_tokens",
-                type="vector",
-                dims=12,
-                start_index=2,
-                end_index=14,
-                scope="agent",
-                description="Flattened token set",
-                semantic_type="custom",
-                feature="variable",
-            ),
-        ]
-    )
 
 
-def test_factory_threads_the_declared_aggregator_into_the_network() -> None:
-    config = SetEncoderConfig(
-        **_encoder_config_kwargs(),
-        aggregator=SetAggregatorConfig(type="attention", num_heads=4),
-    )
-    network = NetworkFactory.build_set_encoder(
-        config=config,
-        obs_dim=14,
-        action_dim=5,
-        observation_spec=_observation_spec(),
-    )
-    assert isinstance(network.aggregator, torch.nn.MultiheadAttention)
-    assert network.aggregator.num_heads == 4

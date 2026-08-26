@@ -342,64 +342,17 @@ class GridNDSubstrate(SpatialSubstrate):
         """Encode positions as raw unnormalized coordinates."""
         return positions.float()
 
-    def encode_observation(self, positions: torch.Tensor, affordances: dict[str, torch.Tensor]) -> torch.Tensor:
-        """Encode agent positions into observation space.
 
-        Args:
-            positions: [num_agents, N] agent positions
-            affordances: {name: [N]} affordance positions (currently unused)
-
-        Returns:
-            Encoded observations:
-            - relative: [num_agents, N]
-            - scaled: [num_agents, 2N]
-            - absolute: [num_agents, N]
-        """
-        if self.observation_encoding == "relative":
-            return self._encode_relative(positions, affordances)
-        elif self.observation_encoding == "scaled":
-            return self._encode_scaled(positions, affordances)
-        elif self.observation_encoding == "absolute":
-            return self._encode_absolute(positions, affordances)
-        else:
-            raise ValueError(f"Invalid observation_encoding: {self.observation_encoding}")
-
-    def get_observation_dim(self) -> int:
-        """Return dimensionality of position encoding.
-
-        Returns:
-            - relative: N (normalized coordinates)
-            - scaled: 2N (normalized + sizes)
-            - absolute: N (raw coordinates)
-        """
-        if self.observation_encoding == "relative":
-            return len(self.dimension_sizes)
-        elif self.observation_encoding == "scaled":
-            return 2 * len(self.dimension_sizes)
-        elif self.observation_encoding == "absolute":
-            return len(self.dimension_sizes)
-        else:
-            raise ValueError(f"Invalid observation_encoding: {self.observation_encoding}")
 
     @property
     def supports_partial_vision(self) -> bool:
         return False
 
-    def get_grid_encoding_dim(self) -> int:
-        """GridND has no occupancy grid; its published grid encoding IS its
-        coordinate encoding (encode_observation), N or 2N by encoding mode."""
-        return self.get_observation_dim()
 
-    def get_position_feature_dim(self) -> int:
-        """GridND has no separate position-feature encoder; the runtime
-        publishes encode_observation for obs_position too."""
-        return self.get_observation_dim()
 
     def get_vision_radius(self, vision_range: float) -> int:
         raise ValueError("GridND substrates do not support partial vision; no vision radius exists.")
 
-    def get_partial_window_dim(self, vision_radius: int) -> int:
-        raise ValueError("GridND substrates do not support partial vision; no local window exists.")
 
     def normalize_positions(self, positions: torch.Tensor) -> torch.Tensor:
         """Normalize positions to [0, 1] range (always relative encoding).
@@ -567,38 +520,3 @@ class GridNDSubstrate(SpatialSubstrate):
     def supports_enumerable_positions(self) -> bool:
         return True
 
-    def encode_partial_observation(
-        self,
-        positions: torch.Tensor,
-        affordances: dict[str, torch.Tensor],
-        vision_range: int,
-    ) -> torch.Tensor:
-        """Encode local window around agents for partial observability (POMDP).
-
-        For N-dimensional grids, this would require an N-dimensional hypercube window,
-        which becomes exponentially large. For example:
-        - 2D with vision_range=2: 5×5 = 25 cells
-        - 3D with vision_range=2: 5×5×5 = 125 cells
-        - 4D with vision_range=2: 5×5×5×5 = 625 cells
-        - 7D with vision_range=2: 5^7 = 78,125 cells!
-
-        Current implementation: Not supported for N≥4. Use full observability
-        with coordinate encoding instead.
-
-        Args:
-            positions: [num_agents, N] agent positions
-            affordances: {name: [N]} affordance positions
-            vision_range: radius of vision window
-
-        Returns:
-            Empty tensor [num_agents, 0] - partial obs not supported for ND
-
-        Raises:
-            NotImplementedError: Partial observability not supported for N≥4
-        """
-        raise NotImplementedError(
-            f"Partial observability (POMDP) is not supported for {self.position_dim}D grids. "
-            f"Local window size would be (2*{vision_range}+1)^{self.position_dim} = "
-            f"{(2 * vision_range + 1) ** self.position_dim} cells, which is impractical. "
-            f"Use full observability with 'relative' or 'scaled' observation_encoding instead."
-        )

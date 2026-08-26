@@ -367,86 +367,8 @@ class TestGridNDGetAllPositions:
             substrate.get_all_positions()
 
 
-class TestGridNDPartialObservation:
-    """Test encode_partial_observation() error handling.
-
-    Coverage target: lines 487-521 (NotImplementedError)
-    """
-
-    def test_encode_partial_observation_raises_not_implemented(self):
-        """Should raise NotImplementedError for N≥4 dimensions.
-
-        POMDP with local windows is impractical for high-D grids.
-        Coverage target: lines 516-521 (error message)
-        """
-        substrate = GridNDSubstrate(
-            dimension_sizes=[5, 5, 5, 5],
-            boundary="clamp",
-            distance_metric="manhattan",
-        )
-
-        positions = torch.tensor([[2, 2, 2, 2]], dtype=torch.long)
-        affordances = {}
-
-        with pytest.raises(NotImplementedError) as exc_info:
-            substrate.encode_partial_observation(positions, affordances, vision_range=2)
-
-        error_msg = str(exc_info.value)
-        assert "not supported" in error_msg.lower()
-        assert "4D" in error_msg
-        assert "625 cells" in error_msg  # (2*2+1)^4 = 5^4 = 625
 
 
-class TestGridNDEncodingErrorPaths:
-    """Test error handling for invalid observation encodings.
-
-    Coverage targets:
-    - line 359 (invalid encoding in encode_observation)
-    - line 376 (invalid encoding in get_observation_dim)
-    """
-
-    def test_encode_observation_invalid_encoding_mode(self):
-        """Should raise ValueError for invalid observation_encoding.
-
-        Coverage target: line 359
-        """
-        substrate = GridNDSubstrate(
-            dimension_sizes=[5, 5, 5, 5],
-            boundary="clamp",
-            distance_metric="manhattan",
-            observation_encoding="relative",
-        )
-
-        # Force invalid encoding
-        substrate.observation_encoding = "INVALID"
-
-        positions = torch.tensor([[2, 2, 2, 2]], dtype=torch.long)
-
-        with pytest.raises(ValueError) as exc_info:
-            substrate.encode_observation(positions, {})
-
-        assert "Invalid observation_encoding" in str(exc_info.value)
-        assert "INVALID" in str(exc_info.value)
-
-    def test_get_observation_dim_invalid_encoding_mode(self):
-        """Should raise ValueError for invalid encoding in get_observation_dim.
-
-        Coverage target: line 376
-        """
-        substrate = GridNDSubstrate(
-            dimension_sizes=[5, 5, 5, 5],
-            boundary="clamp",
-            distance_metric="manhattan",
-            observation_encoding="relative",
-        )
-
-        # Force invalid encoding
-        substrate.observation_encoding = "INVALID"
-
-        with pytest.raises(ValueError) as exc_info:
-            substrate.get_observation_dim()
-
-        assert "Invalid observation_encoding" in str(exc_info.value)
 
 
 class TestGridNDDistanceEdgeCases:
@@ -555,32 +477,6 @@ class TestGridNDValidationEdgeCases:
             )
 
 
-class TestGridNDAbsoluteEncoding:
-    """Test absolute encoding mode.
-
-    Coverage target: lines 335-337 (_encode_absolute)
-    """
-
-    def test_absolute_encoding_returns_raw_coordinates(self):
-        """Absolute encoding should return raw unnormalized coordinates.
-
-        Coverage target: lines 335-337
-        """
-        substrate = GridNDSubstrate(
-            dimension_sizes=[10, 8, 6, 5],
-            boundary="clamp",
-            distance_metric="manhattan",
-            observation_encoding="absolute",
-        )
-
-        positions = torch.tensor([[7, 6, 4, 3]], dtype=torch.long)
-
-        encoded = substrate.encode_observation(positions, {})
-
-        # Should return raw coordinates as float
-        expected = torch.tensor([[7.0, 6.0, 4.0, 3.0]], dtype=torch.float32)
-        assert torch.allclose(encoded, expected), "Absolute encoding should return raw coords"
-        assert substrate.get_observation_dim() == 4, "Absolute has N dimensions"
 
 
 class TestGridNDNormalizePositions:

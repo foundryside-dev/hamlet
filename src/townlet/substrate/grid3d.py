@@ -1,12 +1,11 @@
 """3D cubic grid substrate with integer coordinates (x, y, z)."""
 
 import math
-from typing import Literal, cast
+from typing import Literal
 
 import torch
 
 from townlet.environment.action_config import ActionConfig
-from townlet.environment.affordance_layout import iter_affordance_positions
 
 from .base import SpatialSubstrate, combine_metric, pairwise_axis_deltas, require_position_batch
 
@@ -398,115 +397,15 @@ class Grid3DSubstrate(SpatialSubstrate):
         """
         return positions.float()
 
-    def _encode_full_grid(
-        self,
-        positions: torch.Tensor,
-        affordances: dict[str, torch.Tensor] | object,
-    ) -> torch.Tensor:
-        """Encode global occupancy for each agent in flattened grid form."""
 
-        num_agents = positions.shape[0]
-        device = positions.device
-        grid_volume = self.width * self.height * self.depth
 
-        affordance_grid = torch.zeros(grid_volume, dtype=torch.float32, device=device)
 
-        for affordance_pos in iter_affordance_positions(affordances):
-            if affordance_pos.numel() < 3:
-                continue
-
-            pos = torch.as_tensor(affordance_pos, device=device, dtype=torch.long)
-            x = int(pos[0].item())
-            y = int(pos[1].item())
-            z = int(pos[2].item())
-
-            if 0 <= x < self.width and 0 <= y < self.height and 0 <= z < self.depth:
-                idx = z * (self.width * self.height) + y * self.width + x
-                affordance_grid[idx] = 1.0
-
-        global_grid = affordance_grid.unsqueeze(0).expand(num_agents, -1).clone()
-
-        if num_agents == 0:
-            return global_grid
-
-        agent_x = positions[:, 0].long()
-        agent_y = positions[:, 1].long()
-        agent_z = positions[:, 2].long()
-
-        in_bounds = (
-            (agent_x >= 0) & (agent_x < self.width) & (agent_y >= 0) & (agent_y < self.height) & (agent_z >= 0) & (agent_z < self.depth)
-        )
-
-        if not torch.all(in_bounds):
-            invalid = torch.stack([agent_x[~in_bounds], agent_y[~in_bounds], agent_z[~in_bounds]], dim=1).tolist()
-            raise ValueError(f"Agent positions out of bounds for Grid3D: {invalid}")
-
-        agent_indices = agent_z * (self.width * self.height) + agent_y * self.width + agent_x
-        batch_indices = torch.arange(num_agents, device=device)
-
-        current_values = global_grid[batch_indices, agent_indices]
-        global_grid[batch_indices, agent_indices] = torch.clamp(current_values + 1.0, max=2.0)
-
-        return global_grid
-
-    def _encode_position_features(
-        self,
-        positions: torch.Tensor,
-        affordances: dict[str, torch.Tensor] | object,
-    ) -> torch.Tensor:
-        # The affordances parameter accepts object for flexibility with affordance_layout helpers,
-        # but the encoding methods expect dict. This is safe because encode_observation validates the type.
-        affordances_dict = cast(dict[str, torch.Tensor], affordances)
-        if self.observation_encoding == "relative":
-            return self._encode_relative(positions, affordances_dict)
-        if self.observation_encoding == "scaled":
-            return self._encode_scaled(positions, affordances_dict)
-        if self.observation_encoding == "absolute":
-            return self._encode_absolute(positions, affordances_dict)
-
-        raise ValueError(f"Invalid observation_encoding: {self.observation_encoding}. Must be 'relative', 'scaled', or 'absolute'.")
-
-    def encode_observation(
-        self,
-        positions: torch.Tensor,
-        affordances: dict[str, torch.Tensor] | object,
-    ) -> torch.Tensor:
-        """Encode agent positions and affordances into observation space."""
-
-        global_grid = self._encode_full_grid(positions, affordances)
-        position_features = self._encode_position_features(positions, affordances)
-
-        if position_features.numel() == 0:
-            return global_grid
-
-        return torch.cat([global_grid, position_features], dim=1)
-
-    def get_observation_dim(self) -> int:
-        """Return dimensionality of grid + position encoding."""
-        return self.get_grid_encoding_dim() + self.get_position_feature_dim()
 
     @property
     def supports_partial_vision(self) -> bool:
         return True
 
-    def get_grid_encoding_dim(self) -> int:
-        """Width of _encode_full_grid's output: one cell per grid position."""
-        return self.width * self.height * self.depth
 
-    def get_position_feature_dim(self) -> int:
-        """Width of _encode_position_features' output, per encoding mode.
-
-        - relative: 3 (normalized x, y, z)
-        - scaled: 6 (normalized x, y, z, width, height, depth)
-        - absolute: 3 (raw x, y, z)
-        """
-        if self.observation_encoding == "relative":
-            return 3
-        if self.observation_encoding == "scaled":
-            return 6
-        if self.observation_encoding == "absolute":
-            return 3
-        raise ValueError(f"Invalid observation_encoding: {self.observation_encoding}")
 
     def get_vision_radius(self, vision_range: float) -> int:
         """Radius from the declared fraction of the longest axis (min 1)."""
@@ -550,9 +449,6 @@ class Grid3DSubstrate(SpatialSubstrate):
             deltas = deltas / denominators
         return deltas
 
-    def get_partial_window_dim(self, vision_radius: int) -> int:
-        """Width of encode_partial_observation's output: a (2r+1)³ cube."""
-        return (2 * vision_radius + 1) ** 3
 
     def normalize_positions(self, positions: torch.Tensor) -> torch.Tensor:
         """Normalize positions to [0, 1] range (always relative encoding).
@@ -606,69 +502,6 @@ class Grid3DSubstrate(SpatialSubstrate):
 
         return [torch.tensor(n, dtype=torch.long) for n in neighbors]
 
-    def encode_partial_observation(
-        self,
-        positions: torch.Tensor,
-        affordances: dict[str, torch.Tensor],
-        vision_range: int,
-    ) -> torch.Tensor:
-        """Encode local 3D window around each agent (POMDP).
-
-        Extracts a local (2*vision_range+1)³ cube centered on each agent's
-        position. Affordances within the window are marked.
-
-        Args:
-            positions: [num_agents, 3] agent positions
-            affordances: {name: [3]} affordance positions
-            vision_range: radius of vision (e.g., 2 for 5×5×5 window)
-
-        Returns:
-            [num_agents, window_size³] local grid encoding
-            where window_size = 2*vision_range + 1
-
-        Note: Handles boundary cases - if agent near edge, out-of-bounds
-        cells are marked as empty.
-        """
-        if not isinstance(vision_range, int):
-            raise ValueError(
-                f"Grid3DSubstrate.encode_partial_observation expected integer vision_range (radius), " f"got {type(vision_range)!r}."
-            )
-        num_agents = positions.shape[0]
-        device = positions.device
-        window_size = 2 * vision_range + 1
-
-        # Initialize local grids for all agents
-        local_grids = torch.zeros(
-            (num_agents, window_size, window_size, window_size),
-            device=device,
-            dtype=torch.float32,
-        )
-
-        # For each agent, extract local window
-        for agent_idx in range(num_agents):
-            agent_x, agent_y, agent_z = positions[agent_idx]
-
-            # Mark affordances in local window
-            for affordance_pos in iter_affordance_positions(affordances):
-                if affordance_pos.numel() < 3:
-                    continue
-
-                aff_tensor = torch.as_tensor(affordance_pos, device=device, dtype=torch.long)
-                aff_x = int(aff_tensor[0].item())
-                aff_y = int(aff_tensor[1].item())
-                aff_z = int(aff_tensor[2].item())
-
-                # Compute relative position in local window
-                rel_x = aff_x - agent_x + vision_range
-                rel_y = aff_y - agent_y + vision_range
-                rel_z = aff_z - agent_z + vision_range
-
-                # Check if affordance is within vision window
-                if 0 <= rel_x < window_size and 0 <= rel_y < window_size and 0 <= rel_z < window_size:
-                    local_grids[agent_idx, rel_z, rel_y, rel_x] = 1.0
-
-        # Flatten local grids: [num_agents, W, W, W] → [num_agents, W³]
-        return local_grids.reshape(num_agents, -1)
 
     def supports_enumerable_positions(self) -> bool:
         """Grid3D has a finite set of discrete cells that can be enumerated."""

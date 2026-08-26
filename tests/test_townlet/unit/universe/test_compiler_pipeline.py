@@ -7,13 +7,10 @@ import shutil
 from pathlib import Path
 
 import pytest
-import torch
 import yaml
 
-import townlet.universe.compiler as compiler_module
 from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.errors import CompilationError
-from townlet.vfs.observation_builder import VFSObservationSpec
 
 
 def _copy_experiment(tmp_path: Path) -> Path:
@@ -85,71 +82,7 @@ def test_compile_rejects_level_directory_input(tmp_path: Path) -> None:
         UniverseCompiler().compile(level_dir, primary_level="L0_test", use_cache=False)
 
 
-def test_item_slots_dims_come_from_compiled_vfs_observation_spec(monkeypatch: pytest.MonkeyPatch) -> None:
-    """The item-slot feature's width is the compiled VFS observation spec's item width — the
-    compiler does not re-derive it (PDR-0075: `obs_vfs` is gone; only the item sub-block
-    remains a single feature field, and it is sized from the spec)."""
-    config_dir = Path("configs/test/items_smoke")
-    forced_spec = VFSObservationSpec(global_vfs_dim=0, agent_vfs_dim=0, item_vfs_dim=6, item_vars_per_slot=2)
-
-    monkeypatch.setattr(
-        compiler_module.VFSObservationSpec,
-        "from_compiled_profiles",
-        classmethod(lambda cls, compiled_profiles, *, max_items_per_agent: forced_spec),
-    )
-
-    compiled = UniverseCompiler().compile(config_dir, primary_level="L0_smoke", use_cache=False)
-    item_slots = next(field for field in compiled.observation_spec.fields if field.name == "obs_item_slots")
-
-    assert compiled.vfs_observation_spec is forced_spec
-    assert item_slots.dims == forced_spec.item_vfs_dim
-    assert not any(field.name == "obs_vfs" for field in compiled.observation_spec.fields)
 
 
-@pytest.mark.parametrize(
-    ("field_name", "patch_name"),
-    [
-        ("obs_grid_encoding", "_encode_full_grid"),
-        ("obs_position", "_encode_position_observation"),
-        ("obs_velocity", "_encode_velocity_observation"),
-    ],
-)
-def test_runtime_observation_fields_fail_on_dimension_mismatch(
-    tmp_path: Path,
-    field_name: str,
-    patch_name: str,
-) -> None:
-    config_dir = _copy_experiment(tmp_path)
-    compiled = UniverseCompiler().compile(config_dir, primary_level="L0_test", use_cache=False)
-    env = compiled.create_environment(num_agents=2, level_name="L0_test", device=torch.device("cpu"))
-    field = next(field for field in env.observation_spec.fields if field.name == field_name)
-
-    wrong = torch.zeros((env.num_agents, max(field.dims - 1, 0)), device=env.device)
-    if patch_name == "_encode_full_grid":
-        setattr(env.substrate, patch_name, lambda positions, affordances: wrong)
-    else:
-        setattr(env, patch_name, lambda: wrong)
-
-    with pytest.raises(ValueError, match=f"Observation field '{field_name}' produced"):
-        env._get_observations()
 
 
-def test_domain_compiler_modules_own_their_implementation() -> None:
-    compiler_source = Path(compiler_module.__file__).read_text()
-    forbidden_compiler_methods = [
-        "_build_observation_spec",
-        "_build_observation_activity",
-        "_build_action_space_metadata",
-        "_build_meter_metadata",
-        "_build_affordance_metadata",
-        "_build_optimization_data",
-        "_compile_vfs_profiles",
-        "_compile_effects_catalog",
-    ]
-    for method_name in forbidden_compiler_methods:
-        assert f"def {method_name}" not in compiler_source
-
-    compilers_dir = Path(compiler_module.__file__).parent / "compilers"
-    for module_path in compilers_dir.glob("*.py"):
-        source = module_path.read_text()
-        assert "_delegate" not in source

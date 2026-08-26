@@ -1,13 +1,14 @@
-"""Compiler emission of the TokenSpec artifact (unit 3 Task 7 — ALONGSIDE ruling).
+"""Compiler emission of the TokenSpec artifact.
 
-The pipeline compiles a TokenSpec per level beside the unchanged ObservationSpec family:
-nothing here may move any pre-existing hash (config_hash, observation_schema_hash, the
-vfs_hash composition). The two NEW hashes — `token_type_schema_hash` (transfer contract)
-and `layout_hash` (flat-net contract) — join the inventory with PDR-0033 narrowness:
+Since the unit-3 Task-10 cut the TokenSpec IS the compiler's observation product: the
+ObservationSpec/ObservationActivity/VFS-mirror family it compiled beside is deleted, and
+`observation_schema_hash` is computed over the TokenSpec. `token_type_schema_hash`
+(transfer contract) and `layout_hash` (flat-net contract) carry PDR-0033 narrowness:
 each moves exactly when its declared content moves, both directions pinned below.
 """
 
 from pathlib import Path
+from types import SimpleNamespace
 
 import msgpack
 import pytest
@@ -15,7 +16,6 @@ import pytest
 from townlet.universe.compiled import COMPILED_SCHEMA_VERSION, CompiledUniverse
 from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.compilers.observation import ObservationCompiler
-from townlet.universe.dto import ObservationField, ObservationSpec
 from townlet.universe.dto.token_spec import (
     DESCRIPTOR_BLOCK_WIDTH,
     PAYLOAD_SCHEMAS,
@@ -25,12 +25,11 @@ from townlet.universe.dto.token_spec import (
     TokenTypeSchema,
     build_token_type,
 )
-from townlet.vfs.schema import NormalizationSpec, VariableDef
-from townlet.vfs.schema import ObservationField as VFSObservationField
-from townlet.vfs.schema_hashes import (
+from townlet.universe.token_hashes import (
     compute_token_layout_hash,
     compute_token_type_schema_hash,
 )
+from townlet.vfs.schema import NormalizationSpec, VariableDef
 
 _HEX64 = 64
 
@@ -108,21 +107,51 @@ class TestL1TokenEmission:
         assert l0.token_type_schema_hash == l1.token_type_schema_hash
 
 
-class TestEffectCapacityAdvisory:
-    """Alongside ruling: no `max_active_effects` surface exists yet, so a non-empty
-    effect catalog compiles at capacity 0 with an ADVISORY (Task 10 makes it a refusal)."""
+class TestEffectCapacityFromDeclaredBudget:
+    """`max_active_effects` is required in effects.yaml iff any effect is declared, and
+    the `effect` token capacity is Sigma(scope budget x scope denominator). The Task-7
+    advisory is a REFUSAL since the cut."""
 
-    def test_effects_smoke_compiles_with_capacity_zero(self, effects_universe):
-        assert effects_universe.token_spec.get_type("effect").capacity == 0
+    def test_effects_smoke_capacity_comes_from_the_declared_budget(self, effects_universe):
+        assert effects_universe.token_spec.get_type("effect").capacity > 0
 
-    def test_effects_smoke_records_budget_advisory(self, effects_universe):
-        budget_notes = [a for a in effects_universe.token_advisories if "max_active_effects" in a]
-        assert len(budget_notes) == 1
-        assert "capacity 0" in budget_notes[0]
-        assert "Task 10" in budget_notes[0]
+    def test_no_budget_advisory_survives(self, effects_universe):
+        assert not any("max_active_effects" in a for a in effects_universe.token_advisories)
 
-    def test_empty_catalog_gets_no_effect_advisory(self, l1_universe):
-        assert not any("max_active_effects" in a for a in l1_universe.token_advisories)
+    def test_declaring_effects_without_a_budget_refuses(self, tmp_path):
+        from townlet.config.effects_config import EffectsConfig
+
+        with pytest.raises(ValueError, match="max_active_effects"):
+            EffectsConfig.model_validate(
+                {
+                    "version": "1.0",
+                    "effect_definitions": [
+                        {
+                            "id": "e",
+                            "scope": "agent",
+                            "duration": 1,
+                            "intensity": 1.0,
+                            "reapply_policy": "renew",
+                            "observable": True,
+                        }
+                    ],
+                }
+            )
+
+    def test_empty_catalog_declaring_a_budget_refuses(self):
+        from townlet.config.effects_config import EffectsConfig
+
+        with pytest.raises(ValueError, match="reaches nothing"):
+            EffectsConfig.model_validate(
+                {
+                    "version": "1.0",
+                    "effect_definitions": [],
+                    "max_active_effects": {"global": 0, "agent": 1, "item": 0, "affordance": 0},
+                }
+            )
+
+    def test_empty_catalog_has_zero_effect_capacity(self, l1_universe):
+        assert l1_universe.token_spec.get_type("effect").capacity == 0
 
 
 class TestTransferContractAcrossPacks:
@@ -226,14 +255,14 @@ class TestSerialization:
         assert compute_token_type_schema_hash(restored.token_spec) == restored.token_type_schema_hash
         assert compute_token_layout_hash(restored.token_spec) == restored.layout_hash
 
-    def test_stale_1_20_artifact_refuses(self, effects_universe, tmp_path):
+    def test_stale_pre_cut_artifact_refuses(self, effects_universe, tmp_path):
         payload = effects_universe.to_dict()
-        payload["compiled_schema_version"] = "1.20"
+        payload["compiled_schema_version"] = "1.21"
         stale_path = tmp_path / "stale.msgpack"
         stale_path.write_bytes(msgpack.packb(payload, use_bin_type=True))
         with pytest.raises(ValueError, match="schema mismatch") as excinfo:
             CompiledUniverse.load_from_cache(stale_path)
-        assert "1.20" in str(excinfo.value)
+        assert "1.21" in str(excinfo.value)
         assert COMPILED_SCHEMA_VERSION in str(excinfo.value)
 
     def test_missing_token_block_refuses(self, effects_universe):
@@ -251,45 +280,25 @@ class TestSerialization:
             CompiledUniverse.from_dict(payload)
 
 
-def _variable_obs_field(name: str, dims: int, *, semantic_type: str = "custom") -> ObservationField:
-    return ObservationField(
-        uuid=None,
-        name=name,
-        type="vector" if dims > 1 else "scalar",
-        dims=dims,
-        start_index=0,
-        end_index=dims,
-        scope="global",
-        description=f"test variable {name}",
-        semantic_type=semantic_type,  # type: ignore[arg-type]
-        feature="variable",
-    )
-
-
-def _mirror_field(name: str, dims: int, *, semantic_type: str = "custom") -> VFSObservationField:
-    return VFSObservationField(
-        id=name,
-        source_variable=name,
-        exposed_to=["agent"],
-        shape=[dims],
-        normalization=None,
-        semantic_type=semantic_type,
-        curriculum_active=True,
+def _env_stub(*names_and_types: tuple[str, str]):
+    """Minimal EnvConfigV21 stand-in: `_variable_element_bindings` reads only
+    `environment.environment.variables[*].name / .semantic_type`."""
+    return SimpleNamespace(
+        environment=SimpleNamespace(variables=[SimpleNamespace(name=n, semantic_type=t) for n, t in names_and_types])
     )
 
 
 def _variable_def(name: str, *, dims: int | None = None, normalization: NormalizationSpec | None) -> VariableDef:
-    is_vector = dims is not None and dims > 1
     return VariableDef(
         id=name,
-        scope="global",
-        type="vecNf" if is_vector else "scalar",
-        dims=dims if is_vector else None,
+        scope="agent",
+        type="vecNf" if dims and dims > 1 else "scalar",
+        dims=dims,
         lifetime="tick",
         readable_by=["agent", "engine"],
         writable_by=["engine"],
-        default=[0.0] * dims if is_vector else 0.0,  # type: ignore[operator]
-        description=f"test variable {name}",
+        default=[0.0] * dims if dims and dims > 1 else 0.0,
+        description=name,
         normalization=normalization,
     )
 
@@ -298,18 +307,16 @@ _BOUNDED = NormalizationSpec(kind="minmax", min=0.0, max=1.0, clip=True)
 
 
 class TestVariableElementBindings:
-    """Direct-call coverage of `_variable_element_bindings` (review I1): the positive
-    slot-binding branch, both advisory branches, and the mirror-drift advisory (M2)."""
+    """Direct-call coverage of `_variable_element_bindings`. Every branch that ADVISED
+    while the token path ran alongside the old one is a compile REFUSAL since the cut."""
 
-    def test_passing_declarations_bind_slots_in_field_order(self):
-        obs_spec = ObservationSpec.from_fields(fields=(_variable_obs_field("temp", 1), _variable_obs_field("wind", 3)))
-        mirrors = (_mirror_field("temp", 1), _mirror_field("wind", 3))
+    def test_passing_declarations_bind_slots_in_registry_order(self):
+        env = _env_stub(("temp", "custom"), ("wind", "custom"))
         defs = (
             _variable_def("temp", normalization=_BOUNDED),
             _variable_def("wind", dims=3, normalization=NormalizationSpec(kind="minmax", min=0.0, max=10.0, clip=True)),
         )
-        bindings, advisories = ObservationCompiler._variable_element_bindings(obs_spec, mirrors, defs)
-        assert advisories == ()
+        bindings = ObservationCompiler._variable_element_bindings(env, None, defs)
         assert [b.filler_ref for b in bindings] == ["temp", "wind[0]", "wind[1]", "wind[2]"]
         assert [b.slot_index for b in bindings] == [0, 1, 2, 3]
         assert all(b.filler_kind == "static" for b in bindings)
@@ -317,72 +324,43 @@ class TestVariableElementBindings:
             assert binding.static_signature is not None
             assert len(binding.static_signature) == DESCRIPTOR_BLOCK_WIDTH
         # The bound set constructs a live variable_element type at the derived capacity.
-        token_type = build_token_type("variable_element", bindings)
-        assert token_type.capacity == 4
+        assert build_token_type("variable_element", bindings).capacity == 4
 
-    def test_unnormalized_variable_advises_and_does_not_bind(self):
-        obs_spec = ObservationSpec.from_fields(fields=(_variable_obs_field("raw_var", 1),))
-        mirrors = (_mirror_field("raw_var", 1),)
+    def test_unnormalized_variable_refuses(self):
+        env = _env_stub(("raw_var", "custom"))
         defs = (_variable_def("raw_var", normalization=None),)
-        bindings, advisories = ObservationCompiler._variable_element_bindings(obs_spec, mirrors, defs)
-        assert bindings == ()
-        assert len(advisories) == 1
-        # The advisory carries the exposure rule's own refusal text (I2: actionable reason)
-        # and names the Task-10 disposition.
-        assert "Token exposure advisory: variable 'raw_var'" in advisories[0]
-        assert "declares no normalization" in advisories[0]
-        assert "unit 3 Task 10" in advisories[0]
+        with pytest.raises(ValueError, match="declares no normalization"):
+            ObservationCompiler._variable_element_bindings(env, None, defs)
 
-    def test_unbounded_kind_advises_with_the_boundedness_rule(self):
-        obs_spec = ObservationSpec.from_fields(fields=(_variable_obs_field("z", 1),))
-        mirrors = (_mirror_field("z", 1),)
+    def test_unbounded_kind_refuses_with_the_boundedness_rule(self):
+        env = _env_stub(("z", "custom"))
         defs = (_variable_def("z", normalization=NormalizationSpec(kind="zscore", mean=0.0, std=1.0)),)
-        bindings, advisories = ObservationCompiler._variable_element_bindings(obs_spec, mirrors, defs)
-        assert bindings == ()
-        assert len(advisories) == 1
-        assert "bounded normalization kind" in advisories[0]
+        with pytest.raises(ValueError, match="bounded normalization kind"):
+            ObservationCompiler._variable_element_bindings(env, None, defs)
 
-    def test_indistinguishable_pair_advises_and_still_binds_both(self):
+    def test_rank_scaled_refuses_at_exposure(self):
+        env = _env_stub(("r", "custom"))
+        defs = (_variable_def("r", normalization=NormalizationSpec(kind="rank_scaled")),)
+        with pytest.raises(ValueError, match="rank_scaled"):
+            ObservationCompiler._variable_element_bindings(env, None, defs)
+
+    def test_indistinguishable_pair_refuses_naming_both(self):
         # Identical declarations apart from the id: identical static signatures.
-        obs_spec = ObservationSpec.from_fields(fields=(_variable_obs_field("twin_a", 1), _variable_obs_field("twin_b", 1)))
-        mirrors = (_mirror_field("twin_a", 1), _mirror_field("twin_b", 1))
+        env = _env_stub(("twin_a", "custom"), ("twin_b", "custom"))
         defs = (_variable_def("twin_a", normalization=_BOUNDED), _variable_def("twin_b", normalization=_BOUNDED))
-        bindings, advisories = ObservationCompiler._variable_element_bindings(obs_spec, mirrors, defs)
-        assert [b.filler_ref for b in bindings] == ["twin_a", "twin_b"]  # advisory, not refusal — alongside
-        assert len(advisories) == 1
-        assert "indistinguishable" in advisories[0]
-        assert "twin_a" in advisories[0] and "twin_b" in advisories[0]
-        assert "Task 10" in advisories[0]
+        with pytest.raises(ValueError, match="indistinguishable") as excinfo:
+            ObservationCompiler._variable_element_bindings(env, None, defs)
+        assert "twin_a" in str(excinfo.value) and "twin_b" in str(excinfo.value)
 
-    def test_missing_mirror_entry_advises_and_falls_back_loudly(self):
-        # M2: the mirror is the ruled semantic_type source; a variable field absent from
-        # the mirror is upstream drift and must be loud, never a silent fallback.
-        obs_spec = ObservationSpec.from_fields(fields=(_variable_obs_field("orphan", 1),))
-        defs = (_variable_def("orphan", normalization=_BOUNDED),)
-        bindings, advisories = ObservationCompiler._variable_element_bindings(obs_spec, (), defs)
-        assert [b.filler_ref for b in bindings] == ["orphan"]  # still binds, from the field's own declaration
-        assert len(advisories) == 1
-        assert "no VFS ObservationField mirror entry" in advisories[0]
-        assert "orphan" in advisories[0]
-
-    def test_assertion_error_propagates_as_engine_invariant_failure(self, monkeypatch):
-        # I2: only ValueError is an author-facing refusal; an AssertionError is an engine
-        # invariant failure and must crash the compile, never become an advisory.
-        import townlet.universe.compilers.observation as obs_module
-
-        def _broken(*args, **kwargs):
-            raise AssertionError
-
-        monkeypatch.setattr(obs_module, "static_payload_signature", _broken)
-        obs_spec = ObservationSpec.from_fields(fields=(_variable_obs_field("v", 1),))
-        mirrors = (_mirror_field("v", 1),)
-        defs = (_variable_def("v", normalization=_BOUNDED),)
-        with pytest.raises(AssertionError):
-            ObservationCompiler._variable_element_bindings(obs_spec, mirrors, defs)
+    def test_unexposed_variable_binds_nothing(self):
+        # Explicit exposure: a registry variable no environment.yaml or profile exposure
+        # names is UNEXPOSED and occupies no slot (the fail-open default is deleted).
+        defs = (_variable_def("hidden", normalization=None),)
+        assert ObservationCompiler._variable_element_bindings(_env_stub(), None, defs) == ()
 
 
 class TestMeanCensusAdvisoryWiring:
-    """build_token_spec's census branch (review I1d): a set_encoder brain declaring
+    """build_token_spec's census branch (review I1d): a set-pooling brain declaring
     `{type: mean}` against a census with a type over the threshold advises; other
     architectures do not."""
 
@@ -412,13 +390,13 @@ class TestMeanCensusAdvisoryWiring:
         )
 
     @staticmethod
-    def _set_encoder_mean_brain():
+    def _token_set_mean_brain():
         import yaml
 
         from townlet.config.brain_config import BrainConfig
 
         payload = yaml.safe_load(Path("configs/test/set_encoder_smoke/brain.yaml").read_text())
-        assert payload["architecture"]["set_encoder"]["aggregator"]["type"] == "mean"
+        assert payload["architecture"]["token_set"]["aggregator"]["type"] == "mean"
         return BrainConfig.model_validate(payload)
 
     def _build(self, l1_universe, bars, brain):
@@ -430,21 +408,22 @@ class TestMeanCensusAdvisoryWiring:
             AffordanceMetadata(affordances=()),
             None,
             None,
-            ObservationSpec.from_fields(fields=()),
-            (),
+            None,
+            l1_universe.environment,
+            None,
             (),
             brain,
         )
 
     def test_mean_aggregator_over_threshold_advises(self, l1_universe):
-        spec, advisories = self._build(l1_universe, self._wide_bars(65), self._set_encoder_mean_brain())
+        spec, advisories = self._build(l1_universe, self._wide_bars(65), self._token_set_mean_brain())
         assert spec.census["meter"] == 65
         census_notes = [a for a in advisories if "aggregator 'mean'" in a]
         assert len(census_notes) == 1
         assert "meter=65" in census_notes[0]
 
     def test_mean_aggregator_under_threshold_advises_nothing(self, l1_universe):
-        _spec, advisories = self._build(l1_universe, self._wide_bars(8), self._set_encoder_mean_brain())
+        _spec, advisories = self._build(l1_universe, self._wide_bars(8), self._token_set_mean_brain())
         assert not any("aggregator 'mean'" in a for a in advisories)
 
     def test_non_set_encoder_brain_never_census_advises(self, l1_universe):
@@ -465,7 +444,8 @@ class TestInspectCensus:
         assert "Token census:" in out
         assert "affordance" in out
         assert "total_dims" in out
-        assert "ADVISORY" in out  # effects_smoke carries the budget advisory
+        # effects_smoke's budget advisory is a refusal since the cut, so it carries none.
+        assert "ADVISORY" not in out
 
     def test_inspect_json_carries_census(self, effects_universe, tmp_path, capsys):
         import json

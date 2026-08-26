@@ -6,23 +6,6 @@ import torch
 from townlet.substrate.continuousnd import ContinuousNDSubstrate
 
 
-def test_continuousnd_4d_initialization():
-    """ContinuousND should initialize correctly for 4D continuous space."""
-    substrate = ContinuousNDSubstrate(
-        bounds=[(0.0, 10.0), (0.0, 10.0), (0.0, 10.0), (0.0, 10.0)],
-        boundary="clamp",
-        movement_delta=0.5,
-        interaction_radius=1.0,
-        distance_metric="euclidean",
-        observation_encoding="relative",
-    )
-
-    assert substrate.position_dim == 4
-    assert substrate.position_dtype == torch.float32
-    assert substrate.action_space_size == 10  # 2*4 + 2
-    assert substrate.get_observation_dim() == 4  # Normalized coordinates
-
-
 def test_continuousnd_requires_minimum_4_dimensions():
     """ContinuousND should reject dimensions < 4."""
     with pytest.raises(ValueError, match="ContinuousND requires at least 4 dimensions"):
@@ -196,72 +179,10 @@ def test_continuousnd_distance_chebyshev():
     assert torch.allclose(distance, torch.tensor([6.0]))
 
 
-def test_continuousnd_observation_encoding_relative():
-    """Test relative encoding (normalized [0,1])."""
-    substrate = ContinuousNDSubstrate(
-        bounds=[(0.0, 10.0), (0.0, 10.0), (0.0, 10.0), (0.0, 10.0)],
-        boundary="clamp",
-        movement_delta=0.5,
-        interaction_radius=1.0,
-        distance_metric="euclidean",
-        observation_encoding="relative",
-    )
-
-    # Corner: [0.0, 0.0, 0.0, 0.0] → [0.0, 0.0, 0.0, 0.0]
-    # Opposite corner: [10.0, 10.0, 10.0, 10.0] → [1.0, 1.0, 1.0, 1.0]
-    positions = torch.tensor([[0.0, 0.0, 0.0, 0.0], [10.0, 10.0, 10.0, 10.0]], dtype=torch.float32)
-
-    encoded = substrate.encode_observation(positions, {})
-
-    assert encoded.shape == (2, 4)
-    assert torch.allclose(encoded[0], torch.zeros(4))
-    assert torch.allclose(encoded[1], torch.ones(4))
-    assert substrate.get_observation_dim() == 4
 
 
-def test_continuousnd_observation_encoding_scaled():
-    """Test scaled encoding (normalized + range sizes)."""
-    substrate = ContinuousNDSubstrate(
-        bounds=[(0.0, 100.0), (-50.0, 50.0), (10.0, 20.0), (-10.0, 30.0)],  # Different ranges
-        boundary="clamp",
-        movement_delta=0.5,
-        interaction_radius=1.0,
-        distance_metric="euclidean",
-        observation_encoding="scaled",
-    )
-
-    positions = torch.tensor([[50.0, 0.0, 15.0, 10.0]], dtype=torch.float32)
-
-    encoded = substrate.encode_observation(positions, {})
-
-    # First N dims: normalized positions
-    # Last N dims: range sizes
-    assert encoded.shape == (1, 8)  # 2 * 4 dimensions
-
-    # Verify range sizes in last N dims: [100.0, 100.0, 10.0, 40.0]
-    assert torch.allclose(encoded[0, 4:], torch.tensor([100.0, 100.0, 10.0, 40.0]))
-    assert substrate.get_observation_dim() == 8
 
 
-def test_continuousnd_observation_encoding_absolute():
-    """Test absolute encoding (raw coordinates)."""
-    substrate = ContinuousNDSubstrate(
-        bounds=[(0.0, 100.0), (-50.0, 50.0), (10.0, 20.0), (-10.0, 30.0)],
-        boundary="clamp",
-        movement_delta=0.5,
-        interaction_radius=1.0,
-        distance_metric="euclidean",
-        observation_encoding="absolute",
-    )
-
-    positions = torch.tensor([[50.0, 25.0, 15.0, 10.0]], dtype=torch.float32)
-
-    encoded = substrate.encode_observation(positions, {})
-
-    # Should return raw coordinates unchanged
-    assert encoded.shape == (1, 4)
-    assert torch.allclose(encoded[0], positions[0])
-    assert substrate.get_observation_dim() == 4
 
 
 def test_continuousnd_is_on_position_within_radius():
@@ -349,21 +270,6 @@ def test_continuousnd_get_all_positions_raises():
         substrate.get_all_positions()
 
 
-def test_continuousnd_encode_partial_observation_raises():
-    """ContinuousND should raise NotImplementedError for partial observability."""
-    substrate = ContinuousNDSubstrate(
-        bounds=[(0.0, 10.0), (0.0, 10.0), (0.0, 10.0), (0.0, 10.0)],
-        boundary="clamp",
-        movement_delta=0.5,
-        interaction_radius=1.0,
-        distance_metric="euclidean",
-        observation_encoding="relative",
-    )
-
-    positions = torch.tensor([[5.0, 5.0, 5.0, 5.0]], dtype=torch.float32)
-
-    with pytest.raises(NotImplementedError, match="Partial observability.*not supported"):
-        substrate.encode_partial_observation(positions, {}, vision_range=2)
 
 
 def test_continuousnd_supports_enumerable_positions():

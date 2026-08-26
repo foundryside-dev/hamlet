@@ -291,63 +291,17 @@ class ContinuousSubstrate(SpatialSubstrate):
         """
         return positions
 
-    def encode_observation(self, positions: torch.Tensor, affordances: dict[str, torch.Tensor]) -> torch.Tensor:
-        """Encode agent positions and affordances into observation space.
 
-        Args:
-            positions: Agent positions [num_agents, dimensions]
-            affordances: Dict mapping affordance names to positions
-
-        Returns:
-            Encoded observations with dimensions based on encoding mode:
-            - relative: [num_agents, dimensions]
-            - scaled: [num_agents, dimensions*2]
-            - absolute: [num_agents, dimensions]
-        """
-        if self.observation_encoding == "relative":
-            return self._encode_relative(positions, affordances)
-        elif self.observation_encoding == "scaled":
-            return self._encode_scaled(positions, affordances)
-        elif self.observation_encoding == "absolute":
-            return self._encode_absolute(positions, affordances)
-        else:
-            raise ValueError(f"Invalid observation_encoding: {self.observation_encoding}. Must be 'relative', 'scaled', or 'absolute'.")
-
-    def get_observation_dim(self) -> int:
-        """Return dimensionality of position encoding.
-
-        Returns:
-            - relative: dimensions (normalized positions)
-            - scaled: dimensions * 2 (normalized positions + range sizes)
-            - absolute: dimensions (raw positions)
-        """
-        if self.observation_encoding == "relative":
-            return self.dimensions
-        elif self.observation_encoding == "scaled":
-            return self.dimensions * 2
-        elif self.observation_encoding == "absolute":
-            return self.dimensions
-        else:
-            raise ValueError(f"Invalid observation_encoding: {self.observation_encoding}")
 
     @property
     def supports_partial_vision(self) -> bool:
         return False
 
-    def get_grid_encoding_dim(self) -> int:
-        """Continuous spaces have no grid; no obs_grid_encoding field exists."""
-        return 0
 
-    def get_position_feature_dim(self) -> int:
-        """The whole continuous encoding is position features
-        (encode_observation is what the runtime publishes for obs_position)."""
-        return self.get_observation_dim()
 
     def get_vision_radius(self, vision_range: float) -> int:
         raise ValueError("Continuous substrates do not support partial vision; no vision radius exists.")
 
-    def get_partial_window_dim(self, vision_radius: int) -> int:
-        raise ValueError("Continuous substrates do not support partial vision; no local window exists.")
 
     def normalize_positions(self, positions: torch.Tensor) -> torch.Tensor:
         """Normalize positions to [0, 1] range (always relative encoding).
@@ -397,21 +351,6 @@ class ContinuousSubstrate(SpatialSubstrate):
             deltas = deltas / self._token_axis_extents(deltas.device)
         return deltas
 
-    def encode_partial_observation(self, positions: torch.Tensor, affordances: dict[str, torch.Tensor], vision_range: int) -> torch.Tensor:
-        """Partial observability not supported for continuous substrates.
-
-        Continuous spaces have no discrete grid structure for local windows.
-        Use full observability with normalized position encoding instead.
-
-        Raises:
-            NotImplementedError: Continuous substrates do not support POMDP
-        """
-        raise NotImplementedError(
-            f"{self.__class__.__name__} does not support partial observability (POMDP). "
-            f"Continuous spaces have infinite positions in any local region, making local windows "
-            f"conceptually invalid. Use full observability (partial_observability=False) with "
-            f"'relative' or 'scaled' observation_encoding for position-independent learning instead."
-        )
 
     def get_all_positions(self) -> list[list[float]]:
         """Raise error - continuous space has infinite positions."""

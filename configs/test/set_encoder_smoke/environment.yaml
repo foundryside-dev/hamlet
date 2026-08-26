@@ -149,33 +149,11 @@ environment:
         clip: true
         range: [0.0, 1.0]
 
-    - name: deficit_satiation
-      type: scalar
-      dims: 1
-      scope: agent
-      description: "How far below target satiation"
-      semantic_type: custom
-      normalization:
-        method: normalize
-        clip: true
-        range: [0.0, 1.0]
-
     - name: time_since_last_eat
       type: scalar
       dims: 1
       scope: agent
       description: "Timesteps since last EAT action"
-      semantic_type: custom
-      normalization:
-        method: normalize
-        clip: true
-        range: [0.0, 100.0]
-
-    - name: time_since_last_sleep
-      type: scalar
-      dims: 1
-      scope: agent
-      description: "Timesteps since last SLEEP action"
       semantic_type: custom
       normalization:
         method: normalize

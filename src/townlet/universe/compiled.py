@@ -947,6 +947,7 @@ def _serialize_compiled_variable(var: Any) -> dict[str, Any]:
         "initial_value_params": var.initial_value_params,
         "dims": var.dims,
         "semantic_type": var.semantic_type,
+        "normalization": None if var.normalization is None else var.normalization.model_dump(mode="json", exclude_none=True),
     }
 
 
@@ -989,6 +990,9 @@ def _deserialize_compiled_variable(var: dict[str, Any]) -> Any:
     from townlet.vfs.profiles import CompiledVariable
     from townlet.world.expression import ExpressionParser
 
+    from townlet.vfs.schema import NormalizationSpec
+
+    raw_normalization = var.get("normalization")
     return CompiledVariable(
         name=var["name"],
         type=var["type"],
@@ -996,12 +1000,15 @@ def _deserialize_compiled_variable(var: dict[str, Any]) -> Any:
         ast=ExpressionParser().parse(var["expression"]) if var.get("expression") else None,
         initial_value=var.get("initial_value"),
         result_type=var.get("result_type"),
-        exposed_to=tuple(var.get("exposed_to", ["agent"])),
+        # No fail-open default: an absent exposed_to in a cached artifact means UNEXPOSED
+        # (explicit exposure at the unit-3 cut, hamlet-d97b4d6b4a).
+        exposed_to=tuple(var.get("exposed_to") or ()),
         shape=var.get("shape"),
         initial_value_mode=var.get("initial_value_mode"),
         initial_value_params=var.get("initial_value_params"),
         dims=var.get("dims"),
         semantic_type=var.get("semantic_type"),
+        normalization=None if raw_normalization is None else NormalizationSpec(**raw_normalization),
     )
 
 

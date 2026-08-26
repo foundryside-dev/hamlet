@@ -6,7 +6,37 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from townlet.vfs.schema import NormalizationSpec
 from townlet.vfs.semantic_type import SemanticType
+
+
+def _validate_exposure_normalization(var) -> None:
+    """Exposure is explicit, and normalization is required at exposure (token-obs spec §2).
+
+    An empty ``exposed_to`` means UNEXPOSED — the old fail-open default to ``["agent"]``
+    was a No-Defaults violation on the field that sizes the observation, deleted at the
+    unit-3 cut (hamlet-d97b4d6b4a). An exposed variable must declare the normalization
+    that feeds its token value (hamlet-b8ad2ffcd6); an unexposed variable declaring one
+    is a declaration that reaches nothing, which is removed rather than defaulted
+    (PDR-0066 shape). Kind-level boundedness rules are enforced at compile time
+    (`townlet.universe.dto.token_spec.require_exposure_normalization`).
+    """
+    if var.exposed_to and var.normalization is None:
+        raise ValueError(
+            f"Variable '{var.name}' declares exposed_to={var.exposed_to} but no normalization.\n"
+            "  Rule: normalization is required at exposure (token-obs spec §2, normalization "
+            "authority) — the normalization that feeds a token value is declared on the "
+            "variable being exposed. Add a bounded `normalization:` block, or remove "
+            "`exposed_to` to leave the variable unexposed."
+        )
+    if not var.exposed_to and var.normalization is not None:
+        raise ValueError(
+            f"Variable '{var.name}' declares normalization but no exposed_to, so the "
+            "declaration reaches nothing.\n"
+            "  Rule: unexposed variables need no normalization; a declaration that can reach "
+            "nothing is removed rather than defaulted (PDR-0066). Either expose the variable "
+            "(`exposed_to: [agent]`) or delete the normalization block."
+        )
 
 __all__ = [
     "GlobalVFSVariableConfig",
@@ -25,14 +55,16 @@ class GlobalVFSVariableConfig(BaseModel):
     Global variables are shared across all agents (e.g., day_count, is_night).
     """
 
-    # Metadata
+    # Metadata. An empty exposed_to means UNEXPOSED (explicit exposure at the unit-3 cut;
+    # the old fail-open default to ["agent"] is deleted, hamlet-d97b4d6b4a).
     id: str | None = None
     exposed_to: list[str] = Field(default_factory=list)
+    # REQUIRED at exposure, forbidden when unexposed (token-obs spec §2; hamlet-b8ad2ffcd6).
+    normalization: NormalizationSpec | None = None
 
     name: str
-    # The observation group this variable's field is laid out in when exposed — REQUIRED,
-    # one member of the closed vocabulary (PDR-0047, PDR-0075). A global profile variable
-    # compiles to its OWN observation field, so the declaration reaches the tensor.
+    # The observation group this variable's tokens are attributed to when exposed — REQUIRED,
+    # one member of the closed vocabulary (PDR-0047, PDR-0075).
     # `bars` is reserved to meters and rejected at compile time.
     semantic_type: SemanticType
     type: Literal[
@@ -95,6 +127,11 @@ class GlobalVFSVariableConfig(BaseModel):
             raise ValueError(f"Variable '{self.name}' should not set 'dims' when type is '{self.type}'")
         return self
 
+    @model_validator(mode="after")
+    def validate_exposure_normalization(self):
+        _validate_exposure_normalization(self)
+        return self
+
     model_config = ConfigDict(extra="forbid")
 
 
@@ -120,12 +157,15 @@ class GlobalVFSProfileConfig(BaseModel):
 
     @model_validator(mode="after")
     def default_metadata(self):
-        """Populate optional metadata defaults to align with VFS-REQ-006."""
+        """Default each variable's id to its name (VFS-REQ-006 metadata only).
+
+        The exposed_to fail-open that used to live here (empty -> ["agent"]) is DELETED
+        (unit-3 cut, hamlet-d97b4d6b4a): an empty exposed_to means UNEXPOSED, and every
+        exposure is authored.
+        """
         for var in self.variables:
             if var.id is None:
                 var.id = var.name
-            if not var.exposed_to:
-                var.exposed_to = ["agent"]
         return self
 
     model_config = ConfigDict(extra="forbid")
@@ -137,9 +177,11 @@ class AgentVFSVariableConfig(BaseModel):
     Agent variables are per-agent state (e.g., motivation, is_crisis).
     """
 
-    # Metadata
+    # Metadata. An empty exposed_to means UNEXPOSED (explicit exposure at the unit-3 cut).
     id: str | None = None
     exposed_to: list[str] = Field(default_factory=list)
+    # REQUIRED at exposure, forbidden when unexposed (token-obs spec §2; hamlet-b8ad2ffcd6).
+    normalization: NormalizationSpec | None = None
 
     name: str
     # See GlobalVFSVariableConfig.semantic_type — same rule, same vocabulary (PDR-0075).
@@ -206,6 +248,11 @@ class AgentVFSVariableConfig(BaseModel):
             raise ValueError(f"Variable '{self.name}' should not set 'dims' when type is '{self.type}'")
         return self
 
+    @model_validator(mode="after")
+    def validate_exposure_normalization(self):
+        _validate_exposure_normalization(self)
+        return self
+
     model_config = ConfigDict(extra="forbid")
 
 
@@ -231,12 +278,15 @@ class AgentVFSProfileConfig(BaseModel):
 
     @model_validator(mode="after")
     def default_metadata(self):
-        """Populate optional metadata defaults to align with VFS-REQ-006."""
+        """Default each variable's id to its name (VFS-REQ-006 metadata only).
+
+        The exposed_to fail-open that used to live here (empty -> ["agent"]) is DELETED
+        (unit-3 cut, hamlet-d97b4d6b4a): an empty exposed_to means UNEXPOSED, and every
+        exposure is authored.
+        """
         for var in self.variables:
             if var.id is None:
                 var.id = var.name
-            if not var.exposed_to:
-                var.exposed_to = ["agent"]
         return self
 
     model_config = ConfigDict(extra="forbid")
@@ -253,9 +303,11 @@ class ItemVFSVariableConfig(BaseModel):
     rather than defaulted (PDR-0066, PDR-0075; the layout question is hamlet-1ad6383186).
     """
 
-    # Metadata
+    # Metadata. An empty exposed_to means UNEXPOSED (explicit exposure at the unit-3 cut).
     id: str | None = None
     exposed_to: list[str] = Field(default_factory=list)
+    # REQUIRED at exposure, forbidden when unexposed (token-obs spec §2; hamlet-b8ad2ffcd6).
+    normalization: NormalizationSpec | None = None
 
     name: str
     type: Literal[
@@ -291,6 +343,11 @@ class ItemVFSVariableConfig(BaseModel):
             raise ValueError(f"Tensor VFS variables are not supported for item profiles yet (variable '{self.name}').")
         return self
 
+    @model_validator(mode="after")
+    def validate_exposure_normalization(self):
+        _validate_exposure_normalization(self)
+        return self
+
     model_config = ConfigDict(extra="forbid")
 
 
@@ -318,12 +375,15 @@ class ItemVFSProfileConfig(BaseModel):
 
     @model_validator(mode="after")
     def default_metadata(self):
-        """Populate optional metadata defaults to align with VFS-REQ-006."""
+        """Default each variable's id to its name (VFS-REQ-006 metadata only).
+
+        The exposed_to fail-open that used to live here (empty -> ["agent"]) is DELETED
+        (unit-3 cut, hamlet-d97b4d6b4a): an empty exposed_to means UNEXPOSED, and every
+        exposure is authored.
+        """
         for var in self.variables:
             if var.id is None:
                 var.id = var.name
-            if not var.exposed_to:
-                var.exposed_to = ["agent"]
         return self
 
     model_config = ConfigDict(extra="forbid")

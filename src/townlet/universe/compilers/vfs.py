@@ -331,6 +331,9 @@ class VFSCompiler:
             dims=getattr(compiled_var, "dims", None),
             initial_value_mode=getattr(compiled_var, "initial_value_mode", None),
             initial_value_params=getattr(compiled_var, "initial_value_params", None),
+            # The declared normalization rides onto the runtime declaration so the token
+            # publishers read exactly what the author declared (spec §2).
+            normalization=getattr(compiled_var, "normalization", None),
         )
 
     @staticmethod

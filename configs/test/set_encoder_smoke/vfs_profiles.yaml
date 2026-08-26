@@ -10,6 +10,13 @@ agent_profile:
       shape: [4, 3]
       initial_value_mode: zeros
       exposed_to: [agent]
+      # Required at exposure (token-obs spec S2): token feature lanes live in [0, 1];
+      # clipped minmax certifies boundedness.
+      normalization:
+        kind: minmax
+        min: 0.0
+        max: 1.0
+        clip: true
       description: "Flattened token rows for the set-encoder proof: 4 tokens x 3 features."
 
 item_profiles: []

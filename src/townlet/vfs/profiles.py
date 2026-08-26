@@ -14,6 +14,7 @@ from townlet.config.vfs_profiles_config import (
     ItemVFSProfileConfig,
     ItemVFSVariableConfig,
 )
+from townlet.vfs.schema import NormalizationSpec
 from townlet.world.expression import ASTNode, ExpressionParser, PathAccess, Variable
 from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
 
@@ -50,10 +51,12 @@ class CompiledVariable:
     initial_value_mode: str | None = None
     initial_value_params: dict | None = None
     dims: int | None = None
-    # The author's declared observation group. Set for global and agent profile variables
-    # (each compiles to its own observation field); None for item variables, which are
-    # observed through the `obs_item_slots` feature and carry no declaration (PDR-0075).
+    # The author's declared observation group. Set for global and agent profile variables;
+    # None for item variables (PDR-0075).
     semantic_type: str | None = None
+    # The declared normalization — REQUIRED at exposure, absent when unexposed
+    # (token-obs spec §2, normalization authority; hamlet-b8ad2ffcd6).
+    normalization: NormalizationSpec | None = None
 
 
 @dataclass
@@ -256,6 +259,7 @@ class VFSProfileCompiler:
                 initial_value_params=getattr(var, "initial_value_params", None),
                 dims=getattr(var, "dims", None),
                 semantic_type=getattr(var, "semantic_type", None),
+                normalization=getattr(var, "normalization", None),
             )
 
         # Variable with expression
@@ -283,6 +287,7 @@ class VFSProfileCompiler:
             initial_value_params=getattr(var, "initial_value_params", None),
             dims=getattr(var, "dims", None),
             semantic_type=getattr(var, "semantic_type", None),
+            normalization=getattr(var, "normalization", None),
         )
 
     def compile_global_profile(self, profile: GlobalVFSProfileConfig, bar_schema: dict[str, str] | None = None) -> CompiledGlobalProfile:

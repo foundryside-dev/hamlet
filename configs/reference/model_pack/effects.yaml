@@ -16,3 +16,12 @@ effect_definitions:
     on_despawn:
       - modify: target.vfs.is_digesting
         value: "false"
+
+# Per-scope budget of concurrently active effects (token-obs spec S2, required because
+# effects are declared). Values: one active instance per declared effect per scope
+# entity; a `stack`-policy effect exceeding its scope budget raises loudly at publish.
+max_active_effects:
+  global: 0
+  agent: 1
+  item: 0
+  affordance: 0

@@ -23,7 +23,6 @@ from townlet.vfs.generalisation import (
     build_vfs_generalisation_signature,
     operator_grammar_signature,
 )
-from townlet.vfs.observation_builder import VFSObservationSpec, apply_normalization
 from townlet.vfs.registry import DynamicVariableMutation, VariableRegistry, VFSRegistryProtocol
 from townlet.vfs.relational import canonical_l5_relational_variables
 from townlet.vfs.schema import (
@@ -34,11 +33,9 @@ from townlet.vfs.schema import (
 )
 from townlet.vfs.schema_hashes import (
     canonical_action_schema,
-    canonical_observation_schema,
     canonical_transition_graph_schema,
     canonical_variable_schema,
     compute_action_schema_hash,
-    compute_observation_schema_hash,
     compute_transition_graph_hash,
     compute_variable_schema_hash,
     compute_vfs_hash,
@@ -138,9 +135,7 @@ __all__ = [
     "VFSGeneralisationPack",
     "VFSGeneralisationReport",
     "VFSGeneralisationSignature",
-    "VFSObservationSpec",
     "WriteSpec",
-    "apply_normalization",
     "assert_held_out_generalisation_split",
     "build_vfs_generalisation_signature",
     "canonical_fixed_slot_dynamic_need_variables",
@@ -148,11 +143,9 @@ __all__ = [
     "canonical_l6_message_variables",
     "canonical_l5_relational_variables",
     "canonical_action_schema",
-    "canonical_observation_schema",
     "canonical_transition_graph_schema",
     "canonical_variable_schema",
     "compute_action_schema_hash",
-    "compute_observation_schema_hash",
     "compute_transition_graph_hash",
     "compute_variable_schema_hash",
     "compute_vfs_hash",

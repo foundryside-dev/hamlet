@@ -14,10 +14,11 @@ agent_profile: null
 item_profiles:
   - profile_name: tool_stats
     variables:
-      # The wear state (facet 1). Exposed to the agent so it lands in the
-      # obs_item_slots observation block (facet 4).
+      # The wear state (facet 1). Its old exposure targeted the obs_item_slots
+      # observation block, which died at the unit-3 token cut; item-profile
+      # exposure re-lands with the unit-5 pack migration (retired-corpus pack,
+      # left unexposed rather than migrated early).
       - name: durability
         type: float
         initial_value: 3.0
-        exposed_to: [agent]
         description: "Uses remaining (3.0 = new, 0.0 = broken)"

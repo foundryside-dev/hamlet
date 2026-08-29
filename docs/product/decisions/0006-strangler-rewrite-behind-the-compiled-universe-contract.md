@@ -110,7 +110,7 @@ a still-frozen oracle.
 
    **This pattern already has a proven precedent in this codebase.** The owner ran exactly this
    operation on the compiler a few weeks ago as a side task
-   (`docs/plans/2026-05-15-compiler-cleanup-modernization.md`, with a `.review.json`). That is
+   (`docs/zzz. archive/plans/2026-05-15-compiler-cleanup-modernization.md`, with a `.review.json`). That is
    evidence the approach works *here*, not merely in principle, and the assessment independently
    scored the compiler as the project's single biggest asset — consistent with it having already
    received the treatment. **Mine that plan for the knockdown playbook** rather than inventing one:

@@ -23,7 +23,9 @@ def test_compiler_compiles_item_profiles(tmp_path: Path):
                 "profile_name": "food_stats",
                 "variables": [
                     {"name": "calories", "type": "int", "initial_value": 100},
-                    {"name": "freshness", "type": "float", "expression": "1.0"},
+                    # Not an expression: item-profile expressions refuse at compile
+                    # (hamlet-bc0a5deeff) — item profiles have no evaluator.
+                    {"name": "freshness", "type": "float", "initial_value": 1.0},
                 ],
             },
             {

@@ -1,0 +1,1314 @@
+{
+  "run_dir": "runs/l2_baseline/seed_43",
+  "checkpoint_episode": 3484,
+  "train_seed": 43,
+  "eval_seed": 12345,
+  "eval_episodes": 100,
+  "num_agents": 8,
+  "episode_cap": 1000,
+  "protocol": "greedy: argmax over action-masked Q, epsilon 0, no learning; survival = env.step calls an agent was alive entering, capped; agents stay dead until the batch episode ends",
+  "mean_survival": 98.9975,
+  "median_survival": 99,
+  "episodes": [
+    {
+      "episode": 0,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 1,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 2,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 3,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 4,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 5,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 6,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 7,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 8,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 9,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 10,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 11,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 12,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 13,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 14,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 15,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        97,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 16,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 17,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 18,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 19,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 20,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 21,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 22,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 23,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 24,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 25,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 26,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 27,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 28,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 29,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 30,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 31,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 32,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 33,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 34,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 35,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 36,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 37,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 38,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 39,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 40,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 41,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 42,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 43,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 44,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 45,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 46,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 47,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 48,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 49,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 50,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 51,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 52,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 53,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 54,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 55,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 56,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 57,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 58,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 59,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 60,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 61,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 62,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 63,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 64,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 65,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 66,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 67,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 68,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 69,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 70,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 71,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 72,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 73,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 74,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 75,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 76,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 77,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 78,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 79,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 80,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 81,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 82,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 83,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 84,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 85,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 86,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 87,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 88,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 89,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 90,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 91,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 92,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 93,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 94,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 95,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 96,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 97,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 98,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    },
+    {
+      "episode": 99,
+      "survival_steps": [
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99,
+        99
+      ]
+    }
+  ]
+}

@@ -85,8 +85,8 @@ def test_cache_returns_requested_level_projection_for_every_level(tmp_path: Path
         for field in IDENTITY_HASHES:
             if getattr(got, field) != getattr(expected, field):
                 wrong.append(f"{level}: {field} {getattr(got, field)!r} != fresh {getattr(expected, field)!r}")
-        if got.observation_spec.total_dims != expected.observation_spec.total_dims:
-            wrong.append(f"{level}: observation_dim {got.observation_spec.total_dims} != {expected.observation_spec.total_dims}")
+        if got.token_spec.total_dims != expected.token_spec.total_dims:
+            wrong.append(f"{level}: observation_dim {got.token_spec.total_dims} != {expected.token_spec.total_dims}")
 
     assert not wrong, "cache served another level's projection:\n  " + "\n  ".join(wrong)
 
@@ -125,7 +125,13 @@ def test_yaml_edit_reaches_runtime_and_survives_a_level_switch(tmp_path: Path) -
     assert (
         after.metadata.primary_level == "L2_partial_observability"
     ), f"identity leg: got {after.metadata.primary_level!r} after compiling L0 in between"
-    assert after.vfs_hash != before.vfs_hash, "runtime leg: editing active_vision did not change the compiled projection"
+    # `curriculum_hash`, not `vfs_hash`: since the unit-3 token cut one pack has ONE
+    # TokenSpec, and `active_vision` changes the visibility RADIUS handed to the
+    # substrate, never the observation layout — so the VFS ABI is deliberately identical
+    # across L1 and L2. `curriculum_hash` is what an `active_vision` edit moves, and it
+    # is the projection field this leg is actually about.
+    assert after.curriculum_hash != before.curriculum_hash, "runtime leg: editing active_vision did not reach the compiled projection"
+    assert after.get_level("L2_partial_observability").curriculum.curriculum.active_vision == "global"
 
 
 def test_artifact_stamped_with_a_foreign_primary_level_is_fatal(tmp_path: Path) -> None:

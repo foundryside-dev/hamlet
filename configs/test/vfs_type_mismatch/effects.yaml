@@ -1,3 +1,2 @@
-effects:
-  version: "1.0"
-  effect_definitions: []
+version: "1.0"
+effect_definitions: []

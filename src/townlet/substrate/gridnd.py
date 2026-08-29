@@ -1,12 +1,18 @@
 """N-dimensional grid substrate (N≥4 dimensions)."""
 
+import math
 import warnings
 from typing import Literal
 
 import torch
 
 from townlet.environment.action_config import ActionConfig
-from townlet.substrate.base import SpatialSubstrate
+from townlet.substrate.base import (
+    SpatialSubstrate,
+    combine_metric,
+    pairwise_axis_deltas,
+    require_position_batch,
+)
 
 
 class GridNDSubstrate(SpatialSubstrate):
@@ -336,64 +342,12 @@ class GridNDSubstrate(SpatialSubstrate):
         """Encode positions as raw unnormalized coordinates."""
         return positions.float()
 
-    def encode_observation(self, positions: torch.Tensor, affordances: dict[str, torch.Tensor]) -> torch.Tensor:
-        """Encode agent positions into observation space.
-
-        Args:
-            positions: [num_agents, N] agent positions
-            affordances: {name: [N]} affordance positions (currently unused)
-
-        Returns:
-            Encoded observations:
-            - relative: [num_agents, N]
-            - scaled: [num_agents, 2N]
-            - absolute: [num_agents, N]
-        """
-        if self.observation_encoding == "relative":
-            return self._encode_relative(positions, affordances)
-        elif self.observation_encoding == "scaled":
-            return self._encode_scaled(positions, affordances)
-        elif self.observation_encoding == "absolute":
-            return self._encode_absolute(positions, affordances)
-        else:
-            raise ValueError(f"Invalid observation_encoding: {self.observation_encoding}")
-
-    def get_observation_dim(self) -> int:
-        """Return dimensionality of position encoding.
-
-        Returns:
-            - relative: N (normalized coordinates)
-            - scaled: 2N (normalized + sizes)
-            - absolute: N (raw coordinates)
-        """
-        if self.observation_encoding == "relative":
-            return len(self.dimension_sizes)
-        elif self.observation_encoding == "scaled":
-            return 2 * len(self.dimension_sizes)
-        elif self.observation_encoding == "absolute":
-            return len(self.dimension_sizes)
-        else:
-            raise ValueError(f"Invalid observation_encoding: {self.observation_encoding}")
-
     @property
     def supports_partial_vision(self) -> bool:
         return False
 
-    def get_grid_encoding_dim(self) -> int:
-        """GridND has no occupancy grid; its published grid encoding IS its
-        coordinate encoding (encode_observation), N or 2N by encoding mode."""
-        return self.get_observation_dim()
-
-    def get_position_feature_dim(self) -> int:
-        """GridND has no separate position-feature encoder; the runtime
-        publishes encode_observation for obs_position too."""
-        return self.get_observation_dim()
-
     def get_vision_radius(self, vision_range: float) -> int:
         raise ValueError("GridND substrates do not support partial vision; no vision radius exists.")
-
-    def get_partial_window_dim(self, vision_radius: int) -> int:
-        raise ValueError("GridND substrates do not support partial vision; no local window exists.")
 
     def normalize_positions(self, positions: torch.Tensor) -> torch.Tensor:
         """Normalize positions to [0, 1] range (always relative encoding).
@@ -405,6 +359,47 @@ class GridNDSubstrate(SpatialSubstrate):
             [num_agents, position_dim] normalized to [0, 1]
         """
         return self._encode_relative(positions, {})
+
+    # --- Token visibility / egocentric contract (token-obs unit 3, Task 8) -----
+    #
+    # GridND GAINS partial observability through this contract (the token-obs spec §1
+    # trade, rank ≤ MAX_POSITION_RANK): the OLD raster window path never supported it
+    # (`supports_partial_vision` stays False and `get_vision_radius` still raises —
+    # that contract is untouched), so the radius formula is stated here, identical to
+    # grid2d/grid3d's longest-axis form.
+
+    def _token_axis_sizes(self, device: torch.device) -> torch.Tensor:
+        return torch.tensor([float(size) for size in self.dimension_sizes], dtype=torch.float32, device=device)
+
+    def _token_vision_radius(self, vision_range: float) -> int:
+        span = max(self.dimension_sizes)
+        return max(1, int(math.ceil(vision_range * (span / 2.0))))
+
+    def visible(self, self_pos: torch.Tensor, entity_pos: torch.Tensor, vision_range: float | None) -> torch.Tensor:
+        """Declared-metric visibility; wrap-aware (toroidal shortest path under `wrap`)."""
+        require_position_batch(self_pos, self.position_dim, argument="self_pos")
+        require_position_batch(entity_pos, self.position_dim, argument="entity_pos")
+        if vision_range is None:
+            return torch.ones((self_pos.shape[0], entity_pos.shape[0]), dtype=torch.bool, device=self_pos.device)
+        radius = float(self._token_vision_radius(vision_range))
+        wrap = self._token_axis_sizes(self_pos.device) if self.boundary == "wrap" else None
+        deltas = pairwise_axis_deltas(self_pos, entity_pos, wrap)
+        return combine_metric(deltas.abs(), self.distance_metric) <= radius
+
+    def egocentric_delta(self, self_pos: torch.Tensor, entity_pos: torch.Tensor) -> torch.Tensor:
+        """entity − self per axis, shortest path under wrap, normalized per encoding mode."""
+        require_position_batch(self_pos, self.position_dim, argument="self_pos")
+        require_position_batch(entity_pos, self.position_dim, argument="entity_pos")
+        wrap = self._token_axis_sizes(self_pos.device) if self.boundary == "wrap" else None
+        deltas = pairwise_axis_deltas(self_pos, entity_pos, wrap)
+        if self.observation_encoding == "relative":
+            denominators = torch.tensor(
+                [float(max(size - 1, 1)) for size in self.dimension_sizes],
+                dtype=torch.float32,
+                device=deltas.device,
+            )
+            deltas = deltas / denominators
+        return deltas
 
     def get_valid_neighbors(self, position: torch.Tensor) -> list[torch.Tensor]:
         """Get cardinal neighbors in N dimensions (2N neighbors).
@@ -519,39 +514,3 @@ class GridNDSubstrate(SpatialSubstrate):
 
     def supports_enumerable_positions(self) -> bool:
         return True
-
-    def encode_partial_observation(
-        self,
-        positions: torch.Tensor,
-        affordances: dict[str, torch.Tensor],
-        vision_range: int,
-    ) -> torch.Tensor:
-        """Encode local window around agents for partial observability (POMDP).
-
-        For N-dimensional grids, this would require an N-dimensional hypercube window,
-        which becomes exponentially large. For example:
-        - 2D with vision_range=2: 5×5 = 25 cells
-        - 3D with vision_range=2: 5×5×5 = 125 cells
-        - 4D with vision_range=2: 5×5×5×5 = 625 cells
-        - 7D with vision_range=2: 5^7 = 78,125 cells!
-
-        Current implementation: Not supported for N≥4. Use full observability
-        with coordinate encoding instead.
-
-        Args:
-            positions: [num_agents, N] agent positions
-            affordances: {name: [N]} affordance positions
-            vision_range: radius of vision window
-
-        Returns:
-            Empty tensor [num_agents, 0] - partial obs not supported for ND
-
-        Raises:
-            NotImplementedError: Partial observability not supported for N≥4
-        """
-        raise NotImplementedError(
-            f"Partial observability (POMDP) is not supported for {self.position_dim}D grids. "
-            f"Local window size would be (2*{vision_range}+1)^{self.position_dim} = "
-            f"{(2 * vision_range + 1) ** self.position_dim} cells, which is impractical. "
-            f"Use full observability with 'relative' or 'scaled' observation_encoding instead."
-        )

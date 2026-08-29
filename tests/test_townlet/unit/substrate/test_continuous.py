@@ -264,43 +264,6 @@ class TestContinuousDistance:
         assert torch.allclose(distances, expected, atol=1e-5)
 
 
-class TestContinuousObservationEncoding:
-    """Test observation encoding."""
-
-    def test_encode_observation_shape(self):
-        """Observation encoding has correct shape."""
-        substrate = make_cont2d()
-        positions = torch.tensor([[1.0, 2.0], [5.0, 5.0]], dtype=torch.float32)
-        obs = substrate.encode_observation(positions, {})
-
-        assert obs.shape == (2, 2)  # [num_agents, dimensions]
-        assert obs.dtype == torch.float32
-
-    def test_encode_observation_normalization(self):
-        """Observation encoding normalizes to [0, 1]."""
-        substrate = make_cont2d()
-        # Position at min and max bounds
-        positions = torch.tensor([[0.0, 0.0], [10.0, 10.0], [5.0, 2.5]], dtype=torch.float32)
-        obs = substrate.encode_observation(positions, {})
-
-        # (0, 0) -> (0.0, 0.0)
-        assert torch.allclose(obs[0], torch.tensor([0.0, 0.0]), atol=1e-5)
-        # (10, 10) -> (1.0, 1.0)
-        assert torch.allclose(obs[1], torch.tensor([1.0, 1.0]), atol=1e-5)
-        # (5, 2.5) -> (0.5, 0.25)
-        assert torch.allclose(obs[2], torch.tensor([0.5, 0.25]), atol=1e-5)
-
-    def test_get_observation_dim(self):
-        """Observation dimension matches substrate dimensions."""
-        substrate1d = make_cont1d()
-        substrate2d = make_cont2d()
-        substrate3d = make_cont3d()
-
-        assert substrate1d.get_observation_dim() == 1
-        assert substrate2d.get_observation_dim() == 2
-        assert substrate3d.get_observation_dim() == 3
-
-
 class TestContinuousInteraction:
     """Test proximity-based interaction detection."""
 

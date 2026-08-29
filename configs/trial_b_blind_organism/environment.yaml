@@ -1,0 +1,26 @@
+environment:
+  version: "1.0"
+
+  meters:
+    - name: energy
+      description: Organism vitality
+      range_type:
+        kind: minmax
+        clip: false
+    - name: biomass
+      description: Accumulated food drawn from the warehouse
+      range_type:
+        kind: minmax
+        clip: false
+
+  cascade_graph: []
+  modulation_graph: []
+  affordances:
+    - name: GROW
+      description: Extend the organism into the cell the agent currently occupies
+      category: growth
+    - name: WAREHOUSE
+      description: The food warehouse
+      category: sustenance
+  variables: []
+  cues: []

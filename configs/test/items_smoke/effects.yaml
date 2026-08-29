@@ -64,3 +64,12 @@ effect_definitions:
         value: "self.vfs.freshness - (2.0 * intensity)"
 
     on_despawn: []
+
+# Per-scope budget of concurrently active effects (token-obs spec S2, required because
+# effects are declared). Values: one active instance per declared effect per scope
+# entity; a `stack`-policy effect exceeding its scope budget raises loudly at publish.
+max_active_effects:
+  global: 0
+  agent: 0
+  item: 4
+  affordance: 0

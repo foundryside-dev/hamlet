@@ -214,6 +214,29 @@ class CompiledVTCPassiveDepletion:
 
 
 @dataclass(frozen=True)
+class CompiledVTCBoundsClamp:
+    """A compiled bounds-invariant rule for the `clamp_and_validate` phase.
+
+    One rule per declared meter, sourced from `bars.*.bounds`. This is the
+    end-of-transition invariant net, not a per-write clamp: the per-write clamps
+    (VTC rule clamps and the environment-level ceilings retained by PDR-0014 B3 /
+    PDR-0015) stay where they are because their mid-tick timing is semantic.
+    """
+
+    rule_id: str
+    kind: str
+    source_variable_id: str
+    variable_id: str
+    expression: str
+    condition: str | None
+    composition: str
+    phase: str
+    priority: int
+    clamp: tuple[float, float] | None
+    telemetry_label: str
+
+
+@dataclass(frozen=True)
 class CompiledVTCModulation:
     """A parsed VTC affordance modulation rule."""
 
@@ -362,7 +385,6 @@ class CompiledVTCSocialResidueRule:
     telemetry_label: str
     reads: tuple[str, ...]
     scope: str | None
-    target: str | None
 
 
 @dataclass(frozen=True)
@@ -1080,6 +1102,33 @@ class VTCPassiveDepletionProgram:
         if current_group:
             phase_groups.append(tuple(current_group))
         return phase_groups
+
+
+@dataclass(frozen=True)
+class VTCBoundsClampProgram:
+    """Executable collection of compiled bounds-invariant rules.
+
+    Bounds are declarations about the state, not about a write, so `apply` takes no
+    active mask: a dead agent's meter is still required to sit inside its declared
+    bounds, and clamping an already-in-bounds value is the identity.
+    """
+
+    rules: tuple[CompiledVTCBoundsClamp, ...]
+
+    def apply(
+        self,
+        *,
+        bars_state: Mapping[str, torch.Tensor],
+        device: torch.device,
+    ) -> dict[str, torch.Tensor]:
+        """Clamp every ruled meter into its declared bounds; touch nothing else."""
+        updated = {name: value.to(device=device).clone() for name, value in bars_state.items()}
+        for rule in self.rules:
+            if rule.variable_id not in updated:
+                raise KeyError(f"VTC bounds clamp targets unknown bar '{rule.variable_id}'")
+            clamp_low, clamp_high = _required_clamp(rule.clamp, rule.telemetry_label)
+            updated[rule.variable_id] = torch.clamp(updated[rule.variable_id], min=clamp_low, max=clamp_high)
+        return updated
 
 
 @dataclass(frozen=True)
@@ -1848,7 +1897,6 @@ def compile_vtc_social_residue_rules_with_phase_graph(
                     telemetry_label=write["telemetry_label"],
                     reads=rule["reads"],
                     scope=write["scope"],
-                    target=write["target"],
                 )
             )
 
@@ -1914,7 +1962,6 @@ def _coerce_social_residue_write(raw_write: Mapping[str, Any] | WriteSpec, rule:
     composition: str
     effect: str | None
     scope: str | None
-    target: str | None
 
     if isinstance(raw_write, WriteSpec):
         variable_id = raw_write.variable_id
@@ -1927,8 +1974,13 @@ def _coerce_social_residue_write(raw_write: Mapping[str, Any] | WriteSpec, rule:
         telemetry_label = raw_write.telemetry_label
         effect = None
         scope = None
-        target = None
     elif isinstance(raw_write, Mapping):
+        if "target" in raw_write:
+            raise ValueError(
+                f"VTC social residue rule '{rule_id}' write field 'target' was removed: directed masks are "
+                "expressed through condition/expression data (e.g. a pair-scope observer mask), not a role "
+                "annotation. Delete the 'target' key. See docs/architecture/vfs.md §16.3."
+            )
         variable_id = str(raw_write.get("variable_id", "")).strip()
         expression = str(raw_write.get("expression", "")).strip()
         condition_raw = raw_write.get("condition")
@@ -1943,8 +1995,6 @@ def _coerce_social_residue_write(raw_write: Mapping[str, Any] | WriteSpec, rule:
         effect = None if effect_raw is None else str(effect_raw).strip()
         scope_raw = raw_write.get("scope")
         scope = None if scope_raw is None else str(scope_raw).strip()
-        target_raw = raw_write.get("target")
-        target = None if target_raw is None else str(target_raw).strip()
     else:
         raise TypeError(f"VTC social residue rule '{rule_id}' write entry must be a WriteSpec or mapping")
 
@@ -1966,8 +2016,6 @@ def _coerce_social_residue_write(raw_write: Mapping[str, Any] | WriteSpec, rule:
         raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' effect must be non-empty when provided")
     if scope == "":
         raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' scope must be non-empty when provided")
-    if target == "":
-        raise ValueError(f"VTC social residue rule '{rule_id}' write to '{variable_id}' target must be non-empty when provided")
 
     return {
         "variable_id": variable_id,
@@ -1980,7 +2028,6 @@ def _coerce_social_residue_write(raw_write: Mapping[str, Any] | WriteSpec, rule:
         "telemetry_label": telemetry_label,
         "effect": effect,
         "scope": scope,
-        "target": target,
     }
 
 
@@ -2378,6 +2425,64 @@ def _coerce_threshold_cascade(cascade: VTCThresholdCascadeSource | Mapping[str, 
         "target": target,
         "threshold": threshold,
         "strength": strength,
+    }
+
+
+def compile_vtc_bounds_clamps(meters: Sequence[VTCPassiveDepletionSource | Mapping[str, Any]]) -> VTCBoundsClampProgram:
+    """Compile declared meter bounds into `clamp_and_validate` invariant rules."""
+    return compile_vtc_bounds_clamps_with_phase_graph(meters, TransitionPhaseGraph.default())
+
+
+def compile_vtc_bounds_clamps_with_phase_graph(
+    meters: Sequence[VTCPassiveDepletionSource | Mapping[str, Any]],
+    phase_graph: TransitionPhaseGraph,
+) -> VTCBoundsClampProgram:
+    """Compile declared meter bounds using an explicit VTC transition phase graph."""
+    compiled_rules: list[CompiledVTCBoundsClamp] = []
+
+    for priority, raw_meter in enumerate(meters):
+        meter = _coerce_bounds_clamp(raw_meter)
+        low_literal = _format_rule_float(meter["bounds_min"])
+        high_literal = _format_rule_float(meter["bounds_max"])
+        compiled_rules.append(
+            CompiledVTCBoundsClamp(
+                rule_id=f"bounds:{meter['name']}",
+                kind="bounds_clamp",
+                source_variable_id=meter["name"],
+                variable_id=meter["name"],
+                expression=f"clamp(bar.{meter['name']}, {low_literal}, {high_literal})",
+                condition=None,
+                composition="overwrite",
+                phase="clamp_and_validate",
+                priority=priority,
+                clamp=(meter["bounds_min"], meter["bounds_max"]),
+                telemetry_label=f"bounds_clamp:{meter['name']}",
+            )
+        )
+
+    return VTCBoundsClampProgram(
+        rules=tuple(
+            sorted(
+                compiled_rules,
+                key=lambda item: (phase_graph.sort_key(item.phase), item.priority, item.rule_id),
+            )
+        )
+    )
+
+
+def _coerce_bounds_clamp(meter: VTCPassiveDepletionSource | Mapping[str, Any]) -> dict[str, Any]:
+    if isinstance(meter, Mapping):
+        name = str(meter["name"])
+        bounds = meter["bounds"]
+    else:
+        name = meter.name
+        bounds = meter.bounds
+
+    bounds_min, bounds_max = _coerce_meter_bounds(bounds)
+    return {
+        "name": name,
+        "bounds_min": bounds_min,
+        "bounds_max": bounds_max,
     }
 
 

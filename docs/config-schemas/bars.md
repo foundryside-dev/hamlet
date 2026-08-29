@@ -15,6 +15,36 @@ status: current as of 2026-08-12 (WS-1(e), PDR-0016)
 
 # `bars.yaml`
 
+> ✅ **Restored to the live tree 2026-08-26 — accurate, with ONE stale count. The most trustworthy file in this directory, but not perfect.**
+>
+> Every key was diffed against `src/townlet/config/bars_v2_config.py` in both directions (21
+> keys, no doc-only keys, no required-no-default DTO fields omitted), and the prose validators
+> match. The bounds key really is `bounds:`.
+>
+> **⚠️ "enforced at **six** runtime sites" is now SEVEN.** The six listed below are all real and
+> correctly described. The undocumented seventh is the compiled **`clamp_and_validate` bounds
+> program** — `compile_vtc_bounds_clamps` (`vfs/vtc.py:2431`), run by `_run_bounds_clamps`
+> (`vfs/transition_schedule.py:186`). It genuinely executes every step: `clamp_and_validate`
+> sits between `apply_threshold_cascades` and `evaluate_terminal_conditions` in the phase graph
+> (`vfs/transition_graph.py:21`), which is exactly the span
+> `vectorized_env.py:1253` runs via `phases_between(...)`.
+>
+> This is **honest staleness, not a false claim**: the file self-dates to 2026-08-12, and the
+> seventh site landed 2026-08-22 in `cd3557b6` ("clamp_and_validate carries compiled bounds
+> rules — the phase graph stops lying", `hamlet-f46e2b381a`).
+>
+> **Two understatements** (not errors): the normalization note names only `minmax` as drawing
+> from bounds — `config/environment_config.py:127` says `minmax` **and** `log_scaled`. And
+> cascades must additionally match `environment.yaml: cascade_graph`, enforced at
+> `universe/validation/semantics.py:181-205`; this file does not mention that constraint.
+>
+> Tracked as `hamlet-2631703087`.
+>
+> ℹ️ Where this document and the code *comment* disagree, **this document is right**:
+> `bars_v2_config.py:89` still says `description="Starting value [0.0, 1.0]"` while the
+> validator only enforces bounds containment.
+
+
 One file per curriculum level, at `configs/<pack>/levels/<level>/bars.yaml`. It defines
 the meters that level runs with and the cascades between them.
 

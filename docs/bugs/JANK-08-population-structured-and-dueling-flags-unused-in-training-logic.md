@@ -1,3 +1,40 @@
+
+> 🔴 **Recovered from archive 2026-08-26 — STILL OPEN, but HALF OF THIS TICKET IS NOW FALSE.**
+>
+> Recovered because `docs/product/roadmap.md:446` cites `docs/bugs/JANK-08` as known debt on an
+> active roadmap bet, and that link was dangling. Re-verified against source 2026-08-26:
+>
+> **The `dueling` half is CONFIRMED OPEN, and the roadmap's phrasing — "declared brain flags
+> unused by training logic" — is accurate as stated.** The chain: `config/brain_config.py:432`
+> declares `dueling` in the architecture `Literal`; shipped packs use it (`configs/simple/`,
+> `configs/L5_multi_agent/`, three trial packs); `population/vectorized.py:157` sets
+> `self.is_dueling`; and `grep -rn "is_dueling" src/ tests/` returns **exactly one hit — the
+> assignment itself. Zero readers.** The update path (`vectorized.py:983-993`) branches only on
+> `is_recurrent`.
+>
+> ⚠️ **Refinement: the dueling *math* is not broken.** `DuelingQNetwork.forward`
+> (`agent/networks.py:388-412`) does the V+A aggregation internally and returns a flat
+> `[batch, action_dim]` Q, so the shared `gather()` is correct. The defect is a **dead declared
+> flag**, not incorrect training — which makes this ticket's own "or remove the flags" branch
+> the applicable remedy. For a declarative product, declared-but-inert config is the worst
+> failure mode; that is why the roadmap tracks it.
+>
+> ⛔ **The `structured` half is OBSOLETE — do not act on it.** Three of its claims are now false:
+> there is no `network_type` constructor parameter (`VectorizedPopulation.__init__` takes
+> `brain_config` only); `"structured"` is not in the architecture `Literal` and has no
+> `_build_network` branch, so `StructuredQNetwork` is **unreachable from any config**; and the
+> `ObservationActivity` it says the network is built with **no longer exists**, deleted by the
+> unit-3 token cut.
+>
+> **Two instances this ticket misses.** `vectorized.py:160` sets `self.is_set_encoder` — also
+> zero readers, and worse, `set_encoder` is now a build-time hard error
+> (`vectorized.py:400-407`), so it is a declared-and-refused architecture whose flag is still
+> computed. `vectorized.py:163` sets `self.is_token_set`, the only such flag with a real reader
+> (`vectorized.py:1308`) — and that is a checkpoint path, not the training path.
+>
+> **Line drift:** flags `:151` → **157/160/163**; recurrent buffer branch `:210` → **:213**;
+> `StructuredQNetwork` `networks.py:418` → **:784**.
+
 Title: VectorizedPopulation structured/dueling flags exist but training path treats all networks identically
 
 Severity: medium

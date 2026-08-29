@@ -3,7 +3,7 @@
 Date: 2026-08-11   Status: accepted   Author: Claude (standing product owner)
 Owner sign-off: not required (within grant — accepting/amending a plan against criteria), but **ratified by the owner on 2026-08-11**: *"yes all those three are obviously decisions."* Recorded because "not required" alone would suggest the owner never saw them. The call below is unchanged by the ratification.
 Related: PDR-0008 (WS-1 verified), PDR-0012 (no tech debt), PDR-0007 (options not yet enabled), PDR-0006 (oracle freeze), metrics.md (Config-surface coverage, Provenance integrity)
-Plan: `docs/plans/2026-08-11-ws1-fix-set.md` · tracker `hamlet-67ffbd282a`, `hamlet-88acec4bb5`
+Plan: `docs/zzz. archive/plans/2026-08-11-ws1-fix-set.md` · tracker `hamlet-67ffbd282a`, `hamlet-88acec4bb5`
 
 ## Context
 
@@ -88,7 +88,7 @@ Warnings W1–W5 are accepted as written and folded into their tasks; none requi
   gates the oracle freeze.
 - **`bars.*.bounds` moves from inert to wired**, so the next reading of *Declared-but-inert config
   surfaces* should fall — the first decrement since the count was established at ~40.
-- **The plan is now durable in-repo** at `docs/plans/2026-08-11-ws1-fix-set.md`, carrying a
+- **The plan is now durable in-repo** at `docs/zzz. archive/plans/2026-08-11-ws1-fix-set.md`, carrying a
   post-filigree banner so WS-6's archaeology does not mistake it for the pre-filigree stratum.
 - **The review does not carry forward.** Per the synthesis's own caveat, the plan must be
   re-reviewed after these amendments land rather than treated as approved.

@@ -1,5 +1,22 @@
 # drive_as_code.yaml Configuration
 
+> ⚠️ **Restored to the live tree 2026-08-26 — authoritative on the reward VOCABULARY, wrong about the FILENAME.**
+>
+> This is the reference `CLAUDE.md` and `docs/architecture/HLD.md`/`UAC.md` delegate to for the
+> DAC component vocabularies (modifiers; 9 extrinsic, 5 intrinsic, 11 shaping types). That
+> content is why it is out of the archive.
+>
+> **Known wrong — one error, repeated throughout:** every reference to a file called
+> **`drive_as_code.yaml` is dead.** No shipped pack contains such a file, and a grep for that
+> name returns zero hits, so it will falsely "confirm" whatever you were checking. The real
+> file is **`drive.yaml`**, one per level, at
+> `configs/default_curriculum/levels/<level>/drive.yaml`. Read every `drive_as_code.yaml` below
+> as `drive.yaml`.
+>
+> (The compiler has the same bug in its own error strings — `validation/references.py` emits
+> diagnostics located at `drive_as_code.yaml`. That is a source defect, not a doc defect.)
+
+
 ---
 ## AI-Friendly Frontmatter
 
@@ -1404,7 +1421,7 @@ extrinsic:
 - **Training Config**: `docs/config-schemas/training.md`
 - **Bar Config**: `docs/config-schemas/bars.md`
 - **VFS Config**: `docs/config-schemas/variables.md`
-- **Compiler Architecture**: `docs/architecture/COMPILER_ARCHITECTURE.md`
+- **Compiler**: `docs/architecture/COMPILER.md` (design history: `docs/architecture/archive/COMPILER_ARCHITECTURE.md`)
 
 ---
 

@@ -548,7 +548,7 @@ git commit -m "fix: address lint violations from hotfix"
 
 - **Implementation Guide**: `docs/development/LINT_ENFORCEMENT.md` (detailed how-to, troubleshooting)
 - **Related Policies**: None (first policy decision)
-- **Architecture Docs**: `docs/architecture/UNIVERSE_AS_CODE.md` (no-defaults principle)
+- **Architecture Docs**: `docs/architecture/archive/UNIVERSE_AS_CODE.md` (no-defaults principle)
 - **Fix Patterns**: `docs/development/MYPY_REMAINING_ERRORS.md` (type safety patterns)
 
 ### Tools & Automation

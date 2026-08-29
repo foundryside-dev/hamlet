@@ -12,13 +12,30 @@ from townlet.config.vfs_profiles_config import GlobalVFSProfileConfig, VFSProfil
 from townlet.universe.compiled import CompiledVFSProfiles
 from townlet.universe.validation.limits import MAX_VFS_PROFILES
 from townlet.vfs.profiles import CompiledItemProfile, VFSProfileCompiler
-from townlet.vfs.schema import VariableDef, VariableScope
+from townlet.vfs.schema import VariableDef
 from townlet.world.expression import ExpressionParser
 from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
 
 _RUNTIME_VFS_TYPES = frozenset(
     {"scalar", "bool", "tensor1d", "tensor2d", "tensor3d", "tensorNd", "agent_ref", "item_ref", "affordance_ref", "effect_ref"}
 )
+
+_ENGINE_TICK_ID = "tick"
+
+
+def _engine_tick_variable_def() -> VariableDef:
+    return VariableDef(
+        id=_ENGINE_TICK_ID,
+        scope="global",
+        type="scalar",
+        default=0.0,
+        lifetime="episode",
+        readable_by=["agent", "engine"],
+        writable_by=["engine"],
+        # float32 storage is integer-exact to 2^24; persistent-lifetime counters are
+        # hamlet-0268336cd1's question, not this variable's contract.
+        description="Engine-written step counter — the one temporal primitive (token-obs design ruling 6).",
+    )
 
 
 class VFSCompiler:
@@ -80,25 +97,39 @@ class VFSCompiler:
         static_variables: tuple[VariableDef, ...] | None = None,
     ) -> tuple[VariableDef, ...]:
         """Emit registry-ready VFS variables from observation/environment variables and profiles."""
-        variables: list[VariableDef] = list(base_variables)
+        variables: list[VariableDef] = [_engine_tick_variable_def(), *base_variables]
 
-        if compiled_vfs_profiles is None:
-            return tuple(variables)
+        if compiled_vfs_profiles is not None:
+            if compiled_vfs_profiles.global_profile is not None:
+                for compiled_var in compiled_vfs_profiles.global_profile.variables:
+                    variables.append(self._compiled_profile_var_to_variable_def(compiled_var, scope="global", lifetime="persistent"))
 
-        if compiled_vfs_profiles.global_profile is not None:
-            for compiled_var in compiled_vfs_profiles.global_profile.variables:
-                variables.append(self._compiled_profile_var_to_variable_def(compiled_var, scope="global", lifetime="persistent"))
+            if compiled_vfs_profiles.agent_profile is not None:
+                for compiled_var in compiled_vfs_profiles.agent_profile.variables:
+                    variables.append(self._compiled_profile_var_to_variable_def(compiled_var, scope="agent", lifetime="episode"))
 
-        if compiled_vfs_profiles.agent_profile is not None:
-            for compiled_var in compiled_vfs_profiles.agent_profile.variables:
-                variables.append(self._compiled_profile_var_to_variable_def(compiled_var, scope="agent", lifetime="episode"))
+            existing_ids = {variable.id for variable in variables}
+            for variable in static_variables or ():
+                # Refuse explicitly BEFORE the dedup skip below: existing_ids already
+                # contains the engine's own prepended 'tick' (index 0), so an authored
+                # static variable (variables_reference.yaml) named 'tick' would otherwise
+                # match that dedup check and be silently dropped instead of refused.
+                if variable.id == _ENGINE_TICK_ID:
+                    raise ValueError(
+                        "Variable id 'tick' is reserved for the engine-written step counter "
+                        "(token-obs design ruling 6). Rename the authored variable."
+                    )
+                if variable.id in existing_ids:
+                    continue
+                variables.append(variable)
+                existing_ids.add(variable.id)
 
-        existing_ids = {variable.id for variable in variables}
-        for variable in static_variables or ():
-            if variable.id in existing_ids:
-                continue
-            variables.append(variable)
-            existing_ids.add(variable.id)
+        clashes = [v.id for v in variables[1:] if v.id == _ENGINE_TICK_ID]
+        if clashes:
+            raise ValueError(
+                "Variable id 'tick' is reserved for the engine-written step counter "
+                "(token-obs design ruling 6). Rename the authored variable."
+            )
 
         return tuple(variables)
 
@@ -121,27 +152,44 @@ class VFSCompiler:
 
         return schema
 
-    def extract_observation_marks(self, variables: tuple[VariableDef, ...]) -> dict[str, set[str]]:
-        """Extract which VFS variables are marked for observation."""
-        marks: dict[str, set[str]] = {
-            "global": set(),
-            "agent": set(),
-            "item": set(),
-        }
+    def derive_evaluation_marks(
+        self,
+        profiles_config: VFSProfilesConfig | None,
+        overlay_variables: tuple[VariableDef, ...] | None,
+    ) -> dict[str, set[str]] | None:
+        """Marks = every profile EXPRESSION variable. Statics are never marked.
 
-        for var in variables:
-            if var.observable:
-                if isinstance(var.scope, VariableScope):
-                    scope_key = var.scope.value
-                else:
-                    scope_key = str(var.scope)
+        An expression variable's value is WORLD STATE: a VTC rule, a DAC reward
+        component, another expression or a terminal condition may read it, and none of
+        those care whether anyone observes it. So evaluation is marked by declaration —
+        having an expression — never by exposure.
 
-                if scope_key == "global":
-                    marks["global"].add(var.id)
-                elif scope_key in ("agent", "agent_private"):
-                    marks["agent"].add(var.id)
+        It used to be marked by exposure ("only evaluate observed variables"), which
+        looked harmless only because `exposed_to` failed open to `["agent"]`: every
+        profile expression variable was exposed, so every one was evaluated. Deleting
+        that fail-open at the unit-3 cut (hamlet-d97b4d6b4a) turned an OBSERVATION
+        decision into a STATE decision — unexposed expression variables silently stopped
+        being computed and sat at their defaults, which is a world-evolution change, not
+        an observation change, and would have broken the cut's own adjudication criterion
+        (spec §5: only `obs` may diverge). Marking every expression reproduces the
+        pre-cut evaluation set exactly on every pack.
 
-        return {k: v for k, v in marks.items() if v}
+        Statics stay unmarked: they are storage, and re-emitting their initial value
+        would clobber runtime writes (hamlet-df3a96bbac). They still reach the evaluator
+        by its other two doors — the dependency chase and the compiled `history_spec` —
+        and are REPORTED at their current value there, never re-initialized
+        (vfs/evaluator.py's static branch, comment-242 item 4).
+        """
+        if profiles_config is None:
+            return None
+        marks: dict[str, set[str]] = {}
+        for scope_key, profile in (("global", profiles_config.global_profile), ("agent", profiles_config.agent_profile)):
+            if profile is None:
+                continue
+            expression_vars = {v.name for v in profile.variables if v.expression is not None}
+            if expression_vars:
+                marks[scope_key] = expression_vars
+        return marks or {}
 
     def validate_item_profile_bindings(
         self,
@@ -247,7 +295,7 @@ class VFSCompiler:
         self,
         compiled_var: Any,
         *,
-        scope: Literal["global", "agent"],
+        scope: Literal["global", "agent", "agent_private", "item", "pair", "group", "affordance", "zone", "message"],
         lifetime: Literal["persistent", "episode"],
     ) -> VariableDef:
         raw_type = str(compiled_var.type)
@@ -287,6 +335,9 @@ class VFSCompiler:
             dims=getattr(compiled_var, "dims", None),
             initial_value_mode=getattr(compiled_var, "initial_value_mode", None),
             initial_value_params=getattr(compiled_var, "initial_value_params", None),
+            # The declared normalization rides onto the runtime declaration so the token
+            # publishers read exactly what the author declared (spec §2).
+            normalization=getattr(compiled_var, "normalization", None),
         )
 
     @staticmethod

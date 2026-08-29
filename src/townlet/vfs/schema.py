@@ -15,14 +15,13 @@ from typing import Any, Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
-from townlet.vfs.semantic_type import SemanticType
-
 __all__ = [
     "NormalizationSpec",
     "WriteSpec",
-    "ObservationField",
     "VariableDef",
     "VariableScope",
+    "VFSScopeExtents",
+    "VariablesReferenceData",
     "load_variables_reference_config",
 ]
 
@@ -319,76 +318,6 @@ class WriteSpec(BaseModel):
         return self
 
 
-class ObservationField(BaseModel):
-    """Observation field specification.
-
-    Maps a variable to an observation field that will be exposed to agents
-    or other systems (like the VTC or brain compiler).
-
-    Examples:
-        # Scalar observation
-        ObservationField(
-            id="obs_energy",
-            source_variable="energy",
-            exposed_to=["agent"],
-            shape=[],
-        )
-
-        # Vector observation with normalization
-        ObservationField(
-            id="obs_position",
-            source_variable="position",
-            exposed_to=["agent"],
-            shape=[2],
-            normalization=NormalizationSpec(kind="minmax", min=[0,0], max=[7,7], clip=False),
-        )
-    """
-
-    model_config = ConfigDict(extra="forbid")
-
-    id: str = Field(
-        min_length=1,
-        description="Unique identifier for this observation field",
-    )
-
-    source_variable: str = Field(
-        min_length=1,
-        description="ID of the variable this observation reads from",
-    )
-
-    exposed_to: list[str] = Field(
-        min_length=1,
-        description="Who can observe this field (e.g., ['agent', 'acs', 'bac'])",
-    )
-
-    shape: list[int] = Field(
-        description="Shape of observation ([] for scalar, [N] for vector)",
-    )
-
-    normalization: NormalizationSpec | None = Field(
-        default=None,
-        description="Optional normalization to apply before exposing",
-    )
-
-    semantic_type: SemanticType = Field(
-        description=(
-            "Semantic group of this field in the observation vector — one member of the closed "
-            "vocabulary in townlet.vfs.semantic_type (PDR-0047). Required: it is part of the "
-            "field's identity (observation_schema_hash) and names its group slice, so it is never "
-            "defaulted."
-        ),
-    )
-
-    curriculum_active: bool = Field(
-        default=True,
-        description=(
-            "Whether this field is active in current curriculum level. "
-            "False indicates padding dimensions that should be masked out during training. "
-            "Used by structured encoders and RND to ignore inactive affordances/meters."
-        ),
-    )
-
-
 class VariableDef(BaseModel):
     """Variable definition for VFS.
 
@@ -561,7 +490,43 @@ class VariableDef(BaseModel):
         return self
 
 
-def load_variables_reference_config(config_dir: Path) -> list[VariableDef]:
+class VFSScopeExtents(BaseModel):
+    """Storage extents for the zone/group/message variable scopes.
+
+    Declared in the optional top-level ``extents:`` block of
+    variables_reference.yaml — the only file that can declare variables with
+    these scopes. An extent is required exactly when a variable of the matching
+    scope is declared; the loader rejects the pack otherwise, so the failure is
+    a compile error and never a green compile that crashes at env construction
+    (hamlet-9e1ae3b7a2).
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    num_zones: int | None = Field(default=None, ge=1, description="Number of zone-scope storage rows")
+    num_groups: int | None = Field(default=None, ge=1, description="Number of group-scope storage rows")
+    num_message_slots: int | None = Field(default=None, ge=1, description="Recent-message buffer slots per agent")
+    num_affordances: int | None = Field(default=None, ge=1, description="Number of affordance-scope storage rows")
+
+
+class VariablesReferenceData(BaseModel):
+    """Parsed contents of variables_reference.yaml the compiler consumes."""
+
+    model_config = ConfigDict(frozen=True)
+
+    variables: tuple[VariableDef, ...]
+    extents: VFSScopeExtents | None
+
+
+_SCOPE_EXTENT_FIELD: dict[VariableScope, str] = {
+    VariableScope.ZONE: "num_zones",
+    VariableScope.GROUP: "num_groups",
+    VariableScope.MESSAGE: "num_message_slots",
+    VariableScope.AFFORDANCE: "num_affordances",
+}
+
+
+def load_variables_reference_config(config_dir: Path) -> VariablesReferenceData:
     """Load and validate variables_reference.yaml."""
 
     config_dir = Path(config_dir)
@@ -593,6 +558,32 @@ def load_variables_reference_config(config_dir: Path) -> list[VariableDef]:
             raise ValueError("variables_reference.yaml cannot define item-scoped variables; use vfs_profiles.yaml item_profiles.")
 
     try:
-        return [VariableDef(**raw_var) for raw_var in variables_block]
+        variables = tuple(VariableDef(**raw_var) for raw_var in variables_block)
     except ValidationError as exc:
         raise ValueError(f"Invalid variables_reference.yaml: {exc}") from exc
+
+    extents_block = data.get("extents")
+    try:
+        extents = VFSScopeExtents(**extents_block) if extents_block is not None else None
+    except ValidationError as exc:
+        raise ValueError(f"Invalid extents block in {yaml_path}: {exc}") from exc
+
+    # A zone/group/message-scoped variable sizes its storage by the matching
+    # extent; without one the registry cannot allocate. Reject HERE, so the
+    # author gets a compile error, not a crash at env construction.
+    for variable in variables:
+        extent_field = _SCOPE_EXTENT_FIELD.get(VariableScope(variable.scope))
+        if extent_field is None:
+            continue
+        declared = getattr(extents, extent_field) if extents is not None else None
+        if declared is None:
+            raise ValueError(
+                f"Variable '{variable.id}' uses {VariableScope(variable.scope).value} scope "
+                f"but the pack declares no '{extent_field}' extent.\n"
+                f"  File: {yaml_path}\n"
+                f"  Action: add a top-level extents block:\n"
+                f"    extents:\n"
+                f"      {extent_field}: <positive int>"
+            )
+
+    return VariablesReferenceData(variables=variables, extents=extents)

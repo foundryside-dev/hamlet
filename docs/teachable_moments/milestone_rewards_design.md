@@ -1,5 +1,21 @@
 # Milestone Rewards: Why Birthdays Beat Breathing
 
+> ⛔ **Recovered from archive 2026-08-26 — its "Status: Implemented ✅" line is FALSE. This is a PROPOSAL.**
+>
+> Nothing described here ships. Verified 2026-08-26: there is **no milestone shaping type in
+> the DAC vocabulary** (the 11 shaping `Literal` types are enumerated in
+> `src/townlet/config/drive_as_code.py:291-564` and none is a milestone), **no shipped level
+> declares one**, and the `-100.0` death penalty and `+0.5` / `+5.0` milestone bonuses do not
+> appear in any shipped `drive.yaml`.
+>
+> What actually ships in every level: `constant_base_with_shaped_bonus` at
+> `base_reward: 0.01`, with an `approach_reward` (EAT) and a `completion_bonus` (SLEEP).
+>
+> The lesson is real and worth keeping — dense per-step rewards pay for oscillation, sparse
+> milestone rewards do not — which is why this is recovered rather than deleted. But read it as
+> a design argument for something not yet built, and do not cite it as evidence of behaviour.
+
+
 **Date**: October 31, 2025
 **Insight**: Reward shaping that prevents left-right oscillation
 **Status**: Implemented ✅
@@ -257,7 +273,7 @@ Track these to validate milestone rewards work:
 
 ## Related Documents
 
-- [Episode 1: Hospital Bankruptcy](./episode_1_hospital_bankruptcy.md)
+- [Episode 1: Hospital Bankruptcy](../zzz. archive/teachable_moments/episode_1_hospital_bankruptcy.md)
 - [Reward Hacking: Interact Spam](./reward_hacking_interact_spam.md)
 - [Three Stages of Learning](./three_stages_of_learning.md)
 

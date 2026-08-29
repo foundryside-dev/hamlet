@@ -1,5 +1,27 @@
 # Items Configuration
 
+> ⚠️ **Restored to the live tree 2026-08-26 — stale in several load-bearing places. Tracked as `hamlet-6f27878731`.**
+>
+> Verified 2026-08-26: **no YAML snippet in this document parses as written**, and the required
+> fields **`name`**, **`icon`** and **`tags`** are absent from the document's own field table.
+>
+> The filed ticket names three further defects:
+> 1. Every `if` example uses a nested `{condition: ..., then: ...}` mapping. The real
+>    `CommandConfig` DTO (`effects_config.py:100`) takes the expression as the **value of the
+>    `if` key itself** and refuses the nested form.
+> 2. The `item_profiles` examples show `{id, scope, type, initial_value, normalization}` at
+>    *profile* level. The real `ItemVFSProfileConfig` is `{profile_name, variables: [...]}` with
+>    per-variable `{name, type, initial_value, exposed_to}`.
+> 3. "Migration from Legacy" says items have no observations — **false since PDR-0075**:
+>    exposed item variables are encoded in the `obs_item_slots` block.
+>
+> An author following this document hits a parse error that looks like a blocked capability
+> rather than a doc bug.
+>
+> ✅ **The catalog-vs-appearance split documented here is REAL** (`raw_configs_v21.py:274-280`) —
+> do not treat that part as suspect.
+
+
 ---
 ## AI-Friendly Frontmatter
 

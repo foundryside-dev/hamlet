@@ -1,3 +1,16 @@
+# ⚠️ RECOVERED FROM ARCHIVE 2026-08-26 — read these two corrections first.
+#
+# 1. The comment below says this nests in "substrate.yaml". That file does not exist.
+#    The real container is the pack-root **stratum.yaml**, and the substrate block is
+#    nested one level deeper, under `stratum: > substrate:`. Compare
+#    configs/aspatial_test/stratum.yaml for the shipped shape.
+# 2. Any "Observation dim: ... = N dims" comment here is unreliable. Observation width is
+#    two different quantities (allocated vs active) and moves whenever the observed surface
+#    changes. Ask the compiled artifact -- CompiledUniverse.observation_spec.total_dims --
+#    never a literal in a doc. See CLAUDE.md "State Representation".
+#
+# This file is a FRAGMENT illustrating one substrate's options, not a runnable pack.
+
 # Example: Toroidal Grid (Pac-Man Style Wraparound)
 #
 # This substrate demonstrates "wrap" boundary behavior where agents

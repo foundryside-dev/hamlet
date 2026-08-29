@@ -38,6 +38,8 @@ class ActionCompiler:
             enabled: bool,
             movement_delta: tuple[float, ...] | None = None,
             description: str = "",
+            source_affordance: str | None = None,
+            writes: tuple[dict, ...] = (),
         ) -> None:
             nonlocal next_id
             entries.append(
@@ -50,6 +52,8 @@ class ActionCompiler:
                     costs={},
                     description=description,
                     movement_delta=movement_delta,
+                    source_affordance=source_affordance,
+                    writes=writes,
                 )
             )
             next_id += 1
@@ -111,7 +115,15 @@ class ActionCompiler:
                 enabled = custom.name in allowed_names
             else:
                 enabled = custom.enabled_by_default or custom.name in enabled_custom
-            _add(custom.name, action_type, "custom", enabled, description=custom.description or "")
+            _add(
+                custom.name,
+                action_type,
+                "custom",
+                enabled,
+                description=custom.description or "",
+                source_affordance=custom.source_affordance,
+                writes=tuple(write.model_dump() for write in custom.writes),
+            )
 
         if items is not None and items.max_items_per_agent > 0 and items.max_items_in_world > 0:
             get_enabled = True
@@ -200,9 +212,9 @@ class ActionCompiler:
                 teleport_to=None,
                 description=action.description or None,
                 icon=None,
-                source_affordance=None,
+                source_affordance=action.source_affordance,
                 reads=(),
-                writes=(),
+                writes=action.writes,
             )
             for action in sorted(action_metadata.actions, key=lambda entry: entry.id)
         )

@@ -1,4 +1,7 @@
-effects:
-  version: "1.0"
-  active_effects: []
-  on_demand_effects: []
+version: "1.0"
+
+# active_effects/on_demand_effects were dead field names from an older effects.yaml
+# schema generation (pre-dating EffectsConfig's version/effect_definitions shape) —
+# both were always empty, so there is nothing to convert. Deleted per zero-backcompat:
+# old configs fail loudly and get updated, never accommodated (hamlet-88578e629e).
+effect_definitions: []

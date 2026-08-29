@@ -5,6 +5,7 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
+import pytest
 import yaml
 
 from tests.test_townlet.helpers.config_builder import PRIMARY_LEVEL_NAME
@@ -18,39 +19,43 @@ def _copy_experiment(tmp_path: Path) -> Path:
     return dest
 
 
-def test_standardize_normalization_maps_to_zscore(tmp_path: Path) -> None:
-    config_dir = _copy_experiment(tmp_path)
+def test_standardize_maps_to_zscore_but_refuses_at_exposure(tmp_path: Path) -> None:
+    """`standardize` still compiles to a `zscore` NormalizationSpec — and an
+    `environment.yaml` variable declaring it now REFUSES.
 
-    env_path = config_dir / "environment.yaml"
-    env_data = yaml.safe_load(env_path.read_text())
+    Both halves matter. The mapping is the DTO contract and is unchanged. The refusal is
+    the unit-3 cut: `environment.yaml` variables are exposed by declaration (spec §2), and
+    boundedness is certified at exposure (spec §1), so an unbounded kind cannot reach a
+    token value lane. The consequence — recorded, not hidden — is that `standardize` is
+    now unreachable from `environment.yaml` entirely; the surface survives for VFS
+    variables that are NOT exposed.
+    """
+    from townlet.config.environment_config import NormalizationConfig
+    from townlet.universe.compilers.observation import ObservationCompiler
 
     mean_value = 50.0
     std_value = 25.0
 
+    spec = ObservationCompiler._convert_normalization(
+        "time_since_last_eat",
+        NormalizationConfig(method="standardize", range=[0.0, 100.0], mean=mean_value, std=std_value),
+    )
+    assert spec.kind == "zscore"
+    assert spec.mean == mean_value
+    assert spec.std == std_value
+
+    config_dir = _copy_experiment(tmp_path)
+    env_path = config_dir / "environment.yaml"
+    env_data = yaml.safe_load(env_path.read_text())
     for var in env_data["environment"]["variables"]:
         if var["name"] == "time_since_last_eat":
             var["normalization"]["method"] = "standardize"
-            # `clip` belongs to `normalize` and is forbidden on `standardize`,
-            # which has no range to clamp against (hamlet-fba56feca5). Leaving
-            # it behind is rejected rather than ignored — that rejection is the
-            # point, so drop it here as a real author would.
+            # `clip` belongs to `normalize` and is forbidden on `standardize`, which has
+            # no range to clamp against (hamlet-fba56feca5).
             var["normalization"].pop("clip", None)
             var["normalization"]["mean"] = mean_value
             var["normalization"]["std"] = std_value
-
     env_path.write_text(yaml.safe_dump(env_data))
 
-    compiler = UniverseCompiler()
-    compiled = compiler.compile(config_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
-
-    target_var = next(v for v in compiled.vfs_variables if v.id == "time_since_last_eat")
-    target_field = next(f for f in compiled.vfs_observation_fields if f.id == "time_since_last_eat")
-
-    assert target_var.normalization is not None
-    assert target_var.normalization.kind == "zscore"
-    assert target_var.normalization.mean == mean_value
-    assert target_var.normalization.std == std_value
-    assert target_field.normalization is not None
-    assert target_field.normalization.kind == "zscore"
-    assert target_field.normalization.mean == mean_value
-    assert target_field.normalization.std == std_value
+    with pytest.raises(ValueError, match="bounded normalization kind"):
+        UniverseCompiler().compile(config_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)

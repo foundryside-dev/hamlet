@@ -430,21 +430,22 @@ class TestLSTMForwardPass:
             level_name="L2_partial_observability",
         )
 
-        # Create recurrent network. The spec and activity are REQUIRED for forward():
-        # v2.1 slices the observation by ObservationSpec, and constructing without them
-        # yields a network that builds and then raises on first use.
-        bars_slice = env.observation_activity.group_slices["bars"]
+        # The input-block slices come from the compiled TokenSpec's contiguous per-type
+        # serialization; the factory derives them so the test cannot drift from the engine.
+        from townlet.agent.network_factory import NetworkFactory
+
+        blocks = NetworkFactory.token_block_slices(env.token_spec)
         network = RecurrentSpatialQNetwork(
             action_dim=env.action_dim,
-            window_size=5,
-            position_dim=2,
-            # OBSERVED width of the meter block, read from the activity — not the meter count
-            bars_dim=bars_slice.stop - bars_slice.start,
-            num_affordance_types=env.num_affordance_types,
+            window_size=1,
+            position_dim=blocks["self"].stop - blocks["self"].start,
+            bars_dim=blocks["meter"].stop - blocks["meter"].start,
+            num_affordance_types=(blocks["affordance"].stop - blocks["affordance"].start) - 1,
             enable_temporal_features=False,
             hidden_dim=256,
-            observation_spec=env.observation_spec,
-            observation_activity=env.observation_activity,
+            meters_slice=blocks["meter"],
+            affordance_slice=blocks["affordance"],
+            position_slice=blocks["self"],
         ).to(cpu_device)
 
         # Reset environment and get observation

@@ -41,6 +41,7 @@ def test_self_comparison_agrees(tmp_path: Path) -> None:
         cell=cell,
         run_dir=tmp_path,
         run_cuda=False,
+        scripted=False,
     )
     assert verdict.kind == "AGREE", verdict.detail
 
@@ -64,6 +65,7 @@ def test_driver_failure_is_a_loud_side_error(tmp_path: Path) -> None:
         cell=cell,
         run_dir=tmp_path,
         run_cuda=False,
+        scripted=False,
     )
     assert verdict.kind == "OLD_SIDE_ERROR"  # old side runs first, fails first
     assert verdict.detail["side"] == "old"

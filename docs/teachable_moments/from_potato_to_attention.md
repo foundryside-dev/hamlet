@@ -1,5 +1,25 @@
 # From Potato to Attention: When Your AI Needs to Think Harder
 
+> ⚠️ **Recovered from archive 2026-08-26 — the argument is live and load-bearing; the artifacts it claims are not.**
+>
+> Recovered because this argument has *descendants in the shipped tree*: `SetEncoderQNetwork`
+> and `TokenSetQNetwork` with `aggregator_type="attention"` exist in
+> `src/townlet/agent/networks.py` today. This file is the reasoning behind that direction.
+>
+> **False:** "Files Modified: `src/hamlet/agent/networks.py`: Added RelationalQNetwork". No
+> `RelationalQNetwork` exists anywhere. Live network classes are `SimpleQNetwork`,
+> `RecurrentSpatialQNetwork`, `DuelingQNetwork`, `SetEncoderQNetwork`, `TokenSetQNetwork`,
+> `StructuredQNetwork`. Also `src/hamlet/` is the obsolete legacy tree.
+>
+> **Different universe:** the Stress meter, Bar, HomeMeal/FastFood, zones and the job-payment
+> penalty are not in any shipped pack.
+>
+> **Predictions presented as results:** the table is headed "Empirical Expectations", but the
+> Conclusion asserts "**Result**: From 2000 episodes to 800 episodes … (2.5× faster)". That
+> number was never measured. "State Space: S = ℝ⁷²" is also wrong — see the note on observation
+> width in this directory's `README.md`.
+
+
 **Teachable Moment**: Environmental complexity must match network capacity
 **Date**: 2025-10-28
 **Audience**: Junior high to university level

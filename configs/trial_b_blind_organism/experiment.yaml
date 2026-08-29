@@ -1,0 +1,11 @@
+experiment:
+  version: "1.0"
+  experiment_name: "trial_b_blind_organism"
+  metadata:
+    name: "Trial B blind re-run — spreading organism"
+    description: "5-D gridnd landscape; an organism rooted at one cell spreads toward a food warehouse."
+    author: "PRD-0001 blind executor"
+    created: "2026-08-20"
+    tags: ["trial", "prd-0001", "gridnd", "blind"]
+  curriculum_levels:
+    - L1_spread

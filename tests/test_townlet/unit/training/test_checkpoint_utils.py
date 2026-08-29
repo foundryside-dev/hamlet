@@ -32,12 +32,16 @@ def test_attach_universe_metadata(compiled_universe) -> None:
     attach_universe_metadata(checkpoint, compiled_universe)
 
     assert checkpoint["config_hash"] == compiled_universe.metadata.config_hash
-    assert checkpoint["observation_dim"] == compiled_universe.metadata.observation_dim
     assert checkpoint["action_dim"] == compiled_universe.metadata.action_count
     assert checkpoint["meter_count"] == compiled_universe.metadata.meter_count
-    assert checkpoint["observation_field_uuids"] == [field.uuid for field in compiled_universe.observation_spec.fields]
     assert checkpoint["observation_schema_hash"] == compiled_universe.observation_schema_hash
     assert checkpoint["vfs_hash"] == compiled_universe.vfs_hash
+    # The observation identity is the two TokenSpec hashes since the unit-3 cut;
+    # `observation_dim` and `observation_field_uuids` died with the ObservationSpec.
+    assert checkpoint["token_type_schema_hash"] == compiled_universe.token_type_schema_hash
+    assert checkpoint["layout_hash"] == compiled_universe.layout_hash
+    assert "observation_dim" not in checkpoint
+    assert "observation_field_uuids" not in checkpoint
 
 
 def test_assert_checkpoint_identity_composes_all_legs(compiled_universe) -> None:
@@ -89,14 +93,15 @@ def test_assert_checkpoint_dimensions_raises_on_mismatch(compiled_universe) -> N
 
     assert_checkpoint_dimensions(checkpoint, compiled_universe)
 
-    checkpoint["observation_dim"] = -1
-    with pytest.raises(ValueError):
+    checkpoint["action_dim"] = -1
+    with pytest.raises(ValueError, match="action_dim mismatch"):
         assert_checkpoint_dimensions(checkpoint, compiled_universe)
 
+    # The observation leg for a flat reader is the LAYOUT hash.
     checkpoint = {}
     attach_universe_metadata(checkpoint, compiled_universe)
-    checkpoint["observation_field_uuids"][0] = "deadbeefdeadbeef"
-    with pytest.raises(ValueError):
+    checkpoint["layout_hash"] = "deadbeef" * 8
+    with pytest.raises(ValueError, match="layout_hash mismatch"):
         assert_checkpoint_dimensions(checkpoint, compiled_universe)
 
 

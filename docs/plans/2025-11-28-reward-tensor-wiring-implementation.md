@@ -1,7 +1,17 @@
 # RewardTensor Component Wiring - Implementation Plan
 
+> 📌 **Recovered from archive 2026-08-26 — a COMPLETED plan, retained only as test provenance.**
+>
+> This is a historical implementation plan, not current intent and not a description of shipped
+> behaviour. It is out of the archive for one reason: live test files cite this exact path to
+> explain which plan task they implement, and those citations must resolve.
+>
+> Read it as provenance for those tests. For what the system actually does now, use
+> `README.md` and the HLD set in `docs/architecture/`.
+
+
 **Date**: 2025-11-28
-**Design Document**: `docs/plans/2025-11-28-reward-tensor-wiring-design.md`
+**Design Document**: `docs/zzz. archive/plans/2025-11-28-reward-tensor-wiring-design.md`
 **Status**: Ready for implementation
 **Estimated Tasks**: 9
 

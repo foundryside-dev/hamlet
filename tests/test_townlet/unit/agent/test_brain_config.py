@@ -10,6 +10,7 @@ from townlet.config.brain_config import (
     LossConfig,
     OptimizerConfig,
     QLearningConfig,
+    SetAggregatorConfig,
     SetEncoderConfig,
     apply_training_overrides,
     compute_brain_hash,
@@ -52,6 +53,7 @@ def test_set_encoder_config_valid():
         token_embed_dim=64,
         base_hidden_dim=128,
         q_head_hidden_dim=256,
+        aggregator=SetAggregatorConfig(type="attention", num_heads=4),
     )
 
     arch = ArchitectureConfig(type="set_encoder", set_encoder=config)

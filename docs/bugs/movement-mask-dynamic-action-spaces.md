@@ -1,5 +1,17 @@
 # Bug Analysis: Movement Mask for Dynamic Action Spaces
 
+> ✅ **Recovered from archive 2026-08-26 — this bug is FIXED. Retained as rationale, not as an open defect.**
+>
+> The header below still reads "🔴 Critical Bug / P1". That status is **historical**. Verified
+> 2026-08-26: the offending `movement_mask = actions < 4` no longer exists anywhere in
+> `src/townlet/environment/vectorized_env.py`.
+>
+> This write-up is recovered because it is the stated rationale for a live regression test —
+> `tests/test_townlet/unit/environment/test_movement_mask_bug.py:8` cites this path — so the
+> analysis explains *why* that test exists. Read it as the diagnosis behind a guard, not as
+> work outstanding.
+
+
 **Status**: 🔴 Critical Bug
 **Priority**: P1
 **Severity**: High - Breaks game mechanics for aspatial and 1D substrates

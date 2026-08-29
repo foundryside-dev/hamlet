@@ -39,7 +39,7 @@ class TestGridNDPOMDPValidation:
 
     def test_gridnd_4d_pomdp_rejected(self, gridnd_4d_config_pack):
         """GridND should reject partial observability."""
-        with pytest.raises(ValueError, match=r"Partial observability .* gridnd"):
+        with pytest.raises(ValueError, match=r"Partial observability .* 4D substrates"):
             make_vectorized_env_from_pack(
                 gridnd_4d_config_pack,
                 level_name="L0_test",

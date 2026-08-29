@@ -1,5 +1,24 @@
 # TASK-005: BRAIN_AS_CODE - Agent Architecture Configuration
 
+> 🎯 **Recovered from archive 2026-08-26 — INTENT, NOT A RECORD. This work is NOT BUILT.**
+>
+> Recovered because `docs/product/roadmap.md` cites this exact path as the **tracker** for a
+> live, unbuilt roadmap bet: *"Brain as Code, Layer 1 + Layer 3 — the behaviour contract
+> (ethics, panic, personality) and the think-loop execution graph. This is the half of the
+> vision that is specified in the HLD and not built."* A roadmap item whose tracker link is dead
+> is a roadmap item nobody can follow.
+>
+> **Status: specified, unfiled, unbuilt.** `execution_graph`, `cognitive_topology` and
+> `agent_architecture` return zero hits in `src/` and `configs/` — see `CLAUDE.md`
+> §"Reading docs/ — intent vs record", which names the Brain-as-Code corpus as the sharpest
+> example of design mislabelled as shipped status.
+>
+> **The current authority is `docs/architecture/BAC.md`**, not this file. Read BAC.md first;
+> read this only for the task-level decomposition. Where they disagree, BAC.md wins.
+>
+> Known related debt: `docs/bugs/JANK-08` — declared brain flags that training logic ignores.
+
+
 ## Problem: Hardcoded Network Architecture Prevents Experimentation
 
 ### Current State

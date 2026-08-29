@@ -92,6 +92,7 @@ def test_undeclared_drift_fails_the_cell(monkeypatch: pytest.MonkeyPatch, tmp_pa
         cell=cell,
         run_dir=tmp_path,
         run_cuda=False,
+        scripted=False,
     )
 
     assert verdict.kind == "HARNESS_ERROR"
@@ -125,6 +126,7 @@ def test_declared_drift_lets_the_cell_proceed(monkeypatch: pytest.MonkeyPatch, t
         cell=cell,
         run_dir=tmp_path,
         run_cuda=False,
+        scripted=False,
     )
 
     assert verdict.kind != "HARNESS_ERROR"
@@ -186,6 +188,7 @@ def test_self_comparison_resolves_the_live_root_on_both_sides(monkeypatch: pytes
         cell=cell,
         run_dir=tmp_path,
         run_cuda=False,
+        scripted=False,
     )
 
     assert verdict.kind == "OLD_SIDE_ERROR", verdict.detail  # got past the drift gate, ran the old side

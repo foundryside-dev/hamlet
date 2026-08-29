@@ -13,6 +13,7 @@ from townlet.vfs.transition_graph import TransitionPhaseGraph
 from townlet.vfs.vtc import (
     VTCActionWriteProgram,
     VTCAffordanceGateProgram,
+    VTCBoundsClampProgram,
     VTCInteractionProgressProgram,
     VTCModulationProgram,
     VTCPassiveDepletionProgram,
@@ -20,8 +21,9 @@ from townlet.vfs.vtc import (
     VTCSocialResidueProgram,
     VTCTerminalConditionProgram,
     VTCThresholdCascadeProgram,
-    compile_vtc_action_writes_with_phase_graph,
     compile_vtc_affordance_gates_with_phase_graph,
+    compile_vtc_affordance_occupancy_with_phase_graph,
+    compile_vtc_bounds_clamps_with_phase_graph,
     compile_vtc_interaction_progress_with_phase_graph,
     compile_vtc_modulations_with_phase_graph,
     compile_vtc_passive_depletions_with_phase_graph,
@@ -46,6 +48,7 @@ class VTCTransitionSchedule:
     threshold_cascade_program: VTCThresholdCascadeProgram
     social_residue_program: VTCSocialResidueProgram
     reward_component_program: VTCRewardProgram
+    bounds_clamp_program: VTCBoundsClampProgram
 
 
 @dataclass(frozen=True)
@@ -105,6 +108,7 @@ class VTCTransitionRunner:
             bars_state = self._run_passive_depletions(phase, context, bars_state)
             bars_state = self._run_threshold_cascades(phase, context, bars_state)
             vfs_state = self._run_state_residue(phase, context, vfs_state, bars_state)
+            bars_state = self._run_bounds_clamps(phase, context, bars_state)
             dones = self._run_terminal_conditions(phase, context, bars_state, dones)
 
         return VTCTransitionState(vfs_state=vfs_state, bars_state=bars_state, dones=dones)
@@ -179,6 +183,20 @@ class VTCTransitionRunner:
             bars_state=bars_state,
         )
 
+    def _run_bounds_clamps(
+        self,
+        phase: str,
+        context: VTCTransitionContext,
+        bars_state: dict[str, torch.Tensor],
+    ) -> dict[str, torch.Tensor]:
+        rules = tuple(rule for rule in self.schedule.bounds_clamp_program.rules if rule.phase == phase)
+        if not rules:
+            return bars_state
+        return VTCBoundsClampProgram(rules).apply(
+            bars_state=bars_state,
+            device=context.device,
+        )
+
     def _run_terminal_conditions(
         self,
         phase: str,
@@ -208,7 +226,18 @@ def build_vtc_transition_schedule(
 ) -> VTCTransitionSchedule:
     """Compile all VTC rule families into one runtime transition schedule."""
     phase_graph = TransitionPhaseGraph.default()
-    action_writes = compile_vtc_action_writes_with_phase_graph(runtime_action_space.actions, phase_graph)
+    # The occupancy-aware compiler is a superset of the plain action-writes
+    # compiler: actions without a source_affordance compile identically, and
+    # actions WITH one get their claim writes bound to the affordance's registry
+    # row. The id order below is the registry's affordance-scope row order
+    # (build_affordance_metadata enumerates the same sequence).
+    affordance_ids = tuple(aff.name for aff in level.affordances.affordances)
+    action_writes = compile_vtc_affordance_occupancy_with_phase_graph(runtime_action_space.actions, affordance_ids, phase_graph)
+    _validate_action_write_targets(
+        action_writes,
+        vfs_variable_ids=(variable.id for variable in vfs_variables),
+        meter_names=(meter.name for meter in level.bars.meters),
+    )
     affordance_gates = compile_vtc_affordance_gates_with_phase_graph(level.affordances.affordances, phase_graph)
     interaction_progress = compile_vtc_interaction_progress_with_phase_graph(level.affordances.affordances, phase_graph)
     terminal_conditions = compile_vtc_terminal_conditions_with_phase_graph(level.bars.meters, phase_graph)
@@ -218,6 +247,7 @@ def build_vtc_transition_schedule(
     social_program = compile_vtc_social_residue_rules_with_phase_graph(social_residue_rules, phase_graph)
     _validate_state_residue_targets(social_program, (variable.id for variable in vfs_variables))
     rewards = compile_vtc_reward_components_with_phase_graph(level.drive, phase_graph)
+    bounds_clamps = compile_vtc_bounds_clamps_with_phase_graph(level.bars.meters, phase_graph)
     return VTCTransitionSchedule(
         phase_graph=phase_graph,
         action_write_program=action_writes,
@@ -229,6 +259,7 @@ def build_vtc_transition_schedule(
         threshold_cascade_program=threshold_cascades,
         social_residue_program=social_program,
         reward_component_program=rewards,
+        bounds_clamp_program=bounds_clamps,
     )
 
 
@@ -250,6 +281,7 @@ def serialize_vtc_transition_schedule(schedule: VTCTransitionSchedule) -> dict[s
             "threshold_cascades": len(schedule.threshold_cascade_program.rules),
             "social_residue": len(schedule.social_residue_program.rules),
             "reward_components": len(schedule.reward_component_program.rules),
+            "bounds_clamps": len(schedule.bounds_clamp_program.rules),
         },
     }
 
@@ -282,6 +314,23 @@ def _split_vfs_and_bars(
     return vfs_state, bars_state
 
 
+def _validate_action_write_targets(
+    program: VTCActionWriteProgram,
+    *,
+    vfs_variable_ids: Iterable[str],
+    meter_names: Iterable[str],
+) -> None:
+    """Every action write must target a declared VFS variable or meter bar —
+    an unknown target would otherwise surface as a KeyError mid-step."""
+    known = set(vfs_variable_ids) | set(meter_names)
+    for write in program.writes:
+        if write.variable_id not in known:
+            raise ValueError(
+                f"Action '{write.action_name}' write '{write.telemetry_label}' targets unknown "
+                f"state variable '{write.variable_id}'. Declare it as a VFS variable or meter bar."
+            )
+
+
 def _validate_state_residue_targets(program: VTCSocialResidueProgram, variable_ids: Iterable[str]) -> None:
     known = set(variable_ids)
     for rule in program.rules:
@@ -308,7 +357,6 @@ def _social_rule_to_source(rule: Any) -> dict[str, Any]:
                 "clamp": None if rule.clamp is None else list(rule.clamp),
                 "telemetry_label": rule.telemetry_label,
                 "scope": rule.scope,
-                "target": rule.target,
             }
         ],
     }

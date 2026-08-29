@@ -137,50 +137,11 @@ environment:
       description: "Medical care for health"
       category: health
 
-  variables:
-    - name: deficit_energy
-      type: scalar
-      dims: 1
-      scope: agent
-      description: "How far below target energy (0.0 = at/above target)"
-      semantic_type: custom
-      normalization:
-        method: normalize
-        clip: false
-        range: [0.0, 1.0]
-
-    - name: deficit_satiation
-      type: scalar
-      dims: 1
-      scope: agent
-      description: "How far below target satiation"
-      semantic_type: custom
-      normalization:
-        method: normalize
-        clip: false
-        range: [0.0, 1.0]
-
-    - name: time_since_last_eat
-      type: scalar
-      dims: 1
-      scope: agent
-      description: "Timesteps since last EAT action"
-      semantic_type: custom
-      normalization:
-        method: normalize
-        clip: false
-        range: [0.0, 100.0]
-
-    - name: time_since_last_sleep
-      type: scalar
-      dims: 1
-      scope: agent
-      description: "Timesteps since last SLEEP action"
-      semantic_type: custom
-      normalization:
-        method: normalize
-        clip: false
-        range: [0.0, 100.0]
+  # No custom variables. deficit_energy / deficit_satiation /
+  # time_since_last_eat / time_since_last_sleep were declared here with no
+  # runtime writer — agents observed frozen zeros (hamlet-dc8f887cd5).
+  # A variable belongs here only once the authoring surface can drive it.
+  variables: []
 
   cues:
     - name: low_energy_warning

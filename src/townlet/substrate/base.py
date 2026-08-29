@@ -9,6 +9,45 @@ if TYPE_CHECKING:
     from townlet.environment.action_config import ActionConfig
 
 
+def pairwise_axis_deltas(
+    self_pos: torch.Tensor,
+    entity_pos: torch.Tensor,
+    wrap_extents: torch.Tensor | None,
+) -> torch.Tensor:
+    """Signed per-axis deltas ``entity − self`` as ``[N, M, D]`` float32.
+
+    Shared helper for the token visibility/egocentric contract (token-obs unit 3 Task 8).
+    Under wrap (``wrap_extents`` = per-axis extent tensor ``[D]``) each axis delta is the
+    toroidal shortest signed path: ``((d + e/2) mod e) − e/2``. The half-extent tie on an
+    even extent maps deterministically to the NEGATIVE half (remainder arithmetic) —
+    pinned by test, part of the contract.
+    """
+    deltas = entity_pos.to(dtype=torch.float32).unsqueeze(0) - self_pos.to(dtype=torch.float32).unsqueeze(1)
+    if wrap_extents is not None:
+        extents = wrap_extents.to(dtype=torch.float32, device=deltas.device)
+        deltas = torch.remainder(deltas + extents / 2.0, extents) - extents / 2.0
+    return deltas
+
+
+def combine_metric(abs_deltas: torch.Tensor, distance_metric: str) -> torch.Tensor:
+    """Reduce ``[N, M, D]`` absolute per-axis deltas to ``[N, M]`` declared-metric distance."""
+    if distance_metric == "manhattan":
+        return abs_deltas.sum(dim=-1)
+    if distance_metric == "euclidean":
+        return torch.sqrt((abs_deltas**2).sum(dim=-1))
+    if distance_metric == "chebyshev":
+        if abs_deltas.shape[-1] == 0:
+            return abs_deltas.sum(dim=-1)
+        return abs_deltas.max(dim=-1)[0]
+    raise ValueError(f"Unknown distance metric: {distance_metric}")
+
+
+def require_position_batch(positions: torch.Tensor, position_dim: int, *, argument: str) -> None:
+    """Refuse a position batch whose trailing width is not the substrate's position_dim."""
+    if positions.dim() != 2 or positions.shape[1] != position_dim:
+        raise ValueError(f"{argument} must have shape [batch, position_dim={position_dim}], got {tuple(positions.shape)}")
+
+
 class SpatialSubstrate(ABC):
     """Abstract interface for spatial substrates.
 
@@ -158,48 +197,16 @@ class SpatialSubstrate(ABC):
         """
         pass
 
-    @abstractmethod
-    def encode_observation(
-        self,
-        positions: torch.Tensor,
-        affordances: dict[str, torch.Tensor],
-    ) -> torch.Tensor:
-        """Encode positions and affordances into observation space.
-
-        Args:
-            positions: [num_agents, position_dim] agent positions
-            affordances: {name: [position_dim]} affordance positions
-
-        Returns:
-            [num_agents, observation_dim] grid + position features
-
-        observation_dim is substrate-specific (grid + position):
-        - Grid2D (8×8, relative): 66 (64 grid cells + 2 normalized position)
-        - Grid3D (8×8×3, relative): 195 (192 grid cells + 3 normalized position)
-        - Aspatial: 0 (no position encoding)
-        """
-        pass
-
-    @abstractmethod
-    def get_observation_dim(self) -> int:
-        """Return the dimensionality of grid + position encoding in observations.
-
-        Returns:
-            Number of features in observation (grid + position):
-            - Grid2D (8×8, relative): 66 (64 grid + 2 position)
-            - Grid3D (8×8×3, relative): 195 (192 grid + 3 position)
-            - Aspatial: 0
-        """
-        pass
-
-    # --- Observation-shape contract (WS-7 first knockdown, PDR-0035) --------
+    # --- Vision contract -----------------------------------------------------
     #
-    # The compiler learns a substrate's observation shape by asking the
-    # instance — these five members ARE that contract, and each answer must
-    # equal the width of the tensor the substrate's own encoder produces
-    # (pinned by test_observation_shape_contract.py). Deriving these numbers
-    # anywhere else is the defect class behind DIV-003
-    # (docs/oracle/known-divergences.md).
+    # What survives of the WS-7 observation-shape contract after the unit-3 token
+    # cut. The raster half — `encode_observation`, `get_observation_dim`,
+    # `get_grid_encoding_dim`, `get_position_feature_dim`, `get_partial_window_dim`,
+    # `encode_partial_observation` — is DELETED with the fixed-width superset ABI it
+    # existed to size; nothing asks a substrate for an observation width any more.
+    # The token path asks for `position_dim`, `normalize_positions`,
+    # `egocentric_delta` and `visible` instead, and POMDP is the same TokenSpec with
+    # a radius handed to `visible`.
 
     @property
     @abstractmethod
@@ -213,44 +220,12 @@ class SpatialSubstrate(ABC):
         pass
 
     @abstractmethod
-    def get_grid_encoding_dim(self) -> int:
-        """Width of the global spatial encoding (`obs_grid_encoding`).
-
-        Must equal what the runtime publishes under global vision:
-        _encode_full_grid's width where it exists (Grid2D/Grid3D occupancy
-        grids), otherwise encode_observation's width (GridND coordinate
-        encoding), otherwise 0 (aspatial, continuous — no grid field).
-        """
-        pass
-
-    @abstractmethod
-    def get_position_feature_dim(self) -> int:
-        """Width of the position-features encoding (`obs_position`).
-
-        Must equal the width of the runtime's published position features —
-        observation_encoder's fallback chain: _encode_position_features →
-        encode_position_features → encode_observation → normalize_positions.
-        0 for aspatial (no field is declared).
-        """
-        pass
-
-    @abstractmethod
     def get_vision_radius(self, vision_range: float) -> int:
         """Radius (in cells) for a declared vision_range fraction.
 
         The single home of the historical `ceil(vision_range * grid_size/2)`
         formula, generalized to the longest axis (identical on squares).
         Substrates without partial vision raise ValueError.
-        """
-        pass
-
-    @abstractmethod
-    def get_partial_window_dim(self, vision_radius: int) -> int:
-        """Width of the local-window encoding (`obs_local_window`) at a radius.
-
-        Must equal encode_partial_observation's actual output width for the
-        same radius — (2r+1)² for Grid2D, (2r+1)³ for Grid3D. Substrates
-        without partial vision raise ValueError.
         """
         pass
 
@@ -352,34 +327,48 @@ class SpatialSubstrate(ABC):
         """
         pass
 
+    # --- Token visibility / egocentric contract (token-obs unit 3, Task 8) -----
+    #
+    # The PDR-0041 shape again: the runtime learns spatial-token visibility by asking
+    # the substrate instance. These two members are the token path's ONLY spatial
+    # gate — `supports_partial_vision` and the window encoders above remain the OLD
+    # raster contract, untouched until the unit-3 Task-10 swap retires them.
+
     @abstractmethod
-    def encode_partial_observation(
+    def visible(
         self,
-        positions: torch.Tensor,
-        affordances: dict[str, torch.Tensor],
-        vision_range: int,
+        self_pos: torch.Tensor,
+        entity_pos: torch.Tensor,
+        vision_range: float | None,
     ) -> torch.Tensor:
-        """Encode local window around agents for partial observability (POMDP).
+        """Which entities each agent can see under the declared metric + boundary mode.
 
         Args:
-            positions: [num_agents, position_dim] agent positions
-            affordances: {name: [position_dim]} affordance positions
-            vision_range: radius of vision window (e.g., 2 for 5×5 window)
+            self_pos: [N, position_dim] observer positions
+            entity_pos: [M, position_dim] entity positions
+            vision_range: normalized fraction of the longest axis (the POMDP meaning),
+                or None for full observability (pass-all)
 
         Returns:
-            [num_agents, window_size] local grid encoding
-
-            window_size depends on substrate:
-            - Grid2D: (2*vision_range + 1)²  (e.g., 5×5 = 25)
-            - Aspatial: 0 (no position encoding)
-
-        Used for:
-        - Level 2 POMDP observations (5×5 local window)
-        - Partial observability training
-
-        Example:
-            Grid2D with vision_range=2:
-            - Agent at (4, 4) sees cells (2,2) to (6,6)
-            - Encodes 5×5 = 25 cells relative to agent
+            [N, M] bool — True where the entity is within the vision radius of the
+            observer. Distance is the DECLARED metric; only `wrap` boundary mode changes
+            it (toroidal shortest path) — clamp/bounce/sticky are in-bounds position
+            regimes with plain metric distance. Aspatial substrates return all-True
+            (no positions, nothing to hide).
         """
-        pass
+
+    @abstractmethod
+    def egocentric_delta(self, self_pos: torch.Tensor, entity_pos: torch.Tensor) -> torch.Tensor:
+        """Per-axis ``entity − self`` deltas, shortest-path under wrap.
+
+        Args:
+            self_pos: [N, position_dim] observer positions
+            entity_pos: [M, position_dim] entity positions
+
+        Returns:
+            [N, M, position_dim] float32, normalized per the declared observation
+            encoding mode: `relative` divides by the same denominator as
+            normalize_positions (span − 1 for grids, extent for continuous), so deltas
+            land in [−1, 1]; `scaled` and `absolute` return raw axis units. Aspatial:
+            zeros of width 0.
+        """

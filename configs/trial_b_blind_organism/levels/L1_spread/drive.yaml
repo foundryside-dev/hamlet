@@ -1,0 +1,31 @@
+drive:
+  version: '1.0'
+  modifiers: {}
+  extrinsic:
+    type: constant_base_with_shaped_bonus
+    base_reward: 0.0
+    bar_bonuses:
+    - bar: biomass
+      center: 0.0
+      scale: 1.0
+    variable_bonuses: []
+    apply_modifiers: []
+  intrinsic:
+    strategy: adaptive_rnd
+    base_weight: 0.1
+    apply_modifiers: []
+    adaptive_config:
+      enabled: true
+      threshold: 100.0
+      decay_rate: 0.995
+      min_weight: 0.01
+  shaping:
+  - type: approach_reward
+    weight: 0.05
+    target_affordance: WAREHOUSE
+    max_distance: 10.0
+  composition:
+    normalize: false
+    clip: null
+    log_components: true
+    log_modifiers: true

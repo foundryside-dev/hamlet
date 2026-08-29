@@ -1,5 +1,18 @@
 # Hamlet Training System Documentation
 
+> ⚠️ **Recovered from archive 2026-08-26 — accurate subsystem, stale config paths.**
+>
+> The subsystem this document describes **does ship** (module paths verified against
+> `src/townlet/` on 2026-08-26). It is recovered because it is the only operator
+> documentation for that surface.
+>
+> **Known wrong:** every example config path of the form `configs/<name>.yaml` is dead.
+> That flat layout was replaced by config *packs* — pack-root shared files plus
+> `levels/<level>/` overrides, e.g. `configs/default_curriculum/levels/L1_full_observability/`.
+> See `CLAUDE.md` §"Configuration System". Translate paths as you read; do not copy the
+> example invocations verbatim.
+
+
 ## Overview
 
 The Hamlet training system provides a production-ready infrastructure for training Deep Reinforcement Learning (DRL) agents. It features:

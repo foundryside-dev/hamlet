@@ -1,5 +1,26 @@
 # Action Masking: Why Your AI Keeps Walking Into Walls
 
+> ⚠️ **Recovered from archive 2026-08-26 — durable lesson, but it contains a false claim and its own numbers contradict each other.**
+>
+> `action_masking_wall_evidence.md` in this directory covers the same ground and is strictly
+> more accurate; prefer it. This file is kept for the core argument about wasted actions at
+> boundaries.
+>
+> **False:** the `get_valid_actions()` listing comments "`# INTERACT is always valid`". It is
+> not — INTERACT is masked off unless the agent stands on an open affordance
+> (`environment/action_mask_builder.py:190-202`). Source contradicts it, and so does the
+> companion file.
+>
+> **Numbers stated in both directions — the subtle defect.** "Part 3: The Results — What
+> Changed" reports "Wasted boundary attempts: 23 (15% of all actions)" and "+29 steps
+> improvement" as *measurements*; "Experiment 1" then restates the same figures as
+> "**Hypothesis** … ~10–20% of actions at boundaries are wasted / **Expected result**: ~15%".
+> They are predictions, not results. Treat every figure here as a hypothesis.
+>
+> **Legacy paths:** cites `src/hamlet/environment/hamlet_env.py` and
+> `src/hamlet/agent/drl_agent.py`. `src/hamlet/` is obsolete; the live tree is `src/townlet/`.
+
+
 **Teachable Moment**: Don't let your AI waste time learning impossible things
 **Date**: 2025-10-31
 **Audience**: High school to university level

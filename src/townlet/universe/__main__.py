@@ -98,9 +98,10 @@ def _cmd_compile(args: argparse.Namespace) -> int:
     print(f"Compilation succeeded in {elapsed_ms:.1f} ms")
 
     if not args.no_cache:
+        # compile() either reused a fingerprint-validated artifact or wrote a fresh
+        # one; a failed write raises CompilationError, so this path always exists here.
         cache_path = config_dir / ".compiled" / f"universe-{args.primary_level}.msgpack"
-        if cache_path.exists():
-            print(f"Cache artifact written to: {cache_path}")
+        print(f"Cache artifact: {cache_path}")
 
     return 0
 
@@ -124,6 +125,24 @@ def _format_transition_hash(transition_graph_hash: str) -> str:
     if transition_graph_hash == "":
         return "<empty>"
     return transition_graph_hash[:16]
+
+
+def _print_token_census(compiled: CompiledUniverse) -> None:
+    """The per-type token census (token-obs spec §2: published in the artifact and here)."""
+    spec = compiled.token_spec
+    if spec is None:
+        print("Token census: <absent from artifact>")
+        return
+    print("Token census:")
+    for token_type in spec.types:
+        print(f"  {token_type.type_name:<17}: {token_type.capacity:>4} slots x (1 + {token_type.payload_width}) dims")
+    print(f"  {'total_dims':<17}: {spec.total_dims}")
+    if compiled.token_type_schema_hash:
+        print(f"  Token Type Schema Hash : {compiled.token_type_schema_hash[:16]}")
+    if compiled.layout_hash:
+        print(f"  Layout Hash : {compiled.layout_hash[:16]}")
+    for advisory in compiled.token_advisories:
+        print(f"  ADVISORY: {advisory}")
 
 
 def _cmd_inspect(args: argparse.Namespace) -> int:
@@ -151,6 +170,11 @@ def _cmd_inspect(args: argparse.Namespace) -> int:
             "observation_schema_hash": compiled.observation_schema_hash,
             "variable_schema_hash": compiled.variable_schema_hash,
             "transition_graph_hash": compiled.transition_graph_hash,
+            "token_census": compiled.token_spec.census if compiled.token_spec is not None else None,
+            "token_total_dims": compiled.token_spec.total_dims if compiled.token_spec is not None else None,
+            "token_type_schema_hash": compiled.token_type_schema_hash,
+            "layout_hash": compiled.layout_hash,
+            "token_advisories": list(compiled.token_advisories),
         }
         print(json.dumps(payload, indent=2, sort_keys=True))
     else:
@@ -160,6 +184,7 @@ def _cmd_inspect(args: argparse.Namespace) -> int:
         print(f"  Observation Schema Hash : {compiled.observation_schema_hash[:16]}")
         print(f"  Variable Schema Hash : {compiled.variable_schema_hash[:16]}")
         print(f"  Transition Graph Hash : {_format_transition_hash(compiled.transition_graph_hash)}")
+        _print_token_census(compiled)
         print(f"Artifact path: {artifact_path}")
     return 0
 

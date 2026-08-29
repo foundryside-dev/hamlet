@@ -44,7 +44,7 @@ def test_compile_rejects_invalid_yaml_in_level_file(tmp_path: Path) -> None:
     config_dir = _copy_experiment(tmp_path)
     (config_dir / "levels" / "L0_test" / "curriculum.yaml").write_text("invalid: [yaml: syntax")
 
-    with pytest.raises(CompilationError, match="YAML Syntax Validation"):
+    with pytest.raises(CompilationError, match="Stage 0: Preflight validation"):
         UniverseCompiler().compile(config_dir, primary_level="L0_test", use_cache=False)
 
 

@@ -217,6 +217,8 @@ class EffectDefinitionConfig(BaseModel):
     Effects are reusable simulation behaviors with lifecycle hooks.
     """
 
+    model_config = ConfigDict(extra="forbid")
+
     id: str = Field(..., description="Unique effect identifier")
     scope: EffectScope = Field(..., description="Where effect can attach")
 
@@ -229,6 +231,10 @@ class EffectDefinitionConfig(BaseModel):
 
     # Visibility
     observable: bool = Field(default=True, description="Visible in agent observations")
+
+    # Authoring metadata only — never read at runtime. Same pattern as
+    # ItemTypeConfig.description (items_config.py) — a sibling per-definition DTO.
+    description: str | None = Field(default=None, description="Human-readable description (metadata only)")
 
     # Lifecycle command pipelines
     on_spawn: list[CommandConfig] = Field(default=[], description="Commands on spawn")
@@ -250,8 +256,19 @@ class EffectDefinitionConfig(BaseModel):
 class EffectsConfig(BaseModel):
     """Top-level Effects configuration from effects.yaml."""
 
+    model_config = ConfigDict(extra="forbid")
+
     version: Literal["1.0"] = Field(default="1.0", description="Config schema version")
     effect_definitions: list[EffectDefinitionConfig] = Field(default=[], description="Catalog of reusable effect definitions")
+    # Per-scope budget of concurrently active effects (token-obs spec §2 capacity table;
+    # hamlet-88578e629e). REQUIRED (No-Defaults) whenever any effect is declared —
+    # `effect` token capacity is Σ scope budget × scope denominator — and forbidden when
+    # the catalog is empty (a declaration that reaches nothing). Exceeding a scope's
+    # budget at runtime raises at publish time (overflow is loud, never truncated).
+    max_active_effects: dict[str, int] | None = Field(
+        default=None,
+        description="Per-EffectScope budget of concurrently active effects, e.g. {global: 0, agent: 4, item: 0, affordance: 0}",
+    )
 
     @field_validator("effect_definitions")
     @classmethod
@@ -265,3 +282,32 @@ class EffectsConfig(BaseModel):
             raise ValueError(msg)
 
         return definitions
+
+    @model_validator(mode="after")
+    def validate_max_active_effects(self):
+        """`max_active_effects` is required iff any effects are declared (No-Defaults)."""
+        scope_values = tuple(member.value for member in EffectScope)
+        if self.effect_definitions:
+            if self.max_active_effects is None:
+                raise ValueError(
+                    f"effects.yaml declares {len(self.effect_definitions)} effect(s) but no `max_active_effects` budget.\n"
+                    "  Rule: effect token capacity derives from a per-scope declared budget "
+                    f"(max_active_effects: {{{', '.join(f'{s}: N' for s in scope_values)}}}), "
+                    "required if any effects are declared (token-obs spec §2 capacity table, No-Defaults)."
+                )
+            missing = [s for s in scope_values if s not in self.max_active_effects]
+            unknown = [s for s in self.max_active_effects if s not in scope_values]
+            if missing or unknown:
+                raise ValueError(
+                    f"max_active_effects must declare exactly the EffectScope members {scope_values}; "
+                    f"missing {missing}, unknown {unknown}"
+                )
+            negative = {s: n for s, n in self.max_active_effects.items() if n < 0}
+            if negative:
+                raise ValueError(f"max_active_effects budgets must be >= 0; got {negative}")
+        elif self.max_active_effects is not None:
+            raise ValueError(
+                "effects.yaml declares `max_active_effects` but no effects, so the declaration reaches nothing.\n"
+                "  Rule: a declaration that can reach nothing is removed rather than defaulted (PDR-0066)."
+            )
+        return self

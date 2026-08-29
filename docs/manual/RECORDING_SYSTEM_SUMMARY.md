@@ -1,5 +1,18 @@
 # Episode Recording System - Complete Summary
 
+> ⚠️ **Recovered from archive 2026-08-26 — accurate subsystem, stale config paths.**
+>
+> The subsystem this document describes **does ship** (module paths verified against
+> `src/townlet/` on 2026-08-26). It is recovered because it is the only operator
+> documentation for that surface.
+>
+> **Known wrong:** every example config path of the form `configs/<name>.yaml` is dead.
+> That flat layout was replaced by config *packs* — pack-root shared files plus
+> `levels/<level>/` overrides, e.g. `configs/default_curriculum/levels/L1_full_observability/`.
+> See `CLAUDE.md` §"Configuration System". Translate paths as you read; do not copy the
+> example invocations verbatim.
+
+
 ## Overview
 
 The Hamlet episode recording system captures, stores, and replays training episodes for analysis, debugging, and video export. Designed for **<5% training overhead** with async I/O, the system supports real-time replay and high-quality video export for YouTube streaming.

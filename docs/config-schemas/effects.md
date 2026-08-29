@@ -1,5 +1,36 @@
 # effects.yaml Configuration
 
+> ⚠️ **Restored to the live tree 2026-08-26 — one required field is missing and one whole vocabulary is absent.**
+>
+> **⚠️ `max_active_effects` is conditionally REQUIRED whenever effects are declared, and this
+> 1700-line document mentions it zero times.** Omit it and the pack is refused.
+>
+> **⚠️ The `for_each` collection vocabulary is missing, and described as "future" while it
+> ships.** Measured occurrence counts in this file: `all_agents` **0**, `switch` **0**,
+> `delay` **0**, `sample` **0**. `for_each: all_agents` is the load-bearing surface for
+> expressing a declarative step over simultaneous agent submissions, and it is not mentioned
+> once — both PRD-0001 Trial O executors reached it only by reading
+> `src/townlet/effects/collections.py`. Tracked as `hamlet-7eadeb214c`.
+>
+> **⚠️ `temporal.*` does NOT work in effects — the single reconciled account** (resolved at
+> source 2026-08-26, because this doc and `expressions.md` disagreed):
+> - The effects executor passes **`temporal={}`** (`effects/executor.py:43`, `:739`), so
+>   `temporal.anything` raises here at runtime.
+> - More fundamentally, **no schema builder emits a `temporal.*` key at all** —
+>   `build_expression_schema` (`universe/compilers/vfs.py:136-152`) emits only `bar.*`,
+>   `vfs.*`, `self.vfs.*`, `target.vfs.*` — so it fails at compile time first.
+> - Only the **item spawn-rule** path populates it, with the single key `tick`
+>   (`items/manager.py:624`, `:630`).
+> - **✅ Correct working form: the bare `tick` variable**, the reserved engine-written step
+>   counter (`universe/compilers/vfs.py:130-132`). Not `temporal.tick`.
+>
+> Tracked as `hamlet-7eadeb214c` (comment 262 carries the `max_active_effects` and `temporal.*`
+> findings).
+>
+> Note `sqrt` / `sin` / `cos` fail at **type-check**, not parse — they are absent from
+> `FUNCTION_SPECS`. See `expressions.md`, which carries a banner of its own.
+
+
 ---
 ## AI-Friendly Frontmatter
 
@@ -17,7 +48,7 @@ The Effects System is HAMLET's foundational command pipeline language for all si
 - **First-Time Users**: Read "Overview" → "File Structure" → "Reapply Policies" → "Command Language" → "Examples"
 
 **Related Documents**:
-- `docs/plans/vfs_uplift/2025-11-19-effects-system-design.md` - Complete design document
+- `docs/zzz. archive/plans/archive/vfs_uplift/2025-11-19-effects-system-design.md` - Complete design document
 - `docs/plans/vfs_uplift/2025-11-19-task-3-1-effects-dtos.md` - Implementation plan
 - `docs/config-schemas/variables.md` - VFS variable definitions
 - `docs/config-schemas/affordances.md` - Affordance configuration (uses effects)
@@ -1686,7 +1717,7 @@ value: "target.bar.energy + (0.1 if intensity > 2.0 else 0.05)"
 
 ## See Also
 
-- **Design Document**: `docs/plans/vfs_uplift/2025-11-19-effects-system-design.md` - Complete architecture
+- **Design Document**: `docs/zzz. archive/plans/archive/vfs_uplift/2025-11-19-effects-system-design.md` - Complete architecture
 - **Implementation Plan**: `docs/plans/vfs_uplift/2025-11-19-task-3-1-effects-dtos.md` - DTOs and catalog
 - **VFS Variables**: `docs/config-schemas/variables.md` - Variable system that effects modify
 - **Affordances**: `docs/config-schemas/affordances.md` - How affordances spawn effects

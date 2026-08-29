@@ -29,30 +29,38 @@ itself.
   held behind were satisfied — CI restoration, and a claim-by-claim re-verification of this file.
   Before that merge, `main`'s tip was dated 2025-11-28 and described a system that no longer
   existed. A second merge landed through PR #35 at `4222a917` on 2026-08-16, carrying the
-  `slow`-marker deletion and the integration-test repairs; the nightly on `main` has been green
-  ever since (see [Continuous integration](#continuous-integration)). Repair continues on a
+  `slow`-marker deletion and the integration-test repairs, and a third through PR #36 at
+  `04062872` on 2026-08-19 (41 commits: the blind re-run instrument, protocol Appendices
+  A.6.1/B, and the previous re-verification of this file). The nightly on `main` has been green
+  since the second merge — thirteen consecutive runs to 2026-08-28, the last nine against `04062872` (see
+  [Continuous integration](#continuous-integration)). Repair continues on a
   `project-recovery*` branch and reaches `main` only through the same gates, so between merges
   `main` trails the branch by design — it is the last state that passed both gates, not the newest
-  state.
+  state. The unit-3 token cut described below has landed on the branch; whether it is on `main`
+  is answered by `git log main -1 -- src/townlet/universe/dto/token_spec.py`, not by this file.
 - The project is mid **strangler rewrite behind a pinned oracle**. Tag `oracle-2026-08-17`
-  (commit `4222a917`, the tip of `main` after the second merge) freezes the previous system as
+  (commit `4222a917`, the merge commit of PR #35) freezes the previous system as
   the specification for preserved behaviour; it superseded `oracle-2026-08-13` (`0e875d7a`) on
   2026-08-17, which stays as history. From `docs/oracle/ORACLE.md`: "The oracle never
   mutates" — it moves *forward* to a new tag, never edits the old one — and "a diff against the
   oracle is a defect in the rebuild unless the register says otherwise." Accepted differences
-  are recorded in `docs/oracle/known-divergences.md`.
-- **CI runs, and all three per-push gates are green at `da7d3f7e`** — the last commit CI had
-  reported on when this file was stamped, read at 2026-08-19T18:05Z. A commit cannot report on itself:
-  the commit carrying this file is pushed after it is written, so its own runs land afterwards.
+  are recorded in `docs/oracle/known-divergences.md` (eleven entries; what a green harness run
+  means has changed since the 2026-08-26 token cut — see [Run something](#run-something)).
+- **CI runs, and all three per-push gates are green at `1065dbf0`** — the last commit CI had
+  reported on in full when this file was stamped, read at 2026-08-29T08:51Z. A
+  commit cannot report on itself: the commit carrying this file is pushed after it is written,
+  so its own runs land afterwards.
   Lint, Config Validation and Tests fire on every push, and that has been true since 2026-08-15
-  and not before; across the recovery branches, 162 of 177 completed runs passed.
+  and not before; across the recovery branches, 283 of 356 completed runs passed.
   Since `a725bf66` the default suite deselects nothing: the `slow` marker that had kept 31 red
   integration tests out of every per-push gate is deleted, 29 of them are repaired and 2 deleted
   as dead, and the Tests job runs the whole suite.
   Read this as young rather than settled: before 2026-08-15 nothing had run on the recovery at
-  all, nothing had passed anywhere since 2025-11-28, and the Lint gate has since spent seven
-  consecutive pushes red without being noticed. See
-  [Continuous integration](#continuous-integration).
+  all, nothing had passed anywhere since 2025-11-28, and the Lint gate has twice gone red for a
+  stretch that nobody watching noticed — seven pushes on 2026-08-19, then **47 consecutive
+  pushes, 2026-08-22 to 2026-08-29**, while the product workspace recorded the branch as green
+  (`docs/product/current-state.md`, 2026-08-26). Both were caught by a re-verification, not by
+  the gate. See [Continuous integration](#continuous-integration).
 - Where this file calls something shipped, it means *present and wired*, not mature. The project
   came out of a long stretch of intermittent attention and is unfinished in places; the specific
   gaps are under [Known rough edges](#known-rough-edges).
@@ -60,20 +68,20 @@ itself.
   changes land directly.
 
 *Every command, file path, count and quotation below was executed or read against the working tree
-at commit `da7d3f7e`; the repository-state facts under [Continuous integration](#continuous-integration)
-were read from the GitHub API at 2026-08-19T18:05Z. Dates here are UTC, which is why the second merge is
-dated 2026-08-16 although its commit carries 2026-08-17 in local time. This is the **fourth** full
+at commit `1065dbf0` (2026-08-29, with Lint, Config Validation and Tests all green on it);
+the repository-state facts under [Continuous integration](#continuous-integration)
+were read from the GitHub API at 2026-08-29T08:27Z. Dates here are UTC, which is why the second merge is
+dated 2026-08-16 although its commit carries 2026-08-17 in local time. This is the **fifth** full
 claim-by-claim re-verification of this file. The first (`1b25c99d`) found **ten claims stale in a
 single day**, every one because the recovery had fixed the thing being described; the second
 (`33bfff51`, at the first merge) found five more in four commits; the third (`905acd96`, at the
-second merge) found twenty-one in 27; this one found **eighteen stale or misleading claims and
-four material omissions in 43 commits**, itemised in the `docs/product/` decision record
-that accompanies this commit. Two of those came from the gate finding its own blind spots: the CI
-gate had been red for seven consecutive pushes while this file called it green, and a defect
-described here as afflicting one pack turned out to be a class affecting any pack that declares an
-agent-profile variable. **The adversarial half of the method also found ten factual defects in the
-sweep's own corrections before they were applied** — which is the argument for the method over a
-re-read, and the reason a sweep that finds nothing is treated here as a sweep that was not run.
+second merge) found twenty-one in 27; the fourth (`4a225d84`, at the third merge) found eighteen
+and four omissions in 43, and its adversarial pass found ten factual defects in the sweep's own
+corrections before they were applied — which is the argument for the method over a re-read, and
+the reason a sweep that finds nothing is treated here as a sweep that was not run. This one
+covers **143 commits**, the longest gap yet, and found **33 stale, wrong or misleading claims and
+sixteen material omissions**; its adversarial pass found six defects in the draft's own
+corrections, the same shape as last time.
 There are deliberately no test counts, coverage percentages, observation widths or
 training-performance figures here — see [Numbers](#numbers). **This file decays fast because the
 project moves fast**: it is a status report stamped at a commit, not a standing description, and
@@ -109,6 +117,13 @@ stratum:
   observation_mode:
     mode: full_auto
 ```
+
+⚠️ Two keys in that block are **inert** since the unit-3 token cut (2026-08-26):
+`observation_encoding` and `observation_mode` configured the old raster observation spec and
+nothing reads them now — measured, `scaled` and `relative` compile to a byte-identical
+`TokenSpec`. They still parse, which makes them a No-Defaults violation rather than a choice;
+filed as `hamlet-6a4a6596bd`, not removed here because it would touch every pack's
+`stratum.yaml`.
 
 Nothing else defines the substrate. The grid is 8×8 for every level in the pack: `stratum.yaml`
 exists only at pack root, and the level loader reads no substrate file from a level directory.
@@ -186,11 +201,12 @@ reward function produced it. Two fields in that file are inert: `composition.nor
 ```
 configs/default_curriculum/
   experiment.yaml       # which levels the pack declares
-  stratum.yaml          # substrate, topology, observation mode
+  stratum.yaml          # substrate and topology (its observation keys are inert — see above)
   environment.yaml      # meter observation types (range_type), VFS variables, cascade graph
   actions.yaml          # substrate and custom actions, action labels
   brain.yaml            # architecture, optimizer, loss, Q-learning, replay
   items.yaml  effects.yaml  vfs_profiles.yaml
+  transition_rules.yaml variables_reference.yaml action_labels.yaml   # optional, compiled
   presentation.yaml     # optional; rendering hints for the live viewer — never compiled
   levels/<level>/
     curriculum.yaml     # vision and temporal switches
@@ -198,26 +214,41 @@ configs/default_curriculum/
     affordances.yaml    # interactions (interaction_type required), costs, hours, placement
     drive.yaml          # reward specification
     training.yaml       # hyperparameters, enabled actions
+    brain.yaml          # optional; a COMPLETE replacement brain, never a partial patch
 ```
 
-A level directory carries those five required files plus an optional `items.yaml` declaring
-level-scoped item spawns; the loader (`src/townlet/universe/raw_configs_v21.py`) reads nothing else
-from it. The shared catalogs `vfs_profiles.yaml` and `effects.yaml` are rejected outright at level
-scope, and a level `items.yaml` must declare the v1.0 ItemsAppearance schema
-(`src/townlet/universe/loaders/preflight.py`). Notably the network architecture is pack-level: a
-level's `training.yaml` overrides exactly five scalars of `brain.yaml` — gamma, target-update
-frequency, the double-DQN flag, learning rate and replay capacity — and none of them live in the
-`architecture` block.
+A level directory carries those five required files plus two optional ones: an `items.yaml`
+declaring level-scoped item spawns, and — since `d60104f0` (2026-08-22, `PDR-0027`) — a
+complete `brain.yaml` that forks the whole brain for that level (one pack does:
+`configs/test/set_encoder_smoke`); the loader (`src/townlet/universe/raw_configs_v21.py`) reads
+nothing else from it. The shared catalogs `vfs_profiles.yaml` and `effects.yaml` are rejected
+outright at level scope, and a level `items.yaml` must declare the v1.0 ItemsAppearance schema
+(`src/townlet/universe/loaders/preflight.py`). Without a level `brain.yaml` the architecture
+is pack-level: a level's `training.yaml` overrides exactly five scalars of the pack `brain.yaml`
+— gamma, target-update frequency, the double-DQN flag, learning rate and replay capacity — and
+none of them live in the `architecture` block. Of the optional pack-root files,
+`transition_rules.yaml` (typed social-residue rules, `7e989e8c`) is carried by no pack in
+`configs/`; `variables_reference.yaml`, where a pack declares the `extents` that size its
+`zone`, `group` and `message` scopes, by twenty.
 
 Three declarations are worth knowing about because older docs predate them. Each meter's
 observation type is declared per meter as `range_type` in `environment.yaml` — a closed,
 parameterized vocabulary of nine normalization kinds (`minmax`, `log_scaled`, `zscore`, …); the
-shipped pack uses `minmax` with `clip: false` for all eight. Each `environment.yaml` variable
+shipped pack uses `minmax` with `clip: false` for all eight. ⚠️ **`range_type` no longer
+reaches the observation** (unit-3 token cut, 2026-08-26): a meter token's value lane is the
+meter's clamped position within its `bars.yaml` `[min, max]`, derived from the bars declaration
+alone, so declaring `cyclical_sin_cos` on a clock meter or `one_hot` on a categorical one now
+changes nothing an agent sees. The declaration still parses and still feeds the compiled
+normalization spec. That is a designer-facing capability that silently stopped working, filed
+as `hamlet-1e335e0363` and not accepted as final — either the meter token carries the declared
+normalization, or the surface is retired with a superseding record. Each `environment.yaml` variable
 declares a `semantic_type` from a closed vocabulary, and each affordance declares its
 `interaction_type` (`instant`, `multi_tick` or `dual`) — required, no default. And a pack may carry
 an optional `presentation.yaml` at its root: the live-inference server reads it to render meters and
 affordances (labels, colours, icons, plain/percent/currency formats), the compiler never does, so it enters no hash and
-cannot change behaviour (`src/townlet/demo/presentation.py`, `docs/config-schemas/presentation.md`).
+cannot change behaviour (`src/townlet/demo/presentation.py`,
+`docs/config-schemas/presentation.md` — archived 2026-08-24, back at the live path since
+`931e26d8` on 2026-08-26, the only file in that directory with no staleness banner).
 No shipped pack carries one; without it the viewer renders every meter honestly from its declared
 bounds — a bar as a fraction of the declared range, the plain value, no `%` or `$` inferred from a
 name.
@@ -226,9 +257,18 @@ name.
 levels, but `bars.yaml`, `affordances.yaml` and `drive.yaml` are byte-identical across all five,
 and the substrate is pack-level. Only two levels change the world the agent sees:
 `L2_partial_observability` (`active_vision: partial`) and `L3_temporal_mechanics`
-(`active_temporal: true`, `day_length: 24`). Compiling all five and comparing artifacts,
-`observation_schema_hash` takes exactly three distinct values — one shared by L0_0, L0_5 and L1,
-one for L2, one for L3. Five level directories, three distinct observation surfaces. Within the
+(`active_temporal: true`, `day_length: 24`). **Corrected 2026-08-26 at the unit-3 token cut:**
+this paragraph used to say `observation_schema_hash` took three distinct values across the five
+levels — one shared by L0_0/L0_5/L1, one for L2, one for L3 — and read that as "three distinct
+observation surfaces". It now takes **exactly one**: compiling all five gives an identical
+`observation_schema_hash`, `layout_hash`, `token_type_schema_hash` and `total_dims`. The
+compiled observation surface is the same at every level. Partial observability is a **runtime
+visibility filter** over an unchanged TokenSpec (out-of-range spatial tokens have presence and
+payload zeroed), not a compiled difference; and the day/night phase is now an authored global
+in the pack-root `vfs_profiles.yaml`, so every level carries it, `active_temporal` or not. So
+the "five documented levels are three distinct universes" reading — still true of the
+*mechanics* — is no longer visible in the observation artifact at all, and a level's
+distinguishing feature has to be looked for in `curriculum.yaml`, not in a hash. Within the
 first group, `L0_5_dual_resource` and `L1_full_observability` differ, outside comments, in one
 line of one file (`output_subdir`), and `L0_0_minimal` differs from them in training hyperparameters — the
 double-DQN flag, target-update frequency, batch size, intrinsic-annealing floor, episode budget
@@ -306,9 +346,12 @@ worktree at the oracle tag under `.oracle/` (checking on reuse that it sits at t
 is clean), runs the same logical pack, level, seed, agent count and step count on both trees as
 subprocesses — each side is a (code root, pack root) pair: the oracle side reads its frozen copies
 of the packs under `oracle_fixtures/`, the rebuild side reads the live `configs/` — and compares
-the env-step traces (observations, rewards, dones) plus the compiled provenance hashes. Verdicts
-and a `report.json` land under `runs/differential/<run-id>/`; a `--cell` names both device rows of
-a pack/level, so this prints two verdicts:
+four env-step trace streams (`obs`, `actions`, `dones`, `rewards`; trace format v4 added
+`actions` as an adjudicated stream, `9e7197e6`) plus the compiled provenance hashes. Each side
+draws its own seeded actions by default; `--scripted` makes the oracle side record its actions
+and the rebuild side replay them verbatim, so the world's dynamics are compared under identical
+inputs. Verdicts and a `report.json` land under `runs/differential/<run-id>/`; a `--cell` names
+both device rows of a pack/level, so this prints two verdicts:
 
 ```bash
 uv run python -m townlet.oracle.harness --cell default_curriculum:L0_0_minimal
@@ -317,34 +360,51 @@ uv run python -m townlet.oracle.harness --cell default_curriculum:L0_0_minimal
 Its declared matrix is twenty cells: five levels of `default_curriculum` × {cpu, cuda}, three
 single-axis packs under `configs/differential/` × {cpu, cuda}, and two packs whose
 `vfs_profiles.yaml` declares variables (`configs/test/items_smoke`, `configs/test/effects_smoke`)
-× {cpu, cuda} — the only runnable packs that expose VFS profile variables, added so the cut that
-split the old `obs_vfs` block into per-variable fields (`PDR-0075`, register entry `DIV-006`) was
-visible to the harness at all. The CUDA cells
+× {cpu, cuda} — originally the only runnable packs that exposed VFS profile variables, added
+under `PDR-0074` so the cut that split the old `obs_vfs` block was visible to the harness at
+all. The CUDA cells
 are always declared and reported SKIPPED rather than silently dropped when `--cuda` is absent. It
 exits 0 only when every cell is AGREE, SKIPPED, or DIVERGED_AS_REGISTERED — the last meaning the
-cell's declared binding to a divergence-register entry matched narrowly, in one of two shapes.
+cell's declared binding to a divergence-register entry matched narrowly, in one of three shapes.
 *Old-side crash*: the oracle side crashed without producing a trace, the registered signature
 appearing in the final exception text of its stderr, *and* the rebuild side ran and produced a
 valid trace. *Hash-only*: both sides ran, exactly the enumerated provenance hashes differ — no more
-and no fewer — and every trace stream matches byte-for-byte. Behaviour is never suppressed: any
-stream difference is DIVERGE, an undeclared hash moving is HASH_MISMATCH, and a declared divergence
-that fails to manifest is REGISTERED_DIVERGENCE_ABSENT — all red. An unmatched red of any kind
+and no fewer — and every trace stream matches byte-for-byte. *Stream-scoped* (`afa09b81`,
+2026-08-22, built for the token cut): both sides ran, exactly the enumerated trace streams
+diverge — shape changes included — and every other stream matches byte-for-byte. A cell may bind
+a hash entry and a stream entry together; `compare_traces` labels that `hash+stream`. Behaviour
+is never suppressed: an undeclared stream difference is DIVERGE, an undeclared hash moving is
+HASH_MISMATCH, and a declared divergence that fails to manifest is REGISTERED_DIVERGENCE_ABSENT
+— all red. An unmatched red of any kind
 still fails, and an empty or all-SKIPPED run exits 1 so that doing nothing cannot look green.
-**At `oracle-2026-08-17` the sixteen `default_curriculum` and differential cells declare no
-divergence and their frozen fixtures under `oracle_fixtures/` are byte copies of the live packs**,
-so for them a green run means *old and new agree* — the first time since 2026-08-15 that exit 0 has
-meant that. (Between 2026-08-15 and the re-tag, all ten standing cells bound the hash-only entry
-`DIV-004` and AGREE was unreachable; the register records that as a cost, and its dissolution as
-the reason the tag moved.) The four profile-variable cells bind `DIV-006`, the first entry written against the
-new tag. All four declare the hash-only shape, permitting and requiring exactly
-`observation_schema_hash`, `variable_schema_hash` and `vfs_hash` to move. The two
-`configs/test/effects_smoke` cells additionally declare an *input* divergence under the same entry:
-the cut requires `semantic_type` on global and agent profile variables, their frozen fixture is
-held at the pre-cut schema, and the live pack differs from it by exactly that one key. A declared
-input delta and a declared output delta are two separate decisions, and neither blesses the other. The register holds six entries, in its own lifecycle vocabulary: `DIV-001` and `DIV-002` are
-checkpoint-boundary, `tag-stamped` at the new tag, and cannot appear in an env-step trace;
-`DIV-003`, `DIV-004` and `DIV-005` are `retired` at it; `DIV-006` is `built`. The harness treats any DIVERGE or HASH_MISMATCH with no matched entry as a
-rebuild defect or a missing register entry — both findings.
+**What exit 0 means has changed since `oracle-2026-08-17`.** At the re-tag, the sixteen
+`default_curriculum` and differential cells declared nothing and their fixtures were byte copies
+of the live packs, so a green run meant *old and new agree*. That is no longer true — the
+`matrix.py` docstring says so in those words. Since the token cut was bound on 2026-08-26
+(`7b432de3`), **every one of the twenty cells binds three register entries** — `DIV-009`
+(six pre-cut compiler landings that moved provenance, not behaviour), `DIV-010` (the engine
+`tick` variable), and `DIV-008` (the token cut, bound twice: as a hash entry naming five
+fields — the three entries' union is the eight movers observed — and as the stream entry
+naming `obs` alone). A green run now means *everything diverged exactly as registered*: `obs`
+is permitted and required to differ on every cell, and `actions`, `dones` and `rewards` —
+undeclared — are held byte-exact, which is what makes the token design's acceptance criterion
+machine-checked rather than argued. The acceptance runs, `runs/differential/20260826-172349`
+(`--scripted`) and `20260826-172441` (plain), both exit 0: ten CPU cells
+`DIVERGED_AS_REGISTERED` with shape `hash+stream`, a `streams` key present and containing
+exactly `obs`; ten CUDA cells SKIPPED, so the finding is CPU-only. Fixtures are no longer
+byte copies either: `vfs_profiles.yaml` differs on the four standing and differential packs
+(the authored `time_of_day_phase` global), `effects.yaml` and `vfs_profiles.yaml` on
+`effects_smoke`, `effects.yaml` plus a fixture-only level `brain.yaml` on `items_smoke`
+(`DIV-007`); a declared input delta and a declared output delta remain two decisions, and
+neither blesses the other. Two cells no longer measure the axis they were added for
+(`div003_scaled`, `items_smoke`) and are **demoted as evidence** in writing (`PDR-0124`; tickets
+under [Known rough edges](#known-rough-edges)).
+The register holds eleven entries, in its own lifecycle vocabulary: `DIV-001` and `DIV-002`
+are checkpoint-boundary, `tag-stamped`, and cannot appear in an env-step trace; `DIV-003`,
+`DIV-004` and `DIV-005` are `retired` at the tag; `DIV-006` and `DIV-011` are `retired` into
+`DIV-008`; `DIV-007`, `DIV-008`, `DIV-009` and `DIV-010` are `built`. Any DIVERGE or
+HASH_MISMATCH with no matched entry is a rebuild defect or a missing register entry — both
+findings.
 
 ### Checks, run locally
 
@@ -367,29 +427,43 @@ cd frontend && npm test          # vitest; local only — no workflow runs it
 Four GitHub Actions workflows exist, all specifying `uv sync --all-extras` on Python 3.13: Lint,
 Config Validation, Tests, and Full Test Suite.
 
-**Three of the four run on every push, and 162 of the 177 completed runs on the
-recovery branches have passed** (read from the GitHub API at 2026-08-19T18:05Z). That became true on
+**Three of the four run on every push, and 283 of the 356 completed runs on the
+recovery branches have passed** (read from the GitHub API at 2026-08-29T08:27Z). That became true on
 2026-08-15 and had never been true before: between 2025-11-28 and that date no workflow had run
 against the recovery at all — the 168 commits it merged in PR #32 landed across only seven pushed
-shas, all on 2026-08-15, and nothing before them was checked. 57 shas have been checked in
+shas, all on 2026-08-15, and nothing before them was checked. 116 shas have been checked in
 all across `project-recovery` and `project-recovery-2` — treat the gates as restored, not as
-seasoned.
+seasoned. And one gap is open on `main` itself: the third merge, `04062872`, triggered **no**
+per-push Lint, Tests or Config Validation run there, where both earlier merges had fired all
+three within seconds; the nightlies are the only reads that tip has (`hamlet-83c8e3b50e`, P1;
+the deciding test is the next merge).
 
 - Lint, Config Validation and Tests trigger on `push` to `main` and to `project-recovery*` (and
   on `pull_request`). The glob is deliberate: the original defect was that the recovery branch
   simply was not named in the trigger list, so naming the *next* branch individually would have
   rebuilt the same trap on the next rename. The first runs in the recovery's history were green —
-  Lint 1m11s, Config Validation 1m14s, Tests 24m21s. Of the 177 completed runs since,
-  15 have failed: thirteen Lint and two Tests. Twelve of the Lint reds were `ruff`
-  line-length violations in trial probe scripts under `configs/` — one of which stood red for
-  seven consecutive pushes before a merge gate caught it, having twice been reported green in the
-  meantime; the thirteenth was the no-defaults linter at `8c5fa2c8`, on product source
-  (`environment/observation_encoder.py`), not on an experiment artefact. The two Tests reds were
-  the wall-clock ratio flake at `bf0f2fe4` (run 31870278368), which passed on the same code at the
-  neighbouring commits, and a hosted-runner communication loss at `e65f59e1` (run 32269773738).
-  **No red has been a product regression** — but do not read that as "only lint and
-  infrastructure": one was a real gate catching real product source, and one hid in plain sight
-  for seven pushes.
+  Lint 1m11s, Config Validation 1m14s, Tests 24m21s. Of the 356 completed runs since,
+  73 have failed: 60 Lint, 13 Tests, and no Config Validation. The Lint reds come in two
+  streaks. The first, thirteen through 2026-08-19, was mostly `ruff` line-length violations in
+  trial probe scripts — one stood red for seven consecutive pushes before a merge gate caught
+  it — plus the no-defaults linter once at `8c5fa2c8`, on product source. The second is the one
+  to read: **Lint was red for 47 consecutive pushes**, from `7dc6f66c` (2026-08-22) to
+  `237b0c38` (2026-08-29), last green before it `0b659130` (2026-08-21). Three steps took
+  turns being the red one — the no-defaults linter, Black (64 files) and `ruff` — and because
+  the workflow runs `ruff` → Black → mypy → no-defaults and stops at the first failure, each
+  red hid whatever was broken behind it. Fixed in two commits: `237b0c38` blacked the 64 files;
+  `b915139e` made three real defaults required (`TokenTypeSchema.slot_bindings`,
+  `owner_capacity`, `source_map`) and whitelisted the fifteen structural hits (eleven whitelist
+  entries) with their reasons in `.defaults-whitelist.txt`. The Tests reds: the
+  wall-clock ratio flake at `bf0f2fe4`, a
+  hosted-runner loss at `e65f59e1`, two 2026-08-22 runs where
+  `test_masked_loss_during_training` completed no episode (`11c80a94`, `c9c1d50e`; passing
+  again from `ba2766e6`, cause not established), eight consecutive 2026-08-24 runs where a
+  test opened `docs/architecture/vfs.md` after its promotion to `VFS.md` (fixed `478ab7ee`),
+  and one at `9563dc45` where the pack-freeze guard refused fixture drift no cell declared —
+  closed by binding `DIV-008` at `7b432de3`. **No red has been shown to be a product
+  regression**, but the 2026-08-22 pair is unexplained rather than cleared, and the honest
+  reading of the second Lint streak is that a gate nobody watches is not a gate.
 - **The Tests job now runs the whole suite.** Until `a725bf66` the default `pytest` invocation
   carried `-m "not slow"`, and the `slow` marker covered four files — three of them holding 31
   tests that had been failing unseen (`test_temporal_mechanics.py`, `test_training_loop.py`,
@@ -410,11 +484,13 @@ seasoned.
   `active` again, and it now passes. It fired twice against `main` at `07b26ed5` and was red both
   times, with the same 31 failures — the tests above, which that `main` still deselected from every
   other gate and had not yet repaired. Since the second merge carried the marker deletion and the
-  repairs to `main` at `4222a917`, every run has been green: a `workflow_dispatch` on 2026-08-17
-  (run 31981122221) and the three scheduled runs since (runs 32003077539, 32107696959 and
-  32224227011, on 2026-08-17, -08-18 and -08-19). Those readings are all against `4222a917`; the
-  merge that carries this file puts commits on `main` that the nightly has never run against, so
-  the first nightly after it is the next reading to check. Since `a725bf66` the nightly and the
+  repairs to `main` at `4222a917`, every run has been green — thirteen in a row: a
+  `workflow_dispatch` on 2026-08-17 (run 31981122221), three scheduled runs against `4222a917`
+  (2026-08-17 to -08-19), and nine scheduled runs against `04062872`, the third merge, from
+  2026-08-20 to 2026-08-28 (runs 32340503178 through 33198018719; the last two fired at
+  17:17Z and 18:09Z rather than the usual ~06:35Z). Each merge puts commits on `main` that the
+  nightly has never run against, so the first nightly after any merge is always the next
+  reading to check. Since `a725bf66` the nightly and the
   per-push Tests job are the same bare `uv run pytest` and differ only in trigger.
 - Three of the four — every one except Lint — run `scripts/validate_compiler_cli.py` before their
   other steps, and no step sets `continue-on-error`, so that script gates the rest. It exits 0,
@@ -439,26 +515,52 @@ load-bearing ones:
 
 - **`universe/` — the universe compiler (UAC).** Parses and cross-validates a pack, resolves its
   references and shared schemas, compiles every level, and emits one `CompiledUniverse`: a frozen
-  dataclass carrying 16 declared `*_hash` fields plus per-level metadata. Not all sixteen are
+  dataclass carrying 19 declared `*_hash` fields plus per-level metadata (17 before the token
+  cut; `token_type_schema_hash` and `layout_hash` are the two it added). Not all of them are
   enforced — see checkpoint identity below. The cache is keyed on a config hash and a provenance id
   (compiler version, git sha, python, torch and pydantic versions), and is discarded when any
-  config file's mtime is newer than the artifact's.
-- **`vfs/` — variables, observation spec, and compiled transition programs (VTC).** Access control
+  config file's mtime is newer than the artifact's. The 2026-08-24 cleanup (`312d0fe0`,
+  `PDR-0121`) gave it one authoritative stage enum (`universe/stages.py`), an error-code
+  registry (`universe/error_codes.py`) and a `SourceMap`, so a compile error now carries
+  `file:line`; the never-called cues seam (`CuesCompiler`, `config/cues.py`) was deleted.
+- **`universe/dto/token_spec.py` — the observation ABI, since the unit-3 token cut
+  (`4dde71a2`, 2026-08-26).** An observation is a **set of typed tokens**, not a raster: seven
+  engine token types in a fixed order (`self`, `meter`, `affordance`, `agent`, `item`,
+  `effect`, `variable_element`), each with a payload width fixed across all universes and a
+  per-universe compiled capacity, serialized flat with a presence feature leading every row.
+  `environment/token_publishers.py` fills the flat view; partial observability zeroes
+  out-of-range spatial tokens and never reshapes the tensor. `token_type_schema_hash` is the
+  transfer contract (measured identical across a 2-D grid, a 3-D cubic grid and an aspatial
+  universe); `layout_hash` is the per-universe flat-net contract. The old fixed-width superset
+  and its per-level activity mask — `ObservationSpec`, `ObservationActivity`,
+  `vfs/observation_builder.py` — are deleted, not wrapped.
+- **`vfs/` — variables and compiled transition programs (VTC).** Access control
   is enforced at runtime, not merely declared: `VariableRegistry` raises `PermissionError` when a
   reader or writer is not on the variable's list. The compiled transition schedule is built into
-  `VectorizedHamletEnv` and drives the ordered phases of the step loop.
+  `VectorizedHamletEnv` and drives the ordered phases of the step loop; since `7cbfbff8`
+  affordance occupancy is one of its phases, so contention is authorable from `actions.yaml`.
 - **`environment/dac_engine.py` — declarative rewards (DAC),** compiled from a level's `drive.yaml`.
 - **`agent/` — brain-as-code, layer 2.** `brain.yaml` selects architecture, optimizer and loss
-  through `network_factory.py`, `optimizer_factory.py` and `loss_factory.py`.
+  through `network_factory.py`, `optimizer_factory.py` and `loss_factory.py`. Since `9a0007de`
+  `token_set` (`TokenSetQNetwork`, with a declared `mean` or `attention` aggregator,
+  `PDR-0112`) is a shipped architecture and `set_encoder` no longer builds. Census, not intent:
+  of the 39 `brain.yaml` files in `configs/`, 29 declare `feedforward` (every
+  `default_curriculum` level included), 5 `dueling`, 5 `token_set` (the `token_transfer_*` and
+  `set_encoder_smoke` fixtures), none `recurrent`.
 - **`environment/`, `population/`, `substrate/` — the vectorized torch runtime.** Device is an
   explicit parameter: `VectorizedHamletEnv` requires one and raises rather than picking a default.
 - **`training/checkpoint_utils.py` — checkpoint identity.** One shared gate,
   `assert_checkpoint_identity`, called by both the training-resume path (`demo/runner.py`) and the
-  serving path (`demo/live_inference.py`). Eight of the sixteen `*_hash` fields are stamped into a
-  checkpoint, and seven of those are hard-compared on load — `vfs_hash`, `drive_hash`, the
-  effective `brain_hash`, and the four per-level content hashes — alongside observation dim, action
-  count, observation-field UUIDs and `primary_level`, so a checkpoint refuses to load into a
-  universe it does not match, including a different level of the same pack. What is *not* enforced
+  serving path (`demo/live_inference.py`). Eleven of the `*_hash` fields are stamped into a
+  checkpoint (`CHECKPOINT_FORMAT_VERSION = 4` since the token cut; a version-3 checkpoint
+  refuses loudly), and eight of those are hard-compared on load — `vfs_hash`, `drive_hash`, the
+  effective `brain_hash`, the four per-level content hashes, and one of the two token hashes
+  chosen by architecture: a `token_set` network compares `token_type_schema_hash`, every other
+  reader compares `layout_hash`, because a flat reader's dims are positional — alongside action
+  count and `primary_level`, so a checkpoint refuses to load into a universe it does not match,
+  including a different level of the same pack. `pack_brain_hash` is stamped and required
+  present but compared only to state a brain-lineage fork (`PDR-0027`); the old observation-dim
+  and observation-field-UUID legs are gone with their producer. What is *not* enforced
   is recorded rather than hidden: `observation_schema_hash` is stamped and never compared, and the
   five pack-level hashes (`experiment`, `stratum`, `environment`, `actions`, `items`) are computed
   and serialized and compared by no checkpoint consumer — only the differential harness reads
@@ -475,17 +577,33 @@ load-bearing ones:
 
 Delivered and wired at this commit: a YAML pack compiles to a frozen, hash-carrying artifact
 (`configs/default_curriculum` and `configs/L5_multi_agent` both validate clean); that artifact
-drives the vectorized torch environment; reward functions are specified in config, with no Python
-reward classes left to subclass; VFS access control is enforced at runtime; and the training entry
+drives the vectorized torch environment; the observation is a compiled token set whose
+replacement of the raster ABI the oracle harness adjudicated on all ten CPU cells with world
+dynamics byte-exact (`PDR-0124`); reward functions are specified in config, with no Python
+reward classes left to subclass; VFS access control is enforced at runtime; all nine variable
+scopes construct at runtime; temporality is authored (the day/night phase is a pack-level
+variable over the engine's `tick`, not an engine block); and the training entry
 point runs end to end, writing a run directory whose `training.log` records *Training loop completed
 normally* beside a `config_snapshot/` of the pack that produced it.
+
+One measurement the cut left open was ruled, not hidden: the token design (`PDR-0114`) carried
+a reversal trigger at 8× the pre-cut observation width, and L1 compiles to `total_dims` 1132
+against a pre-cut 120 — **9.43×**, 82% of it the affordance block. The trigger fired, was
+escalated with three levers drilled and refuted (`PDR-0124`), and on 2026-08-29 the owner
+ruled **option 4**: the 8× cap and the engine constants stay unchanged, and the 9.43× reading
+is carried as recorded debt into migration unit 5, to be re-measured after the pack migration
+moves the census.
 
 Intent, not yet built — stated plainly because older docs blur the line:
 
 - **Brain-as-code layers 1 and 3.** The behaviour contract (panic thresholds, forbidden actions,
   personality dials, allowed goals) and the declarative think-loop graph are specified in
-  `docs/architecture/hld/02-brain-as-code.md` and have no implementation: their identifiers appear
-  in zero files under `src/` and `configs/`. Layer 2, the network/optimizer/loss surface, is real.
+  `docs/architecture/archive/hld/02-brain-as-code.md` (archived 2026-08-24; the current honest
+  treatment is `docs/architecture/BAC.md`) and have no implementation: their identifiers appear
+  in zero files under `src/` and `configs/`. Layer 2, the network/optimizer/loss surface, is real,
+  and since the token cut includes a token-native architecture (`token_set`, above); a
+  token-native *recurrent* brain is still intent (migration unit 4) — `RecurrentSpatialQNetwork`
+  survives as a block reader over the `self`, `meter` and `affordance` token rows.
 - **One standard compiler for both halves of an experiment.** The universe compiles to an artifact;
   the brain rides inside it as a validated `BrainConfig` plus a `brain_hash`, rather than compiling
   to an artifact of its own. `CompiledBrain` exists only in `docs/`.
@@ -508,33 +626,43 @@ Intent, not yet built — stated plainly because older docs blur the line:
   `frontend/src/`); no CI workflow installs Node or runs either. One component is dead code: `AffordanceGraph.vue` is
   mounted behind an `affordance_graph` message that no server emits (`hamlet-102db4c2e0`).
 - **A compiled pack can fail to cache without failing the command, and it is a class of failure
-  rather than one pack.** `configs/reference/model_pack` compiles, prints `Compilation succeeded`,
+  rather than one pack.** *(Fixed 2026-08-21, commit `03764c6b` — agent profiles now serialize,
+  the field is typed `CompiledGlobalProfile | None`, and a failed cache write fails the compile.
+  Re-verified 2026-08-24: a pack with a non-null `agent_profile` compiles and writes its cache
+  artifact. The record below is kept as stamped at 2026-08-20.)*
+  `configs/reference/model_pack` compiles, prints `Compilation succeeded`,
   and exits 0 — while its cache artifact is *not* written: serialization raises `can not serialize
   'CompiledGlobalProfile' object`, the failure is downgraded to a log warning the CLI never
   displays, and nothing propagates it to the exit code. `inspect` then fails with `Artifact not
   found`. The trigger is a **non-empty `agent_profile.variables`** in a pack's `vfs_profiles.yaml`:
   packs declaring zero agent-profile variables cache normally, packs declaring one or more do not,
   and adding a single agent-profile variable to a pack that caches is enough to reproduce it. The
-  error names the *global* class because `universe/compiled.py:123` types the field as
+  error names the *global* class because `universe/compiled.py` (then line 123) typed the field as
   `agent_profile: Any | None = None  # TODO: Add CompiledAgentProfile type` — the untyped field is
   the root cause, and the message points at the wrong half of the config. Compiling every pack in
   `configs/` from a cleared cache, exactly two fail this way today. CI cannot see any of it,
   because the gate runs `validate`, which writes no cache. This is the project's recurring shape —
   a failure that is not loud — and it is tracked as a defect rather than left as folklore.
-  (`configs/` holds 33 directories carrying an `experiment.yaml`; 15 are fixtures under
-  `configs/test/`, three of which the script declares expected-to-fail; the other 18 are
-  `default_curriculum`, `L5_multi_agent`, `aspatial_test`, `simple`, `reference/model_pack`, three
-  `differential/div003_*` harness packs, and ten authoring-trial packs — two `trial002_*` and eight
-  `trial_*` — written for the trials recorded in `docs/product/metrics.md` and
-  `docs/product/trials/`. The two packs that used to fail at parse on schema drift,
-  `configs/simple` and `configs/reference/model_pack`, were repaired on 2026-08-15 and both
-  validate clean.)
-- **The declarable surface exceeds the exercised surface.** Measured at this commit by compiling
-  all 30 packs in `configs/` that compile — every pack except the three negative fixtures — and
-  counting rules in-process:
+  (Pack census re-taken 2026-08-29: `configs/` holds 38 directories carrying an
+  `experiment.yaml`; 19 are fixtures under `configs/test/`, three declared expected-to-fail
+  (`set_encoder_smoke` and the three `token_transfer_*` fixtures are new since 2026-08-20); the
+  other 19 are `default_curriculum`, `L5_multi_agent`, `aspatial_test`, `simple`,
+  `reference/model_pack`, three `differential/div003_*` harness packs, and eleven
+  authoring-trial packs — two `trial002_*` and nine `trial_*`, the ninth the blind re-run pack
+  `trial_b_blind_organism` — for the trials in `docs/product/trials/`. All 35 non-negative packs
+  validate clean at this commit. `reference/model_pack` validates and compiles, but its
+  `items.yaml` declares a `spawn_effect` shape the runtime rejects, so env construction raises
+  where the compiler passed — `hamlet-5a87550adb`, the same shape again.)
+- **The declarable surface exceeds the exercised surface.** Measured on 2026-08-20 by compiling
+  the 30 packs in `configs/` that then compiled — every pack except the three negative
+  fixtures — and counting rules in-process (the sample is now 35; the count is not re-taken):
   - Two of the nine compiled transition-program families — `action_write` and `social_residue` —
-    carry zero rules in every one of them. `action_write` is worse than unexercised: no YAML can
-    produce one, because `universe/compilers/actions.py` hardcodes `writes=()` for every action.
+    carried zero rules in every one of them. Both now have an authoring surface no shipped pack
+    uses: custom actions carry a `writes:` list (`universe/compilers/actions.py` no longer
+    hardcodes `writes=()`, which was why `action_write` used to be unproducible), and
+    social-residue rules live in a typed pack-root `transition_rules.yaml` (`7e989e8c`); no
+    `writes:` key and no `transition_rules.yaml` exists under `configs/`, so by census both
+    families are still empty everywhere.
     (A third, `interaction_progress`, was also empty everywhere until 2026-08-15; repairing
     `configs/reference/model_pack` brought the only pack that exercises it back into the measured
     set, where it carries two progress rules and two completion-bonus rules — still the only pack
@@ -548,25 +676,43 @@ Intent, not yet built — stated plainly because older docs blur the line:
   - `type: grid3d` was deleted from the substrate schema (it never had a
     `SubstrateFactory.build` branch, so it could only compile toward a guaranteed crash); 3-D
     grids are `type: grid` with `topology: cubic`.
-  - Three of the nine declared variable scopes — `zone`, `group` and `message` — validate and
-    compile clean and then hard-crash at environment construction. `VariableRegistry` sizes them
-    from `num_zones` / `num_groups` / `num_message_slots`, constructor parameters that default to 0
-    and that `environment/vectorized_env.py` never passes, so `_positive_extent` raises for any
-    pack that declares one; no YAML or DTO can set them either. Unit tests *do* cover the registry
-    in isolation — they pass the extents directly, and pin both the working path and the raise —
-    so the suite is green while the scopes remain unreachable from every real pack. (`affordance`
-    scope works, because `num_affordances` *is* passed.) Measured in the authoring trials recorded
-    under `docs/product/trials/`.
-  - All four VFS variables declared in `configs/default_curriculum/environment.yaml` —
-    `deficit_energy`, `deficit_satiation`, `time_since_last_eat`, `time_since_last_sleep` — are
-    observed but written by nothing: those names appear nowhere under `src/townlet/`, and in no
-    config anywhere beyond their own declaration.
-- **Documentation outside `docs/product/` and `docs/oracle/` is being reconciled.** `CLAUDE.md`,
-  `scripts/README.md` and older architecture docs still name config paths, filenames and scripts
-  that do not exist in the tree — `scripts/README.md`, for one, documents
-  `scripts/validate_configs.py` and `scripts/validate_substrates.py`, neither of which is present.
-  The count of confirmed-false claims in canonical docs is tracked as a product guardrail in
-  `docs/product/metrics.md`.
+  - Three of the nine declared variable scopes — `zone`, `group` and `message` — used to validate
+    and compile clean and then hard-crash at environment construction, because nothing passed
+    the registry its `num_zones` / `num_groups` / `num_message_slots` extents and no YAML could
+    set them (found by Trial K, `docs/product/trials/`). **Fixed at `6b752b3c` (2026-08-21,
+    `hamlet-9e1ae3b7a2` closed):** a pack declares an `extents:` block in
+    `variables_reference.yaml`, the compiler carries it into the level metadata,
+    `environment/vectorized_env.py` passes it to the registry, and a pack that declares one of
+    those scopes without extents is refused loudly. Two packs declare them (`L5_multi_agent`,
+    `trial_o_bidding_blind`).
+  - The four VFS variables `configs/default_curriculum/environment.yaml` used to declare —
+    `deficit_energy`, `deficit_satiation`, `time_since_last_eat`, `time_since_last_sleep` — were
+    observed but written by nothing, so agents saw frozen zeros in slots the ABI claimed were
+    live. Deleted 2026-08-22 (`hamlet-dc8f887cd5`); the shipped pack now declares no custom
+    variables. Trial L (`docs/product/trials/0001/L-20260818.md`) demonstrated the counter
+    mechanic is authorable without them: a bar with a negative passive rate advances per tick,
+    an `on_start` `modify` resets it on use.
+- **Nine defects landed open with the token cut** (`PDR-0124`), all still in triage. Two are
+  inline above — inert `observation_encoding` (`hamlet-6a4a6596bd`, P1) and `range_type`
+  reaching nothing (`hamlet-1e335e0363`, P1). The rest: item tokens carry no declared identity
+  (`hamlet-559cc74246`, P1); the indistinguishability refusal has no declared-parameter escape
+  hatch (`hamlet-2aca57c0f0`, P1); effects survive `env.reset()` (`hamlet-d76684f549`, P1);
+  affordance tokens skip the indistinguishability check and drop costs, hours and non-`on_start`
+  interactions (`hamlet-81bf807963`, P2); effect slots migrate columns on expiry and
+  over-capacity items drop silently (`hamlet-4538ba909f`, P2); every `variable_element` slot in
+  the fleet is an inert declaration (`hamlet-aba6171ff7`, P2); and the `reference/model_pack`
+  env-construction crash above (`hamlet-5a87550adb`, P2). A tenth — L3 unobservable after the
+  cut — blocked and was fixed first, by declaration (`9563dc45`).
+- **Documentation outside `docs/product/` and `docs/oracle/` is being reconciled, and the
+  rewrite is blocked.** `scripts/README.md` still documents `scripts/validate_configs.py` and
+  `scripts/validate_substrates.py`, neither of which is present; `CLAUDE.md`, regenerated and
+  corrected repeatedly, still describes `CuesCompiler` as "instantiated at `compiler.py:69`"
+  after `bb43e024` deleted it. The 2026-08-24 archive and the 2026-08-26 recovery are under
+  [Documentation](#documentation); the corpus rewrite itself is gated on `hamlet-ad2773718a`
+  (generate from the consuming code paths, not from the Pydantic models). An independent VFS
+  gap analysis (`docs/product/assessments/vfs-gap-analysis-20260821.md`) scored 129 spec cells
+  as 63 WORKS / 9 INERT / 26 BLOCKED / 31 ABSENT. The count of confirmed-false claims in
+  canonical docs is tracked as a product guardrail in `docs/product/metrics.md`.
 - **The recording subsystem is slated for removal** once its intent is captured
   (`pyproject.toml`, `recording` extra). Its MP4 export also shells out to an `ffmpeg` binary that
   is not a Python dependency.
@@ -580,33 +726,52 @@ badged a test count and a coverage percentage and stated an observation width; `
 records that coverage figure as measured-false, and the width it gave is not what the compiler
 reports for any `default_curriculum` level at this commit. Read them off the tree instead: compile a level and read
 `Observation Dim` from the summary (the field is `metadata.observation_dim`, set from
-`observation_spec.total_dims` — plural — and it is a property of the pack, not a constant of the
-project); run `uv run pytest` for the suite; and read `docs/product/metrics.md` for measurements
-stamped with the commit and date they were taken at.
+`token_spec.total_dims` — plural — and it is a property of the pack, not a constant of the
+project; the attribute was `observation_spec.total_dims` until the 2026-08-26 token cut deleted
+that artifact, and `token_spec.census` says where the width goes, type by type); run
+`uv run pytest` for the suite; and read `docs/product/metrics.md` for measurements
+stamped with the commit and date they were taken at. Two trigger denominators live there, not
+here: the frozen L2 pre-raster baseline (`docs/product/baselines/2026-08-l2-preraster/`,
+`PDR-0122`, five seeds) and the 9.43× width reading above.
 
 ## Documentation
 
 Current and maintained as part of the recovery:
 
 - `docs/product/vision.md` — purpose, audiences, anti-goals. Owner-endorsed; it separates what is
-  shipped from what is intended, and tags each claim with how it was established.
+  shipped from what is intended, and tags each claim with how it was established. Re-stamped
+  2026-08-24 (`PDR-0119`): the loop ends with the trained model leaving for the designer's
+  own game — *train here, deploy there*.
 - `docs/product/current-state.md` — where the rewrite stands.
 - `docs/product/roadmap.md` — the current bet list, stated as intent rather than dates.
 - `docs/product/metrics.md` — dated measurements and the documentation-truth guardrail.
 - `docs/product/decisions/` — every product decision as a numbered record with its reversal
   trigger; `docs/product/prds/` and `docs/product/trials/` hold the authoring-trial instrument and
-  the per-trial records this file cites for measured authorability claims.
+  the per-trial records this file cites for measured authorability claims;
+  `docs/product/assessments/` holds the independent audits (the VFS gap analysis among them)
+  and `docs/product/baselines/` the frozen measurements that arm reversal triggers.
 - `docs/oracle/ORACLE.md` and `docs/oracle/known-divergences.md` — the rewrite's rules and its
   accepted divergences.
+- `docs/README.md` — the map of the rest of `docs/`, with a trust level per directory.
 
-Subsystem detail lives in `docs/architecture/` and `docs/config-schemas/`. Those are only partly
-reconciled against the tree: `docs/config-schemas/presentation.md` is new and source-verified, and
-`docs/architecture/UNIVERSE_AS_CODE.md` was corrected on 2026-08-16 where the semantic-type and
-interaction-type surfaces changed under it, and `docs/architecture/vfs.md` and
-`vfs-current-implementation.md` were corrected then and again on 2026-08-17, when the compiled
-observation field gained a typed `feature` —
-but the rest has not been swept (`hamlet-7a52a63e0b`), so treat specific filenames, paths and
-numbers there as unverified until you check them.
+Subsystem detail lives in `docs/architecture/` and `docs/config-schemas/`. On 2026-08-24
+(`PDR-0118`) the old architecture corpus — including
+`docs/architecture/archive/UNIVERSE_AS_CODE.md` (corrected 2026-08-16) and
+`docs/architecture/archive/vfs-current-implementation.md` (corrected then and again on
+2026-08-17, when the compiled observation field gained a typed `feature`) — was archived
+wholesale to `docs/architecture/archive/` and replaced by a six-document HLD set reviewed
+against source that day: `HLD.md`, `STRATA.md`, `UAC.md`, `BAC.md`, `COMPILER.md`, and
+`VFS.md` (the former `vfs.md`, promoted). A same-day recut (`c4e8bd58`, "zzz. archive") then
+swept most of the rest of `docs/` — `docs/config-schemas/` included — into `docs/zzz. archive/`
+(the literal directory name; about 400 markdown files sit there as history). On 2026-08-26
+(`PDR-0125`, owner-authorised) 53 files were
+recovered to their live paths with 51 dated staleness banners, all thirteen
+`docs/config-schemas/` files among them: twelve carry a 2026-08-26 banner — nine naming how
+they are wrong (`variables.md` is wholesale 2025-11 stale; `affordances.md` documents a schema
+wired to nothing; `expressions.md` calls nine shipped functions "planned"), three carrying a
+✅ (`transition_rules.md` verified accurate; `bars.md` and `training.md` accurate but for one
+known error each) — and only `presentation.md` carries none. Treat both archives as history,
+never as a record of what shipped.
 
 ## License
 

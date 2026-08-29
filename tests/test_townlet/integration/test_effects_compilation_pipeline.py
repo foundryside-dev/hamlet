@@ -21,6 +21,7 @@ class TestEffectsCompilationPipeline:
 
         effects = {
             "version": "1.0",
+            "max_active_effects": {"global": 8, "agent": 8, "item": 8, "affordance": 8},
             "effect_definitions": [
                 {
                     "id": "regen",
@@ -81,6 +82,7 @@ class TestEffectsCompilationPipeline:
 
         effects = {
             "version": "1.0",
+            "max_active_effects": {"global": 8, "agent": 8, "item": 8, "affordance": 8},
             "effect_definitions": [
                 {
                     "id": "broken_effect",

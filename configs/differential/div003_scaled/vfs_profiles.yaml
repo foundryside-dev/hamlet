@@ -1,6 +1,41 @@
 version: '1.0'
 evaluation_mode: mark_and_sweep
 debug_logging: false
+global_profile:
+  variables:
+  # Time of day, declared rather than hardcoded.
+  #
+  # The engine used to emit a temporal observation block of its own; the unit-3 token cut
+  # deleted it, and it is NOT coming back. `tick` is the one temporal primitive the engine
+  # publishes (vfs/profiles.py AMBIENT_ENGINE_NAMES) — a bare counter with no notion of a
+  # day. Turning that counter into an observable phase is an AUTHORING decision, so it is
+  # made here, in the pack, exactly as a designer would make it for their own world.
+  #
+  # `cyclical_sin_cos` is the whole encoding: the normalization lands sin in value lane 0
+  # and cos in lane 1 of ONE token (token_spec.value_block_width_used). That is what makes
+  # midnight continuous — tick 23 -> 24 moves the pair by the same small step as 0 -> 1,
+  # where a raw `tick % day_length` would jump the full range. It is also inherently
+  # bounded in [-1, 1], so it is a member of token_spec._BOUNDED_KINDS and certifies
+  # boundedness at exposure with no clip parameter and no min/max literals to justify.
+  #
+  # NOTE ON THE DUPLICATED PERIOD: `period: 24` restates `day_length: 24` from
+  # levels/L3_temporal_mechanics/curriculum.yaml. That duplication is deliberate and
+  # currently forced — `NormalizationSpec.period` is a plain compile-time float, so it can
+  # neither reference another declared variable nor read `curriculum.day_length`. The two
+  # must be changed together. See the L3 temporal report for the product signal.
+  - name: time_of_day_phase
+    id: time_of_day_phase
+    type: float
+    semantic_type: temporal
+    expression: tick
+    exposed_to: [agent]
+    normalization:
+      kind: cyclical_sin_cos
+      period: 24
+    description: >-
+      Position within the day/night cycle, as a sin/cos phase pair over the ambient engine
+      tick. Continuous across the midnight wrap. Period must match the temporal level's
+      curriculum.day_length.
 item_profiles:
 - profile_name: default_item
   variables: []

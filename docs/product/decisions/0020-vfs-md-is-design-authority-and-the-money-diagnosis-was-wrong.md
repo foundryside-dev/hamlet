@@ -1,8 +1,8 @@
-# PDR-0020 — `docs/architecture/vfs.md` is design authority; the money-scale diagnosis was wrong and is corrected
+# PDR-0020 — `docs/architecture/VFS.md` is design authority; the money-scale diagnosis was wrong and is corrected
 
 Date: 2026-08-12   Status: accepted (with one **escalation** — the money unit — awaiting owner)
 Author: Claude (standing product owner)
-Owner sign-off: the **pointer** is the owner's: *"docs/architecture/vfs.md — this is probably worthwhile in the VFS review; chapter 9 provides a lot of detail on normalisation and how it should work."* Plus the framing: *"the entire point of VFS is that end users don't need to think too hard about the mechanics under the hood, it's effectively like a 'complex type' that they can trust to be enforced mechanically."*
+Owner sign-off: the **pointer** is the owner's: *"docs/architecture/VFS.md — this is probably worthwhile in the VFS review; chapter 9 provides a lot of detail on normalisation and how it should work."* Plus the framing: *"the entire point of VFS is that end users don't need to think too hard about the mechanics under the hood, it's effectively like a 'complex type' that they can trust to be enforced mechanically."*
 Related: PDR-0016 (bounds + normalization), PDR-0017 (structure vs scale), PDR-0007 (options not yet enabled)
 Tracker: `hamlet-365e996511` (retitled and re-scoped by this PDR)
 
@@ -15,7 +15,7 @@ downstream.
 
 I filed that as *"the ceiling is an authoring error; declare a truthful one; it belongs to
 curriculum authoring."* That diagnosis was reached from the runtime plus `PDR-0016`, and it
-never consulted `docs/architecture/vfs.md`, which is the design authority for VFS. The owner
+never consulted `docs/architecture/VFS.md`, which is the design authority for VFS. The owner
 surfaced the document immediately afterwards. Reading chapter 9 overturns it.
 
 ## What the design actually says (measured against the tree)
@@ -84,7 +84,7 @@ convention.
 
 Reopen if **any** of the following:
 
-- **`docs/architecture/vfs.md` turns out to be materially stale** on a question where it is
+- **`docs/architecture/VFS.md` turns out to be materially stale** on a question where it is
   treated as binding. It is dated and pre-dates several landed changes; if it is wrong somewhere
   load-bearing, its authority needs qualifying rather than assuming. The HLD-vs-implementation
   divergence map is the instrument for this.

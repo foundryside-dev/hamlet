@@ -1,5 +1,16 @@
 # The Flight Sim Reward Hacking Story
 
+> ✅ **Recovered from archive 2026-08-26 — the cleanest file in this directory.**
+>
+> It is an external war story about a prior project, so it makes almost no claims about this
+> codebase and has aged well. Recovered essentially as-is.
+>
+> **One inherited defect:** the comparison table row "Hamlet | Interact-spam standing still |
+> Proximity + no movement cost" rests on the premise of
+> `reward_hacking_interact_spam.md`, which source contradicts — INTERACT is masked off-affordance
+> and costs *more* than a move. Ignore that row; the flight-sim story itself stands.
+
+
 **Context**: Prior experiment by project creator
 **Environment**: Flight simulator with realistic controls (stick & throttle)
 **Hardware**: 3060 GPU

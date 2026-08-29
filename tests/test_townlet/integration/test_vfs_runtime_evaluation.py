@@ -35,22 +35,6 @@ def test_vfs_expressions_evaluated_at_runtime():
     assert "day_count" in env.vfs_registry._storage or "day_count" in env.vfs_registry.variables
 
 
-def test_runtime_uses_compiled_vfs_observation_spec():
-    """Environment should consume the compiler-emitted VFS observation spec directly."""
-    config_dir = Path(__file__).parent.parent.parent.parent / "configs" / "test" / "effects_smoke"
-
-    compiled = UniverseCompiler().compile(config_dir, primary_level="L0_effects", use_cache=False)
-
-    assert compiled.vfs_observation_spec is not None
-    env = compiled.create_environment(
-        num_agents=4,
-        level_name="L0_effects",
-        device=torch.device("cpu"),
-    )
-
-    assert env.vfs_observation_spec is compiled.vfs_observation_spec
-
-
 def test_mark_and_sweep_only_evaluates_observed_vars():
     """Mark-and-sweep should only evaluate variables in observations."""
     # Setup: Use effects_smoke config which has VFS profiles
@@ -85,8 +69,8 @@ def test_mark_and_sweep_only_evaluates_observed_vars():
 
     # Verify: Only variables marked as observed should be evaluated
     # In effects_smoke, we need to check the observation marks
-    if compiled.vfs_observation_marks is not None:
-        expected_vars = compiled.vfs_observation_marks.get("global", set())
+    if compiled.vfs_evaluation_marks is not None:
+        expected_vars = compiled.vfs_evaluation_marks.get("global", set())
         # In mark-and-sweep mode, only marked variables should be evaluated
         # If there are no marks, no variables should be evaluated
         if len(expected_vars) > 0:
@@ -212,7 +196,9 @@ def test_vfs_expressions_access_bars():
     # Verify: low_energy_flag should be False (energy > 0.3)
     low_energy_flag = env.vfs_registry._storage["low_energy_flag"]
     assert low_energy_flag.dtype == torch.bool, f"Expected bool type, got {low_energy_flag.dtype}"
-    # Global VFS variables with bar access return per-agent results (shape [num_agents])
+    # low_energy_flag is agent-scoped (hamlet-d970ef83f0 / token-obs unit 3 Task 5b — a
+    # bar.energy-derived expression is inherently per-agent, so the variable is declared
+    # agent scope, not global). [num_agents] is the DECLARED shape here, not a bypass.
     # low_energy_flag = bar.energy < 0.3 -> [0.8, 0.8, 0.8, 0.8] < 0.3 -> [False, False, False, False]
     assert low_energy_flag.shape == (4,), f"Expected shape [4], got {low_energy_flag.shape}"
     assert torch.all(~low_energy_flag), f"Expected all False when energy=0.8, got {low_energy_flag}"

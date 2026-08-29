@@ -1,5 +1,22 @@
 # training.yaml Configuration
 
+> ✅ **Restored to the live tree 2026-08-26 — one known error, and one correction to `CLAUDE.md` in the other direction.**
+>
+> Cited by `CLAUDE.md` and `docs/architecture/BAC.md` as the `training.yaml` field reference.
+>
+> **Known wrong:** `configs/global_actions.yaml` is a **dead path**. The action vocabulary is
+> the pack-level `<pack>/actions.yaml`. See `enabled_actions.md` in this directory.
+>
+> ⚠️ **`CLAUDE.md` is out of date about this file, not the other way round.** `CLAUDE.md`
+> §"Q-Learning Algorithm Variants" says this document "still carries the stale 3-vs-2 figure".
+> **It does not** — the Double-DQN performance note was corrected in place on 2026-08-24 and now
+> reads "one extra boundary forward pass per batch", which matches
+> `docs/architecture/BAC.md` §2.5 and `population/vectorized.py:862-880`. Verified 2026-08-26.
+>
+> `max_grad_norm` is correctly documented here as a declared training hyperparameter rather than
+> an engine constant; `default_curriculum` declares `10.0`.
+
+
 **Purpose**: Configure hyperparameters for DQN training, including learning rates, replay buffer settings, exploration strategy, and algorithm variants.
 
 **Location**: `<config_pack>/training.yaml`
@@ -172,7 +189,8 @@ Selects the Q-learning algorithm variant:
 
 **Performance Impact**:
 - Feedforward networks: Negligible (<1% overhead)
-- Recurrent networks: ~50% overhead (3 forward passes vs 2 for LSTM)
+- Recurrent networks: one extra boundary forward pass per batch (corrected 2026-08-24 —
+  the earlier "3 forward passes vs 2", implying a third full unroll, was wrong)
 
 **Implementation Notes**:
 - Supported for both `SimpleQNetwork` (feedforward) and `RecurrentSpatialQNetwork` (LSTM)
@@ -391,6 +409,9 @@ training:
 ## Related Documentation
 
 - **Action Space**: `docs/config-schemas/enabled_actions.md`
-- **Substrate Configuration**: `docs/config-schemas/substrate.md`
+- **Substrate Configuration**: there is no `substrate.md` schema doc (and no `substrate.yaml`
+  file — the real pack-root file is `stratum.yaml`). Use `docs/architecture/STRATA.md`, the
+  `SubstrateConfig` / `StratumConfig` DTOs in `src/townlet/config/stratum_config.py`, and the
+  worked examples in `docs/examples/`.
 - **Training System**: `docs/manual/TRAINING_SYSTEM.md`
 - **TensorBoard Integration**: `docs/manual/TENSORBOARD_INTEGRATION.md`

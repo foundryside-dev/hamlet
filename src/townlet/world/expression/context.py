@@ -28,6 +28,7 @@ class ExecutionContext:
     agent_positions: torch.Tensor | None = None
     device: torch.device = torch.device("cpu")
     vfs_types: dict[str, str] | None = None  # Variable id → type (agent_ref/item_ref/etc.)
+    vfs_scopes: dict[str, str] | None = None  # Variable id → declared scope (global/agent/...)
     num_agents: int | None = None
     self_indices: torch.Tensor | None = None
     target_indices: torch.Tensor | None = None
@@ -245,6 +246,11 @@ class ExecutionContext:
             raise KeyError(f"Path '{original_path}' not found in execution context")
         value = self.vfs[name]
         if scope == "global" or not isinstance(value, torch.Tensor):
+            return value
+        # A variable's declared scope wins over the path's implied scope: a global
+        # variable has no agent axis, so gathering it by agent indices would read
+        # its first spatial axis as agents (hamlet-cf16cdb6c4).
+        if self.vfs_scopes is not None and self.vfs_scopes.get(name) == "global":
             return value
         if base_indices is None or value.dim() == 0:
             return value

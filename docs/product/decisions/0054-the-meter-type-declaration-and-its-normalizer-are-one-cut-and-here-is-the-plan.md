@@ -105,7 +105,7 @@ and their parameter sources:
 > `clipped_log_scaled` as a *member* would author `PDR-0053` taxonomy shape #3 — two members,
 > one behaviour — by hand, in the change whose purpose is removing that shape. So
 > `clipped_log_scaled` was deleted: `log_scaled` + `clip: true` is exactly what it did.
-> `docs/architecture/vfs.md` §9.2 had carried the tell all along, passing `clip: true` to a
+> `docs/architecture/VFS.md` §9.2 had carried the tell all along, passing `clip: true` to a
 > kind whose name already implied it. Drop the `clipped_log_scaled` row; `log_scaled` keeps
 > `min`/`max` from bars bounds and gains a required `clip`. The count is the only thing that
 > changes — every kind remains reachable, which is the ruling's actual claim.

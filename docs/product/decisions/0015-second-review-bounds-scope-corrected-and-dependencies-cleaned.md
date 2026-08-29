@@ -3,7 +3,7 @@
 Date: 2026-08-11   Status: accepted   Author: Claude (standing product owner)
 Owner sign-off: **yes, on the bounds fork** — *"Source the existing sites now, file the phase for WS-4"*, followed by *"the original 'game engine' needs to be strangled out by the engine engine"* and *"VFS and the other dynamic engine parts are the guiding star here, not 'health = 0,100"*. Dependency cleanup requested directly: *"please take a second to bring all our dependencies up to a current spec"*.
 Related: PDR-0014 (amended here, not superseded), PDR-0006 (oracle freeze), PDR-0007 (options not yet enabled), PDR-0012 (no tech debt), metrics.md (Config-surface coverage)
-Plan: `docs/plans/2026-08-11-ws1-fix-set.md` §0.1 · tracker `hamlet-67ffbd282a`, `hamlet-f46e2b381a`, `hamlet-88acec4bb5`
+Plan: `docs/zzz. archive/plans/2026-08-11-ws1-fix-set.md` §0.1 · tracker `hamlet-67ffbd282a`, `hamlet-f46e2b381a`, `hamlet-88acec4bb5`
 
 ## Context
 

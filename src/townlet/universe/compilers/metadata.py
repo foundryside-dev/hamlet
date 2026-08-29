@@ -16,7 +16,10 @@ from townlet.config.environment_config import EnvironmentConfig as EnvConfigV21
 from townlet.substrate.factory import SubstrateFactory
 from townlet.universe.compiled import CompiledUniverse
 from townlet.universe.dto import AffordanceInfo, AffordanceMetadata, MeterInfo, MeterMetadata, UniverseMetadata
+from townlet.universe.error_codes import ErrorCode
+from townlet.universe.errors import CompilationError, CompilationMessage
 from townlet.universe.raw_configs_v21 import RawConfigsV21
+from townlet.universe.stages import CompilationStage
 
 
 class MetadataCompiler:
@@ -124,11 +127,20 @@ class MetadataCompiler:
         temporal_active = primary_meta.curriculum.curriculum.active_temporal
         if temporal_supported and temporal_active:
             if curriculum_day_length is None or curriculum_day_length <= 0:
-                raise ValueError(
-                    "Missing curriculum.day_length for temporal-enabled stratum.\n"
-                    f"  Experiment: {experiment_dir}\n"
-                    f"  Level: {primary_meta.level_name}\n"
-                    "Provide an explicit positive day_length; no defaults are applied."
+                raise CompilationError(
+                    CompilationStage.LEVELS.label,
+                    [
+                        CompilationMessage(
+                            code=ErrorCode.UAC_META_DAY_LENGTH,
+                            message=(
+                                "Missing curriculum.day_length for temporal-enabled stratum.\n"
+                                f"  Experiment: {experiment_dir}\n"
+                                f"  Level: {primary_meta.level_name}\n"
+                                "Provide an explicit positive day_length; no defaults are applied."
+                            ),
+                            location=f"levels/{primary_meta.level_name}/curriculum.yaml",
+                        )
+                    ],
                 )
             ticks_per_day = curriculum_day_length
         else:
@@ -141,14 +153,20 @@ class MetadataCompiler:
         if config_mtime is None:
             config_mtime = self._compute_config_mtime(experiment_dir)
 
+        def _version_error(message: str) -> CompilationError:
+            return CompilationError(
+                CompilationStage.LEVELS.label,
+                [CompilationMessage(code=ErrorCode.UAC_META_VERSION, message=message, location="experiment.yaml")],
+            )
+
         try:
             config_version = raw.experiment.experiment.version
         except AttributeError as exc:
-            raise ValueError(
+            raise _version_error(
                 "experiment.version is required in experiment.yaml (no defaults allowed). Provide an explicit semantic version string."
             ) from exc
         if not config_version:
-            raise ValueError("experiment.version is required in experiment.yaml and cannot be empty.")
+            raise _version_error("experiment.version is required in experiment.yaml and cannot be empty.")
 
         return UniverseMetadata(
             universe_name=raw.experiment.experiment.metadata.name,
@@ -163,12 +181,12 @@ class MetadataCompiler:
             affordance_ids=affordance_ids,
             affordance_id_to_index=affordance_id_to_index,
             action_count=primary_meta.action_metadata.total_actions,
-            observation_dim=primary_meta.observation_spec.total_dims,
+            observation_dim=primary_meta.token_spec.total_dims,
+            num_zones=(raw.vfs_extents.num_zones or 0) if raw.vfs_extents is not None else 0,
+            num_groups=(raw.vfs_extents.num_groups or 0) if raw.vfs_extents is not None else 0,
+            num_message_slots=(raw.vfs_extents.num_message_slots or 0) if raw.vfs_extents is not None else 0,
             grid_size=grid_size,
             grid_cells=grid_cells,
-            max_sustainable_income=0.0,
-            total_affordance_costs=0.0,
-            economic_balance=0.0,
             ticks_per_day=ticks_per_day,
             config_version=config_version,
             compiler_version=self._compiler_version,

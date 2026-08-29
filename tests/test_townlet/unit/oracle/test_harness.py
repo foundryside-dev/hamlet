@@ -1,7 +1,14 @@
-"""Harness verdict aggregation and report writing — no subprocesses here (WS-7)."""
+"""Harness verdict aggregation and report writing.
+
+Mostly subprocess-free (WS-7) — the exceptions are the scripted-replay tests
+at the bottom, which exercise the real driver-subprocess plumbing the same
+way tests/test_townlet/integration/test_differential_harness.py does, because
+the thing under test (the harness writing an actions.npz and the new side
+replaying it) only exists once a real driver runs on both sides."""
 
 from __future__ import annotations
 
+import dataclasses
 import json
 import subprocess
 from pathlib import Path
@@ -26,9 +33,27 @@ from townlet.oracle.harness import (
 from townlet.oracle.matrix import Cell, RegisteredDivergence
 from townlet.oracle.trace_io import CellVerdict, HarnessError, RunParams, Trace
 
+REPO_ROOT = Path(__file__).resolve().parents[4]
+
 
 def _v(kind: str, cell: str = "c") -> CellVerdict:
     return CellVerdict(kind=kind, cell_id=cell, detail={})
+
+
+def _small_cell() -> Cell:
+    """A small, fast, real cell for the scripted-replay subprocess tests —
+    mirrors tests/test_townlet/integration/test_differential_harness.py's
+    self-comparison fixture, sized down further to keep these two tests fast."""
+    return Cell(
+        RunParams(
+            pack="configs/default_curriculum",
+            level="L0_0_minimal",
+            num_agents=2,
+            steps=3,
+            seed=42,
+            device="cpu",
+        )
+    )
 
 
 def test_exit_zero_only_for_agree_and_skipped() -> None:
@@ -111,6 +136,7 @@ def test_cuda_cell_without_flag_is_skipped_without_subprocess(tmp_path: Path) ->
         cell=cell,
         run_dir=tmp_path,
         run_cuda=False,
+        scripted=False,
     )
     assert verdict.kind == "SKIPPED"
     assert verdict.detail["reason"] == "cuda not requested"
@@ -198,6 +224,7 @@ def test_run_cell_safely_converts_exception_to_harness_error(monkeypatch: pytest
         cell=cell,
         run_dir=Path("/nonexistent/run"),
         run_cuda=False,
+        scripted=False,
     )
     assert verdict.kind == "HARNESS_ERROR"
     assert verdict.cell_id == cell.cell_id
@@ -218,6 +245,7 @@ def test_run_cell_safely_passes_through_normal_verdicts(monkeypatch: pytest.Monk
         cell=cell,
         run_dir=Path("."),
         run_cuda=False,
+        scripted=False,
     )
     assert verdict.kind == "AGREE"
 
@@ -269,8 +297,10 @@ def _fake_trace(code_root: str) -> Trace:
         obs=np.zeros((2, 1, 1), dtype=np.float32),
         rewards=np.zeros((1, 1), dtype=np.float32),
         dones=np.zeros((1, 1), dtype=bool),
+        actions=np.zeros((1, 1), dtype=np.int64),
         code_root=code_root,
         pack_root="/fake/pack-root",
+        action_source="seeded-random",
     )
 
 
@@ -293,6 +323,7 @@ def test_injection_guard_fires_when_sides_report_same_code_root(monkeypatch: pyt
         cell=cell,
         run_dir=tmp_path,
         run_cuda=False,
+        scripted=False,
     )
     assert verdict.kind == "HARNESS_ERROR"
     assert "PYTHONPATH" in str(verdict.detail["reason"])
@@ -316,6 +347,7 @@ def test_injection_guard_silent_when_code_roots_differ(monkeypatch: pytest.Monke
         cell=cell,
         run_dir=tmp_path,
         run_cuda=False,
+        scripted=False,
     )
     assert verdict.kind == "AGREE"  # both fake traces are identical apart from code_root
 
@@ -339,6 +371,7 @@ def test_injection_guard_not_applied_to_self_comparison(monkeypatch: pytest.Monk
         cell=cell,
         run_dir=tmp_path,
         run_cuda=False,
+        scripted=False,
     )
     assert verdict.kind == "AGREE"
 
@@ -375,8 +408,10 @@ def _trace_for(params: RunParams, code_root: str, obs_fill: float = 0.0) -> Trac
         obs=np.full((params.steps + 1, params.num_agents, 3), obs_fill, dtype=np.float32),
         rewards=np.zeros((params.steps, params.num_agents), dtype=np.float32),
         dones=np.zeros((params.steps, params.num_agents), dtype=bool),
+        actions=np.zeros((params.steps, params.num_agents), dtype=np.int64),
         code_root=code_root,
         pack_root="/fake/pack-root",
+        action_source="seeded-random",
     )
 
 
@@ -386,7 +421,9 @@ def _fake_sides(monkeypatch: pytest.MonkeyPatch, *, old: SideFailure | None, new
 
     calls: list[str] = []
 
-    def fake_run_side(*, driver: Path, src: Path, params: RunParams, out: Path, repo_root: Path, pack_root: Path) -> SideFailure | None:
+    def fake_run_side(
+        *, driver: Path, src: Path, params: RunParams, out: Path, repo_root: Path, pack_root: Path, actions: Path | None = None
+    ) -> SideFailure | None:
         side = "old" if str(src).endswith("old") else "new"
         # Each side must resolve its OWN pack root (hamlet-2090c9f16d): the
         # oracle side reads frozen fixtures, the new side reads live packs.
@@ -410,6 +447,7 @@ def _run_expect_cell(cell: Cell, tmp_path: Path) -> CellVerdict:
         cell=cell,
         run_dir=tmp_path,
         run_cuda=False,
+        scripted=False,
     )
 
 
@@ -655,8 +693,10 @@ def test_matched_path_rejects_a_new_trace_with_inconsistent_shapes(monkeypatch: 
         obs=good.obs[:-1],  # one frame short of steps+1
         rewards=good.rewards,
         dones=good.dones,
+        actions=good.actions,
         code_root=good.code_root,
         pack_root="/fake/pack-root",
+        action_source="seeded-random",
     )
     monkeypatch.setattr(harness_mod, "load_trace", lambda path: truncated)
 
@@ -687,6 +727,7 @@ def test_expectation_cell_cuda_skip_carries_no_refs(tmp_path: Path) -> None:
         cell=_expect_cell("cuda"),
         run_dir=tmp_path,
         run_cuda=False,
+        scripted=False,
     )
     assert verdict.kind == "SKIPPED"
     assert verdict.register_refs == ()
@@ -706,8 +747,6 @@ def test_validate_lone_trace_rejects_each_array_shape_independently() -> None:
     """Mutation kills: a validator that checks obs alone (or drops the ndim
     check) must not survive — every array is validated against the cell's own
     declared params."""
-    import dataclasses
-
     cell = _expect_cell()
     p = cell.params
     good = _trace_for(p, "/s")
@@ -715,6 +754,7 @@ def test_validate_lone_trace_rejects_each_array_shape_independently() -> None:
         "rewards": np.zeros((p.num_agents, p.steps), dtype=np.float32),  # transposed
         "dones": np.zeros((p.steps + 1, p.num_agents), dtype=bool),  # off by one
         "obs": np.zeros((p.steps + 1, p.num_agents), dtype=np.float32),  # ndim 2, matching prefix
+        "actions": np.zeros((p.num_agents, p.steps), dtype=np.int64),  # transposed
     }
     for field, bad in bad_arrays.items():
         mutated = dataclasses.replace(good, **{field: bad})
@@ -813,3 +853,51 @@ def test_main_collects_meta_before_running_any_cell(monkeypatch: pytest.MonkeyPa
 
     assert order == ["meta", "cell"]
     assert exit_status == 0
+
+
+# --- scripted replay (DIV-008): real subprocess self-comparison -------------
+
+
+def test_scripted_self_comparison_agrees_and_replays_actions(tmp_path: Path) -> None:
+    """Self-comparison in scripted mode: new side replays old's recorded actions;
+    the actions stream matches by construction and the verdict is AGREE."""
+    cell = _small_cell()
+    verdict = run_cell(
+        repo_root=REPO_ROOT,
+        old_src=REPO_ROOT / "src",
+        old_pack_root=REPO_ROOT,
+        new_src=REPO_ROOT / "src",
+        cell=cell,
+        run_dir=tmp_path,
+        run_cuda=False,
+        scripted=True,
+    )
+    assert verdict.kind == "AGREE", verdict.detail
+    safe = cell.cell_id.replace(":", "_")
+    actions_file = tmp_path / f"{safe}.actions.npz"
+    assert actions_file.exists()
+    with np.load(tmp_path / f"{safe}.new.npz") as new_side:
+        meta = json.loads(str(new_side["meta"]))
+    assert meta["action_source"].startswith("scripted:")
+
+
+def test_scripted_mode_refuses_expected_crash_cells(tmp_path: Path) -> None:
+    """Scripted replay needs an old-side trace to replay; a cell declaring an
+    old-side crash has none — loud HARNESS_ERROR, never a silent fallback to
+    random."""
+    cell = dataclasses.replace(
+        _small_cell(),
+        expected=RegisteredDivergence(register_ref="DIV-003", old_stderr_substring="registered crash signature"),
+    )
+    verdict = run_cell(
+        repo_root=REPO_ROOT,
+        old_src=REPO_ROOT / "src",
+        old_pack_root=REPO_ROOT,
+        new_src=REPO_ROOT / "src",
+        cell=cell,
+        run_dir=tmp_path,
+        run_cuda=False,
+        scripted=True,
+    )
+    assert verdict.kind == "HARNESS_ERROR"
+    assert "scripted" in str(verdict.detail)

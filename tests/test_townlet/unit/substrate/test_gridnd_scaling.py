@@ -67,47 +67,6 @@ def test_gridnd_7d_movement_all_boundaries():
         assert (new_positions < 5).all()
 
 
-def test_gridnd_10d_observation_encoding():
-    """Test 10D observation encoding."""
-    with pytest.warns(UserWarning):  # Expect warning for 10D
-        substrate = GridNDSubstrate(
-            dimension_sizes=[3] * 10,
-            boundary="clamp",
-            distance_metric="manhattan",
-            observation_encoding="relative",
-        )
-
-    positions = torch.zeros((10, 10), dtype=torch.long)
-
-    encoded = substrate.encode_observation(positions, {})
-
-    # relative: 10 dimensions
-    assert encoded.shape == (10, 10)
-    assert substrate.get_observation_dim() == 10
-
-
-def test_gridnd_7d_scaled_observation():
-    """Test 7D scaled observation encoding."""
-    substrate = GridNDSubstrate(
-        dimension_sizes=[5, 4, 3, 6, 7, 2, 8],  # Asymmetric sizes
-        boundary="clamp",
-        distance_metric="manhattan",
-        observation_encoding="scaled",
-    )
-
-    positions = torch.randint(0, 3, (5, 7), dtype=torch.long)
-
-    encoded = substrate.encode_observation(positions, {})
-
-    # scaled: 2*N dimensions (normalized + sizes)
-    assert encoded.shape == (5, 14)  # 2 * 7
-    assert substrate.get_observation_dim() == 14
-
-    # Verify dimension sizes in second half
-    expected_sizes = torch.tensor([5.0, 4.0, 3.0, 6.0, 7.0, 2.0, 8.0])
-    assert torch.allclose(encoded[0, 7:], expected_sizes)
-
-
 def test_gridnd_7d_distance_metrics():
     """Test all distance metrics in 7D."""
     for metric in ["manhattan", "euclidean", "chebyshev"]:

@@ -1,5 +1,21 @@
 # enabled_actions Configuration
 
+> ⚠️ **Restored to the live tree 2026-08-26 — correct on action composition, wrong about WHERE the vocabulary lives.**
+>
+> Cited by `CLAUDE.md` §"Action Space" and `docs/architecture/STRATA.md` §5 as the reference for
+> enabled actions and action labels.
+>
+> **Known wrong:** `configs/global_actions.yaml` **does not exist and never will** — that path
+> is dead (`CLAUDE.md` says so explicitly). The global action vocabulary is a **pack-level**
+> file: `configs/default_curriculum/actions.yaml`. All levels in a pack share it. Read every
+> `configs/global_actions.yaml` below as `<pack>/actions.yaml`.
+>
+> **Do not quote a per-substrate action count from this file.** The action space is *composed* —
+> substrate movement actions (a function of substrate type *and* declared parameters such as
+> `diagonals`) plus custom actions — under the ordering contract in `substrate/base.py`:
+> movement, then `INTERACT` at `[-2]`, then `WAIT` at `[-1]`. Ask the compiled artifact.
+
+
 **Purpose**: Control which actions from global vocabulary are available in this config.
 
 **Location**: `training.yaml` → `training.enabled_actions`
@@ -22,6 +38,35 @@ custom_actions:
 ```
 
 Total actions: 6 substrate (Grid2D) + 4 custom = **10 actions**
+
+### Occupancy writes (affordance contention)
+
+A custom action in the pack's `actions.yaml` may bind an affordance and declare
+VFS transition writes. Claim compositions (`claim_if_free`, `capacity_claim`)
+target the bound affordance's registry row and resolve contention
+deterministically in `resolve_affordance_access_and_occupancy` during
+`env.step`:
+
+```yaml
+custom_actions:
+  - name: "CLAIM_BED"
+    description: "Claim the bed if it is free"
+    enabled_by_default: true
+    source_affordance: "SLEEP"        # must name a declared affordance
+    writes:
+      - variable_id: "occupied_by"    # affordance-scoped VFS variable
+        expression: "agent_id"
+        condition: null
+        composition: "claim_if_free"
+        phase: "resolve_affordance_access_and_occupancy"
+        priority: 0
+        clamp: null
+        telemetry_label: "claim_bed_occupancy"
+```
+
+Compile-time guarantees: a claim write without `source_affordance` is rejected
+at parse; an unknown affordance name or unknown write target is rejected at
+compile. See `docs/architecture/VFS.md` §13.2 for the contention semantics.
 
 ### L0_0_minimal/training.yaml (excerpt)
 

@@ -29,12 +29,14 @@ def _write_social_residue_rule(config_dir: Path, *, variable_id: str = "trust", 
                 "phase": "apply_social_residue_effects",
                 "kind": "social_residue",
                 "reads": [variable_id],
+                "condition": None,
                 "writes": [
                     {
                         "variable_id": variable_id,
                         "effect": "pair_delta",
                         "expression": str(delta),
                         "composition": "additive_delta",
+                        "condition": None,
                         "clamp": [0.0, 1.0],
                         "scope": "pair",
                     }
@@ -72,6 +74,50 @@ def test_social_residue_rules_are_config_driven_runtime_transitions(tmp_path: Pa
 
     assert torch.allclose(baseline_env.vfs_registry.get("trust", reader="engine"), torch.full((3, 3), 0.5))
     assert torch.allclose(social_env.vfs_registry.get("trust", reader="engine"), torch.full((3, 3), 0.6))
+
+
+def test_transition_rules_typo_key_fails_at_load_not_silently(tmp_path: Path) -> None:
+    """A typo'd write key must fail at config load; the raw-dict path used to
+    silently drop it, turning a conditional rule unconditional."""
+    config_dir = _copy_l5_pack(tmp_path, "typo-key")
+    payload = {
+        "version": "1.0",
+        "social_residue": [
+            {
+                "id": "constant_pair_delta",
+                "phase": "apply_social_residue_effects",
+                "kind": "social_residue",
+                "reads": ["trust"],
+                "condition": None,
+                "writes": [
+                    {
+                        "variable_id": "trust",
+                        "effect": "pair_delta",
+                        "expression": "0.1",
+                        "composition": "additive_delta",
+                        "clamp": [0.0, 1.0],
+                        "scope": "pair",
+                        "condtion": "trust > 0.5",
+                    }
+                ],
+            }
+        ],
+    }
+    (config_dir / "transition_rules.yaml").write_text(yaml.safe_dump(payload, sort_keys=False))
+
+    with pytest.raises(Exception, match="condtion"):
+        UniverseCompiler().compile(config_dir, primary_level=LEVEL_NAME, use_cache=False)
+
+
+def test_transition_rules_missing_version_fails_at_load(tmp_path: Path) -> None:
+    config_dir = _copy_l5_pack(tmp_path, "missing-version")
+    payload = {
+        "social_residue": [],
+    }
+    (config_dir / "transition_rules.yaml").write_text(yaml.safe_dump(payload, sort_keys=False))
+
+    with pytest.raises(Exception, match="version"):
+        UniverseCompiler().compile(config_dir, primary_level=LEVEL_NAME, use_cache=False)
 
 
 def test_social_residue_rules_fail_loudly_for_unknown_targets(tmp_path: Path) -> None:

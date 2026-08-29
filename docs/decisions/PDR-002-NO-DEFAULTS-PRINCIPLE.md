@@ -753,7 +753,7 @@ print(config['exploration']['epsilon_start'])  # Verify nesting
 
 - **Implementation Guide**: `scripts/README-no-defaults-lint.md` (linter usage)
 - **Related Policies**: PDR-001 (Lint Enforcement - includes no-defaults check)
-- **Architecture Docs**: `docs/architecture/UNIVERSE_AS_CODE.md` (philosophy)
+- **Architecture Docs**: `docs/architecture/archive/UNIVERSE_AS_CODE.md` (philosophy)
 - **Task Planning**: `docs/tasks/TASK-001-UAC-CONTRACTS.md` (DTO-based validation)
 
 ### Tools & Automation

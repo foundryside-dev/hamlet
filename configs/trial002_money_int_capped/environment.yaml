@@ -50,7 +50,7 @@ environment:
       semantic_type: custom
       normalization:
         method: normalize
-        clip: false
+        clip: true
         range: [0.0, 1.0]
 
     - name: time_since_last_sleep
@@ -61,51 +61,7 @@ environment:
       semantic_type: custom
       normalization:
         method: normalize
-        clip: false
-        range: [0.0, 100.0]
-
-    - name: deficit_health
-      type: scalar
-      dims: 1
-      scope: agent
-      description: "How far below max health (0.0 = at/above target)"
-      semantic_type: custom
-      normalization:
-        method: normalize
-        clip: false
-        range: [0.0, 1.0]
-
-    - name: time_since_last_doctor
-      type: scalar
-      dims: 1
-      scope: agent
-      description: "Timesteps since last DOCTOR action"
-      semantic_type: custom
-      normalization:
-        method: normalize
-        clip: false
-        range: [0.0, 100.0]
-
-    - name: deficit_satiation
-      type: scalar
-      dims: 1
-      scope: agent
-      description: "How far below max satiation (0.0 = at/above target)"
-      semantic_type: custom
-      normalization:
-        method: normalize
-        clip: false
-        range: [0.0, 1.0]
-
-    - name: time_since_last_cook
-      type: scalar
-      dims: 1
-      scope: agent
-      description: "Timesteps since last COOK action"
-      semantic_type: custom
-      normalization:
-        method: normalize
-        clip: false
+        clip: true
         range: [0.0, 100.0]
 
   cues: []

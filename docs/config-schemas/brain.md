@@ -1,20 +1,68 @@
 # brain.yaml Configuration Reference
 
+> ⚠️ **Restored to the live tree 2026-08-26 — THREE OF FOUR "Complete Examples" ARE REJECTED by the DTO, and the architecture it teaches no longer builds.**
+>
+> Verified against `src/townlet/config/brain_config.py` on 2026-08-26.
+>
+> **⚠️ Two reproduced hard rejections:**
+> 1. **`type: mse` combined with `huber_delta`** — this breaks **3 of the 4** Complete Examples.
+> 2. **`T_max` (line 274) is not a field. The real name is `t_max`** (lowercase,
+>    `brain_config.py:301`) — and **`eta_min` is REQUIRED alongside it**: `brain_config.py:311-312`
+>    raises `type='cosine' requires t_max and eta_min`. This document never mentions `eta_min`.
+>    So the cosine example fails twice: once on the unknown key, once on the missing one.
+>
+> **⛔ `set_encoder` is documented here (3×) but NO LONGER BUILDS.**
+> `population/vectorized.py:400-407` raises: *"architecture.type='set_encoder' has no buildable
+> network after the unit-3 token cut … Landing: declare `token_set`, which consumes the compiled
+> TokenSpec directly."* **Zero shipped packs declare it.**
+>
+> **⛔ `token_set` — the architecture that actually works — is mentioned ZERO times here**,
+> despite being in the architecture `Literal` (`brain_config.py:432`:
+> `["feedforward", "recurrent", "dueling", "set_encoder", "token_set"]`) and declared by **five
+> shipped packs** (`configs/test/token_transfer_a|b|c`, `configs/test/set_encoder_smoke` and its
+> `levels/L1_attention`).
+>
+> So this document steers an author into an architecture that raises, and hides the one that
+> works — the same "makes the framework look less capable than it is" failure as
+> `expressions.md`.
+>
+> Tracked as `hamlet-e69e860948`.
+>
+> ⚠️ Also note `docs/bugs/JANK-08-...md`: the `dueling` flag reaches the network builder and is
+> then **ignored by the training path** — a declared-but-inert flag.
+
+
 Brain configuration defines agent architecture, optimizer, loss function, Q-learning parameters, and replay buffer strategy.
 
 ## File Location
 
-Each config pack requires `brain.yaml`:
+Each config pack requires a pack-root `brain.yaml`, and any level MAY override it with a
+complete `brain.yaml` of its own:
 
 ```
-configs/<level>/
-├── brain.yaml              # Agent architecture and learning (REQUIRED)
-├── substrate.yaml
-├── bars.yaml
-├── drive_as_code.yaml
-├── training.yaml
-└── variables_reference.yaml
+configs/<pack>/
+├── brain.yaml              # Pack brain: architecture and learning (REQUIRED)
+├── stratum.yaml
+├── actions.yaml
+└── levels/<level>/
+    ├── brain.yaml          # OPTIONAL complete override for this level (PDR-0027)
+    ├── bars.yaml
+    ├── drive.yaml
+    └── training.yaml
 ```
+
+**Per-level override semantics (PDR-0027):**
+
+- A level's `brain.yaml` is a **complete file**, not a patch. If present it replaces the
+  pack brain as that level's effective base; if absent the level inherits the pack brain
+  unchanged. There is no partial merge — partial merges need default semantics, which the
+  No-Defaults Principle forbids.
+- **Overriding a brain forks the lineage.** `brain_hash` covers the effective config for
+  the compiled level, so the override moves it; the compiled artifact also carries
+  `pack_brain_hash` (the pack baseline under the same training overrides), and every
+  checkpoint stamps both. A checkpoint whose two hashes differ is stated as a fork at load
+  time — you never discover it by observing wrong behaviour. Forked artifacts are NOT
+  interchangeable with unforked artifacts of the same pack.
 
 ## Schema Version
 
@@ -174,6 +222,9 @@ architecture:
     token_embed_dim: 64
     base_hidden_dim: 128
     q_head_hidden_dim: 256
+    aggregator:
+      type: attention   # or: mean
+      num_heads: 4      # attention only; token_embed_dim must divide by it
 ```
 
 **Parameters:**
@@ -183,6 +234,13 @@ architecture:
 - `token_embed_dim` (int, required): Embedding size for the pooled token set.
 - `base_hidden_dim` (int, required): Embedding size for non-token observation features.
 - `q_head_hidden_dim` (int, required): Hidden size for Q-value prediction.
+- `aggregator` (block, required): How the embedded token set is aggregated. No default —
+  the choice is declared, never an engine fact.
+  - `type: mean` — masked mean-pool over embedded rows (DeepSets). Takes no other keys.
+  - `type: attention` — self-attention over the embedded rows (empty rows excluded via
+    key-padding mask), then the same masked mean-pool. Requires `num_heads` (int > 0);
+    `token_embed_dim` must be divisible by it. Both aggregators are permutation-invariant:
+    token rows are a set, not a sequence.
 
 **Example Use Cases:**
 - Dynamic needs represented by `dynamic_need_tokens`.
@@ -605,5 +663,13 @@ resume. A change to any of those four files rejects the checkpoint with a
 
 ## See Also
 
-- Curriculum configs: `configs/L0_0_minimal/` through `configs/L3_temporal_mechanics/`
-- Experimental configs: `configs/experiments/dueling_network/`, `configs/experiments/prioritized_replay/`
+- Curriculum configs: `configs/default_curriculum/levels/L0_0_minimal/` through
+  `.../levels/L3_temporal_mechanics/`
+  (⚠ corrected 2026-08-26 — the flat `configs/L0_0_minimal/` paths previously listed here are
+  dead; levels live under a pack root, and `brain.yaml` is a **pack-level shared file** with no
+  per-level override)
+- ⚠ There is no `configs/experiments/` directory (the `dueling_network` and
+  `prioritized_replay` example packs listed here previously do not exist). For a pack that
+  actually declares `type: dueling`, see `configs/simple/brain.yaml` or
+  `configs/L5_multi_agent/brain.yaml` — but note `docs/bugs/JANK-08-...md`: the `dueling` flag
+  reaches the network builder and is then **ignored by the training path**.

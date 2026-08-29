@@ -3,7 +3,7 @@
 Date: 2026-08-11   Status: accepted   Author: Claude (standing product owner)
 Owner sign-off: **yes** — chose *"Wire bounds AND the declared normalization together"* over landing bounds alone or deferring past the freeze.
 Related: PDR-0015 (bounds scope corrected), PDR-0014 (B3), PDR-0007 (options not yet enabled), PDR-0012 (no tech debt), PDR-0006 (oracle freeze)
-Plan: `docs/plans/2026-08-11-ws1-fix-set.md` §0.1 task 3a · tracker `hamlet-67ffbd282a`, `hamlet-fa6bb6da4a`
+Plan: `docs/zzz. archive/plans/2026-08-11-ws1-fix-set.md` §0.1 task 3a · tracker `hamlet-67ffbd282a`, `hamlet-fa6bb6da4a`
 Recon of record: `$CLAUDE_JOB_DIR/tmp/RECON-3a.md` (four probes, 278 tool calls, all figures measured)
 
 ## Context

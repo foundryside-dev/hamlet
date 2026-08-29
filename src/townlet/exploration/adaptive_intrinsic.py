@@ -35,7 +35,6 @@ class AdaptiveIntrinsicExploration(ExplorationStrategy):
         epsilon_min: float = 0.01,
         epsilon_decay: float = 0.995,
         device: torch.device = torch.device("cpu"),
-        active_mask: tuple[bool, ...] | None = None,
     ):
         """Initialize adaptive intrinsic exploration.
 
@@ -55,7 +54,6 @@ class AdaptiveIntrinsicExploration(ExplorationStrategy):
             epsilon_min: Minimum epsilon
             epsilon_decay: Epsilon decay rate
             device: Device for tensors
-            active_mask: Optional mask for active observation dimensions (padding dimensions will be zeroed)
         """
         # RND instance (composition)
         self.rnd = RNDExploration(
@@ -67,10 +65,10 @@ class AdaptiveIntrinsicExploration(ExplorationStrategy):
             epsilon_min=epsilon_min,
             epsilon_decay=epsilon_decay,
             device=device,
-            active_mask=active_mask,
         )
 
         # Annealing parameters
+        self.initial_intrinsic_weight = initial_intrinsic_weight
         self.current_intrinsic_weight = initial_intrinsic_weight
         self.min_intrinsic_weight = min_intrinsic_weight
         self.variance_threshold = variance_threshold

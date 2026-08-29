@@ -27,35 +27,18 @@ from townlet.exploration.base import ExplorationStrategy
 from townlet.exploration.rnd import RNDExploration
 from townlet.population.base import PopulationManager
 from townlet.population.runtime_registry import AgentRuntimeRegistry
+from townlet.training.checkpoint_utils import TokenRosterReport, load_token_network_state_by_type
 from townlet.training.replay_buffer import ReplayBuffer
 from townlet.training.sequential_replay_buffer import SequentialReplayBuffer
 from townlet.training.state import BatchedAgentState, CurriculumDecision, PopulationCheckpoint, RewardTensor
+from townlet.universe.token_hashes import compute_token_layout_hash
 
 if TYPE_CHECKING:
     from townlet.environment.vectorized_env import VectorizedHamletEnv
-    from townlet.universe.dto import ObservationActivity
 
 _logger = logging.getLogger(__name__)
 
 EpisodeContainer = dict[str, list[torch.Tensor]]
-
-
-def _bars_observation_width(observation_activity: ObservationActivity) -> int:
-    """The compiled width of the meter block, addressed by semantic group rather than name.
-
-    This is the observation-side quantity a meter-encoder layer must be sized by. It equals
-    the meter count only while every meter observes one dimension; a meter declaring
-    `cyclical_sin_cos` observes two and `one_hot` observes its category count.
-    """
-    bars = observation_activity.group_slices.get("bars")
-    if bars is None:
-        raise ValueError(
-            "The compiled observation declares no 'bars' semantic group, so the meter block "
-            "cannot be located.\n"
-            "  Rule: meters are emitted as bars-semantic observation fields; a universe with "
-            "meters must produce a bars group."
-        )
-    return int(bars.stop) - int(bars.start)
 
 
 class VectorizedPopulation(PopulationManager):
@@ -89,7 +72,7 @@ class VectorizedPopulation(PopulationManager):
         Initialize vectorized population.
 
         Args:
-            env: Vectorized environment (must have observation_spec attribute)
+            env: Vectorized environment (must have a compiled `token_spec`)
             curriculum: Curriculum manager
             exploration: Exploration strategy
             agent_ids: List of agent identifiers
@@ -116,13 +99,14 @@ class VectorizedPopulation(PopulationManager):
                 "See docs/config-schemas/brain.md for examples."
             )
 
-        # ✅ POP-005: Validate observation_spec exists on env (no silent fallback)
-        if not hasattr(env, "observation_spec") or env.observation_spec is None:
+        # The compiled token artifact is the observation ABI (unit-3 cut). It is required
+        # and set by VectorizedHamletEnv from the compiled universe; no silent fallback.
+        if getattr(env, "token_spec", None) is None:
             raise ValueError(
-                "env.observation_spec is required. Environment must have a valid observation_spec "
+                "env.token_spec is required. The environment must carry the compiled TokenSpec "
                 "from the compiled universe. This is set automatically by VectorizedHamletEnv."
             )
-        self.observation_spec = env.observation_spec
+        self.token_spec = env.token_spec
 
         self.env = env
         self.curriculum = curriculum
@@ -163,7 +147,6 @@ class VectorizedPopulation(PopulationManager):
         self._obs_dim = obs_dim
 
         # Build network using DRY helper (POP-001)
-        # observation_spec comes from self.observation_spec (validated above)
         self.q_network: nn.Module = self._build_network(brain_config, obs_dim, action_dim, env, vision_window_size).to(device)
 
         # Set is_recurrent flag from brain_config
@@ -174,6 +157,9 @@ class VectorizedPopulation(PopulationManager):
 
         # Set is_set_encoder flag from brain_config
         self.is_set_encoder = brain_config.architecture.type == "set_encoder"
+
+        # Set is_token_set flag from brain_config (token-obs unit 3 Task 9)
+        self.is_token_set = brain_config.architecture.type == "token_set"
 
         # Target network (stabilises training for both feed-forward and recurrent agents)
         # Build using DRY helper (POP-001)
@@ -383,8 +369,6 @@ class VectorizedPopulation(PopulationManager):
         Returns:
             Constructed network module (not yet moved to device)
 
-        Note:
-            For recurrent networks, uses self.observation_spec (validated in __init__).
         """
         arch = brain_config.architecture
         if arch.type == "feedforward":
@@ -396,18 +380,14 @@ class VectorizedPopulation(PopulationManager):
             )
         elif arch.type == "recurrent":
             assert arch.recurrent is not None, "recurrent config must be present"
+            # Post-cut this is a token-BLOCK reader: its input slices come from the
+            # compiled TokenSpec's contiguous per-type serialization, not from a raster
+            # observation spec. A token-NATIVE recurrent/attention brain is unit 4.
             return NetworkFactory.build_recurrent(
                 config=arch.recurrent,
                 action_dim=action_dim,
-                window_size=vision_window_size,
-                position_dim=env.substrate.position_dim,
-                # The OBSERVED bars width, from the compiled artifact. This passed
-                # env.meter_count — a STATE count — which held only while every meter
-                # observed exactly one dimension (PDR-0054 W6).
-                bars_dim=_bars_observation_width(env.observation_activity),
-                num_affordance_types=env.num_affordance_types,
-                observation_spec=self.observation_spec,  # POP-005: Always use validated spec
-                observation_activity=env.observation_activity,
+                substrate_position_dim=env.substrate.position_dim,
+                token_spec=env.token_spec,
             )
         elif arch.type == "dueling":
             assert arch.dueling is not None, "dueling config must be present"
@@ -417,15 +397,38 @@ class VectorizedPopulation(PopulationManager):
                 action_dim=action_dim,
             )
         elif arch.type == "set_encoder":
-            assert arch.set_encoder is not None, "set_encoder config must be present"
-            return NetworkFactory.build_set_encoder(
-                config=arch.set_encoder,
-                obs_dim=obs_dim,
+            raise ValueError(
+                "architecture.type='set_encoder' has no buildable network after the unit-3 token cut.\n"
+                "  Reason: it sliced a single flattened token FIELD out of the compiled "
+                "ObservationSpec, and that spec no longer exists — the whole observation is now a "
+                "token set.\n"
+                "  Landing: declare `token_set`, which consumes the compiled TokenSpec directly."
+            )
+        elif arch.type == "token_set":
+            assert arch.token_set is not None, "token_set config must be present"
+            token_spec = env.universe.token_spec
+            # IDENTITY, not width (task-9 review M3, discharged at the cut): the network
+            # reads the serialization positionally, so equal width with a different slot
+            # binding is a silently wrong net. `layout_hash` IS that identity.
+            env_layout_hash = compute_token_layout_hash(env.token_spec)
+            if env_layout_hash != compute_token_layout_hash(token_spec):
+                raise ValueError(
+                    "architecture.type='token_set' is bound to a different token layout than the "
+                    "environment serializes.\n"
+                    f"  environment layout_hash: {env_layout_hash}\n"
+                    f"  brain layout_hash:       {compute_token_layout_hash(token_spec)}\n"
+                    "  Rule: a flat reader's dims are positional — equal width with a re-bound slot "
+                    "changes what every dim MEANS. Recompile the pack so both come from one artifact."
+                )
+            return NetworkFactory.build_token_set(
+                config=arch.token_set,
                 action_dim=action_dim,
-                observation_spec=self.observation_spec,
+                token_spec=token_spec,
             )
         else:
-            raise ValueError(f"Unsupported architecture type: {arch.type}. Supported: feedforward, recurrent, dueling, set_encoder")
+            raise ValueError(
+                f"Unsupported architecture type: {arch.type}. Supported: feedforward, recurrent, dueling, set_encoder, token_set"
+            )
 
     def _store_episode_and_reset(self, agent_idx: int) -> bool:
         """Store accumulated episode for agent and reset buffers."""
@@ -1278,3 +1281,78 @@ class VectorizedPopulation(PopulationManager):
         # Restore exploration state
         if "exploration_state" in checkpoint:
             self.exploration.load_state(checkpoint["exploration_state"])
+
+    # ------------------------------------------------------------------ #
+    # Cross-universe token-net load (token-obs unit 3 Task 9)
+    # ------------------------------------------------------------------ #
+    def load_token_network_cross_universe(self, source_q_network_state: dict[str, torch.Tensor]) -> TokenRosterReport:
+        """Load a token net trained on ANOTHER universe into this population (spec §4).
+
+        Per-type encoders and the aggregator transfer as feature extractors by
+        ModuleDict type key (intersection load, both directions reported loudly;
+        payload-schema mismatch refuses — `load_token_network_state_by_type`).
+        Because the source universe's rewards, optimizer moments and novelty
+        statistics do not describe THIS universe, a cross-universe load then:
+
+        - re-copies the target network from the freshly-loaded online network;
+        - resets the optimizer and LR schedule (fresh moments — stale Adam state
+          against re-initialized or re-purposed weights is silent corruption);
+        - resets RND state through its existing construction surface (a fresh
+          fixed/predictor pair and reward statistics; the epsilon schedule carries
+          over — it is exploration pacing, not novelty state).
+
+        This is the seam the Task-10 cut wires into the checkpoint-consumer paths;
+        nothing calls it in the live step path this task.
+        """
+        if not self.is_token_set:
+            raise ValueError(
+                "load_token_network_cross_universe requires architecture.type='token_set'; "
+                f"this population runs {self.brain_config.architecture.type!r}."
+            )
+        report = load_token_network_state_by_type(self.q_network, source_q_network_state)
+
+        # Re-copy target from the loaded online net (never load the source's target).
+        self.target_network.load_state_dict(self.q_network.state_dict())
+        self.target_network.eval()
+        self.training_step_counter = 0
+
+        # Fresh optimizer + schedule over the loaded parameters.
+        self.optimizer, self.scheduler = OptimizerFactory.build(
+            config=self.brain_config.optimizer,
+            parameters=self.q_network.parameters(),
+        )
+
+        self._reset_rnd_state()
+        return report
+
+    def _reset_rnd_state(self) -> None:
+        """Reset RND novelty state via its existing construction surface.
+
+        `RNDExploration` exposes no in-place reset; a fresh instance built from the
+        live instance's own constructor parameters IS the reset surface.
+        """
+
+        def _fresh(rnd: RNDExploration) -> RNDExploration:
+            return RNDExploration(
+                obs_dim=rnd.obs_dim,
+                embed_dim=rnd.embed_dim,
+                learning_rate=float(rnd.optimizer.param_groups[0]["lr"]),
+                training_batch_size=rnd.training_batch_size,
+                epsilon_start=rnd.epsilon,
+                epsilon_min=rnd.epsilon_min,
+                epsilon_decay=rnd.epsilon_decay,
+                device=rnd.device,
+            )
+
+        exploration = self.exploration
+        if isinstance(exploration, RNDExploration):
+            fresh = _fresh(exploration)
+            self.exploration = fresh
+            self.env.set_exploration_module(fresh)
+        elif isinstance(exploration, AdaptiveIntrinsicExploration):
+            exploration.rnd = _fresh(exploration.rnd)
+            # Cross-universe load: the wrapper's annealing/survival statistics are
+            # source-universe data and must not steer the target universe (task-9
+            # review I1) — reset them alongside the inner RND.
+            exploration.current_intrinsic_weight = exploration.initial_intrinsic_weight
+            exploration.survival_history.clear()

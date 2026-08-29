@@ -14,6 +14,7 @@ from townlet.config.vfs_profiles_config import (
     ItemVFSProfileConfig,
     ItemVFSVariableConfig,
 )
+from townlet.vfs.schema import NormalizationSpec
 from townlet.world.expression import ASTNode, ExpressionParser, PathAccess, Variable
 from townlet.world.expression.type_checker import TypeChecker, TypeCheckError
 
@@ -23,7 +24,16 @@ __all__ = [
     "CompiledVariable",
     "CompiledGlobalProfile",
     "CompiledItemProfile",
+    "AMBIENT_ENGINE_NAMES",
 ]
+
+# Names the engine publishes as VFS globals that global/agent profile expressions may
+# reference by bare name without declaring them as profile variables (token-obs design
+# ruling 6: the engine publishes ONE temporal primitive — tick). Ambient names are
+# admitted into the expression type schema but never become an in-profile dependency
+# edge — they aren't sorted, they're just always there. Item profiles do not get this
+# admission (item expressions refuse entirely — Task 6).
+AMBIENT_ENGINE_NAMES: dict[str, str] = {"tick": "float"}
 
 
 @dataclass
@@ -41,10 +51,12 @@ class CompiledVariable:
     initial_value_mode: str | None = None
     initial_value_params: dict | None = None
     dims: int | None = None
-    # The author's declared observation group. Set for global and agent profile variables
-    # (each compiles to its own observation field); None for item variables, which are
-    # observed through the `obs_item_slots` feature and carry no declaration (PDR-0075).
+    # The author's declared observation group. Set for global and agent profile variables;
+    # None for item variables (PDR-0075).
     semantic_type: str | None = None
+    # The declared normalization — REQUIRED at exposure, absent when unexposed
+    # (token-obs spec §2, normalization authority; hamlet-b8ad2ffcd6).
+    normalization: NormalizationSpec | None = None
 
 
 @dataclass
@@ -112,7 +124,7 @@ class VFSProfileCompiler:
         for var in variables:
             if var.expression is not None:
                 # Extract variable references from expression
-                deps = self._extract_variable_refs(var.expression)
+                deps = self._extract_variable_refs(var.expression) - AMBIENT_ENGINE_NAMES.keys()
                 for dep in deps:
                     # Only add edge if dependency is in same profile
                     if dep in variable_names:
@@ -230,8 +242,10 @@ class VFSProfileCompiler:
         Raises:
             TypeCheckError: If expression has type error
         """
-        # Variable with static initial value
-        if var.initial_value is not None:
+        # Variable with a static init source. The DTO enforces exactly one of
+        # {initial_value, initial_value_mode, expression}; the first two are both static —
+        # initial_value_mode is how tensor variables initialize (zeros/ones/eye/random_*).
+        if var.initial_value is not None or getattr(var, "initial_value_mode", None) is not None:
             return CompiledVariable(
                 name=var.name,
                 exposed_to=tuple(var.exposed_to),
@@ -245,6 +259,7 @@ class VFSProfileCompiler:
                 initial_value_params=getattr(var, "initial_value_params", None),
                 dims=getattr(var, "dims", None),
                 semantic_type=getattr(var, "semantic_type", None),
+                normalization=getattr(var, "normalization", None),
             )
 
         # Variable with expression
@@ -272,6 +287,7 @@ class VFSProfileCompiler:
             initial_value_params=getattr(var, "initial_value_params", None),
             dims=getattr(var, "dims", None),
             semantic_type=getattr(var, "semantic_type", None),
+            normalization=getattr(var, "normalization", None),
         )
 
     def compile_global_profile(self, profile: GlobalVFSProfileConfig, bar_schema: dict[str, str] | None = None) -> CompiledGlobalProfile:
@@ -287,8 +303,10 @@ class VFSProfileCompiler:
         # Sort variables in dependency order
         sorted_vars, dependencies = self.topological_sort_with_dependencies(profile.variables)
 
-        # Build type schema for expression type checking
-        schema: dict[str, str] = {}
+        # Build type schema for expression type checking. Ambient engine names (tick)
+        # come first so an authored variable of the same name still fails loudly at the
+        # collision check in universe/compilers/vfs.py rather than shadowing silently here.
+        schema: dict[str, str] = dict(AMBIENT_ENGINE_NAMES)
 
         # Add bar paths to schema
         if bar_schema:
@@ -323,6 +341,15 @@ class VFSProfileCompiler:
         Raises:
             ValueError: If circular dependencies detected
         """
+        for item_var in profile.variables:
+            if item_var.expression is not None:
+                raise ValueError(
+                    f"Item-profile variable '{item_var.name}' declares an expression, but item-profile "
+                    "expressions have no evaluator (hamlet-bc0a5deeff) — nothing would ever run it. "
+                    "Declare initial_value and drive the variable via effects, or wait for the "
+                    "evaluation build. Refusing loudly beats silent inertness."
+                )
+
         # Sort variables in dependency order
         sorted_vars, _ = self.topological_sort_with_dependencies(profile.variables)
 

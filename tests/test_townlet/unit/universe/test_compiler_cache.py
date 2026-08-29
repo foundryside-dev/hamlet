@@ -161,8 +161,9 @@ def test_compile_recovers_from_corrupted_cache(tmp_path: Path, monkeypatch: pyte
 @pytest.mark.parametrize(
     "missing_field",
     [
-        "observation_activity",
-        "vfs_observation_fields",
+        "token_spec",
+        "token_type_schema_hash",
+        "layout_hash",
         "vfs_variables",
         "variable_schema_hash",
         "observation_schema_hash",
@@ -173,7 +174,6 @@ def test_compile_recovers_from_corrupted_cache(tmp_path: Path, monkeypatch: pyte
         "transition_schedule",
         "vfs_hash",
         "optimization_data_raw",
-        "vfs_observation_spec",
         # WS-1 task 4. The per-level copies are covered by the level-provenance test below;
         # these are the TOP-LEVEL projections, which are what attach_universe_metadata stamps
         # and assert_checkpoint_dimensions compares. Without these entries the whole
@@ -204,10 +204,9 @@ def test_direct_cache_load_rejects_missing_required_top_level_fields(tmp_path: P
         "compiled_vfs_profiles",
         "compiled_effect_catalog",
         "effects_schema",
-        "effect_observation_slots",
         "vfs_expression_schema",
         "vfs_history_spec",
-        "vfs_observation_marks",
+        "vfs_evaluation_marks",
         "all_levels",
     ],
 )
@@ -222,34 +221,6 @@ def test_direct_cache_load_rejects_missing_current_schema_optional_value_fields(
     stale_path.write_bytes(msgpack.packb(payload, use_bin_type=True))
 
     with pytest.raises(ValueError, match=f"missing required field '{missing_field}'"):
-        CompiledUniverse.load_from_cache(stale_path)
-
-
-@pytest.mark.parametrize(
-    "missing_field",
-    [
-        "global_vars",
-        "agent_vars",
-        "item_profile_vars",
-        "item_vars_per_slot",
-        "global_active_mask",
-        "agent_active_mask",
-        "item_active_mask",
-        "max_item_profiles",
-        "max_tensor_elements",
-    ],
-)
-def test_direct_cache_load_rejects_missing_vfs_observation_spec_fields(tmp_path: Path, missing_field: str) -> None:
-    config_dir = _copy_experiment(tmp_path)
-    compiler = UniverseCompiler()
-    compiled = compiler.compile(config_dir, primary_level="L0_test", use_cache=True)
-
-    payload = compiled.to_dict()
-    payload["vfs_observation_spec"].pop(missing_field)
-    stale_path = tmp_path / f"missing-vfs-observation-spec-{missing_field}.msgpack"
-    stale_path.write_bytes(msgpack.packb(payload, use_bin_type=True))
-
-    with pytest.raises(ValueError, match=f"missing required field 'vfs_observation_spec.{missing_field}'"):
         CompiledUniverse.load_from_cache(stale_path)
 
 
@@ -304,8 +275,9 @@ def test_direct_cache_load_rejects_missing_level_provenance_fields(tmp_path: Pat
 @pytest.mark.parametrize(
     "missing_field",
     [
-        "observation_activity",
-        "vfs_observation_fields",
+        "token_spec",
+        "token_type_schema_hash",
+        "layout_hash",
         "vfs_variables",
         "variable_schema_hash",
         "observation_schema_hash",
@@ -333,8 +305,9 @@ def test_direct_cache_load_rejects_missing_required_level_fields(tmp_path: Path,
 @pytest.mark.parametrize(
     "missing_field",
     [
-        "observation_activity",
-        "vfs_observation_fields",
+        "token_spec",
+        "token_type_schema_hash",
+        "layout_hash",
         "vfs_variables",
         "variable_schema_hash",
         "observation_schema_hash",
@@ -357,7 +330,7 @@ def test_compile_cache_fast_path_recovers_from_missing_required_fields(tmp_path:
     recompiled = UniverseCompiler().compile(config_dir, primary_level="L0_test", use_cache=True)
 
     assert recompiled.metadata.universe_name == "Model Config (Test)"
-    assert recompiled.observation_activity.active_dim_count > 0
+    assert recompiled.token_spec.total_dims > 0
 
 
 def test_cache_handles_zero_affordances(tmp_path: Path) -> None:

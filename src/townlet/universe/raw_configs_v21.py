@@ -20,9 +20,12 @@ from townlet.config.experiment_config import ExperimentConfig
 from townlet.config.items_config import ItemsAppearanceConfig, ItemsCatalogConfig
 from townlet.config.stratum_config import StratumConfig
 from townlet.config.training_v2_config import TrainingV2Config, load_training_v2_config
+from townlet.config.transition_rules_config import TransitionRulesConfig
 from townlet.config.vfs_profiles_config import VFSProfilesConfig
+from townlet.universe.error_codes import ErrorCode
 from townlet.universe.errors import CompilationErrorCollector
-from townlet.vfs.schema import VariableDef, load_variables_reference_config
+from townlet.universe.stages import CompilationStage
+from townlet.vfs.schema import VariableDef, VFSScopeExtents, load_variables_reference_config
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +40,10 @@ class CurriculumLevel:
     affordances: AffordancesV2Config
     drive: DriveAsCodeConfig
     training: TrainingV2Config
+    # Optional COMPLETE per-level brain.yaml (PDR-0027). None = inherit the pack brain
+    # unchanged. Never a partial patch: partial merges need default semantics, which the
+    # No-Defaults Principle forbids.
+    brain: BrainConfig | None = None
     items_appearance: ItemsAppearanceConfig | None = None
 
     @property
@@ -68,6 +75,7 @@ class RawConfigsV21:
     effects: EffectsConfig | None = None
     action_label_overrides: dict[int, str] | None = None
     variables_reference: tuple[VariableDef, ...] | None = None
+    vfs_extents: VFSScopeExtents | None = None
     social_residue_rules: tuple[dict[str, object], ...] = ()
 
     def __post_init__(self) -> None:
@@ -97,12 +105,13 @@ class RawConfigsV21:
         """
 
         experiment_dir = Path(experiment_dir).resolve()
-        errors = CompilationErrorCollector(stage="Stage 1: Load v2.1 Configs")
+        errors = CompilationErrorCollector(stage=CompilationStage.PARSE.label)
 
         # Shared experiment-level configs
         experiment = stratum = environment = actions = brain = items = vfs_profiles = effects = None
         action_label_overrides: dict[int, str] | None = None
         variables_reference: tuple[VariableDef, ...] | None = None
+        vfs_extents: VFSScopeExtents | None = None
         social_residue_rules: tuple[dict[str, object], ...] = ()
         shared_specs = [
             ("experiment.yaml", ExperimentConfig, "experiment"),
@@ -118,7 +127,7 @@ class RawConfigsV21:
             except Exception as exc:  # noqa: BLE001 - we want to aggregate anything
                 errors.add(
                     f"Failed to load {label} from {filename}: {exc}",
-                    code="LOAD_ERROR",
+                    code=ErrorCode.LOAD_ERROR,
                     location=str(path),
                 )
                 continue
@@ -139,7 +148,7 @@ class RawConfigsV21:
         except Exception as exc:
             errors.add(
                 f"Failed to load brain from brain.yaml: {exc}",
-                code="LOAD_ERROR",
+                code=ErrorCode.LOAD_ERROR,
                 location=str(brain_path),
             )
 
@@ -156,7 +165,7 @@ class RawConfigsV21:
             except Exception as exc:  # noqa: BLE001
                 errors.add(
                     f"Failed to load items from items.yaml: {exc}",
-                    code="LOAD_ERROR",
+                    code=ErrorCode.LOAD_ERROR,
                     location=str(items_path),
                 )
 
@@ -168,7 +177,7 @@ class RawConfigsV21:
         except Exception as exc:  # noqa: BLE001
             errors.add(
                 f"Failed to load VFS profiles from vfs_profiles.yaml: {exc}",
-                code="LOAD_ERROR",
+                code=ErrorCode.LOAD_ERROR,
                 location=str(vfs_profiles_path),
             )
 
@@ -181,7 +190,7 @@ class RawConfigsV21:
             except Exception as exc:  # noqa: BLE001
                 errors.add(
                     f"Failed to load effects from effects.yaml: {exc}",
-                    code="LOAD_ERROR",
+                    code=ErrorCode.LOAD_ERROR,
                     location=str(effects_path),
                 )
 
@@ -198,7 +207,7 @@ class RawConfigsV21:
             except Exception as exc:  # noqa: BLE001
                 errors.add(
                     f"Failed to load action labels from action_labels.yaml: {exc}",
-                    code="LOAD_ERROR",
+                    code=ErrorCode.LOAD_ERROR,
                     location=str(action_labels_path),
                 )
 
@@ -206,11 +215,13 @@ class RawConfigsV21:
         variables_reference_path = experiment_dir / "variables_reference.yaml"
         if variables_reference_path.exists():
             try:
-                variables_reference = tuple(load_variables_reference_config(experiment_dir))
+                reference_data = load_variables_reference_config(experiment_dir)
+                variables_reference = reference_data.variables
+                vfs_extents = reference_data.extents
             except Exception as exc:  # noqa: BLE001
                 errors.add(
                     f"Failed to load variables reference from variables_reference.yaml: {exc}",
-                    code="LOAD_ERROR",
+                    code=ErrorCode.LOAD_ERROR,
                     location=str(variables_reference_path),
                 )
 
@@ -219,16 +230,12 @@ class RawConfigsV21:
         if transition_rules_path.exists():
             try:
                 transition_rules_data = yaml.safe_load(transition_rules_path.read_text()) or {}
-                raw_rules = transition_rules_data.get("social_residue", ())
-                if raw_rules is None:
-                    raw_rules = ()
-                if not isinstance(raw_rules, list):
-                    raise ValueError("transition_rules.yaml social_residue field must be a list")
-                social_residue_rules = tuple(dict(rule) for rule in raw_rules)
+                transition_rules = TransitionRulesConfig(**transition_rules_data)
+                social_residue_rules = transition_rules.social_residue_sources()
             except Exception as exc:  # noqa: BLE001
                 errors.add(
                     f"Failed to load transition rules from transition_rules.yaml: {exc}",
-                    code="LOAD_ERROR",
+                    code=ErrorCode.LOAD_ERROR,
                     location=str(transition_rules_path),
                 )
 
@@ -241,7 +248,7 @@ class RawConfigsV21:
         if not levels_dir.exists():
             errors.add(
                 f"Missing levels/ directory under {experiment_dir}",
-                code="MISSING_LEVELS_DIR",
+                code=ErrorCode.MISSING_LEVELS_DIR,
                 location=str(levels_dir),
             )
             errors.check_and_raise()
@@ -257,6 +264,7 @@ class RawConfigsV21:
                 bars = load_bars_v2_config(level_dir)
                 affordances = load_affordances_v2_config(level_dir)
                 training = load_training_v2_config(level_dir)
+                level_brain = load_brain_config(level_dir) if (level_dir / "brain.yaml").exists() else None
 
                 drive_path = level_dir / "drive.yaml"
                 with drive_path.open() as f:
@@ -278,19 +286,20 @@ class RawConfigsV21:
                     affordances=affordances,
                     drive=drive,
                     training=training,
+                    brain=level_brain,
                     items_appearance=items_appearance,
                 )
             except Exception as exc:  # noqa: BLE001
                 errors.add(
                     f"Failed to load level '{level_name}': {exc}",
-                    code="LEVEL_LOAD_ERROR",
+                    code=ErrorCode.LEVEL_LOAD_ERROR,
                     location=str(level_dir),
                 )
 
         if not levels:
             errors.add(
                 f"No curriculum levels found in {levels_dir}",
-                code="NO_CURRICULUM_LEVELS",
+                code=ErrorCode.NO_CURRICULUM_LEVELS,
                 location=str(levels_dir),
             )
 
@@ -307,6 +316,7 @@ class RawConfigsV21:
             effects=effects,
             action_label_overrides=action_label_overrides,
             variables_reference=variables_reference,
+            vfs_extents=vfs_extents,
             social_residue_rules=social_residue_rules,
             levels=levels,
             experiment_dir=experiment_dir,

@@ -106,7 +106,7 @@ environment:
       semantic_type: custom
       normalization:
         method: normalize
-        clip: false
+        clip: true
         range: [0.0, 1.0]
 
     - name: time_since_last_sleep
@@ -117,7 +117,7 @@ environment:
       semantic_type: custom
       normalization:
         method: normalize
-        clip: false
+        clip: true
         range: [0.0, 100.0]
 
   cues:

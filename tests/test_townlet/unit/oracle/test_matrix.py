@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from townlet.oracle.matrix import Cell, RegisteredDivergence, RegisteredHashDivergence, default_cells
+from townlet.oracle.trace_io import RunParams
 
 LEVELS = (
     "L0_0_minimal",
@@ -145,35 +146,164 @@ def test_registered_divergence_rejects_unicode_digit_refs() -> None:
         RegisteredDivergence(register_ref="DIV-٠٠٣", old_stderr_substring=_GOOD_SIGNATURE)
 
 
-def test_standing_and_differential_cells_declare_nothing_at_this_tag() -> None:
-    """Pin (PDR-0074): the sixteen non-profile cells certify bare agreement —
-    no `expected`, no `pack_divergence`, no `hash_divergence` — so for them
-    exit 0 means AGREE, not "diverged exactly as registered". A declaration
-    sprouting on one of them silently changes what exit 0 certifies; it
-    returns only with a register entry that needs it (PDR-0037)."""
+def test_standing_and_differential_cells_bind_div009_narrowly() -> None:
+    """Pin (hamlet-5cc071f4b6, DIV-009): the sixteen non-profile cells no longer
+    certify bare agreement. Six Phase B landings after the oracle tag moved
+    provenance with no register entry (measured 2026-08-23); every standing and
+    differential cell binds a hash-only DIV-009 entry over exactly the four
+    measured fields — no crash expectation, and no wider or narrower hash_fields
+    set than measurement showed. DIV-010 (hamlet-fa6bb6da4a, unit 2) and DIV-008
+    (unit 3's token cut) compose alongside it on these same cells — checked here
+    as "DIV-009 is present and still narrow", leaving their own field sets to
+    test_standing_and_differential_cells_bind_div010_and_div008_narrowly.
+
+    These sixteen cells DO declare a pack divergence since 2026-08-26: their
+    live vfs_profiles.yaml carries the L3 temporal declaration
+    (hamlet-02684be106) and their frozen fixtures do not. That is DIV-008's
+    row — see docs/oracle/known-divergences.md#div-008's per-pack drift table."""
     for c in default_cells():
         if c.params.pack in _PROFILE_VARIABLE_CELLS:
             continue
         assert c.expected is None, f"{c.cell_id} declares an old-side-crash expectation"
-        assert c.pack_divergence is None, f"{c.cell_id} declares a pack divergence"
-        assert c.hash_divergence is None, f"{c.cell_id} declares a hash divergence"
+        assert c.pack_divergence == "DIV-008", f"{c.cell_id}: the vfs_profiles.yaml drift is DIV-008's row"
+        div009 = [d for d in c.hash_divergences if d.register_ref == "DIV-009"]
+        assert len(div009) == 1, f"{c.cell_id} does not bind exactly one DIV-009 entry"
+        assert div009[0].declared == {
+            "actions_hash",
+            "pack_brain_hash",
+            "transition_graph_hash",
+            "vfs_hash",
+        }, f"{c.cell_id}: DIV-009 hash_fields do not match measurement"
 
 
-def test_profile_variable_cells_bind_div006_narrowly() -> None:
-    """DIV-006 (PDR-0075) is hash-only on the four profile-variable cells: exactly the
-    three DERIVED hashes measured to move, no RAW hash, and a pack divergence only where
-    the frozen fixture actually differs (effects_smoke gained `semantic_type`; items_smoke
-    declares only item variables and is still a byte copy of its fixture)."""
+def test_standing_and_differential_cells_bind_div010_and_div008_narrowly() -> None:
+    """Pin (hamlet-fa6bb6da4a, DIV-010, unit 2 "authored temporality"): the engine tick
+    VariableDef injected into every compiled universe moves exactly `variable_schema_hash`
+    and `vfs_hash` — measured by two-worktree probe (11dee204 vs HEAD) and confirmed
+    per-commit as the tick-injection commit's own movement. Every standing and differential
+    cell binds this as a second, composing entry alongside DIV-009, and unit 3's token cut
+    (DIV-008) composes third — exactly three entries total on these sixteen cells.
+
+    DIV-011 is GONE from the binding: it retired into DIV-008 by its own pre-registered
+    condition, and its two token hashes are declared under DIV-008 now (2026-08-26)."""
+    for c in default_cells():
+        if c.params.pack in _PROFILE_VARIABLE_CELLS:
+            continue
+        div010 = [d for d in c.hash_divergences if d.register_ref == "DIV-010"]
+        assert len(div010) == 1, f"{c.cell_id} does not bind exactly one DIV-010 entry"
+        assert div010[0].declared == {"variable_schema_hash", "vfs_hash"}, f"{c.cell_id}: DIV-010 hash_fields do not match measurement"
+        assert not [
+            d for d in c.hash_divergences if d.register_ref == "DIV-011"
+        ], f"{c.cell_id} still binds DIV-011, which retired into DIV-008"
+        assert len(c.hash_divergences) == 3, f"{c.cell_id} should bind exactly DIV-009 + DIV-010 + DIV-008"
+
+
+def test_every_cell_binds_div008_hash_and_stream_narrowly() -> None:
+    """Pin (hamlet-fa6bb6da4a, DIV-008, unit 3 Task 11): the token cut. Every one of the
+    twenty cells binds DIV-008 TWICE over — once as a hash declaration (five fields, uniform
+    across all three blocks because the cut is unconditional) and once as a stream
+    declaration naming `obs` alone. That pairing is what makes spec §5 machine-checked:
+    `obs` is permitted to diverge and REQUIRED to, while `actions`/`dones`/`rewards` stay
+    undeclared and are therefore held byte-exact.
+
+    The five fields are the MEASURED set (matrix runs 20260826-171622 scripted /
+    20260826-171731 plain, both exit 0), not the entry's original prediction — which named
+    three and left `variable_schema_hash` explicitly open. It moves, and its cause is the
+    fourteen engine-minted `obs_*` registry primitives dying with `build_vfs_variables`, a
+    different deletion from the entry's headline. Two of the five (`token_type_schema_hash`,
+    `layout_hash`) are inherited from the retired DIV-011.
+
+    `scripted_actions` stays False on every cell: plain mode was measured green too, so
+    forcing it would make a plain-mode run unexpressible for no gain."""
+    for cell in default_cells():
+        div008 = [d for d in cell.hash_divergences if d.register_ref == "DIV-008"]
+        assert len(div008) == 1, f"{cell.cell_id} does not bind exactly one DIV-008 hash entry"
+        assert div008[0].declared == {
+            "observation_schema_hash",
+            "variable_schema_hash",
+            "vfs_hash",
+            "token_type_schema_hash",
+            "layout_hash",
+        }, f"{cell.cell_id}: DIV-008 hash_fields do not match measurement"
+        assert cell.stream_divergence is not None, f"{cell.cell_id} declares no stream divergence"
+        assert cell.stream_divergence.register_ref == "DIV-008"
+        assert cell.stream_divergence.declared == {"obs"}, (
+            f"{cell.cell_id}: only `obs` may diverge — declaring another stream would stop " f"spec §5's criterion being adjudicated at all"
+        )
+        assert cell.scripted_actions is False, f"{cell.cell_id}: plain mode measured green, so the criterion is not forced matrix-wide"
+
+
+def test_all_cells_bind_the_drift_and_unit2_and_token_entries() -> None:
+    """Pin (hamlet-5cc071f4b6, hamlet-fa6bb6da4a): every one of the twenty cells names
+    DIV-009 (the pre-unit-2 drift), DIV-010 (unit 2's compiler-surface movement) and DIV-008
+    (unit 3's token cut) in its hash_divergences, with no duplicate register refs on a cell
+    — the matrix-wide binding that brings the matrix back to exit 0. DIV-006 and DIV-011
+    both retired into DIV-008 at the cut and must appear nowhere."""
+    for cell in default_cells():
+        refs = [d.register_ref for d in cell.hash_divergences]
+        assert "DIV-009" in refs
+        assert "DIV-010" in refs
+        assert "DIV-008" in refs
+        assert "DIV-011" not in refs, f"{cell.cell_id}: DIV-011 retired into DIV-008"
+        assert "DIV-006" not in refs, f"{cell.cell_id}: DIV-006 retired into DIV-008"
+        assert refs == sorted(set(refs), key=refs.index)  # no duplicate entries
+
+
+def test_profile_variable_cells_declare_their_pack_drift() -> None:
+    """DIV-006 is RETIRED at the token cut (2026-08-26): its new-side surface — the obs_vfs
+    split into per-variable ObservationFields plus obs_item_slots — was deleted with the
+    whole ObservationSpec family, so binding it would certify a ghost. Its three hashes are
+    declared under DIV-008 now, uniformly on all twenty cells.
+
+    What survives is the pack-drift declaration, re-pointed by measurement:
+    effects_smoke drifts on effects.yaml (Task 10's required max_active_effects) AND
+    vfs_profiles.yaml (DIV-006's old schema hold) -> DIV-008, which enumerates both rows.
+    items_smoke keeps DIV-007 — its fixture still carries the stale, never-loaded
+    levels/L0_smoke/brain.yaml stub the PDR-0027 cut deleted from the live pack; its own
+    effects.yaml row is enumerated in DIV-008's table, since pack_divergence is one string."""
     profile = [c for c in default_cells() if c.params.pack in _PROFILE_VARIABLE_CELLS]
     assert len(profile) == 4
     for c in profile:
         assert c.expected is None
-        assert c.hash_divergence is not None and c.hash_divergence.register_ref == "DIV-006"
-        assert c.hash_divergence.declared == {"observation_schema_hash", "variable_schema_hash", "vfs_hash"}
+        assert not [
+            d for d in c.hash_divergences if d.register_ref == "DIV-006"
+        ], f"{c.cell_id} still binds DIV-006, which retired into DIV-008"
         if c.params.pack == "configs/test/effects_smoke":
-            assert c.pack_divergence == "DIV-006"
+            assert c.pack_divergence == "DIV-008"
         else:
-            assert c.pack_divergence is None, f"{c.cell_id}: items_smoke's fixture is a byte copy; nothing to declare"
+            assert c.pack_divergence == "DIV-007", f"{c.cell_id}: items_smoke's fixture keeps the deleted brain.yaml stub (DIV-007)"
+
+
+def test_profile_variable_cells_bind_div009_narrowly() -> None:
+    """DIV-009's own field set on the four profile cells stays narrowed to exactly the three
+    fields on its own (VTC / actions DTO / brain-fork) surface: `actions_hash`,
+    `pack_brain_hash`, `transition_graph_hash`. It was narrowed to be disjoint from DIV-006's
+    fields; DIV-006 has retired into DIV-008, whose field set it is disjoint from too, so the
+    narrowing stands unchanged."""
+    profile = [c for c in default_cells() if c.params.pack in _PROFILE_VARIABLE_CELLS]
+    assert len(profile) == 4
+    for c in profile:
+        div009 = [d for d in c.hash_divergences if d.register_ref == "DIV-009"]
+        assert len(div009) == 1, f"{c.cell_id} does not bind exactly one DIV-009 entry"
+        assert div009[0].declared == {"actions_hash", "pack_brain_hash", "transition_graph_hash"}
+
+
+def test_profile_variable_cells_bind_div010_narrowly() -> None:
+    """DIV-010's field set on the four profile cells overlaps DIV-008's on
+    `variable_schema_hash` and `vfs_hash` — both move for both causes (DIV-010's tick
+    injection ADDS one VariableDef; the token cut REMOVES fourteen engine-minted `obs_*`
+    primitives), declared under both entries, legal per the union-exact composing rule since
+    each entry's own fields still all move. The tick injection is unconditional, so DIV-010's
+    set here is identical to its set on the standing/differential cells, unlike DIV-009's
+    profile-narrowed set; so is DIV-008's. Each profile cell binds exactly three entries:
+    DIV-009, DIV-010, DIV-008."""
+    profile = [c for c in default_cells() if c.params.pack in _PROFILE_VARIABLE_CELLS]
+    assert len(profile) == 4
+    for c in profile:
+        div010 = [d for d in c.hash_divergences if d.register_ref == "DIV-010"]
+        assert len(div010) == 1, f"{c.cell_id} does not bind exactly one DIV-010 entry"
+        assert div010[0].declared == {"variable_schema_hash", "vfs_hash"}
+        assert len(c.hash_divergences) == 3, f"{c.cell_id} should bind exactly DIV-009 + DIV-010 + DIV-008"
 
 
 def test_differential_cells_run_their_declared_levels() -> None:
@@ -261,7 +391,7 @@ def test_declared_register_refs_exist_in_the_register() -> None:
     declares one (as at oracle-2026-08-17); armed the moment a cell binds."""
     entries = set(_register_sections())
     declared = {c.expected.register_ref for c in default_cells() if c.expected is not None}
-    declared |= {c.hash_divergence.register_ref for c in default_cells() if c.hash_divergence is not None}
+    declared |= {hd.register_ref for c in default_cells() for hd in c.hash_divergences}
     declared |= {c.pack_divergence for c in default_cells() if c.pack_divergence is not None}
     assert declared <= entries, f"matrix declares refs with no register entry: {sorted(declared - entries)}"
 
@@ -297,13 +427,12 @@ def test_hash_divergence_bindings_bind_entries_with_the_hash_only_shape() -> Non
     """
     sections = _register_sections()
     for cell in default_cells():
-        if cell.hash_divergence is None:
-            continue
-        ref = cell.hash_divergence.register_ref
-        assert ref in sections, f"{ref} has no register entry"
-        assert "Harness shape: hash-only" in sections[ref], (
-            f"cell {cell.cell_id} binds {ref} as a hash-only divergence, but that entry " f"does not declare `Harness shape: hash-only`"
-        )
+        for hd in cell.hash_divergences:
+            ref = hd.register_ref
+            assert ref in sections, f"{ref} has no register entry"
+            assert "Harness shape: hash-only" in sections[ref], (
+                f"cell {cell.cell_id} binds {ref} as a hash-only divergence, but that entry " f"does not declare `Harness shape: hash-only`"
+            )
 
 
 def test_a_cell_never_declares_both_divergence_shapes() -> None:
@@ -315,7 +444,7 @@ def test_a_cell_never_declares_both_divergence_shapes() -> None:
     """
     for cell in default_cells():
         assert not (
-            cell.expected is not None and cell.hash_divergence is not None
+            cell.expected is not None and cell.hash_divergences
         ), f"cell {cell.cell_id} declares both an old-side-crash divergence and a hash-only one"
 
 
@@ -333,3 +462,71 @@ def test_hash_divergence_declarations_are_enumerated_not_wildcards() -> None:
         RegisteredHashDivergence(register_ref="DIV-004", hash_fields=("vfs_hash", "observation_schema"))
     with pytest.raises(ValueError, match="DIV-004"):
         RegisteredHashDivergence(register_ref="div-4", hash_fields=("vfs_hash",))
+
+
+def test_profile_cells_bind_hash_divergences_tuple() -> None:
+    for cell in default_cells():
+        assert isinstance(cell.hash_divergences, tuple)
+        assert not hasattr(cell, "hash_divergence")  # old field is gone, not dual-carried
+
+
+# --- RegisteredStreamDivergence: the third declared shape, built for DIV-008 ---
+#
+# DIV-008 (the token-observation cut) changes the obs stream while keeping
+# actions/dones/rewards byte-exact under scripted actions. This declares WHICH
+# streams are permitted to diverge; undeclared streams diverging keeps the cell red.
+
+
+def test_stream_divergence_validates_ref_and_streams() -> None:
+    from townlet.oracle.matrix import RegisteredStreamDivergence
+
+    d = RegisteredStreamDivergence(register_ref="DIV-008", streams=("obs",))
+    assert d.declared == frozenset({"obs"})
+
+    # Pin the full trace-stream vocabulary: all four members must be constructible
+    # (not just "obs"). A typo like "reward" in _TRACE_STREAMS would pass if only
+    # "obs" is tested, breaking Tasks 4/5.
+    d_all = RegisteredStreamDivergence(register_ref="DIV-008", streams=("obs", "actions", "dones", "rewards"))
+    assert d_all.declared == frozenset({"obs", "actions", "dones", "rewards"})
+
+    with pytest.raises(ValueError, match="register_ref"):
+        RegisteredStreamDivergence(register_ref="div8", streams=("obs",))
+    with pytest.raises(ValueError, match="at least one"):
+        RegisteredStreamDivergence(register_ref="DIV-008", streams=())
+    with pytest.raises(ValueError, match="duplicates"):
+        RegisteredStreamDivergence(register_ref="DIV-008", streams=("obs", "obs"))
+    with pytest.raises(ValueError, match="not a trace stream"):
+        RegisteredStreamDivergence(register_ref="DIV-008", streams=("observations",))
+
+
+def test_cell_defaults_declare_nothing_new() -> None:
+    """The two new axes stay OPT-IN at the dataclass level: a cell that names neither gets
+    neither. (The twenty matrix cells all opt in to `stream_divergence` since DIV-008 was
+    bound; what is pinned here is that the DEFAULT is still silence, so a cell added without
+    thinking cannot inherit a suppression.)"""
+    from townlet.oracle.matrix import Cell
+
+    bare = Cell(RunParams(pack="configs/x", level="L0", num_agents=1, steps=1, seed=1, device="cpu"))
+    assert bare.stream_divergence is None
+    assert bare.scripted_actions is False
+
+
+def test_stream_divergence_bindings_bind_entries_with_the_stream_scoped_shape() -> None:
+    """The THIRD shape gets the same typo-bind guard as the first two.
+
+    A `RegisteredStreamDivergence` certifies "this named stream diverged as registered,
+    every other stream is byte-exact". Binding it to an entry that predicts an old-side
+    crash, or a checkpoint-boundary entry that cannot manifest in a trace at all, would
+    certify the wrong thing — so the entry must say `Harness shape: stream-scoped` in its
+    own text. Without this, DIV-008's stream binding was the only one of the three
+    declaration axes with no register-side check."""
+    sections = _register_sections()
+    for cell in default_cells():
+        sd = cell.stream_divergence
+        if sd is None:
+            continue
+        assert sd.register_ref in sections, f"{sd.register_ref} has no register entry"
+        assert "Harness shape: stream-scoped" in sections[sd.register_ref], (
+            f"cell {cell.cell_id} binds {sd.register_ref} as a stream-scoped divergence, but "
+            f"that entry does not declare `Harness shape: stream-scoped`"
+        )

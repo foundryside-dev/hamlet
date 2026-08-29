@@ -22,11 +22,14 @@ class ActionMetadata:
     costs: Mapping[str, float] = field(default_factory=dict)
     description: str = ""
     movement_delta: tuple[float, ...] | None = None
+    source_affordance: str | None = None
+    writes: tuple[Mapping[str, Any], ...] = field(default_factory=tuple)
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "costs", MappingProxyType(dict(self.costs)))
         if self.movement_delta is not None:
             object.__setattr__(self, "movement_delta", tuple(self.movement_delta))
+        object.__setattr__(self, "writes", tuple(dict(write) for write in self.writes))
 
 
 @dataclass(frozen=True)

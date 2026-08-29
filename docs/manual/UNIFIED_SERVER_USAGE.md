@@ -1,5 +1,18 @@
 # Unified Server Usage Guide
 
+> ⚠️ **Recovered from archive 2026-08-26 — accurate subsystem, stale config paths.**
+>
+> The subsystem this document describes **does ship** (module paths verified against
+> `src/townlet/` on 2026-08-26). It is recovered because it is the only operator
+> documentation for that surface.
+>
+> **Known wrong:** every example config path of the form `configs/<name>.yaml` is dead.
+> That flat layout was replaced by config *packs* — pack-root shared files plus
+> `levels/<level>/` overrides, e.g. `configs/default_curriculum/levels/L1_full_observability/`.
+> See `CLAUDE.md` §"Configuration System". Translate paths as you read; do not copy the
+> example invocations verbatim.
+
+
 ## Overview
 
 The unified server runs **training + inference** in a single command, while the frontend runs separately for better stability and Vue.js Hot Module Replacement (HMR) support.

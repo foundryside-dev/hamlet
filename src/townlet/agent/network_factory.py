@@ -10,11 +10,11 @@ from typing import TYPE_CHECKING
 
 import torch.nn as nn
 
-from townlet.agent.networks import DuelingQNetwork, RecurrentSpatialQNetwork, SetEncoderQNetwork
-from townlet.config.brain_config import DuelingConfig, FeedforwardConfig, RecurrentConfig, SetEncoderConfig
+from townlet.agent.networks import DuelingQNetwork, RecurrentSpatialQNetwork, TokenSetQNetwork
+from townlet.config.brain_config import DuelingConfig, FeedforwardConfig, RecurrentConfig, TokenSetConfig
 
 if TYPE_CHECKING:
-    from townlet.universe.dto import ObservationActivity, ObservationSpec
+    from townlet.universe.dto.token_spec import TokenSpec
 
 
 class NetworkFactory:
@@ -70,78 +70,82 @@ class NetworkFactory:
         return nn.Sequential(*layers)
 
     @staticmethod
+    def token_block_slices(spec: TokenSpec) -> dict[str, slice]:
+        """Serialization slice of each token type, by type name.
+
+        The TokenSpec's serialization is contiguous per-type blocks in roster order —
+        the same walk :meth:`TokenObservationEncoder.encode` performs. A block-reading
+        network addresses its inputs through these, never through a dim literal.
+        """
+        slices: dict[str, slice] = {}
+        offset = 0
+        for token_type in spec.types:
+            width = token_type.capacity * token_type.row_width
+            slices[token_type.type_name] = slice(offset, offset + width)
+            offset += width
+        return slices
+
+    @staticmethod
     def build_recurrent(
         config: RecurrentConfig,
         action_dim: int,
-        window_size: int,
-        position_dim: int,
-        bars_dim: int,
-        num_affordance_types: int,
-        observation_spec: ObservationSpec,
-        observation_activity: ObservationActivity,
+        substrate_position_dim: int,
+        token_spec: TokenSpec,
     ) -> RecurrentSpatialQNetwork:
-        """Build recurrent LSTM Q-network from configuration.
+        """Build the LSTM Q-network over the compiled token serialization.
 
-        Args:
-            config: Recurrent architecture configuration
-            action_dim: Number of actions
-            window_size: Vision window size (5 for 5×5)
-            position_dim: Position dimensionality (2 for Grid2D, 3 for Grid3D, 0 for Aspatial)
-            bars_dim: OBSERVED width of the meter block, from
-                observation_activity.group_slices["bars"] — NOT the meter count, which
-                diverges as soon as a meter declares a widening normalization
-            num_affordance_types: Number of affordance types
-            observation_spec: Compiled observation layout. REQUIRED — the network
-                addresses every input block through it
-            observation_activity: Carries group_slices, which is how the meter block is
-                located without knowing any field's name. REQUIRED
+        The network's three real input blocks map onto token types: `self` carries the
+        observer's position features, `meter` the meter block, `affordance` the
+        affordance block. There is no spatial window in a token observation, so
+        `grid_slice` is None and the vision encoder reads zeros at `window_size` 1 —
+        the same "no window" case every full-observability universe produced before the
+        unit-3 cut, when the window side was read off a spec that had no window field.
 
-        Returns:
-            RecurrentSpatialQNetwork
-
-        Note:
-            This builds a RecurrentSpatialQNetwork with configurable dimensions
-            instead of hardcoded values. The network structure matches the original
-            RecurrentSpatialQNetwork but dimensions come from config.
-
-            Currently, the config's vision_encoder, position_encoder, meter_encoder,
-            affordance_encoder, and q_head parameters are not used because
-            RecurrentSpatialQNetwork has a fixed internal architecture. This is
-            acceptable for Phase 2 (TASK-005). Future phases may make the network
-            architecture fully configurable.
-
-        Example:
-            >>> config = RecurrentConfig(...)
-            >>> network = NetworkFactory.build_recurrent(
-            ...     config=config,
-            ...     action_dim=8,
-            ...     window_size=5,
-            ...     position_dim=2,
-            ...     bars_dim=8,
-            ...     num_affordance_types=14,
-            ... )
+        This is a BLOCK reader, not a token-aware one: it flattens each type's rows into
+        one Linear. A genuinely token-native recurrent/attention brain is unit 4, and
+        `architecture.type='token_set'` is the shipped token-native option today. No
+        shipped pack declares `recurrent`; POMDP levels run feedforward.
         """
-        # Extract LSTM hidden size from config
-        lstm_hidden_size = config.lstm.hidden_size
-
-        # Create RecurrentSpatialQNetwork with config-driven LSTM dimension
-        # Note: The existing RecurrentSpatialQNetwork class has hardcoded encoder
-        # architectures (CNN, MLPs). For Phase 2, we only make LSTM hidden_size
-        # configurable via the hidden_dim parameter.
-        # Future phases may make the entire architecture fully configurable.
-        network = RecurrentSpatialQNetwork(
+        blocks = NetworkFactory.token_block_slices(token_spec)
+        for required in ("self", "meter", "affordance"):
+            if required not in blocks:
+                raise ValueError(
+                    f"architecture.type='recurrent' reads the {required!r} token block, which this "
+                    f"compiled TokenSpec does not carry (types: {[t.type_name for t in token_spec.types]})."
+                )
+        meter_block = blocks["meter"]
+        affordance_block = blocks["affordance"]
+        self_block = blocks["self"]
+        bars_dim = meter_block.stop - meter_block.start
+        affordance_dims = affordance_block.stop - affordance_block.start
+        if bars_dim == 0 or affordance_dims == 0:
+            raise ValueError(
+                "architecture.type='recurrent' requires non-empty meter and affordance token blocks; "
+                f"got meter width {bars_dim}, affordance width {affordance_dims}. Declare meters and "
+                "affordances, or use `feedforward` / `token_set`."
+            )
+        # `position_dim` sizes the position encoder, so it is the WIDTH of the block it
+        # reads (the whole `self` token row), not the substrate's coordinate rank. An
+        # aspatial universe has no observer position and passes 0, which is the
+        # network's own "no position encoder" case.
+        position_dim = (self_block.stop - self_block.start) if substrate_position_dim > 0 else 0
+        return RecurrentSpatialQNetwork(
             action_dim=action_dim,
-            window_size=window_size,
+            # No spatial window exists in a token observation; 1 is the API's own
+            # long-standing "no window" value and keeps the Conv2d well-formed.
+            window_size=1,
             position_dim=position_dim,
             bars_dim=bars_dim,
-            num_affordance_types=num_affordance_types,
-            enable_temporal_features=False,  # Will be determined by environment
-            hidden_dim=lstm_hidden_size,  # From config instead of hardcoded!
-            observation_spec=observation_spec,
-            observation_activity=observation_activity,
+            # The affordance encoder is sized `num_affordance_types + 1`; the block width
+            # is what it must consume.
+            num_affordance_types=affordance_dims - 1,
+            enable_temporal_features=False,
+            hidden_dim=config.lstm.hidden_size,
+            meters_slice=meter_block,
+            affordance_slice=affordance_block,
+            grid_slice=None,
+            position_slice=self_block if position_dim > 0 else None,
         )
-
-        return network
 
     @staticmethod
     def build_dueling(
@@ -186,31 +190,24 @@ class NetworkFactory:
         return network
 
     @staticmethod
-    def build_set_encoder(
-        config: SetEncoderConfig,
-        obs_dim: int,
+    def build_token_set(
+        config: TokenSetConfig,
         action_dim: int,
-        observation_spec: ObservationSpec,
-    ) -> SetEncoderQNetwork:
-        """Build a set-aware Q-network from a flattened token observation field."""
-        token_field = observation_spec.get_field_by_name(config.token_field_name)
-        expected_dims = config.max_tokens * config.token_dim
-        if token_field.dims != expected_dims:
-            raise ValueError(
-                f"Set encoder token field {config.token_field_name!r} has dims={token_field.dims}, "
-                f"expected max_tokens * token_dim = {expected_dims}"
-            )
-        if observation_spec.total_dims != obs_dim:
-            raise ValueError(f"ObservationSpec total_dims={observation_spec.total_dims} does not match obs_dim={obs_dim}")
+        token_spec: TokenSpec,
+    ) -> TokenSetQNetwork:
+        """Build a token-native Q-network over a compiled TokenSpec (token-obs spec §4).
 
-        return SetEncoderQNetwork(
-            obs_dim=obs_dim,
+        The roster is compiled, never authored: capacities, payload widths and the
+        serialization layout come from the TokenSpec; ``config`` declares only the
+        embedding width, aggregator (PDR-0112 block verbatim), and Q-head size.
+        """
+        return TokenSetQNetwork(
+            token_spec=token_spec,
             action_dim=action_dim,
-            token_slice=slice(token_field.start_index, token_field.end_index),
-            token_shape=(config.max_tokens, config.token_dim),
             token_embed_dim=config.token_embed_dim,
-            base_hidden_dim=config.base_hidden_dim,
             q_head_hidden_dim=config.q_head_hidden_dim,
+            aggregator_type=config.aggregator.type,
+            num_heads=config.aggregator.num_heads,
         )
 
     @staticmethod

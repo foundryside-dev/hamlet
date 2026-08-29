@@ -26,10 +26,6 @@ import pytest
 import torch
 import yaml
 
-import townlet.environment.action_executor as action_executor_module
-import townlet.environment.env_factory as env_factory_module
-import townlet.environment.observation_encoder as observation_encoder_module
-import townlet.environment.reward_calculator as reward_calculator_module
 import townlet.environment.vectorized_env as vectorized_env_module
 from townlet.environment.env_factory import (
     _build_bar_index_map,
@@ -43,6 +39,7 @@ from townlet.vfs.profiles import CompiledGlobalProfile, CompiledVariable
 from townlet.vfs.schema import WriteSpec
 from townlet.vfs.schema_hashes import compute_transition_graph_hash, compute_vfs_hash
 from townlet.vfs.transition_schedule import (
+    VTCTransitionState,
     build_vtc_transition_schedule,
     serialize_vtc_transition_schedule,
     social_rules_from_transition_payload,
@@ -59,44 +56,6 @@ DEFAULT_CURRICULUM_LEVELS = (
 # =============================================================================
 # AFFORDANCE FILTERING HELPERS
 # =============================================================================
-
-
-def test_environment_runtime_modules_own_extracted_clusters():
-    """R-1 ownership guard: vectorized_env delegates the extracted method clusters."""
-    env_source = Path(vectorized_env_module.__file__).read_text()
-
-    expected_module_methods = {
-        action_executor_module: [
-            "def _execute_actions",
-            "def _handle_interactions",
-            "def _handle_instant_interactions",
-        ],
-        observation_encoder_module: [
-            "def _get_observations",
-            "def _build_affordance_encoding",
-            "def _encode_position_observation",
-        ],
-        reward_calculator_module: ["def _calculate_shaped_rewards"],
-        env_factory_module: ["def from_universe"],
-    }
-    for module, method_markers in expected_module_methods.items():
-        source = Path(module.__file__).read_text()
-        for marker in method_markers:
-            assert marker in source
-
-    delegated_implementation_markers = [
-        "movement_actions =",
-        "build_vfs_observation(",
-        "dac_engine.calculate_rewards(",
-        "return env_cls(",
-    ]
-    for marker in delegated_implementation_markers:
-        assert marker not in env_source
-
-
-def _with_runtime_action_write(universe, level_name: str, action_name: str, write: WriteSpec):
-    """Return a compiled universe whose named runtime action carries one VFS write."""
-    return _with_runtime_action_surface(universe, level_name, action_name, writes=(write,), disable_vfs_profiles=True)
 
 
 def _with_runtime_action_surface(
@@ -172,9 +131,13 @@ def _with_runtime_action_surface(
         vfs_hash=vfs_hash,
         all_levels=all_levels,
         compiled_vfs_profiles=None if disable_vfs_profiles else universe.compiled_vfs_profiles,
-        vfs_observation_spec=None if disable_vfs_profiles else universe.vfs_observation_spec,
-        vfs_observation_marks=None if disable_vfs_profiles else universe.vfs_observation_marks,
+        vfs_evaluation_marks=None if disable_vfs_profiles else universe.vfs_evaluation_marks,
     )
+
+
+def _with_runtime_action_write(universe, level_name: str, action_name: str, write: WriteSpec):
+    """Return a compiled universe whose named runtime action carries one VFS write."""
+    return _with_runtime_action_surface(universe, level_name, action_name, writes=(write,), disable_vfs_profiles=True)
 
 
 def test_build_bar_index_map():
@@ -507,8 +470,12 @@ class TestVectorizedHamletEnvStep:
         env.step(actions)
         assert env.time_of_day == 1
 
-        env.time_of_day = 23
-        env.step(actions)
+        # time_of_day is derived from global_tick (token-obs unit 2c) — there is no
+        # second counter left to seed independently, so wraparound is driven by
+        # stepping global_tick to a full day, not by assigning time_of_day directly.
+        for _ in range(23):
+            env.step(actions)
+        assert env.global_tick == 24
         assert env.time_of_day == 0
 
     def test_step_retirement_bonus(self, custom_env_builder):
@@ -599,7 +566,7 @@ class TestVectorizedHamletEnvStep:
                 item_profiles={},
             ),
         )
-        env.vfs_observation_marks = {"global": {"context_probe"}}
+        env.vfs_evaluation_marks = {"global": {"context_probe"}}
 
         captured_context: dict[str, object] = {}
 
@@ -622,6 +589,99 @@ class TestVectorizedHamletEnvStep:
         assert torch.equal(temporal["time_of_day"], torch.tensor(10.0, device=env.device))
         assert torch.equal(temporal["day_progress"], torch.tensor(10.0 / float(env.day_length), device=env.device))
         assert torch.equal(temporal["is_night"], torch.tensor(False, device=env.device))
+
+
+class TestVFSWriteBackLoudness:
+    """Unknown-id VFS write-backs raise instead of silently dropping (hamlet-0ddc83e377).
+
+    vtc.py and evaluator.py are already loud; these three sites in vectorized_env.py were
+    the last silent-drop paths (global-profile write-back, agent-profile write-back,
+    _commit_vtc_transition_state)."""
+
+    def test_commit_vtc_transition_state_raises_on_unknown_id(self, cpu_env_factory):
+        env = cpu_env_factory()
+        env.reset()
+
+        state = VTCTransitionState(
+            vfs_state={"__definitely_not_a_registered_variable__": torch.zeros(env.num_agents)},
+            bars_state={},
+            dones=None,
+        )
+
+        with pytest.raises(KeyError, match=r"__definitely_not_a_registered_variable__.*Write source: VTC transition state commit"):
+            env._commit_vtc_transition_state(state)
+
+    def test_global_profile_write_back_raises_on_unknown_id(self, custom_env_builder, monkeypatch):
+        env = custom_env_builder()
+        env.reset()
+
+        profile = CompiledGlobalProfile(
+            variables=[
+                CompiledVariable(
+                    name="__unknown_global_expr__",
+                    type="bool",
+                    exposed_to=("agent",),
+                    ast=object(),  # any non-None marks it as an expression var
+                )
+            ],
+            dependencies={"__unknown_global_expr__": tuple()},
+        )
+        env.universe = replace(
+            env.universe,
+            compiled_vfs_profiles=CompiledVFSProfiles(
+                evaluation_mode="mark_and_sweep",
+                debug_logging=False,
+                global_profile=profile,
+                item_profiles={},
+            ),
+        )
+        env.vfs_evaluation_marks = {"global": {"__unknown_global_expr__"}}
+
+        assert env.vfs_evaluator is not None
+        monkeypatch.setattr(
+            env.vfs_evaluator,
+            "evaluate_global_profile",
+            lambda **kwargs: {"__unknown_global_expr__": torch.tensor(True)},
+        )
+
+        with pytest.raises(KeyError, match=r"__unknown_global_expr__.*Write source: global_profile expression evaluation"):
+            env.step(torch.zeros(env.num_agents, dtype=torch.long))
+
+    def test_agent_profile_write_back_raises_on_unknown_id(self, custom_env_builder, monkeypatch):
+        env = custom_env_builder()
+        env.reset()
+
+        agent_profile = CompiledGlobalProfile(
+            variables=[
+                CompiledVariable(
+                    name="__unknown_agent_expr__",
+                    type="bool",
+                    exposed_to=("agent",),
+                    ast=object(),
+                )
+            ],
+            dependencies={"__unknown_agent_expr__": tuple()},
+        )
+        env.universe = replace(
+            env.universe,
+            compiled_vfs_profiles=CompiledVFSProfiles(
+                evaluation_mode="mark_and_sweep",
+                debug_logging=False,
+                agent_profile=agent_profile,
+                item_profiles={},
+            ),
+        )
+        env.vfs_evaluation_marks = {"agent": {"__unknown_agent_expr__"}}
+
+        assert env.vfs_evaluator is not None
+        monkeypatch.setattr(
+            env.vfs_evaluator,
+            "evaluate_global_profile",
+            lambda **kwargs: {"__unknown_agent_expr__": torch.zeros(env.num_agents, dtype=torch.bool)},
+        )
+
+        with pytest.raises(KeyError, match=r"__unknown_agent_expr__.*Write source: agent_profile expression evaluation"):
+            env.step(torch.zeros(env.num_agents, dtype=torch.long))
 
 
 class TestVectorizedHamletEnvGoldenTick:
@@ -784,88 +844,6 @@ class TestExecuteActions:
         result = env._execute_actions(actions)
 
         assert isinstance(result, dict)
-
-
-class TestGetObservations:
-    """Test VectorizedHamletEnv._get_observations() method."""
-
-    def test_get_observations_returns_tensor(self, cpu_env_factory):
-        env = cpu_env_factory(num_agents=2)
-        env.reset()
-
-        obs = env._get_observations()
-
-        assert obs.shape == (2, env.observation_dim)
-
-    def test_get_observations_full_observability_shape(self, cpu_env_factory):
-        env = cpu_env_factory(num_agents=3)
-        env.reset()
-        obs = env._get_observations()
-        assert obs.shape == (3, env.observation_dim)
-        assert env.partial_observability is False
-
-    def test_get_observations_pomdp_shape(self, custom_env_builder):
-        env = custom_env_builder(
-            num_agents=2,
-            source_pack=Path("configs/default_curriculum"),
-            level_name="L2_partial_observability",
-        )
-        env.reset()
-        obs = env._get_observations()
-        assert env.partial_observability is True
-        assert obs.shape == (2, env.observation_dim)
-
-    def test_get_observations_contains_meters(self, cpu_env_factory):
-        env = cpu_env_factory()
-        env.reset()
-        obs = env._get_observations()
-        assert torch.all(obs[:, -4:] >= -1.0)
-
-    def test_get_observations_uses_substrate_position_encoder(self, cpu_env_factory, monkeypatch):
-        env = cpu_env_factory(num_agents=2)
-        env.reset()
-
-        expected = torch.full((env.num_agents, env.substrate.position_dim), 0.42, device=env.device)
-
-        def fake_encoder(positions, affordances):
-            return expected
-
-        def fail_normalize(_):
-            raise AssertionError("normalize_positions should not be called when encoder exists")
-
-        monkeypatch.setattr(env.substrate, "_encode_position_features", fake_encoder)
-        monkeypatch.setattr(env.substrate, "normalize_positions", fail_normalize, raising=False)
-
-        encoded = env._encode_position_observation()
-        assert torch.allclose(encoded, expected)
-
-    def test_get_observations_falls_back_to_encode_observation(self, cpu_env_factory, monkeypatch):
-        env = cpu_env_factory()
-        env.reset()
-
-        expected = torch.full((env.num_agents, env.substrate.position_dim), 0.25, device=env.device)
-
-        def fake_encode_observation(positions, affordances):
-            return expected
-
-        def fail_normalize(_):
-            raise AssertionError("normalize_positions fallback should not trigger when encode_observation exists")
-
-        monkeypatch.setattr(env.substrate, "_encode_position_features", None, raising=False)
-        monkeypatch.setattr(env.substrate, "encode_position_features", None, raising=False)
-        monkeypatch.setattr(env.substrate, "encode_observation", fake_encode_observation)
-        monkeypatch.setattr(env.substrate, "normalize_positions", fail_normalize, raising=False)
-
-        encoded = env._encode_position_observation()
-        assert torch.allclose(encoded, expected)
-
-    def test_get_observations_handles_agent_private_scope(self, cpu_env_factory):
-        env = cpu_env_factory(num_agents=2)
-        env.reset()
-
-        env.vfs_registry.variables["deficit_energy"].scope = "agent_private"
-        obs = env._get_observations()
-        assert obs.shape[0] == env.num_agents
 
 
 class TestGetActionMasks:

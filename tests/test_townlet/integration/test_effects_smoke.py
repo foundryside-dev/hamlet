@@ -116,7 +116,10 @@ def test_effect_modifies_bar_values(compile_universe, effects_smoke_config_path,
 
     env.reset()
 
-    # Get initial energy
+    # Start below the declared ceiling so the effect's increase is observable inside
+    # bounds: the clamp_and_validate phase enforces bars.*.bounds on the effects tick
+    # (hamlet-f46e2b381a), so an effect can no longer push energy past bounds.max.
+    env.meters[0, env.meter_name_to_index["energy"]] = 0.5
     initial_energy = env.meters[0, env.meter_name_to_index["energy"]].item()
 
     # Spawn energy_regen effect

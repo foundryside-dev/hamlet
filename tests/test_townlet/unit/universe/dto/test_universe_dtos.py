@@ -10,88 +10,8 @@ from townlet.universe.dto import (
     AffordanceMetadata,
     MeterInfo,
     MeterMetadata,
-    ObservationField,
-    ObservationSpec,
     UniverseMetadata,
 )
-
-
-class TestObservationSpec:
-    """ObservationSpec behaviors."""
-
-    def test_lookup_and_semantic_filter(self):
-        fields = [
-            ObservationField(
-                uuid=None,
-                name="energy",
-                type="scalar",
-                dims=1,
-                start_index=0,
-                end_index=1,
-                scope="agent",
-                description="Energy meter",
-                semantic_type="bars",
-                feature="meter",
-                feature_ref="energy",
-            ),
-            ObservationField(
-                uuid=None,
-                name="position",
-                type="vector",
-                dims=2,
-                start_index=1,
-                end_index=3,
-                scope="agent",
-                description="Grid position",
-                semantic_type="spatial",
-                feature="position",
-            ),
-        ]
-        spec = ObservationSpec.from_fields(fields)
-
-        assert spec.get_field_by_name("energy").name == "energy"
-        assert spec.get_fields_by_semantic_type("bars")[0].name == "energy"
-        assert [f.name for f in spec.get_fields_by_feature("meter")] == ["energy"]
-        assert spec.get_single_field_by_feature("position").name == "position"
-        assert spec.get_single_field_by_feature("temporal") is None
-        with pytest.raises(ValueError, match="closed vocabulary"):
-            spec.get_fields_by_feature("obs_position")
-        assert spec.fields[0].uuid is not None
-        assert spec.fields[0].uuid != spec.fields[1].uuid
-
-        with pytest.raises(KeyError):
-            spec.get_field_by_name("missing")
-
-    def test_duplicate_uuid_rejected(self):
-        field_a = ObservationField(
-            uuid="deadbeefdeadbeef",
-            name="energy",
-            type="scalar",
-            dims=1,
-            start_index=0,
-            end_index=1,
-            scope="agent",
-            description="Energy",
-            semantic_type="bars",
-            feature="meter",
-            feature_ref="energy",
-        )
-        field_b = ObservationField(
-            uuid="deadbeefdeadbeef",
-            name="energy_clone",
-            type="scalar",
-            dims=1,
-            start_index=1,
-            end_index=2,
-            scope="agent",
-            description="Energy",
-            semantic_type="bars",
-            feature="meter",
-            feature_ref="energy",
-        )
-
-        with pytest.raises(ValueError, match="duplicate observation field UUIDs"):
-            ObservationSpec.from_fields([field_a, field_b])
 
 
 class TestActionSpaceMetadata:
@@ -159,9 +79,6 @@ def test_universe_metadata_instantiation():
         observation_dim=42,
         grid_size=3,
         grid_cells=9,
-        max_sustainable_income=10.0,
-        total_affordance_costs=5.0,
-        economic_balance=2.0,
         ticks_per_day=24,
         config_version="1.0",
         compiler_version="0.1.0",

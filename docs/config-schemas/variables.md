@@ -1,5 +1,42 @@
 # VFS Variables Configuration
 
+> ⛔ **Restored to the live tree 2026-08-26 — STALE (2025-11). This is the only variables reference we have; it is not a trustworthy one.**
+>
+> `CLAUDE.md` flags this file as stale and it is. It is restored rather than left archived
+> because nothing has replaced it and `docs/architecture/VFS.md` cites it for the optional
+> static variable/observation overlay — but **verify everything here against source before
+> acting on it.**
+>
+> **Known wrong (each verified 2026-08-26):**
+>
+> - **The file list at the end is the worst part.** It names
+>   `configs/L0_0_minimal/variables_reference.yaml` … `configs/L3_temporal_mechanics/...` with
+>   dimension figures **(38 / 78 / 93 / 54 / 93)**. Both halves are wrong. That **flat
+>   `configs/<level>/` layout does not exist** — levels live at
+>   `configs/default_curriculum/levels/<level>/` under a pack root. And those dimension figures
+>   are the exact corrupted table `CLAUDE.md` warns about: observation width is **two**
+>   quantities (allocated vs active), it moves whenever the observed surface changes, and it is
+>   currently mid-migration. **Never quote a number from that list.**
+> - **`variables_reference.yaml` is OPTIONAL** — a *static overlay only*, no expressions and no
+>   item-scoped variables. `configs/default_curriculum` has **none at all**;
+>   `configs/L5_multi_agent` has one. The **required** file is `vfs_profiles.yaml` at pack root,
+>   and level directories must NOT contain one. This file's "File Location" section frames
+>   `variables.yaml` as the future home and `variables_reference.yaml` as "current test
+>   infrastructure"; neither framing matches the shipped pack.
+> - **The `scope` field table says the enum is `global` / `agent` / `agent_private` — three
+>   values. VFS has nine**: those plus `item`, `pair`, `group`, `affordance`, `zone`, `message`
+>   (`VariableScope` in `vfs/schema.py`). The file contradicts itself — a later section does
+>   document zone/group/message extents.
+> - **`configs/global_actions.yaml`** (referenced in an example) is a dead path; the action
+>   vocabulary is the pack-level `<pack>/actions.yaml`.
+> - Anything this file says about **access control** or **`agent_private`** should be checked
+>   against `docs/architecture/VFS.md` §6, whose caveat notes the enforcement currently has no
+>   authoring surface and that the observation path bypasses the checked accessor.
+>
+> **Authority order:** `docs/architecture/VFS.md` first, then `vfs-profiles.md` in this
+> directory, then the DTOs in `src/townlet/config/`. This file last.
+
+
 **Status**: Phase 1 Implementation (TASK-002C)
 **Version**: 1.0
 **Last Updated**: 2025-11-07
@@ -111,6 +148,39 @@ exposed_observations:
   default: 0.5
   description: "Internal motivation level (not exposed to agent)"
 ```
+
+### Zone, Group and Message Scopes (extents required)
+
+**Storage**: `zone` → `[num_zones, ...]`, `group` → `[num_groups, ...]`,
+`message` → `[num_agents, num_message_slots, ...]`
+
+These scopes size their storage by an **extent** that must be declared in a
+top-level `extents:` block of `variables_reference.yaml`. Declaring a variable
+with one of these scopes and no matching extent is a compile error (the loader
+rejects the pack — it never validates green and then crashes at env
+construction).
+
+```yaml
+extents:
+  num_zones: 4          # required by any zone-scoped variable, >= 1
+  num_groups: 2         # required by any group-scoped variable, >= 1
+  num_message_slots: 8  # required by any message-scoped variable, >= 1
+
+variables:
+  - id: "zone_temp_offset"
+    scope: "zone"
+    type: "scalar"
+    lifetime: "persistent"
+    readable_by: ["agent", "engine"]
+    writable_by: ["engine"]
+    default: 0.0
+    description: "Per-zone temperature offset"
+```
+
+Extents declared without any matching-scope variable are harmless sizing
+metadata. Note: extents allocate storage only — there is no agent→zone or
+agent→group membership mapping yet, so "which zone is this agent in" is not
+resolvable from the extent alone.
 
 ## Type System
 

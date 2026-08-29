@@ -1,5 +1,77 @@
 # Expression Language Reference
 
+> ⛔ **Restored to the live tree 2026-08-26 — this document UNDERSTATES the engine. Do not use its "planned" lists to decide what you can author.**
+>
+> Verified against `src/townlet/world/expression/functions.py` on 2026-08-26: the function
+> registry `FUNCTION_SPECS` holds **49 working functions**. This document describes a small
+> fraction of them and labels several *shipped* ones "planned but not yet implemented".
+>
+> **That is the most damaging way a doc in this repo can be wrong.** A designer who reads
+> "planned" against the spatial and statistical functions concludes the declarative surface
+> cannot express their idea and reaches for Python — which `CLAUDE.md` names as the exact
+> product defect this project exists to prevent. The framework is more capable than this file
+> says.
+>
+> **⚠️ These NINE ship today, despite being listed below as "planned"** (all present in
+> `FUNCTION_SPECS`): `distance`, `within_radius`, `mean`, `sum`, `min`, `max`,
+> `distance_to_affordance`, `manhattan_distance`, `perlin_noise`.
+>
+> **⚠️ "Function signature validation is deferred to Phase 2 (requires function registry)" is
+> false.** The registry exists and type checking is wired:
+> `world/expression/type_checker.py:358-366` — `visit_function_call` imports `FUNCTION_SPECS`,
+> raises `Unknown function '<name>'` for anything absent, then calls `spec.validate_args()`.
+>
+> **⚠️ Two whole capability families are invisible here — 19 functions, entirely undocumented:**
+> - *Temporal:* `lag`, `delta`, `ema`, `moving_average`, `rate_of_change`, `rising_edge`,
+>   `falling_edge`, `elapsed_ticks`, `time_in_window`, `phase_sin`, `phase_cos`
+> - *Tensor:* `gather`, `scatter`, `one_hot`, `masked_add`, `masked_set`, `argmin`, `argmax`,
+>   `count_where` (`where` and `normalize` appear only incidentally — `normalize` is listed under
+>   "Phase 3 planned" while it ships)
+>
+> **✅ The "planned" label IS correct for these** — genuinely absent from the registry, and they
+> fail at **type-check** time (not parse) with `Unknown function`: `sin`, `cos`, `tan`, `asin`,
+> `acos`, `atan`, `sqrt`, `count`, `random`, `bernoulli`, `normal`, `has_item`.
+> (Note `normal_dist` and `uniform` *do* ship — the absent spellings are `normal` and `random`.)
+>
+> **⚠️ "Division always returns float" is FALSE, and it is stated twice.** Verified empirically:
+> `42 / 10` type-checks to **`int`**; only `1.0 / 2` and `42 / 10.0` give `float`. This is the
+> most treacherous error here, because `compile_variable` rejects a declared-vs-inferred type
+> mismatch — so an author who trusts the sentence gets a compile failure with **no obvious link
+> back to the sentence that caused it**. Fix: declare an operand or the variable as float
+> (`42 / 10.0`).
+>
+> **⚠️ `temporal.*` — the single reconciled account** (this doc, `effects.md` and earlier notes
+> disagreed; resolved at source 2026-08-26):
+> - It **parses**, and the runtime context has a reader
+>   (`world/expression/context.py:64-65`, `:234-237`).
+> - But **no schema builder ever emits a `temporal.*` key.** `build_expression_schema`
+>   (`universe/compilers/vfs.py:136-152`; sole caller `universe/compiler.py:454`) emits only
+>   `bar.*`, `vfs.*`, `self.vfs.*`, `target.vfs.*`. Anything validated against that schema
+>   therefore **fails at compile time**.
+> - At runtime only the **item spawn-rule** path populates it, and only with the single key
+>   `tick` (`items/manager.py:624`, `:630`). The **effects** path passes `temporal={}`
+>   (`effects/executor.py:43`, `:739`), so it always raises there.
+> - **✅ Correct working form: the bare `tick` variable** — the engine-written step counter,
+>   reserved at `universe/compilers/vfs.py:130-132`. Do not write `temporal.tick`.
+>
+> **⚠️ Three of the six path roots this document teaches do not resolve**, for the same reason:
+> the compile-time schema emits only the four roots listed above.
+>
+> **⚠️ The YAML examples in this file do not all compile.** Treat every example as
+> unverified until the fix pass pins them with a test.
+>
+> **✅ Correct as documented** (do not "fix" these): the ternary form is `if C then A else B` —
+> the Python conditional form failing is not a defect. And `sqrt`/`sin`/`cos` fail at
+> **type-check**, not parse.
+>
+> Until this is rewritten, **`src/townlet/world/expression/functions.py` is the authority** on
+> what you can call. Tracked as `hamlet-8f2e13c5a9`.
+>
+> *This document was audited twice on 2026-08-26 with materially different results; the second
+> pass found the first had under-reported it. A doc this wrong should not be signed off on a
+> single read — the durable answer is test-pinned examples, not repeated human passes.*
+
+
 ## Overview
 
 The HAMLET Expression Language is a declarative, type-safe scripting language for specifying dynamic behaviors in configuration files. Expressions enable data-driven gameplay mechanics without Python code changes.

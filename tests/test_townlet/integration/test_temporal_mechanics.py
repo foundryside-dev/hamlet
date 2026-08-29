@@ -42,6 +42,7 @@ killing the wrapping branch, ignoring `duration_ticks`, and moving
 `costs_per_tick` to completion each fail a different named test.
 """
 
+import math
 from pathlib import Path
 
 import pytest
@@ -248,33 +249,155 @@ class TestTimeProgression:
         # Should wrap back to 0
         assert env.time_of_day == 0
 
-    def test_observation_dimensions_with_temporal(self, cpu_device, cpu_env_factory):
-        """Verify observation includes temporal features (sin/cos time + progress + lifetime).
 
-        Migrated from: test_temporal_integration.py::test_observation_dimensions_with_temporal
-        Combined with: test_vectorized_env_temporal.py::test_observation_includes_time_and_progress
+class TestTemporalObservability:
+    """The agent can SEE the time of day — and sees it declaratively.
 
-        NOTE: Updated to expect 4 temporal features (was 3) to match actual implementation.
-        The 4th feature (lifetime_progress) was added for forward compatibility.
+    L3's entire distinguishing feature is a 24-tick day/night cycle. Until this class
+    existed, nothing asserted that the cycle reaches the observation at all: the
+    tests above read `env.time_of_day`, an engine attribute no agent ever sees, so
+    they stayed green through the unit-3 token cut that deleted the engine's
+    hardcoded temporal observation block and left L3 genuinely blind
+    (hamlet-02684be106).
+
+    The replacement is a pack DECLARATION, not restored engine code — the
+    `time_of_day_phase` global in `configs/default_curriculum/vfs_profiles.yaml`,
+    an expression over the ambient `tick` exposed under `cyclical_sin_cos`. These
+    tests therefore pin the product claim as much as the mechanic: an author can
+    declare a time-of-day observation without editing Python.
+
+    Every index below is resolved from the compiled artifact. Writing a literal lane
+    offset here would re-create exactly the decay that made the engine's temporal
+    block wrong in the first place.
+    """
+
+    TEMPORAL_VARIABLE = "time_of_day_phase"
+
+    def _phase_lanes(self, env) -> tuple[int, int]:
+        """Absolute obs columns of the phase token's two value lanes.
+
+        Derived, never written: `row_layout()` gives the token's row span in
+        serialization order, and the payload feature order gives the lanes within
+        it (presence occupies column 0 of the row, hence the +1).
         """
-        env = cpu_env_factory(config_dir=Path("configs/default_curriculum"), level_name="L3_temporal_mechanics", num_agents=2)
+        spec = env.universe.token_spec
+        schema = spec.get_type("variable_element")
+        bound = [
+            row
+            for row in spec.row_layout()
+            if row[0] == "variable_element" and schema.slot_bindings[row[1]].filler_ref == self.TEMPORAL_VARIABLE
+        ]
+        assert bound, (
+            f"No variable_element token is bound to {self.TEMPORAL_VARIABLE!r}. "
+            "L3 cannot observe time of day — the pack declaration is missing or unexposed."
+        )
+        start = bound[0][2]
+        return (
+            start + 1 + schema.payload_features.index("value_0"),
+            start + 1 + schema.payload_features.index("value_1"),
+        )
 
-        obs = env.reset()
+    def _walk_a_day(self, env, ticks: int) -> list[tuple[float, float]]:
+        """Step `ticks` times with WAIT, collecting the phase pair after each step."""
+        wait = env.action_dim - 1  # canonical ordering: WAIT is always last (substrate/base.py)
+        trace = []
+        for _ in range(ticks):
+            obs = env.step(torch.tensor([wait], device=env.device))[0]
+            lane_0, lane_1 = self._phase_lanes(env)
+            trace.append((float(obs[0, lane_0]), float(obs[0, lane_1])))
+        return trace
 
-        # Observation size now flows from compiled metadata
-        expected_dim = env.metadata.observation_dim
-        assert obs.shape == (2, expected_dim)
+    def test_phase_token_is_exposed_with_a_bounded_cyclical_normalization(self, temporal_env):
+        """The declaration compiles into a real, exposed token — the guard against a
+        silently-unexposed variable, which would leave every other assertion vacuous."""
+        env = temporal_env
+        spec = env.universe.token_spec
+        schema = spec.get_type("variable_element")
 
-        # Locate the temporal block by its declared group, not by counting back from
-        # the end — negative indices silently follow any layout change.
-        temporal = obs[0, env.observation_activity.group_slices["temporal"]]
-        time_sin, time_cos, day_progress, is_night = temporal
+        refs = [binding.filler_ref for binding in schema.slot_bindings]
+        assert self.TEMPORAL_VARIABLE in refs, f"{self.TEMPORAL_VARIABLE} not among variable_element slots {refs}"
 
-        # time_of_day = 0 at reset => sin = 0, cos = 1
-        assert time_sin == pytest.approx(0.0, abs=1e-6)
-        assert time_cos == pytest.approx(1.0, abs=1e-6)
-        assert day_progress == 0.0  # midnight is 0/24 of the way through the day
-        assert is_night == 1.0  # midnight IS night (threshold is day_length * 0.25)
+        # The descriptor block must advertise the encoding the agent is being handed:
+        # a global-scope, temporal-semantic value under cyclical_sin_cos with period 24.
+        # These ride in the token itself, so a change of normalization is visible to the
+        # network rather than silent.
+        # `static_signature` is the DESCRIPTOR BLOCK only — it starts at the scope
+        # one-hot, after the position and value lanes — so align it by name rather
+        # than by a counted offset.
+        slot = refs.index(self.TEMPORAL_VARIABLE)
+        descriptor_start = schema.payload_features.index("scope_global")
+        signature = dict(zip(schema.payload_features[descriptor_start:], schema.slot_bindings[slot].static_signature, strict=True))
+        assert signature["scope_global"] == 1.0
+        assert signature["semantic_temporal"] == 1.0
+        assert signature["norm_kind_cyclical_sin_cos"] == 1.0
+        assert signature["norm_param_scale"] == pytest.approx(24.0), "period must match curriculum.day_length"
+
+        # `cyclical_sin_cos` is a member of token_spec._BOUNDED_KINDS, so exposure
+        # certifies boundedness with no clip parameter — the reason this encoding was
+        # chosen over a phase_sin/phase_cos pair under minmax(-1, 1, clip=true).
+        assert signature["norm_param_clip"] == 0.0
+
+    def test_observation_varies_with_time_of_day(self, temporal_env):
+        """Stepping across a full day moves the phase lanes.
+
+        This is the assertion that was missing when L3 went blind: it fails outright
+        against an engine with no temporal observation, where both lanes sit constant.
+        """
+        env = temporal_env
+        env.reset()
+
+        day_length = env.day_length
+        assert day_length == 24, f"fixture assumption: L3 declares a 24-tick day, got {day_length}"
+
+        trace = self._walk_a_day(env, day_length)
+
+        lane_0 = [pair[0] for pair in trace]
+        lane_1 = [pair[1] for pair in trace]
+        assert len(set(lane_0)) > 1, "sin lane is constant — the agent cannot see time of day"
+        assert len(set(lane_1)) > 1, "cos lane is constant — the agent cannot see time of day"
+
+        # A full period is actually swept, not merely jittered: sin and cos each reach
+        # both extremes of [-1, 1] over one declared day.
+        assert max(lane_0) > 0.99 and min(lane_0) < -0.99
+        assert max(lane_1) > 0.99 and min(lane_1) < -0.99
+
+        # Bounded by construction — the boundedness certification must be honest at
+        # runtime, not only at compile time (PDR-0016: unbounded values saturate
+        # LayerNorm and read as perpetual novelty to RND).
+        for sin_value, cos_value in trace:
+            assert -1.0 <= sin_value <= 1.0
+            assert -1.0 <= cos_value <= 1.0
+
+    def test_phase_is_continuous_across_the_midnight_wrap(self, temporal_env):
+        """Midnight is not a cliff.
+
+        This is the property that motivates sin/cos over a raw `tick % day_length`:
+        the step from the last tick of one day to the first of the next must be the
+        same size as any other step. A modulo encoding would jump the full range
+        exactly here, and nothing else in this file would notice.
+        """
+        env = temporal_env
+        env.reset()
+
+        day_length = env.day_length
+        # Two full days, so the wrap sits in the interior of the trace.
+        trace = self._walk_a_day(env, day_length * 2)
+
+        steps = [math.hypot(nxt[0] - cur[0], nxt[1] - cur[1]) for cur, nxt in zip(trace, trace[1:], strict=False)]
+
+        # Every step is one 1/day_length turn around the unit circle, so all step
+        # magnitudes are equal — including the one spanning the wrap. Derived from
+        # the declared period, never a literal.
+        expected = 2.0 * math.sin(math.pi / day_length)
+        for index, step in enumerate(steps):
+            assert step == pytest.approx(expected, abs=1e-4), (
+                f"discontinuity at step {index} (magnitude {step}, expected {expected}) — "
+                "the phase encoding is not continuous across the day boundary"
+            )
+
+        # And the phase genuinely returns to where it started after one full day,
+        # which is what makes "the same hour on a different day" look the same.
+        assert trace[day_length - 1] == pytest.approx(trace[-1], abs=1e-4)
 
 
 # =============================================================================
@@ -458,37 +581,6 @@ class TestMultiTickInteractions:
             expected = 50.0 - REST_MONEY_PER_TICK * tick
             assert env.meters[0, money].item() == pytest.approx(expected, abs=0.001), f"after {tick} tick(s)"
 
-    def test_interaction_progress_is_tracked_but_not_observable(self, multitick_env):
-        """Progress advances as engine state — and is NOT in the observation.
-
-        This test was `test_interaction_progress_in_observations` and read
-        `obs[0, -2]`, expecting progress/10.0 in the last-but-one slot. The
-        temporal observation block is now exactly four features (sin, cos,
-        day_progress, is_night) — see `observation_encoder._build_temporal_observation`
-        — so `interaction_progress` is engine state with no VFS variable and no
-        observation mark. An author cannot declare it observable from a config
-        pack. That gap is filed separately; it is asserted here rather than
-        quietly dropped, so the day it becomes observable this test fails and
-        says so.
-        """
-        env = multitick_env
-        obs = env.reset()
-
-        interact = _park(env, REST_AFFORDANCE)
-        temporal = env.observation_activity.group_slices["temporal"]
-        assert obs[0, temporal].numel() == 4, "temporal block is sin/cos/day_progress/is_night"
-
-        for tick in range(1, 4):
-            obs, _, _, _ = env.step(torch.tensor([interact], device=env.device))
-            env.positions[0] = env.affordances[REST_AFFORDANCE]
-            assert env.interaction_progress[0] == tick
-
-            # The progress value appears nowhere in the observation.
-            assert not torch.isclose(obs[0], torch.full_like(obs[0], tick / 10.0), atol=1e-6).any(), (
-                "interaction progress is unexpectedly present in the observation — "
-                "if it became observable, update this test and close the filed gap"
-            )
-
     def test_completion_bonus_timing(self, multitick_env):
         """The completion bonus lands on the final tick ONLY, not earlier."""
         env = multitick_env
@@ -628,42 +720,6 @@ class TestMultiAgentTemporal:
 
 class TestTemporalIntegrations:
     """Cross-system temporal mechanics integration."""
-
-    def test_temporal_mechanics_disabled_fallback(self, cpu_device, cpu_env_factory, test_config_pack_path):
-        """Verify environment works without temporal mechanics (legacy mode).
-
-        Migrated from: test_temporal_integration.py::test_temporal_mechanics_disabled_fallback
-        """
-        env = cpu_env_factory(config_dir=test_config_pack_path, num_agents=1)
-
-        obs = env.reset()
-
-        # Temporal features always included for forward compatibility. The width comes
-        # from the compiled artifact — reconstructing it from a layout formula is how
-        # this assertion went stale (the meter block became one field per meter).
-        assert obs.shape == (1, env.observation_dim)
-
-        # The temporal block is ALLOCATED even with temporal mechanics off; it is the
-        # activity mask that makes it dormant, not a narrower tensor.
-        assert "temporal" in env.observation_activity.group_slices
-
-        # Temporal state is dormant but present
-        assert hasattr(env, "time_of_day")
-        assert env.time_of_day == 0
-
-        # Interactions work (legacy single-shot mode)
-        assert "SLEEP" in env.affordances, "SLEEP affordance not deployed in test config"
-        env.positions[0] = env.affordances["SLEEP"]
-        env.meters[0, 0] = 0.3  # Start low to see increase
-
-        initial_energy = env.meters[0, 0].item()
-
-        env.step(torch.tensor([_interact_idx(env)], device=env.device))
-
-        final_energy = env.meters[0, 0].item()
-        # Legacy mode: single-shot benefit from SLEEP.
-        # Even with depletion, should see significant increase
-        assert (final_energy - initial_energy) > 0.4  # At least 40% gain
 
     def test_temporal_mechanics_with_curriculum(self, cpu_device, cpu_env_factory):
         """Verify temporal mechanics works with adversarial curriculum.

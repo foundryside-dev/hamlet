@@ -7,16 +7,14 @@ import json
 from collections.abc import Iterable, Mapping
 from typing import Any
 
-from townlet.vfs.schema import NormalizationSpec, ObservationField, VariableDef, VariableScope
+from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope
 from townlet.vfs.transition_graph import TransitionPhaseGraph
 
 __all__ = [
     "canonical_action_schema",
-    "canonical_observation_schema",
     "canonical_transition_graph_schema",
     "canonical_variable_schema",
     "compute_action_schema_hash",
-    "compute_observation_schema_hash",
     "compute_transition_graph_hash",
     "compute_variable_schema_hash",
     "compute_vfs_hash",
@@ -31,16 +29,6 @@ def canonical_variable_schema(variables: Iterable[VariableDef]) -> list[dict[str
 def compute_variable_schema_hash(variables: Iterable[VariableDef]) -> str:
     """Return the SHA-256 digest of the canonical variable-schema payload."""
     return _hash_payload(canonical_variable_schema(variables))
-
-
-def canonical_observation_schema(fields: Iterable[ObservationField]) -> list[dict[str, Any]]:
-    """Return the ordered observation-schema payload used for provenance."""
-    return [_canonical_observation_entry(field) for field in fields]
-
-
-def compute_observation_schema_hash(fields: Iterable[ObservationField]) -> str:
-    """Return the SHA-256 digest of the canonical observation-schema payload."""
-    return _hash_payload(canonical_observation_schema(fields))
 
 
 def canonical_action_schema(actions: Iterable[Any]) -> list[dict[str, Any]]:
@@ -65,6 +53,7 @@ def canonical_transition_graph_schema(
     passive_depletion_program: Any | None = None,
     social_residue_program: Any | None = None,
     reward_component_program: Any | None = None,
+    bounds_clamp_program: Any | None = None,
 ) -> dict[str, Any]:
     """Return the transition-graph payload used for world-physics provenance."""
     rules = [_canonical_transition_rule(write) for write in action_write_program.writes]
@@ -85,6 +74,8 @@ def canonical_transition_graph_schema(
         rules.extend(_canonical_transition_rule(rule) for rule in social_residue_program.rules)
     if reward_component_program is not None:
         rules.extend(_canonical_transition_rule(rule) for rule in reward_component_program.rules)
+    if bounds_clamp_program is not None:
+        rules.extend(_canonical_transition_rule(rule) for rule in bounds_clamp_program.rules)
     return {
         "phase_graph": phase_graph.to_canonical_payload(),
         "rules": rules,
@@ -103,6 +94,7 @@ def compute_transition_graph_hash(
     passive_depletion_program: Any | None = None,
     social_residue_program: Any | None = None,
     reward_component_program: Any | None = None,
+    bounds_clamp_program: Any | None = None,
 ) -> str:
     """Return the SHA-256 digest of the compiled transition graph and rules."""
     return _hash_payload(
@@ -117,6 +109,7 @@ def compute_transition_graph_hash(
             passive_depletion_program=passive_depletion_program,
             social_residue_program=social_residue_program,
             reward_component_program=reward_component_program,
+            bounds_clamp_program=bounds_clamp_program,
         )
     )
 
@@ -127,7 +120,13 @@ def compute_vfs_hash(
     action_schema_hash: str,
     transition_graph_hash: str,
 ) -> str:
-    """Return the combined VFS identity hash over state, observation, action, and transition schemas."""
+    """Return the combined VFS identity hash over state, observation, action, and transition schemas.
+
+    The four-term composition is structurally FROZEN across the unit-3 token cut: slot 2
+    simply receives the TokenSpec-derived ``observation_schema_hash``
+    (townlet.universe.token_hashes), which is why ``vfs_hash`` moved on every pack at the
+    cut — DIV-008's registered movement, never a restructuring of this function.
+    """
     combined = variable_schema_hash + observation_schema_hash + action_schema_hash + transition_graph_hash
     return hashlib.sha256(combined.encode("utf-8")).hexdigest()
 
@@ -142,19 +141,6 @@ def _canonical_variable_entry(variable: VariableDef) -> dict[str, Any]:
         "readable_by": sorted(variable.readable_by),
         "writable_by": sorted(variable.writable_by),
         "range": _normalization_range(variable.normalization),
-    }
-
-
-def _canonical_observation_entry(field: ObservationField) -> dict[str, Any]:
-    return {
-        "id": field.id,
-        "source_variable": field.source_variable,
-        "shape": list(field.shape),
-        "normalization": _normalization_payload(field.normalization),
-        "exposed_to": sorted(field.exposed_to),
-        "curriculum_active": field.curriculum_active,
-        "dtype": "float32",
-        "semantic_type": field.semantic_type,
     }
 
 
@@ -244,12 +230,6 @@ def _normalization_range(normalization: NormalizationSpec | None) -> list[Any] |
     if normalization.min is None or normalization.max is None:
         return None
     return [normalization.min, normalization.max]
-
-
-def _normalization_payload(normalization: NormalizationSpec | None) -> dict[str, Any] | None:
-    if normalization is None:
-        return None
-    return normalization.model_dump(mode="json", exclude_none=True)
 
 
 def _hash_payload(payload: Any) -> str:

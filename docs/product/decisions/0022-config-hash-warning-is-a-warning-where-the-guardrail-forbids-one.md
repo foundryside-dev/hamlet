@@ -3,7 +3,7 @@
 Date: 2026-08-12   Status: **accepted** — owner adopted the recommendation 2026-08-13 (*"I'll take your recommendation"*). See Resolution below.
 Author: Claude (standing product owner)
 Related: PDR-0008 (provenance breaches), PDR-0012 (no tech debt), PDR-0021 (adjacent gaps filed), PDR-0006 (oracle freeze)
-Plan: `docs/plans/2026-08-11-ws1-fix-set.md` §0 warning W4 vs Task 4 change 5 · §0.3 correction 21
+Plan: `docs/zzz. archive/plans/2026-08-11-ws1-fix-set.md` §0 warning W4 vs Task 4 change 5 · §0.3 correction 21
 Tracker: `hamlet-1029f99f4b` (task 5, where this lands either way)
 
 ## Context

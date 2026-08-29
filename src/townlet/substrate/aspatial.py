@@ -60,37 +60,22 @@ class AspatialSubstrate(SpatialSubstrate):
         num_agents = pos1.shape[0]
         return torch.zeros(num_agents, device=pos1.device)
 
-    def encode_observation(
-        self,
-        positions: torch.Tensor,
-        affordances: dict[str, torch.Tensor],
-    ) -> torch.Tensor:
-        """Return empty observation encoding (no position to encode)."""
-        num_agents = positions.shape[0]
-        device = positions.device
-        return torch.zeros((num_agents, 0), device=device)
-
-    def get_observation_dim(self) -> int:
-        """Aspatial has zero observation dimensions (no position encoding)."""
-        return 0
-
     @property
     def supports_partial_vision(self) -> bool:
         return False
 
-    def get_grid_encoding_dim(self) -> int:
-        """No positions, no grid: nothing to encode."""
-        return 0
-
-    def get_position_feature_dim(self) -> int:
-        """No positions: no obs_position field is ever declared."""
-        return 0
-
     def get_vision_radius(self, vision_range: float) -> int:
         raise ValueError("Aspatial substrates do not support partial vision; no vision radius exists.")
 
-    def get_partial_window_dim(self, vision_radius: int) -> int:
-        raise ValueError("Aspatial substrates do not support partial vision; no local window exists.")
+    # --- Token visibility / egocentric contract (token-obs unit 3, Task 8) -----
+
+    def visible(self, self_pos: torch.Tensor, entity_pos: torch.Tensor, vision_range: float | None) -> torch.Tensor:
+        """No positions, nothing to hide: every entity is visible to every agent."""
+        return torch.ones((self_pos.shape[0], entity_pos.shape[0]), dtype=torch.bool, device=self_pos.device)
+
+    def egocentric_delta(self, self_pos: torch.Tensor, entity_pos: torch.Tensor) -> torch.Tensor:
+        """No positions: zero-width deltas."""
+        return torch.zeros((self_pos.shape[0], entity_pos.shape[0], 0), dtype=torch.float32, device=self_pos.device)
 
     def normalize_positions(self, positions: torch.Tensor) -> torch.Tensor:
         """Normalize positions to [0, 1] range (always relative encoding).
@@ -133,24 +118,6 @@ class AspatialSubstrate(SpatialSubstrate):
     def get_capacity(self) -> None:
         """Return None (aspatial has no positions)."""
         return None
-
-    def encode_partial_observation(
-        self,
-        positions: torch.Tensor,
-        affordances: dict[str, torch.Tensor],
-        vision_range: int,
-    ) -> torch.Tensor:
-        """Return empty tensor (aspatial has no position encoding).
-
-        In aspatial universes, there's no concept of "local window" or "vision."
-        All affordances are accessible without positioning.
-
-        Returns:
-            [num_agents, 0] empty tensor
-        """
-        num_agents = positions.shape[0]
-        device = positions.device
-        return torch.zeros((num_agents, 0), device=device)
 
     def supports_enumerable_positions(self) -> bool:
         """Aspatial substrates have no positions."""

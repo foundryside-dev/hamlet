@@ -60,29 +60,41 @@ specification to diff against, never a code path to keep alive.
 
 ## Reading `docs/` — intent vs record
 
-⚠️ **`docs/` is 573 markdown files, ~90% of them last touched 2026-05, before the current
-recovery work. Treat it as design intent, never as a record of what shipped.** Verified
-2026-08-15 (`docs/architecture/REVIEW-2026-08-15-architecture-docs-and-hld.md`).
+⚠️ **Most of `docs/` predates the current recovery work. Treat it as design intent, never as a
+record of what shipped.** On 2026-08-24 the old architecture corpus was archived wholesale to
+`docs/architecture/archive/` and replaced by a six-document HLD set (PDR-0118); archive-internal
+links may dangle, by design.
 
-The sharpest case: `docs/architecture/BRAIN_AS_CODE.md` and
-`docs/architecture/hld/02-brain-as-code.md` both say
+The sharpest case: `docs/architecture/archive/BRAIN_AS_CODE.md` and
+`docs/architecture/archive/hld/02-brain-as-code.md` both say
 *"Status: Approved for Implementation"*, while `execution_graph` / `cognitive_topology` /
 `agent_architecture` return **zero grep hits** in `src/` and `configs/`. The design is the
-target; the status line is false. That pattern repeats across the architecture corpus.
+target; the status line is false. That pattern repeats across the archived corpus.
 
 **Rules:**
 
 1. **Never cite a doc as evidence something is implemented.** Check `src/townlet/` first.
 2. **Where a doc disagrees with `README.md`, README is right.** It is current, honest about
    status, and carries the correct product framing.
-3. `docs/architecture/` does not know about `src/townlet/oracle/`, the strangler rewrite,
-   `items/`, or `effects/`. Absence there means nothing.
+3. `docs/architecture/archive/` does not know about `src/townlet/oracle/`, the strangler
+   rewrite, `items/`, or `effects/`. Absence there means nothing.
 4. Many (not all) files carry frontmatter with an "AI-Friendly Summary" and "Reading Strategy".
    Where present, read it first to decide relevance before opening a 2000-line file.
 
-**Current-and-trustworthy:** `README.md`, `docs/product/`, `docs/oracle/`,
-`docs/architecture/vfs.md`, `docs/architecture/vfs-current-implementation.md`,
-`docs/config-schemas/`.
+**Current-and-trustworthy:** `README.md`, `docs/product/`, `docs/oracle/`, the six-document HLD
+set in `docs/architecture/` — `HLD.md`, `STRATA.md`, `UAC.md`, `BAC.md`, `COMPILER.md`,
+`VFS.md` (all reviewed against source 2026-08-24) — and `docs/config-schemas/`.
+`docs/architecture/archive/vfs-current-implementation.md` also remains accurate per the
+2026-08-24 audit **except** its access-control and `agent_private` claims.
+
+**On `docs/config-schemas/`** (restored 2026-08-26): the 2026-08-24 recut (commit `c4e8bd58`,
+"zzz. archive") swept it into the archive on a fast visual pass, and a follow-up sweep
+repointed every citation at the archive path. Both were reversed on 2026-08-26 — it is the
+reference tier the HLD set delegates to, and nothing replaced it. It is back at
+`docs/config-schemas/` and back on the trustworthy list, **with four exceptions that carry
+dated staleness banners of their own**: `variables.md` (2025-11, wholesale stale),
+`drive_as_code.md`, `enabled_actions.md`, and `training.md`. Trust a file in that directory
+unless it opens with a banner telling you not to.
 
 ### The oracle (strangler discipline)
 
@@ -95,8 +107,8 @@ the register says otherwise."* Accepted differences are registered in
 ### Universe Compiler (UAC) Quick Reference
 
 - **Source**: `src/townlet/universe/compiler.py` - seven-stage pipeline (parse → symbol table → resolve → cross-validate → metadata → optimization → emit/cache)
-- **Docs**: `docs/UNIVERSE-COMPILER.md`. `docs/architecture/COMPILER_ARCHITECTURE.md` is
-  design-era (2025-11): useful for intent, but it describes sub-compilers that were never wired
+- **Docs**: `docs/architecture/COMPILER.md`. `docs/architecture/archive/COMPILER_ARCHITECTURE.md`
+  is design-era (2025-11): useful for intent, but it describes sub-compilers that were never wired
   (notably `CuesCompiler`, instantiated at `compiler.py:69` and never called) and asserts a
   backwards-compatibility success criterion this project rejects.
 - **Tests**: `uv run pytest tests/test_townlet/unit/universe/` (use `UV_CACHE_DIR=.uv-cache` in sandboxed environments)
@@ -160,61 +172,85 @@ CLEAN_HOUSE, ENTERTAINMENT, DOCTOR — `affordances.yaml` is byte-identical acro
 (verified 2026-08-15). Several `docs/architecture/` documents list a *different* affordance set;
 they are wrong, this one is the shipped pack.
 
-**Observation Encoding Modes** (configurable via pack-level `stratum.yaml`):
+**Observation Encoding Modes** (`stratum.yaml`): ⚠️ **`observation_mode` and
+`observation_encoding` are INERT since the unit-3 token cut (2026-08-26).** They configured
+the old raster observation spec's field selection and position-block encoding; nothing reads
+them at runtime now. Measured: `scaled` and `relative` compile to a byte-identical `TokenSpec`
+— same `total_dims`, same `observation_schema_hash`, same `layout_hash` — so the declaration
+is a No-Defaults-violating no-op, not a choice. Filed as `hamlet-6a4a6596bd` (P1). A token
+position block is always the substrate's normalized coordinates plus an egocentric delta,
+padded to `MAX_POSITION_RANK`.
 
-- **relative** (default): Normalized [0,1] coordinates - best for transfer learning, required for POMDP
-- **scaled**: Coordinates scaled to grid dimensions [0, grid_size] - value range conveys grid size implicitly
-- **absolute**: Raw unnormalized coordinates - for physical simulation
+**Observation Dimensions** — the observation is **TOKENS**, not a raster:
 
-**Note**: All encoding modes produce **identical obs_dim** (2 dims for position). Only the value range changes, not the number of dimensions.
+⚠️ **The allocated-vs-active superset-plus-activity-mask framing this section used to teach
+is DEAD** (unit-3 token cut, DIV-008). `ObservationSpec`, `ObservationField`,
+`ObservationActivity`, `curriculum_active` and the per-level activity mask are deleted, not
+renamed. **There is no mask and no inactive slot: every dim is real, and absence is a token's
+own presence feature.** Do not carry an "allocated vs active" reading into any observation
+question.
 
-**Observation Dimensions** (Grid2D with "relative" encoding):
-
-⚠️ **The per-level dimension counts previously listed here (29 / 54) were wrong by roughly 4×,
-and no replacement literal is given on purpose.** Observation width moves whenever the observed
-surface changes, so any number written here starts decaying immediately — that is how the old
-ones got wrong. Ask the compiled artifact — it is the only authority, and correct by
-construction at every commit:
+⚠️ **No dimension literal is given here, on purpose** — the old per-level counts (29 / 54)
+were wrong by roughly 4×, which is how a written-down width decays. Ask the compiled artifact;
+it is the only authority and is correct by construction at every commit:
 
 ```python
 from townlet.universe.compiler import UniverseCompiler
 u = UniverseCompiler().compile(Path("configs/default_curriculum"),
                                primary_level="L1_full_observability")
-u.observation_spec.total_dims
+spec = u.get_level("L1_full_observability").token_spec
+spec.total_dims      # serialization width of the flat view
+spec.census          # {token type: count} — where the width actually goes
+spec.row_layout()    # (type, slot, start, end) per row; presence leads each row
 ```
 
 `compile()` requires an explicit `primary_level` — implicit selection raises. `CompiledUniverse`
 is single-level by construction (`get_level` / `to_level` / `all_levels` navigate; there is no
-`.levels` mapping), and the field is `total_dims`, not `total_dim`.
+`.levels` mapping).
 
-**"Observation dim" is two quantities, and conflating them is what corrupted every table in
-`docs/`.** The observation is a fixed-width **superset with a per-level activity mask**:
+**What a TokenSpec is** (spec
+`docs/superpowers/specs/2026-08-22-token-observation-representation-design.md` §§1-2): seven
+engine token types in a fixed canonical order — `self`, `meter`, `affordance`, `agent`,
+`item`, `effect`, `variable_element` — each with a **fixed payload width across all
+universes**, and a **per-universe compiled capacity** with deterministic slot bindings.
+Content is per-universe; the type system is not. `total_dims = Σ_type capacity × (1 + payload
+width)`. Identity is the declared payload applied recursively (a meter is its declared
+parameters, an affordance carries its targets' meter signatures), never a name or a slot
+index — so two entities identical in every declared parameter are refused at compile time.
 
-- **Allocated** (`observation_spec.total_dims`) — identical at every level. This is the tensor
-  width, and the mechanism behind the transfer-learning property below.
-- **Active** (`sum(observation_activity.active_mask)`) — varies per level. Inactive slots are
-  held at zero, not removed.
+**Two consequences worth holding on to:**
 
-POMDP does **not** shrink the tensor: it zeroes the grid-encoding block and activates the local
--window block instead. Quote which quantity you mean, or don't quote a number.
+- **Transfer is a property of the type schema, not of the width.**
+  `token_type_schema_hash` — the transfer contract — is **identical across a 2-D grid, a 3-D
+  cubic grid and an aspatial universe** (measured 2026-08-26: `428982ef5d81dd26` on
+  `default_curriculum`, `differential/div003_cubic_partial`, `aspatial_test` and all three
+  `token_transfer_*` packs, whose `total_dims` range 162–1132). That is what
+  `MAX_POSITION_RANK` padding buys, and why rank-adaptive padding is not a free width saving.
+  `layout_hash` — the flat-net contract — moves per universe, as it must.
+- **POMDP does not shrink or reshape the tensor**: same `TokenSpec`, same width, same
+  `layout_hash`; `vision_range` is handed to `substrate.visible()` and out-of-range spatial
+  tokens have presence (and payload) zeroed.
 
-**Key insight**: allocated observation width is **constant** across all Grid2D grid sizes —
-that is what enables true transfer learning, and it is a consequence of the superset+mask
-design, not a coincidence.
-
-**Action Space** (global vocabulary enables checkpoint transfer):
-
-- Grid2D: 8 actions (6 substrate + INTERACT + WAIT)
-- Grid3D: 10 actions
-- GridND (7D): 16 actions
-- Aspatial: 4 actions
+**Action Space** (corrected 2026-08-24 — the per-substrate count table previously here, "Grid2D
+8 / Grid3D 10 / GridND(7D) 16 / Aspatial 4", disagreed with source): the action space is
+**composed** — substrate movement actions (a function of substrate type *and* declared
+parameters such as `diagonals`) plus custom actions from `actions.yaml` — under the canonical
+ordering contract of `substrate/base.py`: movement, then `INTERACT` at `[-2]`, then `WAIT` at
+`[-1]`; aspatial has no movement actions. Never quote a per-substrate action-count literal; ask
+the compiled artifact. See `docs/architecture/STRATA.md` §5.
 
 **POMDP Support**:
 
-- ✅ **Supported**: Grid2D, Grid3D (vision_range ≤ 2), Aspatial (special case)
-- ❌ **Not Supported**: Continuous substrates, GridND (N≥4) - window too large
+- ✅ **Supported**: Grid2D, Grid3D — subject to the window-size gate. `vision_range` is a
+  **normalized fraction** of the longest axis, not a cell radius (the old "vision_range ≤ 2"
+  phrasing here predated that encoding; corrected 2026-08-24): validation refuses when the
+  implied window is too large (e.g. Grid3D on 8³ accepts 0.5 → window 5, rejects 0.75 → window 7).
+- ❌ **Not Supported**: Aspatial (`supports_partial_vision` returns False and the
+  window/radius methods raise — the "special case" previously listed here was false,
+  corrected 2026-08-24), Continuous substrates, GridND (N≥4) - window too large
 
-See `tests/test_townlet/unit/environment/test_pomdp_validation.py` for validation logic.
+See `tests/test_townlet/unit/environment/test_pomdp_validation.py` for validation logic and
+`docs/architecture/STRATA.md` §7 for the three independent gates.
 
 ### Variable & Feature System (VFS)
 
@@ -224,13 +260,19 @@ BAC — not just an observation helper.
 **Purpose**: Declarative state space configuration for observation specs, access control, action
 dependencies, and (via VTC) compiled transitions.
 
-**Pipeline**: `YAML Config → Schema Validation → Observation Spec → Runtime Registry → Observations`
+**Pipeline** (corrected 2026-08-26 at the token cut): `YAML Config → Schema Validation →
+TokenSpec → Runtime Registry + token publishers → Observations`
 
 **Key Components**:
 
-- `schema.py`: VariableDef, ObservationField, NormalizationSpec, WriteSpec
+- `schema.py`: VariableDef, NormalizationSpec, WriteSpec (`ObservationField` — the VFS
+  observation mirror — was **deleted** at the token cut, along with `VFSObservationSpec` and
+  `vfs/observation_builder.py`: the mirror was derived one hop downstream of an
+  `ObservationSpec` that no longer exists)
 - `registry.py`: Runtime storage with GPU tensors, access control enforcement
-- `observation_builder.py`: Compile-time spec generation, dimension validation
+- `universe/dto/token_spec.py`: the compiled `TokenSpec` — engine constants, per-type payload
+  schemas, capacity derivations, the exposure refusals and the indistinguishability check
+- `environment/token_publishers.py`: one publisher per token type; fills the flat view
 - `vtc.py`: VFS Transition Compiler — action writes, passive dynamics, cascades, terminal
   conditions, reward components, occupancy claims
 
@@ -239,7 +281,11 @@ dependencies, and (via VTC) compiled transitions.
 
 **Access Control**: `readable_by` / `writable_by` role lists per variable, enforced at
 `registry.get()` / `set()`. Roles are open strings, not a closed enum — `agent`, `engine`,
-`actions`, `vtc`, `social_model` are the common ones.
+`actions`, `vtc`, `social_model` are the common ones. ⚠ Caveat (2026-08-24 audit): the
+enforcement is real where it runs, but it currently has **no authoring surface** (the compiler
+hardcodes the role lists on both required config files) and the observation path bypasses the
+checked accessor entirely — see `docs/architecture/VFS.md` §6 caveat and
+`docs/architecture/archive/REVIEW-2026-08-24-vfs-implementation-vs-spec.md`.
 
 **Which files a pack needs** (corrected 2026-08-15 — the previous "all packs MUST include
 `variables_reference.yaml`" was **false**):
@@ -250,8 +296,11 @@ dependencies, and (via VTC) compiled transitions.
   marks. Static only: no expressions, no item-scoped variables. `configs/default_curriculum`
   does not have one; `configs/L5_multi_agent` does.
 
-**Documentation**: `docs/config-schemas/variables.md`, `docs/config-schemas/vfs-profiles.md`,
-and `docs/architecture/vfs-current-implementation.md` (current, source-mapped).
+**Documentation**: `docs/architecture/VFS.md` (the authoritative VFS document, reviewed
+2026-08-24), `docs/config-schemas/vfs-profiles.md`,
+`docs/config-schemas/variables.md` (⚠ **stale, 2025-11** — restored 2026-08-26 with a
+staleness banner; it is the only variables reference we have, but verify against source), and `docs/architecture/archive/vfs-current-implementation.md`
+(accurate per the 2026-08-24 audit except its access-control and `agent_private` claims).
 
 ### Action Space (Composable)
 
@@ -263,7 +312,8 @@ and `docs/architecture/vfs-current-implementation.md` (current, source-mapped).
 - **Custom Actions**: REST (energy recovery), MEDITATE (mood boost)
 - **Action Labels**: Configurable terminology (gaming, 6dof, cardinal, math presets)
 
-See `docs/config-schemas/enabled_actions.md` for details.
+See `docs/config-schemas/enabled_actions.md` for details (⚠ carries a dated staleness
+banner: it still documents the dead `configs/global_actions.yaml` path).
 
 ## Drive As Code (DAC)
 
@@ -308,7 +358,8 @@ where:
 ### Components
 
 Modifier, extrinsic (9 types), intrinsic (5 types), and shaping (11 types) vocabularies:
-see `docs/config-schemas/drive_as_code.md`.
+see `docs/config-schemas/drive_as_code.md` (⚠ carries a dated staleness banner: it names
+the file `drive_as_code.yaml`, which does not exist — the real file is `drive.yaml`).
 
 ### Pedagogical Pattern: "Low Energy Delirium" Bug
 
@@ -343,14 +394,19 @@ The intended design, for whoever authors it:
 
 ### Documentation
 
-- **Config Reference**: `docs/config-schemas/drive_as_code.md`
+- **Config Reference**: `docs/config-schemas/drive_as_code.md` (archived
+  ⚠ staleness banner — see above)
 - **Migration Guide**: `docs/guides/dac-migration.md`
 
 ### Q-Learning Algorithm Variants
 
 `training.yaml: use_double_dqn` selects vanilla vs Double DQN; checkpoints persist the flag.
-Non-obvious cost: recurrent Double DQN needs 3 forward passes vs 2 for vanilla.
-Details: `docs/config-schemas/training.md`.
+Non-obvious cost on a recurrent architecture (corrected 2026-08-24 — the "3 forward passes vs 2"
+previously stated here does not match the current update path): one extra single-step boundary
+forward per update; action selection reuses the online unroll (`population/vectorized.py:862-880`).
+Details: `docs/architecture/BAC.md` §2.5 and `docs/config-schemas/training.md` — **both now
+agree** (verified 2026-08-26; `training.md` was corrected in place on 2026-08-24, so the
+warning previously here that it "still carries the stale 3-vs-2 figure" is itself obsolete).
 
 ## Configuration System
 
@@ -393,7 +449,9 @@ files differ only in comments. Five documented levels are **three distinct unive
 
 Substrate config examples: the shipped packs (`configs/default_curriculum/stratum.yaml`,
 `configs/aspatial_test/`, `configs/test/action_space/*/`). There is no `configs/templates/`
-directory — that path is dead. Schemas: `docs/config-schemas/`.
+directory — that path is dead. Schemas: `docs/config-schemas/`. Worked substrate examples
+(aspatial, toroidal grid, euclidean distance) and a side-by-side comparison:
+`docs/examples/`.
 
 ### No-Defaults Principle
 
@@ -413,16 +471,27 @@ DTOs live in `src/townlet/config/` — `training_v2_config.py`, `environment_con
 
 ## Network Architecture Selection
 
-**SimpleQNetwork** (full observability — L0, L0.5, L1) and **RecurrentSpatialQNetwork**
-(POMDP — L2, L3: CNN vision encoder + LSTM). Layer shapes: read
-`src/townlet/agent/networks.py`. Observation width comes only from the compiled artifact
+**SimpleQNetwork** (full observability) and **RecurrentSpatialQNetwork** (LSTM). Layer shapes:
+read `src/townlet/agent/networks.py`. Observation width comes only from the compiled artifact
 (see State Representation above) — do not write dimension literals here.
+
+**Census, not intent** (measured 2026-08-26 — the "L0/L0.5/L1 vs L2/L3" mapping this line used
+to assert was never what the packs declared): **no shipped pack declares `recurrent`.** Every
+`default_curriculum` level runs `feedforward`, including the two POMDP ones; only the three
+`configs/test/token_transfer_*` fixtures and `configs/test/set_encoder_smoke` (`token_set`)
+differ. `RecurrentSpatialQNetwork` survives the token cut as a token-BLOCK reader — it binds
+its three real blocks to `NetworkFactory.token_block_slices(spec)` (self→position,
+meter→meters, affordance→affordance) and reads no spatial window, because a token observation
+has none. `set_encoder` no longer builds; declare `token_set`.
 
 - LSTM hidden state: resets at episode start, persists during rollout, resets per transition in batch training
 
 **Training Details**:
 
-- Gradient clipping: `max_norm=10.0` (prevents exploding gradients)
+- Gradient clipping: `clip_grad_norm_(..., max_norm=self.max_grad_norm)` — the threshold is the
+  **declared training hyperparameter** `max_grad_norm` in `training.yaml`
+  (`config/training_v2_config.py`), not an engine constant (corrected 2026-08-24; the
+  `default_curriculum` packs declare `10.0`)
 - Economic balance: WORK pays $22.5. **This became true at runtime only in WS-1(e)**
   (2026-08-12) — before that, six hardcoded `[0.0, 1.0]` clamps crushed every payout to
   `1.0` despite `money.bounds.max: 999999.0`, so six of seven priced affordances were
@@ -468,25 +537,125 @@ When in doubt:
 - The goal is a framework others author in, not production-ready agents.
 - **Work only in `src/townlet/`** — `src/hamlet/` is obsolete legacy code.
 
-<!-- filigree:instructions:v3.1.0:c1c023c3 -->
+<!-- filigree:instructions:v3.1.0:65e6fb25 -->
 <!-- filigree:last-writer:filigree install -->
 ## Filigree Issue Tracker
 
-`filigree` tracks this project's work. Use it to find, claim, update and close
-issues: `filigree session-context` at session start, then
-`filigree start-next-work --assignee <name>`.
+`filigree` tracks tasks for this project. Data lives in `.filigree/`. Prefer
+the MCP tools (`mcp__filigree__*`) when available; fall back to the `filigree`
+CLI otherwise.
 
-Full reference: the **filigree-workflow** skill (patterns, priorities,
-observations, error codes), `filigree --help`, and the `mcp__filigree__*` tool
-schemas. Prefer the MCP tools when available; fall back to the CLI.
+### Workflow
 
-Two rules `--help` will not tell you:
+```bash
+# At session start
+filigree session-context                            # ready / in-progress / critical path
 
-1. Claim atomically: `work_start` / `work_start_next` (MCP) or `start-work` /
-   `start-next-work` (CLI). Never chain a claim with a separate status update;
-   that two-step form races other agents.
-2. On `SCHEMA_MISMATCH` the installed filigree is older than the project
-   database. Surface it to the user; do not retry.
+# Pick up the next startable issue (atomic claim + transition into its working status)
+filigree start-next-work --assignee <name>
+# ...or claim a specific issue
+filigree start-work <id> --assignee <name>
+
+# Do the work, commit, then
+filigree close <id>
+```
+
+Use the atomic claim+transition verbs — `work_start` / `work_start_next`
+(MCP) or `start-work` / `start-next-work` (CLI). Do **not** chain
+`work_claim` (MCP) or `filigree claim` (CLI) with a subsequent status
+update — the two-step form races against other agents; the combined verb is
+atomic.
+
+**Ready ≠ startable.** The working status is type-specific (tasks →
+`in_progress`, features → `building`). Bugs start at `triage`, which has no
+single-hop transition into work (`triage → confirmed → fixing`), so a triage
+bug is *ready* but not directly *startable*: `work_start` on one returns
+`INVALID_TRANSITION` naming the next status, and `work_start_next` skips it.
+`work_ready` items carry a `startable` flag (plus a `next_action` hint when
+false). Pass `advance=true` (MCP) / `--advance` (CLI) to walk the soft
+transitions to the nearest working status automatically.
+
+### Observations: when (and when not) to use them
+
+`observation_create` is a fire-and-forget scratchpad for *incidental* defects — things
+you notice *outside the scope of your current task* (a code smell in a
+neighbouring file, a stale TODO, a missing test for an edge case you happened
+to spot). Notes expire after 14 days unless promoted. Include `file_path` and
+`line` when relevant. At session end, skim `observation_list` and either
+`observation_dismiss` or `observation_promote` for what has accumulated.
+
+**You fix bugs in your currently defined scope. You do NOT use observations
+to finish work prematurely.** If a defect, gap, or follow-up belongs to your
+current task, you own it — handle it as part of that task: fix it now, expand
+the task's scope, file a proper issue with a dependency, or surface it to the
+user. Filing it as an observation and closing the task is *not* completing
+the task; it is shipping known-broken work and hiding the debt in a 14-day
+expiring scratchpad. The test is "would I have noticed this even if I weren't
+working on this task?" If no, it's task scope, not an observation.
+
+### Priority scale
+
+- P0: Critical (drop everything)
+- P1: High (do next)
+- P2: Medium (default)
+- P3: Low
+- P4: Backlog
+
+### Reaching for tools
+
+MCP tool schemas describe each tool; `filigree --help` and `filigree <verb>
+--help` are the authoritative CLI reference. You do not need to memorise
+either catalogue. The verbs you will reach for most:
+
+- **Find work:** `work_ready`, `work_blocked`, `issue_list`, `issue_search`
+- **Claim work:** `work_start`, `work_start_next`
+- **Update:** `comment_add`, `label_add`, `issue_update`, `issue_close`
+- **Admin (irreversible):** `issue_delete` (MCP) / `delete-issue` (CLI) —
+  hard-deletes a terminal issue and its rows; `admin_undo_last` cannot reverse it.
+- **Scratchpad:** `observation_create`, `observation_list`, `observation_promote`, `observation_dismiss`
+- **Cross-product entity bindings (ADR-029):** `entity_association_add`,
+  `entity_association_remove`, `entity_association_list`,
+  `entity_association_list_by_entity`. Used when a sibling tool (e.g.
+  Loomweave) needs to bind a Filigree issue to a function, class, or
+  module identifier it owns. The `entity_id` is an opaque external string
+  from Filigree's perspective and may be a `loomweave:eid:...` SEI or a legacy
+  locator; callers may also supply `entity_kind` explicitly. The consumer (the sibling tool's read
+  path) does drift detection against the stored
+  `content_hash_at_attach`. `entity_association_list_by_entity` is the
+  reverse-lookup surface — given an opaque external entity ID, return every
+  Filigree issue bound to it (project isolation is by DB file). Also
+  reachable over HTTP as
+  `GET/POST /api/issue/{issue_id}/entity-associations`,
+  `DELETE /api/issue/{issue_id}/entity-associations?entity_id=…`,
+  and `GET /api/entity-associations?entity_id=…`.
+- **Health:** `stats_get`, `metrics_get`, `mcp_status_get`
+
+Pass `--actor <name>` (CLI) so events attribute to your agent identity. It
+works in either position — before the verb (`filigree --actor X update …`) or
+after it (`filigree update … --actor X`); the post-verb value overrides the
+group-level one.
+
+### Error handling
+
+Errors return `{error: str, code: ErrorCode, details?: dict}`. Switch on
+`code`, not on message text. Codes: `VALIDATION`, `NOT_FOUND`, `CONFLICT`,
+`INVALID_TRANSITION`, `PERMISSION`, `NOT_INITIALIZED`, `IO`,
+`INVALID_API_URL`, `FILE_REGISTRY_DISPLACED`, `REGISTRY_UNAVAILABLE`,
+`LOOMWEAVE_REGISTRY_VERSION_MISMATCH`, `LOOMWEAVE_OUT_OF_SYNC`,
+`BRIEFING_BLOCKED`, `STOP_FAILED`, `SCHEMA_MISMATCH`, `INTERNAL`.
+
+On `INVALID_TRANSITION`, call `workflow_transition_list` (MCP) or
+`filigree transitions <id>` to see what the workflow allows from here.
+
+Two failure modes deserve a specific response:
+
+- **`SCHEMA_MISMATCH`** — the installed `filigree` is older than the project
+  database. The error message contains upgrade guidance. Surface it to the
+  user; do not retry.
+- **`ForeignDatabaseError`** — filigree found a parent project's database
+  but no local `.filigree.conf`. Run `filigree init` in the current
+  directory. Do **not** `cd` upward to a different project unless that was
+  the actual intent.
 <!-- /filigree:instructions -->
 
 <!-- loomweave:instructions:v1.5.0:39edbf6d -->

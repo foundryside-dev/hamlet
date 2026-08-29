@@ -21,13 +21,19 @@ from townlet.environment.action_labels import ActionLabels
 from townlet.environment.action_mask_builder import ActionMaskBuilder
 from townlet.environment.affordance_engine import AffordanceEngine
 from townlet.environment.dac_engine import DACEngine
-from townlet.environment.observation_encoder import ObservationEncoder
+from townlet.environment.observation_encoder import build_token_observation_encoder
 from townlet.environment.reward_calculator import RewardCalculator
+from townlet.environment.token_publishers import (
+    EffectSlotBatch,
+    ItemSlotBatch,
+    TokenCapacityError,
+    TokenPublishContext,
+)
 from townlet.items import InventoryState, ItemActionHandler, ItemManager
 from townlet.substrate.continuous import ContinuousSubstrate
 from townlet.universe.dto import RuntimeActionSpace
 from townlet.vfs.evaluator import EvaluationMode, VFSEvaluator
-from townlet.vfs.observation_builder import VFSObservationSpec
+from townlet.vfs.profiles import CompiledGlobalProfile
 from townlet.vfs.registry import VariableRegistry
 from townlet.vfs.transition_schedule import VTCTransitionContext, VTCTransitionRunner, VTCTransitionState
 from townlet.vfs.vtc import (
@@ -98,7 +104,6 @@ class VectorizedHamletEnv:
         self.num_agents = num_agents
         self.device = torch_device
         self._action_executor = ActionExecutor(self)
-        self._observation_encoder = ObservationEncoder(self)
         self._reward_calculator = RewardCalculator(self)
         self.optimization_data = level.optimization_data
         self.metadata = self.universe.metadata_for_level(level_name)
@@ -166,10 +171,10 @@ class VectorizedHamletEnv:
                 "Set experiment.experiment_name in your v2.1 experiment config and recompile."
             )
         self.experiment_batch_label = experiment_label
-        self.observation_activity = level.observation_activity
-        # Use level-specific observation spec so non-primary levels
-        # (e.g., POMDP vs full observability) get correct shapes.
-        self.observation_spec = level.observation_spec
+        # The compiled token artifact IS the observation ABI (unit-3 Task-10 cut). It is
+        # pack-level, not level-level: POMDP does not change the TokenSpec, it changes
+        # the radius the substrate visibility filter is given (spec §3).
+        self.token_spec = level.token_spec
 
         # grid_size is the SQUARE display size legacy consumers expect; the
         # metadata compiler derives it from the substrate instance (None for
@@ -191,8 +196,8 @@ class VectorizedHamletEnv:
         self.local_window_size: int = 0
         self._configure_partial_observability()
 
-        # Observation dimension is derived from the level-specific spec.
-        self.observation_dim = self.observation_spec.total_dims
+        # Serialization width of the compiled token observation.
+        self.observation_dim = self.token_spec.total_dims
 
         # Phases below are private helpers that mutate self in a fixed order
         # (hamlet-2559b98232). __init__ reads as orchestration; each phase is
@@ -222,8 +227,6 @@ class VectorizedHamletEnv:
             if effect_catalog is not None
             else None
         )
-        self.effect_observation_slots = getattr(universe, "effect_observation_slots", self.EFFECT_OBS_SLOTS)
-
         if universe.effects_schema is None:
             raise ValueError("Compiled universe is missing effects_schema. Recompile the config pack before creating an environment.")
         self.effects_schema = dict(universe.effects_schema)
@@ -374,10 +377,55 @@ class VectorizedHamletEnv:
         # Initialize affordance positions
         # v2.1: all affordances from affordances.yaml are deployable; no curriculum-level
         # enabled_affordances gating via training.yaml.
+        self._affordance_layout_cache: tuple[torch.Tensor, torch.Tensor] | None = None
         if self.randomize_affordances:
             self.randomize_affordance_positions()
         else:
             self._apply_configured_affordance_positions()
+
+        # Built last: the token encoder reads the substrate, the meter columns, the
+        # compiled affordance/effect declarations and the VFS registry, so every phase
+        # above must have run.
+        self._observation_encoder = build_token_observation_encoder(self)
+
+    def _affordance_layout(self) -> tuple[torch.Tensor, torch.Tensor]:
+        """`([C, D] positions, [C] deployed)` in COMPILED SLOT ORDER, cached.
+
+        Affordance layouts are static between resets; rebuilding this per tick was the
+        per-tick Python loop + `torch.stack` measured by `hamlet-c7084169f7`. The cache
+        is invalidated wherever `self.affordances` is written.
+        """
+        if self._affordance_layout_cache is not None:
+            return self._affordance_layout_cache
+        dim = self.substrate.position_dim
+        affordance_type = self.token_spec.get_type("affordance")
+        slot_refs = [] if affordance_type is None else [binding.filler_ref for binding in affordance_type.slot_bindings]
+        deployed = torch.tensor([ref in self.affordances for ref in slot_refs], dtype=torch.bool, device=self.device)
+        zero = torch.zeros(dim, dtype=self.substrate.position_dtype, device=self.device)
+        positions = torch.stack([self.affordances.get(ref, zero) for ref in slot_refs]) if slot_refs else zero.new_zeros((0, dim))
+        self._affordance_layout_cache = (positions.to(device=self.device), deployed)
+        return self._affordance_layout_cache
+
+    def _build_token_publish_context(self) -> TokenPublishContext:
+        """One tick's publisher inputs (token-obs spec §3).
+
+        `vision_range` is the substrate's visibility radius argument: `None` under full
+        observability (pass-all), the declared normalized fraction under POMDP. That is
+        the ONLY thing partial observability changes about the observation — the TokenSpec
+        is identical (spec §3; POMDP does not shrink or reshape the tensor).
+        """
+        affordance_positions, affordance_deployed = self._affordance_layout()
+        return TokenPublishContext(
+            positions=self.positions,
+            velocities=self._encode_velocity_observation(),
+            meters=self.meters,
+            affordance_positions=affordance_positions,
+            affordance_deployed=affordance_deployed,
+            vision_range=self.vision_range if self.partial_observability else None,
+            agent_slots=None,
+            item_slots=self._item_slot_batch(),
+            effect_slots=self._effect_slot_batch(),
+        )
 
     def attach_runtime_registry(self, registry: AgentRuntimeRegistry) -> None:
         """Attach runtime registry for telemetry tracking."""
@@ -402,6 +450,7 @@ class VectorizedHamletEnv:
             empty = torch.zeros(0, dtype=self.substrate.position_dtype, device=self.device)
             for name in self.affordances.keys():
                 self.affordances[name] = empty.clone()
+            self._affordance_layout_cache = None
             return
 
         for name in self.affordances.keys():
@@ -415,6 +464,7 @@ class VectorizedHamletEnv:
 
             tensor = self._position_to_tensor(source, name)
             self.affordances[name] = tensor
+        self._affordance_layout_cache = None
 
     def _position_to_tensor(self, raw_position: Any, affordance_name: str) -> torch.Tensor:
         """Convert raw config/optimization positions into substrate tensors."""
@@ -565,23 +615,16 @@ class VectorizedHamletEnv:
                 "Use partial_observability=False with 'relative' or 'scaled' observation_encoding instead."
             )
         if self.substrate.position_dim >= 4:
-            window_size = self.local_window_size or 0
-            cell_count = window_size**self.substrate.position_dim if window_size > 0 else 0
             raise ValueError(
-                f"Partial observability (POMDP) is not supported for {self.substrate.position_dim}D substrates. "
-                f"\n\nProblem: Local window size grows EXPONENTIALLY with dimensionality:"
-                f"\n  - 2D: {window_size}×{window_size} = {window_size**2} cells (practical)"
-                f"\n  - 3D: {window_size}×{window_size}×{window_size} = {window_size**3} cells (supported up to vision_range=2)"
-                f"\n  - {self.substrate.position_dim}D: {window_size}^{self.substrate.position_dim} = {cell_count:,} cells (IMPRACTICAL)"
-                f"\n\nThis creates:"
-                f"\n  - Network input explosion ({cell_count:,} vision features + position + meters)"
-                f"\n  - Memory explosion (each agent's observation is massive)"
-                f"\n  - Training slowdown (gradient computation over huge inputs)"
-                f"\n\nSolution: Use full observability (partial_observability=False) with normalized position encoding:"
-                f"\n  - observation_encoding='relative': Just {self.substrate.position_dim} dims (normalized coordinates)"
-                f"\n  - observation_encoding='scaled': {self.substrate.position_dim * 2} dims (coordinates + grid sizes)"
-                f"\n  - Enables dimension-independent learning WITHOUT exponential curse"
-                f"\n\nSee docs/manual/pomdp_compatibility_matrix.md for details."
+                f"Partial observability (POMDP) is not supported for {self.substrate.position_dim}D "
+                f"substrates (substrate type '{type(self.substrate).__name__}').\n"
+                "  Reason: the visibility filter needs a distance metric whose neighbourhood is a "
+                "usable fraction of the space, and in 4D+ the reachable neighbourhood at any radius "
+                "is a vanishing fraction of the volume — every entity reads as out of range or all of "
+                "them read as in range.\n"
+                "  Fix: use full observability (active_vision: global) with normalized position "
+                "encoding, which is dimension-independent.\n"
+                "  See docs/manual/pomdp_compatibility_matrix.md."
             )
         if self.substrate.position_dim == 3:
             window_size = self.local_window_size or 0
@@ -602,11 +645,11 @@ class VectorizedHamletEnv:
             )
 
     def _initialize_vfs_subsystem(self) -> None:
-        """Build the VFS variable registry, observation spec, and evaluator.
+        """Build the VFS variable registry and evaluator.
 
         Phase method of __init__ (hamlet-2559b98232). Writes:
-        ``vfs_variables``, ``vfs_registry``, ``vfs_observation_spec``,
-        ``vfs_evaluator``, ``vfs_observation_marks``, ``meter_name_to_index``,
+        ``vfs_variables``, ``vfs_registry``,
+        ``vfs_evaluator``, ``vfs_evaluation_marks``, ``meter_name_to_index``,
         Depends on ``self.metadata``, ``self.num_agents``,
         ``self.device``, ``self.universe``.
         """
@@ -625,13 +668,10 @@ class VectorizedHamletEnv:
             max_items=max_items_in_world,
             num_affordances=self.metadata.affordance_count,
             item_profiles=item_profiles,
+            num_zones=self.metadata.num_zones,
+            num_groups=self.metadata.num_groups,
+            num_message_slots=self.metadata.num_message_slots,
         )
-
-        self.vfs_observation_spec: VFSObservationSpec | None = None
-        if universe.compiled_vfs_profiles is not None:
-            if universe.vfs_observation_spec is None:
-                raise ValueError("Compiled universe is missing vfs_observation_spec; recompile the config pack.")
-            self.vfs_observation_spec = universe.vfs_observation_spec
 
         self.vfs_evaluator: VFSEvaluator | None = None
         if universe.compiled_vfs_profiles is not None:
@@ -641,9 +681,9 @@ class VectorizedHamletEnv:
                 history_spec=universe.vfs_history_spec,
                 debug_logging=universe.compiled_vfs_profiles.debug_logging,
             )
-            self.vfs_observation_marks = universe.vfs_observation_marks
+            self.vfs_evaluation_marks = universe.vfs_evaluation_marks
         else:
-            self.vfs_observation_marks = None
+            self.vfs_evaluation_marks = None
 
         meter_name_to_index = dict(self.metadata.meter_name_to_index)
         self.meter_name_to_index = meter_name_to_index
@@ -821,6 +861,12 @@ class VectorizedHamletEnv:
         self.global_tick = 0  # HIGH-01: Reset global time counter
         self.intrinsic_weights = torch.ones(self.num_agents, dtype=torch.float32, device=self.device)  # Reset to 1.0
         self.vfs_registry.reset_episode_scoped()
+        # Pinned tick write point (token-obs unit 2): same registry cell as step()'s.
+        # Ordered AFTER reset_episode_scoped: the tick variable is episode-lifetime, so
+        # a write before the reset would be clobbered back to its declared initial —
+        # value-identically today (both are 0.0), but the pinned write must be the
+        # authoritative one, not a coincidence (comment-242 item 3, reorder chosen).
+        self.vfs_registry.set_engine_value("tick", torch.tensor(float(self.global_tick), device=self.device))
 
         # Reset temporal mechanics state
         if self.enable_temporal_mechanics:
@@ -879,7 +925,7 @@ class VectorizedHamletEnv:
                     temporal=temporal_context,
                 )
 
-        return self._observation_encoder._get_observations()
+        return self._get_observations()
 
     @classmethod
     def from_universe(
@@ -911,43 +957,129 @@ class VectorizedHamletEnv:
         )
 
     def _get_observations(self) -> torch.Tensor:
-        """Construct observation vector using compiled observation spec."""
-        return self._observation_encoder._get_observations()
+        """Serialize this tick's compiled token observation, `[num_agents, total_dims]`."""
+        return self._observation_encoder.encode(self.num_agents, self._build_token_publish_context())
 
-    def _build_affordance_encoding(self, dims: int) -> torch.Tensor:
-        """Build one-hot encoding of current affordance under each agent."""
-        return self._observation_encoder._build_affordance_encoding(dims)
+    def _item_slot_batch(self) -> ItemSlotBatch | None:
+        """Live item instances keyed by compiled `item` token slot.
 
-    def _build_effects_observation(self, dims: int) -> torch.Tensor:
-        """Encode observable effects into a fixed-size tensor."""
-        if dims <= 0:
-            return torch.zeros(self.num_agents, 0, device=self.device)
+        Item state is world-SHARED (one `ItemManager` behind N independent agent
+        batches); only `carried` is per world. Slot assignment is the item's `vfs_index`,
+        which is the item arena row and therefore already unique and stable per instance.
+        """
+        manager = self.item_manager
+        if manager is None:
+            return None
+        item_type = self.token_spec.get_type("item")
+        if item_type is None or item_type.capacity == 0:
+            return None
+        instances = [item for item in manager.get_all_items() if item.vfs_index < item_type.capacity]
+        if not instances:
+            return None
+        dim = self.substrate.position_dim
+        slot_indices = torch.tensor([item.vfs_index for item in instances], dtype=torch.long, device=self.device)
+        vfs_indices = slot_indices.clone()
+        if dim > 0:
+            positions = torch.tensor([list(item.position) for item in instances], dtype=self.substrate.position_dtype, device=self.device)
+        else:
+            positions = torch.zeros((len(instances), 0), dtype=self.substrate.position_dtype, device=self.device)
+        carried = torch.zeros((self.num_agents, len(instances)), dtype=torch.bool, device=self.device)
+        for column, item in enumerate(instances):
+            for holder in item.holder_agent_ids:
+                if 0 <= holder < self.num_agents:
+                    carried[holder, column] = True
+        owner_slot = torch.full((len(instances),), -1, dtype=torch.long, device=self.device)
+        return ItemSlotBatch(
+            slot_indices=slot_indices,
+            positions=positions,
+            vfs_indices=vfs_indices,
+            carried=carried,
+            owner_slot=owner_slot,
+            source="item_manager",
+        )
 
-        if self.effect_manager is None or self.effect_observation_slots <= 0:
-            return torch.zeros(self.num_agents, dims, device=self.device)
+    def _effect_slot_batch(self) -> EffectSlotBatch | None:
+        """Active observable effects keyed by compiled `effect` token slot.
 
-        expected_dims = self.effect_observation_slots * 3
-        if dims != expected_dims:
-            raise ValueError(
-                f"Observation field 'obs_effects' expected {dims} dims, but effect observation metadata requires {expected_dims}."
-            )
+        The compiled effect layout is scope-blocked in `EffectScope` vocabulary order,
+        each block sized `budget x denominator` (`effect_slot_refs`). Within a block a
+        live effect takes the next free index, per world — effect content is per world
+        because the agent-scope store is keyed by world (`num_agents` is a batch of
+        independent worlds). Overflowing a scope's declared budget raises at publish
+        time; it is never silently truncated.
+        """
+        manager = self.effect_manager
+        effect_type = self.token_spec.get_type("effect")
+        if manager is None or effect_type is None or effect_type.capacity == 0:
+            return None
+        catalog_order = {effect_id: index for index, effect_id in enumerate(self._effect_catalog_ids())}
+        block_slots: dict[str, list[int]] = {}
+        for binding in effect_type.slot_bindings:
+            scope = binding.filler_ref.split(":")[1]
+            block_slots.setdefault(scope, []).append(binding.slot_index)
 
-        slots = self.effect_observation_slots
-        effect_obs = torch.zeros(self.num_agents, slots, 3, device=self.device)
+        # per world: scope -> list of (slot, catalog index, remaining fraction)
+        occupied: dict[int, list[tuple[int, int, float]]] = {}
+        for world in range(self.num_agents):
+            cursor = dict.fromkeys(block_slots, 0)
+            rows: list[tuple[int, int, float]] = []
+            for effect in self._observable_effects_for_world(world):
+                scope = effect.scope.value if hasattr(effect.scope, "value") else str(effect.scope)
+                slots = block_slots.get(scope)
+                if not slots:
+                    continue
+                index = cursor[scope]
+                if index >= len(slots):
+                    raise TokenCapacityError("effect", len(slots), index + 1, f"effect_manager scope {scope!r}")
+                cursor[scope] = index + 1
+                catalog_index = catalog_order.get(effect.effect_id)
+                if catalog_index is None:
+                    raise ValueError(f"Active effect {effect.effect_id!r} is not in the compiled effect catalog")
+                total = max(1, int(effect.duration_total))
+                remaining = max(0, int(effect.duration_remaining))
+                rows.append((slots[index], catalog_index, remaining / total))
+            occupied[world] = rows
 
-        for agent_idx in range(self.num_agents):
-            for slot_idx, effect in enumerate(self.effect_manager.get_observable_agent_effects(agent_idx)[:slots]):
-                effect_obs[agent_idx, slot_idx, 0] = float(getattr(effect, "effect_index", -1))
-                total = max(1, int(getattr(effect, "duration_total", 1)))
-                remaining = max(0, int(getattr(effect, "duration_remaining", 0)))
-                effect_obs[agent_idx, slot_idx, 1] = float(remaining) / float(total)
-                effect_obs[agent_idx, slot_idx, 2] = 1.0
+        used = sorted({slot for rows in occupied.values() for slot, _, _ in rows})
+        if not used:
+            return None
+        column_of = {slot: column for column, slot in enumerate(used)}
+        k = len(used)
+        effect_indices = torch.zeros((self.num_agents, k), dtype=torch.long, device=self.device)
+        remaining_fraction = torch.zeros((self.num_agents, k), dtype=torch.float32, device=self.device)
+        active = torch.zeros((self.num_agents, k), dtype=torch.bool, device=self.device)
+        for world, rows in occupied.items():
+            for slot, catalog_index, fraction in rows:
+                column = column_of[slot]
+                effect_indices[world, column] = catalog_index
+                remaining_fraction[world, column] = fraction
+                active[world, column] = True
+        return EffectSlotBatch(
+            slot_indices=torch.tensor(used, dtype=torch.long, device=self.device),
+            effect_indices=effect_indices,
+            remaining_fraction=remaining_fraction,
+            active=active,
+            owner_slot=torch.full((k,), -1, dtype=torch.long, device=self.device),
+            source="effect_manager",
+        )
 
-        return effect_obs.reshape(self.num_agents, slots * 3)
+    def _effect_catalog_ids(self) -> tuple[str, ...]:
+        """Declared effect ids in compiled catalog order (the token static-payload order)."""
+        catalog = self.universe.compiled_effect_catalog
+        if catalog is None:
+            return ()
+        return tuple(catalog.effects.keys())
 
-    def _encode_position_observation(self) -> torch.Tensor | None:
-        """Encode agent position using substrate-native semantics."""
-        return self._observation_encoder._encode_position_observation()
+    def _observable_effects_for_world(self, world: int) -> list[Any]:
+        """Every observable active effect this world's agent can see, any scope."""
+        manager = self.effect_manager
+        assert manager is not None
+        effects = [effect for effect in manager.global_effects if getattr(effect, "observable", False)]
+        effects.extend(manager.get_observable_agent_effects(world))
+        for store in (manager.item_effects, manager.affordance_effects):
+            for entries in store.values():
+                effects.extend(effect for effect in entries if getattr(effect, "observable", False))
+        return effects
 
     def _encode_velocity_observation(self) -> torch.Tensor | None:
         """Encode agent velocity as delta position per step.
@@ -1010,6 +1142,10 @@ class VectorizedHamletEnv:
             dones: [num_agents] bool
             info: dict with metadata
         """
+        # Pinned tick write point (token-obs unit 2): every consumer of THIS step —
+        # action executor, effects (current_step), evaluator — sees this one value,
+        # and any read of the registry's tick returns the same.
+        self.vfs_registry.set_engine_value("tick", torch.tensor(float(self.global_tick), device=self.device))
         prev_dones = self.dones.clone()
         self.vfs_registry.reset_tick_scoped()
         # 1. Execute actions and track successful interactions
@@ -1056,7 +1192,7 @@ class VectorizedHamletEnv:
             # Evaluate global profile
             global_profile = self.universe.compiled_vfs_profiles.global_profile
             if global_profile is not None:
-                marks = self.vfs_observation_marks.get("global", set()) if self.vfs_observation_marks else set()
+                marks = self.vfs_evaluation_marks.get("global", set()) if self.vfs_evaluation_marks else set()
 
                 updated_vfs = self.vfs_evaluator.evaluate_global_profile(
                     profile=global_profile,
@@ -1076,9 +1212,40 @@ class VectorizedHamletEnv:
                     item_index_to_profile=self.vfs_registry.item_vfs_index_to_profile,
                 )
 
-                for var_name, value in updated_vfs.items():
-                    if var_name in self.vfs_registry.variables:
-                        self.vfs_registry.set_engine_value(var_name, value)
+                self._write_back_profile_expressions(
+                    "Global-profile", "global_profile", global_profile, updated_vfs, require_agent_shape=False
+                )
+
+            # Evaluate agent profile (hamlet-5d74335111). Compiled agent profiles are
+            # CompiledGlobalProfile — the same machinery, the same MARK_AND_SWEEP
+            # static-skip in evaluate_global_profile, and the same expression-only
+            # write-back filter (statics are storage, never re-written from a
+            # dependency-chased initial — hamlet-df3a96bbac applies here too), but
+            # expressions here already produce [num_agents]-shaped tensors from
+            # `bar.*` references, so write-back is checked against that exact shape.
+            agent_profile = self.universe.compiled_vfs_profiles.agent_profile
+            if agent_profile is not None:
+                agent_marks = self.vfs_evaluation_marks.get("agent", set()) if self.vfs_evaluation_marks else set()
+                updated_agent_vfs = self.vfs_evaluator.evaluate_global_profile(
+                    profile=agent_profile,
+                    bars=bars_dict_vfs,
+                    vfs_state=current_vfs_state,
+                    marks=agent_marks,
+                    device=self.device,
+                    step=self.global_tick,
+                    affordances=self._build_vfs_affordance_context(),
+                    temporal=self._build_vfs_temporal_context(),
+                    agent_positions=self.positions.to(dtype=torch.float32, device=self.device),
+                    affordance_positions={k: v.to(dtype=torch.float32, device=self.device) for k, v in self.affordances.items()},
+                    vfs_types={name: var.type for name, var in self.vfs_registry.variables.items()},
+                    num_agents=self.num_agents,
+                    item_vfs=self.vfs_registry.item_vfs,
+                    item_profile_map=self.vfs_registry.item_profile_map,
+                    item_index_to_profile=self.vfs_registry.item_vfs_index_to_profile,
+                )
+                self._write_back_profile_expressions(
+                    "Agent-profile", "agent_profile", agent_profile, updated_agent_vfs, require_agent_shape=True
+                )
 
         self._run_vtc_transition_phases(
             self.vtc_transition_runner.phases_between("apply_threshold_cascades", "evaluate_terminal_conditions"),
@@ -1119,13 +1286,13 @@ class VectorizedHamletEnv:
                 for idx in torch.nonzero(newly_done, as_tuple=False).flatten():
                     self.effect_manager.cancel_scheduled_for_entity(scope="agent", entity_id=int(idx))
 
-        # 6. Increment time of day only when temporal mechanics are active.
-        if self.enable_temporal_mechanics:
-            self.time_of_day = (self.time_of_day + 1) % int(self.day_length)
-        else:
-            self.time_of_day = 0
+        # 6. time_of_day is DERIVED from global_tick at this same point in the step —
+        # one temporal pipeline (token-obs unit 2c). The update point is load-bearing:
+        # the reward calculator reads time_of_day between the global_tick increment and
+        # here, and moving this line changes reward timing against the pinned oracle.
+        self.time_of_day = (self.global_tick % int(self.day_length)) if self.enable_temporal_mechanics else 0
 
-        observations = self._observation_encoder._get_observations()
+        observations = self._get_observations()
 
         info = {
             "step_counts": self.step_counts.clone(),
@@ -1200,10 +1367,53 @@ class VectorizedHamletEnv:
         for bar_name, value in state.bars_state.items():
             self._set_vtc_bar_value(bar_name, value)
         for variable_id, value in state.vfs_state.items():
-            if variable_id in self.vfs_registry.variables:
-                self.vfs_registry.set_engine_value(variable_id, value)
+            if variable_id not in self.vfs_registry.variables:
+                raise KeyError(
+                    f"VTC transition write-back produced unknown variable id '{variable_id}'.\n"
+                    "  Write source: VTC transition state commit (_commit_vtc_transition_state) "
+                    "(hamlet-0ddc83e377)."
+                )
+            self.vfs_registry.set_engine_value(variable_id, value)
         if state.dones is not None:
             self.dones = state.dones
+
+    def _write_back_profile_expressions(
+        self,
+        profile_label: str,
+        write_source: str,
+        profile: CompiledGlobalProfile,
+        updated_vfs: dict[str, torch.Tensor],
+        *,
+        require_agent_shape: bool,
+    ) -> None:
+        """Commit profile expression outputs to the registry — the static-merge/refusal
+        block, hoisted out of step()'s `compiled_vfs_profiles is not None` gate
+        (comment-242 item 2) so the global and agent branches share one implementation.
+
+        The evaluator chases in-profile dependencies of marked variables, so
+        `updated_vfs` can contain a STATIC dependency re-emitted at its initial value
+        (evaluator.py's add_with_deps; statics also enter vars_to_eval via
+        history_spec). Statics are storage, not evaluation output: write back only
+        expression variables, or a dependency chase silently clobbers an engine-written
+        static every step (hamlet-df3a96bbac). An unknown variable id is a refusal
+        (hamlet-0ddc83e377); agent-profile expressions must land [num_agents]-shaped.
+        """
+        expression_var_names = {var.name for var in profile.variables if var.ast is not None}
+        for var_name, value in updated_vfs.items():
+            if var_name not in expression_var_names:
+                continue  # static: storage, never written back (hamlet-df3a96bbac)
+            if var_name not in self.vfs_registry.variables:
+                raise KeyError(
+                    f"{profile_label} VFS write-back produced unknown variable id '{var_name}'.\n"
+                    f"  Write source: {write_source} expression evaluation "
+                    "(vfs_evaluator.evaluate_global_profile) (hamlet-0ddc83e377)."
+                )
+            if require_agent_shape and value.shape != (self.num_agents,):
+                raise ValueError(
+                    f"Agent-profile variable '{var_name}' evaluated to shape {tuple(value.shape)}, "
+                    f"expected ({self.num_agents},). A constant belongs in initial_value, not an expression."
+                )
+            self.vfs_registry.set_engine_value(var_name, value)
 
     def _current_vfs_state(self) -> dict[str, torch.Tensor]:
         """Return the engine-readable VFS registry snapshot."""
@@ -1389,6 +1599,7 @@ class VectorizedHamletEnv:
         for name, pos in positions.items():
             if name in self.affordances:
                 self.affordances[name] = torch.tensor(pos, device=self.device, dtype=self.substrate.position_dtype)
+        self._affordance_layout_cache = None
 
     def randomize_affordance_positions(self) -> torch.Tensor | None:
         """Randomize affordance positions and return agent spawn positions.
@@ -1413,6 +1624,7 @@ class VectorizedHamletEnv:
             empty = torch.zeros(0, dtype=self.substrate.position_dtype, device=self.device)
             for name in self.affordances.keys():
                 self.affordances[name] = empty.clone()
+            self._affordance_layout_cache = None
             # Return empty agent positions for aspatial
             return torch.zeros(self.num_agents, 0, dtype=self.substrate.position_dtype, device=self.device)
 
@@ -1480,5 +1692,6 @@ class VectorizedHamletEnv:
 
         for idx, name in enumerate(self.affordances.keys()):
             self.affordances[name] = affordance_positions[idx].clone()
+        self._affordance_layout_cache = None
 
         return agent_positions

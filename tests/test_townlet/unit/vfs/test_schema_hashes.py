@@ -16,15 +16,14 @@ from townlet.config.drive_as_code import (
 from townlet.environment.action_config import ActionConfig
 from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.dto import RuntimeAction
+from townlet.universe.token_hashes import compute_observation_schema_hash
 from townlet.vfs import vtc
-from townlet.vfs.schema import NormalizationSpec, ObservationField, VariableDef
+from townlet.vfs.schema import NormalizationSpec, VariableDef
 from townlet.vfs.schema_hashes import (
     canonical_action_schema,
-    canonical_observation_schema,
     canonical_transition_graph_schema,
     canonical_variable_schema,
     compute_action_schema_hash,
-    compute_observation_schema_hash,
     compute_transition_graph_hash,
     compute_variable_schema_hash,
     compute_vfs_hash,
@@ -132,78 +131,13 @@ def test_compiler_surfaces_variable_schema_hash(tmp_path: Path) -> None:
     assert compiled.to_dict()["variable_schema_hash"] == compiled.variable_schema_hash
 
 
-def test_canonical_observation_schema_uses_ordered_abi_fields() -> None:
-    """Observation hashes should use the ordered field ABI, including normalization."""
-    field = ObservationField(
-        id="obs_energy",
-        source_variable="energy",
-        exposed_to=["engine", "agent"],
-        shape=[1],
-        normalization=NormalizationSpec(kind="minmax", min=0.0, max=1.0, clip=False),
-        semantic_type="bars",
-        curriculum_active=True,
-    )
-
-    assert canonical_observation_schema((field,)) == [
-        {
-            "id": "obs_energy",
-            "source_variable": "energy",
-            "shape": [1],
-            "normalization": {"kind": "minmax", "min": 0.0, "max": 1.0, "clip": False},
-            "exposed_to": ["agent", "engine"],
-            "curriculum_active": True,
-            "dtype": "float32",
-            "semantic_type": "bars",
-        }
-    ]
-
-
-def test_observation_schema_hash_changes_when_order_or_normalization_changes() -> None:
-    """Observation field order and normalization are part of the checkpoint ABI."""
-    energy = ObservationField(
-        id="obs_energy",
-        source_variable="energy",
-        exposed_to=["agent"],
-        shape=[1],
-        normalization=NormalizationSpec(kind="minmax", min=0.0, max=1.0, clip=False),
-        semantic_type="bars",
-    )
-    position = ObservationField(
-        id="obs_position",
-        source_variable="position",
-        exposed_to=["agent"],
-        shape=[2],
-        normalization=NormalizationSpec(kind="minmax", min=[0.0, 0.0], max=[10.0, 10.0], clip=False),
-        semantic_type="spatial",
-    )
-    changed_normalization = energy.model_copy(update={"normalization": NormalizationSpec(kind="minmax", min=0.0, max=2.0, clip=False)})
-
-    assert compute_observation_schema_hash((energy, position)) != compute_observation_schema_hash((position, energy))
-    assert compute_observation_schema_hash((energy,)) != compute_observation_schema_hash((changed_normalization,))
-
-
-def test_observation_schema_hash_is_stable_for_exposure_ordering() -> None:
-    """Exposure lists represent an access set, so input ordering should not churn the hash."""
-    field = ObservationField(
-        id="obs_energy",
-        source_variable="energy",
-        exposed_to=["engine", "agent"],
-        shape=[1],
-        normalization=NormalizationSpec(kind="minmax", min=0.0, max=1.0, clip=False),
-        semantic_type="bars",
-    )
-    reordered = field.model_copy(update={"exposed_to": ["agent", "engine"]})
-
-    assert compute_observation_schema_hash((field,)) == compute_observation_schema_hash((reordered,))
-
-
 def test_compiler_surfaces_observation_schema_hash(tmp_path: Path) -> None:
     """UniverseCompiler should emit the observation schema hash on the compiled artifact."""
     experiment_dir = prepare_config_dir(tmp_path, name="experiment")
 
     compiled = UniverseCompiler().compile(experiment_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
 
-    assert compiled.observation_schema_hash == compute_observation_schema_hash(compiled.vfs_observation_fields)
+    assert compiled.observation_schema_hash == compute_observation_schema_hash(compiled.token_spec)
     assert compiled.all_levels is not None
     assert compiled.all_levels[PRIMARY_LEVEL_NAME].observation_schema_hash == compiled.observation_schema_hash
     assert compiled.to_dict()["observation_schema_hash"] == compiled.observation_schema_hash
@@ -685,7 +619,6 @@ def test_transition_graph_hash_binds_social_residue_rules() -> None:
                             "variable_id": "trust",
                             "effect": "trust_delta",
                             "scope": "pair",
-                            "target": "observer -> actor",
                             "expression": str(delta),
                             "composition": "additive_delta",
                             "clamp": [0.0, 1.0],
@@ -717,7 +650,6 @@ def test_transition_graph_hash_binds_social_residue_rules() -> None:
             "telemetry_label": "visibility_effect:seen_stealing_damages_trust:trust_delta",
             "reads": ["chosen_action", "observer_mask", "trust"],
             "scope": "pair",
-            "target": "observer -> actor",
         }
     ]
 
@@ -789,6 +721,10 @@ def test_compiler_surfaces_vfs_hash(tmp_path: Path) -> None:
         ),
         reward_component_program=vtc.compile_vtc_reward_components_with_phase_graph(
             compiled.get_level(PRIMARY_LEVEL_NAME).drive,
+            phase_graph,
+        ),
+        bounds_clamp_program=vtc.compile_vtc_bounds_clamps_with_phase_graph(
+            compiled.get_level(PRIMARY_LEVEL_NAME).bars.meters,
             phase_graph,
         ),
     )

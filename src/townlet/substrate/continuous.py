@@ -7,7 +7,7 @@ import torch
 
 from townlet.environment.action_config import ActionConfig
 
-from .base import SpatialSubstrate
+from .base import SpatialSubstrate, combine_metric, pairwise_axis_deltas, require_position_batch
 
 
 class ContinuousSubstrate(SpatialSubstrate):
@@ -291,63 +291,12 @@ class ContinuousSubstrate(SpatialSubstrate):
         """
         return positions
 
-    def encode_observation(self, positions: torch.Tensor, affordances: dict[str, torch.Tensor]) -> torch.Tensor:
-        """Encode agent positions and affordances into observation space.
-
-        Args:
-            positions: Agent positions [num_agents, dimensions]
-            affordances: Dict mapping affordance names to positions
-
-        Returns:
-            Encoded observations with dimensions based on encoding mode:
-            - relative: [num_agents, dimensions]
-            - scaled: [num_agents, dimensions*2]
-            - absolute: [num_agents, dimensions]
-        """
-        if self.observation_encoding == "relative":
-            return self._encode_relative(positions, affordances)
-        elif self.observation_encoding == "scaled":
-            return self._encode_scaled(positions, affordances)
-        elif self.observation_encoding == "absolute":
-            return self._encode_absolute(positions, affordances)
-        else:
-            raise ValueError(f"Invalid observation_encoding: {self.observation_encoding}. Must be 'relative', 'scaled', or 'absolute'.")
-
-    def get_observation_dim(self) -> int:
-        """Return dimensionality of position encoding.
-
-        Returns:
-            - relative: dimensions (normalized positions)
-            - scaled: dimensions * 2 (normalized positions + range sizes)
-            - absolute: dimensions (raw positions)
-        """
-        if self.observation_encoding == "relative":
-            return self.dimensions
-        elif self.observation_encoding == "scaled":
-            return self.dimensions * 2
-        elif self.observation_encoding == "absolute":
-            return self.dimensions
-        else:
-            raise ValueError(f"Invalid observation_encoding: {self.observation_encoding}")
-
     @property
     def supports_partial_vision(self) -> bool:
         return False
 
-    def get_grid_encoding_dim(self) -> int:
-        """Continuous spaces have no grid; no obs_grid_encoding field exists."""
-        return 0
-
-    def get_position_feature_dim(self) -> int:
-        """The whole continuous encoding is position features
-        (encode_observation is what the runtime publishes for obs_position)."""
-        return self.get_observation_dim()
-
     def get_vision_radius(self, vision_range: float) -> int:
         raise ValueError("Continuous substrates do not support partial vision; no vision radius exists.")
-
-    def get_partial_window_dim(self, vision_radius: int) -> int:
-        raise ValueError("Continuous substrates do not support partial vision; no local window exists.")
 
     def normalize_positions(self, positions: torch.Tensor) -> torch.Tensor:
         """Normalize positions to [0, 1] range (always relative encoding).
@@ -360,21 +309,40 @@ class ContinuousSubstrate(SpatialSubstrate):
         """
         return self._encode_relative(positions, {})
 
-    def encode_partial_observation(self, positions: torch.Tensor, affordances: dict[str, torch.Tensor], vision_range: int) -> torch.Tensor:
-        """Partial observability not supported for continuous substrates.
+    # --- Token visibility / egocentric contract (token-obs unit 3, Task 8) -----
 
-        Continuous spaces have no discrete grid structure for local windows.
-        Use full observability with normalized position encoding instead.
+    def _token_axis_extents(self, device: torch.device) -> torch.Tensor:
+        return torch.tensor([float(max_val - min_val) for min_val, max_val in self.bounds], dtype=torch.float32, device=device)
 
-        Raises:
-            NotImplementedError: Continuous substrates do not support POMDP
+    def _token_vision_radius(self, vision_range: float) -> float:
+        """Radius in world units from the declared fraction of the longest axis extent.
+
+        The continuous analogue of the grids' `ceil(vision_range * span/2)` — no cell
+        quantization, so no ceil and no minimum-1.
         """
-        raise NotImplementedError(
-            f"{self.__class__.__name__} does not support partial observability (POMDP). "
-            f"Continuous spaces have infinite positions in any local region, making local windows "
-            f"conceptually invalid. Use full observability (partial_observability=False) with "
-            f"'relative' or 'scaled' observation_encoding for position-independent learning instead."
-        )
+        longest = max(max_val - min_val for min_val, max_val in self.bounds)
+        return vision_range * (longest / 2.0)
+
+    def visible(self, self_pos: torch.Tensor, entity_pos: torch.Tensor, vision_range: float | None) -> torch.Tensor:
+        """Declared-metric visibility; wrap-aware (toroidal shortest path under `wrap`)."""
+        require_position_batch(self_pos, self.position_dim, argument="self_pos")
+        require_position_batch(entity_pos, self.position_dim, argument="entity_pos")
+        if vision_range is None:
+            return torch.ones((self_pos.shape[0], entity_pos.shape[0]), dtype=torch.bool, device=self_pos.device)
+        radius = self._token_vision_radius(vision_range)
+        wrap = self._token_axis_extents(self_pos.device) if self.boundary == "wrap" else None
+        deltas = pairwise_axis_deltas(self_pos, entity_pos, wrap)
+        return combine_metric(deltas.abs(), self.distance_metric) <= radius
+
+    def egocentric_delta(self, self_pos: torch.Tensor, entity_pos: torch.Tensor) -> torch.Tensor:
+        """entity − self per axis, shortest path under wrap, normalized per encoding mode."""
+        require_position_batch(self_pos, self.position_dim, argument="self_pos")
+        require_position_batch(entity_pos, self.position_dim, argument="entity_pos")
+        wrap = self._token_axis_extents(self_pos.device) if self.boundary == "wrap" else None
+        deltas = pairwise_axis_deltas(self_pos, entity_pos, wrap)
+        if self.observation_encoding == "relative":
+            deltas = deltas / self._token_axis_extents(deltas.device)
+        return deltas
 
     def get_all_positions(self) -> list[list[float]]:
         """Raise error - continuous space has infinite positions."""

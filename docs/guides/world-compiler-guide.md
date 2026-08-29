@@ -1455,8 +1455,8 @@ stats.sort_stats('cumulative').print_stats(20)
 - `docs/config-schemas/drive_as_code.md` - Reward function configuration
 
 **Design Documents** (architectural context):
-- `docs/plans/vfs_uplift/2025-11-19-unified-world-compiler-plan.md` - Master implementation plan
-- `docs/plans/vfs_uplift/2025-11-19-effects-system-design.md` - Effects system architecture
+- `docs/zzz. archive/plans/archive/vfs_uplift/2025-11-19-unified-world-compiler-plan.md` - Master implementation plan
+- `docs/zzz. archive/plans/archive/vfs_uplift/2025-11-19-effects-system-design.md` - Effects system architecture
 - `docs/plans/2025-11-18-items-and-vfs-profiles.md` - Items system design
 
 **Implementation Plans** (task breakdowns):

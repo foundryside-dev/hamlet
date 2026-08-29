@@ -5,22 +5,28 @@ from __future__ import annotations
 from pathlib import Path
 
 from townlet.config.drive_as_code import DriveAsCodeConfig
+from townlet.universe.error_codes import ErrorCode
 from townlet.universe.errors import CompilationError, CompilationErrorCollector, CompilationMessage
-from townlet.universe.pipeline import ResolvedConfigBundle
 from townlet.universe.raw_configs_v21 import RawConfigsV21
+from townlet.universe.source_map import SourceMap, locate
+from townlet.universe.stages import CompilationStage
 from townlet.universe.symbol_table import UniverseSymbolTable
 
 
-def build_symbol_table(raw: RawConfigsV21) -> UniverseSymbolTable:
+def build_symbol_table(raw: RawConfigsV21, source_map: SourceMap | None = None) -> UniverseSymbolTable:
     """Collect all named v2.1 entities into a symbol table."""
-    errors = CompilationErrorCollector(stage="Stage 2: Symbol Table")
+    errors = CompilationErrorCollector(stage=CompilationStage.SYMBOLS.label)
     table = UniverseSymbolTable()
 
-    def _register(register_fn, payload) -> None:
+    def _register(register_fn, payload, location_key: str | None = None) -> None:
         try:
             register_fn(payload)
         except CompilationError as exc:
-            errors.extend(exc.issues)
+            location = locate(source_map, location_key) if location_key else None
+            errors.extend(
+                issue if issue.location else CompilationMessage(code=issue.code, message=issue.message, location=location)
+                for issue in exc.issues
+            )
 
     env = raw.environment.environment
     for meter in getattr(env, "meters", []) or []:
@@ -33,7 +39,7 @@ def build_symbol_table(raw: RawConfigsV21) -> UniverseSymbolTable:
         _register(table.register_affordance, affordance)
 
     for variable in getattr(env, "variables", []) or []:
-        _register(table.register_variable, variable)
+        _register(table.register_variable, variable, f"environment.yaml:{getattr(variable, 'name', None) or getattr(variable, 'id', '')}")
 
     if raw.vfs_profiles is not None:
         profile_configs = [
@@ -45,7 +51,8 @@ def build_symbol_table(raw: RawConfigsV21) -> UniverseSymbolTable:
             if profile is None:
                 continue
             for variable in getattr(profile, "variables", []) or []:
-                _register(table.register_profile_vfs_variable, variable)
+                var_id = getattr(variable, "id", None) or getattr(variable, "name", "")
+                _register(table.register_profile_vfs_variable, variable, f"vfs_profiles.yaml:{var_id}")
 
     for action in getattr(raw.actions.actions, "custom_actions", []) or []:
         _register(table.register_action, action)
@@ -54,7 +61,7 @@ def build_symbol_table(raw: RawConfigsV21) -> UniverseSymbolTable:
         for item in getattr(raw.items, "item_types", []) or []:
             _register(table.register_item, item)
 
-    errors.check_and_raise(stage_label="Stage 2: Symbol Table")
+    errors.check_and_raise()
     return table
 
 
@@ -62,8 +69,15 @@ def validate_dac_references(
     dac_config: DriveAsCodeConfig,
     symbol_table: UniverseSymbolTable,
     errors: CompilationErrorCollector,
+    *,
+    drive_location: str,
+    source_map: SourceMap | None = None,
 ) -> None:
-    """Validate DAC references to bars, variables, and affordances."""
+    """Validate DAC references to bars, variables, and affordances.
+
+    ``drive_location`` is the pack-relative path of the level's drive.yaml
+    (e.g. ``levels/L1_full_observability/drive.yaml``) cited in diagnostics.
+    """
     for mod_name, mod_config in dac_config.modifiers.items():
         bar_ref = getattr(mod_config, "bar", None)
         variable_ref = getattr(mod_config, "variable", None)
@@ -71,18 +85,18 @@ def validate_dac_references(
             if bar_ref not in symbol_table.meters:
                 errors.add(
                     CompilationMessage(
-                        code="DAC-REF-001",
+                        code=ErrorCode.DAC_REF_UNDEFINED_MODIFIER_BAR,
                         message=f"Modifier '{mod_name}' references undefined bar: {bar_ref}",
-                        location=f"drive_as_code.yaml:modifiers.{mod_name}",
+                        location=locate(source_map, f"{drive_location}:modifiers.{mod_name}"),
                     )
                 )
         elif variable_ref:
             if variable_ref not in symbol_table.vfs_variables:
                 errors.add(
                     CompilationMessage(
-                        code="DAC-REF-002",
+                        code=ErrorCode.DAC_REF_UNDEFINED_MODIFIER_VARIABLE,
                         message=f"Modifier '{mod_name}' references undefined VFS variable: {variable_ref}",
-                        location=f"drive_as_code.yaml:modifiers.{mod_name}",
+                        location=locate(source_map, f"{drive_location}:modifiers.{mod_name}"),
                     )
                 )
 
@@ -92,9 +106,9 @@ def validate_dac_references(
             if bar not in symbol_table.meters:
                 errors.add(
                     CompilationMessage(
-                        code="DAC-REF-003",
+                        code=ErrorCode.DAC_REF_UNDEFINED_EXTRINSIC_BAR,
                         message=f"Extrinsic strategy references undefined bar: {bar}",
-                        location="drive_as_code.yaml:extrinsic.bars",
+                        location=locate(source_map, f"{drive_location}:extrinsic.bars"),
                     )
                 )
 
@@ -103,9 +117,9 @@ def validate_dac_references(
         if bonus_bar and bonus_bar not in symbol_table.meters:
             errors.add(
                 CompilationMessage(
-                    code="DAC-REF-004",
+                    code=ErrorCode.DAC_REF_UNDEFINED_BAR_BONUS_BAR,
                     message=f"Extrinsic bar bonus references undefined bar: {bonus_bar}",
-                    location=f"drive_as_code.yaml:extrinsic.bar_bonuses[{idx}]",
+                    location=locate(source_map, f"{drive_location}:extrinsic.bar_bonuses[{idx}]"),
                 )
             )
 
@@ -114,9 +128,9 @@ def validate_dac_references(
         if var_ref and var_ref not in symbol_table.vfs_variables:
             errors.add(
                 CompilationMessage(
-                    code="DAC-REF-005",
+                    code=ErrorCode.DAC_REF_UNDEFINED_VARIABLE_BONUS,
                     message=f"Extrinsic variable bonus references undefined VFS variable: {var_ref}",
-                    location=f"drive_as_code.yaml:extrinsic.variable_bonuses[{idx}]",
+                    location=locate(source_map, f"{drive_location}:extrinsic.variable_bonuses[{idx}]"),
                 )
             )
 
@@ -126,9 +140,9 @@ def validate_dac_references(
             if target_aff and target_aff not in symbol_table.affordances:
                 errors.add(
                     CompilationMessage(
-                        code="DAC-REF-006",
+                        code=ErrorCode.DAC_REF_UNDEFINED_APPROACH_AFFORDANCE,
                         message=f"Shaping bonus references undefined affordance: {target_aff}",
-                        location=f"drive_as_code.yaml:shaping[{idx}]",
+                        location=locate(source_map, f"{drive_location}:shaping[{idx}]"),
                     )
                 )
         elif shaping.type == "completion_bonus":
@@ -136,9 +150,9 @@ def validate_dac_references(
             if aff_ref and aff_ref not in symbol_table.affordances:
                 errors.add(
                     CompilationMessage(
-                        code="DAC-REF-007",
+                        code=ErrorCode.DAC_REF_UNDEFINED_COMPLETION_AFFORDANCE,
                         message=f"Shaping bonus (completion_bonus) references undefined affordance: {aff_ref}",
-                        location=f"drive_as_code.yaml:shaping[{idx}]",
+                        location=locate(source_map, f"{drive_location}:shaping[{idx}]"),
                     )
                 )
         elif shaping.type == "streak_bonus":
@@ -146,9 +160,9 @@ def validate_dac_references(
             if aff_ref and aff_ref not in symbol_table.affordances:
                 errors.add(
                     CompilationMessage(
-                        code="DAC-REF-008",
+                        code=ErrorCode.DAC_REF_UNDEFINED_STREAK_AFFORDANCE,
                         message=f"Shaping bonus (streak_bonus) references undefined affordance: {aff_ref}",
-                        location=f"drive_as_code.yaml:shaping[{idx}]",
+                        location=locate(source_map, f"{drive_location}:shaping[{idx}]"),
                     )
                 )
         elif shaping.type == "timing_bonus":
@@ -157,9 +171,9 @@ def validate_dac_references(
                 if aff_ref and aff_ref not in symbol_table.affordances:
                     errors.add(
                         CompilationMessage(
-                            code="DAC-REF-009",
+                            code=ErrorCode.DAC_REF_UNDEFINED_TIMING_AFFORDANCE,
                             message=f"Shaping bonus (timing_bonus) references undefined affordance: {aff_ref}",
-                            location=f"drive_as_code.yaml:shaping[{idx}].time_ranges[{time_range_idx}]",
+                            location=locate(source_map, f"{drive_location}:shaping[{idx}].time_ranges[{time_range_idx}]"),
                         )
                     )
         elif shaping.type == "efficiency_bonus":
@@ -167,9 +181,9 @@ def validate_dac_references(
             if bar_ref and bar_ref not in symbol_table.meters:
                 errors.add(
                     CompilationMessage(
-                        code="DAC-REF-010",
+                        code=ErrorCode.DAC_REF_UNDEFINED_EFFICIENCY_BAR,
                         message=f"Shaping bonus (efficiency_bonus) references undefined bar: {bar_ref}",
-                        location=f"drive_as_code.yaml:shaping[{idx}]",
+                        location=locate(source_map, f"{drive_location}:shaping[{idx}]"),
                     )
                 )
         elif shaping.type == "crisis_avoidance":
@@ -177,9 +191,9 @@ def validate_dac_references(
             if bar_ref and bar_ref not in symbol_table.meters:
                 errors.add(
                     CompilationMessage(
-                        code="DAC-REF-011",
+                        code=ErrorCode.DAC_REF_UNDEFINED_CRISIS_BAR,
                         message=f"Shaping bonus (crisis_avoidance) references undefined bar: {bar_ref}",
-                        location=f"drive_as_code.yaml:shaping[{idx}]",
+                        location=locate(source_map, f"{drive_location}:shaping[{idx}]"),
                     )
                 )
         elif shaping.type == "economic_efficiency":
@@ -187,9 +201,9 @@ def validate_dac_references(
             if money_bar and money_bar not in symbol_table.meters:
                 errors.add(
                     CompilationMessage(
-                        code="DAC-REF-012",
+                        code=ErrorCode.DAC_REF_UNDEFINED_ECONOMIC_BAR,
                         message=f"Shaping bonus (economic_efficiency) references undefined bar: {money_bar}",
-                        location=f"drive_as_code.yaml:shaping[{idx}]",
+                        location=locate(source_map, f"{drive_location}:shaping[{idx}]"),
                     )
                 )
         elif shaping.type == "balance_bonus":
@@ -197,9 +211,9 @@ def validate_dac_references(
                 if bar and bar not in symbol_table.meters:
                     errors.add(
                         CompilationMessage(
-                            code="DAC-REF-013",
+                            code=ErrorCode.DAC_REF_UNDEFINED_BALANCE_BAR,
                             message=f"Shaping bonus (balance_bonus) references undefined bar: {bar}",
-                            location=f"drive_as_code.yaml:shaping[{idx}]",
+                            location=locate(source_map, f"{drive_location}:shaping[{idx}]"),
                         )
                     )
         elif shaping.type == "state_achievement":
@@ -208,9 +222,9 @@ def validate_dac_references(
                 if condition_bar and condition_bar not in symbol_table.meters:
                     errors.add(
                         CompilationMessage(
-                            code="DAC-REF-014",
+                            code=ErrorCode.DAC_REF_UNDEFINED_ACHIEVEMENT_BAR,
                             message=f"Shaping bonus (state_achievement) references undefined bar: {condition_bar}",
-                            location=f"drive_as_code.yaml:shaping[{idx}].conditions[{condition_idx}]",
+                            location=locate(source_map, f"{drive_location}:shaping[{idx}].conditions[{condition_idx}]"),
                         )
                     )
         elif shaping.type == "vfs_variable":
@@ -218,9 +232,9 @@ def validate_dac_references(
             if var_ref and var_ref not in symbol_table.vfs_variables:
                 errors.add(
                     CompilationMessage(
-                        code="DAC-REF-015",
+                        code=ErrorCode.DAC_REF_UNDEFINED_VFS_VARIABLE,
                         message=f"Shaping bonus (vfs_variable) references undefined VFS variable: {var_ref}",
-                        location=f"drive_as_code.yaml:shaping[{idx}]",
+                        location=locate(source_map, f"{drive_location}:shaping[{idx}]"),
                     )
                 )
 
@@ -229,9 +243,10 @@ def resolve_references(
     raw: RawConfigsV21,
     symbol_table: UniverseSymbolTable,
     experiment_dir: Path,
-) -> ResolvedConfigBundle:
+    source_map: SourceMap | None = None,
+) -> None:
     """Resolve and validate symbolic references between loaded config DTOs."""
-    errors = CompilationErrorCollector(stage="Stage 3: Reference Resolution")
+    errors = CompilationErrorCollector(stage=CompilationStage.RESOLVE.label)
 
     meter_names = set(symbol_table.meters.keys())
     vfs_variable_ids = set(symbol_table.vfs_variables.keys())
@@ -241,20 +256,25 @@ def resolve_references(
         level_dir = experiment_dir / "levels" / level_name
 
         for cascade in getattr(level.bars, "cascades", []) or []:
+            cascade_location = locate(
+                source_map,
+                f"levels/{level_name}/bars.yaml:{cascade.source}->{cascade.target}",
+                str(level_dir / "bars.yaml"),
+            )
             if cascade.source not in meter_names:
                 errors.add(
                     CompilationMessage(
-                        code="UAC-RES-CASCADE",
+                        code=ErrorCode.UAC_RES_CASCADE,
                         message=f"Cascade references unknown source meter '{cascade.source}'.",
-                        location=str(level_dir / "bars.yaml"),
+                        location=cascade_location,
                     )
                 )
             if cascade.target not in meter_names:
                 errors.add(
                     CompilationMessage(
-                        code="UAC-RES-CASCADE",
+                        code=ErrorCode.UAC_RES_CASCADE,
                         message=f"Cascade references unknown target meter '{cascade.target}'.",
-                        location=str(level_dir / "bars.yaml"),
+                        location=cascade_location,
                     )
                 )
 
@@ -269,9 +289,13 @@ def resolve_references(
                             if var_name not in vfs_variable_ids:
                                 errors.add(
                                     CompilationMessage(
-                                        code="UAC-RES-VFS",
+                                        code=ErrorCode.UAC_RES_VFS,
                                         message=f"Affordance '{affordance.name}' interaction uses unknown VFS variable '{var_name}'.",
-                                        location=str(level_dir / "affordances.yaml"),
+                                        location=locate(
+                                            source_map,
+                                            f"levels/{level_name}/affordances.yaml:{affordance.name}",
+                                            str(level_dir / "affordances.yaml"),
+                                        ),
                                     )
                                 )
 
@@ -280,15 +304,20 @@ def resolve_references(
                 if rule.item_type not in item_ids:
                     errors.add(
                         CompilationMessage(
-                            code="UAC-RES-ITEM",
+                            code=ErrorCode.UAC_RES_ITEM,
                             message=f"Item appearance references unknown item_type '{rule.item_type}'.",
                             location=str(level_dir / "items.yaml"),
                         )
                     )
 
-    for level in raw.levels.values():
+    for level_name, level in raw.levels.items():
         if getattr(level, "drive", None):
-            validate_dac_references(level.drive, symbol_table, errors)
+            validate_dac_references(
+                level.drive,
+                symbol_table,
+                errors,
+                drive_location=f"levels/{level_name}/drive.yaml",
+                source_map=source_map,
+            )
 
-    errors.check_and_raise(stage_label="Stage 3: Reference Resolution")
-    return ResolvedConfigBundle(raw=raw, symbol_table=symbol_table)
+    errors.check_and_raise()

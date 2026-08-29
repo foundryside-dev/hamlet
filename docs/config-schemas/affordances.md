@@ -1,5 +1,32 @@
 # Affordances Configuration
 
+> ⛔ **Restored to the live tree 2026-08-26 — this document describes a schema that IS NOT WIRED. Nothing here parses as written.**
+>
+> Verified 2026-08-26. The real DTO is `AffordanceParamConfig`
+> (`src/townlet/config/affordances_v2_config.py`) and its **complete** field set is:
+>
+> `costs` · `costs_per_tick` · `deployment` · `duration_ticks` · `interaction_type` ·
+> `interactions` · `name` · `opening_hours`
+>
+> Because the DTO uses `ConfigDict(extra="forbid")`, **every key this doc documents that is not
+> in that list is refused at parse time.** In particular:
+>
+> - **`id:` is not a field — the identity field is `name:`.**
+> - **`effect_pipeline:` is not a field — the real key is `interactions:`.**
+> - **`capabilities:` is not a field.** `src/townlet/config/capability_config.py` defines six
+>   Capability DTOs (`cooldown`, `meter_gated`, `prerequisite`, `probabilistic`,
+>   `skill_scaling`, …) that **nothing imports** — grep finds zero importers outside the module
+>   itself. It is dead declared surface, unreachable from any pack. Tracked as
+>   `hamlet-6b24c0bd83`, which also notes that `effects.md` Example 8 documents an
+>   affordance-scope `on_cooldown` pattern with no runtime gate consulting it.
+> - **The error strings and codes quoted here are invented.** `UAC-VAL-010` / `-011` / `-012`
+>   appear 3× in this document and **0×** anywhere in `src/`. Do not search for them.
+>
+> Tracked as `hamlet-8c2da322aa`. Use `configs/default_curriculum/levels/*/affordances.yaml` as
+> the working reference until this
+> is rewritten.
+
+
 ## Capability Validation Rules
 
 The Universe Compiler validates affordance capabilities to ensure configuration correctness at compile time.
@@ -134,6 +161,6 @@ affordances:
 
 ## See Also
 
-- [Universe Compiler Architecture](../architecture/COMPILER_ARCHITECTURE.md) - Full compiler pipeline documentation
+- [The Universe Compiler](../architecture/COMPILER.md) - Full compiler pipeline documentation (design history: `../architecture/archive/COMPILER_ARCHITECTURE.md`)
 - [Training Configuration](./training.md) - Training hyperparameters and reward strategies
 - [Variables Reference](./variables.md) - VFS configuration guide

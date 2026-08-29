@@ -1,5 +1,48 @@
 # VFS Profiles Configuration
 
+> ⛔ **Restored to the live tree 2026-08-26 — a pack written from this document WILL NOT PARSE.**
+>
+> Verified against `src/townlet/config/vfs_profiles_config.py` on 2026-08-26.
+>
+> **⚠️ Two REQUIRED top-level fields are never mentioned in this document.**
+> `VFSProfilesConfig` requires `version`, **`evaluation_mode`** and **`debug_logging`**. This
+> file mentions `evaluation_mode` **0 times** and `debug_logging` **0 times**. Omit either and
+> the pack is refused at parse.
+>
+> **⚠️ `readable_by` / `writable_by` are NOT fields of any profile DTO** — this document uses
+> them 12 times combined (8 + 4). No class in `vfs_profiles_config.py` declares them:
+> variables carry **`exposed_to`** instead. Under `extra="forbid"` they are a parse error. (This
+> matches `CLAUDE.md` §VFS: access-control enforcement is real where it runs but currently has
+> **no authoring surface** — the compiler hardcodes the role lists.)
+>
+> **⚠️ The "Optional File" framing is false.** `vfs_profiles.yaml` is **required**, at pack
+> root, and level directories must NOT contain one.
+>
+> **⚠️ `tensorNd` is entirely undocumented here** while `vfs_profiles_config.py:39-52` accepts
+> `tensor1d` / `tensor2d` / `tensor3d` / **`tensorNd`**. It genuinely works, and an
+> undiscoverable working capability is the worst case for a product whose north-star is
+> authorability. Tracked as `hamlet-8b5af63108`.
+>
+> ✅ **Correct as written — do not "fix" it:** the warning that item-scoped *expressions* are
+> refused at compile time is accurate and already present below.
+>
+> 🔁 **"Observation Integration" was CORRECTED 2026-08-26** (unit-3 token cut, DIV-008 — the
+> banner and the section were updated in one commit, so they agree). Three claims that section
+> carried are now dead and have been replaced rather than annotated: the fail-open
+> `exposed_to` → `["agent"]` injection (**deleted** — empty means unexposed); "values are
+> observed raw, no normalization surface" (**normalization is now REQUIRED at exposure**, and
+> boundedness is certified there); and the `PDR-0075` per-variable `ObservationField` /
+> `obs_item_slots` emission (**gone** — an exposed profile variable compiles to a
+> `variable_element` token, and item-profile exposure is refused until the unit-5 pack
+> migration). Everything else in this document is still at its 2026-08-26 restoration state.
+>
+> Tracked as `hamlet-fd0eb2da2c`.
+>
+> Real field sets, verified: `ItemVFSProfileConfig` = `{profile_name, variables}`;
+> item variables = `{id, name, type, initial_value, expression, normalization, exposed_to,
+> description}`.
+
+
 **Status**: Phase 2 Implementation (Expression Support)
 **Version**: 1.0
 **Last Updated**: 2025-11-21
@@ -154,6 +197,12 @@ agent_profile:
 **Shape**: `[max_items, num_vars]` per profile
 **When to use**: Item attributes (nutrition, durability, age)
 
+> ⚠️ **Item-profile `expression:` refuses at compile.** `VFSProfileCompiler.compile_item_profile`
+> has no expression evaluator for item scope and raises `ValueError` (`hamlet-bc0a5deeff`) for
+> any item-profile variable that declares `expression`. Every item-profile variable below must
+> declare `initial_value` instead; drive changing item state (e.g. spoilage, breakage) via
+> effects, not a compiled expression.
+
 **Example**:
 ```yaml
 item_profiles:
@@ -169,9 +218,11 @@ item_profiles:
         initial_value: 0
         description: "Ticks since item creation"
 
+      # Item-profile expressions refuse at compile (hamlet-bc0a5deeff) — static default,
+      # flip it via an effect when the item actually spoils.
       - name: is_spoiled
         type: bool
-        expression: "self.age > 100"
+        initial_value: false
         description: "True when food has spoiled"
 
   - profile_name: weapon_stats
@@ -321,7 +372,9 @@ expression: "bar.energy + bar.health * 0.5"
 expression: "temporal.tick % 24 >= 18"
 ```
 
-**Self-reference (item scope)**:
+**Self-reference (item scope)** — valid `self.<field>` syntax in item spawn-condition
+(`items.yaml` appearance `when:`) and effect expressions; as an item-profile **variable**'s
+own `expression:` field it refuses at compile (`hamlet-bc0a5deeff`, see Item Scope above):
 ```yaml
 expression: "self.age > 100"
 ```
@@ -430,61 +483,78 @@ agent_profile:
 ## Observation Integration
 
 A profile variable appears in the agent's observation when its `exposed_to` list contains
-`agent`. (Note the hidden default: an empty `exposed_to` is currently rewritten to `["agent"]`
-by the profile validators — a No-Defaults violation tracked for WS-4; declare it explicitly.)
+`agent`. **Exposure is explicit.** The three fail-open validators that rewrote an empty
+`exposed_to` to `["agent"]` were deleted by the unit-3 token cut: an absent or empty
+`exposed_to` now means **unexposed**, full stop. That is the No-Defaults fix the old note
+here anticipated, and it is a breaking change for any pack that relied on the injection.
 
-### What the compiler emits (`PDR-0075`)
+**`normalization` is REQUIRED on an exposed variable, and forbidden on an unexposed one.**
+The old claim in this section — "values are observed raw (no normalization surface on profile
+variables yet)" — is dead. A value entering a token must come from a bounded normalization
+kind, certified at exposure (`token_spec.require_exposure_normalization`):
 
-- **Every exposed global or agent profile variable compiles to its OWN observation field**,
-  named after the variable, `scope` `global` or `agent`, width from the variable's type
-  (`int`/`float`/`bool` → 1; `vec2i` → 2; `vec3i` → 3; `vecNi`/`vecNf` → `dims`;
-  tensors → product of `shape`), and **`semantic_type` = the author's declaration**. The field
-  is laid out with its group in the fixed group order `spatial, bars, affordance, effects,
-  custom, temporal`. Values are observed raw (no normalization surface on profile variables
-  yet).
-- **Exposed item-profile variables** are observed through ONE compiler-emitted feature field,
-  `obs_item_slots` (`semantic_type: custom`): for each of the agent's item slots, the exposed
-  variables of the item occupying it, positional within the slot (`max_items_per_agent` ×
-  the widest profile's exposed width). Empty slots read zero. Whether this should instead be
-  name-stable per variable is an open design question (`hamlet-1ad6383186`).
-- The runtime reads every field the same way — by the field's source variable and that
-  variable's declared scope — there is no per-field special case for profile variables.
+- `cyclical_sin_cos` and `binary` are bounded by themselves;
+- `minmax` and `log_scaled` are bounded only with **`clip: true`**;
+- `one_hot` is **refused** on a tokenized variable (it widens 1→C and cannot fit the fixed
+  2-lane value block; expose the category as a clipped `minmax` index over `[0, C-1]` and its
+  declared range rides in the descriptor block);
+- `rank_scaled` is **refused** at exposure (it ranks across the batch, which is causally
+  independent worlds — `hamlet-6a6e104523`);
+- `none`, `zscore`, bare `masked_value` and unclipped range kinds are unbounded and refused.
+
+### What the compiler emits
+
+An exposed global or agent profile variable compiles to a **`variable_element` token** in the
+compiled `TokenSpec`, one token per element (a tensor-shaped variable tokenizes per element;
+a scalar is the rank-0 case). Each token's payload is a padded position block, the two-lane
+value block, and the **descriptor block** — the variable's declared parameters, name-free:
+scope one-hot, `semantic_type` one-hot, normalization kind one-hot plus its canonical
+parameter vector, dtype flag, lifetime one-hot, normalized declared initial, log element
+count, and owner-slot coordinate. Identity is the declared payload (spec §1); two variables
+identical in every declared parameter are **refused at compile time** as
+indistinguishable.
+
+> **Item-profile exposure does not compile yet.** The `obs_item_slots` feature this section
+> used to describe died with the `ObservationSpec` family. An exposed item-profile variable
+> is refused at compile with the unit-5 pack migration named in the message. `PDR-0075`'s
+> per-variable-field emission and `hamlet-1ad6383186`'s layout question are both superseded
+> by the token layout.
 
 ```yaml
 global_profile:
   variables:
-    - name: day_count
-      semantic_type: temporal   # → field `day_count`, scope global, 1 dim, temporal group
-      type: int
-      initial_value: 0
+    - name: time_of_day_phase   # → one `variable_element` token, sin/cos in value lanes 0-1
+      id: time_of_day_phase
+      type: float
+      semantic_type: temporal
+      expression: tick
       exposed_to: [agent]
+      normalization:
+        kind: cyclical_sin_cos  # bounded by itself: no clip, no min/max to justify
+        period: 24
 agent_profile:
   variables:
-    - name: motivation
-      semantic_type: custom     # → field `motivation`, scope agent, 1 dim, custom group
+    - name: motivation          # → one `variable_element` token
       type: float
       initial_value: 1.0
+      semantic_type: custom
       exposed_to: [agent]
-item_profiles:
-  - profile_name: food
-    variables:
-      - name: freshness         # → observed inside `obs_item_slots` (no semantic_type)
-        type: float
-        initial_value: 1.0
-        exposed_to: [agent]
+      normalization:
+        kind: minmax
+        min: 0.0
+        max: 1.0
+        clip: true              # required: minmax is bounded only when clipped
 ```
 
-### Observation Dimensions
+### Observation width
 
-| Type | Contribution |
-|------|--------------|
-| `int`, `float`, `bool`, `*_ref` | +1 dim |
-| `vec2i` | +2 dims |
-| `vec3i` | +3 dims |
-| `vecNi`, `vecNf` | +`dims` |
-| tensors | +product of `shape` |
+An exposed variable contributes **tokens**, not a hand-summable dim count: one token per
+element, each of fixed per-type width. `cyclical_sin_cos` is the one kind that uses both
+value lanes of a single token rather than widening anything.
 
-Ask the compiled artifact for the truth (`observation_spec.fields`); do not sum by hand.
+Ask the compiled artifact for the truth — `token_spec.census` for counts,
+`token_spec.total_dims` for the serialization width, `token_spec.row_layout()` for offsets.
+Do not sum by hand, and do not quote a literal: `observation_spec` no longer exists.
 
 ### Access Control
 
@@ -587,6 +657,9 @@ agent_profile:
 
 ### Example 5: Item Durability
 
+> Item-profile `expression:` refuses at compile (`hamlet-bc0a5deeff`) — `is_broken` is a static
+> default, flipped by an effect when `durability` reaches zero, not a compiled expression.
+
 ```yaml
 item_profiles:
   - profile_name: weapon_stats
@@ -598,7 +671,7 @@ item_profiles:
 
       - name: is_broken
         type: bool
-        expression: "self.durability <= 0"
+        initial_value: false
         description: "True when weapon is broken"
 
       - name: damage
@@ -609,10 +682,14 @@ item_profiles:
 
 **Usage**:
 - `durability` decremented by engine on item use
-- `is_broken` recomputed automatically
+- `is_broken` set by an effect that watches `durability` (no item-scope expression evaluator)
 - `damage` used in combat calculations
 
 ### Example 6: Food Spoilage
+
+> Item-profile `expression:` refuses at compile (`hamlet-bc0a5deeff`) — `is_spoiled` and
+> `effective_nutrition` are static defaults here; drive them via effects instead of a
+> compiled dependency chain.
 
 ```yaml
 item_profiles:
@@ -630,16 +707,18 @@ item_profiles:
 
       - name: is_spoiled
         type: bool
-        expression: "self.age > 100"
+        initial_value: false
         description: "True when food has spoiled"
 
       - name: effective_nutrition
         type: float
-        expression: "0.0 if self.age > 100 else nutrition"
-        description: "Nutrition value (0 if spoiled)"
+        initial_value: 0.5
+        description: "Nutrition value (0 if spoiled; set by an effect, not a compiled expression)"
 ```
 
-**Dependency Order**: `age` → `is_spoiled` → `effective_nutrition`
+**Usage**: `age` accumulates via the engine; an effect flips `is_spoiled` and
+`effective_nutrition` when `age` crosses the spoilage threshold — item scope has no compiled
+dependency resolution to do this automatically.
 
 ### Example 7: Multi-Profile Items System
 

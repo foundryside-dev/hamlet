@@ -6,6 +6,7 @@ import hashlib
 import logging
 import pickle
 from collections.abc import Mapping
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -18,7 +19,11 @@ _DIGEST_BUFFER_SIZE = 1024 * 1024  # 1 MiB chunks keep memory bounded
 
 # WS-1 task 5: the single source of truth for the checkpoint payload format.
 # Previously hardcoded as a magic `3` at two sites in demo/runner.py.
-CHECKPOINT_FORMAT_VERSION = 3
+# 4: THE TOKEN CUT (unit 3 Task 10). `observation_field_uuids` and `observation_dim`
+# are DROPPED with their producer (the compiled ObservationSpec, deleted); token nets gate
+# on `token_type_schema_hash` and flat nets on `layout_hash`. A version-3 checkpoint
+# describes a different observation ABI entirely and refuses loudly (zero backcompat).
+CHECKPOINT_FORMAT_VERSION = 4
 
 logger = logging.getLogger(__name__)
 
@@ -39,10 +44,8 @@ def attach_universe_metadata(checkpoint: dict[str, Any], universe: CompiledUnive
     # D5. The only field separating two levels that collide on every content hash.
     # Stamped here; compared on resume by assert_checkpoint_identity (task 5).
     checkpoint["primary_level"] = universe.metadata.primary_level
-    checkpoint["observation_dim"] = universe.metadata.observation_dim
     checkpoint["action_dim"] = universe.metadata.action_count
     checkpoint["meter_count"] = universe.metadata.meter_count
-    checkpoint["observation_field_uuids"] = [field.uuid for field in universe.observation_spec.fields]
     checkpoint["observation_schema_hash"] = universe.observation_schema_hash
     checkpoint["drive_hash"] = universe.drive_hash
     checkpoint["curriculum_hash"] = universe.curriculum_hash
@@ -50,11 +53,81 @@ def attach_universe_metadata(checkpoint: dict[str, Any], universe: CompiledUnive
     checkpoint["affordances_hash"] = universe.affordances_hash
     checkpoint["training_hash"] = universe.training_hash
     checkpoint["brain_hash"] = universe.brain_hash
+    # PDR-0027: the pack baseline beside the effective hash, so a lineage fork (a per-level
+    # brain.yaml override) is stated at load time instead of discovered at runtime.
+    checkpoint["pack_brain_hash"] = universe.pack_brain_hash
     checkpoint["vfs_hash"] = universe.vfs_hash
+    # The two TokenSpec hashes ARE the observation identity since the unit-3 cut.
+    # `token_type_schema_hash` is the token-net transfer contract (payload-schema
+    # contents, MAX_POSITION_RANK, VALUE_BLOCK_WIDTH via the feature names);
+    # `layout_hash` is the flat-net contract (capacities, slot bindings, total_dims).
+    checkpoint["token_type_schema_hash"] = universe.token_type_schema_hash
+    checkpoint["layout_hash"] = universe.layout_hash
 
 
-def assert_checkpoint_dimensions(checkpoint: Mapping[str, Any], universe: CompiledUniverse) -> None:
+def assert_checkpoint_token_type_schema_hash(checkpoint: Mapping[str, Any], universe: CompiledUniverse) -> None:
+    """The TOKEN-NET checkpoint gate (token-obs spec §4): compare the TokenSpec
+    type-schema hash — payload-schema CONTENTS (closed-vocabulary members,
+    MAX_POSITION_RANK, VALUE_BLOCK_WIDTH, spelled out through the feature names) —
+    so an engine vocabulary bump produces this banner, not a shape error deep in
+    ``load_state_dict``. Deliberately NOT the layout hash: capacities and slot
+    bindings are entity variation, which a token net absorbs by design.
+
+    Used by token nets (``architecture.type='token_set'``).
+    """
+    checkpoint_hash = checkpoint.get("token_type_schema_hash")
+    if checkpoint_hash is None:
+        raise ValueError("Checkpoint missing token_type_schema_hash; regenerate the checkpoint with the latest compiler.")
+    if checkpoint_hash != universe.token_type_schema_hash:
+        raise ValueError(
+            f"Checkpoint token_type_schema_hash mismatch: checkpoint={str(checkpoint_hash)[:16]}..., "
+            f"current={universe.token_type_schema_hash[:16]}... "
+            "The engine's token payload schemas have changed since the checkpoint was created "
+            "(a closed-vocabulary member, MAX_POSITION_RANK, or VALUE_BLOCK_WIDTH moved). "
+            "Per-type encoder weights are not exchangeable across this boundary; retrain."
+        )
+
+
+def assert_checkpoint_layout_hash(checkpoint: Mapping[str, Any], universe: CompiledUniverse) -> None:
+    """The FLAT-NET checkpoint gate capability (token-obs spec §5): compare the
+    TokenSpec serialization-layout hash — type order, capacities, slot-binding
+    identity, ``total_dims``. A flat reader's dims are positional, so a re-bound
+    slot changes what a dim MEANS even at equal width; this hash is the contract
+    that catches it. Since the unit-3 cut this is THE flat-reader observation gate:
+    the obs-dim and field-uuid legs retired with their producer.
+    """
+    checkpoint_hash = checkpoint.get("layout_hash")
+    if checkpoint_hash is None:
+        raise ValueError("Checkpoint missing layout_hash; regenerate the checkpoint with the latest compiler.")
+    if checkpoint_hash != universe.layout_hash:
+        raise ValueError(
+            f"Checkpoint layout_hash mismatch: checkpoint={str(checkpoint_hash)[:16]}..., "
+            f"current={universe.layout_hash[:16]}... "
+            "The token serialization layout (type order, capacities, slot bindings, total_dims) "
+            "has changed since the checkpoint was created. A flat network reads dims positionally "
+            "and cannot ride a moved layout."
+        )
+
+
+def assert_checkpoint_dimensions(
+    checkpoint: Mapping[str, Any],
+    universe: CompiledUniverse,
+    *,
+    architecture_type: str | None = None,
+) -> None:
     """Raise ValueError when checkpoint observation/action dims mismatch universe.
+
+    ``architecture_type`` selects the observation gate (unit-3 cut):
+
+    - ``"token_set"``: the TokenSpec TYPE-SCHEMA hash — the transfer contract.
+      Capacities and slot bindings are entity variation a token net absorbs by design,
+      so they are deliberately excluded.
+    - anything else (a flat reader, ``None`` included): the LAYOUT hash — type order,
+      capacities, slot-binding identity, ``total_dims``. A flat reader's dims are
+      positional, so a re-bound slot changes what a dim MEANS at equal width.
+
+    The obs-dim and order-sensitive field-uuid legs are GONE: their producer (the
+    compiled ``ObservationSpec``) was deleted at the cut.
 
     Raises:
         ValueError: If universe is None or dimensions mismatch
@@ -63,25 +136,14 @@ def assert_checkpoint_dimensions(checkpoint: Mapping[str, Any], universe: Compil
     if universe is None:
         raise ValueError("universe parameter cannot be None - compiled universe required for dimension validation")
 
-    obs_dim = checkpoint.get("observation_dim")
-    if obs_dim is not None and obs_dim != universe.metadata.observation_dim:
-        raise ValueError(f"Checkpoint observation_dim mismatch: checkpoint={obs_dim}, current={universe.metadata.observation_dim}")
-
     action_dim = checkpoint.get("action_dim")
     if action_dim is not None and action_dim != universe.metadata.action_count:
         raise ValueError(f"Checkpoint action_dim mismatch: checkpoint={action_dim}, current={universe.metadata.action_count}")
 
-    expected_uuids = [field.uuid for field in universe.observation_spec.fields]
-    checkpoint_uuids = checkpoint.get("observation_field_uuids")
-    if checkpoint_uuids is None:
-        raise ValueError("Checkpoint missing observation_field_uuids; regenerate the checkpoint with the latest compiler.")
-    # MED-18: UUID comparison is order-sensitive by design - field order matters for observation encoding
-    # If UUIDs match but order differs, the checkpoint is incompatible (dimension mapping would be wrong)
-    if list(checkpoint_uuids) != expected_uuids:
-        raise ValueError(
-            "Checkpoint observation field UUIDs mismatch current universe specification. "
-            "This comparison is order-sensitive - field ordering must match exactly."
-        )
+    if architecture_type == "token_set":
+        assert_checkpoint_token_type_schema_hash(checkpoint, universe)
+    else:
+        assert_checkpoint_layout_hash(checkpoint, universe)
 
     # CRIT-06: Validate drive_hash to ensure reward function consistency
     checkpoint_drive_hash = checkpoint.get("drive_hash")
@@ -164,6 +226,33 @@ def assert_checkpoint_dimensions(checkpoint: Mapping[str, Any], universe: Compil
         )
 
 
+def surface_brain_lineage(checkpoint: Mapping[str, Any]) -> None:
+    """State a brain-lineage fork BEFORE the artifact is used (PDR-0027).
+
+    Legibility, not validation: assert_checkpoint_dimensions still enforces effective
+    brain_hash equality for resume. This makes the fork visible to a human loading an
+    artifact whose brain diverges from its pack baseline.
+
+    A checkpoint missing pack_brain_hash predates this stamp and RAISES — same rule as
+    every other hash here (see the WS-1 task 4 comment in assert_checkpoint_dimensions:
+    no `is not None` escapes). Pre-release, zero users: old checkpoints are regenerated,
+    not accommodated.
+    """
+    pack_hash = checkpoint.get("pack_brain_hash")
+    effective_hash = checkpoint.get("brain_hash")
+    if pack_hash is None:
+        raise ValueError("Checkpoint missing pack_brain_hash; regenerate the checkpoint with the latest compiler.")
+    if pack_hash != effective_hash:
+        logger.warning(
+            "brain lineage fork: this checkpoint's effective brain (%s...) diverges from its "
+            "pack baseline (%s...) at level %s — a per-level brain.yaml override. It is NOT "
+            "interchangeable with unforked artifacts of the same pack (PDR-0027).",
+            str(effective_hash)[:16],
+            str(pack_hash)[:16],
+            checkpoint.get("primary_level"),
+        )
+
+
 def assert_checkpoint_vfs_hash(checkpoint: Mapping[str, Any], universe: CompiledUniverse, *, force_new_vfs: bool) -> bool:
     """Validate checkpoint VFS identity before resume.
 
@@ -201,6 +290,8 @@ def assert_checkpoint_identity(checkpoint: Mapping[str, Any], universe: Compiled
     Composes, in order:
       1. format version — first, because a wrong-format checkpoint may lack
          ``vfs_hash`` entirely;
+      1b. ``surface_brain_lineage`` (PDR-0027) — states a brain fork before any
+         hash leg can raise; requires the ``pack_brain_hash`` stamp;
       2. ``assert_checkpoint_vfs_hash`` — the only leg that can return ``False``
          (the explicit force-new-VFS branch: start fresh, skip state load);
       3. ``assert_checkpoint_dimensions`` — dims, field UUIDs, ``drive_hash``,
@@ -226,6 +317,11 @@ def assert_checkpoint_identity(checkpoint: Mapping[str, Any], universe: Compiled
             f"Unsupported checkpoint version: {version}\nExpected version {CHECKPOINT_FORMAT_VERSION}. Please retrain from scratch."
         )
 
+    # PDR-0027: state a lineage fork before any hash leg can raise about it. Placed after
+    # the format gate on purpose — a wrong-format checkpoint lacks the stamp entirely, and
+    # "unsupported version" is the honest first error there.
+    surface_brain_lineage(checkpoint)
+
     if not assert_checkpoint_vfs_hash(checkpoint, universe, force_new_vfs=force_new_vfs):
         return False
 
@@ -242,6 +338,117 @@ def assert_checkpoint_identity(checkpoint: Mapping[str, Any], universe: Compiled
         )
 
     return True
+
+
+@dataclass(frozen=True)
+class TokenRosterReport:
+    """The loud cross-universe roster report (token-obs spec §4): what a token-net
+    load actually did, both directions, never silently."""
+
+    #: Type keys present on both sides — their encoder + type-embedding weights loaded.
+    loaded_types: tuple[str, ...]
+    #: Types the TARGET network has that the checkpoint lacks — left at fresh init.
+    cold_started_types: tuple[str, ...]
+    #: Types the CHECKPOINT has that the target network lacks — their weights dropped.
+    dropped_types: tuple[str, ...]
+    #: Non-per-type parameter keys (Q-head, aggregator projections) skipped because
+    #: their shapes differ (e.g. a different action_dim) — left at fresh init.
+    cold_started_modules: tuple[str, ...]
+
+    @property
+    def is_clean(self) -> bool:
+        return not self.cold_started_types and not self.dropped_types and not self.cold_started_modules
+
+
+def load_token_network_state_by_type(
+    network: torch.nn.Module,
+    source_state: Mapping[str, torch.Tensor],
+) -> TokenRosterReport:
+    """Load a TokenSetQNetwork state dict BY TYPE KEY (token-obs spec §4).
+
+    Per-type encoders and type embeddings load for the INTERSECTION of type keys —
+    the ``nn.ModuleDict`` keying is the transfer contract (a list indexed by roster
+    position would re-bind weights silently). Both mismatch directions are reported
+    loudly (warning log + the returned report). A shape mismatch on a SHARED type is
+    a payload-schema mismatch — the checkpoint was written by an engine with
+    different payload schemas — and REFUSES.
+
+    Non-per-type parameters (aggregator projections, Q-head) transfer mechanically
+    when shapes match; a shape mismatch there (a different action_dim or embed dim)
+    cold-starts that module and is reported, because the Q-head's values encode the
+    source universe's rewards and must be relearned anyway.
+    """
+    from townlet.agent.networks import TokenSetQNetwork
+
+    if not isinstance(network, TokenSetQNetwork):
+        raise ValueError(f"load_token_network_state_by_type requires a TokenSetQNetwork, got {type(network).__name__}")
+
+    def _type_of(key: str) -> str | None:
+        for prefix in ("encoders.", "type_embeddings."):
+            if key.startswith(prefix):
+                return key[len(prefix) :].split(".", 1)[0]
+        return None
+
+    target_state = network.state_dict()
+    target_types = set(network.token_type_names)
+    source_types = {t for key in source_state if (t := _type_of(key)) is not None}
+
+    loaded_types = tuple(sorted(target_types & source_types))
+    cold_started_types = tuple(sorted(target_types - source_types))
+    dropped_types = tuple(sorted(source_types - target_types))
+
+    merged: dict[str, torch.Tensor] = dict(target_state)
+    cold_started_modules: list[str] = []
+    for key, source_tensor in source_state.items():
+        key_type = _type_of(key)
+        if key_type is not None:
+            if key_type not in target_types:
+                continue  # dropped type — reported below
+            target_tensor = target_state[key]
+            if target_tensor.shape != source_tensor.shape:
+                raise ValueError(
+                    f"Token payload-schema mismatch on shared type {key_type!r}: parameter {key!r} is "
+                    f"{tuple(source_tensor.shape)} in the checkpoint but {tuple(target_tensor.shape)} in the "
+                    "current network. Payload widths are engine constants (spec §1: width is fixed per type "
+                    "across all universes), so this checkpoint was written by an engine with different token "
+                    "payload schemas. Refusing to load; retrain."
+                )
+            merged[key] = source_tensor
+        else:
+            target_tensor_or_none = target_state.get(key)
+            if target_tensor_or_none is None or target_tensor_or_none.shape != source_tensor.shape:
+                cold_started_modules.append(key)
+                continue
+            merged[key] = source_tensor
+
+    # Two-way module loudness (task-9 review M2): a non-per-type parameter the TARGET
+    # has but the checkpoint does not (e.g. attention projections loading from a mean
+    # checkpoint) keeps its fresh init — that is a cold start and must be reported,
+    # not silent.
+    source_keys = set(source_state)
+    for key in target_state:
+        if _type_of(key) is None and key not in source_keys:
+            cold_started_modules.append(key)
+    cold_started_modules.sort()
+
+    network.load_state_dict(merged)
+    report = TokenRosterReport(
+        loaded_types=loaded_types,
+        cold_started_types=cold_started_types,
+        dropped_types=dropped_types,
+        cold_started_modules=tuple(cold_started_modules),
+    )
+    if not report.is_clean:
+        logger.warning(
+            "token-net roster mismatch at cross-universe load: loaded types %s; cold-started types "
+            "(in network, not in checkpoint — fresh init) %s; dropped types (in checkpoint, not in "
+            "network — weights discarded) %s; cold-started modules (shape mismatch, fresh init) %s.",
+            list(report.loaded_types),
+            list(report.cold_started_types),
+            list(report.dropped_types),
+            list(report.cold_started_modules),
+        )
+    return report
 
 
 def _digest_path(checkpoint_path: Path) -> Path:

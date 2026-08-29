@@ -6,7 +6,12 @@ from typing import Literal
 import torch
 
 from townlet.environment.action_config import ActionConfig
-from townlet.substrate.base import SpatialSubstrate
+from townlet.substrate.base import (
+    SpatialSubstrate,
+    combine_metric,
+    pairwise_axis_deltas,
+    require_position_batch,
+)
 
 
 class ContinuousNDSubstrate(SpatialSubstrate):
@@ -285,63 +290,12 @@ class ContinuousNDSubstrate(SpatialSubstrate):
         """Encode positions as raw unnormalized coordinates."""
         return positions
 
-    def encode_observation(self, positions: torch.Tensor, affordances: dict[str, torch.Tensor]) -> torch.Tensor:
-        """Encode agent positions into observation space.
-
-        Args:
-            positions: [num_agents, N] agent positions
-            affordances: {name: [N]} affordance positions (currently unused)
-
-        Returns:
-            Encoded observations:
-            - relative: [num_agents, N]
-            - scaled: [num_agents, 2N]
-            - absolute: [num_agents, N]
-        """
-        if self.observation_encoding == "relative":
-            return self._encode_relative(positions, affordances)
-        elif self.observation_encoding == "scaled":
-            return self._encode_scaled(positions, affordances)
-        elif self.observation_encoding == "absolute":
-            return self._encode_absolute(positions, affordances)
-        else:
-            raise ValueError(f"Invalid observation_encoding: {self.observation_encoding}")
-
-    def get_observation_dim(self) -> int:
-        """Return dimensionality of position encoding.
-
-        Returns:
-            - relative: N (normalized coordinates)
-            - scaled: 2N (normalized + range sizes)
-            - absolute: N (raw coordinates)
-        """
-        if self.observation_encoding == "relative":
-            return len(self.bounds)
-        elif self.observation_encoding == "scaled":
-            return 2 * len(self.bounds)
-        elif self.observation_encoding == "absolute":
-            return len(self.bounds)
-        else:
-            raise ValueError(f"Invalid observation_encoding: {self.observation_encoding}")
-
     @property
     def supports_partial_vision(self) -> bool:
         return False
 
-    def get_grid_encoding_dim(self) -> int:
-        """Continuous spaces have no grid; no obs_grid_encoding field exists."""
-        return 0
-
-    def get_position_feature_dim(self) -> int:
-        """The whole continuous encoding is position features
-        (encode_observation is what the runtime publishes for obs_position)."""
-        return self.get_observation_dim()
-
     def get_vision_radius(self, vision_range: float) -> int:
         raise ValueError("Continuous substrates do not support partial vision; no vision radius exists.")
-
-    def get_partial_window_dim(self, vision_radius: int) -> int:
-        raise ValueError("Continuous substrates do not support partial vision; no local window exists.")
 
     def normalize_positions(self, positions: torch.Tensor) -> torch.Tensor:
         """Normalize positions to [0, 1] range (always relative encoding).
@@ -353,6 +307,37 @@ class ContinuousNDSubstrate(SpatialSubstrate):
             [num_agents, position_dim] normalized to [0, 1]
         """
         return self._encode_relative(positions, {})
+
+    # --- Token visibility / egocentric contract (token-obs unit 3, Task 8) -----
+
+    def _token_axis_extents(self, device: torch.device) -> torch.Tensor:
+        return torch.tensor([float(max_val - min_val) for min_val, max_val in self.bounds], dtype=torch.float32, device=device)
+
+    def _token_vision_radius(self, vision_range: float) -> float:
+        """Radius in world units from the declared fraction of the longest axis extent."""
+        longest = max(max_val - min_val for min_val, max_val in self.bounds)
+        return vision_range * (longest / 2.0)
+
+    def visible(self, self_pos: torch.Tensor, entity_pos: torch.Tensor, vision_range: float | None) -> torch.Tensor:
+        """Declared-metric visibility; wrap-aware (toroidal shortest path under `wrap`)."""
+        require_position_batch(self_pos, self.position_dim, argument="self_pos")
+        require_position_batch(entity_pos, self.position_dim, argument="entity_pos")
+        if vision_range is None:
+            return torch.ones((self_pos.shape[0], entity_pos.shape[0]), dtype=torch.bool, device=self_pos.device)
+        radius = self._token_vision_radius(vision_range)
+        wrap = self._token_axis_extents(self_pos.device) if self.boundary == "wrap" else None
+        deltas = pairwise_axis_deltas(self_pos, entity_pos, wrap)
+        return combine_metric(deltas.abs(), self.distance_metric) <= radius
+
+    def egocentric_delta(self, self_pos: torch.Tensor, entity_pos: torch.Tensor) -> torch.Tensor:
+        """entity − self per axis, shortest path under wrap, normalized per encoding mode."""
+        require_position_batch(self_pos, self.position_dim, argument="self_pos")
+        require_position_batch(entity_pos, self.position_dim, argument="entity_pos")
+        wrap = self._token_axis_extents(self_pos.device) if self.boundary == "wrap" else None
+        deltas = pairwise_axis_deltas(self_pos, entity_pos, wrap)
+        if self.observation_encoding == "relative":
+            deltas = deltas / self._token_axis_extents(deltas.device)
+        return deltas
 
     def get_valid_neighbors(self, position: torch.Tensor) -> list[torch.Tensor]:
         """Raise error - continuous space has no discrete neighbors.
@@ -488,36 +473,3 @@ class ContinuousNDSubstrate(SpatialSubstrate):
         )
 
         return actions
-
-    def encode_partial_observation(
-        self,
-        positions: torch.Tensor,
-        affordances: dict[str, torch.Tensor],
-        vision_range: int,
-    ) -> torch.Tensor:
-        """Encode local window around agents for partial observability (POMDP).
-
-        For N-dimensional continuous spaces, local windows are impractical:
-        - No discrete grid to window into
-        - Infinite positions in any local region
-        - Exponential growth of window volume with dimensions
-
-        Current implementation: Not supported for N≥4. Use full observability
-        with coordinate encoding instead.
-
-        Args:
-            positions: [num_agents, N] agent positions
-            affordances: {name: [N]} affordance positions
-            vision_range: radius of vision window
-
-        Returns:
-            Empty tensor [num_agents, 0] - partial obs not supported for ND
-
-        Raises:
-            NotImplementedError: Partial observability not supported for N≥4
-        """
-        raise NotImplementedError(
-            f"Partial observability (POMDP) is not supported for {self.position_dim}D continuous spaces. "
-            f"Continuous spaces have infinite positions in any local window. "
-            f"Use full observability with 'relative' or 'scaled' observation_encoding instead."
-        )

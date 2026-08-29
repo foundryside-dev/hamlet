@@ -29,7 +29,6 @@ wiring being half-done.
 from __future__ import annotations
 
 import inspect
-import math
 import shutil
 from collections.abc import Callable
 from pathlib import Path
@@ -43,9 +42,7 @@ from townlet.environment.action_executor import ActionExecutor
 from townlet.environment.affordance_engine import AffordanceEngine
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.universe.compiler import UniverseCompiler
-from townlet.universe.compilers.observation import meter_observation_field_name
 from townlet.vfs import vtc
-from townlet.vfs.observation_builder import apply_normalization
 
 SOURCE_PACK = Path("configs/default_curriculum")
 L0 = "L0_0_minimal"
@@ -260,252 +257,9 @@ def test_meter_without_declared_bounds_is_fatal() -> None:
 # --------------------------------------------------------------------------------------
 
 
-def test_each_meter_declares_its_own_normalization_sourced_from_its_own_bounds() -> None:
-    """Every meter carries its OWN spec, and the bounds half still comes from bars.yaml.
-
-    This asserted one block spec whose `min`/`max` were parallel LISTS. Per-meter
-    parameters were therefore always expressible; per-meter KIND was not, which is the
-    whole of hamlet-3d3039f340. Now each meter has its own spec, and PDR-0016's coupling
-    — the declaration that ceilings the runtime also scales the observation — is asserted
-    meter by meter.
-    """
-    universe = UniverseCompiler().compile(SOURCE_PACK, primary_level=L1, use_cache=False)
-    level = universe.get_level(L1)
-
-    declared = {meter.name: meter.bounds for meter in level.bars.meters}
-    specs = {f.id: f.normalization for f in universe.vfs_observation_fields}
-    bars_fields = [f for f in universe.observation_spec.fields if f.semantic_type == "bars"]
-    assert len(bars_fields) == len(declared), "one observation field per declared meter"
-
-    for field in bars_fields:
-        meter_name = field.feature_ref  # the compiled field NAMES its meter; nothing parses it (unit 4)
-        assert meter_name is not None and field.feature == "meter"
-        spec = specs[field.name]
-        assert spec is not None, f"{field.name} must declare a normalization"
-        assert spec.kind == "minmax", "default_curriculum declares minmax for every meter"
-        # Scalars now, not list entries: the spec belongs to ONE meter.
-        assert spec.min == declared[meter_name].min
-        assert spec.max == declared[meter_name].max
-
-
-def test_obs_meters_observation_is_scaled_by_declared_bounds(tmp_path: Path) -> None:
-    """A meter's observation is its value over its DECLARED ceiling, not its raw value.
-
-    Before this unit nothing normalized anything, so money entered the 124-dim
-    observation raw while the other 123 features sat in [0, 1].
-    """
-    env = _env(_pack(tmp_path, L1), L1)
-    money_idx = env.meter_name_to_index["money"]
-    energy_idx = env.meter_name_to_index["energy"]
-    money_max = next(m.bounds.max for m in env.universe.get_level(L1).bars.meters if m.name == "money")
-
-    env.meters[:, money_idx] = 22.5
-    env.meters[:, energy_idx] = 0.5
-
-    obs = env._get_observations()[0]
-    money_field = env.observation_spec.get_field_by_name(meter_observation_field_name("money"))
-    energy_field = env.observation_spec.get_field_by_name(meter_observation_field_name("energy"))
-    observed = {"money": obs[money_field.start_index], "energy": obs[energy_field.start_index]}
-
-    assert observed["money"].item() == pytest.approx(22.5 / money_max, rel=1e-6)
-    # A unit-interval meter is unchanged by minmax over [0, 1] — the normalization is
-    # per-meter, not a single global divisor.
-    assert observed["energy"].item() == pytest.approx(0.5, abs=1e-6)
-
-
-def test_every_declared_normalization_reaches_the_observation(tmp_path: Path) -> None:
-    """The VFS normalization ABI has production callers, for EVERY field that declares one.
-
-    `apply_normalization` was fully implemented, tested and hashed into
-    `observation_schema_hash` with ZERO production callers. This pins that every field
-    declaring a spec now has it applied, so the surface cannot go inert again silently.
-
-    Every field is first driven OFF its identity point, without which this test cannot
-    cash that promise. At reset every declared spec happens to be an identity map —
-    `minmax` over [0, 1] is the identity for the seven unit-interval meters, money is
-    0.0, and the four environment-declared variables are permanently 0.0 because nothing
-    writes them (`hamlet-dc8f887cd5`). A version of this test that observed the reset
-    state passed with the whole normalization half reverted.
-    """
-    env = _env(_pack(tmp_path, L1), L1)
-
-    declared = {f.id: f.normalization for f in env.universe.vfs_observation_fields if f.normalization is not None}
-    money_field_name = meter_observation_field_name("money")
-    assert money_field_name in declared, "every meter must be among the normalized fields"
-
-    # Drive every normalized field off its identity point. The money meter via its value
-    # (the only non-unit ceiling in any shipped pack); the rest by writing the registry
-    # directly, since they have no production writer to do it for us.
-    env.meters[:, env.meter_name_to_index["money"]] = 22.5
-    off_identity = {money_field_name}
-    for field_id, spec in declared.items():
-        if field_id == money_field_name or field_id not in env.vfs_registry.variables:
-            continue
-        maximum = spec.max if isinstance(spec.max, float) else None
-        if spec.kind != "minmax" or maximum is None or maximum == 1.0:
-            continue
-        current = env.vfs_registry.get(field_id, reader="engine")
-        env.vfs_registry.set(field_id, torch.full_like(current, maximum / 2.0), writer="engine")
-        off_identity.add(field_id)
-
-    assert len(off_identity) >= 2, f"only {off_identity} could be driven off identity — the test would not discriminate"
-
-    obs = env._get_observations()
-    checked = 0
-    for field in env.observation_spec.fields:
-        normalization = declared.get(field.name)
-        if normalization is None:
-            continue
-        raw = env.vfs_registry.get(field.name, reader="engine")
-        if raw.dim() == 1:
-            raw = raw.unsqueeze(1)
-        expected = apply_normalization(raw, normalization)
-        actual = obs[:, field.start_index : field.end_index]
-        assert torch.allclose(expected, actual, atol=1e-6), f"{field.name} is not normalized as declared"
-        if field.name in off_identity:
-            # Vacuity guard: prove this field's spec is NOT the identity here, so the
-            # assertion above actually discriminated.
-            assert not torch.allclose(raw, actual, atol=1e-6), f"{field.name} normalization is an identity map — assertion was vacuous"
-            checked += 1
-
-    assert checked >= 2, f"only {checked} field(s) discriminated; this test cannot detect the surface going inert"
-
-
-def test_dimension_changing_normalization_is_rejected_only_when_it_disagrees_with_dims(tmp_path: Path) -> None:
-    """A widening normalizer is legal — the field must simply DECLARE the width it produces.
-
-    This test used to read "a normalizer that changes a field's width must fail loudly",
-    which conflated two things: producing a different width than the SOURCE (fine, and now
-    authorable) versus producing a different width than the field DECLARES (a defect). The
-    first is what `cyclical_sin_cos` and `one_hot` are for; only the second is an error.
-
-    Both halves are pinned, because dropping the mismatch guard while making widening legal
-    would let a wrong-width normalizer corrupt the observation layout silently.
-    """
-    from townlet.vfs.schema import NormalizationSpec
-
-    env = _env(_pack(tmp_path, L1), L1)
-    encoder = env._observation_encoder
-    source = torch.zeros((env.num_agents, 1))
-    widening = NormalizationSpec(kind="cyclical_sin_cos", period=24.0)
-
-    # Declared 2, produces 2: accepted.
-    widened = encoder._apply_declared_normalization("obs_meter_test", source, widening, 2)
-    assert widened.shape == (env.num_agents, 2)
-
-    # Declared 1, produces 2: still a defect, still loud.
-    with pytest.raises(ValueError, match="changed an observation field's width"):
-        encoder._apply_declared_normalization("obs_meter_test", source, widening, 1)
-
-
 # --------------------------------------------------------------------------------------
 # Per-meter normalization kinds (hamlet-3d3039f340, PDR-0054)
 # --------------------------------------------------------------------------------------
-
-
-def test_a_meter_can_declare_a_log_family_and_it_reaches_the_observation() -> None:
-    """ACCEPTANCE LEG 2, verbatim from hamlet-3d3039f340.
-
-    The ticket measured that `money` with bounds [1, 1e6] under a linear normalizer
-    observes 0.000999 at money=1000 — the whole operating range 1..100,000 crushed into
-    [0, 0.0999], leaving the agent effectively blind to money. It required that after the
-    fix the compiled spec reports `log_scaled` and the observed value at money=1000 is
-    0.5.
-
-    Leg 1 (the pack compiles with zero src/ diff) is how the defect arose in the first
-    place: `variables_reference.yaml` accepted exactly this declaration, validated it,
-    compiled green, and discarded it. So this asserts the OBSERVED VALUE, not the schema.
-    """
-    pack = Path("configs/trial002_money_log_gdp")
-    universe = UniverseCompiler().compile(pack, primary_level="L0_simple", use_cache=False)
-
-    spec = next(f.normalization for f in universe.vfs_observation_fields if f.id == meter_observation_field_name("money"))
-    assert spec is not None and spec.kind == "log_scaled", "money must compile to the declared log family"
-
-    observed = {value: apply_normalization(torch.tensor([value]), spec).item() for value in (1.0, 10.0, 1000.0, 100000.0, 1000000.0)}
-    assert observed[1000.0] == pytest.approx(0.5, abs=1e-6), "the ticket's headline number"
-    # The rest of the ticket's table, so a partial regression cannot pass on one point.
-    assert observed[1.0] == pytest.approx(0.0, abs=1e-6)
-    assert observed[10.0] == pytest.approx(1.0 / 6.0, abs=1e-6)
-    assert observed[100000.0] == pytest.approx(5.0 / 6.0, abs=1e-6)
-    assert observed[1000000.0] == pytest.approx(1.0, abs=1e-6)
-
-    # And the defect it replaces: linear scaling would have crushed it to ~0.001.
-    assert observed[1000.0] > 100 * (1000.0 / 1000000.0)
-
-
-def test_a_widening_meter_kind_grows_the_observation_by_exactly_its_extra_dims(tmp_path: Path) -> None:
-    """The width couplings are genuinely broken, not merely bypassed.
-
-    Before this cut the observed bars width was pinned to the meter COUNT in three places
-    (the meter-encoder Linear, its zero fallback, and the encoder's source-shape assert),
-    so a widening kind could not be used even though `apply_normalization` implemented it.
-    Declaring `cyclical_sin_cos` on one meter must now widen the observation by exactly
-    one dimension, end to end — compiled spec, bars group slice, and the real observation
-    tensor.
-    """
-    baseline = UniverseCompiler().compile(SOURCE_PACK, primary_level=L1, use_cache=False)
-    baseline_dims = baseline.observation_spec.total_dims
-    baseline_bars = baseline.observation_activity.group_slices["bars"]
-
-    pack = _pack(tmp_path, L1)
-    env_yaml = pack / "environment.yaml"
-    data = yaml.safe_load(env_yaml.read_text())
-    for meter in data["environment"]["meters"]:
-        if meter["name"] == "mood":
-            meter["range_type"] = {"kind": "cyclical_sin_cos", "period": 24.0}
-    env_yaml.write_text(yaml.safe_dump(data))
-
-    widened = UniverseCompiler().compile(pack, primary_level=L1, use_cache=False)
-
-    assert widened.observation_spec.total_dims == baseline_dims + 1
-    bars = widened.observation_activity.group_slices["bars"]
-    assert (bars.stop - bars.start) == (baseline_bars.stop - baseline_bars.start) + 1
-
-    mood_field = widened.observation_spec.get_field_by_name(meter_observation_field_name("mood"))
-    assert mood_field.dims == 2, "sin and cos"
-
-    # The SOURCE stays one scalar — the extra dimension is produced by the normalizer at
-    # observation time, not stored. Conflating these is what made the kind unreachable.
-    source = next(f for f in widened.vfs_observation_fields if f.id == mood_field.name)
-    assert source.shape == [1]
-
-    # End to end: the real observation is (sin, cos) of the meter's value.
-    env = _env(pack, L1)
-    env.meters[:, env.meter_name_to_index["mood"]] = 6.0
-    obs = env._get_observations()[0, mood_field.start_index : mood_field.end_index]
-    angle = 6.0 * (2.0 * math.pi / 24.0)
-    assert obs[0].item() == pytest.approx(math.sin(angle), abs=1e-5)
-    assert obs[1].item() == pytest.approx(math.cos(angle), abs=1e-5)
-
-
-def test_a_meter_observation_id_that_collides_is_a_compile_error(tmp_path: Path) -> None:
-    """The namespacing prefix is asserted, not trusted.
-
-    A bare meter name as a variable id is unusable twice over: the VTC merges bars and VFS
-    variables into one evaluation namespace and raises at RUNTIME on the first bar write,
-    and `build_vfs_variables` SKIPS a field shadowed by a declared variable, silently
-    producing an observation field with no backing variable. Both are found at compile
-    time, with the meter named.
-    """
-    pack = _pack(tmp_path, L1)
-    env_yaml = pack / "environment.yaml"
-    data = yaml.safe_load(env_yaml.read_text())
-    data["environment"]["variables"].append(
-        {
-            "name": meter_observation_field_name("energy"),
-            "type": "scalar",
-            "dims": 1,
-            "scope": "agent",
-            "description": "A variable that shadows a meter's observation id",
-            "semantic_type": "custom",
-            "normalization": {"method": "normalize", "range": [0.0, 1.0], "clip": False},
-        }
-    )
-    env_yaml.write_text(yaml.safe_dump(data))
-
-    with pytest.raises(Exception, match="collides with a declared environment variable"):
-        UniverseCompiler().compile(pack, primary_level=L1, use_cache=False)
 
 
 def test_an_underspecified_meter_type_is_a_compile_error(tmp_path: Path) -> None:
@@ -526,38 +280,6 @@ def test_an_underspecified_meter_type_is_a_compile_error(tmp_path: Path) -> None
         MeterConfig(name="m", description="d", range_type={"kind": "minmax", "clip": True, "period": 24.0})
     with pytest.raises(ValidationError):
         MeterConfig(name="m", description="d", range_type={"kind": "normalized"})  # deleted member
-
-
-def test_semantic_groups_must_be_contiguous() -> None:
-    """group_slices is the name-blind way to address a block, and W6 sizes a network layer
-    from it — so a group that spans foreign dimensions produces a wrong TENSOR SHAPE, far
-    from its cause. build_activity records a group's start on first sighting and its end on
-    every sighting, so interleaving was previously silent."""
-    from townlet.universe.compilers.observation import ObservationCompiler
-    from townlet.universe.dto import ObservationField, ObservationSpec
-
-    def _field(name: str, start: int, semantic: str) -> ObservationField:
-        return ObservationField(
-            uuid=None,
-            name=name,
-            type="scalar",
-            dims=1,
-            start_index=start,
-            end_index=start + 1,
-            scope="agent",
-            description=name,
-            semantic_type=semantic,
-            feature="meter" if semantic == "bars" else "variable",
-            feature_ref=name if semantic == "bars" else None,
-        )
-
-    interleaved = ObservationSpec.from_fields([_field("a", 0, "bars"), _field("b", 1, "spatial"), _field("c", 2, "bars")])
-    with pytest.raises(ValueError, match="not contiguous"):
-        ObservationCompiler().build_activity(interleaved)
-
-    contiguous = ObservationSpec.from_fields([_field("a", 0, "bars"), _field("c", 1, "bars"), _field("b", 2, "spatial")])
-    activity = ObservationCompiler().build_activity(contiguous)
-    assert activity.group_slices["bars"] == slice(0, 2)
 
 
 def test_the_reference_config_meters_parse_against_the_current_schema() -> None:
@@ -587,39 +309,52 @@ def test_the_reference_config_meters_parse_against_the_current_schema() -> None:
         assert parsed.range_type.kind, f"{parsed.name} must declare a range_type kind"
 
 
-def test_one_hot_over_an_unindexable_bar_range_is_a_compile_error(tmp_path: Path) -> None:
-    """A one_hot meter whose bar can hold an out-of-range index must fail at COMPILE time.
+# --------------------------------------------------------------------------------------
+# The clamp_and_validate phase (hamlet-f46e2b381a — the architecture half)
+# --------------------------------------------------------------------------------------
 
-    Found by review: declaring `categories: 5` on a bar bounded [1, 1e6] compiled green and
-    then died on the first observation build with "one_hot normalization received category
-    index outside configured range" — naming no meter, no value and no file. A bar that only
-    reaches the invalid region later would have failed mid-training.
+
+def test_clamp_and_validate_carries_compiled_bounds_rules(tmp_path: Path) -> None:
+    """The declared-but-empty phase is real: one bounds rule per declared meter.
+
+    Red before this unit: `clamp_and_validate` appeared exactly once in the codebase, as
+    a string in DEFAULT_TRANSITION_PHASES, with no rule family ever assigned to it.
     """
-    pack = _pack(tmp_path, L1)
-    env_yaml = pack / "environment.yaml"
-    data = yaml.safe_load(env_yaml.read_text())
-    for meter in data["environment"]["meters"]:
-        if meter["name"] == "money":
-            meter["range_type"] = {"kind": "one_hot", "categories": 5}
-    env_yaml.write_text(yaml.safe_dump(data))
+    universe = UniverseCompiler().compile(_pack(tmp_path, L1), primary_level=L1, use_cache=False)
+    schedule = universe.transition_schedule
 
-    with pytest.raises(Exception, match="not a valid index range"):
-        UniverseCompiler().compile(pack, primary_level=L1, use_cache=False)
+    bounds_rules = {rule.variable_id: rule for rule in schedule.bounds_clamp_program.rules}
+    passive_rules = {rule.variable_id: rule for rule in schedule.passive_depletion_program.rules}
+
+    # Same source of truth: every declared meter gets a bounds rule, with the same
+    # declared bounds the passive-depletion per-write clamp already carries.
+    assert set(bounds_rules) == set(passive_rules)
+    for name, rule in bounds_rules.items():
+        assert rule.phase == "clamp_and_validate"
+        assert rule.clamp == passive_rules[name].clamp
+
+    # The bound that made this a P1: money's declared ceiling, not a hardcoded 1.0.
+    assert bounds_rules["money"].clamp == (0.0, 999999.0)
 
 
-def test_a_normalizer_failure_at_runtime_names_the_field(tmp_path: Path) -> None:
-    """`apply_normalization` is field-agnostic, so its messages name the KIND and never the
-    field. With one field per meter that leaves an author nothing to act on, so the encoder
-    re-raises with the field name attached."""
-    from townlet.vfs.schema import NormalizationSpec
+def test_meter_pushed_out_of_bounds_after_cascades_is_clamped_before_terminal_reads(tmp_path: Path) -> None:
+    """Closes the live hole: the effect-manager tick runs AFTER passive depletion and
+    cascades, and its `bar.*` writes are raw — nothing between it and terminal
+    conditions, rewards, or the observation enforced declared bounds. The
+    clamp_and_validate phase runs exactly in that slot (see the step loop's
+    `phases_between("apply_threshold_cascades", "evaluate_terminal_conditions")`).
 
-    env = _env(_pack(tmp_path, L1), L1)
-    encoder = env._observation_encoder
+    Red before this unit: the meter stays at 5.0 through the phase range.
+    """
+    env = _env(_pack(tmp_path, L0), L0)
+    energy_idx = env.meter_name_to_index["energy"]
 
-    with pytest.raises(ValueError, match="obs_meter_money"):
-        encoder._apply_declared_normalization(
-            "obs_meter_money",
-            torch.full((env.num_agents, 1), 99.0),
-            NormalizationSpec(kind="one_hot", categories=4),
-            4,
-        )
+    # Simulate a post-cascade write (e.g. a ticking effect's `modify: bar.energy`).
+    env.meters[0, energy_idx] = 5.0
+
+    env._run_vtc_transition_phases(
+        env.vtc_transition_runner.phases_between("apply_threshold_cascades", "evaluate_terminal_conditions"),
+        active_mask=torch.logical_not(env.dones),
+    )
+
+    assert env.meters[0, energy_idx].item() == pytest.approx(1.0)

@@ -1,4 +1,6 @@
 version: "1.0"
+extents:
+  num_affordances: 4
 variables:
   - id: trust
     scope: pair

@@ -1,5 +1,22 @@
 # Interoception-Based Reward Design: Modeling Internal Awareness
 
+> ⚠️ **Recovered from archive 2026-08-26 — a design PROPOSAL, never shipped in this form.**
+>
+> This is the matched pair to `low_energy_delerium.md`: it *proposes* the multiplicative
+> `health × energy` reward that the other file diagnoses as a failure mode. Read them together
+> as one bug→diagnosis→fix arc — that pairing is the reason both are out of the archive.
+>
+> **Not shipped:** the `class RewardStrategy` / `reward_strategy.py` target described below was
+> deleted outright when `drive.yaml` became required. Reward logic is now declared in DAC YAML.
+>
+> **Two defects to read past:**
+> 1. It normalizes meters by `/100.0`. Shipped bars are already `[0, 1]` — the arithmetic is
+>    off by 100×.
+> 2. It indexes meters positionally (`meters[:, 0]`, `meters[:, 6]`). That is exactly the
+>    hardcoded-domain-fact pattern `PDR-0045` forbids: the engine must never know which column
+>    is which meter. A modern version binds a *role* to an author-chosen variable name.
+
+
 **Date**: 2025-11-03
 **Status**: Proposed Design
 **Related**: `milestone_rewards_design.md`, `reward_hacking_interact_spam.md`

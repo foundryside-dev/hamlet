@@ -45,7 +45,7 @@ part not in the approved option text, and the reasoning is the directive itself:
 two members, one behaviour** — by hand, inside the change whose purpose is removing that shape.
 `log_scaled` + `clip: true` is exactly what `clipped_log_scaled` did.
 
-`docs/architecture/vfs.md` §9.2 had carried the tell the whole time: its own money example passed
+`docs/architecture/VFS.md` §9.2 had carried the tell the whole time: its own money example passed
 `clip: true` to a kind whose name already implied it. A redundant parameter on a member is the
 signature of a member that should have been a parameter.
 
@@ -56,7 +56,7 @@ declared range, linearly — had **no member at all** and was therefore unauthor
 ## Consequences
 
 1. Nine kinds, each distinct, each doing what its name says.
-2. `docs/architecture/vfs.md` and `vfs-current-implementation.md` corrected — both are on
+2. `docs/architecture/VFS.md` and `vfs-current-implementation.md` corrected — both are on
    `CLAUDE.md`'s current-and-trustworthy list, which is exactly what makes a stale entry there
    expensive.
 3. Behaviour-preserving by construction: all 85 in-tree declarations migrated to `clip: false`,

@@ -40,14 +40,17 @@ class UniverseMetadata:
     action_count: int = 0
     observation_dim: int = 0
 
+    # VFS scope extents (variables_reference.yaml `extents:` block). Zero means
+    # the pack declares no variables of that scope — the loader rejects a
+    # scoped variable whose extent is undeclared, so 0 never reaches a registry
+    # that needs it.
+    num_zones: int = 0
+    num_groups: int = 0
+    num_message_slots: int = 0
+
     # Spatial metadata (for grid substrates)
     grid_size: int | None = None
     grid_cells: int | None = None
-
-    # Economic metadata
-    max_sustainable_income: float = 0.0
-    total_affordance_costs: float = 0.0
-    economic_balance: float = 0.0
 
     # Versioning + provenance
     config_version: str = "1.0"

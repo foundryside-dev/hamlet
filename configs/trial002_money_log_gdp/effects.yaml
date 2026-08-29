@@ -10,3 +10,12 @@ effect_definitions:
     on_tick:
       - modify: bar.money
         value: "1000.0 * (2.0 + phase_sin(elapsed_ticks, 24.0))"
+
+# Per-scope budget of concurrently active effects (token-obs spec S2, required because
+# effects are declared). Values: one active instance per declared effect per scope
+# entity; a `stack`-policy effect exceeding its scope budget raises loudly at publish.
+max_active_effects:
+  global: 1
+  agent: 0
+  item: 0
+  affordance: 0

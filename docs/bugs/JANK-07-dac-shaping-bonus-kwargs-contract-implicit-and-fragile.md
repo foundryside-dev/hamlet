@@ -1,3 +1,26 @@
+
+> 🔴 **Recovered from archive 2026-08-26 — STILL OPEN, and a live instance has been identified.**
+>
+> Re-verified 2026-08-26. The producer side is unchanged: every bonus closure in
+> `environment/dac_engine.py:455-830` does `kwargs.get(...)` and **returns zeros on miss**
+> rather than failing (e.g. `:680-682`, and the same shape at `:513`, `:623`, `:655`). No
+> validation was added — `grep -rn "required_context\|context_requirements" src/` finds nothing.
+> The one intermediary, `VTCRewardProgram.apply` (`vfs/vtc.py:1824-1829`), splats
+> `**dict(reward_context)` through untouched and validates only *output* tensor shapes
+> (`vtc.py:1836-1857`), never input keys.
+>
+> ⚠️ **Live instance, not in the original ticket:** `environment/reward_calculator.py:38-39`
+> gates `current_hour` behind `if env.enable_temporal_mechanics:`. So a `timing_bonus` declared
+> in a `drive.yaml` on any **non-temporal** level contributes exactly zero — silently, with no
+> error and no log. That is precisely the "enabled in YAML, inert at runtime" case this ticket
+> predicted, and it is reachable from shipped config space today.
+>
+> **Consumer side moved:** the fixed kwargs dict is now `environment/reward_calculator.py:30-39`,
+> not `vectorized_env.py:1249`. **Line drift:** `dac_engine.py:446` → `_compile_shaping` at
+> **:455**. **Name drift:** the env method is `_calculate_shaped_rewards`
+> (`vectorized_env.py:1444`, a one-line delegate); `calculate_rewards` is now the *DACEngine*
+> backend method called by VTC.
+
 Title: DAC shaping bonus kwargs contract is implicit and fragile
 
 Severity: medium

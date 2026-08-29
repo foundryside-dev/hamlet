@@ -6,11 +6,11 @@ not exist. It may import stdlib, numpy, torch, and townlet modules present at
 the oracle tag ONLY. It must never reference the oracle module (pinned by
 test_driver_source_is_self_contained).
 
-The trace file it writes is format_version 3, matching
-trace_io.py exactly (keys: obs, rewards, dones, meta; meta carries params,
-hashes, code_root, and pack_root). trace_io.py cannot be imported here (same
-rule), so the two modules' TRACE_FORMAT_VERSION constants and meta shape are
-kept in sync by hand — see FIX 5, WS-7 fix wave 2. The pairing is pinned by
+The trace file it writes is format_version 4, matching trace_io.py exactly
+(keys: obs, rewards, dones, actions, meta; meta carries params, hashes,
+code_root, pack_root, and action_source). trace_io.py cannot be imported here
+(same rule), so the two modules' TRACE_FORMAT_VERSION constants and meta shape
+are kept in sync by hand — see FIX 5, WS-7 fix wave 2. The pairing is pinned by
 the Task 5 integration test.
 
 --pack-root exists because the oracle pins CODE and must also pin its INPUTS
@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import argparse
 import dataclasses
+import hashlib
 import json
 import sys
 import traceback
@@ -43,7 +44,7 @@ from townlet.determinism import seed_all
 from townlet.environment.vectorized_env import VectorizedHamletEnv
 from townlet.universe.compiler import UniverseCompiler
 
-TRACE_FORMAT_VERSION = 3
+TRACE_FORMAT_VERSION = 4
 
 
 def collect_provenance_hashes(universe: object) -> dict[str, str | None]:
@@ -56,21 +57,63 @@ def collect_provenance_hashes(universe: object) -> dict[str, str | None]:
     return {f.name: getattr(universe, f.name) for f in dataclasses.fields(universe) if f.name.endswith("_hash")}  # type: ignore[arg-type]
 
 
-def run_trace(*, pack: str, pack_root: str, level: str, num_agents: int, steps: int, seed: int, device: str, out: Path) -> None:
+def run_trace(
+    *,
+    pack: str,
+    pack_root: str,
+    level: str,
+    num_agents: int,
+    steps: int,
+    seed: int,
+    device: str,
+    out: Path,
+    actions_path: Path | None = None,
+) -> None:
+    """Produce one differential-harness trace.
+
+    actions_path: None IS the declared seeded-random mode (actions are drawn
+    from torch.randint each step) — it is not a fallback for a missing file.
+    Passing a path selects scripted mode: the npz at that path must hold an
+    integer "actions" array of shape (steps, num_agents) with every value in
+    [0, env.action_dim), and those actions are stepped verbatim in order.
+    seed_all(seed) still runs in scripted mode — env internals may consume
+    RNG independently of the action draw.
+    """
     # `pack` is LOGICAL (part of RunParams, compared across sides); `pack_root`
     # is this side's resolution root and is reported, never compared.
     resolved_pack = (Path(pack_root) / pack).resolve()
     universe = UniverseCompiler().compile(resolved_pack, primary_level=level, use_cache=False)
     seed_all(seed)
     env = VectorizedHamletEnv(universe=universe, level_name=level, num_agents=num_agents, device=torch.device(device))
+
+    scripted: np.ndarray | None = None
+    if actions_path is not None:
+        with np.load(actions_path, allow_pickle=False) as data:
+            if "actions" not in data:
+                raise ValueError(f"actions file {actions_path} has no 'actions' array")
+            scripted = np.asarray(data["actions"])
+        if scripted.shape != (steps, num_agents):
+            raise ValueError(f"actions shape {scripted.shape} != declared (steps={steps}, num_agents={num_agents})")
+        if not np.issubdtype(scripted.dtype, np.integer):
+            raise ValueError(f"actions dtype {scripted.dtype} is not integer")
+        if scripted.min() < 0 or scripted.max() >= env.action_dim:
+            raise ValueError(
+                f"actions contain values outside [0, action_dim={env.action_dim}): " f"min={int(scripted.min())}, max={int(scripted.max())}"
+            )
+
     obs = env.reset()
     obs_frames = [obs.cpu().numpy().copy()]
     reward_frames: list[np.ndarray] = []
     done_frames: list[np.ndarray] = []
-    for _ in range(steps):
-        # Actions drawn on CPU so the stream is device-independent, then moved
-        # to the env device — same as the verified determinism recipe.
-        actions = torch.randint(0, env.action_dim, (env.num_agents,)).to(env.device)
+    action_frames: list[np.ndarray] = []
+    for t in range(steps):
+        if scripted is None:
+            # Actions drawn on CPU so the stream is device-independent, then
+            # moved to the env device — same as the verified determinism recipe.
+            actions = torch.randint(0, env.action_dim, (env.num_agents,)).to(env.device)
+        else:
+            actions = torch.from_numpy(scripted[t].astype(np.int64)).to(env.device)
+        action_frames.append(actions.cpu().numpy().astype(np.int64).copy())
         obs, rewards, dones, _ = env.step(actions)
         obs_frames.append(obs.cpu().numpy().copy())
         reward_frames.append(rewards.cpu().numpy().copy())
@@ -100,12 +143,16 @@ def run_trace(*, pack: str, pack_root: str, level: str, num_agents: int, steps: 
         # resolve different roots BY DESIGN once a pack-schema divergence is
         # declared. Recorded so the choice is never silent.
         "pack_root": str(Path(pack_root).resolve()),
+        "action_source": (
+            "seeded-random" if scripted is None else "scripted:" + hashlib.sha256(scripted.astype(np.int64).tobytes()).hexdigest()[:16]
+        ),
     }
     np.savez_compressed(
         out,
         obs=np.stack(obs_frames).astype(np.float32),
         rewards=np.stack(reward_frames).astype(np.float32),
         dones=np.stack(done_frames).astype(bool),
+        actions=np.stack(action_frames).astype(np.int64),
         meta=np.array(json.dumps(meta)),
     )
 
@@ -120,6 +167,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--seed", type=int, required=True)
     parser.add_argument("--device", required=True, choices=("cpu", "cuda"))
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--actions", type=Path, default=None, help="npz with an 'actions' array to replay verbatim (scripted mode)")
     args = parser.parse_args(argv)
     try:
         run_trace(
@@ -131,6 +179,7 @@ def main(argv: list[str] | None = None) -> int:
             seed=args.seed,
             device=args.device,
             out=args.out,
+            actions_path=args.actions,
         )
     except Exception:  # noqa: BLE001 — boundary: full traceback to stderr, nonzero exit
         traceback.print_exc()

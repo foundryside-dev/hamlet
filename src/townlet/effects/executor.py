@@ -37,9 +37,10 @@ class _TargetAwareExecutionContext(ExprExecutionContext):
         self_index: int | None = None,  # NEW
         self_is_item: bool = False,  # NEW
         device: torch.device | str | None = None,
+        vfs_scopes: dict[str, str] | None = None,
     ):
         resolved_device = torch.device(device) if device is not None else torch.device("cpu")
-        super().__init__(bars=bars, vfs=vfs, affordances={}, temporal={}, device=resolved_device)
+        super().__init__(bars=bars, vfs=vfs, affordances={}, temporal={}, device=resolved_device, vfs_scopes=vfs_scopes)
         self.target_bars = target_bars
         self.target_vfs = target_vfs
         self.self_bars = self_bars or {}  # NEW
@@ -679,24 +680,33 @@ class CommandExecutor:
         for bar_name, tensor in context.bars.items():
             bars_dict[bar_name] = tensor
 
-        # Add VFS variables from the current registry contract.
+        # Add VFS variables from the current registry contract, carrying each
+        # variable's declared scope so resolution can honor it (hamlet-cf16cdb6c4).
+        vfs_scopes: dict[str, str] = {}
         if context.vfs_registry:
             # VariableRegistry has .variables property with variable definitions
             for var_id, var_def in context.vfs_registry.variables.items():
                 try:
                     tensor = context.vfs_registry.get(var_id, reader="engine")
                     vfs_dict[var_id] = tensor
+                    declared_scope = getattr(var_def, "scope", None)
+                    if declared_scope is not None:
+                        vfs_scopes[var_id] = str(declared_scope)
                 except KeyError:
                     # Variable not initialized yet, skip
                     pass
 
-        # Build target/self scoped views when present
+        # Build target/self scoped views when present. Global-scoped variables are
+        # excluded: they have no per-agent axis, so tensor[index] would slice their
+        # first spatial axis by agent index.
         target_bars = {}
         target_vfs = {}
         if context.target_index is not None:
             for bar_name, tensor in bars_dict.items():
                 target_bars[bar_name] = tensor if tensor.dim() == 0 else tensor[context.target_index]
             for var_name, tensor in vfs_dict.items():
+                if vfs_scopes.get(var_name) == "global":
+                    continue
                 target_vfs[var_name] = tensor if tensor.dim() == 0 else tensor[context.target_index]
 
         self_bars = {}
@@ -705,6 +715,8 @@ class CommandExecutor:
             for bar_name, tensor in bars_dict.items():
                 self_bars[bar_name] = tensor if tensor.dim() == 0 else tensor[context.self_index]
             for var_name, tensor in vfs_dict.items():
+                if vfs_scopes.get(var_name) == "global":
+                    continue
                 self_vfs[var_name] = tensor if tensor.dim() == 0 else tensor[context.self_index]
 
         # Always use the prefix-aware context when self or target indices are present
@@ -720,10 +732,11 @@ class CommandExecutor:
                 self_index=context.self_index,
                 self_is_item=context.self_is_item,
                 device=device,
+                vfs_scopes=vfs_scopes,
             )
 
         # No self/target: fall back to basic context
-        return ExprExecutionContext(bars=bars_dict, vfs=vfs_dict, affordances={}, temporal={}, device=device)
+        return ExprExecutionContext(bars=bars_dict, vfs=vfs_dict, affordances={}, temporal={}, device=device, vfs_scopes=vfs_scopes)
 
     def execute_commands(self, commands: list[CommandNode], context: ExecutionContext) -> None:
         """Execute list of commands in order.

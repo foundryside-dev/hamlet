@@ -12,15 +12,18 @@ DIVERGED_AS_REGISTERED naming the known-divergences entry its matrix cell
 declared (hamlet-56ec575ae2 / PDR-0037).
 
 A cell declares an expected divergence by binding a register entry, in one of
-two shapes. Shape 1, matrix.RegisteredDivergence (old-side crash — DIV-003,
+three shapes. Shape 1, matrix.RegisteredDivergence (old-side crash — DIV-003,
 PDR-0036): the oracle side crashes leaving no trace, with the declared
 signature in the FINAL EXCEPTION TEXT of its stderr; the rebuild runs and
 produces a valid trace from the declared src root. Shape 2,
 matrix.RegisteredHashDivergence (hash-only — DIV-004, PDR-0056; DIV-005
 adjudicated under the same binding): both sides run, EXACTLY the enumerated
-provenance hashes differ, and every trace stream is byte-identical. (DIV-003/
-004/005 retired when the oracle moved forward to oracle-2026-08-17, PDR-0074;
-at that tag no cell binds either shape and exit 0 means AGREE.) The match
+provenance hashes differ, and every trace stream is byte-identical. Shape 3,
+matrix.RegisteredStreamDivergence (stream-scoped — DIV-008): both sides run,
+EXACTLY the enumerated trace streams diverge — shape changes included — and
+every other stream matches byte-for-byte. (DIV-003/004/005 retired when the
+oracle moved forward to oracle-2026-08-17, PDR-0074; at that tag no cell
+binds any shape and exit 0 means AGREE.) The match
 is narrow on purpose: an old-side failure without the signature in its final
 exception, a non-crash failure (exit 0, no trace), a crash that still wrote a
 trace, a new side that also fails (divergence not yet built), an undeclared
@@ -47,6 +50,7 @@ import sys
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
+import numpy as np
 import torch
 
 from townlet.oracle import ORACLE_TAG
@@ -55,13 +59,15 @@ from townlet.oracle.trace_io import CellVerdict, HarnessError, RunParams, Trace,
 
 _ADJUDICATION_NOTE = (
     "A cell passes only as AGREE, SKIPPED, or DIVERGED_AS_REGISTERED naming its "
-    "known-divergences entry in register_refs. DIVERGED_AS_REGISTERED requires ALL "
-    "EITHER shape's conditions. Shape 1 (old-side-crash): old side crashed "
+    "known-divergences entry in register_refs. DIVERGED_AS_REGISTERED requires meeting "
+    "every condition of exactly one of the three shapes below. Shape 1 (old-side-crash): old side crashed "
     "(nonzero exit) leaving no trace, with the registered signature inside the "
     "final exception text of its stderr; new side ran and produced a trace valid "
     "for the cell's own params from the declared src root. Shape 2 (hash-only): "
     "both sides ran, EXACTLY the enumerated provenance hashes differ — no more, "
     "no fewer — and every trace stream matches byte-for-byte. "
+    "Shape 3 (stream-scoped): both sides ran, EXACTLY the enumerated trace streams "
+    "diverge — shape changes included — and every other stream matches byte-for-byte. "
     "Everything else fails the run — an old-side failure without the signature or "
     "without a traceback, a non-crash failure, a crash that still wrote a trace, a "
     "registered divergence whose new side also fails (not yet built), a registered "
@@ -216,13 +222,19 @@ def pack_drift(old_pack_root: Path, new_pack_root: Path, logical_pack: str) -> d
     return delta
 
 
-def run_side(*, driver: Path, src: Path, params: RunParams, out: Path, repo_root: Path, pack_root: Path) -> SideFailure | None:
+def run_side(
+    *, driver: Path, src: Path, params: RunParams, out: Path, repo_root: Path, pack_root: Path, actions: Path | None = None
+) -> SideFailure | None:
     """Run the driver under one side's src AND its own pack root.
 
     pack_root is per-side because the oracle pins code but not inputs
     (hamlet-2090c9f16d): pack DTOs are extra="forbid", so one new key in a
     live pack crashes every cell on the oracle side for a schema reason.
     params.pack stays logical — compare_traces requires params equality.
+
+    `actions`, when set, is a path to an npz with an "actions" array to
+    replay verbatim (scripted mode, DIV-008) instead of drawing seeded-random
+    actions — passed straight through to the driver's own `--actions`.
     """
     cmd = [
         sys.executable,
@@ -245,6 +257,8 @@ def run_side(*, driver: Path, src: Path, params: RunParams, out: Path, repo_root
         "--out",
         str(out),
     ]
+    if actions is not None:
+        cmd += ["--actions", str(actions)]
     env = {**os.environ, "PYTHONPATH": str(src)}
     result = subprocess.run(cmd, cwd=repo_root, env=env, capture_output=True, text=True)
     if result.returncode != 0:
@@ -279,11 +293,13 @@ def _validate_lone_trace(trace: Trace, cell: Cell) -> None:
         "obs": (p.steps + 1, p.num_agents),
         "rewards": (p.steps, p.num_agents),
         "dones": (p.steps, p.num_agents),
+        "actions": (p.steps, p.num_agents),
     }
     actual_shapes = {
         "obs": trace.obs.shape[:2],
         "rewards": trace.rewards.shape,
         "dones": trace.dones.shape,
+        "actions": trace.actions.shape,
     }
     if trace.obs.ndim != 3 or actual_shapes != expected_shapes:
         raise HarnessError(
@@ -293,7 +309,7 @@ def _validate_lone_trace(trace: Trace, cell: Cell) -> None:
 
 
 def run_cell(
-    *, repo_root: Path, old_src: Path, old_pack_root: Path, new_src: Path, cell: Cell, run_dir: Path, run_cuda: bool
+    *, repo_root: Path, old_src: Path, old_pack_root: Path, new_src: Path, cell: Cell, run_dir: Path, run_cuda: bool, scripted: bool
 ) -> CellVerdict:
     """Adjudicate one cell: old side (old_src, old_pack_root) vs new side (new_src, repo_root).
 
@@ -303,12 +319,29 @@ def run_cell(
     `repo_root` for a self-comparison — which has no oracle side and so no
     frozen inputs. Required, not defaulted, so a self-comparison cannot be
     written by omission and silently read the frozen fixtures again.
+
+    `scripted`, when true, records the old side's actions to
+    `run_dir / f"{safe}.actions.npz"` and replays them verbatim into the new
+    side (DIV-008 verification mode) instead of letting each side draw its
+    own seeded-random actions.
     """
     if cell.params.device == "cuda":
         if not run_cuda:
             return CellVerdict(kind="SKIPPED", cell_id=cell.cell_id, detail={"reason": "cuda not requested"})
         if not torch.cuda.is_available():
             return CellVerdict(kind="SKIPPED", cell_id=cell.cell_id, detail={"reason": "cuda unavailable"})
+    if scripted and cell.expected is not None:
+        return CellVerdict(
+            kind="HARNESS_ERROR",
+            cell_id=cell.cell_id,
+            detail={
+                "reason": (
+                    "scripted mode requires an old-side trace to replay, but this cell "
+                    "declares an old-side crash (expected=" + cell.expected.register_ref + ") — "
+                    "the two declarations are incompatible; run this cell unscripted"
+                ),
+            },
+        )
     driver = new_src / "townlet" / "oracle" / "driver.py"
     safe = cell.cell_id.replace(":", "_")
     old_out = run_dir / f"{safe}.old.npz"
@@ -426,7 +459,20 @@ def run_cell(
             register_refs=(expected.register_ref,),
         )
 
-    new_failure = run_side(driver=driver, src=new_src, params=cell.params, out=new_out, repo_root=repo_root, pack_root=new_pack_root)
+    actions_file: Path | None = None
+    if scripted:
+        old_trace = load_trace(old_out)
+        actions_file = run_dir / f"{safe}.actions.npz"
+        np.savez_compressed(actions_file, actions=old_trace.actions)
+    new_failure = run_side(
+        driver=driver,
+        src=new_src,
+        params=cell.params,
+        out=new_out,
+        repo_root=repo_root,
+        pack_root=new_pack_root,
+        actions=actions_file,
+    )
     if new_failure is not None:
         detail = {"side": "new", "failure_kind": new_failure.kind, "stderr": new_failure.stderr}
         if expected is not None:
@@ -436,7 +482,8 @@ def run_cell(
             }
         return CellVerdict(kind="NEW_SIDE_ERROR", cell_id=cell.cell_id, detail=detail)
 
-    old_trace = load_trace(old_out)
+    if not scripted:
+        old_trace = load_trace(old_out)
     new_trace = load_trace(new_out)
 
     # PYTHONPATH injection guard (FIX 5): nothing else asserts the injection
@@ -455,7 +502,9 @@ def run_cell(
             },
         )
 
-    verdict = compare_traces(old_trace, new_trace, cell_id=cell.cell_id, hash_divergence=cell.hash_divergence)
+    verdict = compare_traces(
+        old_trace, new_trace, cell_id=cell.cell_id, hash_divergences=cell.hash_divergences, stream_divergence=cell.stream_divergence
+    )
     if expected is not None:
         # The old side RAN on a cell registered to crash: the registered
         # divergence did not manifest. This must fail even — especially — when
@@ -482,7 +531,7 @@ def run_cell(
 
 
 def run_cell_safely(
-    *, repo_root: Path, old_src: Path, old_pack_root: Path, new_src: Path, cell: Cell, run_dir: Path, run_cuda: bool
+    *, repo_root: Path, old_src: Path, old_pack_root: Path, new_src: Path, cell: Cell, run_dir: Path, run_cuda: bool, scripted: bool
 ) -> CellVerdict:
     """run_cell, contained (FIX 4).
 
@@ -503,6 +552,7 @@ def run_cell_safely(
             cell=cell,
             run_dir=run_dir,
             run_cuda=run_cuda,
+            scripted=scripted,
         )
     except Exception as e:  # noqa: BLE001 — containment boundary, see docstring
         return CellVerdict(
@@ -575,6 +625,11 @@ def main(argv: list[str] | None = None) -> int:
         help="run only matching cells (pack dir name + level), repeatable",
     )
     parser.add_argument("--oracle-ref", default=ORACLE_TAG)
+    parser.add_argument(
+        "--scripted",
+        action="store_true",
+        help="replay the old side's recorded actions into the new side on every cell (DIV-008 verification mode)",
+    )
     args = parser.parse_args(argv)
 
     repo_root = Path(__file__).resolve().parents[3]
@@ -611,6 +666,7 @@ def main(argv: list[str] | None = None) -> int:
             cell=cell,
             run_dir=run_dir,
             run_cuda=args.cuda,
+            scripted=cell.scripted_actions or args.scripted,
         )
         detail = "" if not verdict.detail else f"  {json.dumps(verdict.detail)[:120]}"
         print(f"{verdict.kind:<16} {verdict.cell_id}{detail}")

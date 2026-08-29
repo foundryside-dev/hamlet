@@ -1,5 +1,15 @@
 # Substrate Configuration Comparison
 
+> ✅ **Recovered from archive 2026-08-26.** The boundary-mode and distance-metric vocabularies
+> below were checked against `CLAUDE.md` §"Substrate Types" on that date and agree
+> (`clamp` / `wrap` / `bounce` / `sticky`; `manhattan` / `euclidean` / `chebyshev`).
+>
+> Recovered because there is **no `configs/templates/` directory** — that path is dead — so
+> these worked examples are the only side-by-side substrate reference in the tree.
+> The `.yaml` files beside this one are fragments, not runnable packs; each carries its own
+> correction header.
+
+
 Quick reference for comparing different substrate configurations.
 
 ## Boundary Modes

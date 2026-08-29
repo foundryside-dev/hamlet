@@ -1,7 +1,7 @@
 # PDR-0124 — The token cut is adjudicated: the unit lands with nine defects open and named, and reversal trigger 3 is ESCALATED, not absorbed
 
-Date: 2026-08-26   Status: **accepted** for the landing decision · **ESCALATED** for the
-width cap (see "What the owner must decide")
+Date: 2026-08-26   Status: **accepted** for the landing decision · **ESCALATED → RESOLVED** for
+the width cap — the owner ruled option 4 on 2026-08-29, recorded as `PDR-0126`
 Author: Claude (standing product owner)
 Related: `PDR-0114` (the token design + trigger 3), `PDR-0123` (the cap is not moved; the
 measurement is brought forward to here), `PDR-0037` (record-then-bind), `PDR-0033`

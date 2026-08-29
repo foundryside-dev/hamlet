@@ -45,9 +45,7 @@ def combine_metric(abs_deltas: torch.Tensor, distance_metric: str) -> torch.Tens
 def require_position_batch(positions: torch.Tensor, position_dim: int, *, argument: str) -> None:
     """Refuse a position batch whose trailing width is not the substrate's position_dim."""
     if positions.dim() != 2 or positions.shape[1] != position_dim:
-        raise ValueError(
-            f"{argument} must have shape [batch, position_dim={position_dim}], got {tuple(positions.shape)}"
-        )
+        raise ValueError(f"{argument} must have shape [batch, position_dim={position_dim}], got {tuple(positions.shape)}")
 
 
 class SpatialSubstrate(ABC):
@@ -199,8 +197,6 @@ class SpatialSubstrate(ABC):
         """
         pass
 
-
-
     # --- Vision contract -----------------------------------------------------
     #
     # What survives of the WS-7 observation-shape contract after the unit-3 token
@@ -223,8 +219,6 @@ class SpatialSubstrate(ABC):
         """
         pass
 
-
-
     @abstractmethod
     def get_vision_radius(self, vision_range: float) -> int:
         """Radius (in cells) for a declared vision_range fraction.
@@ -234,7 +228,6 @@ class SpatialSubstrate(ABC):
         Substrates without partial vision raise ValueError.
         """
         pass
-
 
     @abstractmethod
     def normalize_positions(self, positions: torch.Tensor) -> torch.Tensor:
@@ -379,4 +372,3 @@ class SpatialSubstrate(ABC):
             land in [−1, 1]; `scaled` and `absolute` return raw axis units. Aspatial:
             zeros of width 0.
         """
-

@@ -668,8 +668,7 @@ class TokenSetQNetwork(nn.Module):
             offset += token_type.capacity * token_type.row_width
         if not layouts:
             raise ValueError(
-                "TokenSpec has no token type with capacity > 0; a token-set network over an "
-                "empty roster cannot observe anything."
+                "TokenSpec has no token type with capacity > 0; a token-set network over an " "empty roster cannot observe anything."
             )
         self._layouts: tuple[_TokenTypeLayout, ...] = tuple(layouts)
         self.obs_dim = token_spec.total_dims
@@ -677,14 +676,10 @@ class TokenSetQNetwork(nn.Module):
         self.token_embed_dim = token_embed_dim
 
         # Per-type projection encoders, keyed by type NAME (the transfer contract).
-        self.encoders = nn.ModuleDict(
-            {layout.type_name: nn.Linear(layout.payload_width, token_embed_dim) for layout in self._layouts}
-        )
+        self.encoders = nn.ModuleDict({layout.type_name: nn.Linear(layout.payload_width, token_embed_dim) for layout in self._layouts})
         # Learned per-type embedding, added post-projection. Zero-init: deterministic,
         # and the per-type projection weights already break type symmetry at step 0.
-        self.type_embeddings = nn.ParameterDict(
-            {layout.type_name: nn.Parameter(torch.zeros(token_embed_dim)) for layout in self._layouts}
-        )
+        self.type_embeddings = nn.ParameterDict({layout.type_name: nn.Parameter(torch.zeros(token_embed_dim)) for layout in self._layouts})
 
         self.aggregator_type = aggregator_type
         if aggregator_type == "attention":

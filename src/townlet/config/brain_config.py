@@ -243,8 +243,7 @@ class SetEncoderConfig(BaseModel):
             assert self.aggregator.num_heads is not None  # guaranteed by SetAggregatorConfig
             if self.token_embed_dim % self.aggregator.num_heads != 0:
                 raise ValueError(
-                    f"token_embed_dim ({self.token_embed_dim}) must be divisible by "
-                    f"aggregator.num_heads ({self.aggregator.num_heads})"
+                    f"token_embed_dim ({self.token_embed_dim}) must be divisible by " f"aggregator.num_heads ({self.aggregator.num_heads})"
                 )
         return self
 
@@ -274,8 +273,7 @@ class TokenSetConfig(BaseModel):
             assert self.aggregator.num_heads is not None  # guaranteed by SetAggregatorConfig
             if self.token_embed_dim % self.aggregator.num_heads != 0:
                 raise ValueError(
-                    f"token_embed_dim ({self.token_embed_dim}) must be divisible by "
-                    f"aggregator.num_heads ({self.aggregator.num_heads})"
+                    f"token_embed_dim ({self.token_embed_dim}) must be divisible by " f"aggregator.num_heads ({self.aggregator.num_heads})"
                 )
         return self
 

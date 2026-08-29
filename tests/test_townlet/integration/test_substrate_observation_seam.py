@@ -30,12 +30,6 @@ _DIV003_PACKS = (
 )
 
 
-
-
-
-
-
-
 def test_rect_boundary_masks_use_each_axis_own_extent() -> None:
     """On a non-square grid the y axis must be masked with HEIGHT and the x
     axis with WIDTH. The old single grid_size masked both axes with width,

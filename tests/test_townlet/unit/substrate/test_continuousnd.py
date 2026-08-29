@@ -179,12 +179,6 @@ def test_continuousnd_distance_chebyshev():
     assert torch.allclose(distance, torch.tensor([6.0]))
 
 
-
-
-
-
-
-
 def test_continuousnd_is_on_position_within_radius():
     """Test proximity-based position matching (within interaction_radius)."""
     substrate = ContinuousNDSubstrate(
@@ -268,8 +262,6 @@ def test_continuousnd_get_all_positions_raises():
 
     with pytest.raises(NotImplementedError, match="infinite positions"):
         substrate.get_all_positions()
-
-
 
 
 def test_continuousnd_supports_enumerable_positions():

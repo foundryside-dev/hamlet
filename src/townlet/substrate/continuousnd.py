@@ -290,17 +290,12 @@ class ContinuousNDSubstrate(SpatialSubstrate):
         """Encode positions as raw unnormalized coordinates."""
         return positions
 
-
-
     @property
     def supports_partial_vision(self) -> bool:
         return False
 
-
-
     def get_vision_radius(self, vision_range: float) -> int:
         raise ValueError("Continuous substrates do not support partial vision; no vision radius exists.")
-
 
     def normalize_positions(self, positions: torch.Tensor) -> torch.Tensor:
         """Normalize positions to [0, 1] range (always relative encoding).
@@ -316,9 +311,7 @@ class ContinuousNDSubstrate(SpatialSubstrate):
     # --- Token visibility / egocentric contract (token-obs unit 3, Task 8) -----
 
     def _token_axis_extents(self, device: torch.device) -> torch.Tensor:
-        return torch.tensor(
-            [float(max_val - min_val) for min_val, max_val in self.bounds], dtype=torch.float32, device=device
-        )
+        return torch.tensor([float(max_val - min_val) for min_val, max_val in self.bounds], dtype=torch.float32, device=device)
 
     def _token_vision_radius(self, vision_range: float) -> float:
         """Radius in world units from the declared fraction of the longest axis extent."""
@@ -480,4 +473,3 @@ class ContinuousNDSubstrate(SpatialSubstrate):
         )
 
         return actions
-

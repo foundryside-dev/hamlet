@@ -346,9 +346,7 @@ class TestReviewRound1Pins:
         torch.manual_seed(13)
         target_universe_net = make_net(spec_with_items())
         population = TestCrossUniverseLoadResets()._bare_population(target_universe_net)
-        adaptive = AdaptiveIntrinsicExploration(
-            obs_dim=target_universe_net.obs_dim, embed_dim=8, device=torch.device("cpu")
-        )
+        adaptive = AdaptiveIntrinsicExploration(obs_dim=target_universe_net.obs_dim, embed_dim=8, device=torch.device("cpu"))
         adaptive.current_intrinsic_weight = 0.25
         adaptive.survival_history.extend([10.0, 20.0, 30.0])
         stale_inner = adaptive.rnd

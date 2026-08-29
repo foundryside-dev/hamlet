@@ -1,8 +1,6 @@
 """Tests for vision radius bounds (ENV-002) in VectorizedHamletEnv."""
 
 
-
-
 def _set_partial_with_vision(vision_range: float):
     """Create curriculum mutator for partial observability with specific vision range."""
 
@@ -11,8 +9,6 @@ def _set_partial_with_vision(vision_range: float):
         curriculum["curriculum"]["vision_range"] = vision_range
 
     return mutate
-
-
 
     # Note: test_vision_radius_exceeds_max_raises_error was removed because:
     # - vision_range is validated to be <= 1.0 by CurriculumConfig

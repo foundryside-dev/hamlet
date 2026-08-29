@@ -50,24 +50,6 @@ def grid2d_absolute(device):
     )
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 def test_grid2d_default_encoding_is_relative():
     """Grid2D should default to relative encoding for backward compatibility."""
     substrate = Grid2DSubstrate(

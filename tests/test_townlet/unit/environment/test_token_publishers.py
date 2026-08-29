@@ -63,9 +63,7 @@ def _substrate(boundary: str = "clamp") -> Grid2DSubstrate:
 
 
 def _static_type(type_name: str, refs: list[str]):
-    return build_token_type(
-        type_name, tuple(SlotBinding(slot_index=i, filler_kind="static", filler_ref=ref) for i, ref in enumerate(refs))
-    )
+    return build_token_type(type_name, tuple(SlotBinding(slot_index=i, filler_kind="static", filler_ref=ref) for i, ref in enumerate(refs)))
 
 
 def _dynamic_type(type_name: str, capacity: int):

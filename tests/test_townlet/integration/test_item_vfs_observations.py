@@ -70,12 +70,6 @@ def spawn_and_pickup_item(
     return item.instance_id
 
 
-
-
-
-
-
-
 def test_spawn_and_pickup_helper_is_robust_to_colocated_items():
     """Regression: spawn_and_pickup_item must pick up its own spawn, not a co-located pre-existing item.
 

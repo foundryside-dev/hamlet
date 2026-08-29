@@ -980,9 +980,7 @@ class VectorizedHamletEnv:
         slot_indices = torch.tensor([item.vfs_index for item in instances], dtype=torch.long, device=self.device)
         vfs_indices = slot_indices.clone()
         if dim > 0:
-            positions = torch.tensor(
-                [list(item.position) for item in instances], dtype=self.substrate.position_dtype, device=self.device
-            )
+            positions = torch.tensor([list(item.position) for item in instances], dtype=self.substrate.position_dtype, device=self.device)
         else:
             positions = torch.zeros((len(instances), 0), dtype=self.substrate.position_dtype, device=self.device)
         carried = torch.zeros((self.num_agents, len(instances)), dtype=torch.bool, device=self.device)

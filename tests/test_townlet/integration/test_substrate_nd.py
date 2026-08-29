@@ -19,10 +19,6 @@ from townlet.substrate.gridnd import GridNDSubstrate
 BASE_ACTION_DISC = {"num_directions": 8, "num_magnitudes": 3}
 
 
-
-
-
-
 class TestNDSubstrateInteroperability:
     """Test that N-D substrates interoperate with existing system components."""
 
@@ -234,8 +230,6 @@ class TestNDSubstrateInteroperability:
 
         # Chebyshev: max(2, 3, 4, 5) = 5.0
         assert torch.allclose(distances["chebyshev"], torch.tensor([5.0]))
-
-
 
 
 class TestNDSubstrateConfigRoundtrip:

@@ -342,17 +342,12 @@ class GridNDSubstrate(SpatialSubstrate):
         """Encode positions as raw unnormalized coordinates."""
         return positions.float()
 
-
-
     @property
     def supports_partial_vision(self) -> bool:
         return False
 
-
-
     def get_vision_radius(self, vision_range: float) -> int:
         raise ValueError("GridND substrates do not support partial vision; no vision radius exists.")
-
 
     def normalize_positions(self, positions: torch.Tensor) -> torch.Tensor:
         """Normalize positions to [0, 1] range (always relative encoding).
@@ -519,4 +514,3 @@ class GridNDSubstrate(SpatialSubstrate):
 
     def supports_enumerable_positions(self) -> bool:
         return True
-

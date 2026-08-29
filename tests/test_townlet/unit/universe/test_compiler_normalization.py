@@ -59,4 +59,3 @@ def test_standardize_maps_to_zscore_but_refuses_at_exposure(tmp_path: Path) -> N
 
     with pytest.raises(ValueError, match="bounded normalization kind"):
         UniverseCompiler().compile(config_dir, primary_level=PRIMARY_LEVEL_NAME, use_cache=False)
-

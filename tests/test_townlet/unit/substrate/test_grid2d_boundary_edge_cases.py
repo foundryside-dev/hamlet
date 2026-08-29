@@ -140,10 +140,6 @@ class TestGrid2DBoundaryEdgeCases:
         assert new_positions[0, 1].item() == 5, "Y should move normally"
 
 
-
-
-
-
 class TestGrid2DDistanceMetricEdgeCases:
     """Test distance metric edge cases and broadcasting.
 

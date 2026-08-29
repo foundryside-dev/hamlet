@@ -80,41 +80,13 @@ def _positions_for(substrate) -> torch.Tensor:
     return torch.zeros((3, substrate.position_dim), dtype=dtype, device=_DEVICE)
 
 
-
-
 # --- grid encoding (obs_grid_encoding) --------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # --- position features (obs_position) ---------------------------------------
 
 
-
-
-
-
-
-
-
-
-
-
 # --- partial vision window (obs_local_window) --------------------------------
-
-
-
-
 
 
 def test_gridnd_does_not_support_partial_vision() -> None:

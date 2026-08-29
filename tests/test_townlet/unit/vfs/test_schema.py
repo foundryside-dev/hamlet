@@ -334,8 +334,6 @@ class TestNormalizationSpec:
             NormalizationSpec(kind="masked_value", fill_value=0.0)
 
 
-
-
 class TestWriteSpec:
     """Test WriteSpec schema validation."""
 

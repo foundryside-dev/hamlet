@@ -348,10 +348,6 @@ class TestContinuousNormalizePositions:
         assert torch.allclose(normalized, expected), "Should handle negative bounds correctly"
 
 
-
-
-
-
 class TestContinuousCoordinateSemantics:
     """Test coordinate_semantics property.
 

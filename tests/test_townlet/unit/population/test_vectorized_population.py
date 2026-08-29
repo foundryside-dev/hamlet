@@ -1058,9 +1058,7 @@ def test_brain_config_none_raises_valueerror(basic_env, adversarial_curriculum, 
         )
 
 
-def test_token_spec_none_raises_valueerror(
-    basic_env, adversarial_curriculum, epsilon_greedy_exploration, cpu_device, minimal_brain_config
-):
+def test_token_spec_none_raises_valueerror(basic_env, adversarial_curriculum, epsilon_greedy_exploration, cpu_device, minimal_brain_config):
     """VectorizedPopulation raises ValueError when env.token_spec is None.
 
     Per CLAUDE.md "no implicit defaults" philosophy, we require env.token_spec

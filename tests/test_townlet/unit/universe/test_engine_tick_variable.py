@@ -42,9 +42,10 @@ def test_tick_variable_is_injected_into_every_universe(tmp_path):
 
 def test_authored_variable_named_tick_refuses(tmp_path):
     config_dir = prepare_config_dir(tmp_path)
-    payload = {**_BASE_PROFILES, "global_profile": {"variables": [
-        {"semantic_type": "custom", "name": "tick", "type": "float", "initial_value": 0.0}
-    ]}}
+    payload = {
+        **_BASE_PROFILES,
+        "global_profile": {"variables": [{"semantic_type": "custom", "name": "tick", "type": "float", "initial_value": 0.0}]},
+    }
     _write_profiles(config_dir, payload)
     with pytest.raises(ValueError, match="tick"):
         _compile(config_dir)
@@ -103,9 +104,10 @@ def test_variables_reference_yaml_declaring_tick_refuses_at_full_compile(tmp_pat
 
 def test_profile_expression_may_reference_bare_tick(tmp_path):
     config_dir = prepare_config_dir(tmp_path)
-    payload = {**_BASE_PROFILES, "global_profile": {"variables": [
-        {"semantic_type": "custom", "name": "double_tick", "type": "float", "expression": "tick * 2.0"}
-    ]}}
+    payload = {
+        **_BASE_PROFILES,
+        "global_profile": {"variables": [{"semantic_type": "custom", "name": "double_tick", "type": "float", "expression": "tick * 2.0"}]},
+    }
     _write_profiles(config_dir, payload)
     u = _compile(config_dir)
     gp = u.compiled_vfs_profiles.global_profile

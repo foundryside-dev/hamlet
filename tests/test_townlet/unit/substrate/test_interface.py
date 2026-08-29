@@ -19,8 +19,6 @@ def test_substrate_is_abstract():
         SpatialSubstrate()
 
 
-
-
 def test_grid2d_initialize_positions():
     """Grid2D should initialize random positions in valid range."""
     substrate = Grid2DSubstrate(width=8, height=8, boundary="clamp", distance_metric="manhattan")
@@ -150,10 +148,6 @@ def test_grid2d_compute_distance_chebyshev():
     assert torch.equal(distances, torch.tensor([5, 4], dtype=torch.long))
 
 
-
-
-
-
 def test_grid2d_get_valid_neighbors():
     """Grid2D should return valid 4-connected neighbors."""
     substrate = Grid2DSubstrate(width=8, height=8, boundary="clamp", distance_metric="manhattan")
@@ -189,8 +183,6 @@ def test_grid2d_get_valid_neighbors_corner():
     for neighbor in neighbors:
         assert torch.all(neighbor >= 0)
         assert neighbor[0] < 8 and neighbor[1] < 8
-
-
 
 
 def test_aspatial_initialize_positions():
@@ -251,15 +243,3 @@ def test_aspatial_get_all_positions():
     positions = substrate.get_all_positions()
 
     assert positions == []
-
-
-
-
-
-
-
-
-
-
-
-

@@ -55,9 +55,7 @@ def build_token_observation_encoder(env: VectorizedHamletEnv) -> TokenObservatio
 
     meter_type = spec.get_type("meter")
     if meter_type is not None and meter_type.capacity > 0:
-        publishers.append(
-            MeterTokenPublisher(meter_type, _meter_declarations(env), env.meter_name_to_index, device)
-        )
+        publishers.append(MeterTokenPublisher(meter_type, _meter_declarations(env), env.meter_name_to_index, device))
 
     affordance_type = spec.get_type("affordance")
     if affordance_type is not None and affordance_type.capacity > 0:
@@ -84,9 +82,7 @@ def build_token_observation_encoder(env: VectorizedHamletEnv) -> TokenObservatio
 
     effect_type = spec.get_type("effect")
     if effect_type is not None and effect_type.capacity > 0:
-        publishers.append(
-            EffectTokenPublisher(effect_type, _effect_declarations(env), _owner_slot_capacity(env), device)
-        )
+        publishers.append(EffectTokenPublisher(effect_type, _effect_declarations(env), _owner_slot_capacity(env), device))
 
     element_type = spec.get_type("variable_element")
     if element_type is not None and element_type.capacity > 0:
@@ -94,9 +90,7 @@ def build_token_observation_encoder(env: VectorizedHamletEnv) -> TokenObservatio
         # `exposed_to` on an item-profile variable and names the landing), so every
         # compiled `variable_element` slot is registry-backed today. The item-arena half
         # wires in with the unit-5 pack migration that authors the first one.
-        publishers.append(
-            RegistryVariableElementPublisher(element_type, env.vfs_registry, list(element_type.slot_bindings), device)
-        )
+        publishers.append(RegistryVariableElementPublisher(element_type, env.vfs_registry, list(element_type.slot_bindings), device))
 
     return TokenObservationEncoder(spec, publishers, device)
 

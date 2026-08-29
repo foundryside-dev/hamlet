@@ -49,8 +49,6 @@ def test_continuousnd_7d_distance_euclidean():
     assert torch.allclose(distance, expected)
 
 
-
-
 def test_continuousnd_10d_initialization_with_warning():
     """Test 10D continuous space emits warning."""
     with pytest.warns(UserWarning, match="10 dimensions"):
@@ -112,10 +110,6 @@ def test_continuousnd_10d_distance_manhattan():
     assert torch.allclose(distance, torch.tensor([10.0]))
 
 
-
-
-
-
 def test_continuousnd_batch_movement_7d():
     """Test batched movement for multiple agents in 7D."""
     substrate = ContinuousNDSubstrate(
@@ -159,8 +153,6 @@ def test_continuousnd_batch_movement_7d():
     assert torch.allclose(new_positions[2], torch.tensor([10.0] * 7))  # Clamped to max
     assert torch.allclose(new_positions[3], torch.tensor([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0]))  # Moved back
     assert torch.allclose(new_positions[4], torch.tensor([9.0] * 7))  # Moved back from boundary
-
-
 
 
 def test_continuousnd_exceeds_max_dimensions():

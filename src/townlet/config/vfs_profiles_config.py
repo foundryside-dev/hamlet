@@ -38,6 +38,7 @@ def _validate_exposure_normalization(var) -> None:
             "(`exposed_to: [agent]`) or delete the normalization block."
         )
 
+
 __all__ = [
     "GlobalVFSVariableConfig",
     "GlobalVFSProfileConfig",

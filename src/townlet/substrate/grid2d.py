@@ -381,21 +381,14 @@ class Grid2DSubstrate(SpatialSubstrate):
         """
         return positions.float()
 
-
-
-
-
     @property
     def supports_partial_vision(self) -> bool:
         return True
-
-
 
     def get_vision_radius(self, vision_range: float) -> int:
         """Radius from the declared fraction of the longest axis (min 1)."""
         span = max(self.width, self.height)
         return max(1, int(math.ceil(vision_range * (span / 2.0))))
-
 
     # --- Token visibility / egocentric contract (token-obs unit 3, Task 8) -----
 
@@ -483,7 +476,6 @@ class Grid2DSubstrate(SpatialSubstrate):
     def get_capacity(self) -> int:
         """Calculate total positions analytically (width × height)."""
         return self.width * self.height
-
 
     def supports_enumerable_positions(self) -> bool:
         """Grid substrates have finite enumerable positions."""

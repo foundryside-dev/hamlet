@@ -191,12 +191,10 @@ def test_standing_and_differential_cells_bind_div010_and_div008_narrowly() -> No
             continue
         div010 = [d for d in c.hash_divergences if d.register_ref == "DIV-010"]
         assert len(div010) == 1, f"{c.cell_id} does not bind exactly one DIV-010 entry"
-        assert div010[0].declared == {"variable_schema_hash", "vfs_hash"}, (
-            f"{c.cell_id}: DIV-010 hash_fields do not match measurement"
-        )
-        assert not [d for d in c.hash_divergences if d.register_ref == "DIV-011"], (
-            f"{c.cell_id} still binds DIV-011, which retired into DIV-008"
-        )
+        assert div010[0].declared == {"variable_schema_hash", "vfs_hash"}, f"{c.cell_id}: DIV-010 hash_fields do not match measurement"
+        assert not [
+            d for d in c.hash_divergences if d.register_ref == "DIV-011"
+        ], f"{c.cell_id} still binds DIV-011, which retired into DIV-008"
         assert len(c.hash_divergences) == 3, f"{c.cell_id} should bind exactly DIV-009 + DIV-010 + DIV-008"
 
 
@@ -230,12 +228,9 @@ def test_every_cell_binds_div008_hash_and_stream_narrowly() -> None:
         assert cell.stream_divergence is not None, f"{cell.cell_id} declares no stream divergence"
         assert cell.stream_divergence.register_ref == "DIV-008"
         assert cell.stream_divergence.declared == {"obs"}, (
-            f"{cell.cell_id}: only `obs` may diverge — declaring another stream would stop "
-            f"spec §5's criterion being adjudicated at all"
+            f"{cell.cell_id}: only `obs` may diverge — declaring another stream would stop " f"spec §5's criterion being adjudicated at all"
         )
-        assert cell.scripted_actions is False, (
-            f"{cell.cell_id}: plain mode measured green, so the criterion is not forced matrix-wide"
-        )
+        assert cell.scripted_actions is False, f"{cell.cell_id}: plain mode measured green, so the criterion is not forced matrix-wide"
 
 
 def test_all_cells_bind_the_drift_and_unit2_and_token_entries() -> None:
@@ -270,9 +265,9 @@ def test_profile_variable_cells_declare_their_pack_drift() -> None:
     assert len(profile) == 4
     for c in profile:
         assert c.expected is None
-        assert not [d for d in c.hash_divergences if d.register_ref == "DIV-006"], (
-            f"{c.cell_id} still binds DIV-006, which retired into DIV-008"
-        )
+        assert not [
+            d for d in c.hash_divergences if d.register_ref == "DIV-006"
+        ], f"{c.cell_id} still binds DIV-006, which retired into DIV-008"
         if c.params.pack == "configs/test/effects_smoke":
             assert c.pack_divergence == "DIV-008"
         else:

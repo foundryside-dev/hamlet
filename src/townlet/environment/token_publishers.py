@@ -488,9 +488,7 @@ class AffordanceTokenPublisher:
         for binding in schema.slot_bindings:
             declaration = by_id.get(binding.filler_ref)
             if declaration is None:
-                raise ValueError(
-                    f"Affordance token slot {binding.slot_index} is bound to undeclared affordance {binding.filler_ref!r}"
-                )
+                raise ValueError(f"Affordance token slot {binding.slot_index} is bound to undeclared affordance {binding.filler_ref!r}")
             if declaration.interaction_type not in INTERACTION_TYPE_VOCABULARY:
                 raise ValueError(
                     f"Affordance {declaration.id!r}: interaction_type {declaration.interaction_type!r} is not in "

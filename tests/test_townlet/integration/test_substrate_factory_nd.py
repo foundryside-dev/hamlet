@@ -14,10 +14,6 @@ from townlet.substrate.gridnd import GridNDSubstrate
 BASE_ACTION_DISC = {"num_directions": 8, "num_magnitudes": 3}
 
 
-
-
-
-
 class TestFactoryConfigValidation:
     """Test that factory properly validates config structures."""
 

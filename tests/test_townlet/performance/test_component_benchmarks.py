@@ -64,5 +64,3 @@ class TestEffectsBenchmarks:
             manager.tick(bars={}, vfs_registry=None, current_step=0, item_manager=None)
 
         benchmark(_tick)
-
-

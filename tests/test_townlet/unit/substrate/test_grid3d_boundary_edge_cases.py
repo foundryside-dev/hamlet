@@ -248,8 +248,6 @@ class TestGrid3DDistanceMetrics:
         assert distance.item() == 4, "Chebyshev should return max component in 3D"
 
 
-
-
 class TestGrid3DGetValidNeighbors:
     """Test 3D neighbor calculation (6-connected in 3D)."""
 
@@ -312,7 +310,3 @@ class TestGrid3DGetValidNeighbors:
 
         for exp in expected:
             assert exp in neighbor_coords, f"Expected neighbor {exp} not found"
-
-
-
-

@@ -257,23 +257,9 @@ def test_meter_without_declared_bounds_is_fatal() -> None:
 # --------------------------------------------------------------------------------------
 
 
-
-
-
-
-
-
-
-
 # --------------------------------------------------------------------------------------
 # Per-meter normalization kinds (hamlet-3d3039f340, PDR-0054)
 # --------------------------------------------------------------------------------------
-
-
-
-
-
-
 
 
 def test_an_underspecified_meter_type_is_a_compile_error(tmp_path: Path) -> None:
@@ -294,8 +280,6 @@ def test_an_underspecified_meter_type_is_a_compile_error(tmp_path: Path) -> None
         MeterConfig(name="m", description="d", range_type={"kind": "minmax", "clip": True, "period": 24.0})
     with pytest.raises(ValidationError):
         MeterConfig(name="m", description="d", range_type={"kind": "normalized"})  # deleted member
-
-
 
 
 def test_the_reference_config_meters_parse_against_the_current_schema() -> None:
@@ -323,10 +307,6 @@ def test_the_reference_config_meters_parse_against_the_current_schema() -> None:
     for raw in meters:
         parsed = MeterConfig(**raw)
         assert parsed.range_type.kind, f"{parsed.name} must declare a range_type kind"
-
-
-
-
 
 
 # --------------------------------------------------------------------------------------

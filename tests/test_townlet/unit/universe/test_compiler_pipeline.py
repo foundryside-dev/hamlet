@@ -80,9 +80,3 @@ def test_compile_rejects_level_directory_input(tmp_path: Path) -> None:
 
     with pytest.raises(CompilationError, match="Cannot validate level directory directly"):
         UniverseCompiler().compile(level_dir, primary_level="L0_test", use_cache=False)
-
-
-
-
-
-

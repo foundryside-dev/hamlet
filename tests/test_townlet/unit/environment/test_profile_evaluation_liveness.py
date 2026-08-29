@@ -24,11 +24,15 @@ def _make_env(tmp_path, profile_payload, num_agents=2):
 
 
 _PROFILES = {
-    "version": "1.0", "evaluation_mode": "mark_and_sweep", "debug_logging": False,
-    "global_profile": {"variables": [
-        {"semantic_type": "custom", "name": "stash", "type": "float", "initial_value": 1.0},
-        {"semantic_type": "custom", "name": "tick_echo", "type": "float", "expression": "tick * 2.0"},
-    ]},
+    "version": "1.0",
+    "evaluation_mode": "mark_and_sweep",
+    "debug_logging": False,
+    "global_profile": {
+        "variables": [
+            {"semantic_type": "custom", "name": "stash", "type": "float", "initial_value": 1.0},
+            {"semantic_type": "custom", "name": "tick_echo", "type": "float", "expression": "tick * 2.0"},
+        ]
+    },
     "agent_profile": None,
     "item_profiles": [{"profile_name": "default_item", "variables": []}],
 }
@@ -55,11 +59,15 @@ def test_static_survives_engine_write_unclobbered(tmp_path):
 
 
 _DEPENDENCY_PROFILES = {
-    "version": "1.0", "evaluation_mode": "mark_and_sweep", "debug_logging": False,
-    "global_profile": {"variables": [
-        {"semantic_type": "custom", "name": "base", "type": "float", "initial_value": 1.0},
-        {"semantic_type": "custom", "name": "derived", "type": "float", "expression": "base + 1.0"},
-    ]},
+    "version": "1.0",
+    "evaluation_mode": "mark_and_sweep",
+    "debug_logging": False,
+    "global_profile": {
+        "variables": [
+            {"semantic_type": "custom", "name": "base", "type": "float", "initial_value": 1.0},
+            {"semantic_type": "custom", "name": "derived", "type": "float", "expression": "base + 1.0"},
+        ]
+    },
     "agent_profile": None,
     "item_profiles": [{"profile_name": "default_item", "variables": []}],
 }
@@ -82,12 +90,16 @@ def test_static_dependency_of_marked_expression_is_not_clobbered_by_write_back(t
 # --- Task 6 (hamlet-5d74335111): agent-profile evaluation gets the second call site ---
 
 _AGENT_PROFILES = {
-    "version": "1.0", "evaluation_mode": "mark_and_sweep", "debug_logging": False,
+    "version": "1.0",
+    "evaluation_mode": "mark_and_sweep",
+    "debug_logging": False,
     "global_profile": None,
-    "agent_profile": {"variables": [
-        {"semantic_type": "custom", "name": "wealth_static", "type": "float", "initial_value": 1.0},
-        {"semantic_type": "custom", "name": "low_energy", "type": "bool", "expression": "bar.energy < 2.0"},
-    ]},
+    "agent_profile": {
+        "variables": [
+            {"semantic_type": "custom", "name": "wealth_static", "type": "float", "initial_value": 1.0},
+            {"semantic_type": "custom", "name": "low_energy", "type": "bool", "expression": "bar.energy < 2.0"},
+        ]
+    },
     "item_profiles": [{"profile_name": "default_item", "variables": []}],
 }
 
@@ -110,12 +122,16 @@ def test_agent_static_is_never_clobbered(tmp_path):
 
 
 _AGENT_DEPENDENCY_PROFILES = {
-    "version": "1.0", "evaluation_mode": "mark_and_sweep", "debug_logging": False,
+    "version": "1.0",
+    "evaluation_mode": "mark_and_sweep",
+    "debug_logging": False,
     "global_profile": None,
-    "agent_profile": {"variables": [
-        {"semantic_type": "custom", "name": "base", "type": "float", "initial_value": 1.0},
-        {"semantic_type": "custom", "name": "derived", "type": "float", "expression": "base + 1.0"},
-    ]},
+    "agent_profile": {
+        "variables": [
+            {"semantic_type": "custom", "name": "base", "type": "float", "initial_value": 1.0},
+            {"semantic_type": "custom", "name": "derived", "type": "float", "expression": "base + 1.0"},
+        ]
+    },
     "item_profiles": [{"profile_name": "default_item", "variables": []}],
 }
 
@@ -139,15 +155,19 @@ def test_agent_static_dependency_of_marked_expression_is_not_clobbered_by_write_
 
 
 _AGENT_SCALAR_EXPRESSION_PROFILES = {
-    "version": "1.0", "evaluation_mode": "mark_and_sweep", "debug_logging": False,
+    "version": "1.0",
+    "evaluation_mode": "mark_and_sweep",
+    "debug_logging": False,
     "global_profile": None,
-    "agent_profile": {"variables": [
-        # No bar.* reference: "tick" is the ambient engine scalar (0-dim), so this
-        # expression evaluates to a SCALAR, not a per-agent tensor. A constant like
-        # this belongs in initial_value; declaring it as an agent-profile expression
-        # must be refused loudly by the write-back shape check, not broadcast.
-        {"semantic_type": "custom", "name": "scalar_expr", "type": "float", "expression": "tick * 2.0"},
-    ]},
+    "agent_profile": {
+        "variables": [
+            # No bar.* reference: "tick" is the ambient engine scalar (0-dim), so this
+            # expression evaluates to a SCALAR, not a per-agent tensor. A constant like
+            # this belongs in initial_value; declaring it as an agent-profile expression
+            # must be refused loudly by the write-back shape check, not broadcast.
+            {"semantic_type": "custom", "name": "scalar_expr", "type": "float", "expression": "tick * 2.0"},
+        ]
+    },
     "item_profiles": [{"profile_name": "default_item", "variables": []}],
 }
 
@@ -163,11 +183,15 @@ def test_agent_expression_wrong_shape_raises_naming_variable_and_shapes(tmp_path
 # Statics are storage in every evaluation mode, not just mark_and_sweep. ---
 
 _EAGER_PROFILES = {
-    "version": "1.0", "evaluation_mode": "eager", "debug_logging": False,
-    "global_profile": {"variables": [
-        {"semantic_type": "custom", "name": "stash", "type": "float", "initial_value": 1.0},
-        {"semantic_type": "custom", "name": "tick_echo", "type": "float", "expression": "tick * 2.0"},
-    ]},
+    "version": "1.0",
+    "evaluation_mode": "eager",
+    "debug_logging": False,
+    "global_profile": {
+        "variables": [
+            {"semantic_type": "custom", "name": "stash", "type": "float", "initial_value": 1.0},
+            {"semantic_type": "custom", "name": "tick_echo", "type": "float", "expression": "tick * 2.0"},
+        ]
+    },
     "agent_profile": None,
     "item_profiles": [{"profile_name": "default_item", "variables": []}],
 }

@@ -24,8 +24,15 @@ LEVEL = "L0_test"
 def _trace(tmp_path: Path, name: str) -> dict[str, np.ndarray]:
     out = tmp_path / name
     run_trace(
-        pack=PACK, pack_root=str(Path.cwd()), level=LEVEL, num_agents=2, steps=25,
-        seed=1234, device="cpu", out=out, actions_path=None,
+        pack=PACK,
+        pack_root=str(Path.cwd()),
+        level=LEVEL,
+        num_agents=2,
+        steps=25,
+        seed=1234,
+        device="cpu",
+        out=out,
+        actions_path=None,
     )
     with np.load(out if out.suffix == ".npz" else out.with_suffix(".npz")) as data:
         return {k: np.asarray(data[k]) for k in ("obs", "rewards", "dones", "actions")} | {

@@ -41,7 +41,6 @@ _logger = logging.getLogger(__name__)
 EpisodeContainer = dict[str, list[torch.Tensor]]
 
 
-
 class VectorizedPopulation(PopulationManager):
     """
     Vectorized population manager.

@@ -169,8 +169,6 @@ class TestGrid3DDistance:
         assert distance[0].item() == 7
 
 
-
-
 class TestGrid3DPositionChecks:
     """Tests for position checking."""
 

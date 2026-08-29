@@ -113,7 +113,3 @@ def test_all_empty_token_set_yields_finite_q_values(aggregator_type: str, num_he
 
 
 # --- factory wiring -------------------------------------------------------
-
-
-
-

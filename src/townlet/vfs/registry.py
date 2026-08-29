@@ -57,6 +57,7 @@ class ScopeArena:
     tensor: torch.Tensor
     index: dict[str, tuple[int, int]]
 
+
 NetworkShapeEffect = Literal["shape_stable_internal", "observation_schema_changed"]
 _NETWORK_SHAPE_EFFECTS = {"shape_stable_internal", "observation_schema_changed"}
 

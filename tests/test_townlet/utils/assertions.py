@@ -66,8 +66,6 @@ def assert_valid_observation(env: VectorizedHamletEnv, obs: torch.Tensor) -> Non
         raise AssertionError(f"Observation contains {inf_count} Inf values")
 
 
-
-
 # =============================================================================
 # ACTION MASK ASSERTIONS
 # =============================================================================

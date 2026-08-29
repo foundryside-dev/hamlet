@@ -397,15 +397,9 @@ class Grid3DSubstrate(SpatialSubstrate):
         """
         return positions.float()
 
-
-
-
-
     @property
     def supports_partial_vision(self) -> bool:
         return True
-
-
 
     def get_vision_radius(self, vision_range: float) -> int:
         """Radius from the declared fraction of the longest axis (min 1)."""
@@ -415,9 +409,7 @@ class Grid3DSubstrate(SpatialSubstrate):
     # --- Token visibility / egocentric contract (token-obs unit 3, Task 8) -----
 
     def _token_axis_sizes(self, device: torch.device) -> torch.Tensor:
-        return torch.tensor(
-            [float(self.width), float(self.height), float(self.depth)], dtype=torch.float32, device=device
-        )
+        return torch.tensor([float(self.width), float(self.height), float(self.depth)], dtype=torch.float32, device=device)
 
     def visible(self, self_pos: torch.Tensor, entity_pos: torch.Tensor, vision_range: float | None) -> torch.Tensor:
         """Declared-metric visibility; wrap-aware (toroidal shortest path under `wrap`)."""
@@ -448,7 +440,6 @@ class Grid3DSubstrate(SpatialSubstrate):
             )
             deltas = deltas / denominators
         return deltas
-
 
     def normalize_positions(self, positions: torch.Tensor) -> torch.Tensor:
         """Normalize positions to [0, 1] range (always relative encoding).
@@ -501,7 +492,6 @@ class Grid3DSubstrate(SpatialSubstrate):
             neighbors = [n for n in neighbors if 0 <= n[0] < self.width and 0 <= n[1] < self.height and 0 <= n[2] < self.depth]
 
         return [torch.tensor(n, dtype=torch.long) for n in neighbors]
-
 
     def supports_enumerable_positions(self) -> bool:
         """Grid3D has a finite set of discrete cells that can be enumerated."""

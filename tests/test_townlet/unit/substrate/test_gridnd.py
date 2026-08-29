@@ -129,10 +129,6 @@ def test_gridnd_distance_euclidean():
     assert torch.allclose(distance, torch.tensor([5.0]))
 
 
-
-
-
-
 def test_gridnd_neighbors_4d_interior():
     """Test interior position has 8 neighbors (2*4) in 4D."""
     substrate = GridNDSubstrate(

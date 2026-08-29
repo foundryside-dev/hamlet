@@ -532,9 +532,7 @@ def _one_hot(vocabulary: Sequence[str], member: str) -> tuple[float, ...]:
     return tuple(1.0 if v == member else 0.0 for v in vocabulary)
 
 
-def _element_param(
-    value: float | list[float] | None, element_index: int, *, element_count: int, where: str
-) -> float | None:
+def _element_param(value: float | list[float] | None, element_index: int, *, element_count: int, where: str) -> float | None:
     """One element's normalization parameter: scalars broadcast; a list must have exactly one
     entry per element (a per-axis list against a multi-axis shape is a named refusal)."""
     if value is None:

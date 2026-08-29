@@ -22,7 +22,6 @@ Semantics pinned:
   Aspatial: visible = all, delta = zeros (width 0).
 """
 
-
 import pytest
 import torch
 
@@ -41,9 +40,7 @@ def _grid2d(boundary: str, *, metric: str = "manhattan", encoding: str = "relati
 
 
 def _grid3d(boundary: str, *, metric: str = "manhattan") -> Grid3DSubstrate:
-    return Grid3DSubstrate(
-        width=8, height=8, depth=3, boundary=boundary, distance_metric=metric, observation_encoding="relative"
-    )
+    return Grid3DSubstrate(width=8, height=8, depth=3, boundary=boundary, distance_metric=metric, observation_encoding="relative")
 
 
 def _gridnd(boundary: str, *, metric: str = "manhattan") -> GridNDSubstrate:

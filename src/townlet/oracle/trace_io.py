@@ -169,9 +169,7 @@ def _divergence_mask(old_arr: np.ndarray, new_arr: np.ndarray) -> np.ndarray:
     return np.asarray(value_diff | nan_mismatch | sign_diff)
 
 
-def compare_traces(
-    old: Trace, new: Trace, cell_id: str, *, hash_divergences: Any = (), stream_divergence: Any = None
-) -> CellVerdict:
+def compare_traces(old: Trace, new: Trace, cell_id: str, *, hash_divergences: Any = (), stream_divergence: Any = None) -> CellVerdict:
     """Adjudicate one cell from both sides' traces.
 
     `hash_divergences` (a sequence of matrix.RegisteredHashDivergence) permits
@@ -347,9 +345,7 @@ def compare_traces(
             kind="DIVERGED_AS_REGISTERED",
             cell_id=cell_id,
             detail={
-                "shape": (
-                    "hash+stream" if union_declared and declared_streams else "hash-only" if union_declared else "stream-only"
-                ),
+                "shape": ("hash+stream" if union_declared and declared_streams else "hash-only" if union_declared else "stream-only"),
                 **({"mismatched": mismatched} if union_declared else {}),
                 **({"streams": {name: findings[name] for name in sorted(diverged)}} if declared_streams else {}),
             },

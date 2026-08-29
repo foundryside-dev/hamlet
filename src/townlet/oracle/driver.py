@@ -98,8 +98,7 @@ def run_trace(
             raise ValueError(f"actions dtype {scripted.dtype} is not integer")
         if scripted.min() < 0 or scripted.max() >= env.action_dim:
             raise ValueError(
-                f"actions contain values outside [0, action_dim={env.action_dim}): "
-                f"min={int(scripted.min())}, max={int(scripted.max())}"
+                f"actions contain values outside [0, action_dim={env.action_dim}): " f"min={int(scripted.min())}, max={int(scripted.max())}"
             )
 
     obs = env.reset()

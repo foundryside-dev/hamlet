@@ -71,18 +71,6 @@ def continuous_1d_absolute():
     )
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 # ==================== Continuous2D Tests ====================
 
 
@@ -135,18 +123,6 @@ def continuous_2d_absolute():
         observation_encoding="absolute",
         action_discretization={"num_directions": 8, "num_magnitudes": 3},
     )
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # ==================== Continuous3D Tests ====================
@@ -209,25 +185,7 @@ def continuous_3d_absolute():
     )
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 # ==================== Edge Case Tests ====================
-
-
-
-
-
-
 
 
 # ==================== Chebyshev Distance Tests ====================

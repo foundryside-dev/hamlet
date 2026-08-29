@@ -581,7 +581,6 @@ class TestMultiTickInteractions:
             expected = 50.0 - REST_MONEY_PER_TICK * tick
             assert env.meters[0, money].item() == pytest.approx(expected, abs=0.001), f"after {tick} tick(s)"
 
-
     def test_completion_bonus_timing(self, multitick_env):
         """The completion bonus lands on the final tick ONLY, not earlier."""
         env = multitick_env
@@ -721,7 +720,6 @@ class TestMultiAgentTemporal:
 
 class TestTemporalIntegrations:
     """Cross-system temporal mechanics integration."""
-
 
     def test_temporal_mechanics_with_curriculum(self, cpu_device, cpu_env_factory):
         """Verify temporal mechanics works with adversarial curriculum.

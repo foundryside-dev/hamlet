@@ -300,9 +300,7 @@ class TestSerialization:
 def _env_stub(*names_and_types: tuple[str, str]):
     """Minimal EnvConfigV21 stand-in: `_variable_element_bindings` reads only
     `environment.environment.variables[*].name / .semantic_type`."""
-    return SimpleNamespace(
-        environment=SimpleNamespace(variables=[SimpleNamespace(name=n, semantic_type=t) for n, t in names_and_types])
-    )
+    return SimpleNamespace(environment=SimpleNamespace(variables=[SimpleNamespace(name=n, semantic_type=t) for n, t in names_and_types]))
 
 
 def _variable_def(name: str, *, dims: int | None = None, normalization: NormalizationSpec | None) -> VariableDef:

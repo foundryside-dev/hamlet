@@ -264,8 +264,6 @@ class TestContinuousDistance:
         assert torch.allclose(distances, expected, atol=1e-5)
 
 
-
-
 class TestContinuousInteraction:
     """Test proximity-based interaction detection."""
 

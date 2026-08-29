@@ -67,10 +67,6 @@ def test_gridnd_7d_movement_all_boundaries():
         assert (new_positions < 5).all()
 
 
-
-
-
-
 def test_gridnd_7d_distance_metrics():
     """Test all distance metrics in 7D."""
     for metric in ["manhattan", "euclidean", "chebyshev"]:

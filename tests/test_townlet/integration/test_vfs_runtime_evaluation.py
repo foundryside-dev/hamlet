@@ -35,8 +35,6 @@ def test_vfs_expressions_evaluated_at_runtime():
     assert "day_count" in env.vfs_registry._storage or "day_count" in env.vfs_registry.variables
 
 
-
-
 def test_mark_and_sweep_only_evaluates_observed_vars():
     """Mark-and-sweep should only evaluate variables in observations."""
     # Setup: Use effects_smoke config which has VFS profiles

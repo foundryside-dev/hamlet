@@ -46,5 +46,3 @@ def test_set_encoder_qnetwork_is_permutation_invariant_over_non_empty_tokens() -
     obs_two = torch.cat((base, torch.cat((empty, token_b, token_a), dim=1)), dim=1)
 
     assert torch.allclose(network(obs_one), network(obs_two), atol=1e-6)
-
-

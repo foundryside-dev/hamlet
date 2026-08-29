@@ -367,10 +367,6 @@ class TestGridNDGetAllPositions:
             substrate.get_all_positions()
 
 
-
-
-
-
 class TestGridNDDistanceEdgeCases:
     """Test distance metric edge cases.
 
@@ -475,8 +471,6 @@ class TestGridNDValidationEdgeCases:
                 distance_metric="manhattan",
                 observation_encoding="INVALID",
             )
-
-
 
 
 class TestGridNDNormalizePositions:

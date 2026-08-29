@@ -58,8 +58,6 @@ DEFAULT_CURRICULUM_LEVELS = (
 # =============================================================================
 
 
-
-
 def _with_runtime_action_surface(
     universe,
     level_name: str,
@@ -140,8 +138,6 @@ def _with_runtime_action_surface(
 def _with_runtime_action_write(universe, level_name: str, action_name: str, write: WriteSpec):
     """Return a compiled universe whose named runtime action carries one VFS write."""
     return _with_runtime_action_surface(universe, level_name, action_name, writes=(write,), disable_vfs_profiles=True)
-
-
 
 
 def test_build_bar_index_map():
@@ -848,8 +844,6 @@ class TestExecuteActions:
         result = env._execute_actions(actions)
 
         assert isinstance(result, dict)
-
-
 
 
 class TestGetActionMasks:

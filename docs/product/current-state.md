@@ -1,4 +1,4 @@
-# Current State — HAMLET / Townlet        Checkpoint: 2026-08-29 · forty-sixth checkpoint (`PDR-0126`–`PDR-0129`: **trigger 3 RULED, the Lint gate RESTORED after 47 dark pushes, gate 2 DISCHARGED, and the fourth merge is owner-directed and in flight**)
+# Current State — HAMLET / Townlet        Checkpoint: 2026-08-29 · forty-seventh checkpoint (`PDR-0126`–`PDR-0130`: **trigger 3 RULED, the Lint gate RESTORED after 47 dark pushes, gate 2 DISCHARGED, and THE FOURTH MERGE LANDED at `9efadd3c` — work continues on `project-recovery-3`**)
 
 ## The bets right now
 
@@ -27,6 +27,13 @@ is re-verified as of this morning; `docs/product/` is consistent with it as of t
 `roadmap.md`.
 
 ## What this checkpoint did
+
+- **Forty-seventh (same day, after the landing):** `PDR-0130` records the landing at `9efadd3c`,
+  the content-empty `main` merge the ruleset required (`1b4020aa`), `main`'s per-push CI firing
+  (Lint ✅, Config Validation ✅, Tests `33245264455` in progress at the reading), and
+  `hamlet-83c8e3b50e` terminal as `not_a_bug` — `PDR-0103`'s escalation closed by observation.
+  `roadmap.md` Now bullet and `metrics.md` header/`Gates green` updated to match. Everything
+  below this line is the forty-sixth checkpoint's record, retained.
 
 - `PDR-0126` — trigger 3 ruled (owner): option 4, debt into unit 5. `PDR-0124` status → RESOLVED.
 - `PDR-0127` — Lint had been red 47 pushes (`7dc6f66c` → `8b733f3e`) under two "green"

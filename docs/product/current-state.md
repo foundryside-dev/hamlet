@@ -8,7 +8,7 @@
   Gate 1 met (`PDR-0127`, all three green at `1065dbf0`); gate 2 discharged (`PDR-0128`).
   The Protect Main ruleset (2025-11) required a content-empty merge of `main` into the branch
   first (`1b4020aa`) and the `lint`/`unit` PR checks — both passed.
-- **`hamlet-83c8e3b50e` is CLOSED by observation**: `main`'s tip got per-push Lint / Config
+- **`hamlet-83c8e3b50e` is TERMINAL (`not_a_bug` — the CLI refuses `triage → closed`)**: `main`'s tip got per-push Lint / Config
   Validation / Tests within ~60 s of landing. The third merge's silence was transient.
 - **Work continues on `project-recovery-3`**, cut from `9efadd3c` and pushed.
 - Bet exit (`PDR-0058`) unchanged and not met: oracle not retired, WS-3/WS-4 open.

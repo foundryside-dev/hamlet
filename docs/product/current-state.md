@@ -3,13 +3,14 @@
 ## The bets right now
 
 **1. Strangler rewrite behind the compiled-universe contract** (`PDR-0006`) — the Now bet.
-- **The fourth merge to `main` is in progress** (`PDR-0129`, owner-directed 2026-08-29): 143
-  commits / 921 files / 38 PDRs from `project-recovery-2` (tip `6fb148fd` + this checkpoint)
-  onto `main` `04062872`. **Gate 1 met** — Lint, Config Validation, Tests all green at
-  `b915139e` and `1065dbf0` (`PDR-0127`). **Gate 2 discharged** — README re-verified by method,
-  stamped at `1065dbf0` (`PDR-0128`). Merge commit through a PR, as the three before.
-- **This merge is the deciding test for `hamlet-83c8e3b50e`** (no per-push CI on `main`'s third
-  merge). Read `main`'s tip check-runs immediately after landing.
+- **THE FOURTH MERGE LANDED: `main` = `9efadd3c` (PR #37, 2026-08-29)**, 143 commits / 921
+  files / 38 PDRs from `project-recovery-2`, merge commit as the three before (`PDR-0129`).
+  Gate 1 met (`PDR-0127`, all three green at `1065dbf0`); gate 2 discharged (`PDR-0128`).
+  The Protect Main ruleset (2025-11) required a content-empty merge of `main` into the branch
+  first (`1b4020aa`) and the `lint`/`unit` PR checks — both passed.
+- **`hamlet-83c8e3b50e` is CLOSED by observation**: `main`'s tip got per-push Lint / Config
+  Validation / Tests within ~60 s of landing. The third merge's silence was transient.
+- **Work continues on `project-recovery-3`**, cut from `9efadd3c` and pushed.
 - Bet exit (`PDR-0058`) unchanged and not met: oracle not retired, WS-3/WS-4 open.
 
 **2. Token-observation encoding** (`PDR-0108`/`PDR-0114`) · `hamlet-fa6bb6da4a`. Unit 3 complete
@@ -43,8 +44,8 @@ is re-verified as of this morning; `docs/product/` is consistent with it as of t
 
 ## Standing gates & in-flight state (read before acting)
 
-1. **Read `main`'s post-merge CI before anything else** — per-push runs at the merge SHA
-   (decides `hamlet-83c8e3b50e`) and the first nightly (`PDR-0128` trigger).
+1. **Read `main`'s post-merge gates**: the per-push runs at `9efadd3c` (queued at landing —
+   read their conclusions) and the first nightly (`PDR-0128` trigger).
 2. **Local gate = CI gate**: `ruff check .`, `black --check src tests`,
    `no_defaults_lint.py` — all three before any push of product source (`PDR-0127`).
 3. **Never take the torch bump (#33) as a dependency chore** — it can move the oracle
@@ -66,9 +67,7 @@ is re-verified as of this morning; `docs/product/` is consistent with it as of t
 1. **`vision.md` `Last reviewed` stamp** reads 2026-08-22; you re-confirmed the grant unchanged
    on 2026-08-29 but no stamp touch was offered, so per the 2026-08-15 rule the debt is carried.
    Approve the stamp correction at the next resume and it moves (the `PDR-0038` pattern).
-2. `hamlet-83c8e3b50e` — if the fourth merge is *also* CI-silent on `main`, this needs your
-   account-level view (`PDR-0103`); the agent will not widen its own token scope.
-3. Instrument redesign — promote or park (unchanged). WS-7 (`hamlet-e3af412673`, P0) — park or
+2. Instrument redesign — promote or park (unchanged). WS-7 (`hamlet-e3af412673`, P0) — park or
    schedule (unchanged). Dependabot #33 (torch) — see gate 3 above; #34 (pytest) goes with the
    fruit.
 
@@ -82,7 +81,7 @@ is re-verified as of this morning; `docs/product/` is consistent with it as of t
 
 ## Next session starts here
 
-**Post-merge reading first** (item 1 above), then on `project-recovery-3`: `hamlet-6a4a6596bd`
+**Read `main`'s per-push conclusions at `9efadd3c` and the first nightly**, then on `project-recovery-3`: `hamlet-6a4a6596bd`
 (delete the inert `observation_mode`/`observation_encoding`), `hamlet-1e335e0363` (rule on
 `range_type`), Dependabot #34, then unit 4 (the `PDR-0114` trigger-1 probes) or WS-4 per the
 owner's steer — the width cap no longer gates either.

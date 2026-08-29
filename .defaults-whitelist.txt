@@ -254,3 +254,39 @@ src/townlet/vfs/transition_schedule.py:*
 # fallback) that is a genuine no-defaults concern if those mappings are
 # authored config.
 src/townlet/vfs/vtc.py:*
+
+# ============================================================================
+# 2026-08-29 — Lint gate restored after 47 consecutive reds (2026-08-22 → 29).
+# Every entry below is a STRUCTURAL default or a false positive, not a
+# behavioural config default. Three real hits in the same sweep were fixed in
+# code instead (TokenTypeSchema.slot_bindings, owner_capacity, source_map).
+# ============================================================================
+
+# transition_rules.yaml (hamlet-84cf93a1b9): the DECLARED "(computed)" fields —
+# phase / priority / telemetry_label derive from the rule or from declaration
+# order when omitted. The linter cannot name class-body fields, so the entry is
+# class+rule; these two classes hold exactly those computed fields. The
+# behavioural optionals in the same DTOs (condition, clamp, effect, scope)
+# carry NO default and require an explicit null.
+src/townlet/config/transition_rules_config.py::SocialResidueWriteConfig:CALL003
+src/townlet/config/transition_rules_config.py::SocialResidueRuleConfig:CALL003
+
+# Internal publisher registry (dict[type_name, list[publisher]]) — a container
+# idiom, not a config default.
+src/townlet/environment/observation_encoder.py::TokenObservationEncoder::__init__:CALL001
+src/townlet/environment/observation_encoder.py::TokenObservationEncoder::encode:CALL001
+
+# token_spec.py — boolean/arithmetic expressions the AST rules misread as
+# defaults: `bounded = a or b` is a predicate; the ternaries are the
+# normalization maths and a None-passthrough, computed from DECLARED params.
+src/townlet/universe/dto/token_spec.py::*::require_exposure_normalization::bounded:ASG001
+src/townlet/universe/dto/token_spec.py::*::normalize_declared_scalar::v:ASG002
+src/townlet/universe/dto/token_spec.py::*::normalization_param_vector::clip:ASG002
+src/townlet/universe/dto/token_spec.py::*::normalization_param_vector::scale:ASG002
+# None-passthrough when serialising an Optional static signature.
+src/townlet/universe/token_hashes.py::*::canonical_observation_schema::binding_entry:ASG002
+
+# Diagnostic instrumentation (spec §6 cold-token hook, per-interval metrics):
+# optional INPUTS to a measurement, not universe behaviour.
+src/townlet/agent/token_diagnostics.py::*::cold_token_injection:DEF001
+src/townlet/agent/token_diagnostics.py::*::token_diagnostic_metrics:DEF001

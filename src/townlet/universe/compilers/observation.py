@@ -253,7 +253,9 @@ class ObservationCompiler:
                 shape=shape,
                 normalization=var_def.normalization,
             )
-            signature = static_payload_signature(exposed)
+            # No compiled variable carries an owner_slot yet (item/effect ownership is a
+            # publisher-side feature); describe_variable raises if that ever changes.
+            signature = static_payload_signature(exposed, owner_capacity=None)
             bound.append(exposed)
             # static_payload_signature returns (scope, shape, per-element descriptor blocks).
             descriptor_blocks = cast("tuple[tuple[float, ...], ...]", signature[2])
@@ -268,7 +270,7 @@ class ObservationCompiler:
                     )
                 )
 
-        check_indistinguishability(bound)
+        check_indistinguishability(bound, owner_capacity=None)
         return tuple(bindings)
 
     def build_vfs_variables(

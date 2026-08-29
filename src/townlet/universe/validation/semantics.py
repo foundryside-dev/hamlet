@@ -55,7 +55,7 @@ def _detect_cycles(graph: Mapping[str, Iterable[str]]) -> list[list[str]]:
     return cycles
 
 
-def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path, source_map: SourceMap | None = None) -> None:
+def validate_v21_semantics(raw: RawConfigsV21, experiment_dir: Path, source_map: SourceMap | None) -> None:
     """Validate v2.1 semantic constraints after typed config loading.
 
     ``source_map`` (optional) upgrades per-entry diagnostics to file:line

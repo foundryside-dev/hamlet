@@ -154,7 +154,7 @@ def test_validate_v21_semantics_rejects_cascade_with_unknown_meter(tmp_path: Pat
     raw = load_v21_configs(config_dir)
 
     with pytest.raises(CompilationError, match="CASCADE_INVALID_METER"):
-        validate_v21_semantics(raw, config_dir)
+        validate_v21_semantics(raw, config_dir, source_map=None)
 
 
 def test_validate_v21_semantics_rejects_cascade_cycle(tmp_path: Path) -> None:
@@ -177,7 +177,7 @@ def test_validate_v21_semantics_rejects_cascade_cycle(tmp_path: Path) -> None:
     raw = load_v21_configs(config_dir)
 
     with pytest.raises(CompilationError, match="CASCADE_CYCLE"):
-        validate_v21_semantics(raw, config_dir)
+        validate_v21_semantics(raw, config_dir, source_map=None)
 
 
 def test_validate_v21_semantics_rejects_modulation_with_unknown_bar(tmp_path: Path) -> None:
@@ -190,7 +190,7 @@ def test_validate_v21_semantics_rejects_modulation_with_unknown_bar(tmp_path: Pa
     raw = load_v21_configs(config_dir)
 
     with pytest.raises(CompilationError, match="MODULATION_INVALID_REFERENCE"):
-        validate_v21_semantics(raw, config_dir)
+        validate_v21_semantics(raw, config_dir, source_map=None)
 
 
 def test_validate_v21_semantics_rejects_missing_level_modulation(tmp_path: Path) -> None:
@@ -203,7 +203,7 @@ def test_validate_v21_semantics_rejects_missing_level_modulation(tmp_path: Path)
     raw = load_v21_configs(config_dir)
 
     with pytest.raises(CompilationError, match="MODULATION_MISSING"):
-        validate_v21_semantics(raw, config_dir)
+        validate_v21_semantics(raw, config_dir, source_map=None)
 
 
 def test_validate_v21_semantics_rejects_level_meter_vocab_mismatch(tmp_path: Path) -> None:
@@ -216,7 +216,7 @@ def test_validate_v21_semantics_rejects_level_meter_vocab_mismatch(tmp_path: Pat
     raw = load_v21_configs(config_dir)
 
     with pytest.raises(CompilationError, match="METER_VOCAB_MISMATCH"):
-        validate_v21_semantics(raw, config_dir)
+        validate_v21_semantics(raw, config_dir, source_map=None)
 
 
 def test_validate_v21_semantics_rejects_level_affordance_vocab_mismatch(tmp_path: Path) -> None:
@@ -229,7 +229,7 @@ def test_validate_v21_semantics_rejects_level_affordance_vocab_mismatch(tmp_path
     raw = load_v21_configs(config_dir)
 
     with pytest.raises(CompilationError, match="AFFORDANCE_VOCAB_MISMATCH"):
-        validate_v21_semantics(raw, config_dir)
+        validate_v21_semantics(raw, config_dir, source_map=None)
 
 
 def test_validate_v21_semantics_rejects_affordance_cost_with_unknown_meter(tmp_path: Path) -> None:
@@ -242,7 +242,7 @@ def test_validate_v21_semantics_rejects_affordance_cost_with_unknown_meter(tmp_p
     raw = load_v21_configs(config_dir)
 
     with pytest.raises(CompilationError, match="AFFORDANCE_INVALID_METER"):
-        validate_v21_semantics(raw, config_dir)
+        validate_v21_semantics(raw, config_dir, source_map=None)
 
 
 def test_validate_v21_semantics_rejects_affordance_interaction_with_unknown_meter(tmp_path: Path) -> None:
@@ -255,7 +255,7 @@ def test_validate_v21_semantics_rejects_affordance_interaction_with_unknown_mete
     raw = load_v21_configs(config_dir)
 
     with pytest.raises(CompilationError, match="AFFORDANCE_INVALID_METER"):
-        validate_v21_semantics(raw, config_dir)
+        validate_v21_semantics(raw, config_dir, source_map=None)
 
 
 def test_validate_v21_semantics_rejects_unknown_enabled_affordance(tmp_path: Path) -> None:
@@ -268,7 +268,7 @@ def test_validate_v21_semantics_rejects_unknown_enabled_affordance(tmp_path: Pat
     raw = load_v21_configs(config_dir)
 
     with pytest.raises(CompilationError, match="ENABLED_AFFORDANCES_INVALID"):
-        validate_v21_semantics(raw, config_dir)
+        validate_v21_semantics(raw, config_dir, source_map=None)
 
 
 def test_validate_v21_semantics_rejects_grid_capacity_exceeded(tmp_path: Path) -> None:
@@ -282,7 +282,7 @@ def test_validate_v21_semantics_rejects_grid_capacity_exceeded(tmp_path: Path) -
     raw = load_v21_configs(config_dir)
 
     with pytest.raises(CompilationError, match="GRID_CAPACITY_EXCEEDED"):
-        validate_v21_semantics(raw, config_dir)
+        validate_v21_semantics(raw, config_dir, source_map=None)
 
 
 def test_grid_capacity_for_gridnd_substrate() -> None:

@@ -178,7 +178,7 @@ class TestDescriptorBlock:
             normalization=NormalizationSpec(kind="minmax", min=[0.0, 0.0], max=[1.0, 1.0], clip=True),
         )
         with pytest.raises(ValueError, match="normalization.min lists 2 values but the variable has 6 elements"):
-            describe_variable(var, element_index=0)
+            describe_variable(var, element_index=0, owner_capacity=None)
 
     def test_descriptor_block_width_is_pinned(self):
         # Single pin so drift is loud: 9 + 6 + 9 + 5 + 3 + 3 + 1 (initial) + 1 (log count) + 2.
@@ -187,7 +187,7 @@ class TestDescriptorBlock:
 
     def test_describe_variable_has_descriptor_width_and_marks_declaration(self):
         var = _var(normalization=_minmax(0.0, 10.0), default=5.0)
-        block = describe_variable(var, element_index=0)
+        block = describe_variable(var, element_index=0, owner_capacity=None)
         assert len(block) == DESCRIPTOR_BLOCK_WIDTH
         scope_hot = block[:SCOPE_ONE_HOT_WIDTH]
         assert scope_hot[list(VariableScope).index(VariableScope.GLOBAL)] == 1.0 and sum(scope_hot) == 1.0
@@ -211,7 +211,7 @@ class TestDescriptorBlock:
             default=[0.0, 5.0, 10.0],
             normalization=NormalizationSpec(kind="minmax", min=[0.0, 0.0, 0.0], max=[10.0, 10.0, 10.0], clip=True),
         )
-        initials = [describe_variable(var, element_index=i)[-4] for i in range(3)]
+        initials = [describe_variable(var, element_index=i, owner_capacity=None)[-4] for i in range(3)]
         assert initials == pytest.approx([0.0, 0.5, 1.0])
 
 
@@ -272,27 +272,27 @@ class TestIndistinguishability:
         a = _var("world_temp", default=0.3)
         b = _var("season_clock", default=0.3)
         with pytest.raises(ValueError, match="world_temp.*season_clock|season_clock.*world_temp"):
-            check_indistinguishability([a, b])
+            check_indistinguishability([a, b], owner_capacity=None)
 
     def test_one_distinguishing_parameter_compiles(self):
         a = _var("world_temp", default=0.3)
         b = _var("season_clock", default=0.3, lifetime="tick")
-        check_indistinguishability([a, b])
+        check_indistinguishability([a, b], owner_capacity=None)
         c = _var("season_clock", default=0.3, semantic_type="temporal")
-        check_indistinguishability([a, c])
+        check_indistinguishability([a, c], owner_capacity=None)
         d = _var("season_clock", default=0.3, normalization=_minmax(0.0, 24.0))
-        check_indistinguishability([a, d])
+        check_indistinguishability([a, d], owner_capacity=None)
 
     def test_different_declared_initial_distinguishes(self):
         a = _var("world_temp", default=0.3)
         b = _var("season_clock", default=0.7)
-        check_indistinguishability([a, b])
-        assert static_payload_signature(a) != static_payload_signature(b)
+        check_indistinguishability([a, b], owner_capacity=None)
+        assert static_payload_signature(a, owner_capacity=None) != static_payload_signature(b, owner_capacity=None)
 
     def test_scope_is_part_of_coordinate_space(self):
         a = _var("x", scope="global")
         b = _var("y", scope="agent")
-        check_indistinguishability([a, b])
+        check_indistinguishability([a, b], owner_capacity=None)
 
 
 # --------------------------------------------------------------------------- capacity

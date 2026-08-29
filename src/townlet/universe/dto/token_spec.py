@@ -29,7 +29,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Iterable, Iterator, Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Final, Literal, get_args
 
 from townlet.config.effects_config import EffectScope, ReapplyPolicy
@@ -341,7 +341,7 @@ class TokenTypeSchema:
     type_name: str
     payload_features: tuple[str, ...]
     capacity: int
-    slot_bindings: tuple[SlotBinding, ...] = field(default_factory=tuple)
+    slot_bindings: tuple[SlotBinding, ...]
 
     def __post_init__(self) -> None:
         if self.type_name in RESERVED_TOKEN_TYPE_NAMES:
@@ -618,7 +618,7 @@ def normalization_param_vector(spec: NormalizationSpec, *, element_index: int, e
     return tuple(0.0 if s is None else float(s) for s in slots) + (1.0 if absent else 0.0,)
 
 
-def describe_variable(var: ExposedVariable, *, element_index: int, owner_capacity: int | None = None) -> tuple[float, ...]:
+def describe_variable(var: ExposedVariable, *, element_index: int, owner_capacity: int | None) -> tuple[float, ...]:
     """The variable-descriptor block for one element (spec §1): fixed-width, name-free, built
     from the declaration. Width == DESCRIPTOR_BLOCK_WIDTH."""
     spec = require_exposure_normalization(var.id, var.normalization)
@@ -645,7 +645,7 @@ def describe_variable(var: ExposedVariable, *, element_index: int, owner_capacit
     return block
 
 
-def static_payload_signature(var: ExposedVariable, *, owner_capacity: int | None = None) -> tuple[object, ...]:
+def static_payload_signature(var: ExposedVariable, *, owner_capacity: int | None) -> tuple[object, ...]:
     """Everything static about a variable's tokens: the descriptor block per element plus the
     coordinate space (scope, shape). Two exposed variables with equal signatures are
     indistinguishable under permutation-invariant pooling (spec §1)."""
@@ -653,7 +653,7 @@ def static_payload_signature(var: ExposedVariable, *, owner_capacity: int | None
     return (var.scope, var.shape, blocks)
 
 
-def check_indistinguishability(variables: Iterable[ExposedVariable], *, owner_capacity: int | None = None) -> None:
+def check_indistinguishability(variables: Iterable[ExposedVariable], *, owner_capacity: int | None) -> None:
     """Compile-time indistinguishability check (spec §1): identical static signature → error
     naming both declarations and demanding a distinguishing declared parameter."""
     seen: dict[tuple[object, ...], str] = {}

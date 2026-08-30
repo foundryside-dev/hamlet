@@ -1,4 +1,9 @@
-# Metrics — HAMLET / Townlet        Last read: 2026-08-31 · forty-eighth checkpoint (`PDR-0131`)
+# Metrics — HAMLET / Townlet        Last read: 2026-08-31 · forty-ninth checkpoint (`PDR-0132`)
+
+> **Plan checkpoint — 2026-08-31, `PDR-0132`:** no engineering metric was re-read. The accepted
+> constraints below are unchanged; they are now assigned to five separately checkpointed
+> milestones, beginning with canonical bounded positions and meter normalization before the
+> compact-replay reading is taken.
 
 > **Current engineering reading — 2026-08-31, `PDR-0131`:** the 9.43× result is no longer
 > carried to unit 5. It is assigned to compact replay engineering before unit 4; the concrete

@@ -1,4 +1,4 @@
-# Roadmap — HAMLET / Townlet        Updated: 2026-08-31 · forty-eighth checkpoint (`PDR-0131`)
+# Roadmap — HAMLET / Townlet        Updated: 2026-08-31 · forty-ninth checkpoint (`PDR-0132`)
 
 > Sequencing, WSJF / cost-of-delay, and dated forecasts are produced by
 > /axiom-program-management. This file records bets as INTENT, not a delivery
@@ -18,9 +18,10 @@
 > that predates the VFS/VTC/DAC era. This file does not supersede or edit it; retiring it is part
 > of the Now bet.
 
-> **Current checkpoint — 2026-08-31, `PDR-0131`:** no horizon change. Token work stays Now,
-> but its next unit is compact dynamic replay plus static compiled context before unit 4. WS-7 is
-> closed and the standing authority grant is confirmed unchanged.
+> **Current checkpoint — 2026-08-31, `PDR-0132`:** no horizon change. Token work stays Now and
+> now has five separately accepted milestones. The first executable unit deletes the inert
+> observation-encoding surface and makes bounded positions canonical; compact replay remains
+> behind both semantic repairs, followed by Unit 4 and Unit 5.
 
 ## Now  (committed, in-flight)
 
@@ -50,7 +51,7 @@
 > sequencing consequence is the 2026-10-06 trial-pack disposition deadline before token unit 5.
 
 - **Token-based observation engineering — IN SCOPE, owner-directed** (`PDR-0108`,
-  `PDR-0114`, `PDR-0131`; `hamlet-fa6bb6da4a`). Phase A, the declared attention choice and
+  `PDR-0114`, `PDR-0131`, `PDR-0132`; `hamlet-fa6bb6da4a`). Phase A, the declared attention choice and
   full token cut through unit 3 are landed. The open work is no longer "prove set_encoder".
   · **The 9.43× decision is re-ruled (`PDR-0131`, superseding `PDR-0126`).** At the default
   100,000-transition capacity, the current 1,132-float serialization spends 863.6 MiB on
@@ -64,12 +65,16 @@
   bytes; batch 256 viable; encoding <25% of `env.step`; Grid2D/Grid3D/aspatial transfer,
   visibility and reconstructed-input parity pinned. Unit 4's 79.19 IQM floor runs only after
   this ABI lands; unit 5 then migrates every shipped pack.
-  · **Sequence:** `hamlet-6a4a6596bd` + `hamlet-1e335e0363` → compact ABI → unit 4 → unit 5.
-  The tracker carries those two blockers explicitly. Relational/message exposure and dynamic
+  · **Checkpointed sequence (`PDR-0132`):** canonical bounded positions
+  (`hamlet-6a4a6596bd`) → meter `range_type` wiring (`hamlet-1e335e0363`) → compact ABI
+  (`hamlet-1b1caf552a`) → Unit 4 engineering regression (`hamlet-25fc3fb955`) → Unit 5 shipped-pack
+  migration (`hamlet-55b2826a02`). Compact waits on both semantic repairs even though those bugs
+  remain independently startable. Each milestone needs terminal tracker evidence and a committed
+  product checkpoint before its successor begins. Relational/message exposure and dynamic
   variables remain downstream, not silently folded into this unit.
   · metric: replay resident bytes, viable batch size, observation-encoding share, unit-4
   regression floor
-  · Updated: 2026-08-31 (`PDR-0131`)
+  · Updated: 2026-08-31 (`PDR-0132`)
 
 ## Next (shaped, decreasing certainty)
 

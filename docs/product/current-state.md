@@ -1,4 +1,4 @@
-# Current State — HAMLET / Townlet        Checkpoint: 2026-08-31 · forty-eighth checkpoint (`PDR-0131`: **ownership reconciled; 9.43× re-ruled as a replay-layout problem; grant confirmed unchanged**)
+# Current State — HAMLET / Townlet        Checkpoint: 2026-08-31 · forty-ninth checkpoint (`PDR-0132`: **five token milestones armed; bounded-position repair is next**)
 
 ## The bets right now
 
@@ -11,7 +11,7 @@
 - The critical path is now WS-6 → WS-2 → WS-3 → WS-4. Bet exit remains unmet: WS-3/WS-4 are open
   and the oracle has not been retired.
 
-**2. Token-observation engineering** (`PDR-0108`/`PDR-0114`/`PDR-0131`) ·
+**2. Token-observation engineering** (`PDR-0108`/`PDR-0114`/`PDR-0131`/`PDR-0132`) ·
 `hamlet-fa6bb6da4a`.
 - Unit 3 is complete. `PDR-0126` is superseded: the 9.43× result is not debt to carry into pack
   migration; it is a representation-layout defect to fix before unit 4.
@@ -21,8 +21,13 @@
 - The accepted design stores static token context once in the compiled artifact, stores only
   compact dynamic state in replay, and reconstructs the fixed transfer schema at the network
   boundary. The old full-payload transition ABI is deleted; no compatibility path is carried.
-- `hamlet-6a4a6596bd` and `hamlet-1e335e0363` now explicitly block the token task. After both:
-  compact ABI → unit 4 engineering acceptance → unit 5 all-pack migration.
+- The work now runs as five independently accepted milestones: bounded positions
+  (`hamlet-6a4a6596bd`), meter `range_type` wiring (`hamlet-1e335e0363`), compact replay
+  (`hamlet-1b1caf552a`), Unit 4 regression (`hamlet-25fc3fb955`), then Unit 5 migration
+  (`hamlet-55b2826a02`). The umbrella closes only after the final child is terminal.
+- **Current milestone:** delete the inert `observation_encoding` surface and establish one
+  canonical bounded position encoding. `div003_scaled` must stop presenting a vacuous matrix
+  cell as evidence.
 
 **3. Documentation truth** (`PDR-0125`) — recovery labelling is complete; source-generated
 rewrite remains gated on WS-4. Do not start `hamlet-7a52a63e0b` merely because it appears ready.
@@ -32,6 +37,11 @@ parked. The pack-disposition clock remains 2026-10-06.
 
 ## What this checkpoint did
 
+- `PDR-0132` turned `PDR-0131`'s prose sequence into a durable five-milestone product plan with
+  an evidence, tracker, product-document and Git checkpoint at every boundary.
+- Filigree now has distinct compact-ABI, Unit 4 and Unit 5 children. Compact replay waits on both
+  semantic repairs, Unit 4 waits on compact replay, Unit 5 waits on Unit 4, and the umbrella waits
+  on Unit 5. This preserves the downstream block without pretending the umbrella is executable.
 - `PDR-0131` replaced the raw 8× acceptance proxy with byte-level engineering constraints:
   dynamic replay ≤120 floats, a 100k observation pair ≤96,000,000 float32 bytes, batch 256 still
   viable, encoding below 25% of `env.step`, and cross-substrate schema/visibility parity.
@@ -55,6 +65,8 @@ parked. The pack-disposition clock remains 2026-10-06.
 
 ## Decision checks
 
+- `PDR-0132`: if a milestone invalidates the next one's assumptions, stop at the checkpoint and
+  write the replacement call before continuing; never skip or combine milestones.
 - `PDR-0131`: if compact-flat state cannot preserve visibility and transfer while meeting the
   byte budget, stop and choose one different token ABI; never retain both.
 - `PDR-0127`: a >3-push red streak under a green checkpoint means the reading rule failed and
@@ -71,8 +83,8 @@ announcement, tags/releases, vision/strategy/grant changes, data deletion or ext
 
 ## Next session starts here
 
-1. Fix `hamlet-6a4a6596bd` (delete the inert observation-mode/encoding surface).
-2. Fix or deliberately delete `hamlet-1e335e0363`'s inert meter `range_type` path.
-3. Start `hamlet-fa6bb6da4a`: write the implementation plan for static compiled context plus the
-   compact dynamic replay ABI, including deletion of the old path and the named acceptance tests.
-4. Run unit 4 only after that ABI lands; migrate packs in unit 5 after unit 4 passes.
+1. Start `hamlet-6a4a6596bd` atomically with its bug workflow advanced to fixing; delete the inert
+   observation-mode/encoding surface and pin the canonical bounded position semantics.
+2. Checkpoint milestone 1, then wire `hamlet-1e335e0363`'s meter `range_type` into token values.
+3. Continue through `hamlet-1b1caf552a` → `hamlet-25fc3fb955` → `hamlet-55b2826a02`, accepting
+   and committing a product checkpoint at each boundary under `PDR-0132`.

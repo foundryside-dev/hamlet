@@ -10,6 +10,12 @@ design is unit 2 of), `PDR-0044` (compiled-block escalation triggers), `PDR-0107
 `PDR-0012`/`PDR-0013` (the no-tech-debt policy the rider applies)
 Tracker: `hamlet-fa6bb6da4a` · Spec: `docs/superpowers/specs/2026-08-22-token-observation-representation-design.md` (Status: APPROVED, committed `c73f729a`)
 
+> **2026-08-31 amendment — `PDR-0131`:** rulings 3 and 5 now mean a compact dynamic flat
+> serialization in replay, not the full descriptor payload. Token-native networks attach static
+> compiled context before projection; universe-bound flat networks consume compact dynamic state.
+> Reversal trigger 3's raw 8× width proxy is replaced by replay bytes, batch viability and encoding
+> cost. There is one ABI at a time; the old full-payload transition path is deleted.
+
 ## Context
 
 Phase B unit 2 — "the migration proper and the big design document": how the fixed-width

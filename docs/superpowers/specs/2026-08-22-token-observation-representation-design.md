@@ -1,5 +1,13 @@
 # Token Observation Representation — Design
 
+> **Binding amendment — 2026-08-31, `PDR-0131`:** replay stores a compact dynamic flat
+> serialization only (presence, live values, actual-rank coordinates). Immutable per-slot
+> descriptors live once in compiled context. Token-native feedforward/recurrent networks attach
+> that context before per-type projection; universe-bound flat/dueling networks consume the compact
+> dynamic view. Fixed-rank expansion occurs at the network boundary, preserving the per-type
+> transfer schema. Delete the old full-payload transition ABI; do not support both. This amendment
+> supersedes contrary transport and unit-sequencing text below.
+
 **Status:** Design approved in-session by the owner, 2026-08-22, section by section; revised
 same day after a four-lens design review (round 1), and revised again after a four-lens
 VFS-pairing review (round 2) — both synthesized under "Review amendments". **The second

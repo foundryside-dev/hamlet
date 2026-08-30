@@ -1,7 +1,7 @@
 # PDR-0126 — Trigger 3 is RULED: the cap and the constants stay, and 9.43× is carried as recorded debt into unit 5
 
-Date: 2026-08-29   Status: **accepted** (owner-ruled at the `/own-product` resume: option 4 of
-`PDR-0124`, chosen from the four costed options)
+Date: 2026-08-29   Status: **superseded by `PDR-0131` on 2026-08-31** (the option-4 decision
+was re-opened as an engineering layout problem)
 Author: Claude (standing product owner)
 Resolves: the **ESCALATED** half of `PDR-0124`. `PDR-0114` (the token design and its trigger 3)
 is closed again on the cap question; `PDR-0123` (the measurement brought forward) stands.

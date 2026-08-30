@@ -1,4 +1,4 @@
-# Roadmap — HAMLET / Townlet            Updated: 2026-08-29, forty-seventh checkpoint (`PDR-0126`–`PDR-0130`: **THE FOURTH MERGE LANDED at `9efadd3c` and trigger 3 is RULED** — no horizon change; details in the Now bullet) · prior: 2026-08-24, forty-third checkpoint (`PDR-0117`–`PDR-0121`: **UNIT 3 IS MID-FLIGHT AND THE ARCHITECTURE WAS RESET IN ONE SESSION.** Unit 3: plan committed at step fidelity, Tasks 1/3/4 landed and reviewed (baseline harness; oracle carry-forwards; **DIV-008 recorded, NOT bound**), all five L2 baseline seeds training at E=5000 against a pinned src tree (operator freed both GPUs mid-session), Phase-2 (the atomic cut) fully expanded with the re-sequencing addendum. The reset, all owner-directed: the architecture corpus **archived wholesale** and replaced by a **six-document HLD** (HLD/STRATA/UAC/BAC/COMPILER/VFS — Opus cherry-pick then Fable source-verification, 14 false claims fixed incl. 5 in CLAUDE.md, marked Current; `PDR-0118`); **pack filenames ruled convention, not mandate** — files are transport, declarations are the unit (`PDR-0117`); the **VFS spec-vs-impl audit** adjudicated (~48 implemented / 16 diverged; systemic gap: epistemic state has no authoring door; 6 tickets; `PDR-0120`); the **compiler assessment** verified the owner's two-era reading, declaration-store target adopted, cleanup buys 1+2 executed hash-identical in a worktree awaiting post-eval landing (`PDR-0121`); the owner's **train-here-deploy-there** vision articulation recorded — fidelity abstraction, bindings later, export load-bearing (`PDR-0119`, extends `PDR-0024`). Proposals parked in tracker: hybrid substrates (`hamlet-157deba962`, graphs a stretch goal), declared propagation. **No horizon change in Now**; TWO SHAPED UNITS ENTER NEXT — the declaration-store compiler unit and the epistemic-access unit, both after the token cut) · prior: 2026-08-23, forty-second checkpoint (`PDR-0113`–`PDR-0116`: **THE FULL-OBSERVATION TOKEN DESIGN IS APPROVED AND MIGRATION UNITS 1–2 ARE BANKED.** The design (`PDR-0114`, spec at `docs/superpowers/specs/2026-08-22-token-observation-representation-design.md`) carries six owner rulings — cross-universe transfer by token type, declared-payload identity, flat view derived from tokens, per-entity spatial tokens (the raster dies), realization C with approach A captured P4, and NO hardcoded temporality — plus the no-tech-debt rider (13 VFS findings filed, each with a named discharge vehicle) and the trial-pack disposition ruling (packs resolve on the 2026-10-06 clock before unit 5). Unit 1 (harness adjudicability: actions as a trace stream, scripted replay, the third declared shape, per-stream adjudication) is accepted with the red-matrix miss adjudicated as pre-existing drift and discharged (`PDR-0115`); unit 2 (authored temporality: the engine tick, exposure-derived evaluation marks, agent profiles BUILD / item profiles REFUSE, one temporal pipeline, DIV-009/DIV-010 registered — matrix exit 0 in both modes, streams byte-identical) is banked (`PDR-0116`). Three VFS-inertness bugs closed; the drift catch-up closed; one pre-existing flakiness bug filed controlled. **No horizon change** — the token bet stays Now; next is unit 3: freeze the L2 baselines, register DIV-008, the cut as one atomic knockdown) · prior: 2026-08-22, forty-first checkpoint (`PDR-0111`, `PDR-0112`: **THE INSTRUMENT FORK IS RULED (c) — THE CORPUS READING IS RETIRED AS RECORD.** Owner-ruled at the resume: no number from this corpus publishes as a rate, ever; the records and by-catch keep full evidentiary value; `PDR-0095`'s fired trigger discharges by retirement; D/E/J stay runnable as record only; reading the north-star again requires a redesigned instrument (search-variance control, revised corpus) — a future bet awaiting the owner's promotion. The measure-the-authoring-claim bet is thereby SUBSTANTIALLY COMPLETE: its deliverable was the instrument, which was built, used for six trials, turned on itself, and honestly rejected by its own criterion — acceptance-on-the-instrument (`PDR-0078`) worked as designed. **And Phase B unit 1 LANDED (`PDR-0112`, `ba2766e6`): the set-encoder aggregator is a DECLARED required choice — mean | attention — with attention authored via an `L1_attention` level-override brain.yaml, the first real use of the `PDR-0027` fork mechanism; `PDR-0109`'s reversal trigger did not fire.** Grant re-confirmed unchanged. **No horizon change** — the token bet stays Now; instrument redesign enters as intent only when the owner promotes it) · prior: 2026-08-22, fortieth checkpoint (`PDR-0110`: **THE COMMISSIONED `tensorNd` AUDIT IS ADJUDICATED — BRANCH A, SOUND — and `PDR-0106`'s rejection of the instrument STANDS as genuine search variance.** Run 2's B-F2 PASS stands on the letter of the countersigned facet; the discriminator (no per-cell write exists — only whole-container flood and an agent-indexed 81-cell slab) is real and scored at B-F5/B-F6 where the countersign put it. The standing agent independently re-verified all four load-bearing probes in a fresh worktree at pin `1ef1d950` — asymmetric per-cell read-back exact, observation indices exact, R1 compile refusal, C3b slab arithmetic exact (3→82 vs the audit's 1→81). Criterion 3 remains unmet; **nothing publishes**; the instrument fork — (a) amend with a search-variance control and re-run criterion 3, (b) accept with a widened caveat publishing headline verdicts only, (c) retire the reading as record — is **ESCALATED to the owner**. This checkpoint also RECONCILES TWO UN-CHECKPOINTED SESSIONS: the 2026-08-21 audit session (audit run and enacted — eight gaps filed `hamlet-cf16cdb6c4`…`hamlet-8b5af63108`, four Trial-B tickets framing-narrowed — but never PDR'd; `PDR-0110` repairs the provenance) and the 2026-08-21/22 VFS-refresh + token-pivot sessions (`PDR-0108`: tokenisation Later→Now owner-directed; `PDR-0109`: **the `set_encoder` proof is GREEN and `PDR-0017` trigger 1 FIRED** — the token path is real, `hamlet-0d0115383e` closed, brain.yaml level-overridable with lineage stated at load, the aggregator upgrade schedulable directly; plus A-G1/A-G2/zone-group-message/`hamlet-a141ab5db3` all FIXED under the VFS refresh). **No horizon change this checkpoint** — the token bet's Later→Now was `PDR-0108`'s, recorded in its own session) · prior: 2026-08-20, thirty-eighth checkpoint (`PDR-0104`–`PDR-0106`: **THE SECOND BLIND RE-RUN REJECTS THE INSTRUMENT — §7's reject branch FIRES, criterion 3 is NOT MET, and no north-star reading publishes** (`PDR-0106`). Both headline verdicts agree (FAIL, FAIL) and that is **not** sufficient: three of five mapped core pairs disagree and two invert. Run 1 ruled the corpus's deep stress BLOCKED and filed four tickets; run 2 expressed it PASS first-reach via a global `tensorNd` — verified real at the pin. Run 2 then *initially* repeated run 1's own measurement error, caught it, and corrected itself to BLOCKED where run 1 had scored PASS. **`PDR-0096`'s trigger does NOT fire: cardinality diverged 5 vs 8 — the exact false-REJECT scenario B.1 named — and B.1 absorbed it. B.1 prevented a false reject and permitted a true one, its entire design goal, on its first real test.** Also: **WS-4 by-catch triage executed and `PDR-0079` trigger 3 DISCHARGED** — 24 tickets accounted for, and the standing "are these four one unit?" question answered **no: two shapes, the first with six sites and a mechanical greppable signature — the hardcoded literal is always the empty/zero/default member of its type** (`PDR-0105`), which gives *declared-but-inert* a mechanical cause rather than a descriptive label and vindicates `PDR-0005`'s wire-not-delete default; **the grant's Status paragraph corrected** to record its own two widenings, owner-approved, provenance trail preserved (`PDR-0104`); and **the nightly on `main` at `04062872` is GREEN**, so `PDR-0101` trigger 2 is CLEARED — though the push-on-`main` gap stays open and narrowed. **No horizon change**) · prior: 2026-08-20, thirty-seventh checkpoint (`PDR-0099`–`PDR-0103`: **THE THIRD MERGE TO `main` LANDED at `04062872` (PR #36), AND THE MERGE IS NO LONGER THE BOUNDARY.** Three grant changes in one exchange, all owner-ruled: pushing `project-recovery*` is autonomous (`PDR-0099`, read narrowly because the consent was explicitly indifferent); **"public release" means publishing a PRODUCT — declaring 1.0 — not code being visible on the internet** (`PDR-0100`, correcting a gloss the *agent* wrote at bootstrap and had been acting on, and which was the stated rationale of `PDR-0099` an hour earlier); and the merge to `main` is autonomous with `PDR-0039` gate 2 surviving as a **quality gate the agent executes** rather than an escalation it waits on (`PDR-0101`). Gate 2 then ran by method as three separate agents (`PDR-0102`): **18 stale claims + 4 omissions in 43 commits**, a blocker (`ruff` red for seven consecutive pushes while the README called CI green — the agent's own defect, twice reported green), and the adversarial half found **10 factual defects in the sweep's own corrections before they were applied**. A sweep alone would have shipped two false statements. The merge then triggered **NO per-push CI on `main`** — zero check-runs where both prior merges fired within seconds — filed P1 (`hamlet-83c8e3b50e`) and escalated rather than diagnosed by widening the agent's own token scope (`PDR-0103`). Still escalated: declaring 1.0, announcement, tags/releases, vision/grant changes, data deletion. **No horizon change**) · prior: 2026-08-20, thirty-sixth checkpoint (`PDR-0095`: **THE FIRST BLIND RE-RUN IS EXECUTED AND ADJUDICATED — idea O reproduces PASS, §7's reject branch does NOT fire, and criterion 3 is HALF MET.** The instrument was turned on itself and held, narrowly: a fresh agent re-ran O blind in a worktree at pin `a3318624`, a *second* fresh agent adjudicated it (A.8 bars the original executor, and the standing agent ran O the first time), 6 mapped facet pairs agreed 6/6. The comparison refuses to bank the win and the refusal is adopted — agreement between two all-PASS records is cheap, §7's discriminating power was never exercised, and **idea B is the re-run that will actually test the classification vocabulary**. A blinding hazard was caught by the protocol itself, not by the agent: today's Appendix A names O's verdict in two places, and A's own scope rule already routed the re-run to the pre-appendix text. Also decided: `PDR-0094` closes `PDR-0092`'s open bucketing gap (owner rules precedence INERT > BLOCKED > ABSENT; K counts BLOCKED; split **0/0/2**); `PDR-0096` adopts **protocol Appendix B** — all four amendments the re-run produced, pre-registered before idea B's re-run, B.1 resolving a §7×A.1 contradiction that was the only live path to a FALSE REJECT, with B.3's *replacement* probe verified executable before adoption so the fix would not reintroduce the defect it removes; `PDR-0097` caveats rather than drops the novice-facing discovery-path row (SD-7: discovery path is a property of the (executor, pack-design) pair, not of the facet — the same observability facet read docs-reachable for one executor and source-reading-required for the other at the same commit); `PDR-0098` records that **Trial F's PASS STANDS** under a commissioned evidence audit, verified independently at the trial commit — facet 1's pre-committed evidence was a disjunction and the executor ran the sound disjunct, so the broken §4 worked example is a protocol defect, not a verdict defect; `PDR-0093` carries the grant's one-day stamp debt deliberately rather than touching `vision.md` unbidden. Six gaps filed including `hamlet-a141ab5db3` (P1 — `compile` prints success and exits 0 while writing NO artifact; reproduced on the shipped `configs/reference/model_pack`, so pre-existing). Suite 3281/16/0 with the blind pack in tree. **No horizon change**) · prior: 2026-08-19, thirty-fifth checkpoint (`PDR-0092`: **TRIAL K, THE SIXTH OF NINE, IS RUN — FAIL, and the ≥80% TARGET IS NOW ARITHMETICALLY UNREACHABLE FOR THIS CORPUS** (2 FAILs of 9 caps the reading at 77.8% against a bar of 80%; per `PDR-0078` a finding about the substrate, not a failed bet). K was the only untouched axis — the world acting on the agent — and the axis does not exist: a declared world process has exact declarative RULES and no declarative IGNITION, so across 12 all-WAIT ticks the world never moved; `zone`/`group`/`message` scopes validate and compile then hard-crash at env construction (`hamlet-9e1ae3b7a2`, P1); and effects are blind to position and time (`hamlet-a737e444c0`, P1, the second instance of the `hamlet-1b9af9088c` pattern). The prediction SPLITS: the doubted equipped-item modifier chain WORKS first-reach, `zone` fails worse than predicted, and the 'likely authorable' pressure is the thing that actually failed. **The corpus's summary line is inverted: an author can express two of the three answers, and cannot make the problem happen on its own.** Also decided: the substrate is FROZEN for the corpus (`PDR-0090`), the blind re-run pair is O + B (`PDR-0089`), two countersign conflicts were escalated and owner-ruled BEFORE authoring rather than adjudicated after (`PDR-0091`), and the grant was re-confirmed with its stamp corrected at an approved touch (`PDR-0088`). Suite 3281/16/0 — over a hole: no test instantiates the three crashing scopes. **No horizon change**) · prior: 2026-08-19, thirty-fourth checkpoint (`PDR-0087`: **TRIAL B, THE FIFTH OF NINE AND THE FIRST UNDER APPENDIX A, IS RUN — FAIL, and the prediction is CONFIRMED** — the corpus's first failed idea, first confirmed FAIL prediction, and first BLOCKED classification. The owner chose B at resume; Appendix A executed in full (facets countersigned by a fresh agent and adopted verbatim; search pre-registered before the countersign arrived and CONFIRMED; discovery paths annotated — every passing facet docs-reachable, the first counter-evidence to the "0 of 4 docs-first" prior; leg-(c) column first readings 6 of 7 clean, double-reset FAIL reproducing the reset leak in a second pack). The deep stress landed exactly as the corpus predicted: an entity that is a set of occupied cells is not expressible — every declarative route to a durable cell is refused loudly, headlined by `spawn_item` being unreachable END-TO-END from config (`hamlet-1b9af9088c`, P1: DTOs refuse coordinates at parse; no runtime pipeline passes agent positions; the docs call it "fully implemented and production-ready"; the tests hand-supply what the runtime never does). Five more gaps filed, none fixed. North-star: 5 of 9 settled — 4 PASS, 1 FAIL — split 0/0/1; INERT surfaces 3 in 5 trials. Remaining draw: D, E, J, K + 2 blind re-runs (owner's pair pick outstanding). SIX trial packs now on the 2026-10-06 disposition clock. **No horizon change**) · prior: 2026-08-18, thirty-third checkpoint (`PDR-0086`: **THE METHODOLOGY REVIEW IS ADJUDICATED** — three Fable lenses (construct validity, RL practice, statistical inference) delivered same-day; convergent core: the instrument measures expert any-surface expressibility, not novice authorability, and all four verdicts STAND within that construct. Owner ruled: adopt the pre-registered amendment package (protocol Appendix A — countersigned facets, search pre-registration, discovery-path annotation, non-gating leg-(c) probe additions, blind-re-run governance) + metric hygiene (construct preamble, "4 of 9 settled" reporting, INERT surface count published); Trial F PASS stands with the un-declarable item-destruction standard captured as `hamlet-83806979f7`; the expert-executor construct was a default — a novice-facing discovery-path row opens prospectively from trial five. Empirical by-catch from the RL lens: the O pack leaks across `env.reset()` (evidence to `hamlet-d76684f549`), raw item-slot observation values filed `hamlet-bf42ac60b5`. Reviews archived under `docs/product/assessments/2026-08-18-trial-methodology-review/`. **No horizon change**) · prior: 2026-08-18, thirty-second checkpoint (`PDR-0085`: **TRIAL O, THE FOURTH OF NINE, IS RUN — PASS**, and the corpus's first STRUCTURAL prediction (FAIL, ABSENT — "nothing else needs the engine to run a clearing step") is falsified: the effects command vocabulary IS a declarative clearing surface (`for_each: all_agents` + global VFS scratch, engine-ticked). North-star 4 of 4, split 0/0/0. By-catch: `hamlet-4cd664a955` (`scope: global` INERT at spawn), `hamlet-77e4f8b3e3` (no ambient world-process spawn, ABSENT). Also: a four-push branch-Lint red found at ORIENT and closed (`a3318624`); post-freeze corpus candidates Q/R captured outside the frozen corpus; a three-lens methodology review of the instrument dispatched at the owner's direction — no north-star reading publishes over an open confirmed validity defect. Suite 3281/16/0 before the trial commit. **No horizon change**) · prior: 2026-08-18, thirty-first checkpoint (`PDR-0084`: **TRIAL M, THE THIRD OF NINE, IS RUN — PASS**, and BOTH predictions fall: M's own (PARTIAL/INERT) is falsified, the third in the `PDR-0082` shape, and the **AGGREGATE pre-registration ("1, possibly 2, pass") is formally FALSIFIED at 3 of 3, INERT count 0**. Sharpest finding: the first-reached surface — custom actions — cannot express effects or preconditions at all; by-catch `hamlet-f1dec55b9d` (ABSENT, routed WS-4). Suite 3281/16/0 before the trial commit. **No horizon change**) · prior: 2026-08-18, thirtieth checkpoint (`PDR-0083`: **TRIAL F, THE SECOND OF NINE, IS RUN — PASS**, and the prediction (PASS) is CONFIRMED — the corpus's first. North-star 2 of 2, split 0/0/0; the aggregate pre-registration ("1, possibly 2, pass") is at its ceiling with seven trials left. By-catch filed, not fixed: `hamlet-fba3d5aa3c` (a zero-affordance pack validates and compiles, then crashes at the first observation), `hamlet-6f27878731` (items.md stale in three load-bearing places). Suite 3281/16/0 before the trial commit. **No horizon change**) · prior: 2026-08-18, twenty-ninth checkpoint (`PDR-0082`: **TRIAL L, THE FIRST OF NINE, IS RUN — PASS**, and the north-star has its first reading: 1 of 1, denominator 9, split 0/0/0. The pre-registered prediction (PARTIAL/INERT) is falsified and stated. By-catch filed, not fixed: `hamlet-d45331a367` (`recovery.natural` INERT), `hamlet-6b24c0bd83` (`CapabilityConfig` dead vocabulary). Suite 3281/16/0 before the trial commit. **No horizon change**) · prior: 2026-08-18, twenty-eighth checkpoint (`PDR-0081`: the TRIAL PROTOCOL is ACTIVE — the instrument is whole. Blind re-runs execute at the first run's pinned commit so criterion 3 tests the protocol, not substrate drift; leg (a) counts untracked files; one session is the budget with a stopping rule; BLOCKED means the idea's declaration was refused, never a pack mistake. Mechanics dry-run executed every documented command at `2c1275d6`, all outputs matched. Also read: the first *scheduled* post-merge nightly on `main` is GREEN (run `32003077539`) — `PDR-0072` trigger 2 discharged. **No horizon change**) · prior: 2026-08-17, twenty-seventh checkpoint (`PDR-0077`: **the authoring claim becomes measurable — a new Now bet, promoted from Next**; the deliverable is the INSTRUMENT, not another authoring unit. `PDR-0078`: ≥80% governs the metric, not the bet's acceptance — the original wording rewarded picking an easy corpus. `PDR-0079`: every miss classifies ABSENT / INERT / BLOCKED, and escalation retargets onto the INERT count. `PDR-0080`: the corpus freezes at 15 and the trial set is DRAWN, not chosen — seed is the corpus's own content hash) · prior: 2026-08-17, twenty-sixth checkpoint (`PDR-0076`: unit 4 LANDED at `ebd16fce` — the compiled `ObservationField` carries a required typed `feature` (who fills it) and the runtime, the recurrent network and the demo dispatch on it; the nine `obs_<x>` name-syncs, the meter name-parse and the dead `obs_affordances` alias are gone; placed on the DTO only, so measured hash-invisible on all 20 cells and NO register entry. **No horizon change**) · prior: 2026-08-17, twenty-fifth checkpoint (`PDR-0074`: THE ORACLE MOVED FORWARD to `oracle-2026-08-17` → `4222a917` — DIV-003/004/005 retired, fixtures re-frozen, matrix 20 cells incl. two profile-variable packs, 20/20 `AGREE` so exit 0 means AGREE again and **exit condition 2 is MET**; `PDR-0075`: unit 3 LANDED at `8c5fa2c8` — the `obs_vfs` block is one field per exposed global/agent profile variable with a declared, required `semantic_type`, the item slots are one named feature, the runtime reads by declared scope and the name branch is gone; DIV-006 `built` on four cells with exactly the three predicted hashes moved. **No horizon change**) · prior: 2026-08-17, twenty-fourth checkpoint (`PDR-0073`: THE SECOND MERGE LANDED at `4222a917`, PR #35, on the owner's in-session instruction; `PDR-0071`: `PDR-0068`'s trigger lit on both prongs — 27 commits ahead, README decay measured — so the merge is banked before unit 3, owner-chosen; `PDR-0072`: gate 2 EXECUTED for the second merge at `905acd96`, stamped at `54132aaf` — twenty-one claims stale in 27 commits, ten more caught by the adversarial pass, and a new durable rule: a claim about `main` in a file that will *become* `main`'s README must be written to survive the merge. **No horizon change**; the merge is the owner's) · prior: 2026-08-17, twenty-third checkpoint (`PDR-0069`: the declared presentation surface is a separate observer-only `presentation.yaml` — the compiler never reads it, no compiled hash moves, no register entry; `PDR-0070`: unit 2 is every live observer site, server and frontend, and the frontend toolchain (`hamlet-d892e161c0`) was restored as its prerequisite — the frontend has a test gate for the first time. Suite 3247/16/0, matrix 16/16, npm test 37/37. **No horizon change**) · prior: 2026-08-16, twenty-second checkpoint (`PDR-0066`: the semantic-type surface is authorable and authoritative — one closed vocabulary, the compiled DTO constrains the compiler, `environment.yaml` variables declare it and the compiler obeys, `effects` admitted, `bars` reserved, unreachable declarations deleted; DIV-005 `built`, matrix 16/16 exit 0, suite 3220/16/0; `interaction_type` required from one vocabulary; `PDR-0067` grant stamp corrected at an approved touch; `PDR-0068` the authoring queue runs before the merge is banked. **No horizon change**) · prior: 2026-08-16, twenty-first checkpoint (`PDR-0065`: the harness fork `PDR-0063` posed was already answered by DIV-004; the self-tests were the defect — a side is (code root, pack root) — and they are whole again; `-m "not slow"` is gone with the marker, so **exit condition 3 is MET ON THE BRANCH**; `hamlet-6f98e38a36` and `hamlet-a0832f9004` closed. **No horizon change**) · prior: 2026-08-16, twentieth checkpoint (`PDR-0061`: `multi_tick` and wraparound hours EXECUTE — the escalation trigger did **not** fire, the pack was the defect, not the engine; `PDR-0062`: the `slow` marker is removed and the default gate reading is honest, deselect 33 → 2; `PDR-0063`: the differential harness's self-comparison DISAGREES, so it currently certifies nothing — filed, deliberately not fixed; `PDR-0064`: a parameter the object cannot function without is required at binding. **No horizon change**) · prior: 2026-08-15, nineteenth checkpoint (`PDR-0058`: **THE MERGE TO `main` LANDED** at `07b26ed5`, both gates discharged first at `33bfff51` — and the owner ruled the bet's **exit was mis-stated**: the merge was an output, not the outcome. The Now bet continues with its exit restated as an outcome condition. `PDR-0059`: the gate hides 31 failures behind a marker, and closing that is the next unit. **No horizon change**) · prior: 2026-08-15, seventeenth checkpoint (`PDR-0048`: **merge gate 2 SATISFIED** — both gates now stand, both commit-scoped, and gate 2 is already owed again at merge; `PDR-0047`: the owner's authoring-grammar ruling gives the Next bet *"close the you-must-write-Python gaps"* its first decided unit. **No horizon change**) · prior: 2026-08-15, fifteenth checkpoint (`PDR-0043`: merge gate 1 — CI restoration — EXECUTED and in verifying; the measured gate set widened 4→6, all green locally; the first CI run in this branch's history fires on the owner's push. **No horizon change**) · prior: 2026-08-15, thirteenth checkpoint (`PDR-0041`: the FIRST KNOCKDOWN is COMPLETE — the substrate→observation-dim seam is cut, the harness adjudicated it end-to-end, and the strangler method is proven once. **No horizon change**) · prior: 2026-08-14, eleventh checkpoint (`PDR-0038`, `PDR-0039`: the owner cleared the whole escalation queue; the README is rewritten and ships branch-scoped; the merge to `main` gains two named gates, CI restoration and README re-verification. New Later bet: adopt wardline as hygiene) · prior: 2026-08-14 (`PDR-0035`–`PDR-0037`: the first knockdown unit is DECIDED — the substrate→observation-dim seam — and content 5's order is changed by a blocking finding in the harness. One Next bet narrowed by one item. **No horizon change**) · prior: 2026-08-13 (harness accepted, `PDR-0032`–`PDR-0034`) · prior: 2026-08-13 (oracle pinned, `PDR-0030`)
+# Roadmap — HAMLET / Townlet        Updated: 2026-08-31 · forty-eighth checkpoint (`PDR-0131`)
 
 > Sequencing, WSJF / cost-of-delay, and dated forecasts are produced by
 > /axiom-program-management. This file records bets as INTENT, not a delivery
@@ -8,7 +8,8 @@
 > **inventory, not a sequence**. One system is pinned at a time; the next is chosen on the
 > strangler's selection criterion — *where does the runtime still know what the game is?* — not by
 > stream number. Two constraints hold: one system at a time, and the work must be replacing,
-> refactoring or fixing. Real blocking edges (WS-1 gates WS-7) are unaffected.
+> refactoring or fixing. Real blocking edges come from Filigree's current dependency graph; WS-7
+> is now closed.
 
 > **Bootstrap seed.** Now is derived from observed tracker + git state. Next/Later are derived
 > from the three-pivot arc in `vision.md` and the HLD, and are **proposals awaiting the owner's
@@ -17,335 +18,58 @@
 > that predates the VFS/VTC/DAC era. This file does not supersede or edit it; retiring it is part
 > of the Now bet.
 
+> **Current checkpoint — 2026-08-31, `PDR-0131`:** no horizon change. Token work stays Now,
+> but its next unit is compact dynamic replay plus static compiled context before unit 4. WS-7 is
+> closed and the standing authority grant is confirmed unchanged.
+
 ## Now  (committed, in-flight)
 
-- **Strangler rewrite behind the compiled-universe contract** — freeze the current system as an
-  **oracle**, then knock down and rebuild one *design-space unit* at a time against it, keeping the
-  provenance spine and re-earning the rest through a differential harness. The owner returned from
-  six months of intermittent attention to a codebase they described as *"best we could do at the
-  time, but uneven and lumpy in places that didn't get an extra quality pass."* The maturity
-  assessment returned REPAIR for all 8 subsystems, but `PDR-0006` supersedes that *execution model*
-  (the assessment's instrument was biased toward REPAIR, and the spec is as spotty as the code):
-  the oracle dissolves the specification bottleneck for preserved behaviour, so spec-writing
-  collapses onto genuinely **new** surface only.
-  · tracker: milestone `hamlet-1ade187dcc`, work streams **WS-0…WS-7** with the dependency graph
-  wired. **WS-7** (`hamlet-e3af412673`) is the enabling stream — determinism, oracle tag,
-  differential harness, known-divergences register, per-unit seam cutting — and gates every
-  knockdown. The **differential harness is BUILT and ACCEPTED** (`PDR-0032`/`PDR-0033`,
-  `d54ad7df`, `src/townlet/oracle/`): oracle worktree vs working tree, same pack + seed,
-  provenance-hash pre-check then byte-exact trace comparison; mutation-verified red.
-  · **The first knockdown is COMPLETE (`PDR-0041`, `b7574132`, 2026-08-15): the
-  substrate→observation-dim seam is cut.** The compiler asks the substrate instance for
-  every observation dim (five-member contract on `SpatialSubstrate`, parity-pinned against
-  the encoders); the three registered crashing configs run; the full 16-cell matrix exits 0
-  on CPU and CUDA with all six DIV-003 cells `DIVERGED_AS_REGISTERED` and every standing
-  cell byte-exact AGREE. The strangler method — register, bind, cut, adjudicate — has now
-  run end-to-end once, which is what `PDR-0035` chose this unit to prove. The unit as
-  decided, kept for provenance:
-  the contract by which the compiler learns a substrate's observation shape. Not the
-  `substrate/` package (the crashes are the compiler's; that boundary would leave all four
-  intact) and not the one-line repair. Chosen on `PDR-0019`'s criterion: the compiler switches
-  on `substrate.type` strings at `compilers/observation.py:64-76` and `:135-145`, while
-  `:146-155` **already asks the substrate instance** for `continuous`/`continuousnd` — the
-  right pattern, in the same function, applied to 2 of 5 types.
-  · **Content 5's `PDR-0037` order (harness → DIV-003 → matrix cells → cut) is EXECUTED IN
-  FULL**: step 1 at `9a75b581` (`PDR-0040`), steps 2–4 at `b7574132` (`PDR-0041`). The
-  register's discipline held the whole way — oracle behaviour re-verified at the tag before
-  the entry was written, cells landed `NEW_SIDE_ERROR` honestly pre-cut, and flipped only
-  when the rebuild actually ran.
-  · **`PDR-0034` corrects a claim this bullet used to carry.** WS-3 is **NOT** reshaped into the
-  differential harness. The harness asks *did old and new behave the same?* — a surface inert on
-  **both** sides yields identical traces and correctly reports AGREE, so inertness is invisible
-  to it by construction. WS-3 (`hamlet-1f89714685`) remains the **wiring-test** mandate — change
-  a YAML value, assert runtime behaviour changed — still `open`, still blocking WS-4, and still
-  the answer to *why six consecutive declarative features shipped inert*. The two instruments are
-  complementary: **differential = did behaviour change; wiring = does the declaration do
-  anything.**
-  · metric: **Subsystem maturity established** ✅ 8 of 8; now guarded by **Provenance integrity**
-  (all 3 breaches CLOSED 2026-08-13 — row goes green when the two filed gaps enter WS-7's
-  register, `PDR-0028`), **Declared-but-inert config surfaces** (baseline ~40; post-assessment
-  7 found / 2 closed), **Documentation truth** (≥14 false claims → 0) and **Gates green**
-  (**GREEN on `project-recovery-2` as of 2026-08-16 at `a725bf66`, over a suite that deselects
-  NOTHING** — 3193 passed / 16 skipped / 0 failed, `-m "not slow"` gone with the marker; the
-  harness matrix at the same tree 16/16 `DIVERGED_AS_REGISTERED`, exit 0, run `20260816-184228`.
-  **Scope matters and is stated here on purpose: `main` is 20+ commits behind and STILL CARRIES
-  ALL 33 behind the marker** — every repair is branch-only, so `main` does not go green until the
-  next merge; its nightly reported 31 failed again this morning, as expected. The 2026-08-16
-  claim that *"the instrument the strangler is measured with currently certifies nothing"* was an
-  overstatement: the matrix certified the meter cut all along; the harness's two SELF-tests were
-  the defect — `PDR-0062`, `PDR-0063` superseded in part by `PDR-0065`)
-  · **WS-1 is COMPLETE and CLOSED** (`PDR-0029`, 2026-08-13, `e8ad4985`): all ten frozen units
-  landed, tree green at every commit, batch gate 2981/0. The `PDR-0028` fence held — nothing
-  entered after the freeze. Routing rule stands for new findings: WS-7's register or WS-4.
-  · **PDR-0002** gated the assessment · **PDR-0004** adopts the dispositions · **PDR-0005** sets the
-  triage rule (**wire, not delete**) · **PDR-0006** chose the strangler · **PDR-0008** verified
-  WS-1 by execution and reordered it
-  · ready now, no prerequisites: **WS-7** (`hamlet-e3af412673`, P0 — unblocked by WS-1's close;
-  the known-divergences register is its FIRST artifact, `PDR-0028` reversal trigger), **WS-6**
-  (`hamlet-5e39fcccb0`) and **WS-0** (`hamlet-8eeaba1461`). WS-1 (`hamlet-67ffbd282a`) closed
-  2026-08-13.
+- **Strangler rewrite behind the compiled-universe contract** (`PDR-0006`) — the recovery
+  execution model. Preserve behaviour against the pinned oracle, then replace one design-space
+  unit at a time; differential tests answer “did behaviour change?” and WS-3 wiring tests answer
+  “does the declaration do anything?”
+  · **Delivered:** WS-1 is closed; WS-7 is closed as of 2026-08-31 after delivering determinism,
+  oracle pinning, the differential harness, divergence register and the first seam cut. Its
+  standalone P3 `--oracle-ref` hardening item remains visible under the recovery milestone.
+  · **Current branch state:** the fourth merge is on `main` at `9efadd3c`; active work is
+  `project-recovery-3`. The bet has not exited: the oracle is still required and WS-3/WS-4 are
+  open.
+  · **Critical path:** WS-6 `hamlet-5e39fcccb0` → WS-2 `hamlet-337b9e80fb` → WS-3
+  `hamlet-1f89714685` → WS-4 `hamlet-15050f280a`.
+  · **Exit:** retire the oracle only when every registered divergence is terminal, the harness
+  verdict contract is trustworthy, and the authoring surface is protected by config-in /
+  behaviour-out wiring tests (`PDR-0058`).
+  · **Gates:** product-source pushes run the CI-equivalent local lint set; every merge still owes
+  the source-verified README gate. The documentation rewrite remains gated on WS-4 even though its
+  tracker item appears ready.
+  · metric: terminal divergence register, wiring-test coverage, trustworthy CI conclusions
+  · Updated: 2026-08-31 (`PDR-0131`)
 
-  · **THE EXIT IS RESTATED — the merge is NOT the exit (`PDR-0058`, owner-ruled, 2026-08-15).**
-  This bullet used to say *"the merge to `main` is the bet's exit."* The merge landed at
-  `07b26ed5` (PR #32, by the owner, both gates discharged first at `33bfff51`) while the strangler
-  had cut **two** units, WS-0/3/4/5/6 were all open, and `Config-surface coverage` read ~2 of 7 —
-  so the recorded exit fired without the bet being finished. The owner's ruling: the merge was an
-  **output**, not the outcome. **The Now bet exits when the pinned oracle can be RETIRED**, on
-  three conditions that must be *read*, not asserted: (1) every entry in
-  `docs/oracle/known-divergences.md` is terminal — closed by an adjudicated rebuild, or accepted
-  as permanent with its own PDR; (2) the harness's verdict vocabulary is re-earned or its
-  successor recorded (`PDR-0056` put this on the clock — `AGREE` is currently unreachable
-  matrix-wide); (3) `Gates green` is read on a suite that hides nothing (`PDR-0059`) —
-  **MET ON THE BRANCH, 2026-08-16 (`PDR-0065`, `a725bf66`): the default suite deselects nothing,
-  all 33 formerly-hidden tests execute and pass, and the marker they hid behind no longer exists
-  in the project.** Met *on the branch* is the honest scope: `main` still carries all 33 until the
-  next merge, so the condition is read as met for the oracle-retirement question — the code the
-  oracle is diffed against is the branch — while the merge remains owed. Condition (2) is
-  untouched by this: the harness's self-comparison is whole again, but `AGREE` stays unreachable
-  matrix-wide by construction until DIV-004 closes.
-  **Merging is
-  a publication step that may happen any number of times inside the bet**, each time owing
-  `PDR-0039`'s unconditional re-sweep — **20+ commits already sit ahead of `main`, so the next
-  merge owes it now.** And the authorability threshold (`Config-surface coverage` 7 of 7) is
-  explicitly **NOT** this bet's exit — that is WS-4, in *Next*. Conflating the two is what
-  produced the mis-statement.
+> **Retired record, not active delivery:** the authoring-trial instrument is terminal for its
+> corpus (`PDR-0111`). No rate publishes from it and redesign remains parked. Its only live
+> sequencing consequence is the 2026-10-06 trial-pack disposition deadline before token unit 5.
 
-  · **THE ORACLE MOVED FORWARD (`PDR-0074`, 2026-08-17, `72144e7c`): `oracle-2026-08-17` →
-  `4222a917`.** The hash-only suppression had reached its ceiling (`AGREE` unreachable on 16/16
-  since 2026-08-15) and no matrix cell could see unit 3 at all (no matrix pack declared a
-  profile variable). Evidence re-earned at the new commit (CI Tests `31971043702` 3239/24/0,
-  determinism CPU+CUDA re-run locally); DIV-001/002 re-stamped, DIV-003/004/005 **`retired`**;
-  fixtures re-frozen as byte copies; matrix now 20 cells (+ `items_smoke`, `effects_smoke`);
-  acceptance run `20260817-072714` **20/20 `AGREE`, zero suppressions** — **exit condition 2
-  is MET** for the first time since `PDR-0056`. Then **unit 3 landed (`PDR-0075`, `8c5fa2c8`)**
-  and DIV-006 went `built` on the four profile-variable cells only (run `20260817-091351`,
-  owner-executed: 16 `AGREE` + 4 `DIVERGED_AS_REGISTERED`, exactly `observation_schema_hash`,
-  `variable_schema_hash`, `vfs_hash` moved, streams byte-exact) — condition 2 is now "met,
-  narrowed to four cells", which is what a narrow entry looks like. Register: 6 entries,
-  DIV-001/002 open (checkpoint-boundary), DIV-006 live, three retired. Filed:
-  `hamlet-1ad6383186` (item-observation layout question), `hamlet-7cd887c9e5`
-  (`configs/reference/model_pack` does not compile).
-
-  · **SECOND MERGE: gate 2 EXECUTED again at `905acd96`, stamped at `54132aaf` (`PDR-0072`,
-  2026-08-17), and the branch is merge-ready for the owner.** Sequenced ahead of unit 3 by
-  `PDR-0071` because `PDR-0068`'s trigger lit on both prongs. Twenty-one README claims stale in 27
-  commits (frontend gate, `slow` marker, two harness shapes, nightly red on `main`, 168-commit PR
-  merge, …) plus ten adversarial-pass catches — all fixed, not re-described. Gate 1 read on the
-  push: Lint ✅ Config Validation ✅ Tests ✅ at `905acd96` and at the tip `f023b9e7`.
-  **THE SECOND MERGE LANDED the same session: `main` = `4222a917` (PR #35, `PDR-0073`)**, executed
-  by the agent on the owner's explicit instruction, boundary unchanged. Exit condition 3 is now
-  read on `main`; the first post-merge nightly confirms or fires `PDR-0072` trigger 2.
-  **THE THIRD MERGE LANDED 2026-08-19: `main` = `04062872` (PR #36, `PDR-0102` gate 2), the first
-  under `PDR-0101`'s autonomy — and it triggered no per-push CI on `main` (`PDR-0103`, escalated).
-  THE FOURTH MERGE LANDED 2026-08-29: `main` = `9efadd3c` (PR #37; 143 commits / 921 files / 38
-  PDRs; gate 1 `PDR-0127`, gate 2 `PDR-0128`, decision `PDR-0129`, landing `PDR-0130`)** — and this
-  one DID fire `main`'s per-push CI within a minute, closing `PDR-0103`'s escalation by
-  observation. Work continues on `project-recovery-3`. No horizon change: the merge is a
-  publication step inside this bet (`PDR-0058`), and the bet's exit is still not met.
-
-  · **The two named gates, and how they now stand** (`PDR-0039`, owner:
-  *"hopefully we'll recover before we push back to main"*). (1) **CI restoration**
-  (`hamlet-2100105c9a`, P1) — no workflow has ever run on this branch and nothing has passed since
-  2025-11-28, so merging would put 145 unvalidated commits on the default branch; sequenced before
-  the merge, after the current knockdown. (2) **README re-verification** by the same method that
-  produced it, not a re-read — its rough-edges and CI sections describe conditions the recovery
-  intends to *fix*, and merging them unchanged converts honest status into stale claims on `main`.
-
-  · **BOTH GATES WERE DISCHARGED AT THE MERGE, and gate 2 is already owed again (`PDR-0058`,
-  2026-08-15).** `33bfff51` executed both conditions before PR #32: the nightly cron **restored**
-  (so `PDR-0043` reversal trigger 2 did **not** fire) and gate 2 **re-swept at the merge commit**
-  per `PDR-0039`, finding *five more* stale README claims in four commits. `PDR-0043` trigger 2 is
-  discharged, not lost. **Gate 2 re-fires at the NEXT merge, unconditionally** — 13 commits sit
-  ahead of `main` already. The first scheduled run of the restored nightly then failed
-  (`PDR-0059`) — the deferral paid off immediately by surfacing 31 hidden failures. Historical
-  reading below, superseded by this bullet and by `PDR-0058`:
-
-  · **BOTH GATES ARE NOW SATISFIED, and both are commit-scoped (`PDR-0048`, 2026-08-15).**
-  Gate 1 closed on remote evidence at `dd94e122` (first CI runs in the branch's history, all
-  three green). Gate 2 — README re-verification **by method** — executed at `1b25c99d`: ten
-  claims had gone stale in one day, every one because the recovery *fixed* the thing being
-  described, and the adversarial pass caught one defect in the new draft as well. **Neither gate
-  is banked.** `PDR-0039` fires the re-verification *at the merge, unconditionally*, and three
-  commits have landed since `1b25c99d`, so gate 2 is already owed again. The merge itself
-  remains the owner's decision (`PDR-0046`: publication is not undone by pushing again), and the
-  checklist still inherits `PDR-0043` trigger 2 — restore the nightly cron at merge or record
-  the PDR that kills it. **No horizon change.**
-
-  · **Gate 1 status (`PDR-0043`, 2026-08-15): EXECUTED, in verifying.** Inputs fixed first per
-  the issue's own ordering (two drifted packs repaired; the previously-unknown second failing
-  gate `no_defaults_lint` adjudicated); three workflows now fire on push to this branch; the
-  nightly cron is deleted and the Full Test Suite parked `disabled_manually` until the merge
-  (on-demand via dispatch). `hamlet-2100105c9a` closes on the first green run after the owner's
-  push. **The merge checklist inherits `PDR-0043` reversal trigger 2**: the merge must restore
-  the nightly (or record the PDR that kills it) — merging without it converts a deliberate
-  deferral into silent capability loss.
-
-  The 2026-05-16 architecture-gap milestone `hamlet-7a932c4e40` is annotated **superseded in
-  scope**; its three open children were reparented into WS-0 / WS-3 / WS-5 with their scope
-  corrected.
-
-- **Measure the authoring claim — the instrument, not another authoring unit** (`PDR-0077`,
-  promoted Next → Now 2026-08-17, owner-chosen). The north-star has never been readable: Trial 001
-  scored a whole idea (`1 of 1`), Trial 002 scored halves (`3 of 4`), no scoring unit was ever
-  defined, so the two are incomparable and there is no denominator. Twenty-six checkpoints landed
-  WS-4 units against an *input* metric while the outcome metric sat unread — the build trap in its
-  textbook form. This bet builds the measuring apparatus.
-  · tracker: `hamlet-5fa1f7bfc0` (P1, parent milestone `hamlet-1ade187dcc`)
-  · spec: **PRD-0001** (`docs/product/prds/0001-measure-the-authoring-claim.md`,
-  `ready-for-planning`) · metric: north-star **Zero-Python authoring rate (world)**
-  · **corpus FROZEN 2026-08-17** at SHA256 `48840cc3…8de935d9`, 15 ideas — 7 owner-supplied, 3
-  owner-riffed, 5 agent-drafted — with a named external source, an axis bucket and a
-  **pre-registered prediction** per idea. The trial set **N=9 (B, D, E, F, J, K, L, M, O)** was
-  **drawn mechanically** (`PDR-0080`), stratified across seven axis buckets, seeded by the corpus's
-  own content hash so nobody picked it. The draw excluded both ideas the agent predicted would pass
-  most easily; had the agent chosen, it would not have chosen these.
-  · **protocol ACTIVE 2026-08-18 (`PDR-0081`)**: `docs/product/prds/0001-trial-protocol.md` —
-  preflight (corpus-hash check voids on mismatch), pre-committed facet enumeration, two-leg
-  verdict, ABSENT/INERT/BLOCKED decision tree, pinned-commit blind re-runs, pack disposition by
-  2026-10-06. Record template at `docs/product/trials/0001/TEMPLATE.md`. The instrument's
-  existence criteria (corpus + protocol) are both done; what remains is its USE — nine trials at
-  one per session, then 2 blind re-runs (criterion 3) before any reading publishes.
-  · **Trial L RUN 2026-08-18 (`PDR-0082`, `484976d3`): PASS, prediction falsified** — 1 of 9
-  done, 0 INERT misses (threshold 3). Record `docs/product/trials/0001/L-20260818.md`, pin
-  `fb8c6148`. Pack disposition OUTSTANDING (promote to fixture or delete by 2026-10-06).
-  · **Trial F RUN 2026-08-18 (`PDR-0083`, `fb56fbbd`): PASS, prediction CONFIRMED — the corpus's
-  first** — 2 of 9 done, 0 INERT misses; the aggregate pre-registration ("1, possibly 2, pass")
-  is at its ceiling, so any further pass falsifies it. Record
-  `docs/product/trials/0001/F-20260818.md`, pin `e5f7dd7a`. Pack disposition OUTSTANDING (the
-  same 2026-10-06 clock — two trial packs now sit on it).
-  · **Trial M RUN 2026-08-18 (`PDR-0084`, `790dcb7e`): PASS, and the AGGREGATE pre-registration
-  is FALSIFIED** — 3 of 9 done, all PASS, 0 INERT misses; M's own prediction (PARTIAL, possibly
-  INERT) falsified, third in the `PDR-0082` shape. The first-reached surface (custom actions)
-  is genuinely incapable — `hamlet-f1dec55b9d`, ABSENT, routed WS-4 — and the affordance
-  surface (event-trace meters + whole-effect `if` gates) expresses the whole idea. Record
-  `docs/product/trials/0001/M-20260818.md`, pin `a519f312`. Pack disposition OUTSTANDING (three
-  trial packs now on the 2026-10-06 clock). Next draw: any of B, D, E, J, K, O — one per
-  session; note four of the six remaining are multi-agent, where the corpus's pessimistic
-  priors get their real test. Blind re-runs (criterion 3, 2 needed) possible with three records
-  on file, chosen by the comparer, run at each trial's pinned commit.
-  · **Trial O RUN 2026-08-18 (`PDR-0085`, `2dcc2273`): PASS, and the first STRUCTURAL
-  prediction is falsified** — 4 of 9 done, all PASS, 0 INERT misses; the predicted-ABSENT
-  clearing phase is declarable (`for_each: all_agents` running max in an engine-ticked
-  effect; swap-tested; award/charge exact; all state observation-encoded). The `PDR-0082`
-  shape in half: `scope: global` is unreachable at spawn (`hamlet-4cd664a955`, INERT) and no
-  ambient world-process spawn exists (`hamlet-77e4f8b3e3`, ABSENT); the second surface
-  expresses the whole idea. Record `docs/product/trials/0001/O-20260818.md`, pin `a3318624`.
-  Pack disposition OUTSTANDING (FOUR trial packs now on the 2026-10-06 clock). Remaining
-  draw: B, D, E, J, K — three multi-agent (D, E, J) carrying the heaviest structural
-  predictions.
-  · **Trial B RUN 2026-08-19 (`PDR-0087`): FAIL — the corpus's first, and the prediction
-  ("FAIL, or a heavy PARTIAL via a group-of-agents workaround") is CONFIRMED.** First trial
-  under Appendix A, executed in full. Facets 1/4/5 PASS (5-D substrate; declared 5-D
-  fixed-position affordances; exact gated absorption; approach gradient); facets 2/3
-  BLOCKED — no declarative route makes any cell durably organism-occupied (`spawn_item`
-  unreachable end-to-end, `hamlet-1b9af9088c` P1; no per-cell scope `hamlet-3f97369711`;
-  agent spawn undeclarable `hamlet-4857e6824b`; N-D static placement refused
-  `hamlet-6c49488b22`; by-catch `hamlet-45f501e15b` items-catalog silent nullification,
-  `hamlet-02bd5a3eaa` zone scope dead). B1 diagnostic: substrate-independent. B3
-  diagnostic: membership exclusivity and shared-source contention work. Records
-  `docs/product/trials/0001/B-20260819.md`, pin `1ef1d950`; packs `trial_b_organism`
-  (+`_2d`), disposition OUTSTANDING (SIX packs on the clock). Remaining draw: D, E, J, K —
-  note B's spawn_item finding discounts J's posting-creates-durable-shared-state facet
-  (same surface family), the statistician's discount now applies to it twice over. **A three-lens methodology review (construct validity / RL practice /
-  statistical inference) is in flight; per `PDR-0085`, no reading publishes over an open
-  confirmed validity defect.** Post-freeze candidates Q (sin/cos forcing) and R
-  (heliotropism) captured in `0001-corpus-candidates.md` for a future re-freeze — the frozen
-  corpus is untouched.
-  *(Correction, thirty-fifth checkpoint: this bullet previously said the three-lens methodology
-  review "is in flight" and gated publication. It was adjudicated a checkpoint earlier by
-  `PDR-0086`; the live publication gate is 3 trials + 2 blind re-runs. Stale text, corrected.)*
-  · **Trial K RUN 2026-08-19 (`PDR-0092`, `76fe4b8d`): FAIL — the corpus's second, and the
-  prediction SPLITS.** Sixth of nine, second under Appendix A; nine countersigned facets, all
-  settled, not budget-limited. The owner chose K as the only untouched axis (world→agent) and
-  ruled two countersign conflicts **before authoring** (`PDR-0091`): F7 is a capability bar,
-  F9 is left unruled. F2/F3/F4/F5/F6/F8 PASS; **F1 (ABSENT), F7 (BLOCKED+ABSENT), F9 FAIL**.
-  The equipped-item modifier chain the corpus doubted **works** first-reach with exact
-  arithmetic; `zone` scope fails **worse than predicted** — it validates and compiles clean
-  then hard-crashes at env construction, as do `group` and `message` (`hamlet-9e1ae3b7a2`, P1);
-  and the *pressure* is not straightforwardly authorable — its rule is exact but its **ignition**
-  is not, so the world never moved across 12 all-WAIT ticks. **The corpus's summary line is
-  inverted: an author can express two of the three answers, and cannot make the problem happen
-  on its own.** Second P1: effects are blind to position and time (`hamlet-a737e444c0`), the
-  second instance of the `hamlet-1b9af9088c` pattern. Nothing fixed. Records
-  `docs/product/trials/0001/K-20260819.md`, pin `3434b2fa`; pack `configs/trial_k_cold/`,
-  disposition OUTSTANDING (**SEVEN packs on the clock**). Remaining draw: D, E, J — all
-  multi-agent.
-  · ⚠️ **The ≥80% target is now arithmetically unreachable for this corpus** — 2 FAILs of 9
-  caps the reading at 7 of 9 (77.8%) against a bar of 8 of 9. Per `PDR-0078` this is a **finding
-  about the substrate, not a failed bet**: acceptance was placed on the instrument precisely so
-  a low number could not be gamed by picking an easy corpus. The remaining three trials still
-  run — they determine how far below the bar the substrate sits and which axes fail, which is
-  the product signal. No reading publishes until trial nine and both blind re-runs.
-  · **Substrate FROZEN for the corpus (`PDR-0090`, owner-ruled)**: `src/townlet/` has not moved
-  once across all six trials (measured), so the readings share one engine de facto. The
-  `spawn_item` P1 (`hamlet-1b9af9088c`) is fixed **after** the nine + both re-runs, not during.
-  · **Blind re-run pair chosen: O + B (`PDR-0089`, owner's pick)** — the richest PASS and the
-  only FAIL, so criterion 3 is tested on both the accept and the reject branch. O's comparer is
-  owed a pre-brief on the untested tie case.
-  · **acceptance is on the instrument, not on the number** (`PDR-0078`) — ≥80% is the standing bar
-  the substrate is measured against over time, and a low reading is a finding, not a failed bet.
-  Every miss classifies **ABSENT** (not built — `PDR-0007`, explicitly not debt) / **INERT**
-  (declared, validates, does nothing — this *is* debt) / **BLOCKED** (fails loudly), and escalation
-  watches the INERT count, not the rate (`PDR-0079`).
-  · **The `tensorNd` evidence audit is DONE and ADJUDICATED (`PDR-0110`, 2026-08-22): Branch A,
-  SOUND.** Commissioned by the owner 2026-08-21 per `PDR-0106` recommendation 1; pre-commitment
-  landed 21 minutes before the audit record (integrity rule verified); fresh-agent audit at pin
-  `1ef1d950`; standing-agent independent re-verification 2026-08-22 in a pinned worktree. Run 2's
-  B-F2 PASS stands; the rejection stands as **genuine search variance**, not executor error;
-  criterion 3 remains unmet and nothing publishes. Run 1's four tickets are framing-narrowed
-  (comments landed 2026-08-21), mechanics intact, none closed on this ground. **What happens to
-  the instrument is the owner's fork** — amend/accept-with-caveat/retire — stated in `PDR-0110`.
-  Trials D, E, J remain runnable as **record, not reading**, under any branch.
-  · **THE FORK IS RULED (`PDR-0111`, 2026-08-22, owner): (c) — the corpus reading is RETIRED
-  AS RECORD.** Terminal for this corpus: no rate, denominator or split ever publishes;
-  `PDR-0095`'s fired trigger discharges by retirement; the records and 30+ by-catch tickets
-  are the banked product signal. The bet is substantially complete — remaining scope is
-  record-keeping (optional D/E/J, L/F/M/O retro-derivation, the 2026-10-06 pack-disposition
-  clock). Instrument redesign (search-variance control, corpus revision with Q/R) is a
-  separate future bet, owner's to promote.
-  · runs **alongside** the strangler bet, not instead of it. The falsification window lives in
-  PRD-0001; sequencing and any dated forecast are `/axiom-program-management`'s, not this file's.
-
-- **Token-based observation encoding — IN SCOPE, owner-directed, to finish the VFS refresh**
-  (moved Later → Now 2026-08-22, `PDR-0108`; direction owner-authoritative since 2026-08-11 per
-  `PDR-0044` — the old "captured rather than started" framing is dead). The fixed-width
-  superset+mask observation with its fixed 14-affordance vocabulary is a hardcoded statement
-  about one universe; tokens kill the fixed vocabulary (**structure**), while magnitude stays
-  with the declared normalization surface (**scale**, `PDR-0016`) — do not conflate them. The
-  VFS refresh's remaining tail (relational observation exposure, message wiring, dynamic
-  variables — vfs.md §21.1 items 1/5/6) all land via this path per `PDR-0107`.
-  · **Phase A plan written and committed**
-  (`docs/superpowers/plans/2026-08-22-token-observation-pivot-phase-a.md`): brain
-  level-override + lineage legibility (`PDR-0027`), then the `set_encoder`
-  config-in/behaviour-out proof — the token encoder ALREADY EXISTS (`SetEncoderQNetwork`,
-  authorable as `architecture.type: set_encoder`, driven by zero packs), so the first unit is
-  proving it works, not adding attention (`PDR-0017`). A design-level proof failure escalates
-  (`PDR-0017` trigger 2); Phase B (attention aggregator, full token representation, relational
-  /message exposure, dynamic variables) is scheduled on the proof's outcome.
-  · **Phase A EXECUTED and adjudicated (`PDR-0109`): `PDR-0017` trigger 1 FIRED — the token
-  path is real.** brain.yaml level-overridable with lineage at load (`hamlet-0d0115383e`
-  closed); the set_encoder proof green (tokens move Q, permutation invariance, gradients).
-  · **Phase B unit 1 LANDED (`PDR-0112`, `ba2766e6`, 2026-08-22): the aggregator is a
-  DECLARED required choice** — `{type: mean}` | `{type: attention, num_heads: N}` — attention
-  authored in `set_encoder_smoke` via an `L1_attention` level-override brain.yaml (first real
-  use of the `PDR-0027` fork; `brain_forked` true). `PDR-0109`'s trigger did not fire:
-  attention needed no new plumbing. **Next unit: token representation of the full
-  observation — the migration proper and its design document.** Then relational/message
-  exposure as tokens (discharges `PDR-0107`), then dynamic variables.
-  · **Unit 3 IN FLIGHT (2026-08-24)**: plan at
-  `docs/superpowers/plans/2026-08-24-token-obs-unit3-baselines-div008-cut.md`; Tasks 1/3/4
-  landed and reviewed (l2_baseline harness with greedy eval; comment-234/242 oracle
-  carry-forward batch; **DIV-008 recorded UNBOUND** — record-then-bind, movers named,
-  binding by measurement at Task 11); five baseline seeds training at E=5000 (floor rule +
-  plateau calibration + the runner's ep-5000 randomization event as hard cap; src-tree
-  PIN), evals + frozen record (`docs/product/baselines/2026-08-l2-preraster/`) follow
-  completions; Phase-2 Tasks 5–11 expanded to code-pinned fidelity with the re-sequencing
-  addendum (explicit exposure, required normalization-at-exposure, required
-  `max_active_effects` move INTO the cut; Task 11 carries an oracle move-forward decision
-  point, PDR-0074 shape). src/townlet and configs/ FROZEN until all seeds trained + evaled.
-  · tracker: `hamlet-fa6bb6da4a` → `hamlet-424adcb84f`
-  · metric: Config-surface coverage, Declared-but-inert config surfaces
-  · Updated: 2026-08-24 (`PDR-0120` confirms the cut's exposure/normalization scope)
+- **Token-based observation engineering — IN SCOPE, owner-directed** (`PDR-0108`,
+  `PDR-0114`, `PDR-0131`; `hamlet-fa6bb6da4a`). Phase A, the declared attention choice and
+  full token cut through unit 3 are landed. The open work is no longer "prove set_encoder".
+  · **The 9.43× decision is re-ruled (`PDR-0131`, superseding `PDR-0126`).** At the default
+  100,000-transition capacity, the current 1,132-float serialization spends 863.6 MiB on
+  observation pairs versus 91.6 MiB before the cut. About 810 floats are immutable declaration
+  context repeated per transition and another 204 are rank padding; compact live state is 118.
+  · **Next implementation unit:** store immutable per-slot descriptors once in the compiled
+  artifact; store only presence/live values/actual-rank coordinates in replay; reconstruct the
+  fixed cross-substrate token schema at the network boundary. Delete the old transition ABI —
+  no compatibility path.
+  · **Acceptance:** L1 dynamic replay ≤120 floats; 100k observation pair ≤96,000,000 float32
+  bytes; batch 256 viable; encoding <25% of `env.step`; Grid2D/Grid3D/aspatial transfer,
+  visibility and reconstructed-input parity pinned. Unit 4's 79.19 IQM floor runs only after
+  this ABI lands; unit 5 then migrates every shipped pack.
+  · **Sequence:** `hamlet-6a4a6596bd` + `hamlet-1e335e0363` → compact ABI → unit 4 → unit 5.
+  The tracker carries those two blockers explicitly. Relational/message exposure and dynamic
+  variables remain downstream, not silently folded into this unit.
+  · metric: replay resident bytes, viable batch size, observation-encoding share, unit-4
+  regression floor
+  · Updated: 2026-08-31 (`PDR-0131`)
 
 ## Next (shaped, decreasing certainty)
 

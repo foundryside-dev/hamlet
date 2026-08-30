@@ -14,7 +14,6 @@ def test_continuousnd_bounce_boundary_single_reflection():
         movement_delta=1.0,
         interaction_radius=0.5,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     # Agent near boundary
@@ -37,7 +36,6 @@ def test_continuousnd_bounce_boundary_negative():
         movement_delta=1.0,
         interaction_radius=0.5,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     # Agent near lower boundary
@@ -60,7 +58,6 @@ def test_continuousnd_sticky_boundary():
         movement_delta=1.0,
         interaction_radius=0.5,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     # Agent near boundary
@@ -82,7 +79,6 @@ def test_continuousnd_large_movement_delta():
         movement_delta=100.0,  # Large delta
         interaction_radius=1.0,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     # Agent in middle
@@ -105,7 +101,6 @@ def test_continuousnd_negative_bounds():
         movement_delta=1.0,
         interaction_radius=0.5,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     # Agent at origin (within bounds)
@@ -128,7 +123,6 @@ def test_continuousnd_interaction_radius_larger_than_space():
             movement_delta=0.1,
             interaction_radius=2.0,  # Larger than range!
             distance_metric="euclidean",
-            observation_encoding="relative",
         )
 
 
@@ -141,7 +135,6 @@ def test_continuousnd_warns_if_interaction_radius_less_than_delta():
             movement_delta=2.0,
             interaction_radius=1.0,  # Smaller than movement_delta
             distance_metric="euclidean",
-            observation_encoding="relative",
         )
 
 
@@ -154,7 +147,6 @@ def test_continuousnd_validates_movement_delta_positive():
             movement_delta=0.0,  # Invalid
             interaction_radius=1.0,
             distance_metric="euclidean",
-            observation_encoding="relative",
         )
 
 
@@ -167,7 +159,6 @@ def test_continuousnd_validates_interaction_radius_positive():
             movement_delta=1.0,
             interaction_radius=-1.0,  # Invalid
             distance_metric="euclidean",
-            observation_encoding="relative",
         )
 
 
@@ -180,7 +171,6 @@ def test_continuousnd_invalid_boundary_mode():
             movement_delta=1.0,
             interaction_radius=0.5,
             distance_metric="euclidean",
-            observation_encoding="relative",
         )
 
 
@@ -193,20 +183,6 @@ def test_continuousnd_invalid_distance_metric():
             movement_delta=1.0,
             interaction_radius=0.5,
             distance_metric="invalid",
-            observation_encoding="relative",
-        )
-
-
-def test_continuousnd_invalid_observation_encoding():
-    """Test that invalid observation encoding raises error."""
-    with pytest.raises(ValueError, match="Unknown observation encoding"):
-        ContinuousNDSubstrate(
-            bounds=[(0.0, 10.0), (0.0, 10.0), (0.0, 10.0), (0.0, 10.0)],
-            boundary="clamp",
-            movement_delta=1.0,
-            interaction_radius=0.5,
-            distance_metric="euclidean",
-            observation_encoding="invalid",
         )
 
 
@@ -218,7 +194,6 @@ def test_continuousnd_mixed_positive_negative_bounds():
         movement_delta=1.0,
         interaction_radius=0.5,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     # Agent at origin
@@ -243,7 +218,6 @@ def test_continuousnd_distance_broadcasting():
         movement_delta=0.5,
         interaction_radius=1.0,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     # Multiple agents
@@ -276,7 +250,6 @@ def test_continuousnd_zero_range_dimension():
             movement_delta=0.5,
             interaction_radius=1.0,
             distance_metric="euclidean",
-            observation_encoding="relative",
         )
 
 
@@ -289,5 +262,4 @@ def test_continuousnd_inverted_bounds():
             movement_delta=0.5,
             interaction_radius=1.0,
             distance_metric="euclidean",
-            observation_encoding="relative",
         )

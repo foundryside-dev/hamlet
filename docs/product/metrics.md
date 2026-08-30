@@ -1,4 +1,12 @@
-# Metrics — HAMLET / Townlet        Last read: 2026-08-31 · forty-ninth checkpoint (`PDR-0132`)
+# Metrics — HAMLET / Townlet        Last read: 2026-08-31 · fiftieth checkpoint (`PDR-0133`)
+
+> **Milestone 1 engineering reading — 2026-08-31, `PDR-0133`:** one declared-but-inert config
+> field and all of its residual runtime branches are deleted. Current DTOs reject the old key;
+> positions are bounded to `[0,1]`, egocentric deltas to `[-1,1]`, and the active code/config
+> census has zero references outside the rejection regression. The vacuous `div003_scaled`
+> evidence cell is replaced by `boundary_wrap`. Local gates are green: Ruff, Black, mypy (173
+> source files), no-defaults, shipped-pack validation, and the full suite at 3,307 passed / 11
+> skipped / 84% coverage. No replay-width or encoding-share metric moved in this milestone.
 
 > **Plan checkpoint — 2026-08-31, `PDR-0132`:** no engineering metric was re-read. The accepted
 > constraints below are unchanged; they are now assigned to five separately checkpointed

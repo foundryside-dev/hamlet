@@ -231,10 +231,7 @@ class SpatialSubstrate(ABC):
 
     @abstractmethod
     def normalize_positions(self, positions: torch.Tensor) -> torch.Tensor:
-        """Normalize positions to [0, 1] range (always relative encoding).
-
-        This method ALWAYS returns relative encoding (normalized to [0,1]),
-        regardless of the substrate's observation_encoding mode.
+        """Normalize positions to the canonical [0, 1] coordinate range.
 
         Used by POMDP for position context in recurrent networks, which
         requires normalized positions regardless of how full observations
@@ -366,9 +363,7 @@ class SpatialSubstrate(ABC):
             entity_pos: [M, position_dim] entity positions
 
         Returns:
-            [N, M, position_dim] float32, normalized per the declared observation
-            encoding mode: `relative` divides by the same denominator as
+            [N, M, position_dim] float32, divided by the same denominator as
             normalize_positions (span − 1 for grids, extent for continuous), so deltas
-            land in [−1, 1]; `scaled` and `absolute` return raw axis units. Aspatial:
-            zeros of width 0.
+            land in [−1, 1]. Aspatial returns zeros of width 0.
         """

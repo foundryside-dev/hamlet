@@ -172,14 +172,11 @@ CLEAN_HOUSE, ENTERTAINMENT, DOCTOR — `affordances.yaml` is byte-identical acro
 (verified 2026-08-15). Several `docs/architecture/` documents list a *different* affordance set;
 they are wrong, this one is the shipped pack.
 
-**Observation Encoding Modes** (`stratum.yaml`): ⚠️ **`observation_mode` and
-`observation_encoding` are INERT since the unit-3 token cut (2026-08-26).** They configured
-the old raster observation spec's field selection and position-block encoding; nothing reads
-them at runtime now. Measured: `scaled` and `relative` compile to a byte-identical `TokenSpec`
-— same `total_dims`, same `observation_schema_hash`, same `layout_hash` — so the declaration
-is a No-Defaults-violating no-op, not a choice. Filed as `hamlet-6a4a6596bd` (P1). A token
-position block is always the substrate's normalized coordinates plus an egocentric delta,
-padded to `MAX_POSITION_RANK`.
+**Position encoding** (`stratum.yaml`): `observation_encoding` is deleted. There is one token
+position contract: substrate coordinates are normalized to `[0, 1]`; egocentric deltas use the
+same per-axis denominator and land in `[-1, 1]`; both are padded to `MAX_POSITION_RANK`. A config
+that still declares the old selector fails validation as an extra field. `observation_mode`
+belongs to the separate observation-layout surface.
 
 **Observation Dimensions** — the observation is **TOKENS**, not a raster:
 

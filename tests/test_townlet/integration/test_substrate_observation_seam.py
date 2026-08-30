@@ -1,11 +1,9 @@
 """The substrate→observation-dim seam, end to end (WS-7 first knockdown).
 
-These are the DIV-003 configurations (docs/oracle/known-divergences.md): three
-declared, schema-valid packs that used to compile and then crash at
-env.reset() because the compiler derived observation dims from substrate.type
-strings instead of asking the substrate instance. Post-cut they must compile
-AND run — the assessment's precise gap was that no test drove a config through
-compiler + env for any non-default substrate value.
+These are three declared, schema-valid differential packs. The cubic and
+rectangular cases originated in DIV-003; boundary_wrap replaces the deleted,
+vacuous observation-encoding case. They must compile and run through the
+compiler + environment seam for real non-default substrate values.
 
 The packs under configs/differential/ are the same fixtures the differential
 harness's DIV-003 matrix cells run; keep them frozen (see
@@ -24,7 +22,7 @@ from tests.test_townlet.utils.builders import make_vectorized_env_from_pack
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 
 _DIV003_PACKS = (
-    ("div003_scaled", "L1_full_observability"),
+    ("boundary_wrap", "L1_full_observability"),
     ("div003_cubic_partial", "L2_partial_observability"),
     ("div003_rect", "L1_full_observability"),
 )
@@ -82,7 +80,6 @@ def test_grid3d_type_literal_is_gone() -> None:
                     "depth": 3,
                     "boundary": "clamp",
                     "distance_metric": "manhattan",
-                    "observation_encoding": "relative",
                     "diagonals": True,
                 },
             }

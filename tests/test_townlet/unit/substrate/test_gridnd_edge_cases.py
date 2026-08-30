@@ -12,7 +12,6 @@ def test_gridnd_get_all_positions_small_grid():
         dimension_sizes=[2, 2, 2, 2],
         boundary="clamp",
         distance_metric="manhattan",
-        observation_encoding="relative",
     )
 
     positions = substrate.get_all_positions()
@@ -30,7 +29,6 @@ def test_gridnd_get_all_positions_moderate_grid():
         dimension_sizes=[10] * 4,  # 10^4 = 10,000 positions
         boundary="clamp",
         distance_metric="manhattan",
-        observation_encoding="relative",
     )
 
     # Should NOT warn (10K < 100K threshold)
@@ -44,7 +42,6 @@ def test_gridnd_get_all_positions_raises_on_huge_grid():
         dimension_sizes=[100] * 4,  # 100^4 = 100M positions
         boundary="clamp",
         distance_metric="manhattan",
-        observation_encoding="relative",
     )
 
     with pytest.raises(MemoryError, match="too large for memory"):
@@ -58,7 +55,6 @@ def test_gridnd_rejects_dimension_count_above_100():
             dimension_sizes=[3] * 101,  # 101 dimensions
             boundary="clamp",
             distance_metric="manhattan",
-            observation_encoding="relative",
         )
 
 
@@ -68,7 +64,6 @@ def test_gridnd_asymmetric_bounds():
         dimension_sizes=[100, 3, 50, 7],  # Very asymmetric
         boundary="clamp",
         distance_metric="manhattan",
-        observation_encoding="relative",
     )
 
     # Test positions initialize within bounds
@@ -85,7 +80,6 @@ def test_gridnd_bounce_boundary_large_delta():
         dimension_sizes=[5, 5, 5, 5],
         boundary="bounce",
         distance_metric="manhattan",
-        observation_encoding="relative",
     )
 
     # Agent at center [2, 2, 2, 2]
@@ -107,7 +101,6 @@ def test_gridnd_sticky_boundary():
         dimension_sizes=[5, 5, 5, 5],
         boundary="sticky",
         distance_metric="manhattan",
-        observation_encoding="relative",
     )
 
     # Agent at [2, 0, 2, 4]

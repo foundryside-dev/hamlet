@@ -459,19 +459,6 @@ class TestGridNDValidationEdgeCases:
                 distance_metric="INVALID",
             )
 
-    def test_invalid_observation_encoding_raises_error(self):
-        """Should raise ValueError for unsupported observation encoding.
-
-        Coverage target: lines 88-89
-        """
-        with pytest.raises(ValueError, match="observation encoding"):
-            GridNDSubstrate(
-                dimension_sizes=[5, 5, 5, 5],
-                boundary="clamp",
-                distance_metric="manhattan",
-                observation_encoding="INVALID",
-            )
-
 
 class TestGridNDNormalizePositions:
     """Test normalize_positions() method.
@@ -489,7 +476,6 @@ class TestGridNDNormalizePositions:
             dimension_sizes=[10, 10, 10, 10],
             boundary="clamp",
             distance_metric="manhattan",
-            observation_encoding="scaled",  # Note: scaled mode
         )
 
         positions = torch.tensor([[0, 0, 0, 0], [9, 9, 9, 9]], dtype=torch.long)

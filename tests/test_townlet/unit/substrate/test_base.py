@@ -59,7 +59,6 @@ class TestActionSpaceSizeProperty:
                     interaction_radius=1.0,
                     action_discretization={"num_directions": 8, "num_magnitudes": 3},
                     distance_metric="manhattan",
-                    observation_encoding="relative",
                 ),
                 1,
                 3,

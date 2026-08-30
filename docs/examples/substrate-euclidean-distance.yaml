@@ -32,5 +32,4 @@ grid:
   height: 8
   boundary: "clamp"
   distance_metric: "euclidean"  # ← Different! L2 norm instead of L1
-  observation_encoding: "relative"
   diagonals: true

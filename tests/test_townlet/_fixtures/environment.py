@@ -420,7 +420,6 @@ def continuous3d_env(
       movement_delta: 0.5
       interaction_radius: 1.0
       distance_metric: euclidean
-      observation_encoding: relative
       action_discretization:
         num_directions: 8
         num_magnitudes: 3

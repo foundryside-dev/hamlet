@@ -59,7 +59,7 @@ DEVICE = torch.device("cpu")
 
 
 def _substrate(boundary: str = "clamp") -> Grid2DSubstrate:
-    return Grid2DSubstrate(width=8, height=8, boundary=boundary, distance_metric="manhattan", observation_encoding="relative")
+    return Grid2DSubstrate(width=8, height=8, boundary=boundary, distance_metric="manhattan")
 
 
 def _static_type(type_name: str, refs: list[str]):

@@ -28,7 +28,6 @@ class TestGridNDPOMDPValidation:
                     "dimension_sizes": [5, 5, 5, 5],
                     "boundary": "clamp",
                     "distance_metric": "manhattan",
-                    "observation_encoding": "relative",
                     "topology": "hypercube",
                 },
             }

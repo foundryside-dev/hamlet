@@ -42,7 +42,6 @@ class Grid2DSubstrate(SpatialSubstrate):
         height: int,
         boundary: Literal["clamp", "wrap", "bounce", "sticky"],
         distance_metric: Literal["manhattan", "euclidean", "chebyshev"],
-        observation_encoding: Literal["relative", "scaled", "absolute"] = "relative",
         topology: Literal["square"] = "square",  # Grid2D is always square topology
         enable_diagonals: bool = True,
     ):
@@ -53,7 +52,6 @@ class Grid2DSubstrate(SpatialSubstrate):
             height: Grid height (number of rows)
             boundary: Boundary mode ("clamp", "wrap", "bounce", "sticky")
             distance_metric: Distance metric ("manhattan", "euclidean", "chebyshev")
-            observation_encoding: Position encoding strategy ("relative", "scaled", "absolute")
             topology: Grid topology ("square" for 2D Cartesian grid)
         """
         if width <= 0 or height <= 0:
@@ -69,7 +67,6 @@ class Grid2DSubstrate(SpatialSubstrate):
         self.height = height
         self.boundary = boundary
         self.distance_metric = distance_metric
-        self.observation_encoding = observation_encoding
         self.topology = topology
         self.enable_diagonals = enable_diagonals
 
@@ -407,24 +404,21 @@ class Grid2DSubstrate(SpatialSubstrate):
         return combine_metric(deltas.abs(), self.distance_metric) <= radius
 
     def egocentric_delta(self, self_pos: torch.Tensor, entity_pos: torch.Tensor) -> torch.Tensor:
-        """entity − self per axis, shortest path under wrap, normalized per encoding mode."""
+        """Bounded entity − self per axis, using the shortest path under wrap."""
         require_position_batch(self_pos, self.position_dim, argument="self_pos")
         require_position_batch(entity_pos, self.position_dim, argument="entity_pos")
         wrap = self._token_axis_sizes(self_pos.device) if self.boundary == "wrap" else None
         deltas = pairwise_axis_deltas(self_pos, entity_pos, wrap)
-        if self.observation_encoding == "relative":
-            denominators = torch.tensor(
-                [float(max(self.width - 1, 1)), float(max(self.height - 1, 1))],
-                dtype=torch.float32,
-                device=deltas.device,
-            )
-            deltas = deltas / denominators
-        return deltas
+        denominators = torch.tensor(
+            [float(max(self.width - 1, 1)), float(max(self.height - 1, 1))],
+            dtype=torch.float32,
+            device=deltas.device,
+        )
+        return deltas / denominators
 
     def normalize_positions(self, positions: torch.Tensor) -> torch.Tensor:
-        """Normalize positions to [0, 1] range (always relative encoding).
+        """Normalize positions to the canonical [0, 1] coordinate range.
 
-        Returns normalized coordinates regardless of observation_encoding mode.
         Used by POMDP for position context in recurrent networks.
 
         Args:

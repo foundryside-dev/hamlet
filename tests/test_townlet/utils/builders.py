@@ -147,7 +147,6 @@ def make_grid2d_substrate(
     height: int = 8,
     boundary: Literal["clamp", "wrap", "bounce", "sticky"] = "clamp",
     distance_metric: Literal["manhattan", "euclidean", "chebyshev"] = "manhattan",
-    observation_encoding: Literal["relative", "scaled", "absolute"] = "relative",
 ) -> Grid2DSubstrate:
     """Create Grid2D substrate with sensible defaults.
 
@@ -156,7 +155,6 @@ def make_grid2d_substrate(
         height: Grid height (default: 8)
         boundary: Boundary mode (default: "clamp")
         distance_metric: Distance metric (default: "manhattan")
-        observation_encoding: Position encoding (default: "relative")
 
     Returns:
         Configured Grid2DSubstrate
@@ -173,7 +171,6 @@ def make_grid2d_substrate(
         height=height,
         boundary=boundary,
         distance_metric=distance_metric,
-        observation_encoding=observation_encoding,
     )
 
 
@@ -184,7 +181,6 @@ def make_grid3d_substrate(
     depth: int = 3,
     boundary: Literal["clamp", "wrap", "bounce", "sticky"] = "clamp",
     distance_metric: Literal["manhattan", "euclidean", "chebyshev"] = "manhattan",
-    observation_encoding: Literal["relative", "scaled", "absolute"] = "relative",
 ) -> Grid3DSubstrate:
     """Create Grid3D substrate with sensible defaults.
 
@@ -194,7 +190,6 @@ def make_grid3d_substrate(
         depth: Grid depth (default: 3)
         boundary: Boundary mode (default: "clamp")
         distance_metric: Distance metric (default: "manhattan")
-        observation_encoding: Position encoding (default: "relative")
 
     Returns:
         Configured Grid3DSubstrate
@@ -212,7 +207,6 @@ def make_grid3d_substrate(
         depth=depth,
         boundary=boundary,
         distance_metric=distance_metric,
-        observation_encoding=observation_encoding,
     )
 
 

@@ -10,7 +10,6 @@ stratum:
       height: 5
       boundary: clamp
       distance_metric: manhattan
-      observation_encoding: relative
       diagonals: false
 
   vision_support: global

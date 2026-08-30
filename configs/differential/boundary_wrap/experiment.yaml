@@ -1,7 +1,7 @@
 experiment:
   version: "1.0"
 
-  experiment_name: "DIV-003 fixture: observation_encoding scaled"
+  experiment_name: "Differential fixture: wrap boundary"
 
   metadata:
     name: "Complete Reference Example"

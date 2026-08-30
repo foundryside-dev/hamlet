@@ -107,7 +107,6 @@ stratum:
 
       distance_metric: manhattan
 
-      observation_encoding: relative
       diagonals: true
 
   vision_support: both
@@ -118,12 +117,9 @@ stratum:
     mode: full_auto
 ```
 
-⚠️ Two keys in that block are **inert** since the unit-3 token cut (2026-08-26):
-`observation_encoding` and `observation_mode` configured the old raster observation spec and
-nothing reads them now — measured, `scaled` and `relative` compile to a byte-identical
-`TokenSpec`. They still parse, which makes them a No-Defaults violation rather than a choice;
-filed as `hamlet-6a4a6596bd`, not removed here because it would touch every pack's
-`stratum.yaml`.
+Position encoding has no selector. Coordinates are normalized to `[0, 1]` and egocentric deltas
+to `[-1, 1]` on every spatial substrate; declaring the deleted `observation_encoding` key fails
+validation. `observation_mode` is the separate observation-layout surface.
 
 Nothing else defines the substrate. The grid is 8×8 for every level in the pack: `stratum.yaml`
 exists only at pack root, and the level loader reads no substrate file from a level directory.
@@ -396,9 +392,9 @@ byte copies either: `vfs_profiles.yaml` differs on the four standing and differe
 (the authored `time_of_day_phase` global), `effects.yaml` and `vfs_profiles.yaml` on
 `effects_smoke`, `effects.yaml` plus a fixture-only level `brain.yaml` on `items_smoke`
 (`DIV-007`); a declared input delta and a declared output delta remain two decisions, and
-neither blesses the other. Two cells no longer measure the axis they were added for
-(`div003_scaled`, `items_smoke`) and are **demoted as evidence** in writing (`PDR-0124`; tickets
-under [Known rough edges](#known-rough-edges)).
+neither blesses the other. The vacuous `div003_scaled` cell was replaced by
+`boundary_wrap`, which exercises a live boundary-semantics axis; `items_smoke` remains demoted as
+evidence under `PDR-0124` and its tracker work.
 The register holds eleven entries, in its own lifecycle vocabulary: `DIV-001` and `DIV-002`
 are checkpoint-boundary, `tag-stamped`, and cannot appear in an env-step trace; `DIV-003`,
 `DIV-004` and `DIV-005` are `retired` at the tag; `DIV-006` and `DIV-011` are `retired` into
@@ -692,8 +688,8 @@ Intent, not yet built — stated plainly because older docs blur the line:
     variables. Trial L (`docs/product/trials/0001/L-20260818.md`) demonstrated the counter
     mechanic is authorable without them: a bar with a negative passive rate advances per tick,
     an `on_start` `modify` resets it on use.
-- **Nine defects landed open with the token cut** (`PDR-0124`), all still in triage. Two are
-  inline above — inert `observation_encoding` (`hamlet-6a4a6596bd`, P1) and `range_type`
+- **Nine defects landed open with the token cut** (`PDR-0124`). Two are
+  inline above — the deleted `observation_encoding` surface (`hamlet-6a4a6596bd`, P1) and `range_type`
   reaching nothing (`hamlet-1e335e0363`, P1). The rest: item tokens carry no declared identity
   (`hamlet-559cc74246`, P1); the indistinguishability refusal has no declared-parameter escape
   hatch (`hamlet-2aca57c0f0`, P1); effects survive `env.reset()` (`hamlet-d76684f549`, P1);

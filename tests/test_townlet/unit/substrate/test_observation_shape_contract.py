@@ -25,42 +25,39 @@ from townlet.substrate.gridnd import GridNDSubstrate
 _DEVICE = torch.device("cpu")
 
 
-def _grid2d(encoding: str = "relative", width: int = 8, height: int = 8) -> Grid2DSubstrate:
+def _grid2d(width: int = 8, height: int = 8) -> Grid2DSubstrate:
     return Grid2DSubstrate(
         width=width,
         height=height,
         boundary="clamp",
         distance_metric="manhattan",
-        observation_encoding=encoding,
         topology="square",
         enable_diagonals=True,
     )
 
 
-def _grid3d(encoding: str = "relative", depth: int = 3) -> Grid3DSubstrate:
+def _grid3d(depth: int = 3) -> Grid3DSubstrate:
     return Grid3DSubstrate(
         width=8,
         height=8,
         depth=depth,
         boundary="clamp",
         distance_metric="manhattan",
-        observation_encoding=encoding,
         topology="cubic",
         enable_diagonals=True,
     )
 
 
-def _gridnd(encoding: str = "relative") -> GridNDSubstrate:
+def _gridnd() -> GridNDSubstrate:
     return GridNDSubstrate(
         dimension_sizes=[4, 4, 4, 4],
         boundary="clamp",
         distance_metric="manhattan",
-        observation_encoding=encoding,
         topology="hypercube",
     )
 
 
-def _continuous2d(encoding: str = "relative") -> Continuous2DSubstrate:
+def _continuous2d() -> Continuous2DSubstrate:
     return Continuous2DSubstrate(
         min_x=0.0,
         max_x=10.0,
@@ -70,7 +67,6 @@ def _continuous2d(encoding: str = "relative") -> Continuous2DSubstrate:
         movement_delta=0.5,
         interaction_radius=1.0,
         distance_metric="euclidean",
-        observation_encoding=encoding,
         action_discretization={"num_directions": 8, "num_speeds": 1},
     )
 

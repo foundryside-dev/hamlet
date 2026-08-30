@@ -12,7 +12,6 @@ def test_gridnd_7d_initialization():
         dimension_sizes=[3] * 7,
         boundary="clamp",
         distance_metric="manhattan",
-        observation_encoding="relative",
     )
 
     assert substrate.position_dim == 7
@@ -32,7 +31,6 @@ def test_gridnd_10d_initialization_with_warning():
             dimension_sizes=[2] * 10,  # Small sizes to keep fast
             boundary="clamp",
             distance_metric="manhattan",
-            observation_encoding="relative",
         )
 
     assert substrate.position_dim == 10
@@ -50,7 +48,6 @@ def test_gridnd_7d_movement_all_boundaries():
             dimension_sizes=[5] * 7,
             boundary=boundary_mode,
             distance_metric="manhattan",
-            observation_encoding="relative",
         )
 
         # Agent at center
@@ -74,7 +71,6 @@ def test_gridnd_7d_distance_metrics():
             dimension_sizes=[10] * 7,
             boundary="clamp",
             distance_metric=metric,
-            observation_encoding="relative",
         )
 
         pos1 = torch.zeros((1, 7), dtype=torch.long)

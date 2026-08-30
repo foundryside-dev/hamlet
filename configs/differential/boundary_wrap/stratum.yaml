@@ -9,11 +9,10 @@ stratum:
       width: 8
       height: 8
 
-      boundary: clamp
+      boundary: wrap
 
       distance_metric: manhattan
 
-      observation_encoding: scaled
       diagonals: true
 
   vision_support: both

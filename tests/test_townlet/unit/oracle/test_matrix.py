@@ -20,12 +20,11 @@ LEVELS = (
 
 # Deliberately DUPLICATED from matrix.py, not imported: these are pins. A
 # matrix edit that changes a block must consciously move the pin too.
-# The differential packs entered as the DIV-003 crash cells (signatures
-# re-verified at oracle-2026-08-13); DIV-003 retired when the oracle moved
-# forward to oracle-2026-08-17 (4222a917, PDR-0074), so they are now plain
-# standing cells and carry no signature.
+# The cubic and rectangular differential packs entered as DIV-003 crash cells.
+# boundary_wrap replaced the deleted observation-encoding axis; all three are
+# plain standing cells and carry no signature.
 _DIFFERENTIAL_LEVELS = {
-    "div003_scaled": "L1_full_observability",
+    "boundary_wrap": "L1_full_observability",
     "div003_cubic_partial": "L2_partial_observability",
     "div003_rect": "L1_full_observability",
 }

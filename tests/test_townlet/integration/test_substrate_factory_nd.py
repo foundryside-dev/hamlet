@@ -42,7 +42,6 @@ class TestFactoryConfigValidation:
             "gridnd": {
                 "dimension_sizes": [8, 8, 8],  # Only 3D
                 "boundary": "clamp",
-                "observation_encoding": "relative",
                 "distance_metric": "manhattan",
                 "topology": "hypercube",
             },
@@ -62,7 +61,6 @@ class TestFactoryConfigValidation:
                 "movement_delta": 0.5,
                 "interaction_radius": 1.0,
                 "distance_metric": "euclidean",
-                "observation_encoding": "relative",
                 "action_discretization": BASE_ACTION_DISC,
             },
         }
@@ -85,7 +83,6 @@ gridnd:
   dimension_sizes: [8, 8, 8, 8]
   boundary: clamp
   distance_metric: manhattan
-  observation_encoding: relative
   topology: hypercube
 """
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
@@ -118,7 +115,6 @@ continuous:
   movement_delta: 0.5
   interaction_radius: 1.0
   distance_metric: euclidean
-  observation_encoding: scaled
   action_discretization:
     num_directions: 8
     num_magnitudes: 3
@@ -137,7 +133,6 @@ continuous:
             assert isinstance(substrate, ContinuousNDSubstrate)
             assert substrate.position_dim == 4
             assert substrate.boundary == "wrap"
-            assert substrate.observation_encoding == "scaled"
         finally:
             config_path.unlink()
 
@@ -152,7 +147,6 @@ class TestFactoryEdgeCases:
             "gridnd": {
                 "dimension_sizes": [2] * 100,  # 100D grid
                 "boundary": "clamp",
-                "observation_encoding": "relative",
                 "distance_metric": "manhattan",
                 "topology": "hypercube",
             },
@@ -175,7 +169,6 @@ class TestFactoryEdgeCases:
                 "movement_delta": 0.01,
                 "interaction_radius": 0.1,
                 "distance_metric": "euclidean",
-                "observation_encoding": "relative",
                 "action_discretization": BASE_ACTION_DISC,
             },
         }
@@ -192,7 +185,6 @@ class TestFactoryEdgeCases:
                 "gridnd": {
                     "dimension_sizes": [8, 8, 8, 8],
                     "boundary": boundary_mode,
-                    "observation_encoding": "relative",
                     "distance_metric": "manhattan",
                     "topology": "hypercube",
                 },
@@ -213,7 +205,6 @@ class TestFactoryEdgeCases:
                     "movement_delta": 0.5,
                     "interaction_radius": 1.0,
                     "distance_metric": "euclidean",
-                    "observation_encoding": "relative",
                     "action_discretization": BASE_ACTION_DISC,
                 },
             }
@@ -230,7 +221,6 @@ class TestFactoryEdgeCases:
                     "dimension_sizes": [8, 8, 8, 8],
                     "boundary": "clamp",
                     "distance_metric": metric,
-                    "observation_encoding": "relative",
                     "topology": "hypercube",
                 },
             }
@@ -250,7 +240,6 @@ class TestFactoryEdgeCases:
                     "movement_delta": 0.5,
                     "interaction_radius": 1.0,
                     "distance_metric": metric,
-                    "observation_encoding": "relative",
                     "action_discretization": BASE_ACTION_DISC,
                 },
             }
@@ -270,7 +259,6 @@ class TestFactoryIntegration:
                 "gridnd": {
                     "dimension_sizes": [8, 8, 8, 8],
                     "boundary": "clamp",
-                    "observation_encoding": "relative",
                     "distance_metric": "manhattan",
                     "topology": "hypercube",
                 },
@@ -285,7 +273,6 @@ class TestFactoryIntegration:
                     "movement_delta": 0.5,
                     "interaction_radius": 1.0,
                     "distance_metric": "euclidean",
-                    "observation_encoding": "relative",
                     "action_discretization": BASE_ACTION_DISC,
                 },
                 "expected_type": ContinuousNDSubstrate,

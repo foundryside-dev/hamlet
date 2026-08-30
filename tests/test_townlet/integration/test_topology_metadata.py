@@ -35,7 +35,6 @@ def test_topology_propagates_from_config_to_websocket_metadata_grid2d():
             "height": 8,
             "boundary": "clamp",
             "distance_metric": "manhattan",
-            "observation_encoding": "relative",
             "diagonals": True,
         },
     }
@@ -84,7 +83,6 @@ def test_topology_propagates_from_config_to_websocket_metadata_gridnd():
             "dimension_sizes": [5, 5, 5, 5, 5, 5, 5],
             "boundary": "clamp",
             "distance_metric": "manhattan",
-            "observation_encoding": "relative",
             "topology": "hypercube",
         },
     }
@@ -137,7 +135,6 @@ def test_continuous_substrate_has_no_topology_in_metadata():
             "movement_delta": 0.5,
             "interaction_radius": 0.8,
             "distance_metric": "euclidean",
-            "observation_encoding": "relative",
             "action_discretization": {"num_directions": 8, "num_magnitudes": 3},
         },
     }
@@ -187,7 +184,6 @@ def test_gridnd_substrate_initializes_with_action_labels():
             "dimension_sizes": [3, 3, 3, 3, 3, 3, 3],
             "boundary": "clamp",
             "distance_metric": "manhattan",
-            "observation_encoding": "relative",
             "topology": "hypercube",
         },
     }
@@ -229,7 +225,6 @@ def test_continuousnd_substrate_initializes_with_action_labels():
             "movement_delta": 0.5,
             "interaction_radius": 0.8,
             "distance_metric": "euclidean",
-            "observation_encoding": "relative",
             "action_discretization": {"num_directions": 8, "num_magnitudes": 3},
         },
     }
@@ -268,7 +263,6 @@ def test_4d_gridnd_custom_action_labels():
             "dimension_sizes": [5, 5, 5, 5],
             "boundary": "clamp",
             "distance_metric": "manhattan",
-            "observation_encoding": "relative",
             "topology": "hypercube",
         },
     }

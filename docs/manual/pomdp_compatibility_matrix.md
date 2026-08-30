@@ -61,7 +61,6 @@ grid:
   width: 8
   height: 8
   boundary: "clamp"
-  observation_encoding: "relative"  # Required for POMDP
 ```
 
 **Environment Parameters**:
@@ -104,7 +103,6 @@ grid:
   height: 8
   depth: 3
   boundary: "clamp"
-  observation_encoding: "relative"  # Required for POMDP
 ```
 
 **Environment Parameters**:
@@ -154,11 +152,10 @@ substrate.encode_partial_observation(...)
 # "Continuous1DSubstrate does not support partial observability (POMDP).
 #  Continuous spaces have infinite positions in any local region, making
 #  local windows conceptually invalid. Use full observability
-#  (partial_observability=False) with 'relative' or 'scaled'
-#  observation_encoding for position-independent learning instead."
+#  (partial_observability=False) with canonical normalized positions instead."
 ```
 
-**Alternative**: Use **full observability** with `observation_encoding="relative"` for position-independent learning.
+**Alternative**: Use **full observability**; positions are normalized canonically.
 
 **Test Coverage**:
 - ✅ Unit test: `test_continuous1d_encode_partial_observation_raises()`
@@ -184,7 +181,7 @@ if partial_observability and substrate.position_dim >= 4:
     )
 ```
 
-**Alternative**: Use **full observability** with `observation_encoding="relative"` or `"scaled"` for dimension-independent learning.
+**Alternative**: Use **full observability** with the canonical normalized position contract.
 
 **Test Coverage**:
 - ✅ Validation test: Environment rejects `partial_observability=True` for 4D+ grids
@@ -242,18 +239,9 @@ aspatial: {}
 
 ### POMDP Configuration Requirements
 
-All POMDP configurations **must** use:
-
-```yaml
-# substrate.yaml
-observation_encoding: "relative"  # Normalized positions required for LSTM
-```
-
-**Other encoding modes are rejected**:
-- `observation_encoding="scaled"` → ValueError
-- `observation_encoding="absolute"` → ValueError
-
-**Rationale**: Recurrent networks (LSTM) require normalized positions for stable training.
+All POMDP configurations use the one canonical position contract: absolute coordinates in
+`[0, 1]` and egocentric deltas in `[-1, 1]`. There is no encoding selector; the deleted key is
+rejected as an extra field.
 
 ### Network Type
 
@@ -412,15 +400,12 @@ Do you need partial observability (POMDP)?
 │  │
 │  ├─ Grid2D → ✅ Use partial_observability=True, vision_range=2
 │  ├─ Grid3D → ✅ Use partial_observability=True, vision_range ≤ 2
-│  ├─ Continuous (any dimension) → ❌ Use full observability with "relative" encoding
-│  ├─ GridND (N≥4) → ❌ Use full observability with "relative" or "scaled" encoding
+│  ├─ Continuous (any dimension) → ❌ Use full observability
+│  ├─ GridND (N≥4) → ❌ Use full observability
 │  └─ Aspatial → ⚠️ Technically works but conceptually invalid
 │
 └─ NO → Use partial_observability=False (full observability)
-   └─ Set observation_encoding based on transfer learning needs:
-      ├─ "relative" → Grid-size independent (transfer learning)
-      ├─ "scaled" → Includes grid metadata (size-aware strategies)
-      └─ "absolute" → Raw coordinates (size-specific learning)
+   └─ Positions still use the canonical bounded encoding
 ```
 
 ---

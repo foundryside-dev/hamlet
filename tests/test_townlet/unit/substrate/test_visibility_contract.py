@@ -15,9 +15,8 @@ Semantics pinned:
   are in-bounds position regimes: distance is the plain declared metric — pinned by the
   boundary-mode table tests.
 - ``egocentric_delta(self_pos [N, D], entity_pos [M, D]) -> [N, M, D] float32`` =
-  entity − self, shortest path under wrap, normalized per the declared observation
-  encoding mode (`relative` divides by the normalize_positions denominator; `scaled` /
-  `absolute` return raw axis units).
+  entity − self, shortest path under wrap, divided by the same axis span as
+  ``normalize_positions`` and therefore bounded to [−1, 1].
 - GridND thereby gains partial observability (rank ≤ MAX_POSITION_RANK — the §1 trade);
   Aspatial: visible = all, delta = zeros (width 0).
 """
@@ -35,19 +34,19 @@ from townlet.substrate.gridnd import GridNDSubstrate
 BOUNDARIES = ("clamp", "wrap", "bounce", "sticky")
 
 
-def _grid2d(boundary: str, *, metric: str = "manhattan", encoding: str = "relative") -> Grid2DSubstrate:
-    return Grid2DSubstrate(width=8, height=8, boundary=boundary, distance_metric=metric, observation_encoding=encoding)
+def _grid2d(boundary: str, *, metric: str = "manhattan") -> Grid2DSubstrate:
+    return Grid2DSubstrate(width=8, height=8, boundary=boundary, distance_metric=metric)
 
 
 def _grid3d(boundary: str, *, metric: str = "manhattan") -> Grid3DSubstrate:
-    return Grid3DSubstrate(width=8, height=8, depth=3, boundary=boundary, distance_metric=metric, observation_encoding="relative")
+    return Grid3DSubstrate(width=8, height=8, depth=3, boundary=boundary, distance_metric=metric)
 
 
 def _gridnd(boundary: str, *, metric: str = "manhattan") -> GridNDSubstrate:
     return GridNDSubstrate(dimension_sizes=[5, 5, 5, 5], boundary=boundary, distance_metric=metric)
 
 
-def _continuous(boundary: str, *, metric: str = "euclidean", encoding: str = "relative") -> ContinuousSubstrate:
+def _continuous(boundary: str, *, metric: str = "euclidean") -> ContinuousSubstrate:
     return ContinuousSubstrate(
         dimensions=2,
         bounds=[(0.0, 10.0), (0.0, 10.0)],
@@ -56,7 +55,6 @@ def _continuous(boundary: str, *, metric: str = "euclidean", encoding: str = "re
         interaction_radius=1.0,
         action_discretization={"num_directions": 8, "num_magnitudes": 3},
         distance_metric=metric,
-        observation_encoding=encoding,
     )
 
 
@@ -67,7 +65,6 @@ def _continuousnd(boundary: str) -> ContinuousNDSubstrate:
         movement_delta=0.5,
         interaction_radius=1.0,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
 
@@ -124,28 +121,18 @@ class TestGrid2DBoundaryModeTable:
         assert vis.tolist() == [[False, True]]
 
     @pytest.mark.parametrize("boundary", ("clamp", "bounce", "sticky"))
-    def test_non_wrap_egocentric_is_plain_difference(self, boundary):
-        substrate = _grid2d(boundary, encoding="absolute")
+    def test_non_wrap_egocentric_is_bounded(self, boundary):
+        substrate = _grid2d(boundary)
         delta = substrate.egocentric_delta(torch.tensor([[0, 0]]), torch.tensor([[7, 3]]))
         assert delta.shape == (1, 1, 2)
         assert delta.dtype == torch.float32
-        assert delta[0, 0].tolist() == [7.0, 3.0]
-
-    def test_wrap_egocentric_is_shortest_path(self):
-        substrate = _grid2d("wrap", encoding="absolute")
-        # entity at x=7 seen from x=0 on width 8: shortest signed path is -1, not +7.
-        delta = substrate.egocentric_delta(torch.tensor([[0, 0]]), torch.tensor([[7, 3]]))
-        assert delta[0, 0].tolist() == [-1.0, 3.0]
-
-    def test_relative_encoding_normalizes_by_span(self):
-        substrate = _grid2d("clamp", encoding="relative")
-        delta = substrate.egocentric_delta(torch.tensor([[0, 0]]), torch.tensor([[7, 3]]))
         assert delta[0, 0].tolist() == pytest.approx([1.0, 3.0 / 7.0])
 
-    def test_scaled_encoding_returns_raw_units(self):
-        substrate = _grid2d("clamp", encoding="scaled")
+    def test_wrap_egocentric_is_shortest_path(self):
+        substrate = _grid2d("wrap")
+        # entity at x=7 seen from x=0 on width 8: shortest signed path is -1, not +7.
         delta = substrate.egocentric_delta(torch.tensor([[0, 0]]), torch.tensor([[7, 3]]))
-        assert delta[0, 0].tolist() == [7.0, 3.0]
+        assert delta[0, 0].tolist() == pytest.approx([-1.0 / 7.0, 3.0 / 7.0])
 
 
 class TestGrid3DBoundaryModeTable:
@@ -215,12 +202,12 @@ class TestContinuousBoundaryModeTable:
         assert substrate.visible(self_pos, entities, 0.5).tolist() == [[True, False]]
 
     def test_wrap_egocentric_shortest_path(self):
-        substrate = _continuous("wrap", encoding="absolute")
+        substrate = _continuous("wrap")
         delta = substrate.egocentric_delta(torch.tensor([[0.0, 0.0]]), torch.tensor([[9.0, 3.0]]))
-        assert delta[0, 0].tolist() == pytest.approx([-1.0, 3.0])
+        assert delta[0, 0].tolist() == pytest.approx([-0.1, 0.3])
 
-    def test_relative_encoding_normalizes_by_extent(self):
-        substrate = _continuous("clamp", encoding="relative")
+    def test_egocentric_delta_normalizes_by_extent(self):
+        substrate = _continuous("clamp")
         delta = substrate.egocentric_delta(torch.tensor([[0.0, 0.0]]), torch.tensor([[9.0, 3.0]]))
         assert delta[0, 0].tolist() == pytest.approx([0.9, 0.3])
 
@@ -270,9 +257,9 @@ class TestWrapTieBreak:
     def test_even_extent_half_span_is_deterministic(self):
         # On an 8-torus, |0-4| is 4 both ways; the shortest-path convention maps the tie
         # to the NEGATIVE half-span deterministically (remainder arithmetic).
-        substrate = _grid2d("wrap", encoding="absolute")
+        substrate = _grid2d("wrap")
         delta = substrate.egocentric_delta(torch.tensor([[0, 0]]), torch.tensor([[4, 0]]))
-        assert delta[0, 0, 0].item() == -4.0
+        assert delta[0, 0, 0].item() == pytest.approx(-4.0 / 7.0)
 
 
 class TestVisibleZeroEntities:

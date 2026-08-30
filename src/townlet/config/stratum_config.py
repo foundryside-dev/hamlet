@@ -50,7 +50,6 @@ class GridConfig(BaseModel):
     depth: int | None = Field(None, description="Grid depth in cells (required for cubic topology)", gt=0)
     boundary: Literal["clamp", "wrap", "bounce", "sticky"] = Field(..., description="Boundary behavior when agent reaches edge")
     distance_metric: Literal["manhattan", "euclidean", "chebyshev"] = Field(..., description="Distance calculation method")
-    observation_encoding: Literal["relative", "scaled", "absolute"] = Field(..., description="Coordinate encoding mode for observations")
     diagonals: bool = Field(..., description="Whether diagonal movement actions are enabled for grid substrates")
 
     model_config = ConfigDict(extra="forbid")
@@ -82,7 +81,6 @@ class GridNDConfig(BaseModel):
     dimension_sizes: list[int] = Field(..., description="Size of each dimension [d0, d1, ..., dN] (N>=4 recommended)")
     boundary: Literal["clamp", "wrap", "bounce", "sticky"] = Field(..., description="Boundary behavior at edges")
     distance_metric: Literal["manhattan", "euclidean", "chebyshev"] = Field(..., description="Distance calculation method")
-    observation_encoding: Literal["relative", "scaled", "absolute"] = Field(..., description="Coordinate encoding mode for observations")
     topology: Literal["hypercube"] = Field(..., description="Grid topology (explicit to avoid hidden defaults)")
 
     model_config = ConfigDict(extra="forbid")
@@ -128,7 +126,6 @@ class ContinuousConfig(BaseModel):
     movement_delta: float = Field(..., gt=0, description="Discrete movement step for navigation")
     interaction_radius: float = Field(..., gt=0, description="Distance threshold for affordance interaction")
     distance_metric: Literal["euclidean", "manhattan", "chebyshev"] = Field(..., description="Distance calculation method")
-    observation_encoding: Literal["relative", "scaled", "absolute"] = Field(..., description="Position encoding strategy")
     action_discretization: ActionDiscretizationConfig = Field(
         ...,
         description=(

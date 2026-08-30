@@ -1,17 +1,17 @@
-# Current State — HAMLET / Townlet        Checkpoint: 2026-08-31 · forty-ninth checkpoint (`PDR-0132`: **five token milestones armed; bounded-position repair is next**)
+# Current State — HAMLET / Townlet        Checkpoint: 2026-08-31 · fiftieth checkpoint (`PDR-0133`: **one bounded position contract; milestone 1 complete**)
 
 ## The bets right now
 
 **1. Strangler rewrite behind the compiled-universe contract** (`PDR-0006`) — the Now bet.
 - `main` remains `9efadd3c` after the fourth merge; work continues on `project-recovery-3` at
-  `22ebbb32` before this checkpoint.
+  `90815496` before this checkpoint.
 - **WS-7 is closed** (`hamlet-e3af412673`). Its enabling stream delivered determinism, the pinned
   oracle, differential harness, divergence register and first seam cut. The only open child was
   standalone P3 CLI hardening (`hamlet-1073af4d4e`); it is preserved under the recovery milestone.
 - The critical path is now WS-6 → WS-2 → WS-3 → WS-4. Bet exit remains unmet: WS-3/WS-4 are open
   and the oracle has not been retired.
 
-**2. Token-observation engineering** (`PDR-0108`/`PDR-0114`/`PDR-0131`/`PDR-0132`) ·
+**2. Token-observation engineering** (`PDR-0108`/`PDR-0114`/`PDR-0131`/`PDR-0132`/`PDR-0133`) ·
 `hamlet-fa6bb6da4a`.
 - Unit 3 is complete. `PDR-0126` is superseded: the 9.43× result is not debt to carry into pack
   migration; it is a representation-layout defect to fix before unit 4.
@@ -25,9 +25,11 @@
   (`hamlet-6a4a6596bd`), meter `range_type` wiring (`hamlet-1e335e0363`), compact replay
   (`hamlet-1b1caf552a`), Unit 4 regression (`hamlet-25fc3fb955`), then Unit 5 migration
   (`hamlet-55b2826a02`). The umbrella closes only after the final child is terminal.
-- **Current milestone:** delete the inert `observation_encoding` surface and establish one
-  canonical bounded position encoding. `div003_scaled` must stop presenting a vacuous matrix
-  cell as evidence.
+- **Milestone 1 is complete:** `observation_encoding` is deleted from the current API and one
+  bounded contract is canonical: positions `[0,1]`, egocentric deltas `[-1,1]`.
+  `div003_scaled` is replaced by the real `boundary_wrap` differential cell.
+- **Current milestone:** restore each meter's declared `range_type` transformation into its token
+  live value (`hamlet-1e335e0363`). The declaration is wired, not deleted.
 
 **3. Documentation truth** (`PDR-0125`) — recovery labelling is complete; source-generated
 rewrite remains gated on WS-4. Do not start `hamlet-7a52a63e0b` merely because it appears ready.
@@ -37,23 +39,19 @@ parked. The pack-disposition clock remains 2026-10-06.
 
 ## What this checkpoint did
 
-- `PDR-0132` turned `PDR-0131`'s prose sequence into a durable five-milestone product plan with
-  an evidence, tracker, product-document and Git checkpoint at every boundary.
-- Filigree now has distinct compact-ABI, Unit 4 and Unit 5 children. Compact replay waits on both
-  semantic repairs, Unit 4 waits on compact replay, Unit 5 waits on Unit 4, and the umbrella waits
-  on Unit 5. This preserves the downstream block without pretending the umbrella is executable.
-- `PDR-0131` replaced the raw 8× acceptance proxy with byte-level engineering constraints:
-  dynamic replay ≤120 floats, a 100k observation pair ≤96,000,000 float32 bytes, batch 256 still
-  viable, encoding below 25% of `env.step`, and cross-substrate schema/visibility parity.
-- The default curriculum was inspected at current HEAD: `token_spec.total_dims = 1132`, with
-  census self 1×18, meter 8×12, affordance 14×66, item 2×21 and variable_element 1×52.
-- Filigree reconciliation:
-  - closed stale P0 WS-7 and reparented its P3 hardening child;
-  - rewrote the stale token umbrella to the compact-state engineering scope;
-  - released its expired `claude-fable` claim back to `open`;
-  - added the two semantic observation defects as explicit blockers.
-- The owner confirmed the standing authority grant unchanged. `vision.md` now carries the
-  2026-08-31 review stamp; the autonomous and escalation lists did not move.
+- `PDR-0133` deleted the inert selector rather than carrying an alias, fallback, constructor
+  overload or config migration. Old current configs now fail loudly as extra-field input.
+- Every spatial substrate now publishes absolute positions in `[0,1]` and egocentric deltas in
+  `[-1,1]`; the hidden raw-delta branch is gone.
+- The vacuous `div003_scaled` cell became `boundary_wrap`. Its frozen-oracle counterpart remains
+  an input to the pinned old executable, not an accepted current config surface.
+- Red-first regression produced 12 failures before the cut and 12 passes after it. Focused
+  evidence is 427 passed / 6 skipped plus 45 oracle/seam passes. The full default suite is
+  3,307 passed / 11 skipped at 84% coverage; pack validation, Ruff, Black, mypy, no-defaults and
+  `git diff --check` are green.
+- The active runtime, scripts, shipped configs and ordinary tests contain zero references to the
+  deleted key. The implementation removes 1,104 lines while adding 121, including the rejection
+  and boundedness regression.
 
 ## Standing gates & in-flight state
 
@@ -61,12 +59,15 @@ parked. The pack-disposition clock remains 2026-10-06.
    and `no_defaults_lint.py` before any source push (`PDR-0127`).
 2. Dependabot #33 (torch) is a separate oracle-moving unit, not dependency housekeeping.
 3. The documentation rewrite remains gated on source generation and WS-4.
-4. `div003_scaled` and `items_smoke` remain demoted as evidence; the §5 finding remains CPU-only.
+4. `boundary_wrap` now exercises a real axis. `items_smoke` remains demoted as evidence; the §5
+   finding remains CPU-only.
 
 ## Decision checks
 
 - `PDR-0132`: if a milestone invalidates the next one's assumptions, stop at the checkpoint and
   write the replacement call before continuing; never skip or combine milestones.
+- `PDR-0133`: a future position representation is one replacement ABI with measured constraints;
+  it does not revive the deleted selector or create a dual path.
 - `PDR-0131`: if compact-flat state cannot preserve visibility and transfer while meeting the
   byte budget, stop and choose one different token ABI; never retain both.
 - `PDR-0127`: a >3-push red streak under a green checkpoint means the reading rule failed and
@@ -83,8 +84,9 @@ announcement, tags/releases, vision/strategy/grant changes, data deletion or ext
 
 ## Next session starts here
 
-1. Start `hamlet-6a4a6596bd` atomically with its bug workflow advanced to fixing; delete the inert
-   observation-mode/encoding surface and pin the canonical bounded position semantics.
-2. Checkpoint milestone 1, then wire `hamlet-1e335e0363`'s meter `range_type` into token values.
-3. Continue through `hamlet-1b1caf552a` → `hamlet-25fc3fb955` → `hamlet-55b2826a02`, accepting
+1. Close `hamlet-6a4a6596bd` with the milestone-1 commit, then start `hamlet-1e335e0363`
+   atomically and restore declared meter `range_type` semantics into token values.
+2. Checkpoint milestone 2, then implement static compiled context plus the compact 118-float
+   replay ABI in `hamlet-1b1caf552a`.
+3. Continue through `hamlet-25fc3fb955` → `hamlet-55b2826a02`, accepting
    and committing a product checkpoint at each boundary under `PDR-0132`.

@@ -35,10 +35,7 @@ class ContinuousNDSubstrate(SpatialSubstrate):
     - Uses distance metric (euclidean, manhattan, chebyshev)
     - Proximity-based, not exact position match
 
-    Observation encoding:
-    - relative: Normalized coordinates [0, 1] per dimension (N dimensions)
-    - scaled: Normalized + range sizes (2N dimensions)
-    - absolute: Raw unnormalized coordinates (N dimensions)
+    Positions are observed in the canonical normalized [0, 1] coordinate range.
 
     Use cases:
     - High-dimensional continuous control
@@ -53,7 +50,6 @@ class ContinuousNDSubstrate(SpatialSubstrate):
         movement_delta: float,
         interaction_radius: float,
         distance_metric: Literal["euclidean", "manhattan", "chebyshev"] = "euclidean",
-        observation_encoding: Literal["relative", "scaled", "absolute"] = "relative",
     ):
         """Initialize N-dimensional continuous substrate.
 
@@ -63,7 +59,6 @@ class ContinuousNDSubstrate(SpatialSubstrate):
             movement_delta: Distance discrete actions move agent
             interaction_radius: Distance threshold for affordance interaction
             distance_metric: Distance metric ("euclidean", "manhattan", "chebyshev")
-            observation_encoding: Position encoding strategy ("relative", "scaled", "absolute")
 
         Raises:
             ValueError: If dimensions < 4 or bounds invalid
@@ -112,9 +107,6 @@ class ContinuousNDSubstrate(SpatialSubstrate):
         if distance_metric not in ("euclidean", "manhattan", "chebyshev"):
             raise ValueError(f"Unknown distance metric: {distance_metric}")
 
-        if observation_encoding not in ("relative", "scaled", "absolute"):
-            raise ValueError(f"Unknown observation encoding: {observation_encoding}")
-
         if movement_delta <= 0:
             raise ValueError(f"movement_delta must be positive, got {movement_delta}")
 
@@ -136,7 +128,6 @@ class ContinuousNDSubstrate(SpatialSubstrate):
         self.movement_delta = movement_delta
         self.interaction_radius = interaction_radius
         self.distance_metric = distance_metric
-        self.observation_encoding = observation_encoding
 
     @property
     def position_dim(self) -> int:
@@ -298,7 +289,7 @@ class ContinuousNDSubstrate(SpatialSubstrate):
         raise ValueError("Continuous substrates do not support partial vision; no vision radius exists.")
 
     def normalize_positions(self, positions: torch.Tensor) -> torch.Tensor:
-        """Normalize positions to [0, 1] range (always relative encoding).
+        """Normalize positions to the canonical [0, 1] coordinate range.
 
         Args:
             positions: [num_agents, position_dim] positions
@@ -330,14 +321,12 @@ class ContinuousNDSubstrate(SpatialSubstrate):
         return combine_metric(deltas.abs(), self.distance_metric) <= radius
 
     def egocentric_delta(self, self_pos: torch.Tensor, entity_pos: torch.Tensor) -> torch.Tensor:
-        """entity − self per axis, shortest path under wrap, normalized per encoding mode."""
+        """Bounded entity − self per axis, using the shortest path under wrap."""
         require_position_batch(self_pos, self.position_dim, argument="self_pos")
         require_position_batch(entity_pos, self.position_dim, argument="entity_pos")
         wrap = self._token_axis_extents(self_pos.device) if self.boundary == "wrap" else None
         deltas = pairwise_axis_deltas(self_pos, entity_pos, wrap)
-        if self.observation_encoding == "relative":
-            deltas = deltas / self._token_axis_extents(deltas.device)
-        return deltas
+        return deltas / self._token_axis_extents(deltas.device)
 
     def get_valid_neighbors(self, position: torch.Tensor) -> list[torch.Tensor]:
         """Raise error - continuous space has no discrete neighbors.

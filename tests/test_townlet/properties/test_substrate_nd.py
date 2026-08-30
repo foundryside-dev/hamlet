@@ -25,7 +25,6 @@ def test_distance_symmetric_gridnd(dimensions, size, metric):
         dimension_sizes=[size] * dimensions,
         boundary="clamp",
         distance_metric=metric,
-        observation_encoding="relative",
     )
 
     # Two random positions
@@ -54,7 +53,6 @@ def test_boundary_idempotence_gridnd(dimensions, size, boundary_mode):
         dimension_sizes=[size] * dimensions,
         boundary=boundary_mode,
         distance_metric="manhattan",
-        observation_encoding="relative",
     )
 
     # Out-of-bounds position
@@ -84,7 +82,6 @@ def test_movement_reversible_gridnd(dimensions, size):
         dimension_sizes=[size] * dimensions,
         boundary="wrap",
         distance_metric="manhattan",
-        observation_encoding="relative",
     )
 
     # Interior position
@@ -128,7 +125,6 @@ def test_distance_symmetric_continuousnd(dimensions, metric):
         movement_delta=0.5,
         interaction_radius=1.0,
         distance_metric=metric,
-        observation_encoding="relative",
     )
 
     # Two random positions
@@ -161,7 +157,6 @@ def test_boundary_idempotence_continuousnd(dimensions, boundary_mode):
         movement_delta=0.5,
         interaction_radius=1.0,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     # Out-of-bounds position
@@ -190,7 +185,6 @@ def test_movement_reversible_continuousnd(dimensions):
         movement_delta=0.5,
         interaction_radius=1.0,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     # Interior position

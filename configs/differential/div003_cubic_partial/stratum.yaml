@@ -14,7 +14,6 @@ stratum:
 
       distance_metric: manhattan
 
-      observation_encoding: relative
       diagonals: true
 
   vision_support: both

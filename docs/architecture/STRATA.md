@@ -202,21 +202,13 @@ documented at `base.py:195-255`. Deriving these numbers anywhere else is the def
 `width * height * depth` for Grid3D. GridND has no occupancy grid, so its published grid encoding
 *is* its coordinate encoding; continuous and aspatial return 0 and no such field is declared.
 
-### 6.2 Position encoding modes
+### 6.2 Canonical bounded position encoding
 
-`observation_encoding` (`relative` | `scaled` | `absolute`), required on every spatial family:
-
-- **`relative`** — normalized [0,1] coordinates. Best for transfer learning, and what POMDP
-  position context always uses (`normalize_positions` returns relative regardless of mode).
-- **`scaled`** — normalized coordinates **plus the extents**, so the value range conveys grid size.
-- **`absolute`** — raw unnormalized coordinates, for physical simulation.
-
-⚠ **`scaled` is wider than the other two.** CLAUDE.md's "all encoding modes produce identical
-obs_dim (2 dims for position)" is **false against the source**: `grid2d.py:480-493` returns
-relative → 2, scaled → **4** (x, y, width, height), absolute → 2; `grid3d.py:496-509` returns
-3 / **6** / 3. Relative and absolute agree; scaled widens the position block because it packs the
-extents into it. Continuous and GridND route `obs_position` through their whole coordinate
-encoding.
+There is one position contract across every spatial family. Absolute coordinates are normalized
+to `[0, 1]` per axis; egocentric deltas use the same denominator and land in `[-1, 1]`. Grid axes
+divide by `max(size - 1, 1)` and continuous axes divide by their declared extent. The deleted
+`observation_encoding` selector is rejected as an extra config field; raw-coordinate and
+extent-appending alternatives do not exist.
 
 ### 6.3 What "constant width" actually claims
 

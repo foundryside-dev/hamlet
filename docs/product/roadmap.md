@@ -1,4 +1,4 @@
-# Roadmap — HAMLET / Townlet        Updated: 2026-08-31 · forty-ninth checkpoint (`PDR-0132`)
+# Roadmap — HAMLET / Townlet        Updated: 2026-08-31 · fiftieth checkpoint (`PDR-0133`)
 
 > Sequencing, WSJF / cost-of-delay, and dated forecasts are produced by
 > /axiom-program-management. This file records bets as INTENT, not a delivery
@@ -18,10 +18,10 @@
 > that predates the VFS/VTC/DAC era. This file does not supersede or edit it; retiring it is part
 > of the Now bet.
 
-> **Current checkpoint — 2026-08-31, `PDR-0132`:** no horizon change. Token work stays Now and
-> now has five separately accepted milestones. The first executable unit deletes the inert
-> observation-encoding surface and makes bounded positions canonical; compact replay remains
-> behind both semantic repairs, followed by Unit 4 and Unit 5.
+> **Current checkpoint — 2026-08-31, `PDR-0133`:** no horizon change. Token milestone 1 is
+> delivered: the obsolete observation-encoding selector and raw-delta branches are deleted, one
+> bounded position contract is canonical, and the vacuous matrix cell now tests wrap boundaries.
+> Meter `range_type` wiring is the next executable milestone; compact replay remains behind it.
 
 ## Now  (committed, in-flight)
 
@@ -51,22 +51,24 @@
 > sequencing consequence is the 2026-10-06 trial-pack disposition deadline before token unit 5.
 
 - **Token-based observation engineering — IN SCOPE, owner-directed** (`PDR-0108`,
-  `PDR-0114`, `PDR-0131`, `PDR-0132`; `hamlet-fa6bb6da4a`). Phase A, the declared attention choice and
+  `PDR-0114`, `PDR-0131`, `PDR-0132`, `PDR-0133`; `hamlet-fa6bb6da4a`). Phase A, the declared attention choice and
   full token cut through unit 3 are landed. The open work is no longer "prove set_encoder".
   · **The 9.43× decision is re-ruled (`PDR-0131`, superseding `PDR-0126`).** At the default
   100,000-transition capacity, the current 1,132-float serialization spends 863.6 MiB on
   observation pairs versus 91.6 MiB before the cut. About 810 floats are immutable declaration
   context repeated per transition and another 204 are rank padding; compact live state is 118.
-  · **Next implementation unit:** store immutable per-slot descriptors once in the compiled
-  artifact; store only presence/live values/actual-rank coordinates in replay; reconstruct the
-  fixed cross-substrate token schema at the network boundary. Delete the old transition ABI —
-  no compatibility path.
+  · **Milestone 1 delivered (`PDR-0133`):** the old position selector, all mode branches and the
+  vacuous `div003_scaled` cell are gone. Current config rejects the old key; positions are
+  `[0,1]`, egocentric deltas `[-1,1]`, with no compatibility path.
+  · **Next implementation unit:** restore declared meter `range_type` normalization into token
+  live values. After that, store immutable per-slot descriptors once in the compiled artifact,
+  keep only compact live state in replay, and reconstruct the fixed schema at the network edge.
   · **Acceptance:** L1 dynamic replay ≤120 floats; 100k observation pair ≤96,000,000 float32
   bytes; batch 256 viable; encoding <25% of `env.step`; Grid2D/Grid3D/aspatial transfer,
   visibility and reconstructed-input parity pinned. Unit 4's 79.19 IQM floor runs only after
   this ABI lands; unit 5 then migrates every shipped pack.
   · **Checkpointed sequence (`PDR-0132`):** canonical bounded positions
-  (`hamlet-6a4a6596bd`) → meter `range_type` wiring (`hamlet-1e335e0363`) → compact ABI
+  (`hamlet-6a4a6596bd`, complete) → meter `range_type` wiring (`hamlet-1e335e0363`) → compact ABI
   (`hamlet-1b1caf552a`) → Unit 4 engineering regression (`hamlet-25fc3fb955`) → Unit 5 shipped-pack
   migration (`hamlet-55b2826a02`). Compact waits on both semantic repairs even though those bugs
   remain independently startable. Each milestone needs terminal tracker evidence and a committed
@@ -74,7 +76,7 @@
   variables remain downstream, not silently folded into this unit.
   · metric: replay resident bytes, viable batch size, observation-encoding share, unit-4
   regression floor
-  · Updated: 2026-08-31 (`PDR-0132`)
+  · Updated: 2026-08-31 (`PDR-0133`)
 
 ## Next (shaped, decreasing certainty)
 

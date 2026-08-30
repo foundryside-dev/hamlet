@@ -260,7 +260,6 @@ class TestGrid3DConfiguration:
                 depth=3,
                 boundary="clamp",
                 distance_metric="manhattan",
-                observation_encoding="relative",
                 diagonals=True,
             ),
         )
@@ -287,7 +286,6 @@ def test_grid3d_stores_topology_when_provided():
         depth=3,
         boundary="clamp",
         distance_metric="manhattan",
-        observation_encoding="relative",
         topology="cubic",
     )
     assert substrate.topology == "cubic"
@@ -303,7 +301,6 @@ def test_grid3d_topology_defaults_to_cubic():
         depth=3,
         boundary="clamp",
         distance_metric="manhattan",
-        observation_encoding="relative",
     )
     assert substrate.topology == "cubic"
 
@@ -318,6 +315,5 @@ def test_grid3d_topology_attribute_exists():
         depth=3,
         boundary="clamp",
         distance_metric="manhattan",
-        observation_encoding="relative",
     )
     assert hasattr(substrate, "topology")

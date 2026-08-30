@@ -30,16 +30,13 @@ _DEFAULT_LEVELS = (
 
 # Differential packs (configs/differential/): default_curriculum with exactly
 # one stratum axis moved (pinned by
-# test_differential_packs_vary_only_the_declared_axis). They entered the matrix
-# as the DIV-003 crash cells — at oracle-2026-08-13 (0e875d7a) each crashed on
-# the old side with a signature re-verified at that tag. DIV-003 was cut and
-# adjudicated (PDR-0041), and at oracle-2026-08-17 (4222a917, PDR-0074) the
-# oracle itself runs them, so the entry is `retired` and these are plain
-# standing cells expected to AGREE. They stay because they exercise the
-# substrate axes the default pack does not.
+# test_differential_packs_vary_only_the_declared_axis). The cubic and rectangular
+# packs entered as DIV-003 crash cells; boundary_wrap replaced the vacuous
+# observation-encoding cell when that selector was deleted. These are plain
+# standing cells because they exercise real substrate axes the default pack does not.
 _DIFFERENTIAL_PACKS = (
     # (pack dir under configs/differential, level)
-    ("div003_scaled", "L1_full_observability"),
+    ("boundary_wrap", "L1_full_observability"),
     ("div003_cubic_partial", "L2_partial_observability"),
     ("div003_rect", "L1_full_observability"),
 )
@@ -246,7 +243,7 @@ class RegisteredStreamDivergence:
 # Which packs' FROZEN fixture drifts from its live pack, and under which register entry.
 # MEASURED at HEAD (`pack_drift`, 2026-08-26):
 #   configs/default_curriculum           differing: vfs_profiles.yaml     -> DIV-008
-#   configs/differential/div003_*  (×3)  differing: vfs_profiles.yaml     -> DIV-008
+#   configs/differential/*         (×3)  differing: vfs_profiles.yaml     -> DIV-008
 #   configs/test/effects_smoke           differing: effects.yaml, vfs_profiles.yaml -> DIV-008
 #   configs/test/items_smoke             only_in_frozen: levels/L0_smoke/brain.yaml (DIV-007)
 #                                        + differing: effects.yaml (DIV-008)
@@ -265,7 +262,7 @@ class RegisteredStreamDivergence:
 # a forward move of the oracle tag.
 _PACK_DIVERGENCE = {
     "configs/default_curriculum": "DIV-008",
-    "configs/differential/div003_scaled": "DIV-008",
+    "configs/differential/boundary_wrap": "DIV-008",
     "configs/differential/div003_cubic_partial": "DIV-008",
     "configs/differential/div003_rect": "DIV-008",
     "configs/test/effects_smoke": "DIV-008",

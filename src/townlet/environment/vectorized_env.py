@@ -612,7 +612,7 @@ class VectorizedHamletEnv:
             raise ValueError(
                 "Partial observability (POMDP) is not supported for continuous substrates. "
                 "Continuous spaces have infinite positions within any local window, making discrete vision grids undefined. "
-                "Use partial_observability=False with 'relative' or 'scaled' observation_encoding instead."
+                "Use partial_observability=False with the canonical normalized position encoding instead."
             )
         if self.substrate.position_dim >= 4:
             raise ValueError(
@@ -636,13 +636,6 @@ class VectorizedHamletEnv:
                     f"Use vision_range ≤ 2 (5×5×5 = 125 cells) for Grid3D partial observability, "
                     f"or disable partial_observability."
                 )
-        if hasattr(self.substrate, "observation_encoding") and self.substrate.observation_encoding != "relative":
-            raise ValueError(
-                f"Partial observability (POMDP) requires observation_encoding='relative', "
-                f"but substrate is configured with observation_encoding='{self.substrate.observation_encoding}'. "
-                f"POMDP uses normalized positions for recurrent network position encoder. "
-                f"Set observation_encoding='relative' in substrate.yaml or disable partial_observability."
-            )
 
     def _initialize_vfs_subsystem(self) -> None:
         """Build the VFS variable registry and evaluator.

@@ -24,7 +24,6 @@ def grid2d_diagonals():
         boundary="clamp",
         distance_metric="manhattan",
         enable_diagonals=True,
-        observation_encoding="relative",
     )
 
 
@@ -61,7 +60,6 @@ def cont1d(action_disc):
         interaction_radius=1.0,
         distance_metric="euclidean",
         action_discretization=action_disc,
-        observation_encoding="relative",
     )
 
 
@@ -77,7 +75,6 @@ def cont2d(action_disc):
         interaction_radius=1.0,
         distance_metric="euclidean",
         action_discretization=action_disc,
-        observation_encoding="relative",
     )
 
 
@@ -95,7 +92,6 @@ def cont3d(action_disc):
         interaction_radius=1.0,
         distance_metric="euclidean",
         action_discretization=action_disc,
-        observation_encoding="relative",
     )
 
 
@@ -107,5 +103,4 @@ def contnd():
         movement_delta=0.1,
         interaction_radius=0.2,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )

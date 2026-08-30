@@ -38,7 +38,6 @@ class TestStratumConfigLoading:
         assert substrate.grid.height == 8
         assert substrate.grid.boundary == "clamp"
         assert substrate.grid.distance_metric == "manhattan"
-        assert substrate.grid.observation_encoding == "relative"
         assert substrate.grid.diagonals is False
 
         # Only one substrate block should be populated
@@ -60,7 +59,6 @@ stratum:
       height: 4
       boundary: clamp
       distance_metric: manhattan
-      observation_encoding: relative
       diagonals: true
   vision_support: global
   temporal_support: disabled
@@ -89,7 +87,6 @@ class TestSubstrateConfigValidation:
             movement_delta=0.1,
             interaction_radius=0.5,
             distance_metric="euclidean",
-            observation_encoding="relative",
             action_discretization=ActionDiscretizationConfig(num_directions=8, num_magnitudes=3),
         )
 

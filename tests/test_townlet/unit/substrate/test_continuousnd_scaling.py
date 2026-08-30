@@ -14,7 +14,6 @@ def test_continuousnd_7d_movement():
         movement_delta=1.0,
         interaction_radius=1.0,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     # Agent at origin
@@ -36,7 +35,6 @@ def test_continuousnd_7d_distance_euclidean():
         movement_delta=0.5,
         interaction_radius=1.0,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     pos1 = torch.tensor([[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]], dtype=torch.float32)
@@ -58,7 +56,6 @@ def test_continuousnd_10d_initialization_with_warning():
             movement_delta=0.5,
             interaction_radius=1.0,
             distance_metric="euclidean",
-            observation_encoding="relative",
         )
 
     assert substrate.position_dim == 10
@@ -74,7 +71,6 @@ def test_continuousnd_10d_movement():
             movement_delta=1.0,
             interaction_radius=1.0,
             distance_metric="euclidean",
-            observation_encoding="relative",
         )
 
     # Agent at boundary
@@ -98,7 +94,6 @@ def test_continuousnd_10d_distance_manhattan():
             movement_delta=0.5,
             interaction_radius=1.0,
             distance_metric="manhattan",
-            observation_encoding="relative",
         )
 
     pos1 = torch.tensor([[0.0] * 10], dtype=torch.float32)
@@ -118,7 +113,6 @@ def test_continuousnd_batch_movement_7d():
         movement_delta=1.0,
         interaction_radius=1.0,
         distance_metric="euclidean",
-        observation_encoding="relative",
     )
 
     # 5 agents
@@ -164,5 +158,4 @@ def test_continuousnd_exceeds_max_dimensions():
             movement_delta=0.01,
             interaction_radius=0.1,
             distance_metric="euclidean",
-            observation_encoding="relative",
         )

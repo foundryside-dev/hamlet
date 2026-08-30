@@ -1,4 +1,4 @@
-"""Test configurable observation encoding for Grid2D substrate."""
+"""Tests for the Grid2D substrate."""
 
 import pytest
 import torch
@@ -9,58 +9,6 @@ from townlet.substrate.grid2d import Grid2DSubstrate
 @pytest.fixture
 def device():
     return torch.device("cpu")
-
-
-@pytest.fixture
-def grid2d_relative(device):
-    """Grid2D with relative encoding (normalized coordinates)."""
-    return Grid2DSubstrate(
-        width=8,
-        height=8,
-        boundary="clamp",
-        distance_metric="manhattan",
-        enable_diagonals=True,
-        observation_encoding="relative",
-    )
-
-
-@pytest.fixture
-def grid2d_scaled(device):
-    """Grid2D with scaled encoding (normalized + ranges)."""
-    return Grid2DSubstrate(
-        width=8,
-        height=8,
-        boundary="clamp",
-        distance_metric="manhattan",
-        enable_diagonals=True,
-        observation_encoding="scaled",
-    )
-
-
-@pytest.fixture
-def grid2d_absolute(device):
-    """Grid2D with absolute encoding (raw coordinates)."""
-    return Grid2DSubstrate(
-        width=8,
-        height=8,
-        boundary="clamp",
-        distance_metric="manhattan",
-        enable_diagonals=True,
-        observation_encoding="absolute",
-    )
-
-
-def test_grid2d_default_encoding_is_relative():
-    """Grid2D should default to relative encoding for backward compatibility."""
-    substrate = Grid2DSubstrate(
-        width=8,
-        height=8,
-        boundary="clamp",
-        distance_metric="manhattan",
-        enable_diagonals=True,
-        # observation_encoding NOT provided
-    )
-    assert substrate.observation_encoding == "relative"
 
 
 # =============================================================================
@@ -117,7 +65,6 @@ def test_grid2d_stores_topology_when_provided():
         boundary="clamp",
         distance_metric="manhattan",
         enable_diagonals=True,
-        observation_encoding="relative",
         topology="square",
     )
     assert substrate.topology == "square"
@@ -131,7 +78,6 @@ def test_grid2d_topology_defaults_to_square():
         boundary="clamp",
         distance_metric="manhattan",
         enable_diagonals=True,
-        observation_encoding="relative",
     )
     assert substrate.topology == "square"
 
@@ -143,6 +89,5 @@ def test_grid2d_topology_attribute_exists():
         height=8,
         boundary="clamp",
         distance_metric="manhattan",
-        observation_encoding="relative",
     )
     assert hasattr(substrate, "topology")

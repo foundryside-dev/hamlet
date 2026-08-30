@@ -120,7 +120,6 @@ stratum:
       # | relative | Normalized [0,1] coordinates      |
       # | scaled   | [0, grid_size] coordinates        |
       # | absolute | Raw coordinates                   |
-      observation_encoding: relative
 
     # Example alternate (continuous):
     # type: continuous
@@ -133,7 +132,6 @@ stratum:
     #   movement_delta: 0.5
     #   interaction_radius: 1.0
     #   distance_metric: euclidean
-    #   observation_encoding: relative
     #   action_discretization:
     #     num_directions: 8  # REQUIRED, 8-32
     #     num_magnitudes: 3  # REQUIRED, 3-7
@@ -1081,7 +1079,7 @@ training:
 # ✅ actions (adding/removing changes action_dim)
 #
 # NOT BREAKING (behavior only):
-# ❌ substrate.boundary, distance_metric, observation_encoding (same dims, different values)
+# ❌ substrate.boundary, distance_metric (same dims, different values)
 # ❌ active_vision, active_temporal (masking doesn't change dims)
 # ❌ vision_range, day_length (parameters, not structure)
 # ❌ meter parameters (depletion, recovery, bounds)

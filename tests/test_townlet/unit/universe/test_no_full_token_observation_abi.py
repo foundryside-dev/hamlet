@@ -142,7 +142,6 @@ def test_vertical_runtime_has_no_whole_fixed_observation_surface_or_allocation(
         batch_size=4,
         sequence_length=1,
         max_grad_norm=1.0,
-        vision_window_size=1,
     )
 
     objects = {

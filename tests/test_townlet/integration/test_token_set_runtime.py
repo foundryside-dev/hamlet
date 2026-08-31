@@ -44,7 +44,6 @@ def _build(level: str):
         batch_size=16,
         sequence_length=1,
         max_grad_norm=1.0,
-        vision_window_size=1,
     )
     population.reset()
     return env, population
@@ -62,9 +61,9 @@ def attention_setup():
 
 def _element_type_slice(env) -> slice:
     """Serialization slice of the `variable_element` block — this pack's exposed vars."""
-    from townlet.agent.network_factory import NetworkFactory
-
-    return NetworkFactory.token_block_slices(env.token_spec)["variable_element"]
+    layout = env.token_spec.compact_layout().get_type("variable_element")
+    assert layout is not None
+    return slice(layout.start, layout.end)
 
 
 def _network_with_permuted_element_contexts(
@@ -101,8 +100,8 @@ def _network_with_permuted_element_contexts(
         action_dim=net.action_dim,
         token_embed_dim=net.token_embed_dim,
         q_head_hidden_dim=first_head_layer.out_features,
-        aggregator_type=net.aggregator_type,
-        num_heads=net.num_heads,
+        aggregator_type=net.encoder.aggregator_type,
+        num_heads=net.encoder.num_heads,
     )
     permuted_net.load_state_dict(net.state_dict())
     return permuted_net
@@ -116,7 +115,7 @@ def test_config_builds_a_token_set_network(setup) -> None:
     # (an nn.ModuleDict, never a list indexed by roster position).
     assert set(net.token_type_names) <= {t.type_name for t in env.token_spec.types}
     assert net.obs_dim == env.token_spec.total_dims == env.observation_dim
-    assert net.aggregator_type == "mean"
+    assert net.encoder.aggregator_type == "mean"
 
 
 def test_tokens_reach_the_network_and_change_its_output(setup) -> None:
@@ -168,7 +167,7 @@ def test_gradients_flow_into_the_per_type_encoders(setup) -> None:
 
     net.zero_grad()
     net(obs).sum().backward()
-    grads = {name: encoder.weight.grad for name, encoder in net.encoders.items()}
+    grads = {name: encoder.weight.grad for name, encoder in net.encoder.encoders.items()}
     assert any(g is not None and torch.any(g != 0.0) for g in grads.values()), "loss must reach the token encoders"
 
 
@@ -177,9 +176,9 @@ def test_declared_attention_reaches_the_built_network(attention_setup) -> None:
     _env, population = attention_setup
     net = population.q_network
     assert isinstance(net, TokenSetQNetwork)
-    assert net.aggregator_type == "attention"
-    assert net.num_heads == 4
-    assert net.q_proj is not None and net.out_proj is not None
+    assert net.encoder.aggregator_type == "attention"
+    assert net.encoder.num_heads == 4
+    assert net.encoder.q_proj is not None and net.encoder.out_proj is not None
 
 
 def test_attention_level_stays_permutation_invariant_end_to_end(attention_setup) -> None:
@@ -213,6 +212,6 @@ def test_attention_level_gradients_reach_the_attention_weights(attention_setup) 
 
     net.zero_grad()
     net(obs).sum().backward()
-    assert net.q_proj is not None
-    grad = net.q_proj.weight.grad
+    assert net.encoder.q_proj is not None
+    grad = net.encoder.q_proj.weight.grad
     assert grad is not None and torch.any(grad != 0.0), "loss must reach the attention weights"

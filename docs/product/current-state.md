@@ -43,7 +43,7 @@ The checkpointed sequence is unchanged:
 1. bounded positions — complete;
 2. meter normalization — closed;
 3. compact replay/static context — accepted, tracker closure being recorded;
-4. token-native recurrent engineering regression — next (`hamlet-25fc3fb955`); and
+4. token-native recurrent engineering regression — in progress (`hamlet-25fc3fb955`); and
 5. shipped-pack migration — after milestone 4 (`hamlet-55b2826a02`).
 
 **3. Documentation truth** (`PDR-0125`) — recovery labelling is complete; the source-derived
@@ -77,13 +77,14 @@ parked; the pack-disposition clock remains 2026-10-06.
   one replacement ABI; never retain two. Milestone 3 met this check.
 - `PDR-0132`: accept and record every milestone before starting its successor.
 - `PDR-0134`: a new meter normalization must remain bounded, fixed-width and world-independent.
-- `PDR-0114` trigger 1 is now milestone 4's engineering check: token feedforward and the
-  token-native recurrent variant must each reach 79.19 IQM at equal environment steps.
+- `PDR-0137` makes trigger 1 an explicit engineering check: all four
+  feedforward/recurrent × mean/attention cells must reach raw greedy mean survival 79.19 on
+  deterministic seed 45 at its full frozen transition budget. No confidence claim is made.
 
 ## Next session starts here
 
-1. Close `hamlet-1b1caf552a` with the implementation/product SHAs and exact evidence.
-2. Atomically start `hamlet-25fc3fb955`.
-3. Build the token-native recurrent variant and run the 79.19 IQM equal-step regression. Do not
-   treat milestone 3's current-reader BPTT check as that result.
-4. Checkpoint milestone 4 before beginning shipped-pack migration.
+1. Land the token-native recurrent hard cut and the source-bound four-cell harness.
+2. Run the four seed-45 cells at 2,278,640 summed-live-agent transitions and evaluate the frozen
+   100-episode greedy protocol.
+3. Record the raw 79.19 verdict and checkpoint milestone 4 before beginning shipped-pack
+   migration.

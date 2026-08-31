@@ -23,7 +23,7 @@ _DIGEST_BUFFER_SIZE = 1024 * 1024  # 1 MiB chunks keep memory bounded
 # 5: THE COMPACT TOKEN/REPLAY CUT (unit 3 M3 Task 4). Every nested population and
 # replay artifact now carries only the compact observation ABI and validates before
 # any runtime state is applied. The immediately previous version describes a different ABI.
-CHECKPOINT_FORMAT_VERSION = 5
+CHECKPOINT_FORMAT_VERSION = 6
 
 # The complete DemoRunner artifact. Producers and both consumers share this one
 # closed schema: only artifacts emitted by the current code are accepted.
@@ -38,6 +38,7 @@ DEMO_CHECKPOINT_KEYS = frozenset(
         "affordance_layout",
         "agent_ids",
         "epsilon",
+        "completed_live_agent_steps",
         "training_config",
         "config_dir",
         "config_hash",
@@ -129,6 +130,10 @@ def validate_demo_checkpoint_runtime_fields(
     epsilon = checkpoint["epsilon"]
     if isinstance(epsilon, bool) or not isinstance(epsilon, int | float) or not math.isfinite(float(epsilon)):
         raise ValueError("Demo checkpoint epsilon must be a finite number.")
+
+    completed_live_agent_steps = checkpoint["completed_live_agent_steps"]
+    if isinstance(completed_live_agent_steps, bool) or not isinstance(completed_live_agent_steps, int) or completed_live_agent_steps < 0:
+        raise ValueError("Demo checkpoint completed_live_agent_steps must be a non-negative integer.")
 
 
 def attach_universe_metadata(checkpoint: dict[str, Any], universe: CompiledUniverse) -> None:
@@ -226,7 +231,8 @@ def assert_checkpoint_dimensions(
 
     ``architecture_type`` selects the observation gate (unit-3 cut):
 
-    - ``"token_set"``: the TokenSpec TYPE-SCHEMA hash — the transfer contract.
+    - ``"token_set"`` or ``"recurrent"``: the TokenSpec TYPE-SCHEMA hash —
+      the token-native transfer contract.
       Capacities and slot bindings are entity variation a token net absorbs by design,
       so they are deliberately excluded.
     - anything else (a flat reader, ``None`` included): the LAYOUT hash — type order,
@@ -249,7 +255,7 @@ def assert_checkpoint_dimensions(
     if action_dim is not None and action_dim != level.action_metadata.total_actions:
         raise ValueError(f"Checkpoint action_dim mismatch: checkpoint={action_dim}, current={level.action_metadata.total_actions}")
 
-    if architecture_type == "token_set":
+    if architecture_type in {"token_set", "recurrent"}:
         assert_checkpoint_token_type_schema_hash(checkpoint, universe)
     else:
         assert_checkpoint_layout_hash(checkpoint, universe)
@@ -431,7 +437,7 @@ def assert_checkpoint_identity(checkpoint: Mapping[str, Any], universe: Compiled
     if not assert_checkpoint_vfs_hash(checkpoint, universe, force_new_vfs=force_new_vfs):
         return False
 
-    assert_checkpoint_dimensions(checkpoint, universe)
+    assert_checkpoint_dimensions(checkpoint, universe, architecture_type=universe.brain.architecture.type)
 
     checkpoint_primary_level = checkpoint.get("primary_level")
     if checkpoint_primary_level is None:
@@ -470,7 +476,7 @@ def load_token_network_state_by_type(
     network: torch.nn.Module,
     source_state: Mapping[str, torch.Tensor],
 ) -> TokenRosterReport:
-    """Load a TokenSetQNetwork state dict BY TYPE KEY (token-obs spec §4).
+    """Load a token-native network state dict BY TYPE KEY (token-obs spec §4).
 
     Per-type encoders and type embeddings load for the INTERSECTION of type keys —
     the ``nn.ModuleDict`` keying is the transfer contract (a list indexed by roster
@@ -484,13 +490,13 @@ def load_token_network_state_by_type(
     cold-starts that module and is reported, because the Q-head's values encode the
     source universe's rewards and must be relearned anyway.
     """
-    from townlet.agent.networks import TokenSetQNetwork
+    from townlet.agent.networks import RecurrentTokenQNetwork, TokenSetQNetwork
 
-    if not isinstance(network, TokenSetQNetwork):
-        raise ValueError(f"load_token_network_state_by_type requires a TokenSetQNetwork, got {type(network).__name__}")
+    if not isinstance(network, (TokenSetQNetwork, RecurrentTokenQNetwork)):
+        raise ValueError(f"load_token_network_state_by_type requires a token-native Q-network, got {type(network).__name__}")
 
     def _type_of(key: str) -> str | None:
-        for prefix in ("encoders.", "type_embeddings."):
+        for prefix in ("encoder.encoders.", "encoder.type_embeddings."):
             if key.startswith(prefix):
                 return key[len(prefix) :].split(".", 1)[0]
         return None

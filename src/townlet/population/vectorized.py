@@ -20,7 +20,7 @@ import torch.nn.functional as F  # noqa: N812
 
 from townlet.agent.loss_factory import LossFactory
 from townlet.agent.network_factory import NetworkFactory
-from townlet.agent.networks import RecurrentSpatialQNetwork
+from townlet.agent.networks import RecurrentTokenQNetwork
 from townlet.agent.optimizer_factory import OptimizerFactory
 from townlet.config.brain_config import BrainConfig
 from townlet.curriculum.base import CurriculumManager
@@ -42,7 +42,7 @@ if TYPE_CHECKING:
 
 _logger = logging.getLogger(__name__)
 
-POPULATION_CHECKPOINT_FORMAT_VERSION = 4
+POPULATION_CHECKPOINT_FORMAT_VERSION = 5
 POPULATION_CHECKPOINT_KEYS = frozenset(
     {
         "version",
@@ -122,7 +122,6 @@ class VectorizedPopulation(PopulationManager):
         sequence_length: int,
         max_grad_norm: float,
         action_dim: int,
-        vision_window_size: int,
         tb_logger=None,
         max_episodes: int | None = None,
         max_steps_per_episode: int | None = None,
@@ -141,7 +140,6 @@ class VectorizedPopulation(PopulationManager):
             brain_config: Brain configuration (REQUIRED). Specifies network architecture,
                 optimizer, loss function, Q-learning parameters, and replay buffer settings.
                 See docs/config-schemas/brain.md for schema.
-            vision_window_size: Size of local vision window for recurrent networks (5 for 5×5)
             tb_logger: Optional TensorBoard logger
             train_frequency: Train Q-network every N steps (required; typically from training.yaml)
             batch_size: Batch size for experience replay (required; typically from training.yaml replay_buffer.batch_size)
@@ -201,11 +199,10 @@ class VectorizedPopulation(PopulationManager):
 
         # Q-network (shared across all agents for now)
         # Store params needed for network building helper
-        self._vision_window_size = vision_window_size
         self._obs_dim = obs_dim
 
         # Build network using DRY helper (POP-001)
-        self.q_network: nn.Module = self._build_network(brain_config, obs_dim, action_dim, env, vision_window_size).to(device)
+        self.q_network: nn.Module = self._build_network(brain_config, obs_dim, action_dim, env).to(device)
 
         # Set is_recurrent flag from brain_config
         self.is_recurrent = brain_config.architecture.type == "recurrent"
@@ -213,26 +210,17 @@ class VectorizedPopulation(PopulationManager):
         # Set is_dueling flag from brain_config
         self.is_dueling = brain_config.architecture.type == "dueling"
 
-        # Set is_token_set flag from brain_config (token-obs unit 3 Task 9)
-        self.is_token_set = brain_config.architecture.type == "token_set"
+        self.is_token_native = brain_config.architecture.type in {"token_set", "recurrent"}
 
         # Target network (stabilises training for both feed-forward and recurrent agents)
         # Build using DRY helper (POP-001)
-        self.target_network: nn.Module = self._build_network(brain_config, obs_dim, action_dim, env, vision_window_size).to(device)
+        self.target_network: nn.Module = self._build_network(brain_config, obs_dim, action_dim, env).to(device)
 
         # Initialize common target network state
         self.target_network.load_state_dict(self.q_network.state_dict())
         self.target_network.eval()  # Target network always in eval mode
         self.target_update_frequency = target_update_frequency
         self.training_step_counter = 0
-
-        # Propagate temporal mechanics flag from environment to recurrent networks.
-        if self.is_recurrent and hasattr(env, "enable_temporal_mechanics"):
-            temporal_enabled = bool(getattr(env, "enable_temporal_mechanics"))
-            if hasattr(self.q_network, "enable_temporal_features"):
-                self.q_network.enable_temporal_features = temporal_enabled  # type: ignore[assignment]
-            if hasattr(self.target_network, "enable_temporal_features"):
-                self.target_network.enable_temporal_features = temporal_enabled  # type: ignore[assignment]
 
         # Optimizer and scheduler from brain_config
         self.optimizer, self.scheduler = OptimizerFactory.build(
@@ -311,7 +299,7 @@ class VectorizedPopulation(PopulationManager):
         # WS-1(b): rollout memory is population-owned; the network holds no state.
         self.rollout_hidden: tuple[torch.Tensor, torch.Tensor] | None = None
         if self.is_recurrent:
-            recurrent_network = cast(RecurrentSpatialQNetwork, self.q_network)
+            recurrent_network = cast(RecurrentTokenQNetwork, self.q_network)
             self.rollout_hidden = recurrent_network.initial_hidden(self.num_agents, self.device)
         # Q-values recorded by the action selectors (read by the live-inference display).
         self.last_selected_q_values: torch.Tensor | None = None
@@ -322,7 +310,7 @@ class VectorizedPopulation(PopulationManager):
 
         # Re-seed population-owned rollout memory (if applicable)
         if self.is_recurrent:
-            recurrent_network = cast(RecurrentSpatialQNetwork, self.q_network)
+            recurrent_network = cast(RecurrentTokenQNetwork, self.q_network)
             self.rollout_hidden = recurrent_network.initial_hidden(self.num_agents, self.device)
 
         # Get epsilon from exploration strategy (handle both direct and composed)
@@ -408,7 +396,6 @@ class VectorizedPopulation(PopulationManager):
         obs_dim: int,
         action_dim: int,
         env: VectorizedHamletEnv,
-        vision_window_size: int,
     ) -> nn.Module:
         """Build network from brain_config (DRY helper for q_network and target_network).
 
@@ -416,8 +403,7 @@ class VectorizedPopulation(PopulationManager):
             brain_config: Brain configuration specifying architecture
             obs_dim: Observation dimension
             action_dim: Action dimension
-            env: Environment for substrate/meter info (recurrent networks)
-            vision_window_size: Vision window size (recurrent networks)
+            env: Environment carrying the compiled token schema
 
         Returns:
             Constructed network module (not yet moved to device)
@@ -433,13 +419,9 @@ class VectorizedPopulation(PopulationManager):
             )
         elif arch.type == "recurrent":
             assert arch.recurrent is not None, "recurrent config must be present"
-            # Post-cut this is a token-BLOCK reader: its input slices come from the
-            # compiled TokenSpec's contiguous per-type serialization, not from a raster
-            # observation spec. A token-NATIVE recurrent/attention brain is unit 4.
             return NetworkFactory.build_recurrent(
                 config=arch.recurrent,
                 action_dim=action_dim,
-                substrate_position_dim=env.substrate.position_dim,
                 token_spec=env.token_spec,
             )
         elif arch.type == "dueling":
@@ -504,9 +486,9 @@ class VectorizedPopulation(PopulationManager):
         c[:, agent_idx, :] = 0.0
 
     def _unroll_recurrent(
-        self, network: RecurrentSpatialQNetwork, observations: torch.Tensor
-    ) -> tuple[list[torch.Tensor], tuple[torch.Tensor, torch.Tensor]]:
-        """Unroll `network` over a sampled batch, threading hidden state t -> t+1.
+        self, network: RecurrentTokenQNetwork, observations: torch.Tensor
+    ) -> tuple[torch.Tensor, tuple[torch.Tensor, torch.Tensor]]:
+        """Evaluate a sampled sequence in one recurrent network call.
 
         Hidden state is LOCAL to this unroll: it starts at zeros for every sampled
         sequence (DRQN zero-start, retained deliberately - the WS-1(b) defect was
@@ -517,17 +499,12 @@ class VectorizedPopulation(PopulationManager):
             observations: [batch, seq_len, obs_dim]
 
         Returns:
-            (q_values_per_step, final_hidden): per-timestep Q-values, each
-            [batch, action_dim], and the hidden state after the last timestep -
-            the state the WS-1(c) boundary bootstrap must evaluate under.
+            (q_values, final_hidden), where q_values is [batch, sequence, action]
+            and final_hidden is used for the boundary bootstrap.
         """
-        batch_size, seq_len = observations.shape[0], observations.shape[1]
+        batch_size = observations.shape[0]
         hidden = network.initial_hidden(batch_size, observations.device)
-        q_values_per_step: list[torch.Tensor] = []
-        for t in range(seq_len):
-            q_values, hidden = network(observations[:, t, :], hidden)
-            q_values_per_step.append(q_values)
-        return q_values_per_step, hidden
+        return cast(tuple[torch.Tensor, tuple[torch.Tensor, torch.Tensor]], network(observations, hidden))
 
     # ------------------------------------------------------------------ #
     # Telemetry synchronisation helpers
@@ -647,9 +624,10 @@ class VectorizedPopulation(PopulationManager):
         with torch.no_grad():
             # Get Q-values from network (recurrent: advance the rollout memory)
             if self.is_recurrent:
-                recurrent_network = cast(RecurrentSpatialQNetwork, self.q_network)
+                recurrent_network = cast(RecurrentTokenQNetwork, self.q_network)
                 assert self.rollout_hidden is not None
-                q_values, self.rollout_hidden = recurrent_network(self.current_obs, self.rollout_hidden)
+                q_sequence, self.rollout_hidden = recurrent_network(self.current_obs.unsqueeze(1), self.rollout_hidden)
+                q_values = q_sequence[:, 0, :]
             else:
                 q_values = self.q_network(self.current_obs)
             # Record BEFORE any early exit so the live Q-value display never reads stale values (plan §3 H8).
@@ -684,9 +662,10 @@ class VectorizedPopulation(PopulationManager):
         with torch.no_grad():
             # Get Q-values from network (recurrent: advance the rollout memory)
             if self.is_recurrent:
-                recurrent_network = cast(RecurrentSpatialQNetwork, self.q_network)
+                recurrent_network = cast(RecurrentTokenQNetwork, self.q_network)
                 assert self.rollout_hidden is not None
-                q_values, self.rollout_hidden = recurrent_network(self.current_obs, self.rollout_hidden)
+                q_sequence, self.rollout_hidden = recurrent_network(self.current_obs.unsqueeze(1), self.rollout_hidden)
+                q_values = q_sequence[:, 0, :]
             else:
                 q_values = self.q_network(self.current_obs)
             # The return below sits inside this no_grad block: record the Q-values
@@ -741,10 +720,11 @@ class VectorizedPopulation(PopulationManager):
         # 1. Get Q-values from network
         with torch.no_grad():
             if self.is_recurrent:
-                recurrent_network = cast(RecurrentSpatialQNetwork, self.q_network)
+                recurrent_network = cast(RecurrentTokenQNetwork, self.q_network)
                 assert self.rollout_hidden is not None
                 # Thread and advance the population-owned rollout memory.
-                q_values, self.rollout_hidden = recurrent_network(self.current_obs, self.rollout_hidden)
+                q_sequence, self.rollout_hidden = recurrent_network(self.current_obs.unsqueeze(1), self.rollout_hidden)
+                q_values = q_sequence[:, 0, :]
             else:
                 q_values = self.q_network(self.current_obs)
 
@@ -878,12 +858,9 @@ class VectorizedPopulation(PopulationManager):
 
                 # PASS 1: Q-predictions from the online network, hidden state threaded
                 # t -> t+1 through the sampled window (gradient flows through the unroll).
-                recurrent_network = cast(RecurrentSpatialQNetwork, self.q_network)
-                q_values_online_list, online_final_hidden = self._unroll_recurrent(recurrent_network, batch["observations"])
-                q_pred_list = []
-                for t in range(seq_len):
-                    q_pred = q_values_online_list[t].gather(1, batch["actions"][:, t].unsqueeze(1)).squeeze()
-                    q_pred_list.append(q_pred)
+                recurrent_network = cast(RecurrentTokenQNetwork, self.q_network)
+                q_values_online, online_final_hidden = self._unroll_recurrent(recurrent_network, batch["observations"])
+                q_pred_all = q_values_online.gather(2, batch["actions"].unsqueeze(2)).squeeze(2)
 
                 # PASS 2: Q-targets. The last index of a sampled window is a WINDOW
                 # boundary, not a terminal (WS-1(c)): it bootstraps from the stored
@@ -900,25 +877,27 @@ class VectorizedPopulation(PopulationManager):
                         # crossing the two hidden states, silently evaluates the
                         # successor under the wrong network's trajectory (plan H6;
                         # the networks have different weights).
-                        q_online_boundary, _ = recurrent_network(boundary_next_obs, online_final_hidden)
+                        q_online_boundary_sequence, _ = recurrent_network(boundary_next_obs.unsqueeze(1), online_final_hidden)
+                        q_online_boundary = q_online_boundary_sequence[:, 0, :]
 
-                    target_recurrent = cast(RecurrentSpatialQNetwork, self.target_network)
-                    q_values_target_list, target_final_hidden = self._unroll_recurrent(target_recurrent, batch["observations"])
+                    target_recurrent = cast(RecurrentTokenQNetwork, self.target_network)
+                    q_values_target, target_final_hidden = self._unroll_recurrent(target_recurrent, batch["observations"])
                     # Boundary forward for the TARGET network, under its own final hidden state.
-                    q_target_boundary, _ = target_recurrent(boundary_next_obs, target_final_hidden)
+                    q_target_boundary_sequence, _ = target_recurrent(boundary_next_obs.unsqueeze(1), target_final_hidden)
+                    q_target_boundary = q_target_boundary_sequence[:, 0, :]
 
                     if self.use_double_dqn:
                         # Double DQN: online network selects, target network evaluates.
                         # Action selection reuses PASS 1's online unroll - a third
                         # unroll would recompute the same trajectory.
-                        next_action_list = [q_values_online.argmax(1) for q_values_online in q_values_online_list]
+                        next_actions_all = q_values_online.argmax(2)
 
                         q_target_list = []
                         for t in range(seq_len):
                             if t < seq_len - 1:
                                 # Use Q-values from t+1, evaluated at actions selected by online network
-                                next_actions = next_action_list[t + 1]
-                                q_next = q_values_target_list[t + 1].gather(1, next_actions.unsqueeze(1)).squeeze(1)
+                                next_actions = next_actions_all[:, t + 1]
+                                q_next = q_values_target[:, t + 1, :].gather(1, next_actions.unsqueeze(1)).squeeze(1)
                             else:
                                 # Window boundary: successor evaluated at the online network's argmax
                                 boundary_actions = q_online_boundary.argmax(1)
@@ -931,7 +910,7 @@ class VectorizedPopulation(PopulationManager):
                         for t in range(seq_len):
                             if t < seq_len - 1:
                                 # Use Q-values from t+1 (computed with hidden state from t)
-                                q_next = q_values_target_list[t + 1].max(1)[0]
+                                q_next = q_values_target[:, t + 1, :].max(1)[0]
                             else:
                                 # Window boundary: successor evaluated by the target network
                                 q_next = q_target_boundary.max(1)[0]
@@ -939,7 +918,6 @@ class VectorizedPopulation(PopulationManager):
                             q_target_list.append(q_target)
 
                 # Compute loss across all timesteps with post-terminal masking (P2.2)
-                q_pred_all = torch.stack(q_pred_list, dim=1)  # [batch, seq_len]
                 q_target_all = torch.stack(q_target_list, dim=1)  # [batch, seq_len]
 
                 # P2.2: Apply mask to prevent gradients from post-terminal garbage
@@ -1817,9 +1795,9 @@ class VectorizedPopulation(PopulationManager):
         This is the seam the Task-10 cut wires into the checkpoint-consumer paths;
         nothing calls it in the live step path this task.
         """
-        if not self.is_token_set:
+        if not self.is_token_native:
             raise ValueError(
-                "load_token_network_cross_universe requires architecture.type='token_set'; "
+                "load_token_network_cross_universe requires architecture.type='token_set' or 'recurrent'; "
                 f"this population runs {self.brain_config.architecture.type!r}."
             )
         report = load_token_network_state_by_type(self.q_network, source_q_network_state)

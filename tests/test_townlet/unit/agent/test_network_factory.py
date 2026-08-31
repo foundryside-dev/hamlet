@@ -8,38 +8,6 @@ from townlet.config.brain_config import (
     DuelingStreamConfig,
     FeedforwardConfig,
 )
-from townlet.universe.dto.token_spec import PAYLOAD_SCHEMAS, TOKEN_TRANSPORT_VERSION, SlotBinding, TokenSpec, build_token_type
-
-
-def test_token_block_slices_use_compact_row_width():
-    self_type = build_token_type(
-        "self",
-        (SlotBinding(slot_index=0, filler_kind="static", filler_ref="self"),),
-        slot_context_payloads=((0.0,) * len(PAYLOAD_SCHEMAS["self"]),),
-        effect_catalog_contexts=(),
-    )
-    meter_type = build_token_type(
-        "meter",
-        tuple(SlotBinding(slot_index=index, filler_kind="static", filler_ref=f"meter:{index}") for index in range(2)),
-        slot_context_payloads=tuple((0.0,) * len(PAYLOAD_SCHEMAS["meter"]) for _ in range(2)),
-        effect_catalog_contexts=(),
-    )
-    spec = TokenSpec(
-        types=(self_type, meter_type),
-        position_rank=2,
-        transport_version=TOKEN_TRANSPORT_VERSION,
-    )
-
-    slices = NetworkFactory.token_block_slices(spec)
-
-    layout = spec.compact_layout()
-    self_layout = layout.get_type("self")
-    meter_layout = layout.get_type("meter")
-    assert self_layout is not None and meter_layout is not None
-    assert slices == {
-        "self": slice(self_layout.start, self_layout.end),
-        "meter": slice(meter_layout.start, meter_layout.end),
-    }
 
 
 def test_build_feedforward_basic():

@@ -67,13 +67,11 @@ experiment:
   # Observation mode is defined in stratum.yaml (see Section 2).
 
 # =============================================================================
-# SECTION 2: stratum.yaml (World Topology & Supported Observations)
+# SECTION 2: stratum.yaml (World Topology & Vision Modes)
 # =============================================================================
 # Location: configs/my_experiment/stratum.yaml
-# Purpose: Defines the world topology and which observation fields CAN exist.
-# Tags: [BREAKING], [OBS_DIM]
-# Rule: If a setting changes tensor shape, it is BREAKING and must be scoped at
-#       the experiment level.
+# Purpose: Defines world topology and the vision modes levels may select.
+# Tags: [BREAKING] where a declaration moves the compiled token layout.
 
 stratum:
   version: "1.0"
@@ -85,23 +83,23 @@ stratum:
   substrate:
     type: grid
     # Valid options:
-    #   grid        : 2D grid
-    #   grid3d      : 3D grid
+    #   grid        : 2D square or 3D cubic grid (selected by topology)
     #   gridnd      : ND grid
     #   continuous  : 2D continuous
     #   continuousnd: ND continuous
     #   aspatial    : No spatial embedding
 
     grid:
-      # [BREAKING][OBS_DIM] Vision windows depend on width/height.
+      # [BREAKING] Axis sizes participate in compiled layout and position context.
       width: 8   # Example: 8
       height: 8  # Example: 8
 
       # [CONFIG] Topology (does NOT change dims)
       # | Option   | Behavior                          |
-      # | square   | Square grid                       |
-      # | hexagonal| Hex tiling                        |
+      # | square   | 2D square grid                    |
+      # | cubic    | 3D cubic grid; depth is required  |
       topology: square
+      diagonals: false
 
       # [CONFIG] Boundary (value-only, non-breaking)
       # | clamp  | Hard walls; agent stops at edges    |
@@ -115,11 +113,6 @@ stratum:
       # | euclidean | L2                               |
       # | chebyshev | L∞                               |
       distance_metric: manhattan
-
-      # [CONFIG] Observation encoding (non-breaking; dims unchanged)
-      # | relative | Normalized [0,1] coordinates      |
-      # | scaled   | [0, grid_size] coordinates        |
-      # | absolute | Raw coordinates                   |
 
     # Example alternate (continuous):
     # type: continuous
@@ -138,55 +131,37 @@ stratum:
 
   # ---------------------------------------------------------------------------
   # [CONFIG] Vision Support
-  # [TAGS]   BREAKING, OBS_DIM
+  # [TAGS]   BEHAVIOR
   # ---------------------------------------------------------------------------
-  # DIMS FORMULA:
-  #   global  -> +(width * height)
-  #   partial -> +(window_width * window_height)
-  #   both    -> +(width * height) + (window_width * window_height)
-  #   none    -> +0
-  # Guidance: Use 'both' to allocate space for transfer (mask at curriculum).
+  # Declares which curriculum vision modes this stratum admits. It does not
+  # allocate raster fields: the compiled TokenSpec owns one token layout.
   vision_support: both
   # Valid options:
-  #   global  : Full grid observability only.
-  #   partial : Local window (POMDP) only.
-  #   both    : Allocates both; curriculum masks one view.
-  #   none    : Blind agent (meters/internal state only).
+  #   global  : Levels may declare full visibility.
+  #   partial : Levels may declare token-filtered partial visibility.
+  #   both    : Levels may declare either mode.
+  #   none    : No level may activate a vision mode.
 
-  # Observation mode (layout strategy)
-  #   full_auto   : include all configured fields (masked fields remain allocated)
-  #   max_compact : drop masked/unused fields to minimize obs_dim
-  #   full_manual : include only explicit include_fields (required)
+  # Required observation-mode declaration. Token roster, capacities and compact
+  # serialization remain compiler-owned under every mode.
   observation_mode:
     mode: full_auto
-    # include_fields: ["obs_grid_encoding", "obs_meter_energy"]  # required when mode=full_manual
-    # NOTE: meters are one field EACH (obs_meter_<name>), not one "obs_meters" block.
-    # A manual selection must keep a semantic group's fields together — splitting the
-    # bars group apart is a compile error, because group_slices is how consumers
-    # address the block without knowing field names.
 
   # ---------------------------------------------------------------------------
   # [CONFIG] Temporal Support
-  # [TAGS]   BREAKING, OBS_DIM
+  # [TAGS]   BEHAVIOR
   # ---------------------------------------------------------------------------
-  # DIMS CONTRIBUTION (when enabled): +4 (time_sin, time_cos, day_progress, is_night)
   temporal_support: enabled
   # Valid options:
-  #   enabled  : Adds temporal fields (+4 dims)
-  #   disabled : No temporal fields
+  #   enabled  : Levels may activate authored temporal mechanics.
+  #   disabled : Temporal mechanics are unavailable.
 
   # ---------------------------------------------------------------------------
-  # [DERIVED] Implicit Substrate Observation Fields
+  # [DERIVED] Spatial Token Payloads
   # ---------------------------------------------------------------------------
-  # These fields always exist based on substrate.type; listed here for clarity.
-  # Grid2D / Grid3D / GridND:
-  #   agent_position: +2 / +3 / +N dims
-  #   agent_velocity: +2 / +3 / +N dims
-  # Continuous / ContinuousND:
-  #   agent_position: +N dims
-  #   agent_velocity: +N dims
-  # Aspatial:
-  #   No position or velocity fields (+0 dims)
+  # Spatial substrates publish normalized absolute position on self tokens and
+  # bounded egocentric deltas on visible entity tokens. The fixed payload schema
+  # pads positions to MAX_POSITION_RANK; aspatial has zero live position lanes.
 
 # =============================================================================
 # SECTION 3: environment.yaml (World Vocabulary)
@@ -490,27 +465,18 @@ brain:
   version: "1.0"
   description: "Reference Brain Configuration"
 
-  architecture: feedforward
-  feedforward:
-    hidden_layers: [256, 128]
-    activation: relu
-    dropout: 0.0
-    layer_norm: true
-  recurrent:
-    vision_encoder:
-      conv_channels: [32, 64]
-      kernel_size: 3
-      stride: 1
-      output_dim: 128
-    position_encoder:
-      hidden_size: 32
-    meter_encoder:
-      hidden_size: 32
-    lstm:
-      hidden_size: 256
-      num_layers: 1
-    q_head:
-      hidden_sizes: [128]
+  architecture:
+    type: recurrent
+    recurrent:
+      token_embed_dim: 128
+      q_head_hidden_dim: 128
+      aggregator:
+        type: attention
+        num_heads: 4
+      lstm:
+        hidden_size: 128
+        num_layers: 1
+        dropout: 0.0
   optimizer:
     type: adam
     learning_rate: 0.0001
@@ -531,36 +497,33 @@ brain:
     prioritized: false
 
 # =============================================================================
-# SECTION 6: curriculum.yaml (Curriculum-Level Active Field Control)
+# SECTION 6: curriculum.yaml (Curriculum-Level Visibility Control)
 # =============================================================================
 # Location: configs/my_experiment/levels/<level>/curriculum.yaml
-# Purpose: Controls which observation fields are ACTIVE vs MASKED.
-# Tags: NON-BREAKING (masking only; shapes fixed by stratum/environment).
-# Key Principle: Active = "which fields ARE used" (support must declare them).
+# Purpose: Selects global or partial token visibility and temporal behavior.
+# Tags: BEHAVIOR (the compiled TokenSpec shape stays fixed).
 
 curriculum:
   version: "1.0"
 
   # ---------------------------------------------------------------------------
   # [CONFIG] Vision Control
-  # [TAGS]   NON-BREAKING (masking only)
+  # [TAGS]   BEHAVIOR
   # ---------------------------------------------------------------------------
   active_vision: global  # Options: global, partial
   # Requirements:
   #   active_vision: global  -> vision_support must be global|both
   #   active_vision: partial -> vision_support must be partial|both
   # Behavior:
-  #   global  -> grid_encoding ACTIVE, local_window MASKED
-  #   partial -> local_window ACTIVE, grid_encoding MASKED
+  #   global  -> pass None to substrate.visible(); all compiled tokens remain eligible
+  #   partial -> pass vision_range to substrate.visible(); out-of-range spatial
+  #              tokens have presence and payload cleared
 
   vision_range: 0.5  # Normalized float [0.0, 1.0]
   # Used when active_vision: partial; still required for no-defaults when global.
-  # Formula: radius = ceil(vision_range * (grid_size / 2))
-  # Examples (8×8 grid):
-  #   0.25 -> radius=1, window=3×3 (9 dims masked/active)
-  #   0.5  -> radius=2, window=5×5 (25 dims masked/active)
-  #   0.75 -> radius=3, window=7×7 (49 dims masked/active)
-  #   1.0  -> radius=4, window=9×9 (81 dims masked/active)
+  # Discrete radius: max(1, ceil(vision_range * longest_axis / 2)).
+  # Continuous radius: vision_range * longest_extent / 2 (no quantization).
+  # The substrate's declared metric and boundary mode determine visibility.
 
   # ---------------------------------------------------------------------------
   # [CONFIG] Temporal Control
@@ -592,7 +555,7 @@ curriculum:
 #
 # L2_partial_observability/curriculum.yaml:
 #   active_vision: partial
-#   vision_range: 0.5  # 5×5 window on 8×8 grid
+#   vision_range: 0.5  # normalized radius input to substrate.visible()
 #   active_temporal: false
 #   day_length: null
 #
@@ -1003,69 +966,33 @@ training:
       min_steps_at_stage: 1000
 
 # =============================================================================
-# COMPUTED OBSERVATION DIMENSIONS (for reference)
+# COMPILED TOKEN OBSERVATION (for reference)
 # =============================================================================
-# This section shows what obs_dim would be for this complete config.
-# The compiler calculates this automatically - shown here for documentation.
+# The compiler builds the TokenSpec; do not derive or copy an observation-width
+# literal into configuration. Inspect these values from the compiled level:
 #
-# Given:
-# - vision_support: both
-# - temporal_support: enabled
-# - 8 meters
-# - 14 affordances
-# - 4 VFS variables
-# - Grid2D substrate (2 position dims)
-# - Grid2D velocity (2 dims)
+# token_spec.total_dims    # compact flat serialization width
+# token_spec.census        # compiled capacity per token type
+# token_spec.row_layout()  # canonical type/slot offsets; presence leads each row
 #
-# Calculation:
-# grid_encoding:   64 dims (8×8 grid)
-# local_window:    25 dims (5×5 window with vision_range=0.5)
-# position:         2 dims (x, y)
-# velocity:         2 dims (dx, dy)
-# meters:           8 dims (1 per meter)
-# affordances:     14 dims (1 per affordance, binary visibility)
-# vfs_variables:    4 dims (1 per variable)
-# temporal:         4 dims (time_sin, time_cos, day_progress, is_night)
-#
-# TOTAL obs_dim: 123 dims
-#
-# With curriculum masking:
-# L1 (active_vision: global, active_temporal: false):
-#   - grid_encoding: ACTIVE (64 dims)
-#   - local_window: MASKED (25 dims of zeros)
-#   - temporal: MASKED (4 dims of zeros)
-#   - obs_dim: 123 (same as L2, enabling checkpoint transfer!)
-#
-# L2 (active_vision: partial, active_temporal: false):
-#   - grid_encoding: MASKED (64 dims of zeros)
-#   - local_window: ACTIVE (25 dims)
-#   - temporal: MASKED (4 dims of zeros)
-#   - obs_dim: 123 (same as L1!)
-#
-# L3 (active_vision: global, active_temporal: true):
-#   - grid_encoding: ACTIVE (64 dims)
-#   - local_window: MASKED (25 dims of zeros)
-#   - temporal: ACTIVE (4 dims)
-#   - obs_dim: 123 (same as L1 and L2!)
+# Global and partial modes use the same TokenSpec. Partial visibility changes
+# token presence and payload values, never the tensor shape.
 
 # =============================================================================
 # BREAKING vs NON-BREAKING SUMMARY
 # =============================================================================
 # Use this checklist to determine if a config change breaks checkpoints:
 #
-# BREAKING (changes obs_dim or action_dim):
-# ✅ substrate.type, substrate.grid.width/height (affects grid_encoding size)
-# ✅ vision_support (affects which vision fields exist)
-# ✅ temporal_support (affects whether temporal fields exist)
-# ✅ meters (adding/removing changes obs_dim)
-# ✅ affordances (adding/removing changes obs_dim)
-# ✅ vfs profiles/variables (adding/removing changes obs_dim)
+# BREAKING (moves a compiled layout, brain identity, or action identity):
+# ✅ substrate.type or rank (changes position payload/layout)
+# ✅ meters, affordances, items, effects or exposed variables (changes token bindings/capacity)
+# ✅ brain architecture or geometry (changes brain_hash)
 # ✅ actions (adding/removing changes action_dim)
 #
 # NOT BREAKING (behavior only):
 # ❌ substrate.boundary, distance_metric (same dims, different values)
-# ❌ active_vision, active_temporal (masking doesn't change dims)
-# ❌ vision_range, day_length (parameters, not structure)
+# ❌ vision_support, active_vision, vision_range (visibility, not token layout)
+# ❌ active_temporal, day_length (behavior, not an engine raster block)
 # ❌ meter parameters (depletion, recovery, bounds)
 # ❌ cascade parameters (threshold, strength)
 # ❌ affordance parameters (costs, effects, opening_hours)

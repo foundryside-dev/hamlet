@@ -32,8 +32,9 @@ Run token recovery as these five milestones, in this order:
    lives once in the compiled artifact, replay stores compact dynamic state, and the fixed schema
    is reconstructed at the network boundary. The L1 target is 118 floats and the acceptance cap
    is 120; the old full-payload ABI is deleted.
-4. **Unit 4 engineering regression — `hamlet-25fc3fb955`.** Accept token feedforward and
-   recurrent variants against the 79.19 IQM floor at equal environment steps, with the named
+4. **Unit 4 engineering regression — `hamlet-25fc3fb955`.** Under `PDR-0137`, accept the
+   four feedforward/recurrent × mean/attention cells against the raw 79.19 greedy-survival floor
+   on deterministic representative seed 45 at its full frozen transition budget, with the named
    transfer, visibility, recurrent-memory, batch-size and aggregation evidence recorded.
 5. **Unit 5 pack migration — `hamlet-55b2826a02`.** After Unit 4 and the 2026-10-06 trial-pack
    disposition condition, migrate every surviving shipped pack to the accepted ABI and delete

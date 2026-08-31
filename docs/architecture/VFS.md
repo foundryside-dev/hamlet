@@ -30,14 +30,14 @@ The Variable & Feature System (VFS) is the formal state, feature, observation, a
 
 In its current Phase 1 form, VFS provides:
 
-1. **Schema definitions** for variables and observation fields.
+1. **Schema definitions** for variables and compiled token exposure.
 2. **A required experiment-level `vfs_profiles.yaml` catalog** for compiled global, agent, and item profiles.
 3. **An optional experiment-level `variables_reference.yaml` static registry overlay** for non-item variables and observation marks; item-scoped variables and expressions belong in `vfs_profiles.yaml`.
 4. **A runtime variable registry** that stores state tensors and enforces read/write access control.
-5. **An observation-spec builder** that generates agent-facing observation layouts from declarative exposures.
+5. **TokenSpec compilation** that binds agent-facing token slots from declarative exposures.
 6. **ActionConfig dependency tracking** through declared `reads` and `writes` fields.
-7. **Dimension regression tests** to protect checkpoint compatibility.
-8. **Integration tests** proving that the schema → registry → observation pipeline works end to end.
+7. **Token schema/layout regression tests** that protect checkpoint compatibility.
+8. **Integration tests** proving that the schema → registry → token pipeline works end to end.
 
 The Phase 2 goal is a general **VFS Transition Compiler (VTC)**. Actions are only one part of the world transition. To fully realise Universe as Code, the compiler should eventually execute action effects, passive decay, cascades, temporal rules, interaction progress, occupancy, reward components, terminal checks, and telemetry side effects through one typed, declarative, hashable transition graph.
 
@@ -181,51 +181,18 @@ VFS supports the Hamlet progression:
 | L5 | Pairwise and affordance-scoped variables for contention, trust, proximity, blocking |
 | L6 | Message variables, communication buffers, shared reward features, group scopes |
 
-⚠️ **Correction (2026-08-15).** This section previously carried a single column of per-level
-observation dimensions (38 / 78 / 93 / 54 / 93) marked "Validated". **That column conflated two
-different quantities**, which is why it could never be reconciled with the other tables in the
-corpus.
+The compiled observation artifact is `TokenSpec`. It declares a canonical token-type roster,
+fixed payload schemas, per-universe capacities and deterministic slot bindings. The runtime
+serializes compact rows with presence first; there is no observation-field activity mask.
 
-The observation tensor is a **fixed-width superset with a per-level activity mask**. Every level
-allocates the same 124 slots; the mask decides which carry information and which are held at
-zero. So "observation dim" has two answers, and only stating both is honest.
+`TokenSpec.total_dims` is the width of the compact flat transport. Do not copy a literal into
+documentation: inspect `token_spec.total_dims`, `token_spec.census`, and
+`token_spec.row_layout()` on the compiled level.
 
-Measured by compiling `configs/default_curriculum` at each level on `project-recovery`:
-
-| Config | Allocated (`total_dims`) | Active | Zeroed fields |
-| --- | ---: | ---: | --- |
-| `L0_0_minimal` | 124 | 95 | `obs_local_window` (25), `obs_temporal` (4) |
-| `L0_5_dual_resource` | 124 | 95 | `obs_local_window` (25), `obs_temporal` (4) |
-| `L1_full_observability` | 124 | 95 | `obs_local_window` (25), `obs_temporal` (4) |
-| `L2_partial_observability` | 124 | 56 | `obs_grid_encoding` (64), `obs_temporal` (4) |
-| `L3_temporal_mechanics` | 124 | 99 | `obs_local_window` (25) |
-
-**Allocated width is constant by design** — that is precisely the mechanism behind the
-"observation dim is constant across grid sizes, enabling transfer learning" claim. It is not a
-sign that the levels are identical.
-
-**Active width has three distinct values (95 / 56 / 99)**, and they line up exactly with the
-three distinct universes in the pack: L0_0 / L0_5 / L1 are one universe, L2 another, L3 a third.
-POMDP does not shrink the tensor — it zeroes the 64-dim grid encoding and lights up the 25-dim
-local window instead, which is the reverse swap.
-
-The old numbers were therefore *the right quantity, gone stale*, not nonsense: 93 → 95 and
-54 → 56 differ by the two `obs_velocity` dims added since, and L3 moved 93 → 99 because its
-temporal block is now actually active. What made the table false was labelling active width as
-the total, and the L0_0 = 38 / L0_5 = 78 entries, which assumed 3×3 and 7×7 grids that no level
-can express (grid size is pack-level in `stratum.yaml` and unoverridable).
-
-**Do not re-add literals here.** Read `observation_spec.total_dims` off the compiled artifact
-(see `CLAUDE.md` → State Representation for the exact call). The numbers above are a dated
-measurement, not a specification, and will decay the moment the observed surface changes.
-
-**And they are on their way out entirely.** The observation system is moving to embedded
-transformers / token observations (owner, 2026-08-15; direction recorded in
-`docs/product/decisions/0017-...`), under which a single total width stops being a meaningful
-quantity at all. The two source documents for the old table —
-`docs/zzz. archive/vfs/observation-dimension-formulas.md` and
-`observation-dimension-manual-validation.md` (archived 2026-08-24) — are marked superseded in
-full rather than corrected, for that reason.
+Partial visibility does not select another layout. Token publishers pass `vision_range` to
+`substrate.visible()` and clear both presence and payload for out-of-range spatial entities.
+Full and partial levels therefore share the same token schema and serialization shape when the
+rest of their compiled declarations match.
 
 The long-term aim is that level changes are expressed primarily by changing variables, exposures, scopes, rules, action definitions, and brain configuration — not by rewriting environment code.
 
@@ -333,50 +300,21 @@ FeatureDef  = derived model input or diagnostic signal
 RuleSpec    = transition relationship over variables
 ```
 
-Phase 1 currently focuses on variables and observation fields. `FeatureDef` is a recommended future extension.
+Phase 1 currently focuses on variables and token exposure. `FeatureDef` is a recommended future extension.
 
-### 4.3 Observation fields
+### 4.3 Token exposure
 
-An **observation field** maps a variable or feature into an agent-facing observation tensor. Observation fields define:
+An exposed variable contributes a compiled `variable_element` token slot when its declaration
+has an executable, finite token payload. Engine-owned state uses the other closed token types:
+`self`, `meter`, `affordance`, `agent`, `item`, and `effect`.
 
-- source variable or feature,
-- shape,
-- normalisation,
-- exposure conditions,
-- **semantic group** — one member of a closed vocabulary (`bars`, `spatial`, `affordance`,
-  `effects`, `temporal`, `custom`; `townlet.vfs.semantic_type`), which names the field's slice
-  in `observation_activity.group_slices` so structured encoders and the meter block's consumers
-  can address a run of dimensions without knowing any field's name,
-- and ordering in the observation ABI — fields are laid out grouped, in the fixed group order
-  `spatial, bars, affordance, effects, custom, temporal`. (The order is guaranteed in the
-  `full_auto` / `max_compact` observation modes; the `full_manual` mode reorders fields to the
-  author's `include_fields` list, and only per-group contiguity is enforced after it.)
+The compiler owns token order and capacity. Authors declare state, exposure and semantics; they
+do not declare flat offsets or semantic-group slices. The token-type schema hash is the transfer
+contract for token-native networks. The layout hash covers the universe-specific capacities,
+slot bindings and compact serialization used by flat readers.
 
-The compiled field additionally records **which feature fills it** — `variable` for a
-registry-owned source, or one of the engine's own encoders (`grid_encoding`, `local_window`,
-`position`, `velocity`, `meter` with the meter named, `affordance_at_position`, `effects`,
-`temporal`, `item_slots`; one closed vocabulary, `townlet.universe.dto.observation_feature`).
-That is the runtime's dispatch key: the environment publishes engine features, the structured
-encoders locate their blocks, and the demo sizes the vision window by the field's feature, never
-by its name (`PDR-0045`). It is not part of the ABI above — it says who fills the source, not how
-the field is exposed — so it lives on the compiled DTO only and moves no hash.
-
-The semantic group is a property of the **observation field**, never of the variable (§4.1): a
-variable is stored state; how it is grouped when observed is part of how it is exposed. Where an
-author declares it (today: `environment.yaml` variables and exposed global/agent profile
-variables, one compiled field each) the compiler
-obeys; for the blocks the compiler emits itself it assigns a member from the same closed set — a
-value an author may not write is a value the compiler may not emit (`PDR-0047`). `bars` is the
-meter block and is reserved to meters. Vocabulary extension is a decision (`PDR-0016`), not a
-literal at a call site.
-
-The semantic group is also **checkpoint-relevant** (restored from the archived implementation
-overview, 2026-08-25): it is part of the payload of each compiled field's provenance UUID
-(`universe/dto/observation_spec.py:26-46`, `compute_observation_field_uuid`), and those UUIDs
-are what resume compares (§8.4, §18.4). Changing a field's group — with no other change —
-re-keys the field and makes existing checkpoints refuse to attach.
-
-Observation fields are not mere convenience. They are the curriculum and checkpoint-compatibility boundary.
+Token exposure is therefore checkpoint-relevant through compiled token hashes and brain identity,
+not observation-field UUIDs.
 
 Changing which fields are exposed can create a new observation ABI and may break existing checkpoints.
 
@@ -492,10 +430,9 @@ there is still no agent→zone / agent→group membership mapping surface.
 > **Re-verified 2026-08-25, with two edges hardened since the audit.** The symbol-table gap
 > itself is unchanged (`universe/validation/references.py:14-58` still registers only
 > `environment.yaml` and `vfs_profiles.yaml` variables). What changed: (a) attempting to
-> *expose* a `pair`/`group`/`affordance`/`zone`/`message` variable as an observation field now
-> refuses loudly at compile — `ObservationField.__post_init__` rejects those five scopes by
-> table (`universe/dto/observation_spec.py:73,84-93`; the scope Literal was simultaneously
-> widened to all nine members); (b) an affordance-scoped `variables_reference.yaml` variable
+> expose a `pair`/`group`/`affordance`/`zone`/`message` variable as a token now refuses loudly
+> when that scope has no compiled `variable_element` binding contract; (b) an
+> affordance-scoped `variables_reference.yaml` variable
 > without `extents.num_affordances` is now a compile error, not a registry-construction crash
 > (see the extents paragraph above).
 
@@ -825,42 +762,35 @@ External tooling / tests:
 
 ---
 
-## 8. Observation specifications
+## 8. Token specifications
 
-### 8.1 Building observation specs
-
-> **Corrected 2026-08-21.** An earlier draft of this section showed a
-> `VFSObservationSpecBuilder` class; no such class exists in the tree and it never shipped.
-> Observation specs are built by the universe compiler, not by hand.
+### 8.1 Building the TokenSpec
 
 ```python
 from pathlib import Path
 
 from townlet.universe.compiler import UniverseCompiler
 
-# ObservationCompiler (townlet.universe.compilers.observation) lays out the
-# engine feature blocks and every exposed global/agent profile variable into
-# one grouped, fixed-width spec at compile time.
 u = UniverseCompiler().compile(
     Path("configs/default_curriculum"),
     primary_level="L1_full_observability",
 )
 
-obs_spec = u.observation_spec            # ObservationSpec: ordered .fields + .total_dims
-obs_dim = u.observation_spec.total_dims  # allocated width, known before runtime
-activity = u.observation_activity        # per-level active_mask + group_slices
+token_spec = u.get_level("L1_full_observability").token_spec
+obs_dim = token_spec.total_dims
+census = token_spec.census
+rows = token_spec.row_layout()
 ```
 
-At runtime, `townlet.vfs.observation_builder.build_vfs_observation` materialises each
-VFS-sourced field and `ObservationEncoder` (`src/townlet/environment/observation_encoder.py`)
-drives the full per-field loop.
+At runtime, `TokenObservationEncoder` dispatches compiled token-type publishers. Exposed
+registry variables publish through `variable_element` slots.
 
 Key points:
 
-- Specs are generated at compile time.
-- Observation dimension is calculated before network construction.
-- Normalisation specs are preserved for observation generation.
-- Dimension regression protects checkpoint compatibility.
+- The TokenSpec is generated at compile time.
+- Compact transport width is known before network construction.
+- Exposure normalization is compiled into token value/context payloads.
+- Token schema and layout hashes protect checkpoint compatibility.
 
 ### 8.2 Generating observations from registry
 
@@ -925,30 +855,20 @@ same variable definitions, different exposure policies
 same policy architecture, different visibility rules
 ```
 
-The current repo also supports dimension-preserving curriculum masking through `ObservationField.curriculum_active`. When `curriculum_active=false`, the field remains in the observation ABI and contributes padding dimensions, but `ObservationActivity.active_mask` marks those dimensions inactive and omits them from `active_field_uuids`. Use this for per-level activation/masking without changing `obs_dim`; adding or removing fields still creates a new observation schema.
+Curriculum partial visibility preserves the TokenSpec and clears out-of-range token presence and
+payload. It does not allocate an inactive field block or activity mask.
 
-### 8.4 Observation ABI and schema hashes
+### 8.4 Token ABI and schema hashes
 
-Every observation spec should have an `observation_schema_hash` computed over:
+The compiled level carries two observation identities:
 
-- ordered field list,
-- source variables/features,
-- shapes,
-- normalisation rules,
-- exposure conditions,
-- semantic group,
-- `curriculum_active` masks,
-- dtype information,
-- and version metadata.
+- `token_type_schema_hash` covers the token payload schemas and their closed vocabularies. Token
+  set and recurrent networks use it as their observation compatibility contract.
+- `layout_hash` covers universe-specific capacities, slot bindings and compact serialization.
+  Flat feedforward and dueling networks use it because each input dimension is positional.
 
-The checkpoint should store this hash. Resume must refuse to attach a checkpoint to an incompatible observation ABI; changed VFS schemas create a new run fork.
-
-Current state (2026-08-21): `compute_observation_schema_hash` (`townlet/vfs/schema_hashes.py`)
-covers everything above **except version metadata**, which is not yet in the payload.
-Checkpoints stamp both `observation_schema_hash` and the combined `vfs_hash`
-(`training/checkpoint_utils.py`); resume compares `vfs_hash` plus the per-field UUIDs and the
-other config hashes rather than `observation_schema_hash` directly — enforcement is real but
-indirect.
+Checkpoints also compare `vfs_hash`, brain identity and the other compiled content hashes. A
+schema mismatch refuses before network or optimizer state mutates.
 
 ---
 
@@ -1057,7 +977,7 @@ action = ActionConfig(
     source_affordance=None,
 
     # VFS Integration (Phase 1)
-    reads=["position", "energy", "grid_encoding"],
+    reads=["position", "energy"],
     writes=[
         WriteSpec(
             variable_id="position",
@@ -2087,66 +2007,29 @@ Problems:
 - Dependency tracking is unclear.
 - Observability curriculum is harder to configure.
 
-### 17.2 Shipped VFS-driven observation generation
+### 17.2 Shipped token observation generation
+
+The compiler emits a `TokenSpec` and the runtime constructs one `TokenObservationEncoder` from
+it. Engine token publishers fill compact dynamic rows; the input assembler attaches immutable
+compiled context at the network boundary. A simplified call shape is:
 
 ```python
-def _initialize_vfs(self):
-    """Initialize VFS registry and observation spec once at startup."""
-    # Use the compiled universe artifact. The compiler has already loaded
-    # vfs_profiles.yaml and the optional variables_reference.yaml static overlay.
-    variables = self.compiled_universe.vfs_variables
-    obs_fields = self.compiled_universe.vfs_observation_fields
+token_spec = compiled_level.token_spec
+encoder = TokenObservationEncoder(token_spec, publishers, device)
 
-    # Initialize registry
-    self.registry = VariableRegistry(
-        variables=variables,
-        num_agents=self.num_agents,
-        device=self.device,
-    )
-
-    # Use the compiled observation layout and VFS contribution dimensions.
-    self.obs_fields = obs_fields
-    self.vfs_obs_spec = self.compiled_universe.vfs_observation_spec
-
-    # Validate dimension
-    obs_dim = self.compiled_universe.observation_spec.total_dims
-    assert obs_dim == self.expected_obs_dim, \
-        f"VFS dimension mismatch! Expected {self.expected_obs_dim}, got {obs_dim}"
-
-
-def _get_observations(self):
-    """Generate observations from VFS registry."""
-    obs_tensors = []
-
-    for field in self.obs_fields:
-        value = self.registry.get(field.source_variable, reader="agent")
-
-        if field.normalization:
-            value = self._apply_normalization(value, field.normalization)
-
-        if len(value.shape) == 1:
-            value = value.unsqueeze(-1)
-
-        obs_tensors.append(value)
-
-    return torch.cat(obs_tensors, dim=-1)
+context = TokenPublishContext(
+    positions=positions,
+    vision_range=vision_range if partial_observability else None,
+    # meter, affordance, item, effect and variable state omitted here
+)
+observations = encoder.encode(num_agents, context)
+assert observations.shape[1] == token_spec.total_dims
 ```
 
-Benefits:
-
-- Observation dimension calculated at compile time.
-- Declarative configuration controls exposure.
-- Dependency tracking is explicit.
-- Checkpoint compatibility is regression-tested.
-- Curriculum can alter observability without changing Python.
-
-This is now the only path. In the shipped implementation
-(`src/townlet/environment/observation_encoder.py`), `ObservationEncoder._get_observations`
-iterates `observation_spec.fields`; engine-computed features (grid, local window, position,
-velocity, meters, affordance-at-position, effects, temporal, item slots) are published into
-the VFS registry through a dispatch table keyed on each field's `feature` — never its name
-(`PDR-0045`) — before the per-field loop reads them back. The code above is illustrative; no
-hardcoded concatenation or shadow path remains in the tree.
+The publishers use `substrate.visible()` for presence and `substrate.egocentric_delta()` for
+relative position payloads. Registry-owned state remains governed by VFS access control and
+compiled transition scheduling; exposure into the agent observation occurs through compiled
+token slots rather than a second observation-field path.
 
 ### 17.3 Migration strategy
 
@@ -2229,7 +2112,8 @@ same weights + money hidden
 | Hash | Contents | Purpose |
 | --- | --- | --- |
 | `variable_schema_hash` | Variable definitions, scopes, types, permissions | State ABI identity |
-| `observation_schema_hash` | Ordered observation fields and normalisation | Checkpoint compatibility |
+| `token_type_schema_hash` | Token payload schemas and closed vocabularies | Token-network transfer compatibility |
+| `layout_hash` | Token capacities, bindings and compact layout | Flat-reader checkpoint compatibility |
 | `action_schema_hash` | Action IDs, names, masks, dependencies | Policy/action-space compatibility |
 | `transition_graph_hash` | Compiled rules, phases, expressions, composition | World physics identity |
 | `vfs_hash` | Combined VFS schema + observation + action + transition hashes | VFS identity |
@@ -2783,7 +2667,7 @@ L6: messages and inferred relationship features
 A developer tool that renders:
 
 ```text
-variables → rules → writes → observation fields → telemetry
+variables → rules → writes → token publishers → telemetry
 ```
 
 This would make VFS teachable and debuggable.

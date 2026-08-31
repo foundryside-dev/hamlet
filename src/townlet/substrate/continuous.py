@@ -288,13 +288,6 @@ class ContinuousSubstrate(SpatialSubstrate):
         """
         return positions
 
-    @property
-    def supports_partial_vision(self) -> bool:
-        return False
-
-    def get_vision_radius(self, vision_range: float) -> int:
-        raise ValueError("Continuous substrates do not support partial vision; no vision radius exists.")
-
     def normalize_positions(self, positions: torch.Tensor) -> torch.Tensor:
         """Normalize positions to the canonical [0, 1] coordinate range.
 

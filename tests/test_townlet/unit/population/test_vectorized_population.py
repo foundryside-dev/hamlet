@@ -57,7 +57,6 @@ def _make_population(
     params = {
         "obs_dim": env.observation_dim,
         "action_dim": env.action_dim,
-        "vision_window_size": 5,
         "train_frequency": 1,
         "batch_size": 32,
         "sequence_length": 1,
@@ -505,305 +504,6 @@ class TestBrainConfigIntegration:
         assert population.loss_fn.delta == 2.0
 
 
-class TestRecurrentNetworkSupport:
-    """Test recurrent network integration (Phase 2)."""
-
-    def test_population_builds_recurrent_network_from_brain_config(
-        self,
-        basic_env,
-        adversarial_curriculum,
-        epsilon_greedy_exploration,
-        cpu_device,
-        minimal_brain_config,
-    ):
-        """VectorizedPopulation should build RecurrentSpatialQNetwork from recurrent config."""
-        from townlet.agent.networks import RecurrentSpatialQNetwork
-        from townlet.config.brain_config import (
-            CNNEncoderConfig,
-            LSTMConfig,
-            MLPEncoderConfig,
-            RecurrentConfig,
-        )
-
-        brain_config = BrainConfig(
-            version="1.0",
-            description="Test recurrent config",
-            architecture=ArchitectureConfig(
-                type="recurrent",
-                recurrent=RecurrentConfig(
-                    vision_encoder=CNNEncoderConfig(
-                        channels=[16, 32],
-                        kernel_sizes=[3, 3],
-                        strides=[1, 1],
-                        padding=[1, 1],
-                        activation="relu",
-                    ),
-                    position_encoder=MLPEncoderConfig(
-                        hidden_sizes=[32],
-                        activation="relu",
-                    ),
-                    meter_encoder=MLPEncoderConfig(
-                        hidden_sizes=[32],
-                        activation="relu",
-                    ),
-                    affordance_encoder=MLPEncoderConfig(
-                        hidden_sizes=[32],
-                        activation="relu",
-                    ),
-                    lstm=LSTMConfig(
-                        hidden_size=256,
-                        num_layers=1,
-                        dropout=0.0,
-                    ),
-                    q_head=MLPEncoderConfig(
-                        hidden_sizes=[128],
-                        activation="relu",
-                    ),
-                ),
-            ),
-            optimizer=OptimizerConfig(
-                type="adam",
-                learning_rate=0.0001,
-                adam_beta1=0.9,
-                adam_beta2=0.999,
-                adam_eps=1e-8,
-                weight_decay=0.0,
-                schedule=ScheduleConfig(type="constant"),
-            ),
-            loss=LossConfig(type="huber", huber_delta=1.0),
-            q_learning=QLearningConfig(
-                gamma=0.99,
-                target_update_frequency=100,
-                use_double_dqn=True,
-            ),
-            replay=ReplayConfig(
-                capacity=10000,
-                prioritized=False,
-            ),
-        )
-
-        population = _make_population(
-            env=basic_env,
-            curriculum=adversarial_curriculum,
-            exploration=epsilon_greedy_exploration,
-            device=cpu_device,
-            brain_config=brain_config,
-        )
-
-        # Should build RecurrentSpatialQNetwork
-        assert isinstance(population.q_network, RecurrentSpatialQNetwork)
-        assert isinstance(population.target_network, RecurrentSpatialQNetwork)
-        assert population.is_recurrent is True
-
-    def test_is_recurrent_flag_comes_from_brain_config_not_network_type(
-        self,
-        basic_env,
-        adversarial_curriculum,
-        epsilon_greedy_exploration,
-        cpu_device,
-        minimal_brain_config,
-    ):
-        """CRITICAL: is_recurrent flag must come from brain_config.architecture.type, not network_type parameter."""
-        from townlet.config.brain_config import (
-            CNNEncoderConfig,
-            LSTMConfig,
-            MLPEncoderConfig,
-            RecurrentConfig,
-        )
-
-        # Create recurrent brain_config
-        recurrent_config = BrainConfig(
-            version="1.0",
-            description="Test is_recurrent flag correctness",
-            architecture=ArchitectureConfig(
-                type="recurrent",
-                recurrent=RecurrentConfig(
-                    vision_encoder=CNNEncoderConfig(
-                        channels=[16, 32],
-                        kernel_sizes=[3, 3],
-                        strides=[1, 1],
-                        padding=[1, 1],
-                        activation="relu",
-                    ),
-                    position_encoder=MLPEncoderConfig(
-                        hidden_sizes=[32],
-                        activation="relu",
-                    ),
-                    meter_encoder=MLPEncoderConfig(
-                        hidden_sizes=[32],
-                        activation="relu",
-                    ),
-                    affordance_encoder=MLPEncoderConfig(
-                        hidden_sizes=[32],
-                        activation="relu",
-                    ),
-                    lstm=LSTMConfig(
-                        hidden_size=256,
-                        num_layers=1,
-                        dropout=0.0,
-                    ),
-                    q_head=MLPEncoderConfig(
-                        hidden_sizes=[128],
-                        activation="relu",
-                    ),
-                ),
-            ),
-            optimizer=OptimizerConfig(
-                type="adam",
-                learning_rate=0.0001,
-                adam_beta1=0.9,
-                adam_beta2=0.999,
-                adam_eps=1e-8,
-                weight_decay=0.0,
-                schedule=ScheduleConfig(type="constant"),
-            ),
-            loss=LossConfig(type="huber", huber_delta=1.0),
-            q_learning=QLearningConfig(
-                gamma=0.99,
-                target_update_frequency=100,
-                use_double_dqn=True,
-            ),
-            replay=ReplayConfig(
-                capacity=10000,
-                prioritized=False,
-            ),
-        )
-
-        # Pass brain_config with recurrent architecture
-        # The is_recurrent flag should come from brain_config.architecture.type
-        population = _make_population(
-            env=basic_env,
-            curriculum=adversarial_curriculum,
-            exploration=epsilon_greedy_exploration,
-            device=cpu_device,
-            brain_config=recurrent_config,
-            sequence_length=1,
-        )
-
-        # CRITICAL: is_recurrent should be True (from brain_config.architecture.type)
-        # NOT False (from brain_config=minimal_brain_config)
-        assert population.is_recurrent is True, (
-            "is_recurrent flag must come from brain_config.architecture.type, not network_type parameter. "
-            f"Expected True (from brain_config), got {population.is_recurrent} (from network_type)"
-        )
-
-    def test_is_recurrent_flag_uses_network_type_when_no_brain_config(
-        self,
-        basic_env,
-        adversarial_curriculum,
-        epsilon_greedy_exploration,
-        cpu_device,
-        minimal_brain_config,
-        recurrent_brain_config,
-    ):
-        """is_recurrent should be inferred from brain_config architecture type."""
-        # Test feedforward network
-        population_feedforward = _make_population(
-            env=basic_env,
-            curriculum=adversarial_curriculum,
-            exploration=epsilon_greedy_exploration,
-            device=cpu_device,
-            brain_config=minimal_brain_config,
-        )
-        assert population_feedforward.is_recurrent is False
-
-        # Test recurrent network
-        population_recurrent = _make_population(
-            env=basic_env,
-            curriculum=adversarial_curriculum,
-            exploration=epsilon_greedy_exploration,
-            device=cpu_device,
-            brain_config=recurrent_brain_config,
-            sequence_length=1,
-        )
-        assert population_recurrent.is_recurrent is True
-
-    def test_recurrent_network_has_correct_dimensions(
-        self,
-        basic_env,
-        adversarial_curriculum,
-        epsilon_greedy_exploration,
-        cpu_device,
-        minimal_brain_config,
-    ):
-        """Recurrent network should have dimensions from config."""
-        from townlet.config.brain_config import (
-            CNNEncoderConfig,
-            LSTMConfig,
-            MLPEncoderConfig,
-            RecurrentConfig,
-        )
-
-        brain_config = BrainConfig(
-            version="1.0",
-            description="Test recurrent dimensions",
-            architecture=ArchitectureConfig(
-                type="recurrent",
-                recurrent=RecurrentConfig(
-                    vision_encoder=CNNEncoderConfig(
-                        channels=[16, 32],
-                        kernel_sizes=[3, 3],
-                        strides=[1, 1],
-                        padding=[1, 1],
-                        activation="relu",
-                    ),
-                    position_encoder=MLPEncoderConfig(
-                        hidden_sizes=[32],
-                        activation="relu",
-                    ),
-                    meter_encoder=MLPEncoderConfig(
-                        hidden_sizes=[32],
-                        activation="relu",
-                    ),
-                    affordance_encoder=MLPEncoderConfig(
-                        hidden_sizes=[32],
-                        activation="relu",
-                    ),
-                    lstm=LSTMConfig(
-                        hidden_size=128,  # Different from hardcoded 256
-                        num_layers=1,
-                        dropout=0.0,
-                    ),
-                    q_head=MLPEncoderConfig(
-                        hidden_sizes=[128],
-                        activation="relu",
-                    ),
-                ),
-            ),
-            optimizer=OptimizerConfig(
-                type="adam",
-                learning_rate=0.0001,
-                adam_beta1=0.9,
-                adam_beta2=0.999,
-                adam_eps=1e-8,
-                weight_decay=0.0,
-                schedule=ScheduleConfig(type="constant"),
-            ),
-            loss=LossConfig(type="huber", huber_delta=1.0),
-            q_learning=QLearningConfig(
-                gamma=0.99,
-                target_update_frequency=100,
-                use_double_dqn=True,
-            ),
-            replay=ReplayConfig(
-                capacity=10000,
-                prioritized=False,
-            ),
-        )
-
-        population = _make_population(
-            env=basic_env,
-            curriculum=adversarial_curriculum,
-            exploration=epsilon_greedy_exploration,
-            device=cpu_device,
-            brain_config=brain_config,
-            sequence_length=1,
-        )
-
-        # LSTM hidden size should come from config (128), not hardcoded (256)
-        assert population.q_network.lstm.hidden_size == 128
-
-
 class TestSchedulerIntegration:
     """Test learning rate scheduler integration (Phase 2)."""
 
@@ -1160,10 +860,10 @@ class TestPopulationCheckpointSchema:
             minimal_brain_config,
         )
         checkpoint = population.get_checkpoint_state()
-        checkpoint["version"] = 3
+        checkpoint["version"] = 4
         before = _population_runtime_snapshot(population)
 
-        with pytest.raises(ValueError, match=r"population checkpoint version.*3.*expected=4"):
+        with pytest.raises(ValueError, match=r"population checkpoint version.*4.*expected=5"):
             population.load_checkpoint_state(checkpoint)
 
         _assert_recursive_state_equal(before, _population_runtime_snapshot(population))
@@ -1297,7 +997,7 @@ class TestPopulationCheckpointSchema:
             minimal_brain_config,
         )
         checkpoint = population.get_checkpoint_state()
-        checkpoint["version"] = 4
+        checkpoint["version"] = 5
         replay_state = checkpoint["replay_buffer"]
         replay_state["format_version"] = 4
         replay_state["replay_kind"] = "standard"
@@ -1346,7 +1046,7 @@ class TestPopulationCheckpointSchema:
             brain_config=brain_config,
         )
         checkpoint = population.get_checkpoint_state()
-        checkpoint["version"] = 4
+        checkpoint["version"] = 5
         checkpoint["replay_buffer"]["format_version"] = 4
         checkpoint["replay_buffer"]["replay_kind"] = "standard"
         before = _population_runtime_snapshot(population)
@@ -1769,7 +1469,6 @@ def test_brain_config_none_raises_valueerror(basic_env, adversarial_curriculum, 
             device=cpu_device,
             obs_dim=basic_env.observation_dim,
             action_dim=basic_env.action_dim,
-            vision_window_size=5,
             train_frequency=1,
             batch_size=32,
             sequence_length=1,
@@ -1800,7 +1499,6 @@ def test_token_spec_none_raises_valueerror(basic_env, adversarial_curriculum, ep
             device=cpu_device,
             obs_dim=basic_env.observation_dim,
             action_dim=basic_env.action_dim,
-            vision_window_size=5,
             train_frequency=1,
             batch_size=32,
             sequence_length=1,
@@ -1834,7 +1532,6 @@ def test_token_spec_missing_attribute_raises_valueerror(
             device=cpu_device,
             obs_dim=basic_env.observation_dim,
             action_dim=basic_env.action_dim,
-            vision_window_size=5,
             train_frequency=1,
             batch_size=32,
             sequence_length=1,
@@ -1867,7 +1564,6 @@ def test_device_mismatch_in_step_all_raises_runtime_error(
         device=cpu_device,
         obs_dim=basic_env.observation_dim,
         action_dim=basic_env.action_dim,
-        vision_window_size=5,
         train_frequency=1,
         batch_size=32,
         sequence_length=1,

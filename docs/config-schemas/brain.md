@@ -48,9 +48,10 @@ description: "Human-readable description"
 The `architecture` section defines the neural network architecture. Four types are supported:
 feedforward, recurrent, dueling, and token_set.
 
-### Feedforward (Full Observability)
+### Feedforward
 
-Standard feedforward MLP for fully observable environments. Suitable for L0, L1, and other curriculum levels without partial observability.
+Standard feedforward MLP over the compiled flat token serialization. It can consume either
+global or partial observations, but it carries no memory across steps.
 
 ```yaml
 architecture:
@@ -77,71 +78,45 @@ architecture:
 - L0_5_dual_resource: Multiple resources (7×7 grid)
 - L1_full_observability: Full observability baseline (8×8 grid)
 
-### Recurrent (compact token blocks with LSTM)
+### Recurrent token set with LSTM
 
-The current recurrent reader flattens the compact `self`, `meter`, and `affordance`
-token blocks into separate encoders, then threads their combined representation through
-an LSTM. Token observations contain no raster vision window: the factory passes
-`grid_slice=None` and the required vision encoder receives the zero-valued 1x1 no-window
-input. A token-native recurrent architecture is a separate design step.
+The recurrent architecture uses the same per-type token projections, learned type embeddings,
+and declared set aggregator as `token_set`. It encodes every frame independently, presents the
+pooled frame sequence to one LSTM call, and applies the Q-head to every recurrent output. The
+compiled `TokenSpec` owns the roster, capacities, payload widths, and flat serialization layout.
 
 ```yaml
 architecture:
   type: recurrent
   recurrent:
-    vision_encoder:
-      channels: [16, 32]        # CNN channel dimensions
-      kernel_sizes: [3, 3]      # Convolution kernel sizes
-      strides: [1, 1]           # Convolution strides
-      padding: [1, 1]           # Convolution padding
-      activation: relu          # Activation function
-    position_encoder:
-      hidden_sizes: [32]        # MLP layer sizes for position
-      activation: relu
-    meter_encoder:
-      hidden_sizes: [32]        # MLP layer sizes for meters
-      activation: relu
-    affordance_encoder:
-      hidden_sizes: [32]        # MLP layer sizes for affordances
-      activation: relu
+    token_embed_dim: 128
+    q_head_hidden_dim: 128
+    aggregator:
+      type: attention
+      num_heads: 4
     lstm:
-      hidden_size: 256          # LSTM hidden state size
-      num_layers: 1             # Number of LSTM layers
-      dropout: 0.0              # LSTM dropout (applied if num_layers > 1)
-    q_head:
-      hidden_sizes: [128]       # Q-value head MLP layers
-      activation: relu
+      hidden_size: 128
+      num_layers: 1
+      dropout: 0.0
 ```
 
 **Parameters:**
 
-**vision_encoder** (required by the current DTO; runs on the zero-valued 1x1 no-window input):
-- `channels` (list[int]): CNN channel dimensions (e.g., [16, 32])
-- `kernel_sizes` (list[int]): Convolution kernel sizes (e.g., [3, 3])
-- `strides` (list[int]): Convolution strides (e.g., [1, 1])
-- `padding` (list[int]): Convolution padding (e.g., [1, 1])
-- `activation` (string): Activation function
-
-**position_encoder, meter_encoder, affordance_encoder** (required by the DTO):
-- `hidden_sizes` (list[int]): Declared MLP sizes. The current runtime constructs fixed
-  compact-block encoders for `self`, `meter`, and `affordance`; the token-native recurrent
-  variant will reconcile these declarations with runtime construction.
-- `activation` (string): Activation function
+- `token_embed_dim` (int, required): Embedding width for every live token type.
+- `q_head_hidden_dim` (int, required): Hidden width of the Q-value head.
+- `aggregator` (block, required): The same closed `mean` or `attention` contract documented
+  under `token_set`. `attention` requires `num_heads`, and `token_embed_dim` must be divisible
+  by it; `mean` takes no `num_heads`.
 
 **lstm** (required):
-- `hidden_size` (int): LSTM hidden state dimension
-  - Typical: 256 for standard POMDP
-- `num_layers` (int): Number of stacked LSTM layers
-  - Typical: 1 (single layer)
-- `dropout` (float): Dropout between LSTM layers (if num_layers > 1)
-
-**q_head** (required):
-- `hidden_sizes` (list[int]): MLP layers for Q-value prediction
-- `activation` (string): Activation function
+- `hidden_size` (int, required): LSTM hidden-state width.
+- `num_layers` (int, required): Number of stacked LSTM layers, from 1 through 4.
+- `dropout` (float, required): Inter-layer dropout in `[0.0, 1.0)`. It must be `0.0` when
+  `num_layers` is 1 because PyTorch applies LSTM dropout only between stacked layers.
 
 **Example Use Cases:**
-- Sequence-sensitive compact-token training with explicit hidden-state threading
-- Engineering regression of recurrent bootstrap and terminal-boundary handling
+- Partially observable token environments that require memory.
+- Sequence-sensitive training with explicit hidden-state threading and terminal boundaries.
 
 ### Dueling (Value/Advantage Decomposition)
 
@@ -456,28 +431,15 @@ description: "Recurrent Q-network with LSTM for POMDP"
 architecture:
   type: recurrent
   recurrent:
-    vision_encoder:
-      channels: [16, 32]
-      kernel_sizes: [3, 3]
-      strides: [1, 1]
-      padding: [1, 1]
-      activation: relu
-    position_encoder:
-      hidden_sizes: [32]
-      activation: relu
-    meter_encoder:
-      hidden_sizes: [32]
-      activation: relu
-    affordance_encoder:
-      hidden_sizes: [32]
-      activation: relu
+    token_embed_dim: 128
+    q_head_hidden_dim: 128
+    aggregator:
+      type: attention
+      num_heads: 4
     lstm:
-      hidden_size: 256
+      hidden_size: 128
       num_layers: 1
       dropout: 0.0
-    q_head:
-      hidden_sizes: [128]
-      activation: relu
 
 optimizer:
   type: adam

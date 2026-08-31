@@ -17,7 +17,7 @@ from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
 from townlet.population.vectorized import VectorizedPopulation
 from townlet.training.state import BatchedAgentState
 
-TRAIN_KWARGS = dict(train_frequency=1, batch_size=16, sequence_length=1, max_grad_norm=1.0, vision_window_size=5)
+TRAIN_KWARGS = dict(train_frequency=1, batch_size=16, sequence_length=1, max_grad_norm=1.0)
 
 # =============================================================================
 # TEST CLASS: Episode Lifecycle
@@ -111,7 +111,7 @@ class TestEpisodeLifecycle:
 
         This test validates episode execution with recurrent networks:
         - Reset → step loop → termination
-        - Uses RecurrentSpatialQNetwork (LSTM with hidden state)
+        - Uses RecurrentTokenQNetwork (token encoder + LSTM with hidden state)
         - Partial observability (POMDP)
         - Verifies hidden state evolves during episode
         - Verifies episodes are flushed to SequentialReplayBuffer
@@ -140,7 +140,6 @@ class TestEpisodeLifecycle:
             agent_ids=["agent_0"],
             device=cpu_device,
             brain_config=recurrent_brain_config,
-            vision_window_size=5,
             batch_size=8,
             action_dim=env.action_dim,
             sequence_length=1,

@@ -333,13 +333,6 @@ class GridNDSubstrate(SpatialSubstrate):
         """Encode positions as raw unnormalized coordinates."""
         return positions.float()
 
-    @property
-    def supports_partial_vision(self) -> bool:
-        return False
-
-    def get_vision_radius(self, vision_range: float) -> int:
-        raise ValueError("GridND substrates do not support partial vision; no vision radius exists.")
-
     def normalize_positions(self, positions: torch.Tensor) -> torch.Tensor:
         """Normalize positions to the canonical [0, 1] coordinate range.
 
@@ -353,11 +346,7 @@ class GridNDSubstrate(SpatialSubstrate):
 
     # --- Token visibility / egocentric contract (token-obs unit 3, Task 8) -----
     #
-    # GridND GAINS partial observability through this contract (the token-obs spec §1
-    # trade, rank ≤ MAX_POSITION_RANK): the OLD raster window path never supported it
-    # (`supports_partial_vision` stays False and `get_vision_radius` still raises —
-    # that contract is untouched), so the radius formula is stated here, identical to
-    # grid2d/grid3d's longest-axis form.
+    # GridND uses the same longest-axis visibility radius as Grid2D/Grid3D.
 
     def _token_axis_sizes(self, device: torch.device) -> torch.Tensor:
         return torch.tensor([float(size) for size in self.dimension_sizes], dtype=torch.float32, device=device)

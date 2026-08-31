@@ -84,7 +84,6 @@ class TestMaskedLossIntegration:
             obs_dim=env.observation_dim,
             action_dim=env.action_dim,
             brain_config=brain_cfg,  # LSTM for masked loss
-            vision_window_size=5,
             batch_size=4,  # Small batch for fast test
             sequence_length=8,
             max_grad_norm=10.0,
@@ -159,7 +158,6 @@ class TestMaskedLossIntegration:
             batch_size=16,
             sequence_length=1,
             max_grad_norm=10.0,
-            vision_window_size=5,
             train_frequency=4,
         )
 
@@ -219,7 +217,6 @@ class TestMaskedLossIntegration:
             batch_size=16,
             sequence_length=1,
             max_grad_norm=10.0,
-            vision_window_size=5,
             train_frequency=4,
         )
 
@@ -293,7 +290,6 @@ class TestMultiEpisodeTraining:
             batch_size=16,
             sequence_length=1,
             max_grad_norm=10.0,
-            vision_window_size=5,
             train_frequency=4,
         )
 
@@ -372,7 +368,6 @@ class TestMultiEpisodeTraining:
             batch_size=16,
             sequence_length=1,
             max_grad_norm=10.0,
-            vision_window_size=5,
             train_frequency=4,
         )
 
@@ -439,7 +434,6 @@ class TestMultiEpisodeTraining:
             batch_size=16,
             sequence_length=1,
             max_grad_norm=10.0,
-            vision_window_size=5,
             train_frequency=4,
         )
 
@@ -502,7 +496,6 @@ class TestMultiEpisodeTraining:
             batch_size=16,
             sequence_length=1,
             max_grad_norm=10.0,
-            vision_window_size=5,
             train_frequency=4,
         )
 
@@ -570,7 +563,6 @@ class TestMultiEpisodeTraining:
             batch_size=16,
             sequence_length=1,
             max_grad_norm=10.0,
-            vision_window_size=5,
             train_frequency=4,
         )
 

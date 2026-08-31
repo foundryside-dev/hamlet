@@ -193,7 +193,7 @@ Selects the Q-learning algorithm variant:
   the earlier "3 forward passes vs 2", implying a third full unroll, was wrong)
 
 **Implementation Notes**:
-- Supported for both `SimpleQNetwork` (feedforward) and `RecurrentSpatialQNetwork` (LSTM)
+- Supported for flat feedforward networks and `RecurrentTokenQNetwork` (LSTM)
 - Checkpoint persistence: `use_double_dqn` flag saved in checkpoint metadata
 - Curriculum compatibility: All levels support both algorithms
 
@@ -283,7 +283,8 @@ Number of consecutive timesteps in each sequence when training recurrent network
 
 **Validation**: Must be positive integer (> 0)
 
-**Note**: Only used when `network_type="recurrent"`. Ignored for feedforward networks.
+**Note**: Used when `brain.yaml` declares `architecture.type: recurrent`. Other architectures
+do not sample recurrent sequences.
 
 ---
 

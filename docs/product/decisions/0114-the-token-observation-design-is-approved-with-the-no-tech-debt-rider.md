@@ -16,6 +16,11 @@ Tracker: `hamlet-fa6bb6da4a` · Spec: `docs/superpowers/specs/2026-08-22-token-o
 > Reversal trigger 3's raw 8× width proxy is replaced by replay bytes, batch viability and encoding
 > cost. There is one ABI at a time; the old full-payload transition path is deleted.
 
+> **2026-09-01 amendment — `PDR-0137`:** milestone 4 is a deterministic engineering
+> qualification, not a statistical study. The four architecture/aggregator cells retain the
+> 79.19 floor and a full frozen transition budget, using representative seed 45; the five-seed
+> IQM and confidence-interval procedure is superseded.
+
 ## Context
 
 Phase B unit 2 — "the migration proper and the big design document": how the fixed-width

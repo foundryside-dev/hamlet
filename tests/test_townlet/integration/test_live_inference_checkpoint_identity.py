@@ -113,6 +113,7 @@ def _write_checkpoint(
         "affordance_layout": server.env.get_affordance_positions(),
         "agent_ids": server.population.agent_ids,
         "epsilon": epsilon,
+        "completed_live_agent_steps": 0,
         "training_config": level.training.model_dump(),
         "config_dir": str(server.config_dir),
     }

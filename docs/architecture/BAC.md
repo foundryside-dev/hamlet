@@ -47,7 +47,7 @@ Declared sub-configs, in source order:
 
 | block | DTO | declares |
 | --- | --- | --- |
-| `architecture` | `ArchitectureConfig` (+ `FeedforwardConfig`, `RecurrentConfig`/`LSTMConfig`/`CNNEncoderConfig`/`MLPEncoderConfig`, `DuelingConfig`/`DuelingStreamConfig`, `TokenSetConfig`/`SetAggregatorConfig`) | network family and its shape |
+| `architecture` | `ArchitectureConfig` (+ `FeedforwardConfig`, `RecurrentConfig`/`LSTMConfig`, `DuelingConfig`/`DuelingStreamConfig`, `TokenSetConfig`/`SetAggregatorConfig`) | network family and its shape |
 | `optimizer` | `OptimizerConfig`, `ScheduleConfig` | optimizer type, learning rate, betas/eps, weight decay, LR schedule |
 | `loss` | `LossConfig` | loss function |
 | `q_learning` | `QLearningConfig` | gamma, target-update frequency, `use_double_dqn` |
@@ -70,32 +70,36 @@ same helper builds both the online and the target network.
 | `type` | built by | produces |
 | --- | --- | --- |
 | `feedforward` | `NetworkFactory.build_feedforward` | an `nn.Sequential` MLP assembled from `hidden_layers` / `activation` / `dropout` / `layer_norm` |
-| `recurrent` | `NetworkFactory.build_recurrent` | `RecurrentSpatialQNetwork` (CNN vision encoder + LSTM) |
+| `recurrent` | `NetworkFactory.build_recurrent` | `RecurrentTokenQNetwork` (shared token-set encoder + LSTM + Q-head) |
 | `dueling` | `NetworkFactory.build_dueling` | `DuelingQNetwork` |
 | `token_set` | `NetworkFactory.build_token_set` | `TokenSetQNetwork` |
 
-For `token_set`, the factory passes the compiled `TokenSpec` directly. `TokenSetQNetwork`
-sets its input width from `TokenSpec.total_dims` and rejects every forward input whose width
-differs. Flat and dueling networks are sized from the environment's compiled observation width.
+For `token_set` and `recurrent`, the factory passes the compiled `TokenSpec` directly. Both use
+`TokenSetEncoder`, whose per-type projections and declared set aggregator produce one pooled
+embedding per frame. `TokenSetQNetwork` sends that embedding directly to a Q-head;
+`RecurrentTokenQNetwork` encodes `[batch * sequence]` frames, makes one LSTM call over the pooled
+sequence, and applies its Q-head to each recurrent output. Flat and dueling networks are sized
+from the compiled flat observation width.
 
 ### 2.3 The network classes, and which are reachable
 
-`src/townlet/agent/networks.py` declares **five** classes:
+The network module exposes these relevant classes:
 
-| class | line | selectable from `brain.yaml`? |
-| --- | --- | --- |
-| `SimpleQNetwork` | 19 | **No.** `type: feedforward` builds an equivalent `nn.Sequential` inline; this class is not instantiated anywhere in `src/`. Referenced only by a docstring in `exploration/rnd.py:72` ("Matches SimpleQNetwork architecture for consistency") and by tests. |
-| `RecurrentSpatialQNetwork` | 58 | Yes — `type: recurrent`. |
-| `DuelingQNetwork` | 307 | Yes — `type: dueling`. |
-| `TokenSetQNetwork` | 440 | Yes — `type: token_set`. |
-| `StructuredQNetwork` | 631 | **No.** Group-encoders-per-semantic-group network, exercised by `tests/test_townlet/unit/agent/test_structured_qnetwork.py`; no `ArchitectureConfig.type` value reaches it. |
+| class | selectable from `brain.yaml`? |
+| --- | --- |
+| `SimpleQNetwork` | **No.** `type: feedforward` builds an equivalent `nn.Sequential` inline. |
+| `DuelingQNetwork` | Yes — `type: dueling`. |
+| `TokenSetEncoder` | **No.** Shared implementation used by both token-native Q-networks. |
+| `TokenSetQNetwork` | Yes — `type: token_set`. |
+| `RecurrentTokenQNetwork` | Yes — `type: recurrent`. |
+| `StructuredQNetwork` | **No.** It has no `ArchitectureConfig.type` authoring door. |
 
 `StructuredQNetwork` is production-dead: it has no authoring door, and the legacy grouped
 observation artifact its constructor expects no longer exists. It is not a current architecture.
 
 > **Never write an observation-dimension literal.** Layer shapes are read from
 > `src/townlet/agent/networks.py`; observation width comes only from the compiled artifact
-> (`observation_spec.total_dims`; see `HLD.md` §5.3). The docstring example in
+> (`token_spec.total_dims`; see `HLD.md` §5.3). The docstring example in
 > `network_factory.py:build_feedforward` contains stale dimension literals — treat it as an
 > illustration of the call shape, not as a fact about any pack.
 

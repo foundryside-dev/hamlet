@@ -109,14 +109,14 @@ class TestTransferContract:
         # A real train step on pack A: TD-style regression, backward, optimizer step.
         optimizer = torch.optim.Adam(net_a.parameters(), lr=1e-3)
         obs = make_obs(universes["a"], batch_size=8, seed=1)
-        before = net_a.encoders["meter"].weight.detach().clone()
+        before = net_a.encoder.encoders["meter"].weight.detach().clone()
         q_values = net_a(obs)
         loss = torch.nn.functional.mse_loss(q_values, torch.rand_like(q_values))
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
         assert torch.isfinite(loss)
-        assert not torch.equal(net_a.encoders["meter"].weight, before), "the train step must move the weights"
+        assert not torch.equal(net_a.encoder.encoders["meter"].weight, before), "the train step must move the weights"
 
         # Load by ModuleDict type key on pack B: intersection, both directions reported.
         net_b = build_net("b", universes)
@@ -125,7 +125,7 @@ class TestTransferContract:
         assert report.loaded_types == ("affordance", "meter", "self")
         assert report.cold_started_types == ("item",)
         assert report.dropped_types == ("variable_element",)
-        assert torch.equal(net_b.encoders["meter"].weight, net_a.encoders["meter"].weight)
+        assert torch.equal(net_b.encoder.encoders["meter"].weight, net_a.encoder.encoders["meter"].weight)
 
         # Forward cleanly on B's universe.
         q_b = net_b(make_obs(universes["b"], batch_size=4, seed=2))
@@ -185,7 +185,7 @@ class TestTransferContract:
         difference means a foreign engine's checkpoint, never a pack difference."""
         net_c = build_net("c", universes)
         doctored = dict(net_c.state_dict())
-        doctored["encoders.meter.weight"] = doctored["encoders.meter.weight"][:, :-3]
+        doctored["encoder.encoders.meter.weight"] = doctored["encoder.encoders.meter.weight"][:, :-3]
         net_b = build_net("b", universes)
         with pytest.raises(ValueError, match="payload-schema mismatch"):
             load_token_network_state_by_type(net_b, doctored)

@@ -109,25 +109,25 @@ def present_rows(spec: TokenSpec) -> set[tuple[str, int]]:
 class TestConstruction:
     def test_moduledict_keys_are_the_live_roster(self):
         net = make_network(make_spec())
-        assert set(net.encoders.keys()) == {"self", "meter", "affordance", "item"}
-        assert set(net.type_embeddings.keys()) == {"self", "meter", "affordance", "item"}
+        assert set(net.encoder.encoders.keys()) == {"self", "meter", "affordance", "item"}
+        assert set(net.encoder.type_embeddings.keys()) == {"self", "meter", "affordance", "item"}
         assert net.token_type_names == ("self", "meter", "affordance", "item")
 
     def test_capacity_zero_type_gets_no_encoder(self):
         net = make_network(make_spec())
-        assert "agent" not in net.encoders
+        assert "agent" not in net.encoder.encoders
 
     def test_encoder_widths_match_payload_schemas(self):
         net = make_network(make_spec())
-        for name, encoder in net.encoders.items():
+        for name, encoder in net.encoder.encoders.items():
             assert isinstance(encoder, nn.Linear)
             assert encoder.in_features == len(PAYLOAD_SCHEMAS[name])
             assert encoder.out_features == 16
 
     def test_compiled_assembler_buffers_are_not_checkpoint_state(self):
         net = make_network(make_spec())
-        assert any(name.startswith("input_assembler.") for name, _buffer in net.named_buffers())
-        assert not any(name.startswith("input_assembler.") for name in net.state_dict())
+        assert any(name.startswith("encoder.input_assembler.") for name, _buffer in net.named_buffers())
+        assert not any(name.startswith("encoder.input_assembler.") for name in net.state_dict())
 
     def test_empty_roster_refuses(self):
         empty = TokenSpec(
@@ -229,17 +229,17 @@ class TestForward:
         present = present_rows(spec) - {("item", 0)}
         obs = make_obs(spec, 2, present=present)
         net(obs).sum().backward()
-        item_encoder = net.encoders["item"]
+        item_encoder = net.encoder.encoders["item"]
         assert isinstance(item_encoder, nn.Linear)
         assert item_encoder.weight.grad is not None
         assert torch.equal(item_encoder.weight.grad, torch.zeros_like(item_encoder.weight.grad))
         assert item_encoder.bias.grad is not None
         assert torch.equal(item_encoder.bias.grad, torch.zeros_like(item_encoder.bias.grad))
-        embedding_grad = net.type_embeddings["item"].grad
+        embedding_grad = net.encoder.type_embeddings["item"].grad
         assert embedding_grad is not None
         assert torch.equal(embedding_grad, torch.zeros_like(embedding_grad))
         # A present type's encoder DID learn something.
-        meter_encoder = net.encoders["meter"]
+        meter_encoder = net.encoder.encoders["meter"]
         assert isinstance(meter_encoder, nn.Linear)
         assert meter_encoder.weight.grad is not None
         assert meter_encoder.weight.grad.abs().sum() > 0
@@ -381,8 +381,8 @@ class TestReviewRound1Pins:
         assert layout is not None
         dynamic_rows = obs[:, layout.start : layout.end].view(1, layout.capacity, layout.compact_row_width)
         with torch.no_grad():
-            payload = net.input_assembler.expand_type("meter", dynamic_rows)[:, 0, 1:]
-            expected = net.encoders["meter"](payload) + net.type_embeddings["meter"]
+            payload = net.encoder.input_assembler.expand_type("meter", dynamic_rows)[:, 0, 1:]
+            expected = net.encoder.encoders["meter"](payload) + net.encoder.type_embeddings["meter"]
             pooled = net.pooled_embedding(obs)
         assert torch.allclose(pooled, expected, atol=1e-6)
 

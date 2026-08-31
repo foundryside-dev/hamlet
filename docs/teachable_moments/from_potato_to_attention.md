@@ -8,8 +8,8 @@
 >
 > **False:** "Files Modified: `src/hamlet/agent/networks.py`: Added RelationalQNetwork". No
 > `RelationalQNetwork` exists anywhere. Live network classes are `SimpleQNetwork`,
-> `RecurrentSpatialQNetwork`, `DuelingQNetwork`, `TokenSetQNetwork`,
-> `StructuredQNetwork`. Also `src/hamlet/` is the obsolete legacy tree.
+> `DuelingQNetwork`, `TokenSetEncoder`, `TokenSetQNetwork`,
+> `RecurrentTokenQNetwork`, and `StructuredQNetwork`. Also `src/hamlet/` is the obsolete legacy tree.
 >
 > **Different universe:** the Stress meter, Bar, HomeMeal/FastFood, zones and the job-payment
 > penalty are not in any shipped pack.

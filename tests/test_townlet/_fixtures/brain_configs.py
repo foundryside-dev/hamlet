@@ -2,7 +2,7 @@
 
 Provides standardized brain.yaml fixtures for all test scenarios:
 - minimal_brain_config: SimpleQNetwork for unit tests
-- recurrent_brain_config: RecurrentSpatialQNetwork for POMDP tests
+- recurrent_brain_config: RecurrentTokenQNetwork for POMDP tests
 
 Usage:
     def test_something(minimal_brain_config):
@@ -63,8 +63,8 @@ replay:
 def recurrent_brain_config(tmp_path):
     """Recurrent brain.yaml for LSTM testing.
 
-    Use for: POMDP tests requiring RecurrentSpatialQNetwork.
-    Architecture: RecurrentSpatialQNetwork (CNN+LSTM)
+    Use for: POMDP tests requiring RecurrentTokenQNetwork.
+    Architecture: token-set encoder + LSTM
     """
     brain_yaml = tmp_path / "brain.yaml"
     brain_yaml.write_text("""
@@ -74,28 +74,14 @@ description: "Recurrent brain config for POMDP tests"
 architecture:
   type: recurrent
   recurrent:
-    vision_encoder:
-      channels: [16, 32]
-      kernel_sizes: [3, 3]
-      strides: [1, 1]
-      padding: [1, 1]
-      activation: relu
-    position_encoder:
-      hidden_sizes: [32]
-      activation: relu
-    meter_encoder:
-      hidden_sizes: [32]
-      activation: relu
-    affordance_encoder:
-      hidden_sizes: [32]
-      activation: relu
+    token_embed_dim: 64
+    aggregator:
+      type: mean
     lstm:
       hidden_size: 256
       num_layers: 1
       dropout: 0.0
-    q_head:
-      hidden_sizes: [128]
-      activation: relu
+    q_head_hidden_dim: 128
 
 optimizer:
   type: adam

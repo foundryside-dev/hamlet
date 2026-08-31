@@ -610,47 +610,6 @@ def test_optimizer_config_rmsprop_requires_rmsprop_params():
 # TASK-005 Phase 2: Recurrent network configuration tests
 
 
-def test_cnn_encoder_config_valid():
-    """CNNEncoderConfig accepts valid CNN parameters."""
-    from townlet.config.brain_config import CNNEncoderConfig
-
-    config = CNNEncoderConfig(
-        channels=[16, 32],
-        kernel_sizes=[3, 3],
-        strides=[1, 1],
-        padding=[1, 1],
-        activation="relu",
-    )
-    assert config.channels == [16, 32]
-    assert config.kernel_sizes == [3, 3]
-
-
-def test_cnn_encoder_config_rejects_mismatched_lengths():
-    """CNNEncoderConfig requires all lists to have same length."""
-    from townlet.config.brain_config import CNNEncoderConfig
-
-    with pytest.raises(ValidationError) as exc_info:
-        CNNEncoderConfig(
-            channels=[16, 32],
-            kernel_sizes=[3],  # Wrong length!
-            strides=[1, 1],
-            padding=[1, 1],
-            activation="relu",
-        )
-    assert "same length" in str(exc_info.value).lower()
-
-
-def test_mlp_encoder_config_valid():
-    """MLPEncoderConfig accepts valid MLP parameters."""
-    from townlet.config.brain_config import MLPEncoderConfig
-
-    config = MLPEncoderConfig(
-        hidden_sizes=[32],
-        activation="relu",
-    )
-    assert config.hidden_sizes == [32]
-
-
 def test_lstm_config_valid():
     """LSTMConfig accepts valid LSTM parameters."""
     from townlet.config.brain_config import LSTMConfig
@@ -678,43 +637,22 @@ def test_lstm_config_rejects_zero_hidden_size():
 
 
 def test_recurrent_config_valid():
-    """RecurrentConfig accepts complete recurrent architecture."""
+    """RecurrentConfig accepts the complete token-native recurrent architecture."""
     from townlet.config.brain_config import (
-        CNNEncoderConfig,
         LSTMConfig,
-        MLPEncoderConfig,
         RecurrentConfig,
+        SetAggregatorConfig,
     )
 
     config = RecurrentConfig(
-        vision_encoder=CNNEncoderConfig(
-            channels=[16, 32],
-            kernel_sizes=[3, 3],
-            strides=[1, 1],
-            padding=[1, 1],
-            activation="relu",
-        ),
-        position_encoder=MLPEncoderConfig(
-            hidden_sizes=[32],
-            activation="relu",
-        ),
-        meter_encoder=MLPEncoderConfig(
-            hidden_sizes=[32],
-            activation="relu",
-        ),
-        affordance_encoder=MLPEncoderConfig(
-            hidden_sizes=[32],
-            activation="relu",
-        ),
+        token_embed_dim=64,
+        aggregator=SetAggregatorConfig(type="attention", num_heads=4),
         lstm=LSTMConfig(
             hidden_size=256,
             num_layers=1,
             dropout=0.0,
         ),
-        q_head=MLPEncoderConfig(
-            hidden_sizes=[128],
-            activation="relu",
-        ),
+        q_head_hidden_dim=128,
     )
     assert config.lstm.hidden_size == 256
 
@@ -814,48 +752,6 @@ def test_architecture_config_rejects_recurrent_without_recurrent_config():
     with pytest.raises(ValidationError) as exc_info:
         ArchitectureConfig(type="recurrent")
     assert "recurrent" in str(exc_info.value).lower()
-
-
-def test_cnn_encoder_config_rejects_empty_channels():
-    """CNNEncoderConfig rejects empty channels list."""
-    from townlet.config.brain_config import CNNEncoderConfig
-
-    with pytest.raises(ValidationError) as exc_info:
-        CNNEncoderConfig(
-            channels=[],
-            kernel_sizes=[],
-            strides=[],
-            padding=[],
-            activation="relu",
-        )
-    assert "channels" in str(exc_info.value)
-
-
-def test_cnn_encoder_config_rejects_negative_channels():
-    """CNNEncoderConfig rejects negative or zero channel values."""
-    from townlet.config.brain_config import CNNEncoderConfig
-
-    with pytest.raises(ValidationError) as exc_info:
-        CNNEncoderConfig(
-            channels=[16, -32],
-            kernel_sizes=[3, 3],
-            strides=[1, 1],
-            padding=[1, 1],
-            activation="relu",
-        )
-    assert "channels" in str(exc_info.value) and "positive" in str(exc_info.value)
-
-
-def test_mlp_encoder_config_rejects_negative_hidden_sizes():
-    """MLPEncoderConfig rejects negative or zero hidden sizes."""
-    from townlet.config.brain_config import MLPEncoderConfig
-
-    with pytest.raises(ValidationError) as exc_info:
-        MLPEncoderConfig(
-            hidden_sizes=[32, 0, -16],
-            activation="relu",
-        )
-    assert "hidden_sizes" in str(exc_info.value) and "positive" in str(exc_info.value)
 
 
 # TASK-005 Phase 3: Dueling DQN configuration tests

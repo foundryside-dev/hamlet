@@ -89,9 +89,11 @@
   token-set mean/attention, RND and four-step recurrent BPTT execute; all three replay variants
   round-trip and reject their previous versions. No whole fixed-observation runtime ABI remains.
   Exact clean-SHA encoding ratios are `0.1618647585026199` and `0.16272129673268468`.
-  · **Next implementation unit (`hamlet-25fc3fb955`):** replace the current compact block reader
-  with the token-native recurrent variant and run the 79.19 IQM equal-step regression. Milestone 3
-  proves BPTT mechanics only; it does not claim that result early.
+  · **Current implementation unit (`hamlet-25fc3fb955`):** replace the compact block reader with
+  the token-native recurrent variant and run `PDR-0137`'s four deterministic seed-45 cells at the
+  full 2,278,640-transition budget. Each cell must reach raw greedy mean survival 79.19; this is an
+  engineering qualification, not an IQM or confidence claim. Milestone 3 proves BPTT mechanics
+  only; it does not claim that result early.
   · **Checkpointed sequence (`PDR-0132`):** canonical bounded positions
   (`hamlet-6a4a6596bd`, complete) → meter `range_type` wiring (`hamlet-1e335e0363`, closed) →
   compact ABI (`hamlet-1b1caf552a`, accepted) → Unit 4 engineering regression

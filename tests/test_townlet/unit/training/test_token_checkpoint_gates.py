@@ -64,6 +64,11 @@ def compiled_universe():
     return UniverseCompiler().compile(Path("configs/test/model_config"), primary_level="L0_test")
 
 
+@pytest.fixture(scope="module")
+def token_set_universe():
+    return UniverseCompiler().compile(Path("configs/test/token_set_smoke"), primary_level="L0_test")
+
+
 @pytest.fixture()
 def checkpoint(compiled_universe) -> dict[str, object]:
     payload: dict[str, object] = {}
@@ -155,15 +160,15 @@ class TestAttachStampsTokenHashes:
 
 class TestCompactReplayArtifactCut:
     def test_checkpoint_format_moves_past_the_full_payload_abi(self) -> None:
-        assert CHECKPOINT_FORMAT_VERSION == 5
+        assert CHECKPOINT_FORMAT_VERSION == 6
 
     def test_full_payload_v4_checkpoint_refuses_before_any_state_is_read(self, compiled_universe) -> None:
-        with pytest.raises(ValueError, match=r"Unsupported checkpoint version: 4\nExpected version 5"):
-            assert_checkpoint_identity({"version": 4}, compiled_universe, force_new_vfs=False)
+        with pytest.raises(ValueError, match=r"Unsupported checkpoint version: 5\nExpected version 6"):
+            assert_checkpoint_identity({"version": 5}, compiled_universe, force_new_vfs=False)
 
     def test_outer_v4_refuses_before_exact_keys_or_nested_state_are_read(self) -> None:
-        with pytest.raises(ValueError, match=r"Unsupported checkpoint version: 4\nExpected version 5"):
-            validate_demo_checkpoint_payload({"version": 4, "population_state": object()})
+        with pytest.raises(ValueError, match=r"Unsupported checkpoint version: 5\nExpected version 6"):
+            validate_demo_checkpoint_payload({"version": 5, "population_state": object()})
 
     @pytest.mark.parametrize("invalid_version", (5.0, True))
     def test_outer_version_requires_an_exact_integer(self, invalid_version: object) -> None:
@@ -192,6 +197,17 @@ class TestTokenNetGate:
         checkpoint["action_dim"] = 999
         with pytest.raises(ValueError, match="action_dim mismatch"):
             assert_checkpoint_dimensions(checkpoint, compiled_universe, architecture_type="token_set")
+
+    @pytest.mark.parametrize("architecture_type", ["token_set", "recurrent"])
+    def test_both_token_native_architectures_ignore_layout_variation(self, checkpoint, compiled_universe, architecture_type: str) -> None:
+        checkpoint["layout_hash"] = "deadbeef" * 8
+        assert_checkpoint_dimensions(checkpoint, compiled_universe, architecture_type=architecture_type)
+
+    def test_live_identity_gate_threads_the_compiled_token_set_type(self, token_set_universe) -> None:
+        checkpoint: dict[str, object] = {"version": CHECKPOINT_FORMAT_VERSION}
+        attach_universe_metadata(checkpoint, token_set_universe)
+        checkpoint["layout_hash"] = "deadbeef" * 8
+        assert assert_checkpoint_identity(checkpoint, token_set_universe, force_new_vfs=False) is True
 
 
 class TestFlatNetLayoutGate:
@@ -222,7 +238,7 @@ class TestLoadByTypeKey:
         torch.manual_seed(3)
         source_net = make_net(spec_with_affordances())
         target_net = make_net(spec_with_items())
-        fresh_item_weight = target_net.encoders["item"].weight.detach().clone()
+        fresh_item_weight = target_net.encoder.encoders["item"].weight.detach().clone()
 
         report = load_token_network_state_by_type(target_net, source_net.state_dict())
 
@@ -231,10 +247,10 @@ class TestLoadByTypeKey:
         assert report.dropped_types == ("affordance",)
         # Shared types carry the SOURCE weights (meter capacity differs — 2 vs 3 —
         # and must not matter: capacities are entity variation, not weight shape).
-        assert torch.equal(target_net.encoders["meter"].weight, source_net.encoders["meter"].weight)
-        assert torch.equal(target_net.type_embeddings["self"], source_net.type_embeddings["self"])
+        assert torch.equal(target_net.encoder.encoders["meter"].weight, source_net.encoder.encoders["meter"].weight)
+        assert torch.equal(target_net.encoder.type_embeddings["self"], source_net.encoder.type_embeddings["self"])
         # The cold-started type keeps its fresh init.
-        assert torch.equal(target_net.encoders["item"].weight, fresh_item_weight)
+        assert torch.equal(target_net.encoder.encoders["item"].weight, fresh_item_weight)
         # Q-head shapes match here, so it transfers mechanically.
         assert report.cold_started_modules == ()
         assert not report.is_clean
@@ -253,7 +269,7 @@ class TestLoadByTypeKey:
         source_net = make_net(spec_with_affordances())
         target_net = make_net(spec_with_items())
         doctored = dict(source_net.state_dict())
-        doctored["encoders.meter.weight"] = doctored["encoders.meter.weight"][:, :-2]
+        doctored["encoder.encoders.meter.weight"] = doctored["encoder.encoders.meter.weight"][:, :-2]
         with pytest.raises(ValueError, match="payload-schema mismatch"):
             load_token_network_state_by_type(target_net, doctored)
 
@@ -272,7 +288,7 @@ class TestLoadByTypeKey:
             assert torch.equal(target_net.state_dict()[key], tensor)
 
     def test_refuses_non_token_networks(self) -> None:
-        with pytest.raises(ValueError, match="requires a TokenSetQNetwork"):
+        with pytest.raises(ValueError, match="requires a token-native Q-network"):
             load_token_network_state_by_type(torch.nn.Linear(4, 4), {})
 
 
@@ -325,7 +341,6 @@ class TestCrossUniverseLoadResets:
             sequence_length=1,
             max_grad_norm=1.0,
             action_dim=5,
-            vision_window_size=1,
         )
         population.training_step_counter = 7
         return population
@@ -365,7 +380,7 @@ class TestCrossUniverseLoadResets:
 
     def test_refuses_non_token_population(self) -> None:
         population = object.__new__(VectorizedPopulation)
-        population.is_token_set = False
+        population.is_token_native = False
         population.brain_config = _token_brain_config()
         with pytest.raises(ValueError, match="token_set"):
             population.load_token_network_cross_universe({})

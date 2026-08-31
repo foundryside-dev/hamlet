@@ -33,7 +33,7 @@ from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
 from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
 from townlet.population.vectorized import VectorizedPopulation
 
-TRAIN_KWARGS = dict(train_frequency=1, batch_size=32, sequence_length=1, max_grad_norm=1.0, vision_window_size=5)
+TRAIN_KWARGS = dict(train_frequency=1, batch_size=32, sequence_length=1, max_grad_norm=1.0)
 LEVEL_NAME = "L0_test"
 
 
@@ -197,7 +197,6 @@ class TestPopulationCheckpointing:
             sequence_length=1,
             max_grad_norm=1.0,
             action_dim=basic_env.action_dim,
-            vision_window_size=5,
         )
 
         # Get checkpoint
@@ -220,7 +219,7 @@ class TestPopulationCheckpointing:
         assert set(checkpoint) == required_keys
 
         # Verify version
-        assert checkpoint["version"] == 4, "Population checkpoint must use the exact current format"
+        assert checkpoint["version"] == 5, "Population checkpoint must use the exact current format"
 
     def test_population_checkpoint_preserves_network_weights(self, cpu_device, test_config_pack_path, env_builder, minimal_brain_config):
         """Q-network weights should be exactly preserved across checkpoint cycle."""
@@ -254,7 +253,6 @@ class TestPopulationCheckpointing:
             sequence_length=1,
             max_grad_norm=1.0,
             action_dim=env.action_dim,
-            vision_window_size=5,
         )
 
         # Train for a bit to change weights
@@ -288,7 +286,6 @@ class TestPopulationCheckpointing:
             sequence_length=1,
             max_grad_norm=1.0,
             action_dim=env.action_dim,
-            vision_window_size=5,
         )
 
         pop2.load_checkpoint_state(checkpoint)
@@ -328,7 +325,6 @@ class TestPopulationCheckpointing:
             sequence_length=1,
             max_grad_norm=1.0,
             action_dim=env.action_dim,
-            vision_window_size=5,
         )
 
         # Fill replay buffer with experiences
@@ -357,7 +353,6 @@ class TestPopulationCheckpointing:
             sequence_length=1,
             max_grad_norm=1.0,
             action_dim=env.action_dim,
-            vision_window_size=5,
         )
 
         # Before load, buffer should be empty
@@ -610,7 +605,6 @@ class TestRunnerCheckpointing:
                     sequence_length=1,
                     max_grad_norm=1.0,
                     action_dim=runner.env.action_dim,
-                    vision_window_size=5,
                 )
 
                 # Save checkpoint
@@ -666,7 +660,6 @@ class TestRunnerCheckpointing:
                     sequence_length=1,
                     max_grad_norm=1.0,
                     action_dim=runner1.env.action_dim,
-                    vision_window_size=5,
                 )
                 runner1.current_episode = 42
                 runner1.save_checkpoint()
@@ -695,7 +688,6 @@ class TestRunnerCheckpointing:
                     sequence_length=1,
                     max_grad_norm=1.0,
                     action_dim=runner2.env.action_dim,
-                    vision_window_size=5,
                 )
                 runner2.load_checkpoint()
                 assert runner2.current_episode == 42, "Episode number should be preserved after load"
@@ -737,7 +729,6 @@ class TestRunnerCheckpointing:
                     sequence_length=1,
                     max_grad_norm=1.0,
                     action_dim=runner1.env.action_dim,
-                    vision_window_size=5,
                 )
 
                 runner1.population.reset()
@@ -776,7 +767,6 @@ class TestRunnerCheckpointing:
                     sequence_length=1,
                     max_grad_norm=1.0,
                     action_dim=runner2.env.action_dim,
-                    vision_window_size=5,
                 )
 
                 runner2.load_checkpoint()
@@ -1039,7 +1029,7 @@ class TestVariableMeterCheckpoints:
         assert "observation_schema_hash" in metadata, "Metadata should contain selected-level observation identity"
 
         # Verify values
-        assert checkpoint["version"] == 4
+        assert checkpoint["version"] == 5
         assert metadata["meter_count"] == 4, f"Should have 4 meters, got {metadata['meter_count']}"
         assert metadata["observation_schema_hash"] == task001_env_4meter.level.observation_schema_hash
         assert list(metadata["meter_names"]) == [

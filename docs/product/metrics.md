@@ -96,7 +96,7 @@
 > ```
 >
 > Accepted performance reading: `max(run1, run2) = 0.16272129673268468 < 0.25`. This measures
-> observation encoding as a share of `env.step`; it is not the milestone-4 79.19 IQM result.
+> observation encoding as a share of `env.step`; it is not the milestone-4 raw 79.19 engineering result.
 
 > **Milestone 2 engineering reading — 2026-08-31, `PDR-0134`:** meter `range_type` is no longer
 > declared-but-inert. Its current token surface admits exactly four bounded transformations:

@@ -319,7 +319,6 @@ class LiveInferenceServer:
         partial_observability = curriculum_cfg.active_vision != "global"
         vision_range = curriculum_cfg.vision_range
         enable_temporal_mechanics = curriculum_cfg.active_temporal
-        vision_window_size = 2 * vision_range + 1
         enabled_affordances = training_cfg.enabled_affordances
 
         logger.info(
@@ -379,9 +378,6 @@ class LiveInferenceServer:
         # Create population (effective_brain_config provides network/optimizer/Q-learning parameters)
         agent_ids = [f"agent_{i}" for i in range(num_agents)]
         logger.info("Network architecture: %s (num_agents=%s)", base_brain_config.architecture.type, num_agents)
-        # Derive vision window size for recurrent networks from observation spec.
-        vision_window_size = 1
-
         # observation_spec is now read directly from env (POP-005 simplification)
         self.population = VectorizedPopulation(
             env=self.env,
@@ -391,7 +387,6 @@ class LiveInferenceServer:
             device=self.device,
             obs_dim=obs_dim,
             action_dim=self.env.action_dim,
-            vision_window_size=vision_window_size,
             train_frequency=loop_cfg.train_frequency,
             batch_size=training_cfg.replay_buffer.batch_size,
             sequence_length=loop_cfg.sequence_length,

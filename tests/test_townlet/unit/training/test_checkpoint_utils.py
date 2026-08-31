@@ -51,6 +51,7 @@ def test_demo_checkpoint_runtime_fields_require_exact_bound_values() -> None:
     payload["substrate_metadata"] = {"position_dim": 2, "substrate_type": "Grid2DSubstrate"}
     payload["agent_ids"] = ["agent_0"]
     payload["epsilon"] = 0.25
+    payload["completed_live_agent_steps"] = 123
 
     validate_demo_checkpoint_runtime_fields(
         payload,
@@ -84,6 +85,16 @@ def test_demo_checkpoint_runtime_fields_require_exact_bound_values() -> None:
     with pytest.raises(ValueError, match="agent_ids length mismatch"):
         validate_demo_checkpoint_runtime_fields(
             wrong_agents,
+            position_dim=2,
+            substrate_type="Grid2DSubstrate",
+            num_agents=1,
+        )
+
+    invalid_steps = dict(payload)
+    invalid_steps["completed_live_agent_steps"] = -1
+    with pytest.raises(ValueError, match="completed_live_agent_steps must be a non-negative integer"):
+        validate_demo_checkpoint_runtime_fields(
+            invalid_steps,
             position_dim=2,
             substrate_type="Grid2DSubstrate",
             num_agents=1,

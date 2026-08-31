@@ -242,7 +242,6 @@ def test_token_set_population_builds_from_selected_non_primary_level(
         sequence_length=1,
         max_grad_norm=10.0,
         action_dim=env.action_dim,
-        vision_window_size=5,
     )
 
     assert population.token_spec is env.token_spec

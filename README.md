@@ -127,9 +127,10 @@ Replacing that `substrate` block re-substrates the same experiment. The measured
 as Trial 001 in `docs/product/metrics.md`: the survival pack was moved to a 6-dimensional
 `gridnd` world by editing about six lines of `stratum.yaml`, with zero lines changed under
 `src/townlet/` — it compiled, reset and stepped, the movement vocabulary auto-expanded to
-`DIM0_NEG … DIM5_POS`, and the entire domain carried over. That trial also found the real caveat:
-`gridnd` has no partial-vision support, so the pack's POMDP levels have to be switched to
-`active_vision: global` or the whole-pack compile fails.
+`DIM0_NEG … DIM5_POS`, and the entire domain carried over. Partial observation preserves each
+compiled universe's token layout on every substrate: the runtime passes `vision_range` to
+`substrate.visible()` and zeroes the presence and payload of out-of-range spatial tokens. GridND
+therefore needs no spatial tensor allocation to run the pack's POMDP levels.
 
 Rewards are declarative in the same way. This is
 `configs/default_curriculum/levels/L1_full_observability/drive.yaml`, in full:
@@ -535,23 +536,21 @@ load-bearing ones:
   `VectorizedHamletEnv` and drives the ordered phases of the step loop; since `7cbfbff8`
   affordance occupancy is one of its phases, so contention is authorable from `actions.yaml`.
 - **`environment/dac_engine.py` — declarative rewards (DAC),** compiled from a level's `drive.yaml`.
-- **`agent/` — brain-as-code, layer 2.** `brain.yaml` selects architecture, optimizer and loss
-  through `network_factory.py`, `optimizer_factory.py` and `loss_factory.py`. Since `9a0007de`
-  `token_set` (`TokenSetQNetwork`, with a declared `mean` or `attention` aggregator,
-  `PDR-0112`) is a shipped architecture. Census, not intent:
-  of the 39 `brain.yaml` files in `configs/`, 29 declare `feedforward` (every
-  `default_curriculum` level included), 5 `dueling`, 5 `token_set` (the `token_transfer_*` and
-  `token_set_smoke` fixtures), none `recurrent`.
+- **`agent/` — brain-as-code, layer 2.** `brain.yaml` selects `feedforward`, `dueling`,
+  `token_set`, or token-native `recurrent`, plus optimizer and loss, through
+  `network_factory.py`, `optimizer_factory.py` and `loss_factory.py`. `TokenSetQNetwork` and
+  `RecurrentTokenQNetwork` share the declared `mean` or `attention` `TokenSetEncoder`.
 - **`environment/`, `population/`, `substrate/` — the vectorized torch runtime.** Device is an
   explicit parameter: `VectorizedHamletEnv` requires one and raises rather than picking a default.
 - **`training/checkpoint_utils.py` — checkpoint identity.** One shared gate,
   `assert_checkpoint_identity`, called by both the training-resume path (`demo/runner.py`) and the
   serving path (`demo/live_inference.py`). Twelve `*_hash` fields are stamped into a
-  checkpoint (`CHECKPOINT_FORMAT_VERSION = 5` since the compact-token cut; a version-4 checkpoint
-  refuses loudly), and eight of those are hard-compared on load — `vfs_hash`, `drive_hash`, the
+  checkpoint (`CHECKPOINT_FORMAT_VERSION = 6` at the token-recurrent/shared-encoder cut; a
+  version-5 checkpoint refuses loudly), and eight of those are hard-compared on load — `vfs_hash`, `drive_hash`, the
   effective `brain_hash`, the four per-level content hashes, and one of the two token hashes
-  chosen by architecture: a `token_set` network compares `token_type_schema_hash`, every other
-  reader compares `layout_hash`, because a flat reader's dims are positional — alongside action
+  chosen by architecture: `token_set` and token-native `recurrent` networks compare
+  `token_type_schema_hash`; flat `feedforward` and `dueling` readers compare `layout_hash`, because
+  their dims are positional — alongside action
   count and `primary_level`, so a checkpoint refuses to load into a universe it does not match,
   including a different level of the same pack. `pack_brain_hash` is stamped and required
   present but compared only to state a brain-lineage fork (`PDR-0027`); the old observation-dim
@@ -602,9 +601,9 @@ Intent, not yet built — stated plainly because older docs blur the line:
   `docs/architecture/archive/hld/02-brain-as-code.md` (archived 2026-08-24; the current honest
   treatment is `docs/architecture/BAC.md`) and have no implementation: their identifiers appear
   in zero files under `src/` and `configs/`. Layer 2, the network/optimizer/loss surface, is real,
-  and since the token cut includes a token-native architecture (`token_set`, above); a
-  token-native *recurrent* brain is still intent (migration unit 4) — `RecurrentSpatialQNetwork`
-  survives as a block reader over the `self`, `meter` and `affordance` token rows.
+  and the token cut includes both feedforward `TokenSetQNetwork` and recurrent
+  `RecurrentTokenQNetwork` architectures. Both share the same per-type `TokenSetEncoder`; the
+  recurrent network feeds its pooled frame sequence through one LSTM call before the Q-head.
 - **One standard compiler for both halves of an experiment.** The universe compiles to an artifact;
   the brain rides inside it as a validated `BrainConfig` plus a `brain_hash`, rather than compiling
   to an artifact of its own. `CompiledBrain` exists only in `docs/`.

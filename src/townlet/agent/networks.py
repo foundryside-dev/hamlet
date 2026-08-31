@@ -55,255 +55,6 @@ class SimpleQNetwork(nn.Module):
         return cast(torch.Tensor, self.net(x))
 
 
-class RecurrentSpatialQNetwork(nn.Module):
-    """
-    Recurrent Spatial Q-Network for partial observability (Level 2 POMDP).
-
-    Architecture:
-    - Vision Encoder: CNN for local window → 128 features
-    - Position Encoder: (x, y) → 32 features
-    - Meter Encoder: 8 meters → 32 features
-    - Affordance Encoder: 15 affordance types → 32 features
-    - LSTM: 224 input → 256 hidden
-    - Q-Head: 256 → 128 → action_dim
-
-    Handles partial observations:
-    - Grid: [batch, window_size²] flattened local window (25 for 5×5)
-    - Position: [batch, 2] normalized (x, y)
-    - Meters: [batch, 8] normalized meter values
-    - Affordance: [batch, 15] one-hot affordance type (14 types + "none")
-    """
-
-    def __init__(
-        self,
-        action_dim: int,
-        window_size: int,
-        position_dim: int,
-        bars_dim: int,
-        num_affordance_types: int,
-        enable_temporal_features: bool,
-        hidden_dim: int,
-        meters_slice: slice,
-        affordance_slice: slice,
-        grid_slice: slice | None = None,
-        position_slice: slice | None = None,
-        temporal_slice: slice | None = None,
-        temporal_embed_dim: int = 16,
-    ):
-        """
-        Initialize recurrent spatial Q-network.
-
-        Args:
-            action_dim: Number of actions
-            window_size: Size of local vision window (5 for 5×5)
-            position_dim: Dimensionality of position (2 for Grid2D, 3 for Grid3D, 0 for Aspatial)
-            bars_dim: OBSERVED width of the meter block. Not the meter COUNT — the two differ
-                whenever a meter declares a widening normalization (cyclical_sin_cos observes 2
-                dims, one_hot observes its category count). Read it from
-                the caller's bars group slice, never from a meter count.
-            num_affordance_types: Number of affordance types
-            enable_temporal_features: Whether to expect temporal features
-            hidden_dim: LSTM hidden dimension (typically 256)
-            meters_slice: Meter (bars) block slice. REQUIRED.
-            grid_slice: Local spatial-window block slice, or None when the universe has
-                no spatial window. `None` is the long-standing "no window" case — it was
-                what a full-observability universe produced before the unit-3 cut too —
-                and the vision encoder then reads zeros at `window_size` 1.
-            affordance_slice: Affordance block slice. REQUIRED.
-            position_slice: Position block slice, or None when the substrate is aspatial.
-            temporal_slice: Temporal block slice, or None when temporal is inactive.
-
-        Note (PDR-002):
-            All network architecture parameters must be explicitly specified.
-            No BAC (BRAIN_AS_CODE) defaults allowed.
-
-        Future (BRAIN_AS_CODE):
-            These parameters should come from network config YAML.
-        """
-        super().__init__()
-        self.action_dim = action_dim
-        self.window_size = window_size
-        self.position_dim = position_dim
-        self.bars_dim = bars_dim
-        self.num_affordance_types = num_affordance_types
-        self.enable_temporal_features = enable_temporal_features
-        self.temporal_dims = 4  # Fixed v2.1 temporal feature count
-        self.hidden_dim = hidden_dim
-
-        # Calculate affordance encoding dimension (types + 1 for "none")
-        self.num_affordance_dims = num_affordance_types + 1
-
-        # Vision Encoder: CNN for local window → 128 features
-        self.vision_encoder = nn.Sequential(
-            nn.Conv2d(1, 16, kernel_size=3, padding=1),  # 16×window_size×window_size
-            nn.ReLU(),
-            nn.Conv2d(16, 32, kernel_size=3, padding=1),  # 32×window_size×window_size
-            nn.ReLU(),
-            nn.Flatten(),  # 32 * window_size * window_size
-            nn.Linear(32 * window_size * window_size, 128),
-            nn.LayerNorm(128),
-            nn.ReLU(),
-        )
-
-        # Position Encoder: position_dim → 32 features (conditional on position_dim > 0)
-        self.position_encoder: nn.Sequential | None
-        if position_dim > 0:
-            self.position_encoder = nn.Sequential(
-                nn.Linear(position_dim, 32),
-                nn.ReLU(),
-            )
-            position_features = 32
-        else:
-            # Aspatial: no position encoding
-            self.position_encoder = None
-            position_features = 0
-
-        # Meter Encoder: the OBSERVED bars width → 32 features. This took `num_meters`, a
-        # STATE count threaded in from env.meter_count — an observation-side layer sized by a
-        # state-side quantity, which held only while every meter observed exactly one dim.
-        self.meter_encoder = nn.Sequential(
-            nn.Linear(bars_dim, 32),
-            nn.ReLU(),
-        )
-
-        # Temporal Encoder: 4 temporal features → temporal_embed_dim
-        self.temporal_encoder = nn.Sequential(
-            nn.Linear(self.temporal_dims, temporal_embed_dim),
-            nn.ReLU(),
-        )
-
-        # Affordance Encoder: dynamic size based on num_affordance_dims
-        self.affordance_encoder = nn.Sequential(
-            nn.Linear(self.num_affordance_dims, 32),
-            nn.ReLU(),
-        )
-
-        # LSTM: variable input → hidden_dim
-        # Input size: 128 (vision) + position_features (0 or 32) + 32 (meters) + 32 (affordance) + temporal_embed_dim
-        self.lstm_input_dim = 128 + position_features + 32 + 32 + temporal_embed_dim
-        self.lstm = nn.LSTM(input_size=self.lstm_input_dim, hidden_size=hidden_dim, num_layers=1, batch_first=True)
-
-        # LayerNorm for LSTM output
-        self.lstm_norm = nn.LayerNorm(hidden_dim)
-
-        # Q-Head: hidden_dim → 128 → action_dim
-        self.q_head = nn.Sequential(
-            nn.Linear(hidden_dim, 128),
-            nn.LayerNorm(128),
-            nn.ReLU(),
-            nn.Linear(128, action_dim),
-        )
-
-        # Input-block slicing, given EXPLICITLY by the caller.
-        #
-        # These used to be derived from the compiled `ObservationSpec` /
-        # `ObservationActivity`, which the unit-3 token cut deleted. The caller now names
-        # them, and `NetworkFactory.build_recurrent` derives them from the compiled
-        # TokenSpec's contiguous per-type serialization blocks: `self` -> position,
-        # `meter` -> meters, `affordance` -> affordance. There is no spatial window in a
-        # token observation, so `grid_slice` is None and the vision encoder reads zeros —
-        # the same "no window" case every full-observability universe produced before the
-        # cut. A token-aware recurrent/attention brain is unit 4.
-        self._grid_slice: slice | None = grid_slice
-        self._position_slice: slice | None = position_slice
-        self._meters_slice: slice = meters_slice
-        self._affordance_slice: slice = affordance_slice
-        self._temporal_slice: slice | None = temporal_slice
-
-    def forward(
-        self,
-        obs: torch.Tensor,
-        hidden: tuple[torch.Tensor, torch.Tensor],
-    ) -> tuple[torch.Tensor, tuple[torch.Tensor, torch.Tensor]]:
-        """
-        Forward pass with LSTM memory.
-
-        The network owns no hidden state: callers thread it explicitly. Use
-        `initial_hidden(batch_size, device)` at episode/sequence start.
-
-        Args:
-            obs: [batch, obs_dim] observations where:
-                - obs[:, :window_size²] = local grid
-                - obs[:, window_size²:window_size²+position_dim] = position (position_dim)
-                - obs[:, window_size²+position_dim:window_size²+position_dim+num_meters] = meters
-                - obs[:, window_size²+position_dim+num_meters:window_size²+position_dim+num_meters+num_affordance_dims] = affordance
-                - obs[:, window_size²+position_dim+num_meters+num_affordance_dims:] = temporal (if enabled)
-            hidden: LSTM hidden state (h, c), each [num_layers, batch, hidden_dim] (required)
-
-        Returns:
-            q_values: [batch, action_dim]
-            new_hidden: Tuple of (h, c) hidden states
-        """
-        batch_size = obs.shape[0]
-
-        grid = obs[:, self._grid_slice] if self._grid_slice is not None else obs.new_zeros((batch_size, self.window_size**2))
-        position = obs[:, self._position_slice] if (self._position_slice is not None and self.position_dim > 0) else None
-        meters = obs[:, self._meters_slice]
-        affordance = (
-            obs[:, self._affordance_slice] if self._affordance_slice is not None else obs.new_zeros((batch_size, self.num_affordance_dims))
-        )
-        temporal = (
-            obs[:, self._temporal_slice]
-            if self._temporal_slice is not None
-            else obs.new_zeros((batch_size, self.temporal_dims if hasattr(self, "temporal_dims") else 0))
-        )
-
-        # Reshape grid for CNN: [batch, 1, window_size, window_size]
-        grid_2d = grid.view(batch_size, 1, self.window_size, self.window_size)
-
-        # Encode components
-        vision_features = self.vision_encoder(grid_2d)  # [batch, 128]
-
-        if self.position_encoder is not None:
-            position_features = self.position_encoder(position)  # [batch, 32]
-        else:
-            # Aspatial: no position features
-            position_features = None
-
-        meter_features = self.meter_encoder(meters)  # [batch, 32]
-        affordance_features = self.affordance_encoder(affordance)  # [batch, 32]
-        temporal_features = self.temporal_encoder(temporal) if temporal.numel() > 0 else None
-
-        # Concatenate features (conditionally include position)
-        parts = [vision_features, meter_features, affordance_features]
-        if position_features is not None:
-            parts.insert(1, position_features)
-        if temporal_features is not None:
-            parts.append(temporal_features)
-        combined = torch.cat(parts, dim=1)
-
-        # LSTM expects [batch, seq_len, input_dim]
-        combined = combined.unsqueeze(1)  # [batch, 1, lstm_input_dim]
-
-        # LSTM forward
-        lstm_out, new_hidden = self.lstm(combined, hidden)  # lstm_out: [batch, 1, hidden_dim]
-        lstm_out = lstm_out.squeeze(1)  # [batch, hidden_dim]
-
-        # Apply LayerNorm to LSTM output
-        lstm_out = self.lstm_norm(lstm_out)  # [batch, hidden_dim]
-
-        # Q-values
-        q_values = self.q_head(lstm_out)  # [batch, action_dim]
-
-        return q_values, new_hidden
-
-    def initial_hidden(self, batch_size: int, device: torch.device) -> tuple[torch.Tensor, torch.Tensor]:
-        """Fresh all-zero LSTM hidden state for a new episode or sampled sequence.
-
-        The network owns no mutable hidden state; callers hold and thread it.
-
-        Args:
-            batch_size: Batch size for the hidden state
-            device: Device for the tensors (required)
-
-        Returns:
-            (h, c), each [num_layers, batch_size, hidden_dim], all zeros
-        """
-        h = torch.zeros(self.lstm.num_layers, batch_size, self.hidden_dim, device=device)
-        c = torch.zeros(self.lstm.num_layers, batch_size, self.hidden_dim, device=device)
-        return (h, c)
-
-
 class DuelingQNetwork(nn.Module):
     """Dueling Q-Network with value and advantage streams.
 
@@ -437,8 +188,8 @@ class _TokenTypeLayout(NamedTuple):
     end: int
 
 
-class TokenSetQNetwork(nn.Module):
-    """Q-network over the TokenSpec serialization (token-obs spec §4; unit 3 Task 9).
+class TokenSetEncoder(nn.Module):
+    """Permutation-invariant encoder over the compiled TokenSpec serialization.
 
     Consumes the flat token observation (`[batch, total_dims]`, rows in canonical
     type-then-slot order, presence leading each row) and reads it as a token set:
@@ -453,7 +204,6 @@ class TokenSetQNetwork(nn.Module):
        Constraints — deliberately NOT ``nn.MultiheadAttention``, whose fused path
        cannot be pinned for byte-exact training replay), then the same masked
        mean-pool;
-    5. Q-head over the pooled embedding.
 
     Masking is OUTPUT-SIDE (spec §4, load-bearing): an absent token's zero row still
     embeds to the projection bias + type embedding, so its embedded row is multiplied
@@ -473,9 +223,7 @@ class TokenSetQNetwork(nn.Module):
     def __init__(
         self,
         token_spec: TokenSpec,
-        action_dim: int,
         token_embed_dim: int,
-        q_head_hidden_dim: int,
         aggregator_type: str,
         num_heads: int | None,
     ):
@@ -485,20 +233,14 @@ class TokenSetQNetwork(nn.Module):
             token_spec: The compiled token artifact. The roster is compiled, never
                 authored — capacities, payload widths and the serialization layout
                 all come from here.
-            action_dim: Number of actions.
             token_embed_dim: Embedding width every live type projects into.
-            q_head_hidden_dim: Hidden size of the Q-value head.
             aggregator_type: ``"mean"`` or ``"attention"`` — declared, never defaulted.
             num_heads: Attention heads; required for ``"attention"``, must be None
                 for ``"mean"`` (the PDR-0112 aggregator contract).
         """
         super().__init__()
-        if action_dim <= 0:
-            raise ValueError("action_dim must be positive")
         if token_embed_dim <= 0:
             raise ValueError("token_embed_dim must be positive")
-        if q_head_hidden_dim <= 0:
-            raise ValueError("q_head_hidden_dim must be positive")
 
         layouts: list[_TokenTypeLayout] = []
         compact_layout = token_spec.compact_layout()
@@ -522,7 +264,6 @@ class TokenSetQNetwork(nn.Module):
             )
         self._layouts: tuple[_TokenTypeLayout, ...] = tuple(layouts)
         self.obs_dim = token_spec.total_dims
-        self.action_dim = action_dim
         self.token_embed_dim = token_embed_dim
         self.input_assembler = _TokenInputAssembler(token_spec)
 
@@ -554,13 +295,6 @@ class TokenSetQNetwork(nn.Module):
             self.out_proj = None
         else:
             raise ValueError(f"Unknown aggregator_type: {aggregator_type!r}. Supported: mean, attention")
-
-        self.q_head = nn.Sequential(
-            nn.Linear(token_embed_dim, q_head_hidden_dim),
-            nn.LayerNorm(q_head_hidden_dim),
-            nn.ReLU(),
-            nn.Linear(q_head_hidden_dim, action_dim),
-        )
 
     @property
     def token_type_names(self) -> tuple[str, ...]:
@@ -624,8 +358,121 @@ class TokenSetQNetwork(nn.Module):
         return tokens.sum(dim=1) / counts.unsqueeze(-1)
 
     def forward(self, obs: torch.Tensor) -> torch.Tensor:
-        """Encode the token set into Q-values, [batch, action_dim]."""
-        return cast(torch.Tensor, self.q_head(self.pooled_embedding(obs)))
+        """Encode observations into pooled token embeddings."""
+        return self.pooled_embedding(obs)
+
+
+class TokenSetQNetwork(nn.Module):
+    """Q-network composed from a shared token-set encoder and a Q-head."""
+
+    def __init__(
+        self,
+        token_spec: TokenSpec,
+        action_dim: int,
+        token_embed_dim: int,
+        q_head_hidden_dim: int,
+        aggregator_type: str,
+        num_heads: int | None,
+    ):
+        super().__init__()
+        if action_dim <= 0:
+            raise ValueError("action_dim must be positive")
+        if q_head_hidden_dim <= 0:
+            raise ValueError("q_head_hidden_dim must be positive")
+        self.action_dim = action_dim
+        self.encoder = TokenSetEncoder(
+            token_spec=token_spec,
+            token_embed_dim=token_embed_dim,
+            aggregator_type=aggregator_type,
+            num_heads=num_heads,
+        )
+        self.obs_dim = self.encoder.obs_dim
+        self.token_embed_dim = self.encoder.token_embed_dim
+        self.q_head = nn.Sequential(
+            nn.Linear(token_embed_dim, q_head_hidden_dim),
+            nn.LayerNorm(q_head_hidden_dim),
+            nn.ReLU(),
+            nn.Linear(q_head_hidden_dim, action_dim),
+        )
+
+    @property
+    def token_type_names(self) -> tuple[str, ...]:
+        return self.encoder.token_type_names
+
+    def pooled_embedding(self, obs: torch.Tensor) -> torch.Tensor:
+        return cast(torch.Tensor, self.encoder(obs))
+
+    def forward(self, obs: torch.Tensor) -> torch.Tensor:
+        return cast(torch.Tensor, self.q_head(self.encoder(obs)))
+
+
+class RecurrentTokenQNetwork(nn.Module):
+    """Token-set encoder followed by one sequence-level LSTM call and a Q-head."""
+
+    def __init__(
+        self,
+        token_spec: TokenSpec,
+        action_dim: int,
+        token_embed_dim: int,
+        q_head_hidden_dim: int,
+        aggregator_type: str,
+        num_heads: int | None,
+        lstm_hidden_size: int,
+        lstm_num_layers: int,
+        lstm_dropout: float,
+    ):
+        super().__init__()
+        if action_dim <= 0:
+            raise ValueError("action_dim must be positive")
+        if q_head_hidden_dim <= 0:
+            raise ValueError("q_head_hidden_dim must be positive")
+        self.action_dim = action_dim
+        self.hidden_dim = lstm_hidden_size
+        self.encoder = TokenSetEncoder(
+            token_spec=token_spec,
+            token_embed_dim=token_embed_dim,
+            aggregator_type=aggregator_type,
+            num_heads=num_heads,
+        )
+        self.obs_dim = self.encoder.obs_dim
+        self.token_embed_dim = self.encoder.token_embed_dim
+        self.lstm = nn.LSTM(
+            input_size=token_embed_dim,
+            hidden_size=lstm_hidden_size,
+            num_layers=lstm_num_layers,
+            dropout=lstm_dropout,
+            batch_first=True,
+        )
+        self.q_head = nn.Sequential(
+            nn.Linear(lstm_hidden_size, q_head_hidden_dim),
+            nn.LayerNorm(q_head_hidden_dim),
+            nn.ReLU(),
+            nn.Linear(q_head_hidden_dim, action_dim),
+        )
+
+    @property
+    def token_type_names(self) -> tuple[str, ...]:
+        return self.encoder.token_type_names
+
+    def initial_hidden(self, batch_size: int, device: torch.device) -> tuple[torch.Tensor, torch.Tensor]:
+        shape = (self.lstm.num_layers, batch_size, self.lstm.hidden_size)
+        return torch.zeros(shape, device=device), torch.zeros(shape, device=device)
+
+    def forward(
+        self,
+        observations: torch.Tensor,
+        hidden: tuple[torch.Tensor, torch.Tensor],
+    ) -> tuple[torch.Tensor, tuple[torch.Tensor, torch.Tensor]]:
+        if observations.dim() != 3 or observations.shape[2] != self.encoder.obs_dim:
+            raise ValueError(
+                f"Expected observations with shape [batch, sequence, observation] where observation={self.encoder.obs_dim}, "
+                f"got {tuple(observations.shape)}"
+            )
+        batch_size, sequence_length, observation_dim = observations.shape
+        flat_observations = observations.reshape(batch_size * sequence_length, observation_dim)
+        encoded = self.encoder(flat_observations).reshape(batch_size, sequence_length, -1)
+        recurrent, new_hidden = self.lstm(encoded, hidden)
+        return cast(torch.Tensor, self.q_head(recurrent)), new_hidden
 
 
 class StructuredQNetwork(nn.Module):

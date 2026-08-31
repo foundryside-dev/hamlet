@@ -35,6 +35,29 @@ from townlet.universe.compiler import UniverseCompiler
 logger = logging.getLogger(__name__)
 
 
+def decide_live_agent_budget(*, completed: int, live_agents: int, budget: int) -> tuple[bool, int]:
+    """Decide whether one indivisible vector step fits a live-agent transition budget.
+
+    Returns ``(may_step, shortfall)``. The shortfall is non-zero only when the
+    remaining budget cannot fit all currently live lanes, so callers stop before
+    the vector step rather than overshooting or injecting a partial batch.
+    """
+    values = {"completed": completed, "live_agents": live_agents, "budget": budget}
+    for name, value in values.items():
+        if not isinstance(value, int) or isinstance(value, bool):
+            raise ValueError(f"{name} must be an integer")
+    if completed < 0:
+        raise ValueError("completed must be non-negative")
+    if live_agents <= 0:
+        raise ValueError("live_agents must be positive")
+    if budget <= 0:
+        raise ValueError("budget must be positive")
+    if completed > budget:
+        raise ValueError("completed cannot exceed budget")
+    remaining = budget - completed
+    return (True, 0) if live_agents <= remaining else (False, remaining)
+
+
 class DemoRunner:
     """Orchestrates multi-day demo training with checkpointing."""
 
@@ -51,6 +74,7 @@ class DemoRunner:
         *,
         level_name: str | None = None,
         force_new_vfs: bool = False,
+        max_environment_steps: int | None = None,
     ):
         """Initialize demo runner.
 
@@ -62,6 +86,8 @@ class DemoRunner:
             checkpoint_dir: Directory for checkpoint files
             max_episodes: Maximum number of episodes to run (if None, reads from level training.yaml)
             force_new_vfs: Start a fresh run branch instead of resuming an incompatible VFS checkpoint.
+            max_environment_steps: Optional summed-live-agent transition budget.
+                A vector step is taken only when every currently live lane fits.
         """
         self.config_dir = Path(config_dir)
         # Resolve training config path:
@@ -74,6 +100,14 @@ class DemoRunner:
         self.db_path = Path(db_path)
         self.checkpoint_dir = Path(checkpoint_dir)
         self.force_new_vfs = force_new_vfs
+        if max_environment_steps is not None and (
+            not isinstance(max_environment_steps, int) or isinstance(max_environment_steps, bool) or max_environment_steps <= 0
+        ):
+            raise ValueError("max_environment_steps must be a positive integer or None")
+        self.max_environment_steps = max_environment_steps
+        self.completed_live_agent_steps = 0
+        self.environment_step_budget_shortfall = 0
+        self.environment_step_budget_reached = False
 
         # Create directories
         self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
@@ -235,6 +269,7 @@ class DemoRunner:
             "affordance_layout": affordance_layout,
             "agent_ids": population.agent_ids,
             "epsilon": population._get_current_epsilon_value(),
+            "completed_live_agent_steps": self.completed_live_agent_steps,
             "training_config": self.training_config.model_dump(),
             "config_dir": str(self.config_dir),
         }
@@ -297,6 +332,12 @@ class DemoRunner:
             substrate_type=type(env.substrate).__name__,
             num_agents=population.num_agents,
         )
+        completed_live_agent_steps = checkpoint["completed_live_agent_steps"]
+        if self.max_environment_steps is not None and completed_live_agent_steps > self.max_environment_steps:
+            raise ValueError(
+                "Checkpoint completed_live_agent_steps exceeds this run's environment-step budget: "
+                f"checkpoint={completed_live_agent_steps}, budget={self.max_environment_steps}."
+            )
         population.validate_checkpoint_state(checkpoint["population_state"])
         curriculum.validate_checkpoint_state(checkpoint["curriculum_state"])
         env.validate_affordance_positions(checkpoint["affordance_layout"])
@@ -306,6 +347,10 @@ class DemoRunner:
         env.set_affordance_positions(checkpoint["affordance_layout"])
         population.agent_ids = checkpoint["agent_ids"]
         self.current_episode = checkpoint["episode"]
+        self.completed_live_agent_steps = completed_live_agent_steps
+        if self.max_environment_steps is not None:
+            self.environment_step_budget_shortfall = self.max_environment_steps - completed_live_agent_steps
+            self.environment_step_budget_reached = completed_live_agent_steps == self.max_environment_steps
 
         logger.info(f"Resumed from episode {self.current_episode}")
         return self.current_episode
@@ -372,11 +417,6 @@ class DemoRunner:
             device=device,
         )
 
-        # The raster vision window died with the fixed-width observation ABI (unit-3
-        # cut). Recurrent readers now consume the same compact token blocks as the
-        # other architectures; 1 remains the constructor value for "no window".
-        vision_window_size = 1
-
         # Get training hyperparameters from config (all required per PDR-002)
         train_frequency = loop_cfg.train_frequency
         batch_size = self.training_config.replay_buffer.batch_size
@@ -404,7 +444,6 @@ class DemoRunner:
             device=device,
             obs_dim=obs_dim,
             action_dim=action_dim,
-            vision_window_size=vision_window_size,
             tb_logger=self.tb_logger,
             train_frequency=train_frequency,
             batch_size=batch_size,
@@ -468,10 +507,13 @@ class DemoRunner:
         # Mark training started
         self.db.set_system_state("training_status", "running")
         self.db.set_system_state("start_time", str(time.time()))
+        if self.max_environment_steps is not None:
+            self.db.set_system_state("environment_step_budget_requested", str(self.max_environment_steps))
+            self.db.set_system_state("environment_step_budget_stop_rule", "stop_before_vector_step")
 
         # Training loop
         try:
-            while self.current_episode < self.max_episodes and not self.should_shutdown:
+            while self.current_episode < self.max_episodes and not self.should_shutdown and not self.environment_step_budget_reached:
                 episode_start = time.time()
 
                 # Generalization test at episode 5000
@@ -516,6 +558,7 @@ class DemoRunner:
                 affordance_transitions = [defaultdict(lambda: defaultdict(int)) for _ in range(num_agents)]
                 last_affordance = [None for _ in range(num_agents)]
                 last_agent_state: BatchedAgentState | None = None
+                alive_agents = torch.ones(num_agents, dtype=torch.bool, device=self.env.device)
 
                 for step in range(max_steps):
                     # Check for shutdown request every step for immediate response
@@ -523,8 +566,30 @@ class DemoRunner:
                         logger.info(f"[Training] Shutdown requested during episode {self.current_episode + 1}, step {step}/{max_steps}")
                         break
 
+                    live_agent_count = int(alive_agents.sum().item())
+                    if self.max_environment_steps is not None:
+                        may_step, shortfall = decide_live_agent_budget(
+                            completed=self.completed_live_agent_steps,
+                            live_agents=live_agent_count,
+                            budget=self.max_environment_steps,
+                        )
+                        if not may_step:
+                            self.environment_step_budget_shortfall = shortfall
+                            self.environment_step_budget_reached = True
+                            logger.info(
+                                "[Training] Environment-step budget reached at %s/%s live-agent transitions " "(conservative shortfall %s)",
+                                self.completed_live_agent_steps,
+                                self.max_environment_steps,
+                                shortfall,
+                            )
+                            break
+
                     agent_state = self.population.step_population(self.env)
                     last_agent_state = agent_state
+                    self.completed_live_agent_steps += live_agent_count
+                    if self.max_environment_steps is not None and self.completed_live_agent_steps == self.max_environment_steps:
+                        self.environment_step_budget_shortfall = 0
+                        self.environment_step_budget_reached = True
 
                     if self.curriculum.transition_events:
                         self.tb_logger.log_curriculum_transitions(
@@ -603,7 +668,8 @@ class DemoRunner:
                             interaction_progress=interaction_progress,
                         )
 
-                    if torch.all(agent_state.dones).item():
+                    alive_agents &= ~agent_state.dones
+                    if torch.all(agent_state.dones).item() or self.environment_step_budget_reached:
                         break
 
                 if last_agent_state is None:
@@ -835,6 +901,16 @@ class DemoRunner:
                 self.current_episode += 1
 
         finally:
+            if self.max_environment_steps is not None:
+                shortfall = self.max_environment_steps - self.completed_live_agent_steps
+                if shortfall < 0:
+                    raise RuntimeError(
+                        f"environment-step budget overshot: {self.completed_live_agent_steps} > {self.max_environment_steps}"
+                    )
+                self.environment_step_budget_shortfall = shortfall
+                self.db.set_system_state("environment_step_budget_realized", str(self.completed_live_agent_steps))
+                self.db.set_system_state("environment_step_budget_shortfall", str(shortfall))
+
             # Save final checkpoint
             logger.info("Training complete, saving final checkpoint...")
             self.save_checkpoint()

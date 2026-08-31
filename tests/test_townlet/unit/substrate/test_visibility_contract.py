@@ -155,13 +155,14 @@ class TestGrid3DBoundaryModeTable:
         assert delta[0, 0].tolist() == pytest.approx([-1.0 / 7.0, -1.0 / 7.0, -1.0 / 2.0])
 
 
-class TestGridNDGainsPartialObservability:
-    """The §1 trade: GridND (rank <= MAX_POSITION_RANK) becomes visibility-filterable even
-    though its raster local-window path never existed (`supports_partial_vision` stays
-    False — that is the OLD window contract, untouched)."""
+class TestGridNDPartialObservability:
+    """GridND visibility is rank-independent and has no raster-window contract."""
 
-    def test_supports_partial_vision_unchanged(self):
-        assert _gridnd("clamp").supports_partial_vision is False
+    def test_six_dimensional_visibility_uses_every_axis(self):
+        substrate = GridNDSubstrate(dimension_sizes=[5] * 6, boundary="clamp", distance_metric="manhattan")
+        self_pos = torch.zeros((1, 6), dtype=torch.long)
+        entities = torch.tensor([[1, 1, 0, 0, 0, 0], [1, 1, 1, 0, 0, 0]], dtype=torch.long)
+        assert substrate.visible(self_pos, entities, 0.5).tolist() == [[True, False]]
 
     @pytest.mark.parametrize("boundary", ("clamp", "bounce", "sticky"))
     def test_non_wrap_table(self, boundary):

@@ -238,16 +238,20 @@ the compiled artifact. See `docs/architecture/STRATA.md` §5.
 
 **POMDP Support**:
 
-- ✅ **Supported**: Grid2D, Grid3D — subject to the window-size gate. `vision_range` is a
-  **normalized fraction** of the longest axis, not a cell radius (the old "vision_range ≤ 2"
-  phrasing here predated that encoding; corrected 2026-08-24): validation refuses when the
-  implied window is too large (e.g. Grid3D on 8³ accepts 0.5 → window 5, rejects 0.75 → window 7).
-- ❌ **Not Supported**: Aspatial (`supports_partial_vision` returns False and the
-  window/radius methods raise — the "special case" previously listed here was false,
-  corrected 2026-08-24), Continuous substrates, GridND (N≥4) - window too large
+- `active_vision: partial` keeps the compiled `TokenSpec` and flat width unchanged. It passes
+  the level's normalized `vision_range` to `substrate.visible()`; spatial token publishers clear
+  both presence and payload for entities outside that predicate.
+- Grid2D, Grid3D and GridND convert `vision_range` to a discrete radius from the longest axis:
+  `max(1, ceil(vision_range * span / 2))`. Continuous and ContinuousND use the corresponding
+  world-unit radius without cell quantization. All use the substrate's declared distance metric,
+  and `wrap` uses toroidal shortest-path deltas.
+- `substrate.egocentric_delta()` supplies bounded entity-minus-observer offsets using the same
+  per-axis denominator as normalized positions. Aspatial has no spatial filtering: `visible()`
+  returns all true and `egocentric_delta()` returns width-zero deltas.
+- `stratum.vision_support` must admit the level's declared `active_vision`; this is a config
+  capability check, not a substrate window-capability matrix.
 
-See `tests/test_townlet/unit/environment/test_pomdp_validation.py` for validation logic and
-`docs/architecture/STRATA.md` §7 for the three independent gates.
+See `docs/architecture/STRATA.md` §7 and `docs/manual/pomdp_compatibility_matrix.md`.
 
 ### Variable & Feature System (VFS)
 
@@ -421,7 +425,7 @@ Verified by diff, 2026-08-12 — the levels live under `configs/default_curricul
 | L0_0_minimal | 3×3 grid, 1 affordance | 8×8, 14 affordances |
 | L0_5_dual_resource | 7×7 grid, 4 affordances | 8×8, 14 affordances — `training.yaml` **identical to L1** but for `output_subdir` |
 | L1_full_observability | 8×8, 14 affordances | as intended |
-| L2_partial_observability | POMDP, 5×5 window | genuinely differs (`active_vision: partial`) |
+| L2_partial_observability | token-filtered POMDP | genuinely differs (`active_vision: partial`) |
 | L3_temporal_mechanics | 24-tick day/night | genuinely differs (`active_temporal: true`, `day_length: 24`) |
 
 `bars.yaml`, `affordances.yaml` and `drive.yaml` are **byte-identical across all five levels**.
@@ -468,20 +472,15 @@ DTOs live in `src/townlet/config/` — `training_v2_config.py`, `environment_con
 
 ## Network Architecture Selection
 
-**SimpleQNetwork** (full observability) and **RecurrentSpatialQNetwork** (LSTM). Layer shapes:
-read `src/townlet/agent/networks.py`. Observation width comes only from the compiled artifact
-(see State Representation above) — do not write dimension literals here.
+`brain.yaml` selects `feedforward`, `dueling`, `token_set`, or `recurrent`. `TokenSetQNetwork`
+and `RecurrentTokenQNetwork` share `TokenSetEncoder`: per-type projections and learned type
+embeddings followed by the declared `mean` or `attention` aggregator. The recurrent network
+folds `[batch, sequence, observation]` into frame batches for token encoding, then makes one LSTM
+call over the complete pooled sequence before its Q-head. Observation width and token roster come
+only from the compiled artifact; do not write dimension literals here.
 
-**Census, not intent** (measured 2026-08-26 — the "L0/L0.5/L1 vs L2/L3" mapping this line used
-to assert was never what the packs declared): **no shipped pack declares `recurrent`.** Every
-`default_curriculum` level runs `feedforward`, including the two POMDP ones; only the three
-`configs/test/token_transfer_*` fixtures and `configs/test/token_set_smoke` (`token_set`)
-differ. `RecurrentSpatialQNetwork` survives the token cut as a token-BLOCK reader — it binds
-its three real blocks to `NetworkFactory.token_block_slices(spec)` (self→position,
-meter→meters, affordance→affordance) and reads no spatial window, because a token observation
-has none. `token_set` is the token-native architecture.
-
-- LSTM hidden state: resets at episode start, persists during rollout, resets per transition in batch training
+- LSTM hidden state resets at episode start, persists during rollout, and observes replay sequence
+  and terminal boundaries during training.
 
 **Training Details**:
 

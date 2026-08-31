@@ -394,12 +394,8 @@ class Grid3DSubstrate(SpatialSubstrate):
         """
         return positions.float()
 
-    @property
-    def supports_partial_vision(self) -> bool:
-        return True
-
-    def get_vision_radius(self, vision_range: float) -> int:
-        """Radius from the declared fraction of the longest axis (min 1)."""
+    def _token_vision_radius(self, vision_range: float) -> int:
+        """Token-visibility radius from the longest-axis fraction (min 1)."""
         span = max(self.width, self.height, self.depth)
         return max(1, int(math.ceil(vision_range * (span / 2.0))))
 
@@ -414,7 +410,7 @@ class Grid3DSubstrate(SpatialSubstrate):
         require_position_batch(entity_pos, self.position_dim, argument="entity_pos")
         if vision_range is None:
             return torch.ones((self_pos.shape[0], entity_pos.shape[0]), dtype=torch.bool, device=self_pos.device)
-        radius = float(self.get_vision_radius(vision_range))
+        radius = float(self._token_vision_radius(vision_range))
         wrap = self._token_axis_sizes(self_pos.device) if self.boundary == "wrap" else None
         deltas = pairwise_axis_deltas(self_pos, entity_pos, wrap)
         return combine_metric(deltas.abs(), self.distance_metric) <= radius

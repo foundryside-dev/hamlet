@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 
 import torch.nn as nn
 
-from townlet.agent.networks import DuelingQNetwork, RecurrentSpatialQNetwork, TokenSetQNetwork
+from townlet.agent.networks import DuelingQNetwork, RecurrentTokenQNetwork, TokenSetQNetwork
 from townlet.config.brain_config import DuelingConfig, FeedforwardConfig, RecurrentConfig, TokenSetConfig
 
 if TYPE_CHECKING:
@@ -70,75 +70,22 @@ class NetworkFactory:
         return nn.Sequential(*layers)
 
     @staticmethod
-    def token_block_slices(spec: TokenSpec) -> dict[str, slice]:
-        """Serialization slice of each token type, by type name.
-
-        The TokenSpec's serialization is contiguous per-type blocks in roster order —
-        the same walk :meth:`TokenObservationEncoder.encode` performs. A block-reading
-        network addresses its inputs through these, never through a dim literal.
-        """
-        return {token_type.type_name: slice(token_type.start, token_type.end) for token_type in spec.compact_layout().types}
-
-    @staticmethod
     def build_recurrent(
         config: RecurrentConfig,
         action_dim: int,
-        substrate_position_dim: int,
         token_spec: TokenSpec,
-    ) -> RecurrentSpatialQNetwork:
-        """Build the LSTM Q-network over the compiled token serialization.
-
-        The network's three real input blocks map onto token types: `self` carries the
-        observer's position features, `meter` the meter block, `affordance` the
-        affordance block. There is no spatial window in a token observation, so
-        `grid_slice` is None and the vision encoder reads zeros at `window_size` 1 —
-        the same "no window" case every full-observability universe produced before the
-        unit-3 cut, when the window side was read off a spec that had no window field.
-
-        This is a BLOCK reader, not a token-aware one: it flattens each type's rows into
-        one Linear. A genuinely token-native recurrent/attention brain is unit 4, and
-        `architecture.type='token_set'` is the shipped token-native option today. No
-        shipped pack declares `recurrent`; POMDP levels run feedforward.
-        """
-        blocks = NetworkFactory.token_block_slices(token_spec)
-        for required in ("self", "meter", "affordance"):
-            if required not in blocks:
-                raise ValueError(
-                    f"architecture.type='recurrent' reads the {required!r} token block, which this "
-                    f"compiled TokenSpec does not carry (types: {[t.type_name for t in token_spec.types]})."
-                )
-        meter_block = blocks["meter"]
-        affordance_block = blocks["affordance"]
-        self_block = blocks["self"]
-        bars_dim = meter_block.stop - meter_block.start
-        affordance_dims = affordance_block.stop - affordance_block.start
-        if bars_dim == 0 or affordance_dims == 0:
-            raise ValueError(
-                "architecture.type='recurrent' requires non-empty meter and affordance token blocks; "
-                f"got meter width {bars_dim}, affordance width {affordance_dims}. Declare meters and "
-                "affordances, or use `feedforward` / `token_set`."
-            )
-        # `position_dim` sizes the position encoder, so it is the WIDTH of the block it
-        # reads (the whole `self` token row), not the substrate's coordinate rank. An
-        # aspatial universe has no observer position and passes 0, which is the
-        # network's own "no position encoder" case.
-        position_dim = (self_block.stop - self_block.start) if substrate_position_dim > 0 else 0
-        return RecurrentSpatialQNetwork(
+    ) -> RecurrentTokenQNetwork:
+        """Build the token-native recurrent Q-network from compiled token schema."""
+        return RecurrentTokenQNetwork(
+            token_spec=token_spec,
             action_dim=action_dim,
-            # No spatial window exists in a token observation; 1 is the API's own
-            # long-standing "no window" value and keeps the Conv2d well-formed.
-            window_size=1,
-            position_dim=position_dim,
-            bars_dim=bars_dim,
-            # The affordance encoder is sized `num_affordance_types + 1`; the block width
-            # is what it must consume.
-            num_affordance_types=affordance_dims - 1,
-            enable_temporal_features=False,
-            hidden_dim=config.lstm.hidden_size,
-            meters_slice=meter_block,
-            affordance_slice=affordance_block,
-            grid_slice=None,
-            position_slice=self_block if position_dim > 0 else None,
+            token_embed_dim=config.token_embed_dim,
+            q_head_hidden_dim=config.q_head_hidden_dim,
+            aggregator_type=config.aggregator.type,
+            num_heads=config.aggregator.num_heads,
+            lstm_hidden_size=config.lstm.hidden_size,
+            lstm_num_layers=config.lstm.num_layers,
+            lstm_dropout=config.lstm.dropout,
         )
 
     @staticmethod

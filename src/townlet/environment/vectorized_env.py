@@ -31,7 +31,6 @@ from townlet.environment.token_publishers import (
     TokenPublishContext,
 )
 from townlet.items import InventoryState, ItemActionHandler, ItemManager
-from townlet.substrate.continuous import ContinuousSubstrate
 from townlet.universe.dto import RuntimeActionSpace
 from townlet.vfs.evaluator import EvaluationMode, VFSEvaluator
 from townlet.vfs.profiles import CompiledGlobalProfile
@@ -181,13 +180,6 @@ class VectorizedHamletEnv:
         # Observation/model metadata
         self.meter_count = self.metadata.meter_count
         meter_count = self.meter_count
-
-        # POMDP support and vision-window sizing live in a single helper so
-        # the env body reads as orchestration, not validation. The helper
-        # writes to vision_radius and local_window_size on self.
-        self.vision_radius: int = 0
-        self.local_window_size: int = 0
-        self._configure_partial_observability()
 
         # Serialization width of the compiled token observation.
         self.observation_dim = self.token_spec.total_dims
@@ -566,69 +558,6 @@ class VectorizedHamletEnv:
                 set(runtime_action_space.enabled_action_names) if runtime_action_space.enabled_action_names is not None else None
             ),
         )
-
-    def _configure_partial_observability(self) -> None:
-        """Derive POMDP vision window and validate substrate compatibility.
-
-        Writes ``self.vision_radius`` and ``self.local_window_size`` when
-        partial observability is enabled. Raises ``ValueError`` for any
-        substrate / encoding combination that is unsupported under POMDP —
-        these are configuration errors that should fail at compile time,
-        not silently produce broken observations.
-        """
-        max_vision_radius = 50
-        if self.partial_observability and self.substrate.supports_partial_vision:
-            # The substrate owns the radius derivation and the window width
-            # (WS-7 first knockdown): the same numbers the compiler asked for
-            # at build_spec time, so declared and produced dims cannot drift.
-            raw_radius = self.substrate.get_vision_radius(self.vision_range)
-            if raw_radius > max_vision_radius:
-                raise ValueError(
-                    f"Vision radius {raw_radius} exceeds maximum {max_vision_radius}. "
-                    f"This would create a {2 * raw_radius + 1}x{2 * raw_radius + 1} observation window, "
-                    f"causing OOM. Reduce vision_range ({self.vision_range}) or the grid extent. "
-                    f"Max supported configuration: derived vision radius <= {max_vision_radius}"
-                )
-            self.vision_radius = raw_radius
-            self.local_window_size = (2 * self.vision_radius) + 1
-
-        if not self.partial_observability:
-            return
-
-        if self.substrate.position_dim == 0:
-            raise ValueError(
-                "Partial observability (POMDP) is not supported for aspatial substrates. "
-                "A local vision window requires at least 1 spatial dimension. "
-                "Set partial_observability=False when using an aspatial substrate."
-            )
-        if isinstance(self.substrate, ContinuousSubstrate):
-            raise ValueError(
-                "Partial observability (POMDP) is not supported for continuous substrates. "
-                "Continuous spaces have infinite positions within any local window, making discrete vision grids undefined. "
-                "Use partial_observability=False with the canonical normalized position encoding instead."
-            )
-        if self.substrate.position_dim >= 4:
-            raise ValueError(
-                f"Partial observability (POMDP) is not supported for {self.substrate.position_dim}D "
-                f"substrates (substrate type '{type(self.substrate).__name__}').\n"
-                "  Reason: the visibility filter needs a distance metric whose neighbourhood is a "
-                "usable fraction of the space, and in 4D+ the reachable neighbourhood at any radius "
-                "is a vanishing fraction of the volume — every entity reads as out of range or all of "
-                "them read as in range.\n"
-                "  Fix: use full observability (active_vision: global) with normalized position "
-                "encoding, which is dimension-independent.\n"
-                "  See docs/manual/pomdp_compatibility_matrix.md."
-            )
-        if self.substrate.position_dim == 3:
-            window_size = self.local_window_size or 0
-            window_volume = window_size**3 if window_size > 0 else 0
-            if window_volume > 125:
-                raise ValueError(
-                    f"Grid3D POMDP with vision_range={self.vision_range} requires {window_volume} cells "
-                    f"(window size {window_size}×{window_size}×{window_size}), which is excessive. "
-                    f"Use vision_range ≤ 2 (5×5×5 = 125 cells) for Grid3D partial observability, "
-                    f"or disable partial_observability."
-                )
 
     def _initialize_vfs_subsystem(self) -> None:
         """Build the VFS variable registry and evaluator.

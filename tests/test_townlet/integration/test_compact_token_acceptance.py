@@ -17,12 +17,10 @@ import torch.nn.functional as F  # noqa: N812
 from townlet.agent.network_factory import NetworkFactory
 from townlet.agent.token_input import TokenInputAssembler
 from townlet.config.brain_config import (
-    CNNEncoderConfig,
     DuelingConfig,
     DuelingStreamConfig,
     FeedforwardConfig,
     LSTMConfig,
-    MLPEncoderConfig,
     RecurrentConfig,
     SetAggregatorConfig,
     TokenSetConfig,
@@ -156,7 +154,6 @@ def _attach_checkpoint_runtime(runner: DemoRunner, *, num_agents: int) -> None:
         sequence_length=loop.sequence_length,
         max_grad_norm=loop.max_grad_norm,
         action_dim=env.action_dim,
-        vision_window_size=1,
         max_episodes=1,
         max_steps_per_episode=loop.max_steps_per_episode,
     )
@@ -353,14 +350,11 @@ def test_batch_256_architecture_matrix(
 
 
 def _recurrent_config() -> RecurrentConfig:
-    encoder = MLPEncoderConfig(hidden_sizes=[16], activation="relu")
     return RecurrentConfig(
-        vision_encoder=CNNEncoderConfig(channels=[8], kernel_sizes=[3], strides=[1], padding=[1], activation="relu"),
-        position_encoder=encoder,
-        meter_encoder=encoder,
-        affordance_encoder=encoder,
+        token_embed_dim=16,
+        aggregator=SetAggregatorConfig(type="mean"),
         lstm=LSTMConfig(hidden_size=32, num_layers=1, dropout=0.0),
-        q_head=encoder,
+        q_head_hidden_dim=16,
     )
 
 
@@ -377,27 +371,19 @@ def test_batch_256_recurrent_bptt(l1_runtime: tuple[TokenSpec, int, torch.Tensor
     terminals[:128, 1] = True
     terminals[128:160, -1] = True
 
-    network = NetworkFactory.build_recurrent(
-        _recurrent_config(), action_dim=action_dim, substrate_position_dim=spec.position_rank, token_spec=spec
-    )
+    network = NetworkFactory.build_recurrent(_recurrent_config(), action_dim=action_dim, token_spec=spec)
     optimizer = torch.optim.Adam(network.parameters(), lr=1e-3)
     lstm_before = {name: parameter.detach().clone() for name, parameter in network.lstm.named_parameters()}
     hidden = network.initial_hidden(BATCH_SIZE, CPU)
-    losses: list[torch.Tensor] = []
-    q_values_by_step: list[torch.Tensor] = []
-    for step in range(SEQUENCE_LENGTH):
-        q_values, hidden = network(sequences[:, step, :], hidden)
-        q_values_by_step.append(q_values)
-        losses.append(q_values.square().mean(dim=1)[validity[:, step]].mean())
-        continue_mask = (validity[:, step] & ~terminals[:, step]).view(1, BATCH_SIZE, 1)
-        hidden = tuple(state * continue_mask.to(dtype=state.dtype) for state in hidden)
+    q_values, hidden = network(sequences, hidden)
+    losses = [q_values[:, step, :].square().mean(dim=1)[validity[:, step]].mean() for step in range(SEQUENCE_LENGTH)]
 
     with torch.no_grad():
-        bootstrap_q, _ = network(next_observations[:, -1, :], hidden)
-        bootstrap = bootstrap_q.max(dim=1).values
+        bootstrap_q, _ = network(next_observations[:, -1:, :], hidden)
+        bootstrap = bootstrap_q[:, 0, :].max(dim=1).values
         bootstrap = torch.where(terminals[:, -1], torch.zeros_like(bootstrap), bootstrap)
     boundary_mask = validity[:, -1]
-    boundary_loss = F.mse_loss(q_values_by_step[-1][boundary_mask, 0], bootstrap[boundary_mask])
+    boundary_loss = F.mse_loss(q_values[boundary_mask, -1, 0], bootstrap[boundary_mask])
     loss = torch.stack(losses).mean() + boundary_loss
     assert loss.ndim == 0 and torch.isfinite(loss)
     optimizer.zero_grad()

@@ -199,35 +199,9 @@ class SpatialSubstrate(ABC):
 
     # --- Vision contract -----------------------------------------------------
     #
-    # What survives of the WS-7 observation-shape contract after the unit-3 token
-    # cut. The raster half — `encode_observation`, `get_observation_dim`,
-    # `get_grid_encoding_dim`, `get_position_feature_dim`, `get_partial_window_dim`,
-    # `encode_partial_observation` — is DELETED with the fixed-width superset ABI it
-    # existed to size; nothing asks a substrate for an observation width any more.
     # The token path asks for `position_dim`, `normalize_positions`,
-    # `egocentric_delta` and `visible` instead, and POMDP is the same TokenSpec with
-    # a radius handed to `visible`.
-
-    @property
-    @abstractmethod
-    def supports_partial_vision(self) -> bool:
-        """Whether this substrate can emit a local vision window (POMDP).
-
-        True only where encode_partial_observation is a real encoding
-        (Grid2D, Grid3D). Substrates returning False never receive
-        get_vision_radius / get_partial_window_dim calls.
-        """
-        pass
-
-    @abstractmethod
-    def get_vision_radius(self, vision_range: float) -> int:
-        """Radius (in cells) for a declared vision_range fraction.
-
-        The single home of the historical `ceil(vision_range * grid_size/2)`
-        formula, generalized to the longest axis (identical on squares).
-        Substrates without partial vision raise ValueError.
-        """
-        pass
+    # `egocentric_delta` and `visible`. POMDP changes token visibility, never the
+    # serialized observation shape.
 
     @abstractmethod
     def normalize_positions(self, positions: torch.Tensor) -> torch.Tensor:
@@ -328,8 +302,7 @@ class SpatialSubstrate(ABC):
     #
     # The PDR-0041 shape again: the runtime learns spatial-token visibility by asking
     # the substrate instance. These two members are the token path's ONLY spatial
-    # gate — `supports_partial_vision` and the window encoders above remain the OLD
-    # raster contract, untouched until the unit-3 Task-10 swap retires them.
+    # gate.
 
     @abstractmethod
     def visible(

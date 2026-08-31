@@ -185,22 +185,14 @@ square/cubic grids; continuous and gridnd currently impose no discrete action re
 
 ## 6. The observation seam
 
-The observation compiler (`src/townlet/universe/compilers/observation.py`) never derives a
-spatial width itself — it **asks the substrate instance**, through the five-member contract
-documented at `base.py:195-255`. Deriving these numbers anywhere else is the defect class behind
-`DIV-003` in `docs/oracle/known-divergences.md`.
+Spatial observation is a token-publisher concern, not an observation-width API. The compiler
+builds one `TokenSpec`; at runtime publishers ask the substrate two questions:
 
-### 6.1 The three spatial fields
+- `visible(self_pos, entity_pos, vision_range)` returns the `[observer, entity]` presence mask.
+- `egocentric_delta(self_pos, entity_pos)` returns normalized entity-minus-observer offsets.
 
-| field | width from | emitted when |
-| --- | --- | --- |
-| `obs_grid_encoding` | `get_grid_encoding_dim()` | `vision_support` in `{both, global}` and the substrate has a grid |
-| `obs_local_window` | `get_partial_window_dim(get_vision_radius(vision_range))` | `vision_support` in `{both, partial}` and `supports_partial_vision` |
-| `obs_position` | `get_position_feature_dim()` | non-zero position features |
-
-`get_grid_encoding_dim()` is **one slot per cell** — `width * height` for Grid2D,
-`width * height * depth` for Grid3D. GridND has no occupancy grid, so its published grid encoding
-*is* its coordinate encoding; continuous and aspatial return 0 and no such field is declared.
+No substrate emits a grid raster or local window, and no network derives an input width from a
+substrate. The compiled token roster, capacities and payload schemas determine the serialization.
 
 ### 6.2 Canonical bounded position encoding
 
@@ -210,59 +202,34 @@ divide by `max(size - 1, 1)` and continuous axes divide by their declared extent
 `observation_encoding` selector is rejected as an extra config field; raw-coordinate and
 extent-appending alternatives do not exist.
 
-### 6.3 What "constant width" actually claims
+### 6.3 Width and visibility
 
-**Allocated observation width is constant across the levels of one pack**, because every level
-shares one `stratum.yaml` (§2.1) — that is the mechanism behind cross-level checkpoint transfer,
-together with the global action vocabulary. It is **not** constant across grid sizes: one slot
-per cell means a larger grid allocates a wider `obs_grid_encoding` field.
+`TokenSpec.total_dims` is the flat serialization width. It is the sum of each token type's
+compiled capacity times its compact row width. Full and partial visibility use the same spec and
+the same width: partial visibility clears presence and payload for out-of-range spatial tokens.
 
-POMDP does not shrink the tensor. Both `obs_grid_encoding` and `obs_local_window` are allocated
-when `vision_support: both`; the level's `active_vision` sets `curriculum_active` on each, and
-the inactive block is held at zero rather than removed.
+Cross-universe token transfer is governed by `token_type_schema_hash`, not equal flat widths.
+Flat `feedforward` and `dueling` readers remain positional and therefore use `layout_hash`.
 
-> **No dimension literals.** "Observation dim" is two quantities — *allocated*
-> (`observation_spec.total_dims`) and *active* (`sum(observation_activity.active_mask)`) — and
-> conflating them is what corrupted every dimension table in the old corpus. Never write either
-> number in a document; ask the compiled artifact. See `HLD.md` §5.3 for the snippet.
-
-### 6.4 `observation_mode` interacts with allocation
-
-`_apply_observation_mode` (`observation.py:883-901`) filters the field list *before* widths are
-summed:
-
-- `full_auto` — every field is kept. This is what preserves the superset-plus-mask property.
-- `max_compact` — keeps only fields with `curriculum_active`, i.e. **drops** the inactive blocks
-  rather than zeroing them. That genuinely narrows the tensor, and therefore trades away the
-  cross-level transfer property of §6.3.
-- `full_manual` — an explicit `include_fields` list; unknown names and empty results raise.
-
-`configs/default_curriculum` declares `full_auto`.
+> **No dimension literals.** Ask the compiled artifact for `token_spec.total_dims`,
+> `token_spec.census`, and `token_spec.row_layout()`.
 
 ---
 
 ## 7. POMDP support
 
-Three independent gates, and conflating them is a common error:
+`stratum.vision_support` must admit the level's `active_vision`; incompatible declarations fail
+with `VISION_INCOMPATIBLE`. Once admitted, the token visibility contract covers every substrate:
 
-1. **Substrate capability** — `supports_partial_vision`. True in `grid2d.py:473` and
-   `grid3d.py:489`; **False** in `gridnd.py:379`, `continuous.py:334`, `continuousnd.py:328`,
-   `aspatial.py:78`, where `get_vision_radius` / `get_partial_window_dim` raise `ValueError`.
-   Requesting `active_vision: partial` on an unsupported substrate raises at compile
-   (`observation.py:202-206`).
-2. **Window size** — for supported substrates, `vision_range` is a **normalized fraction** of the
-   longest axis (`get_vision_radius` = `max(1, ceil(vision_range * span / 2))`), and validation
-   refuses when the implied window is too large. From
-   `tests/test_townlet/unit/environment/test_pomdp_validation.py`: Grid3D accepts `0.5` on an 8³
-   grid (window 5) and rejects `0.75` (window 7 → "requires 343 cells"); GridND 4D is rejected
-   outright (`Partial observability .* gridnd`). Read the test for the live matrix.
-3. **Declared support** — `stratum.vision_support` must admit the level's `active_vision`
-   (`VISION_INCOMPATIBLE`, §2).
+| substrate | `visible()` radius | `egocentric_delta()` |
+| --- | --- | --- |
+| Grid2D, Grid3D, GridND | `max(1, ceil(vision_range * longest_axis / 2))` cells | divide by `max(axis_size - 1, 1)` |
+| Continuous, ContinuousND | `vision_range * longest_extent / 2` world units | divide by axis extent |
+| Aspatial | all entities visible | width-zero deltas |
 
-⚠ CLAUDE.md's support matrix is wrong on two counts against the source: it lists **Aspatial as
-supported ("special case")** — `aspatial.py:78` returns False — and it phrases the Grid3D
-constraint as "vision_range ≤ 2", which predates the normalized-fraction encoding. Its
-continuous-substrate exclusion is correct, and is now source-verified rather than TODO.
+The declared distance metric combines per-axis deltas. `wrap` uses the toroidal shortest path;
+clamp, bounce and sticky use ordinary in-bounds deltas. `vision_range: null` at the runtime seam
+means global visibility. A partial level passes its required normalized `vision_range` instead.
 
 ---
 
@@ -295,7 +262,7 @@ Open design questions, noted rather than resolved: per-dimension boundary modes 
 an angular dimension beside `clamp` on a linear one); how a distance metric composes across
 mixed dimension kinds; action-space composition (discrete ±1 movement actions for discrete
 dimensions alongside discretized continuous displacement for continuous ones, under §5's
-ordering contract); and POMDP window semantics across mixed dimensions.
+ordering contract); and POMDP distance/visibility semantics across mixed dimensions.
 
 ---
 

@@ -254,7 +254,7 @@ For cache refusal ordering, feed both `CompiledUniverse.from_dict()` and a real 
 - Modify: `tests/test_townlet/integration/test_compile_cache_level_identity.py`
 - Modify: `tests/test_townlet/integration/test_reference_model_pack.py`
 - Modify: `tests/test_townlet/integration/test_effects_smoke.py`
-- Modify: `tests/test_townlet/integration/test_set_encoder_runtime.py`
+- Modify: `tests/test_townlet/integration/test_token_set_runtime.py`
 - Modify: `tests/test_townlet/unit/environment/test_vectorized_env.py`
 - Modify: `src/townlet/universe/__main__.py`
 - Create: `tests/test_townlet/integration/test_compact_token_runtime.py`
@@ -346,7 +346,7 @@ uv run pytest \
   tests/test_townlet/unit/agent \
   tests/test_townlet/unit/environment/test_token_publishers.py \
   tests/test_townlet/unit/environment/test_vectorized_env_level_metadata.py \
-  tests/test_townlet/integration/test_set_encoder_runtime.py \
+  tests/test_townlet/integration/test_token_set_runtime.py \
   -q
 ```
 
@@ -531,7 +531,7 @@ Expected: pass, with no production whole-observation expansion surface or 4,090-
 uv run ruff check
 uv run black --check .
 uv run mypy src
-uv run python scripts/no_defaults_lint.py
+uv run python scripts/no_defaults_lint.py src/townlet/ --whitelist .defaults-whitelist.txt
 uv run python scripts/validate_compiler_cli.py
 uv run pytest
 git diff --check
@@ -601,7 +601,7 @@ git add \
   tests/test_townlet/integration/test_reward_component_flow.py \
   tests/test_townlet/integration/test_recurrent_bptt_runtime.py \
   tests/test_townlet/integration/test_recurrent_bootstrap_runtime.py \
-  tests/test_townlet/integration/test_set_encoder_runtime.py \
+  tests/test_townlet/integration/test_token_set_runtime.py \
   tests/test_townlet/integration/test_substrate_observation_seam.py \
   tests/test_townlet/integration/test_token_transfer_contract.py \
   tests/test_townlet/regressions/test_affordance_token_identity.py \

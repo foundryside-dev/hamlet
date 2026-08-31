@@ -20,7 +20,12 @@ import hashlib
 import json
 from typing import Any, cast
 
-from townlet.universe.dto.token_spec import TOKEN_TYPE_FILLER_KIND, TokenSpec
+from townlet.universe.dto.token_spec import (
+    TOKEN_TYPE_FILLER_KIND,
+    CompactTokenLayout,
+    CompactTokenTypeLayout,
+    TokenSpec,
+)
 
 __all__ = [
     "canonical_observation_schema",
@@ -62,35 +67,29 @@ def compute_token_type_schema_hash(spec: TokenSpec) -> str:
 
 
 def canonical_token_layout(spec: TokenSpec) -> dict[str, Any]:
-    """The serialization-layout payload of a TokenSpec — the FLAT-NET contract (spec §5).
-
-    Strictly stronger than the type-schema payload: it adds capacities, slot-binding order
-    and identity (which filler owns which slot — a flat reader's dims are positional, so a
-    re-bound slot changes what a dim MEANS even at equal width), and `total_dims`.
-    Deliberately EXCLUDES `SlotBinding.static_signature`: that is slot CONTENT (what the
-    descriptor block will publish), not layout — a re-declared initial value moves what the
-    net sees, not where (PDR-0033 narrowness; pinned by test).
-    """
+    """The compact transport layout plus fixed binding/catalog row order."""
+    compact = spec.compact_layout()
     return {
-        "encoding_version": spec.encoding_version,
+        "transport_version": spec.transport_version,
+        "position_rank": spec.position_rank,
         "total_dims": spec.total_dims,
         "types": [
             {
                 "type_name": t.type_name,
-                "payload_features": list(t.payload_features),
+                "dynamic_features": list(_require_compact_type(compact, t.type_name).dynamic_features),
                 "capacity": t.capacity,
-                "slot_bindings": [
-                    {
-                        "slot_index": binding.slot_index,
-                        "filler_kind": binding.filler_kind,
-                        "filler_ref": binding.filler_ref,
-                    }
-                    for binding in t.slot_bindings
-                ],
+                "slot_binding_refs": [binding.filler_ref for binding in t.slot_bindings],
+                "effect_catalog_context_refs": [context.context_ref for context in t.effect_catalog_contexts],
             }
             for t in spec.types
         ],
     }
+
+
+def _require_compact_type(compact: CompactTokenLayout, type_name: str) -> CompactTokenTypeLayout:
+    token_type = compact.get_type(type_name)
+    assert token_type is not None
+    return token_type
 
 
 def compute_token_layout_hash(spec: TokenSpec) -> str:
@@ -99,20 +98,15 @@ def compute_token_layout_hash(spec: TokenSpec) -> str:
 
 
 def canonical_observation_schema(spec: TokenSpec) -> dict[str, Any]:
-    """The observation-schema payload — type schema + slot-binding CONTENT (spec §5).
-
-    The strongest of the three: the layout payload plus each slot's compiled
-    ``static_signature`` (the descriptor-block content the runtime will publish for that
-    slot). Two universes equal under this hash produce identically-shaped AND
-    identically-annotated observations; a re-declared initial value or normalization
-    parameter moves this hash without moving ``layout_hash``.
-    """
+    """The layout plus complete non-effect slot and effect-catalog fixed payloads."""
     layout = canonical_token_layout(spec)
     type_entries = cast("list[dict[str, Any]]", layout["types"])
     for type_entry, token_type in zip(type_entries, spec.types, strict=True):
-        binding_entries = cast("list[dict[str, Any]]", type_entry["slot_bindings"])
-        for binding_entry, binding in zip(binding_entries, token_type.slot_bindings, strict=True):
-            binding_entry["static_signature"] = None if binding.static_signature is None else list(binding.static_signature)
+        type_entry["slot_context_payloads"] = [list(payload) for payload in token_type.slot_context_payloads]
+        type_entry["effect_catalog_contexts"] = [
+            {"context_ref": context.context_ref, "fixed_payload": list(context.fixed_payload)}
+            for context in token_type.effect_catalog_contexts
+        ]
     return layout
 
 

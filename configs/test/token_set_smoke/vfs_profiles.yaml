@@ -1,3 +1,4 @@
+---
 version: '1.0'
 evaluation_mode: mark_and_sweep
 debug_logging: false
@@ -19,6 +20,6 @@ agent_profile:
         min: 0.0
         max: 1.0
         clip: true
-      description: "Flattened token rows for the set-encoder proof: 4 tokens x 3 features."
+      description: "Flattened variable-element token rows: 4 tokens x 3 features."
 
 item_profiles: []

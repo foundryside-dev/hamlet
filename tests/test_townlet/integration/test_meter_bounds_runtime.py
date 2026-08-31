@@ -38,6 +38,7 @@ import torch
 import yaml
 from pydantic import ValidationError
 
+from townlet.agent.token_input import TokenInputAssembler
 from townlet.environment.action_executor import ActionExecutor
 from townlet.environment.affordance_engine import AffordanceEngine
 from townlet.environment.vectorized_env import VectorizedHamletEnv
@@ -101,12 +102,19 @@ def _set_meter_range_type(pack: Path, meter_name: str, range_type: dict[str, obj
     environment_path.write_text(yaml.safe_dump(data, sort_keys=False))
 
 
-def _meter_token_lane(env: VectorizedHamletEnv, meter_name: str, feature: str) -> int:
+def _expanded_meter_row(env: VectorizedHamletEnv, observation: torch.Tensor, meter_name: str) -> torch.Tensor:
+    schema = env.token_spec.get_type("meter")
+    layout = env.token_spec.compact_layout().get_type("meter")
+    assert schema is not None and layout is not None
+    binding = next(binding for binding in schema.slot_bindings if binding.filler_ref == meter_name)
+    dynamic_rows = observation[:, layout.start : layout.end].view(observation.shape[0], schema.capacity, layout.compact_row_width)
+    return TokenInputAssembler(env.token_spec).expand_type("meter", dynamic_rows)[0, binding.slot_index]
+
+
+def _fixed_meter_feature(env: VectorizedHamletEnv, row: torch.Tensor, feature: str) -> float:
     schema = env.token_spec.get_type("meter")
     assert schema is not None
-    binding = next(binding for binding in schema.slot_bindings if binding.filler_ref == meter_name)
-    row = next(row for row in env.token_spec.row_layout() if row[0:2] == ("meter", binding.slot_index))
-    return row[2] + 1 + schema.payload_features.index(feature)
+    return row[1 + schema.payload_features.index(feature)].item()
 
 
 # --------------------------------------------------------------------------------------
@@ -291,8 +299,10 @@ def test_range_type_changes_the_live_meter_token_value_and_identity(tmp_path: Pa
 
     linear_observation = linear._get_observations()
     log_observation = logarithmic._get_observations()
-    linear_value = linear_observation[0, _meter_token_lane(linear, "money", "value_0")].item()
-    log_value = log_observation[0, _meter_token_lane(logarithmic, "money", "value_0")].item()
+    linear_row = _expanded_meter_row(linear, linear_observation, "money")
+    log_row = _expanded_meter_row(logarithmic, log_observation, "money")
+    linear_value = _fixed_meter_feature(linear, linear_row, "value_0")
+    log_value = _fixed_meter_feature(logarithmic, log_row, "value_0")
 
     assert linear_value == pytest.approx(1000.0 / 999999.0)
     assert log_value == pytest.approx(torch.log1p(torch.tensor(1000.0)).item() / torch.log1p(torch.tensor(999999.0)).item())
@@ -304,13 +314,17 @@ def test_range_type_changes_the_live_meter_token_value_and_identity(tmp_path: Pa
     log_affordances = logarithmic.token_spec.get_type("affordance")
     assert linear_affordances is not None and log_affordances is not None
     assert any(
-        left.static_signature != right.static_signature
-        for left, right in zip(linear_affordances.slot_bindings, log_affordances.slot_bindings, strict=True)
+        left != right
+        for left, right in zip(
+            linear_affordances.slot_context_payloads,
+            log_affordances.slot_context_payloads,
+            strict=True,
+        )
     )
-    assert linear_observation[0, _meter_token_lane(linear, "money", "normalization_kind_minmax")].item() == 1.0
-    assert linear_observation[0, _meter_token_lane(linear, "money", "normalization_kind_log_scaled")].item() == 0.0
-    assert log_observation[0, _meter_token_lane(logarithmic, "money", "normalization_kind_minmax")].item() == 0.0
-    assert log_observation[0, _meter_token_lane(logarithmic, "money", "normalization_kind_log_scaled")].item() == 1.0
+    assert _fixed_meter_feature(linear, linear_row, "normalization_kind_minmax") == 1.0
+    assert _fixed_meter_feature(linear, linear_row, "normalization_kind_log_scaled") == 0.0
+    assert _fixed_meter_feature(logarithmic, log_row, "normalization_kind_minmax") == 0.0
+    assert _fixed_meter_feature(logarithmic, log_row, "normalization_kind_log_scaled") == 1.0
 
 
 # --------------------------------------------------------------------------------------

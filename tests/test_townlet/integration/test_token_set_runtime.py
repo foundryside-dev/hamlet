@@ -1,18 +1,15 @@
-"""`token_set`, config-in/behaviour-out, over the LIVE token observation.
+"""`token_set`, config-in/behaviour-out, over the live token observation.
 
 An unexercised code path in this codebase is not presumptively working. This file DRIVES
 `architecture.type: token_set` from an authored pack through a real environment.
 
-It was the `set_encoder` exerciser until the unit-3 token cut. `set_encoder` sliced one
-flattened token FIELD out of the compiled `ObservationSpec` — the spec is gone, and the
-whole observation is a token set now, so `configs/test/set_encoder_smoke` declares
-`token_set` and this file follows it. What is pinned is unchanged in substance: the
-declared aggregator reaches the built network, tokens reach the network and change its
-output, rows pool as a SET rather than a sequence, and gradients reach the encoders.
+The declared aggregator reaches the built network, tokens reach the network and change
+its output, rows pool as a set rather than a sequence, and gradients reach the encoders.
 """
 
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -25,7 +22,7 @@ from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
 from townlet.population.vectorized import VectorizedPopulation
 from townlet.universe.compiler import UniverseCompiler
 
-PACK = Path("configs/test/set_encoder_smoke")
+PACK = Path("configs/test/token_set_smoke")
 LEVEL = "L0_test"
 NUM_AGENTS = 2
 
@@ -70,6 +67,47 @@ def _element_type_slice(env) -> slice:
     return NetworkFactory.token_block_slices(env.token_spec)["variable_element"]
 
 
+def _network_with_permuted_element_contexts(
+    env: VectorizedHamletEnv,
+    net: TokenSetQNetwork,
+    order: torch.Tensor,
+) -> TokenSetQNetwork:
+    """Build the equivalent ABI whose compiled slot contexts follow ``order``.
+
+    Compact rows carry only live fields. A meaningful token permutation therefore
+    permutes each row together with the positional compiled context that the input
+    assembler attaches at the network boundary.
+    """
+    element_type = env.token_spec.get_type("variable_element")
+    assert element_type is not None
+    indices = tuple(int(index) for index in order.tolist())
+    permuted_element_type = replace(
+        element_type,
+        slot_bindings=tuple(
+            replace(element_type.slot_bindings[old_index], slot_index=new_index) for new_index, old_index in enumerate(indices)
+        ),
+        slot_context_payloads=tuple(element_type.slot_context_payloads[index] for index in indices),
+    )
+    permuted_spec = replace(
+        env.token_spec,
+        types=tuple(
+            permuted_element_type if token_type.type_name == "variable_element" else token_type for token_type in env.token_spec.types
+        ),
+    )
+    first_head_layer = net.q_head[0]
+    assert isinstance(first_head_layer, torch.nn.Linear)
+    permuted_net = TokenSetQNetwork(
+        token_spec=permuted_spec,
+        action_dim=net.action_dim,
+        token_embed_dim=net.token_embed_dim,
+        q_head_hidden_dim=first_head_layer.out_features,
+        aggregator_type=net.aggregator_type,
+        num_heads=net.num_heads,
+    )
+    permuted_net.load_state_dict(net.state_dict())
+    return permuted_net
+
+
 def test_config_builds_a_token_set_network(setup) -> None:
     env, population = setup
     net = population.q_network
@@ -104,19 +142,21 @@ def test_token_rows_pool_as_a_set_not_a_sequence(setup) -> None:
     env, population = setup
     net = population.q_network
     element_type = env.token_spec.get_type("variable_element")
+    element_layout = env.token_spec.compact_layout().get_type("variable_element")
+    assert element_type is not None and element_layout is not None
     element_slice = _element_type_slice(env)
 
     env.vfs_registry.set("need_tokens", torch.rand(NUM_AGENTS, 4, 3) + 0.1, writer="engine")
     obs = env._get_observations()
 
     permuted = obs.clone()
-    rows = permuted[:, element_slice].reshape(NUM_AGENTS, element_type.capacity, element_type.row_width)
+    rows = permuted[:, element_slice].reshape(NUM_AGENTS, element_type.capacity, element_layout.compact_row_width)
     order = torch.randperm(element_type.capacity, generator=torch.Generator().manual_seed(7))
     permuted[:, element_slice] = rows[:, order, :].reshape(NUM_AGENTS, -1)
+    permuted_net = _network_with_permuted_element_contexts(env, net, order)
 
-    assert torch.allclose(net(obs), net(permuted), atol=1e-6), (
-        "mean-pooled token rows must be permutation-invariant; if this fails the block is "
-        "being consumed as a flat vector, not a token set"
+    assert torch.allclose(net(obs), permuted_net(permuted), atol=1e-6), (
+        "mean-pooled tokens must be invariant when compact rows and their compiled " "slot contexts are permuted together"
     )
 
 
@@ -146,19 +186,22 @@ def test_attention_level_stays_permutation_invariant_end_to_end(attention_setup)
     env, population = attention_setup
     net = population.q_network
     element_type = env.token_spec.get_type("variable_element")
+    element_layout = env.token_spec.compact_layout().get_type("variable_element")
+    assert element_type is not None and element_layout is not None
     element_slice = _element_type_slice(env)
 
     env.vfs_registry.set("need_tokens", torch.rand(NUM_AGENTS, 4, 3) + 0.1, writer="engine")
     obs = env._get_observations()
 
     permuted = obs.clone()
-    rows = permuted[:, element_slice].reshape(NUM_AGENTS, element_type.capacity, element_type.row_width)
+    rows = permuted[:, element_slice].reshape(NUM_AGENTS, element_type.capacity, element_layout.compact_row_width)
     order = torch.randperm(element_type.capacity, generator=torch.Generator().manual_seed(11))
     permuted[:, element_slice] = rows[:, order, :].reshape(NUM_AGENTS, -1)
+    permuted_net = _network_with_permuted_element_contexts(env, net, order)
 
-    assert torch.allclose(net(obs), net(permuted), atol=1e-5), (
+    assert torch.allclose(net(obs), permuted_net(permuted), atol=1e-5), (
         "explicit-QKV attention without positional encoding plus masked mean-pool must stay "
-        "permutation-invariant; a failure here means the aggregator sees row order"
+        "invariant when compact rows and their compiled slot contexts are permuted together"
     )
 
 

@@ -2,13 +2,13 @@
 
 > ⚠️ **Recovered from archive 2026-08-26 — the argument is live and load-bearing; the artifacts it claims are not.**
 >
-> Recovered because this argument has *descendants in the shipped tree*: `SetEncoderQNetwork`
-> and `TokenSetQNetwork` with `aggregator_type="attention"` exist in
+> Recovered because this argument has a *descendant in the shipped tree*: `TokenSetQNetwork`
+> with `aggregator_type="attention"` exists in
 > `src/townlet/agent/networks.py` today. This file is the reasoning behind that direction.
 >
 > **False:** "Files Modified: `src/hamlet/agent/networks.py`: Added RelationalQNetwork". No
 > `RelationalQNetwork` exists anywhere. Live network classes are `SimpleQNetwork`,
-> `RecurrentSpatialQNetwork`, `DuelingQNetwork`, `SetEncoderQNetwork`, `TokenSetQNetwork`,
+> `RecurrentSpatialQNetwork`, `DuelingQNetwork`, `TokenSetQNetwork`,
 > `StructuredQNetwork`. Also `src/hamlet/` is the obsolete legacy tree.
 >
 > **Different universe:** the Stress meter, Bar, HomeMeal/FastFood, zones and the job-payment

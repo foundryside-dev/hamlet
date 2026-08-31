@@ -834,7 +834,7 @@ what a pack declares, so the note's force comes entirely from what the **live** 
 declare, not the frozen `oracle_fixtures/` copies. Verified both sides, 2026-08-24: zero
 `exposed_to` hits under `oracle_fixtures/` (`grep -rn exposed_to oracle_fixtures/`); under
 `configs/`, `exposed_to` appears only in `configs/trial_f_durability`,
-`configs/test/set_encoder_smoke`, and `configs/reference/config-complete.yaml` — **none of
+`configs/test/token_set_smoke`, and `configs/reference/config-complete.yaml` — **none of
 them a matrix pack** (the twenty cells run `default_curriculum`, the three `differential/
 div003_*` packs, `test/items_smoke`, `test/effects_smoke`). So every matrix pack's live
 `vfs_profiles.yaml` declares no `exposed_to` today, on both sides of the cut. Post-cut, once

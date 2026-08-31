@@ -132,10 +132,17 @@ def _print_token_census(compiled: CompiledUniverse) -> None:
     """The per-type token census (token-obs spec §2: published in the artifact and here)."""
     level = compiled.get_level(compiled.metadata.primary_level)
     spec = level.token_spec
+    compact_layout = spec.compact_layout()
     print("Token census:")
     for token_type in spec.types:
-        print(f"  {token_type.type_name:<17}: {token_type.capacity:>4} slots x (1 + {token_type.payload_width}) dims")
-    print(f"  {'total_dims':<17}: {spec.total_dims}")
+        type_layout = compact_layout.get_type(token_type.type_name)
+        assert type_layout is not None
+        print(
+            f"  {token_type.type_name:<17}: {token_type.capacity:>4} slots x compact row "
+            f"{type_layout.compact_row_width} (fixed network boundary {type_layout.fixed_row_width})"
+        )
+    print(f"  {'compact total':<17}: {spec.total_dims}")
+    print(f"  {'fixed boundary':<17}: {spec.fixed_total_dims}")
     if level.token_type_schema_hash:
         print(f"  Token Type Schema Hash : {level.token_type_schema_hash[:16]}")
     if level.layout_hash:
@@ -171,7 +178,8 @@ def _cmd_inspect(args: argparse.Namespace) -> int:
             "variable_schema_hash": level.variable_schema_hash,
             "transition_graph_hash": level.transition_graph_hash,
             "token_census": level.token_spec.census,
-            "token_total_dims": level.token_spec.total_dims,
+            "token_compact_total_dims": level.token_spec.total_dims,
+            "token_fixed_boundary_total_dims": level.token_spec.fixed_total_dims,
             "token_type_schema_hash": level.token_type_schema_hash,
             "layout_hash": level.layout_hash,
             "token_advisories": list(level.token_advisories),

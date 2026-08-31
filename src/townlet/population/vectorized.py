@@ -8,8 +8,10 @@ Manages Q-networks, replay buffers, and training loops.
 from __future__ import annotations
 
 import logging
+import math
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, cast
+from numbers import Real
+from typing import TYPE_CHECKING, Any, cast
 
 import numpy as np
 import torch
@@ -30,6 +32,7 @@ from townlet.exploration.rnd import RNDExploration
 from townlet.population.base import PopulationManager
 from townlet.population.runtime_registry import AgentRuntimeRegistry
 from townlet.training.checkpoint_utils import TokenRosterReport, load_token_network_state_by_type
+from townlet.training.prioritized_replay_buffer import PrioritizedReplayBuffer
 from townlet.training.replay_buffer import ReplayBuffer
 from townlet.training.sequential_replay_buffer import SequentialReplayBuffer
 from townlet.training.state import BatchedAgentState, CurriculumDecision, PopulationCheckpoint, RewardTensor
@@ -39,7 +42,7 @@ if TYPE_CHECKING:
 
 _logger = logging.getLogger(__name__)
 
-POPULATION_CHECKPOINT_FORMAT_VERSION = 3
+POPULATION_CHECKPOINT_FORMAT_VERSION = 4
 POPULATION_CHECKPOINT_KEYS = frozenset(
     {
         "version",
@@ -62,6 +65,35 @@ POPULATION_UNIVERSE_METADATA_KEYS = frozenset(
         "obs_dim",
         "observation_schema_hash",
         "action_dim",
+    }
+)
+EPSILON_EXPLORATION_STATE_KEYS = frozenset({"epsilon", "epsilon_decay", "epsilon_min"})
+RND_EXPLORATION_STATE_KEYS = frozenset(
+    {
+        "fixed_network",
+        "predictor_network",
+        "optimizer",
+        "epsilon",
+        "epsilon_min",
+        "epsilon_decay",
+        "obs_dim",
+        "embed_dim",
+        "reward_rms_mean",
+        "reward_rms_var",
+        "reward_rms_count",
+    }
+)
+ADAPTIVE_EXPLORATION_STATE_KEYS = frozenset(
+    {
+        "rnd_state",
+        "current_intrinsic_weight",
+        "min_intrinsic_weight",
+        "variance_threshold",
+        "min_survival_fraction",
+        "max_episode_length",
+        "survival_window",
+        "decay_rate",
+        "survival_history",
     }
 )
 
@@ -126,7 +158,7 @@ class VectorizedPopulation(PopulationManager):
             )
 
         # The compiled token artifact is the observation ABI (unit-3 cut). It is required
-        # and set by VectorizedHamletEnv from the compiled universe; no silent fallback.
+        # and set by VectorizedHamletEnv from the compiled universe; no alternate source exists.
         if getattr(env, "token_spec", None) is None:
             raise ValueError(
                 "env.token_spec is required. The environment must carry the compiled TokenSpec "
@@ -181,9 +213,6 @@ class VectorizedPopulation(PopulationManager):
         # Set is_dueling flag from brain_config
         self.is_dueling = brain_config.architecture.type == "dueling"
 
-        # Set is_set_encoder flag from brain_config
-        self.is_set_encoder = brain_config.architecture.type == "set_encoder"
-
         # Set is_token_set flag from brain_config (token-obs unit 3 Task 9)
         self.is_token_set = brain_config.architecture.type == "token_set"
 
@@ -224,8 +253,6 @@ class VectorizedPopulation(PopulationManager):
 
         # Replay buffer (dual system: sequential for recurrent, standard/PER for feedforward)
         # TASK-005 Phase 3: Support PrioritizedReplayBuffer
-        from townlet.training.prioritized_replay_buffer import PrioritizedReplayBuffer
-
         self.replay_buffer: ReplayBuffer | SequentialReplayBuffer | PrioritizedReplayBuffer
         self.current_episodes: list[EpisodeContainer] = []
 
@@ -248,7 +275,7 @@ class VectorizedPopulation(PopulationManager):
                     "Use prioritized=false in brain.yaml for recurrent architectures."
                 )
         else:
-            # Feedforward networks support both standard and prioritized replay
+            # Feedforward networks select the configured standard or prioritized replay.
             if self.use_per:
                 # TASK-005 Phase 3: Instantiate PrioritizedReplayBuffer
                 # Pydantic validator ensures PER params not None when prioritized=True
@@ -422,14 +449,6 @@ class VectorizedPopulation(PopulationManager):
                 obs_dim=obs_dim,
                 action_dim=action_dim,
             )
-        elif arch.type == "set_encoder":
-            raise ValueError(
-                "architecture.type='set_encoder' has no buildable network after the unit-3 token cut.\n"
-                "  Reason: it sliced a single flattened token FIELD out of the compiled "
-                "ObservationSpec, and that spec no longer exists — the whole observation is now a "
-                "token set.\n"
-                "  Landing: declare `token_set`, which consumes the compiled TokenSpec directly."
-            )
         elif arch.type == "token_set":
             assert arch.token_set is not None, "token_set config must be present"
             return NetworkFactory.build_token_set(
@@ -438,9 +457,7 @@ class VectorizedPopulation(PopulationManager):
                 token_spec=env.token_spec,
             )
         else:
-            raise ValueError(
-                f"Unsupported architecture type: {arch.type}. Supported: feedforward, recurrent, dueling, set_encoder, token_set"
-            )
+            raise ValueError(f"Unsupported architecture type: {arch.type}. Supported: feedforward, recurrent, dueling, token_set")
 
     def _store_episode_and_reset(self, agent_idx: int) -> bool:
         """Store accumulated episode for agent and reset buffers."""
@@ -980,7 +997,7 @@ class VectorizedPopulation(PopulationManager):
                 # 207/936 mid-episode forwards received an exactly-zero hidden state).
             else:
                 # Standard feedforward DQN training (with optional PER)
-                # TASK-005 Phase 3: Support both standard and prioritized replay
+                # TASK-005 Phase 3: handle the configured standard or prioritized replay.
                 if self.use_per:
                     from townlet.training.prioritized_replay_buffer import PrioritizedReplayBuffer
 
@@ -1177,7 +1194,7 @@ class VectorizedPopulation(PopulationManager):
         - Training counters
         - Replay buffer contents
         - Exploration strategy state
-        - Exact universe metadata for compatibility validation
+        - Exact universe metadata for identity validation
 
         Returns:
             Complete checkpoint state dictionary
@@ -1203,6 +1220,29 @@ class VectorizedPopulation(PopulationManager):
             # All buffer types implement serialize(), but mypy doesn't infer it for unions.
             "replay_buffer": self.replay_buffer.serialize(),  # type: ignore[union-attr]
         }
+
+    @staticmethod
+    def _require_exact_mapping(label: str, incoming_state: object, expected_keys: frozenset[str]) -> Mapping[str, object]:
+        if not isinstance(incoming_state, Mapping):
+            raise ValueError(f"Population checkpoint {label} must be a mapping; got {type(incoming_state).__name__}.")
+        incoming_keys = set(incoming_state)
+        if incoming_keys != expected_keys:
+            missing = sorted(expected_keys - incoming_keys)
+            unknown = sorted(incoming_keys - expected_keys)
+            raise ValueError(f"Population checkpoint {label} key mismatch: missing={missing}, unknown={unknown}.")
+        return incoming_state
+
+    @staticmethod
+    def _require_nonnegative_int(label: str, value: object) -> int:
+        if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+            raise ValueError(f"Population checkpoint {label} mismatch: expected a non-negative integer, got {value!r}.")
+        return value
+
+    @staticmethod
+    def _require_finite_real(label: str, value: object) -> float:
+        if isinstance(value, bool) or not isinstance(value, Real) or not math.isfinite(float(value)):
+            raise ValueError(f"Population checkpoint {label} must be a finite real number; got {value!r}.")
+        return float(value)
 
     @staticmethod
     def _validate_network_checkpoint_state(
@@ -1231,8 +1271,329 @@ class VectorizedPopulation(PopulationManager):
                     f"Population checkpoint {state_key} shape mismatch for {parameter_name}: "
                     f"checkpoint={tuple(incoming_tensor.shape)}, current={tuple(current_tensor.shape)}."
                 )
+            if incoming_tensor.dtype != current_tensor.dtype:
+                raise ValueError(
+                    f"Population checkpoint {state_key} dtype mismatch for {parameter_name}: "
+                    f"checkpoint={incoming_tensor.dtype}, current={current_tensor.dtype}."
+                )
+            if (incoming_tensor.is_floating_point() or incoming_tensor.is_complex()) and not torch.isfinite(incoming_tensor).all():
+                raise ValueError(f"Population checkpoint {state_key}.{parameter_name} contains non-finite values.")
 
-    def validate_checkpoint_state(self, checkpoint: dict) -> None:
+    @classmethod
+    def _validate_optimizer_checkpoint_state(
+        cls,
+        label: str,
+        incoming_state: object,
+        optimizer: torch.optim.Optimizer,
+        *,
+        allow_learning_rate_change: bool = False,
+    ) -> tuple[float, ...]:
+        state = cls._require_exact_mapping(label, incoming_state, frozenset({"state", "param_groups"}))
+        saved_state = state["state"]
+        saved_groups = state["param_groups"]
+        if not isinstance(saved_state, Mapping):
+            raise ValueError(f"Population checkpoint {label}.state must be a mapping.")
+        if not isinstance(saved_groups, list):
+            raise ValueError(f"Population checkpoint {label}.param_groups must be a list.")
+        if len(saved_groups) != len(optimizer.param_groups):
+            raise ValueError(
+                f"Population checkpoint {label} parameter-group count mismatch: "
+                f"checkpoint={len(saved_groups)}, current={len(optimizer.param_groups)}."
+            )
+
+        current_serialized_groups = optimizer.state_dict()["param_groups"]
+        parameter_by_saved_id: dict[int, torch.Tensor] = {}
+        expected_state_keys_by_saved_id: dict[int, frozenset[str]] = {}
+        saved_learning_rates: list[float] = []
+        for group_index, (saved_group, current_group, current_serialized_group) in enumerate(
+            zip(saved_groups, optimizer.param_groups, current_serialized_groups, strict=True)
+        ):
+            if not isinstance(saved_group, Mapping):
+                raise ValueError(f"Population checkpoint {label}.param_groups[{group_index}] must be a mapping.")
+            expected_group_keys = set(current_serialized_group)
+            saved_group_keys = set(saved_group)
+            if saved_group_keys != expected_group_keys:
+                missing = sorted(expected_group_keys - saved_group_keys)
+                unknown = sorted(saved_group_keys - expected_group_keys)
+                raise ValueError(
+                    f"Population checkpoint {label}.param_groups[{group_index}] key mismatch: " f"missing={missing}, unknown={unknown}."
+                )
+            group_label = f"{label}.param_groups[{group_index}]"
+            for group_key, current_value in current_serialized_group.items():
+                if group_key == "params":
+                    continue
+                saved_value = saved_group[group_key]
+                value_label = f"{group_label}.{group_key}"
+                if group_key == "lr":
+                    if type(saved_value) is not type(current_value):
+                        raise ValueError(
+                            f"Population checkpoint {value_label} type mismatch: "
+                            f"checkpoint={type(saved_value).__name__}, current={type(current_value).__name__}."
+                        )
+                    learning_rate = cls._require_finite_real(value_label, saved_value)
+                    if learning_rate < 0.0:
+                        raise ValueError(f"Population checkpoint {value_label} must be non-negative; got {learning_rate}.")
+                    if not allow_learning_rate_change and learning_rate != float(current_value):
+                        raise ValueError(
+                            f"Population checkpoint {value_label} mismatch: checkpoint={learning_rate}, current={current_value}."
+                        )
+                    saved_learning_rates.append(learning_rate)
+                    continue
+                cls._validate_exact_checkpoint_value(value_label, saved_value, current_value)
+
+            saved_parameter_ids = saved_group["params"]
+            current_parameters = current_group["params"]
+            if not isinstance(saved_parameter_ids, list):
+                raise ValueError(f"Population checkpoint {label}.param_groups[{group_index}].params must be a list.")
+            if len(saved_parameter_ids) != len(current_parameters):
+                raise ValueError(
+                    f"Population checkpoint {label} parameter count mismatch in group {group_index}: "
+                    f"checkpoint={len(saved_parameter_ids)}, current={len(current_parameters)}."
+                )
+            for parameter_index, (saved_id, parameter) in enumerate(zip(saved_parameter_ids, current_parameters, strict=True)):
+                if isinstance(saved_id, bool) or not isinstance(saved_id, int):
+                    raise ValueError(
+                        f"Population checkpoint {label}.param_groups[{group_index}].params[{parameter_index}] "
+                        "must be an integer parameter id."
+                    )
+                if saved_id in parameter_by_saved_id:
+                    raise ValueError(f"Population checkpoint {label} repeats parameter id {saved_id}.")
+                if not isinstance(parameter, torch.Tensor):
+                    raise ValueError(f"Current {label} parameter {parameter_index} in group {group_index} is not a tensor.")
+                parameter_by_saved_id[saved_id] = parameter
+                expected_state_keys_by_saved_id[saved_id] = cls._optimizer_parameter_state_keys(optimizer, current_group)
+
+        if any(isinstance(saved_id, bool) or not isinstance(saved_id, int) for saved_id in saved_state):
+            raise ValueError(f"Population checkpoint {label}.state entries must map integer ids to mappings.")
+        unknown_state_ids = set(saved_state) - set(parameter_by_saved_id)
+        if unknown_state_ids:
+            raise ValueError(f"Population checkpoint {label}.state has unknown parameter ids: {sorted(unknown_state_ids)}.")
+        for saved_id, parameter_state in saved_state.items():
+            if not isinstance(parameter_state, Mapping):
+                raise ValueError(f"Population checkpoint {label}.state entries must map integer ids to mappings.")
+            parameter = parameter_by_saved_id[saved_id]
+            expected_state_keys = expected_state_keys_by_saved_id[saved_id]
+            if set(parameter_state) != expected_state_keys:
+                missing = sorted(expected_state_keys - set(parameter_state))
+                unknown = sorted(set(parameter_state) - expected_state_keys)
+                raise ValueError(f"Population checkpoint {label}.state[{saved_id!r}] key mismatch: missing={missing}, unknown={unknown}.")
+            for value_key, value in parameter_state.items():
+                value_label = f"{label}.state[{saved_id!r}].{value_key}"
+                if not isinstance(value, torch.Tensor):
+                    raise ValueError(f"Population checkpoint {value_label} must be a tensor; got {type(value).__name__}.")
+                if value_key == "step":
+                    if value.shape != torch.Size([]) or value.dtype is not torch.float32:
+                        raise ValueError(f"Population checkpoint {value_label} must be a scalar torch.float32 tensor.")
+                    step = float(value.item())
+                    if not math.isfinite(step) or step < 0.0 or not step.is_integer():
+                        raise ValueError(f"Population checkpoint {value_label} must be a finite non-negative integer-valued scalar.")
+                    continue
+                if value.shape != parameter.shape:
+                    raise ValueError(
+                        f"Population checkpoint {value_label} shape mismatch: "
+                        f"checkpoint={tuple(value.shape)}, parameter={tuple(parameter.shape)}."
+                    )
+                if value.dtype != parameter.dtype:
+                    raise ValueError(
+                        f"Population checkpoint {value_label} dtype mismatch: " f"checkpoint={value.dtype}, parameter={parameter.dtype}."
+                    )
+                if (value.is_floating_point() or value.is_complex()) and not torch.isfinite(value).all():
+                    raise ValueError(f"Population checkpoint {value_label} contains non-finite values.")
+        return tuple(saved_learning_rates)
+
+    @classmethod
+    def _validate_exact_checkpoint_value(cls, label: str, incoming: object, current: object) -> None:
+        if isinstance(current, Mapping):
+            if not isinstance(incoming, Mapping):
+                raise ValueError(f"Population checkpoint {label} must be a mapping.")
+            if set(incoming) != set(current):
+                missing = sorted(set(current) - set(incoming))
+                unknown = sorted(set(incoming) - set(current))
+                raise ValueError(f"Population checkpoint {label} key mismatch: missing={missing}, unknown={unknown}.")
+            for key, current_value in current.items():
+                cls._validate_exact_checkpoint_value(f"{label}.{key}", incoming[key], current_value)
+            return
+        if isinstance(current, (list, tuple)):
+            if type(incoming) is not type(current) or len(incoming) != len(current):
+                raise ValueError(f"Population checkpoint {label} sequence shape/type mismatch.")
+            for index, (incoming_value, current_value) in enumerate(zip(incoming, current, strict=True)):
+                cls._validate_exact_checkpoint_value(f"{label}[{index}]", incoming_value, current_value)
+            return
+        if isinstance(current, torch.Tensor):
+            if not isinstance(incoming, torch.Tensor) or incoming.shape != current.shape or incoming.dtype != current.dtype:
+                raise ValueError(f"Population checkpoint {label} tensor shape/dtype mismatch.")
+            if (incoming.is_floating_point() or incoming.is_complex()) and not torch.isfinite(incoming).all():
+                raise ValueError(f"Population checkpoint {label} contains non-finite values.")
+            if not torch.equal(incoming, current):
+                raise ValueError(f"Population checkpoint {label} mismatch against the current configuration.")
+            return
+        if current is None:
+            if incoming is not None:
+                raise ValueError(f"Population checkpoint {label} must be null.")
+            return
+        if type(incoming) is not type(current):
+            raise ValueError(
+                f"Population checkpoint {label} type mismatch: checkpoint={type(incoming).__name__}, current={type(current).__name__}."
+            )
+        if isinstance(incoming, bool):
+            if incoming != current:
+                raise ValueError(f"Population checkpoint {label} mismatch: checkpoint={incoming!r}, current={current!r}.")
+            return
+        if isinstance(incoming, Real):
+            cls._require_finite_real(label, incoming)
+        if incoming != current:
+            raise ValueError(f"Population checkpoint {label} mismatch: checkpoint={incoming!r}, current={current!r}.")
+
+    @staticmethod
+    def _optimizer_parameter_state_keys(
+        optimizer: torch.optim.Optimizer,
+        parameter_group: Mapping[str, Any],
+    ) -> frozenset[str]:
+        if isinstance(optimizer, (torch.optim.Adam, torch.optim.AdamW)):
+            keys = {"step", "exp_avg", "exp_avg_sq"}
+            if parameter_group["amsgrad"] is True:
+                keys.add("max_exp_avg_sq")
+            return frozenset(keys)
+        if isinstance(optimizer, torch.optim.SGD):
+            return frozenset({"momentum_buffer"}) if float(parameter_group["momentum"]) > 0.0 else frozenset()
+        if isinstance(optimizer, torch.optim.RMSprop):
+            keys = {"step", "square_avg"}
+            if float(parameter_group["momentum"]) > 0.0:
+                keys.add("momentum_buffer")
+            if parameter_group["centered"] is True:
+                keys.add("grad_avg")
+            return frozenset(keys)
+        raise ValueError(f"Population checkpoint optimizer type {type(optimizer).__name__} is unsupported.")
+
+    @classmethod
+    def _validate_scheduler_checkpoint_state(
+        cls,
+        label: str,
+        incoming_state: object,
+        scheduler: torch.optim.lr_scheduler.LRScheduler,
+        optimizer_learning_rates: tuple[float, ...],
+    ) -> None:
+        current_state = scheduler.state_dict()
+        state = cls._require_exact_mapping(label, incoming_state, frozenset(current_state))
+        mutable_keys = frozenset({"last_epoch", "_step_count", "_is_initial", "_get_lr_called_within_step", "_last_lr"})
+        for key, current_value in current_state.items():
+            if key not in mutable_keys:
+                cls._validate_exact_checkpoint_value(f"{label}.{key}", state[key], current_value)
+
+        last_epoch = cls._require_nonnegative_int(f"{label}.last_epoch", state["last_epoch"])
+        step_count = cls._require_nonnegative_int(f"{label}._step_count", state["_step_count"])
+        if step_count != last_epoch + 1:
+            raise ValueError(
+                f"Population checkpoint {label}._step_count must equal last_epoch + 1; "
+                f"checkpoint={step_count}, expected={last_epoch + 1}."
+            )
+        for key in ("_is_initial", "_get_lr_called_within_step"):
+            value = state[key]
+            if type(value) is not bool or value is not False:
+                raise ValueError(f"Population checkpoint {label}.{key} must be false outside a scheduler step.")
+
+        last_learning_rates = state["_last_lr"]
+        if not isinstance(last_learning_rates, list) or len(last_learning_rates) != len(optimizer_learning_rates):
+            raise ValueError(
+                f"Population checkpoint {label}._last_lr must be a list with " f"{len(optimizer_learning_rates)} optimizer-group entries."
+            )
+        for index, (value, optimizer_value) in enumerate(zip(last_learning_rates, optimizer_learning_rates, strict=True)):
+            value_label = f"{label}._last_lr[{index}]"
+            if type(value) is not float:
+                raise ValueError(f"Population checkpoint {value_label} must be a float; got {type(value).__name__}.")
+            learning_rate = cls._require_finite_real(value_label, value)
+            if learning_rate < 0.0:
+                raise ValueError(f"Population checkpoint {value_label} must be non-negative; got {learning_rate}.")
+            if learning_rate != optimizer_value:
+                raise ValueError(
+                    f"Population checkpoint {value_label} must match optimizer group {index} lr; "
+                    f"scheduler={learning_rate}, optimizer={optimizer_value}."
+                )
+
+    @classmethod
+    def _validate_rnd_exploration_state(cls, state: object, current: RNDExploration, label: str) -> None:
+        rnd_state = cls._require_exact_mapping(label, state, RND_EXPLORATION_STATE_KEYS)
+        obs_dim = cls._require_nonnegative_int(f"{label}.obs_dim", rnd_state["obs_dim"])
+        embed_dim = cls._require_nonnegative_int(f"{label}.embed_dim", rnd_state["embed_dim"])
+        if obs_dim != current.obs_dim:
+            raise ValueError(f"Population checkpoint {label}.obs_dim mismatch: checkpoint={obs_dim}, current={current.obs_dim}.")
+        if embed_dim != current.embed_dim:
+            raise ValueError(f"Population checkpoint {label}.embed_dim mismatch: checkpoint={embed_dim}, current={current.embed_dim}.")
+        for config_key in ("epsilon_min", "epsilon_decay"):
+            value = cls._require_finite_real(f"{label}.{config_key}", rnd_state[config_key])
+            current_value = float(getattr(current, config_key))
+            if value != current_value:
+                raise ValueError(f"Population checkpoint {label}.{config_key} mismatch: checkpoint={value}, current={current_value}.")
+        epsilon = cls._require_finite_real(f"{label}.epsilon", rnd_state["epsilon"])
+        if not float(current.epsilon_min) <= epsilon <= 1.0:
+            raise ValueError(f"Population checkpoint {label}.epsilon must be within [epsilon_min, 1.0]; got {epsilon}.")
+        cls._validate_network_checkpoint_state(
+            "exploration_state.fixed_network", rnd_state["fixed_network"], current.fixed_network.state_dict()
+        )
+        cls._validate_network_checkpoint_state(
+            "exploration_state.predictor_network", rnd_state["predictor_network"], current.predictor_network.state_dict()
+        )
+        cls._validate_optimizer_checkpoint_state(f"{label}.optimizer", rnd_state["optimizer"], current.optimizer)
+        cls._require_finite_real(f"{label}.reward_rms_mean", rnd_state["reward_rms_mean"])
+        reward_var = cls._require_finite_real(f"{label}.reward_rms_var", rnd_state["reward_rms_var"])
+        reward_count = cls._require_finite_real(f"{label}.reward_rms_count", rnd_state["reward_rms_count"])
+        if reward_var < 0.0 or reward_count <= 0.0:
+            raise ValueError(f"Population checkpoint {label} reward RMS variance/count must be non-negative/positive.")
+
+    def _validate_exploration_checkpoint_state(self, incoming_state: object) -> None:
+        if isinstance(self.exploration, EpsilonGreedyExploration):
+            state = self._require_exact_mapping("exploration_state", incoming_state, EPSILON_EXPLORATION_STATE_KEYS)
+            epsilon = self._require_finite_real("exploration_state.epsilon", state["epsilon"])
+            if not float(self.exploration.epsilon_min) <= epsilon <= 1.0:
+                raise ValueError(f"Population checkpoint exploration_state.epsilon is outside the current range: {epsilon}.")
+            for config_key in ("epsilon_decay", "epsilon_min"):
+                value = self._require_finite_real(f"exploration_state.{config_key}", state[config_key])
+                current_value = float(getattr(self.exploration, config_key))
+                if value != current_value:
+                    raise ValueError(
+                        f"Population checkpoint exploration_state.{config_key} mismatch: " f"checkpoint={value}, current={current_value}."
+                    )
+            return
+
+        if isinstance(self.exploration, RNDExploration):
+            self._validate_rnd_exploration_state(incoming_state, self.exploration, "exploration_state")
+            return
+
+        if isinstance(self.exploration, AdaptiveIntrinsicExploration):
+            state = self._require_exact_mapping("exploration_state", incoming_state, ADAPTIVE_EXPLORATION_STATE_KEYS)
+            self._validate_rnd_exploration_state(state["rnd_state"], self.exploration.rnd, "exploration_state.rnd_state")
+            for config_key in (
+                "min_intrinsic_weight",
+                "variance_threshold",
+                "min_survival_fraction",
+                "max_episode_length",
+                "survival_window",
+                "decay_rate",
+            ):
+                incoming_value = state[config_key]
+                current_value = getattr(self.exploration, config_key)
+                if type(incoming_value) is not type(current_value) or incoming_value != current_value:
+                    raise ValueError(
+                        f"Population checkpoint exploration_state.{config_key} mismatch: "
+                        f"checkpoint={incoming_value!r}, current={current_value!r}."
+                    )
+                if isinstance(incoming_value, Real):
+                    self._require_finite_real(f"exploration_state.{config_key}", incoming_value)
+            current_weight = self._require_finite_real("exploration_state.current_intrinsic_weight", state["current_intrinsic_weight"])
+            if current_weight < float(self.exploration.min_intrinsic_weight):
+                raise ValueError("Population checkpoint exploration_state.current_intrinsic_weight is below the configured minimum.")
+            survival_history = state["survival_history"]
+            if not isinstance(survival_history, list) or len(survival_history) > self.exploration.survival_window:
+                raise ValueError("Population checkpoint exploration_state.survival_history has an invalid shape.")
+            for index, value in enumerate(survival_history):
+                self._require_finite_real(f"exploration_state.survival_history[{index}]", value)
+            return
+
+        raise ValueError(
+            "Population checkpoint exploration_state cannot be validated for unsupported strategy " f"{type(self.exploration).__name__}."
+        )
+
+    def _validate_checkpoint_state(self, checkpoint: Mapping[str, object]) -> Any:
         """
         Validate a complete population checkpoint without mutating runtime state.
 
@@ -1242,8 +1603,18 @@ class VectorizedPopulation(PopulationManager):
         Raises:
             ValueError: If the payload or universe identity is not exactly current
         """
-        if not isinstance(checkpoint, dict):
-            raise ValueError(f"Population checkpoint payload must be a dictionary; got {type(checkpoint).__name__}.")
+        if not isinstance(checkpoint, Mapping):
+            raise ValueError(f"Population checkpoint payload must be a mapping; got {type(checkpoint).__name__}.")
+
+        # The version is the first artifact gate. A previous-format payload is not
+        # inspected for keys or nested state because its entire shape is invalid.
+        checkpoint_version = checkpoint.get("version")
+        if type(checkpoint_version) is not int or checkpoint_version != POPULATION_CHECKPOINT_FORMAT_VERSION:
+            raise ValueError(
+                "Unsupported population checkpoint version: "
+                f"checkpoint={checkpoint_version!r}, expected={POPULATION_CHECKPOINT_FORMAT_VERSION}. "
+                "Regenerate the checkpoint with the current compact observation ABI."
+            )
 
         checkpoint_keys = set(checkpoint)
         if checkpoint_keys != POPULATION_CHECKPOINT_KEYS:
@@ -1255,18 +1626,23 @@ class VectorizedPopulation(PopulationManager):
                 "This checkpoint payload is no longer supported; retrain from scratch."
             )
 
-        checkpoint_version = checkpoint["version"]
-        if checkpoint_version != POPULATION_CHECKPOINT_FORMAT_VERSION:
+        current_obs_dim = self.env.observation_dim
+        token_obs_dim = self.token_spec.total_dims
+        if current_obs_dim != token_obs_dim:
             raise ValueError(
-                "Unsupported population checkpoint version: "
-                f"checkpoint={checkpoint_version!r}, expected={POPULATION_CHECKPOINT_FORMAT_VERSION}. "
-                "Retrain from scratch with the current observation ABI."
+                "Current environment observation_dim must equal token_spec.total_dims before checkpoint state can be applied: "
+                f"observation_dim={current_obs_dim}, token_spec.total_dims={token_obs_dim}."
+            )
+        if self._obs_dim != current_obs_dim:
+            raise ValueError(
+                "Current population obs_dim must equal the environment compact observation width before checkpoint state can be applied: "
+                f"population={self._obs_dim}, environment={current_obs_dim}."
             )
 
         metadata = checkpoint["universe_metadata"]
-        if not isinstance(metadata, dict):
+        if not isinstance(metadata, Mapping):
             raise ValueError(
-                "Population universe_metadata must be a dictionary with the exact current key set; " f"got {type(metadata).__name__}."
+                "Population universe_metadata must be a mapping with the exact current key set; " f"got {type(metadata).__name__}."
             )
 
         metadata_keys = set(metadata)
@@ -1279,8 +1655,10 @@ class VectorizedPopulation(PopulationManager):
                 "This checkpoint payload is no longer supported; retrain from scratch."
             )
 
-        # Validate universe compatibility before mutating any population state.
+        # Validate universe identity before mutating any population state.
         checkpoint_observation_hash = metadata["observation_schema_hash"]
+        if not isinstance(checkpoint_observation_hash, str):
+            raise ValueError("Population universe_metadata.observation_schema_hash must be a string.")
         current_observation_hash = self.env.level.observation_schema_hash
         if checkpoint_observation_hash != current_observation_hash:
             raise ValueError(
@@ -1289,7 +1667,7 @@ class VectorizedPopulation(PopulationManager):
                 f"current={current_observation_hash[:16]}.... "
                 "The selected level's observation semantics changed; retrain or load the exact compiled level."
             )
-        checkpoint_action_dim = metadata["action_dim"]
+        checkpoint_action_dim = self._require_nonnegative_int("universe_metadata.action_dim", metadata["action_dim"])
         if checkpoint_action_dim != self.action_dim:
             raise ValueError(
                 "Checkpoint action_dim mismatch: "
@@ -1297,7 +1675,7 @@ class VectorizedPopulation(PopulationManager):
                 "The action ABI changed; retrain or load the exact compiled level."
             )
         bars_config = self.env.bars_config
-        checkpoint_meter_count = metadata["meter_count"]
+        checkpoint_meter_count = self._require_nonnegative_int("universe_metadata.meter_count", metadata["meter_count"])
         current_meter_count = bars_config.meter_count
         if checkpoint_meter_count != current_meter_count:
             raise ValueError(
@@ -1307,6 +1685,13 @@ class VectorizedPopulation(PopulationManager):
             )
 
         checkpoint_meter_names = metadata["meter_names"]
+        if type(checkpoint_meter_names) is not type(bars_config.meter_names) or not isinstance(checkpoint_meter_names, (list, tuple)):
+            raise ValueError(
+                "Population universe_metadata.meter_names type mismatch: "
+                f"checkpoint={type(checkpoint_meter_names).__name__}, current={type(bars_config.meter_names).__name__}."
+            )
+        if any(not isinstance(name, str) for name in checkpoint_meter_names):
+            raise ValueError("Population universe_metadata.meter_names entries must be strings.")
         if checkpoint_meter_names != bars_config.meter_names:
             raise ValueError(
                 "Checkpoint meter names mismatch: "
@@ -1315,6 +1700,8 @@ class VectorizedPopulation(PopulationManager):
             )
 
         checkpoint_bars_version = metadata["version"]
+        if not isinstance(checkpoint_bars_version, str):
+            raise ValueError("Population universe_metadata.version must be a string.")
         if checkpoint_bars_version != bars_config.version:
             raise ValueError(
                 "Checkpoint bar config version mismatch: " f"checkpoint={checkpoint_bars_version!r}, current={bars_config.version!r}."
@@ -1334,8 +1721,7 @@ class VectorizedPopulation(PopulationManager):
         # so changing range_type alone does not change obs_dim. The count check above can still
         # pass while another token capacity or payload-width change alters the serialized tensor;
         # this inner check catches only that shape mismatch.
-        checkpoint_obs_dim = metadata["obs_dim"]
-        current_obs_dim = self.env.observation_dim
+        checkpoint_obs_dim = self._require_nonnegative_int("universe_metadata.obs_dim", metadata["obs_dim"])
         if checkpoint_obs_dim != current_obs_dim:
             raise ValueError(
                 f"Checkpoint obs_dim mismatch: checkpoint has {checkpoint_obs_dim}, "
@@ -1359,24 +1745,55 @@ class VectorizedPopulation(PopulationManager):
             if checkpoint[state_key] is None:
                 raise ValueError(f"Population checkpoint {state_key} must contain state, got null.")
 
+        self._require_nonnegative_int("total_steps", checkpoint["total_steps"])
+        self._require_nonnegative_int("training_step_counter", checkpoint["training_step_counter"])
         self._validate_network_checkpoint_state("q_network", checkpoint["q_network"], self.q_network.state_dict())
         self._validate_network_checkpoint_state("target_network", checkpoint["target_network"], self.target_network.state_dict())
+        optimizer_learning_rates = self._validate_optimizer_checkpoint_state(
+            "optimizer",
+            checkpoint["optimizer"],
+            self.optimizer,
+            allow_learning_rate_change=self.scheduler is not None,
+        )
+        if self.scheduler is not None:
+            self._validate_scheduler_checkpoint_state("scheduler", scheduler_state, self.scheduler, optimizer_learning_rates)
+        replay_state = cast(Mapping[str, Any], checkpoint["replay_buffer"])
+        validated_replay: Any = self.replay_buffer.validate_serialized(replay_state, expected_obs_dim=current_obs_dim)
+        self._validate_exploration_checkpoint_state(checkpoint["exploration_state"])
+        return validated_replay
 
-    def load_checkpoint_state(self, checkpoint: dict) -> None:
+    def validate_checkpoint_state(self, checkpoint: Mapping[str, object]) -> None:
+        """Validate the complete current population artifact without materializing replay storage."""
+        self._validate_checkpoint_state(checkpoint)
+
+    def load_checkpoint_state(self, checkpoint: Mapping[str, object]) -> None:
         """Validate, then restore every field from the exact current payload."""
-        self.validate_checkpoint_state(checkpoint)
+        validated_replay = self._validate_checkpoint_state(checkpoint)
+
+        q_network_state = cast(Mapping[str, Any], checkpoint["q_network"])
+        target_network_state = cast(Mapping[str, Any], checkpoint["target_network"])
+        optimizer_state = dict(cast(Mapping[str, Any], checkpoint["optimizer"]))
+        raw_scheduler_state = checkpoint["scheduler"]
+        scheduler_state = None if raw_scheduler_state is None else dict(cast(Mapping[str, Any], raw_scheduler_state))
+        exploration_state = dict(cast(Mapping[str, Any], checkpoint["exploration_state"]))
+        total_steps = cast(int, checkpoint["total_steps"])
+        training_step_counter = cast(int, checkpoint["training_step_counter"])
+        # Build the only full restore allocation before applying any population field.
+        # The validation pass performs structure-only replay validation, so this
+        # candidate is neither duplicated nor discarded.
+        prepared_replay: Any = self.replay_buffer.materialize_validated(validated_replay)
 
         # Restore every producer-owned field from the exact current payload.
-        self.q_network.load_state_dict(checkpoint["q_network"])
-        self.optimizer.load_state_dict(checkpoint["optimizer"])
+        self.q_network.load_state_dict(q_network_state)
+        self.optimizer.load_state_dict(optimizer_state)
         if self.scheduler is not None:
-            self.scheduler.load_state_dict(checkpoint["scheduler"])
-        self.total_steps = checkpoint["total_steps"]
-        self.target_network.load_state_dict(checkpoint["target_network"])
-        self.training_step_counter = checkpoint["training_step_counter"]
-        # All buffer types implement load_from_serialized(), but mypy doesn't infer it for unions.
-        self.replay_buffer.load_from_serialized(checkpoint["replay_buffer"])  # type: ignore[union-attr]
-        self.exploration.load_state(checkpoint["exploration_state"])
+            assert scheduler_state is not None
+            self.scheduler.load_state_dict(scheduler_state)
+        self.total_steps = total_steps
+        self.target_network.load_state_dict(target_network_state)
+        self.training_step_counter = training_step_counter
+        self.replay_buffer.load_prepared(prepared_replay)
+        self.exploration.load_state(exploration_state)
 
     # ------------------------------------------------------------------ #
     # Cross-universe token-net load (token-obs unit 3 Task 9)

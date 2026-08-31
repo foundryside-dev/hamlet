@@ -1,3 +1,4 @@
+---
 version: '1.0'
 description: L1_attention level override — the attention aggregator authored in config (PDR-0109 Phase B unit 1)
 architecture:

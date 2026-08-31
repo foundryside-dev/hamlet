@@ -17,8 +17,7 @@ from townlet.universe.compiled import COMPILED_SCHEMA_VERSION, CompiledUniverse
 from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.compilers.observation import ObservationCompiler
 from townlet.universe.dto.token_spec import (
-    DESCRIPTOR_BLOCK_WIDTH,
-    METER_SIGNATURE_WIDTH,
+    METER_SIGNATURE_FEATURES,
     PAYLOAD_SCHEMAS,
     TOKEN_TYPE_ROSTER,
     SlotBinding,
@@ -29,6 +28,7 @@ from townlet.universe.dto.token_spec import (
     variable_element_bindings,
 )
 from townlet.universe.token_hashes import (
+    canonical_token_layout,
     compute_observation_schema_hash,
     compute_token_layout_hash,
     compute_token_type_schema_hash,
@@ -68,10 +68,10 @@ class TestL1TokenEmission:
         }
 
     def test_total_dims_is_task6_measurement(self, l1_universe):
-        # Current token-1.1 measurement after exact meter, opening-hours, duration,
-        # lifecycle/cost, and spawned-effect affordance identity landed.
+        # Compact dynamic transport excludes immutable context and rank padding.
         assert _selected(l1_universe).token_spec.census["variable_element"] == 0
-        assert _selected(l1_universe).token_spec.total_dims == 4090
+        assert _selected(l1_universe).token_spec.total_dims == 115
+        assert _selected(l1_universe).token_spec.fixed_total_dims == 4090
 
     def test_all_roster_types_present_in_engine_order(self, l1_universe):
         assert tuple(t.type_name for t in _selected(l1_universe).token_spec.types) == TOKEN_TYPE_ROSTER
@@ -113,10 +113,12 @@ class TestL1TokenEmission:
     def test_every_level_carries_meter_runtime_declarations_matching_its_token_slots(self, l1_universe):
         for name in l1_universe.available_levels:
             level = l1_universe.get_level(name)
-            bindings = level.token_spec.get_type("meter").slot_bindings
+            meter_type = level.token_spec.get_type("meter")
+            bindings = meter_type.slot_bindings
             assert tuple(meter.name for meter in level.meter_declarations) == tuple(binding.filler_ref for binding in bindings), name
             assert tuple(meter_signature(meter) for meter in level.meter_declarations) == tuple(
-                binding.static_signature for binding in bindings
+                tuple(context[PAYLOAD_SCHEMAS["meter"].index(feature)] for feature in METER_SIGNATURE_FEATURES)
+                for context in meter_type.slot_context_payloads
             ), name
 
     def test_byte_identical_levels_share_layout_hash(self, l1_universe):
@@ -188,6 +190,21 @@ class TestTransferContractAcrossPacks:
     def test_layout_hash_is_universe_specific(self, l1_universe, effects_universe):
         assert _selected(l1_universe).layout_hash != _selected(effects_universe).layout_hash
 
+    def test_type_schema_is_cross_rank_while_compact_layout_is_rank_specific(self):
+        authorities = (
+            (Path("configs/trial002_money_log_gdp"), "L0_simple", 2),
+            (Path("configs/differential/div003_cubic_partial"), "L2_partial_observability", 3),
+            (Path("configs/aspatial_test"), "L0", 0),
+        )
+        levels = tuple(
+            UniverseCompiler().compile(path, primary_level=level_name, use_cache=False).get_level(level_name)
+            for path, level_name, _rank in authorities
+        )
+
+        assert tuple(level.token_spec.position_rank for level in levels) == tuple(rank for _path, _level, rank in authorities)
+        assert len({level.token_type_schema_hash for level in levels}) == 1
+        assert len({level.layout_hash for level in levels}) == len(authorities)
+
 
 def _spec_with(meter_refs: tuple[str, ...], *, item_capacity: int = 0) -> TokenSpec:
     types = []
@@ -200,7 +217,6 @@ def _spec_with(meter_refs: tuple[str, ...], *, item_capacity: int = 0) -> TokenS
                     slot_index=i,
                     filler_kind="static",
                     filler_ref=ref,
-                    static_signature=(0.0,) * METER_SIGNATURE_WIDTH,
                 )
                 for i, ref in enumerate(meter_refs)
             )
@@ -208,8 +224,16 @@ def _spec_with(meter_refs: tuple[str, ...], *, item_capacity: int = 0) -> TokenS
             bindings = tuple(SlotBinding(slot_index=i, filler_kind="dynamic", filler_ref=f"item:{i}") for i in range(item_capacity))
         else:
             bindings = ()
-        types.append(build_token_type(type_name, bindings))
-    return TokenSpec(types=tuple(types))
+        contexts = () if type_name == "effect" else tuple((0.0,) * len(PAYLOAD_SCHEMAS[type_name]) for _ in bindings)
+        types.append(
+            build_token_type(
+                type_name,
+                bindings,
+                slot_context_payloads=contexts,
+                effect_catalog_contexts=(),
+            )
+        )
+    return TokenSpec(types=tuple(types), position_rank=2, transport_version="compact-1")
 
 
 class TestHashNarrowness:
@@ -220,6 +244,22 @@ class TestHashNarrowness:
         b = _spec_with(("energy", "health"))
         assert compute_token_type_schema_hash(a) == compute_token_type_schema_hash(b)
         assert compute_token_layout_hash(a) == compute_token_layout_hash(b)
+
+    def test_layout_payload_excludes_fixed_projected_schema_identity(self):
+        payload = canonical_token_layout(_spec_with(("energy",)))
+
+        assert set(payload) == {"transport_version", "position_rank", "total_dims", "types"}
+        assert all(
+            set(token_type)
+            == {
+                "type_name",
+                "dynamic_features",
+                "capacity",
+                "slot_binding_refs",
+                "effect_catalog_context_refs",
+            }
+            for token_type in payload["types"]
+        )
 
     def test_capacity_change_moves_layout_not_type_schema(self):
         a = _spec_with(("energy", "health"))
@@ -234,25 +274,29 @@ class TestHashNarrowness:
         assert compute_token_type_schema_hash(a) == compute_token_type_schema_hash(b)
         assert compute_token_layout_hash(a) != compute_token_layout_hash(b)
 
-    def test_static_signature_moves_observation_hash_only(self):
-        # Signature is slot CONTENT (what the descriptor publishes), not layout or type schema.
+    def test_slot_context_moves_observation_hash_only(self):
+        # Fixed context is observation content, not compact layout or projected type schema.
         base = _spec_with(())
-        signature_a = (0.5,) + (0.0,) * (METER_SIGNATURE_WIDTH - 1)
-        signature_b = (0.0,) * METER_SIGNATURE_WIDTH
+        context_a = (0.5,) + (0.0,) * (len(PAYLOAD_SCHEMAS["meter"]) - 1)
+        context_b = (0.0,) * len(PAYLOAD_SCHEMAS["meter"])
         meter_a = TokenTypeSchema(
             type_name="meter",
             payload_features=PAYLOAD_SCHEMAS["meter"],
             capacity=1,
-            slot_bindings=(SlotBinding(slot_index=0, filler_kind="static", filler_ref="energy", static_signature=signature_a),),
+            slot_bindings=(SlotBinding(slot_index=0, filler_kind="static", filler_ref="energy"),),
+            slot_context_payloads=(context_a,),
+            effect_catalog_contexts=(),
         )
         meter_b = TokenTypeSchema(
             type_name="meter",
             payload_features=PAYLOAD_SCHEMAS["meter"],
             capacity=1,
-            slot_bindings=(SlotBinding(slot_index=0, filler_kind="static", filler_ref="energy", static_signature=signature_b),),
+            slot_bindings=(SlotBinding(slot_index=0, filler_kind="static", filler_ref="energy"),),
+            slot_context_payloads=(context_b,),
+            effect_catalog_contexts=(),
         )
-        spec_a = TokenSpec(types=(base.types[0], meter_a) + base.types[2:])
-        spec_b = TokenSpec(types=(base.types[0], meter_b) + base.types[2:])
+        spec_a = TokenSpec(types=(base.types[0], meter_a) + base.types[2:], position_rank=2, transport_version="compact-1")
+        spec_b = TokenSpec(types=(base.types[0], meter_b) + base.types[2:], position_rank=2, transport_version="compact-1")
         assert compute_token_layout_hash(spec_a) == compute_token_layout_hash(spec_b)
         assert compute_token_type_schema_hash(spec_a) == compute_token_type_schema_hash(spec_b)
         assert compute_observation_schema_hash(spec_a) != compute_observation_schema_hash(spec_b)
@@ -260,14 +304,14 @@ class TestHashNarrowness:
     def test_roster_subset_moves_type_schema(self):
         # A universe instantiating fewer types IS a different type schema.
         full = _spec_with(())
-        subset = TokenSpec(types=full.types[:3])
+        subset = TokenSpec(types=full.types[:3], position_rank=2, transport_version="compact-1")
         assert compute_token_type_schema_hash(full) != compute_token_type_schema_hash(subset)
         assert compute_token_layout_hash(full) != compute_token_layout_hash(subset)
 
     def test_noncanonical_encoding_version_refuses(self):
         a = _spec_with(())
         with pytest.raises(ValueError, match="encoding_version"):
-            TokenSpec(types=a.types, encoding_version="token-9.9-test")
+            TokenSpec(types=a.types, position_rank=2, transport_version="compact-1", encoding_version="token-9.9-test")
 
 
 class TestSerialization:
@@ -366,11 +410,17 @@ class TestVariableElementBindings:
         assert [b.filler_ref for b in bindings] == ["temp", "wind[0]", "wind[1]", "wind[2]"]
         assert [b.slot_index for b in bindings] == [0, 1, 2, 3]
         assert all(b.filler_kind == "static" for b in bindings)
-        for binding in bindings:
-            assert binding.static_signature is not None
-            assert len(binding.static_signature) == DESCRIPTOR_BLOCK_WIDTH
+        assert all(not hasattr(binding, "static_signature") for binding in bindings)
         # The bound set constructs a live variable_element type at the derived capacity.
-        assert build_token_type("variable_element", bindings).capacity == 4
+        assert (
+            build_token_type(
+                "variable_element",
+                bindings,
+                slot_context_payloads=tuple((0.0,) * len(PAYLOAD_SCHEMAS["variable_element"]) for _ in bindings),
+                effect_catalog_contexts=(),
+            ).capacity
+            == 4
+        )
 
     def test_unnormalized_variable_refuses(self):
         env = _env_stub(("raw_var", "custom"))
@@ -474,7 +524,7 @@ class TestMeanCensusAdvisoryWiring:
 
         from townlet.config.brain_config import BrainConfig
 
-        payload = yaml.safe_load(Path("configs/test/set_encoder_smoke/brain.yaml").read_text())
+        payload = yaml.safe_load(Path("configs/test/token_set_smoke/brain.yaml").read_text())
         assert payload["architecture"]["token_set"]["aggregator"]["type"] == "mean"
         return BrainConfig.model_validate(payload)
 
@@ -523,7 +573,7 @@ class TestMeanCensusAdvisoryWiring:
         _spec, advisories = self._build(l1_universe, self._wide_bars(8), self._token_set_mean_brain())
         assert not any("aggregator 'mean'" in a for a in advisories)
 
-    def test_non_set_encoder_brain_never_census_advises(self, l1_universe):
+    def test_non_token_set_brain_never_census_advises(self, l1_universe):
         # L1's own brain is feedforward; even a 65-meter census must not advise.
         spec, advisories = self._build(l1_universe, self._wide_bars(65), l1_universe.brain)
         assert spec.census["meter"] == 65
@@ -540,7 +590,10 @@ class TestInspectCensus:
         out = capsys.readouterr().out
         assert "Token census:" in out
         assert "affordance" in out
-        assert "total_dims" in out
+        assert "compact row" in out
+        assert "fixed network boundary" in out
+        assert "compact total" in out
+        assert "fixed boundary" in out
         # effects_smoke's budget advisory is a refusal since the cut, so it carries none.
         assert "ADVISORY" not in out
 
@@ -554,6 +607,7 @@ class TestInspectCensus:
         assert main(["inspect", str(artifact), "--format", "json"]) == 0
         payload = json.loads(capsys.readouterr().out)
         assert payload["token_census"] == _selected(effects_universe).token_spec.census
-        assert payload["token_total_dims"] == _selected(effects_universe).token_spec.total_dims
+        assert payload["token_compact_total_dims"] == _selected(effects_universe).token_spec.total_dims
+        assert payload["token_fixed_boundary_total_dims"] == _selected(effects_universe).token_spec.fixed_total_dims
         assert payload["token_type_schema_hash"] == _selected(effects_universe).token_type_schema_hash
         assert payload["layout_hash"] == _selected(effects_universe).layout_hash

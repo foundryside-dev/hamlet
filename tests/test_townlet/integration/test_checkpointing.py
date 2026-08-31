@@ -220,7 +220,7 @@ class TestPopulationCheckpointing:
         assert set(checkpoint) == required_keys
 
         # Verify version
-        assert checkpoint["version"] == 3, "Population checkpoint must use the exact current format"
+        assert checkpoint["version"] == 4, "Population checkpoint must use the exact current format"
 
     def test_population_checkpoint_preserves_network_weights(self, cpu_device, test_config_pack_path, env_builder, minimal_brain_config):
         """Q-network weights should be exactly preserved across checkpoint cycle."""
@@ -996,7 +996,7 @@ class TestCheckpointRoundTrip:
 class TestVariableMeterCheckpoints:
     """Test checkpoint saving/loading with variable meter universes.
 
-    Verifies that checkpoints include meter metadata and validate compatibility.
+    Verifies that checkpoints include meter metadata and validate exact identity.
     """
 
     def test_checkpoint_includes_meter_metadata(self, cpu_device, task001_env_4meter, minimal_brain_config):
@@ -1039,7 +1039,7 @@ class TestVariableMeterCheckpoints:
         assert "observation_schema_hash" in metadata, "Metadata should contain selected-level observation identity"
 
         # Verify values
-        assert checkpoint["version"] == 3
+        assert checkpoint["version"] == 4
         assert metadata["meter_count"] == 4, f"Should have 4 meters, got {metadata['meter_count']}"
         assert metadata["observation_schema_hash"] == task001_env_4meter.level.observation_schema_hash
         assert list(metadata["meter_names"]) == [
@@ -1299,12 +1299,12 @@ class TestVariableMeterCheckpoints:
             **TRAIN_KWARGS,
         )
 
-        # Get a real checkpoint and remove universe_metadata to simulate legacy
+        # Get a real checkpoint and remove a required current-format field.
         checkpoint = population.get_checkpoint_state()
-        legacy_checkpoint = {k: v for k, v in checkpoint.items() if k != "universe_metadata"}
+        incomplete_checkpoint = {k: v for k, v in checkpoint.items() if k != "universe_metadata"}
 
         # Verify universe_metadata was removed
-        assert "universe_metadata" not in legacy_checkpoint
+        assert "universe_metadata" not in incomplete_checkpoint
 
         # Create new population
         curriculum2 = AdversarialCurriculum(max_steps_per_episode=100)
@@ -1325,7 +1325,7 @@ class TestVariableMeterCheckpoints:
 
         # Loading checkpoint without universe_metadata should raise ValueError
         with pytest.raises(ValueError) as exc_info:
-            population2.load_checkpoint_state(legacy_checkpoint)
+            population2.load_checkpoint_state(incomplete_checkpoint)
 
         # Verify error message provides clear guidance
         error_msg = str(exc_info.value)

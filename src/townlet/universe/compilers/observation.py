@@ -26,10 +26,12 @@ from townlet.effects.catalog import EffectCatalog
 from townlet.substrate.factory import SubstrateFactory
 from townlet.universe.compiled import CompiledVFSProfiles
 from townlet.universe.dto.token_spec import (
+    TOKEN_TRANSPORT_VERSION,
     MeterDeclaration,
     TokenSpec,
     build_token_type,
     canonical_token_bindings,
+    canonical_token_contexts,
     mean_census_advisory,
     require_position_rank,
 )
@@ -78,7 +80,7 @@ class ObservationCompiler:
 
         substrate_cfg = stratum.stratum.substrate
         substrate_instance = SubstrateFactory.build(substrate_cfg, torch.device("cpu"))
-        require_position_rank(substrate_instance.position_dim, substrate_type=substrate_cfg.type)
+        position_rank = require_position_rank(substrate_instance.position_dim, substrate_type=substrate_cfg.type)
 
         bindings = canonical_token_bindings(
             meter_declarations=meter_declarations,
@@ -89,13 +91,36 @@ class ObservationCompiler:
             compiled_vfs_profiles=compiled_vfs_profiles,
             vfs_variables=vfs_variables,
         )
-        spec = TokenSpec(types=tuple(build_token_type(type_name, type_bindings) for type_name, type_bindings in bindings))
+        contexts = {
+            type_name: (slot_context_payloads, effect_catalog_contexts)
+            for type_name, slot_context_payloads, effect_catalog_contexts in canonical_token_contexts(
+                position_rank=position_rank,
+                meter_declarations=meter_declarations,
+                affordances=affordances,
+                items_catalog=items_catalog,
+                compiled_effect_catalog=compiled_effect_catalog,
+                environment=environment,
+                compiled_vfs_profiles=compiled_vfs_profiles,
+                vfs_variables=vfs_variables,
+            )
+        }
+        spec = TokenSpec(
+            types=tuple(
+                build_token_type(
+                    type_name,
+                    type_bindings,
+                    slot_context_payloads=contexts[type_name][0],
+                    effect_catalog_contexts=contexts[type_name][1],
+                )
+                for type_name, type_bindings in bindings
+            ),
+            position_rank=position_rank,
+            transport_version=TOKEN_TRANSPORT_VERSION,
+        )
 
         architecture = brain.architecture
         aggregator_type: str | None = None
-        if architecture.type == "set_encoder" and architecture.set_encoder is not None:
-            aggregator_type = architecture.set_encoder.aggregator.type
-        elif architecture.type == "token_set" and architecture.token_set is not None:
+        if architecture.type == "token_set" and architecture.token_set is not None:
             aggregator_type = architecture.token_set.aggregator.type
         if aggregator_type is not None:
             census_note = mean_census_advisory(spec, aggregator=aggregator_type)

@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Literal
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_serializer, model_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
 from townlet.config.training_v2_config import TrainingV2Config
 
@@ -224,30 +224,6 @@ class SetAggregatorConfig(BaseModel):
         return self
 
 
-class SetEncoderConfig(BaseModel):
-    """Set-aware architecture configuration for variable-token observations."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    token_field_name: str = Field(min_length=1, description="ObservationSpec field containing flattened token rows")
-    max_tokens: int = Field(gt=0, description="Maximum number of token rows in the field")
-    token_dim: int = Field(gt=0, description="Feature width of each token row")
-    token_embed_dim: int = Field(gt=0, description="Embedding size produced for the pooled token set")
-    base_hidden_dim: int = Field(gt=0, description="Embedding size for non-token observation features")
-    q_head_hidden_dim: int = Field(gt=0, description="Hidden size for the final Q-value head")
-    aggregator: SetAggregatorConfig = Field(description="Declared token-set aggregation (no default)")
-
-    @model_validator(mode="after")
-    def validate_attention_geometry(self) -> "SetEncoderConfig":
-        if self.aggregator.type == "attention":
-            assert self.aggregator.num_heads is not None  # guaranteed by SetAggregatorConfig
-            if self.token_embed_dim % self.aggregator.num_heads != 0:
-                raise ValueError(
-                    f"token_embed_dim ({self.token_embed_dim}) must be divisible by " f"aggregator.num_heads ({self.aggregator.num_heads})"
-                )
-        return self
-
-
 class TokenSetConfig(BaseModel):
     """Token-native architecture configuration (token-obs spec §4; unit 3 Task 9).
 
@@ -422,18 +398,17 @@ class LossConfig(BaseModel):
 class ArchitectureConfig(BaseModel):
     """Neural network architecture configuration.
 
-    Supports feedforward, recurrent (LSTM), dueling, and set-encoder architectures.
+    Supports feedforward, recurrent (LSTM), dueling, and token-set architectures.
     """
 
     model_config = ConfigDict(extra="forbid")
 
-    type: Literal["feedforward", "recurrent", "dueling", "set_encoder", "token_set"] = Field(description="Architecture type")
+    type: Literal["feedforward", "recurrent", "dueling", "token_set"] = Field(description="Architecture type")
 
     # Architecture-specific configs (exactly one required based on type)
     feedforward: FeedforwardConfig | None = Field(default=None, description="Feedforward MLP config (required when type=feedforward)")
     recurrent: RecurrentConfig | None = Field(default=None, description="Recurrent LSTM config (required when type=recurrent)")
     dueling: DuelingConfig | None = Field(default=None, description="Dueling DQN config (required when type=dueling)")
-    set_encoder: SetEncoderConfig | None = Field(default=None, description="Set encoder config (required when type=set_encoder)")
     token_set: TokenSetConfig | None = Field(default=None, description="Token-native config (required when type=token_set)")
 
     @model_validator(mode="after")
@@ -445,27 +420,9 @@ class ArchitectureConfig(BaseModel):
             raise ValueError("type='recurrent' requires recurrent config")
         if self.type == "dueling" and self.dueling is None:
             raise ValueError("type='dueling' requires dueling config")
-        if self.type == "set_encoder" and self.set_encoder is None:
-            raise ValueError("type='set_encoder' requires set_encoder config")
         if self.type == "token_set" and self.token_set is None:
             raise ValueError("type='token_set' requires token_set config")
         return self
-
-    @model_serializer(mode="wrap")
-    def _serialize_without_absent_token_set(self, handler):  # type: ignore[no-untyped-def]
-        """Omit ``token_set`` from the dump when absent (token-obs unit 3 Task 9).
-
-        ``brain_hash`` = SHA256 of ``model_dump()``: including a new always-``None``
-        key would move every shipped pack's brain_hash for a feature it does not use
-        — an undeclared hash mover inside an ALONGSIDE task. Declaring token_set
-        stamps the key (and moves the hash, correctly); every other dump stays
-        byte-identical to pre-Task-9. Task 10's registered hash movement (DIV-008)
-        may retire this by folding the key in permanently.
-        """
-        data = handler(self)
-        if isinstance(data, dict) and data.get("token_set") is None:
-            data.pop("token_set", None)
-        return data
 
 
 class ReplayConfig(BaseModel):

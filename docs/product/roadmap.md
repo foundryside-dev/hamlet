@@ -55,7 +55,8 @@
 
 - **Token-based observation engineering — IN SCOPE, owner-directed** (`PDR-0108`,
   `PDR-0114`, `PDR-0131`, `PDR-0132`, `PDR-0133`, `PDR-0134`, `PDR-0135`; `hamlet-fa6bb6da4a`). Phase A, the declared attention choice and
-  full token cut through unit 3 are landed. The open work is no longer "prove set_encoder".
+  full token cut through unit 3 are landed. The open work is engineering the accepted
+  `token_set` path through compact replay, recurrent regression, and shipped-pack migration.
   · **The 9.43× decision is re-ruled (`PDR-0131`, superseding `PDR-0126`).** At the default
   100,000-transition capacity, the historical 1,132-float serialization spent 863.6 MiB on
   observation pairs versus 91.6 MiB before the cut. The later 1,580-float line was an intermediate

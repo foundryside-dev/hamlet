@@ -373,9 +373,8 @@ class DemoRunner:
         )
 
         # The raster vision window died with the fixed-width observation ABI (unit-3
-        # cut). It survives only as a `VectorizedPopulation` constructor parameter for
-        # the recurrent path, which now refuses to build; 1 is the value that API has
-        # always taken for "no window".
+        # cut). Recurrent readers now consume the same compact token blocks as the
+        # other architectures; 1 remains the constructor value for "no window".
         vision_window_size = 1
 
         # Get training hyperparameters from config (all required per PDR-002)

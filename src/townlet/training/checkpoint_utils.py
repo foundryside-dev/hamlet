@@ -20,14 +20,13 @@ _DIGEST_BUFFER_SIZE = 1024 * 1024  # 1 MiB chunks keep memory bounded
 
 # WS-1 task 5: the single source of truth for the checkpoint payload format.
 # Previously hardcoded as a magic `3` at two sites in demo/runner.py.
-# 4: THE TOKEN CUT (unit 3 Task 10). `observation_field_uuids` and `observation_dim`
-# are DROPPED with their producer (the compiled ObservationSpec, deleted); token nets gate
-# on `token_type_schema_hash` and flat nets on `layout_hash`. A version-3 checkpoint
-# describes a different observation ABI entirely and refuses loudly (zero backcompat).
-CHECKPOINT_FORMAT_VERSION = 4
+# 5: THE COMPACT TOKEN/REPLAY CUT (unit 3 M3 Task 4). Every nested population and
+# replay artifact now carries only the compact observation ABI and validates before
+# any runtime state is applied. The immediately previous version describes a different ABI.
+CHECKPOINT_FORMAT_VERSION = 5
 
 # The complete DemoRunner artifact. Producers and both consumers share this one
-# closed schema: pre-release checkpoints are regenerated, never migrated.
+# closed schema: only artifacts emitted by the current code are accepted.
 DEMO_CHECKPOINT_KEYS = frozenset(
     {
         "version",
@@ -63,10 +62,19 @@ SUBSTRATE_METADATA_KEYS = frozenset({"position_dim", "substrate_type"})
 logger = logging.getLogger(__name__)
 
 
-def validate_demo_checkpoint_payload(checkpoint: Mapping[str, Any]) -> None:
-    """Validate the exact current outer DemoRunner checkpoint schema."""
+def _validate_checkpoint_format_version(checkpoint: Mapping[str, Any]) -> None:
     if not isinstance(checkpoint, Mapping):
         raise ValueError(f"Demo checkpoint payload must be a mapping; got {type(checkpoint).__name__}.")
+    version = checkpoint.get("version")
+    if type(version) is not int or version != CHECKPOINT_FORMAT_VERSION:
+        raise ValueError(
+            f"Unsupported checkpoint version: {version}\n" f"Expected version {CHECKPOINT_FORMAT_VERSION}. Please retrain from scratch."
+        )
+
+
+def validate_demo_checkpoint_payload(checkpoint: Mapping[str, Any]) -> None:
+    """Validate the exact current outer DemoRunner checkpoint schema."""
+    _validate_checkpoint_format_version(checkpoint)
 
     checkpoint_keys = set(checkpoint)
     if checkpoint_keys != DEMO_CHECKPOINT_KEYS:
@@ -411,14 +419,9 @@ def assert_checkpoint_identity(checkpoint: Mapping[str, Any], universe: Compiled
     Returns True when the checkpoint may be resumed. Every mismatch raises
     ValueError except the explicit force-new-VFS branch, which returns False.
     """
+    _validate_checkpoint_format_version(checkpoint)
     if universe is None:
         raise ValueError("universe parameter cannot be None - compiled universe required for identity validation")
-
-    version = checkpoint.get("version")
-    if version != CHECKPOINT_FORMAT_VERSION:
-        raise ValueError(
-            f"Unsupported checkpoint version: {version}\nExpected version {CHECKPOINT_FORMAT_VERSION}. Please retrain from scratch."
-        )
 
     # PDR-0027: state a lineage fork before any hash leg can raise about it. Placed after
     # the format gate on purpose — a wrong-format checkpoint lacks the stamp entirely, and
@@ -652,7 +655,7 @@ def safe_torch_load(
 
     try:
         # PyTorch 2.6+ requires explicit allowlisting of numpy types
-        # Add numpy types to safe globals for PyTorch 2.6+ compatibility
+        # Register NumPy types required by PyTorch 2.6+ safe loading.
 
         import numpy as np
 

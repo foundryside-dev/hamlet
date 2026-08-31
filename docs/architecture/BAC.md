@@ -1,7 +1,7 @@
 # Brain as Code (BAC)
 
 Document date: 2026-08-24
-Status: **Current** (reviewed 2026-08-24) — part of the six-document HLD set (PDR-0118).
+Status: **Current** (reviewed 2026-08-31) — part of the six-document HLD set (PDR-0118).
 
 > **Status discipline, stated up front because this document's predecessors failed it.**
 > The archived `BRAIN_AS_CODE.md` and `hld/02-brain-as-code.md` both carry
@@ -32,7 +32,7 @@ only in archived documents — README states this plainly, and README is authori
 
 ## 2. What exists today
 
-Verified in `src/townlet/` on 2026-08-24. This is the **realized slice**: network, optimizer,
+Verified in `src/townlet/` on 2026-08-31. This is the **realized slice**: network, optimizer,
 loss, replay and Q-learning hyperparameters. README calls it "brain-as-code, layer 2" — see §3
 for the layer framing.
 
@@ -47,24 +47,23 @@ Declared sub-configs, in source order:
 
 | block | DTO | declares |
 | --- | --- | --- |
-| `architecture` | `ArchitectureConfig` (+ `FeedforwardConfig`, `RecurrentConfig`/`LSTMConfig`/`CNNEncoderConfig`/`MLPEncoderConfig`, `DuelingConfig`/`DuelingStreamConfig`, `SetEncoderConfig`/`SetAggregatorConfig`) | network family and its shape |
+| `architecture` | `ArchitectureConfig` (+ `FeedforwardConfig`, `RecurrentConfig`/`LSTMConfig`/`CNNEncoderConfig`/`MLPEncoderConfig`, `DuelingConfig`/`DuelingStreamConfig`, `TokenSetConfig`/`SetAggregatorConfig`) | network family and its shape |
 | `optimizer` | `OptimizerConfig`, `ScheduleConfig` | optimizer type, learning rate, betas/eps, weight decay, LR schedule |
 | `loss` | `LossConfig` | loss function |
 | `q_learning` | `QLearningConfig` | gamma, target-update frequency, `use_double_dqn` |
 | `replay` | `ReplayConfig` | capacity, prioritized (PER) vs uniform |
 
-Field-level reference: `docs/config-schemas/brain.md` (archived 2026-08-24;
-content may be stale). Do not restate it here.
+Field-level reference: `docs/config-schemas/brain.md`. Do not restate it here.
 
 ### 2.2 Architecture selection
 
 `ArchitectureConfig.type` is a **closed literal of four values**:
-`feedforward` | `recurrent` | `dueling` | `set_encoder`. A model validator enforces that the
+`feedforward` | `recurrent` | `dueling` | `token_set`. A model validator enforces that the
 matching sub-config is present, so `type: recurrent` with no `recurrent:` block is a parse
 error rather than a runtime surprise.
 
 Selection is **not** in the DTO. It happens at
-`src/townlet/population/vectorized.py:366` — `VectorizedPopulation._build_network` — which
+`src/townlet/population/vectorized.py:405` — `VectorizedPopulation._build_network` — which
 dispatches on `arch.type` into `NetworkFactory` (`src/townlet/agent/network_factory.py`). The
 same helper builds both the online and the target network.
 
@@ -73,11 +72,11 @@ same helper builds both the online and the target network.
 | `feedforward` | `NetworkFactory.build_feedforward` | an `nn.Sequential` MLP assembled from `hidden_layers` / `activation` / `dropout` / `layer_norm` |
 | `recurrent` | `NetworkFactory.build_recurrent` | `RecurrentSpatialQNetwork` (CNN vision encoder + LSTM) |
 | `dueling` | `NetworkFactory.build_dueling` | `DuelingQNetwork` |
-| `set_encoder` | `NetworkFactory.build_set_encoder` | `SetEncoderQNetwork` |
+| `token_set` | `NetworkFactory.build_token_set` | `TokenSetQNetwork` |
 
-`NetworkFactory` validates that `observation_spec.total_dims` matches the `obs_dim` it is handed
-and raises otherwise (`network_factory.py:204`) — the compiled artifact is the authority on
-width, and the factory refuses to disagree with it.
+For `token_set`, the factory passes the compiled `TokenSpec` directly. `TokenSetQNetwork`
+sets its input width from `TokenSpec.total_dims` and rejects every forward input whose width
+differs. Flat and dueling networks are sized from the environment's compiled observation width.
 
 ### 2.3 The network classes, and which are reachable
 
@@ -85,16 +84,14 @@ width, and the factory refuses to disagree with it.
 
 | class | line | selectable from `brain.yaml`? |
 | --- | --- | --- |
-| `SimpleQNetwork` | 15 | **No.** `type: feedforward` builds an equivalent `nn.Sequential` inline; this class is not instantiated anywhere in `src/`. Referenced only by a docstring in `exploration/rnd.py:72` ("Matches SimpleQNetwork architecture for consistency") and by tests. |
-| `RecurrentSpatialQNetwork` | 79 | Yes — `type: recurrent`. |
-| `DuelingQNetwork` | 350 | Yes — `type: dueling`. |
-| `SetEncoderQNetwork` | 472 | Yes — `type: set_encoder`. |
-| `StructuredQNetwork` | 629 | **No.** Group-encoders-per-semantic-group network, exercised by `tests/test_townlet/unit/agent/test_structured_qnetwork.py`; no `ArchitectureConfig.type` value reaches it. |
+| `SimpleQNetwork` | 19 | **No.** `type: feedforward` builds an equivalent `nn.Sequential` inline; this class is not instantiated anywhere in `src/`. Referenced only by a docstring in `exploration/rnd.py:72` ("Matches SimpleQNetwork architecture for consistency") and by tests. |
+| `RecurrentSpatialQNetwork` | 58 | Yes — `type: recurrent`. |
+| `DuelingQNetwork` | 307 | Yes — `type: dueling`. |
+| `TokenSetQNetwork` | 440 | Yes — `type: token_set`. |
+| `StructuredQNetwork` | 631 | **No.** Group-encoders-per-semantic-group network, exercised by `tests/test_townlet/unit/agent/test_structured_qnetwork.py`; no `ArchitectureConfig.type` value reaches it. |
 
-Two working networks with no authoring door is the same "mechanics built, doors missing" shape
-the 2026-08-24 VFS audit found on the UAC side (`HLD.md` §8). `StructuredQNetwork` consumes
-`ObservationActivity.group_slices`, so it is the natural consumer of the semantic-group layout —
-it is waiting on an author-facing surface, not on an implementation.
+`StructuredQNetwork` is production-dead: it has no authoring door, and the legacy grouped
+observation artifact its constructor expects no longer exists. It is not a current architecture.
 
 > **Never write an observation-dimension literal.** Layer shapes are read from
 > `src/townlet/agent/networks.py`; observation width comes only from the compiled artifact
@@ -110,9 +107,9 @@ it is waiting on an author-facing surface, not on an implementation.
 level declared its own `brain.yaml`**, and `CompiledUniverse` exposes that as an explicit
 lineage-fork predicate (`compiled.py:218`, PDR-0027).
 
-`brain_hash` is one of the seven hashes `assert_checkpoint_identity` hard-compares, so a
+`brain_hash` is one of the eight hashes `assert_checkpoint_identity` hard-compares, so a
 checkpoint refuses to load into a universe whose effective brain differs. See `HLD.md` §5.2 and
-`docs/config-schemas/brain.md` (archived 2026-08-24) §"Checkpoint Provenance:
+`docs/config-schemas/brain.md` §"Checkpoint Provenance:
 brain_hash".
 
 ### 2.5 Runtime notes
@@ -120,17 +117,17 @@ brain_hash".
 - LSTM hidden state resets at episode start, persists during rollout, and resets per transition
   in batch training.
 - Gradient clipping is applied via `torch.nn.utils.clip_grad_norm_` at
-  `max_norm=self.max_grad_norm` (`population/vectorized.py:945,1023`). That threshold is a
+  `max_norm=self.max_grad_norm` (`population/vectorized.py:979,1057`). That threshold is a
   **declared training hyperparameter**, `max_grad_norm` in `training.yaml`
   (`config/training_v2_config.py:229`) — not a hardcoded engine constant. CLAUDE.md's "10.0"
   is a pack value, not a framework fact.
 - On a recurrent architecture, `use_double_dqn: true` costs **one extra single-step forward
   pass** per update, not a third unroll. Verified 2026-08-24 against
-  `population/vectorized.py:845-905`: both variants run two full sequence unrolls (online for
+  `population/vectorized.py:879-939`: both variants run two full sequence unrolls (online for
   Q-predictions, target for Q-targets) plus a target boundary forward; Double DQN adds one
-  online boundary forward under the online net's final hidden state (`:862-869`), and action
+  online boundary forward under the online net's final hidden state (`:896-904`), and action
   selection deliberately **reuses PASS 1's online unroll** — the code comments "a third unroll
-  would recompute the same trajectory" (`:876-880`). `docs/config-schemas/training.md`
+  would recompute the same trajectory" (`:910-914`). `docs/config-schemas/training.md`
   (archived 2026-08-24)'s "~50% overhead (3 forward passes vs 2)" and CLAUDE.md's "3 vs 2"
   restatement do not match the current update path and overstate today's cost.
 
@@ -197,20 +194,17 @@ worth naming rather than a shortcut.
 
 ## 4. The bridge: token observations
 
-The reason richer BAC architectures are not simply a matter of writing more network classes is
-that the current observation is a **flat fixed-width vector with an activity mask**. A
-world-model rollout, a social model that reasons over other entities, or a per-entity attention
-policy all want *structured, variable-cardinality* input — a set of typed tokens — not a
-padded flat vector. `SetEncoderQNetwork` and `StructuredQNetwork` already exist and are
-under-served by what the observation gives them: the set encoder is proven (PDR-0109) and the
-structured network has no authoring door at all (§2.3).
+The current observation is a compact fixed-capacity serialization of typed tokens.
+`TokenSetQNetwork` consumes the compiled `TokenSpec`, expands one type at a time with static
+context at the network boundary, projects each type, and pools the mixed set with the declared
+`mean` or `attention` aggregator. `StructuredQNetwork` still has no authoring door (§2.3).
 
-The in-flight **token-observation migration** is the step that changes this. Design spec:
+The **token-observation migration** that established this representation is specified in:
 `docs/superpowers/specs/2026-08-22-token-observation-representation-design.md` — approved
 (PDR-0114, with a no-tech-debt rider), units 1 and 2 banked (PDR-0115, PDR-0116). It defines a
 token type system, a compiled `TokenSpec` artifact, runtime encoding with an explicit visibility
-filter, network consumption including a flat view for compatibility, and the transfer/provenance/
-oracle consequences. Read the spec; this document does not restate it.
+filter, network consumption, and the transfer/provenance/oracle consequences. Read the spec;
+this document does not restate it.
 
 Two consequences matter for BAC:
 
@@ -235,7 +229,7 @@ merged by declared id rather than found at a mandated filename. See `UAC.md` §4
   stale) — the field-level reference for `brain.yaml`
 - **Source**: `src/townlet/config/brain_config.py` (DTOs), `src/townlet/agent/networks.py`
   (network classes), `src/townlet/agent/network_factory.py` (construction),
-  `src/townlet/population/vectorized.py:366` (selection)
+  `src/townlet/population/vectorized.py:405` (selection)
 - **Provenance**: `src/townlet/universe/compiled.py` (`brain_hash`, `pack_brain_hash`),
   `src/townlet/training/checkpoint_utils.py` (`assert_checkpoint_identity`)
 - **Token migration**: `docs/superpowers/specs/2026-08-22-token-observation-representation-design.md`

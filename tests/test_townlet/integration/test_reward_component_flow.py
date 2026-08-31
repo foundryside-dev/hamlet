@@ -4,8 +4,8 @@ Verifies the complete data flow:
 1. DACEngine returns components
 2. Components flow through env info dict
 3. Components stored in replay buffer
-4. Checkpoint format_version is 3
-5. Legacy format rejection
+4. Checkpoint format_version is 4
+5. Immediately previous format rejection
 """
 
 from __future__ import annotations
@@ -101,8 +101,8 @@ class TestRewardComponentFlow:
         assert buffer.rewards_shaping[0].item() == pytest.approx(0.2), "Shaping value mismatch"
         assert buffer.rewards[0].item() == pytest.approx(1.0), "Total reward mismatch"
 
-    def test_checkpoint_format_version_3(self, cpu_device):
-        """Serialized buffer has format_version 3 with component fields."""
+    def test_checkpoint_format_version_4(self, cpu_device):
+        """Serialized buffer has format_version 4 with component fields."""
         buffer = ReplayBuffer(capacity=100, device=cpu_device)
 
         reward_tensor = RewardTensor.from_dac(
@@ -124,7 +124,7 @@ class TestRewardComponentFlow:
 
         # Verify format_version
         assert "format_version" in serialized, "Serialized buffer should have format_version"
-        assert serialized["format_version"] == 3, "format_version should be 3"
+        assert serialized["format_version"] == 4, "format_version should be 4"
 
         # Verify component fields exist
         assert "rewards_extrinsic" in serialized, "Serialized buffer should have rewards_extrinsic"
@@ -137,12 +137,12 @@ class TestRewardComponentFlow:
         assert serialized["rewards_shaping"] is not None
 
     def test_load_rejects_old_format(self, cpu_device):
-        """Loading format_version < 3 raises ValueError."""
+        """Loading the immediately previous format raises ValueError."""
         buffer = ReplayBuffer(capacity=100, device=cpu_device)
 
-        # Create old format checkpoint (version 2)
+        # Create an immediately previous-format checkpoint.
         old_format = {
-            "format_version": 2,
+            "format_version": 3,
             "size": 0,
             "position": 0,
             "capacity": 100,
@@ -153,8 +153,8 @@ class TestRewardComponentFlow:
             "dones": None,
         }
 
-        # Should raise ValueError for old format
-        with pytest.raises(ValueError, match="exact current format_version is 3"):
+        # The version gate must refuse the previous artifact before reading its shape.
+        with pytest.raises(ValueError, match="exact current format_version is 4"):
             buffer.load_from_serialized(old_format)
 
     def test_buffer_handles_missing_components(self, cpu_device):
@@ -261,7 +261,7 @@ class TestRewardComponentFlow:
 
         # Serialize and verify format
         serialized = buffer.serialize()
-        assert serialized["format_version"] == 3
+        assert serialized["format_version"] == 4
         assert "rewards_extrinsic" in serialized
         assert "rewards_intrinsic" in serialized
         assert "rewards_shaping" in serialized

@@ -37,12 +37,16 @@ from townlet.universe.dto import (
 )
 from townlet.universe.dto.token_spec import (
     EFFECT_SCOPE_VOCABULARY,
+    MAX_POSITION_RANK,
+    TOKEN_TRANSPORT_VERSION,
     TOKEN_TYPE_ROSTER,
     MeterDeclaration,
     SlotBinding,
+    TokenContext,
     TokenSpec,
     TokenTypeSchema,
     canonical_token_bindings,
+    canonical_token_contexts,
 )
 from townlet.universe.optimization import OptimizationData
 from townlet.universe.token_hashes import (
@@ -105,7 +109,11 @@ from townlet.vfs.transition_schedule import (
 # primary-level projection is deleted, including its token/action/VFS products, metadata,
 # optimization data, advisories, and level-config hashes. A 1.24 artifact carries two
 # independently mutable authorities, so it must be refused rather than translated.
-COMPILED_SCHEMA_VERSION = "1.25"
+# 1.26: TokenSpec serialization is the compact dynamic transport. Required rank and
+# transport versions plus schema-owned fixed context tables replace binding-local static
+# signatures. A 1.25 token payload is a different artifact and is refused before any
+# nested token interpretation.
+COMPILED_SCHEMA_VERSION = "1.26"
 
 REQUIRED_COMPILED_UNIVERSE_FIELDS = (
     "compiled_schema_version",
@@ -398,6 +406,7 @@ class CompiledUniverse:
     @classmethod
     def from_dict(cls, payload: Mapping[str, Any]) -> CompiledUniverse:
         """Create CompiledUniverse from a dictionary produced by to_dict/save_to_cache."""
+        _validate_compiled_schema_version(payload, source="dictionary")
         for field_name in REQUIRED_COMPILED_UNIVERSE_FIELDS:
             _required_field(payload, field_name)
 
@@ -531,13 +540,7 @@ class CompiledUniverse:
     def load_from_cache(cls, path: Path) -> CompiledUniverse:
         """Deserialize a compiled universe from MessagePack file."""
         payload = msgpack.unpackb(path.read_bytes(), raw=False, strict_map_key=False)
-        schema_version = _required_field(payload, "compiled_schema_version")
-        if schema_version != COMPILED_SCHEMA_VERSION:
-            raise ValueError(
-                f"Compiled universe schema mismatch for {path}: "
-                f"found '{schema_version}', expected '{COMPILED_SCHEMA_VERSION}'. "
-                "Recompile the config pack with `python -m townlet.universe compile <config_dir>`."
-            )
+        _validate_compiled_schema_version(payload, source=str(path))
         return cls.from_dict(payload)
 
     # Runtime adapters -----------------------------------------------------
@@ -615,9 +618,36 @@ def _required_mapping(payload: Mapping[str, Any], field_name: str) -> Mapping[st
     return value
 
 
+def _validate_compiled_schema_version(payload: Mapping[str, Any], *, source: str) -> None:
+    schema_version = _required_field(payload, "compiled_schema_version")
+    if schema_version != COMPILED_SCHEMA_VERSION:
+        raise ValueError(
+            f"Compiled universe schema mismatch for {source}: "
+            f"found '{schema_version}', expected '{COMPILED_SCHEMA_VERSION}'. "
+            "Recompile the config pack with `python -m townlet.universe compile <config_dir>`."
+        )
+
+
+def _require_exact_keys(payload: Mapping[str, Any], expected: set[str], *, field_name: str) -> None:
+    actual = set(payload)
+    if actual != expected:
+        missing = sorted(expected - actual)
+        unknown = sorted(actual - expected)
+        raise ValueError(
+            f"Compiled universe cache field '{field_name}' must carry exactly {sorted(expected)!r}; "
+            f"missing {missing!r}, unknown {unknown!r}. Recompile the config pack."
+        )
+
+
 def _validate_compiled_token_coherence(compiled: CompiledUniverse) -> None:
     """Refuse a deserialized artifact whose derived token products disagree."""
     for level_name, level in compiled.all_levels.items():
+        if level.token_spec.position_rank != compiled.metadata.position_dim:
+            raise _token_coherence_error(
+                level_name,
+                f"TokenSpec position_rank {level.token_spec.position_rank} does not match persisted "
+                f"substrate position rank {compiled.metadata.position_dim}",
+            )
         actual_roster = tuple(token_type.type_name for token_type in level.token_spec.types)
         if actual_roster != TOKEN_TYPE_ROSTER:
             raise _token_coherence_error(
@@ -642,6 +672,31 @@ def _validate_compiled_token_coherence(compiled: CompiledUniverse) -> None:
                 raise _token_coherence_error(
                     level_name,
                     f"{type_name} slot bindings do not match canonical bindings derived from persisted declarations",
+                )
+
+        expected_contexts = canonical_token_contexts(
+            position_rank=level.token_spec.position_rank,
+            meter_declarations=level.meter_declarations,
+            affordances=level.affordances,
+            items_catalog=compiled.items_catalog,
+            compiled_effect_catalog=compiled.compiled_effect_catalog,
+            environment=compiled.environment,
+            compiled_vfs_profiles=compiled.compiled_vfs_profiles,
+            vfs_variables=level.vfs_variables,
+        )
+        for type_name, slot_context_payloads, effect_catalog_contexts in expected_contexts:
+            token_type = level.token_spec.get_type(type_name)
+            if token_type is None:
+                raise _token_coherence_error(level_name, f"TokenSpec has no {type_name} type")
+            if token_type.slot_context_payloads != slot_context_payloads:
+                raise _token_coherence_error(
+                    level_name,
+                    f"{type_name} slot context payloads do not match canonical contexts derived from persisted declarations",
+                )
+            if token_type.effect_catalog_contexts != effect_catalog_contexts:
+                raise _token_coherence_error(
+                    level_name,
+                    f"{type_name} effect catalog contexts do not match the persisted compiled catalog",
                 )
 
         computed_hashes = {
@@ -772,6 +827,8 @@ def _serialize_token_spec(spec: TokenSpec) -> dict[str, Any]:
     """
     return {
         "encoding_version": spec.encoding_version,
+        "transport_version": spec.transport_version,
+        "position_rank": spec.position_rank,
         "types": [
             {
                 "type_name": t.type_name,
@@ -782,9 +839,13 @@ def _serialize_token_spec(spec: TokenSpec) -> dict[str, Any]:
                         "slot_index": binding.slot_index,
                         "filler_kind": binding.filler_kind,
                         "filler_ref": binding.filler_ref,
-                        "static_signature": None if binding.static_signature is None else list(binding.static_signature),
                     }
                     for binding in t.slot_bindings
+                ],
+                "slot_context_payloads": [list(context) for context in t.slot_context_payloads],
+                "effect_catalog_contexts": [
+                    {"context_ref": context.context_ref, "fixed_payload": list(context.fixed_payload)}
+                    for context in t.effect_catalog_contexts
                 ],
             }
             for t in spec.types
@@ -798,24 +859,103 @@ def _token_spec_from_plain(payload: Mapping[str, Any] | None) -> TokenSpec:
             "Compiled universe cache carries a null `token_spec`. The TokenSpec IS the artifact's "
             "observation product since COMPILED_SCHEMA_VERSION 1.22; recompile the config pack."
         )
-    types = tuple(
-        TokenTypeSchema(
-            type_name=entry["type_name"],
-            payload_features=tuple(entry["payload_features"]),
-            capacity=entry["capacity"],
-            slot_bindings=tuple(
-                SlotBinding(
-                    slot_index=binding["slot_index"],
-                    filler_kind=binding["filler_kind"],
-                    filler_ref=binding["filler_ref"],
-                    static_signature=None if binding["static_signature"] is None else tuple(binding["static_signature"]),
-                )
-                for binding in entry["slot_bindings"]
-            ),
-        )
-        for entry in payload["types"]
+    if not isinstance(payload, Mapping):
+        raise ValueError("Compiled universe cache field 'token_spec' must be a mapping; recompile the config pack.")
+    _require_exact_keys(
+        payload,
+        {"encoding_version", "transport_version", "position_rank", "types"},
+        field_name="token_spec",
     )
-    return TokenSpec(types=types, encoding_version=payload["encoding_version"])
+    position_rank = payload["position_rank"]
+    if isinstance(position_rank, bool) or not isinstance(position_rank, int):
+        raise ValueError(f"Compiled universe cache token_spec.position_rank must be an integer, got {position_rank!r}")
+    if not 0 <= position_rank <= MAX_POSITION_RANK:
+        raise ValueError(f"Compiled universe cache token_spec.position_rank must be within [0, {MAX_POSITION_RANK}], got {position_rank}")
+    transport_version = payload["transport_version"]
+    if transport_version != TOKEN_TRANSPORT_VERSION:
+        raise ValueError(
+            f"Compiled universe cache token_spec.transport_version must be {TOKEN_TRANSPORT_VERSION!r}, "
+            f"got {transport_version!r}; recompile the config pack."
+        )
+    raw_types = payload["types"]
+    if not isinstance(raw_types, list | tuple):
+        raise ValueError("Compiled universe cache token_spec.types must be a sequence; recompile the config pack.")
+    types: list[TokenTypeSchema] = []
+    for type_index, raw_entry in enumerate(raw_types):
+        type_field = f"token_spec.types[{type_index}]"
+        if not isinstance(raw_entry, Mapping):
+            raise ValueError(f"Compiled universe cache field '{type_field}' must be a mapping; recompile the config pack.")
+        _require_exact_keys(
+            raw_entry,
+            {
+                "type_name",
+                "payload_features",
+                "capacity",
+                "slot_bindings",
+                "slot_context_payloads",
+                "effect_catalog_contexts",
+            },
+            field_name=type_field,
+        )
+        raw_bindings = raw_entry["slot_bindings"]
+        if not isinstance(raw_bindings, list | tuple):
+            raise ValueError(f"Compiled universe cache field '{type_field}.slot_bindings' must be a sequence")
+        bindings: list[SlotBinding] = []
+        for binding_index, raw_binding in enumerate(raw_bindings):
+            binding_field = f"{type_field}.slot_bindings[{binding_index}]"
+            if not isinstance(raw_binding, Mapping):
+                raise ValueError(f"Compiled universe cache field '{binding_field}' must be a mapping")
+            _require_exact_keys(raw_binding, {"slot_index", "filler_kind", "filler_ref"}, field_name=binding_field)
+            bindings.append(
+                SlotBinding(
+                    slot_index=raw_binding["slot_index"],
+                    filler_kind=raw_binding["filler_kind"],
+                    filler_ref=raw_binding["filler_ref"],
+                )
+            )
+
+        raw_slot_contexts = raw_entry["slot_context_payloads"]
+        if not isinstance(raw_slot_contexts, list | tuple):
+            raise ValueError(f"Compiled universe cache field '{type_field}.slot_context_payloads' must be a sequence")
+        slot_contexts: list[tuple[float, ...]] = []
+        for context_index, raw_context in enumerate(raw_slot_contexts):
+            if not isinstance(raw_context, list | tuple):
+                raise ValueError(f"Compiled universe cache field '{type_field}.slot_context_payloads[{context_index}]' must be a sequence")
+            slot_contexts.append(tuple(raw_context))
+
+        raw_effect_contexts = raw_entry["effect_catalog_contexts"]
+        if not isinstance(raw_effect_contexts, list | tuple):
+            raise ValueError(f"Compiled universe cache field '{type_field}.effect_catalog_contexts' must be a sequence")
+        effect_contexts: list[TokenContext] = []
+        for context_index, raw_context in enumerate(raw_effect_contexts):
+            context_field = f"{type_field}.effect_catalog_contexts[{context_index}]"
+            if not isinstance(raw_context, Mapping):
+                raise ValueError(f"Compiled universe cache field '{context_field}' must be a mapping")
+            _require_exact_keys(raw_context, {"context_ref", "fixed_payload"}, field_name=context_field)
+            fixed_payload = raw_context["fixed_payload"]
+            if not isinstance(fixed_payload, list | tuple):
+                raise ValueError(f"Compiled universe cache field '{context_field}.fixed_payload' must be a sequence")
+            effect_contexts.append(TokenContext(context_ref=raw_context["context_ref"], fixed_payload=tuple(fixed_payload)))
+
+        payload_features = raw_entry["payload_features"]
+        if not isinstance(payload_features, list | tuple):
+            raise ValueError(f"Compiled universe cache field '{type_field}.payload_features' must be a sequence")
+        types.append(
+            TokenTypeSchema(
+                type_name=raw_entry["type_name"],
+                payload_features=tuple(payload_features),
+                capacity=raw_entry["capacity"],
+                slot_bindings=tuple(bindings),
+                slot_context_payloads=tuple(slot_contexts),
+                effect_catalog_contexts=tuple(effect_contexts),
+            )
+        )
+    return TokenSpec(
+        types=tuple(types),
+        position_rank=position_rank,
+        transport_version=transport_version,
+        encoding_version=payload["encoding_version"],
+    )
 
 
 def _serialize_compiled_variable(var: Any) -> dict[str, Any]:

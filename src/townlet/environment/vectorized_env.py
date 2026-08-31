@@ -998,7 +998,15 @@ class VectorizedHamletEnv:
         effect_type = self.token_spec.get_type("effect")
         if manager is None or effect_type is None or effect_type.capacity == 0:
             return None
-        catalog_order = {effect_id: index for index, effect_id in enumerate(self._effect_catalog_ids())}
+        catalog_order: dict[str, int] = {}
+        for index, context in enumerate(effect_type.effect_catalog_contexts):
+            prefix = "effect:"
+            if not context.context_ref.startswith(prefix) or len(context.context_ref) == len(prefix):
+                raise ValueError(f"Compiled effect catalog context {context.context_ref!r} must use the non-empty 'effect:<id>' authority")
+            effect_id = context.context_ref[len(prefix) :]
+            if effect_id in catalog_order:
+                raise ValueError(f"Compiled effect catalog contains duplicate context authority for {effect_id!r}")
+            catalog_order[effect_id] = index
         block_slots: dict[str, list[int]] = {}
         for binding in effect_type.slot_bindings:
             scope = binding.filler_ref.split(":")[1]
@@ -1051,13 +1059,6 @@ class VectorizedHamletEnv:
             owner_slot=torch.full((k,), -1, dtype=torch.long, device=self.device),
             source="effect_manager",
         )
-
-    def _effect_catalog_ids(self) -> tuple[str, ...]:
-        """Declared effect ids in compiled catalog order (the token static-payload order)."""
-        catalog = self.universe.compiled_effect_catalog
-        if catalog is None:
-            return ()
-        return tuple(catalog.effects.keys())
 
     def _observable_effects_for_world(self, world: int) -> list[Any]:
         """Every observable active effect this world's agent can see, any scope."""

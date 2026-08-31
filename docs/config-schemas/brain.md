@@ -1,35 +1,7 @@
 # brain.yaml Configuration Reference
 
-> ⚠️ **Restored to the live tree 2026-08-26 — THREE OF FOUR "Complete Examples" ARE REJECTED by the DTO, and the architecture it teaches no longer builds.**
->
-> Verified against `src/townlet/config/brain_config.py` on 2026-08-26.
->
-> **⚠️ Two reproduced hard rejections:**
-> 1. **`type: mse` combined with `huber_delta`** — this breaks **3 of the 4** Complete Examples.
-> 2. **`T_max` (line 274) is not a field. The real name is `t_max`** (lowercase,
->    `brain_config.py:301`) — and **`eta_min` is REQUIRED alongside it**: `brain_config.py:311-312`
->    raises `type='cosine' requires t_max and eta_min`. This document never mentions `eta_min`.
->    So the cosine example fails twice: once on the unknown key, once on the missing one.
->
-> **⛔ `set_encoder` is documented here (3×) but NO LONGER BUILDS.**
-> `population/vectorized.py:400-407` raises: *"architecture.type='set_encoder' has no buildable
-> network after the unit-3 token cut … Landing: declare `token_set`, which consumes the compiled
-> TokenSpec directly."* **Zero shipped packs declare it.**
->
-> **⛔ `token_set` — the architecture that actually works — is mentioned ZERO times here**,
-> despite being in the architecture `Literal` (`brain_config.py:432`:
-> `["feedforward", "recurrent", "dueling", "set_encoder", "token_set"]`) and declared by **five
-> shipped packs** (`configs/test/token_transfer_a|b|c`, `configs/test/set_encoder_smoke` and its
-> `levels/L1_attention`).
->
-> So this document steers an author into an architecture that raises, and hides the one that
-> works — the same "makes the framework look less capable than it is" failure as
-> `expressions.md`.
->
-> Tracked as `hamlet-e69e860948`.
->
-> ⚠️ Also note `docs/bugs/JANK-08-...md`: the `dueling` flag reaches the network builder and is
-> then **ignored by the training path** — a declared-but-inert flag.
+> Verified against `src/townlet/config/brain_config.py` on 2026-08-31. Architecture names and
+> nested blocks are closed vocabularies; obsolete architecture keys fail validation.
 
 
 Brain configuration defines agent architecture, optimizer, loss function, Q-learning parameters, and replay buffer strategy.
@@ -73,7 +45,8 @@ description: "Human-readable description"
 
 ## Architecture Types
 
-The `architecture` section defines the neural network architecture. Four types are supported: feedforward (full observability), recurrent (POMDP with LSTM), dueling (value/advantage decomposition), and set_encoder (variable-token observations).
+The `architecture` section defines the neural network architecture. Four types are supported:
+feedforward, recurrent, dueling, and token_set.
 
 ### Feedforward (Full Observability)
 
@@ -104,9 +77,13 @@ architecture:
 - L0_5_dual_resource: Multiple resources (7×7 grid)
 - L1_full_observability: Full observability baseline (8×8 grid)
 
-### Recurrent (POMDP with LSTM)
+### Recurrent (compact token blocks with LSTM)
 
-Recurrent network with LSTM for partially observable environments. Uses separate encoders for vision, position, meters, and affordances.
+The current recurrent reader flattens the compact `self`, `meter`, and `affordance`
+token blocks into separate encoders, then threads their combined representation through
+an LSTM. Token observations contain no raster vision window: the factory passes
+`grid_slice=None` and the required vision encoder receives the zero-valued 1x1 no-window
+input. A token-native recurrent architecture is a separate design step.
 
 ```yaml
 architecture:
@@ -138,15 +115,17 @@ architecture:
 
 **Parameters:**
 
-**vision_encoder** (required for POMDP):
+**vision_encoder** (required by the current DTO; runs on the zero-valued 1x1 no-window input):
 - `channels` (list[int]): CNN channel dimensions (e.g., [16, 32])
 - `kernel_sizes` (list[int]): Convolution kernel sizes (e.g., [3, 3])
 - `strides` (list[int]): Convolution strides (e.g., [1, 1])
 - `padding` (list[int]): Convolution padding (e.g., [1, 1])
 - `activation` (string): Activation function
 
-**position_encoder, meter_encoder, affordance_encoder** (required):
-- `hidden_sizes` (list[int]): MLP layer sizes for encoding
+**position_encoder, meter_encoder, affordance_encoder** (required by the DTO):
+- `hidden_sizes` (list[int]): Declared MLP sizes. The current runtime constructs fixed
+  compact-block encoders for `self`, `meter`, and `affordance`; the token-native recurrent
+  variant will reconcile these declarations with runtime construction.
 - `activation` (string): Activation function
 
 **lstm** (required):
@@ -161,8 +140,8 @@ architecture:
 - `activation` (string): Activation function
 
 **Example Use Cases:**
-- L2_partial_observability: POMDP with 5×5 vision window
-- L3_temporal_mechanics: Time-based dynamics with LSTM memory
+- Sequence-sensitive compact-token training with explicit hidden-state threading
+- Engineering regression of recurrent bootstrap and terminal-boundary handling
 
 ### Dueling (Value/Advantage Decomposition)
 
@@ -208,19 +187,16 @@ architecture:
 - Experimental: Testing value/advantage decomposition
 - Ablation studies: Comparing against standard feedforward
 
-### Set Encoder (Variable-Token Observations)
+### Token Set
 
-Set encoder Q-network for fixed-capacity token observations such as `dynamic_need_tokens`. The configured token field is flattened in `ObservationSpec`; the network reshapes it to `[max_tokens, token_dim]`, encodes each row, ignores all-zero rows, and mean-pools the non-empty token embeddings before the Q-head.
+Token-native Q-network over the compiled `TokenSpec`. The roster, capacities, compact layout,
+and static context are compiler-owned; the brain declares only network geometry and aggregation.
 
 ```yaml
 architecture:
-  type: set_encoder
-  set_encoder:
-    token_field_name: dynamic_need_tokens
-    max_tokens: 32
-    token_dim: 16
+  type: token_set
+  token_set:
     token_embed_dim: 64
-    base_hidden_dim: 128
     q_head_hidden_dim: 256
     aggregator:
       type: attention   # or: mean
@@ -228,11 +204,7 @@ architecture:
 ```
 
 **Parameters:**
-- `token_field_name` (string, required): Observation field containing flattened token rows.
-- `max_tokens` (int, required): Maximum token rows in the field.
-- `token_dim` (int, required): Width of each token row.
 - `token_embed_dim` (int, required): Embedding size for the pooled token set.
-- `base_hidden_dim` (int, required): Embedding size for non-token observation features.
 - `q_head_hidden_dim` (int, required): Hidden size for Q-value prediction.
 - `aggregator` (block, required): How the embedded token set is aggregated. No default —
   the choice is declared, never an engine fact.
@@ -243,8 +215,8 @@ architecture:
     token rows are a set, not a sequence.
 
 **Example Use Cases:**
-- Dynamic needs represented by `dynamic_need_tokens`.
-- Generalisation experiments where token names and affordance labels vary but causal fields remain stable.
+- Mixed typed-token policies over compiled observations.
+- Generalisation experiments where token rosters differ while type names preserve parameter identity.
 
 ## Optimizer Configuration
 
@@ -303,7 +275,8 @@ Cosine annealing:
 ```yaml
 schedule:
   type: cosine
-  T_max: 10000         # Maximum number of episodes
+  t_max: 10000         # Maximum number of episodes
+  eta_min: 0.00001     # Minimum learning rate
 ```
 
 Exponential decay:
@@ -319,8 +292,8 @@ The `loss` section defines the loss function for Q-value regression.
 
 ```yaml
 loss:
-  type: mse           # mse, huber, smooth_l1
-  huber_delta: 1.0    # Delta parameter for Huber loss
+  type: huber         # mse, huber, smooth_l1
+  huber_delta: 1.0    # Required only for Huber loss
 ```
 
 **Parameters:**
@@ -328,8 +301,8 @@ loss:
   - `mse`: Mean Squared Error (standard DQN)
   - `huber`: Huber loss (robust to outliers)
   - `smooth_l1`: Smooth L1 loss (similar to Huber)
-- `huber_delta` (float, required): Delta parameter for Huber loss
-  - Only used when type=huber
+- `huber_delta` (float, required only for `type: huber`): Delta parameter for Huber loss
+  - Must be omitted for `mse` and `smooth_l1`
   - Typical: 1.0
 
 **Loss Function Comparison:**
@@ -463,7 +436,6 @@ optimizer:
 
 loss:
   type: mse
-  huber_delta: 1.0
 
 q_learning:
   gamma: 0.99
@@ -563,7 +535,6 @@ optimizer:
 
 loss:
   type: mse
-  huber_delta: 1.0
 
 q_learning:
   gamma: 0.99
@@ -601,7 +572,6 @@ optimizer:
 
 loss:
   type: mse
-  huber_delta: 1.0
 
 q_learning:
   gamma: 0.99

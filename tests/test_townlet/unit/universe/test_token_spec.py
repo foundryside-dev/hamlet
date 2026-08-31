@@ -38,6 +38,7 @@ from townlet.universe.dto.token_spec import (
     RESERVED_TOKEN_TYPE_NAMES,
     SCOPE_ONE_HOT_WIDTH,
     SEMANTIC_TYPE_ONE_HOT_WIDTH,
+    TOKEN_TRANSPORT_VERSION,
     TOKEN_TYPE_ROSTER,
     VALUE_BLOCK_WIDTH,
     VARIABLE_TYPE_VOCABULARY,
@@ -45,11 +46,11 @@ from townlet.universe.dto.token_spec import (
     ExposedVariable,
     MeterDeclaration,
     SlotBinding,
+    TokenContext,
     TokenSpec,
     TokenTypeSchema,
     affordance_capacity,
     agent_capacity,
-    build_token_type,
     check_indistinguishability,
     describe_variable,
     effect_capacity,
@@ -68,6 +69,7 @@ from townlet.universe.dto.token_spec import (
     value_block_width_used,
     variable_element_capacity,
 )
+from townlet.universe.dto.token_spec import build_token_type as _build_token_type
 from townlet.vfs.schema import NormalizationSpec, VariableDef, VariableScope
 from townlet.vfs.semantic_type import SEMANTIC_TYPES
 
@@ -120,12 +122,31 @@ def _meter(name: str = "energy", initial: float = 1.0, lo: float = 0.0, hi: floa
 
 
 def _static_bindings(n: int, prefix: str, *, signature_width: int | None = None) -> tuple[SlotBinding, ...]:
-    signature = None if signature_width is None else (0.0,) * signature_width
-    return tuple(SlotBinding(slot_index=i, filler_kind="static", filler_ref=f"{prefix}:{i}", static_signature=signature) for i in range(n))
+    del signature_width
+    return tuple(SlotBinding(slot_index=i, filler_kind="static", filler_ref=f"{prefix}:{i}") for i in range(n))
 
 
 def _dynamic_bindings(n: int, prefix: str) -> tuple[SlotBinding, ...]:
     return tuple(SlotBinding(slot_index=i, filler_kind="dynamic", filler_ref=f"{prefix}:{i}") for i in range(n))
+
+
+def build_token_type(type_name: str, bindings: tuple[SlotBinding, ...]) -> TokenTypeSchema:
+    contexts = () if type_name == "effect" else tuple((0.0,) * len(PAYLOAD_SCHEMAS[type_name]) for _ in bindings)
+    return _build_token_type(
+        type_name,
+        bindings,
+        slot_context_payloads=contexts,
+        effect_catalog_contexts=(),
+    )
+
+
+def _token_spec(types: tuple[TokenTypeSchema, ...], *, encoding_version: str = "token-1.1") -> TokenSpec:
+    return TokenSpec(
+        types=types,
+        position_rank=2,
+        transport_version=TOKEN_TRANSPORT_VERSION,
+        encoding_version=encoding_version,
+    )
 
 
 def _write(meter_name: str, form: int, delta: float | None) -> AffordanceMeterWrite:
@@ -155,11 +176,25 @@ class TestRoster:
     @pytest.mark.parametrize("name", sorted(RESERVED_TOKEN_TYPE_NAMES))
     def test_reserved_name_refuses_instantiation(self, name: str):
         with pytest.raises(ValueError, match="reserved"):
-            TokenTypeSchema(type_name=name, payload_features=("x",), capacity=0, slot_bindings=())
+            TokenTypeSchema(
+                type_name=name,
+                payload_features=("x",),
+                capacity=0,
+                slot_bindings=(),
+                slot_context_payloads=(),
+                effect_catalog_contexts=(),
+            )
 
     def test_unknown_name_refuses(self):
         with pytest.raises(ValueError, match="closed roster"):
-            TokenTypeSchema(type_name="raster", payload_features=("x",), capacity=0, slot_bindings=())
+            TokenTypeSchema(
+                type_name="raster",
+                payload_features=("x",),
+                capacity=0,
+                slot_bindings=(),
+                slot_context_payloads=(),
+                effect_catalog_contexts=(),
+            )
 
     def test_engine_constants(self):
         assert MAX_POSITION_RANK == 8
@@ -624,8 +659,8 @@ class TestPayloadSchemas:
 
 class TestTokenSpecArtifact:
     def _spec(self) -> TokenSpec:
-        return TokenSpec(
-            types=(
+        return _token_spec(
+            (
                 build_token_type("self", _static_bindings(1, "self")),
                 build_token_type("meter", _static_bindings(8, "meter", signature_width=METER_SIGNATURE_WIDTH)),
                 build_token_type(
@@ -641,11 +676,29 @@ class TestTokenSpecArtifact:
 
     def test_total_dims_equals_sum_formula(self):
         spec = self._spec()
-        expected = sum(t.capacity * (1 + t.payload_width) for t in spec.types)
-        assert spec.total_dims == expected
-        assert spec.total_dims == 1 * (1 + len(PAYLOAD_SCHEMAS["self"])) + 8 * (1 + len(PAYLOAD_SCHEMAS["meter"])) + 14 * (
-            1 + len(PAYLOAD_SCHEMAS["affordance"])
-        ) + 2 * (1 + len(PAYLOAD_SCHEMAS["item"]))
+        compact = spec.compact_layout()
+        assert spec.total_dims == sum(
+            compact.get_type(t.type_name).capacity * compact.get_type(t.type_name).compact_row_width for t in spec.types
+        )
+        assert spec.total_dims == 1 * 5 + 8 * 3 + 14 * 5 + 2 * 8 == 115
+        assert spec.fixed_total_dims == sum(t.capacity * t.fixed_row_width for t in spec.types) == 4090
+
+    def test_width_names_are_explicit_and_compact_layout_is_per_type(self):
+        spec = self._spec()
+        token_type = spec.types[0]
+
+        assert not hasattr(token_type, "row_width")
+        assert token_type.fixed_row_width == 1 + token_type.payload_width
+
+        layout = spec.compact_layout()
+        assert not hasattr(layout, "row_widths")
+        self_layout = layout.get_type("self")
+        assert self_layout is not None
+        assert self_layout.start == 0
+        assert self_layout.end == self_layout.capacity * self_layout.compact_row_width
+        assert self_layout.fixed_row_width == token_type.fixed_row_width
+        assert self_layout.dynamic_features == ("presence", "position_0", "position_1", "velocity_0", "velocity_1")
+        assert isinstance(self_layout.fixed_scatter_indices, tuple)
 
     def test_census_counts(self):
         spec = self._spec()
@@ -657,18 +710,20 @@ class TestTokenSpecArtifact:
         offset = 0
         for type_name, slot, start, end in layout:
             assert start == offset
-            assert end - start == 1 + len(PAYLOAD_SCHEMAS[type_name])
+            type_layout = spec.compact_layout().get_type(type_name)
+            assert type_layout is not None
+            assert end - start == type_layout.compact_row_width
             offset = end
             assert slot >= 0
         assert offset == spec.total_dims
 
     def test_types_must_follow_roster_order(self):
         with pytest.raises(ValueError, match="roster order"):
-            TokenSpec(types=(build_token_type("meter", ()), build_token_type("self", _static_bindings(1, "s"))))
+            _token_spec((build_token_type("meter", ()), build_token_type("self", _static_bindings(1, "s"))))
 
     def test_duplicate_type_refuses(self):
         with pytest.raises(ValueError, match="duplicate"):
-            TokenSpec(types=(build_token_type("self", ()), build_token_type("self", ())))
+            _token_spec((build_token_type("self", ()), build_token_type("self", ())))
 
     def test_capacity_must_equal_bindings(self):
         with pytest.raises(ValueError, match="capacity"):
@@ -677,82 +732,63 @@ class TestTokenSpecArtifact:
                 payload_features=PAYLOAD_SCHEMAS["meter"],
                 capacity=3,
                 slot_bindings=_static_bindings(2, "m", signature_width=METER_SIGNATURE_WIDTH),
+                slot_context_payloads=((0.0,) * len(PAYLOAD_SCHEMAS["meter"]),) * 2,
+                effect_catalog_contexts=(),
             )
 
     def test_payload_features_must_match_engine_schema(self):
         with pytest.raises(ValueError, match="payload schema"):
-            TokenTypeSchema(type_name="meter", payload_features=("wrong",), capacity=0, slot_bindings=())
+            TokenTypeSchema(
+                type_name="meter",
+                payload_features=("wrong",),
+                capacity=0,
+                slot_bindings=(),
+                slot_context_payloads=(),
+                effect_catalog_contexts=(),
+            )
 
     def test_slot_binding_indices_are_dense_from_zero(self):
         bad = (SlotBinding(slot_index=1, filler_kind="static", filler_ref="m:1"),)
         with pytest.raises(ValueError, match="slot_index"):
             build_token_type("meter", bad)
 
-    @pytest.mark.parametrize(
-        ("type_name", "signature_width"),
-        (
-            pytest.param("meter", METER_SIGNATURE_WIDTH, id="meter"),
-            pytest.param("affordance", AFFORDANCE_SIGNATURE_WIDTH, id="affordance"),
-            pytest.param("variable_element", DESCRIPTOR_BLOCK_WIDTH, id="variable-element"),
-        ),
-    )
-    def test_compiled_static_slot_requires_per_type_signature(self, type_name: str, signature_width: int):
-        binding = SlotBinding(slot_index=0, filler_kind="static", filler_ref="decl")
+    @pytest.mark.parametrize("type_name", ("self", "meter", "affordance", "agent", "item", "variable_element"))
+    def test_non_effect_slot_requires_one_complete_context(self, type_name: str):
+        filler_kind = "static" if type_name in {"self", "meter", "affordance", "variable_element"} else "dynamic"
+        binding = SlotBinding(slot_index=0, filler_kind=filler_kind, filler_ref="decl")
 
-        with pytest.raises(ValueError, match=rf"{type_name}.*static_signature.*{signature_width}"):
-            build_token_type(type_name, (binding,))
+        with pytest.raises(ValueError, match=rf"{type_name}.*slot context"):
+            _build_token_type(type_name, (binding,), slot_context_payloads=(), effect_catalog_contexts=())
 
-    @pytest.mark.parametrize(
-        ("type_name", "signature_width"),
-        (
-            pytest.param("meter", METER_SIGNATURE_WIDTH, id="meter"),
-            pytest.param("affordance", AFFORDANCE_SIGNATURE_WIDTH, id="affordance"),
-            pytest.param("variable_element", DESCRIPTOR_BLOCK_WIDTH, id="variable-element"),
-        ),
-    )
-    def test_compiled_static_slot_rejects_wrong_signature_width(self, type_name: str, signature_width: int):
-        binding = SlotBinding(
-            slot_index=0,
-            filler_kind="static",
-            filler_ref="decl",
-            static_signature=(0.0,) * (signature_width - 1),
-        )
+    @pytest.mark.parametrize("type_name", ("self", "meter", "affordance", "agent", "item", "variable_element"))
+    def test_non_effect_slot_rejects_wrong_context_width(self, type_name: str):
+        filler_kind = "static" if type_name in {"self", "meter", "affordance", "variable_element"} else "dynamic"
+        binding = SlotBinding(slot_index=0, filler_kind=filler_kind, filler_ref="decl")
 
-        with pytest.raises(ValueError, match=rf"{type_name}.*static_signature.*{signature_width}"):
-            build_token_type(type_name, (binding,))
+        with pytest.raises(ValueError, match=rf"{type_name}.*expected"):
+            _build_token_type(type_name, (binding,), slot_context_payloads=((0.0,),), effect_catalog_contexts=())
 
-    @pytest.mark.parametrize(
-        ("type_name", "signature_width"),
-        (
-            pytest.param("meter", METER_SIGNATURE_WIDTH, id="meter"),
-            pytest.param("affordance", AFFORDANCE_SIGNATURE_WIDTH, id="affordance"),
-            pytest.param("variable_element", DESCRIPTOR_BLOCK_WIDTH, id="variable-element"),
-        ),
-    )
     @pytest.mark.parametrize("non_finite", (float("nan"), float("inf"), float("-inf")))
-    def test_compiled_static_slot_rejects_non_finite_signature(
-        self,
-        type_name: str,
-        signature_width: int,
-        non_finite: float,
-    ):
-        binding = SlotBinding(
-            slot_index=0,
-            filler_kind="static",
-            filler_ref="decl",
-            static_signature=(non_finite,) + (0.0,) * (signature_width - 1),
+    def test_context_payload_rejects_non_finite_features(self, non_finite: float):
+        binding = SlotBinding(slot_index=0, filler_kind="static", filler_ref="decl")
+        payload = (non_finite,) + (0.0,) * (len(PAYLOAD_SCHEMAS["meter"]) - 1)
+
+        with pytest.raises(ValueError, match=r"meter.*context payload.*finite"):
+            _build_token_type("meter", (binding,), slot_context_payloads=(payload,), effect_catalog_contexts=())
+
+    def test_effect_uses_named_catalog_contexts_only(self):
+        binding = SlotBinding(slot_index=0, filler_kind="dynamic", filler_ref="effect:agent:0")
+        payload = (0.0,) * len(PAYLOAD_SCHEMAS["effect"])
+
+        with pytest.raises(ValueError, match="slot_context_payloads must be empty"):
+            _build_token_type("effect", (binding,), slot_context_payloads=(payload,), effect_catalog_contexts=())
+        schema = _build_token_type(
+            "effect",
+            (binding,),
+            slot_context_payloads=(),
+            effect_catalog_contexts=(TokenContext(context_ref="effect:regen", fixed_payload=payload),),
         )
-
-        with pytest.raises(ValueError, match=rf"{type_name}.*static_signature.*finite"):
-            build_token_type(type_name, (binding,))
-
-    @pytest.mark.parametrize("type_name", ("self", "agent", "item", "effect"))
-    def test_type_without_static_payload_rejects_signature(self, type_name: str):
-        filler_kind = "static" if type_name == "self" else "dynamic"
-        binding = SlotBinding(slot_index=0, filler_kind=filler_kind, filler_ref="decl", static_signature=(0.0,))
-
-        with pytest.raises(ValueError, match=rf"{type_name}.*must not.*static_signature"):
-            build_token_type(type_name, (binding,))
+        assert schema.effect_catalog_contexts[0].context_ref == "effect:regen"
 
     def test_encoding_version(self):
         assert self._spec().encoding_version == "token-1.1"
@@ -763,8 +799,8 @@ class TestTokenSpecArtifact:
 
 class TestCensusAdvisory:
     def test_no_advisory_at_or_below_threshold(self):
-        spec = TokenSpec(
-            types=(
+        spec = _token_spec(
+            (
                 build_token_type(
                     "affordance",
                     _static_bindings(MEAN_CENSUS_ADVISORY, "a", signature_width=AFFORDANCE_SIGNATURE_WIDTH),
@@ -774,8 +810,8 @@ class TestCensusAdvisory:
         assert mean_census_advisory(spec, aggregator="mean") is None
 
     def test_advisory_names_counts_when_any_type_exceeds(self):
-        spec = TokenSpec(
-            types=(
+        spec = _token_spec(
+            (
                 build_token_type(
                     "affordance",
                     _static_bindings(MEAN_CENSUS_ADVISORY + 1, "a", signature_width=AFFORDANCE_SIGNATURE_WIDTH),
@@ -787,8 +823,8 @@ class TestCensusAdvisory:
         assert "affordance" in text and str(MEAN_CENSUS_ADVISORY + 1) in text and "64" in text
 
     def test_no_advisory_for_attention(self):
-        spec = TokenSpec(
-            types=(
+        spec = _token_spec(
+            (
                 build_token_type(
                     "affordance",
                     _static_bindings(MEAN_CENSUS_ADVISORY + 1, "a", signature_width=AFFORDANCE_SIGNATURE_WIDTH),

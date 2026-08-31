@@ -1,3 +1,4 @@
+---
 version: '1.0'
 description: token-set smoke pack — the live token_set exerciser over the compiled TokenSpec (token-obs unit 3, hamlet-fa6bb6da4a)
 architecture:

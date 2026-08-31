@@ -10,8 +10,6 @@ from townlet.config.brain_config import (
     LossConfig,
     OptimizerConfig,
     QLearningConfig,
-    SetAggregatorConfig,
-    SetEncoderConfig,
     apply_training_overrides,
     compute_brain_hash,
     load_brain_config,
@@ -42,32 +40,6 @@ def test_feedforward_config_rejects_empty_layers():
             layer_norm=False,
         )
     assert "hidden_layers" in str(exc_info.value)
-
-
-def test_set_encoder_config_valid():
-    """SetEncoderConfig accepts explicit variable-token architecture parameters."""
-    config = SetEncoderConfig(
-        token_field_name="dynamic_need_tokens",
-        max_tokens=32,
-        token_dim=16,
-        token_embed_dim=64,
-        base_hidden_dim=128,
-        q_head_hidden_dim=256,
-        aggregator=SetAggregatorConfig(type="attention", num_heads=4),
-    )
-
-    arch = ArchitectureConfig(type="set_encoder", set_encoder=config)
-
-    assert arch.type == "set_encoder"
-    assert arch.set_encoder is config
-
-
-def test_architecture_config_rejects_set_encoder_without_config():
-    """ArchitectureConfig requires set_encoder config when type is set_encoder."""
-    with pytest.raises(ValidationError) as exc_info:
-        ArchitectureConfig(type="set_encoder")
-
-    assert "type='set_encoder' requires set_encoder config" in str(exc_info.value)
 
 
 def test_feedforward_config_rejects_invalid_activation():

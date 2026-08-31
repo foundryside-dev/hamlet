@@ -1,9 +1,4 @@
-"""The committed token_set pack compiles and drives the token-native brain (hamlet-fa6bb6da4a).
-
-The pack was a `set_encoder` exerciser until the unit-3 cut; `set_encoder` sliced a single
-flattened token FIELD out of the compiled ObservationSpec, which no longer exists. It now
-declares `token_set`, which consumes the compiled TokenSpec directly.
-"""
+"""The committed token_set pack compiles and drives the token-native brain."""
 
 from __future__ import annotations
 
@@ -11,7 +6,7 @@ from pathlib import Path
 
 from townlet.universe.compiler import UniverseCompiler
 
-PACK = Path("configs/test/set_encoder_smoke")
+PACK = Path("configs/test/token_set_smoke")
 LEVEL = "L0_test"
 
 

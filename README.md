@@ -216,7 +216,7 @@ configs/default_curriculum/
 A level directory carries those five required files plus two optional ones: an `items.yaml`
 declaring level-scoped item spawns, and — since `d60104f0` (2026-08-22, `PDR-0027`) — a
 complete `brain.yaml` that forks the whole brain for that level (one pack does:
-`configs/test/set_encoder_smoke`); the loader (`src/townlet/universe/raw_configs_v21.py`) reads
+`configs/test/token_set_smoke`); the loader (`src/townlet/universe/raw_configs_v21.py`) reads
 nothing else from it. The shared catalogs `vfs_profiles.yaml` and `effects.yaml` are rejected
 outright at level scope, and a level `items.yaml` must declare the v1.0 ItemsAppearance schema
 (`src/townlet/universe/loaders/preflight.py`). Without a level `brain.yaml` the architecture
@@ -538,16 +538,16 @@ load-bearing ones:
 - **`agent/` — brain-as-code, layer 2.** `brain.yaml` selects architecture, optimizer and loss
   through `network_factory.py`, `optimizer_factory.py` and `loss_factory.py`. Since `9a0007de`
   `token_set` (`TokenSetQNetwork`, with a declared `mean` or `attention` aggregator,
-  `PDR-0112`) is a shipped architecture and `set_encoder` no longer builds. Census, not intent:
+  `PDR-0112`) is a shipped architecture. Census, not intent:
   of the 39 `brain.yaml` files in `configs/`, 29 declare `feedforward` (every
   `default_curriculum` level included), 5 `dueling`, 5 `token_set` (the `token_transfer_*` and
-  `set_encoder_smoke` fixtures), none `recurrent`.
+  `token_set_smoke` fixtures), none `recurrent`.
 - **`environment/`, `population/`, `substrate/` — the vectorized torch runtime.** Device is an
   explicit parameter: `VectorizedHamletEnv` requires one and raises rather than picking a default.
 - **`training/checkpoint_utils.py` — checkpoint identity.** One shared gate,
   `assert_checkpoint_identity`, called by both the training-resume path (`demo/runner.py`) and the
-  serving path (`demo/live_inference.py`). Eleven of the `*_hash` fields are stamped into a
-  checkpoint (`CHECKPOINT_FORMAT_VERSION = 4` since the token cut; a version-3 checkpoint
+  serving path (`demo/live_inference.py`). Twelve `*_hash` fields are stamped into a
+  checkpoint (`CHECKPOINT_FORMAT_VERSION = 5` since the compact-token cut; a version-4 checkpoint
   refuses loudly), and eight of those are hard-compared on load — `vfs_hash`, `drive_hash`, the
   effective `brain_hash`, the four per-level content hashes, and one of the two token hashes
   chosen by architecture: a `token_set` network compares `token_type_schema_hash`, every other
@@ -645,8 +645,9 @@ Intent, not yet built — stated plainly because older docs blur the line:
   because the gate runs `validate`, which writes no cache. This is the project's recurring shape —
   a failure that is not loud — and it is tracked as a defect rather than left as folklore.
   (Pack census re-taken 2026-08-29: `configs/` holds 38 directories carrying an
-  `experiment.yaml`; 19 are fixtures under `configs/test/`, three declared expected-to-fail
-  (`set_encoder_smoke` and the three `token_transfer_*` fixtures are new since 2026-08-20); the
+  `experiment.yaml`; 19 are fixtures under `configs/test/`, three declared expected-to-fail.
+  Four passing token fixtures — `token_set_smoke` and the three `token_transfer_*` packs —
+  are new since 2026-08-20; the
   other 19 are `default_curriculum`, `L5_multi_agent`, `aspatial_test`, `simple`,
   `reference/model_pack`, three `differential/div003_*` harness packs, and eleven
   authoring-trial packs — two `trial002_*` and nine `trial_*`, the ninth the blind re-run pack

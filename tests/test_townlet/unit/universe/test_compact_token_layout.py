@@ -2,7 +2,7 @@
 
 The fixed per-type payload remains the network-facing transfer schema.  ``TokenSpec``
 serialization itself is the sole compact env/replay ABI; the fixed dimensions and row
-layout exist only for boundary reconstruction.  These tests pin that split without
+layout exist only for boundary assembly.  These tests pin that split without
 preserving the full-payload transition ABI as a callable path.
 """
 
@@ -15,8 +15,6 @@ from typing import Any
 import pytest
 import torch
 
-from townlet.agent import networks as network_module
-from townlet.environment.token_publishers import element_coordinate_block
 from townlet.universe.compiler import UniverseCompiler
 from townlet.universe.dto import token_spec as token_spec_module
 from townlet.universe.dto.token_spec import (
@@ -24,12 +22,14 @@ from townlet.universe.dto.token_spec import (
     EFFECT_STATIC_FEATURES,
     MAX_POSITION_RANK,
     PAYLOAD_SCHEMAS,
+    TOKEN_TYPE_FILLER_KIND,
     EffectDeclaration,
     SlotBinding,
     TokenSpec,
     TokenTypeSchema,
     build_token_type,
     effect_static_payload,
+    element_coordinate_block,
 )
 
 
@@ -107,11 +107,37 @@ def _compact_layout(spec: TokenSpec) -> Any:
 
 
 def _assembler(spec: TokenSpec) -> Any:
-    assembler_type = getattr(network_module, "TokenInputAssembler", None)
-    assert assembler_type is not None, (
-        "fixed-payload expansion belongs at the network boundary in " "TokenInputAssembler, not on the compiled artifact"
+    from townlet.agent.token_input import TokenInputAssembler
+
+    return TokenInputAssembler(token_spec=spec)
+
+
+def _single_type_spec(type_name: str, *, capacity: int = 2, effect_catalog_size: int = 2) -> TokenSpec:
+    filler_kind = TOKEN_TYPE_FILLER_KIND[type_name]
+    bindings = tuple(SlotBinding(slot_index=slot, filler_kind=filler_kind, filler_ref=f"{type_name}:{slot}") for slot in range(capacity))
+    if type_name == "effect":
+        slot_context_payloads: tuple[tuple[float, ...], ...] = ()
+        effect_catalog_contexts = tuple(
+            _context(
+                context_ref=f"effect:catalog:{index}",
+                fixed_payload=tuple((index + 1) * 0.125 for _ in PAYLOAD_SCHEMAS[type_name]),
+            )
+            for index in range(effect_catalog_size)
+        )
+    else:
+        slot_context_payloads = tuple(tuple((slot + 1) * 0.125 for _ in PAYLOAD_SCHEMAS[type_name]) for slot in range(capacity))
+        effect_catalog_contexts = ()
+    return _token_spec(
+        position_rank=2,
+        types=(
+            _build_token_type(
+                type_name,
+                bindings,
+                slot_context_payloads=slot_context_payloads,
+                effect_catalog_contexts=effect_catalog_contexts,
+            ),
+        ),
     )
-    return assembler_type(token_spec=spec)
 
 
 def test_immutable_context_is_schema_owned_without_duplicating_non_effect_identity(l1_token_spec: TokenSpec) -> None:
@@ -201,7 +227,9 @@ def test_one_rank_zero_variable_preserves_the_118_target_shape(l1_token_spec: To
     _compact_layout(l1_token_spec)
     scalar_layout = _compact_layout(scalar_spec)
 
-    assert scalar_layout.dynamic_features_by_type["variable_element"] == ("presence", "value_0", "value_1")
+    variable_layout = scalar_layout.get_type("variable_element")
+    assert variable_layout is not None
+    assert variable_layout.dynamic_features == ("presence", "value_0", "value_1")
     assert scalar_spec.total_dims == scalar_layout.dynamic_total_dims == 3
     assert l1_token_spec.total_dims + scalar_spec.total_dims == 118
     assert 118 * 2 * 100_000 * torch.float32.itemsize == 94_400_000
@@ -210,7 +238,8 @@ def test_one_rank_zero_variable_preserves_the_118_target_shape(l1_token_spec: To
 def test_compact_l1_rows_exclude_descriptors_and_fixed_rank_padding(l1_token_spec: TokenSpec) -> None:
     layout = _compact_layout(l1_token_spec)
 
-    assert layout.dynamic_features_by_type == {
+    dynamic_features_by_type = {token_type.type_name: token_type.dynamic_features for token_type in layout.types}
+    assert dynamic_features_by_type == {
         "self": ("presence", "position_0", "position_1", "velocity_0", "velocity_1"),
         "meter": ("presence", "value_0", "value_1"),
         "affordance": ("presence", "position_0", "position_1", "egocentric_0", "egocentric_1"),
@@ -235,7 +264,7 @@ def test_compact_l1_rows_exclude_descriptors_and_fixed_rank_padding(l1_token_spe
         ),
         "variable_element": ("presence", "value_0", "value_1"),
     }
-    serialized_features = {feature for features in layout.dynamic_features_by_type.values() for feature in features}
+    serialized_features = {feature for features in dynamic_features_by_type.values() for feature in features}
     assert "position_rank" not in serialized_features
     assert "value_width_used" not in serialized_features
     assert not any(f"position_{index}" in serialized_features for index in range(2, MAX_POSITION_RANK))
@@ -257,7 +286,7 @@ def test_compact_l1_rows_exclude_descriptors_and_fixed_rank_padding(l1_token_spe
 
 def test_ranked_variable_coordinates_are_static_context_not_replay_lanes() -> None:
     universe = UniverseCompiler().compile(
-        Path("configs/test/set_encoder_smoke"),
+        Path("configs/test/token_set_smoke"),
         primary_level="L0_test",
         use_cache=False,
     )
@@ -267,7 +296,9 @@ def test_ranked_variable_coordinates_are_static_context_not_replay_lanes() -> No
     variable_type = spec.get_type("variable_element")
     assert variable_type is not None
     assert any(binding.filler_ref.startswith("need_tokens[") for binding in variable_type.slot_bindings)
-    assert layout.dynamic_features_by_type["variable_element"] == ("presence", "value_0", "value_1")
+    variable_layout = layout.get_type("variable_element")
+    assert variable_layout is not None
+    assert variable_layout.dynamic_features == ("presence", "value_0", "value_1")
 
     dynamic_rows = torch.zeros((1, variable_type.capacity, 3), dtype=torch.float32)
     for binding in variable_type.slot_bindings:
@@ -287,7 +318,7 @@ def test_ranked_variable_coordinates_are_static_context_not_replay_lanes() -> No
         )
 
 
-def test_static_context_and_dynamic_state_reconstruct_the_fixed_input_exactly() -> None:
+def test_static_context_and_dynamic_state_assemble_the_fixed_input_exactly() -> None:
     static_feature_names = tuple(
         feature
         for feature in PAYLOAD_SCHEMAS["affordance"]
@@ -368,14 +399,14 @@ def test_presence_gates_compiled_static_context() -> None:
     absent_with_garbage = present.clone()
     absent_with_garbage[0, 0] = 0.0
 
-    reconstructed_present = assembler.expand_type("affordance", present.view(1, 1, 5))
-    reconstructed_absent = assembler.expand_type("affordance", absent_with_garbage.view(1, 1, 5))
+    assembled_present = assembler.expand_type("affordance", present.view(1, 1, 5))
+    assembled_absent = assembler.expand_type("affordance", absent_with_garbage.view(1, 1, 5))
 
-    assert reconstructed_present.abs().sum() > 0
-    assert torch.equal(reconstructed_absent, torch.zeros_like(reconstructed_absent))
+    assert assembled_present.abs().sum() > 0
+    assert torch.equal(assembled_absent, torch.zeros_like(assembled_absent))
 
 
-def test_effect_context_selector_reconstructs_world_specific_static_identity_without_projection() -> None:
+def test_effect_context_selector_assembles_world_specific_static_identity_without_projection() -> None:
     declarations = (
         EffectDeclaration(id="regen", scope="agent", duration=10, reapply_policy="renew"),
         EffectDeclaration(id="shield", scope="agent", duration=8, reapply_policy="replace"),
@@ -410,7 +441,9 @@ def test_effect_context_selector_reconstructs_world_specific_static_identity_wit
         dtype=torch.float32,
     )
 
-    assert layout.dynamic_features_by_type["effect"] == (
+    effect_layout = layout.get_type("effect")
+    assert effect_layout is not None
+    assert effect_layout.dynamic_features == (
         "presence",
         "context_index",
         "remaining_fraction",
@@ -441,3 +474,94 @@ def test_effect_context_selector_reconstructs_world_specific_static_identity_wit
         expanded[0, 0, 1 : 1 + len(EFFECT_STATIC_FEATURES)],
         expanded[1, 0, 1 : 1 + len(EFFECT_STATIC_FEATURES)],
     )
+
+
+@pytest.mark.parametrize(
+    "type_name",
+    ("self", "meter", "affordance", "agent", "item", "effect", "variable_element"),
+)
+def test_each_compact_token_type_expands_one_type_at_a_time(type_name: str) -> None:
+    spec = _single_type_spec(type_name)
+    schema = spec.get_type(type_name)
+    type_layout = spec.compact_layout().get_type(type_name)
+    assert schema is not None and type_layout is not None
+    dynamic_rows = torch.zeros((1, schema.capacity, type_layout.compact_row_width), dtype=torch.float32)
+    for slot in range(schema.capacity):
+        dynamic_rows[0, slot, 0] = 1.0
+        for lane, feature in enumerate(type_layout.dynamic_features[1:], start=1):
+            dynamic_rows[0, slot, lane] = float(slot) if feature == "context_index" else (lane + slot) / 16.0
+
+    expected = torch.zeros((1, schema.capacity, schema.fixed_row_width), dtype=torch.float32)
+    for slot in range(schema.capacity):
+        context = schema.effect_catalog_contexts[slot].fixed_payload if type_name == "effect" else schema.slot_context_payloads[slot]
+        expected[0, slot, 1:] = torch.tensor(context, dtype=torch.float32)
+        for lane, fixed_index in enumerate(type_layout.fixed_scatter_indices):
+            if fixed_index is not None:
+                expected[0, slot, fixed_index] = dynamic_rows[0, slot, lane]
+
+    expanded = _assembler(spec).expand_type(type_name, dynamic_rows)
+
+    assert expanded.shape == expected.shape
+    assert torch.equal(expanded, expected)
+
+
+@pytest.mark.parametrize(
+    ("selector", "error"),
+    (
+        pytest.param(0.5, "integral", id="fractional"),
+        pytest.param(-1.0, "range", id="negative"),
+        pytest.param(2.0, "range", id="out-of-range"),
+        pytest.param(float("nan"), "finite", id="nan"),
+        pytest.param(float("inf"), "finite", id="positive-infinity"),
+        pytest.param(float("-inf"), "finite", id="negative-infinity"),
+        pytest.param(16_777_217.0, "exactly representable.*float32", id="float32-inexact"),
+    ),
+)
+def test_present_effect_selector_refuses_before_catalog_gather(selector: float, error: str) -> None:
+    spec = _single_type_spec("effect", capacity=1)
+    dynamic_rows = torch.zeros((1, 1, 6), dtype=torch.float64)
+    dynamic_rows[0, 0, 0] = 1.0
+    dynamic_rows[0, 0, 1] = selector
+
+    with pytest.raises(ValueError, match=error):
+        _assembler(spec).expand_type("effect", dynamic_rows)
+
+
+@pytest.mark.parametrize(
+    "selector",
+    (0.5, -1.0, 2.0, float("nan"), float("inf"), float("-inf"), 16_777_217.0),
+    ids=("fractional", "negative", "out-of-range", "nan", "positive-infinity", "negative-infinity", "float32-inexact"),
+)
+def test_absent_effect_selector_is_ignored_and_returns_exact_zero(selector: float) -> None:
+    spec = _single_type_spec("effect", capacity=1)
+    dynamic_rows = torch.zeros((1, 1, 6), dtype=torch.float64)
+    dynamic_rows[0, 0, 1] = selector
+
+    expanded = _assembler(spec).expand_type("effect", dynamic_rows)
+
+    assert torch.equal(expanded, torch.zeros_like(expanded))
+
+
+def test_effect_selector_validation_handles_mixed_present_and_absent_batch() -> None:
+    spec = _single_type_spec("effect", capacity=1)
+    dynamic_rows = torch.tensor(
+        [
+            [[1.0, 0.0, 0.75, 0.5, 0.25, 1.0]],
+            [[0.0, float("nan"), 0.75, 0.5, 0.25, 1.0]],
+            [[1.0, 1.0, 0.75, 0.5, 0.25, 1.0]],
+        ],
+        dtype=torch.float32,
+    )
+
+    expanded = _assembler(spec).expand_type("effect", dynamic_rows)
+
+    assert torch.equal(expanded[1], torch.zeros_like(expanded[1]))
+    assert not torch.equal(expanded[0, 0, 1:], expanded[2, 0, 1:])
+
+
+def test_present_effect_against_empty_catalog_refuses_before_gather() -> None:
+    spec = _single_type_spec("effect", capacity=1, effect_catalog_size=0)
+    dynamic_rows = torch.tensor([[[1.0, 0.0, 0.75, 0.5, 0.25, 1.0]]], dtype=torch.float32)
+
+    with pytest.raises(ValueError, match="empty effect catalog"):
+        _assembler(spec).expand_type("effect", dynamic_rows)

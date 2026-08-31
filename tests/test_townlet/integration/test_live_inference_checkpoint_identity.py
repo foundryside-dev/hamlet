@@ -195,7 +195,7 @@ async def test_serving_path_refuses_outer_schema_change_before_mutation(
     if schema_change == "missing":
         checkpoint.pop("epsilon")
     else:
-        checkpoint["legacy_epsilon"] = 0.5
+        checkpoint["removed_epsilon"] = 0.5
     torch.save(checkpoint, path)
     persist_checkpoint_digest(path)
     before = _q_state_snapshot(server)

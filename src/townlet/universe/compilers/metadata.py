@@ -98,6 +98,11 @@ class MetadataCompiler:
         substrate_type = substrate_cfg.type
         substrate_instance = SubstrateFactory.build(substrate_cfg, torch.device("cpu"))
         position_dim = substrate_instance.position_dim
+        if primary_meta.token_spec.position_rank != position_dim:
+            raise ValueError(
+                f"Compiled TokenSpec position_rank {primary_meta.token_spec.position_rank} disagrees with "
+                f"substrate position_dim {position_dim} for level {primary_meta.level_name!r}"
+            )
         # Finite substrates report their cell count; continuous/aspatial None.
         grid_cells = substrate_instance.get_capacity() if position_dim else None
         curriculum_day_length = primary_meta.curriculum.curriculum.day_length

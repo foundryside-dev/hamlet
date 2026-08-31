@@ -1,3 +1,4 @@
+---
 experiment:
   version: "1.0"
   experiment_name: "model_config_test"

@@ -29,8 +29,8 @@ from __future__ import annotations
 
 import math
 from collections.abc import Iterable, Iterator, Mapping, Sequence
-from dataclasses import dataclass, replace
-from typing import TYPE_CHECKING, Final, Literal, cast, get_args
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Final, Literal, get_args
 
 from townlet.config.affordances_v2_config import AffordanceParamConfig
 from townlet.config.effects_config import EffectScope, ReapplyPolicy
@@ -98,6 +98,7 @@ TOKEN_TYPE_FILLER_KIND: Final[Mapping[str, FillerKind]] = {
 }
 
 ENCODING_VERSION: Final[str] = "token-1.1"
+TOKEN_TRANSPORT_VERSION: Final[str] = "compact-1"
 
 # --------------------------------------------------------------------------- vocabularies (read, not written)
 
@@ -280,7 +281,30 @@ def _require_normalization_float32(var_id: str, spec: NormalizationSpec) -> None
 def position_features(prefix: str, *, with_rank: bool) -> tuple[str, ...]:
     """Position block feature names: MAX_POSITION_RANK coordinates (+ rank feature)."""
     names = tuple(f"{prefix}_{i}" for i in range(MAX_POSITION_RANK))
-    return names + (f"{prefix}_rank",) if with_rank else names
+    if with_rank:
+        return names + (f"{prefix}_rank",)
+    return names
+
+
+def element_coordinate_block(shape: tuple[int, ...], element_index: int) -> tuple[float, ...]:
+    """Return one variable element's padded row-major coordinates and normalized rank."""
+    if len(shape) > MAX_POSITION_RANK:
+        raise ValueError(f"Variable element rank {len(shape)} exceeds MAX_POSITION_RANK={MAX_POSITION_RANK}")
+    element_count = 1
+    if shape:
+        element_count = math.prod(shape)
+    if isinstance(element_index, bool) or not isinstance(element_index, int) or not 0 <= element_index < element_count:
+        raise ValueError(f"element_index must be an integer within [0, {element_count}), got {element_index!r}")
+    coords = [0.0] * MAX_POSITION_RANK
+    if shape:
+        stride = element_count
+        for axis, dim in enumerate(shape):
+            if isinstance(dim, bool) or not isinstance(dim, int) or dim <= 0:
+                raise ValueError(f"Variable shape dimensions must be positive integers, got {shape!r}")
+            stride //= dim
+            axis_index = (element_index // stride) % dim
+            coords[axis] = axis_index / max(dim - 1, 1)
+    return _float32_tuple((*coords, len(shape) / MAX_POSITION_RANK), field="variable element coordinate block")
 
 
 VALUE_BLOCK_FEATURES: Final[tuple[str, ...]] = tuple(f"value_{i}" for i in range(VALUE_BLOCK_WIDTH)) + ("value_width_used",)
@@ -326,15 +350,6 @@ AFFORDANCE_EFFECT_ENTRY_WIDTH: Final[int] = AFFORDANCE_EFFECT_METER_OFFSET + MET
 AFFORDANCE_SIGNATURE_WIDTH: Final[int] = (
     len(INTERACTION_TYPE_VOCABULARY) + len(AFFORDANCE_DURATION_FEATURES) + len(OPENING_HOURS_FEATURES) + len(_effect_summary_features()) + 1
 )
-
-#: Immutable compiler-owned content width for every token type that carries a
-#: per-slot static signature. Types absent from this map must not carry one.
-TOKEN_TYPE_STATIC_SIGNATURE_WIDTH: Final[Mapping[str, int]] = {
-    "meter": METER_SIGNATURE_WIDTH,
-    "affordance": AFFORDANCE_SIGNATURE_WIDTH,
-    "variable_element": DESCRIPTOR_BLOCK_WIDTH,
-}
-
 
 #: Per-type payload schema: feature names in order. Presence is NOT a payload feature — it
 #: leads every serialized row (spec §1 "presence is explicit"). Width is fixed per type across
@@ -509,17 +524,11 @@ class EffectDeclaration:
 
 @dataclass(frozen=True)
 class SlotBinding:
-    """One compiled slot: bound at compile time to its filler (spec §2). Binding order is
-    declaration order, stable, and hashed. ``static_signature`` is the compiler-owned,
-    immutable per-slot content for token types listed in
-    ``TOKEN_TYPE_STATIC_SIGNATURE_WIDTH``; every other token type must leave it absent.
-    """
+    """One compiled slot bound to exactly one filler in declaration order."""
 
     slot_index: int
     filler_kind: FillerKind
     filler_ref: str
-    # Per-type immutable content signature, or None where the type has no static content.
-    static_signature: tuple[float, ...] | None = None
 
     def __post_init__(self) -> None:
         if self.slot_index < 0:
@@ -531,6 +540,34 @@ class SlotBinding:
 
 
 @dataclass(frozen=True)
+class TokenContext:
+    """One named effect-catalog row and its complete fixed payload."""
+
+    context_ref: str
+    fixed_payload: tuple[float, ...]
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "fixed_payload", tuple(self.fixed_payload))
+
+
+def _canonical_fixed_payload(type_name: str, payload: Sequence[float], *, field: str) -> tuple[float, ...]:
+    expected_width = len(PAYLOAD_SCHEMAS[type_name])
+    if len(payload) != expected_width:
+        raise ValueError(f"{field} has {len(payload)} features, expected {expected_width}")
+    canonical: list[float] = []
+    for feature_index, feature in enumerate(payload):
+        if isinstance(feature, bool) or not isinstance(feature, int | float):
+            raise ValueError(f"{field} feature {feature_index} must be a finite float, got {feature!r}")
+        value = float(feature)
+        if not math.isfinite(value):
+            raise ValueError(f"{field} feature {feature_index} must be finite, got {feature!r}")
+        if not -1.0 <= value <= 1.0:
+            raise ValueError(f"{field} feature {feature_index} must be within [-1, 1], got {feature!r}")
+        canonical.append(require_float32(value, field=f"{field} feature {feature_index}"))
+    return tuple(canonical)
+
+
+@dataclass(frozen=True)
 class TokenTypeSchema:
     """One token type in a compiled universe: its (engine-constant) payload schema, compiled
     capacity, slot bindings, and census count."""
@@ -539,6 +576,8 @@ class TokenTypeSchema:
     payload_features: tuple[str, ...]
     capacity: int
     slot_bindings: tuple[SlotBinding, ...]
+    slot_context_payloads: tuple[tuple[float, ...], ...]
+    effect_catalog_contexts: tuple[TokenContext, ...]
 
     def __post_init__(self) -> None:
         if self.type_name in RESERVED_TOKEN_TYPE_NAMES:
@@ -550,6 +589,8 @@ class TokenTypeSchema:
             raise ValueError(f"Token type {self.type_name!r} is not in the closed roster {TOKEN_TYPE_ROSTER}")
         object.__setattr__(self, "payload_features", tuple(self.payload_features))
         object.__setattr__(self, "slot_bindings", tuple(self.slot_bindings))
+        object.__setattr__(self, "slot_context_payloads", tuple(tuple(payload) for payload in self.slot_context_payloads))
+        object.__setattr__(self, "effect_catalog_contexts", tuple(self.effect_catalog_contexts))
         expected = PAYLOAD_SCHEMAS[self.type_name]
         if self.payload_features != expected:
             raise ValueError(
@@ -561,7 +602,6 @@ class TokenTypeSchema:
             raise ValueError(f"Token type {self.type_name!r}: capacity must be >= 0")
         if len(self.slot_bindings) != self.capacity:
             raise ValueError(f"Token type {self.type_name!r}: capacity {self.capacity} but {len(self.slot_bindings)} slot bindings")
-        canonical_bindings: list[SlotBinding] = []
         for expected_index, binding in enumerate(self.slot_bindings):
             if binding.slot_index != expected_index:
                 raise ValueError(
@@ -573,54 +613,54 @@ class TokenTypeSchema:
                     f"Token type {self.type_name!r}: slot {binding.slot_index} is {binding.filler_kind!r} but the "
                     f"type's filler kind is {TOKEN_TYPE_FILLER_KIND[self.type_name]!r}"
                 )
-            signature_width = TOKEN_TYPE_STATIC_SIGNATURE_WIDTH.get(self.type_name)
-            if signature_width is None:
-                if binding.static_signature is not None:
-                    raise ValueError(f"Token type {self.type_name!r}: slot {binding.slot_index} must not carry a static_signature")
-                canonical_bindings.append(binding)
-                continue
-            if binding.static_signature is None:
-                raise ValueError(
-                    f"Token type {self.type_name!r}: slot {binding.slot_index} requires a static_signature "
-                    f"with {signature_width} features"
+        if self.type_name == "effect":
+            if self.slot_context_payloads:
+                raise ValueError("Token type 'effect': slot_context_payloads must be empty; effect identity comes from the catalog")
+            refs = [context.context_ref for context in self.effect_catalog_contexts]
+            if any(not ref for ref in refs):
+                raise ValueError("Token type 'effect': effect catalog context_ref must be nonempty")
+            if len(set(refs)) != len(refs):
+                raise ValueError(f"Token type 'effect': effect catalog context_ref values must be unique, got {refs!r}")
+            canonical_contexts = tuple(
+                TokenContext(
+                    context_ref=context.context_ref,
+                    fixed_payload=_canonical_fixed_payload(
+                        self.type_name,
+                        context.fixed_payload,
+                        field=f"Token type 'effect' catalog context {context.context_ref!r} fixed_payload",
+                    ),
                 )
-            if len(binding.static_signature) != signature_width:
-                raise ValueError(
-                    f"Token type {self.type_name!r}: slot {binding.slot_index} static_signature has "
-                    f"{len(binding.static_signature)} features, expected {signature_width}"
-                )
-            for feature_index, feature in enumerate(binding.static_signature):
-                try:
-                    finite = math.isfinite(feature)
-                except TypeError as exc:
-                    raise ValueError(
-                        f"Token type {self.type_name!r}: slot {binding.slot_index} static_signature feature "
-                        f"{feature_index} must be a finite float, got {feature!r}"
-                    ) from exc
-                if not finite:
-                    raise ValueError(
-                        f"Token type {self.type_name!r}: slot {binding.slot_index} static_signature feature "
-                        f"{feature_index} must be finite, got {feature!r}"
-                    )
-                if not -1.0 <= feature <= 1.0:
-                    raise ValueError(
-                        f"Token type {self.type_name!r}: slot {binding.slot_index} static_signature feature "
-                        f"{feature_index} must be within [-1, 1], got {feature!r}"
-                    )
-            canonical_signature = _float32_tuple(
-                binding.static_signature,
-                field=f"Token type {self.type_name!r} slot {binding.slot_index} static_signature",
+                for context in self.effect_catalog_contexts
             )
-            canonical_bindings.append(replace(binding, static_signature=canonical_signature))
-        object.__setattr__(self, "slot_bindings", tuple(canonical_bindings))
+            object.__setattr__(self, "effect_catalog_contexts", canonical_contexts)
+        else:
+            if self.effect_catalog_contexts:
+                raise ValueError(f"Token type {self.type_name!r}: effect_catalog_contexts must be empty")
+            if len(self.slot_context_payloads) != self.capacity:
+                raise ValueError(
+                    f"Token type {self.type_name!r}: capacity {self.capacity} but "
+                    f"{len(self.slot_context_payloads)} slot context payloads"
+                )
+            object.__setattr__(
+                self,
+                "slot_context_payloads",
+                tuple(
+                    _canonical_fixed_payload(
+                        self.type_name,
+                        payload,
+                        field=f"Token type {self.type_name!r} slot {slot_index} context payload",
+                    )
+                    for slot_index, payload in enumerate(self.slot_context_payloads)
+                ),
+            )
 
     @property
     def payload_width(self) -> int:
         return len(self.payload_features)
 
     @property
-    def row_width(self) -> int:
-        """Presence + payload."""
+    def fixed_row_width(self) -> int:
+        """Presence plus the complete projected payload consumed by the network."""
         return 1 + self.payload_width
 
     @property
@@ -628,7 +668,13 @@ class TokenTypeSchema:
         return len(self.slot_bindings)
 
 
-def build_token_type(type_name: str, slot_bindings: Sequence[SlotBinding]) -> TokenTypeSchema:
+def build_token_type(
+    type_name: str,
+    slot_bindings: Sequence[SlotBinding],
+    *,
+    slot_context_payloads: Sequence[Sequence[float]],
+    effect_catalog_contexts: Sequence[TokenContext],
+) -> TokenTypeSchema:
     """Construct a type schema from its bindings; the payload schema is the engine constant."""
     if type_name in RESERVED_TOKEN_TYPE_NAMES:
         raise ValueError(
@@ -642,18 +688,50 @@ def build_token_type(type_name: str, slot_bindings: Sequence[SlotBinding]) -> To
         payload_features=PAYLOAD_SCHEMAS[type_name],
         capacity=len(slot_bindings),
         slot_bindings=tuple(slot_bindings),
+        slot_context_payloads=tuple(tuple(payload) for payload in slot_context_payloads),
+        effect_catalog_contexts=tuple(effect_catalog_contexts),
     )
+
+
+@dataclass(frozen=True)
+class CompactTokenTypeLayout:
+    """Immutable compact and fixed-row metadata for one token type."""
+
+    type_name: str
+    start: int
+    end: int
+    capacity: int
+    compact_row_width: int
+    fixed_row_width: int
+    dynamic_features: tuple[str, ...]
+    fixed_scatter_indices: tuple[int | None, ...]
+
+
+@dataclass(frozen=True)
+class CompactTokenLayout:
+    """Derived metadata for the sole compact env/replay transport."""
+
+    types: tuple[CompactTokenTypeLayout, ...]
+    dynamic_total_dims: int
+
+    def get_type(self, type_name: str) -> CompactTokenTypeLayout | None:
+        for token_type in self.types:
+            if token_type.type_name == type_name:
+                return token_type
+        return None
 
 
 @dataclass(frozen=True)
 class TokenSpec:
     """The compiler's token artifact (spec §2): type schemas in engine-canonical roster order.
 
-    Serialization = the flat view: rows concatenate type-then-slot, presence leading each row,
-    ``total_dims = Σ_type N_type × (1 + payload_width_type)``.
+    Serialization is compact dynamic state. The fixed projected rows exist only for the
+    network boundary and are described separately by ``fixed_*`` derivations.
     """
 
     types: tuple[TokenTypeSchema, ...]
+    position_rank: int
+    transport_version: str
     encoding_version: str = ENCODING_VERSION
 
     def __post_init__(self) -> None:
@@ -662,6 +740,15 @@ class TokenSpec:
             raise ValueError(
                 f"TokenSpec encoding_version must be the engine's exact current version "
                 f"{ENCODING_VERSION!r}, got {self.encoding_version!r}"
+            )
+        if isinstance(self.position_rank, bool) or not isinstance(self.position_rank, int):
+            raise ValueError(f"TokenSpec position_rank must be an integer, got {self.position_rank!r}")
+        if not 0 <= self.position_rank <= MAX_POSITION_RANK:
+            raise ValueError(f"TokenSpec position_rank must be within [0, {MAX_POSITION_RANK}], got {self.position_rank}")
+        if self.transport_version != TOKEN_TRANSPORT_VERSION:
+            raise ValueError(
+                f"TokenSpec transport_version must be the engine's exact current version "
+                f"{TOKEN_TRANSPORT_VERSION!r}, got {self.transport_version!r}"
             )
         names = [t.type_name for t in self.types]
         if len(set(names)) != len(names):
@@ -672,7 +759,11 @@ class TokenSpec:
 
     @property
     def total_dims(self) -> int:
-        return sum(t.capacity * t.row_width for t in self.types)
+        return self.compact_layout().dynamic_total_dims
+
+    @property
+    def fixed_total_dims(self) -> int:
+        return sum(t.capacity * t.fixed_row_width for t in self.types)
 
     @property
     def census(self) -> dict[str, int]:
@@ -685,14 +776,95 @@ class TokenSpec:
         return None
 
     def row_layout(self) -> tuple[tuple[str, int, int, int], ...]:
-        """(type_name, slot_index, start, end) per row in serialization order; presence at `start`."""
+        """Compact (type_name, slot_index, start, end) rows in transport order."""
+        layout = self.compact_layout()
         rows: list[tuple[str, int, int, int]] = []
         offset = 0
         for t in self.types:
+            type_layout = layout.get_type(t.type_name)
+            assert type_layout is not None
             for binding in t.slot_bindings:
-                rows.append((t.type_name, binding.slot_index, offset, offset + t.row_width))
-                offset += t.row_width
+                rows.append(
+                    (
+                        t.type_name,
+                        binding.slot_index,
+                        offset,
+                        offset + type_layout.compact_row_width,
+                    )
+                )
+                offset += type_layout.compact_row_width
         return tuple(rows)
+
+    def fixed_row_layout(self) -> tuple[tuple[str, int, int, int], ...]:
+        """Fixed projected rows consumed only at the network boundary."""
+        rows: list[tuple[str, int, int, int]] = []
+        offset = 0
+        for token_type in self.types:
+            for binding in token_type.slot_bindings:
+                rows.append(
+                    (
+                        token_type.type_name,
+                        binding.slot_index,
+                        offset,
+                        offset + token_type.fixed_row_width,
+                    )
+                )
+                offset += token_type.fixed_row_width
+        return tuple(rows)
+
+    def compact_layout(self) -> CompactTokenLayout:
+        """Derive compact lane order, offsets, widths, and fixed-row scatter metadata."""
+        rank = self.position_rank
+        position = tuple(f"position_{index}" for index in range(rank))
+        velocity = tuple(f"velocity_{index}" for index in range(rank))
+        egocentric = tuple(f"egocentric_{index}" for index in range(rank))
+        dynamic_features: dict[str, tuple[str, ...]] = {
+            "self": ("presence",) + position + velocity,
+            "meter": ("presence", "value_0", "value_1"),
+            "affordance": ("presence",) + position + egocentric,
+            "agent": ("presence",) + position + egocentric,
+            "item": ("presence",) + position + egocentric + ("carried", "owner_slot", "owner_slot_applicable"),
+            "effect": (
+                "presence",
+                "context_index",
+                "remaining_fraction",
+                "live_intensity",
+                "owner_slot",
+                "owner_slot_applicable",
+            ),
+            "variable_element": ("presence", "value_0", "value_1"),
+        }
+        type_layouts: list[CompactTokenTypeLayout] = []
+        offset = 0
+        for token_type in self.types:
+            type_name = token_type.type_name
+            features = dynamic_features[type_name]
+            indices: list[int | None] = []
+            for feature in features:
+                if feature == "presence":
+                    indices.append(0)
+                elif feature == "context_index":
+                    indices.append(None)
+                else:
+                    indices.append(1 + PAYLOAD_SCHEMAS[type_name].index(feature))
+            end = offset + token_type.capacity * len(features)
+            type_layouts.append(
+                CompactTokenTypeLayout(
+                    type_name=type_name,
+                    start=offset,
+                    end=end,
+                    capacity=token_type.capacity,
+                    compact_row_width=len(features),
+                    fixed_row_width=token_type.fixed_row_width,
+                    dynamic_features=features,
+                    fixed_scatter_indices=tuple(indices),
+                )
+            )
+            offset = end
+        return CompactTokenLayout(
+            types=tuple(type_layouts),
+            dynamic_total_dims=offset,
+        )
 
 
 # --------------------------------------------------------------------------- exposure rules
@@ -1200,13 +1372,17 @@ def variable_element_bindings(
     compiled_vfs_profiles: CompiledVFSProfiles | None,
     vfs_variables: tuple[VariableDef, ...],
 ) -> tuple[SlotBinding, ...]:
-    """Derive complete variable-element bindings from persisted declarations.
+    """Derive variable-element bindings in registry declaration order."""
+    bindings, _contexts = _variable_element_artifacts(environment, compiled_vfs_profiles, vfs_variables)
+    return bindings
 
-    Bindings follow registry declaration order. Environment variables are exposed by
-    declaration; global and agent profile variables require authored ``exposed_to``.
-    Item-profile exposure and overlay-only exposure refuse because neither has a compiled
-    semantic identity that can own a slot.
-    """
+
+def _variable_element_artifacts(
+    environment: EnvironmentConfig,
+    compiled_vfs_profiles: CompiledVFSProfiles | None,
+    vfs_variables: tuple[VariableDef, ...],
+) -> tuple[tuple[SlotBinding, ...], tuple[tuple[float, ...], ...]]:
+    """Derive variable bindings and their complete fixed payloads in one pass."""
     env_semantic = {var.name: str(var.semantic_type) for var in environment.environment.variables}
 
     exposed_profile: dict[str, str] = {}
@@ -1232,6 +1408,7 @@ def variable_element_bindings(
                     )
 
     bindings: list[SlotBinding] = []
+    contexts: list[tuple[float, ...]] = []
     bound: list[ExposedVariable] = []
     for var_def in vfs_variables:
         var_id = var_def.id
@@ -1279,9 +1456,10 @@ def variable_element_bindings(
             shape,
             var_def.normalization,
         )
-        signature = static_payload_signature(exposed, owner_capacity=None)
         bound.append(exposed)
-        descriptor_blocks = cast("tuple[tuple[float, ...], ...]", signature[2])
+        descriptor_blocks = tuple(describe_variable(exposed, element_index=i, owner_capacity=None) for i in range(exposed.element_count))
+        assert exposed.normalization is not None
+        width_used = value_block_width_used(exposed.normalization) / VALUE_BLOCK_WIDTH
         for element_index, descriptor_block in enumerate(descriptor_blocks):
             if exposed.element_count == 1:
                 filler_ref = exposed.id
@@ -1292,12 +1470,19 @@ def variable_element_bindings(
                     slot_index=len(bindings),
                     filler_kind="static",
                     filler_ref=filler_ref,
-                    static_signature=tuple(descriptor_block),
                 )
             )
+            payload = [0.0] * len(PAYLOAD_SCHEMAS["variable_element"])
+            coordinates = element_coordinate_block(exposed.shape, element_index)
+            position_start = PAYLOAD_SCHEMAS["variable_element"].index("position_0")
+            descriptor_start = PAYLOAD_SCHEMAS["variable_element"].index(DESCRIPTOR_BLOCK_FEATURES[0])
+            payload[position_start : position_start + MAX_POSITION_RANK + 1] = coordinates
+            payload[PAYLOAD_SCHEMAS["variable_element"].index("value_width_used")] = width_used
+            payload[descriptor_start : descriptor_start + DESCRIPTOR_BLOCK_WIDTH] = descriptor_block
+            contexts.append(_float32_tuple(payload, field=f"Variable '{exposed.id}' fixed payload"))
 
     check_indistinguishability(bound, owner_capacity=None)
-    return tuple(bindings)
+    return tuple(bindings), tuple(contexts)
 
 
 def effect_slot_refs(
@@ -1346,7 +1531,6 @@ def canonical_token_bindings(
             slot_index=index,
             filler_kind="static",
             filler_ref=meter.name,
-            static_signature=meter_signature(meter),
         )
         for index, meter in enumerate(meter_declarations)
     )
@@ -1354,20 +1538,11 @@ def canonical_token_bindings(
     affordance_names = [affordance.name for affordance in affordances.affordances]
     if len(set(affordance_names)) != len(affordance_names):
         raise ValueError("affordances.yaml declares duplicate names; affordance token identity must be unique")
-    meters_by_name = {meter.name: meter for meter in meter_declarations}
     affordance_bindings = tuple(
         SlotBinding(
             slot_index=index,
             filler_kind="static",
             filler_ref=affordance.name,
-            static_signature=affordance_signature(
-                affordance=affordance,
-                effect_deltas=extract_affordance_meter_writes(
-                    affordance,
-                    effect_catalog=compiled_effect_catalog,
-                ),
-                meters=meters_by_name,
-            ),
         )
         for index, affordance in enumerate(affordances.affordances)
     )
@@ -1422,6 +1597,123 @@ def canonical_token_bindings(
     return tuple((type_name, by_type[type_name]) for type_name in TOKEN_TYPE_ROSTER)
 
 
+def _fixed_payload(type_name: str, values: Mapping[str, float]) -> tuple[float, ...]:
+    payload = [0.0] * len(PAYLOAD_SCHEMAS[type_name])
+    for feature, value in values.items():
+        payload[PAYLOAD_SCHEMAS[type_name].index(feature)] = value
+    return _float32_tuple(payload, field=f"Token type {type_name!r} fixed payload")
+
+
+def canonical_token_contexts(
+    *,
+    position_rank: int,
+    meter_declarations: tuple[MeterDeclaration, ...],
+    affordances: AffordancesV2Config,
+    items_catalog: ItemsCatalogConfig | None,
+    compiled_effect_catalog: EffectCatalog | None,
+    environment: EnvironmentConfig,
+    compiled_vfs_profiles: CompiledVFSProfiles | None,
+    vfs_variables: tuple[VariableDef, ...],
+) -> tuple[tuple[TokenType, tuple[tuple[float, ...], ...], tuple[TokenContext, ...]], ...]:
+    """Derive each type's immutable fixed payload table from persisted declarations."""
+    rank = require_position_rank(position_rank, substrate_type="compiled TokenSpec")
+    rank_value = rank / MAX_POSITION_RANK
+    rank_context = {"position_rank": rank_value}
+
+    meter_contexts = tuple(
+        _fixed_payload(
+            "meter",
+            {
+                "value_width_used": value_block_width_used(meter.normalization) / VALUE_BLOCK_WIDTH,
+                **dict(zip(METER_SIGNATURE_FEATURES, meter_signature(meter), strict=True)),
+            },
+        )
+        for meter in meter_declarations
+    )
+
+    meters_by_name = {meter.name: meter for meter in meter_declarations}
+    affordance_static_features = (
+        tuple(f"interaction_type_{member}" for member in INTERACTION_TYPE_VOCABULARY)
+        + AFFORDANCE_DURATION_FEATURES
+        + OPENING_HOURS_FEATURES
+        + _effect_summary_features()
+        + ("effect_count",)
+    )
+    affordance_contexts = tuple(
+        _fixed_payload(
+            "affordance",
+            rank_context
+            | dict(
+                zip(
+                    affordance_static_features,
+                    affordance_signature(
+                        affordance=affordance,
+                        effect_deltas=extract_affordance_meter_writes(affordance, effect_catalog=compiled_effect_catalog),
+                        meters=meters_by_name,
+                    ),
+                    strict=True,
+                )
+            ),
+        )
+        for affordance in affordances.affordances
+    )
+
+    if items_catalog is None:
+        item_capacity_value = 0
+    else:
+        item_capacity_value = item_capacity(
+            max_items_in_world=items_catalog.max_items_in_world,
+            max_items_per_agent=items_catalog.max_items_per_agent,
+            declared_agents_per_world=None,
+        )
+    item_contexts = tuple(_fixed_payload("item", rank_context) for _ in range(item_capacity_value))
+
+    _variable_bindings, variable_contexts = _variable_element_artifacts(environment, compiled_vfs_profiles, vfs_variables)
+
+    effect_contexts: tuple[TokenContext, ...] = ()
+    if compiled_effect_catalog is not None:
+        if len(compiled_effect_catalog.effects) > 2**24:
+            raise ValueError("Effect catalog has more than 2**24 entries; float32 context indices would not remain exact")
+        name_to_id = compiled_effect_catalog.effect_name_to_id
+        if name_to_id is None:
+            name_to_id = {}
+        ordered_effects = sorted(compiled_effect_catalog.effects.values(), key=lambda effect: name_to_id[effect.id])
+        effect_contexts = tuple(
+            TokenContext(
+                context_ref=f"effect:{effect.id}",
+                fixed_payload=_fixed_payload(
+                    "effect",
+                    dict(
+                        zip(
+                            EFFECT_STATIC_FEATURES,
+                            effect_static_payload(
+                                EffectDeclaration(
+                                    id=effect.id,
+                                    scope=effect.scope,
+                                    duration=effect.duration,
+                                    reapply_policy=effect.reapply_policy,
+                                )
+                            ),
+                            strict=True,
+                        )
+                    ),
+                ),
+            )
+            for effect in ordered_effects
+        )
+
+    by_type: Mapping[TokenType, tuple[tuple[tuple[float, ...], ...], tuple[TokenContext, ...]]] = {
+        "self": ((_fixed_payload("self", rank_context),), ()),
+        "meter": (meter_contexts, ()),
+        "affordance": (affordance_contexts, ()),
+        "agent": ((), ()),
+        "item": (item_contexts, ()),
+        "effect": ((), effect_contexts),
+        "variable_element": (variable_contexts, ()),
+    }
+    return tuple((type_name, *by_type[type_name]) for type_name in TOKEN_TYPE_ROSTER)
+
+
 # --------------------------------------------------------------------------- census advisory
 
 
@@ -1471,13 +1763,16 @@ __all__ = [
     "SEMANTIC_TYPE_ONE_HOT_WIDTH",
     "TOKEN_TYPE_FILLER_KIND",
     "TOKEN_TYPE_ROSTER",
-    "TOKEN_TYPE_STATIC_SIGNATURE_WIDTH",
+    "TOKEN_TRANSPORT_VERSION",
     "VALUE_BLOCK_WIDTH",
     "VARIABLE_TYPE_VOCABULARY",
+    "CompactTokenLayout",
+    "CompactTokenTypeLayout",
     "EffectDeclaration",
     "ExposedVariable",
     "MeterDeclaration",
     "SlotBinding",
+    "TokenContext",
     "TokenSpec",
     "TokenType",
     "TokenTypeSchema",
@@ -1486,12 +1781,14 @@ __all__ = [
     "agent_capacity",
     "build_token_type",
     "canonical_token_bindings",
+    "canonical_token_contexts",
     "check_indistinguishability",
     "describe_variable",
     "effect_capacity",
     "effect_slot_refs",
     "effect_static_payload",
     "effect_summary",
+    "element_coordinate_block",
     "item_capacity",
     "mean_census_advisory",
     "meter_capacity",

@@ -32,6 +32,7 @@ def compiled_universe():
 
 def test_demo_checkpoint_payload_requires_exact_current_key_set() -> None:
     payload = {key: None for key in DEMO_CHECKPOINT_KEYS}
+    payload["version"] = CHECKPOINT_FORMAT_VERSION
     validate_demo_checkpoint_payload(payload)
 
     missing = dict(payload)

@@ -77,13 +77,7 @@ class NetworkFactory:
         the same walk :meth:`TokenObservationEncoder.encode` performs. A block-reading
         network addresses its inputs through these, never through a dim literal.
         """
-        slices: dict[str, slice] = {}
-        offset = 0
-        for token_type in spec.types:
-            width = token_type.capacity * token_type.row_width
-            slices[token_type.type_name] = slice(offset, offset + width)
-            offset += width
-        return slices
+        return {token_type.type_name: slice(token_type.start, token_type.end) for token_type in spec.compact_layout().types}
 
     @staticmethod
     def build_recurrent(

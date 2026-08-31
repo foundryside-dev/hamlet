@@ -7,12 +7,75 @@ Stores pre-composed total rewards from DAC, eliminating the misleading
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 import torch
 
 if TYPE_CHECKING:
     from townlet.training.state import RewardTensor
+
+
+REPLAY_BUFFER_FORMAT_VERSION = 4
+REPLAY_BUFFER_KIND = "standard"
+REPLAY_BUFFER_STATE_KEYS = frozenset(
+    {
+        "replay_kind",
+        "format_version",
+        "capacity",
+        "size",
+        "position",
+        "observations",
+        "actions",
+        "rewards",
+        "rewards_extrinsic",
+        "rewards_intrinsic",
+        "rewards_shaping",
+        "next_observations",
+        "dones",
+    }
+)
+_REPLAY_TENSOR_FIELDS = (
+    "observations",
+    "actions",
+    "rewards",
+    "rewards_extrinsic",
+    "rewards_intrinsic",
+    "rewards_shaping",
+    "next_observations",
+    "dones",
+)
+
+
+@dataclass(frozen=True)
+class _ReplayRestoreCandidate:
+    size: int
+    position: int
+    has_wrapped: bool
+    observations: torch.Tensor | None
+    actions: torch.Tensor | None
+    rewards: torch.Tensor | None
+    rewards_extrinsic: torch.Tensor | None
+    rewards_intrinsic: torch.Tensor | None
+    rewards_shaping: torch.Tensor | None
+    next_observations: torch.Tensor | None
+    dones: torch.Tensor | None
+
+
+@dataclass(frozen=True)
+class _ValidatedReplayState:
+    size: int
+    position: int
+    obs_dim: int | None
+    observations: torch.Tensor | None
+    actions: torch.Tensor | None
+    rewards: torch.Tensor | None
+    rewards_extrinsic: torch.Tensor | None
+    rewards_intrinsic: torch.Tensor | None
+    rewards_shaping: torch.Tensor | None
+    next_observations: torch.Tensor | None
+    dones: torch.Tensor | None
 
 
 class ReplayBuffer:
@@ -65,6 +128,23 @@ class ReplayBuffer:
             ValueError: If batch_size > capacity (would corrupt buffer state)
             ValueError: If tensor shapes are inconsistent (MED-04)
         """
+        if observations.ndim != 2:
+            raise ValueError(f"observations must be 2D [batch, obs_dim], got shape {tuple(observations.shape)}")
+        if observations.dtype is not torch.float32:
+            raise ValueError(f"observations must use dtype torch.float32, got {observations.dtype}")
+        if next_observations.ndim != 2:
+            raise ValueError(f"next_observations must be 2D [batch, obs_dim], got shape {tuple(next_observations.shape)}")
+        if next_observations.dtype is not torch.float32:
+            raise ValueError(f"next_observations must use dtype torch.float32, got {next_observations.dtype}")
+        if actions.ndim != 1 or actions.dtype is not torch.int64:
+            raise ValueError(f"actions must be 1D with dtype torch.int64, got shape {tuple(actions.shape)} and dtype {actions.dtype}")
+        if rewards.total.ndim != 1 or rewards.total.dtype is not torch.float32:
+            raise ValueError(
+                f"rewards.total must be 1D with dtype torch.float32, got shape {tuple(rewards.total.shape)} and dtype {rewards.total.dtype}"
+            )
+        if dones.ndim != 1 or dones.dtype is not torch.bool:
+            raise ValueError(f"dones must be 1D with dtype torch.bool, got shape {tuple(dones.shape)} and dtype {dones.dtype}")
+
         batch_size = observations.shape[0]
         obs_dim = observations.shape[1]
 
@@ -86,6 +166,26 @@ class ReplayBuffer:
             raise ValueError(f"next_observations obs_dim ({next_observations.shape[1]}) != observations obs_dim ({obs_dim})")
         if dones.shape[0] != batch_size:
             raise ValueError(f"dones batch size ({dones.shape[0]}) != observations batch size ({batch_size})")
+        if self.observations is not None and obs_dim != self.observations.shape[1]:
+            raise ValueError(f"observations obs_dim ({obs_dim}) != current buffer obs_dim ({self.observations.shape[1]})")
+        for field, tensor in (
+            ("observations", observations),
+            ("rewards.total", rewards.total),
+            ("next_observations", next_observations),
+        ):
+            if not bool(torch.isfinite(tensor).all()):
+                raise ValueError(f"{field} must contain only finite values")
+        for field, component in (
+            ("rewards.extrinsic", rewards.extrinsic),
+            ("rewards.intrinsic", rewards.intrinsic),
+            ("rewards.shaping", rewards.shaping),
+        ):
+            if component is None:
+                continue
+            if component.ndim != 1 or component.shape[0] != batch_size or component.dtype is not torch.float32:
+                raise ValueError(f"{field} must have shape ({batch_size},) and dtype torch.float32")
+            if not bool(torch.isfinite(component).all()):
+                raise ValueError(f"{field} must contain only finite values")
 
         # Initialize storage on first push
         if self.observations is None:
@@ -286,21 +386,14 @@ class ReplayBuffer:
         }
 
     def serialize(self) -> dict[str, Any]:
-        """
-        Serialize buffer contents for checkpointing (P1.1).
-
-        Version 3: Stores reward components (extrinsic, intrinsic, shaping) from DAC.
-
-        Returns:
-            Dictionary with all buffer state on CPU for saving
-        """
+        """Serialize the exact current standard replay artifact."""
         if self.observations is None:
-            # Empty buffer
             return {
+                "replay_kind": REPLAY_BUFFER_KIND,
+                "format_version": REPLAY_BUFFER_FORMAT_VERSION,
+                "capacity": self.capacity,
                 "size": 0,
                 "position": 0,
-                "capacity": self.capacity,
-                "format_version": 3,  # Version 3: reward components support
                 "observations": None,
                 "actions": None,
                 "rewards": None,
@@ -347,10 +440,11 @@ class ReplayBuffer:
             dones = self.dones[: self.size].cpu().clone()
 
         return {
-            "size": self.size,
-            "position": self.size,  # Reset position to size since data is now contiguous
+            "replay_kind": REPLAY_BUFFER_KIND,
+            "format_version": REPLAY_BUFFER_FORMAT_VERSION,
             "capacity": self.capacity,
-            "format_version": 3,  # Version 3: reward components support
+            "size": self.size,
+            "position": self.size % self.capacity,
             "observations": observations,
             "actions": actions,
             "rewards": rewards,
@@ -361,82 +455,197 @@ class ReplayBuffer:
             "dones": dones,
         }
 
-    def load_from_serialized(self, state: dict[str, Any]) -> None:
-        """
-        Restore buffer from serialized state (P1.1).
+    @staticmethod
+    def _require_tensor(
+        state: Mapping[str, Any],
+        field: str,
+        *,
+        dtype: torch.dtype,
+        shape: tuple[int, ...],
+    ) -> torch.Tensor:
+        value = state[field]
+        if not isinstance(value, torch.Tensor):
+            raise ValueError(f"Replay checkpoint {field} must be a tensor; got {type(value).__name__}. Regenerate the checkpoint.")
+        if value.dtype is not dtype:
+            raise ValueError(f"Replay checkpoint {field} dtype is {value.dtype}; expected {dtype}. Regenerate the checkpoint.")
+        if tuple(value.shape) != shape:
+            raise ValueError(f"Replay checkpoint {field} shape is {tuple(value.shape)}; expected {shape}. Regenerate the checkpoint.")
+        if dtype.is_floating_point and not bool(torch.isfinite(value).all()):
+            raise ValueError(f"Replay checkpoint {field} must contain only finite values. Regenerate the checkpoint.")
+        return value
 
-        Version 3 required: Loads reward components (extrinsic, intrinsic, shaping).
+    @staticmethod
+    def _require_int(value: object, field: str, *, minimum: int, maximum: int) -> int:
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise ValueError(f"Replay checkpoint {field} must be an integer; got {value!r}. Regenerate the checkpoint.")
+        if not minimum <= value <= maximum:
+            raise ValueError(f"Replay checkpoint {field}={value} is outside [{minimum}, {maximum}]. Regenerate the checkpoint.")
+        return value
 
-        Args:
-            state: Dictionary from serialize()
-
-        Raises:
-            ValueError: If the checkpoint format version or capacity does not match exactly
-        """
-        # Only the exact current checkpoint format is executable.
+    def _validate_serialized(
+        self,
+        state: Mapping[str, Any],
+        *,
+        expected_obs_dim: int | None,
+    ) -> _ValidatedReplayState:
+        if not isinstance(state, Mapping):
+            raise ValueError(f"Replay buffer checkpoint payload must be a mapping; got {type(state).__name__}.")
         format_version = state.get("format_version")
-        if format_version != 3:
+        if type(format_version) is not int or format_version != REPLAY_BUFFER_FORMAT_VERSION:
             raise ValueError(
                 f"Cannot load replay buffer checkpoint with format_version {format_version!r}; "
-                "the exact current format_version is 3. Regenerate the checkpoint."
+                f"the exact current format_version is {REPLAY_BUFFER_FORMAT_VERSION}. Regenerate the checkpoint."
             )
 
-        if state["observations"] is None:
-            # Empty buffer
-            self.size = 0
-            self.position = 0
-            self.has_wrapped = False  # HIGH-04: Reset wrap flag
-            return
-
-        # HIGH-02: Validate that loaded size doesn't exceed current buffer capacity
-        loaded_size = state["size"]
-        if loaded_size > self.capacity:
+        replay_kind = state.get("replay_kind")
+        if replay_kind != REPLAY_BUFFER_KIND:
             raise ValueError(
-                f"Cannot load buffer: loaded size ({loaded_size}) exceeds buffer capacity ({self.capacity}). "
-                f"Either increase buffer capacity in config or regenerate checkpoint with smaller buffer."
+                f"Replay checkpoint replay_kind is {replay_kind!r}; expected {REPLAY_BUFFER_KIND!r}. Regenerate the checkpoint."
             )
 
-        self.size = loaded_size
-        self.position = state["position"]
-        # HIGH-04: Set has_wrapped if buffer is full, since next push will overwrite oldest
-        # Note: Serialized data is contiguous, but position=size means next push wraps to 0
-        self.has_wrapped = loaded_size == self.capacity
+        state_keys = set(state)
+        if state_keys != REPLAY_BUFFER_STATE_KEYS:
+            missing = sorted(REPLAY_BUFFER_STATE_KEYS - state_keys)
+            unknown = sorted(state_keys - REPLAY_BUFFER_STATE_KEYS)
+            raise ValueError(f"Replay checkpoint key set mismatch: missing={missing}, unknown={unknown}. Regenerate the checkpoint.")
 
-        # Initialize storage if needed
-        obs_dim = state["observations"].shape[1]
-
-        # MED-05: Validate obs_dim consistency when buffer already has data
-        if self.observations is not None and self.observations.shape[1] != obs_dim:
+        capacity = self._require_int(state["capacity"], "capacity", minimum=1, maximum=2**63 - 1)
+        if capacity != self.capacity:
             raise ValueError(
-                f"Cannot load buffer: loaded obs_dim ({obs_dim}) != current buffer obs_dim ({self.observations.shape[1]}). "
-                f"Buffer dimension mismatch may indicate incompatible checkpoint or environment config."
+                f"Replay checkpoint capacity is {capacity}; current capacity is {self.capacity}. "
+                "Regenerate the checkpoint for this configuration."
+            )
+        size = self._require_int(state["size"], "size", minimum=0, maximum=self.capacity)
+        position = self._require_int(state["position"], "position", minimum=0, maximum=self.capacity - 1)
+        expected_position = size % self.capacity
+        if position != expected_position:
+            raise ValueError(
+                f"Replay checkpoint position is {position}; expected {expected_position} for size {size}. Regenerate the checkpoint."
             )
 
-        if self.observations is None:
-            self.observations = torch.zeros(self.capacity, obs_dim, device=self.device)
-            self.actions = torch.zeros(self.capacity, dtype=torch.long, device=self.device)
-            self.rewards = torch.zeros(self.capacity, device=self.device)
-            self.rewards_extrinsic = torch.zeros(self.capacity, device=self.device)
-            self.rewards_intrinsic = torch.zeros(self.capacity, device=self.device)
-            self.rewards_shaping = torch.zeros(self.capacity, device=self.device)
-            self.next_observations = torch.zeros(self.capacity, obs_dim, device=self.device)
-            self.dones = torch.zeros(self.capacity, dtype=torch.bool, device=self.device)
+        if size == 0:
+            non_null = [field for field in _REPLAY_TENSOR_FIELDS if state[field] is not None]
+            if non_null:
+                raise ValueError(f"Empty replay checkpoint tensor fields must be null; non-null={non_null}. Regenerate the checkpoint.")
+            return _ValidatedReplayState(0, 0, None, None, None, None, None, None, None, None, None)
 
-        assert self.observations is not None
-        assert self.actions is not None
-        assert self.rewards is not None
-        assert self.rewards_extrinsic is not None
-        assert self.rewards_intrinsic is not None
-        assert self.rewards_shaping is not None
-        assert self.next_observations is not None
-        assert self.dones is not None
+        observations = state["observations"]
+        if not isinstance(observations, torch.Tensor) or observations.ndim != 2:
+            raise ValueError("Replay checkpoint observations must be a 2D tensor. Regenerate the checkpoint.")
+        obs_dim = observations.shape[1]
+        if obs_dim <= 0:
+            raise ValueError("Replay checkpoint observations obs_dim must be positive. Regenerate the checkpoint.")
+        if expected_obs_dim is not None and obs_dim != expected_obs_dim:
+            raise ValueError(
+                f"Replay checkpoint obs_dim is {obs_dim}; expected current obs_dim {expected_obs_dim}. Regenerate the checkpoint."
+            )
+        if self.observations is not None and obs_dim != self.observations.shape[1]:
+            raise ValueError(
+                f"Replay checkpoint obs_dim is {obs_dim}; current buffer obs_dim is {self.observations.shape[1]}. "
+                "Regenerate the checkpoint."
+            )
 
-        # Restore data
-        self.observations[: self.size] = state["observations"].to(self.device)
-        self.actions[: self.size] = state["actions"].to(self.device)
-        self.rewards[: self.size] = state["rewards"].to(self.device)
-        self.rewards_extrinsic[: self.size] = state["rewards_extrinsic"].to(self.device)
-        self.rewards_intrinsic[: self.size] = state["rewards_intrinsic"].to(self.device)
-        self.rewards_shaping[: self.size] = state["rewards_shaping"].to(self.device)
-        self.next_observations[: self.size] = state["next_observations"].to(self.device)
-        self.dones[: self.size] = state["dones"].to(self.device)
+        observations = self._require_tensor(state, "observations", dtype=torch.float32, shape=(size, obs_dim))
+        actions = self._require_tensor(state, "actions", dtype=torch.int64, shape=(size,))
+        rewards = self._require_tensor(state, "rewards", dtype=torch.float32, shape=(size,))
+        rewards_extrinsic = self._require_tensor(state, "rewards_extrinsic", dtype=torch.float32, shape=(size,))
+        rewards_intrinsic = self._require_tensor(state, "rewards_intrinsic", dtype=torch.float32, shape=(size,))
+        rewards_shaping = self._require_tensor(state, "rewards_shaping", dtype=torch.float32, shape=(size,))
+        next_observations = self._require_tensor(state, "next_observations", dtype=torch.float32, shape=(size, obs_dim))
+        dones = self._require_tensor(state, "dones", dtype=torch.bool, shape=(size,))
+
+        return _ValidatedReplayState(
+            size,
+            position,
+            obs_dim,
+            observations,
+            actions,
+            rewards,
+            rewards_extrinsic,
+            rewards_intrinsic,
+            rewards_shaping,
+            next_observations,
+            dones,
+        )
+
+    def _materialize_serialized(self, state: _ValidatedReplayState) -> _ReplayRestoreCandidate:
+        if state.size == 0:
+            return _ReplayRestoreCandidate(0, 0, False, None, None, None, None, None, None, None, None)
+
+        assert state.obs_dim is not None
+        assert state.observations is not None
+        assert state.actions is not None
+        assert state.rewards is not None
+        assert state.rewards_extrinsic is not None
+        assert state.rewards_intrinsic is not None
+        assert state.rewards_shaping is not None
+        assert state.next_observations is not None
+        assert state.dones is not None
+        candidate_observations = torch.zeros((self.capacity, state.obs_dim), dtype=torch.float32, device=self.device)
+        candidate_actions = torch.zeros(self.capacity, dtype=torch.int64, device=self.device)
+        candidate_rewards = torch.zeros(self.capacity, dtype=torch.float32, device=self.device)
+        candidate_rewards_extrinsic = torch.zeros(self.capacity, dtype=torch.float32, device=self.device)
+        candidate_rewards_intrinsic = torch.zeros(self.capacity, dtype=torch.float32, device=self.device)
+        candidate_rewards_shaping = torch.zeros(self.capacity, dtype=torch.float32, device=self.device)
+        candidate_next_observations = torch.zeros((self.capacity, state.obs_dim), dtype=torch.float32, device=self.device)
+        candidate_dones = torch.zeros(self.capacity, dtype=torch.bool, device=self.device)
+        candidate_observations[: state.size].copy_(state.observations.to(self.device))
+        candidate_actions[: state.size].copy_(state.actions.to(self.device))
+        candidate_rewards[: state.size].copy_(state.rewards.to(self.device))
+        candidate_rewards_extrinsic[: state.size].copy_(state.rewards_extrinsic.to(self.device))
+        candidate_rewards_intrinsic[: state.size].copy_(state.rewards_intrinsic.to(self.device))
+        candidate_rewards_shaping[: state.size].copy_(state.rewards_shaping.to(self.device))
+        candidate_next_observations[: state.size].copy_(state.next_observations.to(self.device))
+        candidate_dones[: state.size].copy_(state.dones.to(self.device))
+        return _ReplayRestoreCandidate(
+            state.size,
+            state.position,
+            state.size == self.capacity,
+            candidate_observations,
+            candidate_actions,
+            candidate_rewards,
+            candidate_rewards_extrinsic,
+            candidate_rewards_intrinsic,
+            candidate_rewards_shaping,
+            candidate_next_observations,
+            candidate_dones,
+        )
+
+    def _prepare_serialized(
+        self,
+        state: Mapping[str, Any],
+        *,
+        expected_obs_dim: int | None,
+    ) -> _ReplayRestoreCandidate:
+        validated = self._validate_serialized(state, expected_obs_dim=expected_obs_dim)
+        return self._materialize_serialized(validated)
+
+    def validate_serialized(self, state: Mapping[str, Any], *, expected_obs_dim: int) -> _ValidatedReplayState:
+        """Validate exact structure without allocating restore storage or mutating this buffer."""
+        return self._validate_serialized(state, expected_obs_dim=expected_obs_dim)
+
+    def materialize_validated(self, state: _ValidatedReplayState) -> _ReplayRestoreCandidate:
+        """Materialize one restore candidate from already validated structure."""
+        return self._materialize_serialized(state)
+
+    def prepare_serialized(self, state: Mapping[str, Any], *, expected_obs_dim: int | None) -> _ReplayRestoreCandidate:
+        """Validate and materialize the one candidate that will be installed."""
+        return self._prepare_serialized(state, expected_obs_dim=expected_obs_dim)
+
+    def load_prepared(self, candidate: _ReplayRestoreCandidate) -> None:
+        """Install a fully validated, already materialized restore candidate."""
+        self.size = candidate.size
+        self.position = candidate.position
+        self.has_wrapped = candidate.has_wrapped
+        self.observations = candidate.observations
+        self.actions = candidate.actions
+        self.rewards = candidate.rewards
+        self.rewards_extrinsic = candidate.rewards_extrinsic
+        self.rewards_intrinsic = candidate.rewards_intrinsic
+        self.rewards_shaping = candidate.rewards_shaping
+        self.next_observations = candidate.next_observations
+        self.dones = candidate.dones
+
+    def load_from_serialized(self, state: Mapping[str, Any]) -> None:
+        """Restore only after the complete exact-current artifact validates."""
+        self.load_prepared(self.prepare_serialized(state, expected_obs_dim=None))

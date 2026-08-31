@@ -15,7 +15,8 @@ from townlet.universe.dto.token_spec import (
     DESCRIPTOR_BLOCK_WIDTH,
     ENCODING_VERSION,
     METER_SIGNATURE_FEATURES,
-    METER_SIGNATURE_WIDTH,
+    PAYLOAD_SCHEMAS,
+    TOKEN_TRANSPORT_VERSION,
     ExposedVariable,
     MeterDeclaration,
     SlotBinding,
@@ -68,34 +69,51 @@ def _variable(normalization: NormalizationSpec, *, shape: tuple[int, ...] = ()) 
 
 def test_token_spec_refuses_noncanonical_encoding_version() -> None:
     with pytest.raises(ValueError, match=rf"encoding_version.*{ENCODING_VERSION}"):
-        TokenSpec(types=(), encoding_version="token-arbitrary")
+        TokenSpec(
+            types=(),
+            position_rank=0,
+            transport_version=TOKEN_TRANSPORT_VERSION,
+            encoding_version="token-arbitrary",
+        )
 
 
-def test_static_signatures_are_bounded_model_inputs() -> None:
+def test_slot_context_payloads_are_bounded_model_inputs() -> None:
     binding = SlotBinding(
         slot_index=0,
         filler_kind="static",
         filler_ref="meter:energy",
-        static_signature=(1.000001,) + (0.0,) * (METER_SIGNATURE_WIDTH - 1),
     )
+    payload = [0.0] * len(PAYLOAD_SCHEMAS["meter"])
+    payload[PAYLOAD_SCHEMAS["meter"].index(METER_SIGNATURE_FEATURES[0])] = 1.000001
 
-    with pytest.raises(ValueError, match=r"static_signature.*\[-1, 1\]"):
-        build_token_type("meter", (binding,))
+    with pytest.raises(ValueError, match=r"context payload.*\[-1, 1\]"):
+        build_token_type(
+            "meter",
+            (binding,),
+            slot_context_payloads=(tuple(payload),),
+            effect_catalog_contexts=(),
+        )
 
 
-def test_static_signatures_are_canonical_float32_values() -> None:
+def test_slot_context_payloads_are_canonical_float32_values() -> None:
     binding = SlotBinding(
         slot_index=0,
         filler_kind="static",
         filler_ref="meter:energy",
-        static_signature=(0.1,) + (0.0,) * (METER_SIGNATURE_WIDTH - 1),
+    )
+    payload = [0.0] * len(PAYLOAD_SCHEMAS["meter"])
+    feature_index = PAYLOAD_SCHEMAS["meter"].index(METER_SIGNATURE_FEATURES[0])
+    payload[feature_index] = 0.1
+
+    schema = build_token_type(
+        "meter",
+        (binding,),
+        slot_context_payloads=(tuple(payload),),
+        effect_catalog_contexts=(),
     )
 
-    schema = build_token_type("meter", (binding,))
-
-    assert schema.slot_bindings[0].static_signature is not None
-    assert schema.slot_bindings[0].static_signature[0] == pytest.approx(0.1)
-    assert schema.slot_bindings[0].static_signature[0] != 0.1
+    assert schema.slot_context_payloads[0][feature_index] == pytest.approx(0.1)
+    assert schema.slot_context_payloads[0][feature_index] != 0.1
 
 
 def test_variable_descriptor_saturates_authored_magnitudes_and_element_count() -> None:

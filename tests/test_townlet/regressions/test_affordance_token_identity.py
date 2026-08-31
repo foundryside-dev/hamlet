@@ -49,9 +49,17 @@ def _write_yaml(path: Path, payload: dict) -> None:
 def _compiled_affordance_signature(pack: Path, name: str) -> tuple[tuple[float, ...], str]:
     compiled = UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
     level = compiled.get_level(LEVEL)
-    binding = next(binding for binding in level.token_spec.get_type("affordance").slot_bindings if binding.filler_ref == name)
-    assert binding.static_signature is not None
-    return binding.static_signature, level.observation_schema_hash
+    return _affordance_context_signature(level, name), level.observation_schema_hash
+
+
+def _affordance_context_signature(level, name: str) -> tuple[float, ...]:
+    schema = level.token_spec.get_type("affordance")
+    assert schema is not None
+    binding = next(binding for binding in schema.slot_bindings if binding.filler_ref == name)
+    payload = schema.slot_context_payloads[binding.slot_index]
+    position_start = schema.payload_features.index("position_0")
+    effect_start = schema.payload_features.index("effect_0_form")
+    return payload[:position_start] + payload[effect_start:]
 
 
 def _effect_blocks(signature: tuple[float, ...]) -> tuple[tuple[float, ...], ...]:
@@ -109,7 +117,6 @@ def test_compiled_affordance_identity_uses_all_executable_lifecycle_deltas(
 ) -> None:
     level = reference_universe.get_level(LEVEL)
     metadata = next(affordance for affordance in level.affordance_metadata.affordances if affordance.id == affordance_name)
-    binding = next(binding for binding in level.token_spec.get_type("affordance").slot_bindings if binding.filler_ref == affordance_name)
     declarations = level.meter_declarations
     meters = {meter.name: meter for meter in declarations}
     affordance = next(affordance for affordance in level.affordances.affordances if affordance.name == affordance_name)
@@ -118,7 +125,9 @@ def test_compiled_affordance_identity_uses_all_executable_lifecycle_deltas(
     assert not hasattr(metadata, "effects")
     assert tuple((write.source, write.stage, write.meter_name, write.delta) for write in writes) == expected_deltas
     expected_signature = affordance_signature(affordance=affordance, effect_deltas=writes, meters=meters)
-    assert binding.static_signature == tuple(require_float32(value, field="expected affordance signature") for value in expected_signature)
+    assert _affordance_context_signature(level, affordance_name) == tuple(
+        require_float32(value, field="expected affordance signature") for value in expected_signature
+    )
 
 
 def test_non_affine_meter_interaction_keeps_dynamic_target_identity(tmp_path: Path) -> None:
@@ -132,10 +141,9 @@ def test_non_affine_meter_interaction_keeps_dynamic_target_identity(tmp_path: Pa
 
     compiled = UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
     level = compiled.get_level(LEVEL)
-    binding = next(binding for binding in level.token_spec.get_type("affordance").slot_bindings if binding.filler_ref == "EAT")
     declarations = level.meter_declarations
     energy = next(meter for meter in declarations if meter.name == "energy")
-    first_effect = _effect_blocks(binding.static_signature)[0]
+    first_effect = _effect_blocks(_affordance_context_signature(level, "EAT"))[0]
     magnitude, sign, meter_start = _effect_value_indices()
 
     assert first_effect[0] == -1.0
@@ -158,17 +166,17 @@ def test_repeated_opposite_deltas_remain_distinct_identity_declarations(tmp_path
 
     compiled = UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
     level = compiled.get_level(LEVEL)
-    binding = next(binding for binding in level.token_spec.get_type("affordance").slot_bindings if binding.filler_ref == "EAT")
     declarations = level.meter_declarations
     energy = next(meter for meter in declarations if meter.name == "energy")
-    first_effect, second_effect, *_ = _effect_blocks(binding.static_signature)
+    signature = _affordance_context_signature(level, "EAT")
+    first_effect, second_effect, *_ = _effect_blocks(signature)
     magnitude, sign, meter_start = _effect_value_indices()
 
     assert (first_effect[0], first_effect[magnitude], first_effect[sign]) == (1.0, pytest.approx(0.1), 1.0)
     assert first_effect[meter_start:] == pytest.approx(meter_signature(energy))
     assert (second_effect[0], second_effect[magnitude], second_effect[sign]) == (1.0, pytest.approx(0.1), -1.0)
     assert second_effect[meter_start:] == pytest.approx(meter_signature(energy))
-    assert binding.static_signature[-1] == pytest.approx(3.0 / 4.0)
+    assert signature[-1] == pytest.approx(3.0 / 4.0)
 
 
 def test_mutually_exclusive_meter_writes_are_marked_dynamic_without_cancelling(tmp_path: Path) -> None:
@@ -189,7 +197,6 @@ def test_mutually_exclusive_meter_writes_are_marked_dynamic_without_cancelling(t
 
     compiled = UniverseCompiler().compile(pack, primary_level=LEVEL, use_cache=False)
     level = compiled.get_level(LEVEL)
-    binding = next(binding for binding in level.token_spec.get_type("affordance").slot_bindings if binding.filler_ref == "EAT")
     writes = extract_affordance_meter_writes(
         next(affordance for affordance in level.affordances.affordances if affordance.name == "EAT"),
         effect_catalog=compiled.compiled_effect_catalog,
@@ -200,7 +207,7 @@ def test_mutually_exclusive_meter_writes_are_marked_dynamic_without_cancelling(t
         (-1, require_float32(0.1, field="expected delta")),
         (-1, require_float32(-0.1, field="expected delta")),
     ]
-    assert binding.static_signature[-1] == pytest.approx(3.0 / 4.0)
+    assert _affordance_context_signature(level, "EAT")[-1] == pytest.approx(3.0 / 4.0)
 
 
 def test_same_meter_delta_in_different_lifecycle_stage_changes_signature_and_hash(tmp_path: Path) -> None:
@@ -225,15 +232,13 @@ def test_same_meter_delta_in_different_lifecycle_stage_changes_signature_and_has
 def test_spawned_effect_meter_writes_are_included_from_compiled_catalog() -> None:
     compiled = UniverseCompiler().compile("configs/trial_k_cold", primary_level="L0_cold", use_cache=False)
     level = compiled.get_level("L0_cold")
-    binding = next(binding for binding in level.token_spec.get_type("affordance").slot_bindings if binding.filler_ref == "WINTER_ONSET")
-    assert binding.static_signature is not None
+    signature = _affordance_context_signature(level, "WINTER_ONSET")
 
     # winter has four recursively reachable target-bar writes (three cold_bite,
     # one comfort); none may disappear merely because the affordance uses spawn_effect.
-    assert binding.static_signature[-1] == pytest.approx(4.0 / 5.0)
+    assert signature[-1] == pytest.approx(4.0 / 5.0)
     cold_bite = next(meter for meter in level.meter_declarations if meter.name == "cold_bite")
     comfort = next(meter for meter in level.meter_declarations if meter.name == "comfort")
-    signature = binding.static_signature
     assert _contains_subsequence(signature, meter_signature(cold_bite))
     assert _contains_subsequence(signature, meter_signature(comfort))
 

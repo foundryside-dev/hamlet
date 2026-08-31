@@ -10,6 +10,8 @@ import torch.nn as nn
 import torch.nn.functional as F  # noqa: N812
 from torch.nn.attention import SDPBackend, sdpa_kernel
 
+from townlet.agent.token_input import TokenInputAssembler as _TokenInputAssembler
+
 if TYPE_CHECKING:
     from townlet.universe.dto.token_spec import TokenSpec
 
@@ -424,170 +426,15 @@ class DuelingQNetwork(nn.Module):
         return activations[activation]
 
 
-class SetEncoderQNetwork(nn.Module):
-    """Q-network over a fixed-capacity token set with a DECLARED permutation-invariant aggregator.
-
-    ``aggregator_type="mean"``: masked mean-pool of embedded token rows (DeepSets).
-    ``aggregator_type="attention"``: self-attention over the embedded rows (empty rows
-    excluded via key-padding mask), then the same masked mean-pool. Self-attention
-    without positional encoding is permutation-equivariant, so the pooled output stays
-    permutation-invariant.
-    """
-
-    def __init__(
-        self,
-        obs_dim: int,
-        action_dim: int,
-        token_slice: slice,
-        token_shape: tuple[int, int],
-        token_embed_dim: int,
-        base_hidden_dim: int,
-        q_head_hidden_dim: int,
-        aggregator_type: str,
-        num_heads: int | None,
-    ):
-        """Initialize a set-aware Q-network.
-
-        Args:
-            obs_dim: Total flattened observation dimension.
-            action_dim: Number of actions.
-            token_slice: Slice of the flattened observation that contains token rows.
-            token_shape: ``(max_tokens, token_dim)`` for reshaping the token slice.
-            token_embed_dim: Embedding size for pooled token features.
-            base_hidden_dim: Embedding size for non-token observation features.
-            q_head_hidden_dim: Hidden size for the Q-value head.
-            aggregator_type: ``"mean"`` or ``"attention"`` — declared, never defaulted.
-            num_heads: Attention heads; required for ``"attention"``, must be None for ``"mean"``.
-        """
-        super().__init__()
-        self.obs_dim = obs_dim
-        self.action_dim = action_dim
-        self.token_slice = self._validate_token_slice(obs_dim, token_slice)
-        self.max_tokens, self.token_dim = self._validate_token_shape(token_shape)
-        self.token_embed_dim = token_embed_dim
-        self.base_hidden_dim = base_hidden_dim
-
-        expected_token_dims = self.max_tokens * self.token_dim
-        if self.token_slice.stop - self.token_slice.start != expected_token_dims:
-            raise ValueError(
-                "token_slice length must equal max_tokens * token_dim "
-                f"({expected_token_dims}), got {self.token_slice.stop - self.token_slice.start}"
-            )
-        if token_embed_dim <= 0:
-            raise ValueError("token_embed_dim must be positive")
-        if base_hidden_dim <= 0:
-            raise ValueError("base_hidden_dim must be positive")
-        if q_head_hidden_dim <= 0:
-            raise ValueError("q_head_hidden_dim must be positive")
-
-        self.base_dim = obs_dim - expected_token_dims
-        if self.base_dim < 0:
-            raise ValueError("token dimensions cannot exceed obs_dim")
-
-        self.token_encoder = nn.Sequential(
-            nn.Linear(self.token_dim, token_embed_dim),
-            nn.LayerNorm(token_embed_dim),
-            nn.ReLU(),
-        )
-        self.aggregator: nn.MultiheadAttention | None
-        if aggregator_type == "attention":
-            if num_heads is None:
-                raise ValueError("aggregator_type='attention' requires num_heads")
-            if token_embed_dim % num_heads != 0:
-                raise ValueError(f"token_embed_dim ({token_embed_dim}) must be divisible by num_heads ({num_heads})")
-            self.aggregator = nn.MultiheadAttention(
-                embed_dim=token_embed_dim,
-                num_heads=num_heads,
-                dropout=0.0,
-                batch_first=True,
-            )
-        elif aggregator_type == "mean":
-            if num_heads is not None:
-                raise ValueError("aggregator_type='mean' takes no num_heads")
-            self.aggregator = None
-        else:
-            raise ValueError(f"Unknown aggregator_type: {aggregator_type!r}. Supported: mean, attention")
-        self.base_encoder: nn.Sequential | None
-        if self.base_dim > 0:
-            self.base_encoder = nn.Sequential(
-                nn.Linear(self.base_dim, base_hidden_dim),
-                nn.LayerNorm(base_hidden_dim),
-                nn.ReLU(),
-            )
-            q_head_input_dim = token_embed_dim + base_hidden_dim
-        else:
-            self.base_encoder = None
-            q_head_input_dim = token_embed_dim
-
-        self.q_head = nn.Sequential(
-            nn.Linear(q_head_input_dim, q_head_hidden_dim),
-            nn.LayerNorm(q_head_hidden_dim),
-            nn.ReLU(),
-            nn.Linear(q_head_hidden_dim, action_dim),
-        )
-
-    def forward(self, obs: torch.Tensor) -> torch.Tensor:
-        """Encode non-token observations and a token set into Q-values."""
-        if obs.dim() != 2 or obs.shape[1] != self.obs_dim:
-            raise ValueError(f"Expected observations with shape [batch, {self.obs_dim}], got {tuple(obs.shape)}")
-
-        token_flat = obs[:, self.token_slice]
-        tokens = token_flat.reshape(obs.shape[0], self.max_tokens, self.token_dim)
-        non_empty_mask = tokens.abs().sum(dim=-1, keepdim=True) > 0
-
-        token_embeddings = self.token_encoder(tokens)
-        if self.aggregator is not None:
-            key_padding_mask = ~non_empty_mask.squeeze(-1)
-            # A fully-masked row makes softmax NaN; unmask it and rely on the output-side
-            # zeroing below, which already forces all-empty sets to a zero pooled vector.
-            all_empty = key_padding_mask.all(dim=1, keepdim=True)
-            key_padding_mask = key_padding_mask & ~all_empty
-            token_embeddings, _ = self.aggregator(
-                token_embeddings,
-                token_embeddings,
-                token_embeddings,
-                key_padding_mask=key_padding_mask,
-                need_weights=False,
-            )
-        token_embeddings = token_embeddings * non_empty_mask.to(dtype=token_embeddings.dtype)
-        token_counts = non_empty_mask.sum(dim=1).clamp(min=1).to(dtype=token_embeddings.dtype)
-        pooled_tokens = token_embeddings.sum(dim=1) / token_counts
-
-        parts = []
-        if self.base_encoder is not None:
-            base_obs = torch.cat((obs[:, : self.token_slice.start], obs[:, self.token_slice.stop :]), dim=1)
-            parts.append(self.base_encoder(base_obs))
-        parts.append(pooled_tokens)
-
-        return cast(torch.Tensor, self.q_head(torch.cat(parts, dim=1)))
-
-    @staticmethod
-    def _validate_token_slice(obs_dim: int, token_slice: slice) -> slice:
-        if token_slice.step not in (None, 1):
-            raise ValueError("token_slice step must be None or 1")
-        if token_slice.start is None or token_slice.stop is None:
-            raise ValueError("token_slice must have explicit start and stop")
-        if token_slice.start < 0 or token_slice.stop > obs_dim or token_slice.stop <= token_slice.start:
-            raise ValueError(f"token_slice must be within observation bounds 0..{obs_dim}")
-        return slice(token_slice.start, token_slice.stop)
-
-    @staticmethod
-    def _validate_token_shape(token_shape: tuple[int, int]) -> tuple[int, int]:
-        max_tokens, token_dim = token_shape
-        if max_tokens <= 0:
-            raise ValueError("token_shape max_tokens must be positive")
-        if token_dim <= 0:
-            raise ValueError("token_shape token_dim must be positive")
-        return max_tokens, token_dim
-
-
 class _TokenTypeLayout(NamedTuple):
-    """One live token type's slice of the flat serialization (derived from the TokenSpec)."""
+    """One live token type's compact slice and fixed network-boundary width."""
 
     type_name: str
     capacity: int
     payload_width: int
-    offset: int  # start of this type's block in the flat vector
+    compact_row_width: int
+    start: int
+    end: int
 
 
 class TokenSetQNetwork(nn.Module):
@@ -654,18 +501,21 @@ class TokenSetQNetwork(nn.Module):
             raise ValueError("q_head_hidden_dim must be positive")
 
         layouts: list[_TokenTypeLayout] = []
-        offset = 0
+        compact_layout = token_spec.compact_layout()
         for token_type in token_spec.types:
             if token_type.capacity > 0:
+                type_layout = compact_layout.get_type(token_type.type_name)
+                assert type_layout is not None
                 layouts.append(
                     _TokenTypeLayout(
                         type_name=token_type.type_name,
                         capacity=token_type.capacity,
                         payload_width=token_type.payload_width,
-                        offset=offset,
+                        compact_row_width=type_layout.compact_row_width,
+                        start=type_layout.start,
+                        end=type_layout.end,
                     )
                 )
-            offset += token_type.capacity * token_type.row_width
         if not layouts:
             raise ValueError(
                 "TokenSpec has no token type with capacity > 0; a token-set network over an " "empty roster cannot observe anything."
@@ -674,6 +524,7 @@ class TokenSetQNetwork(nn.Module):
         self.obs_dim = token_spec.total_dims
         self.action_dim = action_dim
         self.token_embed_dim = token_embed_dim
+        self.input_assembler = _TokenInputAssembler(token_spec)
 
         # Per-type projection encoders, keyed by type NAME (the transfer contract).
         self.encoders = nn.ModuleDict({layout.type_name: nn.Linear(layout.payload_width, token_embed_dim) for layout in self._layouts})
@@ -729,13 +580,14 @@ class TokenSetQNetwork(nn.Module):
         embedded_parts: list[torch.Tensor] = []
         presence_parts: list[torch.Tensor] = []
         for layout in self._layouts:
-            width = layout.capacity * (1 + layout.payload_width)
             # `.view()` raises on copy (Global Constraints) — the flat slice of a
             # contiguous [batch, obs_dim] tensor reshapes without one.
-            rows = obs[:, layout.offset : layout.offset + width].view(batch_size, layout.capacity, 1 + layout.payload_width)
+            dynamic_rows = obs[:, layout.start : layout.end].view(batch_size, layout.capacity, layout.compact_row_width)
+            rows = self.input_assembler.expand_type(layout.type_name, dynamic_rows)
             presence_parts.append(rows[:, :, 0] > 0.5)
             embedded = self.encoders[layout.type_name](rows[:, :, 1:]) + self.type_embeddings[layout.type_name]
             embedded_parts.append(embedded)
+            del rows
         return torch.cat(embedded_parts, dim=1), torch.cat(presence_parts, dim=1)
 
     def pooled_embedding(self, obs: torch.Tensor) -> torch.Tensor:

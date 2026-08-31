@@ -1826,54 +1826,23 @@ Dynamic needs should be describable by causal dimensions rather than human label
 
 ### 15.3 Dynamic variable strategy
 
-There are two approaches:
+There are two implementation approaches. There is no `dynamic_needs` YAML block in the current
+schema; the snippets in earlier revisions of this document were design sketches, not authoring
+syntax.
 
-1. **Fixed dynamic slots**
+1. **Fixed dynamic slots:** one vector lane per causal dimension.
+2. **Variable-element tokens:** an exposed profile tensor whose elements become compiled tokens.
 
-   ```yaml
-   dynamic_needs:
-     max_slots: 16
-     representation: "fixed_slots"
-     fields:
-       - intensity
-       - growth_rate
-       - urgency
-       - recurrence
-       - substitutability
-       - visibility
-       - status_value
-       - social_mediation
-       - contagion
-       - catastrophe_curve
-   ```
-
-2. **Variable-token / set-encoder representation**
-
-   ```yaml
-   dynamic_needs:
-     max_slots: 32
-     representation: "set_encoder"
-     token_fields:
-       - id_embedding
-       - intensity
-       - growth_rate
-       - urgency
-       - tag_embedding
-       - satisfaction_embedding
-   ```
-
-Fixed slots are easier for checkpoint compatibility. Token/set representations are more flexible and better for arbitrary software-defined needs.
+Fixed slots make replay and checkpoint dimensions simpler. Token/set representations are more
+flexible for arbitrary software-defined needs.
 The repo exposes option 1 as `canonical_fixed_slot_dynamic_need_variables(max_slots)`.
 It returns one agent-scoped `vecNf` variable per causal field, with `dims=max_slots`
 so storage and observations stay shape-stable while individual slots can represent
 abstract software-defined needs.
-The repo exposes option 2 as `canonical_set_encoder_dynamic_need_variables(...)`,
-which creates an agent-scoped `dynamic_need_tokens` `tensor2d` variable shaped as
-`[max_slots, token_width]`. `dynamic_need_token_layout(...)` defines the token
-field offsets for `id_embedding`, `intensity`, `growth_rate`, `urgency`,
-`tag_embedding`, and `satisfaction_embedding`. `SetEncoderQNetwork` can reshape
-the flattened observation field back into token rows and mean-pool non-empty rows,
-so token order does not become part of the learned meaning.
+Option 2 is authored through ordinary exposed profile variables. A `tensor2d` variable such
+as `need_tokens` in `configs/test/token_set_smoke/vfs_profiles.yaml` compiles to
+`variable_element` tokens. `TokenSetQNetwork` consumes the compiled roster and pools the mixed
+typed set, so no dynamic-need-specific factory or parallel token layout is needed.
 
 The runtime registry now also exposes a deliberately gated dynamic-variable
 mode for experiments that truly add/remove variable definitions during a run.
@@ -2728,7 +2697,7 @@ hash/generation as a new ABI identity.
 | Observation ABI churn breaks checkpoints | Schema hashes and dimension regression tests |
 | VFS overhead slows training | JIT, caching, batched reads, compiled transition graph |
 | Social variables explode in size | Implemented sparse pair scopes, neighbourhood masks, limited active relationships |
-| Dynamic variables break network shapes | Fixed slots first; set encoders later |
+| Dynamic variables break network shapes | The compiler fixes token capacities; compact dynamic rows are expanded per type only at the token-network projection boundary |
 | Meaning becomes hidden in config complexity | Telemetry labels, rule IDs, documentation, visual rule inspector |
 | BAC naming collision | Use VTC for compiler; reserve BAC for Brain as Code |
 

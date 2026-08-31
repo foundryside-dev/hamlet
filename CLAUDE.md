@@ -475,11 +475,11 @@ read `src/townlet/agent/networks.py`. Observation width comes only from the comp
 **Census, not intent** (measured 2026-08-26 — the "L0/L0.5/L1 vs L2/L3" mapping this line used
 to assert was never what the packs declared): **no shipped pack declares `recurrent`.** Every
 `default_curriculum` level runs `feedforward`, including the two POMDP ones; only the three
-`configs/test/token_transfer_*` fixtures and `configs/test/set_encoder_smoke` (`token_set`)
+`configs/test/token_transfer_*` fixtures and `configs/test/token_set_smoke` (`token_set`)
 differ. `RecurrentSpatialQNetwork` survives the token cut as a token-BLOCK reader — it binds
 its three real blocks to `NetworkFactory.token_block_slices(spec)` (self→position,
 meter→meters, affordance→affordance) and reads no spatial window, because a token observation
-has none. `set_encoder` no longer builds; declare `token_set`.
+has none. `token_set` is the token-native architecture.
 
 - LSTM hidden state: resets at episode start, persists during rollout, resets per transition in batch training
 

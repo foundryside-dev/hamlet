@@ -47,6 +47,27 @@ def _token_type(token_spec: dict[str, Any], type_name: str) -> dict[str, Any]:
     return next(token_type for token_type in token_spec["types"] if token_type["type_name"] == type_name)
 
 
+def _append_non_effect_slot(token_type: dict[str, Any], *, filler_kind: str, filler_ref: str) -> None:
+    """Keep a tampered non-effect type structurally valid for coherence testing."""
+    slot_index = token_type["capacity"]
+    token_type["slot_bindings"].append(
+        {
+            "slot_index": slot_index,
+            "filler_kind": filler_kind,
+            "filler_ref": filler_ref,
+        }
+    )
+    token_type["slot_context_payloads"].append([0.0] * len(token_type["payload_features"]))
+    token_type["capacity"] += 1
+
+
+def _remove_last_non_effect_slot(token_type: dict[str, Any]) -> None:
+    """Keep a reduced non-effect type structurally valid for coherence testing."""
+    token_type["slot_bindings"].pop()
+    token_type["slot_context_payloads"].pop()
+    token_type["capacity"] -= 1
+
+
 def _rehash_primary_token_artifact(payload: dict[str, Any]) -> None:
     """Model an attacker who updates every stored hash after changing TokenSpec."""
     level = _level(payload)
@@ -65,7 +86,26 @@ def _rehash_primary_token_artifact(payload: dict[str, Any]) -> None:
         payload[field_name] = level[field_name]
 
 
-@pytest.mark.parametrize("mutation", ["reference", "order", "signature", "capacity"])
+def test_load_rejects_token_rank_tampering_against_persisted_grid2d_substrate(
+    compiled_token_payload: dict[str, Any],
+) -> None:
+    payload = deepcopy(compiled_token_payload)
+    assert payload["metadata"]["position_dim"] == 2
+    assert payload["stratum"]["stratum"]["substrate"]["grid"]["topology"] == "square"
+    token_spec = _level(payload)["token_spec"]
+    token_spec["position_rank"] = 3
+    for type_name in ("self", "affordance", "agent", "item"):
+        token_type = _token_type(token_spec, type_name)
+        rank_index = token_type["payload_features"].index("position_rank")
+        for context in token_type["slot_context_payloads"]:
+            context[rank_index] = 3 / 8
+    _rehash_primary_token_artifact(payload)
+
+    with pytest.raises(ValueError, match=r"position_rank.*substrate"):
+        CompiledUniverse.from_dict(payload)
+
+
+@pytest.mark.parametrize("mutation", ["reference", "order", "context", "capacity"])
 def test_load_rejects_meter_binding_tampering_even_with_recomputed_hashes(
     compiled_token_payload: dict[str, Any],
     mutation: str,
@@ -76,23 +116,19 @@ def test_load_rejects_meter_binding_tampering_even_with_recomputed_hashes(
         bindings[0]["filler_ref"] = "ghost-meter"
     elif mutation == "order":
         bindings[0]["filler_ref"], bindings[1]["filler_ref"] = bindings[1]["filler_ref"], bindings[0]["filler_ref"]
-        bindings[0]["static_signature"], bindings[1]["static_signature"] = (
-            bindings[1]["static_signature"],
-            bindings[0]["static_signature"],
-        )
-    elif mutation == "signature":
-        current = bindings[0]["static_signature"][0]
-        bindings[0]["static_signature"][0] = 0.25 if current != 0.25 else 0.5
+    elif mutation == "context":
+        contexts = _token_type(_level(payload)["token_spec"], "meter")["slot_context_payloads"]
+        current = contexts[0][0]
+        contexts[0][0] = 0.25 if current != 0.25 else 0.5
     else:
-        bindings.pop()
-        _token_type(_level(payload)["token_spec"], "meter")["capacity"] -= 1
+        _remove_last_non_effect_slot(_token_type(_level(payload)["token_spec"], "meter"))
     _rehash_primary_token_artifact(payload)
 
-    with pytest.raises(ValueError, match="meter slot bindings"):
+    with pytest.raises(ValueError, match=r"meter.*slot (?:bindings|context)"):
         CompiledUniverse.from_dict(payload)
 
 
-@pytest.mark.parametrize("mutation", ["reference", "order", "signature", "capacity"])
+@pytest.mark.parametrize("mutation", ["reference", "order", "context", "capacity"])
 def test_load_rejects_affordance_binding_tampering_even_with_recomputed_hashes(
     compiled_token_payload: dict[str, Any],
     mutation: str,
@@ -103,19 +139,15 @@ def test_load_rejects_affordance_binding_tampering_even_with_recomputed_hashes(
         bindings[0]["filler_ref"] = "ghost-affordance"
     elif mutation == "order":
         bindings[0]["filler_ref"], bindings[1]["filler_ref"] = bindings[1]["filler_ref"], bindings[0]["filler_ref"]
-        bindings[0]["static_signature"], bindings[1]["static_signature"] = (
-            bindings[1]["static_signature"],
-            bindings[0]["static_signature"],
-        )
-    elif mutation == "signature":
-        current = bindings[0]["static_signature"][0]
-        bindings[0]["static_signature"][0] = 0.25 if current != 0.25 else 0.5
+    elif mutation == "context":
+        contexts = _token_type(_level(payload)["token_spec"], "affordance")["slot_context_payloads"]
+        current = contexts[0][0]
+        contexts[0][0] = 0.25 if current != 0.25 else 0.5
     else:
-        bindings.pop()
-        _token_type(_level(payload)["token_spec"], "affordance")["capacity"] -= 1
+        _remove_last_non_effect_slot(_token_type(_level(payload)["token_spec"], "affordance"))
     _rehash_primary_token_artifact(payload)
 
-    with pytest.raises(ValueError, match="affordance slot bindings"):
+    with pytest.raises(ValueError, match=r"affordance.*slot (?:bindings|context)"):
         CompiledUniverse.from_dict(payload)
 
 
@@ -123,7 +155,7 @@ def test_load_rejects_effect_catalog_tampering_used_by_affordance(compiled_token
     payload = deepcopy(compiled_token_payload)
     payload["compiled_effect_catalog"]["effects"]["business_cycle"]["on_tick"][0]["path"] = "bar.energy"
 
-    with pytest.raises(ValueError, match="affordance slot bindings"):
+    with pytest.raises(ValueError, match=r"affordance.*slot (?:bindings|context)"):
         CompiledUniverse.from_dict(payload)
 
 
@@ -137,15 +169,7 @@ def test_load_rejects_self_binding_tampering_even_with_recomputed_hashes(
     if mutation == "reference":
         self_type["slot_bindings"][0]["filler_ref"] = "ghost-self"
     else:
-        self_type["slot_bindings"].append(
-            {
-                "slot_index": 1,
-                "filler_kind": "static",
-                "filler_ref": "ghost-self",
-                "static_signature": None,
-            }
-        )
-        self_type["capacity"] += 1
+        _append_non_effect_slot(self_type, filler_kind="static", filler_ref="ghost-self")
     _rehash_primary_token_artifact(payload)
 
     with pytest.raises(ValueError, match="self.*slot bindings"):
@@ -157,15 +181,7 @@ def test_load_rejects_agent_capacity_tampering_even_with_recomputed_hashes(
 ) -> None:
     payload = deepcopy(compiled_token_payload)
     agent_type = _token_type(_level(payload)["token_spec"], "agent")
-    agent_type["slot_bindings"].append(
-        {
-            "slot_index": 0,
-            "filler_kind": "dynamic",
-            "filler_ref": "agent:0",
-            "static_signature": None,
-        }
-    )
-    agent_type["capacity"] = 1
+    _append_non_effect_slot(agent_type, filler_kind="dynamic", filler_ref="agent:0")
     _rehash_primary_token_artifact(payload)
 
     with pytest.raises(ValueError, match="agent.*slot bindings"):
@@ -177,15 +193,7 @@ def test_load_rejects_item_capacity_tampering_even_with_recomputed_hashes(
 ) -> None:
     payload = deepcopy(compiled_token_payload)
     item_type = _token_type(_level(payload)["token_spec"], "item")
-    item_type["slot_bindings"].append(
-        {
-            "slot_index": 0,
-            "filler_kind": "dynamic",
-            "filler_ref": "item:0",
-            "static_signature": None,
-        }
-    )
-    item_type["capacity"] = 1
+    _append_non_effect_slot(item_type, filler_kind="dynamic", filler_ref="item:0")
     _rehash_primary_token_artifact(payload)
 
     with pytest.raises(ValueError, match="item.*slot bindings"):
@@ -205,8 +213,7 @@ def test_load_rejects_nonzero_item_binding_tampering_even_with_recomputed_hashes
     elif mutation == "order":
         bindings[0]["filler_ref"], bindings[1]["filler_ref"] = bindings[1]["filler_ref"], bindings[0]["filler_ref"]
     else:
-        bindings.pop()
-        item_type["capacity"] -= 1
+        _remove_last_non_effect_slot(item_type)
     _rehash_primary_token_artifact(payload)
 
     with pytest.raises(ValueError, match="item.*slot bindings"):
@@ -253,7 +260,6 @@ def test_load_rejects_effect_scope_block_order_tampering_even_with_recomputed_ha
             "slot_index": 0,
             "filler_kind": "dynamic",
             "filler_ref": "effect:agent:0",
-            "static_signature": None,
         },
     )
     effect_type["slot_bindings"][1]["slot_index"] = 1
@@ -264,7 +270,7 @@ def test_load_rejects_effect_scope_block_order_tampering_even_with_recomputed_ha
         CompiledUniverse.from_dict(payload)
 
 
-@pytest.mark.parametrize("mutation", ["reference", "order", "signature", "capacity"])
+@pytest.mark.parametrize("mutation", ["reference", "order", "context", "capacity"])
 def test_load_rejects_variable_element_binding_tampering_even_with_recomputed_hashes(
     compiled_token_payload: dict[str, Any],
     mutation: str,
@@ -276,19 +282,15 @@ def test_load_rejects_variable_element_binding_tampering_even_with_recomputed_ha
         bindings[0]["filler_ref"] = "ghost-variable"
     elif mutation == "order":
         bindings[0]["filler_ref"], bindings[1]["filler_ref"] = bindings[1]["filler_ref"], bindings[0]["filler_ref"]
-        bindings[0]["static_signature"], bindings[1]["static_signature"] = (
-            bindings[1]["static_signature"],
-            bindings[0]["static_signature"],
-        )
-    elif mutation == "signature":
-        current = bindings[0]["static_signature"][0]
-        bindings[0]["static_signature"][0] = 0.25 if current != 0.25 else 0.5
+    elif mutation == "context":
+        contexts = variable_type["slot_context_payloads"]
+        current = contexts[0][0]
+        contexts[0][0] = 0.25 if current != 0.25 else 0.5
     else:
-        bindings.pop()
-        variable_type["capacity"] -= 1
+        _remove_last_non_effect_slot(variable_type)
     _rehash_primary_token_artifact(payload)
 
-    with pytest.raises(ValueError, match="variable_element.*slot bindings"):
+    with pytest.raises(ValueError, match=r"variable_element.*slot (?:bindings|context)"):
         CompiledUniverse.from_dict(payload)
 
 

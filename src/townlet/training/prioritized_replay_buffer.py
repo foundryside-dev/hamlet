@@ -5,6 +5,9 @@ CRIT-07: Updated to use RewardTensor DTO for explicit composition semantics.
 
 from __future__ import annotations
 
+import math
+from collections.abc import Mapping
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
@@ -12,6 +15,78 @@ import torch
 
 if TYPE_CHECKING:
     from townlet.training.state import RewardTensor
+
+
+PRIORITIZED_REPLAY_BUFFER_FORMAT_VERSION = 4
+PRIORITIZED_REPLAY_BUFFER_KIND = "prioritized"
+PRIORITIZED_REPLAY_BUFFER_STATE_KEYS = frozenset(
+    {
+        "replay_kind",
+        "format_version",
+        "capacity",
+        "alpha",
+        "beta",
+        "beta_initial",
+        "beta_annealing",
+        "observations",
+        "actions",
+        "rewards",
+        "rewards_extrinsic",
+        "rewards_intrinsic",
+        "rewards_shaping",
+        "next_observations",
+        "dones",
+        "priorities",
+        "max_priority",
+        "position",
+        "size_current",
+    }
+)
+_PER_TENSOR_FIELDS = (
+    "observations",
+    "actions",
+    "rewards",
+    "rewards_extrinsic",
+    "rewards_intrinsic",
+    "rewards_shaping",
+    "next_observations",
+    "dones",
+)
+
+
+@dataclass(frozen=True)
+class _PrioritizedRestoreCandidate:
+    beta: float
+    priorities: np.ndarray
+    max_priority: float
+    position: int
+    size_current: int
+    observations: torch.Tensor | None
+    actions: torch.Tensor | None
+    rewards: torch.Tensor | None
+    rewards_extrinsic: torch.Tensor | None
+    rewards_intrinsic: torch.Tensor | None
+    rewards_shaping: torch.Tensor | None
+    next_observations: torch.Tensor | None
+    dones: torch.Tensor | None
+
+
+@dataclass(frozen=True)
+class _ValidatedPrioritizedState:
+    beta: float
+    priorities: np.ndarray
+    max_priority: float
+    position: int
+    size_current: int
+    obs_dim: int | None
+    observations: torch.Tensor | None
+    actions: torch.Tensor | None
+    rewards: torch.Tensor | None
+    rewards_extrinsic: torch.Tensor | None
+    rewards_intrinsic: torch.Tensor | None
+    rewards_shaping: torch.Tensor | None
+    next_observations: torch.Tensor | None
+    dones: torch.Tensor | None
 
 
 class PrioritizedReplayBuffer:
@@ -85,8 +160,54 @@ class PrioritizedReplayBuffer:
             next_observations: [batch, obs_dim] next observations
             dones: [batch] done flags
         """
+        if observations.ndim != 2 or observations.dtype is not torch.float32:
+            raise ValueError(
+                f"observations must be 2D with dtype torch.float32, got shape {tuple(observations.shape)} and dtype {observations.dtype}"
+            )
+        if next_observations.ndim != 2 or next_observations.dtype is not torch.float32:
+            raise ValueError(
+                "next_observations must be 2D with dtype torch.float32, "
+                f"got shape {tuple(next_observations.shape)} and dtype {next_observations.dtype}"
+            )
+        if actions.ndim != 1 or actions.dtype is not torch.int64:
+            raise ValueError(f"actions must be 1D with dtype torch.int64, got shape {tuple(actions.shape)} and dtype {actions.dtype}")
+        if rewards.total.ndim != 1 or rewards.total.dtype is not torch.float32:
+            raise ValueError(
+                f"rewards.total must be 1D with dtype torch.float32, got shape {tuple(rewards.total.shape)} and dtype {rewards.total.dtype}"
+            )
+        if dones.ndim != 1 or dones.dtype is not torch.bool:
+            raise ValueError(f"dones must be 1D with dtype torch.bool, got shape {tuple(dones.shape)} and dtype {dones.dtype}")
+
         batch_size = observations.shape[0]
         obs_dim = observations.shape[1]
+        if batch_size > self.capacity:
+            raise ValueError(f"batch_size ({batch_size}) exceeds buffer capacity ({self.capacity})")
+        if actions.shape[0] != batch_size or rewards.total.shape[0] != batch_size or dones.shape[0] != batch_size:
+            raise ValueError("PER transition batch tensors must have the same leading dimension.")
+        if next_observations.shape != observations.shape:
+            raise ValueError(
+                f"next_observations shape {tuple(next_observations.shape)} must equal observations shape {tuple(observations.shape)}"
+            )
+        if self.observations is not None and obs_dim != self.observations.shape[1]:
+            raise ValueError(f"observations obs_dim ({obs_dim}) != current buffer obs_dim ({self.observations.shape[1]})")
+        for field, tensor in (
+            ("observations", observations),
+            ("rewards.total", rewards.total),
+            ("next_observations", next_observations),
+        ):
+            if not bool(torch.isfinite(tensor).all()):
+                raise ValueError(f"{field} must contain only finite values")
+        for field, component in (
+            ("rewards.extrinsic", rewards.extrinsic),
+            ("rewards.intrinsic", rewards.intrinsic),
+            ("rewards.shaping", rewards.shaping),
+        ):
+            if component is None:
+                continue
+            if component.ndim != 1 or component.shape[0] != batch_size or component.dtype is not torch.float32:
+                raise ValueError(f"{field} must have shape ({batch_size},) and dtype torch.float32")
+            if not bool(torch.isfinite(component).all()):
+                raise ValueError(f"{field} must contain only finite values")
 
         # Initialize storage on first push
         if self.observations is None:
@@ -314,17 +435,11 @@ class PrioritizedReplayBuffer:
         }
 
     def serialize(self) -> dict:
-        """Serialize buffer contents for checkpointing.
-
-        Version 3: Stores reward components (extrinsic, intrinsic, shaping) from DAC.
-
-        Returns:
-            Dictionary containing buffer state (observations, priorities, metadata)
-        """
+        """Serialize the exact current prioritized replay artifact."""
         if self.observations is None:
-            # Empty buffer
             return {
-                "format_version": 3,  # Version 3: reward components support
+                "replay_kind": PRIORITIZED_REPLAY_BUFFER_KIND,
+                "format_version": PRIORITIZED_REPLAY_BUFFER_FORMAT_VERSION,
                 "capacity": self.capacity,
                 "alpha": self.alpha,
                 "beta": self.beta,
@@ -354,7 +469,8 @@ class PrioritizedReplayBuffer:
         assert self.dones is not None
 
         return {
-            "format_version": 3,  # Version 3: reward components support
+            "replay_kind": PRIORITIZED_REPLAY_BUFFER_KIND,
+            "format_version": PRIORITIZED_REPLAY_BUFFER_FORMAT_VERSION,
             "capacity": self.capacity,
             "alpha": self.alpha,
             "beta": self.beta,
@@ -374,74 +490,269 @@ class PrioritizedReplayBuffer:
             "size_current": self.size_current,
         }
 
-    def load_from_serialized(self, state: dict) -> None:
-        """Restore buffer from serialized state.
+    @staticmethod
+    def _require_int(value: object, field: str, *, minimum: int, maximum: int) -> int:
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise ValueError(f"PER checkpoint {field} must be an integer; got {value!r}. Regenerate the checkpoint.")
+        if not minimum <= value <= maximum:
+            raise ValueError(f"PER checkpoint {field}={value} is outside [{minimum}, {maximum}]. Regenerate the checkpoint.")
+        return value
 
-        Version 3 required: Loads reward components (extrinsic, intrinsic, shaping).
+    @staticmethod
+    def _require_float(value: object, field: str, *, minimum: float, maximum: float) -> float:
+        if isinstance(value, bool) or not isinstance(value, int | float) or not math.isfinite(float(value)):
+            raise ValueError(f"PER checkpoint {field} must be a finite number; got {value!r}. Regenerate the checkpoint.")
+        result = float(value)
+        if not minimum <= result <= maximum:
+            raise ValueError(f"PER checkpoint {field}={result} is outside [{minimum}, {maximum}]. Regenerate the checkpoint.")
+        return result
 
-        Args:
-            state: Dictionary from serialize()
+    @staticmethod
+    def _require_tensor(state: Mapping[str, Any], field: str, *, dtype: torch.dtype, shape: tuple[int, ...]) -> torch.Tensor:
+        value = state[field]
+        if not isinstance(value, torch.Tensor):
+            raise ValueError(f"PER checkpoint {field} must be a tensor; got {type(value).__name__}. Regenerate the checkpoint.")
+        if value.dtype is not dtype:
+            raise ValueError(f"PER checkpoint {field} dtype is {value.dtype}; expected {dtype}. Regenerate the checkpoint.")
+        if tuple(value.shape) != shape:
+            raise ValueError(f"PER checkpoint {field} shape is {tuple(value.shape)}; expected {shape}. Regenerate the checkpoint.")
+        if dtype.is_floating_point and not bool(torch.isfinite(value).all()):
+            raise ValueError(f"PER checkpoint {field} must contain only finite values. Regenerate the checkpoint.")
+        return value
 
-        Raises:
-            ValueError: If the checkpoint format version does not match exactly
-        """
-        # Only the exact current checkpoint format is executable.
+    def _validate_serialized(
+        self,
+        state: Mapping[str, Any],
+        *,
+        expected_obs_dim: int | None,
+    ) -> _ValidatedPrioritizedState:
+        if not isinstance(state, Mapping):
+            raise ValueError(f"Prioritized replay checkpoint payload must be a mapping; got {type(state).__name__}.")
         format_version = state.get("format_version")
-        if format_version != 3:
+        if type(format_version) is not int or format_version != PRIORITIZED_REPLAY_BUFFER_FORMAT_VERSION:
             raise ValueError(
                 f"Cannot load PER checkpoint with format_version {format_version!r}; "
-                "the exact current format_version is 3. Regenerate the checkpoint."
+                f"the exact current format_version is {PRIORITIZED_REPLAY_BUFFER_FORMAT_VERSION}. Regenerate the checkpoint."
+            )
+        replay_kind = state.get("replay_kind")
+        if replay_kind != PRIORITIZED_REPLAY_BUFFER_KIND:
+            raise ValueError(
+                f"PER checkpoint replay_kind is {replay_kind!r}; expected {PRIORITIZED_REPLAY_BUFFER_KIND!r}. Regenerate the checkpoint."
+            )
+        state_keys = set(state)
+        if state_keys != PRIORITIZED_REPLAY_BUFFER_STATE_KEYS:
+            missing = sorted(PRIORITIZED_REPLAY_BUFFER_STATE_KEYS - state_keys)
+            unknown = sorted(state_keys - PRIORITIZED_REPLAY_BUFFER_STATE_KEYS)
+            raise ValueError(f"PER checkpoint key set mismatch: missing={missing}, unknown={unknown}. Regenerate the checkpoint.")
+
+        capacity = self._require_int(state["capacity"], "capacity", minimum=1, maximum=2**63 - 1)
+        if capacity != self.capacity:
+            raise ValueError(
+                f"PER checkpoint capacity is {capacity}; current capacity is {self.capacity}. "
+                "Regenerate the checkpoint for this configuration."
+            )
+        alpha = self._require_float(state["alpha"], "alpha", minimum=0.0, maximum=1.0)
+        if alpha != self.alpha:
+            raise ValueError(f"PER checkpoint alpha is {alpha}; current alpha is {self.alpha}. Regenerate the checkpoint.")
+        beta_initial = self._require_float(state["beta_initial"], "beta_initial", minimum=0.0, maximum=1.0)
+        if beta_initial != self.beta_initial:
+            raise ValueError(
+                f"PER checkpoint beta_initial is {beta_initial}; current beta_initial is {self.beta_initial}. Regenerate the checkpoint."
+            )
+        beta_annealing = state["beta_annealing"]
+        if type(beta_annealing) is not bool:
+            raise ValueError("PER checkpoint beta_annealing must be a boolean. Regenerate the checkpoint.")
+        if beta_annealing != self.beta_annealing:
+            raise ValueError(
+                f"PER checkpoint beta_annealing is {beta_annealing}; current beta_annealing is {self.beta_annealing}. "
+                "Regenerate the checkpoint."
+            )
+        beta = self._require_float(state["beta"], "beta", minimum=beta_initial, maximum=1.0)
+        if not beta_annealing and beta != beta_initial:
+            raise ValueError("PER checkpoint beta must equal beta_initial when beta annealing is disabled. Regenerate the checkpoint.")
+        size_current = self._require_int(state["size_current"], "size_current", minimum=0, maximum=self.capacity)
+        position = self._require_int(state["position"], "position", minimum=0, maximum=self.capacity - 1)
+        if size_current < self.capacity and position != size_current:
+            raise ValueError(f"PER checkpoint position is {position}; expected {size_current} before wrap. Regenerate the checkpoint.")
+        priorities = state["priorities"]
+        if not isinstance(priorities, np.ndarray):
+            raise ValueError(
+                f"PER checkpoint priorities must be a numpy array; got {type(priorities).__name__}. Regenerate the checkpoint."
+            )
+        if priorities.dtype != np.dtype(np.float32):
+            raise ValueError(f"PER checkpoint priorities dtype is {priorities.dtype}; expected float32. Regenerate the checkpoint.")
+        if priorities.shape != (self.capacity,):
+            raise ValueError(
+                f"PER checkpoint priorities shape is {priorities.shape}; expected {(self.capacity,)}. Regenerate the checkpoint."
+            )
+        if not bool(np.isfinite(priorities).all()):
+            raise ValueError("PER checkpoint priorities must contain only finite values. Regenerate the checkpoint.")
+        if np.any(priorities[:size_current] <= 0.0) or np.any(priorities[size_current:] < 0.0):
+            raise ValueError("PER checkpoint priorities are outside the valid positive/zero ranges. Regenerate the checkpoint.")
+        max_priority = self._require_float(state["max_priority"], "max_priority", minimum=0.0, maximum=float("inf"))
+        if max_priority <= 0.0:
+            raise ValueError("PER checkpoint max_priority must be positive. Regenerate the checkpoint.")
+        if size_current and max_priority < float(priorities[:size_current].max()):
+            raise ValueError("PER checkpoint max_priority is below an active priority. Regenerate the checkpoint.")
+
+        if size_current == 0:
+            non_null = [field for field in _PER_TENSOR_FIELDS if state[field] is not None]
+            if non_null:
+                raise ValueError(f"Empty PER checkpoint tensor fields must be null; non-null={non_null}. Regenerate the checkpoint.")
+            return _ValidatedPrioritizedState(
+                beta,
+                priorities,
+                max_priority,
+                0,
+                0,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
             )
 
-        self.capacity = state["capacity"]
-        self.alpha = state["alpha"]
-        self.beta = state["beta"]
-        self.beta_initial = state["beta_initial"]
-        self.beta_annealing = state["beta_annealing"]
-        self.priorities = state["priorities"].copy()
-        self.max_priority = state["max_priority"]
-        self.position = state["position"]
-        self.size_current = state["size_current"]
+        observations = state["observations"]
+        if not isinstance(observations, torch.Tensor) or observations.ndim != 2:
+            raise ValueError("PER checkpoint observations must be a 2D tensor. Regenerate the checkpoint.")
+        obs_dim = observations.shape[1]
+        if obs_dim <= 0:
+            raise ValueError("PER checkpoint observations obs_dim must be positive. Regenerate the checkpoint.")
+        if expected_obs_dim is not None and obs_dim != expected_obs_dim:
+            raise ValueError(
+                f"PER checkpoint obs_dim is {obs_dim}; expected current obs_dim {expected_obs_dim}. Regenerate the checkpoint."
+            )
+        if self.observations is not None and obs_dim != self.observations.shape[1]:
+            raise ValueError(
+                f"PER checkpoint obs_dim is {obs_dim}; current buffer obs_dim is {self.observations.shape[1]}. "
+                "Regenerate the checkpoint."
+            )
+        observations = self._require_tensor(state, "observations", dtype=torch.float32, shape=(size_current, obs_dim))
+        actions = self._require_tensor(state, "actions", dtype=torch.int64, shape=(size_current,))
+        rewards = self._require_tensor(state, "rewards", dtype=torch.float32, shape=(size_current,))
+        rewards_extrinsic = self._require_tensor(state, "rewards_extrinsic", dtype=torch.float32, shape=(size_current,))
+        rewards_intrinsic = self._require_tensor(state, "rewards_intrinsic", dtype=torch.float32, shape=(size_current,))
+        rewards_shaping = self._require_tensor(state, "rewards_shaping", dtype=torch.float32, shape=(size_current,))
+        next_observations = self._require_tensor(state, "next_observations", dtype=torch.float32, shape=(size_current, obs_dim))
+        dones = self._require_tensor(state, "dones", dtype=torch.bool, shape=(size_current,))
 
-        if state["observations"] is None:
-            # Empty buffer
-            self.observations = None
-            self.actions = None
-            self.rewards = None
-            self.rewards_extrinsic = None
-            self.rewards_intrinsic = None
-            self.rewards_shaping = None
-            self.next_observations = None
-            self.dones = None
-            return
+        return _ValidatedPrioritizedState(
+            beta,
+            priorities,
+            max_priority,
+            position,
+            size_current,
+            obs_dim,
+            observations,
+            actions,
+            rewards,
+            rewards_extrinsic,
+            rewards_intrinsic,
+            rewards_shaping,
+            next_observations,
+            dones,
+        )
 
-        # Initialize storage if needed
-        obs_dim = state["observations"].shape[1]
-        if self.observations is None:
-            self.observations = torch.zeros(self.capacity, obs_dim, device=self.device)
-            self.actions = torch.zeros(self.capacity, dtype=torch.long, device=self.device)
-            self.rewards = torch.zeros(self.capacity, device=self.device)
-            self.rewards_extrinsic = torch.zeros(self.capacity, device=self.device)
-            self.rewards_intrinsic = torch.zeros(self.capacity, device=self.device)
-            self.rewards_shaping = torch.zeros(self.capacity, device=self.device)
-            self.next_observations = torch.zeros(self.capacity, obs_dim, device=self.device)
-            self.dones = torch.zeros(self.capacity, dtype=torch.bool, device=self.device)
+    def _materialize_serialized(self, state: _ValidatedPrioritizedState) -> _PrioritizedRestoreCandidate:
+        if state.size_current == 0:
+            return _PrioritizedRestoreCandidate(
+                state.beta,
+                state.priorities.copy(),
+                state.max_priority,
+                0,
+                0,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+            )
 
-        assert self.observations is not None
-        assert self.actions is not None
-        assert self.rewards is not None
-        assert self.rewards_extrinsic is not None
-        assert self.rewards_intrinsic is not None
-        assert self.rewards_shaping is not None
-        assert self.next_observations is not None
-        assert self.dones is not None
+        assert state.obs_dim is not None
+        assert state.observations is not None
+        assert state.actions is not None
+        assert state.rewards is not None
+        assert state.rewards_extrinsic is not None
+        assert state.rewards_intrinsic is not None
+        assert state.rewards_shaping is not None
+        assert state.next_observations is not None
+        assert state.dones is not None
+        candidate_observations = torch.zeros((self.capacity, state.obs_dim), dtype=torch.float32, device=self.device)
+        candidate_actions = torch.zeros(self.capacity, dtype=torch.int64, device=self.device)
+        candidate_rewards = torch.zeros(self.capacity, dtype=torch.float32, device=self.device)
+        candidate_rewards_extrinsic = torch.zeros(self.capacity, dtype=torch.float32, device=self.device)
+        candidate_rewards_intrinsic = torch.zeros(self.capacity, dtype=torch.float32, device=self.device)
+        candidate_rewards_shaping = torch.zeros(self.capacity, dtype=torch.float32, device=self.device)
+        candidate_next_observations = torch.zeros((self.capacity, state.obs_dim), dtype=torch.float32, device=self.device)
+        candidate_dones = torch.zeros(self.capacity, dtype=torch.bool, device=self.device)
+        candidate_observations[: state.size_current].copy_(state.observations.to(self.device))
+        candidate_actions[: state.size_current].copy_(state.actions.to(self.device))
+        candidate_rewards[: state.size_current].copy_(state.rewards.to(self.device))
+        candidate_rewards_extrinsic[: state.size_current].copy_(state.rewards_extrinsic.to(self.device))
+        candidate_rewards_intrinsic[: state.size_current].copy_(state.rewards_intrinsic.to(self.device))
+        candidate_rewards_shaping[: state.size_current].copy_(state.rewards_shaping.to(self.device))
+        candidate_next_observations[: state.size_current].copy_(state.next_observations.to(self.device))
+        candidate_dones[: state.size_current].copy_(state.dones.to(self.device))
+        return _PrioritizedRestoreCandidate(
+            state.beta,
+            state.priorities.copy(),
+            state.max_priority,
+            state.position,
+            state.size_current,
+            candidate_observations,
+            candidate_actions,
+            candidate_rewards,
+            candidate_rewards_extrinsic,
+            candidate_rewards_intrinsic,
+            candidate_rewards_shaping,
+            candidate_next_observations,
+            candidate_dones,
+        )
 
-        # Restore data
-        self.observations[: self.size_current] = state["observations"].to(self.device)
-        self.actions[: self.size_current] = state["actions"].to(self.device)
-        self.rewards[: self.size_current] = state["rewards"].to(self.device)
-        self.rewards_extrinsic[: self.size_current] = state["rewards_extrinsic"].to(self.device)
-        self.rewards_intrinsic[: self.size_current] = state["rewards_intrinsic"].to(self.device)
-        self.rewards_shaping[: self.size_current] = state["rewards_shaping"].to(self.device)
-        self.next_observations[: self.size_current] = state["next_observations"].to(self.device)
-        self.dones[: self.size_current] = state["dones"].to(self.device)
+    def _prepare_serialized(
+        self,
+        state: Mapping[str, Any],
+        *,
+        expected_obs_dim: int | None,
+    ) -> _PrioritizedRestoreCandidate:
+        validated = self._validate_serialized(state, expected_obs_dim=expected_obs_dim)
+        return self._materialize_serialized(validated)
+
+    def validate_serialized(self, state: Mapping[str, Any], *, expected_obs_dim: int) -> _ValidatedPrioritizedState:
+        """Validate exact structure without allocating restore storage or mutating this buffer."""
+        return self._validate_serialized(state, expected_obs_dim=expected_obs_dim)
+
+    def materialize_validated(self, state: _ValidatedPrioritizedState) -> _PrioritizedRestoreCandidate:
+        """Materialize one restore candidate from already validated structure."""
+        return self._materialize_serialized(state)
+
+    def prepare_serialized(self, state: Mapping[str, Any], *, expected_obs_dim: int | None) -> _PrioritizedRestoreCandidate:
+        """Validate and materialize the one candidate that will be installed."""
+        return self._prepare_serialized(state, expected_obs_dim=expected_obs_dim)
+
+    def load_prepared(self, candidate: _PrioritizedRestoreCandidate) -> None:
+        """Install a fully validated, already materialized restore candidate."""
+        self.beta = candidate.beta
+        self.priorities = candidate.priorities
+        self.max_priority = candidate.max_priority
+        self.position = candidate.position
+        self.size_current = candidate.size_current
+        self.observations = candidate.observations
+        self.actions = candidate.actions
+        self.rewards = candidate.rewards
+        self.rewards_extrinsic = candidate.rewards_extrinsic
+        self.rewards_intrinsic = candidate.rewards_intrinsic
+        self.rewards_shaping = candidate.rewards_shaping
+        self.next_observations = candidate.next_observations
+        self.dones = candidate.dones
+
+    def load_from_serialized(self, state: Mapping[str, Any]) -> None:
+        """Restore only after the complete exact-current artifact validates."""
+        self.load_prepared(self.prepare_serialized(state, expected_obs_dim=None))
